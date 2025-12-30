@@ -1,0 +1,107 @@
+[
+  {
+    "objectID": "reference.html",
+    "href": "reference.html",
+    "title": "Function Reference",
+    "section": "",
+    "text": "Function\nDescription\n\n\n\n\nforest_plot()\nCreate an interactive forest plot widget\n\n\nwebtable()\nCreate a table-only widget (no forest plot)\n\n\nweb_spec()\nCreate a WebSpec specification object\n\n\n\n\n\nforest_plot(\n  x,                    # Data frame or WebSpec\n\n  point,                # Column name for point estimates\n\n  lower,                # Column name for lower CI bounds\n  upper,                # Column name for upper CI bounds\n\n  label = NULL,         # Column name for row labels\n  group = NULL,         # Column name for grouping\n  columns = NULL,       # List of column specifications\n  scale = \"linear\",     # \"linear\" or \"log\"\n  null_value = NULL,    # Reference value (e.g., 1 for ratios)\n  axis_label = NULL,    # X-axis label\n  theme = web_theme_default(),\n  # Override parameters:\n\n  axis_range = NULL,    # c(min, max) to override axis limits\n  axis_ticks = NULL,    # Numeric vector of tick positions\n  axis_gridlines = NULL # TRUE/FALSE to show gridlines\n)"
+  },
+  {
+    "objectID": "reference.html#main-functions",
+    "href": "reference.html#main-functions",
+    "title": "Function Reference",
+    "section": "",
+    "text": "Function\nDescription\n\n\n\n\nforest_plot()\nCreate an interactive forest plot widget\n\n\nwebtable()\nCreate a table-only widget (no forest plot)\n\n\nweb_spec()\nCreate a WebSpec specification object\n\n\n\n\n\nforest_plot(\n  x,                    # Data frame or WebSpec\n\n  point,                # Column name for point estimates\n\n  lower,                # Column name for lower CI bounds\n  upper,                # Column name for upper CI bounds\n\n  label = NULL,         # Column name for row labels\n  group = NULL,         # Column name for grouping\n  columns = NULL,       # List of column specifications\n  scale = \"linear\",     # \"linear\" or \"log\"\n  null_value = NULL,    # Reference value (e.g., 1 for ratios)\n  axis_label = NULL,    # X-axis label\n  theme = web_theme_default(),\n  # Override parameters:\n\n  axis_range = NULL,    # c(min, max) to override axis limits\n  axis_ticks = NULL,    # Numeric vector of tick positions\n  axis_gridlines = NULL # TRUE/FALSE to show gridlines\n)"
+  },
+  {
+    "objectID": "reference.html#theme-functions",
+    "href": "reference.html#theme-functions",
+    "title": "Function Reference",
+    "section": "Theme Functions",
+    "text": "Theme Functions\n\nPreset Themes\n\n\n\nFunction\nStyle\n\n\n\n\nweb_theme_default()\nClean default theme\n\n\nweb_theme_jama()\nJAMA journal style (B&W, dense)\n\n\nweb_theme_lancet()\nLancet journal style (blue, serif)\n\n\nweb_theme_modern()\nContemporary UI style\n\n\nweb_theme_presentation()\nLarge fonts for slides\n\n\nweb_theme_dark()\nDark mode\n\n\nweb_theme_minimal()\nMinimal black & white\n\n\n\n\n\nTheme Modifiers\nAll modifiers are pipe-friendly and return the modified theme:\nweb_theme_jama() |&gt;\n  set_colors(...) |&gt;\n  set_typography(...) |&gt;\n  set_spacing(...) |&gt;\n  set_shapes(...) |&gt;\n  set_axis(...) |&gt;\n  set_layout(...)\n\nset_colors()\nset_colors(theme,\n  background,           # Background color\n\nforeground,           # Text color\n  primary,              # Primary accent color\n  secondary,            # Secondary text color\n  border,               # Border color\n  interval_positive,    # Color for positive effects\n  interval_negative,    # Color for negative effects\n  interval_line,        # Interval line color\n  summary_fill,         # Summary diamond fill\n  summary_border        # Summary diamond border\n)\n\n\nset_typography()\nset_typography(theme,\n  font_family,          # CSS font-family\n  font_size_sm,         # Small text size\n  font_size_base,       # Base text size\n  font_size_lg,         # Large text size\n  font_weight_normal,   # Normal weight (400)\n  font_weight_medium,   # Medium weight (500)\n  font_weight_bold,     # Bold weight (600-700)\n  line_height           # Line height multiplier\n)\n\n\nset_spacing()\nset_spacing(theme,\n  row_height,           # Row height in pixels\n  header_height,        # Header height in pixels\n  column_gap,           # Gap between columns\n  padding               # Container padding\n)\n\n\nset_shapes()\nset_shapes(theme,\n  point_size,           # Point marker size\n  summary_height,       # Summary diamond height\n  line_width,           # Interval line width\n  border_radius         # Border radius\n)\n\n\nset_axis()\nset_axis(theme,\n  range_min,            # Minimum axis value (NA = auto)\n  range_max,            # Maximum axis value (NA = auto)\n  tick_count,           # Target number of ticks\n  tick_values,          # Explicit tick positions\n  gridlines,            # Show gridlines (TRUE/FALSE)\n  gridline_style        # \"solid\", \"dashed\", or \"dotted\"\n)\n\n\nset_layout()\nset_layout(theme,\n  plot_position,        # \"left\" or \"right\"\n  cell_padding_x,       # Horizontal cell padding\n  cell_padding_y,       # Vertical cell padding\n  row_border,           # Show row borders\n  container_border      # Show container border\n)"
+  },
+  {
+    "objectID": "reference.html#column-functions",
+    "href": "reference.html#column-functions",
+    "title": "Function Reference",
+    "section": "Column Functions",
+    "text": "Column Functions\n\nBasic Columns\ncol_text(field, header, width = NULL, position = \"left\")\ncol_numeric(field, header, width = NULL, position = \"left\")\ncol_interval(header, width = NULL, position = \"right\")\n\n\nSpecial Columns\ncol_bar(field, header, width = NULL, max_value = NULL)\ncol_pvalue(field, header, width = NULL, stars = TRUE)\ncol_sparkline(field, header, width = NULL, type = \"line\")\n\n\nColumn Groups\ncol_group(header, ...)\n# Example:\ncol_group(\"Statistics\",\n  col_numeric(\"n\", header = \"N\"),\n  col_bar(\"weight\", header = \"Weight\")\n)"
+  },
+  {
+    "objectID": "reference.html#annotations",
+    "href": "reference.html#annotations",
+    "title": "Function Reference",
+    "section": "Annotations",
+    "text": "Annotations\n\nReference Lines\nforest_refline(\n  x,                    # X-axis position\n  label = NULL,         # Optional label\n  style = \"solid\",      # \"solid\", \"dashed\", or \"dotted\"\n  color = NULL          # Line color\n)"
+  },
+  {
+    "objectID": "reference.html#classes",
+    "href": "reference.html#classes",
+    "title": "Function Reference",
+    "section": "Classes",
+    "text": "Classes\n\nWebSpec\nThe main specification object containing:\n\ndata — Row data, groups, summaries\ncolumns — Column definitions\ntheme — Visual styling\ninteraction — Enabled features\nannotations — Reference lines, markers\n\n\n\nAxisConfig\nAxis configuration with properties:\n\nrange_min, range_max — Axis bounds\ntick_count, tick_values — Tick configuration\ngridlines, gridline_style — Gridline settings\n\n\n\nLayoutConfig\nLayout configuration with properties:\n\nplot_position — “left” or “right”\ntable_width, plot_width — Sizing\ncell_padding_x, cell_padding_y — Padding\nrow_border, container_border — Borders"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "webforest",
+    "section": "",
+    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, the package supports any data with point estimates and confidence intervals.\n\n\n\nModern web rendering using Svelte 5 and D3.js\nMultiple preset themes (JAMA, Lancet, presentation, dark mode)\nFlexible column system with special renderers (bars, p-values, sparklines)\nHierarchical grouping with collapsible sections\nInteractive features (hover tooltips, row selection, sorting)\nFluent API for theme customization"
+  },
+  {
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "webforest",
+    "section": "",
+    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, the package supports any data with point estimates and confidence intervals.\n\n\n\nModern web rendering using Svelte 5 and D3.js\nMultiple preset themes (JAMA, Lancet, presentation, dark mode)\nFlexible column system with special renderers (bars, p-values, sparklines)\nHierarchical grouping with collapsible sections\nInteractive features (hover tooltips, row selection, sorting)\nFluent API for theme customization"
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "webforest",
+    "section": "Installation",
+    "text": "Installation\n# install.packages(\"pak\")\npak::pak(\"kaskarn/webforest\")"
+  },
+  {
+    "objectID": "index.html#quick-start",
+    "href": "index.html#quick-start",
+    "title": "webforest",
+    "section": "Quick Start",
+    "text": "Quick Start\n\n\nCode\n# Sample meta-analysis data\nmeta_data &lt;- data.frame(\n  study = c(\"Smith 2020\", \"Jones 2021\", \"Lee 2022\", \"Chen 2023\", \"Park 2024\"),\n  hr = c(0.72, 0.85, 0.91, 0.68, 0.79),\n  lower = c(0.55, 0.70, 0.75, 0.52, 0.61),\n  upper = c(0.95, 1.03, 1.10, 0.89, 1.02),\n  n = c(245, 180, 320, 156, 210),\n  events = c(42, 38, 55, 28, 45)\n)\n\nforest_plot(meta_data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\",\n  axis_label = \"Hazard Ratio (95% CI)\"\n)\n\n\n\n\n\n\n\nTwo-Step Workflow\nFor more control, create a WebSpec first:\n\n\nCode\nspec &lt;- web_spec(meta_data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\",\n  columns = list(\n    col_numeric(\"n\", header = \"N\", width = 60),\n    col_numeric(\"events\", header = \"Events\", width = 70)\n  )\n)\n\nforest_plot(spec, axis_label = \"Hazard Ratio\")"
+  },
+  {
+    "objectID": "index.html#theme-system",
+    "href": "index.html#theme-system",
+    "title": "webforest",
+    "section": "Theme System",
+    "text": "Theme System\n\nPreset Themes\n\nJAMALancetModernPresentationDark\n\n\n\n\nCode\nforest_plot(meta_data, point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1, scale = \"log\",\n  theme = web_theme_jama())\n\n\n\n\n\n\n\n\n\n\nCode\nforest_plot(meta_data, point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1, scale = \"log\",\n  theme = web_theme_lancet())\n\n\n\n\n\n\n\n\n\n\nCode\nforest_plot(meta_data, point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1, scale = \"log\",\n  theme = web_theme_modern())\n\n\n\n\n\n\n\n\n\n\nCode\nforest_plot(meta_data, point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1, scale = \"log\",\n  theme = web_theme_presentation())\n\n\n\n\n\n\n\n\n\n\nCode\nforest_plot(meta_data, point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1, scale = \"log\",\n  theme = web_theme_dark())\n\n\n\n\n\n\n\n\n\n\n\nFluent Theme Customization\nModify themes using pipe-friendly set_* functions:\n\n\nCode\ncustom_theme &lt;- web_theme_jama() |&gt;\n  set_colors(primary = \"#0066cc\", interval_line = \"#0066cc\") |&gt;\n  set_spacing(row_height = 24) |&gt;\n  set_axis(gridlines = TRUE, gridline_style = \"dotted\")\n\nforest_plot(meta_data, point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1, scale = \"log\",\n  theme = custom_theme)\n\n\n\n\n\n\n\n\nTheme Components\n\n\n\n\n\n\n\n\nComponent\nFunction\nProperties\n\n\n\n\nColors\nset_colors()\nbackground, foreground, primary, secondary, interval_positive/negative\n\n\nTypography\nset_typography()\nfont_family, font_size_sm/base/lg, font_weight_*\n\n\nSpacing\nset_spacing()\nrow_height, header_height, column_gap, padding\n\n\nShapes\nset_shapes()\npoint_size, summary_height, line_width, border_radius\n\n\nAxis\nset_axis()\nrange_min/max, tick_count, tick_values, gridlines\n\n\nLayout\nset_layout()\nplot_position, cell_padding_x/y, row_border"
+  },
+  {
+    "objectID": "index.html#column-types",
+    "href": "index.html#column-types",
+    "title": "webforest",
+    "section": "Column Types",
+    "text": "Column Types\n\n\nCode\ndemo_data &lt;- data.frame(\n  study = c(\"Alpha\", \"Beta\", \"Gamma\", \"Delta\"),\n  or = c(1.2, 0.8, 1.5, 0.95),\n  lower = c(0.9, 0.5, 1.1, 0.7),\n  upper = c(1.6, 1.3, 2.0, 1.3),\n  n = c(500, 320, 180, 420),\n  weight = c(28, 22, 15, 35),\n  pval = c(0.042, 0.23, 0.008, 0.61)\n)\n\nforest_plot(demo_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1,\n  columns = list(\n    col_numeric(\"n\", header = \"N\", width = 60),\n    col_bar(\"weight\", header = \"Weight %\", width = 80),\n    col_pvalue(\"pval\", header = \"P-value\", width = 80),\n    col_interval(header = \"OR (95% CI)\", width = 120, position = \"right\")\n  ),\n  theme = web_theme_modern()\n)\n\n\n\n\n\n\n\n\n\nType\nFunction\nUse Case\n\n\n\n\ncol_text()\nText values\nStudy names, categories\n\n\ncol_numeric()\nFormatted numbers\nSample sizes, counts\n\n\ncol_interval()\nPoint (CI) format\nEffect size display\n\n\ncol_bar()\nHorizontal bar\nWeights, percentages\n\n\ncol_pvalue()\nP-value formatting\nSignificance stars\n\n\ncol_sparkline()\nMini chart\nTrends, distributions\n\n\ncol_group()\nGroup header\nOrganize related columns"
+  },
+  {
+    "objectID": "index.html#grouping",
+    "href": "index.html#grouping",
+    "title": "webforest",
+    "section": "Grouping",
+    "text": "Grouping\n\n\nCode\ngrouped_data &lt;- data.frame(\n  study = c(\"Study A1\", \"Study A2\", \"Study B1\", \"Study B2\", \"Study B3\"),\n  region = c(\"North\", \"North\", \"South\", \"South\", \"South\"),\n  or = c(0.8, 0.9, 1.1, 1.3, 0.95),\n  lower = c(0.6, 0.7, 0.85, 1.0, 0.7),\n  upper = c(1.1, 1.15, 1.4, 1.7, 1.3)\n)\n\nforest_plot(grouped_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", group = \"region\", null_value = 1\n)"
+  },
+  {
+    "objectID": "index.html#axis-control",
+    "href": "index.html#axis-control",
+    "title": "webforest",
+    "section": "Axis Control",
+    "text": "Axis Control\n\n\nCode\nforest_plot(meta_data, point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1, scale = \"log\",\n  axis_range = c(0.3, 2.0),\n  axis_ticks = c(0.5, 0.7, 1.0, 1.5, 2.0),\n  axis_gridlines = TRUE,\n  theme = web_theme_modern())"
+  },
+  {
+    "objectID": "index.html#labels-and-annotations",
+    "href": "index.html#labels-and-annotations",
+    "title": "webforest",
+    "section": "Labels and Annotations",
+    "text": "Labels and Annotations\n\n\nCode\nspec &lt;- web_spec(meta_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1, scale = \"log\",\n  title = \"Treatment Effect on Primary Outcome\",\n  subtitle = \"Randomized controlled trials, 2020-2024\",\n  caption = \"HR &lt; 1 favors treatment\",\n  annotations = list(\n    forest_refline(0.8, label = \"Threshold\", style = \"dashed\", color = \"#e11d48\")\n  )\n)\n\nforest_plot(spec)"
+  }
+]
