@@ -1,0 +1,31 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "webforest"
+  description: "Interactive, web-native forest plots for R"
+  navbar:
+    background: light
+    left:
+      - text: "Guide"
+        href: index.qmd
+      - text: "Reference"
+        href: reference.qmd
+    right:
+      - icon: github
+        href: https://github.com/kaskarn/webforest
+
+format:
+  html:
+    theme:
+      light: cosmo
+    toc: true
+    toc-depth: 3
+    code-fold: show
+    code-tools: true
+    highlight-style: github
+
+execute:
+  warning: false
+  message: false

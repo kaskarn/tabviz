@@ -21,3 +21,7 @@ examples_output/
 
 # Claude
 .claude/
+
+# Quarto
+docs/_site/
+.quarto/

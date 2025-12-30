@@ -1,0 +1,215 @@
+---
+title: "Function Reference"
+---
+
+## Main Functions
+
+| Function | Description |
+|----------|-------------|
+| `forest_plot()` | Create an interactive forest plot widget |
+| `webtable()` | Create a table-only widget (no forest plot) |
+| `web_spec()` | Create a WebSpec specification object |
+
+### forest_plot()
+
+```r
+forest_plot(
+  x,                    # Data frame or WebSpec
+
+  point,                # Column name for point estimates
+
+  lower,                # Column name for lower CI bounds
+  upper,                # Column name for upper CI bounds
+
+  label = NULL,         # Column name for row labels
+  group = NULL,         # Column name for grouping
+  columns = NULL,       # List of column specifications
+  scale = "linear",     # "linear" or "log"
+  null_value = NULL,    # Reference value (e.g., 1 for ratios)
+  axis_label = NULL,    # X-axis label
+  theme = web_theme_default(),
+  # Override parameters:
+
+  axis_range = NULL,    # c(min, max) to override axis limits
+  axis_ticks = NULL,    # Numeric vector of tick positions
+  axis_gridlines = NULL # TRUE/FALSE to show gridlines
+)
+```
+
+## Theme Functions
+
+### Preset Themes
+
+| Function | Style |
+|----------|-------|
+| `web_theme_default()` | Clean default theme |
+| `web_theme_jama()` | JAMA journal style (B&W, dense) |
+| `web_theme_lancet()` | Lancet journal style (blue, serif) |
+| `web_theme_modern()` | Contemporary UI style |
+| `web_theme_presentation()` | Large fonts for slides |
+| `web_theme_dark()` | Dark mode |
+| `web_theme_minimal()` | Minimal black & white |
+
+### Theme Modifiers
+
+All modifiers are pipe-friendly and return the modified theme:
+```r
+web_theme_jama() |>
+  set_colors(...) |>
+  set_typography(...) |>
+  set_spacing(...) |>
+  set_shapes(...) |>
+  set_axis(...) |>
+  set_layout(...)
+```
+
+#### set_colors()
+
+```r
+set_colors(theme,
+  background,           # Background color
+
+foreground,           # Text color
+  primary,              # Primary accent color
+  secondary,            # Secondary text color
+  border,               # Border color
+  interval_positive,    # Color for positive effects
+  interval_negative,    # Color for negative effects
+  interval_line,        # Interval line color
+  summary_fill,         # Summary diamond fill
+  summary_border        # Summary diamond border
+)
+```
+
+#### set_typography()
+
+```r
+set_typography(theme,
+  font_family,          # CSS font-family
+  font_size_sm,         # Small text size
+  font_size_base,       # Base text size
+  font_size_lg,         # Large text size
+  font_weight_normal,   # Normal weight (400)
+  font_weight_medium,   # Medium weight (500)
+  font_weight_bold,     # Bold weight (600-700)
+  line_height           # Line height multiplier
+)
+```
+
+#### set_spacing()
+
+```r
+set_spacing(theme,
+  row_height,           # Row height in pixels
+  header_height,        # Header height in pixels
+  column_gap,           # Gap between columns
+  padding               # Container padding
+)
+```
+
+#### set_shapes()
+
+```r
+set_shapes(theme,
+  point_size,           # Point marker size
+  summary_height,       # Summary diamond height
+  line_width,           # Interval line width
+  border_radius         # Border radius
+)
+```
+
+#### set_axis()
+
+```r
+set_axis(theme,
+  range_min,            # Minimum axis value (NA = auto)
+  range_max,            # Maximum axis value (NA = auto)
+  tick_count,           # Target number of ticks
+  tick_values,          # Explicit tick positions
+  gridlines,            # Show gridlines (TRUE/FALSE)
+  gridline_style        # "solid", "dashed", or "dotted"
+)
+```
+
+#### set_layout()
+
+```r
+set_layout(theme,
+  plot_position,        # "left" or "right"
+  cell_padding_x,       # Horizontal cell padding
+  cell_padding_y,       # Vertical cell padding
+  row_border,           # Show row borders
+  container_border      # Show container border
+)
+```
+
+## Column Functions
+
+### Basic Columns
+
+```r
+col_text(field, header, width = NULL, position = "left")
+col_numeric(field, header, width = NULL, position = "left")
+col_interval(header, width = NULL, position = "right")
+```
+
+### Special Columns
+
+```r
+col_bar(field, header, width = NULL, max_value = NULL)
+col_pvalue(field, header, width = NULL, stars = TRUE)
+col_sparkline(field, header, width = NULL, type = "line")
+```
+
+### Column Groups
+
+```r
+col_group(header, ...)
+# Example:
+col_group("Statistics",
+  col_numeric("n", header = "N"),
+  col_bar("weight", header = "Weight")
+)
+```
+
+## Annotations
+
+### Reference Lines
+
+```r
+forest_refline(
+  x,                    # X-axis position
+  label = NULL,         # Optional label
+  style = "solid",      # "solid", "dashed", or "dotted"
+  color = NULL          # Line color
+)
+```
+
+## Classes
+
+### WebSpec
+
+The main specification object containing:
+
+- `data` — Row data, groups, summaries
+- `columns` — Column definitions
+- `theme` — Visual styling
+- `interaction` — Enabled features
+- `annotations` — Reference lines, markers
+
+### AxisConfig
+
+Axis configuration with properties:
+
+- `range_min`, `range_max` — Axis bounds
+- `tick_count`, `tick_values` — Tick configuration
+- `gridlines`, `gridline_style` — Gridline settings
+
+### LayoutConfig
+
+Layout configuration with properties:
+
+- `plot_position` — "left" or "right"
+- `table_width`, `plot_width` — Sizing
+- `cell_padding_x`, `cell_padding_y` — Padding
+- `row_border`, `container_border` — Borders
