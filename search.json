@@ -84,6 +84,69 @@
     "text": "mtcars Meta-Analysis\nBuilt-in dataset transformed into a meta-analysis with weight bars and grouping.\n\n\nCode\nset.seed(42)\nmeta_data &lt;- mtcars |&gt;\n  tibble::rownames_to_column(\"study\") |&gt;\n  mutate(\n    effect = scale(mpg)[, 1],\n    se = 0.15 + runif(n()) * 0.25,\n    lower = effect - 1.96 * se,\n    upper = effect + 1.96 * se,\n    weight = 1 / se^2,\n    pvalue = 2 * pnorm(-abs(effect / se)),\n    group = paste0(cyl, \" Cylinder\")\n  ) |&gt;\n  select(study, effect, lower, upper, weight, pvalue, group, hp, wt)\n\nforest_plot(\n  meta_data,\n  point = \"effect\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", group = \"group\",\n  columns = list(\n    col_numeric(\"hp\", \"HP\", position = \"left\"),\n    col_numeric(\"wt\", \"Wt\", position = \"left\"),\n    col_bar(\"weight\", \"Weight\", position = \"right\"),\n    col_pvalue(\"pvalue\", \"P\", position = \"right\")\n  ),\n  theme = web_theme_jama(),\n  axis_label = \"Standardized Effect (95% CI)\",\n  title = \"Meta-analysis of Fuel Efficiency\",\n  subtitle = \"Effect sizes grouped by cylinder count\",\n  caption = \"Source: mtcars dataset (R)\",\n  footnote = \"* Weights computed as inverse variance\"\n)"
   },
   {
+    "objectID": "technical/export-system.html",
+    "href": "technical/export-system.html",
+    "title": "Export System Architecture",
+    "section": "",
+    "text": "webforest uses a unified rendering architecture for static image export. The same JavaScript SVG generator powers both:\n\nR-side: save_plot() function (via the V8 package)\nWeb-side: Download button in interactive plots\n\nThis ensures consistent output regardless of where the export is triggered.\n┌─────────────────────────────────────────────────────────┐\n│                   svg-generator.ts                       │\n│         (Pure-data SVG generator, no DOM needed)         │\n└──────────────────────┬──────────────────────────────────┘\n                       │\n       ┌───────────────┴───────────────┐\n       │                               │\n       ▼                               ▼\n┌──────────────────┐         ┌──────────────────┐\n│  Web (browser)   │         │   R (via V8)     │\n│  DownloadButton  │         │   save_plot()    │\n└──────────────────┘         └──────────────────┘"
+  },
+  {
+    "objectID": "technical/export-system.html#overview",
+    "href": "technical/export-system.html#overview",
+    "title": "Export System Architecture",
+    "section": "",
+    "text": "webforest uses a unified rendering architecture for static image export. The same JavaScript SVG generator powers both:\n\nR-side: save_plot() function (via the V8 package)\nWeb-side: Download button in interactive plots\n\nThis ensures consistent output regardless of where the export is triggered.\n┌─────────────────────────────────────────────────────────┐\n│                   svg-generator.ts                       │\n│         (Pure-data SVG generator, no DOM needed)         │\n└──────────────────────┬──────────────────────────────────┘\n                       │\n       ┌───────────────┴───────────────┐\n       │                               │\n       ▼                               ▼\n┌──────────────────┐         ┌──────────────────┐\n│  Web (browser)   │         │   R (via V8)     │\n│  DownloadButton  │         │   save_plot()    │\n└──────────────────┘         └──────────────────┘"
+  },
+  {
+    "objectID": "technical/export-system.html#why-this-design",
+    "href": "technical/export-system.html#why-this-design",
+    "title": "Export System Architecture",
+    "section": "Why This Design?",
+    "text": "Why This Design?\n\nSingle Source of Truth\nInstead of maintaining two separate renderers (one in R, one in JavaScript), we have a single TypeScript implementation that:\n\nReduces code duplication\nGuarantees visual consistency between exports\nMakes bug fixes and improvements apply to both platforms\n\n\n\nNo Browser Dependency in R\nThe SVG generator is DOM-free — it takes WebSpec JSON data and outputs an SVG string through pure computation. This means:\n\nWorks in R via the lightweight V8 JavaScript engine\nNo need for headless Chrome/Chromium\nFast execution without browser overhead\nWorks offline without any system dependencies beyond V8"
+  },
+  {
+    "objectID": "technical/export-system.html#components",
+    "href": "technical/export-system.html#components",
+    "title": "Export System Architecture",
+    "section": "Components",
+    "text": "Components\n\nsvg-generator.ts\nLocated at srcjs/src/lib/svg-generator.ts, this is the core rendering engine.\nKey functions:\n// Main entry point\ngenerateSVG(spec: WebSpec, options?: ExportOptions): string\n\n// Internal helpers\ncomputeLayout(spec: WebSpec): Layout\nrenderTableColumns(rows, columns, layout): string\nrenderForestPlot(rows, xScale, layout, theme): string\nrenderInterval(row, yPosition, xScale, theme): string\nrenderDiamond(point, lower, upper, yPosition, ...): string\nrenderAxis(xScale, layout, theme, axisLabel): string\nDesign constraints:\n\nNo DOM access — Cannot use document, window, canvas.measureText(), etc.\nNo external dependencies — Pure TypeScript, bundled as standalone IIFE\nDeterministic output — Same input always produces same SVG\n\n\n\nText Measurement\nSince V8 has no DOM, we can’t use canvas.measureText() for precise text width calculation. Instead, we use an approximation:\nfunction measureText(text: string, fontSize: number): number {\n  // Average character width is roughly 0.55 of font size\n  return text.length * fontSize * 0.55;\n}\nThis works well for most cases. For pixel-perfect layouts, users can adjust column widths explicitly.\n\n\nBuild Outputs\nThe SVG generator is bundled twice:\n\n\n\n\n\n\n\n\nFile\nPurpose\nSize\n\n\n\n\ninst/htmlwidgets/webforest.js\nFull widget bundle (includes Svelte UI)\n~142 KB\n\n\ninst/js/svg-generator.js\nStandalone for V8 (export only)\n~11 KB\n\n\n\nBuild commands:\ncd srcjs\nnpm run build          # Both bundles\nnpm run build:widget   # Widget only\nnpm run build:v8       # V8 bundle only"
+  },
+  {
+    "objectID": "technical/export-system.html#r-integration",
+    "href": "technical/export-system.html#r-integration",
+    "title": "Export System Architecture",
+    "section": "R Integration",
+    "text": "R Integration\n\nsave_plot()\nsave_plot(spec, \"output.svg\", width = 800, height = NULL)\nProcess:\n\nSerialize WebSpec to JSON via serialize_spec()\nCreate V8 context and load svg-generator.js\nCall generateSVG(specJson, options)\nWrite SVG string to file (or convert to PDF/PNG via rsvg)\n\nDependencies:\n\nV8 — JavaScript engine (Suggests)\nrsvg — SVG to PDF/PNG conversion (Suggests, optional)\n\n\n\nCode Path\nsave_plot(spec, file)\n    │\n    ├── serialize_spec(spec)     # R: WebSpec → JSON\n    │\n    ├── generate_svg_v8(json)    # R: Load V8, call JS\n    │       │\n    │       └── generateSVG()    # JS: JSON → SVG string\n    │\n    └── writeLines() / rsvg      # R: Save to file"
+  },
+  {
+    "objectID": "technical/export-system.html#web-integration",
+    "href": "technical/export-system.html#web-integration",
+    "title": "Export System Architecture",
+    "section": "Web Integration",
+    "text": "Web Integration\n\nDownloadButton.svelte\nThe download button calls the same generator directly:\nimport { exportToSVG, exportToPNG } from \"$lib/export\";\n\nasync function handleExportSVG() {\n  const svgString = exportToSVG(store.spec);\n  // Create blob and trigger download\n}\n\n\nexport.ts\nThin wrapper around svg-generator:\nimport { generateSVG, svgToBlob } from \"./svg-generator\";\n\nexport function exportToSVG(spec: WebSpec): string {\n  return generateSVG(spec);\n}\n\nexport async function exportToPNG(spec: WebSpec, scale = 2): Promise&lt;Blob&gt; {\n  const svgString = generateSVG(spec);\n  return svgToBlob(svgString, scale);  // Render to canvas, export\n}"
+  },
+  {
+    "objectID": "technical/export-system.html#svg-output-structure",
+    "href": "technical/export-system.html#svg-output-structure",
+    "title": "Export System Architecture",
+    "section": "SVG Output Structure",
+    "text": "SVG Output Structure\nThe generated SVG follows this structure:\n&lt;svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"400\"&gt;\n  &lt;!-- Background --&gt;\n  &lt;rect fill=\"#ffffff\" width=\"100%\" height=\"100%\"/&gt;\n\n  &lt;!-- Title/Subtitle --&gt;\n  &lt;text x=\"12\" y=\"24\" font-size=\"16\" font-weight=\"bold\"&gt;Title&lt;/text&gt;\n\n  &lt;!-- Column headers --&gt;\n  &lt;text x=\"22\" y=\"52\"&gt;Study&lt;/text&gt;\n  &lt;text x=\"320\" y=\"52\"&gt;Effect (95% CI)&lt;/text&gt;\n\n  &lt;!-- Header border --&gt;\n  &lt;line x1=\"12\" x2=\"788\" y1=\"60\" y2=\"60\" stroke=\"#e2e8f0\"/&gt;\n\n  &lt;!-- Reference line (null value) --&gt;\n  &lt;line x1=\"400\" y1=\"60\" x2=\"400\" y2=\"340\"\n        stroke=\"#94a3b8\" stroke-dasharray=\"4\"/&gt;\n\n  &lt;!-- Data rows --&gt;\n  &lt;g class=\"interval\"&gt;\n    &lt;line x1=\"350\" x2=\"450\" y1=\"80\" y2=\"80\" stroke=\"#475569\"/&gt;\n    &lt;rect x=\"394\" y=\"74\" width=\"12\" height=\"12\" fill=\"#22c55e\"/&gt;\n  &lt;/g&gt;\n\n  &lt;!-- Summary diamond --&gt;\n  &lt;polygon points=\"360,320 400,310 440,320 400,330\"\n           fill=\"#2563eb\" stroke=\"#1d4ed8\"/&gt;\n\n  &lt;!-- Axis --&gt;\n  &lt;line x1=\"200\" x2=\"600\" y1=\"360\" y2=\"360\" stroke=\"#e2e8f0\"/&gt;\n  &lt;text x=\"400\" y=\"380\" text-anchor=\"middle\"&gt;Odds Ratio&lt;/text&gt;\n&lt;/svg&gt;"
+  },
+  {
+    "objectID": "technical/export-system.html#extending-the-system",
+    "href": "technical/export-system.html#extending-the-system",
+    "title": "Export System Architecture",
+    "section": "Extending the System",
+    "text": "Extending the System\n\nAdding New Column Types\nTo support a new column type in exports:\n\nAdd rendering logic in svg-generator.ts:\n\nfunction renderTableRow(...) {\n  // ...existing code...\n\n  if (col.type === \"myNewType\") {\n    // Render your custom SVG elements\n    lines.push(`&lt;rect .../&gt;`);\n  }\n}\n\nRebuild both bundles:\n\nnpm run build\n\n\nCustomizing Export Options\nThe ExportOptions interface can be extended:\ninterface ExportOptions {\n  width?: number;\n  height?: number;\n  scale?: number;\n  backgroundColor?: string;\n  // Add new options here\n}"
+  },
+  {
+    "objectID": "technical/export-system.html#troubleshooting",
+    "href": "technical/export-system.html#troubleshooting",
+    "title": "Export System Architecture",
+    "section": "Troubleshooting",
+    "text": "Troubleshooting\n\n“SVG generator JavaScript file not found”\nThe V8 bundle hasn’t been built. Run:\ncd srcjs && npm run build\n\n\nText alignment looks off\nThe text width approximation may be inaccurate for certain fonts. Solutions:\n\nExplicitly set column widths in your spec\nUse a monospace font family in the theme\nFor R exports, consider post-processing with rsvg\n\n\n\nColors don’t match the interactive plot\nEnsure you’re using the same theme. The generator resolves all CSS variables to literal color values at export time."
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "webforest",
