@@ -119,8 +119,12 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
     if (ext == "pdf") {
       rsvg::rsvg_pdf(temp_svg, file)
     } else {
-      # PNG with scaling
-      rsvg::rsvg_png(temp_svg, file, width = width * scale, height = height * scale)
+      # PNG with scaling - let rsvg auto-detect height from SVG if not specified
+      if (is.null(height)) {
+        rsvg::rsvg_png(temp_svg, file, width = width * scale)
+      } else {
+        rsvg::rsvg_png(temp_svg, file, width = width * scale, height = height * scale)
+      }
     }
   }
 

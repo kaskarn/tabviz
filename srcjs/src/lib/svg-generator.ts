@@ -25,12 +25,18 @@ const LAYOUT = {
   DEFAULT_COLUMN_WIDTH: 80,
   /** Default label column width */
   DEFAULT_LABEL_WIDTH: 150,
-  /** Height of the axis area */
+  /** Height of the axis area (line + ticks) */
   AXIS_HEIGHT: 32,
+  /** Height for axis label text below axis */
+  AXIS_LABEL_HEIGHT: 20,
+  /** Bottom margin buffer */
+  BOTTOM_MARGIN: 16,
   /** Minimum forest plot width when auto-calculated */
   MIN_FOREST_WIDTH: 200,
   /** Default width when not specified */
   DEFAULT_WIDTH: 800,
+  /** Gap between columns and forest plot */
+  COLUMN_GAP: 16,
 } as const;
 
 /** Typography constants */
@@ -146,23 +152,33 @@ function computeLayout(spec: WebSpec, options: ExportOptions): InternalLayout {
   const rightTableWidth =
     rightColumns.reduce((sum, c) => sum + (c.width ?? LAYOUT.DEFAULT_COLUMN_WIDTH), 0);
 
-  // Forest width calculation
+  // Forest width calculation - "tables first" approach
   const baseWidth = options.width ?? LAYOUT.DEFAULT_WIDTH;
   const includeForest = spec.data.includeForest;
+  const totalTableWidth = leftTableWidth + rightTableWidth;
 
-  // Calculate forest width based on remaining space or explicit layout settings
+  // Calculate forest width based on remaining space after tables, or explicit layout settings
   let forestWidth: number;
   if (!includeForest) {
     forestWidth = 0;
   } else if (typeof spec.layout.plotWidth === "number") {
     forestWidth = spec.layout.plotWidth;
   } else {
-    // Auto: use percentage of width, with minimum
-    forestWidth = Math.max(baseWidth * RENDERING.AUTO_FOREST_WIDTH_FRACTION, LAYOUT.MIN_FOREST_WIDTH);
+    // Auto: use remaining space after tables, with minimum
+    const availableForForest = baseWidth - totalTableWidth - LAYOUT.COLUMN_GAP * 2 - padding * 2;
+    forestWidth = Math.max(availableForForest, LAYOUT.MIN_FOREST_WIDTH);
   }
 
-  const totalWidth = options.width ?? (leftTableWidth + forestWidth + rightTableWidth + padding * 2);
-  const totalHeight = headerTextHeight + headerHeight + plotHeight + LAYOUT.AXIS_HEIGHT + footerTextHeight + padding * 2;
+  // Total width: expand if forest needs more space than available
+  const neededWidth = padding * 2 + totalTableWidth + forestWidth + LAYOUT.COLUMN_GAP * 2;
+  const totalWidth = options.width ?? Math.max(baseWidth, neededWidth);
+
+  // Total height: include axis label height and bottom margin
+  const totalHeight = headerTextHeight + padding +
+    headerHeight + plotHeight +
+    LAYOUT.AXIS_HEIGHT + LAYOUT.AXIS_LABEL_HEIGHT +
+    footerTextHeight +
+    LAYOUT.BOTTOM_MARGIN;
 
   return {
     totalWidth,
@@ -181,7 +197,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions): InternalLayout {
     titleY: padding + TYPOGRAPHY.TITLE_HEIGHT - 8, // Baseline adjustment
     subtitleY: padding + titleHeight + TYPOGRAPHY.SUBTITLE_HEIGHT - 4,
     mainY: headerTextHeight + padding,
-    footerY: headerTextHeight + padding + headerHeight + plotHeight + LAYOUT.AXIS_HEIGHT + padding,
+    footerY: headerTextHeight + padding + headerHeight + plotHeight + LAYOUT.AXIS_HEIGHT + LAYOUT.AXIS_LABEL_HEIGHT + padding,
   };
 }
 
