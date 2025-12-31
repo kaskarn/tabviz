@@ -11,8 +11,9 @@ Create interactive, web-native forest plots and tables. Forest plots visualize p
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/antoine/webforest}
-  \item Report bugs at \url{https://github.com/antoine/webforest/issues}
+  \item \url{https://github.com/kaskarn/webforest}
+  \item \url{https://kaskarn.github.io/webforest/}
+  \item Report bugs at \url{https://github.com/kaskarn/webforest/issues}
 }
 
 }

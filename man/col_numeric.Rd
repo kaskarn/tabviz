@@ -4,12 +4,14 @@
 \alias{col_numeric}
 \title{Column helper: Numeric column}
 \usage{
-col_numeric(field, header = NULL, ...)
+col_numeric(field, header = NULL, width = 80, ...)
 }
 \arguments{
 \item{field}{Field name}
 
 \item{header}{Column header}
+
+\item{width}{Column width in pixels (default 80)}
 
 \item{...}{Additional arguments passed to web_col}
 }

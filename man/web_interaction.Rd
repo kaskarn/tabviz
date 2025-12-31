@@ -11,7 +11,8 @@ web_interaction(
   enable_sort = TRUE,
   enable_collapse = TRUE,
   enable_select = TRUE,
-  enable_hover = TRUE
+  enable_hover = TRUE,
+  enable_resize = TRUE
 )
 
 forest_interaction(...)
@@ -28,6 +29,8 @@ forest_interaction(...)
 \item{enable_select}{Enable row selection}
 
 \item{enable_hover}{Enable hover effects}
+
+\item{enable_resize}{Enable column resizing}
 }
 \value{
 An InteractionSpec object

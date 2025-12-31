@@ -5,12 +5,14 @@
 \alias{col_ci}
 \title{Column helper: Interval display (e.g., "1.2 (0.9, 1.5)")}
 \usage{
-col_interval(header = "95\% CI", ...)
+col_interval(header = "95\% CI", width = 140, ...)
 
 col_ci(header = "95\% CI", ...)
 }
 \arguments{
 \item{header}{Column header}
+
+\item{width}{Column width in pixels (default 140)}
 
 \item{...}{Additional arguments passed to web_col}
 }

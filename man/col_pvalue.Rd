@@ -10,6 +10,7 @@ col_pvalue(
   stars = TRUE,
   thresholds = c(0.05, 0.01, 0.001),
   format = c("auto", "scientific", "decimal"),
+  width = 100,
   ...
 )
 }
@@ -23,6 +24,8 @@ col_pvalue(
 \item{thresholds}{Numeric vector of 3 significance thresholds (default c(0.05, 0.01, 0.001))}
 
 \item{format}{P-value format: "auto", "scientific", or "decimal"}
+
+\item{width}{Column width in pixels (default 100)}
 
 \item{...}{Additional arguments passed to web_col}
 }

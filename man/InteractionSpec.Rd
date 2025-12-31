@@ -10,7 +10,8 @@ InteractionSpec(
   enable_sort = TRUE,
   enable_collapse = TRUE,
   enable_select = TRUE,
-  enable_hover = TRUE
+  enable_hover = TRUE,
+  enable_resize = TRUE
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ InteractionSpec(
 \item{enable_select}{Enable row selection}
 
 \item{enable_hover}{Enable hover effects}
+
+\item{enable_resize}{Enable column resizing}
 }
 \description{
 InteractionSpec: Interaction settings
