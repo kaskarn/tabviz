@@ -10,6 +10,8 @@ website:
     left:
       - text: "Guide"
         href: index.qmd
+      - text: "Gallery"
+        href: gallery.qmd
       - text: "Reference"
         href: reference.qmd
     right:

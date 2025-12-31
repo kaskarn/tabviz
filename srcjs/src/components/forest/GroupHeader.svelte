@@ -28,7 +28,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 0;
+    padding: 4px 10px;
     user-select: none;
     font-weight: var(--wf-font-weight-bold, 600);
     color: var(--wf-fg, #1a1a1a);

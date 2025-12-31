@@ -216,6 +216,7 @@ export interface InteractionSpec {
   enableCollapse: boolean;
   enableSelect: boolean;
   enableHover: boolean;
+  enableResize: boolean;
 }
 
 export interface LayoutSpec {

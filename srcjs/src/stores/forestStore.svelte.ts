@@ -32,6 +32,12 @@ export function createForestStore() {
   let tooltipRowId = $state<string | null>(null);
   let tooltipPosition = $state<{ x: number; y: number } | null>(null);
 
+  // Column width state (for resize)
+  let columnWidths = $state<Record<string, number>>({});
+
+  // Plot width override (for resizing the forest plot area)
+  let plotWidthOverride = $state<number | null>(null);
+
   // Derived: visible rows (all rows after filter/sort, but NOT collapsed filtering)
   // Collapsed filtering is handled by displayRows for proper group header display
   const visibleRows = $derived.by(() => {
@@ -83,7 +89,10 @@ export function createForestStore() {
 
     // Use log scale for log data
     const isLog = spec.data.scale === "log";
-    const forestWidth = spec.data.includeForest ? Math.max(width * 0.5, 200) : 0;
+    // Use override if set, otherwise calculate default (25% of width, min 200px)
+    const forestWidth = spec.data.includeForest
+      ? (plotWidthOverride ?? Math.max(width * 0.25, 200))
+      : 0;
 
     if (isLog) {
       // Ensure domain is positive for log scale
@@ -277,7 +286,10 @@ export function createForestStore() {
     const headerHeight = spec.theme.spacing.headerHeight;
     const axisHeight = 32; // Space for bottom axis
     const includeForest = spec.data.includeForest;
-    const forestWidth = includeForest ? Math.max(width * 0.5, 200) : 0;
+    // Use override if set, otherwise calculate default (25% of width, min 200px)
+    const forestWidth = includeForest
+      ? (plotWidthOverride ?? Math.max(width * 0.25, 200))
+      : 0;
     const tableWidth = width - forestWidth - (includeForest ? spec.theme.spacing.columnGap : 0);
 
     const hasOverall = !!spec.data.overall;
@@ -357,6 +369,22 @@ export function createForestStore() {
     tooltipPosition = position;
   }
 
+  function setColumnWidth(columnId: string, width: number) {
+    columnWidths[columnId] = Math.max(40, width); // min 40px
+  }
+
+  function getColumnWidth(columnId: string): number | undefined {
+    return columnWidths[columnId];
+  }
+
+  function setPlotWidth(newWidth: number | null) {
+    plotWidthOverride = newWidth === null ? null : Math.max(100, newWidth); // min 100px
+  }
+
+  function getPlotWidth(): number | null {
+    return plotWidthOverride;
+  }
+
   // Derived: tooltip row
   const tooltipRow = $derived.by((): Row | null => {
     if (!tooltipRowId || !spec) return null;
@@ -413,7 +441,12 @@ export function createForestStore() {
     get tooltipPosition() {
       return tooltipPosition;
     },
+    get columnWidths() {
+      return columnWidths;
+    },
     getRowDepth,
+    getColumnWidth,
+    getPlotWidth,
 
     // Actions
     setSpec,
@@ -424,6 +457,8 @@ export function createForestStore() {
     setFilter,
     setHovered,
     setTooltip,
+    setColumnWidth,
+    setPlotWidth,
   };
 }
 

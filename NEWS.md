@@ -14,4 +14,5 @@
 ## Documentation
 
 * Package guide with interactive examples
-* Example gallery demonstrating all features
+* Example gallery with 11 interactive demos (dark theme, nested groups, multiple effects, column groups, journal styles, and more)
+* Enhanced README with visual hero image and simplified quick-start example

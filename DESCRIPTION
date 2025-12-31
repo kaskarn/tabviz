@@ -35,6 +35,7 @@ Imports:
 Suggests:
     shiny (>= 1.8.0),
     data.table,
+    broom,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown

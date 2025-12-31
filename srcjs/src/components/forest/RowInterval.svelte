@@ -22,10 +22,17 @@
     onRowHover,
   }: Props = $props();
 
-  // Computed positions
-  const x1 = $derived(xScale(row.lower));
-  const x2 = $derived(xScale(row.upper));
-  const cx = $derived(xScale(row.point));
+  // Check if row has valid numeric values for rendering
+  const hasValidValues = $derived(
+    row.point != null && !Number.isNaN(row.point) &&
+    row.lower != null && !Number.isNaN(row.lower) &&
+    row.upper != null && !Number.isNaN(row.upper)
+  );
+
+  // Computed positions (only valid when hasValidValues is true)
+  const x1 = $derived(hasValidValues ? xScale(row.lower!) : 0);
+  const x2 = $derived(hasValidValues ? xScale(row.upper!) : 0);
+  const cx = $derived(hasValidValues ? xScale(row.point!) : 0);
 
   // Point size scaled by weight if available
   const pointSize = $derived.by(() => {
@@ -51,53 +58,55 @@
   });
 </script>
 
-<g
-  class="interval-row"
-  role="button"
-  tabindex="0"
-  onclick={onRowClick}
-  onmouseenter={(e) => onRowHover?.(true, e)}
-  onmouseleave={(e) => onRowHover?.(false, e)}
-  onkeydown={(e) => e.key === "Enter" && onRowClick?.()}
->
-  <!-- CI line -->
-  <line
-    {x1}
-    {x2}
-    y1={yPosition}
-    y2={yPosition}
-    stroke="var(--wf-ci-line, #475569)"
-    stroke-width={theme?.shapes.lineWidth ?? 1.5}
-  />
+{#if hasValidValues}
+  <g
+    class="interval-row"
+    role="button"
+    tabindex="0"
+    onclick={onRowClick}
+    onmouseenter={(e) => onRowHover?.(true, e)}
+    onmouseleave={(e) => onRowHover?.(false, e)}
+    onkeydown={(e) => e.key === "Enter" && onRowClick?.()}
+  >
+    <!-- CI line -->
+    <line
+      {x1}
+      {x2}
+      y1={yPosition}
+      y2={yPosition}
+      stroke="var(--wf-ci-line, #475569)"
+      stroke-width={theme?.shapes.lineWidth ?? 1.5}
+    />
 
-  <!-- CI whiskers (caps) -->
-  <line
-    x1={x1}
-    x2={x1}
-    y1={yPosition - 4}
-    y2={yPosition + 4}
-    stroke="var(--wf-ci-line, #475569)"
-    stroke-width={theme?.shapes.lineWidth ?? 1.5}
-  />
-  <line
-    x1={x2}
-    x2={x2}
-    y1={yPosition - 4}
-    y2={yPosition + 4}
-    stroke="var(--wf-ci-line, #475569)"
-    stroke-width={theme?.shapes.lineWidth ?? 1.5}
-  />
+    <!-- CI whiskers (caps) -->
+    <line
+      x1={x1}
+      x2={x1}
+      y1={yPosition - 4}
+      y2={yPosition + 4}
+      stroke="var(--wf-ci-line, #475569)"
+      stroke-width={theme?.shapes.lineWidth ?? 1.5}
+    />
+    <line
+      x1={x2}
+      x2={x2}
+      y1={yPosition - 4}
+      y2={yPosition + 4}
+      stroke="var(--wf-ci-line, #475569)"
+      stroke-width={theme?.shapes.lineWidth ?? 1.5}
+    />
 
-  <!-- Point estimate (square) -->
-  <rect
-    x={cx - pointSize}
-    y={yPosition - pointSize}
-    width={pointSize * 2}
-    height={pointSize * 2}
-    fill={pointColor}
-    class="point-estimate"
-  />
-</g>
+    <!-- Point estimate (square) -->
+    <rect
+      x={cx - pointSize}
+      y={yPosition - pointSize}
+      width={pointSize * 2}
+      height={pointSize * 2}
+      fill={pointColor}
+      class="point-estimate"
+    />
+  </g>
+{/if}
 
 <style>
   .interval-row {

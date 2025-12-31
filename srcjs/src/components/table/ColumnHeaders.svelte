@@ -1,13 +1,22 @@
 <script lang="ts">
   import type { ColumnDef, ColumnSpec, ColumnGroup } from "$types";
+  import type { ForestStore } from "$stores/forestStore.svelte";
 
   interface Props {
     columnDefs: ColumnDef[];
     showLabel?: boolean;
     labelHeader?: string;
+    store?: ForestStore;
+    enableResize?: boolean;
   }
 
-  let { columnDefs, showLabel = false, labelHeader = "Label" }: Props = $props();
+  let {
+    columnDefs,
+    showLabel = false,
+    labelHeader = "Label",
+    store,
+    enableResize = false,
+  }: Props = $props();
 
   // Compute if we have any groups (need two-row header)
   const hasGroups = $derived(columnDefs.some((c) => c.isGroup));
@@ -33,20 +42,74 @@
 
   const leafColumns = $derived(getLeafColumns(columnDefs));
 
+  // Helper to get column width (dynamic or default)
+  function getColWidth(column: ColumnSpec): number | undefined {
+    return store?.getColumnWidth(column.id) ?? column.width ?? undefined;
+  }
+
+  // Get label column width (uses special key "__label__")
+  function getLabelWidth(): number | undefined {
+    return store?.getColumnWidth("__label__");
+  }
+
+  // Start resize for label column
+  function startLabelResize(e: PointerEvent) {
+    if (!store || !enableResize) return;
+    e.preventDefault();
+    e.stopPropagation();
+    resizing = { id: "__label__" } as ColumnSpec;
+    startX = e.clientX;
+    startWidth = getLabelWidth() ?? 150;
+    document.addEventListener("pointermove", onResize);
+    document.addEventListener("pointerup", stopResize);
+  }
+
   // Generate grid template columns for hierarchical layout
   const gridTemplateColumns = $derived.by(() => {
     if (!hasGroups) return "";
     const parts: string[] = [];
-    if (showLabel) parts.push("minmax(120px, 1fr)");
+    if (showLabel) {
+      const labelW = getLabelWidth();
+      parts.push(labelW ? `${labelW}px` : "minmax(120px, 1fr)");
+    }
     for (const col of leafColumns) {
-      if (col.width) {
-        parts.push(`${col.width}px`);
+      const width = getColWidth(col);
+      if (width) {
+        parts.push(`${width}px`);
       } else {
         parts.push("auto");
       }
     }
     return parts.join(" ");
   });
+
+  // Resize state and handlers
+  let resizing = $state<ColumnSpec | null>(null);
+  let startX = 0;
+  let startWidth = 0;
+
+  function startResize(e: PointerEvent, column: ColumnSpec) {
+    if (!store || !enableResize) return;
+    e.preventDefault();
+    e.stopPropagation();
+    resizing = column;
+    startX = e.clientX;
+    startWidth = getColWidth(column) ?? 80;
+    document.addEventListener("pointermove", onResize);
+    document.addEventListener("pointerup", stopResize);
+  }
+
+  function onResize(e: PointerEvent) {
+    if (!resizing || !store) return;
+    const delta = e.clientX - startX;
+    store.setColumnWidth(resizing.id, startWidth + delta);
+  }
+
+  function stopResize() {
+    resizing = null;
+    document.removeEventListener("pointermove", onResize);
+    document.removeEventListener("pointerup", stopResize);
+  }
 </script>
 
 {#if hasGroups}
@@ -54,8 +117,19 @@
   <div class="webforest-header-grid" style:grid-template-columns={gridTemplateColumns}>
     <!-- Row 1: Label + Group headers -->
     {#if showLabel}
-      <div class="webforest-label-col header-cell group-row" style:grid-row="1 / 3">
-        {labelHeader}
+      <div
+        class="webforest-label-col header-cell group-row"
+        style:grid-row="1 / 3"
+        style:width={getLabelWidth() ? `${getLabelWidth()}px` : undefined}
+      >
+        <span class="header-text">{labelHeader}</span>
+        {#if enableResize && store}
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="resize-handle"
+            onpointerdown={startLabelResize}
+          ></div>
+        {/if}
       </div>
     {/if}
     {#each columnDefs as col (col.id)}
@@ -72,7 +146,14 @@
           style:grid-row="1 / 3"
           style:text-align={col.align}
         >
-          {col.header}
+          <span class="header-text">{col.header}</span>
+          {#if enableResize && store}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+              class="resize-handle"
+              onpointerdown={(e) => startResize(e, col)}
+            ></div>
+          {/if}
         </div>
       {/if}
     {/each}
@@ -86,7 +167,14 @@
               class="webforest-col header-cell column-row"
               style:text-align={subCol.align}
             >
-              {subCol.header}
+              <span class="header-text">{subCol.header}</span>
+              {#if enableResize && store}
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div
+                  class="resize-handle"
+                  onpointerdown={(e) => startResize(e, subCol)}
+                ></div>
+              {/if}
             </div>
           {/if}
         {/each}
@@ -97,17 +185,35 @@
   <!-- Single-row header for flat columns -->
   <div class="webforest-table-header">
     {#if showLabel}
-      <div class="webforest-label-col">
-        {labelHeader}
+      <div
+        class="webforest-label-col"
+        style:width={getLabelWidth() ? `${getLabelWidth()}px` : undefined}
+        style:flex={getLabelWidth() ? 'none' : '1'}
+      >
+        <span class="header-text">{labelHeader}</span>
+        {#if enableResize && store}
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="resize-handle"
+            onpointerdown={startLabelResize}
+          ></div>
+        {/if}
       </div>
     {/if}
     {#each leafColumns as column (column.id)}
       <div
         class="webforest-col"
-        style:width={column.width ? `${column.width}px` : "auto"}
+        style:width={getColWidth(column) ? `${getColWidth(column)}px` : "auto"}
         style:text-align={column.align}
       >
-        {column.header}
+        <span class="header-text">{column.header}</span>
+        {#if enableResize && store}
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            class="resize-handle"
+            onpointerdown={(e) => startResize(e, column)}
+          ></div>
+        {/if}
       </div>
     {/each}
   </div>
@@ -122,7 +228,7 @@
     background: var(--wf-bg);
     border-bottom: 1px solid var(--wf-border);
     font-weight: 600;
-    font-size: var(--wf-font-size-sm);
+    font-size: var(--wf-font-size-base);
     color: var(--wf-secondary);
   }
 
@@ -133,7 +239,7 @@
     background: var(--wf-bg);
     border-bottom: 1px solid var(--wf-border);
     font-weight: 600;
-    font-size: var(--wf-font-size-sm);
+    font-size: var(--wf-font-size-base);
     color: var(--wf-secondary);
   }
 
@@ -162,10 +268,35 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    position: relative;
   }
 
   .webforest-col {
     padding: 0 10px;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .header-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+
+  .resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 10;
+  }
+
+  .resize-handle:hover,
+  .resize-handle:active {
+    background: var(--wf-primary, #2563eb);
   }
 </style>

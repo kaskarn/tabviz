@@ -100,47 +100,51 @@ web_col <- function(
 #'
 #' @param field Field name
 #' @param header Column header
+#' @param width Column width in pixels (default 80)
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
 #' @export
-col_text <- function(field, header = NULL, ...) {
-  web_col(field, header, type = "text", ...)
+col_text <- function(field, header = NULL, width = 80, ...) {
+  web_col(field, header, type = "text", width = width, ...)
 }
 
 #' Column helper: Numeric column
 #'
 #' @param field Field name
 #' @param header Column header
+#' @param width Column width in pixels (default 80)
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
 #' @export
-col_numeric <- function(field, header = NULL, ...) {
-  web_col(field, header, type = "numeric", ...)
+col_numeric <- function(field, header = NULL, width = 80, ...) {
+  web_col(field, header, type = "numeric", width = width, ...)
 }
 
 #' Column helper: Sample size / count
 #'
 #' @param field Field name (default "n")
 #' @param header Column header (default "N")
+#' @param width Column width in pixels (default 70)
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
 #' @export
-col_n <- function(field = "n", header = "N", ...) {
-  web_col(field, header, type = "numeric", ...)
+col_n <- function(field = "n", header = "N", width = 70, ...) {
+  web_col(field, header, type = "numeric", width = width, ...)
 }
 
 #' Column helper: Interval display (e.g., "1.2 (0.9, 1.5)")
 #'
 #' @param header Column header
+#' @param width Column width in pixels (default 140)
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
 #' @export
-col_interval <- function(header = "95% CI", ...) {
-  web_col("_interval", header, type = "interval", ...)
+col_interval <- function(header = "95% CI", width = 140, ...) {
+  web_col("_interval", header, type = "interval", width = width, ...)
 }
 
 #' Column helper: P-value
@@ -150,6 +154,7 @@ col_interval <- function(header = "95% CI", ...) {
 #' @param stars Show significance stars (default TRUE)
 #' @param thresholds Numeric vector of 3 significance thresholds (default c(0.05, 0.01, 0.001))
 #' @param format P-value format: "auto", "scientific", or "decimal"
+#' @param width Column width in pixels (default 100)
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
@@ -160,6 +165,7 @@ col_pvalue <- function(
     stars = TRUE,
     thresholds = c(0.05, 0.01, 0.001),
     format = c("auto", "scientific", "decimal"),
+    width = 100,
     ...) {
   format <- match.arg(format)
   opts <- list(
@@ -169,7 +175,7 @@ col_pvalue <- function(
       format = format
     )
   )
-  web_col(field, header, type = "pvalue", options = opts, ...)
+  web_col(field, header, type = "pvalue", width = width, options = opts, ...)
 }
 
 #' Column helper: Bar/weight column
@@ -329,6 +335,7 @@ col_group <- function(header, ..., position = c("left", "right")) {
 #' @param enable_collapse Enable group collapsing
 #' @param enable_select Enable row selection
 #' @param enable_hover Enable hover effects
+#' @param enable_resize Enable column resizing
 #'
 #' @export
 InteractionSpec <- new_class(
@@ -339,7 +346,8 @@ InteractionSpec <- new_class(
     enable_sort = new_property(class_logical, default = TRUE),
     enable_collapse = new_property(class_logical, default = TRUE),
     enable_select = new_property(class_logical, default = TRUE),
-    enable_hover = new_property(class_logical, default = TRUE)
+    enable_hover = new_property(class_logical, default = TRUE),
+    enable_resize = new_property(class_logical, default = TRUE)
   )
 )
 
@@ -351,6 +359,7 @@ InteractionSpec <- new_class(
 #' @param enable_collapse Enable group collapsing
 #' @param enable_select Enable row selection
 #' @param enable_hover Enable hover effects
+#' @param enable_resize Enable column resizing
 #'
 #' @return An InteractionSpec object
 #' @export
@@ -360,14 +369,16 @@ web_interaction <- function(
     enable_sort = TRUE,
     enable_collapse = TRUE,
     enable_select = TRUE,
-    enable_hover = TRUE) {
+    enable_hover = TRUE,
+    enable_resize = TRUE) {
   InteractionSpec(
     show_filters = show_filters,
     show_legend = show_legend,
     enable_sort = enable_sort,
     enable_collapse = enable_collapse,
     enable_select = enable_select,
-    enable_hover = enable_hover
+    enable_hover = enable_hover,
+    enable_resize = enable_resize
   )
 }
 

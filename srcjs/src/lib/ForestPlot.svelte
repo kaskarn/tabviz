@@ -54,6 +54,53 @@
     return dr.row.id;
   }
 
+  // Helper to get column width (dynamic or default)
+  function getColWidth(column: ColumnSpec): string {
+    const dynamicWidth = store.getColumnWidth(column.id);
+    const width = dynamicWidth ?? column.width;
+    return width ? `${width}px` : "auto";
+  }
+
+  // Helper to get label column width
+  function getLabelWidth(): string | undefined {
+    const width = store.getColumnWidth("__label__");
+    return width ? `${width}px` : undefined;
+  }
+
+  // Helper to get label column flex
+  function getLabelFlex(): string {
+    return store.getColumnWidth("__label__") ? "none" : "1";
+  }
+
+  // Plot resize state and handlers
+  let resizingPlot = $state(false);
+  let plotStartX = 0;
+  let plotStartWidth = 0;
+
+  function startPlotResize(e: PointerEvent) {
+    if (!spec?.interaction.enableResize) return;
+    e.preventDefault();
+    e.stopPropagation();
+    resizingPlot = true;
+    plotStartX = e.clientX;
+    plotStartWidth = layout.forestWidth;
+    document.addEventListener("pointermove", onPlotResize);
+    document.addEventListener("pointerup", stopPlotResize);
+  }
+
+  function onPlotResize(e: PointerEvent) {
+    if (!resizingPlot) return;
+    // Dragging right increases plot width, dragging left decreases
+    const delta = e.clientX - plotStartX;
+    store.setPlotWidth(plotStartWidth + delta);
+  }
+
+  function stopPlotResize() {
+    resizingPlot = false;
+    document.removeEventListener("pointermove", onPlotResize);
+    document.removeEventListener("pointerup", stopPlotResize);
+  }
+
   // CSS variable style string
   const cssVars = $derived.by(() => {
     if (!theme) return "";
@@ -105,6 +152,8 @@
           columnDefs={leftColumnDefs}
           showLabel={true}
           {labelHeader}
+          {store}
+          enableResize={spec?.interaction.enableResize ?? true}
         />
 
         <!-- Rows (including group headers) -->
@@ -143,7 +192,12 @@
               onkeydown={(e) => e.key === "Enter" && store.selectRow(row.id)}
               transition:slide={{ duration: 150 }}
             >
-              <div class="webforest-label-col" style:padding-left={effectiveIndent ? `${effectiveIndent * 12}px` : undefined}>
+              <div
+                class="webforest-label-col"
+                style:padding-left={effectiveIndent ? `${effectiveIndent * 12}px` : undefined}
+                style:width={getLabelWidth()}
+                style:flex={getLabelFlex()}
+              >
                 {#if row.style?.icon}<span class="row-icon">{row.style.icon}</span>{/if}
                 {row.label}
                 {#if row.style?.badge}<span class="row-badge">{row.style.badge}</span>{/if}
@@ -151,7 +205,7 @@
               {#each leftColumns as column (column.id)}
                 <div
                   class="webforest-col"
-                  style:width={column.width ? `${column.width}px` : "auto"}
+                  style:width={getColWidth(column)}
                   style:text-align={column.align}
                 >
                   {#if column.type === "bar"}
@@ -186,7 +240,16 @@
 
       <!-- Forest plot (if included) -->
       {#if includeForest && layout.forestWidth > 0}
-        <svg
+        <div class="webforest-plot-wrapper">
+          <!-- Resize divider for plot area (overlays the left edge) -->
+          {#if spec?.interaction.enableResize}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+              class="plot-resize-handle"
+              onpointerdown={startPlotResize}
+            ></div>
+          {/if}
+          <svg
           class="webforest-canvas"
           width={layout.forestWidth}
           height={layout.headerHeight + layout.plotHeight + layout.axisHeight}
@@ -200,6 +263,7 @@
             y2={layout.headerHeight}
             stroke="var(--wf-border, #e2e8f0)"
             stroke-width="1"
+            shape-rendering="crispEdges"
           />
 
 
@@ -213,6 +277,7 @@
               class="row-band {getRowBandClass(displayRow, i, hasGroups)}"
               class:row-hovered={displayRow.type === 'data' && displayRow.row.id === hoveredRowId}
               class:row-selected={displayRow.type === 'data' && selectedRowIds.has(displayRow.row.id)}
+              style:fill={displayRow.type === 'data' && displayRow.row.style?.bg ? displayRow.row.style.bg : undefined}
             />
           {/each}
 
@@ -225,6 +290,7 @@
               y2={layout.headerHeight + (i + 1) * layout.rowHeight}
               stroke="var(--wf-border, #e2e8f0)"
               stroke-width="1"
+              shape-rendering="crispEdges"
             />
           {/each}
 
@@ -308,6 +374,7 @@
             <EffectAxis {xScale} {layout} {theme} axisLabel={spec.data.axisLabel} position="bottom" plotHeight={layout.plotHeight} />
           </g>
         </svg>
+        </div>
       {/if}
 
       <!-- Right table (right-positioned columns) -->
@@ -317,6 +384,8 @@
           <ColumnHeaders
             columnDefs={rightColumnDefs}
             showLabel={false}
+            {store}
+            enableResize={spec?.interaction.enableResize ?? true}
           />
 
           <!-- Rows (including group headers) -->
@@ -342,7 +411,7 @@
                 {#each rightColumns as column (column.id)}
                   <div
                     class="webforest-col"
-                    style:width={column.width ? `${column.width}px` : "auto"}
+                    style:width={getColWidth(column)}
                     style:text-align={column.align}
                   >
                     {#if column.type === "bar"}
@@ -395,6 +464,16 @@
     if (displayRow.type === "group_header") {
       return "band-group";
     }
+
+    // Handle styled rows to match HTML row backgrounds
+    if (displayRow.type === "data") {
+      const style = displayRow.row.style;
+      if (style?.type === "header") return "band-header";
+      if (style?.type === "summary") return "band-summary";
+      if (style?.type === "spacer") return "band-spacer";
+      // Custom background (style.bg) handled via inline style on the rect
+    }
+
     if (hasGroups && displayRow.depth > 0) {
       return `band-depth-${Math.min(displayRow.depth, 4)}`;
     }
@@ -477,6 +556,14 @@
 </script>
 
 <style>
+  /* Ensure consistent box-sizing for all elements */
+  .webforest-container,
+  .webforest-container *,
+  .webforest-container *::before,
+  .webforest-container *::after {
+    box-sizing: border-box;
+  }
+
   .webforest-container {
     font-family: var(--wf-font-family);
     font-size: var(--wf-font-size-base);
@@ -492,6 +579,7 @@
 
   .webforest-main {
     display: flex;
+    align-items: flex-start; /* Ensure all items align at top for border consistency */
     overflow: auto;
     flex: 1;
     min-height: 0; /* Allow shrinking below content height for scroll */
@@ -502,31 +590,21 @@
   }
 
   .webforest-table-left {
+    display: flex;
+    flex-direction: column;
     border-right: 1px solid var(--wf-border);
   }
 
   .webforest-table-right {
-    border-left: 1px solid var(--wf-border);
-  }
-
-  .webforest-table-header {
     display: flex;
-    height: var(--wf-header-height);
-    align-items: center;
-    padding: 0 12px;
-    background: var(--wf-bg);
-    border-bottom: 1px solid var(--wf-border);
-    font-weight: 600;
-    font-size: var(--wf-font-size-sm);
-    color: var(--wf-secondary);
+    flex-direction: column;
+    border-left: 1px solid var(--wf-border);
   }
 
   .webforest-table-row {
     display: flex;
     height: var(--wf-row-height);
-    align-items: center;
-    padding: 0 4px;
-    border-bottom: 1px solid var(--wf-border);
+    align-items: stretch; /* Let cells stretch to fill height for proper border alignment */
   }
 
   .webforest-table-row:hover {
@@ -549,15 +627,49 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    height: var(--wf-row-height);
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--wf-border);
   }
 
   .webforest-col {
     padding: 0 10px;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: var(--wf-row-height);
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--wf-border);
+    flex-shrink: 0;
   }
 
   .webforest-canvas {
     flex-shrink: 0;
+  }
+
+  .webforest-plot-wrapper {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .plot-resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 10;
+    transform: translateX(50%);
+  }
+
+  .plot-resize-handle:hover,
+  .plot-resize-handle:active {
+    background: var(--wf-primary, #2563eb);
   }
 
   .webforest-empty {
@@ -628,9 +740,9 @@
   /* Group header row styles */
   .webforest-group-row {
     display: flex;
+    width: 100%;
     height: var(--wf-row-height);
     align-items: center;
-    padding: 0 4px 0 14px;
     border-bottom: 1px solid var(--wf-border);
     border-left: 3px solid transparent;
     background: color-mix(in srgb, var(--wf-primary) 5%, var(--wf-bg));
@@ -650,6 +762,7 @@
   }
 
   .webforest-group-row-right {
+    width: 100%;
     height: var(--wf-row-height);
     border-bottom: 1px solid var(--wf-border);
     background: color-mix(in srgb, var(--wf-primary) 5%, var(--wf-bg));
@@ -686,6 +799,19 @@
   }
 
   .row-band.band-even {
+    fill: var(--wf-bg, #fff);
+  }
+
+  /* Styled row band types to match HTML row backgrounds */
+  .row-band.band-header {
+    fill: color-mix(in srgb, var(--wf-muted) 10%, var(--wf-bg));
+  }
+
+  .row-band.band-summary {
+    fill: var(--wf-bg, #fff);
+  }
+
+  .row-band.band-spacer {
     fill: var(--wf-bg, #fff);
   }
 

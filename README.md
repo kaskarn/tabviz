@@ -4,6 +4,12 @@
 
 Interactive, web-native forest plots for R. Built with Svelte 5 and D3.js.
 
+<a href="https://kaskarn.github.io/webforest/gallery.html">
+  <img src="docs/images/hero-dark-theme.png" alt="webforest dark theme example" width="100%">
+</a>
+
+<p align="center"><em>Click image to view interactive examples</em></p>
+
 ## Installation
 
 ```r
@@ -17,19 +23,24 @@ pak::pak("kaskarn/webforest")
 library(webforest)
 
 data <- data.frame(
-  study = c("Smith 2020", "Jones 2021", "Lee 2022"),
-  hr = c(0.72, 0.85, 0.91),
-  lower = c(0.55, 0.70, 0.75),
-  upper = c(0.95, 1.03, 1.10)
+  study = c("CheckMate 067", "KEYNOTE-006", "CheckMate 238"),
+  tumor = c("Melanoma", "Melanoma", "Melanoma"),
+  hr = c(0.55, 0.63, 0.65),
+  lower = c(0.45, 0.52, 0.51),
+  upper = c(0.67, 0.76, 0.83),
+  pvalue = c(0.001, 0.001, 0.001)
 )
 
 forest_plot(data,
-  point = "hr",
-  lower = "lower",
-  upper = "upper",
-  label = "study",
-  null_value = 1,
-  scale = "log"
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study", group = "tumor",
+  columns = list(
+    col_interval("HR (95% CI)"),
+    col_pvalue("pvalue", "P")
+  ),
+  theme = web_theme_dark(),
+  scale = "log", null_value = 1,
+  title = "Immune Checkpoint Inhibitor Trials"
 )
 ```
 
@@ -50,8 +61,9 @@ web_theme_jama() |>
 
 ## Documentation
 
-- [Package guide](https://kaskarn.github.io/webforest/webforest-guide.html)
-- [Function reference](https://kaskarn.github.io/webforest/reference/)
+- [Package guide](https://kaskarn.github.io/webforest/)
+- [Examples gallery](https://kaskarn.github.io/webforest/gallery.html)
+- [Function reference](https://kaskarn.github.io/webforest/reference.html)
 
 ## License
 
