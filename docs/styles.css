@@ -1,0 +1,44 @@
+/* Fix navbar visibility issues caused by htmlwidgets CSS conflicts */
+
+/* Ensure navbar is always visible and above widgets */
+.navbar {
+  z-index: 1030 !important;
+  position: relative !important;
+}
+
+/* Ensure navbar collapse container shows items on desktop */
+.navbar-collapse {
+  display: flex !important;
+  flex-basis: auto !important;
+}
+
+/* Ensure navbar items are visible */
+.navbar-nav {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.navbar-nav .nav-item {
+  display: block !important;
+}
+
+.navbar-nav .nav-link {
+  display: block !important;
+  padding: 0.5rem 1rem !important;
+}
+
+/* Ensure right-side items (GitHub icon) are visible */
+.navbar-nav.ms-auto,
+.navbar .ms-auto {
+  display: flex !important;
+}
+
+/* Fix potential overflow issues from widgets */
+.quarto-container {
+  overflow-x: visible !important;
+}
+
+/* Ensure htmlwidgets don't affect document flow negatively */
+.html-widget {
+  max-width: 100%;
+}

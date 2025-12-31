@@ -22,6 +22,7 @@ format:
   html:
     theme:
       light: cosmo
+    css: styles.css
     toc: true
     toc-depth: 3
     code-fold: show
