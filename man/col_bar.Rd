@@ -28,6 +28,8 @@ col_weight(field = "weight", header = "Weight", show_bar = TRUE, ...)
 \item{color}{Bar fill color (NULL = theme primary color)}
 
 \item{...}{Additional arguments passed to web_col}
+
+\item{show_bar}{Show as bar chart (default TRUE)}
 }
 \value{
 A ColumnSpec object

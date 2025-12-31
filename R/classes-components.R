@@ -244,6 +244,7 @@ col_ci <- function(header = "95% CI", ...) {
 
 # Deprecated alias
 #' @rdname col_bar
+#' @param show_bar Show as bar chart (default TRUE)
 #' @export
 col_weight <- function(field = "weight", header = "Weight", show_bar = TRUE, ...) {
   if (show_bar) {
@@ -255,6 +256,7 @@ col_weight <- function(field = "weight", header = "Weight", show_bar = TRUE, ...
 
 # Deprecated alias
 #' @rdname web_col
+#' @param ... Arguments passed to web_col
 #' @export
 forest_col <- function(...) {
   .Deprecated("web_col")
@@ -384,6 +386,7 @@ web_interaction <- function(
 
 # Deprecated alias
 #' @rdname web_interaction
+#' @param ... Arguments passed to web_interaction
 #' @export
 forest_interaction <- function(...) {
   web_interaction(...)

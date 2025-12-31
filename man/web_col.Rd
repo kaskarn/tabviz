@@ -34,6 +34,8 @@ forest_col(...)
 \item{sortable}{Whether sortable}
 
 \item{options}{Named list of type-specific options}
+
+\item{...}{Arguments passed to web_col}
 }
 \value{
 A ColumnSpec object

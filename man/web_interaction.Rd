@@ -31,6 +31,8 @@ forest_interaction(...)
 \item{enable_hover}{Enable hover effects}
 
 \item{enable_resize}{Enable column resizing}
+
+\item{...}{Arguments passed to web_interaction}
 }
 \value{
 An InteractionSpec object
