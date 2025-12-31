@@ -1,5 +1,6 @@
 ---
 title: "Examples Gallery"
+code-fold: true
 ---
 
 A comprehensive showcase of webforest features. Each example focuses on demonstrating specific capabilities.
