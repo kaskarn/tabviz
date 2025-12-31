@@ -3,17 +3,6 @@
 \name{WebTheme}
 \alias{WebTheme}
 \title{WebTheme: Complete theme specification}
-\usage{
-WebTheme(
-  name = "default",
-  colors = <object>,
-  typography = <object>,
-  spacing = <object>,
-  shapes = <object>,
-  axis = <object>,
-  layout = <object>
-)
-}
 \arguments{
 \item{name}{Theme name}
 

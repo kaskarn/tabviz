@@ -153,6 +153,7 @@ LayoutConfig <- new_class(
 #' @param axis AxisConfig object
 #' @param layout LayoutConfig object
 #'
+#' @usage NULL
 #' @export
 WebTheme <- new_class(
   "WebTheme",
