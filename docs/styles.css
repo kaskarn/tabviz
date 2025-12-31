@@ -1,18 +1,28 @@
-/* Fix navbar visibility issues caused by htmlwidgets CSS conflicts */
+/*
+ * Quarto/Bootstrap compatibility fixes for webforest htmlwidgets
+ *
+ * Problem: webforest uses Tailwind CSS which outputs global utility classes.
+ * Tailwind's `.collapse { visibility: collapse }` conflicts with Bootstrap's
+ * `.collapse` class used for the navbar collapse functionality.
+ *
+ * This stylesheet overrides the conflict specifically for the navbar.
+ * A more comprehensive fix would be to scope Tailwind in the webforest build.
+ */
 
-/* Ensure navbar is always visible and above widgets */
-.navbar {
-  z-index: 1030 !important;
-  position: relative !important;
-}
-
-/* Ensure navbar collapse container shows items on desktop */
+/* Override Tailwind's .collapse which hides Bootstrap navbar items */
+.navbar .collapse,
 .navbar-collapse {
+  visibility: visible !important;
   display: flex !important;
   flex-basis: auto !important;
 }
 
-/* Ensure navbar items are visible */
+/* Ensure navbar is always visible and properly layered */
+.navbar {
+  z-index: 1030 !important;
+}
+
+/* Ensure navbar items display correctly */
 .navbar-nav {
   display: flex !important;
   flex-direction: row !important;
@@ -24,21 +34,4 @@
 
 .navbar-nav .nav-link {
   display: block !important;
-  padding: 0.5rem 1rem !important;
-}
-
-/* Ensure right-side items (GitHub icon) are visible */
-.navbar-nav.ms-auto,
-.navbar .ms-auto {
-  display: flex !important;
-}
-
-/* Fix potential overflow issues from widgets */
-.quarto-container {
-  overflow-x: visible !important;
-}
-
-/* Ensure htmlwidgets don't affect document flow negatively */
-.html-widget {
-  max-width: 100%;
 }

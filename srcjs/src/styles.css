@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* NOTE: Tailwind's utility classes (like .collapse, .hidden, etc.) are output
+   globally and may conflict with other CSS frameworks (e.g., Bootstrap).
+   If embedding webforest in a page with Bootstrap, you may need to add
+   CSS overrides. See docs/styles.css for an example. */
+
 /* Base webforest styles */
 .webforest-container {
   @apply font-sans;
