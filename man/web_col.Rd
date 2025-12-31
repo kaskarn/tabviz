@@ -2,7 +2,6 @@
 % Please edit documentation in R/classes-components.R
 \name{web_col}
 \alias{web_col}
-\alias{forest_col}
 \title{Create a column specification}
 \usage{
 web_col(
@@ -15,8 +14,6 @@ web_col(
   sortable = TRUE,
   options = list()
 )
-
-forest_col(...)
 }
 \arguments{
 \item{field}{Data field name to display}
@@ -34,8 +31,6 @@ forest_col(...)
 \item{sortable}{Whether sortable}
 
 \item{options}{Named list of type-specific options}
-
-\item{...}{Arguments passed to web_col}
 }
 \value{
 A ColumnSpec object

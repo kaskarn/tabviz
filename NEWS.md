@@ -16,6 +16,11 @@
 
 * Unified `group` parameter now accepts single column, vector of columns for hierarchy, or list of `web_group()` for explicit control
 * Multi-effect intervals render with vertical offset and custom colors in both web and SVG export
+* **Interaction presets**: New `web_interaction_minimal()` (hover only) and `web_interaction_publication()` (fully static) for common scenarios
+
+### Breaking Changes
+
+* Removed deprecated function aliases: `col_ci()` (use `col_interval()`), `forest_col()` (use `web_col()`), `forest_interaction()` (use `web_interaction()`)
 
 ## 0.0.0.9002
 

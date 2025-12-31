@@ -39,7 +39,13 @@ web_spec(
 
 \item{label_header}{Header text for the label column (default: "Study")}
 
-\item{group}{Column name for grouping/categories (optional)}
+\item{group}{Grouping specification. Can be:
+\itemize{
+\item Single string: Column name for flat grouping, e.g., \code{"category"}
+\item Character vector: Column names for hierarchical nesting from outermost
+to innermost, e.g., \code{c("region", "country")} creates region > country
+\item List of \code{web_group()} objects for explicit control over labels and structure
+}}
 
 \item{columns}{List of column specifications (use \verb{col_*()} helpers)}
 

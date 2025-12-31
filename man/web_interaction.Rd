@@ -2,7 +2,8 @@
 % Please edit documentation in R/classes-components.R
 \name{web_interaction}
 \alias{web_interaction}
-\alias{forest_interaction}
+\alias{web_interaction_minimal}
+\alias{web_interaction_publication}
 \title{Create interaction specification}
 \usage{
 web_interaction(
@@ -16,7 +17,9 @@ web_interaction(
   enable_export = TRUE
 )
 
-forest_interaction(...)
+web_interaction_minimal()
+
+web_interaction_publication()
 }
 \arguments{
 \item{show_filters}{Show filter panel}
@@ -34,8 +37,6 @@ forest_interaction(...)
 \item{enable_resize}{Enable column resizing}
 
 \item{enable_export}{Enable download/export button}
-
-\item{...}{Arguments passed to web_interaction}
 }
 \value{
 An InteractionSpec object

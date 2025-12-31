@@ -2,12 +2,9 @@
 % Please edit documentation in R/classes-components.R
 \name{col_interval}
 \alias{col_interval}
-\alias{col_ci}
 \title{Column helper: Interval display (e.g., "1.2 (0.9, 1.5)")}
 \usage{
 col_interval(header = "95\% CI", width = 140, ...)
-
-col_ci(header = "95\% CI", ...)
 }
 \arguments{
 \item{header}{Column header}

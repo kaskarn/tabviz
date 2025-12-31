@@ -236,13 +236,6 @@ col_sparkline <- function(
 }
 
 # Deprecated alias
-#' @rdname col_interval
-#' @export
-col_ci <- function(header = "95% CI", ...) {
-  col_interval(header, ...)
-}
-
-# Deprecated alias
 #' @rdname col_bar
 #' @param show_bar Show as bar chart (default TRUE)
 #' @export
@@ -252,15 +245,6 @@ col_weight <- function(field = "weight", header = "Weight", show_bar = TRUE, ...
   } else {
     col_numeric(field, header, ...)
   }
-}
-
-# Deprecated alias
-#' @rdname web_col
-#' @param ... Arguments passed to web_col
-#' @export
-forest_col <- function(...) {
-  .Deprecated("web_col")
-  web_col(...)
 }
 
 # ============================================================================
@@ -389,10 +373,32 @@ web_interaction <- function(
   )
 }
 
-# Deprecated alias
 #' @rdname web_interaction
-#' @param ... Arguments passed to web_interaction
 #' @export
-forest_interaction <- function(...) {
-  web_interaction(...)
+web_interaction_minimal <- function() {
+  web_interaction(
+    show_filters = FALSE,
+    show_legend = TRUE,
+    enable_sort = FALSE,
+    enable_collapse = FALSE,
+    enable_select = FALSE,
+    enable_hover = TRUE,
+    enable_resize = FALSE,
+    enable_export = FALSE
+  )
+}
+
+#' @rdname web_interaction
+#' @export
+web_interaction_publication <- function() {
+  web_interaction(
+    show_filters = FALSE,
+    show_legend = FALSE,
+    enable_sort = FALSE,
+    enable_collapse = FALSE,
+    enable_select = FALSE,
+    enable_hover = FALSE,
+    enable_resize = FALSE,
+    enable_export = FALSE
+  )
 }
