@@ -409,13 +409,13 @@
             {@const rowH = layout.rowHeights[i] ?? layout.rowHeight}
             {@const isSummaryRow = displayRow.type === 'data' && displayRow.row.style?.type === 'summary'}
             {@const isSpacerRow = displayRow.type === 'data' && displayRow.row.style?.type === 'spacer'}
-            <!-- Top border for summary rows (2px to match CSS) -->
+            <!-- Top border for summary rows (2px to match CSS border-top) -->
             {#if isSummaryRow}
               <line
                 x1={0}
                 x2={layout.forestWidth}
-                y1={layout.headerHeight + rowY}
-                y2={layout.headerHeight + rowY}
+                y1={layout.headerHeight + rowY + 0.5}
+                y2={layout.headerHeight + rowY + 0.5}
                 stroke="var(--wf-border, #e2e8f0)"
                 stroke-width="2"
                 shape-rendering="crispEdges"
