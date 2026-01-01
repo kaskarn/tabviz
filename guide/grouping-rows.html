@@ -106,7 +106,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
 <script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
 <link href="../site_libs/webforest-styles-0.0.2/webforest.css" rel="stylesheet">
-<script src="../site_libs/webforest-binding-0.0.0.9001/webforest.js"></script>
+<script src="../site_libs/webforest-binding-0.0.0.9004/webforest.js"></script>
 
 
 <link rel="stylesheet" href="../styles.css">
@@ -208,7 +208,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#grouping-studies" id="toc-grouping-studies" class="nav-link active" data-scroll-target="#grouping-studies">Grouping Studies</a></li>
   <li><a href="#nested-groups" id="toc-nested-groups" class="nav-link" data-scroll-target="#nested-groups">Nested Groups</a></li>
-  <li><a href="#row-styling-with-metadata-columns" id="toc-row-styling-with-metadata-columns" class="nav-link" data-scroll-target="#row-styling-with-metadata-columns">Row Styling with Metadata Columns</a>
+  <li><a href="#row-styling" id="toc-row-styling" class="nav-link" data-scroll-target="#row-styling">Row Styling</a>
   <ul class="collapse">
   <li><a href="#example-styled-meta-analysis" id="toc-example-styled-meta-analysis" class="nav-link" data-scroll-target="#example-styled-meta-analysis">Example: Styled Meta-Analysis</a></li>
   </ul></li>
@@ -265,8 +265,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
-<div class="webforest html-widget html-fill-item" id="htmlwidget-75549d3d61e471884bc2" style="width:100%;height:400px;"></div>
-<script type="application/json" data-for="htmlwidget-75549d3d61e471884bc2">{"x":{"data":{"rows":[{"id":"row_1","label":"Study A1","point":0.8,"lower":0.6,"upper":1.1,"groupId":"North","metadata":{"study":"Study A1","region":"North","or":0.8,"lower":0.6,"upper":1.1}},{"id":"row_2","label":"Study A2","point":0.9,"lower":0.7,"upper":1.15,"groupId":"North","metadata":{"study":"Study A2","region":"North","or":0.9,"lower":0.7,"upper":1.15}},{"id":"row_3","label":"Study B1","point":1.1,"lower":0.85,"upper":1.4,"groupId":"South","metadata":{"study":"Study B1","region":"South","or":1.1,"lower":0.85,"upper":1.4}},{"id":"row_4","label":"Study B2","point":1.3,"lower":1,"upper":1.7,"groupId":"South","metadata":{"study":"Study B2","region":"South","or":1.3,"lower":1,"upper":1.7}},{"id":"row_5","label":"Study B3","point":0.95,"lower":0.7,"upper":1.3,"groupId":"South","metadata":{"study":"Study B3","region":"South","or":0.95,"lower":0.7,"upper":1.3}}],"groups":[{"id":"North","label":"North","collapsed":false,"parentId":null,"depth":0},{"id":"South","label":"South","collapsed":false,"parentId":null,"depth":0}],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"or","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":"region","scale":"linear","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"default","colors":{"background":"#ffffff","foreground":"#1a1a1a","primary":"#2563eb","secondary":"#64748b","accent":"#8b5cf6","muted":"#94a3b8","border":"#e2e8f0","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#64748b","intervalLine":"#475569","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":28,"headerHeight":36,"columnGap":8,"sectionGap":16,"padding":12,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":4},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"}},"evals":[],"jsHooks":[]}</script>
+<div class="webforest html-widget html-fill-item" id="htmlwidget-806d2bbfcb62f402e7ca" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-806d2bbfcb62f402e7ca">{"x":{"data":{"rows":[{"id":"row_1","label":"Study A1","point":0.8,"lower":0.6,"upper":1.1,"groupId":"North","metadata":{"study":"Study A1","region":"North","or":0.8,"lower":0.6,"upper":1.1}},{"id":"row_2","label":"Study A2","point":0.9,"lower":0.7,"upper":1.15,"groupId":"North","metadata":{"study":"Study A2","region":"North","or":0.9,"lower":0.7,"upper":1.15}},{"id":"row_3","label":"Study B1","point":1.1,"lower":0.85,"upper":1.4,"groupId":"South","metadata":{"study":"Study B1","region":"South","or":1.1,"lower":0.85,"upper":1.4}},{"id":"row_4","label":"Study B2","point":1.3,"lower":1,"upper":1.7,"groupId":"South","metadata":{"study":"Study B2","region":"South","or":1.3,"lower":1,"upper":1.7}},{"id":"row_5","label":"Study B3","point":0.95,"lower":0.7,"upper":1.3,"groupId":"South","metadata":{"study":"Study B3","region":"South","or":0.95,"lower":0.7,"upper":1.3}}],"groups":[{"id":"North","label":"North","collapsed":false,"parentId":null,"depth":0},{"id":"South","label":"South","collapsed":false,"parentId":null,"depth":0}],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"or","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":"region","scale":"linear","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"default","colors":{"background":"#ffffff","foreground":"#1a1a1a","primary":"#2563eb","secondary":"#64748b","accent":"#8b5cf6","muted":"#94a3b8","border":"#e2e8f0","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#64748b","intervalLine":"#475569","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":28,"headerHeight":36,"columnGap":8,"sectionGap":16,"padding":12,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":4},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <p>Click the group headers to collapse/expand sections.</p>
@@ -302,56 +302,56 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
-<div class="webforest html-widget html-fill-item" id="htmlwidget-97638fd4e9906dee7960" style="width:100%;height:400px;"></div>
-<script type="application/json" data-for="htmlwidget-97638fd4e9906dee7960">{"x":{"data":{"rows":[{"id":"row_1","label":"USA - Northeast","point":0.82,"lower":0.68,"upper":0.99,"groupId":"USA","metadata":{"study":"USA - Northeast","country":"USA","or":0.82,"lower":0.68,"upper":0.99}},{"id":"row_2","label":"USA - Southeast","point":0.91,"lower":0.75,"upper":1.1,"groupId":"USA","metadata":{"study":"USA - Southeast","country":"USA","or":0.91,"lower":0.75,"upper":1.1}},{"id":"row_3","label":"USA - Midwest","point":0.78,"lower":0.62,"upper":0.98,"groupId":"USA","metadata":{"study":"USA - Midwest","country":"USA","or":0.78,"lower":0.62,"upper":0.98}},{"id":"row_4","label":"Canada - Ontario","point":0.85,"lower":0.7,"upper":1.03,"groupId":"Canada","metadata":{"study":"Canada - Ontario","country":"Canada","or":0.85,"lower":0.7,"upper":1.03}},{"id":"row_5","label":"Canada - Quebec","point":0.88,"lower":0.72,"upper":1.07,"groupId":"Canada","metadata":{"study":"Canada - Quebec","country":"Canada","or":0.88,"lower":0.72,"upper":1.07}},{"id":"row_6","label":"UK - England","point":0.92,"lower":0.76,"upper":1.11,"groupId":"UK","metadata":{"study":"UK - England","country":"UK","or":0.92,"lower":0.76,"upper":1.11}},{"id":"row_7","label":"UK - Scotland","point":0.87,"lower":0.71,"upper":1.07,"groupId":"UK","metadata":{"study":"UK - Scotland","country":"UK","or":0.87,"lower":0.71,"upper":1.07}},{"id":"row_8","label":"Germany - Bavaria","point":0.79,"lower":0.64,"upper":0.98,"groupId":"Germany","metadata":{"study":"Germany - Bavaria","country":"Germany","or":0.79,"lower":0.64,"upper":0.98}},{"id":"row_9","label":"Germany - Berlin","point":0.84,"lower":0.68,"upper":1.04,"groupId":"Germany","metadata":{"study":"Germany - Berlin","country":"Germany","or":0.84,"lower":0.68,"upper":1.04}}],"groups":[{"id":"USA","label":"USA","collapsed":false,"parentId":null,"depth":0},{"id":"Canada","label":"Canada","collapsed":false,"parentId":null,"depth":0},{"id":"UK","label":"UK","collapsed":false,"parentId":null,"depth":0},{"id":"Germany","label":"Germany","collapsed":false,"parentId":null,"depth":0}],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"or","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":"country","scale":"log","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"modern","colors":{"background":"#fafafa","foreground":"#18181b","primary":"#2563eb","secondary":"#52525b","accent":"#7c3aed","muted":"#a1a1aa","border":"#e4e4e7","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#71717a","intervalLine":"#3f3f46","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"Inter, system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":32,"headerHeight":40,"columnGap":10,"sectionGap":20,"padding":14,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":7,"summaryHeight":11,"lineWidth":1.5,"borderRadius":6},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"}},"evals":[],"jsHooks":[]}</script>
+<div class="webforest html-widget html-fill-item" id="htmlwidget-d9928b9d757206258d63" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-d9928b9d757206258d63">{"x":{"data":{"rows":[{"id":"row_1","label":"USA - Northeast","point":0.82,"lower":0.68,"upper":0.99,"groupId":"USA","metadata":{"study":"USA - Northeast","country":"USA","or":0.82,"lower":0.68,"upper":0.99}},{"id":"row_2","label":"USA - Southeast","point":0.91,"lower":0.75,"upper":1.1,"groupId":"USA","metadata":{"study":"USA - Southeast","country":"USA","or":0.91,"lower":0.75,"upper":1.1}},{"id":"row_3","label":"USA - Midwest","point":0.78,"lower":0.62,"upper":0.98,"groupId":"USA","metadata":{"study":"USA - Midwest","country":"USA","or":0.78,"lower":0.62,"upper":0.98}},{"id":"row_4","label":"Canada - Ontario","point":0.85,"lower":0.7,"upper":1.03,"groupId":"Canada","metadata":{"study":"Canada - Ontario","country":"Canada","or":0.85,"lower":0.7,"upper":1.03}},{"id":"row_5","label":"Canada - Quebec","point":0.88,"lower":0.72,"upper":1.07,"groupId":"Canada","metadata":{"study":"Canada - Quebec","country":"Canada","or":0.88,"lower":0.72,"upper":1.07}},{"id":"row_6","label":"UK - England","point":0.92,"lower":0.76,"upper":1.11,"groupId":"UK","metadata":{"study":"UK - England","country":"UK","or":0.92,"lower":0.76,"upper":1.11}},{"id":"row_7","label":"UK - Scotland","point":0.87,"lower":0.71,"upper":1.07,"groupId":"UK","metadata":{"study":"UK - Scotland","country":"UK","or":0.87,"lower":0.71,"upper":1.07}},{"id":"row_8","label":"Germany - Bavaria","point":0.79,"lower":0.64,"upper":0.98,"groupId":"Germany","metadata":{"study":"Germany - Bavaria","country":"Germany","or":0.79,"lower":0.64,"upper":0.98}},{"id":"row_9","label":"Germany - Berlin","point":0.84,"lower":0.68,"upper":1.04,"groupId":"Germany","metadata":{"study":"Germany - Berlin","country":"Germany","or":0.84,"lower":0.68,"upper":1.04}}],"groups":[{"id":"USA","label":"USA","collapsed":false,"parentId":null,"depth":0},{"id":"Canada","label":"Canada","collapsed":false,"parentId":null,"depth":0},{"id":"UK","label":"UK","collapsed":false,"parentId":null,"depth":0},{"id":"Germany","label":"Germany","collapsed":false,"parentId":null,"depth":0}],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"or","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":"country","scale":"log","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"modern","colors":{"background":"#fafafa","foreground":"#18181b","primary":"#2563eb","secondary":"#52525b","accent":"#7c3aed","muted":"#a1a1aa","border":"#e4e4e7","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#71717a","intervalLine":"#3f3f46","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"Inter, system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":32,"headerHeight":40,"columnGap":10,"sectionGap":20,"padding":14,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":7,"summaryHeight":11,"lineWidth":1.5,"borderRadius":6},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <p>Nested rows are automatically indented and shaded by depth.</p>
 </section>
-<section id="row-styling-with-metadata-columns" class="level2">
-<h2 class="anchored" data-anchor-id="row-styling-with-metadata-columns">Row Styling with Metadata Columns</h2>
-<p>Control row appearance using special <code>.row_*</code> columns in your data:</p>
+<section id="row-styling" class="level2">
+<h2 class="anchored" data-anchor-id="row-styling">Row Styling</h2>
+<p>Control row appearance using the <code>row_*</code> parameters. Each parameter takes a column name containing the style values:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 27%">
-<col style="width: 44%">
-<col style="width: 27%">
+<col style="width: 28%">
+<col style="width: 33%">
+<col style="width: 38%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Column</th>
+<th>Parameter</th>
 <th>Description</th>
-<th>Values</th>
+<th>Column Values</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>.row_type</code></td>
+<td><code>row_type</code></td>
 <td>Row type</td>
 <td><code>"data"</code>, <code>"header"</code>, <code>"summary"</code>, <code>"spacer"</code></td>
 </tr>
 <tr class="even">
-<td><code>.row_bold</code></td>
+<td><code>row_bold</code></td>
 <td>Bold text</td>
 <td><code>TRUE</code> / <code>FALSE</code></td>
 </tr>
 <tr class="odd">
-<td><code>.row_italic</code></td>
+<td><code>row_italic</code></td>
 <td>Italic text</td>
 <td><code>TRUE</code> / <code>FALSE</code></td>
 </tr>
 <tr class="even">
-<td><code>.row_indent</code></td>
+<td><code>row_indent</code></td>
 <td>Indentation level</td>
 <td><code>0</code>, <code>1</code>, <code>2</code>, …</td>
 </tr>
 <tr class="odd">
-<td><code>.row_color</code></td>
+<td><code>row_color</code></td>
 <td>Custom text color</td>
 <td>Hex color string</td>
 </tr>
 <tr class="even">
-<td><code>.row_badge</code></td>
+<td><code>row_badge</code></td>
 <td>Badge label</td>
 <td>Text to show in badge</td>
 </tr>
@@ -374,14 +374,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.74</span>, <span class="fl">0.75</span>, <span class="fl">0.84</span>, <span class="fl">0.82</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">0.59</span>, <span class="fl">0.51</span>, <span class="fl">0.57</span>, <span class="cn">NA</span>, <span class="fl">0.73</span>),</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.99</span>, <span class="fl">0.97</span>, <span class="fl">1.03</span>, <span class="fl">0.95</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">0.82</span>, <span class="fl">0.72</span>, <span class="fl">0.76</span>, <span class="cn">NA</span>, <span class="fl">0.84</span>),</span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="dv">7020</span>, <span class="dv">10142</span>, <span class="dv">17160</span>, <span class="dv">34322</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="dv">4401</span>, <span class="dv">4304</span>, <span class="dv">8705</span>, <span class="cn">NA</span>, <span class="dv">43027</span>),</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_type =</span> <span class="fu">c</span>(</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">rtype =</span> <span class="fu">c</span>(</span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>, <span class="st">"spacer"</span>,</span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>, <span class="st">"spacer"</span>, <span class="st">"summary"</span></span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_bold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_indent =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>),</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_color =</span> <span class="fu">c</span>(<span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="st">"#166534"</span>),</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_badge =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"n=3"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"n=2"</span>, <span class="cn">NA</span>, <span class="st">"n=5"</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">rbold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">rindent =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">rcolor =</span> <span class="fu">c</span>(<span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="st">"#166534"</span>),</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">rbadge =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"n=3"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"n=2"</span>, <span class="cn">NA</span>, <span class="st">"n=5"</span>)</span>
 <span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(styled_data,</span>
@@ -391,16 +391,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"n"</span>, <span class="st">"N"</span>, <span class="at">position =</span> <span class="st">"right"</span>),</span>
 <span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_interval</span>(<span class="st">"HR (95% CI)"</span>, <span class="at">position =</span> <span class="st">"right"</span>)</span>
 <span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>(),</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_label =</span> <span class="st">"Hazard Ratio (95% CI)"</span>,</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"SGLT2 Inhibitors Meta-Analysis"</span>,</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle =</span> <span class="st">"Cardiovascular and renal outcomes"</span></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_type =</span> <span class="st">"rtype"</span>,</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"rbold"</span>,</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_indent =</span> <span class="st">"rindent"</span>,</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_color =</span> <span class="st">"rcolor"</span>,</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_badge =</span> <span class="st">"rbadge"</span>,</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>(),</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_label =</span> <span class="st">"Hazard Ratio (95% CI)"</span>,</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"SGLT2 Inhibitors Meta-Analysis"</span>,</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle =</span> <span class="st">"Cardiovascular and renal outcomes"</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
-<div class="webforest html-widget html-fill-item" id="htmlwidget-e3725723e3fd9b1a0109" style="width:100%;height:400px;"></div>
-<script type="application/json" data-for="htmlwidget-e3725723e3fd9b1a0109">{"x":{"data":{"rows":[{"id":"row_1","label":"Cardiovascular Outcomes","point":null,"lower":null,"upper":null,"groupId":null,"metadata":{"study":"Cardiovascular Outcomes","hr":null,"lower":null,"upper":null,"n":null},"style":{"type":"header","bold":true,"color":"#0369a1","indent":0}},{"id":"row_2","label":"  EMPA-REG 2015","point":0.86,"lower":0.74,"upper":0.99,"groupId":null,"metadata":{"study":"  EMPA-REG 2015","hr":0.86,"lower":0.74,"upper":0.99,"n":7020},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_3","label":"  CANVAS 2017","point":0.86,"lower":0.75,"upper":0.97,"groupId":null,"metadata":{"study":"  CANVAS 2017","hr":0.86,"lower":0.75,"upper":0.97,"n":10142},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_4","label":"  DECLARE 2019","point":0.93,"lower":0.84,"upper":1.03,"groupId":null,"metadata":{"study":"  DECLARE 2019","hr":0.93,"lower":0.84,"upper":1.03,"n":17160},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_5","label":"  Subtotal","point":0.88,"lower":0.82,"upper":0.95,"groupId":null,"metadata":{"study":"  Subtotal","hr":0.88,"lower":0.82,"upper":0.95,"n":34322},"style":{"type":"summary","bold":true,"color":"#0369a1","indent":1,"badge":"n=3"}},{"id":"row_6","label":"","point":null,"lower":null,"upper":null,"groupId":null,"metadata":{"study":"","hr":null,"lower":null,"upper":null,"n":null},"style":{"type":"spacer","bold":false,"indent":0}},{"id":"row_7","label":"Renal Outcomes","point":null,"lower":null,"upper":null,"groupId":null,"metadata":{"study":"Renal Outcomes","hr":null,"lower":null,"upper":null,"n":null},"style":{"type":"header","bold":true,"color":"#0369a1","indent":0}},{"id":"row_8","label":"  CREDENCE 2019","point":0.7,"lower":0.59,"upper":0.82,"groupId":null,"metadata":{"study":"  CREDENCE 2019","hr":0.7,"lower":0.59,"upper":0.82,"n":4401},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_9","label":"  DAPA-CKD 2020","point":0.61,"lower":0.51,"upper":0.72,"groupId":null,"metadata":{"study":"  DAPA-CKD 2020","hr":0.61,"lower":0.51,"upper":0.72,"n":4304},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_10","label":"  Subtotal","point":0.66,"lower":0.57,"upper":0.76,"groupId":null,"metadata":{"study":"  Subtotal","hr":0.66,"lower":0.57,"upper":0.76,"n":8705},"style":{"type":"summary","bold":true,"color":"#0369a1","indent":1,"badge":"n=2"}},{"id":"row_11","label":"","point":null,"lower":null,"upper":null,"groupId":null,"metadata":{"study":"","hr":null,"lower":null,"upper":null,"n":null},"style":{"type":"spacer","bold":false,"indent":0}},{"id":"row_12","label":"Overall","point":0.78,"lower":0.73,"upper":0.84,"groupId":null,"metadata":{"study":"Overall","hr":0.78,"lower":0.73,"upper":0.84,"n":43027},"style":{"type":"summary","bold":true,"color":"#166534","indent":0,"badge":"n=5"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"hr","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":null,"scale":"log","nullValue":1,"axisLabel":"Hazard Ratio (95% CI)","effects":[],"includeForest":true},"columns":[{"id":"n","header":"N","field":"n","type":"numeric","width":80,"align":"right","position":"right","sortable":true,"isGroup":false},{"id":"_interval","header":"HR (95% CI)","field":"_interval","type":"interval","width":140,"align":"left","position":"right","sortable":true,"isGroup":false}],"annotations":[],"theme":{"name":"modern","colors":{"background":"#fafafa","foreground":"#18181b","primary":"#2563eb","secondary":"#52525b","accent":"#7c3aed","muted":"#a1a1aa","border":"#e4e4e7","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#71717a","intervalLine":"#3f3f46","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"Inter, system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":32,"headerHeight":40,"columnGap":10,"sectionGap":20,"padding":14,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":7,"summaryHeight":11,"lineWidth":1.5,"borderRadius":6},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":{"title":"SGLT2 Inhibitors Meta-Analysis","subtitle":"Cardiovascular and renal outcomes","caption":null,"footnote":null},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"}},"evals":[],"jsHooks":[]}</script>
+<div class="webforest html-widget html-fill-item" id="htmlwidget-1f063e1ce97c20105be5" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-1f063e1ce97c20105be5">{"x":{"data":{"rows":[{"id":"row_1","label":"Cardiovascular Outcomes","point":null,"lower":null,"upper":null,"groupId":null,"metadata":{"study":"Cardiovascular Outcomes","hr":null,"lower":null,"upper":null,"n":null,"rtype":"header","rbold":true,"rindent":0,"rcolor":"#0369a1","rbadge":null},"style":{"type":"header","bold":true,"color":"#0369a1","indent":0}},{"id":"row_2","label":"  EMPA-REG 2015","point":0.86,"lower":0.74,"upper":0.99,"groupId":null,"metadata":{"study":"  EMPA-REG 2015","hr":0.86,"lower":0.74,"upper":0.99,"n":7020,"rtype":"data","rbold":false,"rindent":1,"rcolor":null,"rbadge":null},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_3","label":"  CANVAS 2017","point":0.86,"lower":0.75,"upper":0.97,"groupId":null,"metadata":{"study":"  CANVAS 2017","hr":0.86,"lower":0.75,"upper":0.97,"n":10142,"rtype":"data","rbold":false,"rindent":1,"rcolor":null,"rbadge":null},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_4","label":"  DECLARE 2019","point":0.93,"lower":0.84,"upper":1.03,"groupId":null,"metadata":{"study":"  DECLARE 2019","hr":0.93,"lower":0.84,"upper":1.03,"n":17160,"rtype":"data","rbold":false,"rindent":1,"rcolor":null,"rbadge":null},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_5","label":"  Subtotal","point":0.88,"lower":0.82,"upper":0.95,"groupId":null,"metadata":{"study":"  Subtotal","hr":0.88,"lower":0.82,"upper":0.95,"n":34322,"rtype":"summary","rbold":true,"rindent":1,"rcolor":"#0369a1","rbadge":"n=3"},"style":{"type":"summary","bold":true,"color":"#0369a1","indent":1,"badge":"n=3"}},{"id":"row_6","label":"","point":null,"lower":null,"upper":null,"groupId":null,"metadata":{"study":"","hr":null,"lower":null,"upper":null,"n":null,"rtype":"spacer","rbold":false,"rindent":0,"rcolor":null,"rbadge":null},"style":{"type":"spacer","bold":false,"indent":0}},{"id":"row_7","label":"Renal Outcomes","point":null,"lower":null,"upper":null,"groupId":null,"metadata":{"study":"Renal Outcomes","hr":null,"lower":null,"upper":null,"n":null,"rtype":"header","rbold":true,"rindent":0,"rcolor":"#0369a1","rbadge":null},"style":{"type":"header","bold":true,"color":"#0369a1","indent":0}},{"id":"row_8","label":"  CREDENCE 2019","point":0.7,"lower":0.59,"upper":0.82,"groupId":null,"metadata":{"study":"  CREDENCE 2019","hr":0.7,"lower":0.59,"upper":0.82,"n":4401,"rtype":"data","rbold":false,"rindent":1,"rcolor":null,"rbadge":null},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_9","label":"  DAPA-CKD 2020","point":0.61,"lower":0.51,"upper":0.72,"groupId":null,"metadata":{"study":"  DAPA-CKD 2020","hr":0.61,"lower":0.51,"upper":0.72,"n":4304,"rtype":"data","rbold":false,"rindent":1,"rcolor":null,"rbadge":null},"style":{"type":"data","bold":false,"indent":1}},{"id":"row_10","label":"  Subtotal","point":0.66,"lower":0.57,"upper":0.76,"groupId":null,"metadata":{"study":"  Subtotal","hr":0.66,"lower":0.57,"upper":0.76,"n":8705,"rtype":"summary","rbold":true,"rindent":1,"rcolor":"#0369a1","rbadge":"n=2"},"style":{"type":"summary","bold":true,"color":"#0369a1","indent":1,"badge":"n=2"}},{"id":"row_11","label":"","point":null,"lower":null,"upper":null,"groupId":null,"metadata":{"study":"","hr":null,"lower":null,"upper":null,"n":null,"rtype":"spacer","rbold":false,"rindent":0,"rcolor":null,"rbadge":null},"style":{"type":"spacer","bold":false,"indent":0}},{"id":"row_12","label":"Overall","point":0.78,"lower":0.73,"upper":0.84,"groupId":null,"metadata":{"study":"Overall","hr":0.78,"lower":0.73,"upper":0.84,"n":43027,"rtype":"summary","rbold":true,"rindent":0,"rcolor":"#166534","rbadge":"n=5"},"style":{"type":"summary","bold":true,"color":"#166534","indent":0,"badge":"n=5"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"hr","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":null,"scale":"log","nullValue":1,"axisLabel":"Hazard Ratio (95% CI)","effects":[],"includeForest":true},"columns":[{"id":"n","header":"N","field":"n","type":"numeric","width":80,"align":"right","position":"right","sortable":true,"isGroup":false},{"id":"_interval","header":"HR (95% CI)","field":"_interval","type":"interval","width":140,"align":"left","position":"right","sortable":true,"isGroup":false}],"annotations":[],"theme":{"name":"modern","colors":{"background":"#fafafa","foreground":"#18181b","primary":"#2563eb","secondary":"#52525b","accent":"#7c3aed","muted":"#a1a1aa","border":"#e4e4e7","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#71717a","intervalLine":"#3f3f46","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"Inter, system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":32,"headerHeight":40,"columnGap":10,"sectionGap":20,"padding":14,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":7,"summaryHeight":11,"lineWidth":1.5,"borderRadius":6},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":{"title":"SGLT2 Inhibitors Meta-Analysis","subtitle":"Cardiovascular and renal outcomes","caption":null,"footnote":null},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
@@ -409,24 +414,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="row-types">Row Types</h2>
 <section id="header-rows" class="level3">
 <h3 class="anchored" data-anchor-id="header-rows">Header Rows</h3>
-<p>Section headers that span the full width:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>.row_type <span class="ot">=</span> <span class="st">"header"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Header rows don’t display forest plot elements (point estimates, intervals).</p>
+<p>Section headers that span the full width. Header rows don’t display forest plot elements (point estimates, intervals).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>row_type <span class="ot">=</span> <span class="st">"rtype"</span>  <span class="co"># where data$rtype contains "header"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="summary-rows" class="level3">
 <h3 class="anchored" data-anchor-id="summary-rows">Summary Rows</h3>
 <p>Display a diamond shape instead of a point estimate:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>.row_type <span class="ot">=</span> <span class="st">"summary"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>row_type <span class="ot">=</span> <span class="st">"rtype"</span>  <span class="co"># where data$rtype contains "summary"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="spacer-rows" class="level3">
 <h3 class="anchored" data-anchor-id="spacer-rows">Spacer Rows</h3>
 <p>Empty rows for visual separation:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>.row_type <span class="ot">=</span> <span class="st">"spacer"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>row_type <span class="ot">=</span> <span class="st">"rtype"</span>  <span class="co"># where data$rtype contains "spacer"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="data-rows" class="level3">
 <h3 class="anchored" data-anchor-id="data-rows">Data Rows</h3>
-<p>Normal study rows (default):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>.row_type <span class="ot">=</span> <span class="st">"data"</span>  <span class="co"># or omit the column</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Normal study rows (default when type is <code>"data"</code> or column is not specified).</p>
 </section>
 </section>
 <section id="badges" class="level2">
@@ -435,24 +438,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>badge_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Primary Analysis"</span>, <span class="st">"Sensitivity 1"</span>, <span class="st">"Sensitivity 2"</span>),</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">or =</span> <span class="fu">c</span>(<span class="fl">0.82</span>, <span class="fl">0.85</span>, <span class="fl">0.79</span>),</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.70</span>, <span class="fl">0.72</span>, <span class="fl">0.66</span>),</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.96</span>, <span class="fl">1.00</span>, <span class="fl">0.95</span>),</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_badge =</span> <span class="fu">c</span>(<span class="st">"Main"</span>, <span class="cn">NA</span>, <span class="st">"Robust"</span>),</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_bold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(badge_data,</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>badge_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Primary Analysis"</span>, <span class="st">"Sensitivity 1"</span>, <span class="st">"Sensitivity 2"</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">or =</span> <span class="fu">c</span>(<span class="fl">0.82</span>, <span class="fl">0.85</span>, <span class="fl">0.79</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.70</span>, <span class="fl">0.72</span>, <span class="fl">0.66</span>),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.96</span>, <span class="fl">1.00</span>, <span class="fl">0.95</span>),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="fu">c</span>(<span class="st">"Main"</span>, <span class="cn">NA</span>, <span class="st">"Robust"</span>),</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">is_bold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(badge_data,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_badge =</span> <span class="st">"badge"</span>,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_bold"</span>,</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
-<div class="webforest html-widget html-fill-item" id="htmlwidget-67a4f8a7a46b2c320c5b" style="width:100%;height:400px;"></div>
-<script type="application/json" data-for="htmlwidget-67a4f8a7a46b2c320c5b">{"x":{"data":{"rows":[{"id":"row_1","label":"Primary Analysis","point":0.82,"lower":0.7,"upper":0.96,"groupId":null,"metadata":{"study":"Primary Analysis","or":0.82,"lower":0.7,"upper":0.96},"style":{"bold":true,"badge":"Main"}},{"id":"row_2","label":"Sensitivity 1","point":0.85,"lower":0.72,"upper":1,"groupId":null,"metadata":{"study":"Sensitivity 1","or":0.85,"lower":0.72,"upper":1},"style":{"bold":false}},{"id":"row_3","label":"Sensitivity 2","point":0.79,"lower":0.66,"upper":0.95,"groupId":null,"metadata":{"study":"Sensitivity 2","or":0.79,"lower":0.66,"upper":0.95},"style":{"bold":false,"badge":"Robust"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"or","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":null,"scale":"linear","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"modern","colors":{"background":"#fafafa","foreground":"#18181b","primary":"#2563eb","secondary":"#52525b","accent":"#7c3aed","muted":"#a1a1aa","border":"#e4e4e7","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#71717a","intervalLine":"#3f3f46","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"Inter, system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":32,"headerHeight":40,"columnGap":10,"sectionGap":20,"padding":14,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":7,"summaryHeight":11,"lineWidth":1.5,"borderRadius":6},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"}},"evals":[],"jsHooks":[]}</script>
+<div class="webforest html-widget html-fill-item" id="htmlwidget-66cc505580b2afbc1ff1" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-66cc505580b2afbc1ff1">{"x":{"data":{"rows":[{"id":"row_1","label":"Primary Analysis","point":0.82,"lower":0.7,"upper":0.96,"groupId":null,"metadata":{"study":"Primary Analysis","or":0.82,"lower":0.7,"upper":0.96,"badge":"Main","is_bold":true},"style":{"bold":true,"badge":"Main"}},{"id":"row_2","label":"Sensitivity 1","point":0.85,"lower":0.72,"upper":1,"groupId":null,"metadata":{"study":"Sensitivity 1","or":0.85,"lower":0.72,"upper":1,"badge":null,"is_bold":false},"style":{"bold":false}},{"id":"row_3","label":"Sensitivity 2","point":0.79,"lower":0.66,"upper":0.95,"groupId":null,"metadata":{"study":"Sensitivity 2","or":0.79,"lower":0.66,"upper":0.95,"badge":"Robust","is_bold":false},"style":{"bold":false,"badge":"Robust"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"or","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":null,"scale":"linear","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"modern","colors":{"background":"#fafafa","foreground":"#18181b","primary":"#2563eb","secondary":"#52525b","accent":"#7c3aed","muted":"#a1a1aa","border":"#e4e4e7","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#71717a","intervalLine":"#3f3f46","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"Inter, system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":32,"headerHeight":40,"columnGap":10,"sectionGap":20,"padding":14,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":7,"summaryHeight":11,"lineWidth":1.5,"borderRadius":6},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 
@@ -913,177 +919,179 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     }
   });
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Grouping &amp; Row Styling"</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(webforest)</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="fu">## Grouping Studies</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>Use the <span class="in">`group`</span> parameter to organize studies into collapsible groups:</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>grouped_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Study A1"</span>, <span class="st">"Study A2"</span>, <span class="st">"Study B1"</span>, <span class="st">"Study B2"</span>, <span class="st">"Study B3"</span>),</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">region =</span> <span class="fu">c</span>(<span class="st">"North"</span>, <span class="st">"North"</span>, <span class="st">"South"</span>, <span class="st">"South"</span>, <span class="st">"South"</span>),</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">or =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">0.9</span>, <span class="fl">1.1</span>, <span class="fl">1.3</span>, <span class="fl">0.95</span>),</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.85</span>, <span class="fl">1.0</span>, <span class="fl">0.7</span>),</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">1.1</span>, <span class="fl">1.15</span>, <span class="fl">1.4</span>, <span class="fl">1.7</span>, <span class="fl">1.3</span>)</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(grouped_data,</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">group =</span> <span class="st">"region"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>Click the group headers to collapse/expand sections.</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="fu">## Nested Groups</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>For multi-level hierarchies, use multiple grouping columns:</span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">789</span>)</span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>regional_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(</span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>    <span class="st">"USA - Northeast"</span>, <span class="st">"USA - Southeast"</span>, <span class="st">"USA - Midwest"</span>,</span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Canada - Ontario"</span>, <span class="st">"Canada - Quebec"</span>,</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>    <span class="st">"UK - England"</span>, <span class="st">"UK - Scotland"</span>,</span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Germany - Bavaria"</span>, <span class="st">"Germany - Berlin"</span></span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">country =</span> <span class="fu">c</span>(</span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rep</span>(<span class="st">"USA"</span>, <span class="dv">3</span>), <span class="fu">rep</span>(<span class="st">"Canada"</span>, <span class="dv">2</span>),</span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rep</span>(<span class="st">"UK"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"Germany"</span>, <span class="dv">2</span>)</span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">or =</span> <span class="fu">c</span>(<span class="fl">0.82</span>, <span class="fl">0.91</span>, <span class="fl">0.78</span>, <span class="fl">0.85</span>, <span class="fl">0.88</span>, <span class="fl">0.92</span>, <span class="fl">0.87</span>, <span class="fl">0.79</span>, <span class="fl">0.84</span>),</span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.68</span>, <span class="fl">0.75</span>, <span class="fl">0.62</span>, <span class="fl">0.70</span>, <span class="fl">0.72</span>, <span class="fl">0.76</span>, <span class="fl">0.71</span>, <span class="fl">0.64</span>, <span class="fl">0.68</span>),</span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.99</span>, <span class="fl">1.10</span>, <span class="fl">0.98</span>, <span class="fl">1.03</span>, <span class="fl">1.07</span>, <span class="fl">1.11</span>, <span class="fl">1.07</span>, <span class="fl">0.98</span>, <span class="fl">1.04</span>)</span>
-<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(regional_data,</span>
-<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">group =</span> <span class="st">"country"</span>,</span>
-<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>, <span class="at">scale =</span> <span class="st">"log"</span>,</span>
-<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
-<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>Nested rows are automatically indented and shaded by depth.</span>
-<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="fu">## Row Styling with Metadata Columns</span></span>
-<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>Control row appearance using special <span class="in">`.row_*`</span> columns in your data:</span>
-<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Column <span class="pp">|</span> Description <span class="pp">|</span> Values <span class="pp">|</span></span>
-<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|-------------|--------|</span></span>
-<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`.row_type`</span> <span class="pp">|</span> Row type <span class="pp">|</span> <span class="in">`"data"`</span>, <span class="in">`"header"`</span>, <span class="in">`"summary"`</span>, <span class="in">`"spacer"`</span> <span class="pp">|</span></span>
-<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`.row_bold`</span> <span class="pp">|</span> Bold text <span class="pp">|</span> <span class="in">`TRUE`</span> / <span class="in">`FALSE`</span> <span class="pp">|</span></span>
-<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`.row_italic`</span> <span class="pp">|</span> Italic text <span class="pp">|</span> <span class="in">`TRUE`</span> / <span class="in">`FALSE`</span> <span class="pp">|</span></span>
-<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`.row_indent`</span> <span class="pp">|</span> Indentation level <span class="pp">|</span> <span class="in">`0`</span>, <span class="in">`1`</span>, <span class="in">`2`</span>, ... <span class="pp">|</span></span>
-<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`.row_color`</span> <span class="pp">|</span> Custom text color <span class="pp">|</span> Hex color string <span class="pp">|</span></span>
-<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`.row_badge`</span> <span class="pp">|</span> Badge label <span class="pp">|</span> Text to show in badge <span class="pp">|</span></span>
-<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a><span class="fu">### Example: Styled Meta-Analysis</span></span>
-<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>styled_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(</span>
-<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Cardiovascular Outcomes"</span>,</span>
-<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>    <span class="st">"  EMPA-REG 2015"</span>, <span class="st">"  CANVAS 2017"</span>, <span class="st">"  DECLARE 2019"</span>, <span class="st">"  Subtotal"</span>, <span class="st">""</span>,</span>
-<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Renal Outcomes"</span>,</span>
-<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a>    <span class="st">"  CREDENCE 2019"</span>, <span class="st">"  DAPA-CKD 2020"</span>, <span class="st">"  Subtotal"</span>, <span class="st">""</span>,</span>
-<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Overall"</span></span>
-<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.86</span>, <span class="fl">0.86</span>, <span class="fl">0.93</span>, <span class="fl">0.88</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">0.70</span>, <span class="fl">0.61</span>, <span class="fl">0.66</span>, <span class="cn">NA</span>, <span class="fl">0.78</span>),</span>
-<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.74</span>, <span class="fl">0.75</span>, <span class="fl">0.84</span>, <span class="fl">0.82</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">0.59</span>, <span class="fl">0.51</span>, <span class="fl">0.57</span>, <span class="cn">NA</span>, <span class="fl">0.73</span>),</span>
-<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.99</span>, <span class="fl">0.97</span>, <span class="fl">1.03</span>, <span class="fl">0.95</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">0.82</span>, <span class="fl">0.72</span>, <span class="fl">0.76</span>, <span class="cn">NA</span>, <span class="fl">0.84</span>),</span>
-<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="dv">7020</span>, <span class="dv">10142</span>, <span class="dv">17160</span>, <span class="dv">34322</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="dv">4401</span>, <span class="dv">4304</span>, <span class="dv">8705</span>, <span class="cn">NA</span>, <span class="dv">43027</span>),</span>
-<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_type =</span> <span class="fu">c</span>(</span>
-<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>    <span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>, <span class="st">"spacer"</span>,</span>
-<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>    <span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>, <span class="st">"spacer"</span>, <span class="st">"summary"</span></span>
-<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_bold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
-<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_indent =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>),</span>
-<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_color =</span> <span class="fu">c</span>(<span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="st">"#166534"</span>),</span>
-<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_badge =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"n=3"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"n=2"</span>, <span class="cn">NA</span>, <span class="st">"n=5"</span>)</span>
-<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(styled_data,</span>
-<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
-<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
-<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"n"</span>, <span class="st">"N"</span>, <span class="at">position =</span> <span class="st">"right"</span>),</span>
-<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_interval</span>(<span class="st">"HR (95% CI)"</span>, <span class="at">position =</span> <span class="st">"right"</span>)</span>
-<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>(),</span>
-<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
-<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_label =</span> <span class="st">"Hazard Ratio (95% CI)"</span>,</span>
-<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"SGLT2 Inhibitors Meta-Analysis"</span>,</span>
-<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle =</span> <span class="st">"Cardiovascular and renal outcomes"</span></span>
-<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a><span class="fu">## Row Types</span></span>
-<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a><span class="fu">### Header Rows</span></span>
-<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>Section headers that span the full width:</span>
-<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a>.row_type <span class="ot">=</span> <span class="st">"header"</span></span>
-<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a>Header rows don't display forest plot elements (point estimates, intervals).</span>
-<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a><span class="fu">### Summary Rows</span></span>
-<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a>Display a diamond shape instead of a point estimate:</span>
-<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a>.row_type <span class="ot">=</span> <span class="st">"summary"</span></span>
-<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a><span class="fu">### Spacer Rows</span></span>
-<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a>Empty rows for visual separation:</span>
-<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a>.row_type <span class="ot">=</span> <span class="st">"spacer"</span></span>
-<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data Rows</span></span>
-<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a>Normal study rows (default):</span>
-<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a>.row_type <span class="ot">=</span> <span class="st">"data"</span>  <span class="co"># or omit the column</span></span>
-<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a><span class="fu">## Badges</span></span>
-<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a>Add small labels to highlight specific rows:</span>
-<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a>badge_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Primary Analysis"</span>, <span class="st">"Sensitivity 1"</span>, <span class="st">"Sensitivity 2"</span>),</span>
-<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a>  <span class="at">or =</span> <span class="fu">c</span>(<span class="fl">0.82</span>, <span class="fl">0.85</span>, <span class="fl">0.79</span>),</span>
-<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.70</span>, <span class="fl">0.72</span>, <span class="fl">0.66</span>),</span>
-<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.96</span>, <span class="fl">1.00</span>, <span class="fl">0.95</span>),</span>
-<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_badge =</span> <span class="fu">c</span>(<span class="st">"Main"</span>, <span class="cn">NA</span>, <span class="st">"Robust"</span>),</span>
-<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a>  <span class="at">.row_bold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>)</span>
-<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(badge_data,</span>
-<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
-<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
-<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Grouping &amp; Row Styling"</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(webforest)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">## Grouping Studies</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>Use the <span class="in">`group`</span> parameter to organize studies into collapsible groups:</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>grouped_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Study A1"</span>, <span class="st">"Study A2"</span>, <span class="st">"Study B1"</span>, <span class="st">"Study B2"</span>, <span class="st">"Study B3"</span>),</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">region =</span> <span class="fu">c</span>(<span class="st">"North"</span>, <span class="st">"North"</span>, <span class="st">"South"</span>, <span class="st">"South"</span>, <span class="st">"South"</span>),</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">or =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">0.9</span>, <span class="fl">1.1</span>, <span class="fl">1.3</span>, <span class="fl">0.95</span>),</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="fl">0.85</span>, <span class="fl">1.0</span>, <span class="fl">0.7</span>),</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">1.1</span>, <span class="fl">1.15</span>, <span class="fl">1.4</span>, <span class="fl">1.7</span>, <span class="fl">1.3</span>)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(grouped_data,</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">group =</span> <span class="st">"region"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>Click the group headers to collapse/expand sections.</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="fu">## Nested Groups</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>For multi-level hierarchies, use multiple grouping columns:</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">789</span>)</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>regional_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>    <span class="st">"USA - Northeast"</span>, <span class="st">"USA - Southeast"</span>, <span class="st">"USA - Midwest"</span>,</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Canada - Ontario"</span>, <span class="st">"Canada - Quebec"</span>,</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>    <span class="st">"UK - England"</span>, <span class="st">"UK - Scotland"</span>,</span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Germany - Bavaria"</span>, <span class="st">"Germany - Berlin"</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">country =</span> <span class="fu">c</span>(</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rep</span>(<span class="st">"USA"</span>, <span class="dv">3</span>), <span class="fu">rep</span>(<span class="st">"Canada"</span>, <span class="dv">2</span>),</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rep</span>(<span class="st">"UK"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"Germany"</span>, <span class="dv">2</span>)</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">or =</span> <span class="fu">c</span>(<span class="fl">0.82</span>, <span class="fl">0.91</span>, <span class="fl">0.78</span>, <span class="fl">0.85</span>, <span class="fl">0.88</span>, <span class="fl">0.92</span>, <span class="fl">0.87</span>, <span class="fl">0.79</span>, <span class="fl">0.84</span>),</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.68</span>, <span class="fl">0.75</span>, <span class="fl">0.62</span>, <span class="fl">0.70</span>, <span class="fl">0.72</span>, <span class="fl">0.76</span>, <span class="fl">0.71</span>, <span class="fl">0.64</span>, <span class="fl">0.68</span>),</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.99</span>, <span class="fl">1.10</span>, <span class="fl">0.98</span>, <span class="fl">1.03</span>, <span class="fl">1.07</span>, <span class="fl">1.11</span>, <span class="fl">1.07</span>, <span class="fl">0.98</span>, <span class="fl">1.04</span>)</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(regional_data,</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">group =</span> <span class="st">"country"</span>,</span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>, <span class="at">scale =</span> <span class="st">"log"</span>,</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>Nested rows are automatically indented and shaded by depth.</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a><span class="fu">## Row Styling</span></span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>Control row appearance using the <span class="in">`row_*`</span> parameters. Each parameter takes a column name containing the style values:</span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Parameter <span class="pp">|</span> Description <span class="pp">|</span> Column Values <span class="pp">|</span></span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|-------------|---------------|</span></span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_type`</span> <span class="pp">|</span> Row type <span class="pp">|</span> <span class="in">`"data"`</span>, <span class="in">`"header"`</span>, <span class="in">`"summary"`</span>, <span class="in">`"spacer"`</span> <span class="pp">|</span></span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_bold`</span> <span class="pp">|</span> Bold text <span class="pp">|</span> <span class="in">`TRUE`</span> / <span class="in">`FALSE`</span> <span class="pp">|</span></span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_italic`</span> <span class="pp">|</span> Italic text <span class="pp">|</span> <span class="in">`TRUE`</span> / <span class="in">`FALSE`</span> <span class="pp">|</span></span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_indent`</span> <span class="pp">|</span> Indentation level <span class="pp">|</span> <span class="in">`0`</span>, <span class="in">`1`</span>, <span class="in">`2`</span>, ... <span class="pp">|</span></span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_color`</span> <span class="pp">|</span> Custom text color <span class="pp">|</span> Hex color string <span class="pp">|</span></span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_badge`</span> <span class="pp">|</span> Badge label <span class="pp">|</span> Text to show in badge <span class="pp">|</span></span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a><span class="fu">### Example: Styled Meta-Analysis</span></span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a>styled_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb8-88"><a href="#cb8-88" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(</span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Cardiovascular Outcomes"</span>,</span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true" tabindex="-1"></a>    <span class="st">"  EMPA-REG 2015"</span>, <span class="st">"  CANVAS 2017"</span>, <span class="st">"  DECLARE 2019"</span>, <span class="st">"  Subtotal"</span>, <span class="st">""</span>,</span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Renal Outcomes"</span>,</span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true" tabindex="-1"></a>    <span class="st">"  CREDENCE 2019"</span>, <span class="st">"  DAPA-CKD 2020"</span>, <span class="st">"  Subtotal"</span>, <span class="st">""</span>,</span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Overall"</span></span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb8-95"><a href="#cb8-95" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.86</span>, <span class="fl">0.86</span>, <span class="fl">0.93</span>, <span class="fl">0.88</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">0.70</span>, <span class="fl">0.61</span>, <span class="fl">0.66</span>, <span class="cn">NA</span>, <span class="fl">0.78</span>),</span>
+<span id="cb8-96"><a href="#cb8-96" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.74</span>, <span class="fl">0.75</span>, <span class="fl">0.84</span>, <span class="fl">0.82</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">0.59</span>, <span class="fl">0.51</span>, <span class="fl">0.57</span>, <span class="cn">NA</span>, <span class="fl">0.73</span>),</span>
+<span id="cb8-97"><a href="#cb8-97" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.99</span>, <span class="fl">0.97</span>, <span class="fl">1.03</span>, <span class="fl">0.95</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">0.82</span>, <span class="fl">0.72</span>, <span class="fl">0.76</span>, <span class="cn">NA</span>, <span class="fl">0.84</span>),</span>
+<span id="cb8-98"><a href="#cb8-98" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="dv">7020</span>, <span class="dv">10142</span>, <span class="dv">17160</span>, <span class="dv">34322</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="dv">4401</span>, <span class="dv">4304</span>, <span class="dv">8705</span>, <span class="cn">NA</span>, <span class="dv">43027</span>),</span>
+<span id="cb8-99"><a href="#cb8-99" aria-hidden="true" tabindex="-1"></a>  <span class="at">rtype =</span> <span class="fu">c</span>(</span>
+<span id="cb8-100"><a href="#cb8-100" aria-hidden="true" tabindex="-1"></a>    <span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>, <span class="st">"spacer"</span>,</span>
+<span id="cb8-101"><a href="#cb8-101" aria-hidden="true" tabindex="-1"></a>    <span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>, <span class="st">"spacer"</span>, <span class="st">"summary"</span></span>
+<span id="cb8-102"><a href="#cb8-102" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb8-103"><a href="#cb8-103" aria-hidden="true" tabindex="-1"></a>  <span class="at">rbold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
+<span id="cb8-104"><a href="#cb8-104" aria-hidden="true" tabindex="-1"></a>  <span class="at">rindent =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>),</span>
+<span id="cb8-105"><a href="#cb8-105" aria-hidden="true" tabindex="-1"></a>  <span class="at">rcolor =</span> <span class="fu">c</span>(<span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"#0369a1"</span>, <span class="cn">NA</span>, <span class="st">"#166534"</span>),</span>
+<span id="cb8-106"><a href="#cb8-106" aria-hidden="true" tabindex="-1"></a>  <span class="at">rbadge =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"n=3"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"n=2"</span>, <span class="cn">NA</span>, <span class="st">"n=5"</span>)</span>
+<span id="cb8-107"><a href="#cb8-107" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-108"><a href="#cb8-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-109"><a href="#cb8-109" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(styled_data,</span>
+<span id="cb8-110"><a href="#cb8-110" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb8-111"><a href="#cb8-111" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb8-112"><a href="#cb8-112" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb8-113"><a href="#cb8-113" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"n"</span>, <span class="st">"N"</span>, <span class="at">position =</span> <span class="st">"right"</span>),</span>
+<span id="cb8-114"><a href="#cb8-114" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_interval</span>(<span class="st">"HR (95% CI)"</span>, <span class="at">position =</span> <span class="st">"right"</span>)</span>
+<span id="cb8-115"><a href="#cb8-115" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb8-116"><a href="#cb8-116" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_type =</span> <span class="st">"rtype"</span>,</span>
+<span id="cb8-117"><a href="#cb8-117" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"rbold"</span>,</span>
+<span id="cb8-118"><a href="#cb8-118" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_indent =</span> <span class="st">"rindent"</span>,</span>
+<span id="cb8-119"><a href="#cb8-119" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_color =</span> <span class="st">"rcolor"</span>,</span>
+<span id="cb8-120"><a href="#cb8-120" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_badge =</span> <span class="st">"rbadge"</span>,</span>
+<span id="cb8-121"><a href="#cb8-121" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>(),</span>
+<span id="cb8-122"><a href="#cb8-122" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb8-123"><a href="#cb8-123" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_label =</span> <span class="st">"Hazard Ratio (95% CI)"</span>,</span>
+<span id="cb8-124"><a href="#cb8-124" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"SGLT2 Inhibitors Meta-Analysis"</span>,</span>
+<span id="cb8-125"><a href="#cb8-125" aria-hidden="true" tabindex="-1"></a>  <span class="at">subtitle =</span> <span class="st">"Cardiovascular and renal outcomes"</span></span>
+<span id="cb8-126"><a href="#cb8-126" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-127"><a href="#cb8-127" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-128"><a href="#cb8-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-129"><a href="#cb8-129" aria-hidden="true" tabindex="-1"></a><span class="fu">## Row Types</span></span>
+<span id="cb8-130"><a href="#cb8-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-131"><a href="#cb8-131" aria-hidden="true" tabindex="-1"></a><span class="fu">### Header Rows</span></span>
+<span id="cb8-132"><a href="#cb8-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-133"><a href="#cb8-133" aria-hidden="true" tabindex="-1"></a>Section headers that span the full width. Header rows don't display forest plot elements (point estimates, intervals).</span>
+<span id="cb8-134"><a href="#cb8-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-135"><a href="#cb8-135" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb8-136"><a href="#cb8-136" aria-hidden="true" tabindex="-1"></a>row_type <span class="ot">=</span> <span class="st">"rtype"</span>  <span class="co"># where data$rtype contains "header"</span></span>
+<span id="cb8-137"><a href="#cb8-137" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-138"><a href="#cb8-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-139"><a href="#cb8-139" aria-hidden="true" tabindex="-1"></a><span class="fu">### Summary Rows</span></span>
+<span id="cb8-140"><a href="#cb8-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-141"><a href="#cb8-141" aria-hidden="true" tabindex="-1"></a>Display a diamond shape instead of a point estimate:</span>
+<span id="cb8-142"><a href="#cb8-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-143"><a href="#cb8-143" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb8-144"><a href="#cb8-144" aria-hidden="true" tabindex="-1"></a>row_type <span class="ot">=</span> <span class="st">"rtype"</span>  <span class="co"># where data$rtype contains "summary"</span></span>
+<span id="cb8-145"><a href="#cb8-145" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-146"><a href="#cb8-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-147"><a href="#cb8-147" aria-hidden="true" tabindex="-1"></a><span class="fu">### Spacer Rows</span></span>
+<span id="cb8-148"><a href="#cb8-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-149"><a href="#cb8-149" aria-hidden="true" tabindex="-1"></a>Empty rows for visual separation:</span>
+<span id="cb8-150"><a href="#cb8-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-151"><a href="#cb8-151" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb8-152"><a href="#cb8-152" aria-hidden="true" tabindex="-1"></a>row_type <span class="ot">=</span> <span class="st">"rtype"</span>  <span class="co"># where data$rtype contains "spacer"</span></span>
+<span id="cb8-153"><a href="#cb8-153" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb8-154"><a href="#cb8-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-155"><a href="#cb8-155" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data Rows</span></span>
+<span id="cb8-156"><a href="#cb8-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-157"><a href="#cb8-157" aria-hidden="true" tabindex="-1"></a>Normal study rows (default when type is <span class="in">`"data"`</span> or column is not specified).</span>
+<span id="cb8-158"><a href="#cb8-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-159"><a href="#cb8-159" aria-hidden="true" tabindex="-1"></a><span class="fu">## Badges</span></span>
+<span id="cb8-160"><a href="#cb8-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-161"><a href="#cb8-161" aria-hidden="true" tabindex="-1"></a>Add small labels to highlight specific rows:</span>
+<span id="cb8-162"><a href="#cb8-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-165"><a href="#cb8-165" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb8-166"><a href="#cb8-166" aria-hidden="true" tabindex="-1"></a>badge_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb8-167"><a href="#cb8-167" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Primary Analysis"</span>, <span class="st">"Sensitivity 1"</span>, <span class="st">"Sensitivity 2"</span>),</span>
+<span id="cb8-168"><a href="#cb8-168" aria-hidden="true" tabindex="-1"></a>  <span class="at">or =</span> <span class="fu">c</span>(<span class="fl">0.82</span>, <span class="fl">0.85</span>, <span class="fl">0.79</span>),</span>
+<span id="cb8-169"><a href="#cb8-169" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.70</span>, <span class="fl">0.72</span>, <span class="fl">0.66</span>),</span>
+<span id="cb8-170"><a href="#cb8-170" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.96</span>, <span class="fl">1.00</span>, <span class="fl">0.95</span>),</span>
+<span id="cb8-171"><a href="#cb8-171" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="fu">c</span>(<span class="st">"Main"</span>, <span class="cn">NA</span>, <span class="st">"Robust"</span>),</span>
+<span id="cb8-172"><a href="#cb8-172" aria-hidden="true" tabindex="-1"></a>  <span class="at">is_bold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb8-173"><a href="#cb8-173" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-174"><a href="#cb8-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-175"><a href="#cb8-175" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(badge_data,</span>
+<span id="cb8-176"><a href="#cb8-176" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb8-177"><a href="#cb8-177" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb8-178"><a href="#cb8-178" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_badge =</span> <span class="st">"badge"</span>,</span>
+<span id="cb8-179"><a href="#cb8-179" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_bold"</span>,</span>
+<span id="cb8-180"><a href="#cb8-180" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb8-181"><a href="#cb8-181" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
+<span id="cb8-182"><a href="#cb8-182" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-183"><a href="#cb8-183" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
