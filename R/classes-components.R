@@ -24,7 +24,14 @@ ColumnSpec <- new_class(
     align = new_property(class_character, default = "left"),
     position = new_property(class_character, default = "left"),
     sortable = new_property(class_logical, default = TRUE),
-    options = new_property(class_list, default = list())
+    options = new_property(class_list, default = list()),
+    # Per-cell style mappings: column names containing style values
+    style_bold = new_property(class_character, default = NA_character_),
+    style_italic = new_property(class_character, default = NA_character_),
+    style_color = new_property(class_character, default = NA_character_),
+    style_bg = new_property(class_character, default = NA_character_),
+    style_badge = new_property(class_character, default = NA_character_),
+    style_icon = new_property(class_character, default = NA_character_)
   ),
   validator = function(self) {
     valid_types <- c("text", "numeric", "interval", "bar", "pvalue", "sparkline", "custom")
@@ -56,6 +63,12 @@ ColumnSpec <- new_class(
 #' @param position Column position: "left" or "right" of the forest plot
 #' @param sortable Whether sortable
 #' @param options Named list of type-specific options
+#' @param bold Column name containing logical values for per-cell bold styling
+#' @param italic Column name containing logical values for per-cell italic styling
+#' @param color Column name containing CSS color strings for per-cell text color
+#' @param bg Column name containing CSS color strings for per-cell background color
+#' @param badge Column name containing text for per-cell badges
+#' @param icon Column name containing emoji/unicode for per-cell icons
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -67,7 +80,13 @@ web_col <- function(
     align = NULL,
     position = c("left", "right"),
     sortable = TRUE,
-    options = list()) {
+    options = list(),
+    bold = NULL,
+    italic = NULL,
+    color = NULL,
+    bg = NULL,
+    badge = NULL,
+    icon = NULL) {
   type <- match.arg(type)
   position <- match.arg(position)
 
@@ -88,7 +107,13 @@ web_col <- function(
     align = align,
     position = position,
     sortable = sortable,
-    options = options
+    options = options,
+    style_bold = bold %||% NA_character_,
+    style_italic = italic %||% NA_character_,
+    style_color = color %||% NA_character_,
+    style_bg = bg %||% NA_character_,
+    style_badge = badge %||% NA_character_,
+    style_icon = icon %||% NA_character_
   )
 }
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
   import type { ForestStore } from "$stores/forestStore.svelte";
-  import type { WebTheme, ColumnSpec, Row, DisplayRow, GroupHeaderRow, DataRow } from "$types";
+  import type { WebTheme, ColumnSpec, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
   import EffectAxis from "$components/forest/EffectAxis.svelte";
   import SummaryDiamond from "$components/forest/SummaryDiamond.svelte";
@@ -13,6 +13,7 @@
   import CellBar from "$components/table/CellBar.svelte";
   import CellPvalue from "$components/table/CellPvalue.svelte";
   import CellSparkline from "$components/table/CellSparkline.svelte";
+  import CellContent from "$components/table/CellContent.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
   import {
     ROW_ODD_OPACITY,
@@ -224,6 +225,7 @@
                 {#if row.style?.badge}<span class="row-badge">{row.style.badge}</span>{/if}
               </div>
               {#each leftColumns as column (column.id)}
+                {@const cellStyle = getCellStyle(row, column)}
                 <div
                   class="webforest-col"
                   style:width={getColWidth(column)}
@@ -246,11 +248,11 @@
                       options={column.options?.sparkline}
                     />
                   {:else if column.type === "numeric"}
-                    {formatNumber(row.metadata[column.field] as number)}
+                    <CellContent value={formatNumber(row.metadata[column.field] as number)} {cellStyle} />
                   {:else if column.type === "interval"}
-                    {formatInterval(row.point, row.lower, row.upper)}
+                    <CellContent value={formatInterval(row.point, row.lower, row.upper)} {cellStyle} />
                   {:else}
-                    {row.metadata[column.field] ?? ""}
+                    <CellContent value={row.metadata[column.field] ?? ""} {cellStyle} />
                   {/if}
                 </div>
               {/each}
@@ -431,6 +433,7 @@
                 transition:slide={{ duration: 150 }}
               >
                 {#each rightColumns as column (column.id)}
+                  {@const cellStyle = getCellStyle(row, column)}
                   <div
                     class="webforest-col"
                     style:width={getColWidth(column)}
@@ -453,11 +456,11 @@
                         options={column.options?.sparkline}
                       />
                     {:else if column.type === "numeric"}
-                      {formatNumber(row.metadata[column.field] as number)}
+                      <CellContent value={formatNumber(row.metadata[column.field] as number)} {cellStyle} />
                     {:else if column.type === "interval"}
-                      {formatInterval(row.point, row.lower, row.upper)}
+                      <CellContent value={formatInterval(row.point, row.lower, row.upper)} {cellStyle} />
                     {:else}
-                      {row.metadata[column.field] ?? ""}
+                      <CellContent value={row.metadata[column.field] ?? ""} {cellStyle} />
                     {/if}
                   </div>
                 {/each}
@@ -574,6 +577,43 @@
     }
 
     return styles.join("; ");
+  }
+
+  // Get cell style for a specific column from row.cellStyles or column.styleMapping
+  function getCellStyle(row: Row, column: ColumnSpec): CellStyle | undefined {
+    // Check for pre-computed cellStyles from R serialization
+    if (row.cellStyles?.[column.field]) {
+      return row.cellStyles[column.field];
+    }
+
+    // Check styleMapping on column definition (resolved at render time from metadata)
+    if (column.styleMapping) {
+      const style: CellStyle = {};
+      const meta = row.metadata;
+
+      if (column.styleMapping.bold && meta[column.styleMapping.bold]) {
+        style.bold = Boolean(meta[column.styleMapping.bold]);
+      }
+      if (column.styleMapping.italic && meta[column.styleMapping.italic]) {
+        style.italic = Boolean(meta[column.styleMapping.italic]);
+      }
+      if (column.styleMapping.color && meta[column.styleMapping.color]) {
+        style.color = String(meta[column.styleMapping.color]);
+      }
+      if (column.styleMapping.bg && meta[column.styleMapping.bg]) {
+        style.bg = String(meta[column.styleMapping.bg]);
+      }
+      if (column.styleMapping.badge && meta[column.styleMapping.badge]) {
+        style.badge = String(meta[column.styleMapping.badge]);
+      }
+      if (column.styleMapping.icon && meta[column.styleMapping.icon]) {
+        style.icon = String(meta[column.styleMapping.icon]);
+      }
+
+      if (Object.keys(style).length > 0) return style;
+    }
+
+    return undefined;
   }
 </script>
 

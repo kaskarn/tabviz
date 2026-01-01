@@ -187,7 +187,16 @@ WebSpec <- new_class(
     theme = new_property(class_any, default = NULL),  # Set in web_spec()
     interaction = new_property(class_any, default = NULL),  # Set in web_spec()
     labels = new_property(class_any, default = NULL),  # PlotLabels for title/subtitle/etc
-    annotations = new_property(class_list, default = list())  # ReferenceLine, CustomAnnotation, etc.
+    annotations = new_property(class_list, default = list()),  # ReferenceLine, CustomAnnotation, etc.
+    # Row-level style column mappings
+    row_bold_col = new_property(class_character, default = NA_character_),
+    row_italic_col = new_property(class_character, default = NA_character_),
+    row_color_col = new_property(class_character, default = NA_character_),
+    row_bg_col = new_property(class_character, default = NA_character_),
+    row_badge_col = new_property(class_character, default = NA_character_),
+    row_icon_col = new_property(class_character, default = NA_character_),
+    row_indent_col = new_property(class_character, default = NA_character_),
+    row_type_col = new_property(class_character, default = NA_character_)
   ),
   validator = function(self) {
     # Validate required columns exist

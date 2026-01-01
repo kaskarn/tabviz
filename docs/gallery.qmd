@@ -278,11 +278,11 @@ styled_data <- tibble(
   lower = c(NA, 0.74, 0.76, 0.68, 0.62, NA, NA, 0.79, 0.61, NA, 0.73),
   upper = c(NA, 0.91, 1.02, 0.92, 0.93, NA, NA, 1.05, 0.85, NA, 0.88),
   events = c(NA, 856, 312, 298, 246, NA, NA, 445, 412, NA, 1268),
-  .row_type = c("header", rep("data", 4), "spacer", "header", "data", "data", "spacer", "summary"),
-  .row_bold = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE),
-  .row_indent = c(0, 1, 2, 2, 2, 0, 0, 1, 1, 0, 0),
-  .row_color = c("#2563eb", NA, NA, NA, NA, NA, "#2563eb", NA, NA, NA, "#16a34a"),
-  .row_badge = c(NA, "Primary", NA, NA, NA, NA, NA, NA, "Key", NA, "Pooled")
+  rtype = c("header", rep("data", 4), "spacer", "header", "data", "data", "spacer", "summary"),
+  rbold = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE),
+  rindent = c(0, 1, 2, 2, 2, 0, 0, 1, 1, 0, 0),
+  rcolor = c("#2563eb", NA, NA, NA, NA, NA, "#2563eb", NA, NA, NA, "#16a34a"),
+  rbadge = c(NA, "Primary", NA, NA, NA, NA, NA, NA, "Key", NA, "Pooled")
 )
 
 forest_plot(
@@ -293,11 +293,13 @@ forest_plot(
     col_numeric("events", "Events"),
     col_interval("HR (95% CI)")
   ),
+  row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
+  row_color = "rcolor", row_badge = "rbadge",
   theme = web_theme_modern(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio",
   title = "Row Styling Features",
-  subtitle = ".row_type, .row_bold, .row_indent, .row_color, .row_badge",
+  subtitle = "row_type, row_bold, row_indent, row_color, row_badge",
   caption = "Headers in blue, summary in green, with badges and indentation"
 )
 ```
@@ -398,7 +400,7 @@ trial_program <- tibble(
     c(0.82, 0.75, 0.70, 0.66, 0.65), c(0.85, 0.78, 0.73, 0.69, 0.68),
     c(0.88, 0.82, 0.78, 0.74, 0.73)
   ),
-  .row_badge = c("Lead Site", NA, NA, NA, NA, NA, "Top Recruiter", NA, NA)
+  badge = c("Lead Site", NA, NA, NA, NA, NA, "Top Recruiter", NA, NA)
 )
 
 forest_plot(
@@ -414,6 +416,7 @@ forest_plot(
     web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
     web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
   ),
+  row_badge = "badge",
   theme = web_theme_dark(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio",
@@ -451,11 +454,11 @@ exec_dashboard <- tibble(
     c(210, 215, 220, 224, 227, 230)
   ),
   effect = rep(1, 14), lower = rep(0.9, 14), upper = rep(1.1, 14),
-  .row_type = c("summary", "spacer", "header", rep("data", 3), "spacer",
-                "header", "data", "data", "spacer", "header", "data", "data"),
-  .row_bold = c(TRUE, FALSE, TRUE, rep(FALSE, 3), FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
-  .row_indent = c(0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1),
-  .row_color = c("#16a34a", NA, "#2563eb", NA, NA, NA, NA, "#2563eb", NA, NA, NA, "#2563eb", NA, NA)
+  rtype = c("summary", "spacer", "header", rep("data", 3), "spacer",
+            "header", "data", "data", "spacer", "header", "data", "data"),
+  rbold = c(TRUE, FALSE, TRUE, rep(FALSE, 3), FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
+  rindent = c(0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1),
+  rcolor = c("#16a34a", NA, "#2563eb", NA, NA, NA, NA, "#2563eb", NA, NA, NA, "#2563eb", NA, NA)
 )
 
 webtable(
@@ -469,6 +472,7 @@ webtable(
     col_numeric("satisfaction", "eNPS", position = "right"),
     col_sparkline("trend", "6M Trend", position = "right")
   ),
+  row_type = "rtype", row_bold = "rbold", row_indent = "rindent", row_color = "rcolor",
   theme = web_theme_modern(),
   title = "Executive Dashboard",
   subtitle = "Table-only with hierarchical org structure",
@@ -494,9 +498,9 @@ meta_analysis <- tibble(
   weight = c(NA, 18.5, 22.1, 15.8, 24.2, 19.4, NA, 100),
   n = c(NA, 450, 680, 320, 890, 520, NA, 2860),
   i2 = c(NA, NA, NA, NA, NA, NA, NA, 32),
-  .row_type = c("header", rep("data", 5), "spacer", "summary"),
-  .row_bold = c(TRUE, rep(FALSE, 5), FALSE, TRUE),
-  .row_indent = c(0, 1, 1, 1, 1, 1, 0, 0)
+  rtype = c("header", rep("data", 5), "spacer", "summary"),
+  rbold = c(TRUE, rep(FALSE, 5), FALSE, TRUE),
+  rindent = c(0, 1, 1, 1, 1, 1, 0, 0)
 )
 
 forest_plot(
@@ -511,6 +515,7 @@ forest_plot(
   annotations = list(
     forest_refline(0.75, label = "Pooled", style = "solid", color = "#2563eb")
   ),
+  row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   theme = web_theme_lancet(),
   scale = "log", null_value = 1,
   axis_range = c(0.4, 1.2),
@@ -556,7 +561,7 @@ full_monty <- tibble(
     c(0.88, 0.82, 0.78, 0.74), c(0.92, 0.88, 0.84, 0.78),
     c(0.84, 0.78, 0.73, 0.69)
   ),
-  .row_badge = c("Lead", NA, "Pivotal", NA, NA, NA, "Fast Track")
+  badge = c("Lead", NA, "Pivotal", NA, NA, NA, "Fast Track")
 )
 
 # Custom theme
@@ -587,6 +592,7 @@ forest_plot(
   annotations = list(
     forest_refline(0.75, label = "Target", style = "dashed", color = "#a855f7")
   ),
+  row_badge = "badge",
   theme = monty_theme,
   scale = "log", null_value = 1,
   axis_range = c(0.4, 1.2),
@@ -627,9 +633,9 @@ jama_data <- tibble(
   upper = c(0.85, NA, NA, 0.84, 0.96, NA, NA, 0.86, 0.93, NA, NA, 1.00, 0.89, 0.86),
   n = c(8500, NA, NA, 4200, 4300, NA, NA, 5200, 3300, NA, NA, 2800, 3400, 2300),
   p_int = c(NA, NA, NA, NA, 0.18, NA, NA, NA, 0.42, NA, NA, NA, NA, 0.03),
-  .row_type = c("summary", "spacer", "header", "data", "data", "spacer", "header", "data", "data", "spacer", "header", "data", "data", "data"),
-  .row_bold = c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE),
-  .row_indent = c(0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1)
+  rtype = c("summary", "spacer", "header", "data", "data", "spacer", "header", "data", "data", "spacer", "header", "data", "data", "data"),
+  rbold = c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE),
+  rindent = c(0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1)
 )
 
 forest_plot(
@@ -641,6 +647,7 @@ forest_plot(
     col_interval("HR (95% CI)"),
     col_pvalue("p_int", "P Interaction")
   ),
+  row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   theme = web_theme_jama(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",
@@ -671,9 +678,9 @@ lancet_data <- tibble(
   lower = c(NA, 0.66, NA, NA, 0.72, 0.61, NA, NA, 0.76, 0.74),
   upper = c(NA, 0.83, NA, NA, 0.94, 0.81, NA, NA, 1.02, 0.98),
   events = c(NA, "894/1212", NA, NA, "312/398", "582/814", NA, NA, "445/508", NA),
-  .row_type = c("header", "data", "spacer", "header", "data", "data", "spacer", "header", "data", "data"),
-  .row_bold = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
-  .row_indent = c(0, 1, 0, 0, 1, 1, 0, 0, 1, 1)
+  rtype = c("header", "data", "spacer", "header", "data", "data", "spacer", "header", "data", "data"),
+  rbold = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
+  rindent = c(0, 1, 0, 0, 1, 1, 0, 0, 1, 1)
 )
 
 forest_plot(
@@ -684,6 +691,7 @@ forest_plot(
     col_text("events", "Events (Tx/Ctrl)"),
     col_interval("HR (95% CI)")
   ),
+  row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   theme = web_theme_lancet(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",

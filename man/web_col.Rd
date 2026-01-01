@@ -12,7 +12,13 @@ web_col(
   align = NULL,
   position = c("left", "right"),
   sortable = TRUE,
-  options = list()
+  options = list(),
+  bold = NULL,
+  italic = NULL,
+  color = NULL,
+  bg = NULL,
+  badge = NULL,
+  icon = NULL
 )
 }
 \arguments{
@@ -31,6 +37,18 @@ web_col(
 \item{sortable}{Whether sortable}
 
 \item{options}{Named list of type-specific options}
+
+\item{bold}{Column name containing logical values for per-cell bold styling}
+
+\item{italic}{Column name containing logical values for per-cell italic styling}
+
+\item{color}{Column name containing CSS color strings for per-cell text color}
+
+\item{bg}{Column name containing CSS color strings for per-cell background color}
+
+\item{badge}{Column name containing text for per-cell badges}
+
+\item{icon}{Column name containing emoji/unicode for per-cell icons}
 }
 \value{
 A ColumnSpec object

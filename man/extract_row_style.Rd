@@ -2,11 +2,19 @@
 % Please edit documentation in R/utils-serialize.R
 \name{extract_row_style}
 \alias{extract_row_style}
-\title{Extract row style from .row_* columns}
+\title{Extract row style from explicit column mappings}
 \usage{
-extract_row_style(row)
+extract_row_style(row, spec)
+}
+\arguments{
+\item{row}{A single row of data}
+
+\item{spec}{The WebSpec containing row_*_col mappings}
+}
+\value{
+A list of style properties or NULL if none set
 }
 \description{
-Extract row style from .row_* columns
+Extract row style from explicit column mappings
 }
 \keyword{internal}

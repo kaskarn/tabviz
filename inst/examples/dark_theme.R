@@ -23,8 +23,8 @@ oncology_data <- tibble(
   median_fu = c(60.0, 57.7, 51.1, 42.3, 32.1, 27.4, 18.0, 39.1, 29.5),
   quality = c("High", "High", "High", "High", "Moderate", "High", "High", "High", "High"),
   pvalue = c(0.001, 0.001, 0.001, 0.001, 0.034, 0.001, 0.057, 0.001, 0.005),
-  .row_bold = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  .row_badge = c("Primary", NA, NA, NA, NA, NA, NA, NA, NA)
+  row_bold = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  row_badge = c("Primary", NA, NA, NA, NA, NA, NA, NA, NA)
 )
 
 # Create dark theme forest plot
@@ -43,6 +43,8 @@ forest_plot(
     col_interval("HR (95% CI)"),
     col_pvalue("pvalue", "P")
   ),
+  row_bold = "row_bold",
+  row_badge = "row_badge",
   theme = web_theme_dark(),
   scale = "log",
   null_value = 1,

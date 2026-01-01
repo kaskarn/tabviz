@@ -16,6 +16,26 @@ export interface RowStyle {
   badge?: string | null;
 }
 
+// Per-cell styling (subset of RowStyle applicable to individual cells)
+export interface CellStyle {
+  bold?: boolean;
+  italic?: boolean;
+  color?: string | null;
+  bg?: string | null;
+  badge?: string | null;
+  icon?: string | null;
+}
+
+// Maps style properties to column names containing values
+export interface StyleMapping {
+  bold?: string;
+  italic?: string;
+  color?: string;
+  bg?: string;
+  badge?: string;
+  icon?: string;
+}
+
 export interface Row {
   id: string;
   label: string;
@@ -25,6 +45,8 @@ export interface Row {
   groupId?: string | null;
   metadata: Record<string, unknown>;
   style?: RowStyle;
+  // Per-cell styles keyed by column field name
+  cellStyles?: Record<string, CellStyle>;
 }
 
 export interface Group {
@@ -116,6 +138,8 @@ export interface ColumnSpec {
   sortable: boolean;
   options?: ColumnOptions;
   isGroup: false;
+  // Style mapping: column names containing per-cell style values
+  styleMapping?: StyleMapping;
 }
 
 export interface ColumnGroup {

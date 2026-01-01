@@ -22,6 +22,14 @@ web_spec(
   subtitle = NULL,
   caption = NULL,
   footnote = NULL,
+  row_bold = NULL,
+  row_italic = NULL,
+  row_color = NULL,
+  row_bg = NULL,
+  row_badge = NULL,
+  row_icon = NULL,
+  row_indent = NULL,
+  row_type = NULL,
   theme = web_theme_default(),
   interaction = web_interaction()
 )
@@ -66,6 +74,22 @@ to innermost, e.g., \code{c("region", "country")} creates region > country
 \item{caption}{Caption (displayed below the plot)}
 
 \item{footnote}{Footnote (displayed below caption, italicized)}
+
+\item{row_bold}{Column name for row-level bold styling (logical values)}
+
+\item{row_italic}{Column name for row-level italic styling (logical values)}
+
+\item{row_color}{Column name for row text color (CSS color strings)}
+
+\item{row_bg}{Column name for row background color (CSS color strings)}
+
+\item{row_badge}{Column name for label badges (text values)}
+
+\item{row_icon}{Column name for label icons (emoji/unicode)}
+
+\item{row_indent}{Column name for row indentation (numeric values)}
+
+\item{row_type}{Column name for row type ("data", "header", "summary", "spacer")}
 
 \item{theme}{Theme object (use \verb{web_theme_*()} functions)}
 

@@ -13,7 +13,13 @@ ColumnSpec(
   align = "left",
   position = "left",
   sortable = TRUE,
-  options = list()
+  options = list(),
+  style_bold = NA_character_,
+  style_italic = NA_character_,
+  style_color = NA_character_,
+  style_bg = NA_character_,
+  style_badge = NA_character_,
+  style_icon = NA_character_
 )
 }
 \arguments{

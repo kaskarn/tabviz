@@ -25,6 +25,14 @@
 #' @param subtitle Subtitle (displayed below the title)
 #' @param caption Caption (displayed below the plot)
 #' @param footnote Footnote (displayed below caption, italicized)
+#' @param row_bold Column name for row-level bold styling (logical values)
+#' @param row_italic Column name for row-level italic styling (logical values)
+#' @param row_color Column name for row text color (CSS color strings)
+#' @param row_bg Column name for row background color (CSS color strings)
+#' @param row_badge Column name for label badges (text values)
+#' @param row_icon Column name for label icons (emoji/unicode)
+#' @param row_indent Column name for row indentation (numeric values)
+#' @param row_type Column name for row type ("data", "header", "summary", "spacer")
 #' @param theme Theme object (use `web_theme_*()` functions)
 #' @param interaction Interaction settings (use `web_interaction()`)
 #'
@@ -79,6 +87,14 @@ web_spec <- function(
     subtitle = NULL,
     caption = NULL,
     footnote = NULL,
+    row_bold = NULL,
+    row_italic = NULL,
+    row_color = NULL,
+    row_bg = NULL,
+    row_badge = NULL,
+    row_icon = NULL,
+    row_indent = NULL,
+    row_type = NULL,
     theme = web_theme_default(),
     interaction = web_interaction()) {
   # Match scale
@@ -266,7 +282,15 @@ web_spec <- function(
     theme = theme,
     interaction = interaction,
     labels = labels,
-    annotations = annotations_list
+    annotations = annotations_list,
+    row_bold_col = row_bold %||% NA_character_,
+    row_italic_col = row_italic %||% NA_character_,
+    row_color_col = row_color %||% NA_character_,
+    row_bg_col = row_bg %||% NA_character_,
+    row_badge_col = row_badge %||% NA_character_,
+    row_icon_col = row_icon %||% NA_character_,
+    row_indent_col = row_indent %||% NA_character_,
+    row_type_col = row_type %||% NA_character_
   )
 }
 

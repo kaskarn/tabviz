@@ -1,5 +1,29 @@
 # webforest (development version)
 
+## 0.0.0.9004
+
+### New Features
+
+* **Explicit row styling API**: New `row_*` parameters in `forest_plot()`/`web_spec()` replace magic `.row_*` column naming convention. Use any column name and map it explicitly:
+  - `row_type`, `row_bold`, `row_italic`, `row_indent`, `row_color`, `row_bg`, `row_badge`, `row_icon`
+  - Example: `forest_plot(data, row_bold = "is_primary", row_badge = "sig_label")`
+
+* **Fluent styling API**: New `set_row_style()` and `set_column_style()` functions for piped modifications:
+  ```r
+  spec |> set_row_style(bold = "is_primary", badge = "significance")
+  ```
+
+* **Per-cell styling**: Column specs now support style mappings for cell-level formatting:
+  ```r
+  col_text("study", badge = "sig_col", color = "status_color")
+  ```
+
+### Breaking Changes
+
+* Removed support for `.row_*` magic columns (e.g., `.row_bold`, `.row_badge`). Migrate by:
+  1. Rename columns to remove the dot prefix (`.row_bold` → `is_bold`)
+  2. Add explicit parameters: `forest_plot(..., row_bold = "is_bold")`
+
 ## 0.0.0.9003
 
 ### New Features

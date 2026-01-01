@@ -48,13 +48,15 @@ serialize_data <- function(spec, include_forest = TRUE) {
       NULL
     }
 
-    # Build metadata from all columns (excluding .row_* columns)
-    row_style_cols <- grepl("^\\.row_", names(row))
-    metadata <- as.list(row[, !row_style_cols, drop = FALSE])
-    names(metadata) <- names(row)[!row_style_cols]
+    # Build metadata from all columns
+    metadata <- as.list(row)
+    names(metadata) <- names(row)
 
-    # Extract .row_* columns into style object
-    style <- extract_row_style(row)
+    # Extract row style from explicit column mappings
+    style <- extract_row_style(row, spec)
+
+    # Build per-cell styles from column styleMapping
+    cell_styles <- build_cell_styles(row, spec@columns)
 
     result <- list(
       id = paste0("row_", i),
@@ -69,6 +71,11 @@ serialize_data <- function(spec, include_forest = TRUE) {
     # Only include style if any style properties are set
     if (!is.null(style)) {
       result$style <- style
+    }
+
+    # Only include cellStyles if any cell styles are set
+    if (length(cell_styles) > 0) {
+      result$cellStyles <- cell_styles
     }
 
     result
@@ -144,6 +151,7 @@ serialize_data <- function(spec, include_forest = TRUE) {
 #' Serialize a ColumnSpec or ColumnGroup
 #' @keywords internal
 serialize_column <- function(col) {
+
   # Handle ColumnGroup
   if (S7_inherits(col, ColumnGroup)) {
     return(list(
@@ -171,6 +179,19 @@ serialize_column <- function(col) {
   # Include options if present
   if (length(col@options) > 0) {
     result$options <- col@options
+  }
+
+  # Build styleMapping from style_* properties
+  style_mapping <- list()
+  if (!is.na(col@style_bold)) style_mapping$bold <- col@style_bold
+  if (!is.na(col@style_italic)) style_mapping$italic <- col@style_italic
+  if (!is.na(col@style_color)) style_mapping$color <- col@style_color
+  if (!is.na(col@style_bg)) style_mapping$bg <- col@style_bg
+  if (!is.na(col@style_badge)) style_mapping$badge <- col@style_badge
+  if (!is.na(col@style_icon)) style_mapping$icon <- col@style_icon
+
+  if (length(style_mapping) > 0) {
+    result$styleMapping <- style_mapping
   }
 
   result
@@ -309,50 +330,52 @@ compute_group_depths <- function(groups) {
   depths
 }
 
-#' Extract row style from .row_* columns
+#' Extract row style from explicit column mappings
+#'
+#' @param row A single row of data
+#' @param spec The WebSpec containing row_*_col mappings
+#' @return A list of style properties or NULL if none set
 #' @keywords internal
-extract_row_style <- function(row) {
+extract_row_style <- function(row, spec) {
   style <- list()
 
-  # .row_type: "data", "header", "summary", "spacer"
-  if (".row_type" %in% names(row) && !is.na(row[[".row_type"]])) {
-    style$type <- as.character(row[[".row_type"]])
+  # Helper to get value from explicit column mapping
+  get_style_val <- function(col_name, type = "character") {
+    if (is.na(col_name) || !col_name %in% names(row)) return(NULL)
+    val <- row[[col_name]]
+    if (is.na(val)) return(NULL)
+    switch(type,
+      logical = as.logical(val),
+      numeric = as.numeric(val),
+      as.character(val)
+    )
   }
 
-  # .row_bold: logical
-  if (".row_bold" %in% names(row) && !is.na(row[[".row_bold"]])) {
-    style$bold <- as.logical(row[[".row_bold"]])
-  }
+  # Check explicit column mappings
 
-  # .row_italic: logical
-  if (".row_italic" %in% names(row) && !is.na(row[[".row_italic"]])) {
-    style$italic <- as.logical(row[[".row_italic"]])
-  }
+  val <- get_style_val(spec@row_type_col, "character")
+  if (!is.null(val)) style$type <- val
 
-  # .row_color: character (CSS color)
-  if (".row_color" %in% names(row) && !is.na(row[[".row_color"]])) {
-    style$color <- as.character(row[[".row_color"]])
-  }
+  val <- get_style_val(spec@row_bold_col, "logical")
+  if (!is.null(val)) style$bold <- val
 
-  # .row_bg: character (CSS background color)
-  if (".row_bg" %in% names(row) && !is.na(row[[".row_bg"]])) {
-    style$bg <- as.character(row[[".row_bg"]])
-  }
+  val <- get_style_val(spec@row_italic_col, "logical")
+  if (!is.null(val)) style$italic <- val
 
-  # .row_indent: numeric (indentation level)
-  if (".row_indent" %in% names(row) && !is.na(row[[".row_indent"]])) {
-    style$indent <- as.numeric(row[[".row_indent"]])
-  }
+  val <- get_style_val(spec@row_color_col, "character")
+  if (!is.null(val)) style$color <- val
 
-  # .row_icon: character (emoji or icon)
-  if (".row_icon" %in% names(row) && !is.na(row[[".row_icon"]])) {
-    style$icon <- as.character(row[[".row_icon"]])
-  }
+  val <- get_style_val(spec@row_bg_col, "character")
+  if (!is.null(val)) style$bg <- val
 
-  # .row_badge: character (badge text)
-  if (".row_badge" %in% names(row) && !is.na(row[[".row_badge"]])) {
-    style$badge <- as.character(row[[".row_badge"]])
-  }
+  val <- get_style_val(spec@row_indent_col, "numeric")
+  if (!is.null(val)) style$indent <- val
+
+  val <- get_style_val(spec@row_icon_col, "character")
+  if (!is.null(val)) style$icon <- val
+
+  val <- get_style_val(spec@row_badge_col, "character")
+  if (!is.null(val)) style$badge <- val
 
   # Return NULL if no style properties set
   if (length(style) == 0) {
@@ -360,6 +383,65 @@ extract_row_style <- function(row) {
   }
 
   style
+}
+
+#' Build per-cell styles from column styleMapping
+#' @keywords internal
+build_cell_styles <- function(row, columns) {
+  cell_styles <- list()
+
+  for (col in columns) {
+    # Skip ColumnGroups - process their children instead
+    if (S7_inherits(col, ColumnGroup)) {
+      nested_styles <- build_cell_styles(row, col@columns)
+      for (field in names(nested_styles)) {
+        cell_styles[[field]] <- nested_styles[[field]]
+      }
+      next
+    }
+
+    # Skip non-ColumnSpec objects
+    if (!S7_inherits(col, ColumnSpec)) next
+
+    field <- col@field
+    cs <- list()
+
+    # Helper to safely get value from column
+    get_val <- function(col_name, type = "character") {
+      if (is.na(col_name) || !col_name %in% names(row)) return(NULL)
+      val <- row[[col_name]]
+      if (is.na(val)) return(NULL)
+      switch(type,
+        logical = as.logical(val),
+        as.character(val)
+      )
+    }
+
+    # Check each style mapping
+    val <- get_val(col@style_bold, "logical")
+    if (!is.null(val)) cs$bold <- val
+
+    val <- get_val(col@style_italic, "logical")
+    if (!is.null(val)) cs$italic <- val
+
+    val <- get_val(col@style_color, "character")
+    if (!is.null(val)) cs$color <- val
+
+    val <- get_val(col@style_bg, "character")
+    if (!is.null(val)) cs$bg <- val
+
+    val <- get_val(col@style_badge, "character")
+    if (!is.null(val)) cs$badge <- val
+
+    val <- get_val(col@style_icon, "character")
+    if (!is.null(val)) cs$icon <- val
+
+    if (length(cs) > 0) {
+      cell_styles[[field]] <- cs
+    }
+  }
+
+  cell_styles
 }
 
 #' Serialize annotation objects

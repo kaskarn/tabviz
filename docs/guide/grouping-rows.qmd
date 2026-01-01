@@ -60,18 +60,18 @@ forest_plot(regional_data,
 
 Nested rows are automatically indented and shaded by depth.
 
-## Row Styling with Metadata Columns
+## Row Styling
 
-Control row appearance using special `.row_*` columns in your data:
+Control row appearance using the `row_*` parameters. Each parameter takes a column name containing the style values:
 
-| Column | Description | Values |
-|--------|-------------|--------|
-| `.row_type` | Row type | `"data"`, `"header"`, `"summary"`, `"spacer"` |
-| `.row_bold` | Bold text | `TRUE` / `FALSE` |
-| `.row_italic` | Italic text | `TRUE` / `FALSE` |
-| `.row_indent` | Indentation level | `0`, `1`, `2`, ... |
-| `.row_color` | Custom text color | Hex color string |
-| `.row_badge` | Badge label | Text to show in badge |
+| Parameter | Description | Column Values |
+|-----------|-------------|---------------|
+| `row_type` | Row type | `"data"`, `"header"`, `"summary"`, `"spacer"` |
+| `row_bold` | Bold text | `TRUE` / `FALSE` |
+| `row_italic` | Italic text | `TRUE` / `FALSE` |
+| `row_indent` | Indentation level | `0`, `1`, `2`, ... |
+| `row_color` | Custom text color | Hex color string |
+| `row_badge` | Badge label | Text to show in badge |
 
 ### Example: Styled Meta-Analysis
 
@@ -88,14 +88,14 @@ styled_data <- data.frame(
   lower = c(NA, 0.74, 0.75, 0.84, 0.82, NA, NA, 0.59, 0.51, 0.57, NA, 0.73),
   upper = c(NA, 0.99, 0.97, 1.03, 0.95, NA, NA, 0.82, 0.72, 0.76, NA, 0.84),
   n = c(NA, 7020, 10142, 17160, 34322, NA, NA, 4401, 4304, 8705, NA, 43027),
-  .row_type = c(
+  rtype = c(
     "header", "data", "data", "data", "summary", "spacer",
     "header", "data", "data", "summary", "spacer", "summary"
   ),
-  .row_bold = c(TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE),
-  .row_indent = c(0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0),
-  .row_color = c("#0369a1", NA, NA, NA, "#0369a1", NA, "#0369a1", NA, NA, "#0369a1", NA, "#166534"),
-  .row_badge = c(NA, NA, NA, NA, "n=3", NA, NA, NA, NA, "n=2", NA, "n=5")
+  rbold = c(TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE, TRUE, FALSE, TRUE),
+  rindent = c(0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0),
+  rcolor = c("#0369a1", NA, NA, NA, "#0369a1", NA, "#0369a1", NA, NA, "#0369a1", NA, "#166534"),
+  rbadge = c(NA, NA, NA, NA, "n=3", NA, NA, NA, NA, "n=2", NA, "n=5")
 )
 
 forest_plot(styled_data,
@@ -105,6 +105,11 @@ forest_plot(styled_data,
     col_numeric("n", "N", position = "right"),
     col_interval("HR (95% CI)", position = "right")
   ),
+  row_type = "rtype",
+  row_bold = "rbold",
+  row_indent = "rindent",
+  row_color = "rcolor",
+  row_badge = "rbadge",
   theme = web_theme_modern(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",
@@ -117,20 +122,18 @@ forest_plot(styled_data,
 
 ### Header Rows
 
-Section headers that span the full width:
+Section headers that span the full width. Header rows don't display forest plot elements (point estimates, intervals).
 
 ```r
-.row_type = "header"
+row_type = "rtype"  # where data$rtype contains "header"
 ```
-
-Header rows don't display forest plot elements (point estimates, intervals).
 
 ### Summary Rows
 
 Display a diamond shape instead of a point estimate:
 
 ```r
-.row_type = "summary"
+row_type = "rtype"  # where data$rtype contains "summary"
 ```
 
 ### Spacer Rows
@@ -138,16 +141,12 @@ Display a diamond shape instead of a point estimate:
 Empty rows for visual separation:
 
 ```r
-.row_type = "spacer"
+row_type = "rtype"  # where data$rtype contains "spacer"
 ```
 
 ### Data Rows
 
-Normal study rows (default):
-
-```r
-.row_type = "data"  # or omit the column
-```
+Normal study rows (default when type is `"data"` or column is not specified).
 
 ## Badges
 
@@ -159,13 +158,16 @@ badge_data <- data.frame(
   or = c(0.82, 0.85, 0.79),
   lower = c(0.70, 0.72, 0.66),
   upper = c(0.96, 1.00, 0.95),
-  .row_badge = c("Main", NA, "Robust"),
-  .row_bold = c(TRUE, FALSE, FALSE)
+  badge = c("Main", NA, "Robust"),
+  is_bold = c(TRUE, FALSE, FALSE)
 )
 
 forest_plot(badge_data,
   point = "or", lower = "lower", upper = "upper",
-  label = "study", null_value = 1,
+  label = "study",
+  row_badge = "badge",
+  row_bold = "is_bold",
+  null_value = 1,
   theme = web_theme_modern()
 )
 ```

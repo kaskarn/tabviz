@@ -1,11 +1,11 @@
-# Example: Row-level styling with .row_* columns
+# Example: Row-level styling with row_* parameters
 # Demonstrates: headers, summaries, bold/italic, colors, indentation, icons, badges
 
 library(webforest)
 library(dplyr)
 
 # Create a structured meta-analysis table with row-level styling
-# Using .row_* columns to control appearance
+# Style columns are referenced by name in web_spec/forest_plot
 styled_data <- tibble(
   study = c(
     "Cardiovascular Outcomes",
@@ -26,33 +26,28 @@ styled_data <- tibble(
   upper = c(NA, 0.99, 0.97, 1.03, 0.95, NA, NA, 0.82, 0.72, 0.76, NA, 0.84),
   n = c(NA, 7020, 10142, 17160, 34322, NA, NA, 4401, 4304, 8705, NA, 43027),
 
-  # Row styling columns
-  .row_type = c(
+  # Row styling columns (regular columns, referenced by name)
+  row_type = c(
     "header", "data", "data", "data", "summary", "spacer",
     "header", "data", "data", "summary", "spacer",
     "summary"
   ),
-  .row_bold = c(
+  row_bold = c(
     TRUE, FALSE, FALSE, FALSE, TRUE, FALSE,
     TRUE, FALSE, FALSE, TRUE, FALSE,
     TRUE
   ),
-  .row_indent = c(
+  row_indent = c(
     0, 1, 1, 1, 1, 0,
     0, 1, 1, 1, 0,
     0
   ),
-  .row_color = c(
+  row_color = c(
     "#0369a1", NA, NA, NA, "#0369a1", NA,
     "#0369a1", NA, NA, "#0369a1", NA,
     "#166534"
   ),
-  .row_icon = c(
-    NA, NA, NA, NA, NA, NA,
-    NA, NA, NA, NA, NA,
-    NA
-  ),
-  .row_badge = c(
+  row_badge = c(
     NA, NA, NA, NA, "n=3", NA,
     NA, NA, NA, "n=2", NA,
     "n=5"
@@ -70,6 +65,12 @@ forest_plot(
     col_numeric("n", "N", position = "right"),
     col_interval("HR (95% CI)", position = "right")
   ),
+  # Row styling: reference columns by name
+  row_type = "row_type",
+  row_bold = "row_bold",
+  row_indent = "row_indent",
+  row_color = "row_color",
+  row_badge = "row_badge",
   theme = web_theme_modern(),
   scale = "log",
   null_value = 1,
