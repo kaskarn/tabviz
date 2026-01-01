@@ -26,18 +26,20 @@
   });
 </script>
 
-<div class="cell-bar">
-  <div class="bar-track">
-    <div
-      class="bar-fill"
-      style:width="{percentage()}%"
-      style:background-color={barColor}
-    ></div>
+{#if value !== undefined && value !== null}
+  <div class="cell-bar">
+    <div class="bar-track">
+      <div
+        class="bar-fill"
+        style:width="{percentage()}%"
+        style:background-color={barColor}
+      ></div>
+    </div>
+    {#if showLabel}
+      <span class="bar-label">{formattedValue()}</span>
+    {/if}
   </div>
-  {#if showLabel}
-    <span class="bar-label">{formattedValue()}</span>
-  {/if}
-</div>
+{/if}
 
 <style>
   .cell-bar {

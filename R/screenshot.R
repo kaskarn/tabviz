@@ -78,9 +78,12 @@ screenshot_html <- function(html_file, output_file = NULL, width = 1200,
   )
 
   if (result$status != 0) {
+    # Escape curly braces in error message to prevent cli interpolation
+    err_msg <- gsub("\\{", "{{", trimws(result$stderr))
+    err_msg <- gsub("\\}", "}}", err_msg)
     cli::cli_abort(c(
       "Screenshot failed",
-      "x" = trimws(result$stderr),
+      "x" = err_msg,
       "i" = "Make sure Puppeteer is installed: {.code npm install} in srcjs/"
     ))
   }

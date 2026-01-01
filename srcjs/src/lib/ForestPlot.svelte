@@ -318,12 +318,12 @@
           viewBox="0 0 {layout.forestWidth} {layout.headerHeight + layout.plotHeight + layout.axisHeight}"
           style="overflow: visible;"
         >
-          <!-- Header border -->
+          <!-- Header border (-1px to align with CSS border-bottom) -->
           <line
             x1={0}
             x2={layout.forestWidth}
-            y1={layout.headerHeight}
-            y2={layout.headerHeight}
+            y1={layout.headerHeight - 1}
+            y2={layout.headerHeight - 1}
             stroke="var(--wf-border, #e2e8f0)"
             stroke-width="1"
             shape-rendering="crispEdges"
@@ -345,16 +345,35 @@
           {/each}
 
           <!-- Row gridlines (extending table borders into plot) -->
-          {#each displayRows as _, i}
-            <line
-              x1={0}
-              x2={layout.forestWidth}
-              y1={layout.headerHeight + (layout.rowPositions[i] ?? i * layout.rowHeight) + (layout.rowHeights[i] ?? layout.rowHeight)}
-              y2={layout.headerHeight + (layout.rowPositions[i] ?? i * layout.rowHeight) + (layout.rowHeights[i] ?? layout.rowHeight)}
-              stroke="var(--wf-border, #e2e8f0)"
-              stroke-width="1"
-              shape-rendering="crispEdges"
-            />
+          {#each displayRows as displayRow, i}
+            {@const rowY = layout.rowPositions[i] ?? i * layout.rowHeight}
+            {@const rowH = layout.rowHeights[i] ?? layout.rowHeight}
+            {@const isSummaryRow = displayRow.type === 'data' && displayRow.row.style?.type === 'summary'}
+            {@const isSpacerRow = displayRow.type === 'data' && displayRow.row.style?.type === 'spacer'}
+            <!-- Top border for summary rows (2px to match CSS) -->
+            {#if isSummaryRow}
+              <line
+                x1={0}
+                x2={layout.forestWidth}
+                y1={layout.headerHeight + rowY}
+                y2={layout.headerHeight + rowY}
+                stroke="var(--wf-border, #e2e8f0)"
+                stroke-width="2"
+                shape-rendering="crispEdges"
+              />
+            {/if}
+            <!-- Bottom border (-1px to align with CSS border-bottom) -->
+            {#if !isSpacerRow}
+              <line
+                x1={0}
+                x2={layout.forestWidth}
+                y1={layout.headerHeight + rowY + rowH - 1}
+                y2={layout.headerHeight + rowY + rowH - 1}
+                stroke="var(--wf-border, #e2e8f0)"
+                stroke-width="1"
+                shape-rendering="crispEdges"
+              />
+            {/if}
           {/each}
 
           <!-- Null value reference line (spans full plot height) -->
@@ -590,18 +609,23 @@
   ): string {
     const classes = ["webforest-table-row"];
 
+    // Styled row types (mutually exclusive with alternating banding)
+    const isStyledRow = style?.type === "header" || style?.type === "summary" || style?.type === "spacer";
+
     if (style?.type === "header") classes.push("row-header");
     if (style?.type === "summary") classes.push("row-summary");
     if (style?.type === "spacer") classes.push("row-spacer");
     if (style?.bold) classes.push("row-bold");
     if (style?.italic) classes.push("row-italic");
 
-    // Add depth-based banding class when there are groups
-    if (depth && depth > 0) {
-      classes.push(`row-depth-${Math.min(depth, 4)}`);
-    } else if (!hasGroups && idx !== undefined) {
-      // Default alternating banding when no groups
-      if (idx % 2 === 1) classes.push("row-odd");
+    // Add depth-based banding class when there are groups (skip for styled rows)
+    if (!isStyledRow) {
+      if (depth && depth > 0) {
+        classes.push(`row-depth-${Math.min(depth, 4)}`);
+      } else if (!hasGroups && idx !== undefined) {
+        // Default alternating banding when no groups
+        if (idx % 2 === 1) classes.push("row-odd");
+      }
     }
 
     return classes.join(" ");
@@ -812,6 +836,11 @@
 
   .row-spacer {
     height: calc(var(--wf-row-height) / 2);
+    border-bottom: none;
+  }
+
+  .row-spacer .webforest-label-col,
+  .row-spacer .webforest-col {
     border-bottom: none;
   }
 
