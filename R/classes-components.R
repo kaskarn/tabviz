@@ -11,6 +11,12 @@
 #' @param position Column position relative to plot: "left" or "right"
 #' @param sortable Whether the column is sortable
 #' @param options Named list of type-specific options
+#' @param style_bold Column name containing logical values for per-cell bold styling
+#' @param style_italic Column name containing logical values for per-cell italic styling
+#' @param style_color Column name containing CSS color strings for per-cell text color
+#' @param style_bg Column name containing CSS color strings for per-cell background color
+#' @param style_badge Column name containing text for per-cell badges
+#' @param style_icon Column name containing emoji/unicode for per-cell icons
 #'
 #' @export
 ColumnSpec <- new_class(

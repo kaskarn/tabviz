@@ -40,6 +40,18 @@ ColumnSpec(
 \item{sortable}{Whether the column is sortable}
 
 \item{options}{Named list of type-specific options}
+
+\item{style_bold}{Column name containing logical values for per-cell bold styling}
+
+\item{style_italic}{Column name containing logical values for per-cell italic styling}
+
+\item{style_color}{Column name containing CSS color strings for per-cell text color}
+
+\item{style_bg}{Column name containing CSS color strings for per-cell background color}
+
+\item{style_badge}{Column name containing text for per-cell badges}
+
+\item{style_icon}{Column name containing emoji/unicode for per-cell icons}
 }
 \description{
 ColumnSpec: Specification for a table column

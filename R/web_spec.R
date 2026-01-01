@@ -4,6 +4,8 @@
 #' a forest plot, interactive table, or other visualizations. This is
 #' the recommended way to prepare data for rendering.
 #'
+#' @importFrom stats complete.cases
+#'
 #' @param data A data.frame, data.table, or tibble
 #' @param point Column name for point estimates (unquoted or string)
 #' @param lower Column name for lower bounds of intervals
