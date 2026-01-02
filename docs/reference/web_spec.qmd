@@ -1,0 +1,259 @@
+---
+title: "Specification Objects"
+---
+
+```{r}
+#| include: false
+library(webforest)
+```
+
+Functions for creating specification objects that define forest plot structure.
+
+## Core Specification
+
+### web_spec {#web_spec}
+
+Create a web specification for table visualizations. This is the core data structure that can be rendered as a forest plot or table.
+
+```r
+web_spec(
+  data,
+  point,
+  lower,
+  upper,
+  label = NULL,
+  label_header = "Study",
+  group = NULL,
+  columns = NULL,
+  scale = c("linear", "log"),
+  null_value = NULL,
+  axis_label = NULL,
+  effects = NULL,
+  annotations = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  footnote = NULL,
+  row_bold = NULL,
+  row_italic = NULL,
+  row_color = NULL,
+  row_bg = NULL,
+  row_badge = NULL,
+  row_icon = NULL,
+  row_indent = NULL,
+  row_type = NULL,
+  theme = web_theme_default(),
+  interaction = web_interaction()
+)
+```
+
+### Data Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `data` | A data.frame, data.table, or tibble |
+| `point` | Column name for point estimates |
+| `lower` | Column name for lower confidence bounds |
+| `upper` | Column name for upper confidence bounds |
+| `label` | Column name for row labels |
+| `label_header` | Header text for the label column (default: "Study") |
+
+### Grouping Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `group` | Grouping specification (see below) |
+
+The `group` argument supports three modes:
+
+1. **Single column**: `group = "category"` - flat grouping by one column
+2. **Hierarchical**: `group = c("region", "country")` - nested grouping (region > country)
+3. **Explicit**: `group = list(web_group(...))` - full control over group definitions
+
+### Display Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `columns` | List of column specifications (use `col_*()` helpers) |
+| `scale` | Scale type: `"linear"` or `"log"` |
+| `null_value` | Reference value (default: 0 for linear, 1 for log) |
+| `axis_label` | Label for the x-axis |
+| `title` | Plot title |
+| `subtitle` | Plot subtitle |
+| `caption` | Plot caption |
+| `footnote` | Plot footnote |
+
+### Row Styling Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `row_type` | Column for row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
+| `row_bold` | Column for bold styling (logical) |
+| `row_italic` | Column for italic styling (logical) |
+| `row_color` | Column for text color (hex string) |
+| `row_bg` | Column for background color (hex string) |
+| `row_badge` | Column for badge text |
+| `row_icon` | Column for icons (emoji/unicode) |
+| `row_indent` | Column for indentation level (integer) |
+
+### Advanced Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `effects` | List of `web_effect()` objects for multi-effect plots |
+| `annotations` | List of annotation objects |
+| `theme` | Theme object (default: `web_theme_default()`) |
+| `interaction` | Interaction settings (default: `web_interaction()`) |
+
+## Group Specification
+
+### web_group {#web_group}
+
+Define a row group with optional nesting.
+
+```r
+web_group(id, label = id, parent = NULL, collapsed = FALSE)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `id` | Unique identifier for the group |
+| `label` | Display label (defaults to id) |
+| `parent` | Parent group ID for nesting |
+| `collapsed` | Whether the group starts collapsed |
+
+## Effect Specification
+
+### web_effect {#web_effect}
+
+Define a single effect for multi-effect forest plots.
+
+```r
+web_effect(point, lower, upper, label = NULL, color = NULL)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `point` | Column name for point estimates |
+| `lower` | Column name for lower bounds |
+| `upper` | Column name for upper bounds |
+| `label` | Display label (defaults to point column name) |
+| `color` | Color for this effect |
+
+## Interaction Specification
+
+### web_interaction {#web_interaction}
+
+Configure interactive features.
+
+```r
+web_interaction(
+  show_filters = FALSE,
+  show_legend = TRUE,
+  enable_sort = TRUE,
+  enable_collapse = TRUE,
+  enable_select = TRUE,
+  enable_hover = TRUE,
+  enable_resize = TRUE,
+  enable_export = TRUE
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `show_filters` | Show filter panel |
+| `show_legend` | Show legend |
+| `enable_sort` | Enable column sorting |
+| `enable_collapse` | Enable group collapsing |
+| `enable_select` | Enable row selection |
+| `enable_hover` | Enable hover effects |
+| `enable_resize` | Enable column resizing |
+| `enable_export` | Enable download/export button |
+
+### Presets
+
+```r
+web_interaction_minimal()      # Hover only, no interactive features
+web_interaction_publication()  # No interactive features at all
+```
+
+## Examples
+
+### Basic Specification
+
+```{r}
+#| eval: false
+data <- data.frame(
+  study = c("Study A", "Study B", "Study C"),
+  hr = c(0.72, 0.85, 0.91),
+  lower = c(0.55, 0.70, 0.75),
+  upper = c(0.95, 1.03, 1.10)
+)
+
+spec <- web_spec(data,
+  point = "hr",
+  lower = "lower",
+  upper = "upper",
+  label = "study",
+  scale = "log",
+  null_value = 1
+)
+
+# Render as forest plot
+forest_plot(spec)
+
+# Render as table only
+webtable(spec)
+```
+
+### Hierarchical Grouping
+
+```{r}
+#| eval: false
+data <- data.frame(
+  region = c("North", "North", "South", "South"),
+  country = c("USA", "Canada", "Brazil", "Argentina"),
+  hr = c(0.72, 0.85, 0.91, 0.78),
+  lower = c(0.55, 0.70, 0.75, 0.60),
+  upper = c(0.95, 1.03, 1.10, 1.00)
+)
+
+# Hierarchical grouping: Region > Country
+spec <- web_spec(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "country",
+  group = c("region", "country"),
+  scale = "log", null_value = 1
+)
+```
+
+### Multi-Effect Plot
+
+```{r}
+#| eval: false
+data <- data.frame(
+  study = c("Trial A", "Trial B"),
+  or = c(1.5, 1.2),
+  or_lo = c(1.1, 0.9),
+  or_hi = c(2.0, 1.6),
+  hr = c(1.3, 1.1),
+  hr_lo = c(1.0, 0.8),
+  hr_hi = c(1.7, 1.5)
+)
+
+spec <- web_spec(data,
+  point = "or", lower = "or_lo", upper = "or_hi",
+  label = "study",
+  effects = list(
+    web_effect("or", "or_lo", "or_hi", label = "Odds Ratio", color = "#3b82f6"),
+    web_effect("hr", "hr_lo", "hr_hi", label = "Hazard Ratio", color = "#ef4444")
+  ),
+  scale = "log", null_value = 1
+)
+```
+
+## See Also
+
+- [forest_plot()](forest_plot.qmd) for rendering specifications
+- [Columns](columns.qmd) for column types
+- [Themes](themes.qmd) for styling

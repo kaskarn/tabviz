@@ -1,0 +1,252 @@
+---
+title: "Shiny Integration"
+---
+
+```{r}
+#| include: false
+library(webforest)
+```
+
+Functions for using forest plots in Shiny applications.
+
+## Output and Render
+
+### forestOutput {#forestOutput}
+
+Create a Shiny output element for a forest plot.
+
+```r
+forestOutput(outputId, width = "100%", height = "400px")
+```
+
+| Argument | Description |
+|----------|-------------|
+| `outputId` | Output variable name |
+| `width` | Widget width (CSS units) |
+| `height` | Widget height (CSS units) |
+
+### renderForest {#renderForest}
+
+Render a forest plot in Shiny.
+
+```r
+renderForest(expr, env = parent.frame(), quoted = FALSE)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `expr` | Expression that returns a `forest_plot()` |
+| `env` | Environment for evaluation |
+| `quoted` | Whether expr is already quoted |
+
+## Proxy Functions
+
+Proxy functions allow updating a forest plot without full re-rendering.
+
+### forestProxy {#forestProxy}
+
+Create a proxy object for an existing forest plot.
+
+```r
+forestProxy(id, session = shiny::getDefaultReactiveDomain())
+```
+
+| Argument | Description |
+|----------|-------------|
+| `id` | The widget ID |
+| `session` | Shiny session (default: current session) |
+
+### forest_update_data {#forest_update_data}
+
+Update the data in an existing forest plot.
+
+```r
+forest_update_data(proxy, spec)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `proxy` | A `forest_proxy` object |
+| `spec` | A `WebSpec` object from `web_spec()` |
+
+### forest_toggle_subgroup {#forest_toggle_subgroup}
+
+Toggle a subgroup's collapse state.
+
+```r
+forest_toggle_subgroup(proxy, subgroup_id, collapsed = NULL)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `proxy` | A `forest_proxy` object |
+| `subgroup_id` | The subgroup ID to toggle |
+| `collapsed` | `TRUE` to collapse, `FALSE` to expand, `NULL` to toggle |
+
+### forest_filter {#forest_filter}
+
+Apply a filter to the forest plot.
+
+```r
+forest_filter(proxy, field, operator, value)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `proxy` | A `forest_proxy` object |
+| `field` | Field to filter on |
+| `operator` | Filter operator: `"eq"`, `"neq"`, `"gt"`, `"lt"`, `"contains"` |
+| `value` | Filter value |
+
+### forest_clear_filter {#forest_clear_filter}
+
+Clear all filters from the forest plot.
+
+```r
+forest_clear_filter(proxy)
+```
+
+### forest_sort {#forest_sort}
+
+Sort the forest plot by a column.
+
+```r
+forest_sort(proxy, column, direction)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `proxy` | A `forest_proxy` object |
+| `column` | Column to sort by |
+| `direction` | Sort direction: `"asc"`, `"desc"`, or `"none"` |
+
+## Examples
+
+### Basic Shiny App
+
+```{r}
+#| eval: false
+library(shiny)
+library(webforest)
+
+ui <- fluidPage(
+  titlePanel("Forest Plot Demo"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("theme", "Theme:",
+        choices = c("Default", "JAMA", "Lancet", "Modern")
+      )
+    ),
+    mainPanel(
+      forestOutput("forest", height = "500px")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  data <- data.frame(
+    study = c("Study A", "Study B", "Study C"),
+    hr = c(0.72, 0.85, 0.91),
+    lower = c(0.55, 0.70, 0.75),
+    upper = c(0.95, 1.03, 1.10)
+  )
+
+  output$forest <- renderForest({
+    theme <- switch(input$theme,
+      "Default" = web_theme_default(),
+      "JAMA" = web_theme_jama(),
+      "Lancet" = web_theme_lancet(),
+      "Modern" = web_theme_modern()
+    )
+
+    forest_plot(data,
+      point = "hr", lower = "lower", upper = "upper",
+      label = "study",
+      null_value = 1, scale = "log",
+      theme = theme
+    )
+  })
+}
+
+shinyApp(ui, server)
+```
+
+### Using Proxy for Updates
+
+```{r}
+#| eval: false
+library(shiny)
+library(webforest)
+
+ui <- fluidPage(
+  forestOutput("forest"),
+  actionButton("filter_btn", "Filter HR < 1"),
+  actionButton("clear_btn", "Clear Filter")
+)
+
+server <- function(input, output, session) {
+  data <- reactive({
+    data.frame(
+      study = c("Study A", "Study B", "Study C", "Study D"),
+      hr = c(0.72, 0.85, 1.15, 0.91),
+      lower = c(0.55, 0.70, 0.90, 0.75),
+      upper = c(0.95, 1.03, 1.45, 1.10)
+    )
+  })
+
+  output$forest <- renderForest({
+    forest_plot(data(),
+      point = "hr", lower = "lower", upper = "upper",
+      label = "study",
+      null_value = 1, scale = "log"
+    )
+  })
+
+  observeEvent(input$filter_btn, {
+    forestProxy("forest") |>
+      forest_filter("hr", "lt", 1)
+  })
+
+  observeEvent(input$clear_btn, {
+    forestProxy("forest") |>
+      forest_clear_filter()
+  })
+}
+
+shinyApp(ui, server)
+```
+
+### Dynamic Data Updates
+
+```{r}
+#| eval: false
+library(shiny)
+library(webforest)
+
+server <- function(input, output, session) {
+  # Reactive data source
+  filtered_data <- reactive({
+    base_data |>
+      filter(category == input$category)
+  })
+
+  # Update via proxy for smooth transitions
+  observe({
+    spec <- web_spec(
+      filtered_data(),
+      point = "hr", lower = "lower", upper = "upper",
+      label = "study",
+      scale = "log", null_value = 1
+    )
+
+    forestProxy("forest") |>
+      forest_update_data(spec)
+  })
+}
+```
+
+## See Also
+
+- [forest_plot()](forest_plot.qmd) for creating plots
+- [web_spec()](web_spec.qmd) for creating specifications
+- [Shiny Guide](../guide/shiny.qmd) for detailed examples

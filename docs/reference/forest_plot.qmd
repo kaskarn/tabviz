@@ -1,0 +1,179 @@
+---
+title: "forest_plot"
+---
+
+```{r}
+#| include: false
+library(webforest)
+```
+
+Create interactive forest plots from data frames or WebSpec objects.
+
+## Usage
+
+```r
+forest_plot(
+
+x,
+...,
+axis_range = NULL,
+axis_ticks = NULL,
+axis_gridlines = NULL,
+plot_position = NULL,
+row_height = NULL,
+width_mode = c("fit", "fill", "responsive"),
+height_mode = c("auto", "scroll"),
+width = NULL,
+height = NULL,
+elementId = NULL
+)
+```
+
+## Arguments
+
+### Data Arguments (passed to `web_spec()` via `...`)
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A data frame or WebSpec object |
+| `point` | Column name for point estimates |
+| `lower` | Column name for lower confidence bounds |
+| `upper` | Column name for upper confidence bounds |
+| `label` | Column name for row labels |
+| `group` | Column name(s) for hierarchical grouping |
+| `columns` | List of column specifications |
+| `scale` | `"linear"` or `"log"` |
+| `null_value` | Reference value (e.g., 1 for ratios, 0 for differences) |
+| `axis_label` | X-axis label |
+| `theme` | Theme object (default: `web_theme_default()`) |
+| `title` | Plot title |
+| `subtitle` | Plot subtitle |
+| `caption` | Plot caption |
+| `footnote` | Plot footnote |
+
+### Row Styling Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `row_type` | Column for row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
+| `row_bold` | Column for bold styling (logical) |
+| `row_indent` | Column for indentation level (integer) |
+| `row_color` | Column for text color (hex string) |
+| `row_badge` | Column for badge text |
+
+### Cell Styling Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `style_cols` | Column names to apply cell styling to |
+| `style_bold` | Column for cell bold (logical) |
+| `style_color` | Column for cell text color (hex string) |
+| `style_bg` | Column for cell background color (hex string) |
+
+### Visual Override Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `axis_range` | `c(min, max)` to override axis limits |
+| `axis_ticks` | Numeric vector of explicit tick positions |
+| `axis_gridlines` | `TRUE`/`FALSE` to show/hide gridlines |
+| `plot_position` | `"left"` or `"right"` |
+| `row_height` | Row height in pixels |
+
+### Layout Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `width_mode` | `"fit"` (shrink-wrap), `"fill"` (100%), or `"responsive"` (100% with scaling) |
+| `height_mode` | `"auto"` (natural height) or `"scroll"` (scroll if > viewport) |
+| `width` | Widget width |
+| `height` | Widget height |
+| `elementId` | HTML element ID |
+
+## Value
+
+An htmlwidget object that can be:
+
+- Displayed in RStudio Viewer
+- Rendered in R Markdown / Quarto documents
+- Used in Shiny applications
+- Saved to files with `save_plot()`
+
+## Examples
+
+### Basic Usage
+
+```{r}
+data <- data.frame(
+  study = c("Study A", "Study B", "Study C"),
+  hr = c(0.72, 0.85, 0.91),
+  lower = c(0.55, 0.70, 0.75),
+  upper = c(0.95, 1.03, 1.10)
+)
+
+forest_plot(data,
+  point = "hr",
+  lower = "lower",
+  upper = "upper",
+  label = "study",
+  null_value = 1,
+  scale = "log"
+)
+```
+
+### With Columns and Theme
+
+```{r}
+data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C"),
+  hr = c(0.72, 0.85, 0.68),
+  lower = c(0.55, 0.70, 0.52),
+  upper = c(0.95, 1.03, 0.89),
+  n = c(245, 180, 320),
+  events = c("89/245", "62/180", "98/320")
+)
+
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study",
+  columns = list(
+    col_numeric("n", "N"),
+    col_text("events", "Events"),
+    col_interval("HR (95% CI)")
+  ),
+  null_value = 1,
+  scale = "log",
+  theme = web_theme_lancet(),
+  title = "Treatment Effect by Trial"
+)
+```
+
+### Row Styling
+
+```{r}
+library(dplyr)
+
+styled <- tibble(
+  label = c("Primary Endpoint", "  Outcome A", "  Outcome B", "Summary"),
+  hr = c(NA, 0.72, 0.85, 0.78),
+  lower = c(NA, 0.55, 0.70, 0.65),
+  upper = c(NA, 0.95, 1.03, 0.93),
+  rtype = c("header", "data", "data", "summary"),
+  rbold = c(TRUE, FALSE, FALSE, TRUE)
+)
+
+forest_plot(styled,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "label",
+  row_type = "rtype",
+  row_bold = "rbold",
+  null_value = 1, scale = "log"
+)
+```
+
+## See Also
+
+- [webtable()](webtable.qmd) for table-only widgets
+- [web_spec()](web_spec.qmd) for creating specifications programmatically
+- [Themes](themes.qmd) for customizing appearance
+- [Columns](columns.qmd) for column types

@@ -377,7 +377,7 @@
           viewBox="0 0 {layout.forestWidth} {layout.headerHeight + layout.plotHeight + layout.axisHeight}"
           style="overflow: visible;"
         >
-          <!-- Header border (aligns with CSS border-bottom) -->
+          <!-- Header border -->
           <line
             x1={0}
             x2={layout.forestWidth}
@@ -386,7 +386,6 @@
             stroke="var(--wf-border, #e2e8f0)"
             stroke-width="1"
           />
-
 
           <!-- Row banding backgrounds -->
           {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
@@ -408,18 +407,18 @@
             {@const rowH = layout.rowHeights[i] ?? layout.rowHeight}
             {@const isSummaryRow = displayRow.type === 'data' && displayRow.row.style?.type === 'summary'}
             {@const isSpacerRow = displayRow.type === 'data' && displayRow.row.style?.type === 'spacer'}
-            <!-- Top border for summary rows (2px to match CSS border-top) -->
+            <!-- Top border for summary rows (2px) -->
             {#if isSummaryRow}
               <line
                 x1={0}
                 x2={layout.forestWidth}
-                y1={layout.headerHeight + rowY + 0.5}
-                y2={layout.headerHeight + rowY + 0.5}
+                y1={layout.headerHeight + rowY}
+                y2={layout.headerHeight + rowY}
                 stroke="var(--wf-border, #e2e8f0)"
                 stroke-width="2"
               />
             {/if}
-            <!-- Bottom border (aligns with CSS border-bottom) -->
+            <!-- Bottom border (1px, using -0.5 offset for crisp rendering) -->
             {#if !isSpacerRow}
               <line
                 x1={0}
@@ -806,8 +805,8 @@
   /* Height modes */
   :global(.webforest-container.height-auto) {
     height: auto;
-    max-height: none;
-    overflow: visible;
+    /* Use auto overflow so scrollbars appear if parent constrains height */
+    overflow: auto;
   }
 
   :global(.webforest-container.height-scroll) {

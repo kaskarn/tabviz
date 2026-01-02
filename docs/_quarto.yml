@@ -36,7 +36,27 @@ website:
       - text: "Gallery"
         href: gallery.qmd
       - text: "Reference"
-        href: reference.qmd
+        menu:
+          - text: "Overview"
+            href: reference/index.qmd
+          - text: "---"
+          - text: "forest_plot()"
+            href: reference/forest_plot.qmd
+          - text: "webtable()"
+            href: reference/webtable.qmd
+          - text: "save_plot()"
+            href: reference/save_plot.qmd
+          - text: "---"
+          - text: "Themes"
+            href: reference/themes.qmd
+          - text: "Columns"
+            href: reference/columns.qmd
+          - text: "Annotations"
+            href: reference/annotations.qmd
+          - text: "Specifications"
+            href: reference/web_spec.qmd
+          - text: "Shiny"
+            href: reference/shiny.qmd
       - text: "Technical"
         menu:
           - text: "Export System"

@@ -1,0 +1,81 @@
+---
+title: "Function Reference"
+---
+
+Complete reference for all webforest functions, organized by category.
+
+## Core Functions
+
+| Function | Description |
+|----------|-------------|
+| [`forest_plot()`](forest_plot.qmd) | Create interactive forest plots |
+| [`webtable()`](webtable.qmd) | Create table-only widgets |
+| [`save_plot()`](save_plot.qmd) | Export to SVG, PNG, or PDF |
+
+## Themes
+
+| Function | Description |
+|----------|-------------|
+| [`web_theme_default()`](themes.qmd#web_theme_default) | Clean, modern default theme |
+| [`web_theme_jama()`](themes.qmd#web_theme_jama) | JAMA journal style |
+| [`web_theme_lancet()`](themes.qmd#web_theme_lancet) | Lancet journal style |
+| [`web_theme_modern()`](themes.qmd#web_theme_modern) | Contemporary UI |
+| [`web_theme_presentation()`](themes.qmd#web_theme_presentation) | Large fonts for slides |
+| [`web_theme_dark()`](themes.qmd#web_theme_dark) | Dark mode |
+| [`web_theme_minimal()`](themes.qmd#web_theme_minimal) | Minimal B&W |
+
+### Theme Modifiers
+
+| Function | Description |
+|----------|-------------|
+| [`set_colors()`](themes.qmd#set_colors) | Customize theme colors |
+| [`set_typography()`](themes.qmd#set_typography) | Customize fonts |
+| [`set_spacing()`](themes.qmd#set_spacing) | Customize spacing |
+| [`set_shapes()`](themes.qmd#set_shapes) | Customize shapes |
+| [`set_axis()`](themes.qmd#set_axis) | Customize axis |
+| [`set_layout()`](themes.qmd#set_layout) | Customize layout |
+
+## Columns
+
+| Function | Description |
+|----------|-------------|
+| [`col_text()`](columns.qmd#col_text) | Text column |
+| [`col_numeric()`](columns.qmd#col_numeric) | Numeric column |
+| [`col_interval()`](columns.qmd#col_interval) | Confidence interval display |
+| [`col_bar()`](columns.qmd#col_bar) | Horizontal bar chart |
+| [`col_pvalue()`](columns.qmd#col_pvalue) | P-value with significance stars |
+| [`col_sparkline()`](columns.qmd#col_sparkline) | Inline sparkline |
+| [`col_n()`](columns.qmd#col_n) | Sample size column |
+| [`col_weight()`](columns.qmd#col_weight) | Weight column with bar |
+| [`col_group()`](columns.qmd#col_group) | Group columns under header |
+
+## Annotations
+
+| Function | Description |
+|----------|-------------|
+| [`forest_refline()`](annotations.qmd#forest_refline) | Add reference line |
+| [`forest_annotation()`](annotations.qmd#forest_annotation) | Custom annotation |
+
+## Specification Objects
+
+| Function | Description |
+|----------|-------------|
+| [`web_spec()`](web_spec.qmd#web_spec) | Create plot specification |
+| [`web_group()`](web_spec.qmd#web_group) | Define row group |
+| [`web_effect()`](web_spec.qmd#web_effect) | Define effect for multi-effect plots |
+| [`web_interaction()`](web_spec.qmd#web_interaction) | Interaction settings |
+| [`web_interaction_minimal()`](web_spec.qmd#web_interaction) | Minimal interactivity |
+| [`web_interaction_publication()`](web_spec.qmd#web_interaction) | Publication mode |
+
+## Shiny Integration
+
+| Function | Description |
+|----------|-------------|
+| [`forestOutput()`](shiny.qmd#forestoutput) | Shiny UI output |
+| [`renderForest()`](shiny.qmd#renderforest) | Shiny server render |
+| [`forestProxy()`](shiny.qmd#forestproxy) | Create update proxy |
+| [`forest_update_data()`](shiny.qmd#forest_update_data) | Update plot data |
+| [`forest_sort()`](shiny.qmd#forest_sort) | Sort by column |
+| [`forest_filter()`](shiny.qmd#forest_filter) | Filter rows |
+| [`forest_clear_filter()`](shiny.qmd#forest_clear_filter) | Clear filters |
+| [`forest_toggle_subgroup()`](shiny.qmd#forest_toggle_subgroup) | Toggle group collapse |

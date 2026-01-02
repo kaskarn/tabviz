@@ -1,0 +1,274 @@
+---
+title: "Themes"
+---
+
+```{r}
+#| include: false
+library(webforest)
+```
+
+Theme functions for customizing forest plot appearance.
+
+## Preset Themes
+
+### web_theme_default {#web_theme_default}
+
+Clean, modern default theme with subtle colors.
+```r
+web_theme_default()
+```
+
+### web_theme_jama {#web_theme_jama}
+
+JAMA journal style: black & white, compact, sans-serif fonts.
+
+```r
+web_theme_jama()
+```
+
+### web_theme_lancet {#web_theme_lancet}
+
+Lancet journal style: navy blue accents, serif fonts.
+
+```r
+web_theme_lancet()
+```
+
+### web_theme_modern {#web_theme_modern}
+
+Contemporary UI with subtle colors and modern typography.
+
+```r
+web_theme_modern()
+```
+
+### web_theme_presentation {#web_theme_presentation}
+
+Large fonts optimized for slides and presentations.
+
+```r
+web_theme_presentation()
+```
+
+### web_theme_dark {#web_theme_dark}
+
+Dark mode with light text on dark background.
+
+```r
+web_theme_dark()
+```
+
+### web_theme_minimal {#web_theme_minimal}
+
+Minimal black & white styling.
+
+```r
+web_theme_minimal()
+```
+
+## Theme Modifiers
+
+All modifiers return the modified theme and can be chained with pipes.
+
+### set_colors {#set_colors}
+
+Customize theme colors.
+
+```r
+set_colors(
+  theme,
+  background = NULL,
+  foreground = NULL,
+  primary = NULL,
+  secondary = NULL,
+  accent = NULL,
+  muted = NULL,
+  border = NULL,
+  interval_positive = NULL,
+  interval_negative = NULL,
+  interval_neutral = NULL,
+  interval_line = NULL,
+  summary_fill = NULL,
+  summary_border = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `background` | Background color |
+| `foreground` | Primary text color |
+| `primary` | Primary accent color |
+| `secondary` | Secondary text color |
+| `accent` | Accent color |
+| `muted` | Muted text color |
+| `border` | Border color |
+| `interval_positive` | Color for favorable effects |
+| `interval_negative` | Color for unfavorable effects |
+| `interval_neutral` | Color for neutral effects |
+| `interval_line` | Interval line color |
+| `summary_fill` | Summary diamond fill |
+| `summary_border` | Summary diamond border |
+
+### set_typography {#set_typography}
+
+Customize fonts and text styling.
+
+```r
+set_typography(
+  theme,
+  font_family = NULL,
+  font_size_sm = NULL,
+  font_size_base = NULL,
+  font_size_lg = NULL,
+  font_weight_normal = NULL,
+  font_weight_medium = NULL,
+  font_weight_bold = NULL,
+  line_height = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `font_family` | CSS font-family string |
+| `font_size_sm` | Small text (e.g., `"0.75rem"`) |
+| `font_size_base` | Base text (e.g., `"0.875rem"`) |
+| `font_size_lg` | Large text (e.g., `"1rem"`) |
+| `font_weight_normal` | Normal weight (e.g., 400) |
+| `font_weight_medium` | Medium weight (e.g., 500) |
+| `font_weight_bold` | Bold weight (e.g., 600) |
+| `line_height` | Line height multiplier |
+
+### set_spacing {#set_spacing}
+
+Customize spacing and sizing.
+
+```r
+set_spacing(
+  theme,
+  row_height = NULL,
+  header_height = NULL,
+  column_gap = NULL,
+  section_gap = NULL,
+  padding = NULL,
+  cell_padding_x = NULL,
+  cell_padding_y = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `row_height` | Data row height in pixels |
+| `header_height` | Header row height in pixels |
+| `column_gap` | Gap between columns |
+| `section_gap` | Gap between sections |
+| `padding` | Container padding |
+| `cell_padding_x` | Horizontal cell padding |
+| `cell_padding_y` | Vertical cell padding |
+
+### set_shapes {#set_shapes}
+
+Customize shapes and visual elements.
+
+```r
+set_shapes(
+  theme,
+  point_size = NULL,
+  summary_height = NULL,
+  line_width = NULL,
+  border_radius = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `point_size` | Point marker radius |
+| `summary_height` | Summary diamond height |
+| `line_width` | Interval line width |
+| `border_radius` | Border radius for containers |
+
+### set_axis {#set_axis}
+
+Customize axis appearance.
+
+```r
+set_axis(
+  theme,
+  range_min = NULL,
+  range_max = NULL,
+  tick_count = NULL,
+  tick_values = NULL,
+  gridlines = NULL,
+  gridline_style = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `range_min` | Minimum axis value (NULL = auto) |
+| `range_max` | Maximum axis value (NULL = auto) |
+| `tick_count` | Target number of ticks |
+| `tick_values` | Explicit tick positions (numeric vector) |
+| `gridlines` | Show gridlines (TRUE/FALSE) |
+| `gridline_style` | `"solid"`, `"dashed"`, or `"dotted"` |
+
+### set_layout {#set_layout}
+
+Customize layout options.
+
+```r
+set_layout(
+  theme,
+  plot_position = NULL,
+  table_width = NULL,
+  plot_width = NULL,
+  row_border = NULL,
+  row_border_style = NULL,
+  container_border = NULL,
+  container_border_radius = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `plot_position` | `"left"` or `"right"` |
+| `table_width` | Table width (`"auto"` or pixels) |
+| `plot_width` | Plot width (`"auto"` or pixels) |
+| `row_border` | Show row borders (TRUE/FALSE) |
+| `row_border_style` | `"solid"`, `"dashed"`, `"dotted"` |
+| `container_border` | Show container border (TRUE/FALSE) |
+| `container_border_radius` | Container border radius |
+
+## Examples
+
+### Chaining Modifiers
+
+```{r}
+#| eval: false
+web_theme_jama() |>
+  set_colors(primary = "#0066cc") |>
+  set_typography(font_family = "Georgia, serif") |>
+  set_spacing(row_height = 28) |>
+  set_axis(gridlines = TRUE)
+```
+
+### Custom Theme for Publication
+
+```{r}
+#| eval: false
+publication_theme <- web_theme_minimal() |>
+  set_colors(
+    foreground = "#1a1a1a",
+    interval_line = "#333333"
+  ) |>
+  set_typography(
+    font_family = "Times New Roman, serif",
+    font_size_base = "11pt"
+  ) |>
+  set_spacing(row_height = 24) |>
+  set_axis(gridlines = FALSE)
+```
+
+## See Also
+
+- [forest_plot()](forest_plot.qmd) for using themes
+- [Themes Guide](../guide/themes.qmd) for detailed customization

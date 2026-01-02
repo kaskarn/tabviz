@@ -1,0 +1,112 @@
+---
+title: "Annotations"
+---
+
+```{r}
+#| include: false
+library(webforest)
+```
+
+Annotation functions for adding visual elements to forest plots.
+
+## Reference Lines
+
+### forest_refline {#forest_refline}
+
+Add a vertical reference line at a specific x-axis position.
+
+```r
+forest_refline(x, label = NULL, style = "dashed", color = NULL)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | X-axis position for the line |
+| `label` | Optional text label for the line |
+| `style` | Line style: `"solid"`, `"dashed"`, or `"dotted"` |
+| `color` | Line color (uses theme default if NULL) |
+
+## Custom Annotations
+
+### forest_annotation {#forest_annotation}
+
+Add a custom shape annotation to a specific study.
+
+```r
+forest_annotation(
+  study_id,
+  shape = c("circle", "square", "triangle", "star"),
+  position = c("after", "before", "overlay"),
+  color = "#8b5cf6",
+  size = 1.0
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `study_id` | Study identifier to annotate |
+| `shape` | Shape type: `"circle"`, `"square"`, `"triangle"`, `"star"` |
+| `position` | Position relative to point: `"before"`, `"after"`, `"overlay"` |
+| `color` | Shape color (default: purple) |
+| `size` | Size multiplier (default: 1.0) |
+
+## Risk of Bias
+
+### forest_rob {#forest_rob}
+
+Create a risk of bias traffic light annotation for systematic reviews.
+
+```r
+forest_rob(data, study_id = "study_id", ...)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `data` | Data frame with study IDs and domain assessments |
+| `study_id` | Column name for study identifiers |
+| `...` | Domain columns containing ratings |
+
+**Rating values**: `"low"`, `"unclear"`, `"high"`
+
+## Examples
+
+### Adding Reference Lines
+
+```{r}
+#| eval: false
+data <- data.frame(
+  study = c("Study A", "Study B", "Study C"),
+  hr = c(0.72, 0.85, 1.15),
+  lower = c(0.55, 0.70, 0.90),
+  upper = c(0.95, 1.03, 1.45)
+)
+
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study",
+  null_value = 1, scale = "log",
+  annotations = list(
+    forest_refline(1, "No effect", style = "solid"),
+    forest_refline(0.75, "Clinically meaningful", style = "dashed")
+  )
+)
+```
+
+### Risk of Bias Assessment
+
+```{r}
+#| eval: false
+rob_data <- data.frame(
+  study_id = c("Study A", "Study B", "Study C"),
+  randomization = c("low", "unclear", "low"),
+  blinding = c("low", "high", "low"),
+  attrition = c("low", "low", "unclear")
+)
+
+forest_rob(rob_data)
+```
+
+## See Also
+
+- [forest_plot()](forest_plot.qmd) for using annotations
+- [Axis & Annotations Guide](../guide/axis-annotations.qmd) for detailed examples

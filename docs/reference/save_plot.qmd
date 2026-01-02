@@ -1,0 +1,80 @@
+---
+title: "save_plot"
+---
+
+```{r}
+#| include: false
+library(webforest)
+```
+
+Export a forest plot or webtable to static file formats.
+
+## Usage
+
+```r
+save_plot(
+  plot,
+  file,
+  width = 800,
+  height = NULL,
+  scale = 2
+)
+```
+
+## Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `plot` | A `forest_plot()` or `webtable()` widget |
+| `file` | Output file path with extension `.svg`, `.pdf`, or `.png` |
+| `width` | Width in pixels (default: 800) |
+| `height` | Height in pixels (auto-calculated if NULL) |
+| `scale` | Scale factor for PNG resolution (default: 2) |
+
+## Details
+
+The export process:
+
+1. Renders the widget to SVG using the internal JavaScript renderer
+2. For SVG output, writes the SVG directly
+3. For PDF output, converts SVG to PDF using Chrome/Chromium
+4. For PNG output, renders SVG to PNG at specified scale
+
+### Requirements
+
+- **SVG**: No external dependencies
+- **PDF/PNG**: Requires Chrome, Chromium, or Google Chrome installed
+
+### Resolution
+
+For PNG exports, the `scale` parameter controls the resolution:
+
+- `scale = 1`: 1x resolution (72 DPI equivalent)
+- `scale = 2`: 2x resolution (144 DPI, good for screens)
+- `scale = 3`: 3x resolution (216 DPI, good for print)
+
+## Examples
+
+### Save as SVG
+
+```r
+p <- forest_plot(data, point = "hr", lower = "lo", upper = "hi", label = "study")
+
+save_plot(p, "my_plot.svg")
+```
+### Save as PNG (high resolution)
+
+```r
+save_plot(p, "my_plot.png", width = 1200, scale = 3)
+```
+
+### Save as PDF
+
+```r
+save_plot(p, "my_plot.pdf", width = 800)
+```
+
+## See Also
+
+- [forest_plot()](forest_plot.qmd) for creating plots
+- [Exporting Guide](../guide/exporting.qmd) for detailed export workflows
