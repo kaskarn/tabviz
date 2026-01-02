@@ -94,9 +94,9 @@ function computeLayout(spec: WebSpec, options: ExportOptions): InternalLayout {
   const rightColumns = flattenColumns(columns, "right");
 
   const leftTableWidth = LAYOUT.DEFAULT_LABEL_WIDTH +
-    leftColumns.reduce((sum, c) => sum + (c.width ?? LAYOUT.DEFAULT_COLUMN_WIDTH), 0);
+    leftColumns.reduce((sum, c) => sum + (typeof c.width === 'number' ? c.width : LAYOUT.DEFAULT_COLUMN_WIDTH), 0);
   const rightTableWidth =
-    rightColumns.reduce((sum, c) => sum + (c.width ?? LAYOUT.DEFAULT_COLUMN_WIDTH), 0);
+    rightColumns.reduce((sum, c) => sum + (typeof c.width === 'number' ? c.width : LAYOUT.DEFAULT_COLUMN_WIDTH), 0);
 
   // Forest width calculation - "tables first" approach
   const baseWidth = options.width ?? LAYOUT.DEFAULT_WIDTH;
@@ -296,7 +296,7 @@ function getLeafColumns(col: ColumnDef): ColumnSpec[] {
 
 /** Calculate total width for a column def (including children if group) */
 function getColumnDefWidth(col: ColumnDef, defaultWidth: number): number {
-  if (!col.isGroup) return col.width ?? defaultWidth;
+  if (!col.isGroup) return typeof col.width === 'number' ? col.width : defaultWidth;
   return col.columns.reduce((sum, c) => sum + getColumnDefWidth(c, defaultWidth), 0);
 }
 
@@ -610,8 +610,9 @@ function renderColumnHeaders(
         currentX += groupWidth;
       } else {
         // Non-grouped column spans both rows
-        const width = col.width ?? defaultColWidth;
-        const { textX, anchor } = getTextPosition(currentX, width, col.align);
+        const width = typeof col.width === 'number' ? col.width : defaultColWidth;
+        const headerAlign = col.headerAlign ?? col.align;
+        const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
         const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
         lines.push(`<text x="${textX}" y="${getTextY(y, headerHeight)}"
           font-family="${theme.typography.fontFamily}"
@@ -630,8 +631,9 @@ function renderColumnHeaders(
         // Render sub-column headers
         for (const subCol of col.columns) {
           if (!subCol.isGroup) {
-            const width = subCol.width ?? defaultColWidth;
-            const { textX, anchor } = getTextPosition(currentX, width, subCol.align);
+            const width = typeof subCol.width === 'number' ? subCol.width : defaultColWidth;
+            const headerAlign = subCol.headerAlign ?? subCol.align;
+            const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
             lines.push(`<text x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
               font-family="${theme.typography.fontFamily}"
               font-size="${fontSize}px"
@@ -643,7 +645,8 @@ function renderColumnHeaders(
         }
       } else {
         // Skip non-grouped columns (already rendered spanning both rows)
-        currentX += col.width ?? defaultColWidth;
+        const width = typeof col.width === 'number' ? col.width : defaultColWidth;
+        currentX += width;
       }
     }
   } else {
@@ -660,8 +663,10 @@ function renderColumnHeaders(
     }
 
     for (const col of leafColumns) {
-      const width = col.width ?? defaultColWidth;
-      const { textX, anchor } = getTextPosition(currentX, width, col.align);
+      const width = typeof col.width === 'number' ? col.width : defaultColWidth;
+      // Use headerAlign if specified, otherwise fall back to align
+      const headerAlign = col.headerAlign ?? col.align;
+      const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
       const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
 
       lines.push(`<text x="${textX}" y="${getTextY(y, headerHeight)}"
@@ -787,7 +792,7 @@ function renderTableRow(
 
   // Columns
   for (const col of columns) {
-    const width = col.width ?? LAYOUT.DEFAULT_COLUMN_WIDTH;
+    const width = typeof col.width === 'number' ? col.width : LAYOUT.DEFAULT_COLUMN_WIDTH;
     const value = getCellValue(row, col);
     const { textX, anchor } = getTextPosition(currentX, width, col.align);
 
@@ -1185,7 +1190,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const rightColumns = flattenColumns(columns, "right");
 
   const leftTableWidth = LAYOUT.DEFAULT_LABEL_WIDTH +
-    leftColumns.reduce((sum, c) => sum + (c.width ?? LAYOUT.DEFAULT_COLUMN_WIDTH), 0);
+    leftColumns.reduce((sum, c) => sum + (typeof c.width === 'number' ? c.width : LAYOUT.DEFAULT_COLUMN_WIDTH), 0);
 
   // Forest position
   const forestX = padding + leftTableWidth;
