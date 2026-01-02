@@ -10,6 +10,9 @@
 srcjs/node_modules/
 srcjs/.bun/
 srcjs/bun.lockb
+inst/scripts/node_modules/
+inst/scripts/package-lock.json
+inst/scripts/package.json
 
 # Test artifacts
 tests/testthat/_snaps/
