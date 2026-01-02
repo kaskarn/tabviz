@@ -326,112 +326,168 @@
     "href": "reference.html",
     "title": "Function Reference",
     "section": "",
-    "text": "Complete reference for all webforest functions organized by category."
+    "text": "This page has moved. If you are not redirected automatically, click here."
   },
   {
-    "objectID": "reference.html#creating-plots",
-    "href": "reference.html#creating-plots",
-    "title": "Function Reference",
-    "section": "Creating Plots",
-    "text": "Creating Plots\n\nforest_plot()\nThe main function for creating interactive forest plots.\nforest_plot(\n  x,                      # Data frame or WebSpec object\n  point = NULL,           # Column name for point estimates\n  lower = NULL,           # Column name for lower CI bounds\n  upper = NULL,           # Column name for upper CI bounds\n  label = NULL,           # Column name for row labels\n  group = NULL,           # Column name(s) for hierarchical grouping\n  columns = NULL,         # List of column specifications\n  scale = \"linear\",       # \"linear\" or \"log\"\n  null_value = NULL,      # Reference value (e.g., 1 for ratios, 0 for diffs)\n  axis_label = NULL,      # X-axis label\n  theme = web_theme_default(),\n\n  # Row styling columns\n  row_type = NULL,        # Column for row type: \"header\", \"data\", \"summary\", \"spacer\"\n  row_bold = NULL,        # Column for bold styling (logical)\n  row_indent = NULL,      # Column for indentation level (integer)\n  row_color = NULL,       # Column for text color (hex string)\n  row_badge = NULL,       # Column for badge text\n\n  # Cell styling columns\n  style_cols = NULL,      # Column names to style\n  style_bold = NULL,      # Column for cell bold (logical)\n  style_color = NULL,     # Column for cell color (hex string)\n  style_bg = NULL,        # Column for cell background (hex string)\n\n  # Axis overrides\n  axis_range = NULL,      # c(min, max) to override axis limits\n  axis_ticks = NULL,      # Numeric vector of tick positions\n  axis_gridlines = NULL,  # TRUE/FALSE to show gridlines\n\n  # Widget options\n  width = NULL,           # Widget width\n  height = NULL           # Widget height\n)\n\n\nwebtable()\nCreate a table-only widget without the forest plot visualization.\nwebtable(\n  x,                      # Data frame or WebSpec\n  columns = NULL,         # List of column specifications\n  theme = web_theme_default(),\n  width = NULL,\n  height = NULL\n)\n\n\nsave_plot()\nExport a forest plot to static file formats.\nsave_plot(\n  plot,                   # forest_plot or webtable widget\n\nfile,                   # Output file path (.svg, .pdf, or .png)\n  width = 800,            # Width in pixels\n  height = NULL,          # Height in pixels (auto if NULL)\n  scale = 2               # Scale factor for PNG resolution\n)"
-  },
-  {
-    "objectID": "reference.html#theme-functions",
-    "href": "reference.html#theme-functions",
-    "title": "Function Reference",
-    "section": "Theme Functions",
-    "text": "Theme Functions\n\nPreset Themes\n\n\n\nFunction\nDescription\n\n\n\n\nweb_theme_default()\nClean, modern default theme\n\n\nweb_theme_jama()\nJAMA journal style (B&W, compact, sans-serif)\n\n\nweb_theme_lancet()\nLancet journal style (navy blue, serif fonts)\n\n\nweb_theme_modern()\nContemporary UI with subtle colors\n\n\nweb_theme_presentation()\nLarge fonts optimized for slides\n\n\nweb_theme_dark()\nDark mode with light text\n\n\nweb_theme_minimal()\nMinimal black & white styling\n\n\n\n\n\nTheme Modifiers\nAll modifiers return the modified theme and can be chained with pipes:\nweb_theme_jama() |&gt;\n  set_colors(primary = \"#0066cc\") |&gt;\n  set_typography(font_family = \"Georgia\") |&gt;\n  set_spacing(row_height = 28) |&gt;\n  set_shapes(point_size = 6) |&gt;\n  set_axis(gridlines = TRUE) |&gt;\n  set_layout(row_border = TRUE)\n\nset_colors()\nset_colors(\n  theme,\n  background = NULL,        # Background color\n  foreground = NULL,        # Primary text color\n  primary = NULL,           # Primary accent color\n  secondary = NULL,         # Secondary text color\n  accent = NULL,            # Accent color\n  muted = NULL,             # Muted text color\n  border = NULL,            # Border color\n  interval_positive = NULL, # Color for favorable effects\n  interval_negative = NULL, # Color for unfavorable effects\n  interval_neutral = NULL,  # Color for neutral effects\n  interval_line = NULL,     # Interval line color\n  summary_fill = NULL,      # Summary diamond fill\n  summary_border = NULL     # Summary diamond border\n)\n\n\nset_typography()\nset_typography(\n  theme,\n  font_family = NULL,       # CSS font-family string\n  font_size_sm = NULL,      # Small text (e.g., \"0.75rem\")\n  font_size_base = NULL,    # Base text (e.g., \"0.875rem\")\n  font_size_lg = NULL,      # Large text (e.g., \"1rem\")\n  font_weight_normal = NULL, # Normal weight (e.g., 400)\n  font_weight_medium = NULL, # Medium weight (e.g., 500)\n  font_weight_bold = NULL,   # Bold weight (e.g., 600 or 700)\n  line_height = NULL        # Line height multiplier\n)\n\n\nset_spacing()\nset_spacing(\n  theme,\n  row_height = NULL,        # Data row height in pixels\n  header_height = NULL,     # Header row height in pixels\n  column_gap = NULL,        # Gap between columns\n  section_gap = NULL,       # Gap between sections\n  padding = NULL,           # Container padding\n  cell_padding_x = NULL,    # Horizontal cell padding\n  cell_padding_y = NULL     # Vertical cell padding\n)\n\n\nset_shapes()\nset_shapes(\n  theme,\n  point_size = NULL,        # Point marker radius\n  summary_height = NULL,    # Summary diamond height\n  line_width = NULL,        # Interval line width\n  border_radius = NULL      # Border radius for containers\n)\n\n\nset_axis()\nset_axis(\n  theme,\n  range_min = NULL,         # Minimum axis value (NULL = auto)\n  range_max = NULL,         # Maximum axis value (NULL = auto)\n  tick_count = NULL,        # Target number of ticks\n  tick_values = NULL,       # Explicit tick positions (numeric vector)\n  gridlines = NULL,         # Show gridlines (TRUE/FALSE)\n  gridline_style = NULL     # \"solid\", \"dashed\", or \"dotted\"\n)\n\n\nset_layout()\nset_layout(\n  theme,\n  plot_position = NULL,     # \"left\" or \"right\"\n  table_width = NULL,       # Table width (\"auto\" or pixels)\n  plot_width = NULL,        # Plot width (\"auto\" or pixels)\n  row_border = NULL,        # Show row borders (TRUE/FALSE)\n  row_border_style = NULL,  # \"solid\", \"dashed\", \"dotted\"\n  container_border = NULL,  # Show container border (TRUE/FALSE)\n  container_border_radius = NULL  # Container border radius\n)"
-  },
-  {
-    "objectID": "reference.html#column-functions",
-    "href": "reference.html#column-functions",
-    "title": "Function Reference",
-    "section": "Column Functions",
-    "text": "Column Functions\n\nBasic Columns\n# Text column\ncol_text(field, header = NULL, width = NULL, position = \"left\")\n\n# Numeric column with formatting\ncol_numeric(field, header = NULL, width = NULL, position = \"left\")\n\n# Confidence interval display (point estimate with CI)\ncol_interval(header = \"95% CI\", width = 140, position = \"right\")\n\n\nVisualization Columns\n# Horizontal bar chart\ncol_bar(\n  field,\n  header = NULL,\n  width = NULL,\n  max_value = NULL,         # Maximum value for scaling (auto if NULL)\n  show_label = TRUE,        # Show value label\n  color = NULL              # Bar color\n)\n\n# P-value with optional significance stars\ncol_pvalue(\n  field,\n  header = \"P-value\",\n  width = 80,\n  stars = TRUE              # Show *, **, *** for significance\n)\n\n# Inline sparkline chart\ncol_sparkline(\n  field,                    # Field containing numeric vector\n  header = NULL,\n  width = 80,\n  type = \"line\"             # \"line\", \"bar\", or \"area\"\n)\n\n# Sample size column (alias for col_numeric with \"N\" default)\ncol_n(field = \"n\", header = \"N\", width = 60)\n\n# Weight column with bar visualization\ncol_weight(field = \"weight\", header = \"Weight\", width = 100)\n\n\nColumn Groups\n# Group multiple columns under a shared header\ncol_group(\n  header,                   # Group header text\n  ...                       # Column specifications\n)\n\n# Example:\ncol_group(\"Treatment Effect\",\n  col_numeric(\"hr\", \"HR\"),\n  col_interval(\"95% CI\")\n)"
-  },
-  {
-    "objectID": "reference.html#annotations",
-    "href": "reference.html#annotations",
-    "title": "Function Reference",
-    "section": "Annotations",
-    "text": "Annotations\n\nReference Lines\nforest_refline(\n  x,                        # X-axis position\n  label = NULL,             # Optional label text\n  style = \"dashed\",         # \"solid\", \"dashed\", or \"dotted\"\n  color = NULL              # Line color (uses theme if NULL)\n)\n\n\nCustom Annotations\nforest_annotation(\n  type,                     # Annotation type\n  ...                       # Type-specific parameters\n)"
-  },
-  {
-    "objectID": "reference.html#multiple-effects",
-    "href": "reference.html#multiple-effects",
-    "title": "Function Reference",
-    "section": "Multiple Effects",
-    "text": "Multiple Effects\nDisplay multiple effect estimates per row (e.g., sensitivity analyses):\n# Define effect specifications\neffects &lt;- list(\n  web_effect(\"primary\", point = \"hr\", lower = \"lo\", upper = \"hi\",\n             label = \"Primary\", color = \"#2563eb\"),\n  web_effect(\"sensitivity\", point = \"hr_sens\", lower = \"lo_sens\", upper = \"hi_sens\",\n             label = \"Sensitivity\", color = \"#dc2626\")\n)\n\nforest_plot(data, ..., effects = effects)"
-  },
-  {
-    "objectID": "reference.html#shiny-integration",
-    "href": "reference.html#shiny-integration",
-    "title": "Function Reference",
-    "section": "Shiny Integration",
-    "text": "Shiny Integration\n\nOutput and Render\n# In UI\nforestOutput(\"plot\", width = \"100%\", height = \"400px\")\n\n# In server\noutput$plot &lt;- renderForest({\n  forest_plot(data, ...)\n})\n\n\nProxy Functions\nUpdate plots without full re-render:\n# Create proxy\nproxy &lt;- forestProxy(\"plot\")\n\n# Update data\nforest_update_data(proxy, new_data)\n\n# Sort by column\nforest_sort(proxy, column = \"hr\", direction = \"asc\")\n\n# Filter rows\nforest_filter(proxy, field = \"n\", operator = \"gt\", value = 100)\n\n# Clear filters\nforest_clear_filter(proxy)\n\n# Toggle group collapse\nforest_toggle_subgroup(proxy, group_id = \"group1\", collapsed = TRUE)"
-  },
-  {
-    "objectID": "reference.html#specification-objects",
-    "href": "reference.html#specification-objects",
-    "title": "Function Reference",
-    "section": "Specification Objects",
-    "text": "Specification Objects\n\nWebSpec\nCreate a complete plot specification programmatically:\nweb_spec(\n  data,                     # Data frame\n  columns = list(),         # Column specifications\n  theme = web_theme_default(),\n  interaction = web_interaction(),\n  annotations = list(),\n  labels = list(\n    title = NULL,\n    subtitle = NULL,\n    caption = NULL,\n    footnote = NULL\n  )\n)\n\n\nInteraction Settings\n# Full interactivity (default)\nweb_interaction(\n  show_filters = FALSE,\n  show_legend = TRUE,\n  enable_sort = TRUE,\n  enable_collapse = TRUE,\n  enable_select = TRUE,\n  enable_hover = TRUE,\n  enable_resize = TRUE,\n  enable_export = TRUE\n)\n\n# Minimal interactivity\nweb_interaction_minimal()\n\n# Publication mode (export-focused)\nweb_interaction_publication()"
-  },
-  {
-    "objectID": "reference.html#utility-functions",
-    "href": "reference.html#utility-functions",
-    "title": "Function Reference",
-    "section": "Utility Functions",
-    "text": "Utility Functions\n\nExample Generation\n# Regenerate all package examples\nregenerate_examples()\n\n# Screenshot HTML widgets\nscreenshot_html(html_file, output_file, width = 1200, scale = 2)\nscreenshot_all_examples(output_dir = \"examples_output\")"
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "webforest",
+    "objectID": "reference/columns.html",
+    "href": "reference/columns.html",
+    "title": "Columns",
     "section": "",
-    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, it supports any data with point estimates and confidence intervals."
+    "text": "Column functions for defining table columns in forest plots."
   },
   {
-    "objectID": "index.html#overview",
-    "href": "index.html#overview",
-    "title": "webforest",
+    "objectID": "reference/columns.html#basic-columns",
+    "href": "reference/columns.html#basic-columns",
+    "title": "Columns",
+    "section": "Basic Columns",
+    "text": "Basic Columns\n\ncol_text\nText column for displaying character data.\ncol_text(field, header = NULL, width = NULL, position = \"left\")\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name in data\n\n\nheader\nDisplay header (defaults to field name)\n\n\nwidth\nColumn width in pixels\n\n\nposition\n\"left\" or \"right\" of forest plot\n\n\n\n\n\ncol_numeric\nNumeric column with automatic formatting.\ncol_numeric(field, header = NULL, width = NULL, position = \"left\")\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name in data\n\n\nheader\nDisplay header\n\n\nwidth\nColumn width in pixels\n\n\nposition\n\"left\" or \"right\"\n\n\n\n\n\ncol_interval\nConfidence interval display showing point estimate with bounds.\ncol_interval(header = \"95% CI\", width = 140, position = \"right\")\n\n\n\nArgument\nDescription\n\n\n\n\nheader\nColumn header (default: “95% CI”)\n\n\nwidth\nColumn width in pixels (default: 140)\n\n\nposition\nPosition relative to plot (default: “right”)\n\n\n\nNote: This column automatically uses the point, lower, and upper values specified in forest_plot()."
+  },
+  {
+    "objectID": "reference/columns.html#visualization-columns",
+    "href": "reference/columns.html#visualization-columns",
+    "title": "Columns",
+    "section": "Visualization Columns",
+    "text": "Visualization Columns\n\ncol_bar\nHorizontal bar chart for showing magnitude.\ncol_bar(\n  field,\n  header = NULL,\n  width = NULL,\n  max_value = NULL,\n  show_label = TRUE,\n  color = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name containing numeric values\n\n\nheader\nColumn header\n\n\nwidth\nColumn width in pixels\n\n\nmax_value\nMaximum value for scaling (auto if NULL)\n\n\nshow_label\nShow value label (default: TRUE)\n\n\ncolor\nBar color\n\n\n\n\n\ncol_pvalue\nP-value column with optional significance stars.\ncol_pvalue(field, header = \"P-value\", width = 80, stars = TRUE)\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name containing p-values\n\n\nheader\nColumn header (default: “P-value”)\n\n\nwidth\nColumn width (default: 80)\n\n\nstars\nShow significance stars (default: TRUE)\n\n\n\nSignificance levels:\n\n* p &lt; 0.05\n** p &lt; 0.01\n*** p &lt; 0.001\n\n\n\ncol_sparkline\nInline sparkline chart for trend visualization.\ncol_sparkline(field, header = NULL, width = 80, type = \"line\")\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name containing numeric vector\n\n\nheader\nColumn header\n\n\nwidth\nColumn width (default: 80)\n\n\ntype\n\"line\", \"bar\", or \"area\"\n\n\n\nNote: The field should contain list-columns with numeric vectors.\n\n\ncol_n\nSample size column (alias for col_numeric with sensible defaults).\ncol_n(field = \"n\", header = \"N\", width = 60)\n\n\ncol_weight\nWeight column with bar visualization for meta-analysis.\ncol_weight(field = \"weight\", header = \"Weight\", width = 100)"
+  },
+  {
+    "objectID": "reference/columns.html#column-groups",
+    "href": "reference/columns.html#column-groups",
+    "title": "Columns",
+    "section": "Column Groups",
+    "text": "Column Groups\n\ncol_group\nGroup multiple columns under a shared header.\ncol_group(header, ...)\n\n\n\nArgument\nDescription\n\n\n\n\nheader\nGroup header text\n\n\n...\nColumn specifications to group"
+  },
+  {
+    "objectID": "reference/columns.html#examples",
+    "href": "reference/columns.html#examples",
+    "title": "Columns",
+    "section": "Examples",
+    "text": "Examples\n\nMixed Column Types\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\"),\n  hr = c(0.72, 0.85, 0.68),\n  lower = c(0.55, 0.70, 0.52),\n  upper = c(0.95, 1.03, 0.89),\n  n = c(245, 180, 320),\n  weight = c(35, 28, 37),\n  pval = c(0.018, 0.092, 0.003)\n)\n\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  columns = list(\n    col_n(\"n\"),\n    col_weight(\"weight\"),\n    col_interval(\"HR (95% CI)\"),\n    col_pvalue(\"pval\")\n  ),\n  null_value = 1, scale = \"log\"\n)\n\n\n\n\n\n\n\n\nColumn Groups\n\n\nCode\ncolumns = list(\n  col_n(\"n\"),\n  col_group(\"Treatment Effect\",\n    col_numeric(\"hr\", \"HR\"),\n    col_interval(\"95% CI\")\n  ),\n  col_pvalue(\"pval\")\n)"
+  },
+  {
+    "objectID": "reference/columns.html#see-also",
+    "href": "reference/columns.html#see-also",
+    "title": "Columns",
+    "section": "See Also",
+    "text": "See Also\n\nforest_plot() for using columns\nColumns Guide for detailed examples"
+  },
+  {
+    "objectID": "reference/shiny.html",
+    "href": "reference/shiny.html",
+    "title": "Shiny Integration",
     "section": "",
-    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, it supports any data with point estimates and confidence intervals."
+    "text": "Functions for using forest plots in Shiny applications."
   },
   {
-    "objectID": "index.html#features",
-    "href": "index.html#features",
-    "title": "webforest",
-    "section": "Features",
-    "text": "Features\n\nModern web rendering using Svelte 5 and D3.js\nMultiple preset themes (JAMA, Lancet, presentation, dark mode)\nFlexible column system with special renderers (bars, p-values, sparklines)\nHierarchical grouping with collapsible sections\nInteractive features (hover tooltips, row selection)\nStatic export to SVG, PNG, and PDF\nFluent API for theme customization"
+    "objectID": "reference/shiny.html#output-and-render",
+    "href": "reference/shiny.html#output-and-render",
+    "title": "Shiny Integration",
+    "section": "Output and Render",
+    "text": "Output and Render\n\nforestOutput\nCreate a Shiny output element for a forest plot.\nforestOutput(outputId, width = \"100%\", height = \"400px\")\n\n\n\nArgument\nDescription\n\n\n\n\noutputId\nOutput variable name\n\n\nwidth\nWidget width (CSS units)\n\n\nheight\nWidget height (CSS units)\n\n\n\n\n\nrenderForest\nRender a forest plot in Shiny.\nrenderForest(expr, env = parent.frame(), quoted = FALSE)\n\n\n\nArgument\nDescription\n\n\n\n\nexpr\nExpression that returns a forest_plot()\n\n\nenv\nEnvironment for evaluation\n\n\nquoted\nWhether expr is already quoted"
   },
   {
-    "objectID": "index.html#installation",
-    "href": "index.html#installation",
-    "title": "webforest",
-    "section": "Installation",
-    "text": "Installation\n# install.packages(\"pak\")\npak::pak(\"kaskarn/webforest\")"
+    "objectID": "reference/shiny.html#proxy-functions",
+    "href": "reference/shiny.html#proxy-functions",
+    "title": "Shiny Integration",
+    "section": "Proxy Functions",
+    "text": "Proxy Functions\nProxy functions allow updating a forest plot without full re-rendering.\n\nforestProxy\nCreate a proxy object for an existing forest plot.\nforestProxy(id, session = shiny::getDefaultReactiveDomain())\n\n\n\nArgument\nDescription\n\n\n\n\nid\nThe widget ID\n\n\nsession\nShiny session (default: current session)\n\n\n\n\n\nforest_update_data\nUpdate the data in an existing forest plot.\nforest_update_data(proxy, spec)\n\n\n\nArgument\nDescription\n\n\n\n\nproxy\nA forest_proxy object\n\n\nspec\nA WebSpec object from web_spec()\n\n\n\n\n\nforest_toggle_subgroup\nToggle a subgroup’s collapse state.\nforest_toggle_subgroup(proxy, subgroup_id, collapsed = NULL)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nproxy\nA forest_proxy object\n\n\nsubgroup_id\nThe subgroup ID to toggle\n\n\ncollapsed\nTRUE to collapse, FALSE to expand, NULL to toggle\n\n\n\n\n\nforest_filter\nApply a filter to the forest plot.\nforest_filter(proxy, field, operator, value)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nproxy\nA forest_proxy object\n\n\nfield\nField to filter on\n\n\noperator\nFilter operator: \"eq\", \"neq\", \"gt\", \"lt\", \"contains\"\n\n\nvalue\nFilter value\n\n\n\n\n\nforest_clear_filter\nClear all filters from the forest plot.\nforest_clear_filter(proxy)\n\n\nforest_sort\nSort the forest plot by a column.\nforest_sort(proxy, column, direction)\n\n\n\nArgument\nDescription\n\n\n\n\nproxy\nA forest_proxy object\n\n\ncolumn\nColumn to sort by\n\n\ndirection\nSort direction: \"asc\", \"desc\", or \"none\""
   },
   {
-    "objectID": "index.html#quick-example",
-    "href": "index.html#quick-example",
-    "title": "webforest",
-    "section": "Quick Example",
-    "text": "Quick Example\nlibrary(webforest)\n\nforest_plot(data,\n  point = \"estimate\",\n  lower = \"ci_lower\",\n  upper = \"ci_upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\"\n)"
+    "objectID": "reference/shiny.html#examples",
+    "href": "reference/shiny.html#examples",
+    "title": "Shiny Integration",
+    "section": "Examples",
+    "text": "Examples\n\nBasic Shiny App\n\n\nCode\nlibrary(shiny)\nlibrary(webforest)\n\nui &lt;- fluidPage(\n  titlePanel(\"Forest Plot Demo\"),\n  sidebarLayout(\n    sidebarPanel(\n      selectInput(\"theme\", \"Theme:\",\n        choices = c(\"Default\", \"JAMA\", \"Lancet\", \"Modern\")\n      )\n    ),\n    mainPanel(\n      forestOutput(\"forest\", height = \"500px\")\n    )\n  )\n)\n\nserver &lt;- function(input, output, session) {\n  data &lt;- data.frame(\n    study = c(\"Study A\", \"Study B\", \"Study C\"),\n    hr = c(0.72, 0.85, 0.91),\n    lower = c(0.55, 0.70, 0.75),\n    upper = c(0.95, 1.03, 1.10)\n  )\n\n  output$forest &lt;- renderForest({\n    theme &lt;- switch(input$theme,\n      \"Default\" = web_theme_default(),\n      \"JAMA\" = web_theme_jama(),\n      \"Lancet\" = web_theme_lancet(),\n      \"Modern\" = web_theme_modern()\n    )\n\n    forest_plot(data,\n      point = \"hr\", lower = \"lower\", upper = \"upper\",\n      label = \"study\",\n      null_value = 1, scale = \"log\",\n      theme = theme\n    )\n  })\n}\n\nshinyApp(ui, server)\n\n\n\n\nUsing Proxy for Updates\n\n\nCode\nlibrary(shiny)\nlibrary(webforest)\n\nui &lt;- fluidPage(\n  forestOutput(\"forest\"),\n  actionButton(\"filter_btn\", \"Filter HR &lt; 1\"),\n  actionButton(\"clear_btn\", \"Clear Filter\")\n)\n\nserver &lt;- function(input, output, session) {\n  data &lt;- reactive({\n    data.frame(\n      study = c(\"Study A\", \"Study B\", \"Study C\", \"Study D\"),\n      hr = c(0.72, 0.85, 1.15, 0.91),\n      lower = c(0.55, 0.70, 0.90, 0.75),\n      upper = c(0.95, 1.03, 1.45, 1.10)\n    )\n  })\n\n  output$forest &lt;- renderForest({\n    forest_plot(data(),\n      point = \"hr\", lower = \"lower\", upper = \"upper\",\n      label = \"study\",\n      null_value = 1, scale = \"log\"\n    )\n  })\n\n  observeEvent(input$filter_btn, {\n    forestProxy(\"forest\") |&gt;\n      forest_filter(\"hr\", \"lt\", 1)\n  })\n\n  observeEvent(input$clear_btn, {\n    forestProxy(\"forest\") |&gt;\n      forest_clear_filter()\n  })\n}\n\nshinyApp(ui, server)\n\n\n\n\nDynamic Data Updates\n\n\nCode\nlibrary(shiny)\nlibrary(webforest)\n\nserver &lt;- function(input, output, session) {\n  # Reactive data source\n  filtered_data &lt;- reactive({\n    base_data |&gt;\n      filter(category == input$category)\n  })\n\n  # Update via proxy for smooth transitions\n  observe({\n    spec &lt;- web_spec(\n      filtered_data(),\n      point = \"hr\", lower = \"lower\", upper = \"upper\",\n      label = \"study\",\n      scale = \"log\", null_value = 1\n    )\n\n    forestProxy(\"forest\") |&gt;\n      forest_update_data(spec)\n  })\n}"
   },
   {
-    "objectID": "index.html#guide",
-    "href": "index.html#guide",
-    "title": "webforest",
-    "section": "Guide",
-    "text": "Guide\nLearn how to use webforest:\n\n\n\nChapter\nDescription\n\n\n\n\nQuick Start\nInstallation and basic usage\n\n\nThemes\nPreset themes and customization\n\n\nColumns\nData columns and special formatting\n\n\nGrouping & Rows\nHierarchical data and row styling\n\n\nExporting\nSave plots as SVG, PNG, or PDF\n\n\nAxis & Annotations\nAxis control and reference lines"
+    "objectID": "reference/shiny.html#see-also",
+    "href": "reference/shiny.html#see-also",
+    "title": "Shiny Integration",
+    "section": "See Also",
+    "text": "See Also\n\nforest_plot() for creating plots\nweb_spec() for creating specifications\nShiny Guide for detailed examples"
   },
   {
-    "objectID": "index.html#more-resources",
-    "href": "index.html#more-resources",
-    "title": "webforest",
-    "section": "More Resources",
-    "text": "More Resources\n\nCookbook - Common tasks and patterns\nGallery - Interactive examples\nReference - API documentation"
+    "objectID": "reference/webtable.html",
+    "href": "reference/webtable.html",
+    "title": "webtable",
+    "section": "",
+    "text": "Create a table-only widget without the forest plot visualization."
+  },
+  {
+    "objectID": "reference/webtable.html#usage",
+    "href": "reference/webtable.html#usage",
+    "title": "webtable",
+    "section": "Usage",
+    "text": "Usage\nwebtable(\n  x,\n  ...,\n  width_mode = c(\"fit\", \"fill\", \"responsive\"),\n  height_mode = c(\"auto\", \"scroll\"),\n  width = NULL,\n  height = NULL,\n  elementId = NULL\n)"
+  },
+  {
+    "objectID": "reference/webtable.html#arguments",
+    "href": "reference/webtable.html#arguments",
+    "title": "webtable",
+    "section": "Arguments",
+    "text": "Arguments\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA data frame or WebSpec object\n\n\n...\nArguments passed to web_spec() when x is a data frame\n\n\nwidth_mode\n\"fit\", \"fill\", or \"responsive\"\n\n\nheight_mode\n\"auto\" or \"scroll\"\n\n\nwidth\nWidget width\n\n\nheight\nWidget height\n\n\nelementId\nHTML element ID"
+  },
+  {
+    "objectID": "reference/webtable.html#value",
+    "href": "reference/webtable.html#value",
+    "title": "webtable",
+    "section": "Value",
+    "text": "Value\nAn htmlwidget object displaying the table portion without the forest plot."
+  },
+  {
+    "objectID": "reference/webtable.html#examples",
+    "href": "reference/webtable.html#examples",
+    "title": "webtable",
+    "section": "Examples",
+    "text": "Examples\n\nBasic Table\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Study A\", \"Study B\", \"Study C\"),\n  hr = c(0.72, 0.85, 0.91),\n  lower = c(0.55, 0.70, 0.75),\n  upper = c(0.95, 1.03, 1.10),\n  n = c(245, 180, 320),\n  pval = c(0.018, 0.092, 0.31)\n)\n\nwebtable(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  columns = list(\n    col_numeric(\"n\", \"N\"),\n    col_interval(\"HR (95% CI)\"),\n    col_pvalue(\"pval\", \"P-value\")\n  )\n)"
+  },
+  {
+    "objectID": "reference/webtable.html#see-also",
+    "href": "reference/webtable.html#see-also",
+    "title": "webtable",
+    "section": "See Also",
+    "text": "See Also\n\nforest_plot() for full forest plots\nColumns for column types"
+  },
+  {
+    "objectID": "reference/save_plot.html",
+    "href": "reference/save_plot.html",
+    "title": "save_plot",
+    "section": "",
+    "text": "Export a forest plot or webtable to static file formats."
+  },
+  {
+    "objectID": "reference/save_plot.html#usage",
+    "href": "reference/save_plot.html#usage",
+    "title": "save_plot",
+    "section": "Usage",
+    "text": "Usage\nsave_plot(\n  plot,\n  file,\n  width = 800,\n  height = NULL,\n  scale = 2\n)"
+  },
+  {
+    "objectID": "reference/save_plot.html#arguments",
+    "href": "reference/save_plot.html#arguments",
+    "title": "save_plot",
+    "section": "Arguments",
+    "text": "Arguments\n\n\n\nArgument\nDescription\n\n\n\n\nplot\nA forest_plot() or webtable() widget\n\n\nfile\nOutput file path with extension .svg, .pdf, or .png\n\n\nwidth\nWidth in pixels (default: 800)\n\n\nheight\nHeight in pixels (auto-calculated if NULL)\n\n\nscale\nScale factor for PNG resolution (default: 2)"
+  },
+  {
+    "objectID": "reference/save_plot.html#details",
+    "href": "reference/save_plot.html#details",
+    "title": "save_plot",
+    "section": "Details",
+    "text": "Details\nThe export process:\n\nRenders the widget to SVG using the internal JavaScript renderer\nFor SVG output, writes the SVG directly\nFor PDF output, converts SVG to PDF using Chrome/Chromium\nFor PNG output, renders SVG to PNG at specified scale\n\n\nRequirements\n\nSVG: No external dependencies\nPDF/PNG: Requires Chrome, Chromium, or Google Chrome installed\n\n\n\nResolution\nFor PNG exports, the scale parameter controls the resolution:\n\nscale = 1: 1x resolution (72 DPI equivalent)\nscale = 2: 2x resolution (144 DPI, good for screens)\nscale = 3: 3x resolution (216 DPI, good for print)"
+  },
+  {
+    "objectID": "reference/save_plot.html#examples",
+    "href": "reference/save_plot.html#examples",
+    "title": "save_plot",
+    "section": "Examples",
+    "text": "Examples\n\nSave as SVG\np &lt;- forest_plot(data, point = \"hr\", lower = \"lo\", upper = \"hi\", label = \"study\")\n\nsave_plot(p, \"my_plot.svg\")\n\n\nSave as PNG (high resolution)\nsave_plot(p, \"my_plot.png\", width = 1200, scale = 3)\n\n\nSave as PDF\nsave_plot(p, \"my_plot.pdf\", width = 800)"
+  },
+  {
+    "objectID": "reference/save_plot.html#see-also",
+    "href": "reference/save_plot.html#see-also",
+    "title": "save_plot",
+    "section": "See Also",
+    "text": "See Also\n\nforest_plot() for creating plots\nExporting Guide for detailed export workflows"
   },
   {
     "objectID": "technical/export-system.html",
@@ -495,6 +551,272 @@
     "title": "Export System Architecture",
     "section": "Troubleshooting",
     "text": "Troubleshooting\n\n“SVG generator JavaScript file not found”\nThe V8 bundle hasn’t been built. Run:\ncd srcjs && npm run build\n\n\nText alignment looks off\nThe text width approximation may be inaccurate for certain fonts. Solutions:\n\nExplicitly set column widths in your spec\nUse a monospace font family in the theme\nFor R exports, consider post-processing with rsvg\n\n\n\nColors don’t match the interactive plot\nEnsure you’re using the same theme. The generator resolves all CSS variables to literal color values at export time."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "webforest",
+    "section": "",
+    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, it supports any data with point estimates and confidence intervals."
+  },
+  {
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "webforest",
+    "section": "",
+    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, it supports any data with point estimates and confidence intervals."
+  },
+  {
+    "objectID": "index.html#features",
+    "href": "index.html#features",
+    "title": "webforest",
+    "section": "Features",
+    "text": "Features\n\nModern web rendering using Svelte 5 and D3.js\nMultiple preset themes (JAMA, Lancet, presentation, dark mode)\nFlexible column system with special renderers (bars, p-values, sparklines)\nHierarchical grouping with collapsible sections\nInteractive features (hover tooltips, row selection)\nStatic export to SVG, PNG, and PDF\nFluent API for theme customization"
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "webforest",
+    "section": "Installation",
+    "text": "Installation\n# install.packages(\"pak\")\npak::pak(\"kaskarn/webforest\")"
+  },
+  {
+    "objectID": "index.html#quick-example",
+    "href": "index.html#quick-example",
+    "title": "webforest",
+    "section": "Quick Example",
+    "text": "Quick Example\nlibrary(webforest)\n\nforest_plot(data,\n  point = \"estimate\",\n  lower = \"ci_lower\",\n  upper = \"ci_upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\"\n)"
+  },
+  {
+    "objectID": "index.html#guide",
+    "href": "index.html#guide",
+    "title": "webforest",
+    "section": "Guide",
+    "text": "Guide\nLearn how to use webforest:\n\n\n\nChapter\nDescription\n\n\n\n\nQuick Start\nInstallation and basic usage\n\n\nThemes\nPreset themes and customization\n\n\nColumns\nData columns and special formatting\n\n\nGrouping & Rows\nHierarchical data and row styling\n\n\nExporting\nSave plots as SVG, PNG, or PDF\n\n\nAxis & Annotations\nAxis control and reference lines"
+  },
+  {
+    "objectID": "index.html#more-resources",
+    "href": "index.html#more-resources",
+    "title": "webforest",
+    "section": "More Resources",
+    "text": "More Resources\n\nCookbook - Common tasks and patterns\nGallery - Interactive examples\nReference - API documentation"
+  },
+  {
+    "objectID": "reference/index.html",
+    "href": "reference/index.html",
+    "title": "Function Reference",
+    "section": "",
+    "text": "Complete reference for all webforest functions, organized by category."
+  },
+  {
+    "objectID": "reference/index.html#core-functions",
+    "href": "reference/index.html#core-functions",
+    "title": "Function Reference",
+    "section": "Core Functions",
+    "text": "Core Functions\n\n\n\nFunction\nDescription\n\n\n\n\nforest_plot()\nCreate interactive forest plots\n\n\nwebtable()\nCreate table-only widgets\n\n\nsave_plot()\nExport to SVG, PNG, or PDF"
+  },
+  {
+    "objectID": "reference/index.html#themes",
+    "href": "reference/index.html#themes",
+    "title": "Function Reference",
+    "section": "Themes",
+    "text": "Themes\n\n\n\nFunction\nDescription\n\n\n\n\nweb_theme_default()\nClean, modern default theme\n\n\nweb_theme_jama()\nJAMA journal style\n\n\nweb_theme_lancet()\nLancet journal style\n\n\nweb_theme_modern()\nContemporary UI\n\n\nweb_theme_presentation()\nLarge fonts for slides\n\n\nweb_theme_dark()\nDark mode\n\n\nweb_theme_minimal()\nMinimal B&W\n\n\n\n\nTheme Modifiers\n\n\n\nFunction\nDescription\n\n\n\n\nset_colors()\nCustomize theme colors\n\n\nset_typography()\nCustomize fonts\n\n\nset_spacing()\nCustomize spacing\n\n\nset_shapes()\nCustomize shapes\n\n\nset_axis()\nCustomize axis\n\n\nset_layout()\nCustomize layout"
+  },
+  {
+    "objectID": "reference/index.html#columns",
+    "href": "reference/index.html#columns",
+    "title": "Function Reference",
+    "section": "Columns",
+    "text": "Columns\n\n\n\nFunction\nDescription\n\n\n\n\ncol_text()\nText column\n\n\ncol_numeric()\nNumeric column\n\n\ncol_interval()\nConfidence interval display\n\n\ncol_bar()\nHorizontal bar chart\n\n\ncol_pvalue()\nP-value with significance stars\n\n\ncol_sparkline()\nInline sparkline\n\n\ncol_n()\nSample size column\n\n\ncol_weight()\nWeight column with bar\n\n\ncol_group()\nGroup columns under header"
+  },
+  {
+    "objectID": "reference/index.html#annotations",
+    "href": "reference/index.html#annotations",
+    "title": "Function Reference",
+    "section": "Annotations",
+    "text": "Annotations\n\n\n\nFunction\nDescription\n\n\n\n\nforest_refline()\nAdd reference line\n\n\nforest_annotation()\nCustom annotation"
+  },
+  {
+    "objectID": "reference/index.html#specification-objects",
+    "href": "reference/index.html#specification-objects",
+    "title": "Function Reference",
+    "section": "Specification Objects",
+    "text": "Specification Objects\n\n\n\nFunction\nDescription\n\n\n\n\nweb_spec()\nCreate plot specification\n\n\nweb_group()\nDefine row group\n\n\nweb_effect()\nDefine effect for multi-effect plots\n\n\nweb_interaction()\nInteraction settings\n\n\nweb_interaction_minimal()\nMinimal interactivity\n\n\nweb_interaction_publication()\nPublication mode"
+  },
+  {
+    "objectID": "reference/index.html#shiny-integration",
+    "href": "reference/index.html#shiny-integration",
+    "title": "Function Reference",
+    "section": "Shiny Integration",
+    "text": "Shiny Integration\n\n\n\nFunction\nDescription\n\n\n\n\nforestOutput()\nShiny UI output\n\n\nrenderForest()\nShiny server render\n\n\nforestProxy()\nCreate update proxy\n\n\nforest_update_data()\nUpdate plot data\n\n\nforest_sort()\nSort by column\n\n\nforest_filter()\nFilter rows\n\n\nforest_clear_filter()\nClear filters\n\n\nforest_toggle_subgroup()\nToggle group collapse"
+  },
+  {
+    "objectID": "reference/forest_plot.html",
+    "href": "reference/forest_plot.html",
+    "title": "forest_plot",
+    "section": "",
+    "text": "Create interactive forest plots from data frames or WebSpec objects."
+  },
+  {
+    "objectID": "reference/forest_plot.html#usage",
+    "href": "reference/forest_plot.html#usage",
+    "title": "forest_plot",
+    "section": "Usage",
+    "text": "Usage\nforest_plot(\n\nx,\n...,\naxis_range = NULL,\naxis_ticks = NULL,\naxis_gridlines = NULL,\nplot_position = NULL,\nrow_height = NULL,\nwidth_mode = c(\"fit\", \"fill\", \"responsive\"),\nheight_mode = c(\"auto\", \"scroll\"),\nwidth = NULL,\nheight = NULL,\nelementId = NULL\n)"
+  },
+  {
+    "objectID": "reference/forest_plot.html#arguments",
+    "href": "reference/forest_plot.html#arguments",
+    "title": "forest_plot",
+    "section": "Arguments",
+    "text": "Arguments\n\nData Arguments (passed to web_spec() via ...)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA data frame or WebSpec object\n\n\npoint\nColumn name for point estimates\n\n\nlower\nColumn name for lower confidence bounds\n\n\nupper\nColumn name for upper confidence bounds\n\n\nlabel\nColumn name for row labels\n\n\ngroup\nColumn name(s) for hierarchical grouping\n\n\ncolumns\nList of column specifications\n\n\nscale\n\"linear\" or \"log\"\n\n\nnull_value\nReference value (e.g., 1 for ratios, 0 for differences)\n\n\naxis_label\nX-axis label\n\n\ntheme\nTheme object (default: web_theme_default())\n\n\ntitle\nPlot title\n\n\nsubtitle\nPlot subtitle\n\n\ncaption\nPlot caption\n\n\nfootnote\nPlot footnote\n\n\n\n\n\nRow Styling Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nrow_type\nColumn for row type: \"header\", \"data\", \"summary\", \"spacer\"\n\n\nrow_bold\nColumn for bold styling (logical)\n\n\nrow_indent\nColumn for indentation level (integer)\n\n\nrow_color\nColumn for text color (hex string)\n\n\nrow_badge\nColumn for badge text\n\n\n\n\n\nCell Styling Arguments\n\n\n\nArgument\nDescription\n\n\n\n\nstyle_cols\nColumn names to apply cell styling to\n\n\nstyle_bold\nColumn for cell bold (logical)\n\n\nstyle_color\nColumn for cell text color (hex string)\n\n\nstyle_bg\nColumn for cell background color (hex string)\n\n\n\n\n\nVisual Override Arguments\n\n\n\nArgument\nDescription\n\n\n\n\naxis_range\nc(min, max) to override axis limits\n\n\naxis_ticks\nNumeric vector of explicit tick positions\n\n\naxis_gridlines\nTRUE/FALSE to show/hide gridlines\n\n\nplot_position\n\"left\" or \"right\"\n\n\nrow_height\nRow height in pixels\n\n\n\n\n\nLayout Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nwidth_mode\n\"fit\" (shrink-wrap), \"fill\" (100%), or \"responsive\" (100% with scaling)\n\n\nheight_mode\n\"auto\" (natural height) or \"scroll\" (scroll if &gt; viewport)\n\n\nwidth\nWidget width\n\n\nheight\nWidget height\n\n\nelementId\nHTML element ID"
+  },
+  {
+    "objectID": "reference/forest_plot.html#value",
+    "href": "reference/forest_plot.html#value",
+    "title": "forest_plot",
+    "section": "Value",
+    "text": "Value\nAn htmlwidget object that can be:\n\nDisplayed in RStudio Viewer\nRendered in R Markdown / Quarto documents\nUsed in Shiny applications\nSaved to files with save_plot()"
+  },
+  {
+    "objectID": "reference/forest_plot.html#examples",
+    "href": "reference/forest_plot.html#examples",
+    "title": "forest_plot",
+    "section": "Examples",
+    "text": "Examples\n\nBasic Usage\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Study A\", \"Study B\", \"Study C\"),\n  hr = c(0.72, 0.85, 0.91),\n  lower = c(0.55, 0.70, 0.75),\n  upper = c(0.95, 1.03, 1.10)\n)\n\nforest_plot(data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\"\n)\n\n\n\n\n\n\n\n\nWith Columns and Theme\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\"),\n  hr = c(0.72, 0.85, 0.68),\n  lower = c(0.55, 0.70, 0.52),\n  upper = c(0.95, 1.03, 0.89),\n  n = c(245, 180, 320),\n  events = c(\"89/245\", \"62/180\", \"98/320\")\n)\n\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  columns = list(\n    col_numeric(\"n\", \"N\"),\n    col_text(\"events\", \"Events\"),\n    col_interval(\"HR (95% CI)\")\n  ),\n  null_value = 1,\n  scale = \"log\",\n  theme = web_theme_lancet(),\n  title = \"Treatment Effect by Trial\"\n)\n\n\n\n\n\n\n\n\nRow Styling\n\n\nCode\nlibrary(dplyr)\n\nstyled &lt;- tibble(\n  label = c(\"Primary Endpoint\", \"  Outcome A\", \"  Outcome B\", \"Summary\"),\n  hr = c(NA, 0.72, 0.85, 0.78),\n  lower = c(NA, 0.55, 0.70, 0.65),\n  upper = c(NA, 0.95, 1.03, 0.93),\n  rtype = c(\"header\", \"data\", \"data\", \"summary\"),\n  rbold = c(TRUE, FALSE, FALSE, TRUE)\n)\n\nforest_plot(styled,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"label\",\n  row_type = \"rtype\",\n  row_bold = \"rbold\",\n  null_value = 1, scale = \"log\"\n)"
+  },
+  {
+    "objectID": "reference/forest_plot.html#see-also",
+    "href": "reference/forest_plot.html#see-also",
+    "title": "forest_plot",
+    "section": "See Also",
+    "text": "See Also\n\nwebtable() for table-only widgets\nweb_spec() for creating specifications programmatically\nThemes for customizing appearance\nColumns for column types"
+  },
+  {
+    "objectID": "reference/themes.html",
+    "href": "reference/themes.html",
+    "title": "Themes",
+    "section": "",
+    "text": "Theme functions for customizing forest plot appearance."
+  },
+  {
+    "objectID": "reference/themes.html#preset-themes",
+    "href": "reference/themes.html#preset-themes",
+    "title": "Themes",
+    "section": "Preset Themes",
+    "text": "Preset Themes\n\nweb_theme_default\nClean, modern default theme with subtle colors.\nweb_theme_default()\n\n\nweb_theme_jama\nJAMA journal style: black & white, compact, sans-serif fonts.\nweb_theme_jama()\n\n\nweb_theme_lancet\nLancet journal style: navy blue accents, serif fonts.\nweb_theme_lancet()\n\n\nweb_theme_modern\nContemporary UI with subtle colors and modern typography.\nweb_theme_modern()\n\n\nweb_theme_presentation\nLarge fonts optimized for slides and presentations.\nweb_theme_presentation()\n\n\nweb_theme_dark\nDark mode with light text on dark background.\nweb_theme_dark()\n\n\nweb_theme_minimal\nMinimal black & white styling.\nweb_theme_minimal()"
+  },
+  {
+    "objectID": "reference/themes.html#theme-modifiers",
+    "href": "reference/themes.html#theme-modifiers",
+    "title": "Themes",
+    "section": "Theme Modifiers",
+    "text": "Theme Modifiers\nAll modifiers return the modified theme and can be chained with pipes.\n\nset_colors\nCustomize theme colors.\nset_colors(\n  theme,\n  background = NULL,\n  foreground = NULL,\n  primary = NULL,\n  secondary = NULL,\n  accent = NULL,\n  muted = NULL,\n  border = NULL,\n  interval_positive = NULL,\n  interval_negative = NULL,\n  interval_neutral = NULL,\n  interval_line = NULL,\n  summary_fill = NULL,\n  summary_border = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\nbackground\nBackground color\n\n\nforeground\nPrimary text color\n\n\nprimary\nPrimary accent color\n\n\nsecondary\nSecondary text color\n\n\naccent\nAccent color\n\n\nmuted\nMuted text color\n\n\nborder\nBorder color\n\n\ninterval_positive\nColor for favorable effects\n\n\ninterval_negative\nColor for unfavorable effects\n\n\ninterval_neutral\nColor for neutral effects\n\n\ninterval_line\nInterval line color\n\n\nsummary_fill\nSummary diamond fill\n\n\nsummary_border\nSummary diamond border\n\n\n\n\n\nset_typography\nCustomize fonts and text styling.\nset_typography(\n  theme,\n  font_family = NULL,\n  font_size_sm = NULL,\n  font_size_base = NULL,\n  font_size_lg = NULL,\n  font_weight_normal = NULL,\n  font_weight_medium = NULL,\n  font_weight_bold = NULL,\n  line_height = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\nfont_family\nCSS font-family string\n\n\nfont_size_sm\nSmall text (e.g., \"0.75rem\")\n\n\nfont_size_base\nBase text (e.g., \"0.875rem\")\n\n\nfont_size_lg\nLarge text (e.g., \"1rem\")\n\n\nfont_weight_normal\nNormal weight (e.g., 400)\n\n\nfont_weight_medium\nMedium weight (e.g., 500)\n\n\nfont_weight_bold\nBold weight (e.g., 600)\n\n\nline_height\nLine height multiplier\n\n\n\n\n\nset_spacing\nCustomize spacing and sizing.\nset_spacing(\n  theme,\n  row_height = NULL,\n  header_height = NULL,\n  column_gap = NULL,\n  section_gap = NULL,\n  padding = NULL,\n  cell_padding_x = NULL,\n  cell_padding_y = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\nrow_height\nData row height in pixels\n\n\nheader_height\nHeader row height in pixels\n\n\ncolumn_gap\nGap between columns\n\n\nsection_gap\nGap between sections\n\n\npadding\nContainer padding\n\n\ncell_padding_x\nHorizontal cell padding\n\n\ncell_padding_y\nVertical cell padding\n\n\n\n\n\nset_shapes\nCustomize shapes and visual elements.\nset_shapes(\n  theme,\n  point_size = NULL,\n  summary_height = NULL,\n  line_width = NULL,\n  border_radius = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\npoint_size\nPoint marker radius\n\n\nsummary_height\nSummary diamond height\n\n\nline_width\nInterval line width\n\n\nborder_radius\nBorder radius for containers\n\n\n\n\n\nset_axis\nCustomize axis appearance.\nset_axis(\n  theme,\n  range_min = NULL,\n  range_max = NULL,\n  tick_count = NULL,\n  tick_values = NULL,\n  gridlines = NULL,\n  gridline_style = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\nrange_min\nMinimum axis value (NULL = auto)\n\n\nrange_max\nMaximum axis value (NULL = auto)\n\n\ntick_count\nTarget number of ticks\n\n\ntick_values\nExplicit tick positions (numeric vector)\n\n\ngridlines\nShow gridlines (TRUE/FALSE)\n\n\ngridline_style\n\"solid\", \"dashed\", or \"dotted\"\n\n\n\n\n\nset_layout\nCustomize layout options.\nset_layout(\n  theme,\n  plot_position = NULL,\n  table_width = NULL,\n  plot_width = NULL,\n  row_border = NULL,\n  row_border_style = NULL,\n  container_border = NULL,\n  container_border_radius = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\nplot_position\n\"left\" or \"right\"\n\n\ntable_width\nTable width (\"auto\" or pixels)\n\n\nplot_width\nPlot width (\"auto\" or pixels)\n\n\nrow_border\nShow row borders (TRUE/FALSE)\n\n\nrow_border_style\n\"solid\", \"dashed\", \"dotted\"\n\n\ncontainer_border\nShow container border (TRUE/FALSE)\n\n\ncontainer_border_radius\nContainer border radius"
+  },
+  {
+    "objectID": "reference/themes.html#examples",
+    "href": "reference/themes.html#examples",
+    "title": "Themes",
+    "section": "Examples",
+    "text": "Examples\n\nChaining Modifiers\n\n\nCode\nweb_theme_jama() |&gt;\n  set_colors(primary = \"#0066cc\") |&gt;\n  set_typography(font_family = \"Georgia, serif\") |&gt;\n  set_spacing(row_height = 28) |&gt;\n  set_axis(gridlines = TRUE)\n\n\n\n\nCustom Theme for Publication\n\n\nCode\npublication_theme &lt;- web_theme_minimal() |&gt;\n  set_colors(\n    foreground = \"#1a1a1a\",\n    interval_line = \"#333333\"\n  ) |&gt;\n  set_typography(\n    font_family = \"Times New Roman, serif\",\n    font_size_base = \"11pt\"\n  ) |&gt;\n  set_spacing(row_height = 24) |&gt;\n  set_axis(gridlines = FALSE)"
+  },
+  {
+    "objectID": "reference/themes.html#see-also",
+    "href": "reference/themes.html#see-also",
+    "title": "Themes",
+    "section": "See Also",
+    "text": "See Also\n\nforest_plot() for using themes\nThemes Guide for detailed customization"
+  },
+  {
+    "objectID": "reference/annotations.html",
+    "href": "reference/annotations.html",
+    "title": "Annotations",
+    "section": "",
+    "text": "Annotation functions for adding visual elements to forest plots."
+  },
+  {
+    "objectID": "reference/annotations.html#reference-lines",
+    "href": "reference/annotations.html#reference-lines",
+    "title": "Annotations",
+    "section": "Reference Lines",
+    "text": "Reference Lines\n\nforest_refline\nAdd a vertical reference line at a specific x-axis position.\nforest_refline(x, label = NULL, style = \"dashed\", color = NULL)\n\n\n\nArgument\nDescription\n\n\n\n\nx\nX-axis position for the line\n\n\nlabel\nOptional text label for the line\n\n\nstyle\nLine style: \"solid\", \"dashed\", or \"dotted\"\n\n\ncolor\nLine color (uses theme default if NULL)"
+  },
+  {
+    "objectID": "reference/annotations.html#custom-annotations",
+    "href": "reference/annotations.html#custom-annotations",
+    "title": "Annotations",
+    "section": "Custom Annotations",
+    "text": "Custom Annotations\n\nforest_annotation\nAdd a custom shape annotation to a specific study.\nforest_annotation(\n  study_id,\n  shape = c(\"circle\", \"square\", \"triangle\", \"star\"),\n  position = c(\"after\", \"before\", \"overlay\"),\n  color = \"#8b5cf6\",\n  size = 1.0\n)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nstudy_id\nStudy identifier to annotate\n\n\nshape\nShape type: \"circle\", \"square\", \"triangle\", \"star\"\n\n\nposition\nPosition relative to point: \"before\", \"after\", \"overlay\"\n\n\ncolor\nShape color (default: purple)\n\n\nsize\nSize multiplier (default: 1.0)"
+  },
+  {
+    "objectID": "reference/annotations.html#risk-of-bias",
+    "href": "reference/annotations.html#risk-of-bias",
+    "title": "Annotations",
+    "section": "Risk of Bias",
+    "text": "Risk of Bias\n\nforest_rob\nCreate a risk of bias traffic light annotation for systematic reviews.\nforest_rob(data, study_id = \"study_id\", ...)\n\n\n\nArgument\nDescription\n\n\n\n\ndata\nData frame with study IDs and domain assessments\n\n\nstudy_id\nColumn name for study identifiers\n\n\n...\nDomain columns containing ratings\n\n\n\nRating values: \"low\", \"unclear\", \"high\""
+  },
+  {
+    "objectID": "reference/annotations.html#examples",
+    "href": "reference/annotations.html#examples",
+    "title": "Annotations",
+    "section": "Examples",
+    "text": "Examples\n\nAdding Reference Lines\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Study A\", \"Study B\", \"Study C\"),\n  hr = c(0.72, 0.85, 1.15),\n  lower = c(0.55, 0.70, 0.90),\n  upper = c(0.95, 1.03, 1.45)\n)\n\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  null_value = 1, scale = \"log\",\n  annotations = list(\n    forest_refline(1, \"No effect\", style = \"solid\"),\n    forest_refline(0.75, \"Clinically meaningful\", style = \"dashed\")\n  )\n)\n\n\n\n\nRisk of Bias Assessment\n\n\nCode\nrob_data &lt;- data.frame(\n  study_id = c(\"Study A\", \"Study B\", \"Study C\"),\n  randomization = c(\"low\", \"unclear\", \"low\"),\n  blinding = c(\"low\", \"high\", \"low\"),\n  attrition = c(\"low\", \"low\", \"unclear\")\n)\n\nforest_rob(rob_data)"
+  },
+  {
+    "objectID": "reference/annotations.html#see-also",
+    "href": "reference/annotations.html#see-also",
+    "title": "Annotations",
+    "section": "See Also",
+    "text": "See Also\n\nforest_plot() for using annotations\nAxis & Annotations Guide for detailed examples"
+  },
+  {
+    "objectID": "reference/web_spec.html",
+    "href": "reference/web_spec.html",
+    "title": "Specification Objects",
+    "section": "",
+    "text": "Functions for creating specification objects that define forest plot structure."
+  },
+  {
+    "objectID": "reference/web_spec.html#core-specification",
+    "href": "reference/web_spec.html#core-specification",
+    "title": "Specification Objects",
+    "section": "Core Specification",
+    "text": "Core Specification\n\nweb_spec\nCreate a web specification for table visualizations. This is the core data structure that can be rendered as a forest plot or table.\nweb_spec(\n  data,\n  point,\n  lower,\n  upper,\n  label = NULL,\n  label_header = \"Study\",\n  group = NULL,\n  columns = NULL,\n  scale = c(\"linear\", \"log\"),\n  null_value = NULL,\n  axis_label = NULL,\n  effects = NULL,\n  annotations = NULL,\n  title = NULL,\n  subtitle = NULL,\n  caption = NULL,\n  footnote = NULL,\n  row_bold = NULL,\n  row_italic = NULL,\n  row_color = NULL,\n  row_bg = NULL,\n  row_badge = NULL,\n  row_icon = NULL,\n  row_indent = NULL,\n  row_type = NULL,\n  theme = web_theme_default(),\n  interaction = web_interaction()\n)\n\n\nData Arguments\n\n\n\nArgument\nDescription\n\n\n\n\ndata\nA data.frame, data.table, or tibble\n\n\npoint\nColumn name for point estimates\n\n\nlower\nColumn name for lower confidence bounds\n\n\nupper\nColumn name for upper confidence bounds\n\n\nlabel\nColumn name for row labels\n\n\nlabel_header\nHeader text for the label column (default: “Study”)\n\n\n\n\n\nGrouping Arguments\n\n\n\nArgument\nDescription\n\n\n\n\ngroup\nGrouping specification (see below)\n\n\n\nThe group argument supports three modes:\n\nSingle column: group = \"category\" - flat grouping by one column\nHierarchical: group = c(\"region\", \"country\") - nested grouping (region &gt; country)\nExplicit: group = list(web_group(...)) - full control over group definitions\n\n\n\nDisplay Arguments\n\n\n\nArgument\nDescription\n\n\n\n\ncolumns\nList of column specifications (use col_*() helpers)\n\n\nscale\nScale type: \"linear\" or \"log\"\n\n\nnull_value\nReference value (default: 0 for linear, 1 for log)\n\n\naxis_label\nLabel for the x-axis\n\n\ntitle\nPlot title\n\n\nsubtitle\nPlot subtitle\n\n\ncaption\nPlot caption\n\n\nfootnote\nPlot footnote\n\n\n\n\n\nRow Styling Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nrow_type\nColumn for row type: \"header\", \"data\", \"summary\", \"spacer\"\n\n\nrow_bold\nColumn for bold styling (logical)\n\n\nrow_italic\nColumn for italic styling (logical)\n\n\nrow_color\nColumn for text color (hex string)\n\n\nrow_bg\nColumn for background color (hex string)\n\n\nrow_badge\nColumn for badge text\n\n\nrow_icon\nColumn for icons (emoji/unicode)\n\n\nrow_indent\nColumn for indentation level (integer)\n\n\n\n\n\nAdvanced Arguments\n\n\n\nArgument\nDescription\n\n\n\n\neffects\nList of web_effect() objects for multi-effect plots\n\n\nannotations\nList of annotation objects\n\n\ntheme\nTheme object (default: web_theme_default())\n\n\ninteraction\nInteraction settings (default: web_interaction())"
+  },
+  {
+    "objectID": "reference/web_spec.html#group-specification",
+    "href": "reference/web_spec.html#group-specification",
+    "title": "Specification Objects",
+    "section": "Group Specification",
+    "text": "Group Specification\n\nweb_group\nDefine a row group with optional nesting.\nweb_group(id, label = id, parent = NULL, collapsed = FALSE)\n\n\n\nArgument\nDescription\n\n\n\n\nid\nUnique identifier for the group\n\n\nlabel\nDisplay label (defaults to id)\n\n\nparent\nParent group ID for nesting\n\n\ncollapsed\nWhether the group starts collapsed"
+  },
+  {
+    "objectID": "reference/web_spec.html#effect-specification",
+    "href": "reference/web_spec.html#effect-specification",
+    "title": "Specification Objects",
+    "section": "Effect Specification",
+    "text": "Effect Specification\n\nweb_effect\nDefine a single effect for multi-effect forest plots.\nweb_effect(point, lower, upper, label = NULL, color = NULL)\n\n\n\nArgument\nDescription\n\n\n\n\npoint\nColumn name for point estimates\n\n\nlower\nColumn name for lower bounds\n\n\nupper\nColumn name for upper bounds\n\n\nlabel\nDisplay label (defaults to point column name)\n\n\ncolor\nColor for this effect"
+  },
+  {
+    "objectID": "reference/web_spec.html#interaction-specification",
+    "href": "reference/web_spec.html#interaction-specification",
+    "title": "Specification Objects",
+    "section": "Interaction Specification",
+    "text": "Interaction Specification\n\nweb_interaction\nConfigure interactive features.\nweb_interaction(\n  show_filters = FALSE,\n  show_legend = TRUE,\n  enable_sort = TRUE,\n  enable_collapse = TRUE,\n  enable_select = TRUE,\n  enable_hover = TRUE,\n  enable_resize = TRUE,\n  enable_export = TRUE\n)\n\n\n\nArgument\nDescription\n\n\n\n\nshow_filters\nShow filter panel\n\n\nshow_legend\nShow legend\n\n\nenable_sort\nEnable column sorting\n\n\nenable_collapse\nEnable group collapsing\n\n\nenable_select\nEnable row selection\n\n\nenable_hover\nEnable hover effects\n\n\nenable_resize\nEnable column resizing\n\n\nenable_export\nEnable download/export button\n\n\n\n\n\nPresets\nweb_interaction_minimal()      # Hover only, no interactive features\nweb_interaction_publication()  # No interactive features at all"
+  },
+  {
+    "objectID": "reference/web_spec.html#examples",
+    "href": "reference/web_spec.html#examples",
+    "title": "Specification Objects",
+    "section": "Examples",
+    "text": "Examples\n\nBasic Specification\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Study A\", \"Study B\", \"Study C\"),\n  hr = c(0.72, 0.85, 0.91),\n  lower = c(0.55, 0.70, 0.75),\n  upper = c(0.95, 1.03, 1.10)\n)\n\nspec &lt;- web_spec(data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  scale = \"log\",\n  null_value = 1\n)\n\n# Render as forest plot\nforest_plot(spec)\n\n# Render as table only\nwebtable(spec)\n\n\n\n\nHierarchical Grouping\n\n\nCode\ndata &lt;- data.frame(\n  region = c(\"North\", \"North\", \"South\", \"South\"),\n  country = c(\"USA\", \"Canada\", \"Brazil\", \"Argentina\"),\n  hr = c(0.72, 0.85, 0.91, 0.78),\n  lower = c(0.55, 0.70, 0.75, 0.60),\n  upper = c(0.95, 1.03, 1.10, 1.00)\n)\n\n# Hierarchical grouping: Region &gt; Country\nspec &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"country\",\n  group = c(\"region\", \"country\"),\n  scale = \"log\", null_value = 1\n)\n\n\n\n\nMulti-Effect Plot\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\"),\n  or = c(1.5, 1.2),\n  or_lo = c(1.1, 0.9),\n  or_hi = c(2.0, 1.6),\n  hr = c(1.3, 1.1),\n  hr_lo = c(1.0, 0.8),\n  hr_hi = c(1.7, 1.5)\n)\n\nspec &lt;- web_spec(data,\n  point = \"or\", lower = \"or_lo\", upper = \"or_hi\",\n  label = \"study\",\n  effects = list(\n    web_effect(\"or\", \"or_lo\", \"or_hi\", label = \"Odds Ratio\", color = \"#3b82f6\"),\n    web_effect(\"hr\", \"hr_lo\", \"hr_hi\", label = \"Hazard Ratio\", color = \"#ef4444\")\n  ),\n  scale = \"log\", null_value = 1\n)"
+  },
+  {
+    "objectID": "reference/web_spec.html#see-also",
+    "href": "reference/web_spec.html#see-also",
+    "title": "Specification Objects",
+    "section": "See Also",
+    "text": "See Also\n\nforest_plot() for rendering specifications\nColumns for column types\nThemes for styling"
   },
   {
     "objectID": "cookbook.html",

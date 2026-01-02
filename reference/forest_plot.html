@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>forest_plot – webforest</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-597958c53c93a607afca12fd375c57ed.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-6d8a317f6d7170feb81ce6008a9cc2e3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="../site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="../site_libs/webforest-styles-0.0.2/webforest.css" rel="stylesheet">
+<script src="../site_libs/webforest-binding-0.0.0.9004/webforest.js"></script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">webforest</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-guide" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Guide</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-guide">    
+        <li>
+    <a class="dropdown-item" href="../guide/quick-start.html">
+ <span class="dropdown-text">Quick Start</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/grouping-rows.html">
+ <span class="dropdown-text">Grouping &amp; Rows</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/exporting.html">
+ <span class="dropdown-text">Exporting Plots</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/axis-annotations.html">
+ <span class="dropdown-text">Axis &amp; Annotations</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/data-preparation.html">
+ <span class="dropdown-text">Data Preparation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/cell-styling.html">
+ <span class="dropdown-text">Cell Styling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/shiny.html">
+ <span class="dropdown-text">Shiny Integration</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cookbook.html"> 
+<span class="menu-text">Cookbook</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../gallery.html"> 
+<span class="menu-text">Gallery</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/webtable.html">
+ <span class="dropdown-text">webtable()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/save_plot.html">
+ <span class="dropdown-text">save_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/web_spec.html">
+ <span class="dropdown-text">Specifications</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-technical" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Technical</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-technical">    
+        <li>
+    <a class="dropdown-item" href="../technical/export-system.html">
+ <span class="dropdown-text">Export System</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/webforest"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#usage" id="toc-usage" class="nav-link active" data-scroll-target="#usage">Usage</a></li>
+  <li><a href="#arguments" id="toc-arguments" class="nav-link" data-scroll-target="#arguments">Arguments</a>
+  <ul class="collapse">
+  <li><a href="#data-arguments-passed-to-web_spec-via-..." id="toc-data-arguments-passed-to-web_spec-via-..." class="nav-link" data-scroll-target="#data-arguments-passed-to-web_spec-via-...">Data Arguments (passed to <code>web_spec()</code> via <code>...</code>)</a></li>
+  <li><a href="#row-styling-arguments" id="toc-row-styling-arguments" class="nav-link" data-scroll-target="#row-styling-arguments">Row Styling Arguments</a></li>
+  <li><a href="#cell-styling-arguments" id="toc-cell-styling-arguments" class="nav-link" data-scroll-target="#cell-styling-arguments">Cell Styling Arguments</a></li>
+  <li><a href="#visual-override-arguments" id="toc-visual-override-arguments" class="nav-link" data-scroll-target="#visual-override-arguments">Visual Override Arguments</a></li>
+  <li><a href="#layout-arguments" id="toc-layout-arguments" class="nav-link" data-scroll-target="#layout-arguments">Layout Arguments</a></li>
+  </ul></li>
+  <li><a href="#value" id="toc-value" class="nav-link" data-scroll-target="#value">Value</a></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a>
+  <ul class="collapse">
+  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic Usage</a></li>
+  <li><a href="#with-columns-and-theme" id="toc-with-columns-and-theme" class="nav-link" data-scroll-target="#with-columns-and-theme">With Columns and Theme</a></li>
+  <li><a href="#row-styling" id="toc-row-styling" class="nav-link" data-scroll-target="#row-styling">Row Styling</a></li>
+  </ul></li>
+  <li><a href="#see-also" id="toc-see-also" class="nav-link" data-scroll-target="#see-also">See Also</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">forest_plot</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Create interactive forest plots from data frames or WebSpec objects.</p>
+<section id="usage" class="level2">
+<h2 class="anchored" data-anchor-id="usage">Usage</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>x,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>...,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">axis_range =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">axis_ticks =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">axis_gridlines =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">plot_position =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">row_height =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">width_mode =</span> <span class="fu">c</span>(<span class="st">"fit"</span>, <span class="st">"fill"</span>, <span class="st">"responsive"</span>),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">height_mode =</span> <span class="fu">c</span>(<span class="st">"auto"</span>, <span class="st">"scroll"</span>),</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">width =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">height =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="at">elementId =</span> <span class="cn">NULL</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="arguments" class="level2">
+<h2 class="anchored" data-anchor-id="arguments">Arguments</h2>
+<section id="data-arguments-passed-to-web_spec-via-..." class="level3">
+<h3 class="anchored" data-anchor-id="data-arguments-passed-to-web_spec-via-...">Data Arguments (passed to <code>web_spec()</code> via <code>...</code>)</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 43%">
+<col style="width: 56%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>x</code></td>
+<td>A data frame or WebSpec object</td>
+</tr>
+<tr class="even">
+<td><code>point</code></td>
+<td>Column name for point estimates</td>
+</tr>
+<tr class="odd">
+<td><code>lower</code></td>
+<td>Column name for lower confidence bounds</td>
+</tr>
+<tr class="even">
+<td><code>upper</code></td>
+<td>Column name for upper confidence bounds</td>
+</tr>
+<tr class="odd">
+<td><code>label</code></td>
+<td>Column name for row labels</td>
+</tr>
+<tr class="even">
+<td><code>group</code></td>
+<td>Column name(s) for hierarchical grouping</td>
+</tr>
+<tr class="odd">
+<td><code>columns</code></td>
+<td>List of column specifications</td>
+</tr>
+<tr class="even">
+<td><code>scale</code></td>
+<td><code>"linear"</code> or <code>"log"</code></td>
+</tr>
+<tr class="odd">
+<td><code>null_value</code></td>
+<td>Reference value (e.g., 1 for ratios, 0 for differences)</td>
+</tr>
+<tr class="even">
+<td><code>axis_label</code></td>
+<td>X-axis label</td>
+</tr>
+<tr class="odd">
+<td><code>theme</code></td>
+<td>Theme object (default: <code>web_theme_default()</code>)</td>
+</tr>
+<tr class="even">
+<td><code>title</code></td>
+<td>Plot title</td>
+</tr>
+<tr class="odd">
+<td><code>subtitle</code></td>
+<td>Plot subtitle</td>
+</tr>
+<tr class="even">
+<td><code>caption</code></td>
+<td>Plot caption</td>
+</tr>
+<tr class="odd">
+<td><code>footnote</code></td>
+<td>Plot footnote</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="row-styling-arguments" class="level3">
+<h3 class="anchored" data-anchor-id="row-styling-arguments">Row Styling Arguments</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 43%">
+<col style="width: 56%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>row_type</code></td>
+<td>Column for row type: <code>"header"</code>, <code>"data"</code>, <code>"summary"</code>, <code>"spacer"</code></td>
+</tr>
+<tr class="even">
+<td><code>row_bold</code></td>
+<td>Column for bold styling (logical)</td>
+</tr>
+<tr class="odd">
+<td><code>row_indent</code></td>
+<td>Column for indentation level (integer)</td>
+</tr>
+<tr class="even">
+<td><code>row_color</code></td>
+<td>Column for text color (hex string)</td>
+</tr>
+<tr class="odd">
+<td><code>row_badge</code></td>
+<td>Column for badge text</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="cell-styling-arguments" class="level3">
+<h3 class="anchored" data-anchor-id="cell-styling-arguments">Cell Styling Arguments</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>style_cols</code></td>
+<td>Column names to apply cell styling to</td>
+</tr>
+<tr class="even">
+<td><code>style_bold</code></td>
+<td>Column for cell bold (logical)</td>
+</tr>
+<tr class="odd">
+<td><code>style_color</code></td>
+<td>Column for cell text color (hex string)</td>
+</tr>
+<tr class="even">
+<td><code>style_bg</code></td>
+<td>Column for cell background color (hex string)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="visual-override-arguments" class="level3">
+<h3 class="anchored" data-anchor-id="visual-override-arguments">Visual Override Arguments</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>axis_range</code></td>
+<td><code>c(min, max)</code> to override axis limits</td>
+</tr>
+<tr class="even">
+<td><code>axis_ticks</code></td>
+<td>Numeric vector of explicit tick positions</td>
+</tr>
+<tr class="odd">
+<td><code>axis_gridlines</code></td>
+<td><code>TRUE</code>/<code>FALSE</code> to show/hide gridlines</td>
+</tr>
+<tr class="even">
+<td><code>plot_position</code></td>
+<td><code>"left"</code> or <code>"right"</code></td>
+</tr>
+<tr class="odd">
+<td><code>row_height</code></td>
+<td>Row height in pixels</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="layout-arguments" class="level3">
+<h3 class="anchored" data-anchor-id="layout-arguments">Layout Arguments</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 43%">
+<col style="width: 56%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>width_mode</code></td>
+<td><code>"fit"</code> (shrink-wrap), <code>"fill"</code> (100%), or <code>"responsive"</code> (100% with scaling)</td>
+</tr>
+<tr class="even">
+<td><code>height_mode</code></td>
+<td><code>"auto"</code> (natural height) or <code>"scroll"</code> (scroll if &gt; viewport)</td>
+</tr>
+<tr class="odd">
+<td><code>width</code></td>
+<td>Widget width</td>
+</tr>
+<tr class="even">
+<td><code>height</code></td>
+<td>Widget height</td>
+</tr>
+<tr class="odd">
+<td><code>elementId</code></td>
+<td>HTML element ID</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="value" class="level2">
+<h2 class="anchored" data-anchor-id="value">Value</h2>
+<p>An htmlwidget object that can be:</p>
+<ul>
+<li>Displayed in RStudio Viewer</li>
+<li>Rendered in R Markdown / Quarto documents</li>
+<li>Used in Shiny applications</li>
+<li>Saved to files with <code>save_plot()</code></li>
+</ul>
+</section>
+<section id="examples" class="level2">
+<h2 class="anchored" data-anchor-id="examples">Examples</h2>
+<section id="basic-usage" class="level3">
+<h3 class="anchored" data-anchor-id="basic-usage">Basic Usage</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Study A"</span>, <span class="st">"Study B"</span>, <span class="st">"Study C"</span>),</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="st">"lower"</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="webforest html-widget html-fill-item" id="htmlwidget-3a4a8b38d53c6280e590" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-3a4a8b38d53c6280e590">{"x":{"data":{"rows":[{"id":"row_1","label":"Study A","point":0.72,"lower":0.55,"upper":0.95,"groupId":null,"metadata":{"study":"Study A","hr":0.72,"lower":0.55,"upper":0.95}},{"id":"row_2","label":"Study B","point":0.85,"lower":0.7,"upper":1.03,"groupId":null,"metadata":{"study":"Study B","hr":0.85,"lower":0.7,"upper":1.03}},{"id":"row_3","label":"Study C","point":0.91,"lower":0.75,"upper":1.1,"groupId":null,"metadata":{"study":"Study C","hr":0.91,"lower":0.75,"upper":1.1}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"hr","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":null,"scale":"log","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"default","colors":{"background":"#ffffff","foreground":"#1a1a1a","primary":"#2563eb","secondary":"#64748b","accent":"#8b5cf6","muted":"#94a3b8","border":"#e2e8f0","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#64748b","intervalLine":"#475569","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":28,"headerHeight":36,"columnGap":8,"sectionGap":16,"padding":12,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":4},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"},"widthMode":"fit","heightMode":"auto"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="with-columns-and-theme" class="level3">
+<h3 class="anchored" data-anchor-id="with-columns-and-theme">With Columns and Theme</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>),</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.68</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.52</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">0.89</span>),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">c</span>(<span class="dv">245</span>, <span class="dv">180</span>, <span class="dv">320</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">events =</span> <span class="fu">c</span>(<span class="st">"89/245"</span>, <span class="st">"62/180"</span>, <span class="st">"98/320"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"n"</span>, <span class="st">"N"</span>),</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_text</span>(<span class="st">"events"</span>, <span class="st">"Events"</span>),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_interval</span>(<span class="st">"HR (95% CI)"</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_lancet</span>(),</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Treatment Effect by Trial"</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="webforest html-widget html-fill-item" id="htmlwidget-ffd75e29f0de8bc002fa" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-ffd75e29f0de8bc002fa">{"x":{"data":{"rows":[{"id":"row_1","label":"Trial A","point":0.72,"lower":0.55,"upper":0.95,"groupId":null,"metadata":{"study":"Trial A","hr":0.72,"lower":0.55,"upper":0.95,"n":245,"events":"89/245"}},{"id":"row_2","label":"Trial B","point":0.85,"lower":0.7,"upper":1.03,"groupId":null,"metadata":{"study":"Trial B","hr":0.85,"lower":0.7,"upper":1.03,"n":180,"events":"62/180"}},{"id":"row_3","label":"Trial C","point":0.68,"lower":0.52,"upper":0.89,"groupId":null,"metadata":{"study":"Trial C","hr":0.68,"lower":0.52,"upper":0.89,"n":320,"events":"98/320"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"hr","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":null,"scale":"log","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[{"id":"n","header":"N","field":"n","type":"numeric","width":80,"align":"right","position":"left","sortable":true,"isGroup":false},{"id":"events","header":"Events","field":"events","type":"text","width":80,"align":"left","position":"left","sortable":true,"isGroup":false},{"id":"_interval","header":"HR (95% CI)","field":"_interval","type":"interval","width":140,"align":"left","position":"left","sortable":true,"isGroup":false}],"annotations":[],"theme":{"name":"lancet","colors":{"background":"#ffffff","foreground":"#00407a","primary":"#00407a","secondary":"#446e9b","accent":"#c4161c","muted":"#7a99ac","border":"#ccd6dd","intervalPositive":"#00407a","intervalNegative":"#c4161c","intervalNeutral":"#446e9b","intervalLine":"#00407a","summaryFill":"#00407a","summaryBorder":"#002d54"},"typography":{"fontFamily":"Georgia, 'Times New Roman', serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.4},"spacing":{"rowHeight":24,"headerHeight":32,"columnGap":8,"sectionGap":14,"padding":10,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":5,"summaryHeight":9,"lineWidth":1.25,"borderRadius":0},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":{"title":"Treatment Effect by Trial","subtitle":null,"caption":null,"footnote":null},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"},"widthMode":"fit","heightMode":"auto"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="row-styling" class="level3">
+<h3 class="anchored" data-anchor-id="row-styling">Row Styling</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>styled <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"Primary Endpoint"</span>, <span class="st">"  Outcome A"</span>, <span class="st">"  Outcome B"</span>, <span class="st">"Summary"</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.78</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.65</span>),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">0.93</span>),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">rtype =</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">rbold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(styled,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"label"</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_type =</span> <span class="st">"rtype"</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"rbold"</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>, <span class="at">scale =</span> <span class="st">"log"</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="webforest html-widget html-fill-item" id="htmlwidget-52dc4bf4e43c07028c47" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-52dc4bf4e43c07028c47">{"x":{"data":{"rows":[{"id":"row_1","label":"Primary Endpoint","point":null,"lower":null,"upper":null,"groupId":null,"metadata":{"label":"Primary Endpoint","hr":null,"lower":null,"upper":null,"rtype":"header","rbold":true},"style":{"type":"header","bold":true}},{"id":"row_2","label":"  Outcome A","point":0.72,"lower":0.55,"upper":0.95,"groupId":null,"metadata":{"label":"  Outcome A","hr":0.72,"lower":0.55,"upper":0.95,"rtype":"data","rbold":false},"style":{"type":"data","bold":false}},{"id":"row_3","label":"  Outcome B","point":0.85,"lower":0.7,"upper":1.03,"groupId":null,"metadata":{"label":"  Outcome B","hr":0.85,"lower":0.7,"upper":1.03,"rtype":"data","rbold":false},"style":{"type":"data","bold":false}},{"id":"row_4","label":"Summary","point":0.78,"lower":0.65,"upper":0.93,"groupId":null,"metadata":{"label":"Summary","hr":0.78,"lower":0.65,"upper":0.93,"rtype":"summary","rbold":true},"style":{"type":"summary","bold":true}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"hr","lowerCol":"lower","upperCol":"upper","labelCol":"label","labelHeader":"Study","groupCol":null,"scale":"log","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"default","colors":{"background":"#ffffff","foreground":"#1a1a1a","primary":"#2563eb","secondary":"#64748b","accent":"#8b5cf6","muted":"#94a3b8","border":"#e2e8f0","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#64748b","intervalLine":"#475569","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":28,"headerHeight":36,"columnGap":8,"sectionGap":16,"padding":12,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":4},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"},"widthMode":"fit","heightMode":"auto"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+</section>
+<section id="see-also" class="level2">
+<h2 class="anchored" data-anchor-id="see-also">See Also</h2>
+<ul>
+<li><a href="../reference/webtable.html">webtable()</a> for table-only widgets</li>
+<li><a href="../reference/web_spec.html">web_spec()</a> for creating specifications programmatically</li>
+<li><a href="../reference/themes.html">Themes</a> for customizing appearance</li>
+<li><a href="../reference/columns.html">Columns</a> for column types</li>
+</ul>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "forest_plot"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(webforest)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>Create interactive forest plots from data frames or WebSpec objects.</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## Usage</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>x,</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>...,</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="at">axis_range =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="at">axis_ticks =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="at">axis_gridlines =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="at">plot_position =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="at">row_height =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="at">width_mode =</span> <span class="fu">c</span>(<span class="st">"fit"</span>, <span class="st">"fill"</span>, <span class="st">"responsive"</span>),</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="at">height_mode =</span> <span class="fu">c</span>(<span class="st">"auto"</span>, <span class="st">"scroll"</span>),</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="at">width =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="at">height =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="at">elementId =</span> <span class="cn">NULL</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## Arguments</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data Arguments (passed to `web_spec()` via `...`)</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`x`</span> <span class="pp">|</span> A data frame or WebSpec object <span class="pp">|</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`point`</span> <span class="pp">|</span> Column name for point estimates <span class="pp">|</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`lower`</span> <span class="pp">|</span> Column name for lower confidence bounds <span class="pp">|</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`upper`</span> <span class="pp">|</span> Column name for upper confidence bounds <span class="pp">|</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`label`</span> <span class="pp">|</span> Column name for row labels <span class="pp">|</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`group`</span> <span class="pp">|</span> Column name(s) for hierarchical grouping <span class="pp">|</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`columns`</span> <span class="pp">|</span> List of column specifications <span class="pp">|</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`scale`</span> <span class="pp">|</span> <span class="in">`"linear"`</span> or <span class="in">`"log"`</span> <span class="pp">|</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`null_value`</span> <span class="pp">|</span> Reference value (e.g., 1 for ratios, 0 for differences) <span class="pp">|</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`axis_label`</span> <span class="pp">|</span> X-axis label <span class="pp">|</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`theme`</span> <span class="pp">|</span> Theme object (default: <span class="in">`web_theme_default()`</span>) <span class="pp">|</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`title`</span> <span class="pp">|</span> Plot title <span class="pp">|</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`subtitle`</span> <span class="pp">|</span> Plot subtitle <span class="pp">|</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`caption`</span> <span class="pp">|</span> Plot caption <span class="pp">|</span></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`footnote`</span> <span class="pp">|</span> Plot footnote <span class="pp">|</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="fu">### Row Styling Arguments</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_type`</span> <span class="pp">|</span> Column for row type: <span class="in">`"header"`</span>, <span class="in">`"data"`</span>, <span class="in">`"summary"`</span>, <span class="in">`"spacer"`</span> <span class="pp">|</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_bold`</span> <span class="pp">|</span> Column for bold styling (logical) <span class="pp">|</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_indent`</span> <span class="pp">|</span> Column for indentation level (integer) <span class="pp">|</span></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_color`</span> <span class="pp">|</span> Column for text color (hex string) <span class="pp">|</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_badge`</span> <span class="pp">|</span> Column for badge text <span class="pp">|</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="fu">### Cell Styling Arguments</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`style_cols`</span> <span class="pp">|</span> Column names to apply cell styling to <span class="pp">|</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`style_bold`</span> <span class="pp">|</span> Column for cell bold (logical) <span class="pp">|</span></span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`style_color`</span> <span class="pp">|</span> Column for cell text color (hex string) <span class="pp">|</span></span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`style_bg`</span> <span class="pp">|</span> Column for cell background color (hex string) <span class="pp">|</span></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="fu">### Visual Override Arguments</span></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`axis_range`</span> <span class="pp">|</span> <span class="in">`c(min, max)`</span> to override axis limits <span class="pp">|</span></span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`axis_ticks`</span> <span class="pp">|</span> Numeric vector of explicit tick positions <span class="pp">|</span></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`axis_gridlines`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> to show/hide gridlines <span class="pp">|</span></span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`plot_position`</span> <span class="pp">|</span> <span class="in">`"left"`</span> or <span class="in">`"right"`</span> <span class="pp">|</span></span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_height`</span> <span class="pp">|</span> Row height in pixels <span class="pp">|</span></span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a><span class="fu">### Layout Arguments</span></span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`width_mode`</span> <span class="pp">|</span> <span class="in">`"fit"`</span> (shrink-wrap), <span class="in">`"fill"`</span> (100%), or <span class="in">`"responsive"`</span> (100% with scaling) <span class="pp">|</span></span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`height_mode`</span> <span class="pp">|</span> <span class="in">`"auto"`</span> (natural height) or <span class="in">`"scroll"`</span> (scroll if &gt; viewport) <span class="pp">|</span></span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`width`</span> <span class="pp">|</span> Widget width <span class="pp">|</span></span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`height`</span> <span class="pp">|</span> Widget height <span class="pp">|</span></span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`elementId`</span> <span class="pp">|</span> HTML element ID <span class="pp">|</span></span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a><span class="fu">## Value</span></span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a>An htmlwidget object that can be:</span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Displayed in RStudio Viewer</span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Rendered in R Markdown / Quarto documents</span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Used in Shiny applications</span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Saved to files with <span class="in">`save_plot()`</span></span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a><span class="fu">## Examples</span></span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a><span class="fu">### Basic Usage</span></span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Study A"</span>, <span class="st">"Study B"</span>, <span class="st">"Study C"</span>),</span>
+<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>),</span>
+<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>),</span>
+<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>)</span>
+<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>,</span>
+<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="st">"lower"</span>,</span>
+<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span></span>
+<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a><span class="fu">### With Columns and Theme</span></span>
+<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>),</span>
+<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.68</span>),</span>
+<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.52</span>),</span>
+<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">0.89</span>),</span>
+<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">c</span>(<span class="dv">245</span>, <span class="dv">180</span>, <span class="dv">320</span>),</span>
+<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a>  <span class="at">events =</span> <span class="fu">c</span>(<span class="st">"89/245"</span>, <span class="st">"62/180"</span>, <span class="st">"98/320"</span>)</span>
+<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"n"</span>, <span class="st">"N"</span>),</span>
+<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_text</span>(<span class="st">"events"</span>, <span class="st">"Events"</span>),</span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_interval</span>(<span class="st">"HR (95% CI)"</span>)</span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>,</span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_lancet</span>(),</span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Treatment Effect by Trial"</span></span>
+<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a><span class="fu">### Row Styling</span></span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a>styled <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"Primary Endpoint"</span>, <span class="st">"  Outcome A"</span>, <span class="st">"  Outcome B"</span>, <span class="st">"Summary"</span>),</span>
+<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.78</span>),</span>
+<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.65</span>),</span>
+<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">0.93</span>),</span>
+<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a>  <span class="at">rtype =</span> <span class="fu">c</span>(<span class="st">"header"</span>, <span class="st">"data"</span>, <span class="st">"data"</span>, <span class="st">"summary"</span>),</span>
+<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a>  <span class="at">rbold =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(styled,</span>
+<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"label"</span>,</span>
+<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_type =</span> <span class="st">"rtype"</span>,</span>
+<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"rbold"</span>,</span>
+<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>, <span class="at">scale =</span> <span class="st">"log"</span></span>
+<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-181"><a href="#cb5-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-182"><a href="#cb5-182" aria-hidden="true" tabindex="-1"></a><span class="fu">## See Also</span></span>
+<span id="cb5-183"><a href="#cb5-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-184"><a href="#cb5-184" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">webtable()</span><span class="co">](webtable.qmd)</span> for table-only widgets</span>
+<span id="cb5-185"><a href="#cb5-185" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">web_spec()</span><span class="co">](web_spec.qmd)</span> for creating specifications programmatically</span>
+<span id="cb5-186"><a href="#cb5-186" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Themes</span><span class="co">](themes.qmd)</span> for customizing appearance</span>
+<span id="cb5-187"><a href="#cb5-187" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Columns</span><span class="co">](columns.qmd)</span> for column types</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
