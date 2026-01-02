@@ -19,9 +19,9 @@
   ];
 
   const HEIGHT_OPTIONS = [
-    { value: 'small' as const, label: 'Small (200px)' },
-    { value: 'medium' as const, label: 'Medium (400px)' },
-    { value: 'large' as const, label: 'Large (600px)' },
+    { value: 'small' as const, label: 'Small (400px)' },
+    { value: 'medium' as const, label: 'Medium (600px)' },
+    { value: 'large' as const, label: 'Large (1000px)' },
     { value: 'full' as const, label: 'Full Height' },
     { value: 'container' as const, label: 'Fill Container' },
   ];

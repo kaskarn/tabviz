@@ -198,9 +198,9 @@
   // Height style based on preset (must be inline to override htmlwidgets inline style)
   const heightStyle = $derived.by(() => {
     switch (heightPreset) {
-      case 'small': return 'height: 200px; overflow-y: auto;';
-      case 'medium': return 'height: 400px; overflow-y: auto;';
-      case 'large': return 'height: 600px; overflow-y: auto;';
+      case 'small': return 'height: 400px; overflow-y: auto;';
+      case 'medium': return 'height: 600px; overflow-y: auto;';
+      case 'large': return 'height: 1000px; overflow-y: auto;';
       case 'full': return 'height: auto; overflow: visible;';
       case 'container': return 'height: 100%; overflow-y: auto;';
       default: return '';
@@ -811,17 +811,17 @@
 
   /* Height presets */
   :global(.webforest-container.height-small) {
-    height: 200px;
-    overflow-y: auto;
-  }
-
-  :global(.webforest-container.height-medium) {
     height: 400px;
     overflow-y: auto;
   }
 
-  :global(.webforest-container.height-large) {
+  :global(.webforest-container.height-medium) {
     height: 600px;
+    overflow-y: auto;
+  }
+
+  :global(.webforest-container.height-large) {
+    height: 1000px;
     overflow-y: auto;
   }
 

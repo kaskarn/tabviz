@@ -4,7 +4,7 @@
 
 ### New Features
 
-* **Height presets**: New `height_preset` parameter with explicit size options: `"small"` (200px), `"medium"` (400px), `"large"` (600px), `"full"` (natural height), `"container"` (fill parent). Deprecates `height_mode`.
+* **Height presets**: New `height_preset` parameter with explicit size options: `"small"` (400px), `"medium"` (600px), `"large"` (1000px), `"full"` (natural height), `"container"` (fill parent). Deprecates `height_mode`.
 
 * **Column enhancements**:
   - `header_align`: Independent header vs body alignment
@@ -17,6 +17,7 @@
 * Increased default column widths (`col_text` 80→120px, `col_interval` 140→160px)
 * Better annotation label collision avoidance
 * Fixed gallery_07 example column positioning
+* Fixed `height_preset = "full"` not overriding htmlwidgets container height
 
 ## 0.0.0.9004
 

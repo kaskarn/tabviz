@@ -61,11 +61,21 @@ const binding: HTMLWidgetsBinding = {
           store.setWidthMode(x.widthMode);
         }
         // New height preset system
-        if (x.heightPreset) {
-          store.setHeightPreset(x.heightPreset);
-        } else if (x.heightMode) {
-          // Backwards compatibility: map old heightMode to new heightPreset
-          store.setHeightPreset(x.heightMode === 'auto' ? 'full' : 'medium');
+        const effectivePreset = x.heightPreset ?? (x.heightMode === 'scroll' ? 'medium' : 'full');
+        store.setHeightPreset(effectivePreset);
+
+        // Override htmlwidgets container height based on preset
+        // This is necessary because htmlwidgets sets inline height on the wrapper div
+        if (effectivePreset === 'full') {
+          el.style.height = 'auto';
+          el.style.overflow = 'visible';
+        } else if (effectivePreset === 'container') {
+          el.style.height = '100%';
+          el.style.overflow = 'auto';
+        } else {
+          // For fixed presets, let the inner container handle it
+          el.style.height = '';
+          el.style.overflow = '';
         }
 
         if (component) {
