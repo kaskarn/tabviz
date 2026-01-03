@@ -543,7 +543,7 @@ serialize_split_forest <- function(split_forest, include_forest = TRUE) {
 
   list(
     type = "split_forest",
-    splitVars = split_forest@split_vars,
+    splitVars = I(split_forest@split_vars),  # Force array serialization even for length-1
     navTree = serialize_nav_tree(split_forest@split_tree),
     specs = serialized_specs,
     sharedAxis = split_forest@shared_axis,
