@@ -74,6 +74,8 @@
     flex: 1;
     overflow: auto;
     min-width: 0;
+    /* Required for flex child to respect overflow when content has min-height */
+    min-height: 0;
   }
 
   .split-forest-empty,
