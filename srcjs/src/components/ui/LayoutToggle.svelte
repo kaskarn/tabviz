@@ -18,9 +18,9 @@
   ];
 
   const HEIGHT_OPTIONS = [
-    { value: 'small' as const, label: 'Small (400px)' },
-    { value: 'medium' as const, label: 'Medium (600px)' },
-    { value: 'large' as const, label: 'Large (1000px)' },
+    { value: 'small' as const, label: 'Small (300px)' },
+    { value: 'medium' as const, label: 'Medium (500px)' },
+    { value: 'large' as const, label: 'Large (900px)' },
     { value: 'full' as const, label: 'Full Height' },
     { value: 'container' as const, label: 'Fill Container' },
   ];
@@ -146,8 +146,8 @@
   }
 
   .section-label {
-    padding: 6px 12px 4px;
-    font-size: 11px;
+    padding: 4px 10px 2px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -156,21 +156,21 @@
 
   .divider {
     height: 1px;
-    margin: 4px 8px;
+    margin: 3px 8px;
     background: var(--wf-border, #e2e8f0);
   }
 
   .dropdown-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
-    padding: 8px 12px;
+    padding: 5px 10px;
     border: none;
     border-radius: 4px;
     background: transparent;
     color: var(--wf-fg, #1a1a1a);
-    font-size: 13px;
+    font-size: 12px;
     text-align: left;
     cursor: pointer;
     transition: background-color 0.15s ease;

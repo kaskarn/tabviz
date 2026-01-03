@@ -211,9 +211,9 @@
   // Use max-height for fixed presets so container doesn't fill with empty space
   const heightStyle = $derived.by(() => {
     switch (heightPreset) {
-      case 'small': return 'height: auto; max-height: 400px; overflow-y: auto;';
-      case 'medium': return 'height: auto; max-height: 600px; overflow-y: auto;';
-      case 'large': return 'height: auto; max-height: 1000px; overflow-y: auto;';
+      case 'small': return 'height: auto; max-height: 300px; overflow-y: auto;';
+      case 'medium': return 'height: auto; max-height: 500px; overflow-y: auto;';
+      case 'large': return 'height: auto; max-height: 900px; overflow-y: auto;';
       case 'full': return 'height: auto; max-height: none; overflow: visible;';
       case 'container': return 'height: 100%; max-height: none; overflow-y: auto;';
       default: return '';
@@ -619,8 +619,8 @@
       <PlotFooter caption={spec.labels?.caption} footnote={spec.labels?.footnote} />
     </div>
 
-    <!-- Tooltip -->
-    <Tooltip row={tooltipRow} position={tooltipPosition} {theme} />
+    <!-- Tooltip (only shown if tooltipFields is specified) -->
+    <Tooltip row={tooltipRow} position={tooltipPosition} fields={spec?.interaction?.tooltipFields} {theme} />
   {:else}
     <div class="webforest-empty">No data</div>
   {/if}
@@ -880,19 +880,19 @@
   /* Height presets - use max-height so container doesn't fill with empty space */
   :global(.webforest-container.height-small) {
     height: auto;
-    max-height: 400px;
+    max-height: 300px;
     overflow-y: auto;
   }
 
   :global(.webforest-container.height-medium) {
     height: auto;
-    max-height: 600px;
+    max-height: 500px;
     overflow-y: auto;
   }
 
   :global(.webforest-container.height-large) {
     height: auto;
-    max-height: 1000px;
+    max-height: 900px;
     overflow-y: auto;
   }
 

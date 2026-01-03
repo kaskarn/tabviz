@@ -303,7 +303,8 @@ serialize_interaction <- function(interaction) {
     enableSelect = interaction@enable_select,
     enableHover = interaction@enable_hover,
     enableResize = interaction@enable_resize,
-    enableExport = interaction@enable_export
+    enableExport = interaction@enable_export,
+    tooltipFields = interaction@tooltip_fields
   )
 }
 

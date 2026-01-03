@@ -266,6 +266,7 @@ export interface InteractionSpec {
   enableHover: boolean;
   enableResize: boolean;
   enableExport?: boolean;
+  tooltipFields?: string[] | null;  // Column names to show in hover tooltip (opt-in)
 }
 
 export interface LayoutSpec {

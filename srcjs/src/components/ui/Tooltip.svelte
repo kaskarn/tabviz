@@ -10,6 +10,9 @@
 
   let { row, position, fields = null, theme }: Props = $props();
 
+  // Tooltip element for measuring
+  let tooltipEl: HTMLDivElement | undefined = $state();
+
   // Format value for display
   function formatValue(value: unknown): string {
     if (value === null || value === undefined) return "—";
@@ -20,30 +23,48 @@
     return String(value);
   }
 
-  // Get fields to display
+  // Get fields to display - only if fields are specified (opt-in)
   const displayFields = $derived.by(() => {
-    if (!row) return [];
-
+    if (!row || !fields || fields.length === 0) return [];
     const entries = Object.entries(row.metadata);
-
-    // If specific fields are requested, filter to those
-    if (fields && fields.length > 0) {
-      return entries.filter(([key]) => fields.includes(key));
-    }
-
-    // Otherwise show all non-internal fields
-    return entries.filter(([key]) => !key.startsWith("_") && !key.startsWith("."));
+    return entries.filter(([key]) => fields.includes(key));
   });
 
-  // Compute position styles
+  // Compute position styles with viewport boundary detection
   const positionStyle = $derived.by(() => {
     if (!position) return "";
-    return `left: ${position.x + 10}px; top: ${position.y - 10}px;`;
+
+    const tooltipWidth = 220;  // Approximate max width
+    const tooltipHeight = 100; // Approximate height
+    const margin = 10;
+
+    let x = position.x + margin;
+    let y = position.y - margin;
+
+    // Keep tooltip within viewport bounds
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1000;
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+
+    // Flip to left side if too close to right edge
+    if (x + tooltipWidth > viewportWidth - margin) {
+      x = position.x - tooltipWidth - margin;
+    }
+
+    // Flip to bottom if too close to top edge
+    if (y - tooltipHeight < margin) {
+      y = position.y + margin;
+      return `left: ${x}px; top: ${y}px; transform: none;`;
+    }
+
+    return `left: ${x}px; top: ${y}px;`;
   });
+
+  // Only show tooltip if fields are specified (opt-in behavior)
+  const shouldShow = $derived(row && position && fields && fields.length > 0);
 </script>
 
-{#if row && position}
-  <div class="webforest-tooltip" style={positionStyle}>
+{#if shouldShow}
+  <div bind:this={tooltipEl} class="webforest-tooltip" style={positionStyle}>
     <div class="tooltip-header">{row.label}</div>
     <div class="tooltip-body">
       <div class="tooltip-row tooltip-estimate">
@@ -66,35 +87,36 @@
   .webforest-tooltip {
     position: absolute;
     z-index: 1000;
-    min-width: 180px;
-    max-width: 300px;
-    padding: 8px 12px;
+    min-width: 160px;
+    max-width: 280px;
+    padding: 6px 10px;
     background: var(--wf-fg, #1a1a1a);
     color: var(--wf-bg, #fff);
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    font-size: var(--wf-font-size-sm, 0.75rem);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 0.7rem;
+    line-height: 1.3;
     pointer-events: none;
     transform: translateY(-100%);
   }
 
   .tooltip-header {
     font-weight: 600;
-    padding-bottom: 6px;
-    margin-bottom: 6px;
+    padding-bottom: 3px;
+    margin-bottom: 3px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   .tooltip-body {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
   }
 
   .tooltip-row {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
   }
 
   .tooltip-row.tooltip-estimate {
