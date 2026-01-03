@@ -128,10 +128,19 @@ airline_delays <- do.call(rbind, lapply(carriers, function(carrier) {
     "JetBlue" = 3.0, "Spirit" = 5.0, "Frontier" = 4.5, "Allegiant" = 6.0
   )
 
+  # Carrier type classification
+  carrier_type <- switch(carrier,
+    "Delta" = "Legacy", "United" = "Legacy", "American" = "Legacy",
+    "Alaska" = "Legacy", "Hawaiian" = "Legacy",
+    "Southwest" = "Low-Cost", "JetBlue" = "Low-Cost",
+    "Spirit" = "Ultra Low-Cost", "Frontier" = "Ultra Low-Cost", "Allegiant" = "Ultra Low-Cost"
+  )
+
   months <- c("Jan", "Feb", "Mar", "Apr")
 
   data.frame(
     carrier = carrier,
+    carrier_type = carrier_type,
     month = months,
     delay_vs_avg = round(base_delay + rnorm(4, 0, 2), 1),
     on_time_pct = round(pmin(98, pmax(65, 82 - base_delay + rnorm(4, 0, 3))), 1),

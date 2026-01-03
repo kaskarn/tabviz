@@ -244,18 +244,24 @@ forest_plot(
   point = "return_1y", lower = "lower", upper = "upper",
   label = "fund",
   columns = list(
-    col_bar("aum_b", "AUM ($B)", position = "left"),
-    col_numeric("expense", "Expense %", position = "left"),
-    col_sparkline("monthly_returns", "12M Returns", position = "right"),
-    col_sparkline("flow_trend", "6M Flows", position = "right"),
+    col_group("Fund Info",
+      col_bar("aum_b", "AUM ($B)"),
+      col_numeric("expense", "Expense %"),
+      position = "left"
+    ),
+    col_group("Trends",
+      col_sparkline("monthly_returns", "12M Returns"),
+      col_sparkline("flow_trend", "6M Flows"),
+      position = "right"
+    ),
     col_interval("1Y Return % (95% CI)")
   ),
   theme = web_theme_modern(),
   null_value = 0,
   axis_label = "1-Year Return (%)",
   title = "Sparklines & Bars",
-  subtitle = "col_bar() for magnitude, col_sparkline() for trends",
-  caption = "Two sparkline columns showing different time series"
+  subtitle = "col_group() organizes related columns under shared headers",
+  caption = "Fund Info group on left, Trends group on right"
 )
 ```
 
@@ -494,11 +500,17 @@ forest_plot(
   label = "study",
   group = "group",
   columns = list(
-    col_text("drug", "Drug"),
-    col_n("n"),
-    col_events("events", "n", "Events"),
-    col_interval("HR (95% CI)"),
-    col_pvalue("pvalue", "P")
+    col_group("Study Info",
+      col_text("drug", "Drug"),
+      col_n("n"),
+      position = "left"
+    ),
+    col_group("Results",
+      col_events("events", "n", "Events"),
+      col_interval("HR (95% CI)"),
+      col_pvalue("pvalue", "P"),
+      position = "right"
+    )
   ),
   annotations = list(
     forest_refline(0.85, label = "Pooled HR", style = "dashed", color = "#00407a")
@@ -511,7 +523,7 @@ forest_plot(
   axis_gridlines = TRUE,
   axis_label = "Hazard Ratio (95% CI)",
   title = "GLP-1 Agonist Cardiovascular Outcomes",
-  subtitle = "Package dataset: glp1_trials",
+  subtitle = "Row grouping by trial type + column grouping for Study Info / Results",
   caption = "Major adverse cardiovascular events (MACE)",
   footnote = "See ?glp1_trials for data documentation"
 )
@@ -646,56 +658,63 @@ forest_plot(
 
 ## 14. Lancet Style
 
-Serif fonts, blue palette, traditional academic presentation.
+Serif fonts, blue palette, with row grouping and column grouping.
 
 ```{r}
 lancet_data <- tibble(
   outcome = c(
-    "Primary endpoint",
-    "  CV death or HF hospitalization",
-    "",
-    "Components",
-    "  Cardiovascular death",
-    "  HF hospitalization",
-    "",
-    "Secondary endpoints",
-    "  All-cause mortality",
-    "  Change in KCCQ score"
+    "CV death or HF hospitalization",
+    "Cardiovascular death",
+    "HF hospitalization",
+    "All-cause mortality",
+    "Change in KCCQ score"
   ),
-  hr = c(NA, 0.74, NA, NA, 0.82, 0.70, NA, NA, 0.88, 0.85),
-  lower = c(NA, 0.66, NA, NA, 0.72, 0.61, NA, NA, 0.76, 0.74),
-  upper = c(NA, 0.83, NA, NA, 0.94, 0.81, NA, NA, 1.02, 0.98),
-  events = c(NA, "894/1212", NA, NA, "312/398", "582/814", NA, NA, "445/508", NA),
-  rtype = c("header", "data", "spacer", "header", "data", "data", "spacer", "header", "data", "data"),
-  rbold = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
-  rindent = c(0, 1, 0, 0, 1, 1, 0, 0, 1, 1)
+  category = c("Primary", "Components", "Components", "Secondary", "Secondary"),
+  hr = c(0.74, 0.82, 0.70, 0.88, 0.85),
+  lower = c(0.66, 0.72, 0.61, 0.76, 0.74),
+  upper = c(0.83, 0.94, 0.81, 1.02, 0.98),
+  events_tx = c(447, 156, 291, 222, NA),
+  events_ctrl = c(606, 199, 407, 253, NA),
+  n_tx = c(2373, 2373, 2373, 2373, 2200),
+  n_ctrl = c(2371, 2371, 2371, 2371, 2180)
 )
 
 forest_plot(
   lancet_data,
   point = "hr", lower = "lower", upper = "upper",
   label = "outcome",
+  group = "category",
   columns = list(
-    col_text("events", "Events (Tx/Ctrl)"),
+    col_group("Treatment",
+      col_n("events_tx", "Events"),
+      col_n("n_tx", "N"),
+      position = "left"
+    ),
+    col_group("Control",
+      col_n("events_ctrl", "Events"),
+      col_n("n_ctrl", "N"),
+      position = "left"
+    ),
     col_interval("HR (95% CI)")
   ),
-  row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   theme = web_theme_lancet(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",
   title = "Figure 3: Efficacy Outcomes",
-  caption = "Primary endpoint shown in bold. HR<1 favours treatment.",
+  subtitle = "Row groups by endpoint type + column groups by treatment arm",
+  caption = "HR<1 favours treatment.",
   footnote = "Cox proportional hazards model stratified by region."
 )
 ```
 
 ## 15. Minimal Print
 
-Maximum density, pure black and white, designed for journal figure panels.
+Maximum density, pure black and white, with row and column grouping.
 
 ```{r}
 minimal_data <- tibble(
   trial = c("ADVANCE", "CARDINAL", "ELEVATE", "FRONTIER", "GENESIS", "HORIZON"),
+  phase = c("Phase III", "Phase III", "Phase III", "Phase II", "Phase II", "Phase III"),
   n = c(1680, 1520, 1890, 2100, 980, 1450),
   events = c(168, 152, 189, 210, 98, 145),
   hr = c(0.74, 0.78, 0.71, 0.82, 0.69, 0.76),
@@ -708,16 +727,24 @@ forest_plot(
   minimal_data,
   point = "hr", lower = "lower", upper = "upper",
   label = "trial",
+  group = "phase",
   columns = list(
-    col_numeric("n", "N"),
-    col_numeric("events", "Events"),
-    col_weight("weight"),
-    col_interval("HR (95% CI)")
+    col_group("Sample",
+      col_n("n"),
+      col_numeric("events", "Events"),
+      position = "left"
+    ),
+    col_group("Results",
+      col_weight("weight"),
+      col_interval("HR (95% CI)"),
+      position = "right"
+    )
   ),
   theme = web_theme_minimal(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio",
   title = "Forest Plot",
+  subtitle = "Row groups by phase + column groups for Sample / Results",
   footnote = "Random-effects model. Weights from inverse variance."
 )
 ```
@@ -862,10 +889,16 @@ forest_plot(
   upper = "per_upper",
   group = "conference",
   columns = list(
-    col_text("team", "Team", width = 50),
-    col_text("position", "Pos", width = 40),
-    col_numeric("ppg", "PPG"),
-    col_numeric("games", "GP", decimals = 0),
+    col_group("Player Info",
+      col_text("team", "Team", width = 50),
+      col_text("position", "Pos", width = 40),
+      position = "left"
+    ),
+    col_group("Stats",
+      col_numeric("ppg", "PPG"),
+      col_numeric("games", "GP", decimals = 0),
+      position = "left"
+    ),
     col_interval("PER (95% CI)")
   ),
   row_badge = "award",
@@ -878,7 +911,7 @@ forest_plot(
     ),
   axis_label = "Player Efficiency Rating",
   title = "NBA Player Efficiency Ratings",
-  subtitle = "Package dataset: nba_efficiency",
+  subtitle = "Row groups by conference + column groups for Player Info / Stats",
   caption = "PER = 15 is league average. Badge shows major awards.",
   footnote = "Data simulated based on typical NBA statistics"
 )
@@ -886,14 +919,14 @@ forest_plot(
 
 ## 20. Airline Performance
 
-Transportation analytics using the `airline_delays` package dataset.
+Transportation analytics using the `airline_delays` package dataset, with row and column grouping.
 
 ```{r}
 data(airline_delays)
 
-# Aggregate to carrier level
+# Aggregate to carrier level with carrier type
 carrier_summary <- airline_delays |>
-  group_by(carrier) |>
+  group_by(carrier, carrier_type) |>
   summarise(
     delay_vs_avg = mean(delay_vs_avg),
     delay_lower = mean(delay_lower),
@@ -901,9 +934,10 @@ carrier_summary <- airline_delays |>
     on_time_pct = mean(on_time_pct),
     satisfaction = mean(satisfaction),
     flights = sum(flights),
-    trend = list(unlist(trend[1]))
+    trend = list(unlist(trend[1])),
+    .groups = "drop"
   ) |>
-  arrange(delay_vs_avg)
+  arrange(carrier_type, delay_vs_avg)
 
 forest_plot(
   carrier_summary,
@@ -911,11 +945,18 @@ forest_plot(
   point = "delay_vs_avg",
   lower = "delay_lower",
   upper = "delay_upper",
+  group = "carrier_type",
   columns = list(
-    col_percent("on_time_pct", "On-Time", decimals = 0),
-    col_numeric("satisfaction", "Rating", decimals = 1),
-    col_sparkline("trend", "12M Trend"),
-    col_interval("Delay (min)")
+    col_group("Service",
+      col_percent("on_time_pct", "On-Time", decimals = 0),
+      col_numeric("satisfaction", "Rating", decimals = 1),
+      position = "left"
+    ),
+    col_group("Trends",
+      col_sparkline("trend", "12M"),
+      col_interval("Delay (min)"),
+      position = "right"
+    )
   ),
   null_value = 0,
   theme = web_theme_modern() |>
@@ -925,7 +966,7 @@ forest_plot(
     ),
   axis_label = "Delay vs. Industry Average (minutes)",
   title = "Airline Carrier Performance",
-  subtitle = "Package dataset: airline_delays",
+  subtitle = "Row groups by carrier type + column groups for Service / Trends",
   caption = "Negative values = ahead of schedule",
   footnote = "Satisfaction on 1-5 scale"
 )

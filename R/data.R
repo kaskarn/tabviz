@@ -38,9 +38,10 @@
 #' on-time percentages, and customer satisfaction scores. Data is simulated
 #' but inspired by DOT aviation statistics.
 #'
-#' @format A data frame with 40 rows and 10 variables:
+#' @format A data frame with 40 rows and 11 variables:
 #' \describe{
 #'   \item{carrier}{Airline carrier name}
+#'   \item{carrier_type}{Carrier classification: Legacy, Low-Cost, or Ultra Low-Cost}
 #'   \item{month}{Month of observation (Jan-Apr)}
 #'   \item{delay_vs_avg}{Delay in minutes relative to industry average}
 #'   \item{on_time_pct}{Percentage of flights arriving on time}

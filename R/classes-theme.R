@@ -9,20 +9,20 @@ ColorPalette <- new_class(
   "ColorPalette",
   properties = list(
     background = new_property(class_character, default = "#ffffff"),
-    foreground = new_property(class_character, default = "#1a1a1a"),
-    primary = new_property(class_character, default = "#2563eb"),
+    foreground = new_property(class_character, default = "#333333"),
+    primary = new_property(class_character, default = "#0891b2"),     # Cyan-600: fresh, professional
     secondary = new_property(class_character, default = "#64748b"),
     accent = new_property(class_character, default = "#8b5cf6"),
     muted = new_property(class_character, default = "#94a3b8"),
     border = new_property(class_character, default = "#e2e8f0"),
     # Interval visualization colors
-    interval_positive = new_property(class_character, default = "#16a34a"),
+    interval_positive = new_property(class_character, default = "#0891b2"),  # Match primary
     interval_negative = new_property(class_character, default = "#dc2626"),
     interval_neutral = new_property(class_character, default = "#64748b"),
     interval_line = new_property(class_character, default = "#475569"),
     # Summary/aggregate colors
-    summary_fill = new_property(class_character, default = "#2563eb"),
-    summary_border = new_property(class_character, default = "#1d4ed8")
+    summary_fill = new_property(class_character, default = "#0891b2"),
+    summary_border = new_property(class_character, default = "#0e7490")
   )
 )
 
@@ -72,7 +72,7 @@ Shapes <- new_class(
     point_size = new_property(class_numeric, default = 6),
     summary_height = new_property(class_numeric, default = 10),
     line_width = new_property(class_numeric, default = 1.5),
-    border_radius = new_property(class_numeric, default = 4)
+    border_radius = new_property(class_numeric, default = 2)  # Cleaner, more professional
   )
 )
 

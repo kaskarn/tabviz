@@ -20,31 +20,40 @@ pak::pak("kaskarn/webforest")
 ```r
 library(webforest)
 
-# Clinical trial forest plot
+# Forest plot with row and column grouping
 data <- data.frame(
-  study = c("CheckMate 067", "KEYNOTE-006", "CheckMate 238"),
-  tumor = c("Melanoma", "Melanoma", "Melanoma"),
-  hr = c(0.55, 0.63, 0.65),
-  lower = c(0.45, 0.52, 0.51),
-  upper = c(0.67, 0.76, 0.83),
-  events = c("320/502", "289/456", "154/312")
+  study = c("KEYNOTE-006", "CheckMate 067", "COMBI-v",
+            "ATTRACTION-3", "KEYNOTE-590", "CheckMate 648"),
+  cancer = c("Melanoma", "Melanoma", "Melanoma",
+             "Gastric", "Esophageal", "Esophageal"),
+  hr = c(0.63, 0.55, 0.69, 0.77, 0.73, 0.64),
+  lower = c(0.52, 0.45, 0.57, 0.62, 0.60, 0.52),
+  upper = c(0.76, 0.67, 0.84, 0.95, 0.88, 0.78),
+  events_tx = c(289, 320, 116, 198, 286, 271),
+  n_tx = c(556, 502, 352, 330, 373, 321)
 )
 
 forest_plot(data,
   point = "hr", lower = "lower", upper = "upper",
-  label = "study", group = "tumor",
+  label = "study",
+  group = "cancer",  # Row grouping by cancer type
   columns = list(
-    col_text("events", "Events"),
+    col_group("Sample",  # Column grouping
+      col_n("events_tx", "Events"),
+      col_n("n_tx", "N"),
+      position = "left"
+    ),
     col_interval("HR (95% CI)")
   ),
   scale = "log", null_value = 1,
+  theme = web_theme_cochrane(),
   title = "Immune Checkpoint Inhibitor Trials"
 )
 ```
 
 ## Features
 
-- **Publication themes** — JAMA, Lancet, modern, presentation, dark, minimal
+- **Publication themes** — JAMA, Lancet, Cochrane, Nature, modern, presentation, dark, minimal
 - **Rich columns** — numeric, intervals, bar charts, p-values, sparklines, badges
 - **Hierarchical grouping** — collapsible nested subgroups with summaries
 - **Split by subgroups** — sidebar navigation for separate plots by variable values
@@ -74,6 +83,8 @@ web_theme_jama() |>
 | `web_theme_default()` | Clean, modern default |
 | `web_theme_jama()` | JAMA journal (B&W, compact) |
 | `web_theme_lancet()` | Lancet journal (blue, serif) |
+| `web_theme_cochrane()` | Cochrane systematic reviews (compact, professional) |
+| `web_theme_nature()` | Nature family journals (clean, modern) |
 | `web_theme_modern()` | Contemporary UI |
 | `web_theme_presentation()` | Large fonts for slides |
 | `web_theme_dark()` | Dark mode |

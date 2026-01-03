@@ -20,18 +20,18 @@ const DEFAULT_THEME: WebTheme = {
   name: "default",
   colors: {
     background: "#ffffff",
-    foreground: "#1a1a1a",
-    primary: "#2563eb",
+    foreground: "#333333",
+    primary: "#0891b2",     // Cyan-600: fresh, professional
     secondary: "#64748b",
     accent: "#8b5cf6",
     muted: "#94a3b8",
     border: "#e2e8f0",
-    intervalPositive: "#16a34a",
+    intervalPositive: "#0891b2",  // Match primary
     intervalNegative: "#dc2626",
     intervalNeutral: "#64748b",
     intervalLine: "#475569",
-    summaryFill: "#2563eb",
-    summaryBorder: "#1d4ed8",
+    summaryFill: "#0891b2",
+    summaryBorder: "#0e7490",
   },
   typography: {
     fontFamily: "system-ui, -apple-system, sans-serif",
@@ -56,7 +56,7 @@ const DEFAULT_THEME: WebTheme = {
     pointSize: 6,
     summaryHeight: 10,
     lineWidth: 1.5,
-    borderRadius: 4,
+    borderRadius: 2,  // Cleaner, more professional
   },
   axis: {
     rangeMin: null,
