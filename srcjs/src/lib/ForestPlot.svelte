@@ -52,35 +52,47 @@
   const widthMode = $derived(store.widthMode);
   const heightPreset = $derived(store.heightPreset);
 
-  // Container ref for responsive mode width detection
+  // Container ref for fill mode width detection
   let containerRef: HTMLDivElement | undefined = $state();
+  let scalableRef: HTMLDivElement | undefined = $state();
 
-  // Responsive mode: compute scale factor when content is wider than container
+  // Container width from ResizeObserver (for fill mode scaling)
   let containerWidth = $state(0);
-  let contentScrollWidth = $state(0);
+  let scalableNaturalHeight = $state(0);
 
-  const responsiveScale = $derived.by(() => {
-    if (widthMode !== 'responsive' || containerWidth <= 0 || contentScrollWidth <= 0) {
+  // Natural content width from store (calculated from column specs)
+  const naturalContentWidth = $derived(store.naturalContentWidth);
+
+  // Scale factor for fill mode: stretch or shrink content to fit container
+  const fillScale = $derived.by(() => {
+    if (widthMode !== 'fill' || containerWidth <= 0 || naturalContentWidth <= 0) {
       return 1;
     }
-    // Scale down to fit content within container
-    const scale = Math.min(1, containerWidth / contentScrollWidth);
-    // Don't scale below 0.6 (text becomes unreadable)
-    return Math.max(0.6, scale);
+    // Scale to fit content within container (both up and down)
+    const scale = containerWidth / naturalContentWidth;
+    // Don't scale below 0.6 (text becomes unreadable) or above 2.0 (too stretched)
+    return Math.max(0.6, Math.min(2.0, scale));
   });
 
-  // ResizeObserver for responsive mode width detection
+  // Scaled height for container sizing (CSS transform doesn't affect layout)
+  const scaledHeight = $derived(scalableNaturalHeight * fillScale);
+
+  // ResizeObserver for fill mode - track both container width and scalable height
   $effect(() => {
-    if (!containerRef) return;
+    if (!containerRef || !scalableRef) return;
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        contentScrollWidth = entry.target.scrollWidth;
-        containerWidth = entry.contentRect.width;
+        if (entry.target === containerRef) {
+          containerWidth = entry.contentRect.width;
+        } else if (entry.target === scalableRef) {
+          scalableNaturalHeight = entry.contentRect.height;
+        }
       }
     });
 
     observer.observe(containerRef);
+    observer.observe(scalableRef);
 
     return () => {
       observer.disconnect();
@@ -249,7 +261,7 @@
       --wf-row-selected-opacity: ${ROW_SELECTED_OPACITY};
       --wf-row-selected-hover-opacity: ${ROW_SELECTED_HOVER_OPACITY};
       --wf-depth-base-opacity: ${DEPTH_BASE_OPACITY};
-      --wf-responsive-scale: ${responsiveScale};
+      --wf-fill-scale: ${fillScale};
     `.trim();
   });
 </script>
@@ -257,16 +269,18 @@
 <div
   bind:this={containerRef}
   class="webforest-container width-{widthMode} height-{heightPreset}"
-  style={cssVars}
+  style="{cssVars}; {widthMode === 'fill' && heightPreset === 'full' && scaledHeight > 0 ? `min-height: ${scaledHeight}px` : ''}"
 >
   {#if spec}
-    <!-- Control toolbar (appears on hover) -->
+    <!-- Control toolbar (appears on hover) - outside scalable area -->
     <ControlToolbar {store} {enableExport} />
 
-    <!-- Plot header (title, subtitle) -->
-    <PlotHeader title={spec.labels?.title} subtitle={spec.labels?.subtitle} />
+    <!-- Scalable content wrapper (header + main + footer) -->
+    <div bind:this={scalableRef} class="webforest-scalable">
+      <!-- Plot header (title, subtitle) -->
+      <PlotHeader title={spec.labels?.title} subtitle={spec.labels?.subtitle} />
 
-    <div class="webforest-main">
+      <div class="webforest-main">
       <!-- Left table (label + left-positioned columns) -->
       <div class="webforest-table webforest-table-left">
         <!-- Header -->
@@ -597,8 +611,9 @@
       {/if}
     </div>
 
-    <!-- Plot footer (caption, footnote) -->
-    <PlotFooter caption={spec.labels?.caption} footnote={spec.labels?.footnote} />
+      <!-- Plot footer (caption, footnote) -->
+      <PlotFooter caption={spec.labels?.caption} footnote={spec.labels?.footnote} />
+    </div>
 
     <!-- Tooltip -->
     <Tooltip row={tooltipRow} position={tooltipPosition} {theme} />
@@ -793,22 +808,33 @@
   }
 
   /* Width modes */
-  :global(.webforest-container.width-fit) {
+  :global(.webforest-container.width-natural) {
     width: fit-content;
     max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   :global(.webforest-container.width-fill) {
     width: 100%;
+    /* Remove border/background from container in fill mode - they go on scalable */
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    /* Allow content to extend beyond and trigger page scroll */
+    overflow: visible;
   }
 
-  :global(.webforest-container.width-responsive) {
-    width: 100%;
-  }
-
-  :global(.webforest-container.width-responsive) .webforest-main {
-    transform: scale(var(--wf-responsive-scale, 1));
+  :global(.webforest-container.width-fill) .webforest-scalable {
+    transform: scale(var(--wf-fill-scale, 1));
     transform-origin: top left;
+    /* Scale affects visual rendering but not layout box.
+       Use width to make the layout box match the scaled visual size. */
+    width: calc(100% / var(--wf-fill-scale, 1));
+    /* Move border/background here so they scale with content */
+    background: var(--wf-bg);
+    border: 1px solid var(--wf-border);
+    border-radius: 8px;
   }
 
   /* Height presets - use max-height so container doesn't fill with empty space */
@@ -836,10 +862,23 @@
     overflow: visible;
   }
 
+  /* Override htmlwidgets container height when in full height mode */
+  :global(.webforest:has(.webforest-container.height-full)) {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
   :global(.webforest-container.height-container) {
     height: 100%;
     max-height: none;
     overflow-y: auto;
+  }
+
+  .webforest-scalable {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
 
   .webforest-main {

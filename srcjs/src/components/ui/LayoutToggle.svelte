@@ -13,9 +13,8 @@
   const heightPreset = $derived(store.heightPreset);
 
   const WIDTH_OPTIONS = [
-    { value: 'fit' as const, label: 'Fit Content' },
+    { value: 'natural' as const, label: 'Natural Width' },
     { value: 'fill' as const, label: 'Fill Container' },
-    { value: 'responsive' as const, label: 'Responsive' },
   ];
 
   const HEIGHT_OPTIONS = [
@@ -30,7 +29,7 @@
     dropdownOpen = false;
   }
 
-  function selectWidthMode(mode: 'fit' | 'fill' | 'responsive') {
+  function selectWidthMode(mode: 'natural' | 'fill') {
     store.setWidthMode(mode);
   }
 

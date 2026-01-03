@@ -41,7 +41,7 @@ export function createForestStore() {
   let plotWidthOverride = $state<number | null>(null);
 
   // Layout mode state
-  let widthMode = $state<'fit' | 'fill' | 'responsive'>('fit');
+  let widthMode = $state<'natural' | 'fill'>('natural');
   let heightPreset = $state<'small' | 'medium' | 'large' | 'full' | 'container'>('full');
 
   // Derived: visible rows (all rows after filter/sort, but NOT collapsed filtering)
@@ -371,6 +371,41 @@ export function createForestStore() {
     };
   });
 
+  // Derived: natural content width (intrinsic width based on column specs, not container)
+  // Used for fill mode scaling calculations
+  const naturalContentWidth = $derived.by((): number => {
+    if (!spec) return 800;
+
+    const DEFAULT_COLUMN_WIDTH = 100;
+    const LABEL_COLUMN_WIDTH = 150;
+    const DEFAULT_FOREST_WIDTH = 250;
+
+    // Calculate sum of all column widths
+    let totalColumnWidth = 0;
+    const allColumns = [...leftColumns, ...rightColumns];
+    for (const col of allColumns) {
+      // Use computed width if available, otherwise spec width, otherwise default
+      const w = columnWidths[col.id]
+        ?? (typeof col.width === 'number' ? col.width : null)
+        ?? DEFAULT_COLUMN_WIDTH;
+      totalColumnWidth += w;
+    }
+
+    // Add label column (always present on left)
+    totalColumnWidth += LABEL_COLUMN_WIDTH;
+
+    // Add forest plot width if included
+    const forestWidth = spec.data.includeForest
+      ? (plotWidthOverride ?? DEFAULT_FOREST_WIDTH)
+      : 0;
+
+    // Add gaps and padding
+    const columnGap = spec.data.includeForest ? spec.theme.spacing.columnGap : 0;
+    const padding = spec.theme.spacing.padding * 2;
+
+    return totalColumnWidth + forestWidth + columnGap + padding;
+  });
+
   // Actions
   function setSpec(newSpec: WebSpec) {
     spec = newSpec;
@@ -511,14 +546,12 @@ export function createForestStore() {
   }
 
   // Layout mode controls
-  function setWidthMode(mode: 'fit' | 'fill' | 'responsive') {
+  function setWidthMode(mode: 'natural' | 'fill') {
     widthMode = mode;
   }
 
   function toggleWidthMode() {
-    const modes: Array<'fit' | 'fill' | 'responsive'> = ['fit', 'fill', 'responsive'];
-    const currentIndex = modes.indexOf(widthMode);
-    widthMode = modes[(currentIndex + 1) % modes.length];
+    widthMode = widthMode === 'natural' ? 'fill' : 'natural';
   }
 
   function setHeightPreset(preset: 'small' | 'medium' | 'large' | 'full' | 'container') {
@@ -595,6 +628,9 @@ export function createForestStore() {
     },
     get heightPreset() {
       return heightPreset;
+    },
+    get naturalContentWidth() {
+      return naturalContentWidth;
     },
     getRowDepth,
     getColumnWidth,

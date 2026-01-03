@@ -21,7 +21,7 @@ axis_ticks = NULL,
 axis_gridlines = NULL,
 plot_position = NULL,
 row_height = NULL,
-width_mode = c("fit", "fill", "responsive"),
+width_mode = c("natural", "fill"),
 height_mode = c("auto", "scroll"),
 width = NULL,
 height = NULL,
@@ -84,7 +84,7 @@ elementId = NULL
 
 | Argument | Description |
 |----------|-------------|
-| `width_mode` | `"fit"` (shrink-wrap), `"fill"` (100%), or `"responsive"` (100% with scaling) |
+| `width_mode` | `"natural"` (centered at natural width) or `"fill"` (scale to fill container) |
 | `height_mode` | `"auto"` (natural height) or `"scroll"` (scroll if > viewport) |
 | `width` | Widget width |
 | `height` | Widget height |

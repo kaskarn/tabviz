@@ -16,7 +16,7 @@
 #' @param axis_gridlines Logical to show/hide gridlines (overrides theme)
 #' @param plot_position "left" or "right" to override plot position from theme
 #' @param row_height Numeric row height in pixels (overrides theme)
-#' @param width_mode Layout width mode: "fit" (shrink-wrap, default), "fill" (100%), or "responsive" (100% with scaling)
+#' @param width_mode Layout width mode: "natural" (centered at natural width, default) or "fill" (scale to fill container)
 #' @param height_preset Layout height preset: "small" (200px), "medium" (400px), "large" (600px),
 #'   "full" (natural height, no constraint), or "container" (fill parent). Default is "full".
 #' @param height_mode Deprecated. Use `height_preset` instead.
@@ -74,7 +74,7 @@ forest_plot <- function(
     axis_gridlines = NULL,
     plot_position = NULL,
     row_height = NULL,
-    width_mode = c("fit", "fill", "responsive"),
+    width_mode = c("natural", "fill"),
     height_preset = c("full", "small", "medium", "large", "container"),
     height_mode = NULL,
     width = NULL,

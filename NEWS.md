@@ -1,5 +1,11 @@
 # webforest (development version)
 
+## 0.0.0.9006
+
+### Breaking Changes
+
+* **Simplified width modes**: `width_mode` now has two options: `"natural"` (default, centered) and `"fill"` (scale to fill container). Replaces previous `"fit"`, `"fill"`, `"responsive"` options.
+
 ## 0.0.0.9005
 
 ### New Features

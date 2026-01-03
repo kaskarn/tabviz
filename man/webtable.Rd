@@ -7,7 +7,7 @@
 webtable(
   x,
   ...,
-  width_mode = c("fit", "fill", "responsive"),
+  width_mode = c("natural", "fill"),
   height_preset = c("full", "small", "medium", "large", "container"),
   height_mode = NULL,
   width = NULL,
@@ -22,7 +22,7 @@ webtable(
 Common arguments: \code{point}, \code{lower}, \code{upper}, \code{label}, \code{group},
 \code{columns}, \code{theme}, \code{interaction}}
 
-\item{width_mode}{Layout width mode: "fit" (shrink-wrap, default), "fill" (100\%), or "responsive" (100\% with scaling)}
+\item{width_mode}{Layout width mode: "natural" (centered at natural width, default) or "fill" (scale to fill container)}
 
 \item{height_preset}{Layout height preset: "small" (200px), "medium" (400px), "large" (600px),
 "full" (natural height, no constraint), or "container" (fill parent). Default is "full".}
