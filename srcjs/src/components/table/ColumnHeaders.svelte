@@ -42,6 +42,24 @@
 
   const leafColumns = $derived(getLeafColumns(columnDefs));
 
+  // Calculate explicit grid column start positions for each column def
+  // This is needed because CSS Grid auto-placement doesn't handle mixed
+  // column-spanning and row-spanning items correctly
+  const columnStartPositions = $derived.by(() => {
+    const positions = new Map<string, number>();
+    let currentCol = showLabel ? 2 : 1; // Start after label if present
+    for (const col of columnDefs) {
+      positions.set(col.id, currentCol);
+      currentCol += getColspan(col);
+    }
+    return positions;
+  });
+
+  // Get the grid-column start position for a column def
+  function getGridColumnStart(col: ColumnDef): number {
+    return columnStartPositions.get(col.id) ?? 1;
+  }
+
   // Helper to get column width (dynamic or default)
   function getColWidth(column: ColumnSpec): number | undefined {
     return store?.getColumnWidth(column.id) ?? column.width ?? undefined;
@@ -136,13 +154,14 @@
       {#if col.isGroup}
         <div
           class="webforest-col header-cell group-header group-row"
-          style:grid-column="span {getColspan(col)}"
+          style:grid-column="{getGridColumnStart(col)} / span {getColspan(col)}"
         >
           {col.header}
         </div>
       {:else}
         <div
           class="webforest-col header-cell group-row"
+          style:grid-column={getGridColumnStart(col)}
           style:grid-row="1 / 3"
           style:text-align={col.headerAlign ?? col.align}
         >

@@ -129,13 +129,27 @@ export function createForestStore() {
     return scaleLinear().domain(nicedDomain).range([rangeStart, rangeEnd]);
   });
 
+  // Helper to flatten group children (no position filtering - children inherit from parent)
+  function flattenGroupChildren(columns: ColumnDef[]): ColumnSpec[] {
+    const result: ColumnSpec[] = [];
+    for (const col of columns) {
+      if (col.isGroup) {
+        result.push(...flattenGroupChildren(col.columns));
+      } else {
+        result.push(col);
+      }
+    }
+    return result;
+  }
+
   // Helper to flatten column groups into flat ColumnSpec array
   function flattenColumns(columns: ColumnDef[], position: "left" | "right"): ColumnSpec[] {
     const result: ColumnSpec[] = [];
     for (const col of columns) {
       if (col.position !== position) continue;
       if (col.isGroup) {
-        result.push(...flattenColumns(col.columns, position));
+        // Group children inherit position from parent - don't filter them
+        result.push(...flattenGroupChildren(col.columns));
       } else {
         result.push(col);
       }

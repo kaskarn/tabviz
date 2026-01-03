@@ -19,6 +19,11 @@
 * Fixed gallery_07 example column positioning
 * Fixed `height_preset = "full"` not overriding htmlwidgets container height
 
+### Bug Fixes
+
+* Fixed column group header ordering issue where standalone columns after a group would appear before the group header
+* Fixed flattening of column groups where child columns inside groups were incorrectly filtered by position
+
 ## 0.0.0.9004
 
 ### New Features
