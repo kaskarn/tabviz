@@ -104,6 +104,23 @@ export interface WebData {
 // Column Types
 // ============================================================================
 
+export interface NumericColumnOptions {
+  decimals?: number;  // Number of decimal places (default: 2)
+}
+
+export interface PercentColumnOptions {
+  decimals?: number;  // Decimal places (default: 1)
+  multiply?: boolean; // Multiply by 100 if value is proportion (default: false)
+  symbol?: boolean;   // Show % symbol (default: true)
+}
+
+export interface EventsColumnOptions {
+  eventsField: string;  // Column name for event count
+  nField: string;       // Column name for total N
+  separator?: string;   // Separator between events and N (default: "/")
+  showPct?: boolean;    // Show percentage after (default: false)
+}
+
 export interface BarColumnOptions {
   maxValue?: number | null;
   showLabel?: boolean;
@@ -123,9 +140,13 @@ export interface SparklineColumnOptions {
 }
 
 export interface ColumnOptions {
+  numeric?: NumericColumnOptions;
+  percent?: PercentColumnOptions;
+  events?: EventsColumnOptions;
   bar?: BarColumnOptions;
   pvalue?: PvalueColumnOptions;
   sparkline?: SparklineColumnOptions;
+  naText?: string;  // Custom text for NA/missing values
 }
 
 export interface ColumnSpec {

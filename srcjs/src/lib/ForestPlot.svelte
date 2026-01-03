@@ -1,7 +1,7 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
   import type { ForestStore } from "$stores/forestStore.svelte";
-  import type { WebTheme, ColumnSpec, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle } from "$types";
+  import type { WebTheme, ColumnSpec, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
   import EffectAxis from "$components/forest/EffectAxis.svelte";
   import SummaryDiamond from "$components/forest/SummaryDiamond.svelte";
@@ -364,7 +364,9 @@
                       options={column.options?.sparkline}
                     />
                   {:else if column.type === "numeric"}
-                    <CellContent value={formatNumber(row.metadata[column.field] as number)} {cellStyle} />
+                    <CellContent value={formatNumber(row.metadata[column.field] as number, column.options)} {cellStyle} />
+                  {:else if column.type === "custom" && column.options?.events}
+                    <CellContent value={formatEvents(row, column.options)} {cellStyle} />
                   {:else if column.type === "interval"}
                     <CellContent value={formatInterval(row.point, row.lower, row.upper)} {cellStyle} />
                   {:else}
@@ -596,7 +598,9 @@
                         options={column.options?.sparkline}
                       />
                     {:else if column.type === "numeric"}
-                      <CellContent value={formatNumber(row.metadata[column.field] as number)} {cellStyle} />
+                      <CellContent value={formatNumber(row.metadata[column.field] as number, column.options)} {cellStyle} />
+                    {:else if column.type === "custom" && column.options?.events}
+                      <CellContent value={formatEvents(row, column.options)} {cellStyle} />
                     {:else if column.type === "interval"}
                       <CellContent value={formatInterval(row.point, row.lower, row.upper)} {cellStyle} />
                     {:else}
@@ -654,9 +658,43 @@
     return "";
   }
 
-  function formatNumber(value: number | undefined): string {
-    if (value === undefined || value === null) return "";
-    return value.toFixed(2);
+  function formatNumber(value: number | undefined | null, options?: ColumnOptions): string {
+    if (value === undefined || value === null || Number.isNaN(value)) {
+      return options?.naText ?? "";
+    }
+
+    // Percent formatting
+    if (options?.percent) {
+      const { decimals = 1, multiply = false, symbol = true } = options.percent;
+      const displayValue = multiply ? value * 100 : value;
+      const formatted = displayValue.toFixed(decimals);
+      return symbol ? `${formatted}%` : formatted;
+    }
+
+    // Numeric formatting with decimals
+    const decimals = options?.numeric?.decimals ?? 2;
+    return value.toFixed(decimals);
+  }
+
+  function formatEvents(row: Row, options: ColumnOptions): string {
+    const { eventsField, nField, separator = "/", showPct = false } = options.events!;
+    const events = row.metadata[eventsField];
+    const n = row.metadata[nField];
+
+    if (events === undefined || events === null || n === undefined || n === null) {
+      return options.naText ?? "";
+    }
+
+    const eventsNum = Number(events);
+    const nNum = Number(n);
+    let result = `${eventsNum}${separator}${nNum}`;
+
+    if (showPct && nNum > 0) {
+      const pct = ((eventsNum / nNum) * 100).toFixed(1);
+      result += ` (${pct}%)`;
+    }
+
+    return result;
   }
 
   function formatInterval(point?: number, lower?: number, upper?: number): string {

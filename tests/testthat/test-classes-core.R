@@ -157,3 +157,87 @@ test_that("col_sparkline creates column with options", {
   expect_equal(col@options$sparkline$type, "area")
   expect_equal(col@options$sparkline$height, 30)
 })
+
+# New v0.1.0 feature tests
+
+test_that("web_theme_cochrane creates valid theme", {
+  theme <- web_theme_cochrane()
+  expect_true(inherits(theme, "webforest::WebTheme"))
+  expect_equal(theme@name, "cochrane")
+  expect_equal(theme@colors@primary, "#0099cc")
+  expect_equal(theme@shapes@border_radius, 0)
+  expect_false(theme@layout@container_border)
+})
+
+test_that("web_theme_nature creates valid theme", {
+  theme <- web_theme_nature()
+  expect_true(inherits(theme, "webforest::WebTheme"))
+  expect_equal(theme@name, "nature")
+  expect_equal(theme@colors@primary, "#1976d2")
+  expect_equal(theme@shapes@border_radius, 2)
+  expect_true(theme@layout@container_border)
+})
+
+test_that("col_numeric supports decimals parameter", {
+  col <- col_numeric("value", decimals = 3)
+  expect_equal(col@type, "numeric")
+  expect_equal(col@options$numeric$decimals, 3)
+})
+
+test_that("col_n defaults to 0 decimals", {
+  col <- col_n("n")
+  expect_equal(col@type, "numeric")
+  expect_equal(col@options$numeric$decimals, 0)
+})
+
+test_that("col_percent creates column with percent options", {
+  col <- col_percent("pct", decimals = 2, multiply = TRUE, symbol = FALSE)
+  expect_equal(col@type, "numeric")
+  expect_equal(col@options$percent$decimals, 2)
+  expect_true(col@options$percent$multiply)
+  expect_false(col@options$percent$symbol)
+})
+
+test_that("col_events creates column with events options", {
+  col <- col_events("events", "n", separator = " / ", show_pct = TRUE)
+  expect_equal(col@type, "custom")
+  expect_equal(col@options$events$eventsField, "events")
+  expect_equal(col@options$events$nField, "n")
+  expect_equal(col@options$events$separator, " / ")
+  expect_true(col@options$events$showPct)
+})
+
+test_that("web_col supports na_text parameter", {
+  col <- web_col("value", type = "numeric", na_text = "N/A")
+  expect_equal(col@options$naText, "N/A")
+})
+
+# Dataset tests
+
+test_that("glp1_trials dataset loads correctly", {
+  data(glp1_trials, package = "webforest")
+  expect_true(is.data.frame(glp1_trials))
+  expect_true(nrow(glp1_trials) > 0)
+  expect_true(all(c("study", "hr", "lower", "upper") %in% names(glp1_trials)))
+})
+
+test_that("airline_delays dataset loads correctly", {
+  data(airline_delays, package = "webforest")
+  expect_true(is.data.frame(airline_delays))
+  expect_true(nrow(airline_delays) > 0)
+  expect_true(all(c("carrier", "delay_vs_avg", "delay_lower", "delay_upper") %in% names(airline_delays)))
+})
+
+test_that("nba_efficiency dataset loads correctly", {
+  data(nba_efficiency, package = "webforest")
+  expect_true(is.data.frame(nba_efficiency))
+  expect_true(nrow(nba_efficiency) > 0)
+  expect_true(all(c("player", "per", "per_lower", "per_upper") %in% names(nba_efficiency)))
+})
+
+test_that("climate_temps dataset loads correctly", {
+  data(climate_temps, package = "webforest")
+  expect_true(is.data.frame(climate_temps))
+  expect_true(nrow(climate_temps) > 0)
+  expect_true(all(c("region", "anomaly", "lower", "upper") %in% names(climate_temps)))
+})

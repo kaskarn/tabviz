@@ -699,6 +699,116 @@ web_theme_presentation <- function() {
   )
 }
 
+#' Cochrane systematic review theme
+#'
+#' Theme designed for Cochrane systematic reviews.
+#' Uses Cochrane blue (#0099CC), Arial font, compact spacing, and no border radius.
+#'
+#' @return A WebTheme object
+#' @export
+web_theme_cochrane <- function() {
+  WebTheme(
+    name = "cochrane",
+    colors = ColorPalette(
+      background = "#ffffff",
+      foreground = "#333333",
+      primary = "#0099cc",
+      secondary = "#666666",
+      accent = "#0066cc",
+      muted = "#999999",
+      border = "#cccccc",
+      interval_positive = "#0099cc",
+      interval_negative = "#cc3333",
+      interval_neutral = "#666666",
+      interval_line = "#333333",
+      summary_fill = "#0099cc",
+      summary_border = "#007799"
+    ),
+    typography = Typography(
+      font_family = "Arial, Helvetica, sans-serif",
+      font_size_sm = "0.7rem",
+      font_size_base = "0.8rem",
+      font_size_lg = "0.9rem",
+      font_weight_normal = 400,
+      font_weight_medium = 500,
+      font_weight_bold = 700,
+      line_height = 1.3
+    ),
+    spacing = Spacing(
+      row_height = 22,
+      header_height = 28,
+      column_gap = 6,
+      section_gap = 10,
+      padding = 8
+    ),
+    shapes = Shapes(
+      point_size = 5,
+      summary_height = 8,
+      line_width = 1,
+      border_radius = 0
+    ),
+    layout = LayoutConfig(
+      container_border = FALSE,
+      container_border_radius = 0
+    )
+  )
+}
+
+#' Nature journal theme
+#'
+#' Theme following Nature family journal styling.
+#' Uses Nature blue (#1976D2), Helvetica Neue font, and modern clean aesthetic.
+#'
+#' @return A WebTheme object
+#' @export
+web_theme_nature <- function() {
+  WebTheme(
+    name = "nature",
+    colors = ColorPalette(
+      background = "#ffffff",
+      foreground = "#212121",
+      primary = "#1976d2",
+      secondary = "#424242",
+      accent = "#d32f2f",
+      muted = "#757575",
+      border = "#e0e0e0",
+      interval_positive = "#1976d2",
+      interval_negative = "#d32f2f",
+      interval_neutral = "#616161",
+      interval_line = "#212121",
+      summary_fill = "#1976d2",
+      summary_border = "#1565c0"
+    ),
+    typography = Typography(
+      font_family = "'Helvetica Neue', Helvetica, Arial, sans-serif",
+      font_size_sm = "0.75rem",
+      font_size_base = "0.875rem",
+      font_size_lg = "1rem",
+      font_weight_normal = 400,
+      font_weight_medium = 500,
+      font_weight_bold = 700,
+      line_height = 1.4
+    ),
+    spacing = Spacing(
+      row_height = 26,
+      header_height = 34,
+      column_gap = 8,
+      section_gap = 14,
+      padding = 10
+    ),
+    shapes = Shapes(
+      point_size = 6,
+      summary_height = 9,
+      line_width = 1.25,
+      border_radius = 2
+    ),
+    layout = LayoutConfig(
+      container_border = TRUE,
+      container_border_radius = 2
+    )
+  )
+}
+
 # ============================================================================
 # Deprecated aliases for backwards compatibility
 # ============================================================================

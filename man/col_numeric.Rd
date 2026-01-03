@@ -4,7 +4,7 @@
 \alias{col_numeric}
 \title{Column helper: Numeric column}
 \usage{
-col_numeric(field, header = NULL, width = 90, ...)
+col_numeric(field, header = NULL, width = 90, decimals = 2, ...)
 }
 \arguments{
 \item{field}{Field name}
@@ -13,6 +13,8 @@ col_numeric(field, header = NULL, width = 90, ...)
 
 \item{width}{Column width in pixels (default 90)}
 
+\item{decimals}{Number of decimal places to display (default 2, NULL for auto)}
+
 \item{...}{Additional arguments passed to web_col}
 }
 \value{
@@ -20,4 +22,14 @@ A ColumnSpec object
 }
 \description{
 Column helper: Numeric column
+}
+\examples{
+# Default 2 decimal places
+col_numeric("estimate")
+
+# Show 3 decimal places
+col_numeric("pct", decimals = 3)
+
+# Integer display (no decimals)
+col_numeric("count", decimals = 0)
 }

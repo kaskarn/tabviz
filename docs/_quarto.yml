@@ -25,6 +25,8 @@ website:
           - text: "Axis & Annotations"
             href: guide/axis-annotations.qmd
           - text: "---"
+          - text: "Package Datasets"
+            href: guide/datasets.qmd
           - text: "Data Preparation"
             href: guide/data-preparation.qmd
           - text: "Cell Styling"

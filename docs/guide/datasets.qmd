@@ -1,0 +1,176 @@
+---
+title: "Package Datasets"
+---
+```{r}
+#| include: false
+library(webforest)
+library(dplyr)
+```
+
+webforest includes four datasets for examples, testing, and learning. Each is designed to showcase different features and use cases.
+
+## Available Datasets
+
+| Dataset | Rows | Domain | Key Features |
+|---------|------|--------|--------------|
+| `glp1_trials` | 24 | Clinical trials | HR/CI, groups, subgroups, summary rows |
+| `airline_delays` | 40 | Transportation | Sparkline trends, bar charts, grouped |
+| `nba_efficiency` | 30 | Sports | Player stats, conference groups, badges |
+| `climate_temps` | 20 | Science | Minimal structure, uncertainty ranges |
+
+## glp1_trials
+
+GLP-1 agonist cardiovascular outcomes trials - ideal for meta-analysis examples.
+
+```{r}
+data(glp1_trials)
+glimpse(glp1_trials)
+```
+
+**Best for:** Meta-analyses, subgroup analyses, publication-style forest plots
+
+```{r}
+#| fig-height: 6
+# Filter to main trials only
+glp1_trials |>
+  filter(group == "Main Trials") |>
+  forest_plot(
+    label = "study",
+    point = "hr",
+    lower = "lower",
+    upper = "upper",
+    columns = list(
+      col_text("drug", "Drug"),
+      col_n("n"),
+      col_interval("HR (95% CI)")
+    ),
+    scale = "log",
+    null_value = 1,
+    theme = web_theme_lancet(),
+    axis_label = "Hazard Ratio",
+    title = "GLP-1 Agonist Cardiovascular Outcomes"
+  )
+```
+
+## airline_delays
+
+Airline carrier performance data with trends - ideal for sparklines and bar charts.
+
+```{r}
+data(airline_delays)
+glimpse(airline_delays)
+```
+
+**Best for:** Sparkline columns, bar charts, grouped comparisons
+
+```{r}
+# Aggregate to carrier level for cleaner display
+airline_summary <- airline_delays |>
+  group_by(carrier) |>
+  summarise(
+    delay_vs_avg = mean(delay_vs_avg),
+    delay_lower = mean(delay_lower),
+    delay_upper = mean(delay_upper),
+    on_time_pct = mean(on_time_pct),
+    trend = list(unlist(trend[1]))
+  )
+
+forest_plot(
+  airline_summary,
+  label = "carrier",
+  point = "delay_vs_avg",
+  lower = "delay_lower",
+  upper = "delay_upper",
+  columns = list(
+    col_percent("on_time_pct", "On-Time %"),
+    col_sparkline("trend", "12M Trend"),
+    col_interval("Delay (95% CI)")
+  ),
+  null_value = 0,
+  theme = web_theme_modern(),
+  axis_label = "Delay vs. Average (minutes)",
+  title = "Airline Carrier Performance"
+)
+```
+
+## nba_efficiency
+
+NBA player statistics - a fun dataset for demonstrating grouped data and badges.
+```{r}
+data(nba_efficiency)
+glimpse(nba_efficiency)
+```
+
+**Best for:** Grouped data, badges, non-medical examples
+
+```{r}
+#| fig-height: 7
+forest_plot(
+  nba_efficiency,
+  label = "player",
+  point = "per",
+  lower = "per_lower",
+  upper = "per_upper",
+  group = "conference",
+  columns = list(
+    col_text("team", "Team", width = 60),
+    col_numeric("ppg", "PPG"),
+    col_interval("PER (95% CI)")
+  ),
+  row_badge = "award",
+  null_value = 15,  # League average PER
+  theme = web_theme_modern(),
+  axis_label = "Player Efficiency Rating",
+  title = "NBA Player Efficiency",
+  subtitle = "2023-24 Season",
+  caption = "PER: 15 = league average"
+)
+```
+
+## climate_temps
+
+Regional temperature anomalies - minimal dataset for clean examples.
+
+```{r}
+data(climate_temps)
+glimpse(climate_temps)
+```
+
+**Best for:** Simple examples, minimal themes, uncertainty visualization
+
+```{r}
+climate_temps |>
+  filter(category %in% c("Global", "Hemisphere", "Continental")) |>
+  forest_plot(
+    label = "region",
+    point = "anomaly",
+    lower = "lower",
+    upper = "upper",
+    group = "category",
+    columns = list(
+      col_text("certainty", "Confidence"),
+      col_interval("Anomaly (95% CI)")
+    ),
+    null_value = 0,
+    theme = web_theme_minimal(),
+    axis_label = "Temperature Anomaly (°C)",
+    title = "Regional Temperature Anomalies",
+    subtitle = "2023 vs. Pre-Industrial Baseline"
+  )
+```
+
+## Using Datasets in Your Code
+
+All datasets are lazy-loaded. Simply reference them after loading the package:
+
+```r
+library(webforest)
+
+# Datasets are available immediately
+head(glp1_trials)
+
+# Or explicitly load
+data(glp1_trials)
+```
+
+See `?glp1_trials`, `?airline_delays`, `?nba_efficiency`, and `?climate_temps` for full documentation.

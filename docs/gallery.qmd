@@ -482,50 +482,38 @@ webtable(
 
 ## 11. Publication Meta-Analysis
 
-Row styling + annotations + axis control + weight column.
+Row styling + annotations + axis control using the `glp1_trials` package dataset.
 
 ```{r}
-meta_analysis <- tibble(
-  study = c(
-    "Individual Studies",
-    "  Smith 2018", "  Johnson 2019", "  Williams 2020", "  Brown 2021", "  Davis 2022",
-    "",
-    "Pooled Estimate"
-  ),
-  or = c(NA, 0.72, 0.85, 0.68, 0.78, 0.65, NA, 0.74),
-  lower = c(NA, 0.55, 0.68, 0.52, 0.62, 0.50, NA, 0.66),
-  upper = c(NA, 0.94, 1.06, 0.89, 0.98, 0.85, NA, 0.83),
-  weight = c(NA, 18.5, 22.1, 15.8, 24.2, 19.4, NA, 100),
-  n = c(NA, 450, 680, 320, 890, 520, NA, 2860),
-  i2 = c(NA, NA, NA, NA, NA, NA, NA, 32),
-  rtype = c("header", rep("data", 5), "spacer", "summary"),
-  rbold = c(TRUE, rep(FALSE, 5), FALSE, TRUE),
-  rindent = c(0, 1, 1, 1, 1, 1, 0, 0)
-)
+# Using the glp1_trials package dataset
+data(glp1_trials)
 
 forest_plot(
-  meta_analysis,
-  point = "or", lower = "lower", upper = "upper",
+  glp1_trials,
+  point = "hr", lower = "lower", upper = "upper",
   label = "study",
+  group = "group",
   columns = list(
+    col_text("drug", "Drug"),
     col_n("n"),
-    col_weight("weight"),
-    col_interval("OR (95% CI)")
+    col_events("events", "n", "Events"),
+    col_interval("HR (95% CI)"),
+    col_pvalue("pvalue", "P")
   ),
   annotations = list(
-    forest_refline(0.75, label = "Pooled", style = "solid", color = "#2563eb")
+    forest_refline(0.85, label = "Pooled HR", style = "dashed", color = "#00407a")
   ),
-  row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
+  row_type = "row_type", row_bold = "row_bold",
   theme = web_theme_lancet(),
   scale = "log", null_value = 1,
-  axis_range = c(0.4, 1.2),
-  axis_ticks = c(0.5, 0.75, 1.0),
+  axis_range = c(0.4, 1.5),
+  axis_ticks = c(0.5, 0.75, 1.0, 1.25),
   axis_gridlines = TRUE,
-  axis_label = "Odds Ratio (95% CI)",
-  title = "Publication Meta-Analysis",
-  subtitle = "Weight column + reference line + custom axis",
-  caption = "Pooled estimate shown as reference line; I² = 32%",
-  footnote = "Random-effects model with DerSimonian-Laird estimator"
+  axis_label = "Hazard Ratio (95% CI)",
+  title = "GLP-1 Agonist Cardiovascular Outcomes",
+  subtitle = "Package dataset: glp1_trials",
+  caption = "Major adverse cardiovascular events (MACE)",
+  footnote = "See ?glp1_trials for data documentation"
 )
 ```
 
@@ -849,5 +837,96 @@ forest_plot(
   title = "Global Clinical Trial Program",
   subtitle = "Region > Country hierarchy with shared axis",
   caption = "shared_axis = TRUE ensures consistent visual comparison"
+)
+```
+
+---
+
+# Fun Examples
+
+Non-clinical examples showcasing webforest's versatility.
+
+## 19. NBA Player Efficiency
+
+Sports analytics using the `nba_efficiency` package dataset.
+
+```{r}
+#| fig-height: 8
+data(nba_efficiency)
+
+forest_plot(
+  nba_efficiency,
+  label = "player",
+  point = "per",
+  lower = "per_lower",
+  upper = "per_upper",
+  group = "conference",
+  columns = list(
+    col_text("team", "Team", width = 50),
+    col_text("position", "Pos", width = 40),
+    col_numeric("ppg", "PPG"),
+    col_numeric("games", "GP", decimals = 0),
+    col_interval("PER (95% CI)")
+  ),
+  row_badge = "award",
+  null_value = 15,  # League average PER
+  theme = web_theme_modern() |>
+    set_colors(
+      primary = "#C9082A",  # NBA red
+      interval_positive = "#17408B",  # NBA blue
+      interval_negative = "#C9082A"
+    ),
+  axis_label = "Player Efficiency Rating",
+  title = "NBA Player Efficiency Ratings",
+  subtitle = "Package dataset: nba_efficiency",
+  caption = "PER = 15 is league average. Badge shows major awards.",
+  footnote = "Data simulated based on typical NBA statistics"
+)
+```
+
+## 20. Airline Performance
+
+Transportation analytics using the `airline_delays` package dataset.
+
+```{r}
+data(airline_delays)
+
+# Aggregate to carrier level
+carrier_summary <- airline_delays |>
+  group_by(carrier) |>
+  summarise(
+    delay_vs_avg = mean(delay_vs_avg),
+    delay_lower = mean(delay_lower),
+    delay_upper = mean(delay_upper),
+    on_time_pct = mean(on_time_pct),
+    satisfaction = mean(satisfaction),
+    flights = sum(flights),
+    trend = list(unlist(trend[1]))
+  ) |>
+  arrange(delay_vs_avg)
+
+forest_plot(
+  carrier_summary,
+  label = "carrier",
+  point = "delay_vs_avg",
+  lower = "delay_lower",
+  upper = "delay_upper",
+  columns = list(
+    col_percent("on_time_pct", "On-Time", decimals = 0),
+    col_numeric("satisfaction", "Rating", decimals = 1),
+    col_sparkline("trend", "12M Trend"),
+    col_interval("Delay (min)")
+  ),
+  null_value = 0,
+  theme = web_theme_modern() |>
+    set_colors(
+      interval_positive = "#16a34a",  # Green = good (early)
+      interval_negative = "#dc2626"   # Red = bad (late)
+    ),
+  axis_label = "Delay vs. Industry Average (minutes)",
+  title = "Airline Carrier Performance",
+  subtitle = "Package dataset: airline_delays",
+  caption = "Negative values = ahead of schedule",
+  footnote = "Satisfaction on 1-5 scale"
 )
 ```

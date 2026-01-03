@@ -11,6 +11,7 @@ import type {
   Row,
   ColumnSpec,
   ColumnDef,
+  ColumnOptions,
   ComputedLayout,
   EffectSpec,
 } from "$types";
@@ -366,14 +367,53 @@ function truncateText(text: string, maxWidth: number, fontSize: number, padding:
   return text.slice(0, maxChars - 1) + "…";
 }
 
-/** Format number for display - integers show no decimals, others show 2 */
-function formatNumber(value: number | undefined | null): string {
-  if (value === undefined || value === null || Number.isNaN(value)) return "";
-  // If it's an integer (or very close to one), don't show decimals
+/** Format number for display - respects column options */
+function formatNumber(value: number | undefined | null, options?: ColumnOptions): string {
+  if (value === undefined || value === null || Number.isNaN(value)) {
+    return options?.naText ?? "";
+  }
+
+  // Percent formatting
+  if (options?.percent) {
+    const { decimals = 1, multiply = false, symbol = true } = options.percent;
+    const displayValue = multiply ? value * 100 : value;
+    const formatted = displayValue.toFixed(decimals);
+    return symbol ? `${formatted}%` : formatted;
+  }
+
+  // Numeric formatting with decimals
+  const decimals = options?.numeric?.decimals;
+  if (decimals !== undefined) {
+    return value.toFixed(decimals);
+  }
+
+  // Default behavior: integers show no decimals, others show 2
   if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
     return Math.round(value).toString();
   }
   return value.toFixed(2);
+}
+
+/** Format events column (events/n) */
+function formatEvents(row: Row, options: ColumnOptions): string {
+  const { eventsField, nField, separator = "/", showPct = false } = options.events!;
+  const events = row.metadata[eventsField];
+  const n = row.metadata[nField];
+
+  if (events === undefined || events === null || n === undefined || n === null) {
+    return options.naText ?? "";
+  }
+
+  const eventsNum = Number(events);
+  const nNum = Number(n);
+  let result = `${eventsNum}${separator}${nNum}`;
+
+  if (showPct && nNum > 0) {
+    const pct = ((eventsNum / nNum) * 100).toFixed(1);
+    result += ` (${pct}%)`;
+  }
+
+  return result;
 }
 
 /** Format interval for display */
@@ -868,11 +908,14 @@ function getCellValue(row: Row, col: ColumnSpec): string {
   }
   if (col.type === "numeric") {
     const val = row.metadata[col.field];
-    return typeof val === "number" ? formatNumber(val) : "";
+    return typeof val === "number" ? formatNumber(val, col.options) : (col.options?.naText ?? "");
+  }
+  if (col.type === "custom" && col.options?.events) {
+    return formatEvents(row, col.options);
   }
   if (col.type === "pvalue") {
     const val = row.metadata[col.field];
-    if (typeof val !== "number") return "";
+    if (typeof val !== "number") return col.options?.naText ?? "";
     const stars = col.options?.pvalue?.stars;
     const thresholds = col.options?.pvalue?.thresholds ?? [0.05, 0.01, 0.001];
     let starStr = "";
@@ -884,7 +927,7 @@ function getCellValue(row: Row, col: ColumnSpec): string {
     return val < 0.001 ? `<0.001${starStr}` : `${val.toFixed(3)}${starStr}`;
   }
   const val = row.metadata[col.field];
-  return val !== undefined && val !== null ? String(val) : "";
+  return val !== undefined && val !== null ? String(val) : (col.options?.naText ?? "");
 }
 
 function renderSparklinePath(data: number[], x: number, y: number, width: number, height: number): string {

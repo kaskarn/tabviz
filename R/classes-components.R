@@ -86,6 +86,7 @@ ColumnSpec <- new_class(
 #' @param position Column position: "left" or "right" of the forest plot
 #' @param sortable Whether sortable
 #' @param options Named list of type-specific options
+#' @param na_text Text to display for NA/missing values (default "" for empty)
 #' @param bold Column name containing logical values for per-cell bold styling
 #' @param italic Column name containing logical values for per-cell italic styling
 #' @param color Column name containing CSS color strings for per-cell text color
@@ -106,6 +107,7 @@ web_col <- function(
     position = c("left", "right"),
     sortable = TRUE,
     options = list(),
+    na_text = NULL,
     bold = NULL,
     italic = NULL,
     color = NULL,
@@ -130,6 +132,11 @@ web_col <- function(
     "auto"
   } else {
     as.numeric(width)
+  }
+
+  # Add na_text to options if specified
+  if (!is.null(na_text)) {
+    options$naText <- na_text
   }
 
   ColumnSpec(
@@ -175,12 +182,27 @@ col_text <- function(field, header = NULL, width = 120, ...) {
 #' @param field Field name
 #' @param header Column header
 #' @param width Column width in pixels (default 90)
+#' @param decimals Number of decimal places to display (default 2, NULL for auto)
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
 #' @export
-col_numeric <- function(field, header = NULL, width = 90, ...) {
-  web_col(field, header, type = "numeric", width = width, ...)
+#' @examples
+#' # Default 2 decimal places
+#' col_numeric("estimate")
+#'
+#' # Show 3 decimal places
+#' col_numeric("pct", decimals = 3)
+#'
+#' # Integer display (no decimals)
+#' col_numeric("count", decimals = 0)
+col_numeric <- function(field, header = NULL, width = 90, decimals = 2, ...) {
+  opts <- list(
+    numeric = list(
+      decimals = decimals
+    )
+  )
+  web_col(field, header, type = "numeric", width = width, options = opts, ...)
 }
 
 #' Column helper: Sample size / count
@@ -188,12 +210,18 @@ col_numeric <- function(field, header = NULL, width = 90, ...) {
 #' @param field Field name (default "n")
 #' @param header Column header (default "N")
 #' @param width Column width in pixels (default 80)
+#' @param decimals Number of decimal places (default 0 for integers)
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
 #' @export
-col_n <- function(field = "n", header = "N", width = 80, ...) {
-  web_col(field, header, type = "numeric", width = width, ...)
+col_n <- function(field = "n", header = "N", width = 80, decimals = 0, ...) {
+  opts <- list(
+    numeric = list(
+      decimals = decimals
+    )
+  )
+  web_col(field, header, type = "numeric", width = width, options = opts, ...)
 }
 
 #' Column helper: Interval display (e.g., "1.2 (0.9, 1.5)")
@@ -294,6 +322,91 @@ col_sparkline <- function(
     )
   )
   web_col(field, header, type = "sparkline", options = opts, ...)
+}
+
+#' Column helper: Percentage column
+#'
+#' Display numeric values as percentages with optional % symbol.
+#'
+#' @param field Field name
+#' @param header Column header (default field name)
+#' @param width Column width in pixels (default 80)
+#' @param decimals Number of decimal places (default 1)
+#' @param multiply Whether to multiply by 100 (default FALSE, assumes data already 0-100)
+#' @param symbol Show % symbol (default TRUE)
+#' @param ... Additional arguments passed to web_col
+#'
+#' @return A ColumnSpec object
+#' @export
+#' @examples
+#' # Data with percentages as 0-100
+#' col_percent("accuracy", "Accuracy")
+#'
+#' # Data with proportions (0-1), need multiplication
+#' col_percent("rate", "Rate", multiply = TRUE)
+#'
+#' # No % symbol
+#' col_percent("pct", symbol = FALSE)
+col_percent <- function(
+    field,
+    header = NULL,
+    width = 80,
+    decimals = 1,
+    multiply = FALSE,
+    symbol = TRUE,
+    ...) {
+  opts <- list(
+    percent = list(
+      decimals = decimals,
+      multiply = multiply,
+      symbol = symbol
+    )
+  )
+  web_col(field, header, type = "numeric", width = width, options = opts, ...)
+}
+
+#' Column helper: Events column
+#'
+#' Display event counts in "events/n" format for clinical trial data.
+#'
+#' @param events_field Field name containing number of events
+#' @param n_field Field name containing total sample size
+#' @param header Column header (default "Events")
+#' @param width Column width in pixels (default 100)
+#' @param separator Separator between events and n (default "/")
+#' @param show_pct Show percentage in parentheses (default FALSE)
+#' @param ... Additional arguments passed to web_col
+#'
+#' @return A ColumnSpec object
+#' @export
+#' @examples
+#' # Simple events/n display: "45/120"
+#' col_events("events", "n")
+#'
+#' # With percentage: "45/120 (37.5%)"
+#' col_events("events", "n", show_pct = TRUE)
+#'
+#' # Different separator: "45 of 120"
+#' col_events("events", "n", separator = " of ")
+col_events <- function(
+    events_field,
+    n_field,
+    header = "Events",
+    width = 100,
+    separator = "/",
+    show_pct = FALSE,
+    ...) {
+  opts <- list(
+    events = list(
+      eventsField = events_field,
+      nField = n_field,
+      separator = separator,
+      showPct = show_pct
+    )
+  )
+  # Use a synthetic field that signals this is an events column
+  synthetic_field <- paste0("_events_", events_field, "_", n_field)
+  web_col(synthetic_field, header, type = "custom", width = width, options = opts, ...)
 }
 
 # Deprecated alias

@@ -36,3 +36,21 @@ Invisibly returns a character vector of exported file paths
 Exports all plots in a SplitForest to a directory structure that mirrors
 the split hierarchy. Each sub-plot is saved as a separate file.
 }
+\examples{
+\dontrun{
+# Create a split forest
+split_result <- data |>
+  web_spec(point = "or", lower = "lower", upper = "upper") |>
+  split_forest(by = c("sex", "age_group"))
+
+# Export to directory
+save_split_forest(split_result, "output/plots")
+
+# Creates:
+# output/plots/Male/Male_Young.svg
+# output/plots/Male/Male_Old.svg
+# output/plots/Female/Female_Young.svg
+# output/plots/Female/Female_Old.svg
+}
+
+}

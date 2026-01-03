@@ -14,3 +14,4 @@
 ^_pkgdown\.yml$
 ^inst/scripts$
 ^cran-comments\.md$
+^data-raw$

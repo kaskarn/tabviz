@@ -1,5 +1,35 @@
 # webforest (development version)
 
+## 0.1.0
+
+Second release of webforest with enhanced column formatting, new themes, and package datasets.
+
+### New Features
+
+* **Column formatting enhancements**:
+  - `decimals` parameter for `col_numeric()` and `col_n()` to control decimal places
+  - `na_text` parameter for all column types to customize missing value display
+  - New `col_percent()` helper for percentage columns with `multiply` and `symbol` options
+  - New `col_events()` helper for "events/n" display (e.g., "45/120")
+
+* **New themes**:
+  - `web_theme_cochrane()` - Cochrane systematic review style (compact, Cochrane blue)
+  - `web_theme_nature()` - Nature family journal styling (clean, modern)
+
+* **Package datasets**: Four datasets included for examples and testing:
+  - `glp1_trials` - GLP-1 agonist cardiovascular outcomes trials (~25 rows)
+  - `airline_delays` - Airline carrier delay performance (~40 rows)
+  - `nba_efficiency` - NBA player efficiency ratings (~30 rows)
+  - `climate_temps` - Regional temperature anomalies (~20 rows)
+
+### Documentation
+
+* New guide: "Package Datasets" with examples for all four datasets
+* Gallery examples 19-20: NBA player efficiency and airline performance using package datasets
+* Gallery example 11 updated to use `glp1_trials` dataset
+
+---
+
 ## 0.0.1
 
 First public release of webforest.

@@ -15,6 +15,7 @@ web_col(
   position = c("left", "right"),
   sortable = TRUE,
   options = list(),
+  na_text = NULL,
   bold = NULL,
   italic = NULL,
   color = NULL,
@@ -44,6 +45,8 @@ instead of being truncated with ellipsis.}
 \item{sortable}{Whether sortable}
 
 \item{options}{Named list of type-specific options}
+
+\item{na_text}{Text to display for NA/missing values (default "" for empty)}
 
 \item{bold}{Column name containing logical values for per-cell bold styling}
 

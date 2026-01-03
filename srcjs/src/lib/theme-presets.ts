@@ -9,6 +9,8 @@ export const THEME_NAMES = [
   "lancet",
   "modern",
   "presentation",
+  "cochrane",
+  "nature",
 ] as const;
 
 export type ThemeName = (typeof THEME_NAMES)[number];
@@ -314,6 +316,112 @@ const PRESENTATION_THEME: WebTheme = {
   },
 };
 
+// Cochrane systematic review theme
+const COCHRANE_THEME: WebTheme = {
+  ...DEFAULT_THEME,
+  name: "cochrane",
+  colors: {
+    ...DEFAULT_THEME.colors,
+    background: "#ffffff",
+    foreground: "#333333",
+    primary: "#0099cc",
+    secondary: "#666666",
+    accent: "#0066cc",
+    muted: "#999999",
+    border: "#cccccc",
+    intervalPositive: "#0099cc",
+    intervalNegative: "#cc3333",
+    intervalNeutral: "#666666",
+    intervalLine: "#333333",
+    summaryFill: "#0099cc",
+    summaryBorder: "#007799",
+  },
+  typography: {
+    ...DEFAULT_THEME.typography,
+    fontFamily: "Arial, Helvetica, sans-serif",
+    fontSizeSm: "0.7rem",
+    fontSizeBase: "0.8rem",
+    fontSizeLg: "0.9rem",
+    fontWeightNormal: 400,
+    fontWeightMedium: 500,
+    fontWeightBold: 700,
+    lineHeight: 1.3,
+  },
+  spacing: {
+    ...DEFAULT_THEME.spacing,
+    rowHeight: 22,
+    headerHeight: 28,
+    columnGap: 6,
+    sectionGap: 10,
+    padding: 8,
+  },
+  shapes: {
+    ...DEFAULT_THEME.shapes,
+    pointSize: 5,
+    summaryHeight: 8,
+    lineWidth: 1,
+    borderRadius: 0,
+  },
+  layout: {
+    ...DEFAULT_THEME.layout,
+    containerBorder: false,
+    containerBorderRadius: 0,
+  },
+};
+
+// Nature journal theme
+const NATURE_THEME: WebTheme = {
+  ...DEFAULT_THEME,
+  name: "nature",
+  colors: {
+    ...DEFAULT_THEME.colors,
+    background: "#ffffff",
+    foreground: "#212121",
+    primary: "#1976d2",
+    secondary: "#424242",
+    accent: "#d32f2f",
+    muted: "#757575",
+    border: "#e0e0e0",
+    intervalPositive: "#1976d2",
+    intervalNegative: "#d32f2f",
+    intervalNeutral: "#616161",
+    intervalLine: "#212121",
+    summaryFill: "#1976d2",
+    summaryBorder: "#1565c0",
+  },
+  typography: {
+    ...DEFAULT_THEME.typography,
+    fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+    fontSizeSm: "0.75rem",
+    fontSizeBase: "0.875rem",
+    fontSizeLg: "1rem",
+    fontWeightNormal: 400,
+    fontWeightMedium: 500,
+    fontWeightBold: 700,
+    lineHeight: 1.4,
+  },
+  spacing: {
+    ...DEFAULT_THEME.spacing,
+    rowHeight: 26,
+    headerHeight: 34,
+    columnGap: 8,
+    sectionGap: 14,
+    padding: 10,
+  },
+  shapes: {
+    ...DEFAULT_THEME.shapes,
+    pointSize: 6,
+    summaryHeight: 9,
+    lineWidth: 1.25,
+    borderRadius: 2,
+  },
+  layout: {
+    ...DEFAULT_THEME.layout,
+    containerBorder: true,
+    containerBorderRadius: 2,
+  },
+};
+
 // Export all theme presets
 export const THEME_PRESETS: Record<ThemeName, WebTheme> = {
   default: DEFAULT_THEME,
@@ -323,6 +431,8 @@ export const THEME_PRESETS: Record<ThemeName, WebTheme> = {
   lancet: LANCET_THEME,
   modern: MODERN_THEME,
   presentation: PRESENTATION_THEME,
+  cochrane: COCHRANE_THEME,
+  nature: NATURE_THEME,
 };
 
 // Human-readable theme labels for UI
@@ -334,4 +444,6 @@ export const THEME_LABELS: Record<ThemeName, string> = {
   lancet: "Lancet",
   modern: "Modern",
   presentation: "Presentation",
+  cochrane: "Cochrane",
+  nature: "Nature",
 };
