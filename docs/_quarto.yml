@@ -12,6 +12,8 @@ website:
         menu:
           - text: "Quick Start"
             href: guide/quick-start.qmd
+          - text: "The Fluent API"
+            href: guide/fluent-api.qmd
           - text: "Package Datasets"
             href: guide/datasets.qmd
           - text: "Data Preparation"

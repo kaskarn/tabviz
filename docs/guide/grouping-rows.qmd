@@ -171,3 +171,19 @@ forest_plot(badge_data,
   theme = web_theme_modern()
 )
 ```
+
+## Fluent Alternative
+
+You can also apply row styling after spec creation using `set_row_style()`:
+
+```{r}
+#| eval: false
+web_spec(badge_data,
+  point = "or", lower = "lower", upper = "upper",
+  label = "study", null_value = 1
+) |>
+  set_row_style(badge = "badge", bold = "is_bold") |>
+  forest_plot(theme = web_theme_modern())
+```
+
+This is useful when building specs programmatically or reusing a base spec with different styling. See [The Fluent API](fluent-api.qmd) for more details.

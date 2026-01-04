@@ -388,3 +388,60 @@ split_result <- data |>
 # Creates: output/Male/Male_Young.svg, output/Male/Male_Old.svg, etc.
 save_split_forest(split_result, "output", format = "svg")
 ```
+
+## Build a Plot Step by Step (Fluent API)
+
+Use the fluent API to separate spec creation from styling:
+
+```{r}
+step_data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C", "Overall"),
+  hr = c(0.72, 0.85, 0.91, 0.82),
+  lower = c(0.55, 0.70, 0.75, 0.68),
+  upper = c(0.95, 1.03, 1.10, 0.99),
+  is_summary = c(FALSE, FALSE, FALSE, TRUE),
+  sig_color = c("#16a34a", "#94a3b8", "#94a3b8", "#2563eb"),
+  study_shape = c("circle", "circle", "circle", "diamond")
+)
+
+# Step 1: Create base spec
+base_spec <- web_spec(step_data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study", scale = "log", null_value = 1
+)
+
+# Step 2: Add styling via pipes
+styled_spec <- base_spec |>
+  set_marker_style(color = "sig_color", shape = "study_shape") |>
+  set_row_style(bold = "is_summary")
+
+# Step 3: Render
+forest_plot(styled_spec, theme = web_theme_modern())
+```
+
+## Create Spec Variants from Base
+
+Reuse a base spec with different styling:
+
+```{r}
+#| eval: false
+# Base spec (no styling)
+base <- web_spec(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study", scale = "log", null_value = 1
+)
+
+# Variant 1: Colored by significance
+v1 <- base |> set_marker_style(color = "sig_color")
+
+# Variant 2: Shaped by study type
+v2 <- base |> set_marker_style(shape = "study_shape")
+
+# Variant 3: Both
+v3 <- base |> set_marker_style(color = "sig_color", shape = "study_shape")
+
+# Render each for comparison
+forest_plot(v1)  # Colored
+forest_plot(v2)  # Shaped
+forest_plot(v3)  # Both
+```

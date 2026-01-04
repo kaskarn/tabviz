@@ -92,6 +92,7 @@ The two-step workflow is useful when you want to:
 
 ## Next Steps
 
+- [The Fluent API](fluent-api.qmd) - Build plots step-by-step with pipes
 - [Themes](themes.qmd) - Customize appearance with preset and custom themes
 - [Columns](columns.qmd) - Add data columns with special formatting
 - [Grouping & Rows](grouping-rows.qmd) - Organize studies into groups

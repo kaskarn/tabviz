@@ -174,3 +174,20 @@ col_text("notes", "Notes", width = 200) # Wide
 ```
 
 If not specified, columns use sensible defaults based on their type.
+
+## Styling Columns After Creation
+
+Use `set_column_style()` to apply per-cell styling to a column after spec creation:
+
+```{r}
+#| eval: false
+web_spec(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study",
+  columns = list(col_numeric("hr", "HR"))
+) |>
+  set_column_style("hr", bold = "is_significant", color = "hr_color") |>
+  forest_plot()
+```
+
+This is useful when styling depends on computed columns or when reusing a base spec. See [The Fluent API](fluent-api.qmd) for more details.

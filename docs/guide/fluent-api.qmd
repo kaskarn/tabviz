@@ -1,0 +1,276 @@
+---
+title: "The Fluent API"
+---
+
+```{r}
+#| include: false
+library(webforest)
+```
+
+webforest offers two equivalent approaches for customization: constructor arguments and the fluent API. This guide explains both and when to use each.
+
+## Two Ways to Customize
+
+**Constructor Arguments** set everything when creating the plot:
+
+```{r}
+#| eval: false
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study",
+  row_bold = "is_bold",
+  marker_color = "sig_color",
+  theme = web_theme_modern()
+)
+```
+
+**Fluent API (Pipes)** creates a spec, then modifies it step by step:
+
+```{r}
+#| eval: false
+web_spec(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study"
+) |>
+  set_row_style(bold = "is_bold") |>
+  set_marker_style(color = "sig_color") |>
+  forest_plot(theme = web_theme_modern())
+```
+
+Both produce identical output.
+
+## Comparison Table
+
+| Customization | Constructor Argument | Fluent API |
+|--------------|---------------------|------------|
+| **Row styling** | `row_bold`, `row_italic`, `row_color`, `row_bg`, `row_badge`, `row_icon`, `row_indent`, `row_type` | `set_row_style(bold, italic, color, bg, badge, icon, indent, type)` |
+| **Column styling** | Via `col_*()` parameters | `set_column_style(column, bold, italic, color, bg, badge, icon)` |
+| **Marker styling** | `marker_color`, `marker_shape`, `marker_opacity`, `marker_size` | `set_marker_style(color, shape, opacity, size)` |
+| **Theme colors** | `theme = web_theme_*() |> set_colors(...)` | Same |
+| **Theme typography** | `theme = web_theme_*() |> set_typography(...)` | Same |
+| **Theme spacing** | `theme = web_theme_*() |> set_spacing(...)` | Same |
+| **Theme shapes** | `theme = web_theme_*() |> set_shapes(...)` | Same |
+| **Axis config** | `theme = web_theme_*() |> set_axis(...)` | Same |
+| **Layout config** | `theme = web_theme_*() |> set_layout(...)` | Same |
+
+Note: Theme customization always uses the fluent pattern, even with constructor arguments.
+
+## When to Use Each
+
+### Constructor Arguments
+
+Best when:
+
+- Building a simple plot with known requirements
+- All customization can be determined upfront
+- You want everything visible in one place
+
+```{r}
+#| eval: false
+# Simple, self-contained
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study",
+  row_bold = "is_summary",
+  marker_color = "effect_color",
+  scale = "log", null_value = 1
+)
+```
+
+### Fluent API
+
+Best when:
+
+- Building specs programmatically
+- Applying conditional styling
+- Separating concerns (data preparation → styling → rendering)
+- Reusing a base spec with variations
+- Working in a pipeline with `dplyr`
+
+```{r}
+#| eval: false
+# Separated concerns, reusable base
+base_spec <- web_spec(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study", scale = "log", null_value = 1
+)
+
+# Apply styling based on analysis needs
+styled_spec <- base_spec |>
+  set_marker_style(color = "sig_color") |>
+  set_row_style(bold = "is_summary")
+
+# Render
+forest_plot(styled_spec)
+```
+
+## The Three-Step Workflow
+
+The fluent API follows a natural workflow:
+
+1. **Create** a spec with `web_spec()`
+2. **Modify** with `set_*()` functions via pipes
+3. **Render** with `forest_plot()` or `webtable()`
+
+```{r}
+fluent_data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C", "Overall"),
+  hr = c(0.72, 0.85, 0.91, 0.82),
+  lower = c(0.55, 0.70, 0.75, 0.68),
+  upper = c(0.95, 1.03, 1.10, 0.99),
+  is_summary = c(FALSE, FALSE, FALSE, TRUE),
+  sig_color = c("#16a34a", "#94a3b8", "#94a3b8", "#2563eb")
+)
+
+# Step 1: Create
+spec <- web_spec(fluent_data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study", scale = "log", null_value = 1
+)
+
+# Step 2: Modify
+spec <- spec |>
+  set_marker_style(color = "sig_color") |>
+  set_row_style(bold = "is_summary")
+
+# Step 3: Render
+forest_plot(spec, theme = web_theme_modern())
+```
+
+## Creating Variants from a Base Spec
+
+The fluent API makes it easy to create multiple plot variants from a single base:
+
+```{r}
+#| eval: false
+# Base spec (no styling)
+base <- web_spec(data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study", scale = "log", null_value = 1
+)
+
+# Variant 1: Colored by significance
+colored <- base |> set_marker_style(color = "sig_color")
+
+# Variant 2: Shaped by study type
+shaped <- base |> set_marker_style(shape = "study_shape")
+
+# Variant 3: Both
+styled <- base |> set_marker_style(color = "sig_color", shape = "study_shape")
+
+# Render each as needed
+forest_plot(colored)
+forest_plot(shaped)
+forest_plot(styled)
+```
+
+## Function Reference
+
+### WebSpec Modifiers
+
+These functions modify a WebSpec object and return a modified copy:
+
+#### set_row_style
+
+Apply styling to all rows based on column values.
+
+```r
+spec |> set_row_style(
+  bold = NULL,    # Column name for bold text (logical)
+  italic = NULL,  # Column name for italic text (logical)
+  color = NULL,   # Column name for text color (hex string)
+  bg = NULL,      # Column name for background color (hex string)
+  badge = NULL,   # Column name for badge text
+  icon = NULL,    # Column name for icon (emoji/unicode)
+  indent = NULL,  # Column name for indentation level (integer)
+  type = NULL     # Column name for row type: "data", "header", "summary", "spacer"
+)
+```
+
+#### set_column_style
+
+Apply styling to a specific column.
+
+```r
+spec |> set_column_style(
+  column,         # Field name of the column to style
+  bold = NULL,    # Column name for bold text (logical)
+  italic = NULL,  # Column name for italic text (logical)
+  color = NULL,   # Column name for text color (hex string)
+  bg = NULL,      # Column name for background color (hex string)
+  badge = NULL,   # Column name for badge text
+  icon = NULL     # Column name for icon (emoji/unicode)
+)
+```
+
+#### set_marker_style
+
+Apply styling to forest plot markers.
+
+```r
+spec |> set_marker_style(
+  color = NULL,   # Column name for marker fill color (hex string)
+  shape = NULL,   # Column name for shape: "square", "circle", "diamond", "triangle"
+  opacity = NULL, # Column name for opacity (0-1)
+  size = NULL     # Column name for size multiplier (1 = default)
+)
+```
+
+### WebTheme Modifiers
+
+These functions modify a WebTheme object:
+
+| Function | Purpose | Key Parameters |
+|----------|---------|----------------|
+| `set_colors()` | Color palette | `background`, `foreground`, `primary`, `interval`, `interval_line` |
+| `set_typography()` | Fonts | `font_family`, `font_size_base`, `font_weight_bold` |
+| `set_spacing()` | Dimensions | `row_height`, `header_height`, `column_gap`, `padding` |
+| `set_shapes()` | Marker shapes | `point_size`, `summary_height`, `line_width` |
+| `set_axis()` | Axis config | `range_min`, `range_max`, `tick_count`, `gridlines` |
+| `set_layout()` | Layout | `plot_position`, `row_border`, `container_border` |
+
+Example:
+
+```{r}
+#| eval: false
+custom_theme <- web_theme_jama() |>
+  set_colors(primary = "#0066cc", interval = "#0066cc") |>
+  set_spacing(row_height = 24) |>
+  set_axis(gridlines = TRUE, gridline_style = "dotted")
+
+forest_plot(spec, theme = custom_theme)
+```
+
+## Complete Example: Both Approaches
+
+Here's the same plot built with both approaches:
+
+### Constructor Approach
+
+```{r}
+#| eval: false
+forest_plot(fluent_data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study",
+  row_bold = "is_summary",
+  marker_color = "sig_color",
+  scale = "log", null_value = 1,
+  theme = web_theme_modern()
+)
+```
+
+### Fluent Approach
+
+```{r}
+#| eval: false
+fluent_data |>
+  web_spec(
+    point = "hr", lower = "lower", upper = "upper",
+    label = "study", scale = "log", null_value = 1
+  ) |>
+  set_row_style(bold = "is_summary") |>
+  set_marker_style(color = "sig_color") |>
+  forest_plot(theme = web_theme_modern())
+```
+
+Both produce identical results. Choose based on your workflow and preferences.

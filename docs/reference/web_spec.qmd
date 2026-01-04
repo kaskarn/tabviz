@@ -287,7 +287,7 @@ spec <- web_spec(data,
 
 ## Fluent API
 
-Modify specifications after creation using the pipe operator.
+Modify specifications after creation using the pipe operator. See [The Fluent API](../guide/fluent-api.qmd) guide for detailed usage.
 
 ### set_marker_style {#set_marker_style}
 
@@ -299,18 +299,53 @@ spec |> set_marker_style(color = NULL, shape = NULL, opacity = NULL, size = NULL
 
 | Argument | Description |
 |----------|-------------|
-| `color` | Column name for marker fill colors |
-| `shape` | Column name for marker shapes |
-| `opacity` | Column name for marker opacity |
-| `size` | Column name for marker size multipliers |
+| `color` | Column name for marker fill colors (hex strings) |
+| `shape` | Column name for marker shapes: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `opacity` | Column name for marker opacity (0-1) |
+| `size` | Column name for marker size multipliers (1 = default) |
 
 ### set_row_style {#set_row_style}
 
 Set row styling columns.
 
 ```r
-spec |> set_row_style(bold = NULL, italic = NULL, color = NULL, bg = NULL, ...)
+spec |> set_row_style(
+  bold = NULL, italic = NULL, color = NULL, bg = NULL,
+  badge = NULL, icon = NULL, indent = NULL, type = NULL
+)
 ```
+
+| Argument | Description |
+|----------|-------------|
+| `bold` | Column name for bold text (logical) |
+| `italic` | Column name for italic text (logical) |
+| `color` | Column name for text color (hex string) |
+| `bg` | Column name for background color (hex string) |
+| `badge` | Column name for badge text |
+| `icon` | Column name for icon (emoji/unicode) |
+| `indent` | Column name for indentation level (integer) |
+| `type` | Column name for row type: `"data"`, `"header"`, `"summary"`, `"spacer"` |
+
+### set_column_style {#set_column_style}
+
+Set per-cell styling for a specific column.
+
+```r
+spec |> set_column_style(
+  column, bold = NULL, italic = NULL, color = NULL,
+  bg = NULL, badge = NULL, icon = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `column` | Field name of the column to style |
+| `bold` | Column name for bold text (logical) |
+| `italic` | Column name for italic text (logical) |
+| `color` | Column name for text color (hex string) |
+| `bg` | Column name for background color (hex string) |
+| `badge` | Column name for badge text |
+| `icon` | Column name for icon (emoji/unicode) |
 
 ## See Also
 

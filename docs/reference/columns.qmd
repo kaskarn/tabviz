@@ -194,7 +194,39 @@ columns = list(
 )
 ```
 
+## Fluent Column Styling
+
+### set_column_style {#set_column_style}
+
+Apply per-cell styling to a column after spec creation. See [The Fluent API](../guide/fluent-api.qmd) guide.
+
+```r
+spec |> set_column_style(column, bold = NULL, italic = NULL, color = NULL, bg = NULL, badge = NULL, icon = NULL)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `column` | Field name of the column to style |
+| `bold` | Column name for bold text (logical) |
+| `italic` | Column name for italic text (logical) |
+| `color` | Column name for text color (hex string) |
+| `bg` | Column name for background color (hex string) |
+| `badge` | Column name for badge text |
+| `icon` | Column name for icon (emoji/unicode) |
+
+Example:
+
+```{r}
+#| eval: false
+web_spec(data, point = "hr", lower = "lower", upper = "upper", label = "study",
+  columns = list(col_numeric("hr", "HR"))
+) |>
+  set_column_style("hr", bold = "is_significant", color = "hr_color") |>
+  forest_plot()
+```
+
 ## See Also
 
 - [forest_plot()](forest_plot.qmd) for using columns
 - [Columns Guide](../guide/columns.qmd) for detailed examples
+- [The Fluent API](../guide/fluent-api.qmd) for pipe-based styling
