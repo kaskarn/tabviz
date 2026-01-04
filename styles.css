@@ -35,3 +35,14 @@
 .navbar-nav .nav-link {
   display: block !important;
 }
+
+/* Ensure TOC scroll tracking works with webforest widgets */
+#TOC .active {
+  font-weight: 600 !important;
+  color: var(--bs-primary) !important;
+}
+
+#TOC a.nav-link {
+  display: block !important;
+  visibility: visible !important;
+}

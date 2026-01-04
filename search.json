@@ -242,7 +242,7 @@
     "href": "guide/columns.html#styling-columns-after-creation",
     "title": "Columns",
     "section": "Styling Columns After Creation",
-    "text": "Styling Columns After Creation\nUse set_column_style() to apply per-cell styling to a column after spec creation:\n\n\nCode\nweb_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  columns = list(col_numeric(\"hr\", \"HR\"))\n) |&gt;\n  set_column_style(\"hr\", bold = \"is_significant\", color = \"hr_color\") |&gt;\n  forest_plot()\n\n\nThis is useful when styling depends on computed columns or when reusing a base spec. See The Fluent API for more details."
+    "text": "Styling Columns After Creation\nUse set_column_style() to apply per-cell styling to a column after spec creation:\n\n\nCode\nweb_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  columns = list(col_numeric(\"hr\", \"HR\"))\n) |&gt;\n  set_column_style(\"hr\", bold = \"is_significant\", color = \"hr_color\") |&gt;\n  forest_plot()\n\n\nThis is useful when styling depends on computed columns or when reusing a base spec. See Customizing Plots for more details."
   },
   {
     "objectID": "guide/data-preparation.html",
@@ -543,7 +543,7 @@
     "href": "guide/quick-start.html#next-steps",
     "title": "Quick Start",
     "section": "Next Steps",
-    "text": "Next Steps\n\nThe Fluent API - Build plots step-by-step with pipes\nThemes - Customize appearance with preset and custom themes\nColumns - Add data columns with special formatting\nGrouping & Rows - Organize studies into groups\nExporting - Save plots as SVG, PNG, or PDF"
+    "text": "Next Steps\n\nCustomizing Plots - Build plots step-by-step with pipes\nThemes - Customize appearance with preset and custom themes\nColumns - Add data columns with special formatting\nGrouping & Rows - Organize studies into groups\nExporting - Save plots as SVG, PNG, or PDF"
   },
   {
     "objectID": "reference.html",
@@ -592,14 +592,14 @@
     "href": "reference/columns.html#fluent-column-styling",
     "title": "Columns",
     "section": "Fluent Column Styling",
-    "text": "Fluent Column Styling\n\nset_column_style\nApply per-cell styling to a column after spec creation. See The Fluent API guide.\nspec |&gt; set_column_style(column, bold = NULL, italic = NULL, color = NULL, bg = NULL, badge = NULL, icon = NULL)\n\n\n\nArgument\nDescription\n\n\n\n\ncolumn\nField name of the column to style\n\n\nbold\nColumn name for bold text (logical)\n\n\nitalic\nColumn name for italic text (logical)\n\n\ncolor\nColumn name for text color (hex string)\n\n\nbg\nColumn name for background color (hex string)\n\n\nbadge\nColumn name for badge text\n\n\nicon\nColumn name for icon (emoji/unicode)\n\n\n\nExample:\n\n\nCode\nweb_spec(data, point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  columns = list(col_numeric(\"hr\", \"HR\"))\n) |&gt;\n  set_column_style(\"hr\", bold = \"is_significant\", color = \"hr_color\") |&gt;\n  forest_plot()"
+    "text": "Fluent Column Styling\n\nset_column_style\nApply per-cell styling to a column after spec creation. See Customizing Plots guide.\nspec |&gt; set_column_style(column, bold = NULL, italic = NULL, color = NULL, bg = NULL, badge = NULL, icon = NULL)\n\n\n\nArgument\nDescription\n\n\n\n\ncolumn\nField name of the column to style\n\n\nbold\nColumn name for bold text (logical)\n\n\nitalic\nColumn name for italic text (logical)\n\n\ncolor\nColumn name for text color (hex string)\n\n\nbg\nColumn name for background color (hex string)\n\n\nbadge\nColumn name for badge text\n\n\nicon\nColumn name for icon (emoji/unicode)\n\n\n\nExample:\n\n\nCode\nweb_spec(data, point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  columns = list(col_numeric(\"hr\", \"HR\"))\n) |&gt;\n  set_column_style(\"hr\", bold = \"is_significant\", color = \"hr_color\") |&gt;\n  forest_plot()"
   },
   {
     "objectID": "reference/columns.html#see-also",
     "href": "reference/columns.html#see-also",
     "title": "Columns",
     "section": "See Also",
-    "text": "See Also\n\nforest_plot() for using columns\nColumns Guide for detailed examples\nThe Fluent API for pipe-based styling"
+    "text": "See Also\n\nforest_plot() for using columns\nColumns Guide for detailed examples\nCustomizing Plots for pipe-based styling"
   },
   {
     "objectID": "reference/shiny.html",
@@ -1173,7 +1173,7 @@
     "href": "reference/web_spec.html#fluent-api",
     "title": "Specification Objects",
     "section": "Fluent API",
-    "text": "Fluent API\nModify specifications after creation using the pipe operator. See The Fluent API guide for detailed usage.\n\nset_marker_style\nSet marker styling columns.\nspec |&gt; set_marker_style(color = NULL, shape = NULL, opacity = NULL, size = NULL)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\ncolor\nColumn name for marker fill colors (hex strings)\n\n\nshape\nColumn name for marker shapes: \"square\", \"circle\", \"diamond\", \"triangle\"\n\n\nopacity\nColumn name for marker opacity (0-1)\n\n\nsize\nColumn name for marker size multipliers (1 = default)\n\n\n\n\n\nset_row_style\nSet row styling columns.\nspec |&gt; set_row_style(\n  bold = NULL, italic = NULL, color = NULL, bg = NULL,\n  badge = NULL, icon = NULL, indent = NULL, type = NULL\n)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nbold\nColumn name for bold text (logical)\n\n\nitalic\nColumn name for italic text (logical)\n\n\ncolor\nColumn name for text color (hex string)\n\n\nbg\nColumn name for background color (hex string)\n\n\nbadge\nColumn name for badge text\n\n\nicon\nColumn name for icon (emoji/unicode)\n\n\nindent\nColumn name for indentation level (integer)\n\n\ntype\nColumn name for row type: \"data\", \"header\", \"summary\", \"spacer\"\n\n\n\n\n\nset_column_style\nSet per-cell styling for a specific column.\nspec |&gt; set_column_style(\n  column, bold = NULL, italic = NULL, color = NULL,\n  bg = NULL, badge = NULL, icon = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\ncolumn\nField name of the column to style\n\n\nbold\nColumn name for bold text (logical)\n\n\nitalic\nColumn name for italic text (logical)\n\n\ncolor\nColumn name for text color (hex string)\n\n\nbg\nColumn name for background color (hex string)\n\n\nbadge\nColumn name for badge text\n\n\nicon\nColumn name for icon (emoji/unicode)"
+    "text": "Fluent API\nModify specifications after creation using the pipe operator. See Customizing Plots guide for detailed usage.\n\nset_marker_style\nSet marker styling columns.\nspec |&gt; set_marker_style(color = NULL, shape = NULL, opacity = NULL, size = NULL)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\ncolor\nColumn name for marker fill colors (hex strings)\n\n\nshape\nColumn name for marker shapes: \"square\", \"circle\", \"diamond\", \"triangle\"\n\n\nopacity\nColumn name for marker opacity (0-1)\n\n\nsize\nColumn name for marker size multipliers (1 = default)\n\n\n\n\n\nset_row_style\nSet row styling columns.\nspec |&gt; set_row_style(\n  bold = NULL, italic = NULL, color = NULL, bg = NULL,\n  badge = NULL, icon = NULL, indent = NULL, type = NULL\n)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nbold\nColumn name for bold text (logical)\n\n\nitalic\nColumn name for italic text (logical)\n\n\ncolor\nColumn name for text color (hex string)\n\n\nbg\nColumn name for background color (hex string)\n\n\nbadge\nColumn name for badge text\n\n\nicon\nColumn name for icon (emoji/unicode)\n\n\nindent\nColumn name for indentation level (integer)\n\n\ntype\nColumn name for row type: \"data\", \"header\", \"summary\", \"spacer\"\n\n\n\n\n\nset_column_style\nSet per-cell styling for a specific column.\nspec |&gt; set_column_style(\n  column, bold = NULL, italic = NULL, color = NULL,\n  bg = NULL, badge = NULL, icon = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\ncolumn\nField name of the column to style\n\n\nbold\nColumn name for bold text (logical)\n\n\nitalic\nColumn name for italic text (logical)\n\n\ncolor\nColumn name for text color (hex string)\n\n\nbg\nColumn name for background color (hex string)\n\n\nbadge\nColumn name for badge text\n\n\nicon\nColumn name for icon (emoji/unicode)"
   },
   {
     "objectID": "reference/web_spec.html#see-also",
@@ -1493,49 +1493,49 @@
   {
     "objectID": "guide/fluent-api.html",
     "href": "guide/fluent-api.html",
-    "title": "The Fluent API",
+    "title": "Customizing Plots",
     "section": "",
     "text": "webforest offers a fluent API for modifying plots after creation. This is useful for applying conditional styling, creating plot variants, or separating data preparation from styling."
   },
   {
     "objectID": "guide/fluent-api.html#using-the-fluent-api",
     "href": "guide/fluent-api.html#using-the-fluent-api",
-    "title": "The Fluent API",
+    "title": "Customizing Plots",
     "section": "Using the Fluent API",
     "text": "Using the Fluent API\nThe set_*() functions work on forest_plot() and webtable() outputs:\n\n\nCode\nfluent_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Overall\"),\n  hr = c(0.72, 0.85, 0.91, 0.82),\n  lower = c(0.55, 0.70, 0.75, 0.68),\n  upper = c(0.95, 1.03, 1.10, 0.99),\n  is_summary = c(FALSE, FALSE, FALSE, TRUE),\n  sig_color = c(\"#16a34a\", \"#94a3b8\", \"#94a3b8\", \"#2563eb\")\n)\n\nforest_plot(fluent_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1,\n  theme = web_theme_modern()\n) |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  set_row_style(bold = \"is_summary\")"
   },
   {
     "objectID": "guide/fluent-api.html#available-modifiers",
     "href": "guide/fluent-api.html#available-modifiers",
-    "title": "The Fluent API",
+    "title": "Customizing Plots",
     "section": "Available Modifiers",
     "text": "Available Modifiers\n\nset_row_style\nApply styling to all rows based on column values.\nplot |&gt; set_row_style(\n  bold = NULL,    # Column name for bold text (logical)\n  italic = NULL,  # Column name for italic text (logical)\n  color = NULL,   # Column name for text color (hex string)\n  bg = NULL,      # Column name for background color (hex string)\n  badge = NULL,   # Column name for badge text\n  icon = NULL,    # Column name for icon (emoji/unicode)\n  indent = NULL,  # Column name for indentation level (integer)\n  type = NULL     # Column name for row type: \"data\", \"header\", \"summary\", \"spacer\"\n)\n\n\nset_marker_style\nApply styling to forest plot markers.\nplot |&gt; set_marker_style(\n  color = NULL,   # Column name for marker fill color (hex string)\n  shape = NULL,   # Column name for shape: \"square\", \"circle\", \"diamond\", \"triangle\"\n  opacity = NULL, # Column name for opacity (0-1)\n  size = NULL     # Column name for size multiplier (1 = default)\n)\n\n\nset_column_style\nApply styling to a specific column.\nplot |&gt; set_column_style(\n  column,         # Field name of the column to style\n  bold = NULL,    # Column name for bold text (logical)\n  italic = NULL,  # Column name for italic text (logical)\n  color = NULL,   # Column name for text color (hex string)\n  bg = NULL,      # Column name for background color (hex string)\n  badge = NULL,   # Column name for badge text\n  icon = NULL     # Column name for icon (emoji/unicode)\n)"
   },
   {
     "objectID": "guide/fluent-api.html#theme-modifiers",
     "href": "guide/fluent-api.html#theme-modifiers",
-    "title": "The Fluent API",
+    "title": "Customizing Plots",
     "section": "Theme Modifiers",
     "text": "Theme Modifiers\nThemes are always customized with the fluent pattern:\n\n\nCode\ncustom_theme &lt;- web_theme_jama() |&gt;\n  set_colors(primary = \"#0066cc\", interval = \"#0066cc\") |&gt;\n  set_spacing(row_height = 24) |&gt;\n  set_axis(gridlines = TRUE, gridline_style = \"dotted\")\n\nforest_plot(data, ..., theme = custom_theme)\n\n\n\n\n\n\n\n\n\n\nFunction\nPurpose\nKey Parameters\n\n\n\n\nset_colors()\nColor palette\nbackground, foreground, primary, interval, interval_line\n\n\nset_typography()\nFonts\nfont_family, font_size_base, font_weight_bold\n\n\nset_spacing()\nDimensions\nrow_height, header_height, column_gap, padding\n\n\nset_shapes()\nMarker shapes\npoint_size, summary_height, line_width\n\n\nset_axis()\nAxis config\nrange_min, range_max, tick_count, gridlines\n\n\nset_layout()\nLayout\nplot_position, row_border, container_border"
   },
   {
     "objectID": "guide/fluent-api.html#constructor-arguments-vs-fluent-api",
     "href": "guide/fluent-api.html#constructor-arguments-vs-fluent-api",
-    "title": "The Fluent API",
+    "title": "Customizing Plots",
     "section": "Constructor Arguments vs Fluent API",
     "text": "Constructor Arguments vs Fluent API\nBoth approaches produce identical results:\nConstructor arguments (set everything upfront):\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  row_bold = \"is_summary\",\n  marker_color = \"sig_color\",\n  scale = \"log\", null_value = 1\n)\n\n\nFluent API (modify after creation):\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(bold = \"is_summary\") |&gt;\n  set_marker_style(color = \"sig_color\")\n\n\nChoose constructor arguments when all styling is known upfront. Use the fluent API when styling depends on computation or when you want to create variants."
   },
   {
     "objectID": "guide/fluent-api.html#comparison-table",
     "href": "guide/fluent-api.html#comparison-table",
-    "title": "The Fluent API",
+    "title": "Customizing Plots",
     "section": "Comparison Table",
     "text": "Comparison Table\n\n\n\n\n\n\n\n\nCustomization\nConstructor Argument\nFluent API\n\n\n\n\nRow styling\nrow_bold, row_italic, row_color, row_bg, row_badge, row_icon, row_indent, row_type\nset_row_style(bold, italic, color, bg, badge, icon, indent, type)\n\n\nColumn styling\nVia col_*() parameters\nset_column_style(column, bold, italic, color, bg, badge, icon)\n\n\nMarker styling\nmarker_color, marker_shape, marker_opacity, marker_size\nset_marker_style(color, shape, opacity, size)\n\n\nTheme\ntheme = web_theme_*() |&gt; set_*()\nSame (always fluent)"
   },
   {
     "objectID": "guide/fluent-api.html#advanced-using-web_spec",
     "href": "guide/fluent-api.html#advanced-using-web_spec",
-    "title": "The Fluent API",
+    "title": "Customizing Plots",
     "section": "Advanced: Using web_spec()",
     "text": "Advanced: Using web_spec()\nFor performance-critical applications or when creating many plot variants from one data source, you can work directly with web_spec() objects:\n\n\nCode\n# Create spec once\nspec &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1\n)\n\n# Create variants without re-processing data\nv1 &lt;- spec |&gt; set_marker_style(color = \"sig_color\") |&gt; forest_plot()\nv2 &lt;- spec |&gt; set_marker_style(shape = \"study_shape\") |&gt; forest_plot()\nv3 &lt;- spec |&gt; set_row_style(bold = \"is_summary\") |&gt; webtable()\n\n\nThis avoids repeated data processing when rendering multiple views of the same data. See web_spec reference for details."
   },
@@ -1642,7 +1642,7 @@
     "href": "guide/grouping-rows.html#fluent-alternative",
     "title": "Grouping & Row Styling",
     "section": "Fluent Alternative",
-    "text": "Fluent Alternative\nYou can also apply row styling after spec creation using set_row_style():\n\n\nCode\nweb_spec(badge_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1\n) |&gt;\n  set_row_style(badge = \"badge\", bold = \"is_bold\") |&gt;\n  forest_plot(theme = web_theme_modern())\n\n\nThis is useful when building specs programmatically or reusing a base spec with different styling. See The Fluent API for more details."
+    "text": "Fluent Alternative\nYou can also apply row styling after spec creation using set_row_style():\n\n\nCode\nweb_spec(badge_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1\n) |&gt;\n  set_row_style(badge = \"badge\", bold = \"is_bold\") |&gt;\n  forest_plot(theme = web_theme_modern())\n\n\nThis is useful when building specs programmatically or reusing a base spec with different styling. See Customizing Plots for more details."
   },
   {
     "objectID": "guide/datasets.html",
