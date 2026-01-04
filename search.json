@@ -1495,14 +1495,14 @@
     "href": "guide/fluent-api.html",
     "title": "Customizing Plots",
     "section": "",
-    "text": "webforest offers a fluent API for modifying plots after creation. This is useful for applying conditional styling, creating plot variants, or separating data preparation from styling."
+    "text": "Plots can be fully customized at creation time using constructor arguments. For most users, this is the easiest approach:\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  # Row styling\n  row_bold = \"is_summary\",\n  row_color = \"text_color\",\n  # Marker styling\n  marker_color = \"sig_color\",\n  marker_shape = \"study_shape\",\n  # Theme\n  theme = web_theme_modern(),\n  scale = \"log\", null_value = 1\n)\nSee forest_plot() reference for all available parameters."
   },
   {
-    "objectID": "guide/fluent-api.html#using-the-fluent-api",
-    "href": "guide/fluent-api.html#using-the-fluent-api",
+    "objectID": "guide/fluent-api.html#modifying-plots-after-creation",
+    "href": "guide/fluent-api.html#modifying-plots-after-creation",
     "title": "Customizing Plots",
-    "section": "Using the Fluent API",
-    "text": "Using the Fluent API\nThe set_*() functions work on forest_plot() and webtable() outputs:\n\n\nCode\nfluent_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Overall\"),\n  hr = c(0.72, 0.85, 0.91, 0.82),\n  lower = c(0.55, 0.70, 0.75, 0.68),\n  upper = c(0.95, 1.03, 1.10, 0.99),\n  is_summary = c(FALSE, FALSE, FALSE, TRUE),\n  sig_color = c(\"#16a34a\", \"#94a3b8\", \"#94a3b8\", \"#2563eb\")\n)\n\nforest_plot(fluent_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1,\n  theme = web_theme_modern()\n) |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  set_row_style(bold = \"is_summary\")"
+    "section": "Modifying Plots After Creation",
+    "text": "Modifying Plots After Creation\nFor cases where you need to modify a plot after creation—such as applying conditional styling, creating variants, or working in a pipeline—webforest provides set_*() modifier functions:\n\n\nCode\nfluent_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Overall\"),\n  hr = c(0.72, 0.85, 0.91, 0.82),\n  lower = c(0.55, 0.70, 0.75, 0.68),\n  upper = c(0.95, 1.03, 1.10, 0.99),\n  is_summary = c(FALSE, FALSE, FALSE, TRUE),\n  sig_color = c(\"#16a34a\", \"#94a3b8\", \"#94a3b8\", \"#2563eb\")\n)\n\nforest_plot(fluent_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1,\n  theme = web_theme_modern()\n) |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  set_row_style(bold = \"is_summary\")"
   },
   {
     "objectID": "guide/fluent-api.html#available-modifiers",
