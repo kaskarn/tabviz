@@ -289,25 +289,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#two-ways-to-customize" id="toc-two-ways-to-customize" class="nav-link active" data-scroll-target="#two-ways-to-customize">Two Ways to Customize</a></li>
+  <li><a href="#using-the-fluent-api" id="toc-using-the-fluent-api" class="nav-link active" data-scroll-target="#using-the-fluent-api">Using the Fluent API</a></li>
+  <li><a href="#available-modifiers" id="toc-available-modifiers" class="nav-link" data-scroll-target="#available-modifiers">Available Modifiers</a>
+  <ul class="collapse">
+  <li><a href="#set_row_style" id="toc-set_row_style" class="nav-link" data-scroll-target="#set_row_style">set_row_style</a></li>
+  <li><a href="#set_marker_style" id="toc-set_marker_style" class="nav-link" data-scroll-target="#set_marker_style">set_marker_style</a></li>
+  <li><a href="#set_column_style" id="toc-set_column_style" class="nav-link" data-scroll-target="#set_column_style">set_column_style</a></li>
+  </ul></li>
+  <li><a href="#theme-modifiers" id="toc-theme-modifiers" class="nav-link" data-scroll-target="#theme-modifiers">Theme Modifiers</a></li>
+  <li><a href="#constructor-arguments-vs-fluent-api" id="toc-constructor-arguments-vs-fluent-api" class="nav-link" data-scroll-target="#constructor-arguments-vs-fluent-api">Constructor Arguments vs Fluent API</a></li>
   <li><a href="#comparison-table" id="toc-comparison-table" class="nav-link" data-scroll-target="#comparison-table">Comparison Table</a></li>
-  <li><a href="#when-to-use-each" id="toc-when-to-use-each" class="nav-link" data-scroll-target="#when-to-use-each">When to Use Each</a>
-  <ul class="collapse">
-  <li><a href="#constructor-arguments" id="toc-constructor-arguments" class="nav-link" data-scroll-target="#constructor-arguments">Constructor Arguments</a></li>
-  <li><a href="#fluent-api" id="toc-fluent-api" class="nav-link" data-scroll-target="#fluent-api">Fluent API</a></li>
-  </ul></li>
-  <li><a href="#the-three-step-workflow" id="toc-the-three-step-workflow" class="nav-link" data-scroll-target="#the-three-step-workflow">The Three-Step Workflow</a></li>
-  <li><a href="#creating-variants-from-a-base-spec" id="toc-creating-variants-from-a-base-spec" class="nav-link" data-scroll-target="#creating-variants-from-a-base-spec">Creating Variants from a Base Spec</a></li>
-  <li><a href="#function-reference" id="toc-function-reference" class="nav-link" data-scroll-target="#function-reference">Function Reference</a>
-  <ul class="collapse">
-  <li><a href="#webspec-modifiers" id="toc-webspec-modifiers" class="nav-link" data-scroll-target="#webspec-modifiers">WebSpec Modifiers</a></li>
-  <li><a href="#webtheme-modifiers" id="toc-webtheme-modifiers" class="nav-link" data-scroll-target="#webtheme-modifiers">WebTheme Modifiers</a></li>
-  </ul></li>
-  <li><a href="#complete-example-both-approaches" id="toc-complete-example-both-approaches" class="nav-link" data-scroll-target="#complete-example-both-approaches">Complete Example: Both Approaches</a>
-  <ul class="collapse">
-  <li><a href="#constructor-approach" id="toc-constructor-approach" class="nav-link" data-scroll-target="#constructor-approach">Constructor Approach</a></li>
-  <li><a href="#fluent-approach" id="toc-fluent-approach" class="nav-link" data-scroll-target="#fluent-approach">Fluent Approach</a></li>
-  </ul></li>
+  <li><a href="#advanced-using-web_spec" id="toc-advanced-using-web_spec" class="nav-link" data-scroll-target="#advanced-using-web_spec">Advanced: Using web_spec()</a></li>
   </ul>
 </nav>
     </div>
@@ -333,270 +325,90 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>webforest offers two equivalent approaches for customization: constructor arguments and the fluent API. This guide explains both and when to use each.</p>
-<section id="two-ways-to-customize" class="level2">
-<h2 class="anchored" data-anchor-id="two-ways-to-customize">Two Ways to Customize</h2>
-<p><strong>Constructor Arguments</strong> set everything when creating the plot:</p>
+<p>webforest offers a fluent API for modifying plots after creation. This is useful for applying conditional styling, creating plot variants, or separating data preparation from styling.</p>
+<section id="using-the-fluent-api" class="level2">
+<h2 class="anchored" data-anchor-id="using-the-fluent-api">Using the Fluent API</h2>
+<p>The <code>set_*()</code> functions work on <code>forest_plot()</code> and <code>webtable()</code> outputs:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_bold"</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"sig_color"</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-<p><strong>Fluent API (Pipes)</strong> creates a spec, then modifies it step by step:</p>
-<div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">web_spec</span>(data,</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_bold"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_plot</span>(<span class="at">theme =</span> <span class="fu">web_theme_modern</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-<p>Both produce identical output.</p>
-</section>
-<section id="comparison-table" class="level2">
-<h2 class="anchored" data-anchor-id="comparison-table">Comparison Table</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 29%">
-<col style="width: 44%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Customization</th>
-<th>Constructor Argument</th>
-<th>Fluent API</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>Row styling</strong></td>
-<td><code>row_bold</code>, <code>row_italic</code>, <code>row_color</code>, <code>row_bg</code>, <code>row_badge</code>, <code>row_icon</code>, <code>row_indent</code>, <code>row_type</code></td>
-<td><code>set_row_style(bold, italic, color, bg, badge, icon, indent, type)</code></td>
-</tr>
-<tr class="even">
-<td><strong>Column styling</strong></td>
-<td>Via <code>col_*()</code> parameters</td>
-<td><code>set_column_style(column, bold, italic, color, bg, badge, icon)</code></td>
-</tr>
-<tr class="odd">
-<td><strong>Marker styling</strong></td>
-<td><code>marker_color</code>, <code>marker_shape</code>, <code>marker_opacity</code>, <code>marker_size</code></td>
-<td><code>set_marker_style(color, shape, opacity, size)</code></td>
-</tr>
-<tr class="even">
-<td><strong>Theme colors</strong></td>
-<td><code>theme = web_theme_*() |&gt; set_colors(...)</code></td>
-<td>Same</td>
-</tr>
-<tr class="odd">
-<td><strong>Theme typography</strong></td>
-<td><code>theme = web_theme_*() |&gt; set_typography(...)</code></td>
-<td>Same</td>
-</tr>
-<tr class="even">
-<td><strong>Theme spacing</strong></td>
-<td><code>theme = web_theme_*() |&gt; set_spacing(...)</code></td>
-<td>Same</td>
-</tr>
-<tr class="odd">
-<td><strong>Theme shapes</strong></td>
-<td><code>theme = web_theme_*() |&gt; set_shapes(...)</code></td>
-<td>Same</td>
-</tr>
-<tr class="even">
-<td><strong>Axis config</strong></td>
-<td><code>theme = web_theme_*() |&gt; set_axis(...)</code></td>
-<td>Same</td>
-</tr>
-<tr class="odd">
-<td><strong>Layout config</strong></td>
-<td><code>theme = web_theme_*() |&gt; set_layout(...)</code></td>
-<td>Same</td>
-</tr>
-</tbody>
-</table>
-<p>Note: Theme customization always uses the fluent pattern, even with constructor arguments.</p>
-</section>
-<section id="when-to-use-each" class="level2">
-<h2 class="anchored" data-anchor-id="when-to-use-each">When to Use Each</h2>
-<section id="constructor-arguments" class="level3">
-<h3 class="anchored" data-anchor-id="constructor-arguments">Constructor Arguments</h3>
-<p>Best when:</p>
-<ul>
-<li>Building a simple plot with known requirements</li>
-<li>All customization can be determined upfront</li>
-<li>You want everything visible in one place</li>
-</ul>
-<div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple, self-contained</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_summary"</span>,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"effect_color"</span>,</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-</section>
-<section id="fluent-api" class="level3">
-<h3 class="anchored" data-anchor-id="fluent-api">Fluent API</h3>
-<p>Best when:</p>
-<ul>
-<li>Building specs programmatically</li>
-<li>Applying conditional styling</li>
-<li>Separating concerns (data preparation → styling → rendering)</li>
-<li>Reusing a base spec with variations</li>
-<li>Working in a pipeline with <code>dplyr</code></li>
-</ul>
-<div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Separated concerns, reusable base</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>base_spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(data,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply styling based on analysis needs</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>styled_spec <span class="ot">&lt;-</span> base_spec <span class="sc">|&gt;</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>)</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Render</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(styled_spec)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-</section>
-</section>
-<section id="the-three-step-workflow" class="level2">
-<h2 class="anchored" data-anchor-id="the-three-step-workflow">The Three-Step Workflow</h2>
-<p>The fluent API follows a natural workflow:</p>
-<ol type="1">
-<li><strong>Create</strong> a spec with <code>web_spec()</code></li>
-<li><strong>Modify</strong> with <code>set_*()</code> functions via pipes</li>
-<li><strong>Render</strong> with <code>forest_plot()</code> or <code>webtable()</code></li>
-</ol>
-<div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>fluent_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>, <span class="st">"Overall"</span>),</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>, <span class="fl">0.82</span>),</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>, <span class="fl">0.68</span>),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>, <span class="fl">0.99</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">is_summary =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">sig_color =</span> <span class="fu">c</span>(<span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>, <span class="st">"#94a3b8"</span>, <span class="st">"#2563eb"</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Create</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(fluent_data,</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Modify</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> spec <span class="sc">|&gt;</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>)</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Render</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(spec, <span class="at">theme =</span> <span class="fu">web_theme_modern</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>fluent_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>, <span class="st">"Overall"</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>, <span class="fl">0.82</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>, <span class="fl">0.68</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>, <span class="fl">0.99</span>),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">is_summary =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">sig_color =</span> <span class="fu">c</span>(<span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>, <span class="st">"#94a3b8"</span>, <span class="st">"#2563eb"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(fluent_data,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
-<div class="webforest html-widget html-fill-item" id="htmlwidget-343f650743432ec904f2" style="width:100%;height:400px;"></div>
-<script type="application/json" data-for="htmlwidget-343f650743432ec904f2">{"x":{"data":{"rows":[{"id":"row_1","label":"Trial A","point":0.72,"lower":0.55,"upper":0.95,"groupId":null,"metadata":{"study":"Trial A","hr":0.72,"lower":0.55,"upper":0.95,"is_summary":false,"sig_color":"#16a34a"},"style":{"bold":false},"markerStyle":{"color":"#16a34a"}},{"id":"row_2","label":"Trial B","point":0.85,"lower":0.7,"upper":1.03,"groupId":null,"metadata":{"study":"Trial B","hr":0.85,"lower":0.7,"upper":1.03,"is_summary":false,"sig_color":"#94a3b8"},"style":{"bold":false},"markerStyle":{"color":"#94a3b8"}},{"id":"row_3","label":"Trial C","point":0.91,"lower":0.75,"upper":1.1,"groupId":null,"metadata":{"study":"Trial C","hr":0.91,"lower":0.75,"upper":1.1,"is_summary":false,"sig_color":"#94a3b8"},"style":{"bold":false},"markerStyle":{"color":"#94a3b8"}},{"id":"row_4","label":"Overall","point":0.82,"lower":0.68,"upper":0.99,"groupId":null,"metadata":{"study":"Overall","hr":0.82,"lower":0.68,"upper":0.99,"is_summary":true,"sig_color":"#2563eb"},"style":{"bold":true},"markerStyle":{"color":"#2563eb"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"hr","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":null,"weightCol":null,"scale":"log","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"default","colors":{"background":"#ffffff","foreground":"#333333","primary":"#0891b2","secondary":"#64748b","accent":"#8b5cf6","muted":"#94a3b8","border":"#e2e8f0","interval":"#0891b2","intervalPositive":"#0891b2","intervalNegative":"#dc2626","intervalNeutral":"#64748b","intervalLine":"#475569","summaryFill":"#0891b2","summaryBorder":"#0e7490"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":28,"headerHeight":36,"columnGap":8,"sectionGap":16,"padding":12,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":2},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true,"tooltipFields":null},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"},"widthMode":"natural","heightPreset":"full"},"evals":[],"jsHooks":[]}</script>
+<div class="webforest html-widget html-fill-item" id="htmlwidget-f8150d7e558eba935bb8" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-f8150d7e558eba935bb8">{"x":{"data":{"rows":[{"id":"row_1","label":"Trial A","point":0.72,"lower":0.55,"upper":0.95,"groupId":null,"metadata":{"study":"Trial A","hr":0.72,"lower":0.55,"upper":0.95,"is_summary":false,"sig_color":"#16a34a"},"style":{"bold":false},"markerStyle":{"color":"#16a34a"}},{"id":"row_2","label":"Trial B","point":0.85,"lower":0.7,"upper":1.03,"groupId":null,"metadata":{"study":"Trial B","hr":0.85,"lower":0.7,"upper":1.03,"is_summary":false,"sig_color":"#94a3b8"},"style":{"bold":false},"markerStyle":{"color":"#94a3b8"}},{"id":"row_3","label":"Trial C","point":0.91,"lower":0.75,"upper":1.1,"groupId":null,"metadata":{"study":"Trial C","hr":0.91,"lower":0.75,"upper":1.1,"is_summary":false,"sig_color":"#94a3b8"},"style":{"bold":false},"markerStyle":{"color":"#94a3b8"}},{"id":"row_4","label":"Overall","point":0.82,"lower":0.68,"upper":0.99,"groupId":null,"metadata":{"study":"Overall","hr":0.82,"lower":0.68,"upper":0.99,"is_summary":true,"sig_color":"#2563eb"},"style":{"bold":true},"markerStyle":{"color":"#2563eb"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"pointCol":"hr","lowerCol":"lower","upperCol":"upper","labelCol":"study","labelHeader":"Study","groupCol":null,"weightCol":null,"scale":"log","nullValue":1,"axisLabel":"Estimate","effects":[],"includeForest":true},"columns":[],"annotations":[],"theme":{"name":"modern","colors":{"background":"#fafafa","foreground":"#18181b","primary":"#2563eb","secondary":"#52525b","accent":"#7c3aed","muted":"#a1a1aa","border":"#e4e4e7","interval":"#2563eb","intervalPositive":"#16a34a","intervalNegative":"#dc2626","intervalNeutral":"#71717a","intervalLine":"#3f3f46","summaryFill":"#2563eb","summaryBorder":"#1d4ed8"},"typography":{"fontFamily":"Inter, system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5},"spacing":{"rowHeight":32,"headerHeight":40,"columnGap":10,"sectionGap":20,"padding":14,"cellPaddingX":10,"cellPaddingY":4},"shapes":{"pointSize":7,"summaryHeight":11,"lineWidth":1.5,"borderRadius":6},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted"},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":true,"containerBorderRadius":8}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true,"tooltipFields":null},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"},"widthMode":"natural","heightPreset":"full"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
-<section id="creating-variants-from-a-base-spec" class="level2">
-<h2 class="anchored" data-anchor-id="creating-variants-from-a-base-spec">Creating Variants from a Base Spec</h2>
-<p>The fluent API makes it easy to create multiple plot variants from a single base:</p>
+<section id="available-modifiers" class="level2">
+<h2 class="anchored" data-anchor-id="available-modifiers">Available Modifiers</h2>
+<section id="set_row_style" class="level3">
+<h3 class="anchored" data-anchor-id="set_row_style">set_row_style</h3>
+<p>Apply styling to all rows based on column values.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_row_style</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">bold =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for bold text (logical)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">italic =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for italic text (logical)</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for text color (hex string)</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">bg =</span> <span class="cn">NULL</span>,      <span class="co"># Column name for background color (hex string)</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for badge text</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">icon =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for icon (emoji/unicode)</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">indent =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for indentation level (integer)</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="cn">NULL</span>     <span class="co"># Column name for row type: "data", "header", "summary", "spacer"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="set_marker_style" class="level3">
+<h3 class="anchored" data-anchor-id="set_marker_style">set_marker_style</h3>
+<p>Apply styling to forest plot markers.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for marker fill color (hex string)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">shape =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for shape: "square", "circle", "diamond", "triangle"</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">opacity =</span> <span class="cn">NULL</span>, <span class="co"># Column name for opacity (0-1)</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="cn">NULL</span>     <span class="co"># Column name for size multiplier (1 = default)</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="set_column_style" class="level3">
+<h3 class="anchored" data-anchor-id="set_column_style">set_column_style</h3>
+<p>Apply styling to a specific column.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_column_style</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  column,         <span class="co"># Field name of the column to style</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">bold =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for bold text (logical)</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">italic =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for italic text (logical)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for text color (hex string)</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">bg =</span> <span class="cn">NULL</span>,      <span class="co"># Column name for background color (hex string)</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for badge text</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">icon =</span> <span class="cn">NULL</span>     <span class="co"># Column name for icon (emoji/unicode)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="theme-modifiers" class="level2">
+<h2 class="anchored" data-anchor-id="theme-modifiers">Theme Modifiers</h2>
+<p>Themes are always customized with the fluent pattern:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Base spec (no styling)</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>base <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(data,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Variant 1: Colored by significance</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>colored <span class="ot">&lt;-</span> base <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Variant 2: Shaped by study type</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>shaped <span class="ot">&lt;-</span> base <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">shape =</span> <span class="st">"study_shape"</span>)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Variant 3: Both</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>styled <span class="ot">&lt;-</span> base <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>, <span class="at">shape =</span> <span class="st">"study_shape"</span>)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Render each as needed</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(colored)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(shaped)</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(styled)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>custom_theme <span class="ot">&lt;-</span> <span class="fu">web_theme_jama</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_colors</span>(<span class="at">primary =</span> <span class="st">"#0066cc"</span>, <span class="at">interval =</span> <span class="st">"#0066cc"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_spacing</span>(<span class="at">row_height =</span> <span class="dv">24</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_axis</span>(<span class="at">gridlines =</span> <span class="cn">TRUE</span>, <span class="at">gridline_style =</span> <span class="st">"dotted"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">theme =</span> custom_theme)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-</section>
-<section id="function-reference" class="level2">
-<h2 class="anchored" data-anchor-id="function-reference">Function Reference</h2>
-<section id="webspec-modifiers" class="level3">
-<h3 class="anchored" data-anchor-id="webspec-modifiers">WebSpec Modifiers</h3>
-<p>These functions modify a WebSpec object and return a modified copy:</p>
-<section id="set_row_style" class="level4">
-<h4 class="anchored" data-anchor-id="set_row_style">set_row_style</h4>
-<p>Apply styling to all rows based on column values.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>spec <span class="sc">|&gt;</span> <span class="fu">set_row_style</span>(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">bold =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for bold text (logical)</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">italic =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for italic text (logical)</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for text color (hex string)</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">bg =</span> <span class="cn">NULL</span>,      <span class="co"># Column name for background color (hex string)</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for badge text</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">icon =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for icon (emoji/unicode)</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">indent =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for indentation level (integer)</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="cn">NULL</span>     <span class="co"># Column name for row type: "data", "header", "summary", "spacer"</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="set_column_style" class="level4">
-<h4 class="anchored" data-anchor-id="set_column_style">set_column_style</h4>
-<p>Apply styling to a specific column.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>spec <span class="sc">|&gt;</span> <span class="fu">set_column_style</span>(</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  column,         <span class="co"># Field name of the column to style</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">bold =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for bold text (logical)</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">italic =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for italic text (logical)</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for text color (hex string)</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">bg =</span> <span class="cn">NULL</span>,      <span class="co"># Column name for background color (hex string)</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for badge text</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">icon =</span> <span class="cn">NULL</span>     <span class="co"># Column name for icon (emoji/unicode)</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="set_marker_style" class="level4">
-<h4 class="anchored" data-anchor-id="set_marker_style">set_marker_style</h4>
-<p>Apply styling to forest plot markers.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>spec <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for marker fill color (hex string)</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">shape =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for shape: "square", "circle", "diamond", "triangle"</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">opacity =</span> <span class="cn">NULL</span>, <span class="co"># Column name for opacity (0-1)</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="cn">NULL</span>     <span class="co"># Column name for size multiplier (1 = default)</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-</section>
-<section id="webtheme-modifiers" class="level3">
-<h3 class="anchored" data-anchor-id="webtheme-modifiers">WebTheme Modifiers</h3>
-<p>These functions modify a WebTheme object:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 28%">
@@ -643,60 +455,100 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>Example:</p>
+</section>
+<section id="constructor-arguments-vs-fluent-api" class="level2">
+<h2 class="anchored" data-anchor-id="constructor-arguments-vs-fluent-api">Constructor Arguments vs Fluent API</h2>
+<p>Both approaches produce identical results:</p>
+<p><strong>Constructor arguments</strong> (set everything upfront):</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>custom_theme <span class="ot">&lt;-</span> <span class="fu">web_theme_jama</span>() <span class="sc">|&gt;</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_colors</span>(<span class="at">primary =</span> <span class="st">"#0066cc"</span>, <span class="at">interval =</span> <span class="st">"#0066cc"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_spacing</span>(<span class="at">row_height =</span> <span class="dv">24</span>) <span class="sc">|&gt;</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_axis</span>(<span class="at">gridlines =</span> <span class="cn">TRUE</span>, <span class="at">gridline_style =</span> <span class="st">"dotted"</span>)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(spec, <span class="at">theme =</span> custom_theme)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_summary"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"sig_color"</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-</section>
-</section>
-<section id="complete-example-both-approaches" class="level2">
-<h2 class="anchored" data-anchor-id="complete-example-both-approaches">Complete Example: Both Approaches</h2>
-<p>Here’s the same plot built with both approaches:</p>
-<section id="constructor-approach" class="level3">
-<h3 class="anchored" data-anchor-id="constructor-approach">Constructor Approach</h3>
+<p><strong>Fluent API</strong> (modify after creation):</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(fluent_data,</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_summary"</span>,</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"sig_color"</span>,</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+<p>Choose constructor arguments when all styling is known upfront. Use the fluent API when styling depends on computation or when you want to create variants.</p>
 </section>
-<section id="fluent-approach" class="level3">
-<h3 class="anchored" data-anchor-id="fluent-approach">Fluent Approach</h3>
+<section id="comparison-table" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-table">Comparison Table</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 29%">
+<col style="width: 44%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Customization</th>
+<th>Constructor Argument</th>
+<th>Fluent API</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Row styling</strong></td>
+<td><code>row_bold</code>, <code>row_italic</code>, <code>row_color</code>, <code>row_bg</code>, <code>row_badge</code>, <code>row_icon</code>, <code>row_indent</code>, <code>row_type</code></td>
+<td><code>set_row_style(bold, italic, color, bg, badge, icon, indent, type)</code></td>
+</tr>
+<tr class="even">
+<td><strong>Column styling</strong></td>
+<td>Via <code>col_*()</code> parameters</td>
+<td><code>set_column_style(column, bold, italic, color, bg, badge, icon)</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Marker styling</strong></td>
+<td><code>marker_color</code>, <code>marker_shape</code>, <code>marker_opacity</code>, <code>marker_size</code></td>
+<td><code>set_marker_style(color, shape, opacity, size)</code></td>
+</tr>
+<tr class="even">
+<td><strong>Theme</strong></td>
+<td><code>theme = web_theme_*() |&gt; set_*()</code></td>
+<td>Same (always fluent)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="advanced-using-web_spec" class="level2">
+<h2 class="anchored" data-anchor-id="advanced-using-web_spec">Advanced: Using web_spec()</h2>
+<p>For performance-critical applications or when creating many plot variants from one data source, you can work directly with <code>web_spec()</code> objects:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fluent_data <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">web_spec</span>(</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_plot</span>(<span class="at">theme =</span> <span class="fu">web_theme_modern</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create spec once</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(data,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create variants without re-processing data</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>v1 <span class="ot">&lt;-</span> spec <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span> <span class="fu">forest_plot</span>()</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>v2 <span class="ot">&lt;-</span> spec <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">shape =</span> <span class="st">"study_shape"</span>) <span class="sc">|&gt;</span> <span class="fu">forest_plot</span>()</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>v3 <span class="ot">&lt;-</span> spec <span class="sc">|&gt;</span> <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span> <span class="fu">webtable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Both produce identical results. Choose based on your workflow and preferences.</p>
+<p>This avoids repeated data processing when rendering multiple views of the same data. See <a href="../reference/web_spec.html">web_spec reference</a> for details.</p>
 
 
 <!-- -->
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -1151,282 +1003,171 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     }
   });
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "The Fluent API"</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(webforest)</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>webforest offers two equivalent approaches for customization: constructor arguments and the fluent API. This guide explains both and when to use each.</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## Two Ways to Customize</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>**Constructor Arguments** set everything when creating the plot:</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_bold"</span>,</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"sig_color"</span>,</span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>**Fluent API (Pipes)** creates a spec, then modifies it step by step:</span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="fu">web_spec</span>(data,</span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span></span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_bold"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_plot</span>(<span class="at">theme =</span> <span class="fu">web_theme_modern</span>())</span>
-<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>Both produce identical output.</span>
-<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comparison Table</span></span>
-<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Customization <span class="pp">|</span> Constructor Argument <span class="pp">|</span> Fluent API <span class="pp">|</span></span>
-<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------------|---------------------|------------|</span></span>
-<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Row styling** <span class="pp">|</span> <span class="in">`row_bold`</span>, <span class="in">`row_italic`</span>, <span class="in">`row_color`</span>, <span class="in">`row_bg`</span>, <span class="in">`row_badge`</span>, <span class="in">`row_icon`</span>, <span class="in">`row_indent`</span>, <span class="in">`row_type`</span> <span class="pp">|</span> <span class="in">`set_row_style(bold, italic, color, bg, badge, icon, indent, type)`</span> <span class="pp">|</span></span>
-<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Column styling** <span class="pp">|</span> Via <span class="in">`col_*()`</span> parameters <span class="pp">|</span> <span class="in">`set_column_style(column, bold, italic, color, bg, badge, icon)`</span> <span class="pp">|</span></span>
-<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Marker styling** <span class="pp">|</span> <span class="in">`marker_color`</span>, <span class="in">`marker_shape`</span>, <span class="in">`marker_opacity`</span>, <span class="in">`marker_size`</span> <span class="pp">|</span> <span class="in">`set_marker_style(color, shape, opacity, size)`</span> <span class="pp">|</span></span>
-<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Theme colors** <span class="pp">|</span> <span class="in">`theme = web_theme_*() |&gt; set_colors(...)`</span> <span class="pp">|</span> Same <span class="pp">|</span></span>
-<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Theme typography** <span class="pp">|</span> <span class="in">`theme = web_theme_*() |&gt; set_typography(...)`</span> <span class="pp">|</span> Same <span class="pp">|</span></span>
-<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Theme spacing** <span class="pp">|</span> <span class="in">`theme = web_theme_*() |&gt; set_spacing(...)`</span> <span class="pp">|</span> Same <span class="pp">|</span></span>
-<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Theme shapes** <span class="pp">|</span> <span class="in">`theme = web_theme_*() |&gt; set_shapes(...)`</span> <span class="pp">|</span> Same <span class="pp">|</span></span>
-<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Axis config** <span class="pp">|</span> <span class="in">`theme = web_theme_*() |&gt; set_axis(...)`</span> <span class="pp">|</span> Same <span class="pp">|</span></span>
-<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Layout config** <span class="pp">|</span> <span class="in">`theme = web_theme_*() |&gt; set_layout(...)`</span> <span class="pp">|</span> Same <span class="pp">|</span></span>
-<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>Note: Theme customization always uses the fluent pattern, even with constructor arguments.</span>
-<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a><span class="fu">## When to Use Each</span></span>
-<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a><span class="fu">### Constructor Arguments</span></span>
-<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a>Best when:</span>
-<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Building a simple plot with known requirements</span>
-<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>All customization can be determined upfront</span>
-<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>You want everything visible in one place</span>
-<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb13-78"><a href="#cb13-78" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple, self-contained</span></span>
-<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
-<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
-<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_summary"</span>,</span>
-<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"effect_color"</span>,</span>
-<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-88"><a href="#cb13-88" aria-hidden="true" tabindex="-1"></a><span class="fu">### Fluent API</span></span>
-<span id="cb13-89"><a href="#cb13-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a>Best when:</span>
-<span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Building specs programmatically</span>
-<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Applying conditional styling</span>
-<span id="cb13-94"><a href="#cb13-94" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Separating concerns (data preparation → styling → rendering)</span>
-<span id="cb13-95"><a href="#cb13-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Reusing a base spec with variations</span>
-<span id="cb13-96"><a href="#cb13-96" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Working in a pipeline with <span class="in">`dplyr`</span></span>
-<span id="cb13-97"><a href="#cb13-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-100"><a href="#cb13-100" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-101"><a href="#cb13-101" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb13-102"><a href="#cb13-102" aria-hidden="true" tabindex="-1"></a><span class="co"># Separated concerns, reusable base</span></span>
-<span id="cb13-103"><a href="#cb13-103" aria-hidden="true" tabindex="-1"></a>base_spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(data,</span>
-<span id="cb13-104"><a href="#cb13-104" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb13-105"><a href="#cb13-105" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb13-106"><a href="#cb13-106" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-107"><a href="#cb13-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-108"><a href="#cb13-108" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply styling based on analysis needs</span></span>
-<span id="cb13-109"><a href="#cb13-109" aria-hidden="true" tabindex="-1"></a>styled_spec <span class="ot">&lt;-</span> base_spec <span class="sc">|&gt;</span></span>
-<span id="cb13-110"><a href="#cb13-110" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-111"><a href="#cb13-111" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>)</span>
-<span id="cb13-112"><a href="#cb13-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-113"><a href="#cb13-113" aria-hidden="true" tabindex="-1"></a><span class="co"># Render</span></span>
-<span id="cb13-114"><a href="#cb13-114" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(styled_spec)</span>
-<span id="cb13-115"><a href="#cb13-115" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-116"><a href="#cb13-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-117"><a href="#cb13-117" aria-hidden="true" tabindex="-1"></a><span class="fu">## The Three-Step Workflow</span></span>
-<span id="cb13-118"><a href="#cb13-118" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-119"><a href="#cb13-119" aria-hidden="true" tabindex="-1"></a>The fluent API follows a natural workflow:</span>
-<span id="cb13-120"><a href="#cb13-120" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-121"><a href="#cb13-121" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Create** a spec with <span class="in">`web_spec()`</span></span>
-<span id="cb13-122"><a href="#cb13-122" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Modify** with <span class="in">`set_*()`</span> functions via pipes</span>
-<span id="cb13-123"><a href="#cb13-123" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Render** with <span class="in">`forest_plot()`</span> or <span class="in">`webtable()`</span></span>
-<span id="cb13-124"><a href="#cb13-124" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-127"><a href="#cb13-127" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-128"><a href="#cb13-128" aria-hidden="true" tabindex="-1"></a>fluent_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb13-129"><a href="#cb13-129" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>, <span class="st">"Overall"</span>),</span>
-<span id="cb13-130"><a href="#cb13-130" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>, <span class="fl">0.82</span>),</span>
-<span id="cb13-131"><a href="#cb13-131" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>, <span class="fl">0.68</span>),</span>
-<span id="cb13-132"><a href="#cb13-132" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>, <span class="fl">0.99</span>),</span>
-<span id="cb13-133"><a href="#cb13-133" aria-hidden="true" tabindex="-1"></a>  <span class="at">is_summary =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
-<span id="cb13-134"><a href="#cb13-134" aria-hidden="true" tabindex="-1"></a>  <span class="at">sig_color =</span> <span class="fu">c</span>(<span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>, <span class="st">"#94a3b8"</span>, <span class="st">"#2563eb"</span>)</span>
-<span id="cb13-135"><a href="#cb13-135" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-136"><a href="#cb13-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-137"><a href="#cb13-137" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Create</span></span>
-<span id="cb13-138"><a href="#cb13-138" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(fluent_data,</span>
-<span id="cb13-139"><a href="#cb13-139" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb13-140"><a href="#cb13-140" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb13-141"><a href="#cb13-141" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-142"><a href="#cb13-142" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-143"><a href="#cb13-143" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Modify</span></span>
-<span id="cb13-144"><a href="#cb13-144" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> spec <span class="sc">|&gt;</span></span>
-<span id="cb13-145"><a href="#cb13-145" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-146"><a href="#cb13-146" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>)</span>
-<span id="cb13-147"><a href="#cb13-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-148"><a href="#cb13-148" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Render</span></span>
-<span id="cb13-149"><a href="#cb13-149" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(spec, <span class="at">theme =</span> <span class="fu">web_theme_modern</span>())</span>
-<span id="cb13-150"><a href="#cb13-150" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-151"><a href="#cb13-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-152"><a href="#cb13-152" aria-hidden="true" tabindex="-1"></a><span class="fu">## Creating Variants from a Base Spec</span></span>
-<span id="cb13-153"><a href="#cb13-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-154"><a href="#cb13-154" aria-hidden="true" tabindex="-1"></a>The fluent API makes it easy to create multiple plot variants from a single base:</span>
-<span id="cb13-155"><a href="#cb13-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-158"><a href="#cb13-158" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-159"><a href="#cb13-159" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb13-160"><a href="#cb13-160" aria-hidden="true" tabindex="-1"></a><span class="co"># Base spec (no styling)</span></span>
-<span id="cb13-161"><a href="#cb13-161" aria-hidden="true" tabindex="-1"></a>base <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(data,</span>
-<span id="cb13-162"><a href="#cb13-162" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb13-163"><a href="#cb13-163" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb13-164"><a href="#cb13-164" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-165"><a href="#cb13-165" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-166"><a href="#cb13-166" aria-hidden="true" tabindex="-1"></a><span class="co"># Variant 1: Colored by significance</span></span>
-<span id="cb13-167"><a href="#cb13-167" aria-hidden="true" tabindex="-1"></a>colored <span class="ot">&lt;-</span> base <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>)</span>
-<span id="cb13-168"><a href="#cb13-168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-169"><a href="#cb13-169" aria-hidden="true" tabindex="-1"></a><span class="co"># Variant 2: Shaped by study type</span></span>
-<span id="cb13-170"><a href="#cb13-170" aria-hidden="true" tabindex="-1"></a>shaped <span class="ot">&lt;-</span> base <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">shape =</span> <span class="st">"study_shape"</span>)</span>
-<span id="cb13-171"><a href="#cb13-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-172"><a href="#cb13-172" aria-hidden="true" tabindex="-1"></a><span class="co"># Variant 3: Both</span></span>
-<span id="cb13-173"><a href="#cb13-173" aria-hidden="true" tabindex="-1"></a>styled <span class="ot">&lt;-</span> base <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>, <span class="at">shape =</span> <span class="st">"study_shape"</span>)</span>
-<span id="cb13-174"><a href="#cb13-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-175"><a href="#cb13-175" aria-hidden="true" tabindex="-1"></a><span class="co"># Render each as needed</span></span>
-<span id="cb13-176"><a href="#cb13-176" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(colored)</span>
-<span id="cb13-177"><a href="#cb13-177" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(shaped)</span>
-<span id="cb13-178"><a href="#cb13-178" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(styled)</span>
-<span id="cb13-179"><a href="#cb13-179" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-180"><a href="#cb13-180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-181"><a href="#cb13-181" aria-hidden="true" tabindex="-1"></a><span class="fu">## Function Reference</span></span>
-<span id="cb13-182"><a href="#cb13-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-183"><a href="#cb13-183" aria-hidden="true" tabindex="-1"></a><span class="fu">### WebSpec Modifiers</span></span>
-<span id="cb13-184"><a href="#cb13-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-185"><a href="#cb13-185" aria-hidden="true" tabindex="-1"></a>These functions modify a WebSpec object and return a modified copy:</span>
-<span id="cb13-186"><a href="#cb13-186" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-187"><a href="#cb13-187" aria-hidden="true" tabindex="-1"></a><span class="fu">#### set_row_style</span></span>
-<span id="cb13-188"><a href="#cb13-188" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-189"><a href="#cb13-189" aria-hidden="true" tabindex="-1"></a>Apply styling to all rows based on column values.</span>
-<span id="cb13-190"><a href="#cb13-190" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-191"><a href="#cb13-191" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-192"><a href="#cb13-192" aria-hidden="true" tabindex="-1"></a>spec <span class="sc">|&gt;</span> <span class="fu">set_row_style</span>(</span>
-<span id="cb13-193"><a href="#cb13-193" aria-hidden="true" tabindex="-1"></a>  <span class="at">bold =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for bold text (logical)</span></span>
-<span id="cb13-194"><a href="#cb13-194" aria-hidden="true" tabindex="-1"></a>  <span class="at">italic =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for italic text (logical)</span></span>
-<span id="cb13-195"><a href="#cb13-195" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for text color (hex string)</span></span>
-<span id="cb13-196"><a href="#cb13-196" aria-hidden="true" tabindex="-1"></a>  <span class="at">bg =</span> <span class="cn">NULL</span>,      <span class="co"># Column name for background color (hex string)</span></span>
-<span id="cb13-197"><a href="#cb13-197" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for badge text</span></span>
-<span id="cb13-198"><a href="#cb13-198" aria-hidden="true" tabindex="-1"></a>  <span class="at">icon =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for icon (emoji/unicode)</span></span>
-<span id="cb13-199"><a href="#cb13-199" aria-hidden="true" tabindex="-1"></a>  <span class="at">indent =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for indentation level (integer)</span></span>
-<span id="cb13-200"><a href="#cb13-200" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="cn">NULL</span>     <span class="co"># Column name for row type: "data", "header", "summary", "spacer"</span></span>
-<span id="cb13-201"><a href="#cb13-201" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-202"><a href="#cb13-202" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-203"><a href="#cb13-203" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-204"><a href="#cb13-204" aria-hidden="true" tabindex="-1"></a><span class="fu">#### set_column_style</span></span>
-<span id="cb13-205"><a href="#cb13-205" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-206"><a href="#cb13-206" aria-hidden="true" tabindex="-1"></a>Apply styling to a specific column.</span>
-<span id="cb13-207"><a href="#cb13-207" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-208"><a href="#cb13-208" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-209"><a href="#cb13-209" aria-hidden="true" tabindex="-1"></a>spec <span class="sc">|&gt;</span> <span class="fu">set_column_style</span>(</span>
-<span id="cb13-210"><a href="#cb13-210" aria-hidden="true" tabindex="-1"></a>  column,         <span class="co"># Field name of the column to style</span></span>
-<span id="cb13-211"><a href="#cb13-211" aria-hidden="true" tabindex="-1"></a>  <span class="at">bold =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for bold text (logical)</span></span>
-<span id="cb13-212"><a href="#cb13-212" aria-hidden="true" tabindex="-1"></a>  <span class="at">italic =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for italic text (logical)</span></span>
-<span id="cb13-213"><a href="#cb13-213" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for text color (hex string)</span></span>
-<span id="cb13-214"><a href="#cb13-214" aria-hidden="true" tabindex="-1"></a>  <span class="at">bg =</span> <span class="cn">NULL</span>,      <span class="co"># Column name for background color (hex string)</span></span>
-<span id="cb13-215"><a href="#cb13-215" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for badge text</span></span>
-<span id="cb13-216"><a href="#cb13-216" aria-hidden="true" tabindex="-1"></a>  <span class="at">icon =</span> <span class="cn">NULL</span>     <span class="co"># Column name for icon (emoji/unicode)</span></span>
-<span id="cb13-217"><a href="#cb13-217" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-218"><a href="#cb13-218" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-219"><a href="#cb13-219" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-220"><a href="#cb13-220" aria-hidden="true" tabindex="-1"></a><span class="fu">#### set_marker_style</span></span>
-<span id="cb13-221"><a href="#cb13-221" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-222"><a href="#cb13-222" aria-hidden="true" tabindex="-1"></a>Apply styling to forest plot markers.</span>
-<span id="cb13-223"><a href="#cb13-223" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-224"><a href="#cb13-224" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-225"><a href="#cb13-225" aria-hidden="true" tabindex="-1"></a>spec <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(</span>
-<span id="cb13-226"><a href="#cb13-226" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for marker fill color (hex string)</span></span>
-<span id="cb13-227"><a href="#cb13-227" aria-hidden="true" tabindex="-1"></a>  <span class="at">shape =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for shape: "square", "circle", "diamond", "triangle"</span></span>
-<span id="cb13-228"><a href="#cb13-228" aria-hidden="true" tabindex="-1"></a>  <span class="at">opacity =</span> <span class="cn">NULL</span>, <span class="co"># Column name for opacity (0-1)</span></span>
-<span id="cb13-229"><a href="#cb13-229" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="cn">NULL</span>     <span class="co"># Column name for size multiplier (1 = default)</span></span>
-<span id="cb13-230"><a href="#cb13-230" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-231"><a href="#cb13-231" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-232"><a href="#cb13-232" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-233"><a href="#cb13-233" aria-hidden="true" tabindex="-1"></a><span class="fu">### WebTheme Modifiers</span></span>
-<span id="cb13-234"><a href="#cb13-234" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-235"><a href="#cb13-235" aria-hidden="true" tabindex="-1"></a>These functions modify a WebTheme object:</span>
-<span id="cb13-236"><a href="#cb13-236" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-237"><a href="#cb13-237" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Purpose <span class="pp">|</span> Key Parameters <span class="pp">|</span></span>
-<span id="cb13-238"><a href="#cb13-238" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|---------|----------------|</span></span>
-<span id="cb13-239"><a href="#cb13-239" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_colors()`</span> <span class="pp">|</span> Color palette <span class="pp">|</span> <span class="in">`background`</span>, <span class="in">`foreground`</span>, <span class="in">`primary`</span>, <span class="in">`interval`</span>, <span class="in">`interval_line`</span> <span class="pp">|</span></span>
-<span id="cb13-240"><a href="#cb13-240" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_typography()`</span> <span class="pp">|</span> Fonts <span class="pp">|</span> <span class="in">`font_family`</span>, <span class="in">`font_size_base`</span>, <span class="in">`font_weight_bold`</span> <span class="pp">|</span></span>
-<span id="cb13-241"><a href="#cb13-241" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_spacing()`</span> <span class="pp">|</span> Dimensions <span class="pp">|</span> <span class="in">`row_height`</span>, <span class="in">`header_height`</span>, <span class="in">`column_gap`</span>, <span class="in">`padding`</span> <span class="pp">|</span></span>
-<span id="cb13-242"><a href="#cb13-242" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_shapes()`</span> <span class="pp">|</span> Marker shapes <span class="pp">|</span> <span class="in">`point_size`</span>, <span class="in">`summary_height`</span>, <span class="in">`line_width`</span> <span class="pp">|</span></span>
-<span id="cb13-243"><a href="#cb13-243" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_axis()`</span> <span class="pp">|</span> Axis config <span class="pp">|</span> <span class="in">`range_min`</span>, <span class="in">`range_max`</span>, <span class="in">`tick_count`</span>, <span class="in">`gridlines`</span> <span class="pp">|</span></span>
-<span id="cb13-244"><a href="#cb13-244" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_layout()`</span> <span class="pp">|</span> Layout <span class="pp">|</span> <span class="in">`plot_position`</span>, <span class="in">`row_border`</span>, <span class="in">`container_border`</span> <span class="pp">|</span></span>
-<span id="cb13-245"><a href="#cb13-245" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-246"><a href="#cb13-246" aria-hidden="true" tabindex="-1"></a>Example:</span>
-<span id="cb13-247"><a href="#cb13-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-250"><a href="#cb13-250" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-251"><a href="#cb13-251" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb13-252"><a href="#cb13-252" aria-hidden="true" tabindex="-1"></a>custom_theme <span class="ot">&lt;-</span> <span class="fu">web_theme_jama</span>() <span class="sc">|&gt;</span></span>
-<span id="cb13-253"><a href="#cb13-253" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_colors</span>(<span class="at">primary =</span> <span class="st">"#0066cc"</span>, <span class="at">interval =</span> <span class="st">"#0066cc"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-254"><a href="#cb13-254" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_spacing</span>(<span class="at">row_height =</span> <span class="dv">24</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-255"><a href="#cb13-255" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_axis</span>(<span class="at">gridlines =</span> <span class="cn">TRUE</span>, <span class="at">gridline_style =</span> <span class="st">"dotted"</span>)</span>
-<span id="cb13-256"><a href="#cb13-256" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-257"><a href="#cb13-257" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(spec, <span class="at">theme =</span> custom_theme)</span>
-<span id="cb13-258"><a href="#cb13-258" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-259"><a href="#cb13-259" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-260"><a href="#cb13-260" aria-hidden="true" tabindex="-1"></a><span class="fu">## Complete Example: Both Approaches</span></span>
-<span id="cb13-261"><a href="#cb13-261" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-262"><a href="#cb13-262" aria-hidden="true" tabindex="-1"></a>Here's the same plot built with both approaches:</span>
-<span id="cb13-263"><a href="#cb13-263" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-264"><a href="#cb13-264" aria-hidden="true" tabindex="-1"></a><span class="fu">### Constructor Approach</span></span>
-<span id="cb13-265"><a href="#cb13-265" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-268"><a href="#cb13-268" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-269"><a href="#cb13-269" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb13-270"><a href="#cb13-270" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(fluent_data,</span>
-<span id="cb13-271"><a href="#cb13-271" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb13-272"><a href="#cb13-272" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
-<span id="cb13-273"><a href="#cb13-273" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_summary"</span>,</span>
-<span id="cb13-274"><a href="#cb13-274" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"sig_color"</span>,</span>
-<span id="cb13-275"><a href="#cb13-275" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
-<span id="cb13-276"><a href="#cb13-276" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
-<span id="cb13-277"><a href="#cb13-277" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-278"><a href="#cb13-278" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-279"><a href="#cb13-279" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-280"><a href="#cb13-280" aria-hidden="true" tabindex="-1"></a><span class="fu">### Fluent Approach</span></span>
-<span id="cb13-281"><a href="#cb13-281" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-284"><a href="#cb13-284" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb13-285"><a href="#cb13-285" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb13-286"><a href="#cb13-286" aria-hidden="true" tabindex="-1"></a>fluent_data <span class="sc">|&gt;</span></span>
-<span id="cb13-287"><a href="#cb13-287" aria-hidden="true" tabindex="-1"></a>  <span class="fu">web_spec</span>(</span>
-<span id="cb13-288"><a href="#cb13-288" aria-hidden="true" tabindex="-1"></a>    <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb13-289"><a href="#cb13-289" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
-<span id="cb13-290"><a href="#cb13-290" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb13-291"><a href="#cb13-291" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-292"><a href="#cb13-292" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-293"><a href="#cb13-293" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_plot</span>(<span class="at">theme =</span> <span class="fu">web_theme_modern</span>())</span>
-<span id="cb13-294"><a href="#cb13-294" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-295"><a href="#cb13-295" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-296"><a href="#cb13-296" aria-hidden="true" tabindex="-1"></a>Both produce identical results. Choose based on your workflow and preferences.</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "The Fluent API"</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(webforest)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>webforest offers a fluent API for modifying plots after creation. This is useful for applying conditional styling, creating plot variants, or separating data preparation from styling.</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## Using the Fluent API</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>The <span class="in">`set_*()`</span> functions work on <span class="in">`forest_plot()`</span> and <span class="in">`webtable()`</span> outputs:</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>fluent_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>, <span class="st">"Overall"</span>),</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>, <span class="fl">0.82</span>),</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>, <span class="fl">0.68</span>),</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>, <span class="fl">0.99</span>),</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">is_summary =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>),</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">sig_color =</span> <span class="fu">c</span>(<span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>, <span class="st">"#94a3b8"</span>, <span class="st">"#2563eb"</span>)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(fluent_data,</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>,</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_modern</span>()</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>)</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="fu">## Available Modifiers</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="fu">### set_row_style</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>Apply styling to all rows based on column values.</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_row_style</span>(</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>  <span class="at">bold =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for bold text (logical)</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>  <span class="at">italic =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for italic text (logical)</span></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for text color (hex string)</span></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">bg =</span> <span class="cn">NULL</span>,      <span class="co"># Column name for background color (hex string)</span></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for badge text</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">icon =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for icon (emoji/unicode)</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">indent =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for indentation level (integer)</span></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="cn">NULL</span>     <span class="co"># Column name for row type: "data", "header", "summary", "spacer"</span></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a><span class="fu">### set_marker_style</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>Apply styling to forest plot markers.</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for marker fill color (hex string)</span></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>  <span class="at">shape =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for shape: "square", "circle", "diamond", "triangle"</span></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>  <span class="at">opacity =</span> <span class="cn">NULL</span>, <span class="co"># Column name for opacity (0-1)</span></span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="cn">NULL</span>     <span class="co"># Column name for size multiplier (1 = default)</span></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a><span class="fu">### set_column_style</span></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>Apply styling to a specific column.</span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_column_style</span>(</span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>  column,         <span class="co"># Field name of the column to style</span></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>  <span class="at">bold =</span> <span class="cn">NULL</span>,    <span class="co"># Column name for bold text (logical)</span></span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>  <span class="at">italic =</span> <span class="cn">NULL</span>,  <span class="co"># Column name for italic text (logical)</span></span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for text color (hex string)</span></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>  <span class="at">bg =</span> <span class="cn">NULL</span>,      <span class="co"># Column name for background color (hex string)</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a>  <span class="at">badge =</span> <span class="cn">NULL</span>,   <span class="co"># Column name for badge text</span></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>  <span class="at">icon =</span> <span class="cn">NULL</span>     <span class="co"># Column name for icon (emoji/unicode)</span></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme Modifiers</span></span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>Themes are always customized with the fluent pattern:</span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>custom_theme <span class="ot">&lt;-</span> <span class="fu">web_theme_jama</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_colors</span>(<span class="at">primary =</span> <span class="st">"#0066cc"</span>, <span class="at">interval =</span> <span class="st">"#0066cc"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_spacing</span>(<span class="at">row_height =</span> <span class="dv">24</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_axis</span>(<span class="at">gridlines =</span> <span class="cn">TRUE</span>, <span class="at">gridline_style =</span> <span class="st">"dotted"</span>)</span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">theme =</span> custom_theme)</span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Purpose <span class="pp">|</span> Key Parameters <span class="pp">|</span></span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|---------|----------------|</span></span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_colors()`</span> <span class="pp">|</span> Color palette <span class="pp">|</span> <span class="in">`background`</span>, <span class="in">`foreground`</span>, <span class="in">`primary`</span>, <span class="in">`interval`</span>, <span class="in">`interval_line`</span> <span class="pp">|</span></span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_typography()`</span> <span class="pp">|</span> Fonts <span class="pp">|</span> <span class="in">`font_family`</span>, <span class="in">`font_size_base`</span>, <span class="in">`font_weight_bold`</span> <span class="pp">|</span></span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_spacing()`</span> <span class="pp">|</span> Dimensions <span class="pp">|</span> <span class="in">`row_height`</span>, <span class="in">`header_height`</span>, <span class="in">`column_gap`</span>, <span class="in">`padding`</span> <span class="pp">|</span></span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_shapes()`</span> <span class="pp">|</span> Marker shapes <span class="pp">|</span> <span class="in">`point_size`</span>, <span class="in">`summary_height`</span>, <span class="in">`line_width`</span> <span class="pp">|</span></span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_axis()`</span> <span class="pp">|</span> Axis config <span class="pp">|</span> <span class="in">`range_min`</span>, <span class="in">`range_max`</span>, <span class="in">`tick_count`</span>, <span class="in">`gridlines`</span> <span class="pp">|</span></span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`set_layout()`</span> <span class="pp">|</span> Layout <span class="pp">|</span> <span class="in">`plot_position`</span>, <span class="in">`row_border`</span>, <span class="in">`container_border`</span> <span class="pp">|</span></span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a><span class="fu">## Constructor Arguments vs Fluent API</span></span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>Both approaches produce identical results:</span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>**Constructor arguments** (set everything upfront):</span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_summary"</span>,</span>
+<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"sig_color"</span>,</span>
+<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a>**Fluent API** (modify after creation):</span>
+<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
+<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>)</span>
+<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a>Choose constructor arguments when all styling is known upfront. Use the fluent API when styling depends on computation or when you want to create variants.</span>
+<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comparison Table</span></span>
+<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Customization <span class="pp">|</span> Constructor Argument <span class="pp">|</span> Fluent API <span class="pp">|</span></span>
+<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------------|---------------------|------------|</span></span>
+<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Row styling** <span class="pp">|</span> <span class="in">`row_bold`</span>, <span class="in">`row_italic`</span>, <span class="in">`row_color`</span>, <span class="in">`row_bg`</span>, <span class="in">`row_badge`</span>, <span class="in">`row_icon`</span>, <span class="in">`row_indent`</span>, <span class="in">`row_type`</span> <span class="pp">|</span> <span class="in">`set_row_style(bold, italic, color, bg, badge, icon, indent, type)`</span> <span class="pp">|</span></span>
+<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Column styling** <span class="pp">|</span> Via <span class="in">`col_*()`</span> parameters <span class="pp">|</span> <span class="in">`set_column_style(column, bold, italic, color, bg, badge, icon)`</span> <span class="pp">|</span></span>
+<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Marker styling** <span class="pp">|</span> <span class="in">`marker_color`</span>, <span class="in">`marker_shape`</span>, <span class="in">`marker_opacity`</span>, <span class="in">`marker_size`</span> <span class="pp">|</span> <span class="in">`set_marker_style(color, shape, opacity, size)`</span> <span class="pp">|</span></span>
+<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Theme** <span class="pp">|</span> <span class="in">`theme = web_theme_*() |&gt; set_*()`</span> <span class="pp">|</span> Same (always fluent) <span class="pp">|</span></span>
+<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a><span class="fu">## Advanced: Using web_spec()</span></span>
+<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a>For performance-critical applications or when creating many plot variants from one data source, you can work directly with <span class="in">`web_spec()`</span> objects:</span>
+<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a><span class="co"># Create spec once</span></span>
+<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(data,</span>
+<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
+<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a><span class="co"># Create variants without re-processing data</span></span>
+<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a>v1 <span class="ot">&lt;-</span> spec <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"sig_color"</span>) <span class="sc">|&gt;</span> <span class="fu">forest_plot</span>()</span>
+<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a>v2 <span class="ot">&lt;-</span> spec <span class="sc">|&gt;</span> <span class="fu">set_marker_style</span>(<span class="at">shape =</span> <span class="st">"study_shape"</span>) <span class="sc">|&gt;</span> <span class="fu">forest_plot</span>()</span>
+<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a>v3 <span class="ot">&lt;-</span> spec <span class="sc">|&gt;</span> <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span> <span class="fu">webtable</span>()</span>
+<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a>This avoids repeated data processing when rendering multiple views of the same data. See <span class="co">[</span><span class="ot">web_spec reference</span><span class="co">](../reference/web_spec.qmd)</span> for details.</span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

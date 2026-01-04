@@ -214,7 +214,7 @@
     "href": "guide/columns.html#p-value-columns",
     "title": "Columns",
     "section": "P-value Columns",
-    "text": "P-value Columns\nFormat p-values with optional significance stars:\ncol_pvalue(field = \"pvalue\", header = \"P\", width = 70)\nBy default, stars are added: * for p &lt; 0.05, ** for p &lt; 0.01, *** for p &lt; 0.001.\nCustomize thresholds:\ncol_pvalue(\"pvalue\", \"P\",\n  options = list(\n    thresholds = c(0.05, 0.01, 0.001),\n    show_stars = TRUE\n  )\n)"
+    "text": "P-value Columns\nFormat p-values with optional significance stars and smart exponential notation:\ncol_pvalue(field = \"pvalue\", header = \"P\", width = 100)\nStars can be enabled: * for p &lt; 0.05, ** for p &lt; 0.01, *** for p &lt; 0.001.\n\nUnicode Superscript Notation\nVery small p-values are displayed using Unicode superscript for readability. For example, p = 0.00012 becomes 1.2×10⁻⁴ instead of 1.2e-04.\nThe threshold for exponential notation defaults to 0.001, but can be customized:\n# Use exponential notation for values below 0.01\ncol_pvalue(\"pval\", exp_threshold = 0.01)\n\n# Force decimal format for all values\ncol_pvalue(\"pval\", format = \"decimal\")\n\n\nPrecision Control\nControl the number of significant figures:\n# Show 3 significant figures (default is 2)\ncol_pvalue(\"pval\", digits = 3)\n\n\nEnable Stars\nAdd significance stars for quick visual identification:\ncol_pvalue(\"pval\", stars = TRUE)\n\n\nCustom Thresholds\nCustomize significance thresholds for stars:\ncol_pvalue(\"pvalue\",\n  thresholds = c(0.10, 0.05, 0.01)  # *, **, *** at 0.10, 0.05, 0.01\n)"
   },
   {
     "objectID": "guide/columns.html#sparkline-columns",
@@ -571,7 +571,7 @@
     "href": "reference/columns.html#visualization-columns",
     "title": "Columns",
     "section": "Visualization Columns",
-    "text": "Visualization Columns\n\ncol_bar\nHorizontal bar chart for showing magnitude.\ncol_bar(\n  field,\n  header = NULL,\n  width = NULL,\n  max_value = NULL,\n  show_label = TRUE,\n  color = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name containing numeric values\n\n\nheader\nColumn header\n\n\nwidth\nColumn width in pixels\n\n\nmax_value\nMaximum value for scaling (auto if NULL)\n\n\nshow_label\nShow value label (default: TRUE)\n\n\ncolor\nBar color\n\n\n\n\n\ncol_pvalue\nP-value column with optional significance stars.\ncol_pvalue(field, header = \"P-value\", width = 80, stars = TRUE)\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name containing p-values\n\n\nheader\nColumn header (default: “P-value”)\n\n\nwidth\nColumn width (default: 80)\n\n\nstars\nShow significance stars (default: TRUE)\n\n\n\nSignificance levels:\n\n* p &lt; 0.05\n** p &lt; 0.01\n*** p &lt; 0.001\n\n\n\ncol_sparkline\nInline sparkline chart for trend visualization.\ncol_sparkline(field, header = NULL, width = 80, type = \"line\")\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name containing numeric vector\n\n\nheader\nColumn header\n\n\nwidth\nColumn width (default: 80)\n\n\ntype\n\"line\", \"bar\", or \"area\"\n\n\n\nNote: The field should contain list-columns with numeric vectors.\n\n\ncol_n\nSample size column (alias for col_numeric with sensible defaults).\ncol_n(field = \"n\", header = \"N\", width = 60)\n\n\ncol_weight\nWeight column with bar visualization for meta-analysis.\ncol_weight(field = \"weight\", header = \"Weight\", width = 100)"
+    "text": "Visualization Columns\n\ncol_bar\nHorizontal bar chart for showing magnitude.\ncol_bar(\n  field,\n  header = NULL,\n  width = NULL,\n  max_value = NULL,\n  show_label = TRUE,\n  color = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name containing numeric values\n\n\nheader\nColumn header\n\n\nwidth\nColumn width in pixels\n\n\nmax_value\nMaximum value for scaling (auto if NULL)\n\n\nshow_label\nShow value label (default: TRUE)\n\n\ncolor\nBar color\n\n\n\n\n\ncol_pvalue\nP-value column with optional significance stars and smart formatting. Very small values are displayed using Unicode superscript notation (e.g., 1.2×10⁻⁵) for improved readability.\ncol_pvalue(\n  field = \"pvalue\",\n  header = \"P-value\",\n  stars = TRUE,\n  thresholds = c(0.05, 0.01, 0.001),\n  format = c(\"auto\", \"scientific\", \"decimal\"),\n  digits = 2,\n  exp_threshold = 0.001,\n  width = 100\n)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name containing p-values\n\n\nheader\nColumn header (default: “P-value”)\n\n\nstars\nShow significance stars (default: FALSE)\n\n\nthresholds\nNumeric vector of 3 significance thresholds (default: c(0.05, 0.01, 0.001))\n\n\nformat\nDisplay format: \"auto\", \"scientific\", or \"decimal\"\n\n\ndigits\nNumber of significant figures (default: 2)\n\n\nexp_threshold\nValues below this use exponential notation (default: 0.001)\n\n\nwidth\nColumn width in pixels (default: 100)\n\n\n\nFormatting behavior:\n\nValues ≥ exp_threshold: displayed as decimal (e.g., 0.042)\nValues &lt; exp_threshold: displayed with Unicode superscript (e.g., 2.3×10⁻⁴)\nValues &lt; 0.0001: displayed as “&lt;0.0001”\n\nSignificance levels (when stars = TRUE):\n\n* p &lt; 0.05\n** p &lt; 0.01\n*** p &lt; 0.001\n\nExamples:\n# Default: 2 significant figures, exponential below 0.001\ncol_pvalue(\"pval\")\n\n# More precision\ncol_pvalue(\"pval\", digits = 3)\n\n# Use exponential notation earlier (below 0.01)\ncol_pvalue(\"pval\", exp_threshold = 0.01)\n\n# With significance stars\ncol_pvalue(\"pval\", stars = TRUE)\n\n\ncol_sparkline\nInline sparkline chart for trend visualization.\ncol_sparkline(field, header = NULL, width = 80, type = \"line\")\n\n\n\nArgument\nDescription\n\n\n\n\nfield\nColumn name containing numeric vector\n\n\nheader\nColumn header\n\n\nwidth\nColumn width (default: 80)\n\n\ntype\n\"line\", \"bar\", or \"area\"\n\n\n\nNote: The field should contain list-columns with numeric vectors.\n\n\ncol_n\nSample size column (alias for col_numeric with sensible defaults).\ncol_n(field = \"n\", header = \"N\", width = 60)\n\n\ncol_weight\nWeight column with bar visualization for meta-analysis.\ncol_weight(field = \"weight\", header = \"Weight\", width = 100)"
   },
   {
     "objectID": "reference/columns.html#column-groups",
@@ -1218,11 +1218,25 @@
     "text": "Export High-Resolution PNG\nFor journal submission at 300 DPI:\nspec &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1, scale = \"log\",\n  theme = web_theme_jama()\n)\n\n# 800px * 3 = 2400px for ~8 inch width at 300 DPI\nsave_plot(spec, \"figure1.png\", width = 800, scale = 3)"
   },
   {
+    "objectID": "cookbook.html#format-p-values",
+    "href": "cookbook.html#format-p-values",
+    "title": "Cookbook",
+    "section": "Format P-values",
+    "text": "Format P-values\nP-values are displayed cleanly with Unicode superscript notation for very small values (e.g., 1.2×10⁻⁴):\n\n\nCode\npval_data &lt;- data.frame(\n  study = c(\"Alpha\", \"Beta\", \"Gamma\", \"Delta\"),\n  or = c(0.72, 0.95, 0.68, 1.02),\n  lower = c(0.55, 0.78, 0.52, 0.84),\n  upper = c(0.94, 1.16, 0.89, 1.24),\n  pval = c(0.00012, 0.42, 0.003, 0.78)  # Note: very small p-value\n)\n\nforest_plot(pval_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1,\n  columns = list(\n    col_pvalue(\"pval\", \"P-value\")\n  ),\n  theme = web_theme_modern()\n)"
+  },
+  {
+    "objectID": "cookbook.html#customize-p-value-display",
+    "href": "cookbook.html#customize-p-value-display",
+    "title": "Cookbook",
+    "section": "Customize P-value Display",
+    "text": "Customize P-value Display\nControl precision and exponential notation threshold:\n# Show 3 significant figures, use exponential below 0.01\ncol_pvalue(\"pval\", \"P-value\",\n  digits = 3,\n  exp_threshold = 0.01\n)"
+  },
+  {
     "objectID": "cookbook.html#add-significance-stars-to-p-values",
     "href": "cookbook.html#add-significance-stars-to-p-values",
     "title": "Cookbook",
     "section": "Add Significance Stars to P-values",
-    "text": "Add Significance Stars to P-values\nP-values automatically show stars by default:\n\n\nCode\npval_data &lt;- data.frame(\n  study = c(\"Alpha\", \"Beta\", \"Gamma\", \"Delta\"),\n  or = c(0.72, 0.95, 0.68, 1.02),\n  lower = c(0.55, 0.78, 0.52, 0.84),\n  upper = c(0.94, 1.16, 0.89, 1.24),\n  pval = c(0.008, 0.42, 0.003, 0.78)\n)\n\nforest_plot(pval_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1,\n  columns = list(\n    col_pvalue(\"pval\", \"P-value\")\n  ),\n  theme = web_theme_modern()\n)\n\n\n\n\n\n\nCustomize the thresholds:\ncol_pvalue(\"pval\", \"P\",\n  options = list(\n    thresholds = c(0.05, 0.01, 0.001),  # Default\n    show_stars = TRUE\n  )\n)"
+    "text": "Add Significance Stars to P-values\nEnable stars for quick visual identification of significant results:\ncol_pvalue(\"pval\", \"P-value\",\n  stars = TRUE\n)"
   },
   {
     "objectID": "cookbook.html#create-nested-subgroups",
@@ -1302,18 +1316,18 @@
     "text": "Export Split Forest to Directory\nSave all subgroup plots as separate files:\nsplit_result &lt;- data |&gt;\n  web_spec(point = \"or\", lower = \"lower\", upper = \"upper\", label = \"study\") |&gt;\n  split_forest(by = c(\"sex\", \"age_group\"))\n\n# Creates: output/Male/Male_Young.svg, output/Male/Male_Old.svg, etc.\nsave_split_forest(split_result, \"output\", format = \"svg\")"
   },
   {
-    "objectID": "cookbook.html#build-a-plot-step-by-step-fluent-api",
-    "href": "cookbook.html#build-a-plot-step-by-step-fluent-api",
+    "objectID": "cookbook.html#apply-styling-with-the-fluent-api",
+    "href": "cookbook.html#apply-styling-with-the-fluent-api",
     "title": "Cookbook",
-    "section": "Build a Plot Step by Step (Fluent API)",
-    "text": "Build a Plot Step by Step (Fluent API)\nUse the fluent API to separate spec creation from styling:\n\n\nCode\nstep_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Overall\"),\n  hr = c(0.72, 0.85, 0.91, 0.82),\n  lower = c(0.55, 0.70, 0.75, 0.68),\n  upper = c(0.95, 1.03, 1.10, 0.99),\n  is_summary = c(FALSE, FALSE, FALSE, TRUE),\n  sig_color = c(\"#16a34a\", \"#94a3b8\", \"#94a3b8\", \"#2563eb\"),\n  study_shape = c(\"circle\", \"circle\", \"circle\", \"diamond\")\n)\n\n# Step 1: Create base spec\nbase_spec &lt;- web_spec(step_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1\n)\n\n# Step 2: Add styling via pipes\nstyled_spec &lt;- base_spec |&gt;\n  set_marker_style(color = \"sig_color\", shape = \"study_shape\") |&gt;\n  set_row_style(bold = \"is_summary\")\n\n# Step 3: Render\nforest_plot(styled_spec, theme = web_theme_modern())"
+    "section": "Apply Styling with the Fluent API",
+    "text": "Apply Styling with the Fluent API\nUse set_*() functions to modify plots after creation:\n\n\nCode\nstep_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Overall\"),\n  hr = c(0.72, 0.85, 0.91, 0.82),\n  lower = c(0.55, 0.70, 0.75, 0.68),\n  upper = c(0.95, 1.03, 1.10, 0.99),\n  is_summary = c(FALSE, FALSE, FALSE, TRUE),\n  sig_color = c(\"#16a34a\", \"#94a3b8\", \"#94a3b8\", \"#2563eb\"),\n  study_shape = c(\"circle\", \"circle\", \"circle\", \"diamond\")\n)\n\nforest_plot(step_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1,\n  theme = web_theme_modern()\n) |&gt;\n  set_marker_style(color = \"sig_color\", shape = \"study_shape\") |&gt;\n  set_row_style(bold = \"is_summary\")"
   },
   {
-    "objectID": "cookbook.html#create-spec-variants-from-base",
-    "href": "cookbook.html#create-spec-variants-from-base",
+    "objectID": "cookbook.html#create-plot-variants",
+    "href": "cookbook.html#create-plot-variants",
     "title": "Cookbook",
-    "section": "Create Spec Variants from Base",
-    "text": "Create Spec Variants from Base\nReuse a base spec with different styling:\n\n\nCode\n# Base spec (no styling)\nbase &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1\n)\n\n# Variant 1: Colored by significance\nv1 &lt;- base |&gt; set_marker_style(color = \"sig_color\")\n\n# Variant 2: Shaped by study type\nv2 &lt;- base |&gt; set_marker_style(shape = \"study_shape\")\n\n# Variant 3: Both\nv3 &lt;- base |&gt; set_marker_style(color = \"sig_color\", shape = \"study_shape\")\n\n# Render each for comparison\nforest_plot(v1)  # Colored\nforest_plot(v2)  # Shaped\nforest_plot(v3)  # Both"
+    "section": "Create Plot Variants",
+    "text": "Create Plot Variants\nApply different styling to the same base plot:\n\n\nCode\nbase_plot &lt;- forest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1\n)\n\n# Variant 1: Colored by significance\nbase_plot |&gt; set_marker_style(color = \"sig_color\")\n\n# Variant 2: Shaped by study type\nbase_plot |&gt; set_marker_style(shape = \"study_shape\")\n\n# Variant 3: Both\nbase_plot |&gt; set_marker_style(color = \"sig_color\", shape = \"study_shape\")"
   },
   {
     "objectID": "guide/cell-styling.html",
@@ -1481,56 +1495,49 @@
     "href": "guide/fluent-api.html",
     "title": "The Fluent API",
     "section": "",
-    "text": "webforest offers two equivalent approaches for customization: constructor arguments and the fluent API. This guide explains both and when to use each."
+    "text": "webforest offers a fluent API for modifying plots after creation. This is useful for applying conditional styling, creating plot variants, or separating data preparation from styling."
   },
   {
-    "objectID": "guide/fluent-api.html#two-ways-to-customize",
-    "href": "guide/fluent-api.html#two-ways-to-customize",
+    "objectID": "guide/fluent-api.html#using-the-fluent-api",
+    "href": "guide/fluent-api.html#using-the-fluent-api",
     "title": "The Fluent API",
-    "section": "Two Ways to Customize",
-    "text": "Two Ways to Customize\nConstructor Arguments set everything when creating the plot:\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  row_bold = \"is_bold\",\n  marker_color = \"sig_color\",\n  theme = web_theme_modern()\n)\n\n\nFluent API (Pipes) creates a spec, then modifies it step by step:\n\n\nCode\nweb_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\"\n) |&gt;\n  set_row_style(bold = \"is_bold\") |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  forest_plot(theme = web_theme_modern())\n\n\nBoth produce identical output."
+    "section": "Using the Fluent API",
+    "text": "Using the Fluent API\nThe set_*() functions work on forest_plot() and webtable() outputs:\n\n\nCode\nfluent_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Overall\"),\n  hr = c(0.72, 0.85, 0.91, 0.82),\n  lower = c(0.55, 0.70, 0.75, 0.68),\n  upper = c(0.95, 1.03, 1.10, 0.99),\n  is_summary = c(FALSE, FALSE, FALSE, TRUE),\n  sig_color = c(\"#16a34a\", \"#94a3b8\", \"#94a3b8\", \"#2563eb\")\n)\n\nforest_plot(fluent_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1,\n  theme = web_theme_modern()\n) |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  set_row_style(bold = \"is_summary\")"
+  },
+  {
+    "objectID": "guide/fluent-api.html#available-modifiers",
+    "href": "guide/fluent-api.html#available-modifiers",
+    "title": "The Fluent API",
+    "section": "Available Modifiers",
+    "text": "Available Modifiers\n\nset_row_style\nApply styling to all rows based on column values.\nplot |&gt; set_row_style(\n  bold = NULL,    # Column name for bold text (logical)\n  italic = NULL,  # Column name for italic text (logical)\n  color = NULL,   # Column name for text color (hex string)\n  bg = NULL,      # Column name for background color (hex string)\n  badge = NULL,   # Column name for badge text\n  icon = NULL,    # Column name for icon (emoji/unicode)\n  indent = NULL,  # Column name for indentation level (integer)\n  type = NULL     # Column name for row type: \"data\", \"header\", \"summary\", \"spacer\"\n)\n\n\nset_marker_style\nApply styling to forest plot markers.\nplot |&gt; set_marker_style(\n  color = NULL,   # Column name for marker fill color (hex string)\n  shape = NULL,   # Column name for shape: \"square\", \"circle\", \"diamond\", \"triangle\"\n  opacity = NULL, # Column name for opacity (0-1)\n  size = NULL     # Column name for size multiplier (1 = default)\n)\n\n\nset_column_style\nApply styling to a specific column.\nplot |&gt; set_column_style(\n  column,         # Field name of the column to style\n  bold = NULL,    # Column name for bold text (logical)\n  italic = NULL,  # Column name for italic text (logical)\n  color = NULL,   # Column name for text color (hex string)\n  bg = NULL,      # Column name for background color (hex string)\n  badge = NULL,   # Column name for badge text\n  icon = NULL     # Column name for icon (emoji/unicode)\n)"
+  },
+  {
+    "objectID": "guide/fluent-api.html#theme-modifiers",
+    "href": "guide/fluent-api.html#theme-modifiers",
+    "title": "The Fluent API",
+    "section": "Theme Modifiers",
+    "text": "Theme Modifiers\nThemes are always customized with the fluent pattern:\n\n\nCode\ncustom_theme &lt;- web_theme_jama() |&gt;\n  set_colors(primary = \"#0066cc\", interval = \"#0066cc\") |&gt;\n  set_spacing(row_height = 24) |&gt;\n  set_axis(gridlines = TRUE, gridline_style = \"dotted\")\n\nforest_plot(data, ..., theme = custom_theme)\n\n\n\n\n\n\n\n\n\n\nFunction\nPurpose\nKey Parameters\n\n\n\n\nset_colors()\nColor palette\nbackground, foreground, primary, interval, interval_line\n\n\nset_typography()\nFonts\nfont_family, font_size_base, font_weight_bold\n\n\nset_spacing()\nDimensions\nrow_height, header_height, column_gap, padding\n\n\nset_shapes()\nMarker shapes\npoint_size, summary_height, line_width\n\n\nset_axis()\nAxis config\nrange_min, range_max, tick_count, gridlines\n\n\nset_layout()\nLayout\nplot_position, row_border, container_border"
+  },
+  {
+    "objectID": "guide/fluent-api.html#constructor-arguments-vs-fluent-api",
+    "href": "guide/fluent-api.html#constructor-arguments-vs-fluent-api",
+    "title": "The Fluent API",
+    "section": "Constructor Arguments vs Fluent API",
+    "text": "Constructor Arguments vs Fluent API\nBoth approaches produce identical results:\nConstructor arguments (set everything upfront):\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  row_bold = \"is_summary\",\n  marker_color = \"sig_color\",\n  scale = \"log\", null_value = 1\n)\n\n\nFluent API (modify after creation):\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(bold = \"is_summary\") |&gt;\n  set_marker_style(color = \"sig_color\")\n\n\nChoose constructor arguments when all styling is known upfront. Use the fluent API when styling depends on computation or when you want to create variants."
   },
   {
     "objectID": "guide/fluent-api.html#comparison-table",
     "href": "guide/fluent-api.html#comparison-table",
     "title": "The Fluent API",
     "section": "Comparison Table",
-    "text": "Comparison Table\n\n\n\n\n\n\n\n\nCustomization\nConstructor Argument\nFluent API\n\n\n\n\nRow styling\nrow_bold, row_italic, row_color, row_bg, row_badge, row_icon, row_indent, row_type\nset_row_style(bold, italic, color, bg, badge, icon, indent, type)\n\n\nColumn styling\nVia col_*() parameters\nset_column_style(column, bold, italic, color, bg, badge, icon)\n\n\nMarker styling\nmarker_color, marker_shape, marker_opacity, marker_size\nset_marker_style(color, shape, opacity, size)\n\n\nTheme colors\ntheme = web_theme_*() |&gt; set_colors(...)\nSame\n\n\nTheme typography\ntheme = web_theme_*() |&gt; set_typography(...)\nSame\n\n\nTheme spacing\ntheme = web_theme_*() |&gt; set_spacing(...)\nSame\n\n\nTheme shapes\ntheme = web_theme_*() |&gt; set_shapes(...)\nSame\n\n\nAxis config\ntheme = web_theme_*() |&gt; set_axis(...)\nSame\n\n\nLayout config\ntheme = web_theme_*() |&gt; set_layout(...)\nSame\n\n\n\nNote: Theme customization always uses the fluent pattern, even with constructor arguments."
+    "text": "Comparison Table\n\n\n\n\n\n\n\n\nCustomization\nConstructor Argument\nFluent API\n\n\n\n\nRow styling\nrow_bold, row_italic, row_color, row_bg, row_badge, row_icon, row_indent, row_type\nset_row_style(bold, italic, color, bg, badge, icon, indent, type)\n\n\nColumn styling\nVia col_*() parameters\nset_column_style(column, bold, italic, color, bg, badge, icon)\n\n\nMarker styling\nmarker_color, marker_shape, marker_opacity, marker_size\nset_marker_style(color, shape, opacity, size)\n\n\nTheme\ntheme = web_theme_*() |&gt; set_*()\nSame (always fluent)"
   },
   {
-    "objectID": "guide/fluent-api.html#when-to-use-each",
-    "href": "guide/fluent-api.html#when-to-use-each",
+    "objectID": "guide/fluent-api.html#advanced-using-web_spec",
+    "href": "guide/fluent-api.html#advanced-using-web_spec",
     "title": "The Fluent API",
-    "section": "When to Use Each",
-    "text": "When to Use Each\n\nConstructor Arguments\nBest when:\n\nBuilding a simple plot with known requirements\nAll customization can be determined upfront\nYou want everything visible in one place\n\n\n\nCode\n# Simple, self-contained\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  row_bold = \"is_summary\",\n  marker_color = \"effect_color\",\n  scale = \"log\", null_value = 1\n)\n\n\n\n\nFluent API\nBest when:\n\nBuilding specs programmatically\nApplying conditional styling\nSeparating concerns (data preparation → styling → rendering)\nReusing a base spec with variations\nWorking in a pipeline with dplyr\n\n\n\nCode\n# Separated concerns, reusable base\nbase_spec &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1\n)\n\n# Apply styling based on analysis needs\nstyled_spec &lt;- base_spec |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  set_row_style(bold = \"is_summary\")\n\n# Render\nforest_plot(styled_spec)"
-  },
-  {
-    "objectID": "guide/fluent-api.html#the-three-step-workflow",
-    "href": "guide/fluent-api.html#the-three-step-workflow",
-    "title": "The Fluent API",
-    "section": "The Three-Step Workflow",
-    "text": "The Three-Step Workflow\nThe fluent API follows a natural workflow:\n\nCreate a spec with web_spec()\nModify with set_*() functions via pipes\nRender with forest_plot() or webtable()\n\n\n\nCode\nfluent_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Overall\"),\n  hr = c(0.72, 0.85, 0.91, 0.82),\n  lower = c(0.55, 0.70, 0.75, 0.68),\n  upper = c(0.95, 1.03, 1.10, 0.99),\n  is_summary = c(FALSE, FALSE, FALSE, TRUE),\n  sig_color = c(\"#16a34a\", \"#94a3b8\", \"#94a3b8\", \"#2563eb\")\n)\n\n# Step 1: Create\nspec &lt;- web_spec(fluent_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1\n)\n\n# Step 2: Modify\nspec &lt;- spec |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  set_row_style(bold = \"is_summary\")\n\n# Step 3: Render\nforest_plot(spec, theme = web_theme_modern())"
-  },
-  {
-    "objectID": "guide/fluent-api.html#creating-variants-from-a-base-spec",
-    "href": "guide/fluent-api.html#creating-variants-from-a-base-spec",
-    "title": "The Fluent API",
-    "section": "Creating Variants from a Base Spec",
-    "text": "Creating Variants from a Base Spec\nThe fluent API makes it easy to create multiple plot variants from a single base:\n\n\nCode\n# Base spec (no styling)\nbase &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1\n)\n\n# Variant 1: Colored by significance\ncolored &lt;- base |&gt; set_marker_style(color = \"sig_color\")\n\n# Variant 2: Shaped by study type\nshaped &lt;- base |&gt; set_marker_style(shape = \"study_shape\")\n\n# Variant 3: Both\nstyled &lt;- base |&gt; set_marker_style(color = \"sig_color\", shape = \"study_shape\")\n\n# Render each as needed\nforest_plot(colored)\nforest_plot(shaped)\nforest_plot(styled)"
-  },
-  {
-    "objectID": "guide/fluent-api.html#function-reference",
-    "href": "guide/fluent-api.html#function-reference",
-    "title": "The Fluent API",
-    "section": "Function Reference",
-    "text": "Function Reference\n\nWebSpec Modifiers\nThese functions modify a WebSpec object and return a modified copy:\n\nset_row_style\nApply styling to all rows based on column values.\nspec |&gt; set_row_style(\n  bold = NULL,    # Column name for bold text (logical)\n  italic = NULL,  # Column name for italic text (logical)\n  color = NULL,   # Column name for text color (hex string)\n  bg = NULL,      # Column name for background color (hex string)\n  badge = NULL,   # Column name for badge text\n  icon = NULL,    # Column name for icon (emoji/unicode)\n  indent = NULL,  # Column name for indentation level (integer)\n  type = NULL     # Column name for row type: \"data\", \"header\", \"summary\", \"spacer\"\n)\n\n\nset_column_style\nApply styling to a specific column.\nspec |&gt; set_column_style(\n  column,         # Field name of the column to style\n  bold = NULL,    # Column name for bold text (logical)\n  italic = NULL,  # Column name for italic text (logical)\n  color = NULL,   # Column name for text color (hex string)\n  bg = NULL,      # Column name for background color (hex string)\n  badge = NULL,   # Column name for badge text\n  icon = NULL     # Column name for icon (emoji/unicode)\n)\n\n\nset_marker_style\nApply styling to forest plot markers.\nspec |&gt; set_marker_style(\n  color = NULL,   # Column name for marker fill color (hex string)\n  shape = NULL,   # Column name for shape: \"square\", \"circle\", \"diamond\", \"triangle\"\n  opacity = NULL, # Column name for opacity (0-1)\n  size = NULL     # Column name for size multiplier (1 = default)\n)\n\n\n\nWebTheme Modifiers\nThese functions modify a WebTheme object:\n\n\n\n\n\n\n\n\nFunction\nPurpose\nKey Parameters\n\n\n\n\nset_colors()\nColor palette\nbackground, foreground, primary, interval, interval_line\n\n\nset_typography()\nFonts\nfont_family, font_size_base, font_weight_bold\n\n\nset_spacing()\nDimensions\nrow_height, header_height, column_gap, padding\n\n\nset_shapes()\nMarker shapes\npoint_size, summary_height, line_width\n\n\nset_axis()\nAxis config\nrange_min, range_max, tick_count, gridlines\n\n\nset_layout()\nLayout\nplot_position, row_border, container_border\n\n\n\nExample:\n\n\nCode\ncustom_theme &lt;- web_theme_jama() |&gt;\n  set_colors(primary = \"#0066cc\", interval = \"#0066cc\") |&gt;\n  set_spacing(row_height = 24) |&gt;\n  set_axis(gridlines = TRUE, gridline_style = \"dotted\")\n\nforest_plot(spec, theme = custom_theme)"
-  },
-  {
-    "objectID": "guide/fluent-api.html#complete-example-both-approaches",
-    "href": "guide/fluent-api.html#complete-example-both-approaches",
-    "title": "The Fluent API",
-    "section": "Complete Example: Both Approaches",
-    "text": "Complete Example: Both Approaches\nHere’s the same plot built with both approaches:\n\nConstructor Approach\n\n\nCode\nforest_plot(fluent_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  row_bold = \"is_summary\",\n  marker_color = \"sig_color\",\n  scale = \"log\", null_value = 1,\n  theme = web_theme_modern()\n)\n\n\n\n\nFluent Approach\n\n\nCode\nfluent_data |&gt;\n  web_spec(\n    point = \"hr\", lower = \"lower\", upper = \"upper\",\n    label = \"study\", scale = \"log\", null_value = 1\n  ) |&gt;\n  set_row_style(bold = \"is_summary\") |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  forest_plot(theme = web_theme_modern())\n\n\nBoth produce identical results. Choose based on your workflow and preferences."
+    "section": "Advanced: Using web_spec()",
+    "text": "Advanced: Using web_spec()\nFor performance-critical applications or when creating many plot variants from one data source, you can work directly with web_spec() objects:\n\n\nCode\n# Create spec once\nspec &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", scale = \"log\", null_value = 1\n)\n\n# Create variants without re-processing data\nv1 &lt;- spec |&gt; set_marker_style(color = \"sig_color\") |&gt; forest_plot()\nv2 &lt;- spec |&gt; set_marker_style(shape = \"study_shape\") |&gt; forest_plot()\nv3 &lt;- spec |&gt; set_row_style(bold = \"is_summary\") |&gt; webtable()\n\n\nThis avoids repeated data processing when rendering multiple views of the same data. See web_spec reference for details."
   },
   {
     "objectID": "guide/split-forest.html",
