@@ -58,6 +58,8 @@ forest_plot(meta_data,
 | `scale` | `"linear"` or `"log"` | `"linear"` |
 | `axis_label` | X-axis label text | `NULL` |
 | `theme` | Theme object from `web_theme_*()` | `web_theme_default()` |
+| `marker_color` | Column for marker fill colors | `NULL` |
+| `marker_shape` | Column for shapes: `"square"`, `"circle"`, `"diamond"`, `"triangle"` | `NULL` |
 
 ## Two-Step Workflow
 

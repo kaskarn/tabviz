@@ -164,3 +164,60 @@ set_column_style <- function(
     spec
   }
 }
+
+#' Set marker styling on a WebSpec
+#'
+#' Provides a fluent API for setting marker styling (color, shape, opacity, size)
+#' based on column values. These styles apply to the primary effect's markers.
+#' For multi-effect plots, additional effects use their `web_effect()` properties.
+#'
+#' @param x A WebSpec object or an htmlwidget created by forest_plot/webtable
+#' @param color Column name containing CSS color strings for marker fill color
+#' @param shape Column name containing shape values ("square", "circle", "diamond", "triangle")
+#' @param opacity Column name containing numeric values (0-1) for marker opacity
+#' @param size Column name containing numeric values for marker size multiplier
+#'
+#' @return The modified WebSpec object (or widget)
+#'
+#' @examples
+#' \dontrun{
+#' forest_data |>
+#'   web_spec(hr, lower, upper) |>
+#'   set_marker_style(color = "significance_color", shape = "study_type") |>
+#'   forest_plot()
+#' }
+#'
+#' @export
+set_marker_style <- function(
+    x,
+    color = NULL,
+    shape = NULL,
+    opacity = NULL,
+    size = NULL) {
+  # Extract WebSpec from widget if needed
+  spec <- if (inherits(x, "htmlwidget")) {
+    attr(x, "webspec")
+  } else if (S7_inherits(x, WebSpec)) {
+    x
+  } else {
+    cli_abort("x must be a WebSpec or htmlwidget")
+  }
+
+  # Update spec properties
+  if (!is.null(color)) spec@marker_color_col <- color
+  if (!is.null(shape)) spec@marker_shape_col <- shape
+  if (!is.null(opacity)) spec@marker_opacity_col <- opacity
+  if (!is.null(size)) spec@marker_size_col <- size
+
+  # Return same type as input
+  if (inherits(x, "htmlwidget")) {
+    # Re-create widget with updated spec
+    if (inherits(x, "forest_plot")) {
+      forest_plot(spec)
+    } else {
+      webtable(spec)
+    }
+  } else {
+    spec
+  }
+}

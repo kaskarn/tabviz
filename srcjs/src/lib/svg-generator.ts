@@ -14,6 +14,7 @@ import type {
   ColumnOptions,
   ComputedLayout,
   EffectSpec,
+  MarkerShape,
 } from "$types";
 import { niceDomain, DOMAIN_PADDING } from "./scale-utils";
 import {
@@ -981,6 +982,8 @@ function renderInterval(
     lower: number | null;
     upper: number | null;
     color: string | null;
+    shape: MarkerShape | null;
+    opacity: number | null;
   }
 
   let effectsToRender: ResolvedEffect[];
@@ -992,6 +995,8 @@ function renderInterval(
       lower: row.lower,
       upper: row.upper,
       color: null,
+      shape: null,
+      opacity: null,
     }];
   } else {
     // Map effects with resolved values from metadata
@@ -1000,6 +1005,8 @@ function renderInterval(
       lower: getEffectValue(row, effect.lowerCol, row.lower),
       upper: getEffectValue(row, effect.upperCol, row.upper),
       color: effect.color ?? null,
+      shape: effect.shape ?? null,
+      opacity: effect.opacity ?? null,
     }));
   }
 
@@ -1015,13 +1022,6 @@ function renderInterval(
   }
 
   const baseSize = theme.shapes.pointSize;
-  const weight = weightCol ? (row.metadata[weightCol] as number | undefined) : undefined;
-  let pointSize = baseSize;
-  if (weight) {
-    const scale = 0.5 + Math.sqrt(weight / 100) * 1.5;
-    pointSize = Math.min(Math.max(baseSize * scale, 3), baseSize * 2.5);
-  }
-
   const lineWidth = theme.shapes.lineWidth;
   const defaultLineColor = theme.colors.intervalLine;
   const whiskerHalf = SPACING.WHISKER_HALF_HEIGHT;
@@ -1031,6 +1031,93 @@ function renderInterval(
   const diamondHeight = theme.shapes.summaryHeight;
   const halfDiamondHeight = diamondHeight / 2;
 
+  // Helper to get point size for an effect
+  function getPointSize(isPrimary: boolean): number {
+    // Check row-level marker size (only applies to primary effect)
+    if (isPrimary && row.markerStyle?.size != null) {
+      return baseSize * row.markerStyle.size;
+    }
+    // Legacy weight column support
+    const weight = weightCol ? (row.metadata[weightCol] as number | undefined) : undefined;
+    if (weight) {
+      const scale = 0.5 + Math.sqrt(weight / 100) * 1.5;
+      return Math.min(Math.max(baseSize * scale, 3), baseSize * 2.5);
+    }
+    return baseSize;
+  }
+
+  // Helper to get style for an effect
+  function getEffectStyle(effect: ResolvedEffect, idx: number): {
+    color: string;
+    shape: MarkerShape;
+    opacity: number;
+  } {
+    const isPrimary = idx === 0;
+    const markerStyle = row.markerStyle;
+
+    // Color priority: row.markerStyle (primary) > effect > theme.colors.interval
+    let color: string;
+    if (isPrimary && markerStyle?.color) {
+      color = markerStyle.color;
+    } else if (effect.color) {
+      color = effect.color;
+    } else {
+      color = theme.colors.interval ?? theme.colors.primary ?? "#2563eb";
+    }
+
+    // Shape priority: row.markerStyle (primary) > effect > default square
+    let shape: MarkerShape;
+    if (isPrimary && markerStyle?.shape) {
+      shape = markerStyle.shape;
+    } else if (effect.shape) {
+      shape = effect.shape;
+    } else {
+      shape = "square";
+    }
+
+    // Opacity priority: row.markerStyle (primary) > effect > 1
+    let opacity: number;
+    if (isPrimary && markerStyle?.opacity != null) {
+      opacity = markerStyle.opacity;
+    } else if (effect.opacity != null) {
+      opacity = effect.opacity;
+    } else {
+      opacity = 1;
+    }
+
+    return { color, shape, opacity };
+  }
+
+  // Helper to render marker shape
+  function renderMarker(cx: number, effectY: number, size: number, style: { color: string; shape: MarkerShape; opacity: number }): string {
+    const { color, shape, opacity } = style;
+    const opacityAttr = opacity < 1 ? ` fill-opacity="${opacity}"` : "";
+
+    switch (shape) {
+      case "circle":
+        return `<circle cx="${cx}" cy="${effectY}" r="${size}" fill="${color}"${opacityAttr}/>`;
+      case "diamond": {
+        const pts = [
+          `${cx},${effectY - size}`,
+          `${cx + size},${effectY}`,
+          `${cx},${effectY + size}`,
+          `${cx - size},${effectY}`
+        ].join(' ');
+        return `<polygon points="${pts}" fill="${color}"${opacityAttr}/>`;
+      }
+      case "triangle": {
+        const pts = [
+          `${cx},${effectY - size}`,
+          `${cx + size},${effectY + size}`,
+          `${cx - size},${effectY + size}`
+        ].join(' ');
+        return `<polygon points="${pts}" fill="${color}"${opacityAttr}/>`;
+      }
+      default: // square
+        return `<rect x="${cx - size}" y="${effectY - size}" width="${size * 2}" height="${size * 2}" fill="${color}"${opacityAttr}/>`;
+    }
+  }
+
   // Render each effect
   const parts: string[] = [];
   validEffects.forEach((effect, idx) => {
@@ -1038,18 +1125,13 @@ function renderInterval(
     const x1 = xScale(effect.lower!);
     const x2 = xScale(effect.upper!);
     const cx = xScale(effect.point!);
-
-    // Use effect's color or theme-based color
-    const lineColor = effect.color ?? defaultLineColor;
-    const pointColor = effect.color ??
-      (effect.point! > nullValue
-        ? theme.colors.intervalPositive
-        : effect.point! < nullValue
-          ? theme.colors.intervalNegative
-          : theme.colors.muted);
+    const style = getEffectStyle(effect, idx);
+    const pointSize = getPointSize(idx === 0);
+    const lineColor = defaultLineColor;
 
     if (isSummaryRow) {
       // Summary row: render diamond shape spanning lower to upper
+      const opacityAttr = style.opacity < 1 ? ` fill-opacity="${style.opacity}"` : "";
       const diamondPoints = [
         `${x1},${effectY}`,
         `${cx},${effectY - halfDiamondHeight}`,
@@ -1059,23 +1141,19 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"
-            fill="${theme.colors.summaryFill}" stroke="${theme.colors.summaryBorder}" stroke-width="1"/>
+            fill="${style.color}"${opacityAttr} stroke="${theme.colors.summaryBorder}" stroke-width="1"/>
         </g>`);
     } else {
-      // Regular row: CI line with whiskers and square point
+      // Regular row: CI line with whiskers and marker
       parts.push(`
         <g class="interval effect-${idx}">
-          <!-- CI line -->
           <line x1="${x1}" x2="${x2}" y1="${effectY}" y2="${effectY}"
             stroke="${lineColor}" stroke-width="${lineWidth}"/>
-          <!-- Whiskers -->
           <line x1="${x1}" x2="${x1}" y1="${effectY - whiskerHalf}" y2="${effectY + whiskerHalf}"
             stroke="${lineColor}" stroke-width="${lineWidth}"/>
           <line x1="${x2}" x2="${x2}" y1="${effectY - whiskerHalf}" y2="${effectY + whiskerHalf}"
             stroke="${lineColor}" stroke-width="${lineWidth}"/>
-          <!-- Point -->
-          <rect x="${cx - pointSize}" y="${effectY - pointSize}"
-            width="${pointSize * 2}" height="${pointSize * 2}" fill="${pointColor}"/>
+          ${renderMarker(cx, effectY, pointSize, style)}
         </g>`);
     }
   });

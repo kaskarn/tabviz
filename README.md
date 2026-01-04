@@ -58,6 +58,7 @@ forest_plot(data,
 - **Hierarchical grouping** — collapsible nested subgroups with summaries
 - **Split by subgroups** — sidebar navigation for separate plots by variable values
 - **Row styling** — headers, spacers, bold/italic, indentation, custom colors
+- **Marker styling** — per-row color, shape, opacity, and size
 - **Interactivity** — hover, selection, tooltips, sorting, column resize
 - **Layout controls** — fit/fill/responsive width modes; auto/scroll height modes
 - **Export** — `save_plot()` for SVG/PDF/PNG; download button in widget toolbar
@@ -119,6 +120,20 @@ forest_plot(data, ...,
   row_color = "color",    # Column for text color
   row_badge = "badge"     # Column for badge text
 )
+```
+
+## Marker Styling
+
+```r
+forest_plot(data, ...,
+  marker_color = "sig_color",   # Column for marker fill colors
+  marker_shape = "study_shape", # "square", "circle", "diamond", "triangle"
+  marker_opacity = "weight",    # Column for opacity (0-1)
+  marker_size = "precision"     # Column for size multiplier
+)
+
+# Or use fluent API
+spec |> set_marker_style(color = "sig_color", shape = "study_shape")
 ```
 
 ## Split Forest Plots

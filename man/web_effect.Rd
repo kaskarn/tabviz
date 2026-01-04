@@ -4,7 +4,15 @@
 \alias{web_effect}
 \title{Create an effect specification}
 \usage{
-web_effect(point, lower, upper, label = NULL, color = NULL)
+web_effect(
+  point,
+  lower,
+  upper,
+  label = NULL,
+  color = NULL,
+  shape = NULL,
+  opacity = NULL
+)
 }
 \arguments{
 \item{point}{Column name for point estimates}
@@ -16,6 +24,10 @@ web_effect(point, lower, upper, label = NULL, color = NULL)
 \item{label}{Display label (defaults to point column name)}
 
 \item{color}{Color for this effect (optional)}
+
+\item{shape}{Marker shape: "square" (default), "circle", "diamond", "triangle"}
+
+\item{opacity}{Marker opacity from 0 to 1 (optional)}
 }
 \value{
 An EffectSpec object

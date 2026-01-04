@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Row, WebTheme, ComputedLayout, EffectSpec } from "$types";
+  import type { Row, WebTheme, ComputedLayout, EffectSpec, MarkerShape } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
 
   interface Props {
@@ -52,6 +52,8 @@
         upperCol: "upper",
         label: null,
         color: null,
+        shape: null as MarkerShape | null,
+        opacity: null as number | null,
         point: row.point,
         lower: row.lower,
         upper: row.upper,
@@ -93,32 +95,71 @@
   const diamondHeight = $derived(theme?.shapes.summaryHeight ?? 10);
   const halfDiamondHeight = $derived(diamondHeight / 2);
 
-  // Point size scaled by weight if available (requires explicit weightCol configuration)
-  const pointSize = $derived.by(() => {
-    const baseSize = theme?.shapes.pointSize ?? 6;
+  // Base point size from theme
+  const basePointSize = $derived(theme?.shapes.pointSize ?? 6);
+
+  // Get point size for an effect (scaled by weight or markerStyle.size for primary)
+  function getEffectSize(isPrimary: boolean): number {
+    // Check row-level marker size (only applies to primary effect)
+    if (isPrimary && row.markerStyle?.size != null) {
+      return basePointSize * row.markerStyle.size;
+    }
+
+    // Legacy weight column support
     const weight = weightCol ? (row.metadata[weightCol] as number | undefined) : undefined;
     if (weight) {
       // Scale between 0.5x and 2x based on weight
       const scale = 0.5 + Math.sqrt(weight / 100) * 1.5;
-      return Math.min(Math.max(baseSize * scale, 3), baseSize * 2.5);
+      return Math.min(Math.max(basePointSize * scale, 3), basePointSize * 2.5);
     }
-    return baseSize;
-  });
 
-  // Get color for an effect
-  function getEffectColor(effect: typeof effectsToRender[0]): string {
-    // Use effect's specified color if available
-    if (effect.color) return effect.color;
+    return basePointSize;
+  }
 
-    // Fall back to theme-based coloring
-    if (!theme) return "#2563eb";
-    const nullValue = layout.nullValue;
-    const point = effect.point ?? 0;
-    return point > nullValue
-      ? theme.colors.intervalPositive
-      : point < nullValue
-        ? theme.colors.intervalNegative
-        : theme.colors.muted;
+  // Get style (color, shape, opacity) for an effect
+  // Priority: row.markerStyle (primary only) > effect spec > theme default
+  function getEffectStyle(effect: typeof effectsToRender[0], idx: number): {
+    color: string;
+    shape: MarkerShape;
+    opacity: number;
+  } {
+    const isPrimary = idx === 0;
+    const markerStyle = row.markerStyle;
+
+    // Color priority:
+    // 1. Primary effect: row.markerStyle.color (if set)
+    // 2. effect.color (if set)
+    // 3. theme.colors.interval (new unified default)
+    let color: string;
+    if (isPrimary && markerStyle?.color) {
+      color = markerStyle.color;
+    } else if (effect.color) {
+      color = effect.color;
+    } else {
+      color = theme?.colors.interval ?? theme?.colors.primary ?? "#2563eb";
+    }
+
+    // Shape priority: same pattern
+    let shape: MarkerShape;
+    if (isPrimary && markerStyle?.shape) {
+      shape = markerStyle.shape;
+    } else if (effect.shape) {
+      shape = effect.shape;
+    } else {
+      shape = "square";
+    }
+
+    // Opacity priority: same pattern
+    let opacity: number;
+    if (isPrimary && markerStyle?.opacity != null) {
+      opacity = markerStyle.opacity;
+    } else if (effect.opacity != null) {
+      opacity = effect.opacity;
+    } else {
+      opacity = 1;
+    }
+
+    return { color, shape, opacity };
   }
 </script>
 
@@ -141,27 +182,28 @@
         {@const x1 = xScale(effect.lower!)}
         {@const x2 = xScale(effect.upper!)}
         {@const cx = xScale(effect.point!)}
-        {@const color = getEffectColor(effect)}
-        {@const lineColor = effect.color ?? "var(--wf-interval-line, #475569)"}
+        {@const style = getEffectStyle(effect, idx)}
+        {@const pointSize = getEffectSize(idx === 0)}
+        {@const lineColor = theme?.colors.intervalLine ?? "#475569"}
 
         {#if isSummaryRow}
           <!-- Summary row: render diamond shape spanning lower to upper -->
-          {@const diamondPoints = [
-            `${x1},${effectY}`,           // left (lower)
-            `${cx},${effectY - halfDiamondHeight}`,  // top (point)
-            `${x2},${effectY}`,           // right (upper)
-            `${cx},${effectY + halfDiamondHeight}`   // bottom (point)
+          {@const summaryDiamondPoints = [
+            `${x1},${effectY}`,
+            `${cx},${effectY - halfDiamondHeight}`,
+            `${x2},${effectY}`,
+            `${cx},${effectY + halfDiamondHeight}`
           ].join(' ')}
           <polygon
-            points={diamondPoints}
-            fill="var(--wf-summary-fill, #2563eb)"
-            stroke="var(--wf-summary-border, #1d4ed8)"
+            points={summaryDiamondPoints}
+            fill={style.color}
+            fill-opacity={style.opacity}
+            stroke={theme?.colors.summaryBorder ?? "#1d4ed8"}
             stroke-width="1"
             class="point-estimate"
           />
         {:else}
-          <!-- Regular row: CI line with whiskers and square point -->
-          <!-- CI line -->
+          <!-- Regular row: CI line with whiskers -->
           <line
             {x1}
             {x2}
@@ -170,8 +212,6 @@
             stroke={lineColor}
             stroke-width={theme?.shapes.lineWidth ?? 1.5}
           />
-
-          <!-- CI whiskers (caps) -->
           <line
             x1={x1}
             x2={x1}
@@ -189,15 +229,53 @@
             stroke-width={theme?.shapes.lineWidth ?? 1.5}
           />
 
-          <!-- Point estimate (square) -->
-          <rect
-            x={cx - pointSize}
-            y={effectY - pointSize}
-            width={pointSize * 2}
-            height={pointSize * 2}
-            fill={color}
-            class="point-estimate"
-          />
+          <!-- Point estimate marker (shape varies) -->
+          {#if style.shape === "circle"}
+            <circle
+              cx={cx}
+              cy={effectY}
+              r={pointSize}
+              fill={style.color}
+              fill-opacity={style.opacity}
+              class="point-estimate"
+            />
+          {:else if style.shape === "diamond"}
+            {@const diamondPts = [
+              `${cx},${effectY - pointSize}`,
+              `${cx + pointSize},${effectY}`,
+              `${cx},${effectY + pointSize}`,
+              `${cx - pointSize},${effectY}`
+            ].join(' ')}
+            <polygon
+              points={diamondPts}
+              fill={style.color}
+              fill-opacity={style.opacity}
+              class="point-estimate"
+            />
+          {:else if style.shape === "triangle"}
+            {@const trianglePts = [
+              `${cx},${effectY - pointSize}`,
+              `${cx + pointSize},${effectY + pointSize}`,
+              `${cx - pointSize},${effectY + pointSize}`
+            ].join(' ')}
+            <polygon
+              points={trianglePts}
+              fill={style.color}
+              fill-opacity={style.opacity}
+              class="point-estimate"
+            />
+          {:else}
+            <!-- Default: square -->
+            <rect
+              x={cx - pointSize}
+              y={effectY - pointSize}
+              width={pointSize * 2}
+              height={pointSize * 2}
+              fill={style.color}
+              fill-opacity={style.opacity}
+              class="point-estimate"
+            />
+          {/if}
         {/if}
       {/if}
     {/each}

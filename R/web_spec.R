@@ -35,7 +35,11 @@
 #' @param row_icon Column name for label icons (emoji/unicode)
 #' @param row_indent Column name for row indentation (numeric values)
 #' @param row_type Column name for row type ("data", "header", "summary", "spacer")
-#' @param weight Column name for marker weight/size scaling (numeric values, typically 0-100)
+#' @param marker_color Column name for marker fill color (CSS color strings)
+#' @param marker_shape Column name for marker shape ("square", "circle", "diamond", "triangle")
+#' @param marker_opacity Column name for marker opacity (numeric 0-1)
+#' @param marker_size Column name for marker size multiplier (numeric)
+#' @param weight Deprecated: use marker_size instead
 #' @param theme Theme object (use `web_theme_*()` functions)
 #' @param interaction Interaction settings (use `web_interaction()`)
 #'
@@ -98,6 +102,10 @@ web_spec <- function(
     row_icon = NULL,
     row_indent = NULL,
     row_type = NULL,
+    marker_color = NULL,
+    marker_shape = NULL,
+    marker_opacity = NULL,
+    marker_size = NULL,
     weight = NULL,
     theme = web_theme_default(),
     interaction = web_interaction()) {
@@ -300,6 +308,10 @@ web_spec <- function(
     row_icon_col = row_icon %||% NA_character_,
     row_indent_col = row_indent %||% NA_character_,
     row_type_col = row_type %||% NA_character_,
+    marker_color_col = marker_color %||% NA_character_,
+    marker_shape_col = marker_shape %||% NA_character_,
+    marker_opacity_col = marker_opacity %||% NA_character_,
+    marker_size_col = marker_size %||% NA_character_,
     weight_col = weight %||% NA_character_
   )
 }

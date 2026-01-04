@@ -10,7 +10,9 @@ EffectSpec(
   lower_col = character(0),
   upper_col = character(0),
   label = NA_character_,
-  color = NA_character_
+  color = NA_character_,
+  shape = NA_character_,
+  opacity = NA_real_
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ EffectSpec(
 \item{label}{Display label for this effect in legends}
 
 \item{color}{Optional color for this effect's interval}
+
+\item{shape}{Optional shape: "square", "circle", "diamond", "triangle"}
+
+\item{opacity}{Optional opacity (0-1)}
 }
 \description{
 Used for multiple-effect forest plots where each row displays

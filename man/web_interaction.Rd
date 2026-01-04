@@ -14,7 +14,8 @@ web_interaction(
   enable_select = TRUE,
   enable_hover = TRUE,
   enable_resize = TRUE,
-  enable_export = TRUE
+  enable_export = TRUE,
+  tooltip_fields = NULL
 )
 
 web_interaction_minimal()
@@ -37,6 +38,8 @@ web_interaction_publication()
 \item{enable_resize}{Enable column resizing}
 
 \item{enable_export}{Enable download/export button}
+
+\item{tooltip_fields}{Character vector of column names to show in hover tooltip (NULL = no tooltip)}
 }
 \value{
 An InteractionSpec object

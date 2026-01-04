@@ -30,6 +30,10 @@ web_spec(
   row_icon = NULL,
   row_indent = NULL,
   row_type = NULL,
+  marker_color = NULL,
+  marker_shape = NULL,
+  marker_opacity = NULL,
+  marker_size = NULL,
   weight = NULL,
   theme = web_theme_default(),
   interaction = web_interaction()
@@ -92,7 +96,15 @@ to innermost, e.g., \code{c("region", "country")} creates region > country
 
 \item{row_type}{Column name for row type ("data", "header", "summary", "spacer")}
 
-\item{weight}{Column name for marker weight/size scaling (numeric values, typically 0-100)}
+\item{marker_color}{Column name for marker fill color (CSS color strings)}
+
+\item{marker_shape}{Column name for marker shape ("square", "circle", "diamond", "triangle")}
+
+\item{marker_opacity}{Column name for marker opacity (numeric 0-1)}
+
+\item{marker_size}{Column name for marker size multiplier (numeric)}
+
+\item{weight}{Deprecated: use marker_size instead}
 
 \item{theme}{Theme object (use \verb{web_theme_*()} functions)}
 

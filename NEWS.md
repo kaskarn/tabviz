@@ -16,6 +16,12 @@ Second release of webforest with enhanced column formatting, new themes, and pac
   - `web_theme_cochrane()` - Cochrane systematic review style (compact, Cochrane blue)
   - `web_theme_nature()` - Nature family journal styling (clean, modern)
 
+* **Marker styling**: Per-row control over marker appearance in the forest plot:
+  - `marker_color`, `marker_shape`, `marker_opacity`, `marker_size` parameters in `web_spec()`/`forest_plot()`
+  - `set_marker_style()` fluent API function
+  - `web_effect()` gains `shape` and `opacity` parameters for multi-effect styling
+  - New unified `theme.colors.interval` for default marker color
+
 * **Package datasets**: Four datasets included for examples and testing:
   - `glp1_trials` - GLP-1 agonist cardiovascular outcomes trials (~25 rows)
   - `airline_delays` - Airline carrier delay performance (~40 rows)
@@ -39,8 +45,11 @@ Second release of webforest with enhanced column formatting, new themes, and pac
 ### Documentation
 
 * New guide: "Package Datasets" with examples for all four datasets
-* Gallery examples 19-20: NBA player efficiency and airline performance using package datasets
-* Gallery example 11 updated to use `glp1_trials` dataset
+* Gallery example 7: Marker styling showcase with shapes and colors by study design
+* Gallery examples 20-21: NBA player efficiency and airline performance using package datasets
+* Gallery example 12 updated to use `glp1_trials` dataset
+* Cookbook recipes for marker color by significance and shapes by study type
+* Reference docs for `set_marker_style()` and updated `web_effect()` signature
 
 ---
 

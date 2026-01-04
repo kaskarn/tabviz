@@ -42,6 +42,10 @@ web_spec(
   row_icon = NULL,
   row_indent = NULL,
   row_type = NULL,
+  marker_color = NULL,
+  marker_shape = NULL,
+  marker_opacity = NULL,
+  marker_size = NULL,
   theme = web_theme_default(),
   interaction = web_interaction()
 )
@@ -96,6 +100,15 @@ The `group` argument supports three modes:
 | `row_icon` | Column for icons (emoji/unicode) |
 | `row_indent` | Column for indentation level (integer) |
 
+### Marker Styling Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `marker_color` | Column containing marker fill colors (hex strings) |
+| `marker_shape` | Column containing shapes: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `marker_opacity` | Column containing opacity values (0-1) |
+| `marker_size` | Column containing size multipliers (1 = default size) |
+
 ### Advanced Arguments
 
 | Argument | Description |
@@ -129,7 +142,7 @@ web_group(id, label = id, parent = NULL, collapsed = FALSE)
 Define a single effect for multi-effect forest plots.
 
 ```r
-web_effect(point, lower, upper, label = NULL, color = NULL)
+web_effect(point, lower, upper, label = NULL, color = NULL, shape = NULL, opacity = NULL)
 ```
 
 | Argument | Description |
@@ -138,7 +151,9 @@ web_effect(point, lower, upper, label = NULL, color = NULL)
 | `lower` | Column name for lower bounds |
 | `upper` | Column name for upper bounds |
 | `label` | Display label (defaults to point column name) |
-| `color` | Color for this effect |
+| `color` | Color for this effect (hex string) |
+| `shape` | Marker shape: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `opacity` | Marker opacity (0-1) |
 
 ## Interaction Specification
 
@@ -250,6 +265,33 @@ spec <- web_spec(data,
   ),
   scale = "log", null_value = 1
 )
+```
+
+## Fluent API
+
+Modify specifications after creation using the pipe operator.
+
+### set_marker_style {#set_marker_style}
+
+Set marker styling columns.
+
+```r
+spec |> set_marker_style(color = NULL, shape = NULL, opacity = NULL, size = NULL)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `color` | Column name for marker fill colors |
+| `shape` | Column name for marker shapes |
+| `opacity` | Column name for marker opacity |
+| `size` | Column name for marker size multipliers |
+
+### set_row_style {#set_row_style}
+
+Set row styling columns.
+
+```r
+spec |> set_row_style(bold = NULL, italic = NULL, color = NULL, bg = NULL, ...)
 ```
 
 ## See Also

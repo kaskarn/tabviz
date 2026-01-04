@@ -16,6 +16,15 @@ export interface RowStyle {
   badge?: string | null;
 }
 
+export type MarkerShape = "square" | "circle" | "diamond" | "triangle";
+
+export interface MarkerStyle {
+  color?: string;
+  shape?: MarkerShape;
+  opacity?: number;
+  size?: number;
+}
+
 // Per-cell styling (subset of RowStyle applicable to individual cells)
 export interface CellStyle {
   bold?: boolean;
@@ -45,6 +54,8 @@ export interface Row {
   groupId?: string | null;
   metadata: Record<string, unknown>;
   style?: RowStyle;
+  // Marker styling for primary effect (color, shape, opacity, size)
+  markerStyle?: MarkerStyle;
   // Per-cell styles keyed by column field name
   cellStyles?: Record<string, CellStyle>;
 }
@@ -79,6 +90,8 @@ export interface EffectSpec {
   upperCol: string;
   label?: string | null;
   color?: string | null;
+  shape?: MarkerShape | null;
+  opacity?: number | null;
 }
 
 export interface WebData {
@@ -188,8 +201,9 @@ export interface ColorPalette {
   accent: string;
   muted: string;
   border: string;
-  intervalPositive: string;
-  intervalNegative: string;
+  interval: string;  // Unified marker color (new default)
+  intervalPositive: string;  // Deprecated: kept for backwards compat
+  intervalNegative: string;  // Deprecated: kept for backwards compat
   intervalNeutral: string;
   intervalLine: string;
   summaryFill: string;

@@ -65,6 +65,9 @@ serialize_data <- function(spec, include_forest = TRUE) {
     # Extract row style from explicit column mappings
     style <- extract_row_style(row, spec)
 
+    # Extract marker style from explicit column mappings
+    marker_style <- extract_marker_style(row, spec)
+
     # Build per-cell styles from column styleMapping
     cell_styles <- build_cell_styles(row, spec@columns)
 
@@ -81,6 +84,11 @@ serialize_data <- function(spec, include_forest = TRUE) {
     # Only include style if any style properties are set
     if (!is.null(style)) {
       result$style <- style
+    }
+
+    # Only include markerStyle if any marker style properties are set
+    if (!is.null(marker_style)) {
+      result$markerStyle <- marker_style
     }
 
     # Only include cellStyles if any cell styles are set
@@ -135,7 +143,9 @@ serialize_data <- function(spec, include_forest = TRUE) {
       lowerCol = e@lower_col,
       upperCol = e@upper_col,
       label = if (is.na(e@label)) NULL else e@label,
-      color = if (is.na(e@color)) NULL else e@color
+      color = if (is.na(e@color)) NULL else e@color,
+      shape = if (is.na(e@shape)) NULL else e@shape,
+      opacity = if (is.na(e@opacity)) NULL else e@opacity
     )
   })
 
@@ -236,6 +246,7 @@ serialize_theme <- function(theme) {
       accent = theme@colors@accent,
       muted = theme@colors@muted,
       border = theme@colors@border,
+      interval = theme@colors@interval,
       intervalPositive = theme@colors@interval_positive,
       intervalNegative = theme@colors@interval_negative,
       intervalNeutral = theme@colors@interval_neutral,
@@ -401,6 +412,47 @@ extract_row_style <- function(row, spec) {
   if (!is.null(val)) style$badge <- val
 
   # Return NULL if no style properties set
+  if (length(style) == 0) {
+    return(NULL)
+  }
+
+  style
+}
+
+#' Extract marker style from explicit column mappings
+#'
+#' @param row A single row of data
+#' @param spec The WebSpec containing marker_*_col mappings
+#' @return A list of marker style properties or NULL if none set
+#' @keywords internal
+extract_marker_style <- function(row, spec) {
+  style <- list()
+
+  # Helper to get value from explicit column mapping
+  get_style_val <- function(col_name, type = "character") {
+    if (is.na(col_name) || !col_name %in% names(row)) return(NULL)
+    val <- row[[col_name]]
+    if (is.na(val)) return(NULL)
+    switch(type,
+      numeric = as.numeric(val),
+      as.character(val)
+    )
+  }
+
+  # Check explicit column mappings
+  val <- get_style_val(spec@marker_color_col, "character")
+  if (!is.null(val)) style$color <- val
+
+  val <- get_style_val(spec@marker_shape_col, "character")
+  if (!is.null(val)) style$shape <- val
+
+  val <- get_style_val(spec@marker_opacity_col, "numeric")
+  if (!is.null(val)) style$opacity <- val
+
+  val <- get_style_val(spec@marker_size_col, "numeric")
+  if (!is.null(val)) style$size <- val
+
+  # Return NULL if no marker style properties set
   if (length(style) == 0) {
     return(NULL)
   }

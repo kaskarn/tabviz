@@ -310,7 +310,48 @@ forest_plot(
 )
 ```
 
-## 7. Annotations & Reference Lines
+## 7. Marker Styling
+
+Customize marker shapes, colors, and opacity per row.
+
+```{r}
+marker_data <- tibble(
+  study = c("RCT-001", "RCT-002", "RCT-003", "OBS-001", "OBS-002", "OBS-003"),
+  design = c("RCT", "RCT", "RCT", "Observational", "Observational", "Observational"),
+  hr = c(0.72, 0.68, 0.75, 0.82, 0.78, 0.85),
+  lower = c(0.58, 0.52, 0.61, 0.68, 0.64, 0.71),
+  upper = c(0.89, 0.89, 0.92, 0.99, 0.95, 1.02),
+  pvalue = c(0.002, 0.001, 0.008, 0.045, 0.022, 0.068),
+  n = c(1250, 980, 1420, 2100, 1890, 1650),
+  # Marker styling columns
+  marker_shape = ifelse(design == "RCT", "circle", "square"),
+  marker_color = ifelse(pvalue < 0.05, "#16a34a", "#94a3b8"),
+  marker_opacity = ifelse(pvalue < 0.01, 1, 0.7)
+)
+
+forest_plot(
+  marker_data,
+  point = "hr", lower = "lower", upper = "upper",
+  label = "study",
+  group = "design",
+  columns = list(
+    col_n("n"),
+    col_pvalue("pvalue", "P"),
+    col_interval("HR (95% CI)")
+  ),
+  marker_shape = "marker_shape",
+  marker_color = "marker_color",
+  marker_opacity = "marker_opacity",
+  theme = web_theme_modern(),
+  scale = "log", null_value = 1,
+  axis_label = "Hazard Ratio",
+  title = "Marker Styling",
+  subtitle = "Shape by study design, color by significance, opacity by p-value",
+  caption = "Circles = RCTs, Squares = Observational. Green = p<0.05, Gray = non-significant."
+)
+```
+
+## 8. Annotations & Reference Lines
 
 Custom reference lines with labels at specific values.
 
@@ -344,7 +385,7 @@ forest_plot(
 )
 ```
 
-## 8. Axis Control
+## 9. Axis Control
 
 Custom range, explicit ticks, and gridlines.
 
@@ -378,7 +419,7 @@ forest_plot(
 
 Multiple features working together.
 
-## 9. Clinical Trial Program
+## 10. Clinical Trial Program
 
 Nested groups + multiple effects + sparklines + badges.
 
@@ -432,7 +473,7 @@ forest_plot(
 )
 ```
 
-## 10. Executive Dashboard
+## 11. Executive Dashboard
 
 Table-only + bars + sparklines + row styling.
 
@@ -486,7 +527,7 @@ webtable(
 )
 ```
 
-## 11. Publication Meta-Analysis
+## 12. Publication Meta-Analysis
 
 Row styling + annotations + axis control using the `glp1_trials` package dataset.
 
@@ -529,7 +570,7 @@ forest_plot(
 )
 ```
 
-## 12. The Full Monty
+## 13. The Full Monty
 
 Everything at once. Maximum feature density.
 
@@ -610,7 +651,7 @@ forest_plot(
 
 Clean, professional examples for different contexts.
 
-## 13. JAMA Style
+## 14. JAMA Style
 
 Dense, minimal, black and white. Interaction p-values for subgroups.
 
@@ -656,7 +697,7 @@ forest_plot(
 )
 ```
 
-## 14. Lancet Style
+## 15. Lancet Style
 
 Serif fonts, blue palette, with row grouping and column grouping.
 
@@ -707,7 +748,7 @@ forest_plot(
 )
 ```
 
-## 15. Minimal Print
+## 16. Minimal Print
 
 Maximum density, pure black and white, with row and column grouping.
 
@@ -755,7 +796,7 @@ forest_plot(
 
 Navigate between subgroups using an interactive sidebar.
 
-## 16. Regional Subgroup Analysis
+## 17. Regional Subgroup Analysis
 
 Split by a single variable with floating sidebar navigation.
 
@@ -790,7 +831,7 @@ forest_plot(
 )
 ```
 
-## 17. Hierarchical Subgroups
+## 18. Hierarchical Subgroups
 
 Two-level split: Sex > Age Group. Expanding tree navigation.
 
@@ -827,7 +868,7 @@ hierarchical_data |>
   )
 ```
 
-## 18. Three-Level Clinical Trial
+## 19. Three-Level Clinical Trial
 
 Region > Country > Site with shared axis for consistent comparison.
 
@@ -873,7 +914,7 @@ forest_plot(
 
 Non-clinical examples showcasing webforest's versatility.
 
-## 19. NBA Player Efficiency
+## 20. NBA Player Efficiency
 
 Sports analytics using the `nba_efficiency` package dataset.
 
@@ -917,7 +958,7 @@ forest_plot(
 )
 ```
 
-## 20. Airline Performance
+## 21. Airline Performance
 
 Transportation analytics using the `airline_delays` package dataset, with row and column grouping.
 

@@ -51,6 +51,8 @@ web_group <- function(id, label = id, parent = NULL, collapsed = FALSE) {
 #' @param upper_col Column name for upper bounds
 #' @param label Display label for this effect in legends
 #' @param color Optional color for this effect's interval
+#' @param shape Optional shape: "square", "circle", "diamond", "triangle"
+#' @param opacity Optional opacity (0-1)
 #'
 #' @export
 EffectSpec <- new_class(
@@ -61,8 +63,20 @@ EffectSpec <- new_class(
     lower_col = class_character,
     upper_col = class_character,
     label = new_property(class_character, default = NA_character_),
-    color = new_property(class_character, default = NA_character_)
-  )
+    color = new_property(class_character, default = NA_character_),
+    shape = new_property(class_character, default = NA_character_),
+    opacity = new_property(class_numeric, default = NA_real_)
+  ),
+  validator = function(self) {
+    valid_shapes <- c("square", "circle", "diamond", "triangle")
+    if (!is.na(self@shape) && !self@shape %in% valid_shapes) {
+      return(paste("shape must be one of:", paste(valid_shapes, collapse = ", ")))
+    }
+    if (!is.na(self@opacity) && (self@opacity < 0 || self@opacity > 1)) {
+      return("opacity must be between 0 and 1")
+    }
+    NULL
+  }
 )
 
 #' Create an effect specification
@@ -74,17 +88,22 @@ EffectSpec <- new_class(
 #' @param upper Column name for upper bounds
 #' @param label Display label (defaults to point column name)
 #' @param color Color for this effect (optional)
+#' @param shape Marker shape: "square" (default), "circle", "diamond", "triangle"
+#' @param opacity Marker opacity from 0 to 1 (optional)
 #'
 #' @return An EffectSpec object
 #' @export
-web_effect <- function(point, lower, upper, label = NULL, color = NULL) {
+web_effect <- function(point, lower, upper, label = NULL, color = NULL,
+                       shape = NULL, opacity = NULL) {
   EffectSpec(
     id = point,
     point_col = point,
     lower_col = lower,
     upper_col = upper,
     label = label %||% point,
-    color = color %||% NA_character_
+    color = color %||% NA_character_,
+    shape = shape %||% NA_character_,
+    opacity = opacity %||% NA_real_
   )
 }
 
@@ -199,7 +218,12 @@ WebSpec <- new_class(
     row_icon_col = new_property(class_character, default = NA_character_),
     row_indent_col = new_property(class_character, default = NA_character_),
     row_type_col = new_property(class_character, default = NA_character_),
-    # Marker weight/size column mapping
+    # Marker style column mappings
+    marker_color_col = new_property(class_character, default = NA_character_),
+    marker_shape_col = new_property(class_character, default = NA_character_),
+    marker_opacity_col = new_property(class_character, default = NA_character_),
+    marker_size_col = new_property(class_character, default = NA_character_),
+    # Deprecated: use marker_size_col instead
     weight_col = new_property(class_character, default = NA_character_)
   ),
   validator = function(self) {

@@ -16,10 +16,12 @@ ColorPalette <- new_class(
     muted = new_property(class_character, default = "#94a3b8"),
     border = new_property(class_character, default = "#e2e8f0"),
     # Interval visualization colors
-    interval_positive = new_property(class_character, default = "#0891b2"),  # Match primary
+    interval = new_property(class_character, default = "#0891b2"),  # Default marker color
+    interval_line = new_property(class_character, default = "#475569"),
+    # Deprecated: kept for backwards compatibility but unused by default
+    interval_positive = new_property(class_character, default = "#0891b2"),
     interval_negative = new_property(class_character, default = "#dc2626"),
     interval_neutral = new_property(class_character, default = "#64748b"),
-    interval_line = new_property(class_character, default = "#475569"),
     # Summary/aggregate colors
     summary_fill = new_property(class_character, default = "#0891b2"),
     summary_border = new_property(class_character, default = "#0e7490")
@@ -192,10 +194,11 @@ web_theme_minimal <- function() {
       secondary = "#333333",
       muted = "#666666",
       border = "#cccccc",
+      interval = "#333333",
+      interval_line = "#000000",
       interval_positive = "#333333",
       interval_negative = "#333333",
       interval_neutral = "#666666",
-      interval_line = "#000000",
       summary_fill = "#000000",
       summary_border = "#000000"
     ),
@@ -220,10 +223,11 @@ web_theme_dark <- function() {
       accent = "#cba6f7",
       muted = "#6c7086",
       border = "#45475a",
+      interval = "#89b4fa",
+      interval_line = "#bac2de",
       interval_positive = "#a6e3a1",
       interval_negative = "#f38ba8",
       interval_neutral = "#6c7086",
-      interval_line = "#bac2de",
       summary_fill = "#89b4fa",
       summary_border = "#74c7ec"
     )
@@ -513,10 +517,11 @@ web_theme_jama <- function() {
       accent = "#000000",
       muted = "#666666",
       border = "#000000",
+      interval = "#000000",
+      interval_line = "#000000",
       interval_positive = "#000000",
       interval_negative = "#000000",
       interval_neutral = "#000000",
-      interval_line = "#000000",
       summary_fill = "#000000",
       summary_border = "#000000"
     ),
@@ -564,10 +569,11 @@ web_theme_lancet <- function() {
       accent = "#c4161c",
       muted = "#7a99ac",
       border = "#ccd6dd",
+      interval = "#00407a",
+      interval_line = "#00407a",
       interval_positive = "#00407a",
       interval_negative = "#c4161c",
       interval_neutral = "#446e9b",
-      interval_line = "#00407a",
       summary_fill = "#00407a",
       summary_border = "#002d54"
     ),
@@ -615,10 +621,11 @@ web_theme_modern <- function() {
       accent = "#7c3aed",
       muted = "#a1a1aa",
       border = "#e4e4e7",
+      interval = "#2563eb",
+      interval_line = "#3f3f46",
       interval_positive = "#16a34a",
       interval_negative = "#dc2626",
       interval_neutral = "#71717a",
-      interval_line = "#3f3f46",
       summary_fill = "#2563eb",
       summary_border = "#1d4ed8"
     ),
@@ -666,10 +673,11 @@ web_theme_presentation <- function() {
       accent = "#f59e0b",
       muted = "#94a3b8",
       border = "#cbd5e1",
+      interval = "#0284c7",
+      interval_line = "#1e293b",
       interval_positive = "#059669",
       interval_negative = "#e11d48",
       interval_neutral = "#475569",
-      interval_line = "#1e293b",
       summary_fill = "#0284c7",
       summary_border = "#0369a1"
     ),
@@ -717,10 +725,11 @@ web_theme_cochrane <- function() {
       accent = "#0066cc",
       muted = "#999999",
       border = "#cccccc",
+      interval = "#0099cc",
+      interval_line = "#333333",
       interval_positive = "#0099cc",
       interval_negative = "#cc3333",
       interval_neutral = "#666666",
-      interval_line = "#333333",
       summary_fill = "#0099cc",
       summary_border = "#007799"
     ),
@@ -772,10 +781,11 @@ web_theme_nature <- function() {
       accent = "#d32f2f",
       muted = "#757575",
       border = "#e0e0e0",
+      interval = "#1976d2",
+      interval_line = "#212121",
       interval_positive = "#1976d2",
       interval_negative = "#d32f2f",
       interval_neutral = "#616161",
-      interval_line = "#212121",
       summary_fill = "#1976d2",
       summary_border = "#1565c0"
     ),
