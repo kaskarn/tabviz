@@ -1222,21 +1222,21 @@
     "href": "cookbook.html#format-p-values",
     "title": "Cookbook",
     "section": "Format P-values",
-    "text": "Format P-values\nP-values are displayed cleanly with Unicode superscript notation for very small values (e.g., 1.2×10⁻⁴):\n\n\nCode\npval_data &lt;- data.frame(\n  study = c(\"Alpha\", \"Beta\", \"Gamma\", \"Delta\"),\n  or = c(0.72, 0.95, 0.68, 1.02),\n  lower = c(0.55, 0.78, 0.52, 0.84),\n  upper = c(0.94, 1.16, 0.89, 1.24),\n  pval = c(0.00012, 0.42, 0.003, 0.78)  # Note: very small p-value\n)\n\nforest_plot(pval_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1,\n  columns = list(\n    col_pvalue(\"pval\", \"P-value\")\n  ),\n  theme = web_theme_modern()\n)"
+    "text": "Format P-values\nP-values are displayed with Unicode superscript notation for very small values (e.g., 1.2×10⁻⁵). This keeps the display compact and readable:\n\n\nCode\npval_data &lt;- data.frame(\n  study = c(\"Alpha\", \"Beta\", \"Gamma\", \"Delta\", \"Epsilon\"),\n  or = c(0.72, 0.95, 0.68, 1.02, 0.55),\n  lower = c(0.55, 0.78, 0.52, 0.84, 0.42),\n  upper = c(0.94, 1.16, 0.89, 1.24, 0.72),\n  pval = c(0.000012, 0.42, 0.0008, 0.78, 0.00000035)\n)\n\nforest_plot(pval_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1,\n  columns = list(\n    col_pvalue(\"pval\", \"P-value\")\n  ),\n  theme = web_theme_modern()\n)"
   },
   {
-    "objectID": "cookbook.html#customize-p-value-display",
-    "href": "cookbook.html#customize-p-value-display",
+    "objectID": "cookbook.html#customize-p-value-precision",
+    "href": "cookbook.html#customize-p-value-precision",
     "title": "Cookbook",
-    "section": "Customize P-value Display",
-    "text": "Customize P-value Display\nControl precision and exponential notation threshold:\n# Show 3 significant figures, use exponential below 0.01\ncol_pvalue(\"pval\", \"P-value\",\n  digits = 3,\n  exp_threshold = 0.01\n)"
+    "section": "Customize P-value Precision",
+    "text": "Customize P-value Precision\nControl the number of significant figures and when to switch to exponential notation:\n\n\nCode\nforest_plot(pval_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1,\n  columns = list(\n    col_pvalue(\"pval\", \"P-value\",\n      digits = 3,           # 3 significant figures\n      exp_threshold = 0.01  # Use exponential below 0.01\n    )\n  ),\n  theme = web_theme_modern()\n)"
   },
   {
-    "objectID": "cookbook.html#add-significance-stars-to-p-values",
-    "href": "cookbook.html#add-significance-stars-to-p-values",
+    "objectID": "cookbook.html#add-significance-stars",
+    "href": "cookbook.html#add-significance-stars",
     "title": "Cookbook",
-    "section": "Add Significance Stars to P-values",
-    "text": "Add Significance Stars to P-values\nEnable stars for quick visual identification of significant results:\ncol_pvalue(\"pval\", \"P-value\",\n  stars = TRUE\n)"
+    "section": "Add Significance Stars",
+    "text": "Add Significance Stars\nEnable stars for quick visual identification (* p&lt;0.05, ** p&lt;0.01, *** p&lt;0.001):\n\n\nCode\nforest_plot(pval_data,\n  point = \"or\", lower = \"lower\", upper = \"upper\",\n  label = \"study\", null_value = 1,\n  columns = list(\n    col_pvalue(\"pval\", \"P-value\", stars = TRUE)\n  ),\n  theme = web_theme_modern()\n)"
   },
   {
     "objectID": "cookbook.html#create-nested-subgroups",
