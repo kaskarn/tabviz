@@ -877,6 +877,9 @@
     transform-origin: top left;
     /* Don't use flex: 1 in fill mode - we need natural height for scaling */
     flex: none;
+    /* Prevent flex stretch from constraining width - need natural content width for scaling */
+    align-self: flex-start;
+    width: max-content;
     /* No margins in fill mode - we fill the container */
     margin: 0;
     /* Move border/background here so they scale with content */
