@@ -147,11 +147,18 @@
     "text": "20. NBA Player Efficiency\nSports analytics using the nba_efficiency package dataset.\n\n\nCode\ndata(nba_efficiency)\n\nforest_plot(\n  nba_efficiency,\n  label = \"player\",\n  point = \"per\",\n  lower = \"per_lower\",\n  upper = \"per_upper\",\n  group = \"conference\",\n  columns = list(\n    col_group(\"Player Info\",\n      col_text(\"team\", \"Team\", width = 50),\n      col_text(\"position\", \"Pos\", width = 40),\n      position = \"left\"\n    ),\n    col_group(\"Stats\",\n      col_numeric(\"ppg\", \"PPG\"),\n      col_numeric(\"games\", \"GP\", decimals = 0),\n      position = \"left\"\n    ),\n    col_interval(\"PER (95% CI)\")\n  ),\n  row_badge = \"award\",\n  null_value = 15,  # League average PER\n  theme = web_theme_modern() |&gt;\n    set_colors(\n      primary = \"#C9082A\",  # NBA red\n      interval_positive = \"#17408B\",  # NBA blue\n      interval_negative = \"#C9082A\"\n    ),\n  axis_label = \"Player Efficiency Rating\",\n  title = \"NBA Player Efficiency Ratings\",\n  subtitle = \"Row groups by conference + column groups for Player Info / Stats\",\n  caption = \"PER = 15 is league average. Badge shows major awards.\",\n  footnote = \"Data simulated based on typical NBA statistics\"\n)"
   },
   {
+    "objectID": "gallery.html#rich-column-types",
+    "href": "gallery.html#rich-column-types",
+    "title": "Examples Gallery",
+    "section": "21. Rich Column Types",
+    "text": "21. Rich Column Types\nShowcasing badges, icons, stars, images, and ranges.\n\n\nCode\nrich_columns_data &lt;- tibble(\n  study = c(\"ADVANCE\", \"CARDINAL\", \"ELEVATE\", \"FRONTIER\", \"GENESIS\"),\n  status = c(\"Published\", \"Draft\", \"Published\", \"In Review\", \"Published\"),\n  quality = c(4, 3, 5, 4, 3),\n  age_min = c(18, 21, 25, 18, 30),\n  age_max = c(65, 75, 70, 80, 65),\n  validated = c(\"yes\", \"no\", \"yes\", \"yes\", \"no\"),\n  doi = c(\"10.1001/jama.2024.1234\", \"10.1016/j.lancet.2024.5678\",\n          \"10.1056/NEJMoa2024.9012\", \"10.1136/bmj.2024.3456\",\n          \"10.1161/CIRCULATIONAHA.2024.7890\"),\n  hr = c(0.74, 0.78, 0.71, 0.82, 0.69),\n  lower = c(0.62, 0.66, 0.60, 0.71, 0.55),\n  upper = c(0.88, 0.92, 0.84, 0.95, 0.87)\n)\n\nforest_plot(\n  rich_columns_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  columns = list(\n    col_badge(\"status\", \"Status\",\n      variants = list(Published = \"success\", Draft = \"warning\", `In Review` = \"info\"),\n      position = \"left\"\n    ),\n    col_stars(\"quality\", \"Quality\", position = \"left\"),\n    col_range(\"age_min\", \"age_max\", header = \"Age\", position = \"left\"),\n    col_icon(\"validated\", \"Valid\",\n      mapping = list(yes = \"✓\", no = \"✗\"),\n      color = \"#16a34a\", position = \"left\"\n    ),\n    col_reference(\"doi\", \"DOI\", max_chars = 20, position = \"right\"),\n    col_interval(\"HR (95% CI)\")\n  ),\n  theme = web_theme_modern(),\n  scale = \"log\", null_value = 1,\n  axis_label = \"Hazard Ratio\",\n  title = \"Rich Column Types\",\n  subtitle = \"Badges, stars, ranges, icons, and references\",\n  caption = \"New column types for enhanced data presentation\"\n)"
+  },
+  {
     "objectID": "gallery.html#airline-performance",
     "href": "gallery.html#airline-performance",
     "title": "Examples Gallery",
-    "section": "21. Airline Performance",
-    "text": "21. Airline Performance\nTransportation analytics using the airline_delays package dataset, with row and column grouping.\n\n\nCode\ndata(airline_delays)\n\n# Aggregate to carrier level with carrier type\ncarrier_summary &lt;- airline_delays |&gt;\n  group_by(carrier, carrier_type) |&gt;\n  summarise(\n    delay_vs_avg = mean(delay_vs_avg),\n    delay_lower = mean(delay_lower),\n    delay_upper = mean(delay_upper),\n    on_time_pct = mean(on_time_pct),\n    satisfaction = mean(satisfaction),\n    flights = sum(flights),\n    trend = list(unlist(trend[1])),\n    .groups = \"drop\"\n  ) |&gt;\n  arrange(carrier_type, delay_vs_avg)\n\nforest_plot(\n  carrier_summary,\n  label = \"carrier\",\n  point = \"delay_vs_avg\",\n  lower = \"delay_lower\",\n  upper = \"delay_upper\",\n  group = \"carrier_type\",\n  columns = list(\n    col_group(\"Service\",\n      col_percent(\"on_time_pct\", \"On-Time\", decimals = 0),\n      col_numeric(\"satisfaction\", \"Rating\", decimals = 1),\n      position = \"left\"\n    ),\n    col_group(\"Trends\",\n      col_sparkline(\"trend\", \"12M\"),\n      col_interval(\"Delay (min)\"),\n      position = \"right\"\n    )\n  ),\n  null_value = 0,\n  theme = web_theme_modern() |&gt;\n    set_colors(\n      interval_positive = \"#16a34a\",  # Green = good (early)\n      interval_negative = \"#dc2626\"   # Red = bad (late)\n    ),\n  axis_label = \"Delay vs. Industry Average (minutes)\",\n  title = \"Airline Carrier Performance\",\n  subtitle = \"Row groups by carrier type + column groups for Service / Trends\",\n  caption = \"Negative values = ahead of schedule\",\n  footnote = \"Satisfaction on 1-5 scale\"\n)"
+    "section": "22. Airline Performance",
+    "text": "22. Airline Performance\nTransportation analytics using the airline_delays package dataset, with row and column grouping.\n\n\nCode\ndata(airline_delays)\n\n# Aggregate to carrier level with carrier type\ncarrier_summary &lt;- airline_delays |&gt;\n  group_by(carrier, carrier_type) |&gt;\n  summarise(\n    delay_vs_avg = mean(delay_vs_avg),\n    delay_lower = mean(delay_lower),\n    delay_upper = mean(delay_upper),\n    on_time_pct = mean(on_time_pct),\n    satisfaction = mean(satisfaction),\n    flights = sum(flights),\n    trend = list(unlist(trend[1])),\n    .groups = \"drop\"\n  ) |&gt;\n  arrange(carrier_type, delay_vs_avg)\n\nforest_plot(\n  carrier_summary,\n  label = \"carrier\",\n  point = \"delay_vs_avg\",\n  lower = \"delay_lower\",\n  upper = \"delay_upper\",\n  group = \"carrier_type\",\n  columns = list(\n    col_group(\"Service\",\n      col_percent(\"on_time_pct\", \"On-Time\", decimals = 0),\n      col_numeric(\"satisfaction\", \"Rating\", decimals = 1),\n      position = \"left\"\n    ),\n    col_group(\"Trends\",\n      col_sparkline(\"trend\", \"12M\"),\n      col_interval(\"Delay (min)\"),\n      position = \"right\"\n    )\n  ),\n  null_value = 0,\n  theme = web_theme_modern() |&gt;\n    set_colors(\n      interval_positive = \"#16a34a\",  # Green = good (early)\n      interval_negative = \"#dc2626\"   # Red = bad (late)\n    ),\n  axis_label = \"Delay vs. Industry Average (minutes)\",\n  title = \"Airline Carrier Performance\",\n  subtitle = \"Row groups by carrier type + column groups for Service / Trends\",\n  caption = \"Negative values = ahead of schedule\",\n  footnote = \"Satisfaction on 1-5 scale\"\n)"
   },
   {
     "objectID": "guide/columns.html",
@@ -172,7 +179,7 @@
     "href": "guide/columns.html#column-types",
     "title": "Columns",
     "section": "Column Types",
-    "text": "Column Types\n\n\n\nType\nFunction\nUse Case\n\n\n\n\ncol_text()\nText values\nStudy names, categories\n\n\ncol_numeric()\nFormatted numbers\nSample sizes, counts\n\n\ncol_interval()\nPoint (CI) format\nEffect size display\n\n\ncol_bar()\nHorizontal bar\nWeights, percentages\n\n\ncol_pvalue()\nP-value formatting\nSignificance stars\n\n\ncol_sparkline()\nMini chart\nTrends, distributions\n\n\ncol_group()\nGroup header\nOrganize related columns"
+    "text": "Column Types\n\n\n\nType\nFunction\nUse Case\n\n\n\n\ncol_text()\nText values\nStudy names, categories\n\n\ncol_numeric()\nFormatted numbers\nSample sizes, counts\n\n\ncol_interval()\nPoint (CI) format\nEffect size display\n\n\ncol_bar()\nHorizontal bar\nWeights, percentages\n\n\ncol_pvalue()\nP-value formatting\nSignificance stars\n\n\ncol_sparkline()\nMini chart\nTrends, distributions\n\n\ncol_icon()\nIcons/emoji\nStatus indicators, yes/no\n\n\ncol_badge()\nColored badges\nStatus labels, categories\n\n\ncol_stars()\nStar ratings\nQuality scores (1-5)\n\n\ncol_img()\nInline images\nLogos, flags, icons\n\n\ncol_reference()\nTruncated links\nCitations, DOIs, URLs\n\n\ncol_range()\nMin-max ranges\nAge ranges, value bounds\n\n\ncol_group()\nGroup header\nOrganize related columns"
   },
   {
     "objectID": "guide/columns.html#column-positioning",
@@ -222,6 +229,48 @@
     "title": "Columns",
     "section": "Sparkline Columns",
     "text": "Sparkline Columns\nDisplay mini charts for trends or distributions:\ncol_sparkline(field = \"trend_data\", header = \"Trend\", width = 80)\ncol_sparkline(field = \"dist\", header = \"Distribution\",\n  options = list(type = \"bar\", color = \"#22c55e\"))\nSparkline types: \"line\" (default), \"area\", \"bar\"."
+  },
+  {
+    "objectID": "guide/columns.html#icon-columns",
+    "href": "guide/columns.html#icon-columns",
+    "title": "Columns",
+    "section": "Icon Columns",
+    "text": "Icon Columns\nDisplay icons or emoji based on data values:\n# Direct emoji values\ncol_icon(field = \"status_emoji\", header = \"Status\", width = 50)\n\n# With value-to-icon mapping\ncol_icon(field = \"status\",\n  mapping = list(yes = \"✓\", no = \"✗\", pending = \"⏳\"),\n  color = \"#16a34a\"  # Optional color override\n)"
+  },
+  {
+    "objectID": "guide/columns.html#badge-columns",
+    "href": "guide/columns.html#badge-columns",
+    "title": "Columns",
+    "section": "Badge Columns",
+    "text": "Badge Columns\nDisplay colored status badges:\ncol_badge(field = \"status\", header = \"Status\", width = 100,\n  variants = list(\n    published = \"success\",\n    draft = \"warning\",\n    rejected = \"error\"\n  )\n)\n\n# Or use custom hex colors\ncol_badge(field = \"category\",\n  colors = list(\n    \"A\" = \"#2563eb\",\n    \"B\" = \"#16a34a\",\n    \"C\" = \"#f59e0b\"\n  )\n)\nAvailable variants: \"success\", \"warning\", \"error\", \"info\", \"muted\", \"default\"."
+  },
+  {
+    "objectID": "guide/columns.html#star-rating-columns",
+    "href": "guide/columns.html#star-rating-columns",
+    "title": "Columns",
+    "section": "Star Rating Columns",
+    "text": "Star Rating Columns\nDisplay star ratings (1-5 scale):\ncol_stars(field = \"quality\", header = \"Quality\", width = 80)\n\n# Customize appearance\ncol_stars(field = \"rating\",\n  max_stars = 5,\n  color = \"#f59e0b\",      # Filled star color (gold)\n  empty_color = \"#d1d5db\", # Empty star color\n  half_stars = TRUE        # Allow 0.5 increments\n)"
+  },
+  {
+    "objectID": "guide/columns.html#image-columns",
+    "href": "guide/columns.html#image-columns",
+    "title": "Columns",
+    "section": "Image Columns",
+    "text": "Image Columns\nDisplay inline images from URLs:\ncol_img(field = \"logo_url\", header = \"Logo\", width = 60)\n\n# With options\ncol_img(field = \"avatar\",\n  height = 24,          # Image height in pixels\n  shape = \"circle\",     # \"square\", \"circle\", or \"rounded\"\n  fallback = \"📷\"       # Shown if image fails to load\n)"
+  },
+  {
+    "objectID": "guide/columns.html#reference-columns",
+    "href": "guide/columns.html#reference-columns",
+    "title": "Columns",
+    "section": "Reference Columns",
+    "text": "Reference Columns\nDisplay truncated text with optional links:\ncol_reference(field = \"doi\", header = \"DOI\", width = 120)\n\n# With clickable links\ncol_reference(field = \"pmid\",\n  href_field = \"pubmed_url\",  # Column containing the URL\n  max_chars = 25,             # Truncate after N chars\n  icon = TRUE                 # Show external link icon\n)"
+  },
+  {
+    "objectID": "guide/columns.html#range-columns",
+    "href": "guide/columns.html#range-columns",
+    "title": "Columns",
+    "section": "Range Columns",
+    "text": "Range Columns\nDisplay min-max ranges from two fields:\ncol_range(\n  min_field = \"age_min\",\n  max_field = \"age_max\",\n  header = \"Age Range\",\n  separator = \" – \",   # Separator between values\n  decimals = 0         # NULL for auto-detection\n)"
   },
   {
     "objectID": "guide/columns.html#column-groups",
