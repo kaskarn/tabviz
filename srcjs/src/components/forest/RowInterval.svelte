@@ -91,6 +91,20 @@
   // Check if this is a summary row (should render diamond instead of square)
   const isSummaryRow = $derived(row.style?.type === 'summary');
 
+  // Check if intervals are clipped (extend beyond axis)
+  function isClippedLeft(lower: number): boolean {
+    return xScale(lower) < 0;
+  }
+
+  function isClippedRight(upper: number): boolean {
+    return xScale(upper) > layout.forestWidth;
+  }
+
+  // Clamp x-coordinate to visible range
+  function clampX(x: number): number {
+    return Math.max(0, Math.min(layout.forestWidth, x));
+  }
+
   // Diamond height for summary rows
   const diamondHeight = $derived(theme?.shapes.summaryHeight ?? 10);
   const halfDiamondHeight = $derived(diamondHeight / 2);
@@ -204,30 +218,50 @@
           />
         {:else}
           <!-- Regular row: CI line with whiskers -->
+          {@const clippedL = isClippedLeft(effect.lower!)}
+          {@const clippedR = isClippedRight(effect.upper!)}
+          {@const clampedX1 = clampX(x1)}
+          {@const clampedX2 = clampX(x2)}
           <line
-            {x1}
-            {x2}
+            x1={clampedX1}
+            x2={clampedX2}
             y1={effectY}
             y2={effectY}
             stroke={lineColor}
             stroke-width={theme?.shapes.lineWidth ?? 1.5}
           />
-          <line
-            x1={x1}
-            x2={x1}
-            y1={effectY - 4}
-            y2={effectY + 4}
-            stroke={lineColor}
-            stroke-width={theme?.shapes.lineWidth ?? 1.5}
-          />
-          <line
-            x1={x2}
-            x2={x2}
-            y1={effectY - 4}
-            y2={effectY + 4}
-            stroke={lineColor}
-            stroke-width={theme?.shapes.lineWidth ?? 1.5}
-          />
+          <!-- Left whisker or arrow if clipped -->
+          {#if clippedL}
+            <path
+              d="M 4 {effectY} L 10 {effectY - 4} L 10 {effectY + 4} Z"
+              fill={lineColor}
+            />
+          {:else}
+            <line
+              x1={clampedX1}
+              x2={clampedX1}
+              y1={effectY - 4}
+              y2={effectY + 4}
+              stroke={lineColor}
+              stroke-width={theme?.shapes.lineWidth ?? 1.5}
+            />
+          {/if}
+          <!-- Right whisker or arrow if clipped -->
+          {#if clippedR}
+            <path
+              d="M {layout.forestWidth - 4} {effectY} L {layout.forestWidth - 10} {effectY - 4} L {layout.forestWidth - 10} {effectY + 4} Z"
+              fill={lineColor}
+            />
+          {:else}
+            <line
+              x1={clampedX2}
+              x2={clampedX2}
+              y1={effectY - 4}
+              y2={effectY + 4}
+              stroke={lineColor}
+              stroke-width={theme?.shapes.lineWidth ?? 1.5}
+            />
+          {/if}
 
           <!-- Point estimate marker (shape varies) -->
           {#if style.shape === "circle"}

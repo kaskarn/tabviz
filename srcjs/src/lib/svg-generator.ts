@@ -1172,7 +1172,9 @@ function renderInterval(
   theme: WebTheme,
   nullValue: number,
   effects: EffectSpec[] = [],
-  weightCol?: string | null
+  weightCol?: string | null,
+  forestX: number = 0,
+  forestWidth: number = Infinity
 ): string {
   // Build effective effects to render
   interface ResolvedEffect {
@@ -1343,14 +1345,40 @@ function renderInterval(
         </g>`);
     } else {
       // Regular row: CI line with whiskers and marker
+      // Detect clipping (interval extends beyond axis range)
+      const minX = forestX;
+      const maxX = forestX + forestWidth;
+      const clippedLeft = x1 < minX;
+      const clippedRight = x2 > maxX;
+      const clampedX1 = Math.max(minX, Math.min(maxX, x1));
+      const clampedX2 = Math.max(minX, Math.min(maxX, x2));
+
+      // Build left end: whisker or arrow
+      let leftEnd = "";
+      if (clippedLeft) {
+        // Arrow pointing left
+        leftEnd = `<path d="M ${minX + 4} ${effectY} L ${minX + 10} ${effectY - 4} L ${minX + 10} ${effectY + 4} Z" fill="${lineColor}"/>`;
+      } else {
+        // Normal whisker
+        leftEnd = `<line x1="${clampedX1}" x2="${clampedX1}" y1="${effectY - whiskerHalf}" y2="${effectY + whiskerHalf}" stroke="${lineColor}" stroke-width="${lineWidth}"/>`;
+      }
+
+      // Build right end: whisker or arrow
+      let rightEnd = "";
+      if (clippedRight) {
+        // Arrow pointing right
+        rightEnd = `<path d="M ${maxX - 4} ${effectY} L ${maxX - 10} ${effectY - 4} L ${maxX - 10} ${effectY + 4} Z" fill="${lineColor}"/>`;
+      } else {
+        // Normal whisker
+        rightEnd = `<line x1="${clampedX2}" x2="${clampedX2}" y1="${effectY - whiskerHalf}" y2="${effectY + whiskerHalf}" stroke="${lineColor}" stroke-width="${lineWidth}"/>`;
+      }
+
       parts.push(`
         <g class="interval effect-${idx}">
-          <line x1="${x1}" x2="${x2}" y1="${effectY}" y2="${effectY}"
+          <line x1="${clampedX1}" x2="${clampedX2}" y1="${effectY}" y2="${effectY}"
             stroke="${lineColor}" stroke-width="${lineWidth}"/>
-          <line x1="${x1}" x2="${x1}" y1="${effectY - whiskerHalf}" y2="${effectY + whiskerHalf}"
-            stroke="${lineColor}" stroke-width="${lineWidth}"/>
-          <line x1="${x2}" x2="${x2}" y1="${effectY - whiskerHalf}" y2="${effectY + whiskerHalf}"
-            stroke="${lineColor}" stroke-width="${lineWidth}"/>
+          ${leftEnd}
+          ${rightEnd}
           ${renderMarker(cx, effectY, pointSize, style)}
         </g>`);
     }
@@ -1618,7 +1646,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     displayRows.forEach((displayRow, i) => {
       if (displayRow.type === "data") {
         const yPos = plotY + i * layout.rowHeight + layout.rowHeight / 2;
-        parts.push(renderInterval(displayRow.row, yPos, (v) => forestX + xScale(v), theme, spec.data.nullValue, spec.data.effects, spec.data.weightCol));
+        parts.push(renderInterval(displayRow.row, yPos, (v) => forestX + xScale(v), theme, spec.data.nullValue, spec.data.effects, spec.data.weightCol, forestX, layout.forestWidth));
       }
     });
 
