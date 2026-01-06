@@ -7,7 +7,7 @@
 col_reference(
   field,
   header = "Reference",
-  width = 150,
+  width = NULL,
   href_field = NULL,
   max_chars = 30,
   icon = TRUE,
@@ -19,7 +19,7 @@ col_reference(
 
 \item{header}{Column header (default "Reference")}
 
-\item{width}{Column width in pixels (default 150)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{href_field}{Optional field name containing URLs for linking}
 

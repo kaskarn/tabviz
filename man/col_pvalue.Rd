@@ -13,7 +13,7 @@ col_pvalue(
   digits = 2,
   exp_threshold = 0.001,
   abbrev_threshold = NULL,
-  width = 100,
+  width = NULL,
   ...
 )
 }
@@ -35,7 +35,7 @@ col_pvalue(
 \item{abbrev_threshold}{Values below this display as "<threshold" (default NULL = off).
 For example, \code{abbrev_threshold = 0.0001} displays values below 0.0001 as "<0.0001".}
 
-\item{width}{Column width in pixels (default 100)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{...}{Additional arguments passed to web_col}
 }

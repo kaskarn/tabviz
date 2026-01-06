@@ -16,7 +16,7 @@
 
 ## UI Polish
 
-* **Column auto-width**: Increased max auto-width from 400px to 600px for better handling of wide content.
+* **Column auto-width**: All `col_*()` helpers now default to `width = NULL`, which triggers automatic width calculation based on content. Previously, columns had fixed pixel defaults (e.g., 90px for numeric, 160px for interval) that could truncate headers. Max auto-width increased from 400px to 600px.
 
 * **Compact menus**: Reduced padding in theme switcher and layout toggle dropdowns for a more compact feel.
 

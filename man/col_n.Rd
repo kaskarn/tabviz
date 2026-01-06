@@ -7,7 +7,7 @@
 col_n(
   field = "n",
   header = "N",
-  width = 80,
+  width = NULL,
   decimals = 0,
   digits = NULL,
   thousands_sep = ",",
@@ -20,7 +20,7 @@ col_n(
 
 \item{header}{Column header (default "N")}
 
-\item{width}{Column width in pixels (default 80)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{decimals}{Number of decimal places (default 0 for integers)}
 

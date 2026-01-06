@@ -4,14 +4,14 @@
 \alias{col_text}
 \title{Column helper: Text column}
 \usage{
-col_text(field, header = NULL, width = 120, ...)
+col_text(field, header = NULL, width = NULL, ...)
 }
 \arguments{
 \item{field}{Field name}
 
 \item{header}{Column header}
 
-\item{width}{Column width in pixels (default 120)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{...}{Additional arguments passed to web_col}
 }

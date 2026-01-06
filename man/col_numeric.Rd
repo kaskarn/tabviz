@@ -7,7 +7,7 @@
 col_numeric(
   field,
   header = NULL,
-  width = 90,
+  width = NULL,
   decimals = 2,
   digits = NULL,
   thousands_sep = FALSE,
@@ -20,7 +20,7 @@ col_numeric(
 
 \item{header}{Column header}
 
-\item{width}{Column width in pixels (default 90)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{decimals}{Number of decimal places to display (default 2, NULL for auto)}
 

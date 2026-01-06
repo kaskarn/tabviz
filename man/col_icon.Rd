@@ -7,7 +7,7 @@
 col_icon(
   field,
   header = NULL,
-  width = 50,
+  width = NULL,
   mapping = NULL,
   size = c("base", "sm", "lg"),
   color = NULL,
@@ -19,7 +19,7 @@ col_icon(
 
 \item{header}{Column header (default NULL, uses field name)}
 
-\item{width}{Column width in pixels (default 50)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{mapping}{Named character vector mapping values to icons/emoji
 (e.g., \code{c("yes" = "✓", "no" = "✗")})}

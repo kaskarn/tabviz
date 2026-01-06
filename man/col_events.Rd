@@ -8,7 +8,7 @@ col_events(
   events_field,
   n_field,
   header = "Events",
-  width = 100,
+  width = NULL,
   separator = "/",
   show_pct = FALSE,
   thousands_sep = ",",
@@ -23,7 +23,7 @@ col_events(
 
 \item{header}{Column header (default "Events")}
 
-\item{width}{Column width in pixels (default 100)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{separator}{Separator between events and n (default "/")}
 

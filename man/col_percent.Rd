@@ -7,7 +7,7 @@
 col_percent(
   field,
   header = NULL,
-  width = 80,
+  width = NULL,
   decimals = 1,
   multiply = FALSE,
   symbol = TRUE,
@@ -19,7 +19,7 @@ col_percent(
 
 \item{header}{Column header (default field name)}
 
-\item{width}{Column width in pixels (default 80)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{decimals}{Number of decimal places (default 1)}
 

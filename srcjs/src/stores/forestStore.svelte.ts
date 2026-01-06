@@ -456,8 +456,8 @@ export function createForestStore() {
         return;
       }
 
-      // Only process columns with width="auto"
-      if (col.width !== "auto") return;
+      // Only process columns with width="auto" or null (both trigger auto-sizing)
+      if (col.width !== "auto" && col.width !== null) return;
 
       let maxWidth = 0;
 

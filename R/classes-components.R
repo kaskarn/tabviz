@@ -122,14 +122,14 @@ web_col <- function(
   # Default header to field name
   header <- header %||% field
 
-  # Default alignment based on type
+  # Default alignment is left
   if (is.null(align)) {
-    align <- if (type %in% c("numeric", "pvalue", "bar")) "right" else "left"
+    align <- "left"
   }
 
-  # Handle width: NULL → NA, "auto" → "auto", numeric → numeric
+  # Handle width: NULL → "auto", "auto" → "auto", numeric → numeric
   width_val <- if (is.null(width)) {
-    NA_real_
+    "auto"
   } else if (identical(width, "auto")) {
     "auto"
   } else {
@@ -170,12 +170,12 @@ web_col <- function(
 #'
 #' @param field Field name
 #' @param header Column header
-#' @param width Column width in pixels (default 120)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
 #' @export
-col_text <- function(field, header = NULL, width = 120, ...) {
+col_text <- function(field, header = NULL, width = NULL, ...) {
   web_col(field, header, type = "text", width = width, ...)
 }
 
@@ -183,7 +183,7 @@ col_text <- function(field, header = NULL, width = 120, ...) {
 #'
 #' @param field Field name
 #' @param header Column header
-#' @param width Column width in pixels (default 90)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param decimals Number of decimal places to display (default 2, NULL for auto)
 #' @param digits Number of significant figures (takes precedence over decimals if set)
 #' @param thousands_sep Thousands separator (default FALSE for decimal columns,
@@ -210,7 +210,7 @@ col_text <- function(field, header = NULL, width = 120, ...) {
 #'
 #' # Abbreviate large numbers: 1,234,567 -> "1.2M"
 #' col_numeric("population", abbreviate = TRUE)
-col_numeric <- function(field, header = NULL, width = 90, decimals = 2,
+col_numeric <- function(field, header = NULL, width = NULL, decimals = 2,
                         digits = NULL, thousands_sep = FALSE, abbreviate = FALSE,
                         ...) {
   opts <- list(
@@ -230,7 +230,7 @@ col_numeric <- function(field, header = NULL, width = 90, decimals = 2,
 #'
 #' @param field Field name (default "n")
 #' @param header Column header (default "N")
-#' @param width Column width in pixels (default 80)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param decimals Number of decimal places (default 0 for integers)
 #' @param digits Number of significant figures (takes precedence over decimals if set)
 #' @param thousands_sep Thousands separator (default "," for integer columns)
@@ -249,7 +249,7 @@ col_numeric <- function(field, header = NULL, width = 90, decimals = 2,
 #'
 #' # Abbreviate large sample sizes: 12,345 -> "12K"
 #' col_n("n", abbreviate = TRUE)
-col_n <- function(field = "n", header = "N", width = 80, decimals = 0,
+col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
                   digits = NULL, thousands_sep = ",", abbreviate = FALSE, ...) {
   opts <- list(
     numeric = list(
@@ -269,7 +269,7 @@ col_n <- function(field = "n", header = "N", width = 80, decimals = 0,
 #' overridden with the `point`, `lower`, and `upper` arguments.
 #'
 #' @param header Column header (default "95% CI")
-#' @param width Column width in pixels (default 160)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param decimals Number of decimal places (default 2)
 #' @param sep Separator between point and CI (default " ")
 #' @param point Optional field name to override the point estimate column
@@ -294,7 +294,7 @@ col_n <- function(field = "n", header = "N", width = 80, decimals = 0,
 #'
 #' # Hide imprecise estimates (CI ratio > 10)
 #' col_interval(imprecise_threshold = 10)
-col_interval <- function(header = "95% CI", width = 160, decimals = 2, sep = " ",
+col_interval <- function(header = "95% CI", width = NULL, decimals = 2, sep = " ",
                          point = NULL, lower = NULL, upper = NULL,
                          imprecise_threshold = NULL, ...) {
   opts <- list(
@@ -325,7 +325,7 @@ col_interval <- function(header = "95% CI", width = 160, decimals = 2, sep = " "
 #' @param exp_threshold Values below this use exponential notation (default 0.001)
 #' @param abbrev_threshold Values below this display as "<threshold" (default NULL = off).
 #'   For example, `abbrev_threshold = 0.0001` displays values below 0.0001 as "<0.0001".
-#' @param width Column width in pixels (default 100)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
@@ -355,7 +355,7 @@ col_pvalue <- function(
     digits = 2,
     exp_threshold = 0.001,
     abbrev_threshold = NULL,
-    width = 100,
+    width = NULL,
     ...) {
   format <- match.arg(format)
   opts <- list(
@@ -434,7 +434,7 @@ col_sparkline <- function(
 #'
 #' @param field Field name
 #' @param header Column header (default field name)
-#' @param width Column width in pixels (default 80)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param decimals Number of decimal places (default 1)
 #' @param multiply Whether to multiply by 100 (default FALSE, assumes data already 0-100)
 #' @param symbol Show % symbol (default TRUE)
@@ -454,7 +454,7 @@ col_sparkline <- function(
 col_percent <- function(
     field,
     header = NULL,
-    width = 80,
+    width = NULL,
     decimals = 1,
     multiply = FALSE,
     symbol = TRUE,
@@ -477,7 +477,7 @@ col_percent <- function(
 #' @param events_field Field name containing number of events
 #' @param n_field Field name containing total sample size
 #' @param header Column header (default "Events")
-#' @param width Column width in pixels (default 100)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param separator Separator between events and n (default "/")
 #' @param show_pct Show percentage in parentheses (default FALSE)
 #' @param thousands_sep Thousands separator (default ",")
@@ -503,7 +503,7 @@ col_events <- function(
     events_field,
     n_field,
     header = "Events",
-    width = 100,
+    width = NULL,
     separator = "/",
     show_pct = FALSE,
     thousands_sep = ",",
@@ -547,7 +547,7 @@ col_weight <- function(field = "weight", header = "Weight", show_bar = TRUE, ...
 #'
 #' @param field Field name containing the values to display
 #' @param header Column header (default NULL, uses field name)
-#' @param width Column width in pixels (default 50)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param mapping Named character vector mapping values to icons/emoji
 #'   (e.g., `c("yes" = "✓", "no" = "✗")`)
 #' @param size Icon size: "sm", "base", or "lg" (default "base")
@@ -568,7 +568,7 @@ col_weight <- function(field = "weight", header = "Weight", show_bar = TRUE, ...
 col_icon <- function(
     field,
     header = NULL,
-    width = 50,
+    width = NULL,
     mapping = NULL,
     size = c("base", "sm", "lg"),
     color = NULL,
@@ -591,7 +591,7 @@ col_icon <- function(
 #'
 #' @param field Field name containing the badge text
 #' @param header Column header (default NULL, uses field name)
-#' @param width Column width in pixels (default 100)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param variants Named character vector mapping values to semantic variants:
 #'   "default", "success", "warning", "error", "info", "muted"
 #'   (e.g., `c("published" = "success", "draft" = "warning")`)
@@ -622,7 +622,7 @@ col_icon <- function(
 col_badge <- function(
     field,
     header = NULL,
-    width = 100,
+    width = NULL,
     variants = NULL,
     colors = NULL,
     size = c("base", "sm"),
@@ -645,7 +645,7 @@ col_badge <- function(
 #'
 #' @param field Field name containing numeric rating (1-5 or custom range)
 #' @param header Column header (default NULL, uses field name)
-#' @param width Column width in pixels (default 80)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param max_stars Maximum number of stars (default 5)
 #' @param color CSS color for filled stars (default "#f59e0b", amber)
 #' @param empty_color CSS color for empty stars (default "#d1d5db", gray)
@@ -666,7 +666,7 @@ col_badge <- function(
 col_stars <- function(
     field,
     header = NULL,
-    width = 80,
+    width = NULL,
     max_stars = 5,
     color = "#f59e0b",
     empty_color = "#d1d5db",
@@ -690,7 +690,7 @@ col_stars <- function(
 #'
 #' @param field Field name containing image URLs
 #' @param header Column header (default NULL, uses field name)
-#' @param width Column width in pixels (default 60)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param height Image height in pixels (default NULL, uses row height - 4)
 #' @param max_width Maximum image width (default NULL, uses column width)
 #' @param fallback Fallback text or icon if image fails to load (default "📷")
@@ -711,7 +711,7 @@ col_stars <- function(
 col_img <- function(
     field,
     header = NULL,
-    width = 60,
+    width = NULL,
     height = NULL,
     max_width = NULL,
     fallback = "\U0001F4F7",
@@ -736,7 +736,7 @@ col_img <- function(
 #'
 #' @param field Field name containing the reference text
 #' @param header Column header (default "Reference")
-#' @param width Column width in pixels (default 150)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param href_field Optional field name containing URLs for linking
 #' @param max_chars Maximum characters to display before truncating (default 30)
 #' @param icon Show external link icon when href_field is provided (default TRUE)
@@ -756,7 +756,7 @@ col_img <- function(
 col_reference <- function(
     field,
     header = "Reference",
-    width = 150,
+    width = NULL,
     href_field = NULL,
     max_chars = 30,
     icon = TRUE,
@@ -778,7 +778,7 @@ col_reference <- function(
 #' @param min_field Field name containing minimum values
 #' @param max_field Field name containing maximum values
 #' @param header Column header (default "Range")
-#' @param width Column width in pixels (default 100)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param separator Separator between min and max (default " - ")
 #' @param decimals Number of decimal places (default NULL for auto-detection)
 #' @param show_bar Show visual bar representation (default FALSE)
@@ -799,7 +799,7 @@ col_range <- function(
     min_field,
     max_field,
     header = "Range",
-    width = 100,
+    width = NULL,
     separator = " - ",
     decimals = NULL,
     show_bar = FALSE,

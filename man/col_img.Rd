@@ -7,7 +7,7 @@
 col_img(
   field,
   header = NULL,
-  width = 60,
+  width = NULL,
   height = NULL,
   max_width = NULL,
   fallback = "📷",
@@ -20,7 +20,7 @@ col_img(
 
 \item{header}{Column header (default NULL, uses field name)}
 
-\item{width}{Column width in pixels (default 60)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{height}{Image height in pixels (default NULL, uses row height - 4)}
 

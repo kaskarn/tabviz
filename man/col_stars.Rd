@@ -7,7 +7,7 @@
 col_stars(
   field,
   header = NULL,
-  width = 80,
+  width = NULL,
   max_stars = 5,
   color = "#f59e0b",
   empty_color = "#d1d5db",
@@ -20,7 +20,7 @@ col_stars(
 
 \item{header}{Column header (default NULL, uses field name)}
 
-\item{width}{Column width in pixels (default 80)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{max_stars}{Maximum number of stars (default 5)}
 

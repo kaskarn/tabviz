@@ -8,7 +8,7 @@ col_range(
   min_field,
   max_field,
   header = "Range",
-  width = 100,
+  width = NULL,
   separator = " - ",
   decimals = NULL,
   show_bar = FALSE,
@@ -22,7 +22,7 @@ col_range(
 
 \item{header}{Column header (default "Range")}
 
-\item{width}{Column width in pixels (default 100)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{separator}{Separator between min and max (default " - ")}
 

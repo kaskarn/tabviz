@@ -6,7 +6,7 @@
 \usage{
 col_interval(
   header = "95\% CI",
-  width = 160,
+  width = NULL,
   decimals = 2,
   sep = " ",
   point = NULL,
@@ -19,7 +19,7 @@ col_interval(
 \arguments{
 \item{header}{Column header (default "95\% CI")}
 
-\item{width}{Column width in pixels (default 160)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{decimals}{Number of decimal places (default 2)}
 

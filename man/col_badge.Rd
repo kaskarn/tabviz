@@ -7,7 +7,7 @@
 col_badge(
   field,
   header = NULL,
-  width = 100,
+  width = NULL,
   variants = NULL,
   colors = NULL,
   size = c("base", "sm"),
@@ -19,7 +19,7 @@ col_badge(
 
 \item{header}{Column header (default NULL, uses field name)}
 
-\item{width}{Column width in pixels (default 100)}
+\item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{variants}{Named character vector mapping values to semantic variants:
 "default", "success", "warning", "error", "info", "muted"
