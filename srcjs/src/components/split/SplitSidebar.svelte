@@ -114,10 +114,19 @@
         onkeydown={handleKeydown}
       >
         {#if hasChildren}
-          <span class="chevron" class:expanded={isExpanded}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+          <span class="tree-toggle" class:expanded={isExpanded}>
+            {#if isExpanded}
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/>
+                <line x1="3" y1="6" x2="9" y2="6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            {:else}
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/>
+                <line x1="6" y1="3" x2="6" y2="9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                <line x1="3" y1="6" x2="9" y2="6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            {/if}
           </span>
         {/if}
         <span class="label">{node.label}</span>
@@ -161,8 +170,9 @@
     overflow: hidden;
     font-family: var(--wf-font-family, system-ui, -apple-system, sans-serif);
     font-size: 13px;
-    margin: 8px;
-    max-height: calc(100% - 16px);
+    margin: 0 8px 8px 8px;
+    max-height: calc(100% - 8px);
+    align-self: flex-start;
   }
 
   .sidebar-header {
@@ -293,7 +303,7 @@
     align-items: center;
     gap: 4px;
     width: 100%;
-    padding: 5px 8px;
+    padding: 4px 8px;
     margin-left: calc(var(--depth, 0) * 14px);
     border: none;
     background: transparent;
@@ -314,7 +324,7 @@
     font-weight: 600;
   }
 
-  .chevron {
+  .tree-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -322,14 +332,9 @@
     height: 14px;
     flex-shrink: 0;
     color: var(--wf-muted, #94a3b8);
-    transition: transform 0.15s ease;
   }
 
-  .chevron.expanded {
-    transform: rotate(90deg);
-  }
-
-  .node-btn:hover .chevron {
+  .node-btn:hover .tree-toggle {
     color: var(--wf-fg, #1e293b);
   }
 

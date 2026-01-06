@@ -1,6 +1,7 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
   import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { ThemeName } from "$lib/theme-presets";
   import type { WebTheme, ColumnSpec, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
   import EffectAxis from "$components/forest/EffectAxis.svelte";
@@ -32,9 +33,10 @@
 
   interface Props {
     store: ForestStore;
+    onThemeChange?: (themeName: ThemeName) => void;
   }
 
-  let { store }: Props = $props();
+  let { store, onThemeChange }: Props = $props();
 
   // Reactive derivations from store
   const spec = $derived(store.spec);
@@ -290,7 +292,7 @@
 >
   {#if spec}
     <!-- Control toolbar (appears on hover) - outside scalable area -->
-    <ControlToolbar {store} {enableExport} />
+    <ControlToolbar {store} {enableExport} {onThemeChange} />
 
     <!-- Scalable content wrapper (header + main + footer) -->
     <div bind:this={scalableRef} class="webforest-scalable">

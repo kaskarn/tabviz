@@ -139,9 +139,21 @@ split_forest <- function(x, by, shared_axis = FALSE, ...) {
 #' @return A new WebSpec object
 #' @keywords internal
 create_subset_spec <- function(base_spec, subset_data, label) {
-  # Create new labels with subset as title
+  # Concatenate base title with subset label if base title exists
+  base_title <- if (!is.null(base_spec@labels) && !is.na(base_spec@labels@title)) {
+    base_spec@labels@title
+  } else {
+    NULL
+  }
+  combined_title <- if (!is.null(base_title) && nzchar(base_title)) {
+    paste0(base_title, " \u2014 ", label)  # em-dash separator
+  } else {
+    label
+  }
+
+  # Create new labels with combined title
   new_labels <- PlotLabels(
-    title = label,
+    title = combined_title,
     subtitle = if (!is.null(base_spec@labels) && !is.na(base_spec@labels@subtitle)) {
       base_spec@labels@subtitle
     } else {

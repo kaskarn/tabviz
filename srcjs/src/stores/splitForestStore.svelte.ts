@@ -1,5 +1,6 @@
 import type { SplitForestPayload, NavTreeNode, WebSpec } from "$types";
 import { createForestStore, type ForestStore } from "./forestStore.svelte";
+import { type ThemeName } from "$lib/theme-presets";
 
 /**
  * Store for managing split forest navigation and display state.
@@ -12,6 +13,9 @@ export function createSplitForestStore() {
   let searchQuery = $state("");
   let expandedNodes = $state<Set<string>>(new Set());
   let sidebarCollapsed = $state(false);
+
+  // Theme persistence - stores user-selected theme across navigation
+  let userTheme = $state<ThemeName | null>(null);
 
   // Container dimensions
   let containerWidth = $state(800);
@@ -77,6 +81,10 @@ export function createSplitForestStore() {
     const spec = payload.specs[key];
     if (spec) {
       activeStore.setSpec(spec);
+      // Apply stored theme if user has selected one
+      if (userTheme) {
+        activeStore.setTheme(userTheme);
+      }
       // Update dimensions accounting for sidebar
       activeStore.setDimensions(containerWidth - effectiveSidebarWidth, containerHeight);
     }
@@ -147,6 +155,23 @@ export function createSplitForestStore() {
     }
   }
 
+  function setTheme(themeName: ThemeName) {
+    userTheme = themeName;
+    activeStore.setTheme(themeName);
+  }
+
+  function resetTheme() {
+    userTheme = null;
+    // Re-apply original spec theme
+    if (activeKey && payload) {
+      const spec = payload.specs[activeKey];
+      if (spec) {
+        activeStore.setSpec(spec);
+        activeStore.setDimensions(containerWidth - effectiveSidebarWidth, containerHeight);
+      }
+    }
+  }
+
   return {
     // Getters
     get payload() { return payload; },
@@ -159,6 +184,7 @@ export function createSplitForestStore() {
     get splitVars() { return splitVars; },
     get sidebarWidth() { return effectiveSidebarWidth; },
     get sidebarCollapsed() { return sidebarCollapsed; },
+    get userTheme() { return userTheme; },
 
     // Actions
     setPayload,
@@ -169,6 +195,8 @@ export function createSplitForestStore() {
     toggleSidebar,
     selectNext,
     selectPrevious,
+    setTheme,
+    resetTheme,
   };
 }
 

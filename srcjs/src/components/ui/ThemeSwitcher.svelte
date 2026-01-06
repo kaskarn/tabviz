@@ -4,9 +4,10 @@
 
   interface Props {
     store: ForestStore;
+    onThemeChange?: (themeName: ThemeName) => void;
   }
 
-  let { store }: Props = $props();
+  let { store, onThemeChange }: Props = $props();
 
   let dropdownOpen = $state(false);
 
@@ -17,7 +18,11 @@
   }
 
   function selectTheme(themeName: ThemeName) {
-    store.setTheme(themeName);
+    if (onThemeChange) {
+      onThemeChange(themeName);
+    } else {
+      store.setTheme(themeName);
+    }
     closeDropdown();
   }
 

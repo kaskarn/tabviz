@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { SplitForestStore } from "$stores/splitForestStore.svelte";
+  import type { ThemeName } from "$lib/theme-presets";
   import ForestPlot from "./ForestPlot.svelte";
   import SplitSidebar from "$components/split/SplitSidebar.svelte";
 
@@ -13,6 +14,11 @@
   const activeKey = $derived(store.activeKey);
   const payload = $derived(store.payload);
   const sidebarWidth = $derived(store.sidebarWidth);
+
+  // Theme persistence: when theme changes in any plot, persist it across all splits
+  function handleThemeChange(themeName: ThemeName) {
+    store.setTheme(themeName);
+  }
 
   // Container ref for resize observer
   let containerRef: HTMLDivElement | undefined = $state();
@@ -45,7 +51,7 @@
     <div class="split-forest-main">
       {#if activeStore.spec}
         {#key activeKey}
-          <ForestPlot store={activeStore} />
+          <ForestPlot store={activeStore} onThemeChange={handleThemeChange} />
         {/key}
       {:else}
         <div class="split-forest-empty">

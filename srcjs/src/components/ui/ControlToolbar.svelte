@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { ThemeName } from "$lib/theme-presets";
   import LayoutToggle from "./LayoutToggle.svelte";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import ViewToggle from "./ViewToggle.svelte";
@@ -11,6 +12,7 @@
     enableThemeSwitcher?: boolean;
     enableViewToggle?: boolean;
     enableLayoutToggle?: boolean;
+    onThemeChange?: (themeName: ThemeName) => void;
   }
 
   let {
@@ -19,6 +21,7 @@
     enableThemeSwitcher = true,
     enableViewToggle = true,
     enableLayoutToggle = true,
+    onThemeChange,
   }: Props = $props();
 </script>
 
@@ -27,7 +30,7 @@
     <LayoutToggle {store} />
   {/if}
   {#if enableThemeSwitcher}
-    <ThemeSwitcher {store} />
+    <ThemeSwitcher {store} {onThemeChange} />
   {/if}
   {#if enableViewToggle}
     <ViewToggle {store} />
