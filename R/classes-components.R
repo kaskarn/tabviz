@@ -275,6 +275,9 @@ col_n <- function(field = "n", header = "N", width = 80, decimals = 0,
 #' @param point Optional field name to override the point estimate column
 #' @param lower Optional field name to override the lower bound column
 #' @param upper Optional field name to override the upper bound column
+#' @param imprecise_threshold When upper/lower ratio exceeds this threshold,
+#'   the interval is considered imprecise and displayed as "—" instead.
+#'   The forest plot marker is also hidden. Default is NULL (no threshold).
 #' @param ... Additional arguments passed to web_col
 #'
 #' @return A ColumnSpec object
@@ -288,15 +291,20 @@ col_n <- function(field = "n", header = "N", width = 80, decimals = 0,
 #'
 #' # Override interval fields (show different effect than plot)
 #' col_interval("Per-Protocol", point = "pp_hr", lower = "pp_lower", upper = "pp_upper")
+#'
+#' # Hide imprecise estimates (CI ratio > 10)
+#' col_interval(imprecise_threshold = 10)
 col_interval <- function(header = "95% CI", width = 160, decimals = 2, sep = " ",
-                         point = NULL, lower = NULL, upper = NULL, ...) {
+                         point = NULL, lower = NULL, upper = NULL,
+                         imprecise_threshold = NULL, ...) {
   opts <- list(
     interval = list(
       decimals = decimals,
       sep = sep,
       point = point,
       lower = lower,
-      upper = upper
+      upper = upper,
+      impreciseThreshold = imprecise_threshold
     )
   )
   web_col("_interval", header, type = "interval", width = width, options = opts, ...)

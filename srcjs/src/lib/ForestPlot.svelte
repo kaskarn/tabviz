@@ -872,11 +872,18 @@
 
     const decimals = options?.interval?.decimals ?? 2;
     const sep = options?.interval?.sep ?? " ";
+    const impreciseThreshold = options?.interval?.impreciseThreshold;
 
     if (lower === undefined || lower === null || upper === undefined || upper === null ||
         Number.isNaN(lower) || Number.isNaN(upper)) {
       return point.toFixed(decimals);
     }
+
+    // Check for imprecise estimate (CI ratio exceeds threshold)
+    if (impreciseThreshold != null && lower > 0 && upper / lower > impreciseThreshold) {
+      return "—";
+    }
+
     return `${point.toFixed(decimals)}${sep}(${lower.toFixed(decimals)}, ${upper.toFixed(decimals)})`;
   }
 

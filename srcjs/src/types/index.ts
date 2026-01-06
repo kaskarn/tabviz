@@ -130,6 +130,7 @@ export interface IntervalColumnOptions {
   point?: string;     // Override field for point estimate
   lower?: string;     // Override field for lower bound
   upper?: string;     // Override field for upper bound
+  impreciseThreshold?: number | null;  // When upper/lower ratio > threshold, show "—"
 }
 
 export interface PercentColumnOptions {
