@@ -295,7 +295,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#components" id="toc-components" class="nav-link" data-scroll-target="#components">Components</a>
   <ul class="collapse">
   <li><a href="#svg-generator.ts" id="toc-svg-generator.ts" class="nav-link" data-scroll-target="#svg-generator.ts">svg-generator.ts</a></li>
-  <li><a href="#text-measurement" id="toc-text-measurement" class="nav-link" data-scroll-target="#text-measurement">Text Measurement</a></li>
+  <li><a href="#text-measurement-and-auto-width" id="toc-text-measurement-and-auto-width" class="nav-link" data-scroll-target="#text-measurement-and-auto-width">Text Measurement and Auto-Width</a></li>
   <li><a href="#build-outputs" id="toc-build-outputs" class="nav-link" data-scroll-target="#build-outputs">Build Outputs</a></li>
   </ul></li>
   <li><a href="#r-integration" id="toc-r-integration" class="nav-link" data-scroll-target="#r-integration">R Integration</a>
@@ -416,14 +416,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Deterministic output</strong> — Same input always produces same SVG</li>
 </ol>
 </section>
-<section id="text-measurement" class="level3">
-<h3 class="anchored" data-anchor-id="text-measurement">Text Measurement</h3>
-<p>Since V8 has no DOM, we can’t use <code>canvas.measureText()</code> for precise text width calculation. Instead, we use an approximation:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">measureText</span>(text<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> fontSize<span class="op">:</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Average character width is roughly 0.55 of font size</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> text<span class="op">.</span><span class="at">length</span> <span class="op">*</span> fontSize <span class="op">*</span> <span class="fl">0.55</span><span class="op">;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This works well for most cases. For pixel-perfect layouts, users can adjust column widths explicitly.</p>
+<section id="text-measurement-and-auto-width" class="level3">
+<h3 class="anchored" data-anchor-id="text-measurement-and-auto-width">Text Measurement and Auto-Width</h3>
+<p>Since V8 has no DOM, we can’t use <code>canvas.measureText()</code> for precise text width calculation. Instead, <code>width-utils.ts</code> provides character-aware estimation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode typescript code-with-copy"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">estimateTextWidth</span>(text<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> fontSize<span class="op">:</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> width <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> char <span class="kw">of</span> text) {</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="st">"il1.,;:|!()[]{}' "</span><span class="op">.</span><span class="fu">includes</span>(char)) {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      width <span class="op">+=</span> fontSize <span class="op">*</span> <span class="fl">0.35</span><span class="op">;</span>  <span class="co">// Narrow characters</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (<span class="st">"mwMW@%"</span><span class="op">.</span><span class="fu">includes</span>(char)) {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      width <span class="op">+=</span> fontSize <span class="op">*</span> <span class="fl">0.85</span><span class="op">;</span>  <span class="co">// Wide characters</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (char <span class="op">&gt;=</span> <span class="st">"0"</span> <span class="op">&amp;&amp;</span> char <span class="op">&lt;=</span> <span class="st">"9"</span>) {</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      width <span class="op">+=</span> fontSize <span class="op">*</span> <span class="fl">0.6</span><span class="op">;</span>   <span class="co">// Tabular numbers</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>      width <span class="op">+=</span> fontSize <span class="op">*</span> <span class="fl">0.55</span><span class="op">;</span>  <span class="co">// Average characters</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> width<span class="op">;</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Auto-width calculation:</strong> Both web and SVG renderers now calculate column widths from actual content. For each column with <code>width="auto"</code>:</p>
+<ol type="1">
+<li>Measure the header text</li>
+<li>Measure all cell values using the proper formatted text (e.g., “0.76 (0.68, 0.85)” for intervals)</li>
+<li>Apply padding (28px) and constraints (min 60px, max 600px)</li>
+</ol>
+<p>This ensures columns are wide enough to display their content without truncation, matching the behavior of the interactive web renderer.</p>
 </section>
 <section id="build-outputs" class="level3">
 <h3 class="anchored" data-anchor-id="build-outputs">Build Outputs</h3>
@@ -597,11 +614,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="text-alignment-looks-off" class="level3">
 <h3 class="anchored" data-anchor-id="text-alignment-looks-off">Text alignment looks off</h3>
-<p>The text width approximation may be inaccurate for certain fonts. Solutions:</p>
+<p>The text width estimation is character-aware but may still be slightly off for unusual fonts. Solutions:</p>
 <ol type="1">
-<li>Explicitly set column widths in your spec</li>
-<li>Use a monospace font family in the theme</li>
-<li>For R exports, consider post-processing with rsvg</li>
+<li>Explicitly set column widths with <code>col_text("field", width = 150)</code></li>
+<li>Use a standard font family in the theme (Inter, Arial, system-ui)</li>
+<li>Increase or decrease padding via the <code>AUTO_WIDTH.PADDING</code> constant in <code>rendering-constants.ts</code></li>
 </ol>
 </section>
 <section id="colors-dont-match-the-interactive-plot" class="level3">
@@ -1141,202 +1158,219 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**No external dependencies** — Pure TypeScript, bundled as standalone IIFE</span>
 <span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Deterministic output** — Same input always produces same SVG</span>
 <span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a><span class="fu">### Text Measurement</span></span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a><span class="fu">### Text Measurement and Auto-Width</span></span>
 <span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a>Since V8 has no DOM, we can't use <span class="in">`canvas.measureText()`</span> for precise text width calculation. Instead, we use an approximation:</span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a>Since V8 has no DOM, we can't use <span class="in">`canvas.measureText()`</span> for precise text width calculation. Instead, <span class="in">`width-utils.ts`</span> provides character-aware estimation:</span>
 <span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
-<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">measureText</span>(text<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> fontSize<span class="op">:</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
-<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Average character width is roughly 0.55 of font size</span></span>
-<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> text<span class="op">.</span><span class="at">length</span> <span class="op">*</span> fontSize <span class="op">*</span> <span class="fl">0.55</span><span class="op">;</span></span>
-<span id="cb14-84"><a href="#cb14-84" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb14-85"><a href="#cb14-85" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb14-86"><a href="#cb14-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-87"><a href="#cb14-87" aria-hidden="true" tabindex="-1"></a>This works well for most cases. For pixel-perfect layouts, users can adjust column widths explicitly.</span>
-<span id="cb14-88"><a href="#cb14-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-89"><a href="#cb14-89" aria-hidden="true" tabindex="-1"></a><span class="fu">### Build Outputs</span></span>
-<span id="cb14-90"><a href="#cb14-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-91"><a href="#cb14-91" aria-hidden="true" tabindex="-1"></a>The SVG generator is bundled twice:</span>
-<span id="cb14-92"><a href="#cb14-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-93"><a href="#cb14-93" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> File <span class="pp">|</span> Purpose <span class="pp">|</span> Size <span class="pp">|</span></span>
-<span id="cb14-94"><a href="#cb14-94" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|---------|------|</span></span>
-<span id="cb14-95"><a href="#cb14-95" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inst/htmlwidgets/webforest.js`</span> <span class="pp">|</span> Full widget bundle (includes Svelte UI) <span class="pp">|</span> ~142 KB <span class="pp">|</span></span>
-<span id="cb14-96"><a href="#cb14-96" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inst/js/svg-generator.js`</span> <span class="pp">|</span> Standalone for V8 (export only) <span class="pp">|</span> ~11 KB <span class="pp">|</span></span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">estimateTextWidth</span>(text<span class="op">:</span> <span class="dt">string</span><span class="op">,</span> fontSize<span class="op">:</span> <span class="dt">number</span>)<span class="op">:</span> <span class="dt">number</span> {</span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> width <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (<span class="kw">const</span> char <span class="kw">of</span> text) {</span>
+<span id="cb14-84"><a href="#cb14-84" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="st">"il1.,;:|!()[]{}' "</span><span class="op">.</span><span class="fu">includes</span>(char)) {</span>
+<span id="cb14-85"><a href="#cb14-85" aria-hidden="true" tabindex="-1"></a>      width <span class="op">+=</span> fontSize <span class="op">*</span> <span class="fl">0.35</span><span class="op">;</span>  <span class="co">// Narrow characters</span></span>
+<span id="cb14-86"><a href="#cb14-86" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (<span class="st">"mwMW@%"</span><span class="op">.</span><span class="fu">includes</span>(char)) {</span>
+<span id="cb14-87"><a href="#cb14-87" aria-hidden="true" tabindex="-1"></a>      width <span class="op">+=</span> fontSize <span class="op">*</span> <span class="fl">0.85</span><span class="op">;</span>  <span class="co">// Wide characters</span></span>
+<span id="cb14-88"><a href="#cb14-88" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (char <span class="op">&gt;=</span> <span class="st">"0"</span> <span class="op">&amp;&amp;</span> char <span class="op">&lt;=</span> <span class="st">"9"</span>) {</span>
+<span id="cb14-89"><a href="#cb14-89" aria-hidden="true" tabindex="-1"></a>      width <span class="op">+=</span> fontSize <span class="op">*</span> <span class="fl">0.6</span><span class="op">;</span>   <span class="co">// Tabular numbers</span></span>
+<span id="cb14-90"><a href="#cb14-90" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb14-91"><a href="#cb14-91" aria-hidden="true" tabindex="-1"></a>      width <span class="op">+=</span> fontSize <span class="op">*</span> <span class="fl">0.55</span><span class="op">;</span>  <span class="co">// Average characters</span></span>
+<span id="cb14-92"><a href="#cb14-92" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb14-93"><a href="#cb14-93" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb14-94"><a href="#cb14-94" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> width<span class="op">;</span></span>
+<span id="cb14-95"><a href="#cb14-95" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-96"><a href="#cb14-96" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb14-97"><a href="#cb14-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-98"><a href="#cb14-98" aria-hidden="true" tabindex="-1"></a>Build commands:</span>
+<span id="cb14-98"><a href="#cb14-98" aria-hidden="true" tabindex="-1"></a>**Auto-width calculation:** Both web and SVG renderers now calculate column widths from actual content. For each column with <span class="in">`width="auto"`</span>:</span>
 <span id="cb14-99"><a href="#cb14-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-100"><a href="#cb14-100" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb14-101"><a href="#cb14-101" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> srcjs</span>
-<span id="cb14-102"><a href="#cb14-102" aria-hidden="true" tabindex="-1"></a><span class="ex">bun</span> run build          <span class="co"># Both bundles</span></span>
-<span id="cb14-103"><a href="#cb14-103" aria-hidden="true" tabindex="-1"></a><span class="ex">bun</span> run build:widget   <span class="co"># Widget only</span></span>
-<span id="cb14-104"><a href="#cb14-104" aria-hidden="true" tabindex="-1"></a><span class="ex">bun</span> run build:v8       <span class="co"># V8 bundle only</span></span>
-<span id="cb14-105"><a href="#cb14-105" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb14-106"><a href="#cb14-106" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-107"><a href="#cb14-107" aria-hidden="true" tabindex="-1"></a><span class="fu">## R Integration</span></span>
-<span id="cb14-108"><a href="#cb14-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-109"><a href="#cb14-109" aria-hidden="true" tabindex="-1"></a><span class="fu">### save_plot()</span></span>
-<span id="cb14-110"><a href="#cb14-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-111"><a href="#cb14-111" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb14-112"><a href="#cb14-112" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(spec, <span class="st">"output.svg"</span>, <span class="at">width =</span> <span class="dv">800</span>, <span class="at">height =</span> <span class="cn">NULL</span>)</span>
-<span id="cb14-113"><a href="#cb14-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-100"><a href="#cb14-100" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Measure the header text</span>
+<span id="cb14-101"><a href="#cb14-101" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Measure all cell values using the proper formatted text (e.g., "0.76 (0.68, 0.85)" for intervals)</span>
+<span id="cb14-102"><a href="#cb14-102" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Apply padding (28px) and constraints (min 60px, max 600px)</span>
+<span id="cb14-103"><a href="#cb14-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-104"><a href="#cb14-104" aria-hidden="true" tabindex="-1"></a>This ensures columns are wide enough to display their content without truncation, matching the behavior of the interactive web renderer.</span>
+<span id="cb14-105"><a href="#cb14-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-106"><a href="#cb14-106" aria-hidden="true" tabindex="-1"></a><span class="fu">### Build Outputs</span></span>
+<span id="cb14-107"><a href="#cb14-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-108"><a href="#cb14-108" aria-hidden="true" tabindex="-1"></a>The SVG generator is bundled twice:</span>
+<span id="cb14-109"><a href="#cb14-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-110"><a href="#cb14-110" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> File <span class="pp">|</span> Purpose <span class="pp">|</span> Size <span class="pp">|</span></span>
+<span id="cb14-111"><a href="#cb14-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|---------|------|</span></span>
+<span id="cb14-112"><a href="#cb14-112" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inst/htmlwidgets/webforest.js`</span> <span class="pp">|</span> Full widget bundle (includes Svelte UI) <span class="pp">|</span> ~142 KB <span class="pp">|</span></span>
+<span id="cb14-113"><a href="#cb14-113" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inst/js/svg-generator.js`</span> <span class="pp">|</span> Standalone for V8 (export only) <span class="pp">|</span> ~11 KB <span class="pp">|</span></span>
 <span id="cb14-114"><a href="#cb14-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-115"><a href="#cb14-115" aria-hidden="true" tabindex="-1"></a>**Process:**</span>
+<span id="cb14-115"><a href="#cb14-115" aria-hidden="true" tabindex="-1"></a>Build commands:</span>
 <span id="cb14-116"><a href="#cb14-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-117"><a href="#cb14-117" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Serialize WebSpec to JSON via <span class="in">`serialize_spec()`</span></span>
-<span id="cb14-118"><a href="#cb14-118" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Create V8 context and load <span class="in">`svg-generator.js`</span></span>
-<span id="cb14-119"><a href="#cb14-119" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Call <span class="in">`generateSVG(specJson, options)`</span></span>
-<span id="cb14-120"><a href="#cb14-120" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Write SVG string to file (or convert to PDF/PNG via rsvg)</span>
-<span id="cb14-121"><a href="#cb14-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-122"><a href="#cb14-122" aria-hidden="true" tabindex="-1"></a>**Dependencies:**</span>
+<span id="cb14-117"><a href="#cb14-117" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb14-118"><a href="#cb14-118" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> srcjs</span>
+<span id="cb14-119"><a href="#cb14-119" aria-hidden="true" tabindex="-1"></a><span class="ex">bun</span> run build          <span class="co"># Both bundles</span></span>
+<span id="cb14-120"><a href="#cb14-120" aria-hidden="true" tabindex="-1"></a><span class="ex">bun</span> run build:widget   <span class="co"># Widget only</span></span>
+<span id="cb14-121"><a href="#cb14-121" aria-hidden="true" tabindex="-1"></a><span class="ex">bun</span> run build:v8       <span class="co"># V8 bundle only</span></span>
+<span id="cb14-122"><a href="#cb14-122" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb14-123"><a href="#cb14-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-124"><a href="#cb14-124" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`V8`</span> — JavaScript engine (Suggests)</span>
-<span id="cb14-125"><a href="#cb14-125" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`rsvg`</span> — SVG to PDF/PNG conversion (Suggests, optional)</span>
-<span id="cb14-126"><a href="#cb14-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-127"><a href="#cb14-127" aria-hidden="true" tabindex="-1"></a><span class="fu">### Code Path</span></span>
-<span id="cb14-128"><a href="#cb14-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-129"><a href="#cb14-129" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb14-130"><a href="#cb14-130" aria-hidden="true" tabindex="-1"></a><span class="in">save_plot(spec, file)</span></span>
-<span id="cb14-131"><a href="#cb14-131" aria-hidden="true" tabindex="-1"></a><span class="in">    │</span></span>
-<span id="cb14-132"><a href="#cb14-132" aria-hidden="true" tabindex="-1"></a><span class="in">    ├── serialize_spec(spec)     # R: WebSpec → JSON</span></span>
-<span id="cb14-133"><a href="#cb14-133" aria-hidden="true" tabindex="-1"></a><span class="in">    │</span></span>
-<span id="cb14-134"><a href="#cb14-134" aria-hidden="true" tabindex="-1"></a><span class="in">    ├── generate_svg_v8(json)    # R: Load V8, call JS</span></span>
-<span id="cb14-135"><a href="#cb14-135" aria-hidden="true" tabindex="-1"></a><span class="in">    │       │</span></span>
-<span id="cb14-136"><a href="#cb14-136" aria-hidden="true" tabindex="-1"></a><span class="in">    │       └── generateSVG()    # JS: JSON → SVG string</span></span>
-<span id="cb14-137"><a href="#cb14-137" aria-hidden="true" tabindex="-1"></a><span class="in">    │</span></span>
-<span id="cb14-138"><a href="#cb14-138" aria-hidden="true" tabindex="-1"></a><span class="in">    └── writeLines() / rsvg      # R: Save to file</span></span>
-<span id="cb14-139"><a href="#cb14-139" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-124"><a href="#cb14-124" aria-hidden="true" tabindex="-1"></a><span class="fu">## R Integration</span></span>
+<span id="cb14-125"><a href="#cb14-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-126"><a href="#cb14-126" aria-hidden="true" tabindex="-1"></a><span class="fu">### save_plot()</span></span>
+<span id="cb14-127"><a href="#cb14-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-128"><a href="#cb14-128" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-129"><a href="#cb14-129" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(spec, <span class="st">"output.svg"</span>, <span class="at">width =</span> <span class="dv">800</span>, <span class="at">height =</span> <span class="cn">NULL</span>)</span>
+<span id="cb14-130"><a href="#cb14-130" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-131"><a href="#cb14-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-132"><a href="#cb14-132" aria-hidden="true" tabindex="-1"></a>**Process:**</span>
+<span id="cb14-133"><a href="#cb14-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-134"><a href="#cb14-134" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Serialize WebSpec to JSON via <span class="in">`serialize_spec()`</span></span>
+<span id="cb14-135"><a href="#cb14-135" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Create V8 context and load <span class="in">`svg-generator.js`</span></span>
+<span id="cb14-136"><a href="#cb14-136" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Call <span class="in">`generateSVG(specJson, options)`</span></span>
+<span id="cb14-137"><a href="#cb14-137" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Write SVG string to file (or convert to PDF/PNG via rsvg)</span>
+<span id="cb14-138"><a href="#cb14-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-139"><a href="#cb14-139" aria-hidden="true" tabindex="-1"></a>**Dependencies:**</span>
 <span id="cb14-140"><a href="#cb14-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-141"><a href="#cb14-141" aria-hidden="true" tabindex="-1"></a><span class="fu">## Web Integration</span></span>
-<span id="cb14-142"><a href="#cb14-142" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-143"><a href="#cb14-143" aria-hidden="true" tabindex="-1"></a><span class="fu">### DownloadButton.svelte</span></span>
-<span id="cb14-144"><a href="#cb14-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-145"><a href="#cb14-145" aria-hidden="true" tabindex="-1"></a>The download button calls the same generator directly:</span>
-<span id="cb14-146"><a href="#cb14-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-147"><a href="#cb14-147" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
-<span id="cb14-148"><a href="#cb14-148" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { exportToSVG<span class="op">,</span> exportToPNG } <span class="im">from</span> <span class="st">"$lib/export"</span><span class="op">;</span></span>
-<span id="cb14-149"><a href="#cb14-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-150"><a href="#cb14-150" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">handleExportSVG</span>() {</span>
-<span id="cb14-151"><a href="#cb14-151" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> svgString <span class="op">=</span> <span class="fu">exportToSVG</span>(store<span class="op">.</span><span class="at">spec</span>)<span class="op">;</span></span>
-<span id="cb14-152"><a href="#cb14-152" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create blob and trigger download</span></span>
-<span id="cb14-153"><a href="#cb14-153" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb14-154"><a href="#cb14-154" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb14-155"><a href="#cb14-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-156"><a href="#cb14-156" aria-hidden="true" tabindex="-1"></a><span class="fu">### export.ts</span></span>
+<span id="cb14-141"><a href="#cb14-141" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`V8`</span> — JavaScript engine (Suggests)</span>
+<span id="cb14-142"><a href="#cb14-142" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`rsvg`</span> — SVG to PDF/PNG conversion (Suggests, optional)</span>
+<span id="cb14-143"><a href="#cb14-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-144"><a href="#cb14-144" aria-hidden="true" tabindex="-1"></a><span class="fu">### Code Path</span></span>
+<span id="cb14-145"><a href="#cb14-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-146"><a href="#cb14-146" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-147"><a href="#cb14-147" aria-hidden="true" tabindex="-1"></a><span class="in">save_plot(spec, file)</span></span>
+<span id="cb14-148"><a href="#cb14-148" aria-hidden="true" tabindex="-1"></a><span class="in">    │</span></span>
+<span id="cb14-149"><a href="#cb14-149" aria-hidden="true" tabindex="-1"></a><span class="in">    ├── serialize_spec(spec)     # R: WebSpec → JSON</span></span>
+<span id="cb14-150"><a href="#cb14-150" aria-hidden="true" tabindex="-1"></a><span class="in">    │</span></span>
+<span id="cb14-151"><a href="#cb14-151" aria-hidden="true" tabindex="-1"></a><span class="in">    ├── generate_svg_v8(json)    # R: Load V8, call JS</span></span>
+<span id="cb14-152"><a href="#cb14-152" aria-hidden="true" tabindex="-1"></a><span class="in">    │       │</span></span>
+<span id="cb14-153"><a href="#cb14-153" aria-hidden="true" tabindex="-1"></a><span class="in">    │       └── generateSVG()    # JS: JSON → SVG string</span></span>
+<span id="cb14-154"><a href="#cb14-154" aria-hidden="true" tabindex="-1"></a><span class="in">    │</span></span>
+<span id="cb14-155"><a href="#cb14-155" aria-hidden="true" tabindex="-1"></a><span class="in">    └── writeLines() / rsvg      # R: Save to file</span></span>
+<span id="cb14-156"><a href="#cb14-156" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb14-157"><a href="#cb14-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-158"><a href="#cb14-158" aria-hidden="true" tabindex="-1"></a>Thin wrapper around svg-generator:</span>
+<span id="cb14-158"><a href="#cb14-158" aria-hidden="true" tabindex="-1"></a><span class="fu">## Web Integration</span></span>
 <span id="cb14-159"><a href="#cb14-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-160"><a href="#cb14-160" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
-<span id="cb14-161"><a href="#cb14-161" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { generateSVG<span class="op">,</span> svgToBlob } <span class="im">from</span> <span class="st">"./svg-generator"</span><span class="op">;</span></span>
-<span id="cb14-162"><a href="#cb14-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-163"><a href="#cb14-163" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">exportToSVG</span>(spec<span class="op">:</span> WebSpec)<span class="op">:</span> <span class="dt">string</span> {</span>
-<span id="cb14-164"><a href="#cb14-164" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="fu">generateSVG</span>(spec)<span class="op">;</span></span>
-<span id="cb14-165"><a href="#cb14-165" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-160"><a href="#cb14-160" aria-hidden="true" tabindex="-1"></a><span class="fu">### DownloadButton.svelte</span></span>
+<span id="cb14-161"><a href="#cb14-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-162"><a href="#cb14-162" aria-hidden="true" tabindex="-1"></a>The download button calls the same generator directly:</span>
+<span id="cb14-163"><a href="#cb14-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-164"><a href="#cb14-164" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
+<span id="cb14-165"><a href="#cb14-165" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { exportToSVG<span class="op">,</span> exportToPNG } <span class="im">from</span> <span class="st">"$lib/export"</span><span class="op">;</span></span>
 <span id="cb14-166"><a href="#cb14-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-167"><a href="#cb14-167" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">exportToPNG</span>(spec<span class="op">:</span> WebSpec<span class="op">,</span> scale <span class="op">=</span> <span class="dv">2</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="bu">Blob</span><span class="op">&gt;</span> {</span>
-<span id="cb14-168"><a href="#cb14-168" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> svgString <span class="op">=</span> <span class="fu">generateSVG</span>(spec)<span class="op">;</span></span>
-<span id="cb14-169"><a href="#cb14-169" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="fu">svgToBlob</span>(svgString<span class="op">,</span> scale)<span class="op">;</span>  <span class="co">// Render to canvas, export</span></span>
+<span id="cb14-167"><a href="#cb14-167" aria-hidden="true" tabindex="-1"></a><span class="kw">async</span> <span class="kw">function</span> <span class="fu">handleExportSVG</span>() {</span>
+<span id="cb14-168"><a href="#cb14-168" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> svgString <span class="op">=</span> <span class="fu">exportToSVG</span>(store<span class="op">.</span><span class="at">spec</span>)<span class="op">;</span></span>
+<span id="cb14-169"><a href="#cb14-169" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Create blob and trigger download</span></span>
 <span id="cb14-170"><a href="#cb14-170" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb14-171"><a href="#cb14-171" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb14-172"><a href="#cb14-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-173"><a href="#cb14-173" aria-hidden="true" tabindex="-1"></a><span class="fu">## SVG Output Structure</span></span>
+<span id="cb14-173"><a href="#cb14-173" aria-hidden="true" tabindex="-1"></a><span class="fu">### export.ts</span></span>
 <span id="cb14-174"><a href="#cb14-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-175"><a href="#cb14-175" aria-hidden="true" tabindex="-1"></a>The generated SVG follows this structure:</span>
+<span id="cb14-175"><a href="#cb14-175" aria-hidden="true" tabindex="-1"></a>Thin wrapper around svg-generator:</span>
 <span id="cb14-176"><a href="#cb14-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-177"><a href="#cb14-177" aria-hidden="true" tabindex="-1"></a><span class="in">```xml</span></span>
-<span id="cb14-178"><a href="#cb14-178" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">svg</span><span class="ot"> xmlns=</span><span class="st">"http://www.w3.org/2000/svg"</span><span class="ot"> width=</span><span class="st">"800"</span><span class="ot"> height=</span><span class="st">"400"</span>&gt;</span>
-<span id="cb14-179"><a href="#cb14-179" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Background --&gt;</span></span>
-<span id="cb14-180"><a href="#cb14-180" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">rect</span><span class="ot"> fill=</span><span class="st">"#ffffff"</span><span class="ot"> width=</span><span class="st">"100%"</span><span class="ot"> height=</span><span class="st">"100%"</span>/&gt;</span>
-<span id="cb14-181"><a href="#cb14-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-182"><a href="#cb14-182" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Title/Subtitle --&gt;</span></span>
-<span id="cb14-183"><a href="#cb14-183" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">text</span><span class="ot"> x=</span><span class="st">"12"</span><span class="ot"> y=</span><span class="st">"24"</span><span class="ot"> font-size=</span><span class="st">"16"</span><span class="ot"> font-weight=</span><span class="st">"bold"</span>&gt;Title&lt;/<span class="kw">text</span>&gt;</span>
-<span id="cb14-184"><a href="#cb14-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-185"><a href="#cb14-185" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Column headers --&gt;</span></span>
-<span id="cb14-186"><a href="#cb14-186" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">text</span><span class="ot"> x=</span><span class="st">"22"</span><span class="ot"> y=</span><span class="st">"52"</span>&gt;Study&lt;/<span class="kw">text</span>&gt;</span>
-<span id="cb14-187"><a href="#cb14-187" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">text</span><span class="ot"> x=</span><span class="st">"320"</span><span class="ot"> y=</span><span class="st">"52"</span>&gt;Effect (95% CI)&lt;/<span class="kw">text</span>&gt;</span>
-<span id="cb14-188"><a href="#cb14-188" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-189"><a href="#cb14-189" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Header border --&gt;</span></span>
-<span id="cb14-190"><a href="#cb14-190" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">line</span><span class="ot"> x1=</span><span class="st">"12"</span><span class="ot"> x2=</span><span class="st">"788"</span><span class="ot"> y1=</span><span class="st">"60"</span><span class="ot"> y2=</span><span class="st">"60"</span><span class="ot"> stroke=</span><span class="st">"#e2e8f0"</span>/&gt;</span>
+<span id="cb14-177"><a href="#cb14-177" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
+<span id="cb14-178"><a href="#cb14-178" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> { generateSVG<span class="op">,</span> svgToBlob } <span class="im">from</span> <span class="st">"./svg-generator"</span><span class="op">;</span></span>
+<span id="cb14-179"><a href="#cb14-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-180"><a href="#cb14-180" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">function</span> <span class="fu">exportToSVG</span>(spec<span class="op">:</span> WebSpec)<span class="op">:</span> <span class="dt">string</span> {</span>
+<span id="cb14-181"><a href="#cb14-181" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="fu">generateSVG</span>(spec)<span class="op">;</span></span>
+<span id="cb14-182"><a href="#cb14-182" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-183"><a href="#cb14-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-184"><a href="#cb14-184" aria-hidden="true" tabindex="-1"></a><span class="im">export</span> <span class="kw">async</span> <span class="kw">function</span> <span class="fu">exportToPNG</span>(spec<span class="op">:</span> WebSpec<span class="op">,</span> scale <span class="op">=</span> <span class="dv">2</span>)<span class="op">:</span> <span class="bu">Promise</span><span class="op">&lt;</span><span class="bu">Blob</span><span class="op">&gt;</span> {</span>
+<span id="cb14-185"><a href="#cb14-185" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> svgString <span class="op">=</span> <span class="fu">generateSVG</span>(spec)<span class="op">;</span></span>
+<span id="cb14-186"><a href="#cb14-186" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="fu">svgToBlob</span>(svgString<span class="op">,</span> scale)<span class="op">;</span>  <span class="co">// Render to canvas, export</span></span>
+<span id="cb14-187"><a href="#cb14-187" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-188"><a href="#cb14-188" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-189"><a href="#cb14-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-190"><a href="#cb14-190" aria-hidden="true" tabindex="-1"></a><span class="fu">## SVG Output Structure</span></span>
 <span id="cb14-191"><a href="#cb14-191" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-192"><a href="#cb14-192" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Reference line (null value) --&gt;</span></span>
-<span id="cb14-193"><a href="#cb14-193" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">line</span><span class="ot"> x1=</span><span class="st">"400"</span><span class="ot"> y1=</span><span class="st">"60"</span><span class="ot"> x2=</span><span class="st">"400"</span><span class="ot"> y2=</span><span class="st">"340"</span></span>
-<span id="cb14-194"><a href="#cb14-194" aria-hidden="true" tabindex="-1"></a><span class="ot">        stroke=</span><span class="st">"#94a3b8"</span><span class="ot"> stroke-dasharray=</span><span class="st">"4"</span>/&gt;</span>
-<span id="cb14-195"><a href="#cb14-195" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-196"><a href="#cb14-196" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Data rows --&gt;</span></span>
-<span id="cb14-197"><a href="#cb14-197" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">g</span><span class="ot"> class=</span><span class="st">"interval"</span>&gt;</span>
-<span id="cb14-198"><a href="#cb14-198" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">line</span><span class="ot"> x1=</span><span class="st">"350"</span><span class="ot"> x2=</span><span class="st">"450"</span><span class="ot"> y1=</span><span class="st">"80"</span><span class="ot"> y2=</span><span class="st">"80"</span><span class="ot"> stroke=</span><span class="st">"#475569"</span>/&gt;</span>
-<span id="cb14-199"><a href="#cb14-199" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">rect</span><span class="ot"> x=</span><span class="st">"394"</span><span class="ot"> y=</span><span class="st">"74"</span><span class="ot"> width=</span><span class="st">"12"</span><span class="ot"> height=</span><span class="st">"12"</span><span class="ot"> fill=</span><span class="st">"#22c55e"</span>/&gt;</span>
-<span id="cb14-200"><a href="#cb14-200" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">g</span>&gt;</span>
+<span id="cb14-192"><a href="#cb14-192" aria-hidden="true" tabindex="-1"></a>The generated SVG follows this structure:</span>
+<span id="cb14-193"><a href="#cb14-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-194"><a href="#cb14-194" aria-hidden="true" tabindex="-1"></a><span class="in">```xml</span></span>
+<span id="cb14-195"><a href="#cb14-195" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">svg</span><span class="ot"> xmlns=</span><span class="st">"http://www.w3.org/2000/svg"</span><span class="ot"> width=</span><span class="st">"800"</span><span class="ot"> height=</span><span class="st">"400"</span>&gt;</span>
+<span id="cb14-196"><a href="#cb14-196" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Background --&gt;</span></span>
+<span id="cb14-197"><a href="#cb14-197" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">rect</span><span class="ot"> fill=</span><span class="st">"#ffffff"</span><span class="ot"> width=</span><span class="st">"100%"</span><span class="ot"> height=</span><span class="st">"100%"</span>/&gt;</span>
+<span id="cb14-198"><a href="#cb14-198" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-199"><a href="#cb14-199" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Title/Subtitle --&gt;</span></span>
+<span id="cb14-200"><a href="#cb14-200" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">text</span><span class="ot"> x=</span><span class="st">"12"</span><span class="ot"> y=</span><span class="st">"24"</span><span class="ot"> font-size=</span><span class="st">"16"</span><span class="ot"> font-weight=</span><span class="st">"bold"</span>&gt;Title&lt;/<span class="kw">text</span>&gt;</span>
 <span id="cb14-201"><a href="#cb14-201" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-202"><a href="#cb14-202" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Summary diamond --&gt;</span></span>
-<span id="cb14-203"><a href="#cb14-203" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">polygon</span><span class="ot"> points=</span><span class="st">"360,320 400,310 440,320 400,330"</span></span>
-<span id="cb14-204"><a href="#cb14-204" aria-hidden="true" tabindex="-1"></a><span class="ot">           fill=</span><span class="st">"#2563eb"</span><span class="ot"> stroke=</span><span class="st">"#1d4ed8"</span>/&gt;</span>
+<span id="cb14-202"><a href="#cb14-202" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Column headers --&gt;</span></span>
+<span id="cb14-203"><a href="#cb14-203" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">text</span><span class="ot"> x=</span><span class="st">"22"</span><span class="ot"> y=</span><span class="st">"52"</span>&gt;Study&lt;/<span class="kw">text</span>&gt;</span>
+<span id="cb14-204"><a href="#cb14-204" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">text</span><span class="ot"> x=</span><span class="st">"320"</span><span class="ot"> y=</span><span class="st">"52"</span>&gt;Effect (95% CI)&lt;/<span class="kw">text</span>&gt;</span>
 <span id="cb14-205"><a href="#cb14-205" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-206"><a href="#cb14-206" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Axis --&gt;</span></span>
-<span id="cb14-207"><a href="#cb14-207" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">line</span><span class="ot"> x1=</span><span class="st">"200"</span><span class="ot"> x2=</span><span class="st">"600"</span><span class="ot"> y1=</span><span class="st">"360"</span><span class="ot"> y2=</span><span class="st">"360"</span><span class="ot"> stroke=</span><span class="st">"#e2e8f0"</span>/&gt;</span>
-<span id="cb14-208"><a href="#cb14-208" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">text</span><span class="ot"> x=</span><span class="st">"400"</span><span class="ot"> y=</span><span class="st">"380"</span><span class="ot"> text-anchor=</span><span class="st">"middle"</span>&gt;Odds Ratio&lt;/<span class="kw">text</span>&gt;</span>
-<span id="cb14-209"><a href="#cb14-209" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">svg</span>&gt;</span>
-<span id="cb14-210"><a href="#cb14-210" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb14-211"><a href="#cb14-211" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-212"><a href="#cb14-212" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extending the System</span></span>
-<span id="cb14-213"><a href="#cb14-213" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-214"><a href="#cb14-214" aria-hidden="true" tabindex="-1"></a><span class="fu">### Adding New Column Types</span></span>
-<span id="cb14-215"><a href="#cb14-215" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-216"><a href="#cb14-216" aria-hidden="true" tabindex="-1"></a>To support a new column type in exports:</span>
-<span id="cb14-217"><a href="#cb14-217" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-218"><a href="#cb14-218" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Add rendering logic in <span class="in">`svg-generator.ts`</span>:</span>
-<span id="cb14-219"><a href="#cb14-219" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-220"><a href="#cb14-220" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
-<span id="cb14-221"><a href="#cb14-221" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">renderTableRow</span>(<span class="op">...</span>) {</span>
-<span id="cb14-222"><a href="#cb14-222" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...existing code...</span></span>
-<span id="cb14-223"><a href="#cb14-223" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-224"><a href="#cb14-224" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (col<span class="op">.</span><span class="at">type</span> <span class="op">===</span> <span class="st">"myNewType"</span>) {</span>
-<span id="cb14-225"><a href="#cb14-225" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Render your custom SVG elements</span></span>
-<span id="cb14-226"><a href="#cb14-226" aria-hidden="true" tabindex="-1"></a>    lines<span class="op">.</span><span class="fu">push</span>(<span class="vs">`&lt;rect .../&gt;`</span>)<span class="op">;</span></span>
-<span id="cb14-227"><a href="#cb14-227" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb14-228"><a href="#cb14-228" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb14-229"><a href="#cb14-229" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-206"><a href="#cb14-206" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Header border --&gt;</span></span>
+<span id="cb14-207"><a href="#cb14-207" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">line</span><span class="ot"> x1=</span><span class="st">"12"</span><span class="ot"> x2=</span><span class="st">"788"</span><span class="ot"> y1=</span><span class="st">"60"</span><span class="ot"> y2=</span><span class="st">"60"</span><span class="ot"> stroke=</span><span class="st">"#e2e8f0"</span>/&gt;</span>
+<span id="cb14-208"><a href="#cb14-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-209"><a href="#cb14-209" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Reference line (null value) --&gt;</span></span>
+<span id="cb14-210"><a href="#cb14-210" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">line</span><span class="ot"> x1=</span><span class="st">"400"</span><span class="ot"> y1=</span><span class="st">"60"</span><span class="ot"> x2=</span><span class="st">"400"</span><span class="ot"> y2=</span><span class="st">"340"</span></span>
+<span id="cb14-211"><a href="#cb14-211" aria-hidden="true" tabindex="-1"></a><span class="ot">        stroke=</span><span class="st">"#94a3b8"</span><span class="ot"> stroke-dasharray=</span><span class="st">"4"</span>/&gt;</span>
+<span id="cb14-212"><a href="#cb14-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-213"><a href="#cb14-213" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Data rows --&gt;</span></span>
+<span id="cb14-214"><a href="#cb14-214" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">g</span><span class="ot"> class=</span><span class="st">"interval"</span>&gt;</span>
+<span id="cb14-215"><a href="#cb14-215" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">line</span><span class="ot"> x1=</span><span class="st">"350"</span><span class="ot"> x2=</span><span class="st">"450"</span><span class="ot"> y1=</span><span class="st">"80"</span><span class="ot"> y2=</span><span class="st">"80"</span><span class="ot"> stroke=</span><span class="st">"#475569"</span>/&gt;</span>
+<span id="cb14-216"><a href="#cb14-216" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">rect</span><span class="ot"> x=</span><span class="st">"394"</span><span class="ot"> y=</span><span class="st">"74"</span><span class="ot"> width=</span><span class="st">"12"</span><span class="ot"> height=</span><span class="st">"12"</span><span class="ot"> fill=</span><span class="st">"#22c55e"</span>/&gt;</span>
+<span id="cb14-217"><a href="#cb14-217" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">g</span>&gt;</span>
+<span id="cb14-218"><a href="#cb14-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-219"><a href="#cb14-219" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Summary diamond --&gt;</span></span>
+<span id="cb14-220"><a href="#cb14-220" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">polygon</span><span class="ot"> points=</span><span class="st">"360,320 400,310 440,320 400,330"</span></span>
+<span id="cb14-221"><a href="#cb14-221" aria-hidden="true" tabindex="-1"></a><span class="ot">           fill=</span><span class="st">"#2563eb"</span><span class="ot"> stroke=</span><span class="st">"#1d4ed8"</span>/&gt;</span>
+<span id="cb14-222"><a href="#cb14-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-223"><a href="#cb14-223" aria-hidden="true" tabindex="-1"></a>  <span class="co">&lt;!-- Axis --&gt;</span></span>
+<span id="cb14-224"><a href="#cb14-224" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">line</span><span class="ot"> x1=</span><span class="st">"200"</span><span class="ot"> x2=</span><span class="st">"600"</span><span class="ot"> y1=</span><span class="st">"360"</span><span class="ot"> y2=</span><span class="st">"360"</span><span class="ot"> stroke=</span><span class="st">"#e2e8f0"</span>/&gt;</span>
+<span id="cb14-225"><a href="#cb14-225" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">text</span><span class="ot"> x=</span><span class="st">"400"</span><span class="ot"> y=</span><span class="st">"380"</span><span class="ot"> text-anchor=</span><span class="st">"middle"</span>&gt;Odds Ratio&lt;/<span class="kw">text</span>&gt;</span>
+<span id="cb14-226"><a href="#cb14-226" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">svg</span>&gt;</span>
+<span id="cb14-227"><a href="#cb14-227" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-228"><a href="#cb14-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-229"><a href="#cb14-229" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extending the System</span></span>
 <span id="cb14-230"><a href="#cb14-230" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-231"><a href="#cb14-231" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Rebuild both bundles:</span>
+<span id="cb14-231"><a href="#cb14-231" aria-hidden="true" tabindex="-1"></a><span class="fu">### Adding New Column Types</span></span>
 <span id="cb14-232"><a href="#cb14-232" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-233"><a href="#cb14-233" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb14-234"><a href="#cb14-234" aria-hidden="true" tabindex="-1"></a><span class="ex">bun</span> run build</span>
-<span id="cb14-235"><a href="#cb14-235" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-233"><a href="#cb14-233" aria-hidden="true" tabindex="-1"></a>To support a new column type in exports:</span>
+<span id="cb14-234"><a href="#cb14-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-235"><a href="#cb14-235" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Add rendering logic in <span class="in">`svg-generator.ts`</span>:</span>
 <span id="cb14-236"><a href="#cb14-236" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-237"><a href="#cb14-237" aria-hidden="true" tabindex="-1"></a><span class="fu">### Customizing Export Options</span></span>
-<span id="cb14-238"><a href="#cb14-238" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-239"><a href="#cb14-239" aria-hidden="true" tabindex="-1"></a>The <span class="in">`ExportOptions`</span> interface can be extended:</span>
+<span id="cb14-237"><a href="#cb14-237" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
+<span id="cb14-238"><a href="#cb14-238" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">renderTableRow</span>(<span class="op">...</span>) {</span>
+<span id="cb14-239"><a href="#cb14-239" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...existing code...</span></span>
 <span id="cb14-240"><a href="#cb14-240" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-241"><a href="#cb14-241" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
-<span id="cb14-242"><a href="#cb14-242" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ExportOptions {</span>
-<span id="cb14-243"><a href="#cb14-243" aria-hidden="true" tabindex="-1"></a>  width<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
-<span id="cb14-244"><a href="#cb14-244" aria-hidden="true" tabindex="-1"></a>  height<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
-<span id="cb14-245"><a href="#cb14-245" aria-hidden="true" tabindex="-1"></a>  scale<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
-<span id="cb14-246"><a href="#cb14-246" aria-hidden="true" tabindex="-1"></a>  backgroundColor<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
-<span id="cb14-247"><a href="#cb14-247" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Add new options here</span></span>
-<span id="cb14-248"><a href="#cb14-248" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb14-249"><a href="#cb14-249" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb14-250"><a href="#cb14-250" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-251"><a href="#cb14-251" aria-hidden="true" tabindex="-1"></a><span class="fu">## Troubleshooting</span></span>
-<span id="cb14-252"><a href="#cb14-252" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-253"><a href="#cb14-253" aria-hidden="true" tabindex="-1"></a><span class="fu">### "SVG generator JavaScript file not found"</span></span>
-<span id="cb14-254"><a href="#cb14-254" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-255"><a href="#cb14-255" aria-hidden="true" tabindex="-1"></a>The V8 bundle hasn't been built. Run:</span>
-<span id="cb14-256"><a href="#cb14-256" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-257"><a href="#cb14-257" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb14-258"><a href="#cb14-258" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> srcjs <span class="kw">&amp;&amp;</span> <span class="ex">bun</span> run build</span>
-<span id="cb14-259"><a href="#cb14-259" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb14-260"><a href="#cb14-260" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-261"><a href="#cb14-261" aria-hidden="true" tabindex="-1"></a><span class="fu">### Text alignment looks off</span></span>
-<span id="cb14-262"><a href="#cb14-262" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-263"><a href="#cb14-263" aria-hidden="true" tabindex="-1"></a>The text width approximation may be inaccurate for certain fonts. Solutions:</span>
-<span id="cb14-264"><a href="#cb14-264" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-265"><a href="#cb14-265" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Explicitly set column widths in your spec</span>
-<span id="cb14-266"><a href="#cb14-266" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Use a monospace font family in the theme</span>
-<span id="cb14-267"><a href="#cb14-267" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>For R exports, consider post-processing with rsvg</span>
-<span id="cb14-268"><a href="#cb14-268" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-269"><a href="#cb14-269" aria-hidden="true" tabindex="-1"></a><span class="fu">### Colors don't match the interactive plot</span></span>
-<span id="cb14-270"><a href="#cb14-270" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-271"><a href="#cb14-271" aria-hidden="true" tabindex="-1"></a>Ensure you're using the same theme. The generator resolves all CSS variables to literal color values at export time.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb14-241"><a href="#cb14-241" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (col<span class="op">.</span><span class="at">type</span> <span class="op">===</span> <span class="st">"myNewType"</span>) {</span>
+<span id="cb14-242"><a href="#cb14-242" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Render your custom SVG elements</span></span>
+<span id="cb14-243"><a href="#cb14-243" aria-hidden="true" tabindex="-1"></a>    lines<span class="op">.</span><span class="fu">push</span>(<span class="vs">`&lt;rect .../&gt;`</span>)<span class="op">;</span></span>
+<span id="cb14-244"><a href="#cb14-244" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb14-245"><a href="#cb14-245" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-246"><a href="#cb14-246" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-247"><a href="#cb14-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-248"><a href="#cb14-248" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Rebuild both bundles:</span>
+<span id="cb14-249"><a href="#cb14-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-250"><a href="#cb14-250" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb14-251"><a href="#cb14-251" aria-hidden="true" tabindex="-1"></a><span class="ex">bun</span> run build</span>
+<span id="cb14-252"><a href="#cb14-252" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-253"><a href="#cb14-253" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-254"><a href="#cb14-254" aria-hidden="true" tabindex="-1"></a><span class="fu">### Customizing Export Options</span></span>
+<span id="cb14-255"><a href="#cb14-255" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-256"><a href="#cb14-256" aria-hidden="true" tabindex="-1"></a>The <span class="in">`ExportOptions`</span> interface can be extended:</span>
+<span id="cb14-257"><a href="#cb14-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-258"><a href="#cb14-258" aria-hidden="true" tabindex="-1"></a><span class="in">```typescript</span></span>
+<span id="cb14-259"><a href="#cb14-259" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ExportOptions {</span>
+<span id="cb14-260"><a href="#cb14-260" aria-hidden="true" tabindex="-1"></a>  width<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb14-261"><a href="#cb14-261" aria-hidden="true" tabindex="-1"></a>  height<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb14-262"><a href="#cb14-262" aria-hidden="true" tabindex="-1"></a>  scale<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb14-263"><a href="#cb14-263" aria-hidden="true" tabindex="-1"></a>  backgroundColor<span class="op">?:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb14-264"><a href="#cb14-264" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Add new options here</span></span>
+<span id="cb14-265"><a href="#cb14-265" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-266"><a href="#cb14-266" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-267"><a href="#cb14-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-268"><a href="#cb14-268" aria-hidden="true" tabindex="-1"></a><span class="fu">## Troubleshooting</span></span>
+<span id="cb14-269"><a href="#cb14-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-270"><a href="#cb14-270" aria-hidden="true" tabindex="-1"></a><span class="fu">### "SVG generator JavaScript file not found"</span></span>
+<span id="cb14-271"><a href="#cb14-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-272"><a href="#cb14-272" aria-hidden="true" tabindex="-1"></a>The V8 bundle hasn't been built. Run:</span>
+<span id="cb14-273"><a href="#cb14-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-274"><a href="#cb14-274" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
+<span id="cb14-275"><a href="#cb14-275" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> srcjs <span class="kw">&amp;&amp;</span> <span class="ex">bun</span> run build</span>
+<span id="cb14-276"><a href="#cb14-276" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-277"><a href="#cb14-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-278"><a href="#cb14-278" aria-hidden="true" tabindex="-1"></a><span class="fu">### Text alignment looks off</span></span>
+<span id="cb14-279"><a href="#cb14-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-280"><a href="#cb14-280" aria-hidden="true" tabindex="-1"></a>The text width estimation is character-aware but may still be slightly off for unusual fonts. Solutions:</span>
+<span id="cb14-281"><a href="#cb14-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-282"><a href="#cb14-282" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Explicitly set column widths with <span class="in">`col_text("field", width = 150)`</span></span>
+<span id="cb14-283"><a href="#cb14-283" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Use a standard font family in the theme (Inter, Arial, system-ui)</span>
+<span id="cb14-284"><a href="#cb14-284" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Increase or decrease padding via the <span class="in">`AUTO_WIDTH.PADDING`</span> constant in <span class="in">`rendering-constants.ts`</span></span>
+<span id="cb14-285"><a href="#cb14-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-286"><a href="#cb14-286" aria-hidden="true" tabindex="-1"></a><span class="fu">### Colors don't match the interactive plot</span></span>
+<span id="cb14-287"><a href="#cb14-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-288"><a href="#cb14-288" aria-hidden="true" tabindex="-1"></a>Ensure you're using the same theme. The generator resolves all CSS variables to literal color values at export time.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 
