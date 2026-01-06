@@ -506,7 +506,9 @@ export function createForestStore() {
       }
 
       // Apply computed width with padding and constraints
-      const computedWidth = Math.min(AUTO_WIDTH.MAX, Math.max(AUTO_WIDTH.MIN, Math.ceil(maxWidth + AUTO_WIDTH.PADDING)));
+      // Use type-specific minimum for visual columns, else default minimum
+      const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
+      const computedWidth = Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, Math.ceil(maxWidth + AUTO_WIDTH.PADDING)));
       columnWidths[col.id] = computedWidth;
     }
 

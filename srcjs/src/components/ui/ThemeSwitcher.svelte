@@ -1,27 +1,55 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
-  import { THEME_NAMES, THEME_LABELS, type ThemeName } from "$lib/theme-presets";
+  import type { WebTheme } from "$types";
+  import { THEME_NAMES, THEME_LABELS, THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 
   interface Props {
     store: ForestStore;
+    availableThemes?: Record<string, WebTheme> | null;  // Custom themes to show (undefined = all, null = none)
     onThemeChange?: (themeName: ThemeName) => void;
   }
 
-  let { store, onThemeChange }: Props = $props();
+  let { store, availableThemes, onThemeChange }: Props = $props();
 
   let dropdownOpen = $state(false);
 
   const currentTheme = $derived(store.spec?.theme?.name ?? "default");
 
+  // Determine which themes to show
+  // If availableThemes is undefined, show all preset themes
+  // If availableThemes is an object, show those themes
+  const themeEntries = $derived.by((): [string, string][] => {
+    if (availableThemes === undefined || availableThemes === null) {
+      // Use all preset themes
+      return THEME_NAMES.map(name => [name, THEME_LABELS[name]]);
+    }
+    // Use provided themes - get name from each theme object or use key
+    return Object.entries(availableThemes).map(([key, theme]) => {
+      const label = theme.name
+        ? THEME_LABELS[theme.name as ThemeName] ?? theme.name
+        : key;
+      return [key, label];
+    });
+  });
+
   function closeDropdown() {
     dropdownOpen = false;
   }
 
-  function selectTheme(themeName: ThemeName) {
+  function selectTheme(themeName: string) {
     if (onThemeChange) {
-      onThemeChange(themeName);
+      onThemeChange(themeName as ThemeName);
     } else {
-      store.setTheme(themeName);
+      // If using custom themes, apply the theme directly from availableThemes
+      if (availableThemes && themeName in availableThemes) {
+        const theme = availableThemes[themeName];
+        if (store.spec) {
+          store.setSpec({ ...store.spec, theme });
+        }
+      } else {
+        // Use preset themes
+        store.setTheme(themeName as ThemeName);
+      }
     }
     closeDropdown();
   }
@@ -52,7 +80,7 @@
 
   {#if dropdownOpen}
     <div class="theme-dropdown">
-      {#each THEME_NAMES as themeName}
+      {#each themeEntries as [themeName, label]}
         <button
           class="dropdown-item"
           class:active={currentTheme === themeName}
@@ -65,7 +93,7 @@
           {:else}
             <span class="spacer"></span>
           {/if}
-          <span>{THEME_LABELS[themeName]}</span>
+          <span>{label}</span>
         </button>
       {/each}
     </div>

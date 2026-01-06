@@ -1,3 +1,24 @@
+# webforest 0.1.3
+
+## Bug Fixes
+
+* **Sparkline column width**: Fixed bug where sparkline columns were rendered overly wide. The auto-width calculation was stringifying the sparkline data array (e.g., "1,2,3,4,5...") instead of treating it as a visual element with fixed width. Sparkline columns now size correctly based on header text and 88px minimum (60px SVG + padding).
+
+* **Visual column auto-sizing**: Added proper handling for visual column types (sparkline, bar, icon, badge, stars, img, range) in auto-width calculation. Each visual type now has appropriate minimum widths to ensure the visual content fits without truncation.
+
+* **Border alignment**: Fixed sub-pixel border misalignment between CSS table borders and SVG plot gridlines. Removed the `-0.5` offset hack from SVG lines and added `shape-rendering="crispEdges"` for consistent border rendering across the table and plot areas.
+
+## New Features
+
+* **Programmatic theme control**: `web_interaction()` gains `enable_themes` parameter to control the theme switcher menu:
+  - `"default"` (the default): Shows theme menu with all `package_themes()`
+  - `NULL`: Disables theme selection entirely (hides menu icon)
+  - A list of WebTheme objects: Shows theme menu with only the specified themes
+
+* **`package_themes()`**: New function returning a named list of all themes distributed with the package (`default`, `minimal`, `dark`, `jama`, `lancet`, `modern`, `presentation`, `cochrane`, `nature`). Useful for subsetting available themes in `enable_themes`.
+
+---
+
 # webforest 0.1.2
 
 ## Axis & Interval Improvements

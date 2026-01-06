@@ -150,6 +150,14 @@ export const AUTO_WIDTH = {
 
   /** Maximum width for auto-sized label column */
   LABEL_MAX: 400,
+
+  /** Minimum widths for visual column types (element width + cell padding) */
+  VISUAL_MIN: {
+    sparkline: 88, // 60px SVG + 28px padding
+    bar: 100, // ~60px track + ~32px label + padding
+    stars: 80, // 5 stars at ~12px each + padding
+    range: 80, // visual element + padding
+  } as Record<string, number>,
 } as const;
 
 // ============================================================================

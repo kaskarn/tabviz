@@ -110,8 +110,10 @@ export function calculateColumnAutoWidth(
   }
 
   // Apply padding and constraints
+  // Use type-specific minimum for visual columns, else default minimum
+  const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
   const computedWidth = Math.ceil(maxWidth + AUTO_WIDTH.PADDING);
-  return Math.min(AUTO_WIDTH.MAX, Math.max(AUTO_WIDTH.MIN, computedWidth));
+  return Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, computedWidth));
 }
 
 /**

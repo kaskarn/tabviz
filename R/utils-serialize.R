@@ -309,6 +309,22 @@ serialize_interaction <- function(interaction) {
     interaction <- web_interaction()
   }
 
+  # Handle enable_themes serialization
+  enable_themes <- interaction@enable_themes
+  if (is.null(enable_themes)) {
+    # NULL means disable theme selection
+    themes_config <- NULL
+  } else if (identical(enable_themes, "default")) {
+    # "default" means use all package themes
+    themes_config <- lapply(package_themes(), function(t) serialize_theme(t))
+  } else if (is.list(enable_themes)) {
+    # Custom list of themes
+    themes_config <- lapply(enable_themes, function(t) serialize_theme(t))
+  } else {
+    # Fallback to package themes
+    themes_config <- lapply(package_themes(), function(t) serialize_theme(t))
+  }
+
   list(
     showFilters = interaction@show_filters,
     showLegend = interaction@show_legend,
@@ -318,7 +334,8 @@ serialize_interaction <- function(interaction) {
     enableHover = interaction@enable_hover,
     enableResize = interaction@enable_resize,
     enableExport = interaction@enable_export,
-    tooltipFields = interaction@tooltip_fields
+    tooltipFields = interaction@tooltip_fields,
+    enableThemes = themes_config
   )
 }
 

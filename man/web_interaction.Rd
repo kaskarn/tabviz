@@ -15,7 +15,8 @@ web_interaction(
   enable_hover = TRUE,
   enable_resize = TRUE,
   enable_export = TRUE,
-  tooltip_fields = NULL
+  tooltip_fields = NULL,
+  enable_themes = "default"
 )
 
 web_interaction_minimal()
@@ -40,6 +41,13 @@ web_interaction_publication()
 \item{enable_export}{Enable download/export button}
 
 \item{tooltip_fields}{Character vector of column names to show in hover tooltip (NULL = no tooltip)}
+
+\item{enable_themes}{Control theme selection menu:
+\itemize{
+\item \code{"default"} (default): Enable theme menu with all \code{package_themes()}
+\item \code{NULL}: Disable theme selection entirely (hide menu icon)
+\item A list of WebTheme objects: Enable theme menu with only the specified themes
+}}
 }
 \value{
 An InteractionSpec object

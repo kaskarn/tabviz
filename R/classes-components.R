@@ -909,7 +909,8 @@ InteractionSpec <- new_class(
     enable_hover = new_property(class_logical, default = TRUE),
     enable_resize = new_property(class_logical, default = TRUE),
     enable_export = new_property(class_logical, default = TRUE),
-    tooltip_fields = new_property(class_any, default = NULL)
+    tooltip_fields = new_property(class_any, default = NULL),
+    enable_themes = new_property(class_any, default = "default")  # NULL, "default", or list of themes
   )
 )
 
@@ -924,6 +925,10 @@ InteractionSpec <- new_class(
 #' @param enable_resize Enable column resizing
 #' @param enable_export Enable download/export button
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)
+#' @param enable_themes Control theme selection menu:
+#'   - `"default"` (default): Enable theme menu with all `package_themes()`
+#'   - `NULL`: Disable theme selection entirely (hide menu icon)
+#'   - A list of WebTheme objects: Enable theme menu with only the specified themes
 #'
 #' @return An InteractionSpec object
 #' @export
@@ -936,7 +941,8 @@ web_interaction <- function(
     enable_hover = TRUE,
     enable_resize = TRUE,
     enable_export = TRUE,
-    tooltip_fields = NULL) {
+    tooltip_fields = NULL,
+    enable_themes = "default") {
   InteractionSpec(
     show_filters = show_filters,
     show_legend = show_legend,
@@ -946,7 +952,8 @@ web_interaction <- function(
     enable_hover = enable_hover,
     enable_resize = enable_resize,
     enable_export = enable_export,
-    tooltip_fields = tooltip_fields
+    tooltip_fields = tooltip_fields,
+    enable_themes = enable_themes
   )
 }
 

@@ -258,6 +258,27 @@ export function getColumnDisplayText(
     case "percent":
       return formatNumber(row.metadata[field] as number, options);
 
+    // Visual column types - these render SVG/visual elements, not text
+    // Return empty string so auto-sizing uses header width + visual element min-width
+    case "sparkline":
+    case "icon":
+    case "badge":
+    case "stars":
+    case "img":
+    case "range":
+      return "";
+
+    // Bar columns have labels that need measuring (unless showLabel=false)
+    case "bar": {
+      if (options?.bar?.showLabel === false) return "";
+      const barValue = row.metadata[field] as number;
+      if (barValue === undefined || barValue === null) return "";
+      // Match CellBar.svelte label formatting
+      if (barValue >= 100) return barValue.toFixed(0);
+      if (barValue >= 10) return barValue.toFixed(1);
+      return barValue.toFixed(2);
+    }
+
     case "text":
     default:
       return String(row.metadata[field] ?? "");

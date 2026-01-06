@@ -129,6 +129,9 @@
   // Check if export is enabled (default true)
   const enableExport = $derived(spec?.interaction?.enableExport !== false);
 
+  // Get available themes for theme switcher (null = disabled, object = custom themes)
+  const enableThemes = $derived(spec?.interaction?.enableThemes);
+
   // Check if the data has any groups
   const hasGroups = $derived((spec?.data.groups?.length ?? 0) > 0);
 
@@ -307,7 +310,7 @@
 >
   {#if spec}
     <!-- Control toolbar (appears on hover) - outside scalable area -->
-    <ControlToolbar {store} {enableExport} {onThemeChange} />
+    <ControlToolbar {store} {enableExport} {enableThemes} {onThemeChange} />
 
     <!-- Scalable content wrapper (header + main + footer) -->
     <div bind:this={scalableRef} class="webforest-scalable">
@@ -472,10 +475,11 @@
           <line
             x1={0}
             x2={layout.forestWidth}
-            y1={layout.headerHeight - 0.5}
-            y2={layout.headerHeight - 0.5}
+            y1={layout.headerHeight}
+            y2={layout.headerHeight}
             stroke="var(--wf-border, #e2e8f0)"
             stroke-width="1"
+            shape-rendering="crispEdges"
           />
 
           <!-- Row banding backgrounds -->
@@ -507,17 +511,19 @@
                 y2={layout.headerHeight + rowY}
                 stroke="var(--wf-border, #e2e8f0)"
                 stroke-width="2"
+                shape-rendering="crispEdges"
               />
             {/if}
-            <!-- Bottom border (1px, using -0.5 offset for crisp rendering) -->
+            <!-- Bottom border (1px) -->
             {#if !isSpacerRow}
               <line
                 x1={0}
                 x2={layout.forestWidth}
-                y1={layout.headerHeight + rowY + rowH - 0.5}
-                y2={layout.headerHeight + rowY + rowH - 0.5}
+                y1={layout.headerHeight + rowY + rowH}
+                y2={layout.headerHeight + rowY + rowH}
                 stroke="var(--wf-border, #e2e8f0)"
                 stroke-width="1"
+                shape-rendering="crispEdges"
               />
             {/if}
           {/each}

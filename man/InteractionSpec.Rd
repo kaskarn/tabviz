@@ -13,7 +13,8 @@ InteractionSpec(
   enable_hover = TRUE,
   enable_resize = TRUE,
   enable_export = TRUE,
-  tooltip_fields = NULL
+  tooltip_fields = NULL,
+  enable_themes = "default"
 )
 }
 \arguments{

@@ -853,3 +853,35 @@ forest_theme_dark <- function() {
   .Deprecated("web_theme_dark")
   web_theme_dark()
 }
+
+# ============================================================================
+# Theme Collections
+# ============================================================================
+
+#' Get all package themes
+#'
+#' Returns a named list of all themes distributed with the package.
+#' This is the default value for `enable_themes` in `web_interaction()`.
+#'
+#' @return A named list of WebTheme objects
+#' @export
+#' @examples
+#' # Get all available themes
+#' themes <- package_themes()
+#' names(themes)
+#'
+#' # Use specific themes in interaction
+#' web_interaction(enable_themes = package_themes()[c("default", "modern")])
+package_themes <- function() {
+  list(
+    default = web_theme_default(),
+    minimal = web_theme_minimal(),
+    dark = web_theme_dark(),
+    jama = web_theme_jama(),
+    lancet = web_theme_lancet(),
+    modern = web_theme_modern(),
+    presentation = web_theme_presentation(),
+    cochrane = web_theme_cochrane(),
+    nature = web_theme_nature()
+  )
+}

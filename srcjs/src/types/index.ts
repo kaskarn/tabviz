@@ -349,6 +349,7 @@ export interface InteractionSpec {
   enableResize: boolean;
   enableExport?: boolean;
   tooltipFields?: string[] | null;  // Column names to show in hover tooltip (opt-in)
+  enableThemes?: Record<string, WebTheme> | null;  // Available themes for switching (null = disable)
 }
 
 export interface LayoutSpec {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
   import type { ThemeName } from "$lib/theme-presets";
+  import type { WebTheme } from "$types";
   import LayoutToggle from "./LayoutToggle.svelte";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
   import ViewToggle from "./ViewToggle.svelte";
@@ -10,7 +11,7 @@
   interface Props {
     store: ForestStore;
     enableExport?: boolean;
-    enableThemeSwitcher?: boolean;
+    enableThemes?: Record<string, WebTheme> | null;  // Available themes (null = disabled)
     enableViewToggle?: boolean;
     enableLayoutToggle?: boolean;
     enableReset?: boolean;
@@ -20,20 +21,23 @@
   let {
     store,
     enableExport = true,
-    enableThemeSwitcher = true,
+    enableThemes = undefined,  // undefined = show all themes (default behavior)
     enableViewToggle = true,
     enableLayoutToggle = true,
     enableReset = true,
     onThemeChange,
   }: Props = $props();
+
+  // Show theme switcher if enableThemes is not null (null explicitly disables it)
+  const showThemeSwitcher = $derived(enableThemes !== null);
 </script>
 
 <div class="control-toolbar">
   {#if enableLayoutToggle}
     <LayoutToggle {store} />
   {/if}
-  {#if enableThemeSwitcher}
-    <ThemeSwitcher {store} {onThemeChange} />
+  {#if showThemeSwitcher}
+    <ThemeSwitcher {store} availableThemes={enableThemes} {onThemeChange} />
   {/if}
   {#if enableViewToggle}
     <ViewToggle {store} />
