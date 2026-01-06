@@ -28,10 +28,11 @@ col_text(field, header = NULL, width = NULL, position = "left")
 
 ### col_numeric {#col_numeric}
 
-Numeric column with automatic formatting.
+Numeric column with automatic formatting, significant figures support, and large number abbreviation.
 
 ```r
-col_numeric(field, header = NULL, width = NULL, position = "left")
+col_numeric(field, header = NULL, width = NULL, position = "left",
+            decimals = 2, digits = NULL, abbreviate = FALSE)
 ```
 
 | Argument | Description |
@@ -40,22 +41,58 @@ col_numeric(field, header = NULL, width = NULL, position = "left")
 | `header` | Display header |
 | `width` | Column width in pixels |
 | `position` | `"left"` or `"right"` |
+| `decimals` | Fixed decimal places (default: 2) |
+| `digits` | Significant figures (overrides decimals if set) |
+| `abbreviate` | Abbreviate large numbers with K/M/B suffixes |
+
+**Examples**:
+
+```r
+# Fixed 2 decimal places (default)
+col_numeric("value")
+
+# Significant figures instead
+col_numeric("value", digits = 3)
+
+# Abbreviate large numbers: 1,234,567 → "1.2M"
+col_numeric("population", abbreviate = TRUE)
+```
 
 ### col_interval {#col_interval}
 
 Confidence interval display showing point estimate with bounds.
 
 ```r
-col_interval(header = "95% CI", width = 140, position = "right")
+col_interval(header = "95% CI", width = 160, position = "right",
+             decimals = 2, sep = " ",
+             point = NULL, lower = NULL, upper = NULL)
 ```
 
 | Argument | Description |
 |----------|-------------|
 | `header` | Column header (default: "95% CI") |
-| `width` | Column width in pixels (default: 140) |
+| `width` | Column width in pixels (default: 160) |
 | `position` | Position relative to plot (default: "right") |
+| `decimals` | Decimal places for formatting (default: 2) |
+| `sep` | Separator between point and CI (default: " ") |
+| `point` | Override field for point estimate |
+| `lower` | Override field for lower bound |
+| `upper` | Override field for upper bound |
 
-**Note**: This column automatically uses the `point`, `lower`, and `upper` values specified in `forest_plot()`.
+**Note**: By default, this column uses the `point`, `lower`, and `upper` values specified in `forest_plot()`. Use the override arguments to display different effect estimates.
+
+**Examples**:
+
+```r
+# Default formatting
+col_interval("HR (95% CI)")
+
+# Custom formatting: 1 decimal, comma separator
+col_interval("HR (95% CI)", decimals = 1, sep = ", ")
+
+# Show alternative effect from different columns
+col_interval("Per-Protocol", point = "pp_hr", lower = "pp_lower", upper = "pp_upper")
+```
 
 ## Visualization Columns
 
@@ -96,6 +133,7 @@ col_pvalue(
   format = c("auto", "scientific", "decimal"),
   digits = 2,
   exp_threshold = 0.001,
+  abbrev_threshold = NULL,
   width = 100
 )
 ```
@@ -109,13 +147,14 @@ col_pvalue(
 | `format` | Display format: `"auto"`, `"scientific"`, or `"decimal"` |
 | `digits` | Number of significant figures (default: 2) |
 | `exp_threshold` | Values below this use exponential notation (default: 0.001) |
+| `abbrev_threshold` | Values below this display as "<threshold" (e.g., "<0.0001") |
 | `width` | Column width in pixels (default: 100) |
 
 **Formatting behavior**:
 
 - Values ≥ `exp_threshold`: displayed as decimal (e.g., 0.042)
 - Values < `exp_threshold`: displayed with Unicode superscript (e.g., 2.3×10⁻⁴)
-- Values < 0.0001: displayed as "<0.0001"
+- Values < `abbrev_threshold`: displayed as "<threshold" (e.g., "<0.0001")
 
 **Significance levels** (when `stars = TRUE`):
 
@@ -134,6 +173,9 @@ col_pvalue("pval", digits = 3)
 
 # Use exponential notation earlier (below 0.01)
 col_pvalue("pval", exp_threshold = 0.01)
+
+# Show very small values as "<0.0001"
+col_pvalue("pval", abbrev_threshold = 0.0001)
 
 # With significance stars
 col_pvalue("pval", stars = TRUE)
@@ -158,10 +200,29 @@ col_sparkline(field, header = NULL, width = 80, type = "line")
 
 ### col_n {#col_n}
 
-Sample size column (alias for `col_numeric` with sensible defaults).
+Sample size column with optional abbreviation for large values.
 
 ```r
-col_n(field = "n", header = "N", width = 60)
+col_n(field = "n", header = "N", width = 60,
+      digits = NULL, abbreviate = FALSE)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `field` | Column name (default: "n") |
+| `header` | Column header (default: "N") |
+| `width` | Column width (default: 60) |
+| `digits` | Significant figures (optional) |
+| `abbreviate` | Abbreviate large values with K/M suffixes |
+
+**Examples**:
+
+```r
+# Default display
+col_n("sample_size")
+
+# Abbreviate large sample sizes: 10,500 → "10.5K"
+col_n("sample_size", abbreviate = TRUE)
 ```
 
 ### col_weight {#col_weight}

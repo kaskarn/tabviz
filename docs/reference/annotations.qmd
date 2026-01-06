@@ -13,10 +13,11 @@ Annotation functions for adding visual elements to forest plots.
 
 ### forest_refline {#forest_refline}
 
-Add a vertical reference line at a specific x-axis position.
+Add a vertical reference line at a specific x-axis position. Commonly used to mark the null effect or clinically meaningful thresholds.
 
 ```r
-forest_refline(x, label = NULL, style = "dashed", color = NULL)
+forest_refline(x, label = NULL, style = "dashed", color = NULL,
+               width = 1, opacity = 0.6)
 ```
 
 | Argument | Description |
@@ -25,6 +26,19 @@ forest_refline(x, label = NULL, style = "dashed", color = NULL)
 | `label` | Optional text label for the line |
 | `style` | Line style: `"solid"`, `"dashed"`, or `"dotted"` |
 | `color` | Line color (uses theme default if NULL) |
+| `width` | Line width in pixels (default: 1) |
+| `opacity` | Line opacity from 0 to 1 (default: 0.6) |
+
+**Examples**:
+
+```r
+# Basic null line
+forest_refline(1)
+
+# Labeled threshold with custom styling
+forest_refline(0.5, label = "Clinically meaningful",
+               style = "solid", width = 2, opacity = 0.8)
+```
 
 ## Custom Annotations
 
