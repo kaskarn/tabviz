@@ -125,48 +125,25 @@ web_spec <- function(
   # Convert data to data.frame
   data <- as.data.frame(data)
 
-  # Resolve column names - supports both strings and NSE (unquoted names)
-  # Priority: string literal > variable evaluation > NSE
-  # This order fixes GitHub issue #1 (wrapper functions with same-named params)
-  resolve_column <- function(expr, arg_name, data, env) {
-    if (is.character(expr)) {
-      # Direct string literal: point = "effect"
-      col <- expr
-    } else if (is.symbol(expr)) {
-      symbol_str <- as.character(expr)
-      # Check if symbol exists as variable in calling environment
-      if (exists(symbol_str, envir = env, inherits = TRUE)) {
-        val <- get(symbol_str, envir = env, inherits = TRUE)
-        if (is.character(val) && length(val) == 1) {
-          col <- val
-        } else {
-          # Variable exists but isn't a single string - use as NSE
-          col <- symbol_str
-        }
-      } else {
-        # Symbol doesn't exist as variable - pure NSE
-        col <- symbol_str
-      }
-    } else {
-      cli_abort("{.arg {arg_name}} must be a column name (string or symbol)")
+  # Resolve column names - strings only (no NSE magic)
+  check_column <- function(col, arg_name, data) {
+    if (!is.character(col) || length(col) != 1) {
+      cli_abort("{.arg {arg_name}} must be a single column name string")
     }
-
     if (!col %in% names(data)) {
-      cli_abort("Column {.val {col}} not found in data for argument {.arg {arg_name}}")
+      cli_abort("Column {.val {col}} not found in data")
     }
     col
   }
 
-  caller_env <- parent.frame()
-  point_col <- resolve_column(substitute(point), "point", data, caller_env)
-  lower_col <- resolve_column(substitute(lower), "lower", data, caller_env)
-  upper_col <- resolve_column(substitute(upper), "upper", data, caller_env)
+  point_col <- check_column(point, "point", data)
+  lower_col <- check_column(lower, "lower", data)
+  upper_col <- check_column(upper, "upper", data)
 
-  # Handle optional label column (use substitute before any evaluation)
-  label_expr <- substitute(label)
+  # Handle optional label column
   label_col <- NA_character_
-  if (!is.null(label_expr) && !identical(label_expr, quote(expr = ))) {
-    label_col <- resolve_column(label_expr, "label", data, caller_env)
+  if (!is.null(label)) {
+    label_col <- check_column(label, "label", data)
   }
 
   # Handle grouping - supports three modes via the `group` parameter:
