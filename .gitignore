@@ -5,6 +5,8 @@
 .httr-oauth
 .DS_Store
 *.Rproj
+*.Rcheck/
+*.tar.gz
 
 # Node/Bun
 srcjs/node_modules/

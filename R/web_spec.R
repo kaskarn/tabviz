@@ -144,6 +144,16 @@ web_spec <- function(
   label_col <- NA_character_
   if (!is.null(label)) {
     label_col <- check_column(label, "label", data)
+    # Auto-generate label_header from field name if still default
+    if (label_header == "Study") {
+      # Prettify: "study_name" -> "Study Name", "studyID" -> "Study ID"
+      label_header <- gsub("_", " ", label_col)
+      label_header <- gsub("([a-z])([A-Z])", "\\1 \\2", label_header)
+      label_header <- tools::toTitleCase(label_header)
+    }
+  } else {
+    # No label column - use row numbers
+    label_header <- "#"
   }
 
   # Handle grouping - supports three modes via the `group` parameter:

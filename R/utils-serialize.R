@@ -38,7 +38,8 @@ serialize_data <- function(spec, include_forest = TRUE) {
     label <- if (!is.na(spec@label_col)) {
       as.character(row[[spec@label_col]])
     } else {
-      paste0("Row ", i)
+      # No label column - use row number
+      as.character(i)
     }
 
     # Get group ID - use composite ID for hierarchical groups
