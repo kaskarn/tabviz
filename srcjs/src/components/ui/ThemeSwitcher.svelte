@@ -115,7 +115,7 @@
     align-items: center;
     gap: 8px;
     width: 100%;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: none;
     border-radius: 4px;
     background: transparent;

@@ -165,7 +165,7 @@
     align-items: center;
     gap: 6px;
     width: 100%;
-    padding: 5px 10px;
+    padding: 4px 10px;
     border: none;
     border-radius: 4px;
     background: transparent;

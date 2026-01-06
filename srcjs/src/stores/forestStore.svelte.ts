@@ -444,7 +444,7 @@ export function createForestStore() {
     ctx.font = `${fontSize} ${fontFamily}`;
 
     const padding = 20; // 10px padding on each side
-    const maxAutoWidth = 400; // Cap auto width at 400px
+    const maxAutoWidth = 600; // Cap auto width at 600px
     const minAutoWidth = 60; // Minimum auto width
 
     // Process columns recursively
