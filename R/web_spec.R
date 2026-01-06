@@ -125,46 +125,48 @@ web_spec <- function(
   # Convert data to data.frame
   data <- as.data.frame(data)
 
-  # Resolve column names (support for strings)
-  point_col <- as.character(substitute(point))
-  if (length(point_col) > 1 || !point_col %in% names(data)) {
-    # Try as literal string
-    if (is.character(point) && point %in% names(data)) {
-      point_col <- point
-    } else {
-      cli_abort("Column {.arg point} not found in data")
-    }
-  }
-
-  lower_col <- as.character(substitute(lower))
-  if (length(lower_col) > 1 || !lower_col %in% names(data)) {
-    if (is.character(lower) && lower %in% names(data)) {
-      lower_col <- lower
-    } else {
-      cli_abort("Column {.arg lower} not found in data")
-    }
-  }
-
-  upper_col <- as.character(substitute(upper))
-  if (length(upper_col) > 1 || !upper_col %in% names(data)) {
-    if (is.character(upper) && upper %in% names(data)) {
-      upper_col <- upper
-    } else {
-      cli_abort("Column {.arg upper} not found in data")
-    }
-  }
-
-  # Handle optional label column
-  label_col <- NA_character_
-  if (!is.null(label)) {
-    label_col <- as.character(substitute(label))
-    if (length(label_col) > 1 || !label_col %in% names(data)) {
-      if (is.character(label) && label %in% names(data)) {
-        label_col <- label
+  # Resolve column names - supports both strings and NSE (unquoted names)
+  # Priority: string literal > variable evaluation > NSE
+  # This order fixes GitHub issue #1 (wrapper functions with same-named params)
+  resolve_column <- function(expr, arg_name, data, env) {
+    if (is.character(expr)) {
+      # Direct string literal: point = "effect"
+      col <- expr
+    } else if (is.symbol(expr)) {
+      symbol_str <- as.character(expr)
+      # Check if symbol exists as variable in calling environment
+      if (exists(symbol_str, envir = env, inherits = TRUE)) {
+        val <- get(symbol_str, envir = env, inherits = TRUE)
+        if (is.character(val) && length(val) == 1) {
+          col <- val
+        } else {
+          # Variable exists but isn't a single string - use as NSE
+          col <- symbol_str
+        }
       } else {
-        cli_abort("Column {.arg label} not found in data")
+        # Symbol doesn't exist as variable - pure NSE
+        col <- symbol_str
       }
+    } else {
+      cli_abort("{.arg {arg_name}} must be a column name (string or symbol)")
     }
+
+    if (!col %in% names(data)) {
+      cli_abort("Column {.val {col}} not found in data for argument {.arg {arg_name}}")
+    }
+    col
+  }
+
+  caller_env <- parent.frame()
+  point_col <- resolve_column(substitute(point), "point", data, caller_env)
+  lower_col <- resolve_column(substitute(lower), "lower", data, caller_env)
+  upper_col <- resolve_column(substitute(upper), "upper", data, caller_env)
+
+  # Handle optional label column (use substitute before any evaluation)
+  label_expr <- substitute(label)
+  label_col <- NA_character_
+  if (!is.null(label_expr) && !identical(label_expr, quote(expr = ))) {
+    label_col <- resolve_column(label_expr, "label", data, caller_env)
   }
 
   # Handle grouping - supports three modes via the `group` parameter:
