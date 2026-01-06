@@ -126,6 +126,12 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
   # Generate SVG using V8
   svg_string <- generate_svg_v8(spec_json, options_list)
 
+  # Ensure output directory exists
+  output_dir <- dirname(file)
+  if (!dir.exists(output_dir) && output_dir != ".") {
+    dir.create(output_dir, recursive = TRUE)
+  }
+
   # Output based on format
   if (ext == "svg") {
     # Write SVG directly
@@ -293,7 +299,7 @@ save_split_forest <- function(x, path, format = c("svg", "pdf", "png"),
   # Track exported files
   exported_files <- character()
 
-  # Export each spec
+ # Export each spec
   for (key in names(split_forest@specs)) {
     spec <- split_forest@specs[[key]]
 
@@ -301,16 +307,19 @@ save_split_forest <- function(x, path, format = c("svg", "pdf", "png"),
     # e.g., "Male__Young" -> "Male/Male_Young.svg"
     parts <- strsplit(key, "__", fixed = TRUE)[[1]]
 
-    if (length(parts) > 1) {
+    # Sanitize each part for use in filenames/directories
+    safe_parts <- vapply(parts, sanitize_filename, character(1))
+
+    if (length(safe_parts) > 1) {
       # Create subdirectory for parent levels
-      subdir <- file.path(path, paste(parts[-length(parts)], collapse = .Platform$file.sep))
+      subdir <- file.path(path, paste(safe_parts[-length(safe_parts)], collapse = .Platform$file.sep))
       if (!dir.exists(subdir)) {
         dir.create(subdir, recursive = TRUE)
       }
-      filename <- paste0(paste(parts, collapse = "_"), ".", format)
+      filename <- paste0(paste(safe_parts, collapse = "_"), ".", format)
       file_path <- file.path(subdir, filename)
     } else {
-      filename <- paste0(key, ".", format)
+      filename <- paste0(safe_parts, ".", format)
       file_path <- file.path(path, filename)
     }
 
@@ -346,4 +355,34 @@ extract_splitforest <- function(x) {
   }
 
   NULL
+}
+
+#' Sanitize a string for use as a filename
+#'
+#' Replaces characters that are problematic in filenames across platforms.
+#'
+#' @param x Character string to sanitize
+#' @return Sanitized string safe for use as filename
+#' @noRd
+sanitize_filename <- function(x) {
+  # Replace problematic characters with safe alternatives
+  # These are invalid on Windows: \ / : * ? " < > |
+  # Also handle other problematic chars like newlines, tabs
+  x <- gsub("[/\\\\*?\"<>|]", "-", x)
+  x <- gsub(":", " -", x)  # Colon to " -" for readability (e.g., "Risk: High" -> "Risk - High")
+  x <- gsub("[\r\n\t]", " ", x)
+
+  # Collapse multiple spaces/dashes to single
+  x <- gsub("-+", "-", x)
+  x <- gsub(" +", " ", x)
+
+  # Trim leading/trailing whitespace and dashes
+  x <- gsub("^[- ]+|[- ]+$", "", x)
+
+  # If empty after sanitization, use placeholder
+  if (nchar(x) == 0) {
+    x <- "unnamed"
+  }
+
+  x
 }

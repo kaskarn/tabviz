@@ -1,6 +1,6 @@
 Package: webforest
 Title: Web-Native Interactive Forest Plots
-Version: 0.1.2
+Version: 0.1.3
 Authors@R:
     person("Antoine", "Baldassari", , "baldassarian@gmail.com", role = c("aut", "cre"))
 Author: Antoine Baldassari [aut, cre]
