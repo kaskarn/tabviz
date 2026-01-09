@@ -285,11 +285,18 @@ export function getColumnDisplayText(
     // Return empty string so auto-sizing uses header width + visual element min-width
     case "sparkline":
     case "icon":
-    case "badge":
     case "stars":
     case "img":
     case "range":
       return "";
+
+    // Badge columns contain text that needs measuring (plus padding for pill shape)
+    case "badge": {
+      const badgeValue = row.metadata[field];
+      if (badgeValue === undefined || badgeValue === null) return "";
+      // Add padding chars to account for badge pill padding
+      return `  ${String(badgeValue)}  `;
+    }
 
     // Bar columns have labels that need measuring (unless showLabel=false)
     case "bar": {

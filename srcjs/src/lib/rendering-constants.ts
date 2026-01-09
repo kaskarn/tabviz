@@ -157,6 +157,7 @@ export const AUTO_WIDTH = {
     bar: 100, // ~60px track + ~32px label + padding
     stars: 80, // 5 stars at ~12px each + padding
     range: 80, // visual element + padding
+    badge: 70, // minimum for short badges + pill padding
   } as Record<string, number>,
 } as const;
 

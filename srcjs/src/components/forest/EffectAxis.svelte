@@ -26,7 +26,9 @@
   const ticks = $derived.by(() => {
     // Use explicit tick values if provided
     if (axisConfig?.tickValues && axisConfig.tickValues.length > 0) {
-      return axisConfig.tickValues;
+      // Filter to domain bounds to ensure ticks stay within axis range
+      const [domainMin, domainMax] = xScale.domain() as [number, number];
+      return axisConfig.tickValues.filter(t => t >= domainMin && t <= domainMax);
     }
 
     const minSpacing = 50; // minimum pixels between tick labels
@@ -37,20 +39,46 @@
     const tickCount = requestedTicks ?? Math.min(7, maxTicks);
 
     const allTicks = xScale.ticks(tickCount);
+    if (allTicks.length === 0) return [];
 
-    // Filter ticks to ensure minimum spacing
-    const filtered: number[] = [];
-    let lastX = -Infinity;
+    // Filter ticks symmetrically from null value outward
+    // This ensures both sides of the null line adapt equally when resizing
+    const nullValue = layout.nullValue;
+    const nullX = xScale(nullValue);
 
-    for (const tick of allTicks) {
+    // Separate ticks into left and right of null
+    const leftTicks = allTicks.filter(t => t < nullValue).reverse(); // Process outward from null
+    const rightTicks = allTicks.filter(t => t > nullValue);
+    const hasNullTick = allTicks.some(t => t === nullValue);
+
+    // Filter left side (from null outward to left)
+    const filteredLeft: number[] = [];
+    let lastLeftX = nullX;
+    for (const tick of leftTicks) {
       const x = xScale(tick);
-      if (x - lastX >= minSpacing) {
-        filtered.push(tick);
-        lastX = x;
+      if (lastLeftX - x >= minSpacing) {
+        filteredLeft.unshift(tick); // Prepend to maintain order
+        lastLeftX = x;
       }
     }
 
-    return filtered;
+    // Filter right side (from null outward to right)
+    const filteredRight: number[] = [];
+    let lastRightX = nullX;
+    for (const tick of rightTicks) {
+      const x = xScale(tick);
+      if (x - lastRightX >= minSpacing) {
+        filteredRight.push(tick);
+        lastRightX = x;
+      }
+    }
+
+    // Combine: left + null (if present) + right
+    const result = [...filteredLeft];
+    if (hasNullTick) result.push(nullValue);
+    result.push(...filteredRight);
+
+    return result;
   });
 
   // Position axis line based on position prop

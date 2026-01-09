@@ -186,6 +186,20 @@ forest_plot <- function(
     }
   }
   if (!is.null(axis_ticks)) {
+    # Filter ticks to axis_range if both are specified, with warning
+    if (!is.null(axis_range) && length(axis_range) == 2) {
+      in_range <- axis_ticks >= axis_range[1] & axis_ticks <= axis_range[2]
+      if (!all(in_range)) {
+        excluded <- axis_ticks[!in_range]
+        cli::cli_warn(c(
+
+          "Some {.arg axis_ticks} values fall outside {.arg axis_range} and will be excluded.",
+          "i" = "Excluded ticks: {.val {excluded}}",
+          "i" = "axis_range: [{axis_range[1]}, {axis_range[2]}]"
+        ))
+        axis_ticks <- axis_ticks[in_range]
+      }
+    }
     spec@theme@axis@tick_values <- axis_ticks
   }
   if (!is.null(axis_gridlines)) {
