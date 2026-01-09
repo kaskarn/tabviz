@@ -35,7 +35,7 @@ screenshot_html <- function(html_file, output_file = NULL, width = 1200,
                             height = 800, scale = 2) {
   # Validate input file exists
  if (!file.exists(html_file)) {
-    cli::cli_abort("HTML file not found: {.file {html_file}}")
+    cli_abort("HTML file not found: {.file {html_file}}")
   }
 
   # Default output path
@@ -52,7 +52,7 @@ screenshot_html <- function(html_file, output_file = NULL, width = 1200,
   }
 
   if (!file.exists(script_path) || script_path == "") {
-    cli::cli_abort(c(
+    cli_abort(c(
       "Screenshot script not found",
       "i" = "Run {.code npm install} in the {.file srcjs} directory"
     ))
@@ -81,7 +81,7 @@ screenshot_html <- function(html_file, output_file = NULL, width = 1200,
     # Escape curly braces in error message to prevent cli interpolation
     err_msg <- gsub("\\{", "{{", trimws(result$stderr))
     err_msg <- gsub("\\}", "}}", err_msg)
-    cli::cli_abort(c(
+    cli_abort(c(
       "Screenshot failed",
       "x" = err_msg,
       "i" = "Make sure Puppeteer is installed: {.code npm install} in srcjs/"
@@ -116,7 +116,7 @@ screenshot_all_examples <- function(input_dir = "examples_output",
   html_files <- list.files(input_dir, pattern = pattern, full.names = TRUE)
 
   if (length(html_files) == 0) {
-    cli::cli_warn("No HTML files found in {.path {input_dir}}")
+    cli_warn("No HTML files found in {.path {input_dir}}")
     return(invisible(character(0)))
   }
 

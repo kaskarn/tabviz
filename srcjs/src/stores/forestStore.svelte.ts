@@ -16,7 +16,7 @@ import type {
 import { niceDomain, DOMAIN_PADDING } from "$lib/scale-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
-import { AUTO_WIDTH } from "$lib/rendering-constants";
+import { AUTO_WIDTH, SPACING } from "$lib/rendering-constants";
 
 // Svelte 5 runes-based store
 export function createForestStore() {
@@ -66,10 +66,6 @@ export function createForestStore() {
     return rows;
   });
 
-  // Padding for axis labels at edges (prevents label clipping)
-  // 30px provides enough space for 4-char labels like "0.20"
-  const AXIS_LABEL_PADDING = 30;
-
   // Derived: x-scale
   const xScale = $derived.by(() => {
     if (!spec) return scaleLinear().domain([0, 1]).range([0, 100]);
@@ -116,8 +112,8 @@ export function createForestStore() {
     const nicedDomain = niceDomain(domain, isLog);
 
     // Add padding to range so edge labels don't get clipped
-    const rangeStart = AXIS_LABEL_PADDING;
-    const rangeEnd = Math.max(forestWidth - AXIS_LABEL_PADDING, rangeStart + 50);
+    const rangeStart = SPACING.AXIS_LABEL_PADDING;
+    const rangeEnd = Math.max(forestWidth - SPACING.AXIS_LABEL_PADDING, rangeStart + 50);
 
     if (isLog) {
       // Ensure domain is positive for log scale
@@ -531,7 +527,7 @@ export function createForestStore() {
       for (const row of spec.data.rows) {
         if (row.label) {
           const indent = row.style?.indent ?? 0;
-          const indentWidth = indent * 16; // INDENT_PER_LEVEL
+          const indentWidth = indent * SPACING.INDENT_PER_LEVEL;
           maxLabelWidth = Math.max(maxLabelWidth, ctx!.measureText(row.label).width + indentWidth);
         }
       }

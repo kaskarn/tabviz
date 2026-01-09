@@ -5,7 +5,7 @@
 
 import type { ColumnSpec, Row, ColumnOptions } from "../types";
 import { getColumnDisplayText } from "./formatters";
-import { AUTO_WIDTH } from "./rendering-constants";
+import { AUTO_WIDTH, SPACING } from "./rendering-constants";
 
 // ============================================================================
 // Text Width Measurement
@@ -179,9 +179,9 @@ export function calculateLabelColumnWidth(
   // Measure all labels (accounting for indentation)
   for (const row of rows) {
     if (row.label) {
-      // Account for potential indentation (roughly 16px per indent level)
+      // Account for potential indentation
       const indent = row.style?.indent ?? 0;
-      const indentWidth = indent * 16;
+      const indentWidth = indent * SPACING.INDENT_PER_LEVEL;
       maxWidth = Math.max(maxWidth, measureText(row.label) + indentWidth);
     }
   }

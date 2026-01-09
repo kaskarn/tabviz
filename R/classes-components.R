@@ -215,7 +215,7 @@ col_numeric <- function(field, header = NULL, width = NULL, decimals = 2,
                         ...) {
   # Validate mutual exclusivity of decimals and digits
   if (!is.null(digits) && decimals != 2) {
-    cli::cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
+    cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
 
   opts <- list(
@@ -258,7 +258,7 @@ col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
                   digits = NULL, thousands_sep = ",", abbreviate = FALSE, ...) {
   # Validate mutual exclusivity of decimals and digits
   if (!is.null(digits) && decimals != 0) {
-    cli::cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
+    cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
 
   opts <- list(
@@ -490,7 +490,7 @@ col_percent <- function(
     ...) {
   # Validate mutual exclusivity of decimals and digits
   if (!is.null(digits) && decimals != 1) {
-    cli::cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
+    cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
 
   opts <- list(

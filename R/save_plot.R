@@ -61,11 +61,11 @@
 save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
   # Validate inputs
   if (missing(file) || is.null(file)) {
-    cli::cli_abort("{.arg file} is required")
+    cli_abort("{.arg file} is required")
   }
 
   # Dispatch to save_split_forest() if x is a SplitForest
-  if (S7::S7_inherits(x, SplitForest)) {
+  if (S7_inherits(x, SplitForest)) {
     # Determine format and path from file argument
     ext <- tolower(tools::file_ext(file))
     if (ext %in% c("svg", "pdf", "png")) {
@@ -83,7 +83,7 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
 
   # Check for V8 package
   if (!requireNamespace("V8", quietly = TRUE)) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "Package {.pkg V8} is required for {.fn save_plot}",
       "i" = "Install it with: {.code install.packages(\"V8\")}"
     ))
@@ -94,7 +94,7 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
 
   # Validate spec
   if (is.null(spec)) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "{.arg x} must be a WebSpec object or forest_plot() output",
       "i" = "Create a spec with {.fn web_spec} or plot with {.fn forest_plot}"
     ))
@@ -104,7 +104,7 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
   ext <- tolower(tools::file_ext(file))
 
   if (!ext %in% c("svg", "pdf", "png")) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "Unsupported file format: {.file .{ext}}",
       "i" = "Supported formats: .svg, .pdf, .png"
     ))
@@ -139,7 +139,7 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
   } else if (ext %in% c("pdf", "png")) {
     # Convert SVG to raster/PDF using rsvg
     if (!requireNamespace("rsvg", quietly = TRUE)) {
-      cli::cli_abort(c(
+      cli_abort(c(
         "Package {.pkg rsvg} is required for {.file .{ext}} output",
         "i" = "Install it with: {.code install.packages(\"rsvg\")}"
       ))
@@ -184,7 +184,7 @@ generate_svg_v8 <- function(spec_json, options = list()) {
       "..", "..", "inst", "js", "svg-generator.js"
     )
     if (!file.exists(js_file)) {
-      cli::cli_abort(c(
+      cli_abort(c(
         "SVG generator JavaScript file not found",
         "i" = "Run {.code npm run build} in the {.file srcjs} directory"
       ))
@@ -213,7 +213,7 @@ generate_svg_v8 <- function(spec_json, options = list()) {
 #' @noRd
 extract_webspec <- function(x) {
   # Direct WebSpec (check S7 class)
-  if (S7::S7_inherits(x, WebSpec)) {
+  if (S7_inherits(x, WebSpec)) {
     return(x)
   }
 
@@ -221,14 +221,14 @@ extract_webspec <- function(x) {
   if (inherits(x, "htmlwidget")) {
     # Check for attached spec
     spec <- attr(x, "webspec")
-    if (!is.null(spec) && S7::S7_inherits(spec, WebSpec)) {
+    if (!is.null(spec) && S7_inherits(spec, WebSpec)) {
       return(spec)
     }
 
     # Try to extract from widget data
     # The x$x contains the serialized payload
     if (!is.null(x$x)) {
-      cli::cli_warn(c(
+      cli_warn(c(
         "Cannot extract WebSpec from htmlwidget",
         "i" = "Pass the WebSpec object directly to {.fn save_plot}"
       ))
@@ -285,7 +285,7 @@ save_split_forest <- function(x, path, format = c("svg", "pdf", "png"),
   split_forest <- extract_splitforest(x)
 
   if (is.null(split_forest)) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "{.arg x} must be a SplitForest object or forest_plot() output with split_by",
       "i" = "Create with {.fn split_forest} or use {.code split_by} in {.fn forest_plot}"
     ))
@@ -340,7 +340,7 @@ save_split_forest <- function(x, path, format = c("svg", "pdf", "png"),
 #' @noRd
 extract_splitforest <- function(x) {
   # Direct SplitForest (check S7 class)
-  if (S7::S7_inherits(x, SplitForest)) {
+  if (S7_inherits(x, SplitForest)) {
     return(x)
   }
 
@@ -348,7 +348,7 @@ extract_splitforest <- function(x) {
   if (inherits(x, "htmlwidget")) {
     # Check for attached splitforest
     sf <- attr(x, "splitforest")
-    if (!is.null(sf) && S7::S7_inherits(sf, SplitForest)) {
+    if (!is.null(sf) && S7_inherits(sf, SplitForest)) {
       return(sf)
     }
     return(NULL)

@@ -190,7 +190,7 @@ web_spec <- function(
     if (is.list(group) && length(group) > 0) {
       # Validate that all elements are GroupSpec objects
       for (g in group) {
-        if (!S7::S7_inherits(g, GroupSpec)) {
+        if (!S7_inherits(g, GroupSpec)) {
           cli_abort("{.arg group} list must contain {.fn web_group} objects")
         }
       }

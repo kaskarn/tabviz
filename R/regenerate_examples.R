@@ -15,7 +15,7 @@
 #' }
 regenerate_examples <- function(output_dir = "examples_output", open_browser = FALSE) {
   if (!requireNamespace("htmlwidgets", quietly = TRUE)) {
-    cli::cli_abort("htmlwidgets package required for regenerating examples")
+    cli_abort("htmlwidgets package required for regenerating examples")
   }
 
   # Get example files
@@ -28,7 +28,7 @@ regenerate_examples <- function(output_dir = "examples_output", open_browser = F
   examples <- list.files(example_dir, pattern = "[.]R$", full.names = TRUE)
 
   if (length(examples) == 0) {
-    cli::cli_warn("No example files found")
+    cli_warn("No example files found")
     return(invisible(list()))
   }
 

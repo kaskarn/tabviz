@@ -121,7 +121,7 @@ forest_plot <- function(
 
   # Handle deprecated height_mode parameter
   if (!is.null(height_mode)) {
-    cli::cli_warn(c(
+    cli_warn(c(
       "{.arg height_mode} is deprecated.",
       "i" = "Use {.arg height_preset} instead.",
       "i" = 'Mapping "{height_mode}" to "{if (height_mode == "auto") "full" else "medium"}".'
@@ -191,7 +191,7 @@ forest_plot <- function(
       in_range <- axis_ticks >= axis_range[1] & axis_ticks <= axis_range[2]
       if (!all(in_range)) {
         excluded <- axis_ticks[!in_range]
-        cli::cli_warn(c(
+        cli_warn(c(
 
           "Some {.arg axis_ticks} values fall outside {.arg axis_range} and will be excluded.",
           "i" = "Excluded ticks: {.val {excluded}}",

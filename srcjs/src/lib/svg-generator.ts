@@ -425,22 +425,6 @@ function hasColumnGroups(columnDefs: ColumnDef[]): boolean {
   return columnDefs.some((c) => c.isGroup);
 }
 
-/** Get leaf columns from a single column def (for colspan calculation) */
-function getLeafColumns(col: ColumnDef): ColumnSpec[] {
-  if (!col.isGroup) return [col];
-  const result: ColumnSpec[] = [];
-  for (const sub of col.columns) {
-    result.push(...getLeafColumns(sub));
-  }
-  return result;
-}
-
-/** Calculate total width for a column def (including children if group) */
-function getColumnDefWidth(col: ColumnDef, defaultWidth: number): number {
-  if (!col.isGroup) return typeof col.width === 'number' ? col.width : defaultWidth;
-  return col.columns.reduce((sum, c) => sum + getColumnDefWidth(c, defaultWidth), 0);
-}
-
 /** Parse font size from CSS string (e.g., "0.875rem" -> 14) */
 function parseFontSize(size: string): number {
   if (size.endsWith("rem")) {

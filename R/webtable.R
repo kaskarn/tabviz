@@ -63,7 +63,7 @@ webtable <- function(
 
   # Handle deprecated height_mode parameter
   if (!is.null(height_mode)) {
-    cli::cli_warn(c(
+    cli_warn(c(
       "{.arg height_mode} is deprecated.",
       "i" = "Use {.arg height_preset} instead.",
       "i" = 'Mapping "{height_mode}" to "{if (height_mode == "auto") "full" else "medium"}".'

@@ -16,6 +16,9 @@
 #' @param indent Column name containing numeric values for row indentation
 #' @param type Column name containing row type ("data", "header", "summary", "spacer")
 #' @param weight Column name for marker weight/size scaling (numeric values, typically 0-100)
+#' @param emphasis Column name containing logical values for emphasis styling (uses theme primary color)
+#' @param muted Column name containing logical values for muted styling (uses theme muted color)
+#' @param accent Column name containing logical values for accent styling (uses theme accent color)
 #'
 #' @return The modified WebSpec object (or widget)
 #'
@@ -38,7 +41,10 @@ set_row_style <- function(
     icon = NULL,
     indent = NULL,
     type = NULL,
-    weight = NULL) {
+    weight = NULL,
+    emphasis = NULL,
+    muted = NULL,
+    accent = NULL) {
   # Extract WebSpec from widget if needed
   spec <- if (inherits(x, "htmlwidget")) {
     attr(x, "webspec")
@@ -58,6 +64,9 @@ set_row_style <- function(
   if (!is.null(indent)) spec@row_indent_col <- indent
   if (!is.null(type)) spec@row_type_col <- type
   if (!is.null(weight)) spec@weight_col <- weight
+  if (!is.null(emphasis)) spec@row_emphasis_col <- emphasis
+  if (!is.null(muted)) spec@row_muted_col <- muted
+  if (!is.null(accent)) spec@row_accent_col <- accent
 
   # Return same type as input
   if (inherits(x, "htmlwidget")) {

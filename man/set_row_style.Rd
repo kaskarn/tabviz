@@ -14,7 +14,10 @@ set_row_style(
   icon = NULL,
   indent = NULL,
   type = NULL,
-  weight = NULL
+  weight = NULL,
+  emphasis = NULL,
+  muted = NULL,
+  accent = NULL
 )
 }
 \arguments{
@@ -37,6 +40,12 @@ set_row_style(
 \item{type}{Column name containing row type ("data", "header", "summary", "spacer")}
 
 \item{weight}{Column name for marker weight/size scaling (numeric values, typically 0-100)}
+
+\item{emphasis}{Column name containing logical values for emphasis styling (uses theme primary color)}
+
+\item{muted}{Column name containing logical values for muted styling (uses theme muted color)}
+
+\item{accent}{Column name containing logical values for accent styling (uses theme accent color)}
 }
 \value{
 The modified WebSpec object (or widget)

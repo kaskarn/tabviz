@@ -280,7 +280,9 @@ serialize_theme <- function(theme) {
       pointSize = theme@shapes@point_size,
       summaryHeight = theme@shapes@summary_height,
       lineWidth = theme@shapes@line_width,
-      borderRadius = theme@shapes@border_radius
+      borderRadius = theme@shapes@border_radius,
+      markerColors = theme@shapes@marker_colors,
+      markerShapes = theme@shapes@marker_shapes
     ),
     axis = list(
       rangeMin = if (is.na(theme@axis@range_min)) NULL else theme@axis@range_min,

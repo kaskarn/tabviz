@@ -120,6 +120,9 @@ export const SPACING = {
 
   /** Default tick count for axis */
   DEFAULT_TICK_COUNT: 5,
+
+  /** Padding at edges of axis to prevent label clipping */
+  AXIS_LABEL_PADDING: 30,
 } as const;
 
 // ============================================================================
