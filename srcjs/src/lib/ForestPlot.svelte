@@ -478,12 +478,11 @@
           {/if}
           <svg
           class="webforest-canvas"
-          width={layout.forestWidth}
+          width={layout.forestWidth + 2}
           height={layout.headerHeight + layout.plotHeight + layout.axisHeight}
-          viewBox="0 0 {layout.forestWidth} {layout.headerHeight + layout.plotHeight + layout.axisHeight}"
-          style="overflow: visible;"
+          viewBox="-1 0 {layout.forestWidth + 2} {layout.headerHeight + layout.plotHeight + layout.axisHeight}"
         >
-          <!-- Header border (extend 1px beyond to overlap with table borders) -->
+          <!-- Header border (extend to overlap with table borders) -->
           <line
             x1={-1}
             x2={layout.forestWidth + 1}
@@ -497,9 +496,9 @@
           <!-- Row banding backgrounds -->
           {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
             <rect
-              x={0}
+              x={-1}
               y={layout.headerHeight + (layout.rowPositions[i] ?? i * layout.rowHeight)}
-              width={layout.forestWidth}
+              width={layout.forestWidth + 2}
               height={layout.rowHeights[i] ?? layout.rowHeight}
               class="row-band {getRowBandClass(displayRow, i, hasGroups)}"
               class:row-hovered={displayRow.type === 'data' && displayRow.row.id === hoveredRowId}
@@ -1104,9 +1103,9 @@
   .webforest-plot-wrapper {
     position: relative;
     flex-shrink: 0;
-    /* Vertical separator borders - placed here so SVG gridlines can overlap them */
-    border-left: 1px solid var(--wf-border);
-    border-right: 1px solid var(--wf-border);
+    /* SVG is 2px wider (x=-1 to forestWidth+1), offset to overlap tables */
+    margin-left: -1px;
+    margin-right: -1px;
   }
 
   .plot-resize-handle {

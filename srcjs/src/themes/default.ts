@@ -30,7 +30,7 @@ export const defaultTypography: Typography = {
 export const defaultSpacing: Spacing = {
   rowHeight: 28,
   headerHeight: 36,
-  columnGap: 8,
+  columnGap: 0, // No gap - borders connect directly
   sectionGap: 16,
   padding: 12,
 };
