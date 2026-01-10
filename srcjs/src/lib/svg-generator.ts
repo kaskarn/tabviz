@@ -102,17 +102,33 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
   const fontSize = parseFontSize(spec.theme.typography.fontSizeBase);
   let maxWidth = 0;
 
+  // Build group depth map for calculating row indentation
+  const groupDepths = new Map<string, number>();
+  const groups = Array.isArray(spec.data.groups) ? spec.data.groups : [];
+  for (const group of groups) {
+    groupDepths.set(group.id, group.depth);
+  }
+
+  // Helper to get row depth (group depth + 1 for data rows)
+  const getRowDepth = (groupId: string | null | undefined): number => {
+    if (!groupId) return 0;
+    const groupDepth = groupDepths.get(groupId) ?? 0;
+    return groupDepth + 1;
+  };
+
   // Measure label header
   if (spec.data.labelHeader) {
     maxWidth = Math.max(maxWidth, estimateTextWidth(spec.data.labelHeader, fontSize));
   }
 
-  // Measure all labels (including badges if present)
+  // Measure all labels (including group depth, row indent, and badges)
   for (const row of spec.data.rows) {
     if (row.label) {
-      // Account for indentation
-      const indent = row.style?.indent ?? 0;
-      const indentWidth = indent * SPACING.INDENT_PER_LEVEL;
+      // Total indent = group-based depth + row-level indent
+      const depth = getRowDepth(row.groupId);
+      const rowIndent = row.style?.indent ?? 0;
+      const totalIndent = depth + rowIndent;
+      const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
       let rowWidth = estimateTextWidth(row.label, fontSize) + indentWidth;
 
       // Account for badge width if present
@@ -130,8 +146,8 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
     }
   }
 
-  // Also measure group headers
-  for (const group of spec.data.groups) {
+  // Also measure group headers (they have their own indentation)
+  for (const group of groups) {
     if (group.label) {
       const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
       maxWidth = Math.max(maxWidth, estimateTextWidth(group.label, fontSize) + indentWidth);

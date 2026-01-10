@@ -516,19 +516,35 @@ export function createForestStore() {
     if (spec.data.labelCol) {
       let maxLabelWidth = 0;
 
+      // Build group depth map for calculating row indentation
+      const groupDepths = new Map<string, number>();
+      for (const group of spec.data.groups) {
+        groupDepths.set(group.id, group.depth);
+      }
+
+      // Helper to get row depth (group depth + 1 for data rows)
+      const getRowDepth = (groupId: string | null | undefined): number => {
+        if (!groupId) return 0;
+        const groupDepth = groupDepths.get(groupId) ?? 0;
+        return groupDepth + 1;
+      };
+
       // Measure label header with bold font
       if (spec.data.labelHeader) {
         ctx!.font = headerFont;
         maxLabelWidth = Math.max(maxLabelWidth, ctx!.measureText(spec.data.labelHeader).width);
       }
 
-      // Measure all row labels with normal font (accounting for indentation and badges)
+      // Measure all row labels with normal font (accounting for group depth, indent, and badges)
       ctx!.font = dataFont;
       const baseFontSize = parseFloat(fontSize);
       for (const row of spec.data.rows) {
         if (row.label) {
-          const indent = row.style?.indent ?? 0;
-          const indentWidth = indent * SPACING.INDENT_PER_LEVEL;
+          // Total indent = group-based depth + row-level indent
+          const depth = getRowDepth(row.groupId);
+          const rowIndent = row.style?.indent ?? 0;
+          const totalIndent = depth + rowIndent;
+          const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
           let rowWidth = ctx!.measureText(row.label).width + indentWidth;
 
           // Account for badge width if present
@@ -545,6 +561,15 @@ export function createForestStore() {
           }
 
           maxLabelWidth = Math.max(maxLabelWidth, rowWidth);
+        }
+      }
+
+      // Also measure group headers (they have their own indentation)
+      ctx!.font = headerFont;
+      for (const group of spec.data.groups) {
+        if (group.label) {
+          const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
+          maxLabelWidth = Math.max(maxLabelWidth, ctx!.measureText(group.label).width + indentWidth);
         }
       }
 
