@@ -332,21 +332,33 @@
         <!-- Rows (including group headers) -->
         {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
           {#if displayRow.type === "group_header"}
-            <!-- Group header row - entire row is clickable -->
+            <!-- Group header row - uses cell structure for consistent borders -->
             <div
-              class="webforest-group-row"
-              style:padding-left={`${displayRow.depth * 12}px`}
+              class="webforest-table-row webforest-group-row"
               role="button"
               tabindex="0"
               onclick={() => store.toggleGroup(displayRow.group.id)}
               onkeydown={(e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id)}
               transition:slide={{ duration: 150 }}
             >
-              <GroupHeader
-                group={displayRow.group}
-                rowCount={displayRow.rowCount}
-                {theme}
-              />
+              <div
+                class="webforest-label-col"
+                style:padding-left={`${displayRow.depth * 12}px`}
+                style:width={getLabelWidth()}
+                style:flex={getLabelFlex()}
+              >
+                <GroupHeader
+                  group={displayRow.group}
+                  rowCount={displayRow.rowCount}
+                  {theme}
+                />
+              </div>
+              {#each leftColumns as column (column.id)}
+                <div
+                  class="webforest-col group-placeholder"
+                  style:width={getColWidth(column)}
+                ></div>
+              {/each}
             </div>
           {:else}
             <!-- Data row with slide animation -->
@@ -635,9 +647,14 @@
           <!-- Rows (including group headers) -->
           {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
             {#if displayRow.type === "group_header"}
-              <!-- Empty row for group header (columns don't apply) -->
-              <div class="webforest-group-row-right" transition:slide={{ duration: 150 }}>
-                <!-- Empty placeholder to maintain alignment -->
+              <!-- Group header row - uses cell structure for consistent borders -->
+              <div class="webforest-table-row webforest-group-row" transition:slide={{ duration: 150 }}>
+                {#each rightColumns as column (column.id)}
+                  <div
+                    class="webforest-col group-placeholder"
+                    style:width={getColWidth(column)}
+                  ></div>
+                {/each}
               </div>
             {:else}
               <!-- Data row with slide animation -->
@@ -1199,12 +1216,16 @@
     width: 100%;
     height: var(--wf-row-height);
     align-items: center;
-    border-bottom: 1px solid var(--wf-border);
     border-left: 3px solid transparent;
     background: color-mix(in srgb, var(--wf-primary) 5%, var(--wf-bg));
     cursor: pointer;
     outline: none;
     transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  /* Placeholder cells in group rows - empty cells that maintain borders */
+  .group-placeholder {
+    /* Empty cells - no content but borders remain visible */
   }
 
   .webforest-group-row:hover {
@@ -1215,13 +1236,6 @@
   .webforest-group-row:focus-visible {
     outline: 2px solid var(--wf-primary);
     outline-offset: -2px;
-  }
-
-  .webforest-group-row-right {
-    width: 100%;
-    height: var(--wf-row-height);
-    border-bottom: 1px solid var(--wf-border);
-    background: color-mix(in srgb, var(--wf-primary) 5%, var(--wf-bg));
   }
 
   /* SVG row banding */
