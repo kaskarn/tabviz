@@ -471,10 +471,10 @@
           viewBox="0 0 {layout.forestWidth} {layout.headerHeight + layout.plotHeight + layout.axisHeight}"
           style="overflow: visible;"
         >
-          <!-- Header border -->
+          <!-- Header border (extend 1px beyond to overlap with table borders) -->
           <line
-            x1={0}
-            x2={layout.forestWidth}
+            x1={-1}
+            x2={layout.forestWidth + 1}
             y1={layout.headerHeight}
             y2={layout.headerHeight}
             stroke="var(--wf-border, #e2e8f0)"
@@ -497,6 +497,7 @@
           {/each}
 
           <!-- Row gridlines (extending table borders into plot) -->
+          <!-- Extend lines 1px beyond SVG bounds on each side to overlap with table borders -->
           {#each displayRows as displayRow, i}
             {@const rowY = layout.rowPositions[i] ?? i * layout.rowHeight}
             {@const rowH = layout.rowHeights[i] ?? layout.rowHeight}
@@ -505,8 +506,8 @@
             <!-- Top border for summary rows (2px) -->
             {#if isSummaryRow}
               <line
-                x1={0}
-                x2={layout.forestWidth}
+                x1={-1}
+                x2={layout.forestWidth + 1}
                 y1={layout.headerHeight + rowY}
                 y2={layout.headerHeight + rowY}
                 stroke="var(--wf-border, #e2e8f0)"
@@ -517,8 +518,8 @@
             <!-- Bottom border (1px) -->
             {#if !isSpacerRow}
               <line
-                x1={0}
-                x2={layout.forestWidth}
+                x1={-1}
+                x2={layout.forestWidth + 1}
                 y1={layout.headerHeight + rowY + rowH}
                 y2={layout.headerHeight + rowY + rowH}
                 stroke="var(--wf-border, #e2e8f0)"
