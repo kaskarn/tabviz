@@ -522,13 +522,29 @@ export function createForestStore() {
         maxLabelWidth = Math.max(maxLabelWidth, ctx!.measureText(spec.data.labelHeader).width);
       }
 
-      // Measure all row labels with normal font (accounting for indentation)
+      // Measure all row labels with normal font (accounting for indentation and badges)
       ctx!.font = dataFont;
+      const baseFontSize = parseFloat(fontSize);
       for (const row of spec.data.rows) {
         if (row.label) {
           const indent = row.style?.indent ?? 0;
           const indentWidth = indent * SPACING.INDENT_PER_LEVEL;
-          maxLabelWidth = Math.max(maxLabelWidth, ctx!.measureText(row.label).width + indentWidth);
+          let rowWidth = ctx!.measureText(row.label).width + indentWidth;
+
+          // Account for badge width if present
+          if (row.style?.badge) {
+            const badgeText = String(row.style.badge);
+            const badgeFontSize = baseFontSize * 0.8;
+            const badgePadding = 4;
+            const badgeGap = 6; // gap between label and badge
+            ctx!.font = `${badgeFontSize}px ${fontFamily}`;
+            const badgeTextWidth = ctx!.measureText(badgeText).width;
+            const badgeWidth = badgeTextWidth + badgePadding * 2;
+            rowWidth += badgeGap + badgeWidth;
+            ctx!.font = dataFont; // restore font
+          }
+
+          maxLabelWidth = Math.max(maxLabelWidth, rowWidth);
         }
       }
 

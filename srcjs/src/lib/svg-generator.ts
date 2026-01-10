@@ -107,13 +107,26 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
     maxWidth = Math.max(maxWidth, estimateTextWidth(spec.data.labelHeader, fontSize));
   }
 
-  // Measure all labels
+  // Measure all labels (including badges if present)
   for (const row of spec.data.rows) {
     if (row.label) {
       // Account for indentation
       const indent = row.style?.indent ?? 0;
       const indentWidth = indent * SPACING.INDENT_PER_LEVEL;
-      maxWidth = Math.max(maxWidth, estimateTextWidth(row.label, fontSize) + indentWidth);
+      let rowWidth = estimateTextWidth(row.label, fontSize) + indentWidth;
+
+      // Account for badge width if present
+      if (row.style?.badge) {
+        const badgeText = String(row.style.badge);
+        const badgeFontSize = fontSize * 0.8;
+        const badgePadding = 4;
+        const badgeGap = 6; // gap between label and badge
+        const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
+        const badgeWidth = badgeTextWidth + badgePadding * 2;
+        rowWidth += badgeGap + badgeWidth;
+      }
+
+      maxWidth = Math.max(maxWidth, rowWidth);
     }
   }
 
