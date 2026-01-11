@@ -539,7 +539,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><code>foreground</code></td>
 <td><code>"#333333"</code></td>
 <td>Primary text color</td>
-<td>Labels, data values, headers</td>
+<td>Labels, data values, headers; <code>row_emphasis</code> text</td>
 </tr>
 <tr class="odd">
 <td><code>primary</code></td>
@@ -551,19 +551,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><code>secondary</code></td>
 <td><code>"#64748b"</code></td>
 <td>Secondary text/UI color</td>
-<td>Subtitles, less prominent text</td>
+<td>Subtitles, less prominent UI text</td>
 </tr>
 <tr class="odd">
 <td><code>accent</code></td>
 <td><code>"#8b5cf6"</code></td>
-<td>Accent color for emphasis</td>
-<td>Reserved for custom use</td>
+<td>Accent color</td>
+<td><code>row_accent</code> text styling, annotation labels</td>
 </tr>
 <tr class="even">
 <td><code>muted</code></td>
 <td><code>"#94a3b8"</code></td>
-<td>Muted/disabled text color</td>
-<td>Footnotes, captions</td>
+<td>Muted text color</td>
+<td>Footnotes, captions; <code>row_muted</code> text styling</td>
 </tr>
 <tr class="odd">
 <td><code>border</code></td>
@@ -1862,11 +1862,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb30-129"><a href="#cb30-129" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span> Used For <span class="pp">|</span></span>
 <span id="cb30-130"><a href="#cb30-130" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|---------|-------------|----------|</span></span>
 <span id="cb30-131"><a href="#cb30-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`background`</span> <span class="pp">|</span> <span class="in">`"#ffffff"`</span> <span class="pp">|</span> Background color <span class="pp">|</span> Plot container, table cells <span class="pp">|</span></span>
-<span id="cb30-132"><a href="#cb30-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`foreground`</span> <span class="pp">|</span> <span class="in">`"#333333"`</span> <span class="pp">|</span> Primary text color <span class="pp">|</span> Labels, data values, headers <span class="pp">|</span></span>
+<span id="cb30-132"><a href="#cb30-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`foreground`</span> <span class="pp">|</span> <span class="in">`"#333333"`</span> <span class="pp">|</span> Primary text color <span class="pp">|</span> Labels, data values, headers; <span class="in">`row_emphasis`</span> text <span class="pp">|</span></span>
 <span id="cb30-133"><a href="#cb30-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`primary`</span> <span class="pp">|</span> <span class="in">`"#0891b2"`</span> <span class="pp">|</span> Primary accent color <span class="pp">|</span> Row group backgrounds, hover states, selection <span class="pp">|</span></span>
-<span id="cb30-134"><a href="#cb30-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`secondary`</span> <span class="pp">|</span> <span class="in">`"#64748b"`</span> <span class="pp">|</span> Secondary text/UI color <span class="pp">|</span> Subtitles, less prominent text <span class="pp">|</span></span>
-<span id="cb30-135"><a href="#cb30-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`accent`</span> <span class="pp">|</span> <span class="in">`"#8b5cf6"`</span> <span class="pp">|</span> Accent color for emphasis <span class="pp">|</span> Reserved for custom use <span class="pp">|</span></span>
-<span id="cb30-136"><a href="#cb30-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`muted`</span> <span class="pp">|</span> <span class="in">`"#94a3b8"`</span> <span class="pp">|</span> Muted/disabled text color <span class="pp">|</span> Footnotes, captions <span class="pp">|</span></span>
+<span id="cb30-134"><a href="#cb30-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`secondary`</span> <span class="pp">|</span> <span class="in">`"#64748b"`</span> <span class="pp">|</span> Secondary text/UI color <span class="pp">|</span> Subtitles, less prominent UI text <span class="pp">|</span></span>
+<span id="cb30-135"><a href="#cb30-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`accent`</span> <span class="pp">|</span> <span class="in">`"#8b5cf6"`</span> <span class="pp">|</span> Accent color <span class="pp">|</span> <span class="in">`row_accent`</span> text styling, annotation labels <span class="pp">|</span></span>
+<span id="cb30-136"><a href="#cb30-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`muted`</span> <span class="pp">|</span> <span class="in">`"#94a3b8"`</span> <span class="pp">|</span> Muted text color <span class="pp">|</span> Footnotes, captions; <span class="in">`row_muted`</span> text styling <span class="pp">|</span></span>
 <span id="cb30-137"><a href="#cb30-137" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`border`</span> <span class="pp">|</span> <span class="in">`"#e2e8f0"`</span> <span class="pp">|</span> Border color <span class="pp">|</span> Row dividers, container borders <span class="pp">|</span></span>
 <span id="cb30-138"><a href="#cb30-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`interval`</span> <span class="pp">|</span> <span class="in">`"#0891b2"`</span> <span class="pp">|</span> Default marker/interval color <span class="pp">|</span> CI marker fill (squares, circles) <span class="pp">|</span></span>
 <span id="cb30-139"><a href="#cb30-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`interval_positive`</span> <span class="pp">|</span> *(deprecated)* <span class="pp">|</span> Color for favorable effects <span class="pp">|</span> — <span class="pp">|</span></span>
