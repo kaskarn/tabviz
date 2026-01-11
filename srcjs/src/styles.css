@@ -4,9 +4,8 @@
 @import "tailwindcss/theme";
 
 /* Base webforest styles */
-.webforest-container {
-  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-}
+/* Note: font-family is set via --wf-font-family CSS variable from the theme
+   in ForestPlot.svelte. Don't override it here. */
 
 /* Ensure SVG text inherits font */
 .webforest-canvas text {

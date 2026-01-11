@@ -1137,6 +1137,7 @@
     overflow: auto;
     flex: 1;
     min-height: 0;
+    border-top: 2px solid var(--wf-border);
   }
 
   /* Base grid cell styles */

@@ -13,21 +13,23 @@ export type { ExportOptions } from "./svg-generator";
  * Export spec as SVG string
  *
  * @param spec - The WebSpec object containing plot data and configuration
+ * @param options - Optional export options (dimensions, column widths)
  * @returns SVG string
  */
-export function exportToSVG(spec: WebSpec): string {
-  return generateSVG(spec);
+export function exportToSVG(spec: WebSpec, options?: ExportOptions): string {
+  return generateSVG(spec, options);
 }
 
 /**
  * Export spec as PNG blob
  *
  * @param spec - The WebSpec object containing plot data and configuration
+ * @param options - Optional export options (dimensions, column widths)
  * @param scale - Scale factor for resolution (default 2 for retina)
  * @returns Promise resolving to PNG Blob
  */
-export async function exportToPNG(spec: WebSpec, scale: number = 2): Promise<Blob> {
-  const svgString = generateSVG(spec);
+export async function exportToPNG(spec: WebSpec, options?: ExportOptions, scale: number = 2): Promise<Blob> {
+  const svgString = generateSVG(spec, options);
   return svgToBlob(svgString, scale);
 }
 

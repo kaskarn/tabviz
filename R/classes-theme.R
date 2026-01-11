@@ -105,28 +105,66 @@ Shapes <- new_class(
 
 #' AxisConfig: Axis rendering configuration
 #'
+#' Controls how the x-axis range and ticks are calculated.
+#'
+#' @section Auto-Scaling Algorithm:
+#' When `range_min`/`range_max` are NA (auto), the axis range is calculated as:
+#' 1. Collect all point estimates (not CI bounds)
+#' 2. Extend range to include null value (if `include_null = TRUE`)
+#' 3. Add padding as a fraction of the estimate range
+#' 4. Optionally make symmetric around null (if `symmetric = TRUE`)
+#' 5. Apply nice rounding for clean tick values
+#'
+#' CIs extending beyond `ci_truncation_threshold × estimate_range` are truncated
+#' with arrow indicators rather than expanding the axis.
+#'
 #' @param range_min Minimum value for axis (NA = auto from data)
 #' @param range_max Maximum value for axis (NA = auto from data)
 #' @param tick_count Target number of ticks (NA = auto)
 #' @param tick_values Explicit tick positions (overrides tick_count)
 #' @param gridlines Show gridlines on the plot
 #' @param gridline_style Style of gridlines: "solid", "dashed", or "dotted"
+#' @param padding Fraction of estimate range to add as padding on each side (default: 0.10)
+#' @param ci_truncation_threshold Truncate CIs extending beyond this multiple of
+#'   the estimate range (default: 2.0). Use `Inf` to never truncate.
+#' @param include_null Always include the null value in the axis range (default: TRUE)
+#' @param symmetric Make axis symmetric around null value (default: NULL for auto,
+#'   which enables symmetry only when effects appear on both sides of null)
+#' @param null_tick Always show a tick at the null value (default: TRUE)
+#' @param marker_margin Add half-marker-width padding at edges so markers don't clip (default: TRUE)
 #'
 #' @export
 AxisConfig <- new_class(
   "AxisConfig",
   properties = list(
+    # Explicit overrides (when set, bypass auto-calculation)
     range_min = new_property(class_numeric, default = NA_real_),
     range_max = new_property(class_numeric, default = NA_real_),
     tick_count = new_property(class_numeric, default = NA_real_),
     tick_values = new_property(class_any, default = NULL),
     gridlines = new_property(class_logical, default = FALSE),
-    gridline_style = new_property(class_character, default = "dotted")
+    gridline_style = new_property(class_character, default = "dotted"),
+    # Auto-scaling parameters
+    padding = new_property(class_numeric, default = 0.10),
+    ci_truncation_threshold = new_property(class_numeric, default = 2.0),
+    include_null = new_property(class_logical, default = TRUE),
+    symmetric = new_property(class_any, default = NULL),  # NULL = auto
+    null_tick = new_property(class_logical, default = TRUE),
+    marker_margin = new_property(class_logical, default = TRUE)
   ),
   validator = function(self) {
     valid_styles <- c("solid", "dashed", "dotted")
     if (!self@gridline_style %in% valid_styles) {
       return(paste("gridline_style must be one of:", paste(valid_styles, collapse = ", ")))
+    }
+    if (!is.na(self@padding) && (self@padding < 0 || self@padding > 1)) {
+      return("padding must be between 0 and 1")
+    }
+    if (!is.na(self@ci_truncation_threshold) && self@ci_truncation_threshold < 0) {
+      return("ci_truncation_threshold must be non-negative")
+    }
+    if (!is.null(self@symmetric) && !is.logical(self@symmetric)) {
+      return("symmetric must be TRUE, FALSE, or NULL (auto)")
     }
     NULL
   }

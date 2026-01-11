@@ -1,3 +1,30 @@
+# webforest 0.1.5
+
+## Breaking Changes
+
+* **`axis_trim` removed**: The `axis_trim` parameter has been replaced by a new, more powerful auto-scaling system. See "Smart Axis Auto-Scaling" below.
+
+## New Features
+
+* **Smart Axis Auto-Scaling**: Completely redesigned x-axis range calculation:
+  - **Point estimates are sacred**: Axis range is based on point estimates, not CI bounds. All markers are always visible.
+  - **CI truncation**: Wide CIs that would blow up the axis are truncated with arrow indicators instead
+  - **Null value included**: The null reference line is always within the axis range (configurable)
+  - **Null tick guaranteed**: A tick is always shown at the null value (configurable)
+  - **At least 2 ticks**: Minimum of 2 ticks are always rendered
+  - **Symmetric option**: Axis can be made symmetric around null (auto-enabled when effects are on both sides)
+  - **Marker margin**: Half-marker-width added at edges so markers don't clip
+
+* **New axis theme settings** in `AxisConfig`:
+  - `padding`: Fraction of estimate range for padding (default: 0.10)
+  - `ci_truncation_threshold`: Truncate CIs beyond this × estimate range (default: 2.0)
+  - `include_null`: Always include null in range (default: TRUE)
+  - `symmetric`: NULL = auto, TRUE = force, FALSE = disable
+  - `null_tick`: Always show tick at null (default: TRUE)
+  - `marker_margin`: Add marker padding at edges (default: TRUE)
+
+---
+
 # webforest 0.1.4
 
 ## New Features
@@ -16,7 +43,7 @@
 
 ## Improvements
 
-* **Axis padding reduced**: Domain padding decreased from 15% to 8% for tighter axis ranges.
+* **Axis padding**: Default axis padding is now 10% on each side of point estimates.
 
 * **Split forest axis settings**: `axis_range` and `axis_ticks` now properly propagate to all splits when `shared_axis=TRUE`.
 
@@ -61,7 +88,7 @@
 
 ## Axis & Interval Improvements
 
-* **Axis outlier trimming**: `forest_plot()` gains `axis_trim` parameter for IQR-based axis range trimming. When set (e.g., `axis_trim = 2`), the axis range is computed as `median ± axis_trim × IQR`.
+* **Axis outlier trimming** _(removed in v0.1.5)_: `forest_plot()` gained `axis_trim` parameter for IQR-based axis range trimming. This has been replaced by the new smart auto-scaling system in v0.1.5.
 
 * **Arrow indicators**: Confidence intervals extending beyond axis bounds now display arrow indicators instead of whiskers, showing "continues beyond visible range".
 

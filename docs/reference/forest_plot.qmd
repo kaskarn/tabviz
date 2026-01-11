@@ -18,7 +18,6 @@ forest_plot(
   split_by = NULL,
   shared_axis = FALSE,
   axis_range = NULL,
-  axis_trim = NULL,
   axis_ticks = NULL,
   axis_gridlines = NULL,
   plot_position = NULL,
@@ -84,7 +83,6 @@ forest_plot(
 | Argument | Description |
 |----------|-------------|
 | `axis_range` | `c(min, max)` to override axis limits |
-| `axis_trim` | IQR multiplier for automatic outlier trimming. Computes range as `median ± axis_trim × IQR`. Ignored if `axis_range` is set. |
 | `axis_ticks` | Numeric vector of explicit tick positions |
 | `axis_gridlines` | `TRUE`/`FALSE` to show/hide gridlines |
 | `plot_position` | `"left"` or `"right"` |

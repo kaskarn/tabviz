@@ -8,7 +8,7 @@
 </script>
 
 {#if title || subtitle}
-  <div class="plot-header">
+  <div class="title-area">
     {#if title}
       <h2 class="plot-title">{title}</h2>
     {/if}
@@ -19,7 +19,7 @@
 {/if}
 
 <style>
-  .plot-header {
+  .title-area {
     padding: 12px 12px 8px;
   }
 

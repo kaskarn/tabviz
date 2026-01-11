@@ -130,8 +130,8 @@ export const SPACING = {
 // ============================================================================
 
 export const RENDERING = {
-  /** Height multiplier for header when column groups exist */
-  GROUP_HEADER_HEIGHT_MULTIPLIER: 1.5,
+  /** Height multiplier for header when column groups exist (more compact two-tier headers) */
+  GROUP_HEADER_HEIGHT_MULTIPLIER: 1.3,
 
   /** Height multiplier for overall summary row */
   OVERALL_ROW_HEIGHT_MULTIPLIER: 1.5,

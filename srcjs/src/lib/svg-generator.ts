@@ -45,6 +45,12 @@ export interface ExportOptions {
   height?: number;
   scale?: number;
   backgroundColor?: string;
+  // Pre-computed column widths from web view (keyed by column ID, including "__label__")
+  columnWidths?: Record<string, number>;
+  // Pre-computed forest/plot width from web view
+  forestWidth?: number;
+  // Pre-computed x-axis domain from web view (ensures matching scale)
+  xDomain?: [number, number];
 }
 
 // ============================================================================
@@ -221,20 +227,41 @@ function computeLayout(spec: WebSpec, options: ExportOptions): InternalLayout {
 
   // Compute display rows (includes group headers)
   const displayRows = buildDisplayRows(spec);
-  const displayRowCount = displayRows.length;
   const hasOverall = !!spec.data.overall;
 
-  const plotHeight = displayRowCount * rowHeight +
-    (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
+  // Calculate plot height accounting for spacer rows (half height)
+  let plotHeight = 0;
+  for (const dr of displayRows) {
+    const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
+    plotHeight += isSpacerRow ? rowHeight / 2 : rowHeight;
+  }
+  if (hasOverall) {
+    plotHeight += rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER;
+  }
 
   // Calculate auto-widths for columns
   const leftColumns = flattenColumns(columns, "left");
   const rightColumns = flattenColumns(columns, "right");
   const allColumns = [...leftColumns, ...rightColumns];
-  const autoWidths = calculateSvgAutoWidths(spec, allColumns);
 
-  // Calculate label column width
-  const labelWidth = calculateSvgLabelWidth(spec);
+  // Use pre-computed widths from web view if provided, otherwise calculate
+  let autoWidths: Map<string, number>;
+  let labelWidth: number;
+
+  if (options.columnWidths) {
+    // Use pre-computed widths from web view
+    autoWidths = new Map<string, number>();
+    for (const [id, width] of Object.entries(options.columnWidths)) {
+      if (id !== "__label__") {
+        autoWidths.set(id, width);
+      }
+    }
+    labelWidth = options.columnWidths["__label__"] ?? calculateSvgLabelWidth(spec);
+  } else {
+    // Calculate widths from scratch (R-side export path)
+    autoWidths = calculateSvgAutoWidths(spec, allColumns);
+    labelWidth = calculateSvgLabelWidth(spec);
+  }
 
   // Calculate table widths using effective widths
   const leftTableWidth = labelWidth +
@@ -251,6 +278,9 @@ function computeLayout(spec: WebSpec, options: ExportOptions): InternalLayout {
   let forestWidth: number;
   if (!includeForest) {
     forestWidth = 0;
+  } else if (typeof options.forestWidth === "number") {
+    // Use pre-computed forest width from web view
+    forestWidth = options.forestWidth;
   } else if (typeof spec.layout.plotWidth === "number") {
     forestWidth = spec.layout.plotWidth;
   } else {
@@ -608,10 +638,40 @@ function createLogScale(domain: [number, number], range: [number, number]): Scal
   return scale;
 }
 
-function computeXScale(spec: WebSpec, forestWidth: number): Scale {
+/**
+ * Compute x-scale for forest plot using the new auto-scaling algorithm:
+ * 1. Core range from point estimates (not CI bounds)
+ * 2. Include null value if configured
+ * 3. Add padding as fraction of estimate range
+ * 4. Apply symmetry around null if configured
+ * 5. Account for marker margin at edges
+ *
+ * If options.xDomain is provided, uses that domain directly (for matching web view).
+ */
+function computeXScale(spec: WebSpec, forestWidth: number, options?: ExportOptions): Scale {
+  const isLog = spec.data.scale === "log";
+
+  // If pre-computed domain is provided, use it directly
+  if (options?.xDomain) {
+    const domain = options.xDomain;
+    if (isLog) {
+      return createLogScale(
+        [Math.max(domain[0], 0.01), Math.max(domain[1], 0.02)],
+        [0, forestWidth]
+      );
+    }
+    return createLinearScale(domain, [0, forestWidth]);
+  }
+
   const rows = spec.data.rows;
   const axisConfig = spec.theme.axis;
-  const isLog = spec.data.scale === "log";
+  const nullValue = spec.data.nullValue;
+
+  // Extract axis config with defaults
+  const padding = axisConfig?.padding ?? 0.10;
+  const includeNull = axisConfig?.includeNull ?? true;
+  const symmetric = axisConfig?.symmetric;  // null = auto
+  const markerMargin = axisConfig?.markerMargin ?? true;
 
   // Guard against R serialization returning {} instead of null for missing values
   const hasExplicitMin = typeof axisConfig?.rangeMin === "number";
@@ -622,33 +682,93 @@ function computeXScale(spec: WebSpec, forestWidth: number): Scale {
   if (hasExplicitMin && hasExplicitMax) {
     domain = [axisConfig.rangeMin!, axisConfig.rangeMax!];
   } else {
-    const allValues = rows
-      .flatMap((r) => [r.lower, r.upper])
-      .filter((v) => v != null && !Number.isNaN(v) && Number.isFinite(v));
+    // Step 1: Collect point estimates (not CI bounds)
+    const pointEstimates = rows
+      .map((r) => r.point)
+      .filter((v): v is number => v != null && !Number.isNaN(v) && Number.isFinite(v));
 
-    if (allValues.length === 0) {
+    if (pointEstimates.length === 0) {
       domain = isLog ? [0.1, 10] : [0, 1];
     } else {
-      const [minVal, maxVal] = [Math.min(...allValues), Math.max(...allValues)];
-      const range = maxVal - minVal || 1;
-      domain = [
-        hasExplicitMin ? axisConfig.rangeMin! : minVal - range * DOMAIN_PADDING,
-        hasExplicitMax ? axisConfig.rangeMax! : maxVal + range * DOMAIN_PADDING,
-      ];
+      let minEst = Math.min(...pointEstimates);
+      let maxEst = Math.max(...pointEstimates);
+
+      // Step 2: Include null value if configured
+      if (includeNull) {
+        minEst = Math.min(minEst, nullValue);
+        maxEst = Math.max(maxEst, nullValue);
+      }
+
+      // Calculate estimate range for padding
+      const estimateRange = maxEst - minEst || 1;
+
+      // Step 3: Add padding as fraction of estimate range
+      let domainMin = hasExplicitMin ? axisConfig.rangeMin! : minEst - estimateRange * padding;
+      let domainMax = hasExplicitMax ? axisConfig.rangeMax! : maxEst + estimateRange * padding;
+
+      // Step 4: Apply symmetry around null if configured
+      const hasEffectsBothSides = pointEstimates.some(e => e < nullValue) &&
+                                   pointEstimates.some(e => e > nullValue);
+      const shouldBeSymmetric = symmetric === true || (symmetric === null && hasEffectsBothSides);
+
+      if (shouldBeSymmetric && !hasExplicitMin && !hasExplicitMax) {
+        if (isLog) {
+          // Log scale: geometric symmetry around null
+          const logNull = Math.log(nullValue);
+          const maxLogDist = Math.max(
+            Math.abs(Math.log(Math.max(domainMin, 0.001)) - logNull),
+            Math.abs(Math.log(domainMax) - logNull)
+          );
+          domainMin = Math.exp(logNull - maxLogDist);
+          domainMax = Math.exp(logNull + maxLogDist);
+        } else {
+          // Linear scale: arithmetic symmetry
+          const maxDist = Math.max(
+            Math.abs(domainMin - nullValue),
+            Math.abs(domainMax - nullValue)
+          );
+          domainMin = nullValue - maxDist;
+          domainMax = nullValue + maxDist;
+        }
+      }
+
+      domain = [domainMin, domainMax];
     }
   }
 
   // Apply nice rounding to domain (matches D3's .nice() behavior)
   const nicedDomain = niceDomain(domain, isLog);
 
+  // Step 5: Account for marker margin at edges
+  let finalDomain = nicedDomain;
+  if (markerMargin && forestWidth > 0) {
+    const pointSize = spec.theme.shapes.pointSize;
+    // Convert pixel margin to domain units
+    const domainRange = nicedDomain[1] - nicedDomain[0];
+    const marginInDomainUnits = (pointSize / 2) * (domainRange / forestWidth);
+
+    if (isLog) {
+      const logMargin = marginInDomainUnits / nicedDomain[0];
+      finalDomain = [
+        nicedDomain[0] / (1 + logMargin),
+        nicedDomain[1] * (1 + logMargin),
+      ];
+    } else {
+      finalDomain = [
+        nicedDomain[0] - marginInDomainUnits,
+        nicedDomain[1] + marginInDomainUnits,
+      ];
+    }
+  }
+
   if (isLog) {
     return createLogScale(
-      [Math.max(nicedDomain[0], 0.01), Math.max(nicedDomain[1], 0.02)],
+      [Math.max(finalDomain[0], 0.01), Math.max(finalDomain[1], 0.02)],
       [0, forestWidth]
     );
   }
 
-  return createLinearScale(nicedDomain, [0, forestWidth]);
+  return createLinearScale(finalDomain, [0, forestWidth]);
 }
 
 // ============================================================================
@@ -720,7 +840,8 @@ function renderColumnHeaders(
   autoWidths?: Map<string, number>
 ): string {
   const lines: string[] = [];
-  const fontSize = parseFontSize(theme.typography.fontSizeSm);
+  // Use fontSizeBase to match web view (ColumnHeaders.svelte uses --wf-font-size-base)
+  const fontSize = parseFontSize(theme.typography.fontSizeBase);
   const fontWeight = theme.typography.fontWeightMedium;
   const boldWeight = theme.typography.fontWeightBold;
   const hasGroups = hasColumnGroups(columnDefs);
@@ -758,14 +879,13 @@ function renderColumnHeaders(
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
         fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
-      // Vertical divider for label column
-      lines.push(`<line x1="${currentX + actualLabelWidth}" x2="${currentX + actualLabelWidth}"
-        y1="${y}" y2="${y + headerHeight}"
-        stroke="${theme.colors.border}" stroke-width="1" opacity="0.3"/>`);
       currentX += actualLabelWidth;
     }
 
     // Row 1: Group headers and non-grouped column headers
+    // Track positions of column groups to draw borders only under them
+    const groupBorders: Array<{ x1: number; x2: number }> = [];
+
     for (const col of columnDefs) {
       if (col.isGroup) {
         // Group header spans its children
@@ -777,10 +897,8 @@ function renderColumnHeaders(
           font-weight="${boldWeight}"
           text-anchor="middle"
           fill="${theme.colors.foreground}">${escapeXml(col.header)}</text>`);
-        // Border under group header
-        lines.push(`<line x1="${currentX}" x2="${currentX + groupWidth}"
-          y1="${y + row1Height}" y2="${y + row1Height}"
-          stroke="${theme.colors.border}" stroke-width="1" opacity="0.5"/>`);
+        // Track this column group for border drawing
+        groupBorders.push({ x1: currentX, x2: currentX + groupWidth });
         currentX += groupWidth;
       } else {
         // Non-grouped column spans both rows
@@ -796,6 +914,13 @@ function renderColumnHeaders(
           fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
         currentX += width;
       }
+    }
+
+    // Draw borders only under actual column groups (not under spanning columns)
+    for (const border of groupBorders) {
+      lines.push(`<line x1="${border.x1}" x2="${border.x2}"
+        y1="${y + row1Height}" y2="${y + row1Height}"
+        stroke="${theme.colors.border}" stroke-width="1" opacity="0.5"/>`);
     }
 
     // Row 2: Sub-column headers (under groups)
@@ -1453,15 +1578,34 @@ function renderAxis(
   layout: InternalLayout,
   theme: WebTheme,
   axisLabel: string,
-  forestX: number
+  forestX: number,
+  nullValue: number = 1
 ): string {
   const lines: string[] = [];
   // Guard against R serialization returning {} instead of null
   const tickCount = typeof theme.axis.tickCount === "number"
     ? theme.axis.tickCount
     : SPACING.DEFAULT_TICK_COUNT;
-  const ticks = Array.isArray(theme.axis.tickValues) ? theme.axis.tickValues : xScale.ticks(tickCount);
+
+  // Generate filtered ticks matching web view logic (EffectAxis.svelte)
+  const ticks = filterAxisTicks(xScale, tickCount, theme, nullValue, layout.forestWidth);
   const fontSize = parseFontSize(theme.typography.fontSizeSm);
+
+  // Edge threshold for text anchor adjustment (matches EffectAxis.svelte EDGE_THRESHOLD)
+  const EDGE_THRESHOLD = 35;
+
+  // Helper functions for edge label handling (matches EffectAxis.svelte)
+  const getTextAnchor = (tickX: number): "start" | "middle" | "end" => {
+    if (tickX < EDGE_THRESHOLD) return "start";
+    if (tickX > layout.forestWidth - EDGE_THRESHOLD) return "end";
+    return "middle";
+  };
+
+  const getTextXOffset = (tickX: number): number => {
+    if (tickX < EDGE_THRESHOLD) return 2;
+    if (tickX > layout.forestWidth - EDGE_THRESHOLD) return -2;
+    return 0;
+  };
 
   // Axis line
   lines.push(`<line x1="${forestX}" x2="${forestX + layout.forestWidth}"
@@ -1469,10 +1613,14 @@ function renderAxis(
 
   // Ticks and labels
   for (const tick of ticks) {
-    const x = forestX + xScale(tick);
+    const tickX = xScale(tick); // Position relative to forest plot
+    const x = forestX + tickX;  // Absolute position in SVG
+    const textAnchor = getTextAnchor(tickX);
+    const xOffset = getTextXOffset(tickX);
+
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="4"
       stroke="${theme.colors.border}" stroke-width="1"/>`);
-    lines.push(`<text x="${x}" y="16" text-anchor="middle"
+    lines.push(`<text x="${x + xOffset}" y="16" text-anchor="${textAnchor}"
       font-family="${theme.typography.fontFamily}"
       font-size="${fontSize}px"
       fill="${theme.colors.secondary}">${formatTick(tick)}</text>`);
@@ -1489,6 +1637,103 @@ function renderAxis(
   }
 
   return `<g transform="translate(0, ${layout.mainY + layout.headerHeight + layout.plotHeight})">${lines.join("\n")}</g>`;
+}
+
+/**
+ * Filter axis ticks to match web view behavior (EffectAxis.svelte).
+ * - Uses minimum spacing to prevent overlap
+ * - Filters symmetrically from null value outward
+ * - Ensures null tick is included when in domain
+ * - Guarantees at least 2 ticks
+ */
+function filterAxisTicks(
+  xScale: Scale,
+  tickCount: number,
+  theme: WebTheme,
+  nullValue: number,
+  forestWidth: number
+): number[] {
+  // Use explicit tick values if provided
+  if (Array.isArray(theme.axis.tickValues) && theme.axis.tickValues.length > 0) {
+    const [domainMin, domainMax] = xScale.domain() as [number, number];
+    let result = theme.axis.tickValues.filter((t: number) => t >= domainMin && t <= domainMax);
+    // Ensure null tick is included if in domain
+    const shouldIncludeNull = theme.axis.nullTick !== false;
+    const nullInDomain = nullValue >= domainMin && nullValue <= domainMax;
+    if (shouldIncludeNull && nullInDomain && !result.includes(nullValue)) {
+      result = [...result, nullValue].sort((a, b) => a - b);
+    }
+    return result;
+  }
+
+  const [domainMin, domainMax] = xScale.domain() as [number, number];
+  const shouldIncludeNull = theme.axis.nullTick !== false;
+  const nullInDomain = nullValue >= domainMin && nullValue <= domainMax;
+
+  const minSpacing = 50; // Minimum pixels between tick labels (matches web view)
+  const maxTicks = Math.max(2, Math.floor(forestWidth / minSpacing));
+  const effectiveTickCount = Math.min(tickCount, Math.min(7, maxTicks));
+
+  const allTicks = xScale.ticks(effectiveTickCount);
+  if (allTicks.length === 0) {
+    if (shouldIncludeNull && nullInDomain) {
+      return [nullValue];
+    }
+    return [];
+  }
+
+  // Filter ticks symmetrically from null value outward
+  const nullX = xScale(nullValue);
+
+  // Separate ticks into left and right of null
+  const leftTicks = allTicks.filter((t: number) => t < nullValue).reverse(); // Process outward from null
+  const rightTicks = allTicks.filter((t: number) => t > nullValue);
+  const hasNullTickInAll = allTicks.some((t: number) => t === nullValue);
+
+  // Filter left side (from null outward to left)
+  const filteredLeft: number[] = [];
+  let lastLeftX = nullX;
+  for (const tick of leftTicks) {
+    const x = xScale(tick);
+    if (lastLeftX - x >= minSpacing) {
+      filteredLeft.unshift(tick); // Prepend to maintain order
+      lastLeftX = x;
+    }
+  }
+
+  // Filter right side (from null outward to right)
+  const filteredRight: number[] = [];
+  let lastRightX = nullX;
+  for (const tick of rightTicks) {
+    const x = xScale(tick);
+    if (x - lastRightX >= minSpacing) {
+      filteredRight.push(tick);
+      lastRightX = x;
+    }
+  }
+
+  // Combine: left + null (if present or required) + right
+  const result = [...filteredLeft];
+
+  // Include null tick if: (1) it was in D3's ticks, OR (2) nullTick config requires it and it's in domain
+  if (hasNullTickInAll || (shouldIncludeNull && nullInDomain)) {
+    result.push(nullValue);
+  }
+
+  result.push(...filteredRight);
+
+  // Guarantee at least 2 ticks
+  if (result.length < 2) {
+    const tickSet = new Set(result);
+    if (!tickSet.has(domainMin)) {
+      result.unshift(domainMin);
+    }
+    if (result.length < 2 && !tickSet.has(domainMax)) {
+      result.push(domainMax);
+    }
+  }
+
+  return result;
 }
 
 function renderReferenceLine(
@@ -1582,12 +1827,12 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const leftTableWidth = layout.labelWidth +
     leftColumns.reduce((sum, c) => sum + getEffectiveWidth(c, layout.autoWidths), 0);
 
-  // Forest position
-  const forestX = padding + leftTableWidth;
-  const xScale = computeXScale(spec, layout.forestWidth);
+  // Forest position (with COLUMN_GAP padding on each side)
+  const forestX = padding + leftTableWidth + LAYOUT.COLUMN_GAP;
+  const xScale = computeXScale(spec, layout.forestWidth, options);
 
-  // Right table position
-  const rightTableX = forestX + layout.forestWidth;
+  // Right table position (after forest + gap)
+  const rightTableX = forestX + layout.forestWidth + LAYOUT.COLUMN_GAP;
 
   // Build SVG
   const parts: string[] = [];
@@ -1604,6 +1849,12 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   // Header (title, subtitle)
   parts.push(renderHeader(spec, layout, theme));
+
+  // Table separator line (at top of table area, always present)
+  parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
+    y1="${layout.mainY}" y2="${layout.mainY}"
+    stroke="${theme.colors.border}" stroke-width="2"/>`);
+
 
   // Column headers (supports column groups with two-tier rendering)
   const headerY = layout.mainY;
@@ -1632,13 +1883,30 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     ));
   }
 
-  // Header border
+  // Header border (2px to match web view)
   parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
     y1="${headerY + layout.headerHeight}" y2="${headerY + layout.headerHeight}"
-    stroke="${theme.colors.border}" stroke-width="1"/>`);
+    stroke="${theme.colors.border}" stroke-width="2"/>`);
 
   // Build display rows (used for both forest intervals and table rendering)
   const displayRows = buildDisplayRows(spec);
+
+  // Check if we have row groups (affects row background logic)
+  const rowGroups = Array.isArray(spec.data.groups) ? spec.data.groups : [];
+  const hasRowGroups = rowGroups.length > 0;
+
+  // Pre-compute row positions and heights (accounting for spacer rows)
+  // This is used for both forest intervals and table row rendering
+  const rowPositions: number[] = [];
+  const rowHeights: number[] = [];
+  let accumulatedY = 0;
+  for (const dr of displayRows) {
+    const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
+    const height = isSpacerRow ? layout.rowHeight / 2 : layout.rowHeight;
+    rowPositions.push(accumulatedY);
+    rowHeights.push(height);
+    accumulatedY += height;
+  }
 
   // Forest plot area
   if (spec.data.includeForest && layout.forestWidth > 0) {
@@ -1675,7 +1943,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     // Row intervals (only render for data rows, skip group headers)
     displayRows.forEach((displayRow, i) => {
       if (displayRow.type === "data") {
-        const yPos = plotY + i * layout.rowHeight + layout.rowHeight / 2;
+        const yPos = plotY + rowPositions[i] + rowHeights[i] / 2;
         parts.push(renderInterval(displayRow.row, yPos, (v) => forestX + xScale(v), theme, spec.data.nullValue, spec.data.effects, spec.data.weightCol, forestX, layout.forestWidth));
       }
     });
@@ -1699,10 +1967,11 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     }
 
     // Axis
-    parts.push(renderAxis(xScale, layout, theme, spec.data.axisLabel, forestX));
+    parts.push(renderAxis(xScale, layout, theme, spec.data.axisLabel, forestX, spec.data.nullValue));
   }
 
   // Table rows (uses display rows to interleave group headers with data)
+  // rowPositions and rowHeights are already computed above
   const rowsY = layout.mainY + layout.headerHeight;
 
   // Compute bar max values from all data rows for proper scaling
@@ -1711,7 +1980,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const rightBarMaxValues = computeBarMaxValues(allDataRows, rightColumns);
 
   displayRows.forEach((displayRow, i) => {
-    const y = rowsY + i * layout.rowHeight;
+    const y = rowsY + rowPositions[i];
+    const rowHeight = rowHeights[i];
 
     if (displayRow.type === "group_header") {
       // Render group header
@@ -1720,7 +1990,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         displayRow.depth,
         padding,
         y,
-        layout.rowHeight,
+        rowHeight,
         layout.totalWidth - padding * 2,
         theme
       ));
@@ -1728,24 +1998,32 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render data row
       const row = displayRow.row;
       const depth = displayRow.depth;
+      const isSpacerRow = row.style?.type === "spacer";
 
-      // Row background - depth-based or alternating (uses shared constants)
-      const depthOpacity = getDepthOpacity(depth);
-      const oddOpacity = i % 2 === 1 ? ROW_ODD_OPACITY : 0;
-      const bgOpacity = Math.max(depthOpacity, oddOpacity);
+      // Row background - depth-based when groups exist, alternating when no groups
+      // Matches web view logic in getRowClasses():
+      //   - With groups: use depth-based opacity (depth > 0 only)
+      //   - Without groups: use alternating odd row opacity
+      // Skip background for spacer rows
+      if (!isSpacerRow) {
+        const depthOpacity = getDepthOpacity(depth);
+        // Only apply alternating background when there are no groups
+        const oddOpacity = (!hasRowGroups && i % 2 === 1) ? ROW_ODD_OPACITY : 0;
+        const bgOpacity = Math.max(depthOpacity, oddOpacity);
 
-      if (bgOpacity > 0) {
-        parts.push(`<rect x="${padding}" y="${y}"
-          width="${layout.totalWidth - padding * 2}" height="${layout.rowHeight}"
-          fill="${theme.colors.muted}" opacity="${bgOpacity}"/>`);
+        if (bgOpacity > 0) {
+          parts.push(`<rect x="${padding}" y="${y}"
+            width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
+            fill="${theme.colors.muted}" opacity="${bgOpacity}"/>`);
+        }
       }
 
       // Left table
-      parts.push(renderTableRow(row, leftColumns, padding, y, layout.rowHeight, theme, true, layout.labelWidth, depth, leftBarMaxValues, layout.autoWidths));
+      parts.push(renderTableRow(row, leftColumns, padding, y, rowHeight, theme, true, layout.labelWidth, depth, leftBarMaxValues, layout.autoWidths));
 
       // Right table
       if (rightColumns.length > 0) {
-        parts.push(renderTableRow(row, rightColumns, rightTableX, y, layout.rowHeight, theme, false, 0, depth, rightBarMaxValues, layout.autoWidths));
+        parts.push(renderTableRow(row, rightColumns, rightTableX, y, rowHeight, theme, false, 0, depth, rightBarMaxValues, layout.autoWidths));
       }
     }
 
@@ -1765,14 +2043,14 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Bottom border (skip for spacer rows)
       if (!isSpacerRow) {
         parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
-          y1="${y + layout.rowHeight}" y2="${y + layout.rowHeight}"
-          stroke="${theme.colors.border}" stroke-width="1" opacity="0.5"/>`);
+          y1="${y + rowHeight}" y2="${y + rowHeight}"
+          stroke="${theme.colors.border}" stroke-width="1"/>`);
       }
     } else {
-      // Group headers get a normal 1px bottom border
+      // Group headers get a bottom border
       parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
-        y1="${y + layout.rowHeight}" y2="${y + layout.rowHeight}"
-        stroke="${theme.colors.border}" stroke-width="1" opacity="0.5"/>`);
+        y1="${y + rowHeight}" y2="${y + rowHeight}"
+        stroke="${theme.colors.border}" stroke-width="1"/>`);
     }
   });
 

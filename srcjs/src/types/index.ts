@@ -314,12 +314,20 @@ export interface Shapes {
 }
 
 export interface AxisConfig {
+  // Explicit overrides (when set, bypass auto-calculation)
   rangeMin: number | null;
   rangeMax: number | null;
   tickCount: number | null;
   tickValues: number[] | null;
   gridlines: boolean;
   gridlineStyle: "solid" | "dashed" | "dotted";
+  // Auto-scaling parameters
+  padding: number;                    // Fraction of estimate range for padding (default: 0.10)
+  ciTruncationThreshold: number;      // Truncate CIs beyond this × estimate range (default: 2.0)
+  includeNull: boolean;               // Always include null in axis range (default: true)
+  symmetric: boolean | null;          // null = auto, true/false = force (default: null)
+  nullTick: boolean;                  // Always show tick at null value (default: true)
+  markerMargin: boolean;              // Add half-marker-width at edges (default: true)
 }
 
 export interface LayoutConfig {

@@ -22,13 +22,25 @@
   // Should be >= AXIS_LABEL_PADDING from forestStore to ensure edge labels are detected
   const EDGE_THRESHOLD = 35;
 
+  // Extract nullTick config (default: true)
+  const shouldIncludeNullTick = $derived(axisConfig?.nullTick ?? true);
+
   // Generate nice tick values with spacing-aware filtering to prevent overlap
+  // Ensures: (1) null tick always present if nullTick = true, (2) at least 2 ticks
   const ticks = $derived.by(() => {
+    const [domainMin, domainMax] = xScale.domain() as [number, number];
+    const nullValue = layout.nullValue;
+    const nullInDomain = nullValue >= domainMin && nullValue <= domainMax;
+
     // Use explicit tick values if provided
     if (axisConfig?.tickValues && axisConfig.tickValues.length > 0) {
-      // Filter to domain bounds to ensure ticks stay within axis range
-      const [domainMin, domainMax] = xScale.domain() as [number, number];
-      return axisConfig.tickValues.filter(t => t >= domainMin && t <= domainMax);
+      // Filter to domain bounds
+      let result = axisConfig.tickValues.filter(t => t >= domainMin && t <= domainMax);
+      // Ensure null tick is included if configured and in domain
+      if (shouldIncludeNullTick && nullInDomain && !result.includes(nullValue)) {
+        result = [...result, nullValue].sort((a, b) => a - b);
+      }
+      return result;
     }
 
     const minSpacing = 50; // minimum pixels between tick labels
@@ -39,17 +51,22 @@
     const tickCount = requestedTicks ?? Math.min(7, maxTicks);
 
     const allTicks = xScale.ticks(tickCount);
-    if (allTicks.length === 0) return [];
+    if (allTicks.length === 0) {
+      // Even with no ticks from D3, ensure at least null + one domain boundary
+      if (shouldIncludeNullTick && nullInDomain) {
+        return [nullValue];
+      }
+      return [];
+    }
 
     // Filter ticks symmetrically from null value outward
     // This ensures both sides of the null line adapt equally when resizing
-    const nullValue = layout.nullValue;
     const nullX = xScale(nullValue);
 
     // Separate ticks into left and right of null
     const leftTicks = allTicks.filter(t => t < nullValue).reverse(); // Process outward from null
     const rightTicks = allTicks.filter(t => t > nullValue);
-    const hasNullTick = allTicks.some(t => t === nullValue);
+    const hasNullTickInAll = allTicks.some(t => t === nullValue);
 
     // Filter left side (from null outward to left)
     const filteredLeft: number[] = [];
@@ -73,10 +90,27 @@
       }
     }
 
-    // Combine: left + null (if present) + right
+    // Combine: left + null (if present or required) + right
     const result = [...filteredLeft];
-    if (hasNullTick) result.push(nullValue);
+
+    // Include null tick if: (1) it was in D3's ticks, OR (2) nullTick config requires it and it's in domain
+    if (hasNullTickInAll || (shouldIncludeNullTick && nullInDomain)) {
+      result.push(nullValue);
+    }
+
     result.push(...filteredRight);
+
+    // Guarantee at least 2 ticks
+    if (result.length < 2) {
+      // Add domain boundaries if needed
+      const tickSet = new Set(result);
+      if (!tickSet.has(domainMin)) {
+        result.unshift(domainMin);
+      }
+      if (result.length < 2 && !tickSet.has(domainMax)) {
+        result.push(domainMax);
+      }
+    }
 
     return result;
   });

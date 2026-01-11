@@ -20,7 +20,9 @@
 
     try {
       isExporting = true;
-      const svgString = exportToSVG(store.spec);
+      // Get current dimensions from store to match web view
+      const dimensions = store.getExportDimensions();
+      const svgString = exportToSVG(store.spec, dimensions);
       const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
       triggerDownload(blob, generateFilename("svg"));
     } catch (error) {
@@ -36,7 +38,9 @@
 
     try {
       isExporting = true;
-      const blob = await exportToPNG(store.spec, 2);
+      // Get current dimensions from store to match web view
+      const dimensions = store.getExportDimensions();
+      const blob = await exportToPNG(store.spec, dimensions, 2);
       triggerDownload(blob, generateFilename("png"));
     } catch (error) {
       console.error("Failed to export PNG:", error);

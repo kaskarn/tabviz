@@ -284,12 +284,20 @@ serialize_theme <- function(theme) {
       markerShapes = theme@shapes@marker_shapes
     ),
     axis = list(
+      # Explicit overrides
       rangeMin = if (is.na(theme@axis@range_min)) NULL else theme@axis@range_min,
       rangeMax = if (is.na(theme@axis@range_max)) NULL else theme@axis@range_max,
       tickCount = if (is.na(theme@axis@tick_count)) NULL else theme@axis@tick_count,
       tickValues = theme@axis@tick_values,
       gridlines = theme@axis@gridlines,
-      gridlineStyle = theme@axis@gridline_style
+      gridlineStyle = theme@axis@gridline_style,
+      # Auto-scaling parameters
+      padding = theme@axis@padding,
+      ciTruncationThreshold = theme@axis@ci_truncation_threshold,
+      includeNull = theme@axis@include_null,
+      symmetric = theme@axis@symmetric,  # NULL or logical
+      nullTick = theme@axis@null_tick,
+      markerMargin = theme@axis@marker_margin
     ),
     layout = list(
       plotPosition = theme@layout@plot_position,
