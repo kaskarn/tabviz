@@ -20,7 +20,7 @@
 
 <style>
   .title-area {
-    padding: 12px 12px 8px;
+    padding: 12px 12px 8px 2px;
   }
 
   .plot-title {
@@ -29,6 +29,8 @@
     font-weight: var(--wf-font-weight-bold, 600);
     color: var(--wf-fg, #1a1a1a);
     line-height: 1.3;
+    white-space: normal;
+    word-wrap: break-word;
   }
 
   .plot-subtitle {
@@ -37,5 +39,7 @@
     font-weight: var(--wf-font-weight-normal, 400);
     color: var(--wf-secondary, #64748b);
     line-height: 1.4;
+    white-space: normal;
+    word-wrap: break-word;
   }
 </style>

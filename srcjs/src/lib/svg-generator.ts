@@ -262,21 +262,21 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
       const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
       const labelWidth = estimateTextWidth(group.label, fontSize);
 
-      // Count rows in this group for the "(N)" suffix
-      const rowCount = spec.data.rows.filter(r => r.groupId === group.id).length;
+      // Count all descendant rows for the "(N)" suffix, matching display
+      const rowCount = countAllDescendantRows(group.id);
       const countText = `(${rowCount})`;
       const countFontSize = fontSize * 0.75; // matches theme.typography.fontSizeSm
       const countWidth = estimateTextWidth(countText, countFontSize);
 
       // Total width: all components from GroupHeader.svelte layout
-      // [indent] + [chevron] + [gap] + [label] + [gap] + [count] + [internal padding]
+      // [indent] + [chevron] + [gap] + [label] + [gap] + [count] + [safety margin]
       const totalWidth = indentWidth
         + GROUP_HEADER.CHEVRON_WIDTH
         + GROUP_HEADER.GAP
         + labelWidth
         + GROUP_HEADER.GAP
         + countWidth
-        + GROUP_HEADER.INTERNAL_PADDING;
+        + GROUP_HEADER.SAFETY_MARGIN;
 
       maxWidth = Math.max(maxWidth, totalWidth);
     }

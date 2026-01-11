@@ -798,7 +798,7 @@ export function createForestStore() {
             + labelWidth
             + GROUP_HEADER.GAP
             + countWidth
-            + GROUP_HEADER.INTERNAL_PADDING;
+            + GROUP_HEADER.SAFETY_MARGIN;
 
           maxLabelWidth = Math.max(maxLabelWidth, totalWidth);
         }

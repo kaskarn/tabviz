@@ -99,6 +99,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    min-width: 12px;
     transition: transform 0.15s ease;
     color: var(--wf-secondary, #64748b);
   }

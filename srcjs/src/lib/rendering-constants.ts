@@ -36,16 +36,16 @@ export function getDepthOpacity(depth: number): number {
 // ============================================================================
 
 /** Opacity for hovered rows */
-export const ROW_HOVER_OPACITY = 0.08; // 8%
+export const ROW_HOVER_OPACITY = 0.12; // 12%
 
 /** Opacity for selected rows */
-export const ROW_SELECTED_OPACITY = 0.12; // 12%
+export const ROW_SELECTED_OPACITY = 0.16; // 16%
 
 /** Opacity for selected + hovered rows */
-export const ROW_SELECTED_HOVER_OPACITY = 0.18; // 18%
+export const ROW_SELECTED_HOVER_OPACITY = 0.22; // 22%
 
 /** Opacity for group header hover state */
-export const GROUP_HEADER_HOVER_OPACITY = 0.10; // 10%
+export const GROUP_HEADER_HOVER_OPACITY = 0.15; // 15%
 
 // ============================================================================
 // Layout Constants
@@ -231,8 +231,8 @@ export const GROUP_HEADER = {
   /** Gap between elements (chevron-label, label-count) */
   GAP: 6,
 
-  /** Internal padding inside .group-header (10px left + 10px right) */
-  INTERNAL_PADDING: 20,
+  /** Safety margin for group header width calculation (accounts for rendering variance) */
+  SAFETY_MARGIN: 8,
 } as const;
 
 // ============================================================================

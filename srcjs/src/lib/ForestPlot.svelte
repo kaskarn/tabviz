@@ -1190,7 +1190,8 @@
   /* Header cells - use row height for multi-row headers */
   .header-cell {
     min-height: var(--wf-header-row-height);
-    font-weight: var(--wf-font-weight-medium, 500);
+    font-weight: var(--wf-font-weight-bold, 600);
+    font-size: calc(var(--wf-font-size-base, 0.875rem) * 1.05);
     border-bottom: 1px solid var(--wf-border);
     background: var(--wf-bg);
     position: relative;
@@ -1311,26 +1312,26 @@
   }
 
   .group-row:hover {
-    filter: brightness(0.95);
+    background: color-mix(in srgb, var(--wf-muted) 15%, transparent) !important;
   }
 
-  /* Hovered row styling */
+  /* Hovered row styling - uses accent color for better visibility */
   .data-cell.hovered {
-    background: color-mix(in srgb, var(--wf-primary) 8%, var(--wf-bg));
+    background: color-mix(in srgb, var(--wf-accent) 12%, var(--wf-bg));
     cursor: pointer;
   }
 
   /* Selected row styling */
   .data-cell.selected {
-    background: color-mix(in srgb, var(--wf-primary) 12%, var(--wf-bg));
+    background: color-mix(in srgb, var(--wf-accent) 16%, var(--wf-bg));
   }
 
   .data-cell.selected.hovered {
-    background: color-mix(in srgb, var(--wf-primary) 18%, var(--wf-bg));
+    background: color-mix(in srgb, var(--wf-accent) 22%, var(--wf-bg));
   }
 
   .data-cell.selected:first-child {
-    box-shadow: inset 3px 0 0 var(--wf-primary);
+    box-shadow: inset 3px 0 0 var(--wf-accent);
   }
 
   /* Spacer row styling */

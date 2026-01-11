@@ -20,7 +20,7 @@
 
 <style>
   .plot-footer {
-    padding: 8px 12px 12px;
+    padding: 8px 12px 12px 2px;
     border-top: 1px solid var(--wf-border, #e2e8f0);
   }
 
@@ -30,6 +30,8 @@
     font-weight: var(--wf-font-weight-normal, 400);
     color: var(--wf-secondary, #64748b);
     line-height: 1.4;
+    white-space: normal;
+    word-wrap: break-word;
   }
 
   .plot-footnote {
@@ -39,5 +41,7 @@
     color: var(--wf-muted, #94a3b8);
     font-style: italic;
     line-height: 1.4;
+    white-space: normal;
+    word-wrap: break-word;
   }
 </style>
