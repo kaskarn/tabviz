@@ -760,8 +760,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  @ axis_label        : chr "Estimate"
  @ effects           : list()
  @ theme             : &lt;webforest::WebTheme&gt;
- .. @ name      : chr "default"
- .. @ colors    : &lt;webforest::ColorPalette&gt;
+ .. @ name         : chr "default"
+ .. @ colors       : &lt;webforest::ColorPalette&gt;
  .. .. @ background       : chr "#ffffff"
  .. .. @ foreground       : chr "#333333"
  .. .. @ primary          : chr "#0891b2"
@@ -776,7 +776,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  .. .. @ interval_neutral : chr "#64748b"
  .. .. @ summary_fill     : chr "#0891b2"
  .. .. @ summary_border   : chr "#0e7490"
- .. @ typography: &lt;webforest::Typography&gt;
+ .. @ typography   : &lt;webforest::Typography&gt;
  .. .. @ font_family       : chr "system-ui, -apple-system, sans-serif"
  .. .. @ font_size_sm      : chr "0.75rem"
  .. .. @ font_size_base    : chr "0.875rem"
@@ -785,37 +785,57 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  .. .. @ font_weight_medium: num 500
  .. .. @ font_weight_bold  : num 600
  .. .. @ line_height       : num 1.5
- .. @ spacing   : &lt;webforest::Spacing&gt;
- .. .. @ row_height   : num 28
- .. .. @ header_height: num 36
- .. .. @ section_gap  : num 16
- .. .. @ padding      : num 12
- .. .. @ axis_gap     : num 12
- .. .. @ group_padding: num 8
- .. @ shapes    : &lt;webforest::Shapes&gt;
+ .. @ spacing      : &lt;webforest::Spacing&gt;
+ .. .. @ row_height    : num 28
+ .. .. @ header_height : num 36
+ .. .. @ section_gap   : num 16
+ .. .. @ padding       : num 12
+ .. .. @ axis_gap      : num 12
+ .. .. @ group_padding : num 8
+ .. .. @ cell_padding_x: num 10
+ .. .. @ cell_padding_y: num 4
+ .. @ shapes       : &lt;webforest::Shapes&gt;
  .. .. @ point_size    : num 6
  .. .. @ summary_height: num 10
  .. .. @ line_width    : num 1.5
  .. .. @ border_radius : num 2
  .. .. @ marker_colors : NULL
  .. .. @ marker_shapes : chr [1:4] "square" "circle" "diamond" "triangle"
- .. @ axis      : &lt;webforest::AxisConfig&gt;
- .. .. @ range_min     : num NA
- .. .. @ range_max     : num NA
- .. .. @ tick_count    : num NA
- .. .. @ tick_values   : NULL
- .. .. @ gridlines     : logi FALSE
- .. .. @ gridline_style: chr "dotted"
- .. @ layout    : &lt;webforest::LayoutConfig&gt;
+ .. @ axis         : &lt;webforest::AxisConfig&gt;
+ .. .. @ range_min              : num NA
+ .. .. @ range_max              : num NA
+ .. .. @ tick_count             : num NA
+ .. .. @ tick_values            : NULL
+ .. .. @ gridlines              : logi FALSE
+ .. .. @ gridline_style         : chr "dotted"
+ .. .. @ padding                : num 0.1
+ .. .. @ ci_truncation_threshold: num 2
+ .. .. @ include_null           : logi TRUE
+ .. .. @ symmetric              : NULL
+ .. .. @ null_tick              : logi TRUE
+ .. .. @ marker_margin          : logi TRUE
+ .. @ layout       : &lt;webforest::LayoutConfig&gt;
  .. .. @ plot_position          : chr "right"
  .. .. @ table_width            : chr "auto"
  .. .. @ plot_width             : chr "auto"
- .. .. @ cell_padding_x         : num 10
- .. .. @ cell_padding_y         : num 4
  .. .. @ row_border             : logi TRUE
  .. .. @ row_border_style       : chr "solid"
  .. .. @ container_border       : logi TRUE
  .. .. @ container_border_radius: num 8
+ .. @ group_headers: &lt;webforest::GroupHeaderStyles&gt;
+ .. .. @ level1_font_size    : chr "1rem"
+ .. .. @ level1_font_weight  : num 700
+ .. .. @ level1_background   : NULL
+ .. .. @ level1_border_bottom: logi TRUE
+ .. .. @ level2_font_size    : chr "0.9375rem"
+ .. .. @ level2_font_weight  : num 600
+ .. .. @ level2_background   : NULL
+ .. .. @ level2_border_bottom: logi TRUE
+ .. .. @ level3_font_size    : chr "0.875rem"
+ .. .. @ level3_font_weight  : num 500
+ .. .. @ level3_background   : NULL
+ .. .. @ level3_border_bottom: logi FALSE
+ .. .. @ indent_per_level    : num 16
  @ interaction       : &lt;webforest::InteractionSpec&gt;
  .. @ show_filters   : logi FALSE
  .. @ show_legend    : logi TRUE
