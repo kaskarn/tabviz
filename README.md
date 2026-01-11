@@ -5,7 +5,7 @@
 
 **Interactive, publication-ready forest plots for R.** Built with Svelte 5 and D3.js for speed and flexibility.
 
-[![webforest example](docs/images/hero-row-styling.png)](https://kaskarn.github.io/webforest/gallery.html)
+[![webforest example](docs/images/hero-row-readme.png)](https://kaskarn.github.io/webforest/gallery.html)
 
 *Click image to view interactive gallery*
 
