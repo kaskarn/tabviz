@@ -1666,19 +1666,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-404"><a href="#cb14-404" aria-hidden="true" tabindex="-1"></a><span class="fu">## Best Practices</span></span>
 <span id="cb14-405"><a href="#cb14-405" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-406"><a href="#cb14-406" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Create proxies in reactive contexts** - Never create a proxy at the top level of your server function</span>
-<span id="cb14-407"><a href="#cb14-407" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-408"><a href="#cb14-408" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Use debouncing for sliders** - Prevent excessive re-renders during drag</span>
-<span id="cb14-409"><a href="#cb14-409" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-410"><a href="#cb14-410" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Prefer proxy for interactions** - Sorting, filtering, and toggling are smoother via proxy</span>
-<span id="cb14-411"><a href="#cb14-411" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-412"><a href="#cb14-412" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Use reactive for data changes** - When the underlying data changes, let Shiny re-render</span>
-<span id="cb14-413"><a href="#cb14-413" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-414"><a href="#cb14-414" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Combine proxy calls** - Chain multiple operations for atomic updates:</span>
-<span id="cb14-415"><a href="#cb14-415" aria-hidden="true" tabindex="-1"></a>   <span class="in">```r</span></span>
-<span id="cb14-416"><a href="#cb14-416" aria-hidden="true" tabindex="-1"></a>   <span class="fu">forestProxy</span>(<span class="st">"forest"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb14-417"><a href="#cb14-417" aria-hidden="true" tabindex="-1"></a>     <span class="fu">forest_clear_filter</span>() <span class="sc">|&gt;</span></span>
-<span id="cb14-418"><a href="#cb14-418" aria-hidden="true" tabindex="-1"></a>     <span class="fu">forest_sort</span>(<span class="st">"hr"</span>, <span class="st">"asc"</span>)</span>
-<span id="cb14-419"><a href="#cb14-419" aria-hidden="true" tabindex="-1"></a>   <span class="in">```</span></span>
+<span id="cb14-407"><a href="#cb14-407" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Use debouncing for sliders** - Prevent excessive re-renders during drag</span>
+<span id="cb14-408"><a href="#cb14-408" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Prefer proxy for interactions** - Sorting, filtering, and toggling are smoother via proxy</span>
+<span id="cb14-409"><a href="#cb14-409" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Use reactive for data changes** - When the underlying data changes, let Shiny re-render</span>
+<span id="cb14-410"><a href="#cb14-410" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Combine proxy calls** - Chain multiple operations for atomic updates:</span>
+<span id="cb14-411"><a href="#cb14-411" aria-hidden="true" tabindex="-1"></a>   <span class="in">```r</span></span>
+<span id="cb14-412"><a href="#cb14-412" aria-hidden="true" tabindex="-1"></a>   <span class="fu">forestProxy</span>(<span class="st">"forest"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-413"><a href="#cb14-413" aria-hidden="true" tabindex="-1"></a>     <span class="fu">forest_clear_filter</span>() <span class="sc">|&gt;</span></span>
+<span id="cb14-414"><a href="#cb14-414" aria-hidden="true" tabindex="-1"></a>     <span class="fu">forest_sort</span>(<span class="st">"hr"</span>, <span class="st">"asc"</span>)</span>
+<span id="cb14-415"><a href="#cb14-415" aria-hidden="true" tabindex="-1"></a>   <span class="in">```</span></span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
