@@ -39,6 +39,62 @@ renderForest(expr, env = parent.frame(), quoted = FALSE)
 | `env` | Environment for evaluation |
 | `quoted` | Whether expr is already quoted |
 
+## Split Forest in Shiny
+
+### splitForestOutput {#splitForestOutput}
+
+Create a Shiny output element for a split forest plot.
+
+```r
+splitForestOutput(outputId, width = "100%", height = "600px")
+```
+
+| Argument | Description |
+|----------|-------------|
+| `outputId` | Output variable name |
+| `width` | Widget width (CSS units) |
+| `height` | Widget height (CSS units) |
+
+### renderSplitForest {#renderSplitForest}
+
+Render a split forest plot in Shiny.
+
+```r
+renderSplitForest(expr, env = parent.frame(), quoted = FALSE)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `expr` | Expression that returns a `split_forest()` result rendered with `forest_plot()` |
+| `env` | Environment for evaluation |
+| `quoted` | Whether expr is already quoted |
+
+### splitForestProxy {#splitForestProxy}
+
+Create a proxy object for an existing split forest plot.
+
+```r
+splitForestProxy(id, session = shiny::getDefaultReactiveDomain())
+```
+
+| Argument | Description |
+|----------|-------------|
+| `id` | The widget ID |
+| `session` | Shiny session (default: current session) |
+
+### split_forest_select {#split_forest_select}
+
+Select a specific sub-plot in a split forest.
+
+```r
+split_forest_select(proxy, key)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `proxy` | A `split_forest_proxy` object |
+| `key` | The key of the sub-plot to select (e.g., `"Americas"` or `"Female/Young"`) |
+
 ## Proxy Functions
 
 Proxy functions allow updating a forest plot without full re-rendering.

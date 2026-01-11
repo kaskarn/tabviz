@@ -66,6 +66,71 @@ Minimal black & white styling.
 web_theme_minimal()
 ```
 
+### web_theme_cochrane {#web_theme_cochrane}
+
+Cochrane Collaboration style: cyan/teal accents, compact layout, Arial font. Commonly used for systematic reviews.
+
+```r
+web_theme_cochrane()
+```
+
+### web_theme_nature {#web_theme_nature}
+
+Nature journal family styling: Nature blue (#1976D2) accents, Helvetica Neue font, modern clean aesthetic.
+
+```r
+web_theme_nature()
+```
+
+## Custom Theme Creation
+
+### web_theme {#web_theme}
+
+Create a custom theme by extending a base theme with overrides. This is the most flexible way to create themes when preset themes don't match your needs.
+
+```r
+web_theme(
+  name = "custom",
+  colors = NULL,
+  typography = NULL,
+  spacing = NULL,
+  shapes = NULL,
+  axis = NULL,
+  layout = NULL,
+  base_theme = web_theme_default()
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `name` | Name for the custom theme |
+| `colors` | Named list of color overrides (see `set_colors()` for available properties) |
+| `typography` | Named list of typography overrides (see `set_typography()`) |
+| `spacing` | Named list of spacing overrides (see `set_spacing()`) |
+| `shapes` | Named list of shape overrides (see `set_shapes()`) |
+| `axis` | Named list of axis overrides (see `set_axis()`) |
+| `layout` | Named list of layout overrides (see `set_layout()`) |
+| `base_theme` | Base theme to extend (default: `web_theme_default()`) |
+
+**Example**:
+```r
+my_theme <- web_theme(
+  name = "my_journal",
+  colors = list(
+    primary = "#1a365d",
+    interval_line = "#2d3748"
+  ),
+  typography = list(
+    font_family = "Georgia, serif",
+    font_size_base = "0.8rem"
+  ),
+  spacing = list(
+    row_height = 22
+  ),
+  base_theme = web_theme_minimal()
+)
+```
+
 ## Theme Modifiers
 
 All modifiers return the modified theme and can be chained with pipes.

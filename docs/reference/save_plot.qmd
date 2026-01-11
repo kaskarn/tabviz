@@ -88,7 +88,51 @@ save_plot(split_result, "output/plots")
 # Creates: output/plots/North/North_Young.svg, etc.
 ```
 
+## save_split_forest
+
+Export all sub-plots from a SplitForest to a directory structure.
+
+### Usage
+
+```r
+save_split_forest(x, path, format = c("svg", "pdf", "png"),
+                  width = 800, height = NULL, scale = 2)
+```
+
+### Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `SplitForest` object |
+| `path` | Output directory path |
+| `format` | Output format: `"svg"`, `"pdf"`, or `"png"` |
+| `width` | Width in pixels (default: 800) |
+| `height` | Height in pixels (auto if NULL) |
+| `scale` | Scale factor for PNG (default: 2) |
+
+### Details
+
+Creates a directory structure matching the split hierarchy:
+- Single split: `path/Value.svg`
+- Hierarchical split: `path/Level1/Level1_Level2.svg`
+
+### Example
+
+```r
+data |>
+  web_spec(point = "or", lower = "lower", upper = "upper", label = "study") |>
+  split_forest(by = c("sex", "age_group")) |>
+  save_split_forest("output/plots", format = "svg")
+
+# Creates:
+# output/plots/Male/Male_Young.svg
+# output/plots/Male/Male_Old.svg
+# output/plots/Female/Female_Young.svg
+# output/plots/Female/Female_Old.svg
+```
+
 ## See Also
 
 - [forest_plot()](forest_plot.qmd) for creating plots
+- [split_forest()](split_forest.qmd) for creating split forests
 - [Exporting Guide](../guide/exporting.qmd) for detailed export workflows

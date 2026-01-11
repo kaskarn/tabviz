@@ -10,7 +10,9 @@ Complete reference for all webforest functions, organized by category.
 |----------|-------------|
 | [`forest_plot()`](forest_plot.qmd) | Create interactive forest plots |
 | [`webtable()`](webtable.qmd) | Create table-only widgets |
+| [`split_forest()`](split_forest.qmd) | Create split forest with sidebar |
 | [`save_plot()`](save_plot.qmd) | Export to SVG, PNG, or PDF |
+| [`save_split_forest()`](save_plot.qmd#save_split_forest) | Export split forest to directory |
 
 ## Themes
 
@@ -19,10 +21,18 @@ Complete reference for all webforest functions, organized by category.
 | [`web_theme_default()`](themes.qmd#web_theme_default) | Clean, modern default theme |
 | [`web_theme_jama()`](themes.qmd#web_theme_jama) | JAMA journal style |
 | [`web_theme_lancet()`](themes.qmd#web_theme_lancet) | Lancet journal style |
+| [`web_theme_nature()`](themes.qmd#web_theme_nature) | Nature journal style |
+| [`web_theme_cochrane()`](themes.qmd#web_theme_cochrane) | Cochrane Collaboration style |
 | [`web_theme_modern()`](themes.qmd#web_theme_modern) | Contemporary UI |
 | [`web_theme_presentation()`](themes.qmd#web_theme_presentation) | Large fonts for slides |
 | [`web_theme_dark()`](themes.qmd#web_theme_dark) | Dark mode |
 | [`web_theme_minimal()`](themes.qmd#web_theme_minimal) | Minimal B&W |
+
+### Custom Theme Creation
+
+| Function | Description |
+|----------|-------------|
+| [`web_theme()`](themes.qmd#web_theme) | Create custom theme with overrides |
 
 ### Theme Modifiers
 
@@ -99,13 +109,24 @@ Complete reference for all webforest functions, organized by category.
 
 ## Shiny Integration
 
+### Forest Plot
+
 | Function | Description |
 |----------|-------------|
-| [`forestOutput()`](shiny.qmd#forestoutput) | Shiny UI output |
-| [`renderForest()`](shiny.qmd#renderforest) | Shiny server render |
-| [`forestProxy()`](shiny.qmd#forestproxy) | Create update proxy |
+| [`forestOutput()`](shiny.qmd#forestOutput) | Shiny UI output |
+| [`renderForest()`](shiny.qmd#renderForest) | Shiny server render |
+| [`forestProxy()`](shiny.qmd#forestProxy) | Create update proxy |
 | [`forest_update_data()`](shiny.qmd#forest_update_data) | Update plot data |
 | [`forest_sort()`](shiny.qmd#forest_sort) | Sort by column |
 | [`forest_filter()`](shiny.qmd#forest_filter) | Filter rows |
 | [`forest_clear_filter()`](shiny.qmd#forest_clear_filter) | Clear filters |
 | [`forest_toggle_subgroup()`](shiny.qmd#forest_toggle_subgroup) | Toggle group collapse |
+
+### Split Forest
+
+| Function | Description |
+|----------|-------------|
+| [`splitForestOutput()`](shiny.qmd#splitForestOutput) | Shiny UI output for split forest |
+| [`renderSplitForest()`](shiny.qmd#renderSplitForest) | Shiny server render for split forest |
+| [`splitForestProxy()`](shiny.qmd#splitForestProxy) | Create split forest proxy |
+| [`split_forest_select()`](shiny.qmd#split_forest_select) | Select sub-plot programmatically |
