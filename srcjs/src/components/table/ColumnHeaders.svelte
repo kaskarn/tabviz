@@ -258,7 +258,7 @@
     display: flex;
     height: var(--wf-header-height);
     align-items: center;
-    padding: 0 4px;
+    /* Removed padding: 0 4px - was causing width mismatch with data rows */
     background: var(--wf-bg);
     border-bottom: 1px solid var(--wf-border);
     font-weight: 600;
@@ -269,7 +269,7 @@
   .webforest-header-grid {
     display: grid;
     grid-template-rows: calc(var(--wf-header-height) / 2) calc(var(--wf-header-height) / 2);
-    padding: 0 4px;
+    /* Removed padding: 0 4px - was causing width mismatch with data rows */
     background: var(--wf-bg);
     border-bottom: 1px solid var(--wf-border);
     font-weight: 600;

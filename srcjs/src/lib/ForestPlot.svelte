@@ -492,6 +492,7 @@
             shape-rendering="crispEdges"
           />
 
+
           <!-- Row banding backgrounds -->
           {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
             <rect
