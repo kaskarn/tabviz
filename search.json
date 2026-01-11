@@ -798,13 +798,6 @@
     "text": "Theme functions for customizing forest plot appearance."
   },
   {
-    "objectID": "reference/themes.html#preset-themes",
-    "href": "reference/themes.html#preset-themes",
-    "title": "Themes",
-    "section": "Preset Themes",
-    "text": "Preset Themes\n\nweb_theme_default\nClean, modern default theme with subtle cyan accents, system fonts, and rounded corners.\nweb_theme_default()\n\n\nweb_theme_jama\nJAMA journal style: maximum density, pure black & white, Arial font, compact rows (18px). Optimized for print.\nweb_theme_jama()\n\n\nweb_theme_lancet\nElegant academic theme with Lancet navy blue (#00407A), warm off-white background, gold accents, and serif typography (Georgia). Generous spacing with sharp corners.\nweb_theme_lancet()\n\n\nweb_theme_modern\nBold, vibrant design with Inter font, bright blue (#3B82F6) accents, larger elements (36px rows), and prominent rounded corners (12px). Ideal for digital reports and dashboards.\nweb_theme_modern()\n\n\nweb_theme_presentation\nOversized theme for slides and posters: extra large fonts (1-1.25rem), thick lines (2.5px), oversized markers (12px), and tall rows (44px). High visibility at distance.\nweb_theme_presentation()\n\n\nweb_theme_dark\nCatppuccin Mocha-inspired dark mode with comfortable low-contrast colors for extended viewing. Blue accents on dark background, soft rounded corners.\nweb_theme_dark()\n\n\nweb_theme_minimal\nAcademic publication-ready with pure black & white styling, Georgia serif font, sharp corners. Classic, authoritative look for journal submissions.\nweb_theme_minimal()\n\n\nweb_theme_cochrane\nCochrane systematic review style: teal accents (#0099CC), Arial font, very compact layout (20px rows). Clean, utilitarian design without decorative elements.\nweb_theme_cochrane()\n\n\nweb_theme_nature\nNature journal family styling: Nature blue (#1976D2), Helvetica Neue font, tight typography, and precise aesthetic. Balanced between academic rigor and modern readability.\nweb_theme_nature()"
-  },
-  {
     "objectID": "reference/themes.html#custom-theme-creation",
     "href": "reference/themes.html#custom-theme-creation",
     "title": "Themes",
@@ -824,6 +817,13 @@
     "title": "Themes",
     "section": "Examples",
     "text": "Examples\n\nChaining Modifiers\n\n\nCode\nweb_theme_jama() |&gt;\n  set_colors(primary = \"#0066cc\") |&gt;\n  set_typography(font_family = \"Georgia, serif\") |&gt;\n  set_spacing(row_height = 28) |&gt;\n  set_axis(gridlines = TRUE)\n\n\n\n\nCustom Theme for Publication\n\n\nCode\npublication_theme &lt;- web_theme_minimal() |&gt;\n  set_colors(\n    foreground = \"#1a1a1a\",\n    interval = \"#333333\",\n    interval_line = \"#333333\"\n  ) |&gt;\n  set_typography(\n    font_family = \"Times New Roman, serif\",\n    font_size_base = \"11pt\"\n  ) |&gt;\n  set_spacing(row_height = 24) |&gt;\n  set_axis(gridlines = FALSE)\n\n\n\n\nCustomizing Group Header Hierarchy\n\n\nCode\n# Create distinct visual levels for nested groups\nweb_theme_default() |&gt;\n  set_group_headers(\n    level1_font_size = \"1.1rem\",\n    level1_font_weight = 800,\n    level1_background = \"#e0f2fe\",  # Light blue\n    level2_font_size = \"0.95rem\",\n    level2_font_weight = 500,\n    level2_italic = TRUE,           # Italic for level 2 (default)\n    level2_background = \"#f0f9ff\",  # Lighter blue\n    level3_font_size = \"0.875rem\",\n    level3_font_weight = 400,\n    level3_background = \"#fafafa\"   # Near white\n  )"
+  },
+  {
+    "objectID": "reference/themes.html#preset-themes",
+    "href": "reference/themes.html#preset-themes",
+    "title": "Themes",
+    "section": "Preset Themes",
+    "text": "Preset Themes\n\nweb_theme_default\nClean, modern default theme with subtle cyan accents, system fonts, and rounded corners.\nweb_theme_default()\n\n\nweb_theme_jama\nJAMA journal style: maximum density, pure black & white, Arial font, compact rows (18px). Optimized for print.\nweb_theme_jama()\n\n\nweb_theme_lancet\nElegant academic theme with Lancet navy blue (#00407A), warm off-white background, gold accents, and serif typography (Georgia). Generous spacing with sharp corners.\nweb_theme_lancet()\n\n\nweb_theme_modern\nBold, vibrant design with Inter font, bright blue (#3B82F6) accents, larger elements (36px rows), and prominent rounded corners (12px). Ideal for digital reports and dashboards.\nweb_theme_modern()\n\n\nweb_theme_presentation\nOversized theme for slides and posters: extra large fonts (1-1.25rem), thick lines (2.5px), oversized markers (12px), and tall rows (44px). High visibility at distance.\nweb_theme_presentation()\n\n\nweb_theme_dark\nCatppuccin Mocha-inspired dark mode with comfortable low-contrast colors for extended viewing. Blue accents on dark background, soft rounded corners.\nweb_theme_dark()\n\n\nweb_theme_minimal\nAcademic publication-ready with pure black & white styling, Georgia serif font, sharp corners. Classic, authoritative look for journal submissions.\nweb_theme_minimal()\n\n\nweb_theme_cochrane\nCochrane systematic review style: teal accents (#0099CC), Arial font, very compact layout (20px rows). Clean, utilitarian design without decorative elements.\nweb_theme_cochrane()\n\n\nweb_theme_nature\nNature journal family styling: Nature blue (#1976D2), Helvetica Neue font, tight typography, and precise aesthetic. Balanced between academic rigor and modern readability.\nweb_theme_nature()"
   },
   {
     "objectID": "reference/themes.html#see-also",
