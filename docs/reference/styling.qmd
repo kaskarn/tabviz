@@ -1,0 +1,427 @@
+---
+title: "Styling Functions"
+---
+
+```{r}
+#| include: false
+library(webforest)
+library(dplyr)
+```
+
+The styling functions provide a fluent, pipe-friendly interface for customizing forest plot appearance. These functions work on both `WebSpec` objects and rendered htmlwidgets, allowing you to style plots at any point in your workflow.
+
+## The Two Styling Approaches
+
+webforest offers two equivalent ways to style your plots. Both produce identical results—choose the approach that fits your workflow:
+
+### Direct Arguments in forest_plot()
+
+When you know all styling upfront, pass it directly to the constructor:
+
+```{r}
+#| eval: false
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  row_bold = "is_summary",
+  row_type = "rtype",
+  marker_color = "effect_color",
+  marker_shape = "shape_col",
+  scale = "log", null_value = 1
+)
+```
+
+This approach is concise and keeps all configuration in one place.
+
+### Fluent API with set_*() Functions
+
+When styling depends on computation, when you're creating multiple variants, or when you want more explicit control, use the fluent API:
+
+```{r}
+#| eval: false
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  scale = "log", null_value = 1
+) |>
+  set_row_style(bold = "is_summary", type = "rtype") |>
+  set_marker_style(color = "effect_color", shape = "shape_col")
+```
+
+The fluent approach shines when you need to:
+
+- Apply conditional styling based on computed columns
+- Create multiple plot variants from the same base
+- Build reusable styling pipelines
+- Separate data specification from visual presentation
+
+::: {.callout-note}
+## Immutability Guarantee
+
+Every `set_*()` function returns a **new** modified object, leaving the original unchanged. This makes it safe to create multiple variants from the same base without side effects.
+:::
+
+---
+
+## Row Styling
+
+### set_row_style() {#set_row_style}
+
+Applies visual styling to entire rows based on column values. This is your primary tool for creating visual hierarchy in forest plots—distinguishing headers from data rows, highlighting summaries, and showing nested structure through indentation.
+
+```r
+set_row_style(
+  x,
+  type = NULL,
+
+  bold = NULL,
+  italic = NULL,
+  color = NULL,
+  bg = NULL,
+  badge = NULL,
+  icon = NULL,
+  indent = NULL,
+  emphasis = NULL,
+  muted = NULL,
+  accent = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `forest_plot()` widget, `WebSpec`, or data frame |
+| `type` | Column name containing row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
+| `bold` | Column name containing `TRUE`/`FALSE` for bold text |
+| `italic` | Column name containing `TRUE`/`FALSE` for italic text |
+| `color` | Column name containing CSS color strings (e.g., `"#1a365d"`) |
+| `bg` | Column name containing background color strings |
+| `badge` | Column name containing badge text to display |
+| `icon` | Column name containing emoji or unicode icons |
+| `indent` | Column name containing indentation levels (0, 1, 2, ...) |
+| `emphasis` | Column name for emphasis styling (bold + theme primary color) |
+| `muted` | Column name for muted styling (lighter, reduced prominence) |
+| `accent` | Column name for accent styling (theme accent color) |
+
+**Returns**: Modified widget or WebSpec (same type as input)
+
+#### Row Types
+
+The `type` parameter controls fundamental row behavior:
+
+| Type | Behavior |
+|------|----------|
+| `"data"` | Standard data row with interval marker |
+| `"header"` | Section header, no interval displayed |
+| `"summary"` | Summary row with diamond marker (for pooled estimates) |
+| `"spacer"` | Empty row for visual separation |
+
+::: {.callout-important}
+## NA Values for Non-Data Rows
+
+Rows with `type = "header"` or `"spacer"` should have `NA` for `point`, `lower`, and `upper`. The plot displays them as label-only rows without interval markers.
+:::
+
+#### Semantic Styling Shortcuts
+
+The `emphasis`, `muted`, and `accent` parameters provide theme-aware styling that adapts automatically when you change themes:
+
+```{r}
+#| eval: false
+data |>
+  mutate(
+    is_key = pval < 0.001,
+    is_secondary = !is_primary_endpoint
+  ) |>
+  forest_plot(point = "hr", lower = "lower", upper = "upper", label = "study") |>
+  set_row_style(emphasis = "is_key", muted = "is_secondary")
+```
+
+#### Complete Example
+
+```{r}
+styled_data <- data.frame(
+  label = c("Primary Endpoint", "  CV Death", "  MI", "  Stroke",
+            "Secondary Endpoints", "  HF Hospitalization", "Summary"),
+  hr = c(NA, 0.82, 0.79, 0.88, NA, 0.73, 0.80),
+  lower = c(NA, 0.72, 0.68, 0.74, NA, 0.61, 0.72),
+  upper = c(NA, 0.94, 0.92, 1.05, NA, 0.87, 0.89),
+  rtype = c("header", "data", "data", "data", "header", "data", "summary"),
+  rbold = c(TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE),
+  rindent = c(0, 1, 1, 1, 0, 1, 0)
+)
+
+forest_plot(styled_data,
+  point = "hr", lower = "lower", upper = "upper", label = "label",
+  scale = "log", null_value = 1
+) |>
+  set_row_style(type = "rtype", bold = "rbold", indent = "rindent")
+```
+
+---
+
+## Marker Styling
+
+### set_marker_style() {#set_marker_style}
+
+Controls the appearance of interval markers (the points and lines that represent effect estimates and confidence intervals). Use this to encode additional dimensions of your data through color, shape, opacity, or size.
+
+```r
+set_marker_style(
+  x,
+  color = NULL,
+  shape = NULL,
+  opacity = NULL,
+  size = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `forest_plot()` widget, `WebSpec`, or data frame |
+| `color` | Column name containing CSS color strings for marker fill |
+| `shape` | Column name containing shape values: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `opacity` | Column name containing opacity values from 0 (transparent) to 1 (opaque) |
+| `size` | Column name containing size multipliers (1 = default size, 2 = double, 0.5 = half) |
+
+**Returns**: Modified widget or WebSpec (same type as input)
+
+#### Shape Reference
+
+| Shape | Best For |
+|-------|----------|
+| `"square"` | Default, works for most data |
+| `"circle"` | Distinguishing study designs or subgroups |
+| `"diamond"` | Summary estimates, pooled results |
+| `"triangle"` | Directional indicators, special categories |
+
+#### Encoding Effect Direction with Color
+
+A common pattern is using color to indicate whether results favor treatment or control:
+
+```{r}
+direction_data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C", "Trial D"),
+  hr = c(0.72, 0.95, 0.68, 1.15),
+  lower = c(0.55, 0.78, 0.52, 0.90),
+  upper = c(0.94, 1.15, 0.89, 1.47)
+) |>
+  mutate(
+    marker_color = case_when(
+      upper < 1 ~ "#16a34a",  # Green: significant benefit
+      lower > 1 ~ "#dc2626",  # Red: significant harm
+      TRUE ~ "#64748b"        # Gray: not significant
+    )
+  )
+
+forest_plot(direction_data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  scale = "log", null_value = 1
+) |>
+  set_marker_style(color = "marker_color")
+```
+
+#### Encoding Study Quality with Shape and Opacity
+
+```{r}
+#| eval: false
+quality_data <- data |>
+  mutate(
+    marker_shape = ifelse(design == "RCT", "circle", "square"),
+    marker_opacity = case_when(
+      quality == "high" ~ 1.0,
+      quality == "medium" ~ 0.7,
+      quality == "low" ~ 0.4
+    )
+  )
+
+forest_plot(quality_data, ...) |>
+  set_marker_style(shape = "marker_shape", opacity = "marker_opacity")
+```
+
+---
+
+## Column Styling
+
+### set_column_style() {#set_column_style}
+
+Applies per-cell styling to a specific column. While `set_row_style()` affects entire rows uniformly, `set_column_style()` lets you highlight individual cells based on their values.
+
+```r
+set_column_style(
+  x,
+  column,
+  bold = NULL,
+  italic = NULL,
+  color = NULL,
+  bg = NULL,
+  badge = NULL,
+  icon = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec` object (not applicable to rendered widgets) |
+| `column` | Field name of the column to style |
+| `bold` | Column name for bold text (`TRUE`/`FALSE`) |
+| `italic` | Column name for italic text (`TRUE`/`FALSE`) |
+| `color` | Column name for text color (CSS color string) |
+| `bg` | Column name for background color |
+| `badge` | Column name for badge text overlay |
+| `icon` | Column name for icon (emoji/unicode) |
+
+**Returns**: Modified WebSpec
+
+::: {.callout-warning}
+## WebSpec Only
+
+`set_column_style()` only works on `WebSpec` objects, not on rendered widgets. Apply column styling before calling `forest_plot()`.
+:::
+
+#### Styling Priority
+
+When both row and column styles target the same cell:
+
+1. **Column styles take precedence** for that specific cell
+2. **Row styles apply** to cells without column-specific overrides
+
+This lets you set row-wide defaults while adding column-specific highlights.
+
+#### Highlighting Significant P-values
+
+```{r}
+#| eval: false
+data <- data |>
+  mutate(
+    pval_bold = pval < 0.05,
+    pval_color = ifelse(pval < 0.05, "#16a34a", "#64748b")
+  )
+
+web_spec(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  columns = list(col_pvalue("pval"))
+) |>
+  set_column_style("pval", bold = "pval_bold", color = "pval_color") |>
+  forest_plot()
+```
+
+---
+
+## Theme Application
+
+### set_theme() {#set_theme}
+
+Applies a complete theme to change the visual appearance of your plot. Accepts either a theme name string or a `WebTheme` object.
+
+```r
+set_theme(x, theme)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `forest_plot()` widget or `WebSpec` |
+| `theme` | Theme name (`"default"`, `"jama"`, `"lancet"`, etc.) or `WebTheme` object |
+
+**Available theme names**: `"default"`, `"minimal"`, `"dark"`, `"jama"`, `"lancet"`, `"modern"`, `"presentation"`, `"cochrane"`, `"nature"`
+
+```{r}
+#| eval: false
+# Apply by name
+forest_plot(data, ...) |> set_theme("jama")
+
+# Apply theme object
+forest_plot(data, ...) |> set_theme(web_theme_lancet())
+
+# Apply customized theme
+custom <- web_theme_minimal() |>
+  set_colors(primary = "#1a365d") |>
+  set_spacing(row_height = 24)
+
+forest_plot(data, ...) |> set_theme(custom)
+```
+
+---
+
+## Building Styling Pipelines
+
+### Creating Variants
+
+A powerful pattern is creating multiple plot versions from a common base:
+
+```{r}
+#| eval: false
+# Prepare data with styling columns
+styled <- data |>
+  mutate(
+    sig_color = ifelse(pval < 0.05, "#16a34a", "#64748b"),
+    design_shape = ifelse(is_rct, "circle", "square"),
+    is_sig = pval < 0.05
+  )
+
+# Base plot
+base <- forest_plot(styled,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  scale = "log", null_value = 1
+)
+
+# Variant 1: Color by significance
+plot_sig <- base |>
+  set_marker_style(color = "sig_color") |>
+  set_row_style(bold = "is_sig")
+
+# Variant 2: Shape by design
+plot_design <- base |>
+  set_marker_style(shape = "design_shape")
+
+# Variant 3: Different theme
+plot_lancet <- base |>
+  set_theme("lancet")
+```
+
+### Reusable Styling Functions
+
+Create functions that encapsulate your organization's styling standards:
+
+```{r}
+#| eval: false
+# Define standard styling pipeline
+apply_clinical_style <- function(plot) {
+  plot |>
+    set_marker_style(color = "direction_color") |>
+    set_row_style(bold = "is_significant", type = "row_type") |>
+    set_theme("jama")
+}
+
+# Apply consistently across analyses
+forest_plot(trial_a, ...) |> apply_clinical_style()
+forest_plot(trial_b, ...) |> apply_clinical_style()
+forest_plot(pooled, ...) |> apply_clinical_style()
+```
+
+---
+
+## Quick Reference
+
+| Function | Works On | Purpose |
+|----------|----------|---------|
+| `set_row_style()` | Widget, WebSpec | Row-level text styling, types, indentation |
+| `set_marker_style()` | Widget, WebSpec | Interval marker color, shape, opacity, size |
+| `set_column_style()` | WebSpec only | Per-cell styling for specific columns |
+| `set_theme()` | Widget, WebSpec | Apply complete theme |
+
+### Equivalent forest_plot() Arguments
+
+Every styling function has equivalent direct arguments in `forest_plot()`:
+
+| set_*() Parameter | forest_plot() Argument |
+|-------------------|------------------------|
+| `set_row_style(bold = "col")` | `row_bold = "col"` |
+| `set_row_style(type = "col")` | `row_type = "col"` |
+| `set_row_style(indent = "col")` | `row_indent = "col"` |
+| `set_marker_style(color = "col")` | `marker_color = "col"` |
+| `set_marker_style(shape = "col")` | `marker_shape = "col"` |
+| `set_marker_style(size = "col")` | `marker_size = "col"` |
+
+## See Also
+
+- [forest_plot()](forest_plot.qmd) for core plot creation
+- [Themes](themes.qmd) for theme customization
+- [Customizing Plots Guide](../guide/fluent-api.qmd) for workflow patterns

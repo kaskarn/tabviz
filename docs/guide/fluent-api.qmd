@@ -8,28 +8,15 @@ library(webforest)
 library(dplyr)
 ```
 
-webforest provides a **fluent API** that lets you build and customize plots step by step using R's pipe operator (`|>`).
+webforest provides a **fluent API** that lets you customize plots step by step using R's pipe operator (`|>`). This guide covers how to style your plots, whether you prefer specifying everything upfront or building incrementally.
 
-::: {.callout-tip}
-## The Fluent Pattern
-The fluent API follows a simple rule: **every function returns a modified object that can be piped into the next function**.
+## The Two Styling Approaches
 
-```r
-data |>
-  web_spec(point = "hr", ...) |>      # Create spec
-  set_row_style(bold = "is_key") |>   # Modify rows
-  set_marker_style(color = "dir") |>  # Modify markers
-  forest_plot(theme = "jama")          # Render
-```
+webforest offers two equivalent ways to style your forest plots. Both produce identical results—choose based on your workflow preferences.
 
-Each step modifies and passes forward the same object type (WebSpec or htmlwidget).
-:::
+### Approach 1: Direct Arguments in forest_plot()
 
-## Two Equivalent Approaches
-
-webforest offers two ways to achieve the same result:
-
-### Constructor Arguments (All at Once)
+When you know all your styling upfront, pass everything directly to `forest_plot()`:
 
 ```{r}
 #| eval: false
@@ -43,17 +30,21 @@ forest_plot(data,
 )
 ```
 
-### Fluent API (Step by Step)
+This approach is concise and keeps all configuration in one place.
+
+### Approach 2: Fluent API (Pipe-Based Styling)
+
+When styling depends on computation or you want to build incrementally, use `set_*()` functions:
 
 ```{r}
 #| eval: false
-web_spec(data,
+forest_plot(data,
   point = "hr", lower = "lower", upper = "upper", label = "study",
   scale = "log", null_value = 1
 ) |>
   set_row_style(type = "rtype", bold = "rbold") |>
   set_marker_style(color = "effect_color") |>
-  forest_plot(theme = web_theme_jama())
+  set_theme("jama")
 ```
 
 Both produce identical output.
@@ -61,27 +52,47 @@ Both produce identical output.
 ::: {.callout-note}
 ## When to Use Which
 
-| Approach | Best When |
-|----------|-----------|
-| **Constructor** | Everything is known upfront |
-| **Fluent API** | Styling depends on computation |
-| **Fluent API** | Creating multiple variants from one base |
-| **Fluent API** | Conditional logic determines styling |
-| **Fluent API** | Building reusable pipelines |
+| Use Constructor Arguments When | Use Fluent API When |
+|-------------------------------|---------------------|
+| Everything is known upfront | Styling depends on computation |
+| Simple, static plots | Creating multiple variants from one base |
+| Fewer lines of code matter | Conditional logic determines styling |
+|  | Building reusable styling pipelines |
 :::
 
-## Core Modifier Functions
+---
+
+## The Fluent Pattern
+
+The fluent API follows a simple rule: **every `set_*()` function returns a modified plot that can be piped into the next function**.
+
+```r
+forest_plot(data, ...) |>     # Create plot
+  set_row_style(...) |>       # Modify rows
+  set_marker_style(...) |>    # Modify markers
+  set_theme(...)              # Apply theme
+```
+
+::: {.callout-note}
+## Immutability Guarantee
+
+Each `set_*()` call returns a **new** modified plot, leaving the original unchanged. This makes it safe to create multiple variants without side effects.
+:::
+
+---
+
+## Core Styling Functions
 
 ### set_row_style()
 
-Style entire rows based on column values:
+Style entire rows based on column values. This is your primary tool for creating visual hierarchy—distinguishing headers from data rows, highlighting summaries, and showing nested structure through indentation.
 
 ```r
-spec |> set_row_style(
+plot |> set_row_style(
   type = "rtype",     # "header", "data", "summary", "spacer"
   bold = "rbold",     # Column with TRUE/FALSE
   italic = "ritalic", # Column with TRUE/FALSE
-  color = "rcolor",   # Column with hex colors
+  color = "rcolor",   # Column with CSS colors
   bg = "rbg",         # Column with background colors
   badge = "rbadge",   # Column with badge text
   icon = "ricon",     # Column with emoji/unicode
@@ -102,22 +113,22 @@ styled_data <- data.frame(
   rindent = c(0, 1, 1, 0, 1)
 )
 
-web_spec(styled_data,
+forest_plot(styled_data,
   point = "hr", lower = "lower", upper = "upper", label = "study",
   scale = "log", null_value = 1
 ) |>
   set_row_style(type = "rtype", bold = "rbold", indent = "rindent") |>
-  forest_plot(theme = web_theme_modern())
+  set_theme("modern")
 ```
 
 ### set_marker_style()
 
-Style interval markers based on column values:
+Style interval markers (the points and lines representing effect estimates):
 
 ```r
-spec |> set_marker_style(
-  color = "marker_color",   # Column with hex colors
-  shape = "marker_shape",   # Column with "square", "circle", "diamond", "triangle"
+plot |> set_marker_style(
+  color = "marker_color",   # Column with CSS colors
+  shape = "marker_shape",   # "square", "circle", "diamond", "triangle"
   opacity = "marker_alpha", # Column with 0-1 values
   size = "marker_size"      # Column with size multipliers
 )
@@ -142,20 +153,20 @@ marker_data <- data.frame(
     marker_shape = ifelse(direction == "benefit", "circle", "square")
   )
 
-web_spec(marker_data,
+forest_plot(marker_data,
   point = "hr", lower = "lower", upper = "upper", label = "study",
   scale = "log", null_value = 1
 ) |>
   set_marker_style(color = "marker_color", shape = "marker_shape") |>
-  forest_plot(theme = web_theme_modern())
+  set_theme("modern")
 ```
 
 ### set_column_style()
 
-Style individual column cells:
+Style individual column cells (must be applied before rendering):
 
 ```r
-spec |> set_column_style(column = "hr",
+plot |> set_column_style(column = "hr",
   bold = "is_sig",
   color = "hr_color",
   bg = "hr_bg"
@@ -165,12 +176,12 @@ spec |> set_column_style(column = "hr",
 ::: {.callout-tip}
 ## Styling Priority
 
-When both row and column styles are set:
+When both row and column styles are set for the same cell:
 
 1. Column styles take precedence
-2. Row styles apply to all cells without column overrides
+2. Row styles apply to cells without column overrides
 
-This lets you set row-wide defaults with column-specific overrides.
+This lets you set row-wide defaults with column-specific highlights.
 :::
 
 ### set_theme() and Theme Modifiers
@@ -179,47 +190,49 @@ Apply or modify themes:
 
 ```r
 # Apply by name
-spec |> set_theme("jama")
+plot |> set_theme("jama")
 
 # Apply by object
-spec |> set_theme(web_theme_lancet())
+plot |> set_theme(web_theme_lancet())
 
 # Modify theme properties inline
-spec |> set_colors(primary = "#1a365d")
-spec |> set_spacing(row_height = 24)
-spec |> set_axis(gridlines = TRUE)
+plot |> set_colors(primary = "#1a365d")
+plot |> set_spacing(row_height = 24)
+plot |> set_axis(gridlines = TRUE)
 ```
 
-All theme modifiers work on both WebSpec and htmlwidget objects.
+All theme modifiers work on both plot widgets and theme objects.
 
-## Creating Variants
+---
 
-A common pattern is creating multiple versions from one base:
+## Creating Multiple Variants
+
+A powerful pattern is creating multiple plot versions from a common base:
 
 ```{r}
-base_spec <- web_spec(marker_data,
+# Base plot
+base_plot <- forest_plot(marker_data,
   point = "hr", lower = "lower", upper = "upper", label = "study",
   scale = "log", null_value = 1
 )
 
 # Variant 1: Color by significance
-plot_colored <- base_spec |>
+plot_colored <- base_plot |>
   set_marker_style(color = "marker_color") |>
-  forest_plot(theme = "modern", title = "Colored by Direction")
+  set_theme("modern")
 
 # Variant 2: Shape by design
-plot_shaped <- base_spec |>
+plot_shaped <- base_plot |>
   set_marker_style(shape = "marker_shape") |>
-  forest_plot(theme = "modern", title = "Shaped by Design")
+  set_theme("modern")
 
 # Show one
 plot_colored
 ```
 
-::: {.callout-note}
-## Immutable Specs
-Each `set_*()` call returns a **new** modified spec, leaving the original unchanged. This makes it safe to create multiple variants from the same base.
-:::
+Since each `set_*()` call returns a new object, `base_plot` remains unchanged and can be reused for each variant.
+
+---
 
 ## Conditional Styling with dplyr
 
@@ -248,14 +261,14 @@ styled_analysis <- analysis_data |>
     )
   )
 
-web_spec(styled_analysis,
+forest_plot(styled_analysis,
   point = "hr", lower = "lower", upper = "upper", label = "study",
   columns = list(col_pvalue("pval")),
   scale = "log", null_value = 1
 ) |>
   set_marker_style(color = "sig_color") |>
   set_row_style(bold = "is_sig") |>
-  forest_plot(theme = "modern")
+  set_theme("modern")
 ```
 
 ::: {.callout-tip}
@@ -271,36 +284,41 @@ Use consistent suffixes for style columns:
 This makes it clear which columns are data vs styling.
 :::
 
-## Reusable Pipelines
+---
 
-Create reusable styling functions:
+## Reusable Styling Pipelines
+
+Create functions that encapsulate your organization's styling standards:
 
 ```{r}
 #| eval: false
 # Define a standard styling pipeline
-apply_significance_style <- function(spec) {
-  spec |>
+apply_clinical_style <- function(plot) {
+  plot |>
     set_marker_style(color = "sig_color") |>
     set_row_style(bold = "is_sig") |>
-    set_column_style("hr", color = "sig_color")
+    set_theme("jama")
 }
 
-# Use it on different datasets
-web_spec(dataset1, ...) |> apply_significance_style() |> forest_plot()
-web_spec(dataset2, ...) |> apply_significance_style() |> forest_plot()
+# Use it consistently across analyses
+forest_plot(trial_a, ...) |> apply_clinical_style()
+forest_plot(trial_b, ...) |> apply_clinical_style()
+forest_plot(pooled, ...) |> apply_clinical_style()
 ```
 
-## Post-Render Modifications
+---
 
-You can modify plots after rendering:
+## Theme Customization Example
+
+Create a customized theme and apply it:
 
 ```{r}
-# Create a customized theme first
+# Create a customized theme
 custom_theme <- web_theme_lancet() |>
   set_axis(gridlines = TRUE) |>
   set_spacing(row_height = 32)
 
-# Then apply it to the plot
+# Apply to plot
 forest_plot(analysis_data[1:3, ],
   point = "hr", lower = "lower", upper = "upper", label = "study",
   scale = "log", null_value = 1
@@ -308,27 +326,24 @@ forest_plot(analysis_data[1:3, ],
   set_theme(custom_theme)
 ```
 
-::: {.callout-warning}
-## Widget Modifications Are Limited
-After `forest_plot()`, you can only modify **theme properties** (colors, spacing, axis). Row and marker styling must be set on the WebSpec before rendering.
-:::
+---
 
 ## Function Reference
 
-| Function | Works On | Purpose |
-|----------|----------|---------|
-| `set_row_style()` | WebSpec, widget | Row-level styling |
-| `set_marker_style()` | WebSpec, widget | Interval marker styling |
-| `set_column_style()` | WebSpec | Per-cell column styling |
-| `set_theme()` | Both | Apply theme by name/object |
-| `set_colors()` | Both | Modify color palette |
-| `set_typography()` | Both | Modify fonts |
-| `set_spacing()` | Both | Modify spacing |
-| `set_shapes()` | Both | Modify shapes |
-| `set_axis()` | Both | Modify axis settings |
-| `set_layout()` | Both | Modify layout |
-| `set_group_headers()` | Both | Modify group header hierarchy |
-| `set_marker_colors()` | Both | Set multi-effect color palette |
-| `set_marker_shapes()` | Both | Set multi-effect shape palette |
+| Function | Purpose |
+|----------|---------|
+| `set_row_style()` | Row-level styling (bold, italic, color, type, indent) |
+| `set_marker_style()` | Interval marker styling (color, shape, opacity, size) |
+| `set_column_style()` | Per-cell column styling |
+| `set_theme()` | Apply theme by name or object |
+| `set_colors()` | Modify color palette |
+| `set_typography()` | Modify fonts |
+| `set_spacing()` | Modify spacing |
+| `set_shapes()` | Modify shapes |
+| `set_axis()` | Modify axis settings |
+| `set_layout()` | Modify layout |
+| `set_group_headers()` | Modify group header hierarchy |
+| `set_marker_colors()` | Set multi-effect color palette |
+| `set_marker_shapes()` | Set multi-effect shape palette |
 
-See [web_spec Reference](../reference/web_spec.qmd) for complete parameter documentation.
+See [Styling Reference](../reference/styling.qmd) for complete parameter documentation.

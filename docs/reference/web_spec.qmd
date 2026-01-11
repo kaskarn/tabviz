@@ -1,5 +1,5 @@
 ---
-title: "Specification Objects"
+title: "Advanced: Specification Objects"
 ---
 
 ```{r}
@@ -7,13 +7,48 @@ title: "Specification Objects"
 library(webforest)
 ```
 
-Functions for creating specification objects that define forest plot structure.
+::: {.callout-note}
+## When to Use This Page
+
+**Most users should start with [`forest_plot()`](forest_plot.qmd)**, which accepts all the same arguments and is simpler for typical workflows.
+
+Use `web_spec()` when you need to:
+
+- Build plot specifications programmatically (e.g., in functions or loops)
+- Reuse the same specification with different rendering options
+- Inspect or serialize the specification object
+- Work with multi-effect plots requiring explicit `web_effect()` definitions
+:::
+
+## Overview
+
+The `web_spec()` function creates a `WebSpec` object—an intermediate representation that captures all the data, mappings, and styling for a forest plot. This object can then be rendered with `forest_plot()` or `webtable()`.
+
+```{r}
+#| eval: false
+# Two equivalent approaches:
+
+# Direct (recommended for most cases)
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  scale = "log", null_value = 1
+)
+
+# Via WebSpec (for programmatic use)
+spec <- web_spec(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  scale = "log", null_value = 1
+)
+forest_plot(spec)
+```
+
+---
 
 ## Core Specification
 
 ### web_spec {#web_spec}
 
-Create a web specification for table visualizations. This is the core data structure that can be rendered as a forest plot or table.
+Create a specification object for forest plot rendering.
 
 ```r
 web_spec(
@@ -42,6 +77,9 @@ web_spec(
   row_icon = NULL,
   row_indent = NULL,
   row_type = NULL,
+  row_emphasis = NULL,
+  row_muted = NULL,
+  row_accent = NULL,
   marker_color = NULL,
   marker_shape = NULL,
   marker_opacity = NULL,
@@ -51,7 +89,7 @@ web_spec(
 )
 ```
 
-### Data Arguments
+### Required Arguments
 
 | Argument | Description |
 |----------|-------------|
@@ -59,10 +97,15 @@ web_spec(
 | `point` | Column name for point estimates |
 | `lower` | Column name for lower confidence bounds |
 | `upper` | Column name for upper confidence bounds |
-| `label` | Column name for row labels |
-| `label_header` | Header text for the label column (default: "Study") |
 
-### Grouping Arguments
+### Optional Data Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `label` | Column name for row labels |
+| `label_header` | Header text for the label column (default: `"Study"`) |
+
+### Grouping
 
 | Argument | Description |
 |----------|-------------|
@@ -70,9 +113,9 @@ web_spec(
 
 The `group` argument supports three modes:
 
-1. **Single column**: `group = "category"` - flat grouping by one column
-2. **Hierarchical**: `group = c("region", "country")` - nested grouping (region > country)
-3. **Explicit**: `group = list(web_group(...))` - full control over group definitions
+1. **Single column**: `group = "category"` — flat grouping by one column
+2. **Hierarchical**: `group = c("region", "country")` — nested grouping (region > country)
+3. **Explicit**: `group = list(web_group(...))` — full control over group definitions
 
 ### Display Arguments
 
@@ -89,40 +132,47 @@ The `group` argument supports three modes:
 
 ### Row Styling Arguments
 
-| Argument | Description |
-|----------|-------------|
-| `row_type` | Column for row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
-| `row_bold` | Column for bold styling (logical) |
-| `row_italic` | Column for italic styling (logical) |
-| `row_color` | Column for text color (hex string) |
-| `row_bg` | Column for background color (hex string) |
-| `row_badge` | Column for badge text |
-| `row_icon` | Column for icons (emoji/unicode) |
-| `row_indent` | Column for indentation level (integer) |
+All row styling arguments accept column names containing the styling values:
+
+| Argument | Column Contains |
+|----------|-----------------|
+| `row_type` | Row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
+| `row_bold` | `TRUE`/`FALSE` for bold text |
+| `row_italic` | `TRUE`/`FALSE` for italic text |
+| `row_color` | CSS color strings (e.g., `"#1a365d"`) |
+| `row_bg` | Background color strings |
+| `row_badge` | Badge text to display |
+| `row_icon` | Emoji or unicode icons |
+| `row_indent` | Indentation levels (0, 1, 2, ...) |
+| `row_emphasis` | `TRUE`/`FALSE` for emphasis styling (bold + primary color) |
+| `row_muted` | `TRUE`/`FALSE` for muted styling (lighter, reduced prominence) |
+| `row_accent` | `TRUE`/`FALSE` for accent styling (theme accent color) |
 
 ### Marker Styling Arguments
 
-| Argument | Description |
-|----------|-------------|
-| `marker_color` | Column containing marker fill colors (hex strings) |
-| `marker_shape` | Column containing shapes: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
-| `marker_opacity` | Column containing opacity values (0-1) |
-| `marker_size` | Column containing size multipliers (1 = default size) |
+| Argument | Column Contains |
+|----------|-----------------|
+| `marker_color` | CSS color strings for marker fill |
+| `marker_shape` | Shape values: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `marker_opacity` | Opacity values from 0 to 1 |
+| `marker_size` | Size multipliers (1 = default size) |
 
 ### Advanced Arguments
 
 | Argument | Description |
 |----------|-------------|
 | `effects` | List of `web_effect()` objects for multi-effect plots |
-| `annotations` | List of annotation objects |
+| `annotations` | List of annotation objects (`forest_refline()`, `forest_annotation()`) |
 | `theme` | Theme object (default: `web_theme_default()`) |
 | `interaction` | Interaction settings (default: `web_interaction()`) |
+
+---
 
 ## Group Specification
 
 ### web_group {#web_group}
 
-Define a row group with optional nesting.
+Define a row group with optional nesting. Use this for explicit control over group structure when automatic grouping from column values isn't sufficient.
 
 ```r
 web_group(id, label = id, parent = NULL, collapsed = FALSE)
@@ -130,16 +180,41 @@ web_group(id, label = id, parent = NULL, collapsed = FALSE)
 
 | Argument | Description |
 |----------|-------------|
-| `id` | Unique identifier for the group |
+| `id` | Unique identifier for the group (must match values in your data) |
 | `label` | Display label (defaults to id) |
-| `parent` | Parent group ID for nesting |
-| `collapsed` | Whether the group starts collapsed |
+| `parent` | Parent group ID for creating nested hierarchies |
+| `collapsed` | Whether the group starts collapsed (`TRUE`/`FALSE`) |
+
+**Example: Explicit Group Definitions**
+
+```{r}
+#| eval: false
+# Data with group column
+data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C", "Trial D"),
+  group_id = c("cardio", "cardio", "renal", "renal"),
+  hr = c(0.72, 0.85, 0.91, 0.78),
+  lower = c(0.55, 0.70, 0.75, 0.60),
+  upper = c(0.95, 1.03, 1.10, 1.00)
+)
+
+# Explicit groups with custom labels
+web_spec(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  group = list(
+    web_group("cardio", label = "Cardiovascular Outcomes"),
+    web_group("renal", label = "Renal Outcomes", collapsed = TRUE)
+  )
+)
+```
+
+---
 
 ## Effect Specification
 
 ### web_effect {#web_effect}
 
-Define a single effect for multi-effect forest plots.
+Define a single effect for multi-effect forest plots. Multi-effect plots display multiple intervals per row, useful for comparing different analyses (e.g., unadjusted vs. adjusted) or different outcomes.
 
 ```r
 web_effect(point, lower, upper, label = NULL, color = NULL, shape = NULL, opacity = NULL)
@@ -150,16 +225,48 @@ web_effect(point, lower, upper, label = NULL, color = NULL, shape = NULL, opacit
 | `point` | Column name for point estimates |
 | `lower` | Column name for lower bounds |
 | `upper` | Column name for upper bounds |
-| `label` | Display label (defaults to point column name) |
-| `color` | Color for this effect (hex string) |
-| `shape` | Marker shape: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
-| `opacity` | Marker opacity (0-1) |
+| `label` | Display label for legend (defaults to point column name) |
+| `color` | Override color for this effect (CSS color string) |
+| `shape` | Override shape: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `opacity` | Override opacity (0–1) |
+
+**Example: Comparing Unadjusted and Adjusted Estimates**
+
+```{r}
+#| eval: false
+data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C"),
+  # Unadjusted estimates
+  hr_unadj = c(0.75, 0.82, 0.88),
+  lo_unadj = c(0.58, 0.68, 0.72),
+  hi_unadj = c(0.97, 0.99, 1.07),
+  # Adjusted estimates
+  hr_adj = c(0.72, 0.79, 0.85),
+  lo_adj = c(0.55, 0.65, 0.70),
+  hi_adj = c(0.94, 0.96, 1.03)
+)
+
+web_spec(data,
+  point = "hr_unadj", lower = "lo_unadj", upper = "hi_unadj",
+  label = "study",
+  effects = list(
+    web_effect("hr_unadj", "lo_unadj", "hi_unadj",
+               label = "Unadjusted", color = "#64748b"),
+    web_effect("hr_adj", "lo_adj", "hi_adj",
+               label = "Adjusted", color = "#2563eb")
+  ),
+  scale = "log", null_value = 1
+) |>
+  forest_plot()
+```
+
+---
 
 ## Interaction Specification
 
 ### web_interaction {#web_interaction}
 
-Configure interactive features and tooltips.
+Configure interactive features for the rendered widget.
 
 ```r
 web_interaction(
@@ -171,7 +278,8 @@ web_interaction(
   enable_select = TRUE,
   enable_hover = TRUE,
   enable_resize = TRUE,
-  enable_export = TRUE
+  enable_export = TRUE,
+  enable_themes = "default"
 )
 ```
 
@@ -186,169 +294,99 @@ web_interaction(
 | `enable_hover` | Enable hover effects | `TRUE` |
 | `enable_resize` | Enable column resizing | `TRUE` |
 | `enable_export` | Enable download/export button | `TRUE` |
+| `enable_themes` | Theme menu: `"default"`, `NULL`, or list of `WebTheme` | `"default"` |
 
 ### Tooltips
 
-Tooltips are **opt-in**. Specify column names to display when hovering over interval markers:
+Tooltips are opt-in. Specify column names to display when hovering over interval markers:
 
 ```r
-# Show sample size and p-value on hover
 web_interaction(
   tooltip_fields = c("n", "events", "pvalue")
 )
 ```
 
-The tooltip displays:
-1. Row label (study name)
-2. Point estimate with CI
-3. Each specified field as key-value pairs
+The tooltip displays the row label, point estimate with CI, and each specified field.
 
 ### Presets
 
 ```r
-web_interaction_minimal()      # Hover only, no interactive features
-web_interaction_publication()  # No interactive features at all
+# Read-only: hover effects only, no interactive features
+web_interaction_minimal()
+
+# Static: no interactive features at all (for publications)
+web_interaction_publication()
 ```
 
-## Examples
+---
 
-### Basic Specification
+## Programmatic Construction Patterns
+
+### Building Specs in Functions
 
 ```{r}
 #| eval: false
-data <- data.frame(
-  study = c("Study A", "Study B", "Study C"),
-  hr = c(0.72, 0.85, 0.91),
-  lower = c(0.55, 0.70, 0.75),
-  upper = c(0.95, 1.03, 1.10)
-)
+create_forest_spec <- function(data, effect_col, ci_cols, ...) {
+  web_spec(data,
+    point = effect_col,
+    lower = ci_cols[1],
+    upper = ci_cols[2],
+    ...
+  )
+}
 
-spec <- web_spec(data,
-  point = "hr",
-  lower = "lower",
-  upper = "upper",
-  label = "study",
-  scale = "log",
-  null_value = 1
+# Use it
+spec <- create_forest_spec(my_data, "hr", c("lower", "upper"),
+  label = "study", scale = "log", null_value = 1
 )
-
-# Render as forest plot
 forest_plot(spec)
+```
+
+### Reusing Specs with Different Renderings
+
+```{r}
+#| eval: false
+# Create base specification once
+base_spec <- web_spec(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  columns = list(col_n("n"), col_interval("HR (95% CI)")),
+  scale = "log", null_value = 1
+)
+
+# Render with different themes
+forest_plot(base_spec, theme = web_theme_jama())
+forest_plot(base_spec, theme = web_theme_lancet())
 
 # Render as table only
-webtable(spec)
+webtable(base_spec)
+
+# Export to file
+save_plot(forest_plot(base_spec), "forest.svg")
 ```
 
-### Hierarchical Grouping
+### Inspecting Specifications
 
 ```{r}
 #| eval: false
-data <- data.frame(
-  region = c("North", "North", "South", "South"),
-  country = c("USA", "Canada", "Brazil", "Argentina"),
-  hr = c(0.72, 0.85, 0.91, 0.78),
-  lower = c(0.55, 0.70, 0.75, 0.60),
-  upper = c(0.95, 1.03, 1.10, 1.00)
-)
+spec <- web_spec(data, point = "hr", lower = "lower", upper = "upper")
 
-# Hierarchical grouping: Region > Country
-spec <- web_spec(data,
-  point = "hr", lower = "lower", upper = "upper",
-  label = "country",
-  group = c("region", "country"),
-  scale = "log", null_value = 1
-)
+# Print summary
+print(spec)
+
+# Convert to data frame
+as.data.frame(spec)
+
+# Access components
+spec@data       # Original data
+spec@theme      # Theme object
+spec@columns    # Column specifications
 ```
 
-### Multi-Effect Plot
-
-```{r}
-#| eval: false
-data <- data.frame(
-  study = c("Trial A", "Trial B"),
-  or = c(1.5, 1.2),
-  or_lo = c(1.1, 0.9),
-  or_hi = c(2.0, 1.6),
-  hr = c(1.3, 1.1),
-  hr_lo = c(1.0, 0.8),
-  hr_hi = c(1.7, 1.5)
-)
-
-spec <- web_spec(data,
-  point = "or", lower = "or_lo", upper = "or_hi",
-  label = "study",
-  effects = list(
-    web_effect("or", "or_lo", "or_hi", label = "Odds Ratio", color = "#3b82f6"),
-    web_effect("hr", "hr_lo", "hr_hi", label = "Hazard Ratio", color = "#ef4444")
-  ),
-  scale = "log", null_value = 1
-)
-```
-
-## Fluent API
-
-Modify specifications after creation using the pipe operator. See [Customizing Plots](../guide/fluent-api.qmd) guide for detailed usage.
-
-### set_marker_style {#set_marker_style}
-
-Set marker styling columns.
-
-```r
-spec |> set_marker_style(color = NULL, shape = NULL, opacity = NULL, size = NULL)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `color` | Column name for marker fill colors (hex strings) |
-| `shape` | Column name for marker shapes: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
-| `opacity` | Column name for marker opacity (0-1) |
-| `size` | Column name for marker size multipliers (1 = default) |
-
-### set_row_style {#set_row_style}
-
-Set row styling columns.
-
-```r
-spec |> set_row_style(
-  bold = NULL, italic = NULL, color = NULL, bg = NULL,
-  badge = NULL, icon = NULL, indent = NULL, type = NULL
-)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `bold` | Column name for bold text (logical) |
-| `italic` | Column name for italic text (logical) |
-| `color` | Column name for text color (hex string) |
-| `bg` | Column name for background color (hex string) |
-| `badge` | Column name for badge text |
-| `icon` | Column name for icon (emoji/unicode) |
-| `indent` | Column name for indentation level (integer) |
-| `type` | Column name for row type: `"data"`, `"header"`, `"summary"`, `"spacer"` |
-
-### set_column_style {#set_column_style}
-
-Set per-cell styling for a specific column.
-
-```r
-spec |> set_column_style(
-  column, bold = NULL, italic = NULL, color = NULL,
-  bg = NULL, badge = NULL, icon = NULL
-)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `column` | Field name of the column to style |
-| `bold` | Column name for bold text (logical) |
-| `italic` | Column name for italic text (logical) |
-| `color` | Column name for text color (hex string) |
-| `bg` | Column name for background color (hex string) |
-| `badge` | Column name for badge text |
-| `icon` | Column name for icon (emoji/unicode) |
+---
 
 ## See Also
 
-- [forest_plot()](forest_plot.qmd) for rendering specifications
-- [Columns](columns.qmd) for column types
-- [Themes](themes.qmd) for styling
+- [forest_plot()](forest_plot.qmd) — Primary function for creating plots (recommended)
+- [Styling Functions](styling.qmd) — Apply styling with `set_*()` functions
+- [Columns](columns.qmd) — Column type specifications
+- [Themes](themes.qmd) — Theme customization

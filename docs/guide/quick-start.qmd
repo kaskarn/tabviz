@@ -5,6 +5,7 @@ title: "Quick Start"
 ```{r}
 #| include: false
 library(webforest)
+library(dplyr)
 ```
 
 ## Installation
@@ -14,9 +15,9 @@ library(webforest)
 pak::pak("kaskarn/webforest")
 ```
 
-## Basic Usage
+## Your First Forest Plot
 
-Create a forest plot with a single function call:
+Create a forest plot with a single function call using `forest_plot()`:
 
 ```{r}
 # Sample meta-analysis data
@@ -41,15 +42,17 @@ forest_plot(meta_data,
 ```
 
 ::: {.callout-important}
-## The Four Required Mappings
-Every forest plot needs these four column mappings:
+## The Three Required Mappings
+
+Every forest plot needs these three column mappings:
 
 | Argument | What it is | Example |
 |----------|------------|---------|
 | `point` | Point estimate | Hazard ratio, odds ratio, mean difference |
 | `lower` | Lower CI bound | 95% CI lower |
 | `upper` | Upper CI bound | 95% CI upper |
-| `label` | Row label | Study name |
+
+The `label` argument is optional but almost always used to identify each row.
 :::
 
 ### Common Options
@@ -60,8 +63,6 @@ Every forest plot needs these four column mappings:
 | `scale` | `"linear"` or `"log"` | `"linear"` |
 | `axis_label` | X-axis label text | `NULL` |
 | `theme` | Theme object from `web_theme_*()` | `web_theme_default()` |
-| `marker_color` | Column for marker fill colors | `NULL` |
-| `marker_shape` | Column for shapes: `"square"`, `"circle"`, `"diamond"`, `"triangle"` | `NULL` |
 
 ::: {.callout-tip}
 ## Scale Selection Rule of Thumb
@@ -70,44 +71,36 @@ Every forest plot needs these four column mappings:
 - **Linear scale** (`scale = "linear"`, `null_value = 0`): For differences (MD, RD, SMD) where effects are additive
 :::
 
-## Two-Step Workflow
+---
 
-For more control, create a `WebSpec` first, then render it:
+## Adding Data Columns
+
+Display additional data alongside your forest plot using `col_*()` functions:
 
 ```{r}
-# Step 1: Create the spec
-spec <- web_spec(meta_data,
-  point = "hr",
-  lower = "lower",
-  upper = "upper",
-  label = "study",
-  null_value = 1,
-  scale = "log",
+forest_plot(meta_data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
   columns = list(
-    col_numeric("n", header = "N", width = 60),
-    col_numeric("events", header = "Events", width = 70)
-  )
+    col_n("n"),
+    col_numeric("events", header = "Events"),
+    col_interval("HR (95% CI)")
+  ),
+  null_value = 1, scale = "log",
+  axis_label = "Hazard Ratio"
 )
-
-# Step 2: Render the plot
-forest_plot(spec, axis_label = "Hazard Ratio")
 ```
 
-::: {.callout-note}
-## When to Use Two-Step Workflow
-The two-step workflow is useful when you want to:
+See [Columns](columns.qmd) for all available column types.
 
-- **Reuse the same spec** with different themes or visual settings
-- **Apply conditional styling** using `set_*()` modifier functions
-- **Export to multiple formats** from the same data structure
-- **Inspect or debug** the spec programmatically
-:::
+---
 
-## Adding Styling
+## Styling Your Plot
 
-webforest offers two equivalent ways to style your plot:
+webforest offers two equivalent ways to style your plots—both produce identical results.
 
-### Constructor Arguments (All at Once)
+### Option 1: Direct Arguments
+
+Pass styling options directly to `forest_plot()`:
 
 ```{r}
 #| eval: false
@@ -120,7 +113,9 @@ forest_plot(meta_data,
 )
 ```
 
-### Fluent API (Step by Step)
+### Option 2: Fluent API (Pipe-Based)
+
+Use `set_*()` functions for step-by-step styling:
 
 ```{r}
 #| eval: false
@@ -133,9 +128,13 @@ forest_plot(meta_data,
   set_theme("jama")
 ```
 
-Both approaches produce identical results. Use constructor arguments when everything is known upfront. Use the fluent API when styling depends on computation or you want to create variants.
+Use constructor arguments when everything is known upfront. Use the fluent API when styling depends on computation or you want to create variants.
 
-## Quick Theme Preview
+---
+
+## Applying Themes
+
+webforest includes 9 publication-ready themes:
 
 ```{r}
 #| layout-ncol: 2
@@ -152,13 +151,78 @@ forest_plot(meta_data[1:3, ],
   theme = web_theme_lancet(), title = "Lancet")
 ```
 
-See [Themes](themes.qmd) for all 9 preset themes and customization options.
+**Available themes**: `web_theme_default()`, `web_theme_jama()`, `web_theme_lancet()`, `web_theme_nature()`, `web_theme_cochrane()`, `web_theme_modern()`, `web_theme_presentation()`, `web_theme_dark()`, `web_theme_minimal()`
+
+See [Themes](themes.qmd) for customization options.
+
+---
+
+## Creating Visual Hierarchy
+
+Use row styling to distinguish headers, data rows, and summaries:
+
+```{r}
+styled_data <- data.frame(
+  label = c("Primary Endpoint", "  CV Death", "  MI", "Summary"),
+  hr = c(NA, 0.82, 0.79, 0.78),
+  lower = c(NA, 0.72, 0.68, 0.65),
+  upper = c(NA, 0.94, 0.92, 0.93),
+  rtype = c("header", "data", "data", "summary"),
+  rbold = c(TRUE, FALSE, FALSE, TRUE)
+)
+
+forest_plot(styled_data,
+  point = "hr", lower = "lower", upper = "upper", label = "label",
+  row_type = "rtype",
+  row_bold = "rbold",
+  columns = list(col_interval("HR (95% CI)")),
+  null_value = 1, scale = "log"
+)
+```
+
+::: {.callout-note}
+## Row Types
+
+| Type | Behavior |
+|------|----------|
+| `"data"` | Standard row with interval marker |
+| `"header"` | Section header, no interval displayed |
+| `"summary"` | Summary row with diamond marker |
+| `"spacer"` | Empty row for visual separation |
+
+Header and spacer rows should have `NA` for point, lower, and upper.
+:::
+
+---
+
+## Conditional Marker Styling
+
+Color markers based on effect direction using computed columns:
+
+```{r}
+direction_data <- meta_data |>
+  mutate(
+    marker_color = case_when(
+      upper < 1 ~ "#16a34a",  # Green: significant benefit
+      lower > 1 ~ "#dc2626",  # Red: significant harm
+      TRUE ~ "#64748b"        # Gray: not significant
+    )
+  )
+
+forest_plot(direction_data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  marker_color = "marker_color",
+  null_value = 1, scale = "log"
+)
+```
+
+---
 
 ## Next Steps
 
 | Topic | What You'll Learn |
 |-------|-------------------|
-| [Customizing Plots](fluent-api.qmd) | Build plots step-by-step with pipes |
+| [Customizing Plots](fluent-api.qmd) | Build plots step-by-step with the fluent API |
 | [Themes](themes.qmd) | Preset themes and customization |
 | [Columns](columns.qmd) | Data columns with special formatting |
 | [Grouping & Rows](grouping-rows.qmd) | Organize studies into collapsible groups |

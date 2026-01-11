@@ -1,133 +1,358 @@
 ---
-title: "forest_plot"
+title: "forest_plot()"
 ---
 
 ```{r}
 #| include: false
 library(webforest)
+library(dplyr)
 ```
 
-Create interactive forest plots from data frames or WebSpec objects.
+Create interactive forest plots from data frames. This is the primary function for building forest plots in webforest—pass your data directly with column mappings and styling options.
 
-::: {.callout-tip}
-## Two Ways to Create Plots
+## Quick Example
 
-**Quick path**: Pass a data frame directly with all arguments:
-```r
-forest_plot(data, point = "hr", lower = "lower", upper = "upper", label = "study", ...)
+```{r}
+data <- data.frame(
+  study = c("Smith 2020", "Jones 2021", "Lee 2022", "Chen 2023"),
+  hr = c(0.72, 0.85, 0.91, 0.68),
+  lower = c(0.55, 0.70, 0.75, 0.52),
+  upper = c(0.95, 1.03, 1.10, 0.89)
+)
+
+forest_plot(data,
+  point = "hr",
+  lower = "lower",
+  upper = "upper",
+  label = "study",
+  null_value = 1,
+  scale = "log"
+)
 ```
-
-**Flexible path**: Create a WebSpec first, then render:
-```r
-spec <- web_spec(data, point = "hr", ...) |> set_row_style(bold = "is_summary")
-forest_plot(spec, axis_range = c(0.5, 2))
-```
-
-Use the two-step approach when you need to reuse specs, apply conditional styling, or create variants.
-:::
 
 ## Usage
 
 ```r
 forest_plot(
   x,
-  ...,
+  point = NULL,
+  lower = NULL,
+  upper = NULL,
+  label = NULL,
+  group = NULL,
+  columns = NULL,
+  scale = NULL,
+  null_value = NULL,
+  axis_label = NULL,
+  theme = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  footnote = NULL,
+
+  # Row styling
+
+  row_type = NULL,
+  row_bold = NULL,
+  row_italic = NULL,
+  row_color = NULL,
+  row_bg = NULL,
+  row_indent = NULL,
+  row_emphasis = NULL,
+  row_muted = NULL,
+  row_accent = NULL,
+
+  # Marker styling
+  marker_color = NULL,
+  marker_shape = NULL,
+  marker_opacity = NULL,
+  marker_size = NULL,
+
+  # Split plots
   split_by = NULL,
   shared_axis = FALSE,
+
+  # Visual overrides
   axis_range = NULL,
   axis_ticks = NULL,
   axis_gridlines = NULL,
   plot_position = NULL,
   row_height = NULL,
+
+  # Layout
   width_mode = c("natural", "fill"),
   height_preset = c("full", "small", "medium", "large", "container"),
   width = NULL,
   height = NULL,
-  elementId = NULL
+  elementId = NULL,
+
+  ...
 )
 ```
 
-## Arguments
+---
 
-### Core Data Arguments (passed to `web_spec()` via `...`)
+## Core Arguments
+
+These are the essential arguments for creating any forest plot.
 
 | Argument | Description |
 |----------|-------------|
-| `x` | A data frame or WebSpec object |
-| `point` | Column name for point estimates |
-| `lower` | Column name for lower confidence bounds |
-| `upper` | Column name for upper confidence bounds |
+| `x` | A data frame (or `WebSpec` object for advanced use) |
+| `point` | Column name for point estimates (required) |
+| `lower` | Column name for lower confidence bounds (required) |
+| `upper` | Column name for upper confidence bounds (required) |
 | `label` | Column name for row labels |
-| `group` | Column name(s) for hierarchical grouping |
-| `columns` | List of column specifications |
-| `scale` | `"linear"` or `"log"` |
-| `null_value` | Reference value (e.g., 1 for ratios, 0 for differences) |
-| `axis_label` | X-axis label |
-| `theme` | Theme object (default: `web_theme_default()`) |
-| `title` | Plot title |
-| `subtitle` | Plot subtitle |
-| `caption` | Plot caption |
-| `footnote` | Plot footnote |
-| `weight` | Column for marker size weighting (larger values = larger markers) |
 
-::: {.callout-note}
-## Constructor Arguments vs Fluent API
+::: {.callout-important}
+## The Three Required Mappings
 
-Every styling argument (like `row_bold`, `marker_color`) has an equivalent fluent method (`set_row_style(bold = ...)`, `set_marker_style(color = ...)`). Both produce identical results. See [Customizing Plots](../guide/fluent-api.qmd) for details.
+Every forest plot needs at minimum: `point`, `lower`, and `upper`. These define what values to plot.
+
+```r
+forest_plot(data, point = "hr", lower = "ci_low", upper = "ci_high")
+```
 :::
 
-### Row Styling Arguments
+### Scale and Reference
 
 | Argument | Description |
 |----------|-------------|
-| `row_type` | Column for row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
-| `row_bold` | Column for bold styling (logical) |
-| `row_italic` | Column for italic styling (logical) |
-| `row_indent` | Column for indentation level (integer) |
-| `row_color` | Column for text color (hex string) |
-| `row_bg` | Column for background color (hex string) |
-| `row_badge` | Column for badge text |
+| `scale` | `"linear"` or `"log"` |
+| `null_value` | Reference line value (e.g., 1 for ratios, 0 for differences) |
+| `axis_label` | X-axis label text |
 
 ::: {.callout-tip}
-## Semantic Styling Shortcuts
+## Scale Selection
 
-For quick conditional formatting, use these semantic options that automatically use theme colors:
+- **Log scale** (`scale = "log"`, `null_value = 1`): For ratios where effects are multiplicative (OR, HR, RR)
+- **Linear scale** (`scale = "linear"`, `null_value = 0`): For differences where effects are additive (MD, RD, SMD)
+:::
+
+### Grouping
+
+| Argument | Description |
+|----------|-------------|
+| `group` | Column name(s) for grouping rows into collapsible sections |
+
+```r
+# Single-level grouping
+forest_plot(data, ..., group = "category")
+
+# Hierarchical grouping (region > country)
+forest_plot(data, ..., group = c("region", "country"))
+```
+
+### Columns
+
+| Argument | Description |
+|----------|-------------|
+| `columns` | List of column specifications using `col_*()` functions |
+
+```{r}
+#| eval: false
+forest_plot(data, ...,
+  columns = list(
+    col_n("n"),
+    col_events("events", "n"),
+    col_interval("HR (95% CI)"),
+    col_pvalue("pval")
+  )
+)
+```
+
+See [Columns Reference](columns.qmd) for all available column types.
+
+### Labels and Titles
+
+| Argument | Description |
+|----------|-------------|
+| `title` | Plot title |
+| `subtitle` | Subtitle below title |
+| `caption` | Caption text |
+| `footnote` | Footnote at bottom |
+
+---
+
+## Row Styling Arguments
+
+Style entire rows based on column values. Each argument accepts a column name containing the styling values.
+
+| Argument | Column Contains | Effect |
+|----------|-----------------|--------|
+| `row_type` | `"header"`, `"data"`, `"summary"`, `"spacer"` | Controls row behavior and marker display |
+| `row_bold` | `TRUE`/`FALSE` | Bold text |
+| `row_italic` | `TRUE`/`FALSE` | Italic text |
+| `row_color` | CSS color (e.g., `"#1a365d"`) | Text color |
+| `row_bg` | CSS color | Background color |
+| `row_indent` | Integer (0, 1, 2, ...) | Indentation level |
+
+### Semantic Styling Shortcuts
+
+These apply theme-aware styling that adapts when you change themes:
 
 | Argument | Effect |
 |----------|--------|
-| `row_emphasis` | Bold text, darker color (for key results) |
+| `row_emphasis` | Bold text with theme primary color (for key results) |
 | `row_muted` | Lighter color, reduced prominence (for secondary data) |
 | `row_accent` | Theme accent color (for highlighted findings) |
 
-These adapt automatically when you switch themes.
+```{r}
+styled_data <- data.frame(
+  label = c("Primary Endpoint", "  CV Death", "  MI", "Summary"),
+  hr = c(NA, 0.82, 0.79, 0.78),
+  lower = c(NA, 0.72, 0.68, 0.65),
+  upper = c(NA, 0.94, 0.92, 0.93),
+  rtype = c("header", "data", "data", "summary"),
+  rbold = c(TRUE, FALSE, FALSE, TRUE),
+  rindent = c(0, 1, 1, 0)
+)
+
+forest_plot(styled_data,
+  point = "hr", lower = "lower", upper = "upper", label = "label",
+  row_type = "rtype",
+  row_bold = "rbold",
+  row_indent = "rindent",
+  null_value = 1, scale = "log"
+)
+```
+
+::: {.callout-warning}
+## Row Types and NA Values
+
+Rows with `row_type = "header"` or `"spacer"` should have `NA` for point, lower, and upper. The plot displays them as label-only rows without interval markers.
 :::
 
-### Marker Styling Arguments
+---
+
+## Marker Styling Arguments
+
+Control the appearance of interval markers (points and lines).
+
+| Argument | Column Contains | Effect |
+|----------|-----------------|--------|
+| `marker_color` | CSS color strings | Marker fill color |
+| `marker_shape` | `"square"`, `"circle"`, `"diamond"`, `"triangle"` | Marker shape |
+| `marker_opacity` | 0–1 | Transparency |
+| `marker_size` | Numeric multiplier | Size (1 = default, 2 = double) |
+
+```{r}
+direction_data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C", "Trial D"),
+  hr = c(0.72, 0.95, 0.68, 1.15),
+  lower = c(0.55, 0.78, 0.52, 0.90),
+  upper = c(0.94, 1.15, 0.89, 1.47)
+) |>
+  mutate(
+    marker_color = case_when(
+      upper < 1 ~ "#16a34a",
+      lower > 1 ~ "#dc2626",
+      TRUE ~ "#64748b"
+    )
+  )
+
+forest_plot(direction_data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  marker_color = "marker_color",
+  null_value = 1, scale = "log"
+)
+```
+
+---
+
+## Fluent API: set_*() Functions
+
+Every styling argument has an equivalent `set_*()` function for pipe-based workflows. Both approaches produce identical results.
+
+```{r}
+#| eval: false
+# Constructor arguments (all at once)
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  row_bold = "is_summary",
+  marker_color = "effect_color",
+  scale = "log", null_value = 1
+)
+
+# Fluent API (step by step)
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  scale = "log", null_value = 1
+) |>
+  set_row_style(bold = "is_summary") |>
+  set_marker_style(color = "effect_color")
+```
+
+The fluent API is useful when:
+
+- Styling depends on computed columns
+- You're creating multiple variants from one base
+- You want to apply conditional styling
+- You're building reusable styling pipelines
+
+See [Styling Functions](styling.qmd) for complete documentation.
+
+---
+
+## Theme Arguments
 
 | Argument | Description |
 |----------|-------------|
-| `marker_color` | Column for marker fill color (hex string) |
-| `marker_shape` | Column for shapes: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
-| `marker_opacity` | Column for opacity values (0-1) |
-| `marker_size` | Column for size multiplier (1 = default) |
-| `weight` | Column for weight-based sizing (alternative to `marker_size`) |
+| `theme` | A `WebTheme` object or theme name string |
 
-::: {.callout-note}
-## Weight vs Size
+**Theme names**: `"default"`, `"jama"`, `"lancet"`, `"nature"`, `"cochrane"`, `"modern"`, `"presentation"`, `"dark"`, `"minimal"`
 
-`weight` is typically used for meta-analysis study weights - larger weights produce larger markers proportionally. `marker_size` is for explicit size control via a multiplier column.
-:::
+```{r}
+#| layout-ncol: 2
+#| fig-height: 3
+small_data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C"),
+  hr = c(0.72, 0.85, 0.68),
+  lower = c(0.55, 0.70, 0.52),
+  upper = c(0.95, 1.03, 0.89)
+)
 
-### Split Plot Arguments
+forest_plot(small_data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  null_value = 1, scale = "log",
+  theme = web_theme_jama(), title = "JAMA"
+)
+
+forest_plot(small_data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  null_value = 1, scale = "log",
+  theme = web_theme_lancet(), title = "Lancet"
+)
+```
+
+See [Themes Reference](themes.qmd) for customization options.
+
+---
+
+## Split Plot Arguments
+
+Create multiple linked plots for subgroup analyses.
 
 | Argument | Description |
 |----------|-------------|
 | `split_by` | Column name(s) to split data into separate plots with sidebar navigation |
-| `shared_axis` | When `split_by` is used, `TRUE` to use the same axis range across all plots |
+| `shared_axis` | `TRUE` to use same axis range across all split plots |
 
-### Visual Override Arguments
+```{r}
+#| eval: false
+forest_plot(data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  split_by = "region",
+  shared_axis = TRUE,
+  scale = "log", null_value = 1
+)
+```
 
-These override theme settings for quick adjustments:
+---
+
+## Visual Override Arguments
+
+Quick adjustments that override theme settings:
 
 | Argument | Description |
 |----------|-------------|
@@ -141,26 +366,31 @@ These override theme settings for quick adjustments:
 ## Equivalence with Theme Modifiers
 
 Direct arguments are shortcuts for theme modifications:
+
 ```r
 # These are equivalent:
 forest_plot(data, ..., row_height = 32)
-forest_plot(data, ..., theme = web_theme_default() |> set_spacing(row_height = 32))
+forest_plot(data, ...) |> set_spacing(row_height = 32)
 ```
 :::
 
-### Layout Arguments
+---
+
+## Layout Arguments
 
 | Argument | Description |
 |----------|-------------|
-| `width_mode` | `"natural"` (centered at natural width) or `"fill"` (scale to fill container) |
-| `height_preset` | `"full"` (natural height), `"small"` (300px), `"medium"` (500px), `"large"` (900px), or `"container"` (fill parent) |
-| `width` | Widget width |
-| `height` | Widget height |
-| `elementId` | HTML element ID |
+| `width_mode` | `"natural"` (centered at natural width) or `"fill"` (expand to container) |
+| `height_preset` | `"full"`, `"small"` (300px), `"medium"` (500px), `"large"` (900px), `"container"` |
+| `width` | Explicit widget width |
+| `height` | Explicit widget height |
+| `elementId` | HTML element ID for the widget |
 
-## Value
+---
 
-An htmlwidget object that can be:
+## Return Value
+
+Returns an `htmlwidget` object that can be:
 
 - Displayed in RStudio Viewer
 - Rendered in R Markdown / Quarto documents
@@ -168,88 +398,77 @@ An htmlwidget object that can be:
 - Saved to files with `save_plot()`
 - Further modified with `set_*()` functions
 
-## Examples
+---
 
-### Basic Usage
+## Complete Examples
 
-```{r}
-data <- data.frame(
-  study = c("Study A", "Study B", "Study C"),
-  hr = c(0.72, 0.85, 0.91),
-  lower = c(0.55, 0.70, 0.75),
-  upper = c(0.95, 1.03, 1.10)
-)
-
-forest_plot(data,
-  point = "hr",
-  lower = "lower",
-  upper = "upper",
-  label = "study",
-  null_value = 1,
-  scale = "log"
-)
-```
-
-### With Columns and Theme
+### Clinical Trial Summary
 
 ```{r}
-data <- data.frame(
-  study = c("Trial A", "Trial B", "Trial C"),
-  hr = c(0.72, 0.85, 0.68),
-  lower = c(0.55, 0.70, 0.52),
-  upper = c(0.95, 1.03, 0.89),
-  n = c(245, 180, 320),
-  events = c("89/245", "62/180", "98/320")
+trial_data <- data.frame(
+  study = c("EMPA-REG", "CANVAS", "DECLARE", "DAPA-HF", "EMPEROR"),
+  hr = c(0.62, 0.86, 0.93, 0.74, 0.75),
+  lower = c(0.49, 0.75, 0.84, 0.65, 0.65),
+  upper = c(0.77, 0.97, 1.03, 0.85, 0.86),
+  n = c(7020, 10142, 17160, 4744, 3730),
+  events = c(490, 585, 1216, 386, 361),
+  pval = c(0.0001, 0.02, 0.17, 0.0001, 0.0001)
 )
 
-forest_plot(data,
-  point = "hr", lower = "lower", upper = "upper",
-  label = "study",
+forest_plot(trial_data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
   columns = list(
-    col_numeric("n", "N"),
-    col_text("events", "Events"),
-    col_interval("HR (95% CI)")
+    col_n("n"),
+    col_numeric("events", "Events"),
+    col_interval("HR (95% CI)"),
+    col_pvalue("pval")
   ),
-  null_value = 1,
-  scale = "log",
-  theme = web_theme_lancet(),
-  title = "Treatment Effect by Trial"
+  null_value = 1, scale = "log",
+  theme = web_theme_modern(),
+  title = "SGLT2 Inhibitor Cardiovascular Outcomes"
 )
 ```
 
-### Row Styling with Summary Diamond
+### Styled Subgroup Analysis
 
 ```{r}
-library(dplyr)
-
-styled <- tibble(
-  label = c("Primary Endpoint", "  Outcome A", "  Outcome B", "Summary"),
-  hr = c(NA, 0.72, 0.85, 0.78),
-  lower = c(NA, 0.55, 0.70, 0.65),
-  upper = c(NA, 0.95, 1.03, 0.93),
-  rtype = c("header", "data", "data", "summary"),
-  rbold = c(TRUE, FALSE, FALSE, TRUE)
+subgroup_data <- tibble(
+  label = c(
+    "Overall Population", "",
+    "Age",
+    "  < 65 years", "  >= 65 years", "",
+    "Sex",
+    "  Male", "  Female", "",
+    "Diabetes",
+    "  Yes", "  No"
+  ),
+  hr = c(0.78, NA, NA, 0.72, 0.85, NA, NA, 0.76, 0.82, NA, NA, 0.74, 0.81),
+  lower = c(0.68, NA, NA, 0.58, 0.72, NA, NA, 0.64, 0.68, NA, NA, 0.61, 0.66),
+  upper = c(0.89, NA, NA, 0.89, 1.00, NA, NA, 0.90, 0.99, NA, NA, 0.90, 0.99),
+  rtype = c("summary", "spacer", "header", "data", "data", "spacer",
+            "header", "data", "data", "spacer", "header", "data", "data"),
+  rbold = c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE,
+            TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)
 )
 
-forest_plot(styled,
-  point = "hr", lower = "lower", upper = "upper",
-  label = "label",
+forest_plot(subgroup_data,
+  point = "hr", lower = "lower", upper = "upper", label = "label",
   row_type = "rtype",
   row_bold = "rbold",
-  null_value = 1, scale = "log"
+  columns = list(col_interval("HR (95% CI)")),
+  null_value = 1, scale = "log",
+  axis_label = "Hazard Ratio",
+  theme = web_theme_jama()
 )
 ```
 
-::: {.callout-warning}
-## Row Types and NA Values
-
-Rows with `row_type = "header"` or `"spacer"` should have `NA` for point, lower, and upper. The plot will display them as label-only rows without intervals.
-:::
+---
 
 ## See Also
 
-- [webtable()](webtable.qmd) for table-only widgets
-- [web_spec()](web_spec.qmd) for creating specifications programmatically
-- [Themes](themes.qmd) for customizing appearance
-- [Columns](columns.qmd) for column types
-- [Customizing Plots](../guide/fluent-api.qmd) for the fluent API pattern
+- [Styling Functions](styling.qmd) — `set_row_style()`, `set_marker_style()`, and more
+- [Themes](themes.qmd) — Preset and custom themes
+- [Columns](columns.qmd) — Column type specifications
+- [Quick Start Guide](../guide/quick-start.qmd) — Getting started tutorial
+- [Customizing Plots](../guide/fluent-api.qmd) — Fluent API patterns
+- [Advanced: web_spec()](web_spec.qmd) — Programmatic specification building

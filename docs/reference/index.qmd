@@ -6,15 +6,49 @@ Complete reference for all webforest functions, organized by category.
 
 ## Core Functions
 
+The main entry points for creating visualizations. `forest_plot()` is the primary function for most use cases.
+
 | Function | Description |
 |----------|-------------|
 | [`forest_plot()`](forest_plot.qmd) | Create interactive forest plots |
-| [`webtable()`](webtable.qmd) | Create table-only widgets |
-| [`split_forest()`](split_forest.qmd) | Create split forest with sidebar |
+| [`webtable()`](webtable.qmd) | Create table-only widgets (no forest plot) |
+| [`split_forest()`](split_forest.qmd) | Create split forest with sidebar navigation |
 | [`save_plot()`](save_plot.qmd) | Export to SVG, PNG, or PDF |
 | [`save_split_forest()`](save_plot.qmd#save_split_forest) | Export split forest to directory |
 
+## Styling Functions
+
+Style your plots using the fluent API. These functions work on both `forest_plot()` widgets and `WebSpec` objects.
+
+| Function | Description |
+|----------|-------------|
+| [`set_row_style()`](styling.qmd#set_row_style) | Apply row-level styling (bold, italic, color, type, indent) |
+| [`set_marker_style()`](styling.qmd#set_marker_style) | Style interval markers (color, shape, opacity, size) |
+| [`set_column_style()`](styling.qmd#set_column_style) | Apply per-cell styling to specific columns |
+| [`set_theme()`](styling.qmd#set_theme) | Apply a theme by name or object |
+
+::: {.callout-tip}
+## Constructor Arguments vs Fluent API
+
+Every styling function has equivalent direct arguments in `forest_plot()`:
+
+```r
+# These produce identical results:
+forest_plot(data, ..., row_bold = "is_summary", marker_color = "dir_color")
+
+forest_plot(data, ...) |>
+  set_row_style(bold = "is_summary") |>
+  set_marker_style(color = "dir_color")
+```
+
+Use direct arguments when configuration is known upfront. Use the fluent API when styling depends on computation or you need multiple variants.
+:::
+
 ## Themes
+
+### Preset Themes
+
+Nine publication-ready themes for different contexts:
 
 | Function | Description |
 |----------|-------------|
@@ -36,9 +70,10 @@ Complete reference for all webforest functions, organized by category.
 
 ### Theme Modifiers
 
+Fine-tune theme properties. These work on both themes and plots:
+
 | Function | Description |
 |----------|-------------|
-| [`set_theme()`](themes.qmd#set_theme) | Set theme by name or object |
 | [`set_colors()`](themes.qmd#set_colors) | Customize theme colors |
 | [`set_typography()`](themes.qmd#set_typography) | Customize fonts |
 | [`set_spacing()`](themes.qmd#set_spacing) | Customize spacing |
@@ -47,6 +82,7 @@ Complete reference for all webforest functions, organized by category.
 | [`set_marker_shapes()`](themes.qmd#set_marker_shapes) | Set multi-effect marker shapes |
 | [`set_axis()`](themes.qmd#set_axis) | Customize axis |
 | [`set_layout()`](themes.qmd#set_layout) | Customize layout |
+| [`set_group_headers()`](themes.qmd#set_group_headers) | Customize group header hierarchy |
 
 ## Columns
 
@@ -88,25 +124,6 @@ Complete reference for all webforest functions, organized by category.
 | [`forest_refline()`](annotations.qmd#forest_refline) | Add reference line |
 | [`forest_annotation()`](annotations.qmd#forest_annotation) | Custom annotation |
 
-## Fluent API Modifiers
-
-| Function | Description |
-|----------|-------------|
-| [`set_row_style()`](columns.qmd#set_row_style) | Apply row-level styling |
-| [`set_column_style()`](columns.qmd#set_column_style) | Apply cell-level styling to column |
-| [`set_marker_style()`](columns.qmd#set_marker_style) | Apply marker styling |
-
-## Specification Objects
-
-| Function | Description |
-|----------|-------------|
-| [`web_spec()`](web_spec.qmd#web_spec) | Create plot specification |
-| [`web_group()`](web_spec.qmd#web_group) | Define row group |
-| [`web_effect()`](web_spec.qmd#web_effect) | Define effect for multi-effect plots |
-| [`web_interaction()`](web_spec.qmd#web_interaction) | Interaction settings |
-| [`web_interaction_minimal()`](web_spec.qmd#web_interaction) | Minimal interactivity |
-| [`web_interaction_publication()`](web_spec.qmd#web_interaction) | Publication mode |
-
 ## Shiny Integration
 
 ### Forest Plot
@@ -130,3 +147,16 @@ Complete reference for all webforest functions, organized by category.
 | [`renderSplitForest()`](shiny.qmd#renderSplitForest) | Shiny server render for split forest |
 | [`splitForestProxy()`](shiny.qmd#splitForestProxy) | Create split forest proxy |
 | [`split_forest_select()`](shiny.qmd#split_forest_select) | Select sub-plot programmatically |
+
+## Advanced: Specification Objects
+
+For advanced use cases requiring programmatic plot construction, you can work with specification objects directly. Most users should use `forest_plot()` with direct arguments instead.
+
+| Function | Description |
+|----------|-------------|
+| [`web_spec()`](web_spec.qmd#web_spec) | Create plot specification programmatically |
+| [`web_group()`](web_spec.qmd#web_group) | Define row group |
+| [`web_effect()`](web_spec.qmd#web_effect) | Define effect for multi-effect plots |
+| [`web_interaction()`](web_spec.qmd#web_interaction) | Configure interaction settings |
+| [`web_interaction_minimal()`](web_spec.qmd#web_interaction) | Minimal interactivity preset |
+| [`web_interaction_publication()`](web_spec.qmd#web_interaction) | Publication mode preset |

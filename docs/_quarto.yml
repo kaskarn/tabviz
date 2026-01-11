@@ -51,6 +51,9 @@ website:
           - text: "---"
           - text: "forest_plot()"
             href: reference/forest_plot.qmd
+          - text: "Styling Functions"
+            href: reference/styling.qmd
+          - text: "---"
           - text: "split_forest()"
             href: reference/split_forest.qmd
           - text: "webtable()"
@@ -64,10 +67,11 @@ website:
             href: reference/columns.qmd
           - text: "Annotations"
             href: reference/annotations.qmd
-          - text: "Specifications"
-            href: reference/web_spec.qmd
           - text: "Shiny"
             href: reference/shiny.qmd
+          - text: "---"
+          - text: "Advanced: Specifications"
+            href: reference/web_spec.qmd
       - text: "Technical"
         menu:
           - text: "S7 Class Architecture"
