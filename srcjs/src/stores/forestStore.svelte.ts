@@ -16,7 +16,7 @@ import type {
 import { niceDomain, DOMAIN_PADDING } from "$lib/scale-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
-import { AUTO_WIDTH, SPACING } from "$lib/rendering-constants";
+import { AUTO_WIDTH, SPACING, GROUP_HEADER, COLUMN_GROUP } from "$lib/rendering-constants";
 
 // Svelte 5 runes-based store
 export function createForestStore() {
@@ -465,21 +465,65 @@ export function createForestStore() {
     const headerFont = `600 ${fontSize} ${fontFamily}`;
     const dataFont = `${fontSize} ${fontFamily}`;
 
-    // Process columns recursively
-    function processColumn(col: ColumnSpec | ColumnGroup) {
-      if (col.isGroup) {
-        for (const child of col.columns) {
-          processColumn(child);
-        }
-        return;
-      }
+    // ========================================================================
+    // COLUMN WIDTH MEASUREMENT
+    // ========================================================================
+    //
+    // Width calculation follows this flow:
+    // 1. Measure leaf columns (bottom-up): header text + cell content + padding
+    // 2. Adjust for column groups: if group header is wider than children, expand children
+    // 3. Store computed widths in columnWidths state
+    //
+    // Width types:
+    // - width="auto" or width=null: auto-sized based on content
+    // - width=<number>: explicit pixel width (but may be expanded for group headers)
+    //
+    // The computed width stored in columnWidths is always used by the grid,
+    // even for explicit-width columns that were expanded for group headers.
+    // ========================================================================
 
-      // Only process columns with width="auto" or null (both trigger auto-sizing)
+    /**
+     * Get all leaf columns under a column definition.
+     * For groups, recursively collects all descendant leaf columns.
+     * For leaf columns, returns the column itself.
+     */
+    function getLeafColumns(col: ColumnSpec | ColumnGroup): ColumnSpec[] {
+      if (col.isGroup) {
+        return col.columns.flatMap(getLeafColumns);
+      }
+      return [col];
+    }
+
+    /**
+     * Get the effective width of a column for calculations.
+     * Priority: computed width > explicit width > default minimum
+     */
+    function getEffectiveWidth(col: ColumnSpec): number {
+      if (columnWidths[col.id] !== undefined) {
+        return columnWidths[col.id];
+      }
+      if (typeof col.width === 'number') {
+        return col.width;
+      }
+      return AUTO_WIDTH.MIN;
+    }
+
+    /**
+     * Measure a leaf column's content and compute its width.
+     * Only processes auto-width columns (width="auto" or null).
+     * Explicit-width columns keep their specified width unless expanded for group headers.
+     */
+    function measureLeafColumn(col: ColumnSpec) {
+      // Skip columns with explicit numeric width - they use that width directly
+      // (but may be expanded later if a group header needs more space)
+      if (typeof col.width === 'number') return;
+
+      // Only auto-size columns with width="auto" or null
       if (col.width !== "auto" && col.width !== null) return;
 
       let maxWidth = 0;
 
-      // Measure header text with bold font (headers use font-weight: 600)
+      // Measure header text with bold font
       if (col.header) {
         ctx!.font = headerFont;
         maxWidth = Math.max(maxWidth, ctx!.measureText(col.header).width);
@@ -488,25 +532,65 @@ export function createForestStore() {
       // Measure all data cell values with normal font
       ctx!.font = dataFont;
       for (const row of spec!.data.rows) {
-        // Skip header/spacer rows that don't have real data
         if (row.style?.type === "header" || row.style?.type === "spacer") {
           continue;
         }
-
-        // Use getColumnDisplayText to get the actual rendered text for this column type
         const text = getColumnDisplayText(row, col);
         if (text) {
           maxWidth = Math.max(maxWidth, ctx!.measureText(text).width);
         }
       }
 
-      // Apply computed width with padding and constraints
-      // Use type-specific minimum for visual columns, else default minimum
+      // Apply padding and constraints
       const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
       const computedWidth = Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, Math.ceil(maxWidth + AUTO_WIDTH.PADDING)));
       columnWidths[col.id] = computedWidth;
     }
 
+    /**
+     * Process columns recursively (bottom-up).
+     * 1. For groups: process children first, then check if group header needs more width
+     * 2. For leaves: measure content and set width
+     *
+     * Group header width check:
+     * - Measures group header text + padding
+     * - Compares to sum of all leaf column widths under this group
+     * - If header is wider, distributes extra width evenly to ALL children
+     *   (including explicit-width columns, to ensure header fits)
+     */
+    function processColumn(col: ColumnSpec | ColumnGroup) {
+      if (col.isGroup) {
+        // Process children first (bottom-up)
+        for (const child of col.columns) {
+          processColumn(child);
+        }
+
+        // Check if group header needs more width than children provide
+        if (col.header) {
+          ctx!.font = headerFont;
+          // Group header needs: text width + its own padding (different from cell padding)
+          const groupHeaderWidth = ctx!.measureText(col.header).width + COLUMN_GROUP.PADDING;
+
+          const leafCols = getLeafColumns(col);
+          const childrenTotalWidth = leafCols.reduce((sum, leaf) => sum + getEffectiveWidth(leaf), 0);
+
+          // If group header needs more width, distribute extra to ALL children
+          // (including explicit-width columns - we override to ensure header fits)
+          if (groupHeaderWidth > childrenTotalWidth && leafCols.length > 0) {
+            const extraPerChild = Math.ceil((groupHeaderWidth - childrenTotalWidth) / leafCols.length);
+            for (const leaf of leafCols) {
+              columnWidths[leaf.id] = getEffectiveWidth(leaf) + extraPerChild;
+            }
+          }
+        }
+        return;
+      }
+
+      // Leaf column: measure it
+      measureLeafColumn(col);
+    }
+
+    // Process all top-level column definitions
     for (const colDef of spec.columns) {
       processColumn(colDef);
     }
@@ -563,12 +647,38 @@ export function createForestStore() {
         }
       }
 
-      // Also measure group headers (they have their own indentation)
+      // ========================================================================
+      // MEASURE ROW GROUP HEADERS
+      // ========================================================================
+      // Group headers in the label column include multiple elements:
+      // [indent][chevron][gap][label][gap][count][internal-padding]
+      // See GROUP_HEADER constants in rendering-constants.ts
+      // ========================================================================
+
       ctx!.font = headerFont;
       for (const group of spec.data.groups) {
         if (group.label) {
           const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
-          maxLabelWidth = Math.max(maxLabelWidth, ctx!.measureText(group.label).width + indentWidth);
+          const labelWidth = ctx!.measureText(group.label).width;
+
+          // Row count (e.g., "(3)") is shown in smaller font
+          const rowCount = spec.data.rows.filter(r => r.groupId === group.id).length;
+          const countText = `(${rowCount})`;
+          const countFontSize = baseFontSize * 0.75; // font-size-sm
+          ctx!.font = `${countFontSize}px ${fontFamily}`;
+          const countWidth = ctx!.measureText(countText).width;
+          ctx!.font = headerFont;
+
+          // Total: all components from GroupHeader.svelte layout
+          const totalWidth = indentWidth
+            + GROUP_HEADER.CHEVRON_WIDTH
+            + GROUP_HEADER.GAP
+            + labelWidth
+            + GROUP_HEADER.GAP
+            + countWidth
+            + GROUP_HEADER.INTERNAL_PADDING;
+
+          maxLabelWidth = Math.max(maxLabelWidth, totalWidth);
         }
       }
 

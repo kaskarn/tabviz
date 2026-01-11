@@ -141,6 +141,18 @@ export const RENDERING = {
 // Auto Width Constants
 // ============================================================================
 
+/**
+ * Column width calculation constants.
+ *
+ * Width calculation flow:
+ * 1. Leaf columns: measure header + all cell content, add PADDING, clamp to MIN/MAX
+ * 2. Column groups: measure group header, if wider than children sum, expand children
+ * 3. Label column: measure header + all labels (including group headers with chevron/count)
+ *
+ * The PADDING value accounts for:
+ * - Cell horizontal padding (--wf-cell-padding-x, typically 10px each side = 20px)
+ * - Rendering overhead and font measurement imprecision (~8px)
+ */
 export const AUTO_WIDTH = {
   /** Padding added to measured text width (accounts for cell padding + rendering overhead) */
   PADDING: 28,
@@ -162,6 +174,42 @@ export const AUTO_WIDTH = {
     range: 80, // visual element + padding
     badge: 70, // minimum for short badges + pill padding
   } as Record<string, number>,
+} as const;
+
+// ============================================================================
+// Group Header Constants (for label column measurement)
+// ============================================================================
+
+/**
+ * Constants for measuring row group headers in the label column.
+ * These match the GroupHeader.svelte component layout.
+ *
+ * GroupHeader layout: [indent][chevron][gap][label][gap][count][internal-padding]
+ */
+export const GROUP_HEADER = {
+  /** Width of the expand/collapse chevron SVG icon */
+  CHEVRON_WIDTH: 12,
+
+  /** Gap between elements (chevron-label, label-count) */
+  GAP: 6,
+
+  /** Internal padding inside .group-header (10px left + 10px right) */
+  INTERNAL_PADDING: 20,
+} as const;
+
+// ============================================================================
+// Column Group Header Constants
+// ============================================================================
+
+/**
+ * Constants for column group header cells.
+ * These match the .column-group-header CSS in ForestPlot.svelte.
+ *
+ * Column group headers span multiple child columns and have their own padding.
+ */
+export const COLUMN_GROUP = {
+  /** Horizontal padding for column group header cells (--wf-group-padding default) */
+  PADDING: 16, // 8px left + 8px right
 } as const;
 
 // ============================================================================

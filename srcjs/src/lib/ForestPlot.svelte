@@ -311,13 +311,14 @@
   );
 
   // Helper to get column width (dynamic or default)
-  // Returns "auto" for auto-width columns, "{n}px" for fixed-width columns
+  // Returns "max-content" for auto-width columns (sizes to content, won't shrink)
+  // Returns "{n}px" for fixed-width columns
   // Uses columnWidthsSnapshot to ensure Svelte 5 reactivity
   function getColWidth(column: ColumnSpec): string {
     const dynamicWidth = columnWidthsSnapshot[column.id];
     if (typeof dynamicWidth === "number") return `${dynamicWidth}px`;
     if (typeof column.width === "number") return `${column.width}px`;
-    return "auto";
+    return "max-content";
   }
 
   // Helper to get label column width
@@ -338,9 +339,9 @@
   const gridTemplateColumns = $derived.by(() => {
     const parts: string[] = [];
 
-    // Label column
+    // Label column - max-content sizes to content (won't shrink when space is limited)
     const labelWidth = columnWidthsSnapshot["__label__"];
-    parts.push(labelWidth ? `${labelWidth}px` : "minmax(120px, 1fr)");
+    parts.push(labelWidth ? `${labelWidth}px` : "max-content");
 
     // Left columns
     for (const col of leftColumns) {
@@ -637,7 +638,6 @@
             <!-- Group header -->
             <div
               class="grid-cell header-cell column-group-header"
-              class:group-separator={!cell.isFirstGroupInRow}
               style:grid-column="{cell.gridColumnStart} / span {cell.colspan}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
             >
@@ -1175,11 +1175,6 @@
     padding-right: var(--wf-group-padding, 8px);
   }
 
-  /* Vertical separator between adjacent column groups */
-  .column-group-header.group-separator {
-    border-left: 1px solid var(--wf-border);
-  }
-
   /* Last row of headers gets thicker border */
   .header-cell:not(.column-group-header):not(.label-header):not(.plot-header) {
     border-bottom: 2px solid var(--wf-border);
@@ -1265,6 +1260,7 @@
   .plot-overlay {
     position: absolute;
     pointer-events: none;
+    overflow: visible; /* Allow axis label to extend beyond plot column */
   }
 
   .plot-overlay :global(.interactive) {
