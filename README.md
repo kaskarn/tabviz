@@ -11,14 +11,14 @@
 
 ## Why webforest?
 
-- **Simple interface**: `forest_plot` function able to generate complex interactive plots with succinct parameters/arguments
+- **Simple interface**: `forest_plot` function able to generate complex interactive plots with succinct parameters/arguments.
 - **Granular customization**: Multiple mechanisms provide precise control over rendering at the cell, row, and column levels.
-- **Themable**: Full theming system, with support for detailed custom theming. Varied preset themes available, including based on JAMA, Lancet, Cochrane, Nature
+- **Themable**: Full theming system, with support for detailed custom theming. Varied preset themes available, including based on JAMA, Lancet, Cochrane, Nature.
 - **Rich column types**: Native support for rendering badges, star ratings, sparklines, images, p-values, and more.
-- **No JavaScript required**: R interface provides total control over the output
+- **No JavaScript required**: R interface provides total control over the output.
 - **Versatile API**: Use standard argument passing or a pipe-friendly workflow with set_* modifiers.
 - **Portable graphics**: Export as interactive HTML or high-quality static images (SVG/PDF/PNG).
-- **Web-native**: Web-ready widgets with shiny support
+- **Web-native**: Web-ready widgets with shiny support.
 
 ## Installation
 
