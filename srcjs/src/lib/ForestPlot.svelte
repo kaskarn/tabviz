@@ -372,20 +372,30 @@
   let plotHeaderRef: HTMLDivElement | undefined = $state();
   let plotColumnLeft = $state(0);
 
-  // Update plot column position when ref changes or column widths change
+  // Ref to measure actual header height (label header spans all header rows)
+  let labelHeaderRef: HTMLDivElement | undefined = $state();
+  let measuredHeaderHeight = $state(0);
+
+  // Update plot column position and header height when refs change or layout changes
   $effect(() => {
     // Reference these to re-run when columns/plot resize
     const _ = columnWidthsSnapshot;
     const __ = layout.forestWidth;
-    if (plotHeaderRef) {
-      // Wait for DOM to update before measuring
-      tick().then(() => {
-        if (plotHeaderRef) {
-          plotColumnLeft = plotHeaderRef.offsetLeft;
-        }
-      });
-    }
+    const ___ = headerDepth;
+
+    // Wait for DOM to update before measuring
+    tick().then(() => {
+      if (plotHeaderRef) {
+        plotColumnLeft = plotHeaderRef.offsetLeft;
+      }
+      if (labelHeaderRef) {
+        measuredHeaderHeight = labelHeaderRef.offsetHeight;
+      }
+    });
   });
+
+  // Use measured header height if available, otherwise fall back to theme value
+  const actualHeaderHeight = $derived(measuredHeaderHeight > 0 ? measuredHeaderHeight : layout.headerHeight);
 
   // Plot resize state and handlers
   let resizingPlot = $state(false);
@@ -607,6 +617,7 @@
         <!-- Header cells (supports hierarchical column groups) -->
         <!-- Label header (spans all header rows) -->
         <div
+          bind:this={labelHeaderRef}
           class="grid-cell header-cell label-header"
           style:grid-row="1 / span {headerDepth}"
         >
@@ -626,6 +637,7 @@
             <!-- Group header -->
             <div
               class="grid-cell header-cell column-group-header"
+              class:group-separator={!cell.isFirstGroupInRow}
               style:grid-column="{cell.gridColumnStart} / span {cell.colspan}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
             >
@@ -785,7 +797,7 @@
           width={layout.forestWidth}
           height={rowsAreaHeight + layout.axisHeight}
           viewBox="0 0 {layout.forestWidth} {rowsAreaHeight + layout.axisHeight}"
-          style:top="{layout.headerHeight}px"
+          style:top="{actualHeaderHeight}px"
           style:left="{plotColumnLeft}px"
         >
           <!-- Null value reference line -->
@@ -1161,19 +1173,11 @@
     text-align: center;
     padding-left: var(--wf-group-padding, 8px);
     padding-right: var(--wf-group-padding, 8px);
-    border-bottom: none;
-    position: relative;
   }
 
-  /* Inset border for column group headers - creates visual separation between groups */
-  .column-group-header::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: var(--wf-group-padding, 8px);
-    right: var(--wf-group-padding, 8px);
-    height: 1px;
-    background: var(--wf-border);
+  /* Vertical separator between adjacent column groups */
+  .column-group-header.group-separator {
+    border-left: 1px solid var(--wf-border);
   }
 
   /* Last row of headers gets thicker border */
