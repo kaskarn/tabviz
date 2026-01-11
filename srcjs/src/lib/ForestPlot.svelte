@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { slide } from "svelte/transition";
+  import { tick } from "svelte";
   import type { ForestStore } from "$stores/forestStore.svelte";
   import type { ThemeName } from "$lib/theme-presets";
-  import type { WebTheme, ColumnSpec, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle } from "$types";
+  import type { WebTheme, ColumnSpec, ColumnDef, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
   import EffectAxis from "$components/forest/EffectAxis.svelte";
   import SummaryDiamond from "$components/forest/SummaryDiamond.svelte";
   import PlotHeader from "$components/forest/PlotHeader.svelte";
   import PlotFooter from "$components/forest/PlotFooter.svelte";
-  import ColumnHeaders from "$components/table/ColumnHeaders.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
   import Tooltip from "$components/ui/Tooltip.svelte";
   import CellBar from "$components/table/CellBar.svelte";
@@ -58,6 +57,11 @@
   const leftColumnDefs = $derived(store.leftColumnDefs);
   const rightColumnDefs = $derived(store.rightColumnDefs);
   const labelHeader = $derived(spec?.data.labelHeader || "Study");
+
+  // Check if we have column groups (need two-row header)
+  const hasColumnGroups = $derived(
+    leftColumnDefs.some(c => c.isGroup) || rightColumnDefs.some(c => c.isGroup)
+  );
   const tooltipRow = $derived(store.tooltipRow);
   const tooltipPosition = $derived(store.tooltipPosition);
   const selectedRowIds = $derived(store.selectedRowIds);
@@ -135,14 +139,25 @@
   // Check if the data has any groups
   const hasGroups = $derived((spec?.data.groups?.length ?? 0) > 0);
 
-  // Compute total height of the rows area (accounting for variable row heights like spacers)
-  const rowsAreaHeight = $derived.by(() => {
-    if (layout.rowPositions.length > 0 && layout.rowHeights.length > 0) {
-      const lastIdx = layout.rowPositions.length - 1;
-      return (layout.rowPositions[lastIdx] ?? 0) + (layout.rowHeights[lastIdx] ?? layout.rowHeight);
+  // Compute row Y positions and heights for SVG overlay (must match CSS grid)
+  // Returns arrays indexed by displayRow index
+  const rowLayout = $derived.by(() => {
+    const positions: number[] = [];
+    const heights: number[] = [];
+    let y = 0;
+    for (const dr of displayRows) {
+      const h = (dr.type === "data" && dr.row.style?.type === "spacer")
+        ? layout.rowHeight / 2
+        : layout.rowHeight;
+      positions.push(y);
+      heights.push(h);
+      y += h;
     }
-    return displayRows.length * layout.rowHeight;
+    return { positions, heights, totalHeight: y };
   });
+
+  // Total height of rows area for SVG sizing
+  const rowsAreaHeight = $derived(rowLayout.totalHeight);
 
   // Compute Y offsets for annotation labels to avoid collisions
   // Labels that are too close in x-space get staggered vertically
@@ -190,6 +205,111 @@
     return dr.row.id;
   }
 
+  // Helper to get colspan for a column definition (1 for regular columns, N for groups)
+  function getColspan(col: ColumnDef): number {
+    if (!col.isGroup) return 1;
+    return col.columns.reduce((sum, c) => sum + getColspan(c), 0);
+  }
+
+  // Helper to get flat leaf columns from a column definition
+  function getLeafColumns(col: ColumnDef): ColumnSpec[] {
+    if (!col.isGroup) return [col];
+    return col.columns.flatMap(c => getLeafColumns(c));
+  }
+
+  // Calculate the maximum depth of column groups (0 = no groups, 1 = one level, etc.)
+  function getMaxGroupDepth(cols: ColumnDef[]): number {
+    let maxDepth = 0;
+    for (const col of cols) {
+      if (col.isGroup) {
+        const childDepth = 1 + getMaxGroupDepth(col.columns);
+        maxDepth = Math.max(maxDepth, childDepth);
+      }
+    }
+    return maxDepth;
+  }
+
+  // Get the depth of a specific column (how many levels from root)
+  function getColumnDepth(col: ColumnDef): number {
+    if (!col.isGroup) return 0;
+    return 1 + Math.max(0, ...col.columns.map(c => getColumnDepth(c)));
+  }
+
+  // Calculate maximum header depth (number of header rows needed)
+  const headerDepth = $derived(
+    Math.max(1, 1 + getMaxGroupDepth([...leftColumnDefs, ...rightColumnDefs]))
+  );
+
+  // Flatten column structure into render items with position info
+  // Each item has: col, gridColumnStart, colspan, rowStart, rowSpan
+  interface HeaderCell {
+    col: ColumnDef;
+    gridColumnStart: number;
+    colspan: number;
+    rowStart: number;
+    rowSpan: number;
+    isGroupHeader: boolean;
+  }
+
+  const headerCells = $derived.by((): HeaderCell[] => {
+    const cells: HeaderCell[] = [];
+    let colIndex = 2; // Start at 2 (1 = label column)
+
+    function processColumn(col: ColumnDef, depth: number) {
+      const colspan = getColspan(col);
+      const startCol = colIndex;
+
+      if (col.isGroup) {
+        // Group header: spans its children horizontally, only 1 row
+        cells.push({
+          col,
+          gridColumnStart: startCol,
+          colspan,
+          rowStart: depth + 1, // 1-based
+          rowSpan: 1,
+          isGroupHeader: true,
+        });
+        // Process children at next depth
+        for (const child of col.columns) {
+          processColumn(child, depth + 1);
+        }
+      } else {
+        // Leaf column: spans from current depth to bottom
+        cells.push({
+          col,
+          gridColumnStart: startCol,
+          colspan: 1,
+          rowStart: depth + 1,
+          rowSpan: headerDepth - depth,
+          isGroupHeader: false,
+        });
+        colIndex++;
+      }
+    }
+
+    // Process left columns
+    for (const col of leftColumnDefs) {
+      processColumn(col, 0);
+    }
+
+    // Skip plot column (handled separately)
+    if (includeForest) {
+      colIndex++;
+    }
+
+    // Process right columns
+    for (const col of rightColumnDefs) {
+      processColumn(col, 0);
+    }
+
+    return cells;
+  });
+
+  // Compute grid column index for plot header
+  const plotGridColumn = $derived(
+    1 + leftColumns.length + 1 // 1 for label + left columns + 1 for plot
+  );
+
   // Helper to get column width (dynamic or default)
   // Returns "auto" for auto-width columns, "{n}px" for fixed-width columns
   // Uses columnWidthsSnapshot to ensure Svelte 5 reactivity
@@ -212,6 +332,60 @@
   function getLabelFlex(): string {
     return columnWidthsSnapshot["__label__"] ? "none" : "1";
   }
+
+  // Compute CSS grid template columns for unified layout
+  // Order: label | left columns | plot | right columns
+  const gridTemplateColumns = $derived.by(() => {
+    const parts: string[] = [];
+
+    // Label column
+    const labelWidth = columnWidthsSnapshot["__label__"];
+    parts.push(labelWidth ? `${labelWidth}px` : "minmax(120px, 1fr)");
+
+    // Left columns
+    for (const col of leftColumns) {
+      parts.push(getColWidth(col));
+    }
+
+    // Plot column (if included)
+    if (includeForest) {
+      parts.push(`${layout.forestWidth}px`);
+    }
+
+    // Right columns
+    for (const col of rightColumns) {
+      parts.push(getColWidth(col));
+    }
+
+    return parts.join(" ");
+  });
+
+  // Total column count for grid (label + left + plot + right)
+  const totalColumns = $derived(
+    1 + leftColumns.length + (includeForest ? 1 : 0) + rightColumns.length
+  );
+
+  // Plot column index (0-based, for grid-column positioning)
+  const plotColumnIndex = $derived(1 + leftColumns.length + 1); // 1-based for CSS grid
+
+  // Ref to measure plot column position for SVG overlay
+  let plotHeaderRef: HTMLDivElement | undefined = $state();
+  let plotColumnLeft = $state(0);
+
+  // Update plot column position when ref changes or column widths change
+  $effect(() => {
+    // Reference these to re-run when columns/plot resize
+    const _ = columnWidthsSnapshot;
+    const __ = layout.forestWidth;
+    if (plotHeaderRef) {
+      // Wait for DOM to update before measuring
+      tick().then(() => {
+        if (plotHeaderRef) {
+          plotColumnLeft = plotHeaderRef.offsetLeft;
+        }
+      });
+    }
+  });
 
   // Plot resize state and handlers
   let resizingPlot = $state(false);
@@ -240,6 +414,47 @@
     resizingPlot = false;
     document.removeEventListener("pointermove", onPlotResize);
     document.removeEventListener("pointerup", stopPlotResize);
+  }
+
+  // Column resize state and handlers
+  let resizingColumn = $state<string | null>(null);
+  let columnStartX = 0;
+  let columnStartWidth = 0;
+
+  function startColumnResize(e: PointerEvent, columnId: string, currentWidth: number) {
+    if (!spec?.interaction.enableResize) return;
+    e.preventDefault();
+    e.stopPropagation();
+    resizingColumn = columnId;
+    columnStartX = e.clientX;
+    columnStartWidth = currentWidth;
+    document.addEventListener("pointermove", onColumnResize);
+    document.addEventListener("pointerup", stopColumnResize);
+  }
+
+  function onColumnResize(e: PointerEvent) {
+    if (!resizingColumn) return;
+    const delta = e.clientX - columnStartX;
+    const newWidth = Math.max(40, columnStartWidth + delta); // Min width 40px
+    store.setColumnWidth(resizingColumn, newWidth);
+  }
+
+  function stopColumnResize() {
+    resizingColumn = null;
+    document.removeEventListener("pointermove", onColumnResize);
+    document.removeEventListener("pointerup", stopColumnResize);
+  }
+
+  // Row hover handler - sets both hover state and tooltip position
+  function handleRowHover(rowId: string, event: MouseEvent) {
+    store.setHovered(rowId);
+    // Set tooltip position for potential tooltip display
+    store.setTooltip(rowId, { x: event.clientX, y: event.clientY });
+  }
+
+  function handleRowLeave() {
+    store.setHovered(null);
+    store.setTooltip(null, null);
   }
 
   // Height style based on preset (must be inline to override htmlwidgets inline style)
@@ -282,11 +497,15 @@
       --wf-line-height: ${theme.typography.lineHeight};
       --wf-row-height: ${theme.spacing.rowHeight}px;
       --wf-header-height: ${theme.spacing.headerHeight}px;
+      --wf-header-row-height: ${theme.spacing.headerHeight / headerDepth}px;
+      --wf-header-depth: ${headerDepth};
       --wf-padding: ${theme.spacing.padding}px;
       --wf-cell-padding-x: ${theme.spacing.cellPaddingX}px;
       --wf-cell-padding-y: ${theme.spacing.cellPaddingY}px;
       --wf-axis-gap: ${theme.spacing.axisGap ?? 12}px;
+      --wf-axis-height: ${layout.axisHeight}px;
       --wf-group-padding: ${theme.spacing.groupPadding ?? 8}px;
+      --wf-plot-width: ${layout.forestWidth}px;
       --wf-point-size: ${theme.shapes.pointSize}px;
       --wf-line-width: ${theme.shapes.lineWidth}px;
       --wf-border-radius: ${theme.shapes.borderRadius}px;
@@ -316,236 +535,265 @@
       <!-- Plot header (title, subtitle) -->
       <PlotHeader title={spec.labels?.title} subtitle={spec.labels?.subtitle} />
 
-      <div class="webforest-main">
-      <!-- Left table (label + left-positioned columns) -->
-      <div class="webforest-table webforest-table-left">
-        <!-- Header -->
-        <ColumnHeaders
-          columnDefs={leftColumnDefs}
-          showLabel={true}
-          {labelHeader}
-          {store}
-          enableResize={spec?.interaction.enableResize ?? true}
-        />
+      <!-- Snippet for rendering cell content based on column type -->
+      {#snippet renderCellContent(row: DataRow['row'], column: ColumnSpec)}
+        {@const cellStyle = getCellStyle(row, column)}
+        {#if column.type === "bar"}
+          <CellBar
+            value={row.metadata[column.field] as number}
+            maxValue={getMaxValueForColumn(visibleRows, column)}
+            options={column.options?.bar}
+          />
+        {:else if column.type === "pvalue"}
+          <CellPvalue
+            value={row.metadata[column.field] as number}
+            options={column.options?.pvalue}
+          />
+        {:else if column.type === "sparkline"}
+          <CellSparkline
+            data={row.metadata[column.field] as number[]}
+            options={column.options?.sparkline}
+          />
+        {:else if column.type === "icon"}
+          <CellIcon
+            value={row.metadata[column.field]}
+            options={column.options?.icon}
+          />
+        {:else if column.type === "badge"}
+          <CellBadge
+            value={row.metadata[column.field]}
+            options={column.options?.badge}
+          />
+        {:else if column.type === "stars"}
+          <CellStars
+            value={row.metadata[column.field] as number}
+            options={column.options?.stars}
+          />
+        {:else if column.type === "img"}
+          <CellImg
+            value={row.metadata[column.field] as string}
+            options={column.options?.img}
+          />
+        {:else if column.type === "reference"}
+          <CellReference
+            value={row.metadata[column.field] as string}
+            metadata={row.metadata}
+            options={column.options?.reference}
+          />
+        {:else if column.type === "range"}
+          <CellRange
+            value={row.metadata[column.field]}
+            metadata={row.metadata}
+            options={column.options?.range}
+          />
+        {:else if column.type === "numeric"}
+          <CellContent value={formatNumber(row.metadata[column.field] as number, column.options)} {cellStyle} />
+        {:else if column.type === "custom" && column.options?.events}
+          <CellContent value={formatEvents(row, column.options)} {cellStyle} />
+        {:else if column.type === "interval"}
+          <CellContent value={formatInterval(
+            column.options?.interval?.point ? row.metadata[column.options.interval.point] as number : row.point,
+            column.options?.interval?.lower ? row.metadata[column.options.interval.lower] as number : row.lower,
+            column.options?.interval?.upper ? row.metadata[column.options.interval.upper] as number : row.upper,
+            column.options
+          )} {cellStyle} />
+        {:else}
+          <CellContent value={row.metadata[column.field] ?? ""} {cellStyle} />
+        {/if}
+      {/snippet}
 
-        <!-- Rows (including group headers) -->
-        {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
-          {#if displayRow.type === "group_header"}
-            <!-- Group header row - uses cell structure for consistent borders -->
-            <div
-              class="webforest-table-row webforest-group-row"
-              role="button"
-              tabindex="0"
-              onclick={() => store.toggleGroup(displayRow.group.id)}
-              onkeydown={(e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id)}
-              transition:slide={{ duration: 150 }}
-            >
-              <div
-                class="webforest-label-col"
-                style:padding-left={`${displayRow.depth * 12}px`}
-                style:width={getLabelWidth()}
-                style:flex={getLabelFlex()}
-              >
-                <GroupHeader
-                  group={displayRow.group}
-                  rowCount={displayRow.rowCount}
-                  {theme}
-                />
-              </div>
-              {#each leftColumns as column (column.id)}
-                <div
-                  class="webforest-col group-placeholder"
-                  style:width={getColWidth(column)}
-                ></div>
-              {/each}
-            </div>
-          {:else}
-            <!-- Data row with slide animation -->
-            {@const row = displayRow.row}
-            {@const rowDepth = displayRow.depth}
-            {@const effectiveIndent = row.style?.indent ?? rowDepth}
-            {@const selected = isSelected(row.id)}
-            <div
-              class="{getRowClasses(row.style, rowDepth, i, hasGroups)}{selected ? ' selected' : ''}"
-              style={getRowStyles(row.style, rowDepth)}
-              onclick={() => store.selectRow(row.id)}
-              onmouseenter={() => store.setHovered(row.id)}
-              onmouseleave={() => store.setHovered(null)}
-              role="button"
-              tabindex="0"
-              onkeydown={(e) => e.key === "Enter" && store.selectRow(row.id)}
-              transition:slide={{ duration: 150 }}
-            >
-              <div
-                class="webforest-label-col"
-                style:padding-left={effectiveIndent ? `${effectiveIndent * 12}px` : undefined}
-                style:width={getLabelWidth()}
-                style:flex={getLabelFlex()}
-                title={row.label}
-              >
-                {#if row.style?.icon}<span class="row-icon">{row.style.icon}</span>{/if}
-                {row.label}
-                {#if row.style?.badge}<span class="row-badge">{row.style.badge}</span>{/if}
-              </div>
-              {#each leftColumns as column (column.id)}
-                {@const cellStyle = getCellStyle(row, column)}
-                <div
-                  class="webforest-col"
-                  class:wrap-enabled={column.wrap}
-                  style:width={getColWidth(column)}
-                  style:text-align={column.align}
-                >
-                  {#if column.type === "bar"}
-                    <CellBar
-                      value={row.metadata[column.field] as number}
-                      maxValue={getMaxValueForColumn(visibleRows, column)}
-                      options={column.options?.bar}
-                    />
-                  {:else if column.type === "pvalue"}
-                    <CellPvalue
-                      value={row.metadata[column.field] as number}
-                      options={column.options?.pvalue}
-                    />
-                  {:else if column.type === "sparkline"}
-                    <CellSparkline
-                      data={row.metadata[column.field] as number[]}
-                      options={column.options?.sparkline}
-                    />
-                  {:else if column.type === "icon"}
-                    <CellIcon
-                      value={row.metadata[column.field]}
-                      options={column.options?.icon}
-                    />
-                  {:else if column.type === "badge"}
-                    <CellBadge
-                      value={row.metadata[column.field]}
-                      options={column.options?.badge}
-                    />
-                  {:else if column.type === "stars"}
-                    <CellStars
-                      value={row.metadata[column.field] as number}
-                      options={column.options?.stars}
-                    />
-                  {:else if column.type === "img"}
-                    <CellImg
-                      value={row.metadata[column.field] as string}
-                      options={column.options?.img}
-                    />
-                  {:else if column.type === "reference"}
-                    <CellReference
-                      value={row.metadata[column.field] as string}
-                      metadata={row.metadata}
-                      options={column.options?.reference}
-                    />
-                  {:else if column.type === "range"}
-                    <CellRange
-                      value={row.metadata[column.field]}
-                      metadata={row.metadata}
-                      options={column.options?.range}
-                    />
-                  {:else if column.type === "numeric"}
-                    <CellContent value={formatNumber(row.metadata[column.field] as number, column.options)} {cellStyle} />
-                  {:else if column.type === "custom" && column.options?.events}
-                    <CellContent value={formatEvents(row, column.options)} {cellStyle} />
-                  {:else if column.type === "interval"}
-                    <CellContent value={formatInterval(
-                      column.options?.interval?.point ? row.metadata[column.options.interval.point] as number : row.point,
-                      column.options?.interval?.lower ? row.metadata[column.options.interval.lower] as number : row.lower,
-                      column.options?.interval?.upper ? row.metadata[column.options.interval.upper] as number : row.upper,
-                      column.options
-                    )} {cellStyle} />
-                  {:else}
-                    <CellContent value={row.metadata[column.field] ?? ""} {cellStyle} />
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          {/if}
-        {/each}
-      </div>
-
-      <!-- Forest plot (if included) -->
-      {#if includeForest && layout.forestWidth > 0}
-        <div class="webforest-plot-wrapper">
-          <!-- Resize divider for plot area (overlays the left edge) -->
+      <!-- CSS Grid layout: label | left cols | plot | right cols -->
+      <div class="webforest-main" style:grid-template-columns={gridTemplateColumns}>
+        <!-- Header cells (supports hierarchical column groups) -->
+        <!-- Label header (spans all header rows) -->
+        <div
+          class="grid-cell header-cell label-header"
+          style:grid-row="1 / span {headerDepth}"
+        >
+          <span class="header-text">{labelHeader}</span>
           {#if spec?.interaction.enableResize}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div
-              class="plot-resize-handle"
-              onpointerdown={startPlotResize}
+              class="resize-handle"
+              onpointerdown={(e) => startColumnResize(e, "__label__", columnWidthsSnapshot["__label__"] ?? 150)}
             ></div>
           {/if}
-          <svg
-          class="webforest-canvas"
-          width={layout.forestWidth + 2}
-          height={layout.headerHeight + layout.plotHeight + layout.axisHeight}
-          viewBox="-1 0 {layout.forestWidth + 2} {layout.headerHeight + layout.plotHeight + layout.axisHeight}"
+        </div>
+
+        <!-- Column headers (groups and leaf columns) -->
+        {#each headerCells as cell (cell.col.id)}
+          {#if cell.isGroupHeader}
+            <!-- Group header -->
+            <div
+              class="grid-cell header-cell column-group-header"
+              style:grid-column="{cell.gridColumnStart} / span {cell.colspan}"
+              style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
+            >
+              <span class="header-text">{cell.col.header}</span>
+            </div>
+          {:else}
+            <!-- Leaf column header -->
+            {@const column = cell.col as ColumnSpec}
+            <div
+              class="grid-cell header-cell"
+              style:grid-column="{cell.gridColumnStart}"
+              style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
+              style:text-align={column.headerAlign ?? column.align}
+            >
+              <span class="header-text">{column.header}</span>
+              {#if spec?.interaction.enableResize}
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div
+                  class="resize-handle"
+                  onpointerdown={(e) => startColumnResize(e, column.id, columnWidthsSnapshot[column.id] ?? (typeof column.width === 'number' ? column.width : 80))}
+                ></div>
+              {/if}
+            </div>
+          {/if}
+        {/each}
+
+        <!-- Plot header (spans all header rows) -->
+        {#if includeForest}
+          <div
+            bind:this={plotHeaderRef}
+            class="grid-cell header-cell plot-header"
+            style:grid-column={plotGridColumn}
+            style:grid-row="1 / span {headerDepth}"
+          >
+            {#if spec?.interaction.enableResize}
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
+              <div
+                class="resize-handle"
+                onpointerdown={startPlotResize}
+              ></div>
+            {/if}
+          </div>
+        {/if}
+
+        <!-- Data rows -->
+        {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
+          {@const isGroupHeader = displayRow.type === "group_header"}
+          {@const row = isGroupHeader ? null : displayRow.row}
+          {@const rowDepth = displayRow.depth}
+          {@const selected = row ? isSelected(row.id) : false}
+          {@const rowClasses = row ? getRowClasses(row.style, rowDepth, i, hasGroups) : ""}
+          {@const isSpacerRow = row?.style?.type === "spacer"}
+          {@const gridRow = headerDepth + 1 + i}
+
+          <!-- Label cell -->
+          <div
+            class="grid-cell data-cell label-cell {rowClasses}"
+            class:group-row={isGroupHeader}
+            class:selected
+            class:hovered={row && hoveredRowId === row.id}
+            class:spacer-row={isSpacerRow}
+            style:grid-row={gridRow}
+            style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
+            role={isGroupHeader ? "button" : undefined}
+            tabindex={isGroupHeader ? 0 : undefined}
+            onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => store.selectRow(row.id) : undefined}
+            onkeydown={isGroupHeader ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id) : undefined}
+            onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
+            onmouseleave={row ? () => handleRowLeave() : undefined}
+          >
+            {#if isGroupHeader}
+              <GroupHeader
+                group={displayRow.group}
+                rowCount={displayRow.rowCount}
+                {theme}
+              />
+            {:else if row}
+              {#if row.style?.icon}<span class="row-icon">{row.style.icon}</span>{/if}
+              {row.label}
+              {#if row.style?.badge}<span class="row-badge">{row.style.badge}</span>{/if}
+            {/if}
+          </div>
+
+          <!-- Left column cells -->
+          {#each leftColumns as column (column.id)}
+            <div
+              class="grid-cell data-cell {rowClasses}"
+              class:group-row={isGroupHeader}
+              class:selected
+              class:hovered={row && hoveredRowId === row.id}
+              class:spacer-row={isSpacerRow}
+              class:wrap-enabled={column.wrap}
+              style:grid-row={gridRow}
+              style:text-align={column.align}
+              onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
+              onmouseleave={row ? () => handleRowLeave() : undefined}
+              onclick={row ? () => store.selectRow(row.id) : undefined}
+            >
+              {#if row}
+                {@render renderCellContent(row, column)}
+              {/if}
+            </div>
+          {/each}
+
+          <!-- Plot cell (empty - SVG overlays this) -->
+          {#if includeForest}
+            <div
+              class="grid-cell data-cell plot-cell {rowClasses}"
+              class:group-row={isGroupHeader}
+              class:selected
+              class:hovered={row && hoveredRowId === row.id}
+              class:spacer-row={isSpacerRow}
+              style:grid-row={gridRow}
+              onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
+              onmouseleave={row ? () => handleRowLeave() : undefined}
+              onclick={row ? () => store.selectRow(row.id) : undefined}
+            ></div>
+          {/if}
+
+          <!-- Right column cells -->
+          {#each rightColumns as column (column.id)}
+            <div
+              class="grid-cell data-cell {rowClasses}"
+              class:group-row={isGroupHeader}
+              class:selected
+              class:hovered={row && hoveredRowId === row.id}
+              class:spacer-row={isSpacerRow}
+              class:wrap-enabled={column.wrap}
+              style:grid-row={gridRow}
+              style:text-align={column.align}
+              onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
+              onmouseleave={row ? () => handleRowLeave() : undefined}
+              onclick={row ? () => store.selectRow(row.id) : undefined}
+            >
+              {#if row}
+                {@render renderCellContent(row, column)}
+              {/if}
+            </div>
+          {/each}
+        {/each}
+
+        <!-- Axis row (spans under plot column) -->
+        {#if includeForest}
+          {@const axisRowNum = headerDepth + 1 + displayRows.length}
+          <div class="grid-cell axis-spacer" style:grid-column="1 / {plotColumnIndex}" style:grid-row={axisRowNum}></div>
+          <div class="grid-cell axis-cell" style:grid-row={axisRowNum}></div>
+          {#if rightColumns.length > 0}
+            <div class="grid-cell axis-spacer" style:grid-column="{plotColumnIndex + 1} / -1" style:grid-row={axisRowNum}></div>
+          {/if}
+        {/if}
+
+        <!-- SVG overlay for plot markers (positioned over plot column, inside grid for correct positioning) -->
+        {#if includeForest && layout.forestWidth > 0}
+        {@const axisGap = theme?.spacing.axisGap ?? 12}
+        <svg
+          class="plot-overlay"
+          width={layout.forestWidth}
+          height={rowsAreaHeight + layout.axisHeight}
+          viewBox="0 0 {layout.forestWidth} {rowsAreaHeight + layout.axisHeight}"
+          style:top="{layout.headerHeight}px"
+          style:left="{plotColumnLeft}px"
         >
-          <!-- Header border (extend to overlap with table borders) -->
-          <line
-            x1={-1}
-            x2={layout.forestWidth + 1}
-            y1={layout.headerHeight}
-            y2={layout.headerHeight}
-            stroke="var(--wf-border, #e2e8f0)"
-            stroke-width="1"
-            shape-rendering="crispEdges"
-          />
-
-
-          <!-- Row banding backgrounds -->
-          {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
-            <rect
-              x={-1}
-              y={layout.headerHeight + (layout.rowPositions[i] ?? i * layout.rowHeight)}
-              width={layout.forestWidth + 2}
-              height={layout.rowHeights[i] ?? layout.rowHeight}
-              class="row-band {getRowBandClass(displayRow, i, hasGroups)}"
-              class:row-hovered={displayRow.type === 'data' && displayRow.row.id === hoveredRowId}
-              class:row-selected={displayRow.type === 'data' && selectedRowIds.has(displayRow.row.id)}
-              style:fill={displayRow.type === 'data' && displayRow.row.style?.bg ? displayRow.row.style.bg : undefined}
-            />
-          {/each}
-
-          <!-- Row gridlines (extending table borders into plot) -->
-          <!-- Extend lines 1px beyond SVG bounds on each side to overlap with table borders -->
-          {#each displayRows as displayRow, i}
-            {@const rowY = layout.rowPositions[i] ?? i * layout.rowHeight}
-            {@const rowH = layout.rowHeights[i] ?? layout.rowHeight}
-            {@const isSummaryRow = displayRow.type === 'data' && displayRow.row.style?.type === 'summary'}
-            {@const isSpacerRow = displayRow.type === 'data' && displayRow.row.style?.type === 'spacer'}
-            <!-- Top border for summary rows (2px) -->
-            {#if isSummaryRow}
-              <line
-                x1={-1}
-                x2={layout.forestWidth + 1}
-                y1={layout.headerHeight + rowY}
-                y2={layout.headerHeight + rowY}
-                stroke="var(--wf-border, #e2e8f0)"
-                stroke-width="2"
-                shape-rendering="crispEdges"
-              />
-            {/if}
-            <!-- Bottom border (1px) -->
-            {#if !isSpacerRow}
-              <line
-                x1={-1}
-                x2={layout.forestWidth + 1}
-                y1={layout.headerHeight + rowY + rowH}
-                y2={layout.headerHeight + rowY + rowH}
-                stroke="var(--wf-border, #e2e8f0)"
-                stroke-width="1"
-                shape-rendering="crispEdges"
-              />
-            {/if}
-          {/each}
-
-          <!-- Null value reference line (spans full plot height) -->
+          <!-- Null value reference line -->
           <line
             x1={xScale(layout.nullValue)}
             x2={xScale(layout.nullValue)}
-            y1={layout.headerHeight}
-            y2={layout.headerHeight + rowsAreaHeight}
+            y1={0}
+            y2={rowsAreaHeight}
             stroke="var(--wf-muted)"
             stroke-width="1"
             stroke-dasharray="4,4"
@@ -557,8 +805,8 @@
               <line
                 x1={xScale(annotation.x)}
                 x2={xScale(annotation.x)}
-                y1={layout.headerHeight}
-                y2={layout.headerHeight + rowsAreaHeight}
+                y1={0}
+                y2={rowsAreaHeight}
                 stroke={annotation.color ?? "var(--wf-accent)"}
                 stroke-width={annotation.width ?? 1.5}
                 stroke-opacity={annotation.opacity ?? 0.6}
@@ -568,7 +816,7 @@
                 {@const yOffset = annotationLabelOffsets[annotation.id] ?? 0}
                 <text
                   x={xScale(annotation.x)}
-                  y={layout.headerHeight - 4 + yOffset}
+                  y={-4 + yOffset}
                   text-anchor="middle"
                   fill={annotation.color ?? "var(--wf-secondary)"}
                   font-size="var(--wf-font-size-sm)"
@@ -580,172 +828,55 @@
             {/if}
           {/each}
 
-          <!-- Rows area -->
-          <g transform="translate(0, {layout.headerHeight})">
-            {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
-              {#if displayRow.type === "data"}
-                {@const rowY = layout.rowPositions[i] ?? i * layout.rowHeight}
-                {@const rowH = layout.rowHeights[i] ?? layout.rowHeight}
-                <RowInterval
-                  row={displayRow.row}
-                  yPosition={rowY + rowH / 2}
-                  {xScale}
-                  {layout}
-                  {theme}
-                  effects={spec.data.effects}
-                  weightCol={spec.data.weightCol}
-                  onRowClick={() => store.selectRow(displayRow.row.id)}
-                  onRowHover={(hovered, event) => {
-                    store.setHovered(hovered ? displayRow.row.id : null);
-                    if (hovered && event) {
-                      store.setTooltip(displayRow.row.id, { x: event.clientX, y: event.clientY });
-                    } else {
-                      store.setTooltip(null, null);
-                    }
-                  }}
-                />
-              {/if}
-            {/each}
-
-            <!-- Overall summary diamond -->
-            {#if spec.data.overall && layout.showOverallSummary &&
-                 typeof spec.data.overall.point === 'number' && !Number.isNaN(spec.data.overall.point) &&
-                 typeof spec.data.overall.lower === 'number' && !Number.isNaN(spec.data.overall.lower) &&
-                 typeof spec.data.overall.upper === 'number' && !Number.isNaN(spec.data.overall.upper)}
-              <SummaryDiamond
-                point={spec.data.overall.point}
-                lower={spec.data.overall.lower}
-                upper={spec.data.overall.upper}
-                yPosition={layout.summaryYPosition}
+          <!-- Row intervals (markers) -->
+          {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
+            {#if displayRow.type === "data"}
+              {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
+              {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+              <RowInterval
+                row={displayRow.row}
+                yPosition={rowY + rowH / 2}
                 {xScale}
                 {layout}
                 {theme}
+                effects={spec.data.effects}
+                weightCol={spec.data.weightCol}
+                onRowClick={() => store.selectRow(displayRow.row.id)}
+                onRowHover={(hovered, event) => {
+                  store.setHovered(hovered ? displayRow.row.id : null);
+                  if (hovered && event) {
+                    store.setTooltip(displayRow.row.id, { x: event.clientX, y: event.clientY });
+                  } else {
+                    store.setTooltip(null, null);
+                  }
+                }}
               />
             {/if}
-          </g>
+          {/each}
 
-          <!-- Axis at bottom -->
-          <g transform="translate(0, {layout.headerHeight + layout.plotHeight})">
+          <!-- Overall summary diamond (positioned at end of rows) -->
+          {#if spec.data.overall && layout.showOverallSummary &&
+               typeof spec.data.overall.point === 'number' && !Number.isNaN(spec.data.overall.point) &&
+               typeof spec.data.overall.lower === 'number' && !Number.isNaN(spec.data.overall.lower) &&
+               typeof spec.data.overall.upper === 'number' && !Number.isNaN(spec.data.overall.upper)}
+            <SummaryDiamond
+              point={spec.data.overall.point}
+              lower={spec.data.overall.lower}
+              upper={spec.data.overall.upper}
+              yPosition={rowsAreaHeight + layout.rowHeight / 2}
+              {xScale}
+              {layout}
+              {theme}
+            />
+          {/if}
+
+          <!-- Axis at bottom (with axisGap spacing from rows) -->
+          <g transform="translate(0, {rowsAreaHeight + axisGap})">
             <EffectAxis {xScale} {layout} {theme} axisLabel={spec.data.axisLabel} position="bottom" plotHeight={layout.plotHeight} />
           </g>
         </svg>
-        </div>
-      {/if}
-
-      <!-- Right table (right-positioned columns) -->
-      {#if rightColumns.length > 0}
-        <div class="webforest-table webforest-table-right">
-          <!-- Header -->
-          <ColumnHeaders
-            columnDefs={rightColumnDefs}
-            showLabel={false}
-            {store}
-            enableResize={spec?.interaction.enableResize ?? true}
-          />
-
-          <!-- Rows (including group headers) -->
-          {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
-            {#if displayRow.type === "group_header"}
-              <!-- Group header row - uses cell structure for consistent borders -->
-              <div class="webforest-table-row webforest-group-row" transition:slide={{ duration: 150 }}>
-                {#each rightColumns as column (column.id)}
-                  <div
-                    class="webforest-col group-placeholder"
-                    style:width={getColWidth(column)}
-                  ></div>
-                {/each}
-              </div>
-            {:else}
-              <!-- Data row with slide animation -->
-              {@const row = displayRow.row}
-              {@const rowDepth = displayRow.depth}
-              {@const selected = isSelected(row.id)}
-              <!-- svelte-ignore a11y_no_static_element_interactions -->
-              <div
-                class="{getRowClasses(row.style, rowDepth, i, hasGroups)}{selected ? ' selected' : ''}"
-                style={getRowStyles(row.style, rowDepth)}
-                onmouseenter={() => store.setHovered(row.id)}
-                onmouseleave={() => store.setHovered(null)}
-                transition:slide={{ duration: 150 }}
-              >
-                {#each rightColumns as column (column.id)}
-                  {@const cellStyle = getCellStyle(row, column)}
-                  <div
-                    class="webforest-col"
-                    class:wrap-enabled={column.wrap}
-                    style:width={getColWidth(column)}
-                    style:text-align={column.align}
-                  >
-                    {#if column.type === "bar"}
-                      <CellBar
-                        value={row.metadata[column.field] as number}
-                        maxValue={getMaxValueForColumn(visibleRows, column)}
-                        options={column.options?.bar}
-                      />
-                    {:else if column.type === "pvalue"}
-                      <CellPvalue
-                        value={row.metadata[column.field] as number}
-                        options={column.options?.pvalue}
-                      />
-                    {:else if column.type === "sparkline"}
-                      <CellSparkline
-                        data={row.metadata[column.field] as number[]}
-                        options={column.options?.sparkline}
-                      />
-                    {:else if column.type === "icon"}
-                      <CellIcon
-                        value={row.metadata[column.field]}
-                        options={column.options?.icon}
-                      />
-                    {:else if column.type === "badge"}
-                      <CellBadge
-                        value={row.metadata[column.field]}
-                        options={column.options?.badge}
-                      />
-                    {:else if column.type === "stars"}
-                      <CellStars
-                        value={row.metadata[column.field] as number}
-                        options={column.options?.stars}
-                      />
-                    {:else if column.type === "img"}
-                      <CellImg
-                        value={row.metadata[column.field] as string}
-                        options={column.options?.img}
-                      />
-                    {:else if column.type === "reference"}
-                      <CellReference
-                        value={row.metadata[column.field] as string}
-                        metadata={row.metadata}
-                        options={column.options?.reference}
-                      />
-                    {:else if column.type === "range"}
-                      <CellRange
-                        value={row.metadata[column.field]}
-                        metadata={row.metadata}
-                        options={column.options?.range}
-                      />
-                    {:else if column.type === "numeric"}
-                      <CellContent value={formatNumber(row.metadata[column.field] as number, column.options)} {cellStyle} />
-                    {:else if column.type === "custom" && column.options?.events}
-                      <CellContent value={formatEvents(row, column.options)} {cellStyle} />
-                    {:else if column.type === "interval"}
-                      <CellContent value={formatInterval(
-                        column.options?.interval?.point ? row.metadata[column.options.interval.point] as number : row.point,
-                        column.options?.interval?.lower ? row.metadata[column.options.interval.lower] as number : row.lower,
-                        column.options?.interval?.upper ? row.metadata[column.options.interval.upper] as number : row.upper,
-                        column.options
-                      )} {cellStyle} />
-                    {:else}
-                      <CellContent value={row.metadata[column.field] ?? ""} {cellStyle} />
-                    {/if}
-                  </div>
-                {/each}
-              </div>
-            {/if}
-          {/each}
-        </div>
-      {/if}
-    </div>
+        {/if}
+      </div>
 
       <!-- Plot footer (caption, footnote) -->
       <PlotFooter caption={spec.labels?.caption} footnote={spec.labels?.footnote} />
@@ -760,35 +891,6 @@
 
 <script lang="ts" module>
   import type { Row, ColumnSpec, RowStyle, DisplayRow } from "$types";
-
-  // Get CSS class for SVG row banding (must match getRowClasses logic for HTML table)
-  function getRowBandClass(displayRow: DisplayRow, idx: number, hasGroups: boolean): string {
-    if (displayRow.type === "group_header") {
-      return "band-group";
-    }
-
-    // Handle styled rows to match HTML row backgrounds
-    if (displayRow.type === "data") {
-      const style = displayRow.row.style;
-      if (style?.type === "header") return "band-header";
-      if (style?.type === "summary") return "band-summary";
-      if (style?.type === "spacer") return "band-spacer";
-      // Custom background (style.bg) handled via inline style on the rect
-    }
-
-    // Depth-based banding for nested groups (matches HTML row-depth-X)
-    if (hasGroups && displayRow.depth > 0) {
-      return `band-depth-${Math.min(displayRow.depth, 4)}`;
-    }
-
-    // Default alternating banding only when no groups (matches HTML row-odd)
-    if (!hasGroups) {
-      return idx % 2 === 1 ? "band-odd" : "band-even";
-    }
-
-    // When hasGroups but depth === 0, no banding (matches HTML behavior)
-    return "";
-  }
 
   // Note: formatNumber, formatEvents, formatInterval, addThousandsSep, abbreviateNumber are imported from $lib/formatters
 
@@ -814,14 +916,13 @@
     idx?: number,
     hasGroups?: boolean
   ): string {
-    const classes = ["webforest-table-row"];
+    const classes: string[] = [];
 
     // Styled row types (mutually exclusive with alternating banding)
     const isStyledRow = style?.type === "header" || style?.type === "summary" || style?.type === "spacer";
 
     if (style?.type === "header") classes.push("row-header");
     if (style?.type === "summary") classes.push("row-summary");
-    if (style?.type === "spacer") classes.push("row-spacer");
     if (style?.bold) classes.push("row-bold");
     if (style?.italic) classes.push("row-italic");
 
@@ -1017,75 +1118,135 @@
     min-height: 0;
   }
 
+  /* CSS Grid layout for unified table + plot */
   .webforest-main {
-    display: flex;
-    align-items: flex-start; /* Ensure all items align at top for border consistency */
+    display: grid;
+    position: relative;
     overflow: auto;
     flex: 1;
-    min-height: 0; /* Allow shrinking below content height for scroll */
+    min-height: 0;
   }
 
-  .webforest-table {
-    flex-shrink: 0;
-  }
-
-  .webforest-table-left {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .webforest-table-right {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .webforest-table-row {
-    display: flex;
-    height: var(--wf-row-height);
-    align-items: stretch; /* Let cells stretch to fill height for proper border alignment */
-  }
-
-  .webforest-table-row:hover {
-    background: color-mix(in srgb, var(--wf-primary) 5%, var(--wf-bg));
-  }
-
-  .webforest-table-row.selected {
-    background: color-mix(in srgb, var(--wf-primary) 12%, var(--wf-bg));
-    box-shadow: inset 3px 0 0 var(--wf-primary);
-  }
-
-  .webforest-table-row.selected:hover {
-    background: color-mix(in srgb, var(--wf-primary) 18%, var(--wf-bg));
-  }
-
-  .webforest-label-col {
-    flex: 1;
-    min-width: 120px;
-    padding: var(--wf-cell-padding-y) var(--wf-cell-padding-x);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    height: var(--wf-row-height);
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid var(--wf-border);
-  }
-
-  .webforest-col {
+  /* Base grid cell styles */
+  .grid-cell {
     padding: var(--wf-cell-padding-y) var(--wf-cell-padding-x);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    height: var(--wf-row-height);
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--wf-border);
-    flex-shrink: 0;
+    background: var(--wf-bg);
+  }
+
+  /* Header cells - use row height for multi-row headers */
+  .header-cell {
+    min-height: var(--wf-header-row-height);
+    font-weight: var(--wf-font-weight-medium, 500);
+    border-bottom: 1px solid var(--wf-border);
+    background: var(--wf-bg);
+    position: relative;
+  }
+
+  /* Label header gets thicker bottom border (spans all rows, so border is at bottom) */
+  .label-header {
+    border-bottom: 2px solid var(--wf-border);
+  }
+
+  /* Column group header styling */
+  .column-group-header {
+    justify-content: center;
+    font-weight: var(--wf-font-weight-bold, 600);
+    text-align: center;
+    padding-left: var(--wf-group-padding, 8px);
+    padding-right: var(--wf-group-padding, 8px);
+    border-bottom: none;
+    position: relative;
+  }
+
+  /* Inset border for column group headers - creates visual separation between groups */
+  .column-group-header::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: var(--wf-group-padding, 8px);
+    right: var(--wf-group-padding, 8px);
+    height: 1px;
+    background: var(--wf-border);
+  }
+
+  /* Last row of headers gets thicker border */
+  .header-cell:not(.column-group-header):not(.label-header):not(.plot-header) {
+    border-bottom: 2px solid var(--wf-border);
+  }
+
+  /* Plot header also gets thicker border */
+  .plot-header {
+    border-bottom: 2px solid var(--wf-border);
+  }
+
+  .header-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Resize handle on right edge of header cells */
+  .resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 10;
+  }
+
+  .resize-handle:hover,
+  .resize-handle:active {
+    background: var(--wf-primary, #2563eb);
+  }
+
+  /* Data cells */
+  .data-cell {
+    height: var(--wf-row-height);
+  }
+
+  /* Label column (first column) */
+  .label-cell {
+    min-width: 120px;
+  }
+
+  /* Plot cell (empty - SVG overlays this) */
+  .plot-cell {
+    padding: 0;
+    position: relative;
+  }
+
+  /* Plot header cell */
+  .plot-header {
+    padding: 0;
+  }
+
+  /* Axis row cells - use full axis height (gap + content) */
+  .axis-spacer {
+    height: var(--wf-axis-height);
+    border-bottom: none;
+    background: var(--wf-bg);
+    padding: 0;
+  }
+
+  .axis-cell {
+    height: var(--wf-axis-height);
+    border-bottom: none;
+    background: var(--wf-bg);
+    padding: 0;
   }
 
   /* Text wrapping mode - allows long text to wrap and respects \n newlines */
-  .webforest-col.wrap-enabled {
+  .wrap-enabled {
     white-space: pre-line;
     word-wrap: break-word;
     text-overflow: clip;
@@ -1096,33 +1257,57 @@
     padding-bottom: 6px;
   }
 
-  .webforest-canvas {
-    flex-shrink: 0;
-  }
-
-  .webforest-plot-wrapper {
-    position: relative;
-    flex-shrink: 0;
-    /* SVG is 2px wider (x=-1 to forestWidth+1), offset to overlap tables */
-    margin-left: -1px;
-    margin-right: -1px;
-  }
-
-  .plot-resize-handle {
+  /* SVG overlay positioned absolutely over plot column */
+  .plot-overlay {
     position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 8px;
-    cursor: col-resize;
-    background: transparent;
-    z-index: 10;
-    transform: translateX(50%);
+    pointer-events: none;
   }
 
-  .plot-resize-handle:hover,
-  .plot-resize-handle:active {
-    background: var(--wf-primary, #2563eb);
+  .plot-overlay :global(.interactive) {
+    pointer-events: auto;
+  }
+
+  /* Row hover effect - apply to all cells in a row via CSS sibling selectors */
+  /* We handle this via JavaScript by tracking hover state on rows */
+
+  /* Group row styling */
+  .group-row {
+    background: color-mix(in srgb, var(--wf-primary) 5%, var(--wf-bg));
+    cursor: pointer;
+  }
+
+  .group-row:hover {
+    background: color-mix(in srgb, var(--wf-primary) 10%, var(--wf-bg));
+  }
+
+  /* Hovered row styling */
+  .data-cell.hovered {
+    background: color-mix(in srgb, var(--wf-primary) 8%, var(--wf-bg));
+    cursor: pointer;
+  }
+
+  /* Selected row styling */
+  .data-cell.selected {
+    background: color-mix(in srgb, var(--wf-primary) 12%, var(--wf-bg));
+  }
+
+  .data-cell.selected.hovered {
+    background: color-mix(in srgb, var(--wf-primary) 18%, var(--wf-bg));
+  }
+
+  .data-cell.selected:first-child {
+    box-shadow: inset 3px 0 0 var(--wf-primary);
+  }
+
+  /* Spacer row styling */
+  .spacer-row {
+    height: calc(var(--wf-row-height) / 2);
+    border-bottom: none;
+    visibility: hidden;
+  }
+
+  .spacer-row.plot-cell {
+    visibility: visible; /* Keep plot cell visible for spacing */
   }
 
   .webforest-empty {
@@ -1131,7 +1316,7 @@
     color: var(--wf-muted);
   }
 
-  /* Row type styles */
+  /* Row type styles (applied to data-cell elements) */
   .row-header {
     font-weight: var(--wf-font-weight-bold, 600);
     background: color-mix(in srgb, var(--wf-muted) 10%, var(--wf-bg));
@@ -1140,17 +1325,6 @@
   .row-summary {
     font-weight: var(--wf-font-weight-bold, 600);
     border-top: 2px solid var(--wf-border);
-  }
-
-  .row-spacer {
-    height: calc(var(--wf-row-height) / 2);
-    border-bottom: none;
-  }
-
-  .row-spacer .webforest-label-col,
-  .row-spacer .webforest-col {
-    border-bottom: none;
-    visibility: hidden;
   }
 
   .row-bold {
@@ -1210,90 +1384,4 @@
     background: color-mix(in srgb, var(--wf-muted) 20%, var(--wf-bg));
   }
 
-  /* Group header row styles */
-  .webforest-group-row {
-    display: flex;
-    width: 100%;
-    height: var(--wf-row-height);
-    align-items: center;
-    border-left: 3px solid transparent;
-    background: color-mix(in srgb, var(--wf-primary) 5%, var(--wf-bg));
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.15s ease, background 0.15s ease;
-  }
-
-  /* Placeholder cells in group rows - empty cells that maintain borders */
-  .group-placeholder {
-    /* Empty cells - no content but borders remain visible */
-  }
-
-  .webforest-group-row:hover {
-    background: color-mix(in srgb, var(--wf-primary) 10%, var(--wf-bg));
-    border-left-color: var(--wf-primary);
-  }
-
-  .webforest-group-row:focus-visible {
-    outline: 2px solid var(--wf-primary);
-    outline-offset: -2px;
-  }
-
-  /* SVG row banding */
-  .row-band {
-    fill: var(--wf-bg, #fff);
-    transition: fill 0.1s ease;
-  }
-
-  .row-band.band-group {
-    fill: color-mix(in srgb, var(--wf-primary) 5%, var(--wf-bg));
-  }
-
-  .row-band.band-depth-1 {
-    fill: color-mix(in srgb, var(--wf-muted) 8%, var(--wf-bg));
-  }
-
-  .row-band.band-depth-2 {
-    fill: color-mix(in srgb, var(--wf-muted) 12%, var(--wf-bg));
-  }
-
-  .row-band.band-depth-3 {
-    fill: color-mix(in srgb, var(--wf-muted) 16%, var(--wf-bg));
-  }
-
-  .row-band.band-depth-4 {
-    fill: color-mix(in srgb, var(--wf-muted) 20%, var(--wf-bg));
-  }
-
-  .row-band.band-odd {
-    fill: color-mix(in srgb, var(--wf-muted) 6%, var(--wf-bg));
-  }
-
-  .row-band.band-even {
-    fill: var(--wf-bg, #fff);
-  }
-
-  /* Styled row band types to match HTML row backgrounds */
-  .row-band.band-header {
-    fill: color-mix(in srgb, var(--wf-muted) 10%, var(--wf-bg));
-  }
-
-  .row-band.band-summary {
-    fill: var(--wf-bg, #fff);
-  }
-
-  .row-band.band-spacer {
-    fill: var(--wf-bg, #fff);
-  }
-
-  .row-band.row-hovered {
-    fill: color-mix(in srgb, var(--wf-primary) 8%, var(--wf-bg));
-  }
-
-  .row-band.row-selected {
-    fill: color-mix(in srgb, var(--wf-primary) 12%, var(--wf-bg));
-  }
-
-  .row-band.row-selected.row-hovered {
-    fill: color-mix(in srgb, var(--wf-primary) 18%, var(--wf-bg));
-  }
 </style>
