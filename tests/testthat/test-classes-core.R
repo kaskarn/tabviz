@@ -122,18 +122,19 @@ test_that("web_theme_lancet creates valid theme", {
 })
 
 test_that("web_theme_modern creates valid theme", {
+
   theme <- web_theme_modern()
   expect_true(inherits(theme, "webforest::WebTheme"))
   expect_equal(theme@name, "modern")
-  expect_equal(theme@spacing@row_height, 32)
+  expect_equal(theme@spacing@row_height, 36)
 })
 
 test_that("web_theme_presentation creates valid theme", {
   theme <- web_theme_presentation()
   expect_true(inherits(theme, "webforest::WebTheme"))
   expect_equal(theme@name, "presentation")
-  expect_equal(theme@spacing@row_height, 40)
-  expect_equal(theme@shapes@point_size, 10)
+  expect_equal(theme@spacing@row_height, 44)
+  expect_equal(theme@shapes@point_size, 12)
 })
 
 # Column helper tests
@@ -174,7 +175,7 @@ test_that("web_theme_nature creates valid theme", {
   expect_true(inherits(theme, "webforest::WebTheme"))
   expect_equal(theme@name, "nature")
   expect_equal(theme@colors@primary, "#1976d2")
-  expect_equal(theme@shapes@border_radius, 2)
+  expect_equal(theme@shapes@border_radius, 1)
   expect_true(theme@layout@container_border)
 })
 

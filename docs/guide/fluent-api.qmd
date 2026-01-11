@@ -291,13 +291,17 @@ web_spec(dataset2, ...) |> apply_significance_style() |> forest_plot()
 You can modify plots after rendering:
 
 ```{r}
+# Create a customized theme first
+custom_theme <- web_theme_lancet() |>
+  set_axis(gridlines = TRUE) |>
+  set_spacing(row_height = 32)
+
+# Then apply it to the plot
 forest_plot(analysis_data[1:3, ],
   point = "hr", lower = "lower", upper = "upper", label = "study",
   scale = "log", null_value = 1
 ) |>
-  set_theme("lancet") |>
-  set_axis(gridlines = TRUE) |>
-  set_spacing(row_height = 32)
+  set_theme(custom_theme)
 ```
 
 ::: {.callout-warning}
