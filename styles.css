@@ -6,7 +6,6 @@
  * `.collapse` class used for the navbar collapse functionality.
  *
  * This stylesheet overrides the conflict specifically for the navbar.
- * A more comprehensive fix would be to scope Tailwind in the webforest build.
  */
 
 /* Override Tailwind's .collapse which hides Bootstrap navbar items */
