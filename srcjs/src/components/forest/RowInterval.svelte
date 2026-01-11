@@ -248,7 +248,7 @@
           <!-- Left whisker or arrow if clipped -->
           {#if clippedL}
             <path
-              d="M 4 {effectY} L 10 {effectY - 4} L 10 {effectY + 4} Z"
+              d="M 0 {effectY} L 6 {effectY - 4} L 6 {effectY + 4} Z"
               fill={lineColor}
             />
           {:else}
@@ -264,7 +264,7 @@
           <!-- Right whisker or arrow if clipped -->
           {#if clippedR}
             <path
-              d="M {layout.forestWidth - 4} {effectY} L {layout.forestWidth - 10} {effectY - 4} L {layout.forestWidth - 10} {effectY + 4} Z"
+              d="M {layout.forestWidth} {effectY} L {layout.forestWidth - 6} {effectY - 4} L {layout.forestWidth - 6} {effectY + 4} Z"
               fill={lineColor}
             />
           {:else}
