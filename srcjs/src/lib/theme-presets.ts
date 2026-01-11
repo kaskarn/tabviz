@@ -88,15 +88,15 @@ const DEFAULT_THEME: WebTheme = {
   groupHeaders: {
     level1FontSize: "1rem",
     level1FontWeight: 700,
-    level1Background: null,  // Computed from primary at 8% opacity
-    level1BorderBottom: true,
+    level1Background: null,  // Computed from primary at 15% opacity
+    level1BorderBottom: false,
     level2FontSize: "0.9375rem",
     level2FontWeight: 600,
-    level2Background: null,  // Computed from primary at 5% opacity
-    level2BorderBottom: true,
+    level2Background: null,  // Computed from primary at 10% opacity
+    level2BorderBottom: false,
     level3FontSize: "0.875rem",
     level3FontWeight: 500,
-    level3Background: null,  // Computed from primary at 3% opacity
+    level3Background: null,  // Computed from primary at 6% opacity
     level3BorderBottom: false,
     indentPerLevel: 16,
   },

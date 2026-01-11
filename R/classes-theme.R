@@ -232,13 +232,13 @@ GroupHeaderStyles <- new_class(
     level1_font_size = new_property(class_character, default = "1rem"),
     level1_font_weight = new_property(class_numeric, default = 700),
     level1_background = new_property(class_any, default = NULL),  # NULL = computed
-    level1_border_bottom = new_property(class_logical, default = TRUE),
+    level1_border_bottom = new_property(class_logical, default = FALSE),
 
     # Level 2 (like h2)
     level2_font_size = new_property(class_character, default = "0.9375rem"),
     level2_font_weight = new_property(class_numeric, default = 600),
     level2_background = new_property(class_any, default = NULL),  # NULL = computed
-    level2_border_bottom = new_property(class_logical, default = TRUE),
+    level2_border_bottom = new_property(class_logical, default = FALSE),
 
     # Level 3+ (like h3)
     level3_font_size = new_property(class_character, default = "0.875rem"),
@@ -915,11 +915,11 @@ set_layout <- function(
 #' @param level1_font_size Font size for top-level groups (default: "1rem")
 #' @param level1_font_weight Font weight for top-level groups (default: 700)
 #' @param level1_background Background color for level 1. NULL = computed from primary at 8% opacity.
-#' @param level1_border_bottom Show bottom border on level 1 headers (default: TRUE)
+#' @param level1_border_bottom Show bottom border on level 1 headers (default: FALSE)
 #' @param level2_font_size Font size for second-level groups (default: "0.9375rem")
 #' @param level2_font_weight Font weight for second-level groups (default: 600)
 #' @param level2_background Background color for level 2. NULL = computed from primary at 5% opacity.
-#' @param level2_border_bottom Show bottom border on level 2 headers (default: TRUE)
+#' @param level2_border_bottom Show bottom border on level 2 headers (default: FALSE)
 #' @param level3_font_size Font size for third-level and deeper groups (default: "0.875rem")
 #' @param level3_font_weight Font weight for third-level groups (default: 500)
 #' @param level3_background Background color for level 3+. NULL = computed from primary at 3% opacity.
