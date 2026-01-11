@@ -296,7 +296,8 @@ export interface Spacing {
   rowHeight: number;
   headerHeight: number;
   sectionGap: number;
-  padding: number;
+  padding: number;  // Padding around forest plot SVG (default 12px)
+  containerPadding: number;  // Left/right padding for outer container (default 0)
   cellPaddingX: number;
   cellPaddingY: number;
   axisGap: number;  // Gap between table and x-axis (default ~12px)

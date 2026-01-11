@@ -60,6 +60,7 @@ Spacing <- new_class(
     header_height = new_property(class_numeric, default = 36),
     section_gap = new_property(class_numeric, default = 16),
     padding = new_property(class_numeric, default = 12),
+    container_padding = new_property(class_numeric, default = 0),
     axis_gap = new_property(class_numeric, default = 12),
     group_padding = new_property(class_numeric, default = 8),
     cell_padding_x = new_property(class_numeric, default = 10),
@@ -635,7 +636,8 @@ set_typography <- function(
 #' @param row_height Height of data rows in pixels (default: 28)
 #' @param header_height Height of header row in pixels (default: 36)
 #' @param section_gap Gap between sections in pixels (default: 16)
-#' @param padding Overall container padding in pixels (default: 12)
+#' @param padding Padding around the forest plot SVG in pixels (default: 12)
+#' @param container_padding Left/right padding for the outer container in pixels (default: 0)
 #' @param axis_gap Gap between table content and x-axis in pixels (default: 12)
 #' @param group_padding Left/right padding for column group headers in pixels (default: 8)
 #' @param cell_padding_x Horizontal cell padding in pixels (default: 10)
@@ -652,6 +654,7 @@ set_spacing <- function(
     header_height = NULL,
     section_gap = NULL,
     padding = NULL,
+    container_padding = NULL,
     axis_gap = NULL,
     group_padding = NULL,
     cell_padding_x = NULL,
@@ -664,6 +667,7 @@ set_spacing <- function(
   if (!is.null(header_height)) current@header_height <- header_height
   if (!is.null(section_gap)) current@section_gap <- section_gap
   if (!is.null(padding)) current@padding <- padding
+  if (!is.null(container_padding)) current@container_padding <- container_padding
   if (!is.null(axis_gap)) current@axis_gap <- axis_gap
   if (!is.null(group_padding)) current@group_padding <- group_padding
   if (!is.null(cell_padding_x)) current@cell_padding_x <- cell_padding_x

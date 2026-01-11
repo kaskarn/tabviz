@@ -33,7 +33,7 @@ Each theme is designed with a specific context in mind:
 |-----------|----------|----------------|
 | Colors | `set_colors()` | background, foreground, primary, interval, interval_line |
 | Typography | `set_typography()` | font_family, font_size_*, font_weight_* |
-| Spacing | `set_spacing()` | row_height, header_height, padding, cell_padding_x/y |
+| Spacing | `set_spacing()` | row_height, header_height, padding, container_padding, cell_padding_x/y |
 | Shapes | `set_shapes()` | point_size, summary_height, line_width, marker_colors, marker_shapes |
 | Axis | `set_axis()` | range_min/max, tick_count, tick_values, gridlines, symmetric |
 | Layout | `set_layout()` | plot_position, row_border, container_border |
@@ -217,12 +217,13 @@ set_typography(
 
 ```r
 set_spacing(
-  row_height = 28,        # Data row height in pixels
-  header_height = 36,     # Header row height in pixels
-  padding = 12,           # Container padding
-  cell_padding_x = 10,    # Horizontal cell padding
-  cell_padding_y = 4,     # Vertical cell padding
-  axis_gap = 12           # Gap between table and x-axis
+  row_height = 28,          # Data row height in pixels
+  header_height = 36,       # Header row height in pixels
+  padding = 12,             # Padding around forest plot SVG
+  container_padding = 0,    # Left/right padding for outer container
+  cell_padding_x = 10,      # Horizontal cell padding
+  cell_padding_y = 4,       # Vertical cell padding
+  axis_gap = 12             # Gap between table and x-axis
 )
 ```
 

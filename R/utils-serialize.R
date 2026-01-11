@@ -270,6 +270,7 @@ serialize_theme <- function(theme) {
       headerHeight = theme@spacing@header_height,
       sectionGap = theme@spacing@section_gap,
       padding = theme@spacing@padding,
+      containerPadding = theme@spacing@container_padding,
       cellPaddingX = theme@spacing@cell_padding_x,
       cellPaddingY = theme@spacing@cell_padding_y,
       axisGap = theme@spacing@axis_gap,

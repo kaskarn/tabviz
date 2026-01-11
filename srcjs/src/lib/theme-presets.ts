@@ -49,6 +49,7 @@ const DEFAULT_THEME: WebTheme = {
     headerHeight: 36,
     sectionGap: 16,
     padding: 12,
+    containerPadding: 0,
     cellPaddingX: 10,
     cellPaddingY: 4,
     axisGap: 12,

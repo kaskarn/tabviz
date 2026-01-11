@@ -10,6 +10,7 @@ set_spacing(
   header_height = NULL,
   section_gap = NULL,
   padding = NULL,
+  container_padding = NULL,
   axis_gap = NULL,
   group_padding = NULL,
   cell_padding_x = NULL,
@@ -25,7 +26,9 @@ set_spacing(
 
 \item{section_gap}{Gap between sections in pixels (default: 16)}
 
-\item{padding}{Overall container padding in pixels (default: 12)}
+\item{padding}{Padding around the forest plot SVG in pixels (default: 12)}
+
+\item{container_padding}{Left/right padding for the outer container in pixels (default: 0)}
 
 \item{axis_gap}{Gap between table content and x-axis in pixels (default: 12)}
 

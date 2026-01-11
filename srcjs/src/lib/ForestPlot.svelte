@@ -535,6 +535,7 @@
       --wf-header-row-height: ${theme.spacing.headerHeight / headerDepth}px;
       --wf-header-depth: ${headerDepth};
       --wf-padding: ${theme.spacing.padding}px;
+      --wf-container-padding: ${theme.spacing.containerPadding}px;
       --wf-cell-padding-x: ${theme.spacing.cellPaddingX}px;
       --wf-cell-padding-y: ${theme.spacing.cellPaddingY}px;
       --wf-axis-gap: ${theme.spacing.axisGap ?? 12}px;
@@ -1158,6 +1159,8 @@
     display: flex;
     flex-direction: column;
     flex: 1;
+    padding-left: var(--wf-container-padding, 0);
+    padding-right: var(--wf-container-padding, 0);
     min-height: 0;
   }
 
