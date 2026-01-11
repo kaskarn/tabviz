@@ -15,6 +15,11 @@ meta_data <- data.frame(
 )
 ```
 
+::: {.callout-note}
+## Auto-Scaling by Default
+webforest automatically calculates appropriate axis ranges and tick positions based on your data. Only override when you need specific control.
+:::
+
 ## Axis Control
 
 ### Axis Range

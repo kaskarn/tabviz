@@ -40,15 +40,17 @@ forest_plot(meta_data,
 )
 ```
 
-### Required Arguments
+::: {.callout-important}
+## The Four Required Mappings
+Every forest plot needs these four column mappings:
 
-| Argument | Description |
-|----------|-------------|
-| `data` | Data frame with your study data |
-| `point` | Column name for point estimates |
-| `lower` | Column name for lower CI bounds |
-| `upper` | Column name for upper CI bounds |
-| `label` | Column name for row labels (study names) |
+| Argument | What it is | Example |
+|----------|------------|---------|
+| `point` | Point estimate | Hazard ratio, odds ratio, mean difference |
+| `lower` | Lower CI bound | 95% CI lower |
+| `upper` | Upper CI bound | 95% CI upper |
+| `label` | Row label | Study name |
+:::
 
 ### Common Options
 
@@ -60,6 +62,12 @@ forest_plot(meta_data,
 | `theme` | Theme object from `web_theme_*()` | `web_theme_default()` |
 | `marker_color` | Column for marker fill colors | `NULL` |
 | `marker_shape` | Column for shapes: `"square"`, `"circle"`, `"diamond"`, `"triangle"` | `NULL` |
+
+::: {.callout-tip}
+## Scale Selection Rule of Thumb
+- **Log scale** (`scale = "log"`, `null_value = 1`): For ratios (OR, HR, RR) where effects are multiplicative
+- **Linear scale** (`scale = "linear"`, `null_value = 0`): For differences (MD, RD, SMD) where effects are additive
+:::
 
 ## Two-Step Workflow
 
@@ -84,16 +92,74 @@ spec <- web_spec(meta_data,
 forest_plot(spec, axis_label = "Hazard Ratio")
 ```
 
+::: {.callout-note}
+## When to Use Two-Step Workflow
 The two-step workflow is useful when you want to:
 
-- Reuse the same spec with different themes
-- Export to multiple formats
-- Inspect or modify the spec programmatically
+- **Reuse the same spec** with different themes or visual settings
+- **Apply conditional styling** using `set_*()` modifier functions
+- **Export to multiple formats** from the same data structure
+- **Inspect or debug** the spec programmatically
+:::
+
+## Adding Styling
+
+webforest offers two equivalent ways to style your plot:
+
+### Constructor Arguments (All at Once)
+
+```{r}
+#| eval: false
+forest_plot(meta_data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  row_bold = "is_summary",        # Column with TRUE/FALSE
+  marker_color = "effect_color",  # Column with hex colors
+  theme = web_theme_jama(),
+  scale = "log", null_value = 1
+)
+```
+
+### Fluent API (Step by Step)
+
+```{r}
+#| eval: false
+forest_plot(meta_data,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  scale = "log", null_value = 1
+) |>
+  set_row_style(bold = "is_summary") |>
+  set_marker_style(color = "effect_color") |>
+  set_theme("jama")
+```
+
+Both approaches produce identical results. Use constructor arguments when everything is known upfront. Use the fluent API when styling depends on computation or you want to create variants.
+
+## Quick Theme Preview
+
+```{r}
+#| layout-ncol: 2
+#| fig-height: 3
+
+forest_plot(meta_data[1:3, ],
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  null_value = 1, scale = "log",
+  theme = web_theme_jama(), title = "JAMA")
+
+forest_plot(meta_data[1:3, ],
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  null_value = 1, scale = "log",
+  theme = web_theme_lancet(), title = "Lancet")
+```
+
+See [Themes](themes.qmd) for all 9 preset themes and customization options.
 
 ## Next Steps
 
-- [Customizing Plots](fluent-api.qmd) - Build plots step-by-step with pipes
-- [Themes](themes.qmd) - Customize appearance with preset and custom themes
-- [Columns](columns.qmd) - Add data columns with special formatting
-- [Grouping & Rows](grouping-rows.qmd) - Organize studies into groups
-- [Exporting](exporting.qmd) - Save plots as SVG, PNG, or PDF
+| Topic | What You'll Learn |
+|-------|-------------------|
+| [Customizing Plots](fluent-api.qmd) | Build plots step-by-step with pipes |
+| [Themes](themes.qmd) | Preset themes and customization |
+| [Columns](columns.qmd) | Data columns with special formatting |
+| [Grouping & Rows](grouping-rows.qmd) | Organize studies into collapsible groups |
+| [Cell Styling](cell-styling.qmd) | Conditional formatting for individual cells |
+| [Exporting](exporting.qmd) | Save plots as SVG, PNG, or PDF |

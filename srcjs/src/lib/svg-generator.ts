@@ -23,6 +23,8 @@ import {
   SPACING,
   RENDERING,
   AUTO_WIDTH,
+  GROUP_HEADER,
+  COLUMN_GROUP,
   ROW_ODD_OPACITY,
   GROUP_HEADER_OPACITY,
   getDepthOpacity,
@@ -60,6 +62,11 @@ export interface ExportOptions {
 /**
  * Calculate auto-widths for columns that have width="auto" or null.
  * Uses text estimation since canvas measurement is not available in SVG context.
+ *
+ * This function now handles column groups the same way as the web view:
+ * 1. First measure leaf columns based on content
+ * 2. Then check if column groups need more width than their children provide
+ * 3. If so, distribute extra width evenly to all children
  */
 function calculateSvgAutoWidths(
   spec: WebSpec,
@@ -69,6 +76,9 @@ function calculateSvgAutoWidths(
   const fontSize = parseFontSize(spec.theme.typography.fontSizeBase);
   const rows = spec.data.rows;
 
+  // ========================================================================
+  // PHASE 1: Measure leaf column content
+  // ========================================================================
   for (const col of columns) {
     // Only process columns with width="auto" or null
     if (col.width !== "auto" && col.width !== null && col.width !== undefined) {
@@ -94,11 +104,98 @@ function calculateSvgAutoWidths(
     }
 
     // Apply padding and constraints
+    // Use type-specific minimum for visual columns, else default minimum
+    const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
     const computedWidth = Math.ceil(maxWidth + AUTO_WIDTH.PADDING);
-    widths.set(col.id, Math.min(AUTO_WIDTH.MAX, Math.max(AUTO_WIDTH.MIN, computedWidth)));
+    widths.set(col.id, Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, computedWidth)));
   }
 
+  // ========================================================================
+  // PHASE 2: Check column groups and expand children if needed
+  // ========================================================================
+  // This matches the web view's doMeasurement() logic in forestStore.svelte.ts
+  expandColumnGroupWidths(spec.columns, widths, fontSize);
+
   return widths;
+}
+
+/**
+ * Process column groups recursively and expand children if group header needs more space.
+ * This matches the web view's processColumn() logic in forestStore.svelte.ts.
+ *
+ * @param columnDefs - Top-level column definitions (may include groups)
+ * @param widths - Map to store computed widths (modified in place)
+ * @param fontSize - Font size in pixels for text measurement
+ */
+function expandColumnGroupWidths(
+  columnDefs: ColumnDef[],
+  widths: Map<string, number>,
+  fontSize: number
+): void {
+  /**
+   * Get all leaf columns under a column definition.
+   * For groups, recursively collects all descendant leaf columns.
+   * For leaf columns, returns the column itself.
+   */
+  function getLeafColumns(col: ColumnDef): ColumnSpec[] {
+    if (col.isGroup) {
+      return col.columns.flatMap(getLeafColumns);
+    }
+    return [col];
+  }
+
+  /**
+   * Get the effective width of a column for calculations.
+   * Priority: computed width > explicit width > default minimum
+   */
+  function getEffectiveWidth(col: ColumnSpec): number {
+    const computed = widths.get(col.id);
+    if (computed !== undefined) {
+      return computed;
+    }
+    if (typeof col.width === "number") {
+      return col.width;
+    }
+    return AUTO_WIDTH.MIN;
+  }
+
+  /**
+   * Process a column definition recursively (bottom-up).
+   * For groups: process children first, then check if group header needs more width.
+   * For leaves: already measured in phase 1.
+   */
+  function processColumn(col: ColumnDef): void {
+    if (col.isGroup) {
+      // Process children first (bottom-up)
+      for (const child of col.columns) {
+        processColumn(child);
+      }
+
+      // Check if group header needs more width than children provide
+      if (col.header) {
+        // Group header needs: text width + its own padding (different from cell padding)
+        const groupHeaderWidth = estimateTextWidth(col.header, fontSize) + COLUMN_GROUP.PADDING;
+
+        const leafCols = getLeafColumns(col);
+        const childrenTotalWidth = leafCols.reduce((sum, leaf) => sum + getEffectiveWidth(leaf), 0);
+
+        // If group header needs more width, distribute extra to ALL children
+        // (including explicit-width columns - we override to ensure header fits)
+        if (groupHeaderWidth > childrenTotalWidth && leafCols.length > 0) {
+          const extraPerChild = Math.ceil((groupHeaderWidth - childrenTotalWidth) / leafCols.length);
+          for (const leaf of leafCols) {
+            widths.set(leaf.id, getEffectiveWidth(leaf) + extraPerChild);
+          }
+        }
+      }
+    }
+    // Leaf columns are already measured in phase 1
+  }
+
+  // Process all top-level column definitions
+  for (const colDef of columnDefs) {
+    processColumn(colDef);
+  }
 }
 
 /**
@@ -152,11 +249,36 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
     }
   }
 
-  // Also measure group headers (they have their own indentation)
+  // ========================================================================
+  // MEASURE ROW GROUP HEADERS
+  // ========================================================================
+  // Group headers in the label column include multiple elements:
+  // [indent][chevron][gap][label][gap][count][internal-padding]
+  // See GROUP_HEADER constants in rendering-constants.ts
+  // This must match the web view measurement in forestStore.svelte.ts
+  // ========================================================================
   for (const group of groups) {
     if (group.label) {
       const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
-      maxWidth = Math.max(maxWidth, estimateTextWidth(group.label, fontSize) + indentWidth);
+      const labelWidth = estimateTextWidth(group.label, fontSize);
+
+      // Count rows in this group for the "(N)" suffix
+      const rowCount = spec.data.rows.filter(r => r.groupId === group.id).length;
+      const countText = `(${rowCount})`;
+      const countFontSize = fontSize * 0.75; // matches theme.typography.fontSizeSm
+      const countWidth = estimateTextWidth(countText, countFontSize);
+
+      // Total width: all components from GroupHeader.svelte layout
+      // [indent] + [chevron] + [gap] + [label] + [gap] + [count] + [internal padding]
+      const totalWidth = indentWidth
+        + GROUP_HEADER.CHEVRON_WIDTH
+        + GROUP_HEADER.GAP
+        + labelWidth
+        + GROUP_HEADER.GAP
+        + countWidth
+        + GROUP_HEADER.INTERNAL_PADDING;
+
+      maxWidth = Math.max(maxWidth, totalWidth);
     }
   }
 
@@ -991,20 +1113,64 @@ function renderGroupHeader(
   theme: WebTheme
 ): string {
   const lines: string[] = [];
-  const fontSize = parseFontSize(theme.typography.fontSizeBase);
-  const textY = y + rowHeight / 2 + fontSize * TYPOGRAPHY.TEXT_BASELINE_ADJUSTMENT;
-  const indent = depth * SPACING.INDENT_PER_LEVEL;
 
-  // Group header background - uses shared GROUP_HEADER_OPACITY constant
+  // Get level-based styling (depth is 0-indexed, level is 1-indexed)
+  const level = depth + 1;
+  const gh = theme.groupHeaders;
+
+  let fontSize: number;
+  let fontWeight: number;
+  let background: string | null;
+  let borderBottom: boolean;
+
+  if (level === 1) {
+    fontSize = parseFontSize(gh?.level1FontSize ?? theme.typography.fontSizeBase);
+    fontWeight = gh?.level1FontWeight ?? theme.typography.fontWeightBold;
+    background = gh?.level1Background ?? null;
+    borderBottom = gh?.level1BorderBottom ?? true;
+  } else if (level === 2) {
+    fontSize = parseFontSize(gh?.level2FontSize ?? theme.typography.fontSizeBase);
+    fontWeight = gh?.level2FontWeight ?? theme.typography.fontWeightMedium;
+    background = gh?.level2Background ?? null;
+    borderBottom = gh?.level2BorderBottom ?? true;
+  } else {
+    fontSize = parseFontSize(gh?.level3FontSize ?? theme.typography.fontSizeBase);
+    fontWeight = gh?.level3FontWeight ?? theme.typography.fontWeightNormal;
+    background = gh?.level3Background ?? null;
+    borderBottom = gh?.level3BorderBottom ?? false;
+  }
+
+  // Compute background from primary if not explicitly set
+  if (!background) {
+    const primary = theme.colors.primary;
+    const opacity = level === 1 ? 0.15 : level === 2 ? 0.10 : 0.06;
+    // Parse hex and create rgba
+    const hex = primary.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    background = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  const textY = y + rowHeight / 2 + fontSize * TYPOGRAPHY.TEXT_BASELINE_ADJUSTMENT;
+  const indent = depth * (gh?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL);
+
+  // Group header background
   lines.push(`<rect x="${x}" y="${y}"
     width="${totalWidth}" height="${rowHeight}"
-    fill="${theme.colors.primary}" opacity="${GROUP_HEADER_OPACITY}"/>`);
+    fill="${background}"/>`);
 
-  // Group header text (bold)
+  // Border bottom if enabled
+  if (borderBottom) {
+    lines.push(`<line x1="${x}" x2="${x + totalWidth}" y1="${y + rowHeight}" y2="${y + rowHeight}"
+      stroke="${theme.colors.border}" stroke-width="1" opacity="0.5"/>`);
+  }
+
+  // Group header text
   lines.push(`<text x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
     font-family="${theme.typography.fontFamily}"
     font-size="${fontSize}px"
-    font-weight="${theme.typography.fontWeightBold}"
+    font-weight="${fontWeight}"
     fill="${theme.colors.foreground}">${escapeXml(label)}</text>`);
 
   return lines.join("\n");
@@ -1084,15 +1250,17 @@ function renderTableRow(
       fill="${textColor}">${escapeXml(truncatedLabel)}</text>`);
 
     // Badge (if present)
+    // Uses estimateTextWidth() for consistent width calculation with calculateSvgLabelWidth()
     if (row.style?.badge) {
       const badgeText = String(row.style.badge);
       const badgeFontSize = fontSize * 0.8;
       const badgePadding = 4;
+      const badgeGap = 6; // gap between label and badge
       const badgeHeight = badgeFontSize + badgePadding * 2;
-      // Estimate label text width (rough approximation)
-      const labelTextWidth = row.label.length * fontSize * 0.55;
-      const badgeX = currentX + SPACING.TEXT_PADDING + indent + labelTextWidth + 6;
-      const badgeTextWidth = badgeText.length * badgeFontSize * 0.6;
+      // Use estimateTextWidth for accurate positioning (matches width calculation)
+      const labelTextWidth = estimateTextWidth(row.label, fontSize);
+      const badgeX = currentX + SPACING.TEXT_PADDING + indent + labelTextWidth + badgeGap;
+      const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
       const badgeWidth = badgeTextWidth + badgePadding * 2;
       const badgeY = y + (rowHeight - badgeHeight) / 2;
 

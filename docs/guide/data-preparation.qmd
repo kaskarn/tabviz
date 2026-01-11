@@ -10,6 +10,19 @@ library(dplyr)
 
 This guide covers how to structure your data for webforest, handle missing values, and prepare data from common meta-analysis workflows.
 
+::: {.callout-tip}
+## Key Principle: Column Names, Not Values
+webforest uses a **column-mapping pattern**: you specify which columns contain your data, not the values themselves. This makes it easy to use any data frame without renaming columns.
+
+```r
+# Your data can have any column names
+my_data <- data.frame(my_study = ..., my_or = ..., my_lo = ..., my_hi = ...)
+
+# Just map them to the right arguments
+forest_plot(my_data, point = "my_or", lower = "my_lo", upper = "my_hi", label = "my_study")
+```
+:::
+
 ## Required Columns
 
 At minimum, `forest_plot()` needs four column mappings:
@@ -83,6 +96,11 @@ For data rows where an effect couldn't be calculated, `NA` values display the la
 ## Scale Considerations
 
 ### Log Scale
+
+::: {.callout-warning}
+## Log Scale Requires Positive Values
+When using `scale = "log"`, all values in `point`, `lower`, and `upper` must be **positive**. Zero or negative values will cause rendering errors.
+:::
 
 When using `scale = "log"`, all values in `point`, `lower`, and `upper` must be positive:
 

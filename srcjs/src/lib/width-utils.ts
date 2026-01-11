@@ -1,11 +1,43 @@
 /**
  * Width calculation utilities for column auto-sizing.
- * Used by both web (forestStore) and SVG (svg-generator) renderers.
+ *
+ * This module provides shared utilities for calculating column widths in forest plots.
+ * It is used by both the web view (forestStore.svelte.ts) and SVG generator (svg-generator.ts)
+ * to ensure visual consistency between renderers.
+ *
+ * === KEY FUNCTIONS ===
+ *
+ * - estimateTextWidth(): Character-class text width approximation (for SVG/non-browser)
+ * - measureTextWidthCanvas(): Accurate canvas-based measurement (browser only)
+ * - calculateColumnAutoWidth(): Measures a single column's content
+ * - calculateAllAutoWidths(): Measures all auto-width columns
+ * - calculateLabelColumnWidth(): Measures label column including badges and group headers
+ * - flattenColumns(): Utility to get leaf columns from nested groups
+ * - getEffectiveColumnWidth(): Get computed or explicit column width
+ *
+ * === TEXT WIDTH ESTIMATION ===
+ *
+ * The estimateTextWidth() function uses character-class width multipliers:
+ * - Very narrow: superscripts (×0.3)
+ * - Narrow: i, l, 1, punctuation, space (×0.35)
+ * - Math operators: ×, − (×0.5)
+ * - Wide: m, w, M, W, @, % (×0.85)
+ * - Digits: 0-9 (×0.6, tabular width)
+ * - Normal: everything else (×0.55)
+ *
+ * === USAGE ===
+ *
+ * The forestStore uses canvas measurement when available (more accurate),
+ * while the SVG generator uses estimateTextWidth() since it runs in a
+ * DOM-free environment (R's V8 engine).
+ *
+ * See rendering-constants.ts for detailed documentation of the width
+ * calculation algorithm and constants.
  */
 
-import type { ColumnSpec, Row, ColumnOptions } from "../types";
+import type { ColumnSpec, Row, ColumnOptions, Group } from "../types";
 import { getColumnDisplayText } from "./formatters";
-import { AUTO_WIDTH, SPACING } from "./rendering-constants";
+import { AUTO_WIDTH, SPACING, GROUP_HEADER } from "./rendering-constants";
 
 // ============================================================================
 // Text Width Measurement
@@ -152,11 +184,26 @@ export function calculateAllAutoWidths(
 
 /**
  * Calculate the width for the label column based on actual label content.
+ *
+ * This function measures:
+ * 1. Label header text
+ * 2. All row labels (with indentation and badges)
+ * 3. Row group headers (with chevron, gap, count, and internal padding)
+ *
+ * The width calculation accounts for the complete visual layout of:
+ * - Data rows: [indent][label][badge]
+ * - Group headers: [indent][chevron][gap][label][gap][count][internal-padding]
+ *
+ * @param rows - All data rows
+ * @param labelHeader - Header text for the label column
+ * @param options - Font and measurement options
+ * @param groups - Optional array of row groups (for measuring group header width)
  */
 export function calculateLabelColumnWidth(
   rows: Row[],
   labelHeader: string | null | undefined,
-  options: AutoWidthOptions
+  options: AutoWidthOptions,
+  groups: Group[] = []
 ): number {
   const { fontSize, fontFamily, useCanvas = true } = options;
   const fontSizeNum = parseFloat(fontSize) || 14;
@@ -176,13 +223,58 @@ export function calculateLabelColumnWidth(
     maxWidth = Math.max(maxWidth, measureText(labelHeader));
   }
 
-  // Measure all labels (accounting for indentation)
+  // ========================================================================
+  // MEASURE DATA ROW LABELS
+  // ========================================================================
+  // Data row layout: [indent][label][badge]
   for (const row of rows) {
     if (row.label) {
       // Account for potential indentation
       const indent = row.style?.indent ?? 0;
       const indentWidth = indent * SPACING.INDENT_PER_LEVEL;
-      maxWidth = Math.max(maxWidth, measureText(row.label) + indentWidth);
+      let rowWidth = measureText(row.label) + indentWidth;
+
+      // Account for badge width if present
+      if (row.style?.badge) {
+        const badgeText = String(row.style.badge);
+        const badgeFontSize = fontSizeNum * 0.8;
+        const badgePadding = 4;
+        const badgeGap = 6; // gap between label and badge
+        const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
+        const badgeWidth = badgeTextWidth + badgePadding * 2;
+        rowWidth += badgeGap + badgeWidth;
+      }
+
+      maxWidth = Math.max(maxWidth, rowWidth);
+    }
+  }
+
+  // ========================================================================
+  // MEASURE ROW GROUP HEADERS
+  // ========================================================================
+  // Group header layout: [indent][chevron][gap][label][gap][count][internal-padding]
+  // See GROUP_HEADER constants in rendering-constants.ts
+  for (const group of groups) {
+    if (group.label) {
+      const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
+      const labelWidth = measureText(group.label);
+
+      // Count rows in this group for the "(N)" suffix
+      const rowCount = rows.filter(r => r.groupId === group.id).length;
+      const countText = `(${rowCount})`;
+      const countFontSize = fontSizeNum * 0.75; // matches theme.typography.fontSizeSm
+      const countWidth = estimateTextWidth(countText, countFontSize);
+
+      // Total width: all components from GroupHeader.svelte layout
+      const totalWidth = indentWidth
+        + GROUP_HEADER.CHEVRON_WIDTH
+        + GROUP_HEADER.GAP
+        + labelWidth
+        + GROUP_HEADER.GAP
+        + countWidth
+        + GROUP_HEADER.INTERNAL_PADDING;
+
+      maxWidth = Math.max(maxWidth, totalWidth);
     }
   }
 

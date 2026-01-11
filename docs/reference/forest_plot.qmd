@@ -9,6 +9,23 @@ library(webforest)
 
 Create interactive forest plots from data frames or WebSpec objects.
 
+::: {.callout-tip}
+## Two Ways to Create Plots
+
+**Quick path**: Pass a data frame directly with all arguments:
+```r
+forest_plot(data, point = "hr", lower = "lower", upper = "upper", label = "study", ...)
+```
+
+**Flexible path**: Create a WebSpec first, then render:
+```r
+spec <- web_spec(data, point = "hr", ...) |> set_row_style(bold = "is_summary")
+forest_plot(spec, axis_range = c(0.5, 2))
+```
+
+Use the two-step approach when you need to reuse specs, apply conditional styling, or create variants.
+:::
+
 ## Usage
 
 ```r
@@ -32,7 +49,7 @@ forest_plot(
 
 ## Arguments
 
-### Data Arguments (passed to `web_spec()` via `...`)
+### Core Data Arguments (passed to `web_spec()` via `...`)
 
 | Argument | Description |
 |----------|-------------|
@@ -51,6 +68,12 @@ forest_plot(
 | `subtitle` | Plot subtitle |
 | `caption` | Plot caption |
 | `footnote` | Plot footnote |
+| `weight` | Column for marker size weighting (larger values = larger markers) |
+
+::: {.callout-note}
+## Constructor Arguments vs Fluent API
+Every styling argument (like `row_bold`, `marker_color`) has an equivalent fluent method (`set_row_style(bold = ...)`, `set_marker_style(color = ...)`). Both produce identical results. See [Customizing Plots](../guide/fluent-api.qmd) for details.
+:::
 
 ### Row Styling Arguments
 
@@ -58,18 +81,39 @@ forest_plot(
 |----------|-------------|
 | `row_type` | Column for row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
 | `row_bold` | Column for bold styling (logical) |
+| `row_italic` | Column for italic styling (logical) |
 | `row_indent` | Column for indentation level (integer) |
 | `row_color` | Column for text color (hex string) |
+| `row_bg` | Column for background color (hex string) |
 | `row_badge` | Column for badge text |
 
-### Cell Styling Arguments
+::: {.callout-tip}
+## Semantic Styling Shortcuts
+For quick conditional formatting, use these semantic options that automatically use theme colors:
+
+| Argument | Effect |
+|----------|--------|
+| `row_emphasis` | Bold text, darker color (for key results) |
+| `row_muted` | Lighter color, reduced prominence (for secondary data) |
+| `row_accent` | Theme accent color (for highlighted findings) |
+
+These adapt automatically when you switch themes.
+:::
+
+### Marker Styling Arguments
 
 | Argument | Description |
 |----------|-------------|
-| `style_cols` | Column names to apply cell styling to |
-| `style_bold` | Column for cell bold (logical) |
-| `style_color` | Column for cell text color (hex string) |
-| `style_bg` | Column for cell background color (hex string) |
+| `marker_color` | Column for marker fill color (hex string) |
+| `marker_shape` | Column for shapes: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `marker_opacity` | Column for opacity values (0-1) |
+| `marker_size` | Column for size multiplier (1 = default) |
+| `weight` | Column for weight-based sizing (alternative to `marker_size`) |
+
+::: {.callout-note}
+## Weight vs Size
+`weight` is typically used for meta-analysis study weights - larger weights produce larger markers proportionally. `marker_size` is for explicit size control via a multiplier column.
+:::
 
 ### Split Plot Arguments
 
@@ -80,6 +124,8 @@ forest_plot(
 
 ### Visual Override Arguments
 
+These override theme settings for quick adjustments:
+
 | Argument | Description |
 |----------|-------------|
 | `axis_range` | `c(min, max)` to override axis limits |
@@ -87,6 +133,16 @@ forest_plot(
 | `axis_gridlines` | `TRUE`/`FALSE` to show/hide gridlines |
 | `plot_position` | `"left"` or `"right"` |
 | `row_height` | Row height in pixels |
+
+::: {.callout-tip}
+## Equivalence with Theme Modifiers
+Direct arguments are shortcuts for theme modifications:
+```r
+# These are equivalent:
+forest_plot(data, ..., row_height = 32)
+forest_plot(data, ..., theme = web_theme_default() |> set_spacing(row_height = 32))
+```
+:::
 
 ### Layout Arguments
 
@@ -106,6 +162,7 @@ An htmlwidget object that can be:
 - Rendered in R Markdown / Quarto documents
 - Used in Shiny applications
 - Saved to files with `save_plot()`
+- Further modified with `set_*()` functions
 
 ## Examples
 
@@ -156,7 +213,7 @@ forest_plot(data,
 )
 ```
 
-### Row Styling
+### Row Styling with Summary Diamond
 
 ```{r}
 library(dplyr)
@@ -179,9 +236,15 @@ forest_plot(styled,
 )
 ```
 
+::: {.callout-warning}
+## Row Types and NA Values
+Rows with `row_type = "header"` or `"spacer"` should have `NA` for point, lower, and upper. The plot will display them as label-only rows without intervals.
+:::
+
 ## See Also
 
 - [webtable()](webtable.qmd) for table-only widgets
 - [web_spec()](web_spec.qmd) for creating specifications programmatically
 - [Themes](themes.qmd) for customizing appearance
 - [Columns](columns.qmd) for column types
+- [Customizing Plots](../guide/fluent-api.qmd) for the fluent API pattern

@@ -270,8 +270,8 @@ serialize_theme <- function(theme) {
       headerHeight = theme@spacing@header_height,
       sectionGap = theme@spacing@section_gap,
       padding = theme@spacing@padding,
-      cellPaddingX = theme@layout@cell_padding_x,
-      cellPaddingY = theme@layout@cell_padding_y,
+      cellPaddingX = theme@spacing@cell_padding_x,
+      cellPaddingY = theme@spacing@cell_padding_y,
       axisGap = theme@spacing@axis_gap,
       groupPadding = theme@spacing@group_padding
     ),
@@ -307,6 +307,21 @@ serialize_theme <- function(theme) {
       rowBorderStyle = theme@layout@row_border_style,
       containerBorder = theme@layout@container_border,
       containerBorderRadius = theme@layout@container_border_radius
+    ),
+    groupHeaders = list(
+      level1FontSize = theme@group_headers@level1_font_size,
+      level1FontWeight = theme@group_headers@level1_font_weight,
+      level1Background = theme@group_headers@level1_background,
+      level1BorderBottom = theme@group_headers@level1_border_bottom,
+      level2FontSize = theme@group_headers@level2_font_size,
+      level2FontWeight = theme@group_headers@level2_font_weight,
+      level2Background = theme@group_headers@level2_background,
+      level2BorderBottom = theme@group_headers@level2_border_bottom,
+      level3FontSize = theme@group_headers@level3_font_size,
+      level3FontWeight = theme@group_headers@level3_font_weight,
+      level3Background = theme@group_headers@level3_background,
+      level3BorderBottom = theme@group_headers@level3_border_bottom,
+      indentPerLevel = theme@group_headers@indent_per_level
     )
   )
 }

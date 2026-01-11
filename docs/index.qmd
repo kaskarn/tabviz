@@ -70,13 +70,43 @@ forest_plot(
 
 ## Features
 
-- **Modern web rendering** using Svelte 5 and D3.js
-- **Multiple preset themes** (JAMA, Lancet, presentation, dark mode)
-- **Flexible column system** with special renderers (bars, p-values, sparklines)
-- **Hierarchical grouping** with collapsible sections
-- **Interactive features** (hover tooltips, row selection)
-- **Static export** to SVG, PNG, and PDF
-- **Fluent API** for theme customization
+::: {.grid}
+::: {.g-col-6}
+**Visualization**
+
+- 9 preset themes (JAMA, Lancet, Nature, etc.)
+- 16+ column types (bars, p-values, sparklines)
+- Hierarchical grouping with collapsible sections
+- Multiple effects per row (ITT vs Per-Protocol)
+:::
+
+::: {.g-col-6}
+**Interactivity**
+
+- Hover tooltips with custom content
+- Column sorting and resizing
+- Row selection and highlighting
+- Split view navigation for subgroups
+:::
+:::
+
+::: {.grid}
+::: {.g-col-6}
+**Export**
+
+- SVG, PNG, PDF output
+- Publication-quality figures at 300 DPI
+- Consistent rendering between web and export
+:::
+
+::: {.g-col-6}
+**Developer Experience**
+
+- Fluent API with R pipes
+- Declarative column system
+- Type-safe styling with column mapping
+:::
+:::
 
 ## Installation
 

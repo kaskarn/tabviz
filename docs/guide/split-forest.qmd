@@ -10,6 +10,16 @@ library(dplyr)
 
 Split forest plots create **separate plots for each value** of a categorical variable, with an interactive sidebar for navigation. This is ideal for subgroup analyses where you want to compare results across different populations.
 
+::: {.callout-tip}
+## When to Use Split vs Group
+| Feature | Use When |
+|---------|----------|
+| **`split_by`** | Many subgroups (5+), each deserves focused attention |
+| **`group`** | Few subgroups (2-4), want to see all at once |
+
+Split creates a sidebar with one plot per subgroup. Group creates collapsible sections in a single plot.
+:::
+
 ## Basic Split
 
 Use `split_by` to create separate plots for each unique value:

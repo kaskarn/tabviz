@@ -7,6 +7,18 @@ title: "Grouping & Row Styling"
 library(webforest)
 ```
 
+::: {.callout-tip}
+## Two Types of Organization
+webforest provides two complementary ways to organize data:
+
+| Feature | Purpose | Visual |
+|---------|---------|--------|
+| **`group`** | Create collapsible sections from a column | Header rows with chevrons, click to collapse |
+| **`row_type`** | Manual section headers and summaries | "header", "summary", "spacer" row types |
+
+Use `group` for automatic grouping from your data. Use `row_type` for manually structured layouts with subtotals.
+:::
+
 ## Grouping Studies
 
 Use the `group` parameter to organize studies into collapsible groups:

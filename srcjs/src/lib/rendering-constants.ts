@@ -144,14 +144,52 @@ export const RENDERING = {
 /**
  * Column width calculation constants.
  *
- * Width calculation flow:
- * 1. Leaf columns: measure header + all cell content, add PADDING, clamp to MIN/MAX
- * 2. Column groups: measure group header, if wider than children sum, expand children
- * 3. Label column: measure header + all labels (including group headers with chevron/count)
+ * === WIDTH CALCULATION OVERVIEW ===
  *
- * The PADDING value accounts for:
- * - Cell horizontal padding (--wf-cell-padding-x, typically 10px each side = 20px)
- * - Rendering overhead and font measurement imprecision (~8px)
+ * Width calculation is performed by both the web view (forestStore.svelte.ts)
+ * and the SVG generator (svg-generator.ts). Both use the same constants and
+ * follow the same algorithm to ensure visual consistency.
+ *
+ * === CALCULATION FLOW ===
+ *
+ * 1. LEAF COLUMN MEASUREMENT
+ *    For each column with width="auto" or null:
+ *    - Measure header text width
+ *    - Measure all cell content widths (using display text, not raw value)
+ *    - Take maximum width
+ *    - Add PADDING (for cell padding + rendering overhead)
+ *    - Clamp to [MIN, MAX] (or type-specific VISUAL_MIN)
+ *
+ * 2. COLUMN GROUP EXPANSION
+ *    For each column group (columns grouped under a shared header):
+ *    - Measure group header text + COLUMN_GROUP.PADDING
+ *    - Sum widths of all leaf columns under this group
+ *    - If group header is wider than children sum:
+ *      - Distribute extra width evenly to ALL children
+ *      - This may override explicit-width columns to fit the header
+ *
+ * 3. LABEL COLUMN MEASUREMENT
+ *    The label column (study names) has special handling:
+ *    - Measure label header text
+ *    - Measure each row's label + indentation
+ *    - Measure badges (if present): label + gap + badge text + badge padding
+ *    - Measure group headers: indent + chevron + gap + label + gap + count + internal padding
+ *    - Add PADDING, clamp to [MIN, LABEL_MAX]
+ *
+ * === TEXT MEASUREMENT ===
+ *
+ * - Web view: Uses Canvas.measureText() for accurate measurement
+ * - SVG generator: Uses estimateTextWidth() character-class approximation
+ *
+ * The web view performs two measurement passes:
+ * 1. Immediate measurement (may be inaccurate if fonts not loaded)
+ * 2. After document.fonts.ready (accurate with custom fonts)
+ *
+ * === PADDING BREAKDOWN ===
+ *
+ * The PADDING value (28px) accounts for:
+ * - Cell horizontal padding: --wf-cell-padding-x × 2 = 10px × 2 = 20px
+ * - Rendering overhead and font measurement imprecision: ~8px
  */
 export const AUTO_WIDTH = {
   /** Padding added to measured text width (accounts for cell padding + rendering overhead) */

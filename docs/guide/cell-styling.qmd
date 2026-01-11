@@ -10,6 +10,17 @@ library(dplyr)
 
 This guide covers per-cell styling, which allows you to apply different formatting to individual cells based on data values.
 
+::: {.callout-tip}
+## The Styling Hierarchy
+webforest applies styles in order of specificity:
+
+1. **Theme defaults** (base colors, fonts)
+2. **Row styles** (`row_bold`, `row_color`) - apply to entire rows
+3. **Cell styles** (`col_*(bold = ...)`) - override for specific cells
+
+More specific styles override less specific ones. This lets you set row-wide defaults and override individual cells.
+:::
+
 ## Row vs Cell Styling
 
 webforest offers two levels of styling:

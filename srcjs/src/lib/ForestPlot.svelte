@@ -235,6 +235,27 @@
     return 1 + Math.max(0, ...col.columns.map(c => getColumnDepth(c)));
   }
 
+  // Compute group header background color based on nesting level
+  function getGroupBackground(level: number, theme: WebTheme | undefined): string {
+    const gh = theme?.groupHeaders;
+    const primary = theme?.colors?.primary ?? "#0891b2";
+
+    // Get explicit background if set, otherwise compute from primary
+    const opacities = [0.15, 0.10, 0.06]; // Increased for distinctiveness
+    const opacity = opacities[Math.min(level - 1, 2)];
+
+    if (level === 1 && gh?.level1Background) return gh.level1Background;
+    if (level === 2 && gh?.level2Background) return gh.level2Background;
+    if (level >= 3 && gh?.level3Background) return gh.level3Background;
+
+    // Convert hex to rgba
+    const hex = primary.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
   // Calculate maximum header depth (number of header rows needed)
   const headerDepth = $derived(
     Math.max(1, 1 + getMaxGroupDepth([...leftColumnDefs, ...rightColumnDefs]))
@@ -691,6 +712,7 @@
           {@const rowClasses = row ? getRowClasses(row.style, rowDepth, i, hasGroups) : ""}
           {@const isSpacerRow = row?.style?.type === "spacer"}
           {@const gridRow = headerDepth + 1 + i}
+          {@const groupBg = isGroupHeader ? getGroupBackground(rowDepth + 1, theme) : undefined}
 
           <!-- Label cell -->
           <div
@@ -700,6 +722,7 @@
             class:hovered={row && hoveredRowId === row.id}
             class:spacer-row={isSpacerRow}
             style:grid-row={gridRow}
+            style:background-color={groupBg}
             style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
             role={isGroupHeader ? "button" : undefined}
             tabindex={isGroupHeader ? 0 : undefined}
@@ -712,6 +735,7 @@
               <GroupHeader
                 group={displayRow.group}
                 rowCount={displayRow.rowCount}
+                level={displayRow.depth + 1}
                 {theme}
               />
             {:else if row}
@@ -731,6 +755,7 @@
               class:spacer-row={isSpacerRow}
               class:wrap-enabled={column.wrap}
               style:grid-row={gridRow}
+              style:background-color={groupBg}
               style:text-align={column.align}
               onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
               onmouseleave={row ? () => handleRowLeave() : undefined}
@@ -751,6 +776,7 @@
               class:hovered={row && hoveredRowId === row.id}
               class:spacer-row={isSpacerRow}
               style:grid-row={gridRow}
+              style:background-color={groupBg}
               onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
               onmouseleave={row ? () => handleRowLeave() : undefined}
               onclick={row ? () => store.selectRow(row.id) : undefined}
@@ -767,6 +793,7 @@
               class:spacer-row={isSpacerRow}
               class:wrap-enabled={column.wrap}
               style:grid-row={gridRow}
+              style:background-color={groupBg}
               style:text-align={column.align}
               onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
               onmouseleave={row ? () => handleRowLeave() : undefined}
@@ -1271,14 +1298,13 @@
   /* Row hover effect - apply to all cells in a row via CSS sibling selectors */
   /* We handle this via JavaScript by tracking hover state on rows */
 
-  /* Group row styling */
+  /* Group row styling - background is set inline per level */
   .group-row {
-    background: color-mix(in srgb, var(--wf-primary) 5%, var(--wf-bg));
     cursor: pointer;
   }
 
   .group-row:hover {
-    background: color-mix(in srgb, var(--wf-primary) 10%, var(--wf-bg));
+    filter: brightness(0.95);
   }
 
   /* Hovered row styling */

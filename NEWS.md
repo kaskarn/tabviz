@@ -1,3 +1,43 @@
+# webforest 0.1.6
+
+## Bug Fixes
+
+* **SVG group header width**: Group headers in the label column now correctly account for chevron icon (12px), gaps, count text "(N)", and internal padding. Previously, group headers were measured without these elements, causing potential truncation.
+
+* **SVG badge positioning**: Badge rendering now uses `estimateTextWidth()` for accurate positioning instead of crude character-count approximations. This ensures badges align consistently between web and SVG export.
+
+* **Column group expansion**: SVG generator now properly expands child column widths when a column group header is wider than its children (matching web view behavior).
+
+## Improvements
+
+* **Group header backgrounds**: Increased opacity from 8%/5%/3% to 15%/10%/6% for more distinctive visual hierarchy. Backgrounds now span the full row width across all cells.
+
+* **Width calculation documentation**: Added comprehensive comments explaining the width calculation algorithm in `rendering-constants.ts`, `svg-generator.ts`, and `width-utils.ts`.
+
+* **`calculateLabelColumnWidth()` enhancement**: Now accepts optional `groups` parameter to measure group header widths including chevron, gap, label, and count elements.
+
+## Documentation
+
+Major documentation overhaul with improved discoverability and design pattern explanations:
+
+* **Callouts throughout**: Added tip, note, and warning callouts to all guides explaining design patterns, when to use features, and common pitfalls
+
+* **Hidden arguments documented**: Added documentation for `weight`, `row_bg`, `row_emphasis`, `row_muted`, `row_accent` parameters
+
+* **Design pattern explanations**:
+  - Column-mapping pattern (specify column names, not values)
+  - Two-step workflow (web_spec → forest_plot)
+  - Styling hierarchy (theme → row → cell)
+  - Fluent API immutability
+
+* **Improved reference pages**: `forest_plot()` now documents all arguments with organized sections (Core, Row Styling, Marker Styling, Split, Visual Override, Layout)
+
+* **Better cross-references**: Added "See Also" sections linking related documentation
+
+* **Quick start enhancements**: Clear explanation of four required mappings, scale selection guidance, two-step workflow benefits
+
+---
+
 # webforest 0.1.5
 
 ## Breaking Changes

@@ -340,6 +340,22 @@ export interface LayoutConfig {
   containerBorderRadius: number;
 }
 
+export interface GroupHeaderStyles {
+  level1FontSize: string;
+  level1FontWeight: number;
+  level1Background: string | null;
+  level1BorderBottom: boolean;
+  level2FontSize: string;
+  level2FontWeight: number;
+  level2Background: string | null;
+  level2BorderBottom: boolean;
+  level3FontSize: string;
+  level3FontWeight: number;
+  level3Background: string | null;
+  level3BorderBottom: boolean;
+  indentPerLevel: number;
+}
+
 export interface WebTheme {
   name: string;
   colors: ColorPalette;
@@ -348,6 +364,7 @@ export interface WebTheme {
   shapes: Shapes;
   axis: AxisConfig;
   layout: LayoutConfig;
+  groupHeaders: GroupHeaderStyles;
 }
 
 // ============================================================================

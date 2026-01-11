@@ -13,14 +13,14 @@ Theme functions for customizing forest plot appearance.
 
 ### web_theme_default {#web_theme_default}
 
-Clean, modern default theme with subtle colors.
+Clean, modern default theme with subtle cyan accents, system fonts, and rounded corners.
 ```r
 web_theme_default()
 ```
 
 ### web_theme_jama {#web_theme_jama}
 
-JAMA journal style: black & white, compact, sans-serif fonts.
+JAMA journal style: maximum density, pure black & white, Arial font, compact rows (18px). Optimized for print.
 
 ```r
 web_theme_jama()
@@ -28,7 +28,7 @@ web_theme_jama()
 
 ### web_theme_lancet {#web_theme_lancet}
 
-Lancet journal style: navy blue accents, serif fonts.
+Elegant academic theme with Lancet navy blue (#00407A), warm off-white background, gold accents, and serif typography (Georgia). Generous spacing with sharp corners.
 
 ```r
 web_theme_lancet()
@@ -36,7 +36,7 @@ web_theme_lancet()
 
 ### web_theme_modern {#web_theme_modern}
 
-Contemporary UI with subtle colors and modern typography.
+Bold, vibrant design with Inter font, bright blue (#3B82F6) accents, larger elements (36px rows), and prominent rounded corners (12px). Ideal for digital reports and dashboards.
 
 ```r
 web_theme_modern()
@@ -44,7 +44,7 @@ web_theme_modern()
 
 ### web_theme_presentation {#web_theme_presentation}
 
-Large fonts optimized for slides and presentations.
+Oversized theme for slides and posters: extra large fonts (1-1.25rem), thick lines (2.5px), oversized markers (12px), and tall rows (44px). High visibility at distance.
 
 ```r
 web_theme_presentation()
@@ -52,7 +52,7 @@ web_theme_presentation()
 
 ### web_theme_dark {#web_theme_dark}
 
-Dark mode with light text on dark background.
+Catppuccin Mocha-inspired dark mode with comfortable low-contrast colors for extended viewing. Blue accents on dark background, soft rounded corners.
 
 ```r
 web_theme_dark()
@@ -60,7 +60,7 @@ web_theme_dark()
 
 ### web_theme_minimal {#web_theme_minimal}
 
-Minimal black & white styling.
+Academic publication-ready with pure black & white styling, Georgia serif font, sharp corners. Classic, authoritative look for journal submissions.
 
 ```r
 web_theme_minimal()
@@ -68,7 +68,7 @@ web_theme_minimal()
 
 ### web_theme_cochrane {#web_theme_cochrane}
 
-Cochrane Collaboration style: cyan/teal accents, compact layout, Arial font. Commonly used for systematic reviews.
+Cochrane systematic review style: teal accents (#0099CC), Arial font, very compact layout (20px rows). Clean, utilitarian design without decorative elements.
 
 ```r
 web_theme_cochrane()
@@ -76,7 +76,7 @@ web_theme_cochrane()
 
 ### web_theme_nature {#web_theme_nature}
 
-Nature journal family styling: Nature blue (#1976D2) accents, Helvetica Neue font, modern clean aesthetic.
+Nature journal family styling: Nature blue (#1976D2), Helvetica Neue font, tight typography, and precise aesthetic. Balanced between academic rigor and modern readability.
 
 ```r
 web_theme_nature()
@@ -97,6 +97,7 @@ web_theme(
   shapes = NULL,
   axis = NULL,
   layout = NULL,
+  group_headers = NULL,
   base_theme = web_theme_default()
 )
 ```
@@ -110,6 +111,7 @@ web_theme(
 | `shapes` | Named list of shape overrides (see `set_shapes()`) |
 | `axis` | Named list of axis overrides (see `set_axis()`) |
 | `layout` | Named list of layout overrides (see `set_layout()`) |
+| `group_headers` | Named list of group header style overrides (see `set_group_headers()`) |
 | `base_theme` | Base theme to extend (default: `web_theme_default()`) |
 
 **Example**:
@@ -118,6 +120,7 @@ my_theme <- web_theme(
   name = "my_journal",
   colors = list(
     primary = "#1a365d",
+    interval = "#1a365d",
     interval_line = "#2d3748"
   ),
   typography = list(
@@ -133,7 +136,18 @@ my_theme <- web_theme(
 
 ## Theme Modifiers
 
-All modifiers return the modified theme and can be chained with pipes.
+All modifiers return the modified theme and can be chained with pipes. These are equivalent to setting the same parameters directly in `forest_plot()`.
+
+::: {.callout-tip}
+## Equivalence with forest_plot()
+Theme modifier functions and direct `forest_plot()` arguments are equivalent:
+
+```r
+# These produce the same result:
+forest_plot(data, ..., row_height = 32)
+forest_plot(data, ...) |> set_spacing(row_height = 32)
+```
+:::
 
 ### set_theme {#set_theme}
 
@@ -172,6 +186,7 @@ set_colors(
   accent = NULL,
   muted = NULL,
   border = NULL,
+  interval = NULL,
   interval_positive = NULL,
   interval_negative = NULL,
   interval_neutral = NULL,
@@ -181,21 +196,22 @@ set_colors(
 )
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `background` | Background color |
-| `foreground` | Primary text color |
-| `primary` | Primary accent color |
-| `secondary` | Secondary text color |
-| `accent` | Accent color |
-| `muted` | Muted text color |
-| `border` | Border color |
-| `interval_positive` | Color for favorable effects |
-| `interval_negative` | Color for unfavorable effects |
-| `interval_neutral` | Color for neutral effects |
-| `interval_line` | Interval line color |
-| `summary_fill` | Summary diamond fill |
-| `summary_border` | Summary diamond border |
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `background` | `"#ffffff"` | Background color |
+| `foreground` | `"#333333"` | Primary text color |
+| `primary` | `"#0891b2"` | Primary accent color for highlights |
+| `secondary` | `"#64748b"` | Secondary text/UI color |
+| `accent` | `"#8b5cf6"` | Accent color for emphasis |
+| `muted` | `"#94a3b8"` | Muted/disabled text color |
+| `border` | `"#e2e8f0"` | Border color for containers/dividers |
+| `interval` | `"#0891b2"` | Default marker/interval color |
+| `interval_positive` | *(deprecated)* | Color for favorable effects |
+| `interval_negative` | *(deprecated)* | Color for unfavorable effects |
+| `interval_neutral` | `"#64748b"` | Color for neutral effects |
+| `interval_line` | `"#475569"` | Confidence interval line color |
+| `summary_fill` | `"#0891b2"` | Summary diamond fill color |
+| `summary_border` | `"#0e7490"` | Summary diamond border color |
 
 ### set_typography {#set_typography}
 
@@ -215,16 +231,16 @@ set_typography(
 )
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `font_family` | CSS font-family string |
-| `font_size_sm` | Small text (e.g., `"0.75rem"`) |
-| `font_size_base` | Base text (e.g., `"0.875rem"`) |
-| `font_size_lg` | Large text (e.g., `"1rem"`) |
-| `font_weight_normal` | Normal weight (e.g., 400) |
-| `font_weight_medium` | Medium weight (e.g., 500) |
-| `font_weight_bold` | Bold weight (e.g., 600) |
-| `line_height` | Line height multiplier |
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `font_family` | `"system-ui, ..."` | CSS font-family string |
+| `font_size_sm` | `"0.75rem"` | Small text size |
+| `font_size_base` | `"0.875rem"` | Base text size |
+| `font_size_lg` | `"1rem"` | Large text size |
+| `font_weight_normal` | `400` | Normal font weight |
+| `font_weight_medium` | `500` | Medium font weight |
+| `font_weight_bold` | `600` | Bold font weight |
+| `line_height` | `1.5` | Line height multiplier |
 
 ### set_spacing {#set_spacing}
 
@@ -237,19 +253,23 @@ set_spacing(
   header_height = NULL,
   section_gap = NULL,
   padding = NULL,
+  axis_gap = NULL,
+  group_padding = NULL,
   cell_padding_x = NULL,
   cell_padding_y = NULL
 )
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `row_height` | Data row height in pixels |
-| `header_height` | Header row height in pixels |
-| `section_gap` | Gap between sections |
-| `padding` | Container padding |
-| `cell_padding_x` | Horizontal cell padding |
-| `cell_padding_y` | Vertical cell padding |
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `row_height` | `28` | Data row height in pixels |
+| `header_height` | `36` | Header row height in pixels |
+| `section_gap` | `16` | Gap between sections in pixels |
+| `padding` | `12` | Container padding in pixels |
+| `axis_gap` | `12` | Gap between table and x-axis |
+| `group_padding` | `8` | Column group header padding |
+| `cell_padding_x` | `10` | Horizontal cell padding |
+| `cell_padding_y` | `4` | Vertical cell padding |
 
 ### set_shapes {#set_shapes}
 
@@ -267,14 +287,14 @@ set_shapes(
 )
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `point_size` | Point marker radius |
-| `summary_height` | Summary diamond height |
-| `line_width` | Interval line width |
-| `border_radius` | Border radius for containers |
-| `marker_colors` | Vector of colors for multi-effect plots |
-| `marker_shapes` | Vector of shapes for multi-effect plots |
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `point_size` | `6` | Point marker radius in pixels |
+| `summary_height` | `10` | Summary diamond height in pixels |
+| `line_width` | `1.5` | Confidence interval line width |
+| `border_radius` | `2` | Border radius for containers |
+| `marker_colors` | `NULL` | Vector of colors for multi-effect plots |
+| `marker_shapes` | `c("square", ...)` | Vector of shapes for multi-effect plots |
 
 ### set_marker_colors {#set_marker_colors}
 
@@ -316,7 +336,7 @@ web_theme_default() |>
 
 ### set_axis {#set_axis}
 
-Customize axis appearance.
+Customize axis appearance and auto-scaling behavior.
 
 ```r
 set_axis(
@@ -326,18 +346,30 @@ set_axis(
   tick_count = NULL,
   tick_values = NULL,
   gridlines = NULL,
-  gridline_style = NULL
+  gridline_style = NULL,
+  padding = NULL,
+  ci_truncation_threshold = NULL,
+  include_null = NULL,
+  symmetric = NULL,
+  null_tick = NULL,
+  marker_margin = NULL
 )
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `range_min` | Minimum axis value (NULL = auto) |
-| `range_max` | Maximum axis value (NULL = auto) |
-| `tick_count` | Target number of ticks |
-| `tick_values` | Explicit tick positions (numeric vector) |
-| `gridlines` | Show gridlines (TRUE/FALSE) |
-| `gridline_style` | `"solid"`, `"dashed"`, or `"dotted"` |
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `range_min` | `NA` | Minimum axis value (NA = auto) |
+| `range_max` | `NA` | Maximum axis value (NA = auto) |
+| `tick_count` | `NA` | Target number of ticks (NA = auto) |
+| `tick_values` | `NULL` | Explicit tick positions (numeric vector) |
+| `gridlines` | `FALSE` | Show vertical gridlines |
+| `gridline_style` | `"dotted"` | `"solid"`, `"dashed"`, or `"dotted"` |
+| `padding` | `0.10` | Fraction of range to add as padding (0-1) |
+| `ci_truncation_threshold` | `2.0` | Truncate CIs beyond this multiple of estimate range |
+| `include_null` | `TRUE` | Always include null value in axis range |
+| `symmetric` | `NULL` | Make axis symmetric around null (NULL = auto) |
+| `null_tick` | `TRUE` | Always show tick at null value |
+| `marker_margin` | `TRUE` | Add padding at edges to prevent marker clipping |
 
 ### set_layout {#set_layout}
 
@@ -356,15 +388,64 @@ set_layout(
 )
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `plot_position` | `"left"` or `"right"` |
-| `table_width` | Table width (`"auto"` or pixels) |
-| `plot_width` | Plot width (`"auto"` or pixels) |
-| `row_border` | Show row borders (TRUE/FALSE) |
-| `row_border_style` | `"solid"`, `"dashed"`, `"dotted"` |
-| `container_border` | Show container border (TRUE/FALSE) |
-| `container_border_radius` | Container border radius |
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `plot_position` | `"right"` | `"left"` or `"right"` |
+| `table_width` | `"auto"` | Table width (`"auto"` or pixels) |
+| `plot_width` | `"auto"` | Plot width (`"auto"` or pixels) |
+| `row_border` | `TRUE` | Show row borders |
+| `row_border_style` | `"solid"` | `"solid"`, `"dashed"`, `"dotted"` |
+| `container_border` | `TRUE` | Show container border |
+| `container_border_radius` | `8` | Container border radius in pixels |
+
+### set_group_headers {#set_group_headers}
+
+Customize hierarchical styling for nested row groups (h1/h2/h3-style visual hierarchy).
+
+```r
+set_group_headers(
+  theme,
+  level1_font_size = NULL,
+  level1_font_weight = NULL,
+  level1_background = NULL,
+  level1_border_bottom = NULL,
+  level2_font_size = NULL,
+  level2_font_weight = NULL,
+  level2_background = NULL,
+  level2_border_bottom = NULL,
+  level3_font_size = NULL,
+  level3_font_weight = NULL,
+  level3_background = NULL,
+  level3_border_bottom = NULL,
+  indent_per_level = NULL
+)
+```
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `level1_font_size` | `"1rem"` | Font size for top-level groups |
+| `level1_font_weight` | `700` | Font weight for top-level groups |
+| `level1_background` | `NULL` | Background color (NULL = 15% primary opacity) |
+| `level1_border_bottom` | `TRUE` | Show bottom border on level 1 |
+| `level2_font_size` | `"0.9375rem"` | Font size for second-level groups |
+| `level2_font_weight` | `600` | Font weight for second-level groups |
+| `level2_background` | `NULL` | Background color (NULL = 10% primary opacity) |
+| `level2_border_bottom` | `TRUE` | Show bottom border on level 2 |
+| `level3_font_size` | `"0.875rem"` | Font size for third-level groups |
+| `level3_font_weight` | `500` | Font weight for third-level groups |
+| `level3_background` | `NULL` | Background color (NULL = 6% primary opacity) |
+| `level3_border_bottom` | `FALSE` | Show bottom border on level 3+ |
+| `indent_per_level` | `16` | Indentation per nesting level (px) |
+
+**Example**:
+```r
+web_theme_default() |>
+  set_group_headers(
+    level1_font_weight = 800,
+    level1_background = "#f0f9ff",
+    indent_per_level = 24
+  )
+```
 
 ## Examples
 
@@ -386,6 +467,7 @@ web_theme_jama() |>
 publication_theme <- web_theme_minimal() |>
   set_colors(
     foreground = "#1a1a1a",
+    interval = "#333333",
     interval_line = "#333333"
   ) |>
   set_typography(
@@ -394,6 +476,25 @@ publication_theme <- web_theme_minimal() |>
   ) |>
   set_spacing(row_height = 24) |>
   set_axis(gridlines = FALSE)
+```
+
+### Customizing Group Header Hierarchy
+
+```{r}
+#| eval: false
+# Create distinct visual levels for nested groups
+web_theme_default() |>
+  set_group_headers(
+    level1_font_size = "1.1rem",
+    level1_font_weight = 800,
+    level1_background = "#e0f2fe",  # Light blue
+    level2_font_size = "0.95rem",
+    level2_font_weight = 600,
+    level2_background = "#f0f9ff",  # Lighter blue
+    level3_font_size = "0.875rem",
+    level3_font_weight = 500,
+    level3_background = "#fafafa"   # Near white
+  )
 ```
 
 ## See Also

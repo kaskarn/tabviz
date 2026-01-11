@@ -11,12 +11,16 @@ library(webforest)
 
 webforest supports exporting plots to static image formats for publications, presentations, and reports.
 
-**Two ways to export:**
+::: {.callout-tip}
+## Two Ways to Export
 
-1. **From R** - Use `save_plot()` for programmatic export
-2. **From the browser** - Click the download button on interactive plots
+| Method | Best For |
+|--------|----------|
+| **`save_plot()`** | Batch export, scripts, reproducible workflows |
+| **Browser download** | Interactive exploration, quick exports |
 
-Both methods use the same rendering engine, ensuring consistent output.
+Both methods use the same SVG rendering engine, ensuring consistent output.
+:::
 
 ## Using save_plot()
 
@@ -54,6 +58,13 @@ save_plot(p, "output.svg")
 | SVG | `.svg` | Vector graphics, web | None |
 | PNG | `.png` | Raster images, documents | `rsvg` package |
 | PDF | `.pdf` | Print, publications | `rsvg` package |
+
+::: {.callout-note}
+## Choosing a Format
+- **SVG**: Best for web, editable in Illustrator/Inkscape, infinitely scalable
+- **PNG**: Best for documents and slides, set `scale = 2` for retina displays
+- **PDF**: Best for print, preserves vectors, requires `rsvg`
+:::
 
 ### SVG (Scalable Vector Graphics)
 
@@ -127,6 +138,18 @@ brew install librsvg
 ```
 
 ## Publication-Quality Figures
+
+::: {.callout-tip}
+## DPI Calculation
+Most journals require 300 DPI figures. To calculate the right settings:
+
+**Width in pixels = Width in inches × 300 DPI × scale**
+
+For an 8-inch figure at 300 DPI with `scale = 3`:
+- `width = 800` (base canvas width)
+- `scale = 3` (multiplier for PNG output)
+- Result: 800 × 3 = 2400 pixels = 8 inches at 300 DPI
+:::
 
 ### For Journal Submission
 

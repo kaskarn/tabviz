@@ -15,13 +15,24 @@ meta_data <- data.frame(
 )
 ```
 
-## Preset Themes
+webforest includes 9 preset themes designed for different use cases. All themes can be customized using a fluent API.
 
-webforest includes several preset themes designed for different use cases:
+::: {.callout-tip}
+## Theme Design Philosophy
+Each theme is designed with a specific context in mind:
+
+- **Publication themes** (JAMA, Lancet, Nature): Journal-specific styling for submissions
+- **Presentation themes** (modern, presentation, dark): Optimized for screen viewing
+- **Utility themes** (default, minimal, cochrane): Clean and adaptable
+:::
+
+## Preset Themes
 
 ::: {.panel-tabset}
 
 ### Default
+
+Clean, modern default with subtle cyan accents and system fonts.
 
 ```{r}
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
@@ -31,7 +42,7 @@ forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
 
 ### JAMA
 
-Clean, minimal styling for JAMA-style publications.
+JAMA journal style: maximum density, pure black & white, Arial font, compact rows (18px). Optimized for print.
 
 ```{r}
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
@@ -41,7 +52,7 @@ forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
 
 ### Lancet
 
-Serif fonts and blue palette for academic publications.
+Elegant academic theme with Lancet navy blue (#00407A), warm off-white background, gold accents, and serif typography (Georgia).
 
 ```{r}
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
@@ -51,7 +62,7 @@ forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
 
 ### Modern
 
-Contemporary styling with subtle colors.
+Bold, vibrant design with Inter font, bright blue (#3B82F6) accents, larger elements (36px rows), and rounded corners.
 
 ```{r}
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
@@ -61,7 +72,7 @@ forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
 
 ### Presentation
 
-Large fonts and bold colors for slides.
+Oversized theme for slides and posters: extra large fonts (1-1.25rem), thick lines (2.5px), oversized markers (12px), and tall rows (44px).
 
 ```{r}
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
@@ -71,12 +82,42 @@ forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
 
 ### Dark
 
-Dark mode for presentations or dashboards.
+Catppuccin Mocha-inspired dark mode with comfortable low-contrast colors for extended viewing.
 
 ```{r}
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
   label = "study", null_value = 1, scale = "log",
   theme = web_theme_dark())
+```
+
+### Minimal
+
+Academic publication-ready with pure black & white styling and Georgia serif font. Classic, authoritative look.
+
+```{r}
+forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
+  label = "study", null_value = 1, scale = "log",
+  theme = web_theme_minimal())
+```
+
+### Cochrane
+
+Cochrane systematic review style: teal accents (#0099CC), Arial font, very compact layout (20px rows).
+
+```{r}
+forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
+  label = "study", null_value = 1, scale = "log",
+  theme = web_theme_cochrane())
+```
+
+### Nature
+
+Nature journal family styling: Nature blue (#1976D2), Helvetica Neue font, tight typography, and precise aesthetic.
+
+```{r}
+forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
+  label = "study", null_value = 1, scale = "log",
+  theme = web_theme_nature())
 ```
 
 :::
@@ -96,36 +137,60 @@ forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
   theme = custom_theme)
 ```
 
-## Theme Components
+::: {.callout-note}
+## Modifier Pattern
+All `set_*()` functions follow the same pattern:
+1. Take a theme object as the first argument
+2. Accept named parameters for properties to change
+3. Return a modified theme object
+4. Can be chained with pipes
 
-Each theme has several components that can be customized:
+```r
+web_theme_default() |>
+  set_colors(primary = "red") |>
+  set_spacing(row_height = 32) |>
+  set_axis(gridlines = TRUE)
+```
+:::
+
+## Theme Components
 
 ### Colors
 
 ```r
 set_colors(
-  background = "#ffffff",
-  foreground = "#1a1a1a",
-  primary = "#2563eb",
-  secondary = "#64748b",
-  muted = "#94a3b8",
-  border = "#e2e8f0",
+  background = "#ffffff",      # Background color
+  foreground = "#1a1a1a",      # Primary text color
+  primary = "#2563eb",         # Primary accent for highlights
+  secondary = "#64748b",       # Secondary text/UI color
+  accent = "#8b5cf6",          # Accent color for emphasis
+  muted = "#94a3b8",           # Muted/disabled text color
+  border = "#e2e8f0",          # Border color for dividers
   interval = "#2563eb",        # Marker fill color
-  interval_line = "#475569"    # CI line color
+  interval_line = "#475569",   # Confidence interval line color
+  summary_fill = "#2563eb",    # Summary diamond fill
+  summary_border = "#1d4ed8"   # Summary diamond border
 )
 ```
+
+::: {.callout-tip}
+## Semantic Color Usage
+- Use `interval` for the main marker color
+- Use `interval_line` for the CI whisker lines (often slightly darker/muted)
+- For significant vs non-significant, create columns in your data with computed colors and use `marker_color`
+:::
 
 ### Typography
 
 ```r
 set_typography(
-  font_family = "system-ui, sans-serif",
-  font_size_sm = "0.75rem",
-  font_size_base = "0.875rem",
-  font_size_lg = "1rem",
-  font_weight_normal = 400,
-  font_weight_medium = 500,
-  font_weight_bold = 600
+  font_family = "system-ui, sans-serif",  # CSS font-family string
+  font_size_sm = "0.75rem",               # Small text (badges, counts)
+  font_size_base = "0.875rem",            # Default text size
+  font_size_lg = "1rem",                  # Large text (headers)
+  font_weight_normal = 400,               # Normal weight
+  font_weight_medium = 500,               # Medium weight
+  font_weight_bold = 600                  # Bold weight
 )
 ```
 
@@ -133,30 +198,41 @@ set_typography(
 
 ```r
 set_spacing(
-  row_height = 28,
-  header_height = 36,
-  padding = 12,
-  cell_padding_x = 10,
-  cell_padding_y = 4
+  row_height = 28,        # Data row height in pixels
+  header_height = 36,     # Header row height in pixels
+  padding = 12,           # Container padding
+  cell_padding_x = 10,    # Horizontal cell padding
+  cell_padding_y = 4,     # Vertical cell padding
+  axis_gap = 12           # Gap between table and x-axis
 )
 ```
+
+::: {.callout-note}
+## Row Height Guidelines
+| Context | Recommended Height |
+|---------|-------------------|
+| Compact/print | 18-22px |
+| Standard web | 28-32px |
+| Touch/mobile | 36-40px |
+| Presentation | 40-48px |
+:::
 
 ### Shapes
 
 ```r
 set_shapes(
-  point_size = 6,
-  summary_height = 10,
-  line_width = 1.5,
-  border_radius = 4,
-  marker_colors = NULL,   # Vector of colors for multi-effect plots
+  point_size = 6,         # Point marker radius in pixels
+  summary_height = 10,    # Summary diamond height
+  line_width = 1.5,       # Confidence interval line width
+  border_radius = 4,      # Container border radius
+  marker_colors = NULL,   # Default colors for multi-effect plots
   marker_shapes = c("square", "circle", "diamond", "triangle")
 )
 ```
 
 ### Multi-Effect Marker Defaults
 
-For plots with multiple effects, markers cycle through theme-defined colors and shapes:
+For plots with multiple effects per row (e.g., ITT vs Per-Protocol), markers cycle through theme-defined colors and shapes:
 
 ```{r}
 #| eval: false
@@ -174,23 +250,64 @@ Effects without explicit `color` or `shape` in `web_effect()` use these theme de
 
 ```r
 set_axis(
-  range_min = NULL,    # Auto-calculate
-  range_max = NULL,
-  tick_count = 5,
-  tick_values = NULL,  # Custom tick positions
-  gridlines = FALSE,
-  gridline_style = "solid"  # or "dotted", "dashed"
+  range_min = NULL,        # Minimum axis value (NULL = auto)
+  range_max = NULL,        # Maximum axis value (NULL = auto)
+  tick_count = 5,          # Target number of ticks
+  tick_values = NULL,      # Custom tick positions (overrides tick_count)
+  gridlines = FALSE,       # Show vertical gridlines
+  gridline_style = "solid",# "solid", "dashed", or "dotted"
+  symmetric = NULL,        # Force symmetric axis around null (NULL = auto)
+  include_null = TRUE,     # Always include null value in range
+  null_tick = TRUE         # Always show tick at null value
 )
 ```
+
+::: {.callout-tip}
+## When to Use Symmetric Axes
+Use `symmetric = TRUE` when comparing benefit vs harm magnitudes. This makes a HR of 0.5 and 2.0 appear equidistant from 1.0 on log scale.
+:::
 
 ### Layout
 
 ```r
 set_layout(
-  plot_position = "center",  # "left", "center", "right"
-  row_border = TRUE
+  plot_position = "right",    # "left" or "right"
+  row_border = TRUE,          # Show row borders
+  row_border_style = "solid", # "solid", "dashed", "dotted"
+  container_border = TRUE,    # Show container border
+  container_border_radius = 8 # Container corner radius
 )
 ```
+
+### Group Headers
+
+Control the hierarchical styling for nested row groups (h1/h2/h3-style visual hierarchy):
+
+```r
+set_group_headers(
+  level1_font_size = "1rem",
+  level1_font_weight = 700,
+  level1_background = NULL,      # NULL = 15% primary opacity
+  level1_border_bottom = TRUE,
+
+  level2_font_size = "0.9375rem",
+  level2_font_weight = 600,
+  level2_background = NULL,      # NULL = 10% primary opacity
+  level2_border_bottom = TRUE,
+
+  level3_font_size = "0.875rem",
+  level3_font_weight = 500,
+  level3_background = NULL,      # NULL = 6% primary opacity
+  level3_border_bottom = FALSE,
+
+  indent_per_level = 16          # Indentation per nesting level (px)
+)
+```
+
+::: {.callout-note}
+## Automatic Background Colors
+When `levelN_background = NULL`, the theme automatically computes a subtle background from the primary color at reduced opacity. Override with explicit hex colors for full control.
+:::
 
 ## Component Summary
 
@@ -200,6 +317,33 @@ set_layout(
 | Typography | `set_typography()` | font_family, font_size_*, font_weight_* |
 | Spacing | `set_spacing()` | row_height, header_height, padding, cell_padding_x/y |
 | Shapes | `set_shapes()` | point_size, summary_height, line_width, marker_colors, marker_shapes |
-| Axis | `set_axis()` | range_min/max, tick_count, tick_values, gridlines |
-| Layout | `set_layout()` | plot_position, row_border |
+| Axis | `set_axis()` | range_min/max, tick_count, tick_values, gridlines, symmetric |
+| Layout | `set_layout()` | plot_position, row_border, container_border |
+| Group Headers | `set_group_headers()` | level*_font_size, level*_background, indent_per_level |
 | Markers | `set_marker_colors()`, `set_marker_shapes()` | Multi-effect default colors/shapes |
+
+## Creating Custom Themes
+
+For extensive customization, use `web_theme()` to extend a base theme:
+
+```{r}
+#| eval: false
+publication_theme <- web_theme(
+  name = "my_journal",
+  colors = list(
+    primary = "#1a365d",
+    interval = "#1a365d",
+    interval_line = "#2d3748"
+  ),
+  typography = list(
+    font_family = "Georgia, serif",
+    font_size_base = "0.8rem"
+  ),
+  spacing = list(
+    row_height = 22
+  ),
+  base_theme = web_theme_minimal()  # Start from minimal
+)
+```
+
+See [Themes Reference](../reference/themes.qmd) for complete parameter documentation.

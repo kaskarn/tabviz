@@ -9,6 +9,19 @@ library(webforest)
 
 webforest plots are interactive by default. This guide covers tooltips, interaction controls, and layout modes.
 
+::: {.callout-note}
+## Interactive by Default
+All webforest plots include these interactions out of the box:
+- **Hover highlighting** on rows
+- **Click to select** rows
+- **Column sorting** via header clicks
+- **Column resizing** via drag
+- **Group collapsing** via chevron clicks
+- **Download button** on hover (top-right)
+
+No configuration needed - these work automatically.
+:::
+
 ## Hover Tooltips
 
 Tooltips display additional data when hovering over interval markers. They're **opt-in** - you must specify which fields to show.
