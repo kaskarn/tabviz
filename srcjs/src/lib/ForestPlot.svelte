@@ -58,6 +58,9 @@
   const rightColumnDefs = $derived(store.rightColumnDefs);
   const labelHeader = $derived(spec?.data.labelHeader || "Study");
 
+  // Check if title/subtitle area is shown (for border styling)
+  const hasPlotHeader = $derived(!!spec?.labels?.title || !!spec?.labels?.subtitle);
+
   // Check if we have column groups (need two-row header)
   const hasColumnGroups = $derived(
     leftColumnDefs.some(c => c.isGroup) || rightColumnDefs.some(c => c.isGroup)
@@ -635,7 +638,7 @@
       {/snippet}
 
       <!-- CSS Grid layout: label | left cols | plot | right cols -->
-      <div class="webforest-main" style:grid-template-columns={gridTemplateColumns}>
+      <div class="webforest-main" class:has-header={hasPlotHeader} style:grid-template-columns={gridTemplateColumns}>
         <!-- Header cells (supports hierarchical column groups) -->
         <!-- Label header (spans all header rows) -->
         <div
@@ -1164,6 +1167,10 @@
     overflow: auto;
     flex: 1;
     min-height: 0;
+  }
+
+  /* Only show border when title/subtitle area is present */
+  .webforest-main.has-header {
     border-top: 2px solid var(--wf-border);
   }
 
