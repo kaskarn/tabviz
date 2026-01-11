@@ -45,7 +45,8 @@ Typography <- new_class(
     font_weight_normal = new_property(class_numeric, default = 400),
     font_weight_medium = new_property(class_numeric, default = 500),
     font_weight_bold = new_property(class_numeric, default = 600),
-    line_height = new_property(class_numeric, default = 1.5)
+    line_height = new_property(class_numeric, default = 1.5),
+    header_font_scale = new_property(class_numeric, default = 1.05)
   )
 )
 
@@ -595,6 +596,7 @@ set_colors <- function(
 #' @param font_weight_medium Medium font weight (default: 500)
 #' @param font_weight_bold Bold font weight (default: 600)
 #' @param line_height Line height multiplier (default: 1.5)
+#' @param header_font_scale Scale factor for header cell font size relative to base (default: 1.05)
 #'
 #' @return Modified WebTheme object
 #' @export
@@ -610,7 +612,8 @@ set_typography <- function(
     font_weight_normal = NULL,
     font_weight_medium = NULL,
     font_weight_bold = NULL,
-    line_height = NULL
+    line_height = NULL,
+    header_font_scale = NULL
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
   current <- theme@typography
@@ -623,6 +626,7 @@ set_typography <- function(
   if (!is.null(font_weight_medium)) current@font_weight_medium <- font_weight_medium
   if (!is.null(font_weight_bold)) current@font_weight_bold <- font_weight_bold
   if (!is.null(line_height)) current@line_height <- line_height
+  if (!is.null(header_font_scale)) current@header_font_scale <- header_font_scale
 
   theme@typography <- current
   theme

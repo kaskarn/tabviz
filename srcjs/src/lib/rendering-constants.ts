@@ -147,22 +147,22 @@ export const RENDERING = {
  * === WIDTH CALCULATION OVERVIEW ===
  *
  * Width calculation is performed by both the web view (forestStore.svelte.ts)
- * and the SVG generator (svg-generator.ts). Both use the same constants and
- * follow the same algorithm to ensure visual consistency.
+ * and the SVG generator (svg-generator.ts). Both use theme-based padding values
+ * and follow the same algorithm to ensure visual consistency.
  *
  * === CALCULATION FLOW ===
  *
  * 1. LEAF COLUMN MEASUREMENT
  *    For each column with width="auto" or null:
- *    - Measure header text width
+ *    - Measure header text width (using headerFontScale from theme)
  *    - Measure all cell content widths (using display text, not raw value)
  *    - Take maximum width
- *    - Add PADDING (for cell padding + rendering overhead)
+ *    - Add padding: (theme.spacing.cellPaddingX × 2) + RENDERING_BUFFER
  *    - Clamp to [MIN, MAX] (or type-specific VISUAL_MIN)
  *
  * 2. COLUMN GROUP EXPANSION
  *    For each column group (columns grouped under a shared header):
- *    - Measure group header text + COLUMN_GROUP.PADDING
+ *    - Measure group header text + (theme.spacing.groupPadding × 2) + RENDERING_BUFFER
  *    - Sum widths of all leaf columns under this group
  *    - If group header is wider than children sum:
  *      - Distribute extra width evenly to ALL children
@@ -174,7 +174,8 @@ export const RENDERING = {
  *    - Measure each row's label + indentation
  *    - Measure badges (if present): label + gap + badge text + badge padding
  *    - Measure group headers: indent + chevron + gap + label + gap + count + internal padding
- *    - Add PADDING, clamp to [MIN, LABEL_MAX]
+ *    - Add padding: (theme.spacing.cellPaddingX × 2) + RENDERING_BUFFER
+ *    - Clamp to [MIN, LABEL_MAX]
  *
  * === TEXT MEASUREMENT ===
  *
@@ -185,15 +186,18 @@ export const RENDERING = {
  * 1. Immediate measurement (may be inaccurate if fonts not loaded)
  * 2. After document.fonts.ready (accurate with custom fonts)
  *
- * === PADDING BREAKDOWN ===
+ * === PADDING VALUES ===
  *
- * The PADDING value (28px) accounts for:
- * - Cell horizontal padding: --wf-cell-padding-x × 2 = 10px × 2 = 20px
- * - Rendering overhead and font measurement imprecision: ~8px
+ * Padding is now theme-based (not a magic number):
+ * - Cell padding: theme.spacing.cellPaddingX × 2 (default: 10px × 2 = 20px)
+ * - Group header padding: theme.spacing.groupPadding × 2 (default: 8px × 2 = 16px)
+ * - RENDERING_BUFFER: 4px (covers Canvas vs CSS text rendering differences)
+ *
+ * The PADDING constant below is only used for VISUAL_MIN fallback calculations.
  */
 export const AUTO_WIDTH = {
-  /** Padding added to measured text width (accounts for cell padding + rendering overhead) */
-  PADDING: 28,
+  /** Legacy padding constant - only used for VISUAL_MIN defaults. Actual padding comes from theme. */
+  PADDING: 32,
 
   /** Minimum width for auto-sized columns */
   MIN: 60,
@@ -206,11 +210,11 @@ export const AUTO_WIDTH = {
 
   /** Minimum widths for visual column types (element width + cell padding) */
   VISUAL_MIN: {
-    sparkline: 88, // 60px SVG + 28px padding
+    sparkline: 92, // 60px SVG + 32px padding
     bar: 100, // ~60px track + ~32px label + padding
-    stars: 80, // 5 stars at ~12px each + padding
-    range: 80, // visual element + padding
-    badge: 70, // minimum for short badges + pill padding
+    stars: 84, // 5 stars at ~12px each + 32px padding
+    range: 84, // visual element + 32px padding
+    badge: 74, // minimum for short badges + pill padding
   } as Record<string, number>,
 } as const;
 

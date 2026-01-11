@@ -155,7 +155,8 @@ set_typography(
   font_weight_normal = NULL,
   font_weight_medium = NULL,
   font_weight_bold = NULL,
-  line_height = NULL
+  line_height = NULL,
+  header_font_scale = NULL
 )
 ```
 
@@ -169,6 +170,7 @@ set_typography(
 | `font_weight_medium` | `500` | Medium font weight |
 | `font_weight_bold` | `600` | Bold font weight |
 | `line_height` | `1.5` | Line height multiplier |
+| `header_font_scale` | `1.05` | Scale factor for header cell font size relative to base |
 
 ### set_spacing {#set_spacing}
 

@@ -32,7 +32,7 @@ Each theme is designed with a specific context in mind:
 | Component | Function | Key Properties |
 |-----------|----------|----------------|
 | Colors | `set_colors()` | background, foreground, primary, interval, interval_line |
-| Typography | `set_typography()` | font_family, font_size_*, font_weight_* |
+| Typography | `set_typography()` | font_family, font_size_*, font_weight_*, header_font_scale |
 | Spacing | `set_spacing()` | row_height, header_height, padding, container_padding, cell_padding_x/y |
 | Shapes | `set_shapes()` | point_size, summary_height, line_width, marker_colors, marker_shapes |
 | Axis | `set_axis()` | range_min/max, tick_count, tick_values, gridlines, symmetric |
@@ -209,7 +209,8 @@ set_typography(
   font_size_lg = "1rem",                  # Large text (headers)
   font_weight_normal = 400,               # Normal weight
   font_weight_medium = 500,               # Medium weight
-  font_weight_bold = 600                  # Bold weight
+  font_weight_bold = 600,                 # Bold weight
+  header_font_scale = 1.05                # Header cell font scale relative to base
 )
 ```
 

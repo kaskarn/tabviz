@@ -263,7 +263,8 @@ serialize_theme <- function(theme) {
       fontWeightNormal = theme@typography@font_weight_normal,
       fontWeightMedium = theme@typography@font_weight_medium,
       fontWeightBold = theme@typography@font_weight_bold,
-      lineHeight = theme@typography@line_height
+      lineHeight = theme@typography@line_height,
+      headerFontScale = theme@typography@header_font_scale
     ),
     spacing = list(
       rowHeight = theme@spacing@row_height,

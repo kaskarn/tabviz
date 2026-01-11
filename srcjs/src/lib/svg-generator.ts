@@ -74,7 +74,16 @@ function calculateSvgAutoWidths(
 ): Map<string, number> {
   const widths = new Map<string, number>();
   const fontSize = parseFontSize(spec.theme.typography.fontSizeBase);
+  // Header cells use scaled font size (theme.typography.headerFontScale, default 1.05)
+  const headerFontScale = spec.theme.typography.headerFontScale ?? 1.05;
+  const headerFontSize = fontSize * headerFontScale;
   const rows = spec.data.rows;
+
+  // Padding values from theme (not hardcoded magic numbers)
+  const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
+  const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
+  // Small buffer for text estimation imprecision
+  const RENDERING_BUFFER = 4;
 
   // ========================================================================
   // PHASE 1: Measure leaf column content
@@ -87,9 +96,9 @@ function calculateSvgAutoWidths(
 
     let maxWidth = 0;
 
-    // Measure header text
+    // Measure header text with header font size
     if (col.header) {
-      maxWidth = Math.max(maxWidth, estimateTextWidth(col.header, fontSize));
+      maxWidth = Math.max(maxWidth, estimateTextWidth(col.header, headerFontSize));
     }
 
     // Measure all data cell values using proper display text
@@ -103,10 +112,10 @@ function calculateSvgAutoWidths(
       }
     }
 
-    // Apply padding and constraints
+    // Apply padding (from theme) and constraints
     // Use type-specific minimum for visual columns, else default minimum
     const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
-    const computedWidth = Math.ceil(maxWidth + AUTO_WIDTH.PADDING);
+    const computedWidth = Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER);
     widths.set(col.id, Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, computedWidth)));
   }
 
@@ -114,7 +123,8 @@ function calculateSvgAutoWidths(
   // PHASE 2: Check column groups and expand children if needed
   // ========================================================================
   // This matches the web view's doMeasurement() logic in forestStore.svelte.ts
-  expandColumnGroupWidths(spec.columns, widths, fontSize);
+  // Column group headers also use scaled font size (they inherit .header-cell)
+  expandColumnGroupWidths(spec.columns, widths, headerFontSize, groupPadding, RENDERING_BUFFER);
 
   return widths;
 }
@@ -126,11 +136,15 @@ function calculateSvgAutoWidths(
  * @param columnDefs - Top-level column definitions (may include groups)
  * @param widths - Map to store computed widths (modified in place)
  * @param fontSize - Font size in pixels for text measurement
+ * @param groupPadding - Padding for group headers (from theme)
+ * @param renderingBuffer - Small buffer for text estimation imprecision
  */
 function expandColumnGroupWidths(
   columnDefs: ColumnDef[],
   widths: Map<string, number>,
-  fontSize: number
+  fontSize: number,
+  groupPadding: number,
+  renderingBuffer: number
 ): void {
   /**
    * Get all leaf columns under a column definition.
@@ -173,8 +187,8 @@ function expandColumnGroupWidths(
 
       // Check if group header needs more width than children provide
       if (col.header) {
-        // Group header needs: text width + its own padding (different from cell padding)
-        const groupHeaderWidth = estimateTextWidth(col.header, fontSize) + COLUMN_GROUP.PADDING;
+        // Group header needs: text width + its own padding (from theme) + rendering buffer
+        const groupHeaderWidth = estimateTextWidth(col.header, fontSize) + groupPadding + renderingBuffer;
 
         const leafCols = getLeafColumns(col);
         const childrenTotalWidth = leafCols.reduce((sum, leaf) => sum + getEffectiveWidth(leaf), 0);
@@ -203,6 +217,9 @@ function expandColumnGroupWidths(
  */
 function calculateSvgLabelWidth(spec: WebSpec): number {
   const fontSize = parseFontSize(spec.theme.typography.fontSizeBase);
+  // Use theme-based padding (not hardcoded magic numbers)
+  const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
+  const RENDERING_BUFFER = 4;  // Small buffer for text estimation differences
   let maxWidth = 0;
 
   // Build group depth map for calculating row indentation
@@ -282,7 +299,7 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
     }
   }
 
-  const computedWidth = Math.ceil(maxWidth + AUTO_WIDTH.PADDING);
+  const computedWidth = Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER);
   return Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, computedWidth));
 }
 
@@ -999,8 +1016,10 @@ function renderColumnHeaders(
   autoWidths?: Map<string, number>
 ): string {
   const lines: string[] = [];
-  // Use fontSizeBase to match web view (ColumnHeaders.svelte uses --wf-font-size-base)
-  const fontSize = parseFontSize(theme.typography.fontSizeBase);
+  // Header cells use scaled font size (theme.typography.headerFontScale, default 1.05)
+  const baseFontSize = parseFontSize(theme.typography.fontSizeBase);
+  const headerFontScale = theme.typography.headerFontScale ?? 1.05;
+  const fontSize = baseFontSize * headerFontScale;
   const fontWeight = theme.typography.fontWeightMedium;
   const boldWeight = theme.typography.fontWeightBold;
   const hasGroups = hasColumnGroups(columnDefs);

@@ -290,6 +290,7 @@ export interface Typography {
   fontWeightMedium: number;
   fontWeightBold: number;
   lineHeight: number;
+  headerFontScale: number;  // Scale factor for header cell font size (default: 1.05)
 }
 
 export interface Spacing {

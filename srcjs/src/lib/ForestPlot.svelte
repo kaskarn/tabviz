@@ -94,15 +94,20 @@
     if (widthMode !== 'fill' || containerWidth <= 0) {
       return 1;
     }
-    // Use measured width (more accurate - includes padding, borders, gaps)
+    // Use measured width (more accurate - includes borders, gaps)
     // Fall back to calculated width from store if not measured yet
     const contentWidth = scalableNaturalWidth > 0
       ? scalableNaturalWidth
       : naturalContentWidth;
     if (contentWidth <= 0) return 1;
 
+    // Account for container padding: the scaled element (content + padding) must fit
+    // contentRect.width excludes padding, so we add it back for the total scaled width
+    const containerPadding = theme?.spacing?.containerPadding ?? 0;
+    const totalWidth = contentWidth + containerPadding * 2;
+
     // Scale to fit content within container (both up and down)
-    const scale = containerWidth / contentWidth;
+    const scale = containerWidth / totalWidth;
     // Don't scale below 0.6 (text becomes unreadable) or above 2.0 (too stretched)
     return Math.max(0.6, Math.min(2.0, scale));
   });
@@ -530,6 +535,7 @@
       --wf-font-weight-medium: ${theme.typography.fontWeightMedium};
       --wf-font-weight-bold: ${theme.typography.fontWeightBold};
       --wf-line-height: ${theme.typography.lineHeight};
+      --wf-header-font-scale: ${theme.typography.headerFontScale ?? 1.05};
       --wf-row-height: ${theme.spacing.rowHeight}px;
       --wf-header-height: ${theme.spacing.headerHeight}px;
       --wf-header-row-height: ${theme.spacing.headerHeight / headerDepth}px;
@@ -1195,7 +1201,7 @@
   .header-cell {
     min-height: var(--wf-header-row-height);
     font-weight: var(--wf-font-weight-bold, 600);
-    font-size: calc(var(--wf-font-size-base, 0.875rem) * 1.05);
+    font-size: calc(var(--wf-font-size-base, 0.875rem) * var(--wf-header-font-scale, 1.05));
     border-bottom: 1px solid var(--wf-border);
     background: var(--wf-bg);
     position: relative;

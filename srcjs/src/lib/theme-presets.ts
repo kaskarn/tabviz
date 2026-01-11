@@ -43,6 +43,7 @@ const DEFAULT_THEME: WebTheme = {
     fontWeightMedium: 500,
     fontWeightBold: 600,
     lineHeight: 1.5,
+    headerFontScale: 1.05,
   },
   spacing: {
     rowHeight: 28,

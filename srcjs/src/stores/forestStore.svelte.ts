@@ -566,9 +566,31 @@ export function createForestStore() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Font strings for headers (bold) and data cells (normal)
-    const headerFont = `600 ${fontSize} ${fontFamily}`;
+    // Header cells use scaled font size (theme.typography.headerFontScale, default 1.05)
+    // Parse the font size and scale it for headers
+    const headerFontScale = spec.theme.typography.headerFontScale ?? 1.05;
+    let headerFontSize = fontSize;
+    if (typeof fontSize === 'string') {
+      const match = fontSize.match(/^([\d.]+)(px|rem|em)$/);
+      if (match) {
+        const value = parseFloat(match[1]) * headerFontScale;
+        headerFontSize = `${value}${match[2]}`;
+      }
+    }
+
+    // Font strings for headers (bold, scaled size) and data cells (normal)
+    // Use actual theme fontWeightBold (varies by theme: 600 or 700)
+    const fontWeightBold = spec.theme.typography.fontWeightBold ?? 600;
+    const headerFont = `${fontWeightBold} ${headerFontSize} ${fontFamily}`;
     const dataFont = `${fontSize} ${fontFamily}`;
+
+    // Padding values from theme (not hardcoded magic numbers)
+    // cellPaddingX is applied to both left and right of each cell
+    const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
+    // groupPadding is applied to both left and right of column group headers
+    const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
+    // Small buffer for Canvas vs CSS text rendering differences (kerning, sub-pixel rounding)
+    const RENDERING_BUFFER = 4;
 
     // ========================================================================
     // COLUMN WIDTH MEASUREMENT
@@ -646,9 +668,9 @@ export function createForestStore() {
         }
       }
 
-      // Apply padding and constraints
+      // Apply padding (from theme) and constraints
       const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
-      const computedWidth = Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, Math.ceil(maxWidth + AUTO_WIDTH.PADDING)));
+      const computedWidth = Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER)));
       columnWidths[col.id] = computedWidth;
     }
 
@@ -673,8 +695,8 @@ export function createForestStore() {
         // Check if group header needs more width than children provide
         if (col.header) {
           ctx!.font = headerFont;
-          // Group header needs: text width + its own padding (different from cell padding)
-          const groupHeaderWidth = ctx!.measureText(col.header).width + COLUMN_GROUP.PADDING;
+          // Group header needs: text width + its own padding (from theme) + rendering buffer
+          const groupHeaderWidth = ctx!.measureText(col.header).width + groupPadding + RENDERING_BUFFER;
 
           const leafCols = getLeafColumns(col);
           const childrenTotalWidth = leafCols.reduce((sum, leaf) => sum + getEffectiveWidth(leaf), 0);
@@ -804,8 +826,8 @@ export function createForestStore() {
         }
       }
 
-      // Apply padding and constraints (label column has higher max)
-      const computedLabelWidth = Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, Math.ceil(maxLabelWidth + AUTO_WIDTH.PADDING)));
+      // Apply padding (from theme) and constraints (label column has higher max)
+      const computedLabelWidth = Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, Math.ceil(maxLabelWidth + cellPadding + RENDERING_BUFFER)));
       columnWidths["__label__"] = computedLabelWidth;
     }
   }

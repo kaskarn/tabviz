@@ -107,6 +107,7 @@ export interface AutoWidthOptions {
   fontSize: string;      // e.g., "14px"
   fontFamily: string;    // e.g., "Inter, system-ui, sans-serif"
   useCanvas?: boolean;   // Whether to use canvas measurement (browser only)
+  cellPadding?: number;  // Horizontal cell padding (both sides) - defaults to 20 (10px * 2)
 }
 
 /**
@@ -117,7 +118,8 @@ export function calculateColumnAutoWidth(
   rows: Row[],
   options: AutoWidthOptions
 ): number {
-  const { fontSize, fontFamily, useCanvas = true } = options;
+  const { fontSize, fontFamily, useCanvas = true, cellPadding = 20 } = options;
+  const RENDERING_BUFFER = 4;  // Small buffer for text measurement differences
 
   // Parse font size to number (assumes px units)
   const fontSizeNum = parseFloat(fontSize) || 14;
@@ -154,7 +156,7 @@ export function calculateColumnAutoWidth(
   // Apply padding and constraints
   // Use type-specific minimum for visual columns, else default minimum
   const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
-  const computedWidth = Math.ceil(maxWidth + AUTO_WIDTH.PADDING);
+  const computedWidth = Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER);
   return Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, computedWidth));
 }
 
@@ -205,7 +207,8 @@ export function calculateLabelColumnWidth(
   options: AutoWidthOptions,
   groups: Group[] = []
 ): number {
-  const { fontSize, fontFamily, useCanvas = true } = options;
+  const { fontSize, fontFamily, useCanvas = true, cellPadding = 20 } = options;
+  const RENDERING_BUFFER = 4;  // Small buffer for text measurement differences
   const fontSizeNum = parseFloat(fontSize) || 14;
 
   const measureText = (text: string): number => {
@@ -297,7 +300,7 @@ export function calculateLabelColumnWidth(
   }
 
   // Apply padding and constraints (label column has higher max)
-  const computedWidth = Math.ceil(maxWidth + AUTO_WIDTH.PADDING);
+  const computedWidth = Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER);
   return Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, computedWidth));
 }
 
