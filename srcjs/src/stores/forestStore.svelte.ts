@@ -82,10 +82,11 @@ export function createForestStore() {
     const nullValue = spec.data.nullValue;
 
     // Extract axis config with defaults
-    const padding = axisConfig?.padding ?? 0.10;
+    const padding = axisConfig?.padding ?? 0.15;
     const includeNull = axisConfig?.includeNull ?? true;
     const symmetric = axisConfig?.symmetric;  // null = auto
     const markerMargin = axisConfig?.markerMargin ?? true;
+    const ciTruncationThreshold = axisConfig?.ciTruncationThreshold ?? 3.0;
 
     // Check if explicit range is provided in theme
     const hasExplicitMin = axisConfig?.rangeMin != null;
@@ -115,10 +116,32 @@ export function createForestStore() {
           maxEst = Math.max(maxEst, nullValue);
         }
 
-        // Calculate estimate range for padding
+        // Calculate estimate range for CI truncation threshold
         const estimateRange = maxEst - minEst || 1;
+        const truncationLimit = estimateRange * ciTruncationThreshold;
 
-        // Step 3: Add padding as fraction of estimate range
+        // Step 3: Extend range to include CI bounds within truncation threshold
+        // This reduces how often CIs get truncated (shown with arrows)
+        const lowerBounds = rows
+          .map((r) => r.lower)
+          .filter((v): v is number => v != null && !Number.isNaN(v) && Number.isFinite(v));
+        const upperBounds = rows
+          .map((r) => r.upper)
+          .filter((v): v is number => v != null && !Number.isNaN(v) && Number.isFinite(v));
+
+        // Include CI bounds that are within the truncation threshold
+        for (const lb of lowerBounds) {
+          if (minEst - lb <= truncationLimit) {
+            minEst = Math.min(minEst, lb);
+          }
+        }
+        for (const ub of upperBounds) {
+          if (ub - maxEst <= truncationLimit) {
+            maxEst = Math.max(maxEst, ub);
+          }
+        }
+
+        // Step 4: Add padding as fraction of the range
         let domainMin = hasExplicitMin ? axisConfig.rangeMin! : minEst - estimateRange * padding;
         let domainMax = hasExplicitMax ? axisConfig.rangeMax! : maxEst + estimateRange * padding;
 

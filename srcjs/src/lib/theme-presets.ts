@@ -70,7 +70,7 @@ const DEFAULT_THEME: WebTheme = {
     gridlineStyle: "dotted",
     // Auto-scaling parameters
     padding: 0.15,                  // 15% padding on each side
-    ciTruncationThreshold: 2.0,     // Truncate CIs beyond 2× estimate range
+    ciTruncationThreshold: 3.0,     // Include CIs within 3× estimate range before truncating
     includeNull: true,              // Always include null in range
     symmetric: null,                // null = auto (symmetric if effects on both sides)
     nullTick: true,                 // Always show tick at null value
