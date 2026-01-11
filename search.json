@@ -518,39 +518,53 @@
     "text": "# install.packages(\"pak\")\npak::pak(\"kaskarn/webforest\")"
   },
   {
-    "objectID": "guide/quick-start.html#basic-usage",
-    "href": "guide/quick-start.html#basic-usage",
+    "objectID": "guide/quick-start.html#your-first-forest-plot",
+    "href": "guide/quick-start.html#your-first-forest-plot",
     "title": "Quick Start",
-    "section": "Basic Usage",
-    "text": "Basic Usage\nCreate a forest plot with a single function call:\n\n\nCode\n# Sample meta-analysis data\nmeta_data &lt;- data.frame(\n  study = c(\"Smith 2020\", \"Jones 2021\", \"Lee 2022\", \"Chen 2023\", \"Park 2024\"),\n  hr = c(0.72, 0.85, 0.91, 0.68, 0.79),\n  lower = c(0.55, 0.70, 0.75, 0.52, 0.61),\n  upper = c(0.95, 1.03, 1.10, 0.89, 1.02),\n  n = c(245, 180, 320, 156, 210),\n  events = c(42, 38, 55, 28, 45)\n)\n\nforest_plot(meta_data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\",\n  axis_label = \"Hazard Ratio (95% CI)\"\n)\n\n\n\n\n\n\n\n\n\n\n\n\nImportantThe Four Required Mappings\n\n\n\nEvery forest plot needs these four column mappings:\n\n\n\nArgument\nWhat it is\nExample\n\n\n\n\npoint\nPoint estimate\nHazard ratio, odds ratio, mean difference\n\n\nlower\nLower CI bound\n95% CI lower\n\n\nupper\nUpper CI bound\n95% CI upper\n\n\nlabel\nRow label\nStudy name\n\n\n\n\n\n\nCommon Options\n\n\n\n\n\n\n\n\nArgument\nDescription\nDefault\n\n\n\n\nnull_value\nReference line value (e.g., 1 for ratios, 0 for differences)\nNULL\n\n\nscale\n\"linear\" or \"log\"\n\"linear\"\n\n\naxis_label\nX-axis label text\nNULL\n\n\ntheme\nTheme object from web_theme_*()\nweb_theme_default()\n\n\nmarker_color\nColumn for marker fill colors\nNULL\n\n\nmarker_shape\nColumn for shapes: \"square\", \"circle\", \"diamond\", \"triangle\"\nNULL\n\n\n\n\n\n\n\n\n\nTipScale Selection Rule of Thumb\n\n\n\n\nLog scale (scale = \"log\", null_value = 1): For ratios (OR, HR, RR) where effects are multiplicative\nLinear scale (scale = \"linear\", null_value = 0): For differences (MD, RD, SMD) where effects are additive"
+    "section": "Your First Forest Plot",
+    "text": "Your First Forest Plot\nCreate a forest plot with a single function call using forest_plot():\n\n\nCode\n# Sample meta-analysis data\nmeta_data &lt;- data.frame(\n  study = c(\"Smith 2020\", \"Jones 2021\", \"Lee 2022\", \"Chen 2023\", \"Park 2024\"),\n  hr = c(0.72, 0.85, 0.91, 0.68, 0.79),\n  lower = c(0.55, 0.70, 0.75, 0.52, 0.61),\n  upper = c(0.95, 1.03, 1.10, 0.89, 1.02),\n  n = c(245, 180, 320, 156, 210),\n  events = c(42, 38, 55, 28, 45)\n)\n\nforest_plot(meta_data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\",\n  axis_label = \"Hazard Ratio (95% CI)\"\n)\n\n\n\n\n\n\n\n\n\n\n\n\nImportantThe Three Required Mappings\n\n\n\nEvery forest plot needs these three column mappings:\n\n\n\nArgument\nWhat it is\nExample\n\n\n\n\npoint\nPoint estimate\nHazard ratio, odds ratio, mean difference\n\n\nlower\nLower CI bound\n95% CI lower\n\n\nupper\nUpper CI bound\n95% CI upper\n\n\n\nThe label argument is optional but almost always used to identify each row.\n\n\n\nCommon Options\n\n\n\n\n\n\n\n\nArgument\nDescription\nDefault\n\n\n\n\nnull_value\nReference line value (e.g., 1 for ratios, 0 for differences)\nNULL\n\n\nscale\n\"linear\" or \"log\"\n\"linear\"\n\n\naxis_label\nX-axis label text\nNULL\n\n\ntheme\nTheme object from web_theme_*()\nweb_theme_default()\n\n\n\n\n\n\n\n\n\nTipScale Selection Rule of Thumb\n\n\n\n\nLog scale (scale = \"log\", null_value = 1): For ratios (OR, HR, RR) where effects are multiplicative\nLinear scale (scale = \"linear\", null_value = 0): For differences (MD, RD, SMD) where effects are additive"
   },
   {
-    "objectID": "guide/quick-start.html#two-step-workflow",
-    "href": "guide/quick-start.html#two-step-workflow",
+    "objectID": "guide/quick-start.html#adding-data-columns",
+    "href": "guide/quick-start.html#adding-data-columns",
     "title": "Quick Start",
-    "section": "Two-Step Workflow",
-    "text": "Two-Step Workflow\nFor more control, create a WebSpec first, then render it:\n\n\nCode\n# Step 1: Create the spec\nspec &lt;- web_spec(meta_data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\",\n  columns = list(\n    col_numeric(\"n\", header = \"N\", width = 60),\n    col_numeric(\"events\", header = \"Events\", width = 70)\n  )\n)\n\n# Step 2: Render the plot\nforest_plot(spec, axis_label = \"Hazard Ratio\")\n\n\n\n\n\n\n\n\n\n\n\n\nNoteWhen to Use Two-Step Workflow\n\n\n\nThe two-step workflow is useful when you want to:\n\nReuse the same spec with different themes or visual settings\nApply conditional styling using set_*() modifier functions\nExport to multiple formats from the same data structure\nInspect or debug the spec programmatically"
+    "section": "Adding Data Columns",
+    "text": "Adding Data Columns\nDisplay additional data alongside your forest plot using col_*() functions:\n\n\nCode\nforest_plot(meta_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  columns = list(\n    col_n(\"n\"),\n    col_numeric(\"events\", header = \"Events\"),\n    col_interval(\"HR (95% CI)\")\n  ),\n  null_value = 1, scale = \"log\",\n  axis_label = \"Hazard Ratio\"\n)\n\n\n\n\n\n\nSee Columns for all available column types."
   },
   {
-    "objectID": "guide/quick-start.html#adding-styling",
-    "href": "guide/quick-start.html#adding-styling",
+    "objectID": "guide/quick-start.html#styling-your-plot",
+    "href": "guide/quick-start.html#styling-your-plot",
     "title": "Quick Start",
-    "section": "Adding Styling",
-    "text": "Adding Styling\nwebforest offers two equivalent ways to style your plot:\n\nConstructor Arguments (All at Once)\n\n\nCode\nforest_plot(meta_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  row_bold = \"is_summary\",        # Column with TRUE/FALSE\n  marker_color = \"effect_color\",  # Column with hex colors\n  theme = web_theme_jama(),\n  scale = \"log\", null_value = 1\n)\n\n\n\n\nFluent API (Step by Step)\n\n\nCode\nforest_plot(meta_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(bold = \"is_summary\") |&gt;\n  set_marker_style(color = \"effect_color\") |&gt;\n  set_theme(\"jama\")\n\n\nBoth approaches produce identical results. Use constructor arguments when everything is known upfront. Use the fluent API when styling depends on computation or you want to create variants."
+    "section": "Styling Your Plot",
+    "text": "Styling Your Plot\nwebforest offers two equivalent ways to style your plots—both produce identical results.\n\nOption 1: Direct Arguments\nPass styling options directly to forest_plot():\n\n\nCode\nforest_plot(meta_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  row_bold = \"is_summary\",        # Column with TRUE/FALSE\n  marker_color = \"effect_color\",  # Column with hex colors\n  theme = web_theme_jama(),\n  scale = \"log\", null_value = 1\n)\n\n\n\n\nOption 2: Fluent API (Pipe-Based)\nUse set_*() functions for step-by-step styling:\n\n\nCode\nforest_plot(meta_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(bold = \"is_summary\") |&gt;\n  set_marker_style(color = \"effect_color\") |&gt;\n  set_theme(\"jama\")\n\n\nUse constructor arguments when everything is known upfront. Use the fluent API when styling depends on computation or you want to create variants."
   },
   {
-    "objectID": "guide/quick-start.html#quick-theme-preview",
-    "href": "guide/quick-start.html#quick-theme-preview",
+    "objectID": "guide/quick-start.html#applying-themes",
+    "href": "guide/quick-start.html#applying-themes",
     "title": "Quick Start",
-    "section": "Quick Theme Preview",
-    "text": "Quick Theme Preview\n\nCode\nforest_plot(meta_data[1:3, ],\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  null_value = 1, scale = \"log\",\n  theme = web_theme_jama(), title = \"JAMA\")\nforest_plot(meta_data[1:3, ],\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  null_value = 1, scale = \"log\",\n  theme = web_theme_lancet(), title = \"Lancet\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nSee Themes for all 9 preset themes and customization options."
+    "section": "Applying Themes",
+    "text": "Applying Themes\nwebforest includes 9 publication-ready themes:\n\nCode\nforest_plot(meta_data[1:3, ],\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  null_value = 1, scale = \"log\",\n  theme = web_theme_jama(), title = \"JAMA\")\nforest_plot(meta_data[1:3, ],\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  null_value = 1, scale = \"log\",\n  theme = web_theme_lancet(), title = \"Lancet\")\n\n\n\n\n\n\n\n\n\n\n\n\n\nAvailable themes: web_theme_default(), web_theme_jama(), web_theme_lancet(), web_theme_nature(), web_theme_cochrane(), web_theme_modern(), web_theme_presentation(), web_theme_dark(), web_theme_minimal()\nSee Themes for customization options."
+  },
+  {
+    "objectID": "guide/quick-start.html#creating-visual-hierarchy",
+    "href": "guide/quick-start.html#creating-visual-hierarchy",
+    "title": "Quick Start",
+    "section": "Creating Visual Hierarchy",
+    "text": "Creating Visual Hierarchy\nUse row styling to distinguish headers, data rows, and summaries:\n\n\nCode\nstyled_data &lt;- data.frame(\n  label = c(\"Primary Endpoint\", \"  CV Death\", \"  MI\", \"Summary\"),\n  hr = c(NA, 0.82, 0.79, 0.78),\n  lower = c(NA, 0.72, 0.68, 0.65),\n  upper = c(NA, 0.94, 0.92, 0.93),\n  rtype = c(\"header\", \"data\", \"data\", \"summary\"),\n  rbold = c(TRUE, FALSE, FALSE, TRUE)\n)\n\nforest_plot(styled_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"label\",\n  row_type = \"rtype\",\n  row_bold = \"rbold\",\n  columns = list(col_interval(\"HR (95% CI)\")),\n  null_value = 1, scale = \"log\"\n)\n\n\n\n\n\n\n\n\n\n\n\n\nNoteRow Types\n\n\n\n\n\n\nType\nBehavior\n\n\n\n\n\"data\"\nStandard row with interval marker\n\n\n\"header\"\nSection header, no interval displayed\n\n\n\"summary\"\nSummary row with diamond marker\n\n\n\"spacer\"\nEmpty row for visual separation\n\n\n\nHeader and spacer rows should have NA for point, lower, and upper."
+  },
+  {
+    "objectID": "guide/quick-start.html#conditional-marker-styling",
+    "href": "guide/quick-start.html#conditional-marker-styling",
+    "title": "Quick Start",
+    "section": "Conditional Marker Styling",
+    "text": "Conditional Marker Styling\nColor markers based on effect direction using computed columns:\n\n\nCode\ndirection_data &lt;- meta_data |&gt;\n  mutate(\n    marker_color = case_when(\n      upper &lt; 1 ~ \"#16a34a\",  # Green: significant benefit\n      lower &gt; 1 ~ \"#dc2626\",  # Red: significant harm\n      TRUE ~ \"#64748b\"        # Gray: not significant\n    )\n  )\n\nforest_plot(direction_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  marker_color = \"marker_color\",\n  null_value = 1, scale = \"log\"\n)"
   },
   {
     "objectID": "guide/quick-start.html#next-steps",
     "href": "guide/quick-start.html#next-steps",
     "title": "Quick Start",
     "section": "Next Steps",
-    "text": "Next Steps\n\n\n\nTopic\nWhat You’ll Learn\n\n\n\n\nCustomizing Plots\nBuild plots step-by-step with pipes\n\n\nThemes\nPreset themes and customization\n\n\nColumns\nData columns with special formatting\n\n\nGrouping & Rows\nOrganize studies into collapsible groups\n\n\nCell Styling\nConditional formatting for individual cells\n\n\nExporting\nSave plots as SVG, PNG, or PDF"
+    "text": "Next Steps\n\n\n\nTopic\nWhat You’ll Learn\n\n\n\n\nCustomizing Plots\nBuild plots step-by-step with the fluent API\n\n\nThemes\nPreset themes and customization\n\n\nColumns\nData columns with special formatting\n\n\nGrouping & Rows\nOrganize studies into collapsible groups\n\n\nCell Styling\nConditional formatting for individual cells\n\n\nExporting\nSave plots as SVG, PNG, or PDF"
   },
   {
     "objectID": "reference.html",
@@ -693,102 +707,228 @@
     "text": "See Also\n\nforest_plot() for full forest plots\nColumns for column types"
   },
   {
-    "objectID": "reference/forest_plot.html",
-    "href": "reference/forest_plot.html",
-    "title": "forest_plot",
+    "objectID": "reference/styling.html",
+    "href": "reference/styling.html",
+    "title": "Styling Functions",
     "section": "",
-    "text": "Create interactive forest plots from data frames or WebSpec objects."
+    "text": "The styling functions provide a fluent, pipe-friendly interface for customizing forest plot appearance. These functions work on both WebSpec objects and rendered htmlwidgets, allowing you to style plots at any point in your workflow."
   },
   {
-    "objectID": "reference/forest_plot.html#usage",
-    "href": "reference/forest_plot.html#usage",
-    "title": "forest_plot",
-    "section": "Usage",
-    "text": "Usage\nforest_plot(\n  x,\n  ...,\n  split_by = NULL,\n  shared_axis = FALSE,\n  axis_range = NULL,\n  axis_ticks = NULL,\n  axis_gridlines = NULL,\n  plot_position = NULL,\n  row_height = NULL,\n  width_mode = c(\"natural\", \"fill\"),\n  height_preset = c(\"full\", \"small\", \"medium\", \"large\", \"container\"),\n  width = NULL,\n  height = NULL,\n  elementId = NULL\n)"
+    "objectID": "reference/styling.html#the-two-styling-approaches",
+    "href": "reference/styling.html#the-two-styling-approaches",
+    "title": "Styling Functions",
+    "section": "The Two Styling Approaches",
+    "text": "The Two Styling Approaches\nwebforest offers two equivalent ways to style your plots. Both produce identical results—choose the approach that fits your workflow:\n\nDirect Arguments in forest_plot()\nWhen you know all styling upfront, pass it directly to the constructor:\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  row_bold = \"is_summary\",\n  row_type = \"rtype\",\n  marker_color = \"effect_color\",\n  marker_shape = \"shape_col\",\n  scale = \"log\", null_value = 1\n)\n\n\nThis approach is concise and keeps all configuration in one place.\n\n\nFluent API with set_*() Functions\nWhen styling depends on computation, when you’re creating multiple variants, or when you want more explicit control, use the fluent API:\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(bold = \"is_summary\", type = \"rtype\") |&gt;\n  set_marker_style(color = \"effect_color\", shape = \"shape_col\")\n\n\nThe fluent approach shines when you need to:\n\nApply conditional styling based on computed columns\nCreate multiple plot variants from the same base\nBuild reusable styling pipelines\nSeparate data specification from visual presentation\n\n\n\n\n\n\n\nNoteImmutability Guarantee\n\n\n\nEvery set_*() function returns a new modified object, leaving the original unchanged. This makes it safe to create multiple variants from the same base without side effects."
   },
   {
-    "objectID": "reference/forest_plot.html#arguments",
-    "href": "reference/forest_plot.html#arguments",
-    "title": "forest_plot",
-    "section": "Arguments",
-    "text": "Arguments\n\nCore Data Arguments (passed to web_spec() via ...)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA data frame or WebSpec object\n\n\npoint\nColumn name for point estimates\n\n\nlower\nColumn name for lower confidence bounds\n\n\nupper\nColumn name for upper confidence bounds\n\n\nlabel\nColumn name for row labels\n\n\ngroup\nColumn name(s) for hierarchical grouping\n\n\ncolumns\nList of column specifications\n\n\nscale\n\"linear\" or \"log\"\n\n\nnull_value\nReference value (e.g., 1 for ratios, 0 for differences)\n\n\naxis_label\nX-axis label\n\n\ntheme\nTheme object (default: web_theme_default())\n\n\ntitle\nPlot title\n\n\nsubtitle\nPlot subtitle\n\n\ncaption\nPlot caption\n\n\nfootnote\nPlot footnote\n\n\nweight\nColumn for marker size weighting (larger values = larger markers)\n\n\n\n\n\n\n\n\n\nNoteConstructor Arguments vs Fluent API\n\n\n\nEvery styling argument (like row_bold, marker_color) has an equivalent fluent method (set_row_style(bold = ...), set_marker_style(color = ...)). Both produce identical results. See Customizing Plots for details.\n\n\n\n\nRow Styling Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nrow_type\nColumn for row type: \"header\", \"data\", \"summary\", \"spacer\"\n\n\nrow_bold\nColumn for bold styling (logical)\n\n\nrow_italic\nColumn for italic styling (logical)\n\n\nrow_indent\nColumn for indentation level (integer)\n\n\nrow_color\nColumn for text color (hex string)\n\n\nrow_bg\nColumn for background color (hex string)\n\n\nrow_badge\nColumn for badge text\n\n\n\n\n\n\n\n\n\nTipSemantic Styling Shortcuts\n\n\n\nFor quick conditional formatting, use these semantic options that automatically use theme colors:\n\n\n\nArgument\nEffect\n\n\n\n\nrow_emphasis\nBold text, darker color (for key results)\n\n\nrow_muted\nLighter color, reduced prominence (for secondary data)\n\n\nrow_accent\nTheme accent color (for highlighted findings)\n\n\n\nThese adapt automatically when you switch themes.\n\n\n\n\nMarker Styling Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nmarker_color\nColumn for marker fill color (hex string)\n\n\nmarker_shape\nColumn for shapes: \"square\", \"circle\", \"diamond\", \"triangle\"\n\n\nmarker_opacity\nColumn for opacity values (0-1)\n\n\nmarker_size\nColumn for size multiplier (1 = default)\n\n\nweight\nColumn for weight-based sizing (alternative to marker_size)\n\n\n\n\n\n\n\n\n\nNoteWeight vs Size\n\n\n\nweight is typically used for meta-analysis study weights - larger weights produce larger markers proportionally. marker_size is for explicit size control via a multiplier column.\n\n\n\n\nSplit Plot Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nsplit_by\nColumn name(s) to split data into separate plots with sidebar navigation\n\n\nshared_axis\nWhen split_by is used, TRUE to use the same axis range across all plots\n\n\n\n\n\nVisual Override Arguments\nThese override theme settings for quick adjustments:\n\n\n\nArgument\nDescription\n\n\n\n\naxis_range\nc(min, max) to override axis limits\n\n\naxis_ticks\nNumeric vector of explicit tick positions\n\n\naxis_gridlines\nTRUE/FALSE to show/hide gridlines\n\n\nplot_position\n\"left\" or \"right\"\n\n\nrow_height\nRow height in pixels\n\n\n\n\n\n\n\n\n\nTipEquivalence with Theme Modifiers\n\n\n\nDirect arguments are shortcuts for theme modifications:\n# These are equivalent:\nforest_plot(data, ..., row_height = 32)\nforest_plot(data, ..., theme = web_theme_default() |&gt; set_spacing(row_height = 32))\n\n\n\n\nLayout Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nwidth_mode\n\"natural\" (centered at natural width) or \"fill\" (scale to fill container)\n\n\nheight_preset\n\"full\" (natural height), \"small\" (300px), \"medium\" (500px), \"large\" (900px), or \"container\" (fill parent)\n\n\nwidth\nWidget width\n\n\nheight\nWidget height\n\n\nelementId\nHTML element ID"
+    "objectID": "reference/styling.html#row-styling",
+    "href": "reference/styling.html#row-styling",
+    "title": "Styling Functions",
+    "section": "Row Styling",
+    "text": "Row Styling\n\nset_row_style()\nApplies visual styling to entire rows based on column values. This is your primary tool for creating visual hierarchy in forest plots—distinguishing headers from data rows, highlighting summaries, and showing nested structure through indentation.\nset_row_style(\n  x,\n  type = NULL,\n\n  bold = NULL,\n  italic = NULL,\n  color = NULL,\n  bg = NULL,\n  badge = NULL,\n  icon = NULL,\n  indent = NULL,\n  emphasis = NULL,\n  muted = NULL,\n  accent = NULL\n)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA forest_plot() widget, WebSpec, or data frame\n\n\ntype\nColumn name containing row type: \"header\", \"data\", \"summary\", \"spacer\"\n\n\nbold\nColumn name containing TRUE/FALSE for bold text\n\n\nitalic\nColumn name containing TRUE/FALSE for italic text\n\n\ncolor\nColumn name containing CSS color strings (e.g., \"#1a365d\")\n\n\nbg\nColumn name containing background color strings\n\n\nbadge\nColumn name containing badge text to display\n\n\nicon\nColumn name containing emoji or unicode icons\n\n\nindent\nColumn name containing indentation levels (0, 1, 2, …)\n\n\nemphasis\nColumn name for emphasis styling (bold + theme primary color)\n\n\nmuted\nColumn name for muted styling (lighter, reduced prominence)\n\n\naccent\nColumn name for accent styling (theme accent color)\n\n\n\nReturns: Modified widget or WebSpec (same type as input)\n\nRow Types\nThe type parameter controls fundamental row behavior:\n\n\n\nType\nBehavior\n\n\n\n\n\"data\"\nStandard data row with interval marker\n\n\n\"header\"\nSection header, no interval displayed\n\n\n\"summary\"\nSummary row with diamond marker (for pooled estimates)\n\n\n\"spacer\"\nEmpty row for visual separation\n\n\n\n\n\n\n\n\n\nImportantNA Values for Non-Data Rows\n\n\n\nRows with type = \"header\" or \"spacer\" should have NA for point, lower, and upper. The plot displays them as label-only rows without interval markers.\n\n\n\n\nSemantic Styling Shortcuts\nThe emphasis, muted, and accent parameters provide theme-aware styling that adapts automatically when you change themes:\n\n\nCode\ndata |&gt;\n  mutate(\n    is_key = pval &lt; 0.001,\n    is_secondary = !is_primary_endpoint\n  ) |&gt;\n  forest_plot(point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\") |&gt;\n  set_row_style(emphasis = \"is_key\", muted = \"is_secondary\")\n\n\n\n\nComplete Example\n\n\nCode\nstyled_data &lt;- data.frame(\n  label = c(\"Primary Endpoint\", \"  CV Death\", \"  MI\", \"  Stroke\",\n            \"Secondary Endpoints\", \"  HF Hospitalization\", \"Summary\"),\n  hr = c(NA, 0.82, 0.79, 0.88, NA, 0.73, 0.80),\n  lower = c(NA, 0.72, 0.68, 0.74, NA, 0.61, 0.72),\n  upper = c(NA, 0.94, 0.92, 1.05, NA, 0.87, 0.89),\n  rtype = c(\"header\", \"data\", \"data\", \"data\", \"header\", \"data\", \"summary\"),\n  rbold = c(TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE),\n  rindent = c(0, 1, 1, 1, 0, 1, 0)\n)\n\nforest_plot(styled_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"label\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(type = \"rtype\", bold = \"rbold\", indent = \"rindent\")"
   },
   {
-    "objectID": "reference/forest_plot.html#value",
-    "href": "reference/forest_plot.html#value",
-    "title": "forest_plot",
-    "section": "Value",
-    "text": "Value\nAn htmlwidget object that can be:\n\nDisplayed in RStudio Viewer\nRendered in R Markdown / Quarto documents\nUsed in Shiny applications\nSaved to files with save_plot()\nFurther modified with set_*() functions"
+    "objectID": "reference/styling.html#marker-styling",
+    "href": "reference/styling.html#marker-styling",
+    "title": "Styling Functions",
+    "section": "Marker Styling",
+    "text": "Marker Styling\n\nset_marker_style()\nControls the appearance of interval markers (the points and lines that represent effect estimates and confidence intervals). Use this to encode additional dimensions of your data through color, shape, opacity, or size.\nset_marker_style(\n  x,\n  color = NULL,\n  shape = NULL,\n  opacity = NULL,\n  size = NULL\n)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA forest_plot() widget, WebSpec, or data frame\n\n\ncolor\nColumn name containing CSS color strings for marker fill\n\n\nshape\nColumn name containing shape values: \"square\", \"circle\", \"diamond\", \"triangle\"\n\n\nopacity\nColumn name containing opacity values from 0 (transparent) to 1 (opaque)\n\n\nsize\nColumn name containing size multipliers (1 = default size, 2 = double, 0.5 = half)\n\n\n\nReturns: Modified widget or WebSpec (same type as input)\n\nShape Reference\n\n\n\nShape\nBest For\n\n\n\n\n\"square\"\nDefault, works for most data\n\n\n\"circle\"\nDistinguishing study designs or subgroups\n\n\n\"diamond\"\nSummary estimates, pooled results\n\n\n\"triangle\"\nDirectional indicators, special categories\n\n\n\n\n\nEncoding Effect Direction with Color\nA common pattern is using color to indicate whether results favor treatment or control:\n\n\nCode\ndirection_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Trial D\"),\n  hr = c(0.72, 0.95, 0.68, 1.15),\n  lower = c(0.55, 0.78, 0.52, 0.90),\n  upper = c(0.94, 1.15, 0.89, 1.47)\n) |&gt;\n  mutate(\n    marker_color = case_when(\n      upper &lt; 1 ~ \"#16a34a\",  # Green: significant benefit\n      lower &gt; 1 ~ \"#dc2626\",  # Red: significant harm\n      TRUE ~ \"#64748b\"        # Gray: not significant\n    )\n  )\n\nforest_plot(direction_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_marker_style(color = \"marker_color\")\n\n\n\n\n\n\n\n\nEncoding Study Quality with Shape and Opacity\n\n\nCode\nquality_data &lt;- data |&gt;\n  mutate(\n    marker_shape = ifelse(design == \"RCT\", \"circle\", \"square\"),\n    marker_opacity = case_when(\n      quality == \"high\" ~ 1.0,\n      quality == \"medium\" ~ 0.7,\n      quality == \"low\" ~ 0.4\n    )\n  )\n\nforest_plot(quality_data, ...) |&gt;\n  set_marker_style(shape = \"marker_shape\", opacity = \"marker_opacity\")"
   },
   {
-    "objectID": "reference/forest_plot.html#examples",
-    "href": "reference/forest_plot.html#examples",
-    "title": "forest_plot",
-    "section": "Examples",
-    "text": "Examples\n\nBasic Usage\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Study A\", \"Study B\", \"Study C\"),\n  hr = c(0.72, 0.85, 0.91),\n  lower = c(0.55, 0.70, 0.75),\n  upper = c(0.95, 1.03, 1.10)\n)\n\nforest_plot(data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\"\n)\n\n\n\n\n\n\n\n\nWith Columns and Theme\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\"),\n  hr = c(0.72, 0.85, 0.68),\n  lower = c(0.55, 0.70, 0.52),\n  upper = c(0.95, 1.03, 0.89),\n  n = c(245, 180, 320),\n  events = c(\"89/245\", \"62/180\", \"98/320\")\n)\n\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"study\",\n  columns = list(\n    col_numeric(\"n\", \"N\"),\n    col_text(\"events\", \"Events\"),\n    col_interval(\"HR (95% CI)\")\n  ),\n  null_value = 1,\n  scale = \"log\",\n  theme = web_theme_lancet(),\n  title = \"Treatment Effect by Trial\"\n)\n\n\n\n\n\n\n\n\nRow Styling with Summary Diamond\n\n\nCode\nlibrary(dplyr)\n\nstyled &lt;- tibble(\n  label = c(\"Primary Endpoint\", \"  Outcome A\", \"  Outcome B\", \"Summary\"),\n  hr = c(NA, 0.72, 0.85, 0.78),\n  lower = c(NA, 0.55, 0.70, 0.65),\n  upper = c(NA, 0.95, 1.03, 0.93),\n  rtype = c(\"header\", \"data\", \"data\", \"summary\"),\n  rbold = c(TRUE, FALSE, FALSE, TRUE)\n)\n\nforest_plot(styled,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"label\",\n  row_type = \"rtype\",\n  row_bold = \"rbold\",\n  null_value = 1, scale = \"log\"\n)\n\n\n\n\n\n\n\n\n\n\n\n\nWarningRow Types and NA Values\n\n\n\nRows with row_type = \"header\" or \"spacer\" should have NA for point, lower, and upper. The plot will display them as label-only rows without intervals."
+    "objectID": "reference/styling.html#column-styling",
+    "href": "reference/styling.html#column-styling",
+    "title": "Styling Functions",
+    "section": "Column Styling",
+    "text": "Column Styling\n\nset_column_style()\nApplies per-cell styling to a specific column. While set_row_style() affects entire rows uniformly, set_column_style() lets you highlight individual cells based on their values.\nset_column_style(\n  x,\n  column,\n  bold = NULL,\n  italic = NULL,\n  color = NULL,\n  bg = NULL,\n  badge = NULL,\n  icon = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA WebSpec object (not applicable to rendered widgets)\n\n\ncolumn\nField name of the column to style\n\n\nbold\nColumn name for bold text (TRUE/FALSE)\n\n\nitalic\nColumn name for italic text (TRUE/FALSE)\n\n\ncolor\nColumn name for text color (CSS color string)\n\n\nbg\nColumn name for background color\n\n\nbadge\nColumn name for badge text overlay\n\n\nicon\nColumn name for icon (emoji/unicode)\n\n\n\nReturns: Modified WebSpec\n\n\n\n\n\n\nWarningWebSpec Only\n\n\n\nset_column_style() only works on WebSpec objects, not on rendered widgets. Apply column styling before calling forest_plot().\n\n\n\nStyling Priority\nWhen both row and column styles target the same cell:\n\nColumn styles take precedence for that specific cell\nRow styles apply to cells without column-specific overrides\n\nThis lets you set row-wide defaults while adding column-specific highlights.\n\n\nHighlighting Significant P-values\n\n\nCode\ndata &lt;- data |&gt;\n  mutate(\n    pval_bold = pval &lt; 0.05,\n    pval_color = ifelse(pval &lt; 0.05, \"#16a34a\", \"#64748b\")\n  )\n\nweb_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  columns = list(col_pvalue(\"pval\"))\n) |&gt;\n  set_column_style(\"pval\", bold = \"pval_bold\", color = \"pval_color\") |&gt;\n  forest_plot()"
   },
   {
-    "objectID": "reference/forest_plot.html#see-also",
-    "href": "reference/forest_plot.html#see-also",
-    "title": "forest_plot",
+    "objectID": "reference/styling.html#theme-application",
+    "href": "reference/styling.html#theme-application",
+    "title": "Styling Functions",
+    "section": "Theme Application",
+    "text": "Theme Application\n\nset_theme()\nApplies a complete theme to change the visual appearance of your plot. Accepts either a theme name string or a WebTheme object.\nset_theme(x, theme)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA forest_plot() widget or WebSpec\n\n\ntheme\nTheme name (\"default\", \"jama\", \"lancet\", etc.) or WebTheme object\n\n\n\nAvailable theme names: \"default\", \"minimal\", \"dark\", \"jama\", \"lancet\", \"modern\", \"presentation\", \"cochrane\", \"nature\"\n\n\nCode\n# Apply by name\nforest_plot(data, ...) |&gt; set_theme(\"jama\")\n\n# Apply theme object\nforest_plot(data, ...) |&gt; set_theme(web_theme_lancet())\n\n# Apply customized theme\ncustom &lt;- web_theme_minimal() |&gt;\n  set_colors(primary = \"#1a365d\") |&gt;\n  set_spacing(row_height = 24)\n\nforest_plot(data, ...) |&gt; set_theme(custom)"
+  },
+  {
+    "objectID": "reference/styling.html#building-styling-pipelines",
+    "href": "reference/styling.html#building-styling-pipelines",
+    "title": "Styling Functions",
+    "section": "Building Styling Pipelines",
+    "text": "Building Styling Pipelines\n\nCreating Variants\nA powerful pattern is creating multiple plot versions from a common base:\n\n\nCode\n# Prepare data with styling columns\nstyled &lt;- data |&gt;\n  mutate(\n    sig_color = ifelse(pval &lt; 0.05, \"#16a34a\", \"#64748b\"),\n    design_shape = ifelse(is_rct, \"circle\", \"square\"),\n    is_sig = pval &lt; 0.05\n  )\n\n# Base plot\nbase &lt;- forest_plot(styled,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n)\n\n# Variant 1: Color by significance\nplot_sig &lt;- base |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  set_row_style(bold = \"is_sig\")\n\n# Variant 2: Shape by design\nplot_design &lt;- base |&gt;\n  set_marker_style(shape = \"design_shape\")\n\n# Variant 3: Different theme\nplot_lancet &lt;- base |&gt;\n  set_theme(\"lancet\")\n\n\n\n\nReusable Styling Functions\nCreate functions that encapsulate your organization’s styling standards:\n\n\nCode\n# Define standard styling pipeline\napply_clinical_style &lt;- function(plot) {\n  plot |&gt;\n    set_marker_style(color = \"direction_color\") |&gt;\n    set_row_style(bold = \"is_significant\", type = \"row_type\") |&gt;\n    set_theme(\"jama\")\n}\n\n# Apply consistently across analyses\nforest_plot(trial_a, ...) |&gt; apply_clinical_style()\nforest_plot(trial_b, ...) |&gt; apply_clinical_style()\nforest_plot(pooled, ...) |&gt; apply_clinical_style()"
+  },
+  {
+    "objectID": "reference/styling.html#quick-reference",
+    "href": "reference/styling.html#quick-reference",
+    "title": "Styling Functions",
+    "section": "Quick Reference",
+    "text": "Quick Reference\n\n\n\n\n\n\n\n\nFunction\nWorks On\nPurpose\n\n\n\n\nset_row_style()\nWidget, WebSpec\nRow-level text styling, types, indentation\n\n\nset_marker_style()\nWidget, WebSpec\nInterval marker color, shape, opacity, size\n\n\nset_column_style()\nWebSpec only\nPer-cell styling for specific columns\n\n\nset_theme()\nWidget, WebSpec\nApply complete theme\n\n\n\n\nEquivalent forest_plot() Arguments\nEvery styling function has equivalent direct arguments in forest_plot():\n\n\n\nset_*() Parameter\nforest_plot() Argument\n\n\n\n\nset_row_style(bold = \"col\")\nrow_bold = \"col\"\n\n\nset_row_style(type = \"col\")\nrow_type = \"col\"\n\n\nset_row_style(indent = \"col\")\nrow_indent = \"col\"\n\n\nset_marker_style(color = \"col\")\nmarker_color = \"col\"\n\n\nset_marker_style(shape = \"col\")\nmarker_shape = \"col\"\n\n\nset_marker_style(size = \"col\")\nmarker_size = \"col\""
+  },
+  {
+    "objectID": "reference/styling.html#see-also",
+    "href": "reference/styling.html#see-also",
+    "title": "Styling Functions",
     "section": "See Also",
-    "text": "See Also\n\nwebtable() for table-only widgets\nweb_spec() for creating specifications programmatically\nThemes for customizing appearance\nColumns for column types\nCustomizing Plots for the fluent API pattern"
+    "text": "See Also\n\nforest_plot() for core plot creation\nThemes for theme customization\nCustomizing Plots Guide for workflow patterns"
   },
   {
-    "objectID": "reference/index.html",
-    "href": "reference/index.html",
-    "title": "Function Reference",
+    "objectID": "reference/save_plot.html",
+    "href": "reference/save_plot.html",
+    "title": "save_plot",
     "section": "",
-    "text": "Complete reference for all webforest functions, organized by category."
+    "text": "Export a forest plot, webtable, or split forest to static file formats."
   },
   {
-    "objectID": "reference/index.html#core-functions",
-    "href": "reference/index.html#core-functions",
-    "title": "Function Reference",
-    "section": "Core Functions",
-    "text": "Core Functions\n\n\n\nFunction\nDescription\n\n\n\n\nforest_plot()\nCreate interactive forest plots\n\n\nwebtable()\nCreate table-only widgets\n\n\nsplit_forest()\nCreate split forest with sidebar\n\n\nsave_plot()\nExport to SVG, PNG, or PDF\n\n\nsave_split_forest()\nExport split forest to directory"
+    "objectID": "reference/save_plot.html#usage",
+    "href": "reference/save_plot.html#usage",
+    "title": "save_plot",
+    "section": "Usage",
+    "text": "Usage\nsave_plot(\n  x,\n  file,\n  width = 800,\n  height = NULL,\n  scale = 2\n)"
   },
   {
-    "objectID": "reference/index.html#themes",
-    "href": "reference/index.html#themes",
-    "title": "Function Reference",
-    "section": "Themes",
-    "text": "Themes\n\n\n\nFunction\nDescription\n\n\n\n\nweb_theme_default()\nClean, modern default theme\n\n\nweb_theme_jama()\nJAMA journal style\n\n\nweb_theme_lancet()\nLancet journal style\n\n\nweb_theme_nature()\nNature journal style\n\n\nweb_theme_cochrane()\nCochrane Collaboration style\n\n\nweb_theme_modern()\nContemporary UI\n\n\nweb_theme_presentation()\nLarge fonts for slides\n\n\nweb_theme_dark()\nDark mode\n\n\nweb_theme_minimal()\nMinimal B&W\n\n\n\n\nCustom Theme Creation\n\n\n\nFunction\nDescription\n\n\n\n\nweb_theme()\nCreate custom theme with overrides\n\n\n\n\n\nTheme Modifiers\n\n\n\nFunction\nDescription\n\n\n\n\nset_theme()\nSet theme by name or object\n\n\nset_colors()\nCustomize theme colors\n\n\nset_typography()\nCustomize fonts\n\n\nset_spacing()\nCustomize spacing\n\n\nset_shapes()\nCustomize shapes\n\n\nset_marker_colors()\nSet multi-effect marker colors\n\n\nset_marker_shapes()\nSet multi-effect marker shapes\n\n\nset_axis()\nCustomize axis\n\n\nset_layout()\nCustomize layout"
+    "objectID": "reference/save_plot.html#arguments",
+    "href": "reference/save_plot.html#arguments",
+    "title": "save_plot",
+    "section": "Arguments",
+    "text": "Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA WebSpec, SplitForest, or htmlwidget from forest_plot()/webtable()\n\n\nfile\nOutput file path (or directory for SplitForest). Extension determines format: .svg, .pdf, or .png\n\n\nwidth\nWidth in pixels (default: 800)\n\n\nheight\nHeight in pixels (auto-calculated if NULL)\n\n\nscale\nScale factor for PNG resolution (default: 2)"
   },
   {
-    "objectID": "reference/index.html#columns",
-    "href": "reference/index.html#columns",
-    "title": "Function Reference",
-    "section": "Columns",
-    "text": "Columns\n\nBasic Columns\n\n\n\nFunction\nDescription\n\n\n\n\ncol_text()\nText column\n\n\ncol_numeric()\nNumeric column with formatting\n\n\ncol_n()\nSample size column\n\n\ncol_percent()\nPercentage column\n\n\ncol_interval()\nConfidence interval display\n\n\ncol_events()\nEvents/N format\n\n\n\n\n\nVisualization Columns\n\n\n\nFunction\nDescription\n\n\n\n\ncol_bar()\nHorizontal bar chart\n\n\ncol_pvalue()\nP-value with formatting\n\n\ncol_sparkline()\nInline sparkline\n\n\ncol_icon()\nIcon/emoji column\n\n\ncol_badge()\nColored status badges\n\n\ncol_stars()\nStar ratings\n\n\ncol_img()\nInline images\n\n\ncol_reference()\nTruncated references with links\n\n\ncol_range()\nMin-max range display\n\n\n\n\n\nColumn Groups\n\n\n\nFunction\nDescription\n\n\n\n\ncol_group()\nGroup columns under header"
+    "objectID": "reference/save_plot.html#details",
+    "href": "reference/save_plot.html#details",
+    "title": "save_plot",
+    "section": "Details",
+    "text": "Details\nThe export process:\n\nRenders the widget to SVG using the internal JavaScript renderer\nFor SVG output, writes the SVG directly\nFor PDF output, converts SVG to PDF using Chrome/Chromium\nFor PNG output, renders SVG to PNG at specified scale\n\n\nRequirements\n\nSVG: No external dependencies\nPDF/PNG: Requires Chrome, Chromium, or Google Chrome installed\n\n\n\nResolution\nFor PNG exports, the scale parameter controls the resolution:\n\nscale = 1: 1x resolution (72 DPI equivalent)\nscale = 2: 2x resolution (144 DPI, good for screens)\nscale = 3: 3x resolution (216 DPI, good for print)"
   },
   {
-    "objectID": "reference/index.html#annotations",
-    "href": "reference/index.html#annotations",
-    "title": "Function Reference",
-    "section": "Annotations",
-    "text": "Annotations\n\n\n\nFunction\nDescription\n\n\n\n\nforest_refline()\nAdd reference line\n\n\nforest_annotation()\nCustom annotation"
+    "objectID": "reference/save_plot.html#examples",
+    "href": "reference/save_plot.html#examples",
+    "title": "save_plot",
+    "section": "Examples",
+    "text": "Examples\n\nSave as SVG\np &lt;- forest_plot(data, point = \"hr\", lower = \"lo\", upper = \"hi\", label = \"study\")\n\nsave_plot(p, \"my_plot.svg\")\n\n\nSave as PNG (high resolution)\nsave_plot(p, \"my_plot.png\", width = 1200, scale = 3)\n\n\nSave as PDF\nsave_plot(p, \"my_plot.pdf\", width = 800)\n\n\nSave SplitForest to Directory\nWhen saving a SplitForest, all sub-plots are exported to a directory structure matching the split hierarchy:\nsplit_result &lt;- data |&gt;\n  web_spec(point = \"hr\", lower = \"lo\", upper = \"hi\") |&gt;\n  split_forest(by = c(\"region\", \"age_group\"))\n\n# Export all plots to a directory\nsave_plot(split_result, \"output/plots\")\n# Creates: output/plots/North/North_Young.svg, etc."
   },
   {
-    "objectID": "reference/index.html#fluent-api-modifiers",
-    "href": "reference/index.html#fluent-api-modifiers",
-    "title": "Function Reference",
-    "section": "Fluent API Modifiers",
-    "text": "Fluent API Modifiers\n\n\n\nFunction\nDescription\n\n\n\n\nset_row_style()\nApply row-level styling\n\n\nset_column_style()\nApply cell-level styling to column\n\n\nset_marker_style()\nApply marker styling"
+    "objectID": "reference/save_plot.html#save_split_forest",
+    "href": "reference/save_plot.html#save_split_forest",
+    "title": "save_plot",
+    "section": "save_split_forest",
+    "text": "save_split_forest\nExport all sub-plots from a SplitForest to a directory structure.\n\nUsage\nsave_split_forest(x, path, format = c(\"svg\", \"pdf\", \"png\"),\n                  width = 800, height = NULL, scale = 2)\n\n\nArguments\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA SplitForest object\n\n\npath\nOutput directory path\n\n\nformat\nOutput format: \"svg\", \"pdf\", or \"png\"\n\n\nwidth\nWidth in pixels (default: 800)\n\n\nheight\nHeight in pixels (auto if NULL)\n\n\nscale\nScale factor for PNG (default: 2)\n\n\n\n\n\nDetails\nCreates a directory structure matching the split hierarchy: - Single split: path/Value.svg - Hierarchical split: path/Level1/Level1_Level2.svg\n\n\nExample\ndata |&gt;\n  web_spec(point = \"or\", lower = \"lower\", upper = \"upper\", label = \"study\") |&gt;\n  split_forest(by = c(\"sex\", \"age_group\")) |&gt;\n  save_split_forest(\"output/plots\", format = \"svg\")\n\n# Creates:\n# output/plots/Male/Male_Young.svg\n# output/plots/Male/Male_Old.svg\n# output/plots/Female/Female_Young.svg\n# output/plots/Female/Female_Old.svg"
   },
   {
-    "objectID": "reference/index.html#specification-objects",
-    "href": "reference/index.html#specification-objects",
-    "title": "Function Reference",
-    "section": "Specification Objects",
-    "text": "Specification Objects\n\n\n\nFunction\nDescription\n\n\n\n\nweb_spec()\nCreate plot specification\n\n\nweb_group()\nDefine row group\n\n\nweb_effect()\nDefine effect for multi-effect plots\n\n\nweb_interaction()\nInteraction settings\n\n\nweb_interaction_minimal()\nMinimal interactivity\n\n\nweb_interaction_publication()\nPublication mode"
+    "objectID": "reference/save_plot.html#see-also",
+    "href": "reference/save_plot.html#see-also",
+    "title": "save_plot",
+    "section": "See Also",
+    "text": "See Also\n\nforest_plot() for creating plots\nsplit_forest() for creating split forests\nExporting Guide for detailed export workflows"
   },
   {
-    "objectID": "reference/index.html#shiny-integration",
-    "href": "reference/index.html#shiny-integration",
-    "title": "Function Reference",
-    "section": "Shiny Integration",
-    "text": "Shiny Integration\n\nForest Plot\n\n\n\nFunction\nDescription\n\n\n\n\nforestOutput()\nShiny UI output\n\n\nrenderForest()\nShiny server render\n\n\nforestProxy()\nCreate update proxy\n\n\nforest_update_data()\nUpdate plot data\n\n\nforest_sort()\nSort by column\n\n\nforest_filter()\nFilter rows\n\n\nforest_clear_filter()\nClear filters\n\n\nforest_toggle_subgroup()\nToggle group collapse\n\n\n\n\n\nSplit Forest\n\n\n\nFunction\nDescription\n\n\n\n\nsplitForestOutput()\nShiny UI output for split forest\n\n\nrenderSplitForest()\nShiny server render for split forest\n\n\nsplitForestProxy()\nCreate split forest proxy\n\n\nsplit_forest_select()\nSelect sub-plot programmatically"
+    "objectID": "technical/export-system.html",
+    "href": "technical/export-system.html",
+    "title": "Export System Architecture",
+    "section": "",
+    "text": "webforest uses a unified rendering architecture for static image export. The same JavaScript SVG generator powers both:\n\nR-side: save_plot() function (via the V8 package)\nWeb-side: Download button in interactive plots\n\nThis ensures consistent output regardless of where the export is triggered.\n┌─────────────────────────────────────────────────────────┐\n│                   svg-generator.ts                       │\n│         (Pure-data SVG generator, no DOM needed)         │\n└──────────────────────┬──────────────────────────────────┘\n                       │\n       ┌───────────────┴───────────────┐\n       │                               │\n       ▼                               ▼\n┌──────────────────┐         ┌──────────────────┐\n│  Web (browser)   │         │   R (via V8)     │\n│  DownloadButton  │         │   save_plot()    │\n└──────────────────┘         └──────────────────┘"
+  },
+  {
+    "objectID": "technical/export-system.html#overview",
+    "href": "technical/export-system.html#overview",
+    "title": "Export System Architecture",
+    "section": "",
+    "text": "webforest uses a unified rendering architecture for static image export. The same JavaScript SVG generator powers both:\n\nR-side: save_plot() function (via the V8 package)\nWeb-side: Download button in interactive plots\n\nThis ensures consistent output regardless of where the export is triggered.\n┌─────────────────────────────────────────────────────────┐\n│                   svg-generator.ts                       │\n│         (Pure-data SVG generator, no DOM needed)         │\n└──────────────────────┬──────────────────────────────────┘\n                       │\n       ┌───────────────┴───────────────┐\n       │                               │\n       ▼                               ▼\n┌──────────────────┐         ┌──────────────────┐\n│  Web (browser)   │         │   R (via V8)     │\n│  DownloadButton  │         │   save_plot()    │\n└──────────────────┘         └──────────────────┘"
+  },
+  {
+    "objectID": "technical/export-system.html#why-this-design",
+    "href": "technical/export-system.html#why-this-design",
+    "title": "Export System Architecture",
+    "section": "Why This Design?",
+    "text": "Why This Design?\n\nSingle Source of Truth\nInstead of maintaining two separate renderers (one in R, one in JavaScript), we have a single TypeScript implementation that:\n\nReduces code duplication\nGuarantees visual consistency between exports\nMakes bug fixes and improvements apply to both platforms\n\n\n\nNo Browser Dependency in R\nThe SVG generator is DOM-free — it takes WebSpec JSON data and outputs an SVG string through pure computation. This means:\n\nWorks in R via the lightweight V8 JavaScript engine\nNo need for headless Chrome/Chromium\nFast execution without browser overhead\nWorks offline without any system dependencies beyond V8"
+  },
+  {
+    "objectID": "technical/export-system.html#components",
+    "href": "technical/export-system.html#components",
+    "title": "Export System Architecture",
+    "section": "Components",
+    "text": "Components\n\nsvg-generator.ts\nLocated at srcjs/src/lib/svg-generator.ts, this is the core rendering engine.\nKey functions:\n// Main entry point\ngenerateSVG(spec: WebSpec, options?: ExportOptions): string\n\n// Internal helpers\ncomputeLayout(spec: WebSpec): Layout\nrenderTableColumns(rows, columns, layout): string\nrenderForestPlot(rows, xScale, layout, theme): string\nrenderInterval(row, yPosition, xScale, theme): string\nrenderDiamond(point, lower, upper, yPosition, ...): string\nrenderAxis(xScale, layout, theme, axisLabel): string\nDesign constraints:\n\nNo DOM access — Cannot use document, window, canvas.measureText(), etc.\nNo external dependencies — Pure TypeScript, bundled as standalone IIFE\nDeterministic output — Same input always produces same SVG\n\n\n\nText Measurement and Auto-Width\nSince V8 has no DOM, we can’t use canvas.measureText() for precise text width calculation. Instead, width-utils.ts provides character-aware estimation:\nfunction estimateTextWidth(text: string, fontSize: number): number {\n  let width = 0;\n  for (const char of text) {\n    if (\"il1.,;:|!()[]{}' \".includes(char)) {\n      width += fontSize * 0.35;  // Narrow characters\n    } else if (\"mwMW@%\".includes(char)) {\n      width += fontSize * 0.85;  // Wide characters\n    } else if (char &gt;= \"0\" && char &lt;= \"9\") {\n      width += fontSize * 0.6;   // Tabular numbers\n    } else {\n      width += fontSize * 0.55;  // Average characters\n    }\n  }\n  return width;\n}\nAuto-width calculation: Both web and SVG renderers now calculate column widths from actual content. For each column with width=\"auto\":\n\nMeasure the header text\nMeasure all cell values using the proper formatted text (e.g., “0.76 (0.68, 0.85)” for intervals)\nApply padding (28px) and constraints (min 60px, max 600px)\n\nThis ensures columns are wide enough to display their content without truncation, matching the behavior of the interactive web renderer.\n\n\nBuild Outputs\nThe SVG generator is bundled twice:\n\n\n\n\n\n\n\n\nFile\nPurpose\nSize\n\n\n\n\ninst/htmlwidgets/webforest.js\nFull widget bundle (includes Svelte UI)\n~142 KB\n\n\ninst/js/svg-generator.js\nStandalone for V8 (export only)\n~11 KB\n\n\n\nBuild commands:\ncd srcjs\nbun run build          # Both bundles\nbun run build:widget   # Widget only\nbun run build:v8       # V8 bundle only"
+  },
+  {
+    "objectID": "technical/export-system.html#r-integration",
+    "href": "technical/export-system.html#r-integration",
+    "title": "Export System Architecture",
+    "section": "R Integration",
+    "text": "R Integration\n\nsave_plot()\nsave_plot(spec, \"output.svg\", width = 800, height = NULL)\nProcess:\n\nSerialize WebSpec to JSON via serialize_spec()\nCreate V8 context and load svg-generator.js\nCall generateSVG(specJson, options)\nWrite SVG string to file (or convert to PDF/PNG via rsvg)\n\nDependencies:\n\nV8 — JavaScript engine (Suggests)\nrsvg — SVG to PDF/PNG conversion (Suggests, optional)\n\n\n\nCode Path\nsave_plot(spec, file)\n    │\n    ├── serialize_spec(spec)     # R: WebSpec → JSON\n    │\n    ├── generate_svg_v8(json)    # R: Load V8, call JS\n    │       │\n    │       └── generateSVG()    # JS: JSON → SVG string\n    │\n    └── writeLines() / rsvg      # R: Save to file"
+  },
+  {
+    "objectID": "technical/export-system.html#web-integration",
+    "href": "technical/export-system.html#web-integration",
+    "title": "Export System Architecture",
+    "section": "Web Integration",
+    "text": "Web Integration\n\nDownloadButton.svelte\nThe download button calls the same generator directly:\nimport { exportToSVG, exportToPNG } from \"$lib/export\";\n\nasync function handleExportSVG() {\n  const svgString = exportToSVG(store.spec);\n  // Create blob and trigger download\n}\n\n\nexport.ts\nThin wrapper around svg-generator:\nimport { generateSVG, svgToBlob } from \"./svg-generator\";\n\nexport function exportToSVG(spec: WebSpec): string {\n  return generateSVG(spec);\n}\n\nexport async function exportToPNG(spec: WebSpec, scale = 2): Promise&lt;Blob&gt; {\n  const svgString = generateSVG(spec);\n  return svgToBlob(svgString, scale);  // Render to canvas, export\n}"
+  },
+  {
+    "objectID": "technical/export-system.html#svg-output-structure",
+    "href": "technical/export-system.html#svg-output-structure",
+    "title": "Export System Architecture",
+    "section": "SVG Output Structure",
+    "text": "SVG Output Structure\nThe generated SVG follows this structure:\n&lt;svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"400\"&gt;\n  &lt;!-- Background --&gt;\n  &lt;rect fill=\"#ffffff\" width=\"100%\" height=\"100%\"/&gt;\n\n  &lt;!-- Title/Subtitle --&gt;\n  &lt;text x=\"12\" y=\"24\" font-size=\"16\" font-weight=\"bold\"&gt;Title&lt;/text&gt;\n\n  &lt;!-- Column headers --&gt;\n  &lt;text x=\"22\" y=\"52\"&gt;Study&lt;/text&gt;\n  &lt;text x=\"320\" y=\"52\"&gt;Effect (95% CI)&lt;/text&gt;\n\n  &lt;!-- Header border --&gt;\n  &lt;line x1=\"12\" x2=\"788\" y1=\"60\" y2=\"60\" stroke=\"#e2e8f0\"/&gt;\n\n  &lt;!-- Reference line (null value) --&gt;\n  &lt;line x1=\"400\" y1=\"60\" x2=\"400\" y2=\"340\"\n        stroke=\"#94a3b8\" stroke-dasharray=\"4\"/&gt;\n\n  &lt;!-- Data rows --&gt;\n  &lt;g class=\"interval\"&gt;\n    &lt;line x1=\"350\" x2=\"450\" y1=\"80\" y2=\"80\" stroke=\"#475569\"/&gt;\n    &lt;rect x=\"394\" y=\"74\" width=\"12\" height=\"12\" fill=\"#22c55e\"/&gt;\n  &lt;/g&gt;\n\n  &lt;!-- Summary diamond --&gt;\n  &lt;polygon points=\"360,320 400,310 440,320 400,330\"\n           fill=\"#2563eb\" stroke=\"#1d4ed8\"/&gt;\n\n  &lt;!-- Axis --&gt;\n  &lt;line x1=\"200\" x2=\"600\" y1=\"360\" y2=\"360\" stroke=\"#e2e8f0\"/&gt;\n  &lt;text x=\"400\" y=\"380\" text-anchor=\"middle\"&gt;Odds Ratio&lt;/text&gt;\n&lt;/svg&gt;"
+  },
+  {
+    "objectID": "technical/export-system.html#extending-the-system",
+    "href": "technical/export-system.html#extending-the-system",
+    "title": "Export System Architecture",
+    "section": "Extending the System",
+    "text": "Extending the System\n\nAdding New Column Types\nTo support a new column type in exports:\n\nAdd rendering logic in svg-generator.ts:\n\nfunction renderTableRow(...) {\n  // ...existing code...\n\n  if (col.type === \"myNewType\") {\n    // Render your custom SVG elements\n    lines.push(`&lt;rect .../&gt;`);\n  }\n}\n\nRebuild both bundles:\n\nbun run build\n\n\nCustomizing Export Options\nThe ExportOptions interface can be extended:\ninterface ExportOptions {\n  width?: number;\n  height?: number;\n  scale?: number;\n  backgroundColor?: string;\n  // Add new options here\n}"
+  },
+  {
+    "objectID": "technical/export-system.html#troubleshooting",
+    "href": "technical/export-system.html#troubleshooting",
+    "title": "Export System Architecture",
+    "section": "Troubleshooting",
+    "text": "Troubleshooting\n\n“SVG generator JavaScript file not found”\nThe V8 bundle hasn’t been built. Run:\ncd srcjs && bun run build\n\n\nText alignment looks off\nThe text width estimation is character-aware but may still be slightly off for unusual fonts. Solutions:\n\nExplicitly set column widths with col_text(\"field\", width = 150)\nUse a standard font family in the theme (Inter, Arial, system-ui)\nIncrease or decrease padding via the AUTO_WIDTH.PADDING constant in rendering-constants.ts\n\n\n\nColors don’t match the interactive plot\nEnsure you’re using the same theme. The generator resolves all CSS variables to literal color values at export time."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "webforest",
+    "section": "",
+    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, it supports any data with point estimates and confidence intervals."
+  },
+  {
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "webforest",
+    "section": "",
+    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, it supports any data with point estimates and confidence intervals."
+  },
+  {
+    "objectID": "index.html#features",
+    "href": "index.html#features",
+    "title": "webforest",
+    "section": "Features",
+    "text": "Features\n\n\nVisualization\n\n9 preset themes (JAMA, Lancet, Nature, etc.)\n16+ column types (bars, p-values, sparklines)\nHierarchical grouping with collapsible sections\nMultiple effects per row (ITT vs Per-Protocol)\n\n\n\nInteractivity\n\nHover tooltips with custom content\nColumn sorting and resizing\nRow selection and highlighting\nSplit view navigation for subgroups\n\n\n\n\n\nExport\n\nSVG, PNG, PDF output\nPublication-quality figures at 300 DPI\nConsistent rendering between web and export\n\n\n\nDeveloper Experience\n\nFluent API with R pipes\nDeclarative column system\nType-safe styling with column mapping"
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "webforest",
+    "section": "Installation",
+    "text": "Installation\n# install.packages(\"pak\")\npak::pak(\"kaskarn/webforest\")"
+  },
+  {
+    "objectID": "index.html#quick-example",
+    "href": "index.html#quick-example",
+    "title": "webforest",
+    "section": "Quick Example",
+    "text": "Quick Example\nlibrary(webforest)\n\nforest_plot(data,\n  point = \"estimate\",\n  lower = \"ci_lower\",\n  upper = \"ci_upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\"\n)"
+  },
+  {
+    "objectID": "index.html#guide",
+    "href": "index.html#guide",
+    "title": "webforest",
+    "section": "Guide",
+    "text": "Guide\nLearn how to use webforest:\n\n\n\nChapter\nDescription\n\n\n\n\nQuick Start\nInstallation and basic usage\n\n\nThemes\nPreset themes and customization\n\n\nColumns\nData columns and special formatting\n\n\nGrouping & Rows\nHierarchical data and row styling\n\n\nExporting\nSave plots as SVG, PNG, or PDF\n\n\nAxis & Annotations\nAxis control and reference lines"
+  },
+  {
+    "objectID": "index.html#more-resources",
+    "href": "index.html#more-resources",
+    "title": "webforest",
+    "section": "More Resources",
+    "text": "More Resources\n\nCookbook - Common tasks and patterns\nGallery - Interactive examples\nReference - API documentation"
   },
   {
     "objectID": "technical/s7-classes.html",
@@ -861,165 +1001,158 @@
     "text": "Best Practices\n\nCreating New Classes\n\nStart with the helper function API, then design the class to support it\nUse NA_* for optional scalars, NULL for optional objects\nAdd validators for invariants that can’t be expressed as types\nDocument the helper, not the class directly\n\n\n\nModifying Existing Classes\n\nAdd new properties with defaults to maintain backward compatibility\nUpdate serialization in utils-serialize.R\nUpdate TypeScript types in srcjs/src/types/index.ts\nUpdate fluent modifiers if the property should be user-configurable\n\n\n\nTesting Classes\n# Test construction\nspec &lt;- web_spec(df, point = \"hr\", lower = \"lo\", upper = \"hi\")\nexpect_s7_class(spec, WebSpec)\n\n# Test validation\nexpect_error(\n  WebSpec(data = df, point_col = \"nonexistent\", ...),\n  \"not found in data\"\n)\n\n# Test serialization round-trip\njson &lt;- serialize_spec(spec)\nexpect_equal(json$data$pointCol, \"hr\")"
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "webforest",
+    "objectID": "reference/index.html",
+    "href": "reference/index.html",
+    "title": "Function Reference",
     "section": "",
-    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, it supports any data with point estimates and confidence intervals."
+    "text": "Complete reference for all webforest functions, organized by category."
   },
   {
-    "objectID": "index.html#overview",
-    "href": "index.html#overview",
-    "title": "webforest",
+    "objectID": "reference/index.html#core-functions",
+    "href": "reference/index.html#core-functions",
+    "title": "Function Reference",
+    "section": "Core Functions",
+    "text": "Core Functions\nThe main entry points for creating visualizations. forest_plot() is the primary function for most use cases.\n\n\n\nFunction\nDescription\n\n\n\n\nforest_plot()\nCreate interactive forest plots\n\n\nwebtable()\nCreate table-only widgets (no forest plot)\n\n\nsplit_forest()\nCreate split forest with sidebar navigation\n\n\nsave_plot()\nExport to SVG, PNG, or PDF\n\n\nsave_split_forest()\nExport split forest to directory"
+  },
+  {
+    "objectID": "reference/index.html#styling-functions",
+    "href": "reference/index.html#styling-functions",
+    "title": "Function Reference",
+    "section": "Styling Functions",
+    "text": "Styling Functions\nStyle your plots using the fluent API. These functions work on both forest_plot() widgets and WebSpec objects.\n\n\n\nFunction\nDescription\n\n\n\n\nset_row_style()\nApply row-level styling (bold, italic, color, type, indent)\n\n\nset_marker_style()\nStyle interval markers (color, shape, opacity, size)\n\n\nset_column_style()\nApply per-cell styling to specific columns\n\n\nset_theme()\nApply a theme by name or object\n\n\n\n\n\n\n\n\n\nTipConstructor Arguments vs Fluent API\n\n\n\nEvery styling function has equivalent direct arguments in forest_plot():\n# These produce identical results:\nforest_plot(data, ..., row_bold = \"is_summary\", marker_color = \"dir_color\")\n\nforest_plot(data, ...) |&gt;\n  set_row_style(bold = \"is_summary\") |&gt;\n  set_marker_style(color = \"dir_color\")\nUse direct arguments when configuration is known upfront. Use the fluent API when styling depends on computation or you need multiple variants."
+  },
+  {
+    "objectID": "reference/index.html#themes",
+    "href": "reference/index.html#themes",
+    "title": "Function Reference",
+    "section": "Themes",
+    "text": "Themes\n\nPreset Themes\nNine publication-ready themes for different contexts:\n\n\n\nFunction\nDescription\n\n\n\n\nweb_theme_default()\nClean, modern default theme\n\n\nweb_theme_jama()\nJAMA journal style\n\n\nweb_theme_lancet()\nLancet journal style\n\n\nweb_theme_nature()\nNature journal style\n\n\nweb_theme_cochrane()\nCochrane Collaboration style\n\n\nweb_theme_modern()\nContemporary UI\n\n\nweb_theme_presentation()\nLarge fonts for slides\n\n\nweb_theme_dark()\nDark mode\n\n\nweb_theme_minimal()\nMinimal B&W\n\n\n\n\n\nCustom Theme Creation\n\n\n\nFunction\nDescription\n\n\n\n\nweb_theme()\nCreate custom theme with overrides\n\n\n\n\n\nTheme Modifiers\nFine-tune theme properties. These work on both themes and plots:\n\n\n\nFunction\nDescription\n\n\n\n\nset_colors()\nCustomize theme colors\n\n\nset_typography()\nCustomize fonts\n\n\nset_spacing()\nCustomize spacing\n\n\nset_shapes()\nCustomize shapes\n\n\nset_marker_colors()\nSet multi-effect marker colors\n\n\nset_marker_shapes()\nSet multi-effect marker shapes\n\n\nset_axis()\nCustomize axis\n\n\nset_layout()\nCustomize layout\n\n\nset_group_headers()\nCustomize group header hierarchy"
+  },
+  {
+    "objectID": "reference/index.html#columns",
+    "href": "reference/index.html#columns",
+    "title": "Function Reference",
+    "section": "Columns",
+    "text": "Columns\n\nBasic Columns\n\n\n\nFunction\nDescription\n\n\n\n\ncol_text()\nText column\n\n\ncol_numeric()\nNumeric column with formatting\n\n\ncol_n()\nSample size column\n\n\ncol_percent()\nPercentage column\n\n\ncol_interval()\nConfidence interval display\n\n\ncol_events()\nEvents/N format\n\n\n\n\n\nVisualization Columns\n\n\n\nFunction\nDescription\n\n\n\n\ncol_bar()\nHorizontal bar chart\n\n\ncol_pvalue()\nP-value with formatting\n\n\ncol_sparkline()\nInline sparkline\n\n\ncol_icon()\nIcon/emoji column\n\n\ncol_badge()\nColored status badges\n\n\ncol_stars()\nStar ratings\n\n\ncol_img()\nInline images\n\n\ncol_reference()\nTruncated references with links\n\n\ncol_range()\nMin-max range display\n\n\n\n\n\nColumn Groups\n\n\n\nFunction\nDescription\n\n\n\n\ncol_group()\nGroup columns under header"
+  },
+  {
+    "objectID": "reference/index.html#annotations",
+    "href": "reference/index.html#annotations",
+    "title": "Function Reference",
+    "section": "Annotations",
+    "text": "Annotations\n\n\n\nFunction\nDescription\n\n\n\n\nforest_refline()\nAdd reference line\n\n\nforest_annotation()\nCustom annotation"
+  },
+  {
+    "objectID": "reference/index.html#shiny-integration",
+    "href": "reference/index.html#shiny-integration",
+    "title": "Function Reference",
+    "section": "Shiny Integration",
+    "text": "Shiny Integration\n\nForest Plot\n\n\n\nFunction\nDescription\n\n\n\n\nforestOutput()\nShiny UI output\n\n\nrenderForest()\nShiny server render\n\n\nforestProxy()\nCreate update proxy\n\n\nforest_update_data()\nUpdate plot data\n\n\nforest_sort()\nSort by column\n\n\nforest_filter()\nFilter rows\n\n\nforest_clear_filter()\nClear filters\n\n\nforest_toggle_subgroup()\nToggle group collapse\n\n\n\n\n\nSplit Forest\n\n\n\nFunction\nDescription\n\n\n\n\nsplitForestOutput()\nShiny UI output for split forest\n\n\nrenderSplitForest()\nShiny server render for split forest\n\n\nsplitForestProxy()\nCreate split forest proxy\n\n\nsplit_forest_select()\nSelect sub-plot programmatically"
+  },
+  {
+    "objectID": "reference/index.html#advanced-specification-objects",
+    "href": "reference/index.html#advanced-specification-objects",
+    "title": "Function Reference",
+    "section": "Advanced: Specification Objects",
+    "text": "Advanced: Specification Objects\nFor advanced use cases requiring programmatic plot construction, you can work with specification objects directly. Most users should use forest_plot() with direct arguments instead.\n\n\n\nFunction\nDescription\n\n\n\n\nweb_spec()\nCreate plot specification programmatically\n\n\nweb_group()\nDefine row group\n\n\nweb_effect()\nDefine effect for multi-effect plots\n\n\nweb_interaction()\nConfigure interaction settings\n\n\nweb_interaction_minimal()\nMinimal interactivity preset\n\n\nweb_interaction_publication()\nPublication mode preset"
+  },
+  {
+    "objectID": "reference/forest_plot.html",
+    "href": "reference/forest_plot.html",
+    "title": "forest_plot()",
     "section": "",
-    "text": "webforest is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, it supports any data with point estimates and confidence intervals."
+    "text": "Create interactive forest plots from data frames. This is the primary function for building forest plots in webforest—pass your data directly with column mappings and styling options."
   },
   {
-    "objectID": "index.html#features",
-    "href": "index.html#features",
-    "title": "webforest",
-    "section": "Features",
-    "text": "Features\n\n\nVisualization\n\n9 preset themes (JAMA, Lancet, Nature, etc.)\n16+ column types (bars, p-values, sparklines)\nHierarchical grouping with collapsible sections\nMultiple effects per row (ITT vs Per-Protocol)\n\n\n\nInteractivity\n\nHover tooltips with custom content\nColumn sorting and resizing\nRow selection and highlighting\nSplit view navigation for subgroups\n\n\n\n\n\nExport\n\nSVG, PNG, PDF output\nPublication-quality figures at 300 DPI\nConsistent rendering between web and export\n\n\n\nDeveloper Experience\n\nFluent API with R pipes\nDeclarative column system\nType-safe styling with column mapping"
-  },
-  {
-    "objectID": "index.html#installation",
-    "href": "index.html#installation",
-    "title": "webforest",
-    "section": "Installation",
-    "text": "Installation\n# install.packages(\"pak\")\npak::pak(\"kaskarn/webforest\")"
-  },
-  {
-    "objectID": "index.html#quick-example",
-    "href": "index.html#quick-example",
-    "title": "webforest",
+    "objectID": "reference/forest_plot.html#quick-example",
+    "href": "reference/forest_plot.html#quick-example",
+    "title": "forest_plot()",
     "section": "Quick Example",
-    "text": "Quick Example\nlibrary(webforest)\n\nforest_plot(data,\n  point = \"estimate\",\n  lower = \"ci_lower\",\n  upper = \"ci_upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\"\n)"
+    "text": "Quick Example\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Smith 2020\", \"Jones 2021\", \"Lee 2022\", \"Chen 2023\"),\n  hr = c(0.72, 0.85, 0.91, 0.68),\n  lower = c(0.55, 0.70, 0.75, 0.52),\n  upper = c(0.95, 1.03, 1.10, 0.89)\n)\n\nforest_plot(data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  null_value = 1,\n  scale = \"log\"\n)"
   },
   {
-    "objectID": "index.html#guide",
-    "href": "index.html#guide",
-    "title": "webforest",
-    "section": "Guide",
-    "text": "Guide\nLearn how to use webforest:\n\n\n\nChapter\nDescription\n\n\n\n\nQuick Start\nInstallation and basic usage\n\n\nThemes\nPreset themes and customization\n\n\nColumns\nData columns and special formatting\n\n\nGrouping & Rows\nHierarchical data and row styling\n\n\nExporting\nSave plots as SVG, PNG, or PDF\n\n\nAxis & Annotations\nAxis control and reference lines"
-  },
-  {
-    "objectID": "index.html#more-resources",
-    "href": "index.html#more-resources",
-    "title": "webforest",
-    "section": "More Resources",
-    "text": "More Resources\n\nCookbook - Common tasks and patterns\nGallery - Interactive examples\nReference - API documentation"
-  },
-  {
-    "objectID": "technical/export-system.html",
-    "href": "technical/export-system.html",
-    "title": "Export System Architecture",
-    "section": "",
-    "text": "webforest uses a unified rendering architecture for static image export. The same JavaScript SVG generator powers both:\n\nR-side: save_plot() function (via the V8 package)\nWeb-side: Download button in interactive plots\n\nThis ensures consistent output regardless of where the export is triggered.\n┌─────────────────────────────────────────────────────────┐\n│                   svg-generator.ts                       │\n│         (Pure-data SVG generator, no DOM needed)         │\n└──────────────────────┬──────────────────────────────────┘\n                       │\n       ┌───────────────┴───────────────┐\n       │                               │\n       ▼                               ▼\n┌──────────────────┐         ┌──────────────────┐\n│  Web (browser)   │         │   R (via V8)     │\n│  DownloadButton  │         │   save_plot()    │\n└──────────────────┘         └──────────────────┘"
-  },
-  {
-    "objectID": "technical/export-system.html#overview",
-    "href": "technical/export-system.html#overview",
-    "title": "Export System Architecture",
-    "section": "",
-    "text": "webforest uses a unified rendering architecture for static image export. The same JavaScript SVG generator powers both:\n\nR-side: save_plot() function (via the V8 package)\nWeb-side: Download button in interactive plots\n\nThis ensures consistent output regardless of where the export is triggered.\n┌─────────────────────────────────────────────────────────┐\n│                   svg-generator.ts                       │\n│         (Pure-data SVG generator, no DOM needed)         │\n└──────────────────────┬──────────────────────────────────┘\n                       │\n       ┌───────────────┴───────────────┐\n       │                               │\n       ▼                               ▼\n┌──────────────────┐         ┌──────────────────┐\n│  Web (browser)   │         │   R (via V8)     │\n│  DownloadButton  │         │   save_plot()    │\n└──────────────────┘         └──────────────────┘"
-  },
-  {
-    "objectID": "technical/export-system.html#why-this-design",
-    "href": "technical/export-system.html#why-this-design",
-    "title": "Export System Architecture",
-    "section": "Why This Design?",
-    "text": "Why This Design?\n\nSingle Source of Truth\nInstead of maintaining two separate renderers (one in R, one in JavaScript), we have a single TypeScript implementation that:\n\nReduces code duplication\nGuarantees visual consistency between exports\nMakes bug fixes and improvements apply to both platforms\n\n\n\nNo Browser Dependency in R\nThe SVG generator is DOM-free — it takes WebSpec JSON data and outputs an SVG string through pure computation. This means:\n\nWorks in R via the lightweight V8 JavaScript engine\nNo need for headless Chrome/Chromium\nFast execution without browser overhead\nWorks offline without any system dependencies beyond V8"
-  },
-  {
-    "objectID": "technical/export-system.html#components",
-    "href": "technical/export-system.html#components",
-    "title": "Export System Architecture",
-    "section": "Components",
-    "text": "Components\n\nsvg-generator.ts\nLocated at srcjs/src/lib/svg-generator.ts, this is the core rendering engine.\nKey functions:\n// Main entry point\ngenerateSVG(spec: WebSpec, options?: ExportOptions): string\n\n// Internal helpers\ncomputeLayout(spec: WebSpec): Layout\nrenderTableColumns(rows, columns, layout): string\nrenderForestPlot(rows, xScale, layout, theme): string\nrenderInterval(row, yPosition, xScale, theme): string\nrenderDiamond(point, lower, upper, yPosition, ...): string\nrenderAxis(xScale, layout, theme, axisLabel): string\nDesign constraints:\n\nNo DOM access — Cannot use document, window, canvas.measureText(), etc.\nNo external dependencies — Pure TypeScript, bundled as standalone IIFE\nDeterministic output — Same input always produces same SVG\n\n\n\nText Measurement and Auto-Width\nSince V8 has no DOM, we can’t use canvas.measureText() for precise text width calculation. Instead, width-utils.ts provides character-aware estimation:\nfunction estimateTextWidth(text: string, fontSize: number): number {\n  let width = 0;\n  for (const char of text) {\n    if (\"il1.,;:|!()[]{}' \".includes(char)) {\n      width += fontSize * 0.35;  // Narrow characters\n    } else if (\"mwMW@%\".includes(char)) {\n      width += fontSize * 0.85;  // Wide characters\n    } else if (char &gt;= \"0\" && char &lt;= \"9\") {\n      width += fontSize * 0.6;   // Tabular numbers\n    } else {\n      width += fontSize * 0.55;  // Average characters\n    }\n  }\n  return width;\n}\nAuto-width calculation: Both web and SVG renderers now calculate column widths from actual content. For each column with width=\"auto\":\n\nMeasure the header text\nMeasure all cell values using the proper formatted text (e.g., “0.76 (0.68, 0.85)” for intervals)\nApply padding (28px) and constraints (min 60px, max 600px)\n\nThis ensures columns are wide enough to display their content without truncation, matching the behavior of the interactive web renderer.\n\n\nBuild Outputs\nThe SVG generator is bundled twice:\n\n\n\n\n\n\n\n\nFile\nPurpose\nSize\n\n\n\n\ninst/htmlwidgets/webforest.js\nFull widget bundle (includes Svelte UI)\n~142 KB\n\n\ninst/js/svg-generator.js\nStandalone for V8 (export only)\n~11 KB\n\n\n\nBuild commands:\ncd srcjs\nbun run build          # Both bundles\nbun run build:widget   # Widget only\nbun run build:v8       # V8 bundle only"
-  },
-  {
-    "objectID": "technical/export-system.html#r-integration",
-    "href": "technical/export-system.html#r-integration",
-    "title": "Export System Architecture",
-    "section": "R Integration",
-    "text": "R Integration\n\nsave_plot()\nsave_plot(spec, \"output.svg\", width = 800, height = NULL)\nProcess:\n\nSerialize WebSpec to JSON via serialize_spec()\nCreate V8 context and load svg-generator.js\nCall generateSVG(specJson, options)\nWrite SVG string to file (or convert to PDF/PNG via rsvg)\n\nDependencies:\n\nV8 — JavaScript engine (Suggests)\nrsvg — SVG to PDF/PNG conversion (Suggests, optional)\n\n\n\nCode Path\nsave_plot(spec, file)\n    │\n    ├── serialize_spec(spec)     # R: WebSpec → JSON\n    │\n    ├── generate_svg_v8(json)    # R: Load V8, call JS\n    │       │\n    │       └── generateSVG()    # JS: JSON → SVG string\n    │\n    └── writeLines() / rsvg      # R: Save to file"
-  },
-  {
-    "objectID": "technical/export-system.html#web-integration",
-    "href": "technical/export-system.html#web-integration",
-    "title": "Export System Architecture",
-    "section": "Web Integration",
-    "text": "Web Integration\n\nDownloadButton.svelte\nThe download button calls the same generator directly:\nimport { exportToSVG, exportToPNG } from \"$lib/export\";\n\nasync function handleExportSVG() {\n  const svgString = exportToSVG(store.spec);\n  // Create blob and trigger download\n}\n\n\nexport.ts\nThin wrapper around svg-generator:\nimport { generateSVG, svgToBlob } from \"./svg-generator\";\n\nexport function exportToSVG(spec: WebSpec): string {\n  return generateSVG(spec);\n}\n\nexport async function exportToPNG(spec: WebSpec, scale = 2): Promise&lt;Blob&gt; {\n  const svgString = generateSVG(spec);\n  return svgToBlob(svgString, scale);  // Render to canvas, export\n}"
-  },
-  {
-    "objectID": "technical/export-system.html#svg-output-structure",
-    "href": "technical/export-system.html#svg-output-structure",
-    "title": "Export System Architecture",
-    "section": "SVG Output Structure",
-    "text": "SVG Output Structure\nThe generated SVG follows this structure:\n&lt;svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"400\"&gt;\n  &lt;!-- Background --&gt;\n  &lt;rect fill=\"#ffffff\" width=\"100%\" height=\"100%\"/&gt;\n\n  &lt;!-- Title/Subtitle --&gt;\n  &lt;text x=\"12\" y=\"24\" font-size=\"16\" font-weight=\"bold\"&gt;Title&lt;/text&gt;\n\n  &lt;!-- Column headers --&gt;\n  &lt;text x=\"22\" y=\"52\"&gt;Study&lt;/text&gt;\n  &lt;text x=\"320\" y=\"52\"&gt;Effect (95% CI)&lt;/text&gt;\n\n  &lt;!-- Header border --&gt;\n  &lt;line x1=\"12\" x2=\"788\" y1=\"60\" y2=\"60\" stroke=\"#e2e8f0\"/&gt;\n\n  &lt;!-- Reference line (null value) --&gt;\n  &lt;line x1=\"400\" y1=\"60\" x2=\"400\" y2=\"340\"\n        stroke=\"#94a3b8\" stroke-dasharray=\"4\"/&gt;\n\n  &lt;!-- Data rows --&gt;\n  &lt;g class=\"interval\"&gt;\n    &lt;line x1=\"350\" x2=\"450\" y1=\"80\" y2=\"80\" stroke=\"#475569\"/&gt;\n    &lt;rect x=\"394\" y=\"74\" width=\"12\" height=\"12\" fill=\"#22c55e\"/&gt;\n  &lt;/g&gt;\n\n  &lt;!-- Summary diamond --&gt;\n  &lt;polygon points=\"360,320 400,310 440,320 400,330\"\n           fill=\"#2563eb\" stroke=\"#1d4ed8\"/&gt;\n\n  &lt;!-- Axis --&gt;\n  &lt;line x1=\"200\" x2=\"600\" y1=\"360\" y2=\"360\" stroke=\"#e2e8f0\"/&gt;\n  &lt;text x=\"400\" y=\"380\" text-anchor=\"middle\"&gt;Odds Ratio&lt;/text&gt;\n&lt;/svg&gt;"
-  },
-  {
-    "objectID": "technical/export-system.html#extending-the-system",
-    "href": "technical/export-system.html#extending-the-system",
-    "title": "Export System Architecture",
-    "section": "Extending the System",
-    "text": "Extending the System\n\nAdding New Column Types\nTo support a new column type in exports:\n\nAdd rendering logic in svg-generator.ts:\n\nfunction renderTableRow(...) {\n  // ...existing code...\n\n  if (col.type === \"myNewType\") {\n    // Render your custom SVG elements\n    lines.push(`&lt;rect .../&gt;`);\n  }\n}\n\nRebuild both bundles:\n\nbun run build\n\n\nCustomizing Export Options\nThe ExportOptions interface can be extended:\ninterface ExportOptions {\n  width?: number;\n  height?: number;\n  scale?: number;\n  backgroundColor?: string;\n  // Add new options here\n}"
-  },
-  {
-    "objectID": "technical/export-system.html#troubleshooting",
-    "href": "technical/export-system.html#troubleshooting",
-    "title": "Export System Architecture",
-    "section": "Troubleshooting",
-    "text": "Troubleshooting\n\n“SVG generator JavaScript file not found”\nThe V8 bundle hasn’t been built. Run:\ncd srcjs && bun run build\n\n\nText alignment looks off\nThe text width estimation is character-aware but may still be slightly off for unusual fonts. Solutions:\n\nExplicitly set column widths with col_text(\"field\", width = 150)\nUse a standard font family in the theme (Inter, Arial, system-ui)\nIncrease or decrease padding via the AUTO_WIDTH.PADDING constant in rendering-constants.ts\n\n\n\nColors don’t match the interactive plot\nEnsure you’re using the same theme. The generator resolves all CSS variables to literal color values at export time."
-  },
-  {
-    "objectID": "reference/save_plot.html",
-    "href": "reference/save_plot.html",
-    "title": "save_plot",
-    "section": "",
-    "text": "Export a forest plot, webtable, or split forest to static file formats."
-  },
-  {
-    "objectID": "reference/save_plot.html#usage",
-    "href": "reference/save_plot.html#usage",
-    "title": "save_plot",
+    "objectID": "reference/forest_plot.html#usage",
+    "href": "reference/forest_plot.html#usage",
+    "title": "forest_plot()",
     "section": "Usage",
-    "text": "Usage\nsave_plot(\n  x,\n  file,\n  width = 800,\n  height = NULL,\n  scale = 2\n)"
+    "text": "Usage\nforest_plot(\n  x,\n  point = NULL,\n  lower = NULL,\n  upper = NULL,\n  label = NULL,\n  group = NULL,\n  columns = NULL,\n  scale = NULL,\n  null_value = NULL,\n  axis_label = NULL,\n  theme = NULL,\n  title = NULL,\n  subtitle = NULL,\n  caption = NULL,\n  footnote = NULL,\n\n  # Row styling\n\n  row_type = NULL,\n  row_bold = NULL,\n  row_italic = NULL,\n  row_color = NULL,\n  row_bg = NULL,\n  row_indent = NULL,\n  row_emphasis = NULL,\n  row_muted = NULL,\n  row_accent = NULL,\n\n  # Marker styling\n  marker_color = NULL,\n  marker_shape = NULL,\n  marker_opacity = NULL,\n  marker_size = NULL,\n\n  # Split plots\n  split_by = NULL,\n  shared_axis = FALSE,\n\n  # Visual overrides\n  axis_range = NULL,\n  axis_ticks = NULL,\n  axis_gridlines = NULL,\n  plot_position = NULL,\n  row_height = NULL,\n\n  # Layout\n  width_mode = c(\"natural\", \"fill\"),\n  height_preset = c(\"full\", \"small\", \"medium\", \"large\", \"container\"),\n  width = NULL,\n  height = NULL,\n  elementId = NULL,\n\n  ...\n)"
   },
   {
-    "objectID": "reference/save_plot.html#arguments",
-    "href": "reference/save_plot.html#arguments",
-    "title": "save_plot",
-    "section": "Arguments",
-    "text": "Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA WebSpec, SplitForest, or htmlwidget from forest_plot()/webtable()\n\n\nfile\nOutput file path (or directory for SplitForest). Extension determines format: .svg, .pdf, or .png\n\n\nwidth\nWidth in pixels (default: 800)\n\n\nheight\nHeight in pixels (auto-calculated if NULL)\n\n\nscale\nScale factor for PNG resolution (default: 2)"
+    "objectID": "reference/forest_plot.html#core-arguments",
+    "href": "reference/forest_plot.html#core-arguments",
+    "title": "forest_plot()",
+    "section": "Core Arguments",
+    "text": "Core Arguments\nThese are the essential arguments for creating any forest plot.\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA data frame (or WebSpec object for advanced use)\n\n\npoint\nColumn name for point estimates (required)\n\n\nlower\nColumn name for lower confidence bounds (required)\n\n\nupper\nColumn name for upper confidence bounds (required)\n\n\nlabel\nColumn name for row labels\n\n\n\n\n\n\n\n\n\nImportantThe Three Required Mappings\n\n\n\nEvery forest plot needs at minimum: point, lower, and upper. These define what values to plot.\nforest_plot(data, point = \"hr\", lower = \"ci_low\", upper = \"ci_high\")\n\n\n\nScale and Reference\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nscale\n\"linear\" or \"log\"\n\n\nnull_value\nReference line value (e.g., 1 for ratios, 0 for differences)\n\n\naxis_label\nX-axis label text\n\n\n\n\n\n\n\n\n\nTipScale Selection\n\n\n\n\nLog scale (scale = \"log\", null_value = 1): For ratios where effects are multiplicative (OR, HR, RR)\nLinear scale (scale = \"linear\", null_value = 0): For differences where effects are additive (MD, RD, SMD)\n\n\n\n\n\nGrouping\n\n\n\nArgument\nDescription\n\n\n\n\ngroup\nColumn name(s) for grouping rows into collapsible sections\n\n\n\n# Single-level grouping\nforest_plot(data, ..., group = \"category\")\n\n# Hierarchical grouping (region &gt; country)\nforest_plot(data, ..., group = c(\"region\", \"country\"))\n\n\nColumns\n\n\n\nArgument\nDescription\n\n\n\n\ncolumns\nList of column specifications using col_*() functions\n\n\n\n\n\nCode\nforest_plot(data, ...,\n  columns = list(\n    col_n(\"n\"),\n    col_events(\"events\", \"n\"),\n    col_interval(\"HR (95% CI)\"),\n    col_pvalue(\"pval\")\n  )\n)\n\n\nSee Columns Reference for all available column types.\n\n\nLabels and Titles\n\n\n\nArgument\nDescription\n\n\n\n\ntitle\nPlot title\n\n\nsubtitle\nSubtitle below title\n\n\ncaption\nCaption text\n\n\nfootnote\nFootnote at bottom"
   },
   {
-    "objectID": "reference/save_plot.html#details",
-    "href": "reference/save_plot.html#details",
-    "title": "save_plot",
-    "section": "Details",
-    "text": "Details\nThe export process:\n\nRenders the widget to SVG using the internal JavaScript renderer\nFor SVG output, writes the SVG directly\nFor PDF output, converts SVG to PDF using Chrome/Chromium\nFor PNG output, renders SVG to PNG at specified scale\n\n\nRequirements\n\nSVG: No external dependencies\nPDF/PNG: Requires Chrome, Chromium, or Google Chrome installed\n\n\n\nResolution\nFor PNG exports, the scale parameter controls the resolution:\n\nscale = 1: 1x resolution (72 DPI equivalent)\nscale = 2: 2x resolution (144 DPI, good for screens)\nscale = 3: 3x resolution (216 DPI, good for print)"
+    "objectID": "reference/forest_plot.html#row-styling-arguments",
+    "href": "reference/forest_plot.html#row-styling-arguments",
+    "title": "forest_plot()",
+    "section": "Row Styling Arguments",
+    "text": "Row Styling Arguments\nStyle entire rows based on column values. Each argument accepts a column name containing the styling values.\n\n\n\n\n\n\n\n\nArgument\nColumn Contains\nEffect\n\n\n\n\nrow_type\n\"header\", \"data\", \"summary\", \"spacer\"\nControls row behavior and marker display\n\n\nrow_bold\nTRUE/FALSE\nBold text\n\n\nrow_italic\nTRUE/FALSE\nItalic text\n\n\nrow_color\nCSS color (e.g., \"#1a365d\")\nText color\n\n\nrow_bg\nCSS color\nBackground color\n\n\nrow_indent\nInteger (0, 1, 2, …)\nIndentation level\n\n\n\n\nSemantic Styling Shortcuts\nThese apply theme-aware styling that adapts when you change themes:\n\n\n\n\n\n\n\nArgument\nEffect\n\n\n\n\nrow_emphasis\nBold text with theme primary color (for key results)\n\n\nrow_muted\nLighter color, reduced prominence (for secondary data)\n\n\nrow_accent\nTheme accent color (for highlighted findings)\n\n\n\n\n\nCode\nstyled_data &lt;- data.frame(\n  label = c(\"Primary Endpoint\", \"  CV Death\", \"  MI\", \"Summary\"),\n  hr = c(NA, 0.82, 0.79, 0.78),\n  lower = c(NA, 0.72, 0.68, 0.65),\n  upper = c(NA, 0.94, 0.92, 0.93),\n  rtype = c(\"header\", \"data\", \"data\", \"summary\"),\n  rbold = c(TRUE, FALSE, FALSE, TRUE),\n  rindent = c(0, 1, 1, 0)\n)\n\nforest_plot(styled_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"label\",\n  row_type = \"rtype\",\n  row_bold = \"rbold\",\n  row_indent = \"rindent\",\n  null_value = 1, scale = \"log\"\n)\n\n\n\n\n\n\n\n\n\n\n\n\nWarningRow Types and NA Values\n\n\n\nRows with row_type = \"header\" or \"spacer\" should have NA for point, lower, and upper. The plot displays them as label-only rows without interval markers."
   },
   {
-    "objectID": "reference/save_plot.html#examples",
-    "href": "reference/save_plot.html#examples",
-    "title": "save_plot",
-    "section": "Examples",
-    "text": "Examples\n\nSave as SVG\np &lt;- forest_plot(data, point = \"hr\", lower = \"lo\", upper = \"hi\", label = \"study\")\n\nsave_plot(p, \"my_plot.svg\")\n\n\nSave as PNG (high resolution)\nsave_plot(p, \"my_plot.png\", width = 1200, scale = 3)\n\n\nSave as PDF\nsave_plot(p, \"my_plot.pdf\", width = 800)\n\n\nSave SplitForest to Directory\nWhen saving a SplitForest, all sub-plots are exported to a directory structure matching the split hierarchy:\nsplit_result &lt;- data |&gt;\n  web_spec(point = \"hr\", lower = \"lo\", upper = \"hi\") |&gt;\n  split_forest(by = c(\"region\", \"age_group\"))\n\n# Export all plots to a directory\nsave_plot(split_result, \"output/plots\")\n# Creates: output/plots/North/North_Young.svg, etc."
+    "objectID": "reference/forest_plot.html#marker-styling-arguments",
+    "href": "reference/forest_plot.html#marker-styling-arguments",
+    "title": "forest_plot()",
+    "section": "Marker Styling Arguments",
+    "text": "Marker Styling Arguments\nControl the appearance of interval markers (points and lines).\n\n\n\n\n\n\n\n\nArgument\nColumn Contains\nEffect\n\n\n\n\nmarker_color\nCSS color strings\nMarker fill color\n\n\nmarker_shape\n\"square\", \"circle\", \"diamond\", \"triangle\"\nMarker shape\n\n\nmarker_opacity\n0–1\nTransparency\n\n\nmarker_size\nNumeric multiplier\nSize (1 = default, 2 = double)\n\n\n\n\n\nCode\ndirection_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Trial D\"),\n  hr = c(0.72, 0.95, 0.68, 1.15),\n  lower = c(0.55, 0.78, 0.52, 0.90),\n  upper = c(0.94, 1.15, 0.89, 1.47)\n) |&gt;\n  mutate(\n    marker_color = case_when(\n      upper &lt; 1 ~ \"#16a34a\",\n      lower &gt; 1 ~ \"#dc2626\",\n      TRUE ~ \"#64748b\"\n    )\n  )\n\nforest_plot(direction_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  marker_color = \"marker_color\",\n  null_value = 1, scale = \"log\"\n)"
   },
   {
-    "objectID": "reference/save_plot.html#save_split_forest",
-    "href": "reference/save_plot.html#save_split_forest",
-    "title": "save_plot",
-    "section": "save_split_forest",
-    "text": "save_split_forest\nExport all sub-plots from a SplitForest to a directory structure.\n\nUsage\nsave_split_forest(x, path, format = c(\"svg\", \"pdf\", \"png\"),\n                  width = 800, height = NULL, scale = 2)\n\n\nArguments\n\n\n\nArgument\nDescription\n\n\n\n\nx\nA SplitForest object\n\n\npath\nOutput directory path\n\n\nformat\nOutput format: \"svg\", \"pdf\", or \"png\"\n\n\nwidth\nWidth in pixels (default: 800)\n\n\nheight\nHeight in pixels (auto if NULL)\n\n\nscale\nScale factor for PNG (default: 2)\n\n\n\n\n\nDetails\nCreates a directory structure matching the split hierarchy: - Single split: path/Value.svg - Hierarchical split: path/Level1/Level1_Level2.svg\n\n\nExample\ndata |&gt;\n  web_spec(point = \"or\", lower = \"lower\", upper = \"upper\", label = \"study\") |&gt;\n  split_forest(by = c(\"sex\", \"age_group\")) |&gt;\n  save_split_forest(\"output/plots\", format = \"svg\")\n\n# Creates:\n# output/plots/Male/Male_Young.svg\n# output/plots/Male/Male_Old.svg\n# output/plots/Female/Female_Young.svg\n# output/plots/Female/Female_Old.svg"
+    "objectID": "reference/forest_plot.html#fluent-api-set_-functions",
+    "href": "reference/forest_plot.html#fluent-api-set_-functions",
+    "title": "forest_plot()",
+    "section": "Fluent API: set_*() Functions",
+    "text": "Fluent API: set_*() Functions\nEvery styling argument has an equivalent set_*() function for pipe-based workflows. Both approaches produce identical results.\n\n\nCode\n# Constructor arguments (all at once)\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  row_bold = \"is_summary\",\n  marker_color = \"effect_color\",\n  scale = \"log\", null_value = 1\n)\n\n# Fluent API (step by step)\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(bold = \"is_summary\") |&gt;\n  set_marker_style(color = \"effect_color\")\n\n\nThe fluent API is useful when:\n\nStyling depends on computed columns\nYou’re creating multiple variants from one base\nYou want to apply conditional styling\nYou’re building reusable styling pipelines\n\nSee Styling Functions for complete documentation."
   },
   {
-    "objectID": "reference/save_plot.html#see-also",
-    "href": "reference/save_plot.html#see-also",
-    "title": "save_plot",
+    "objectID": "reference/forest_plot.html#theme-arguments",
+    "href": "reference/forest_plot.html#theme-arguments",
+    "title": "forest_plot()",
+    "section": "Theme Arguments",
+    "text": "Theme Arguments\n\n\n\nArgument\nDescription\n\n\n\n\ntheme\nA WebTheme object or theme name string\n\n\n\nTheme names: \"default\", \"jama\", \"lancet\", \"nature\", \"cochrane\", \"modern\", \"presentation\", \"dark\", \"minimal\"\n\nCode\nsmall_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\"),\n  hr = c(0.72, 0.85, 0.68),\n  lower = c(0.55, 0.70, 0.52),\n  upper = c(0.95, 1.03, 0.89)\n)\n\nforest_plot(small_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  null_value = 1, scale = \"log\",\n  theme = web_theme_jama(), title = \"JAMA\"\n)\nforest_plot(small_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  null_value = 1, scale = \"log\",\n  theme = web_theme_lancet(), title = \"Lancet\"\n)\n\n\n\n\n\n\n\n\n\n\n\n\n\nSee Themes Reference for customization options."
+  },
+  {
+    "objectID": "reference/forest_plot.html#split-plot-arguments",
+    "href": "reference/forest_plot.html#split-plot-arguments",
+    "title": "forest_plot()",
+    "section": "Split Plot Arguments",
+    "text": "Split Plot Arguments\nCreate multiple linked plots for subgroup analyses.\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nsplit_by\nColumn name(s) to split data into separate plots with sidebar navigation\n\n\nshared_axis\nTRUE to use same axis range across all split plots\n\n\n\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  split_by = \"region\",\n  shared_axis = TRUE,\n  scale = \"log\", null_value = 1\n)"
+  },
+  {
+    "objectID": "reference/forest_plot.html#visual-override-arguments",
+    "href": "reference/forest_plot.html#visual-override-arguments",
+    "title": "forest_plot()",
+    "section": "Visual Override Arguments",
+    "text": "Visual Override Arguments\nQuick adjustments that override theme settings:\n\n\n\nArgument\nDescription\n\n\n\n\naxis_range\nc(min, max) to override axis limits\n\n\naxis_ticks\nNumeric vector of explicit tick positions\n\n\naxis_gridlines\nTRUE/FALSE to show/hide gridlines\n\n\nplot_position\n\"left\" or \"right\"\n\n\nrow_height\nRow height in pixels\n\n\n\n\n\n\n\n\n\nTipEquivalence with Theme Modifiers\n\n\n\nDirect arguments are shortcuts for theme modifications:\n# These are equivalent:\nforest_plot(data, ..., row_height = 32)\nforest_plot(data, ...) |&gt; set_spacing(row_height = 32)"
+  },
+  {
+    "objectID": "reference/forest_plot.html#layout-arguments",
+    "href": "reference/forest_plot.html#layout-arguments",
+    "title": "forest_plot()",
+    "section": "Layout Arguments",
+    "text": "Layout Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nwidth_mode\n\"natural\" (centered at natural width) or \"fill\" (expand to container)\n\n\nheight_preset\n\"full\", \"small\" (300px), \"medium\" (500px), \"large\" (900px), \"container\"\n\n\nwidth\nExplicit widget width\n\n\nheight\nExplicit widget height\n\n\nelementId\nHTML element ID for the widget"
+  },
+  {
+    "objectID": "reference/forest_plot.html#return-value",
+    "href": "reference/forest_plot.html#return-value",
+    "title": "forest_plot()",
+    "section": "Return Value",
+    "text": "Return Value\nReturns an htmlwidget object that can be:\n\nDisplayed in RStudio Viewer\nRendered in R Markdown / Quarto documents\nUsed in Shiny applications\nSaved to files with save_plot()\nFurther modified with set_*() functions"
+  },
+  {
+    "objectID": "reference/forest_plot.html#complete-examples",
+    "href": "reference/forest_plot.html#complete-examples",
+    "title": "forest_plot()",
+    "section": "Complete Examples",
+    "text": "Complete Examples\n\nClinical Trial Summary\n\n\nCode\ntrial_data &lt;- data.frame(\n  study = c(\"EMPA-REG\", \"CANVAS\", \"DECLARE\", \"DAPA-HF\", \"EMPEROR\"),\n  hr = c(0.62, 0.86, 0.93, 0.74, 0.75),\n  lower = c(0.49, 0.75, 0.84, 0.65, 0.65),\n  upper = c(0.77, 0.97, 1.03, 0.85, 0.86),\n  n = c(7020, 10142, 17160, 4744, 3730),\n  events = c(490, 585, 1216, 386, 361),\n  pval = c(0.0001, 0.02, 0.17, 0.0001, 0.0001)\n)\n\nforest_plot(trial_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  columns = list(\n    col_n(\"n\"),\n    col_numeric(\"events\", \"Events\"),\n    col_interval(\"HR (95% CI)\"),\n    col_pvalue(\"pval\")\n  ),\n  null_value = 1, scale = \"log\",\n  theme = web_theme_modern(),\n  title = \"SGLT2 Inhibitor Cardiovascular Outcomes\"\n)\n\n\n\n\n\n\n\n\nStyled Subgroup Analysis\n\n\nCode\nsubgroup_data &lt;- tibble(\n  label = c(\n    \"Overall Population\", \"\",\n    \"Age\",\n    \"  &lt; 65 years\", \"  &gt;= 65 years\", \"\",\n    \"Sex\",\n    \"  Male\", \"  Female\", \"\",\n    \"Diabetes\",\n    \"  Yes\", \"  No\"\n  ),\n  hr = c(0.78, NA, NA, 0.72, 0.85, NA, NA, 0.76, 0.82, NA, NA, 0.74, 0.81),\n  lower = c(0.68, NA, NA, 0.58, 0.72, NA, NA, 0.64, 0.68, NA, NA, 0.61, 0.66),\n  upper = c(0.89, NA, NA, 0.89, 1.00, NA, NA, 0.90, 0.99, NA, NA, 0.90, 0.99),\n  rtype = c(\"summary\", \"spacer\", \"header\", \"data\", \"data\", \"spacer\",\n            \"header\", \"data\", \"data\", \"spacer\", \"header\", \"data\", \"data\"),\n  rbold = c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE,\n            TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)\n)\n\nforest_plot(subgroup_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"label\",\n  row_type = \"rtype\",\n  row_bold = \"rbold\",\n  columns = list(col_interval(\"HR (95% CI)\")),\n  null_value = 1, scale = \"log\",\n  axis_label = \"Hazard Ratio\",\n  theme = web_theme_jama()\n)"
+  },
+  {
+    "objectID": "reference/forest_plot.html#see-also",
+    "href": "reference/forest_plot.html#see-also",
+    "title": "forest_plot()",
     "section": "See Also",
-    "text": "See Also\n\nforest_plot() for creating plots\nsplit_forest() for creating split forests\nExporting Guide for detailed export workflows"
+    "text": "See Also\n\nStyling Functions — set_row_style(), set_marker_style(), and more\nThemes — Preset and custom themes\nColumns — Column type specifications\nQuick Start Guide — Getting started tutorial\nCustomizing Plots — Fluent API patterns\nAdvanced: web_spec() — Programmatic specification building"
   },
   {
     "objectID": "reference/split_forest.html",
@@ -1157,58 +1290,58 @@
   {
     "objectID": "reference/web_spec.html",
     "href": "reference/web_spec.html",
-    "title": "Specification Objects",
+    "title": "Advanced: Specification Objects",
     "section": "",
-    "text": "Functions for creating specification objects that define forest plot structure."
+    "text": "NoteWhen to Use This Page\n\n\n\nMost users should start with forest_plot(), which accepts all the same arguments and is simpler for typical workflows.\nUse web_spec() when you need to:\n\nBuild plot specifications programmatically (e.g., in functions or loops)\nReuse the same specification with different rendering options\nInspect or serialize the specification object\nWork with multi-effect plots requiring explicit web_effect() definitions"
+  },
+  {
+    "objectID": "reference/web_spec.html#overview",
+    "href": "reference/web_spec.html#overview",
+    "title": "Advanced: Specification Objects",
+    "section": "Overview",
+    "text": "Overview\nThe web_spec() function creates a WebSpec object—an intermediate representation that captures all the data, mappings, and styling for a forest plot. This object can then be rendered with forest_plot() or webtable().\n\n\nCode\n# Two equivalent approaches:\n\n# Direct (recommended for most cases)\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n)\n\n# Via WebSpec (for programmatic use)\nspec &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n)\nforest_plot(spec)"
   },
   {
     "objectID": "reference/web_spec.html#core-specification",
     "href": "reference/web_spec.html#core-specification",
-    "title": "Specification Objects",
+    "title": "Advanced: Specification Objects",
     "section": "Core Specification",
-    "text": "Core Specification\n\nweb_spec\nCreate a web specification for table visualizations. This is the core data structure that can be rendered as a forest plot or table.\nweb_spec(\n  data,\n  point,\n  lower,\n  upper,\n  label = NULL,\n  label_header = \"Study\",\n  group = NULL,\n  columns = NULL,\n  scale = c(\"linear\", \"log\"),\n  null_value = NULL,\n  axis_label = NULL,\n  effects = NULL,\n  annotations = NULL,\n  title = NULL,\n  subtitle = NULL,\n  caption = NULL,\n  footnote = NULL,\n  row_bold = NULL,\n  row_italic = NULL,\n  row_color = NULL,\n  row_bg = NULL,\n  row_badge = NULL,\n  row_icon = NULL,\n  row_indent = NULL,\n  row_type = NULL,\n  marker_color = NULL,\n  marker_shape = NULL,\n  marker_opacity = NULL,\n  marker_size = NULL,\n  theme = web_theme_default(),\n  interaction = web_interaction()\n)\n\n\nData Arguments\n\n\n\nArgument\nDescription\n\n\n\n\ndata\nA data.frame, data.table, or tibble\n\n\npoint\nColumn name for point estimates\n\n\nlower\nColumn name for lower confidence bounds\n\n\nupper\nColumn name for upper confidence bounds\n\n\nlabel\nColumn name for row labels\n\n\nlabel_header\nHeader text for the label column (default: “Study”)\n\n\n\n\n\nGrouping Arguments\n\n\n\nArgument\nDescription\n\n\n\n\ngroup\nGrouping specification (see below)\n\n\n\nThe group argument supports three modes:\n\nSingle column: group = \"category\" - flat grouping by one column\nHierarchical: group = c(\"region\", \"country\") - nested grouping (region &gt; country)\nExplicit: group = list(web_group(...)) - full control over group definitions\n\n\n\nDisplay Arguments\n\n\n\nArgument\nDescription\n\n\n\n\ncolumns\nList of column specifications (use col_*() helpers)\n\n\nscale\nScale type: \"linear\" or \"log\"\n\n\nnull_value\nReference value (default: 0 for linear, 1 for log)\n\n\naxis_label\nLabel for the x-axis\n\n\ntitle\nPlot title\n\n\nsubtitle\nPlot subtitle\n\n\ncaption\nPlot caption\n\n\nfootnote\nPlot footnote\n\n\n\n\n\nRow Styling Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nrow_type\nColumn for row type: \"header\", \"data\", \"summary\", \"spacer\"\n\n\nrow_bold\nColumn for bold styling (logical)\n\n\nrow_italic\nColumn for italic styling (logical)\n\n\nrow_color\nColumn for text color (hex string)\n\n\nrow_bg\nColumn for background color (hex string)\n\n\nrow_badge\nColumn for badge text\n\n\nrow_icon\nColumn for icons (emoji/unicode)\n\n\nrow_indent\nColumn for indentation level (integer)\n\n\n\n\n\nMarker Styling Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nmarker_color\nColumn containing marker fill colors (hex strings)\n\n\nmarker_shape\nColumn containing shapes: \"square\", \"circle\", \"diamond\", \"triangle\"\n\n\nmarker_opacity\nColumn containing opacity values (0-1)\n\n\nmarker_size\nColumn containing size multipliers (1 = default size)\n\n\n\n\n\nAdvanced Arguments\n\n\n\nArgument\nDescription\n\n\n\n\neffects\nList of web_effect() objects for multi-effect plots\n\n\nannotations\nList of annotation objects\n\n\ntheme\nTheme object (default: web_theme_default())\n\n\ninteraction\nInteraction settings (default: web_interaction())"
+    "text": "Core Specification\n\nweb_spec\nCreate a specification object for forest plot rendering.\nweb_spec(\n  data,\n  point,\n  lower,\n  upper,\n  label = NULL,\n  label_header = \"Study\",\n  group = NULL,\n  columns = NULL,\n  scale = c(\"linear\", \"log\"),\n  null_value = NULL,\n  axis_label = NULL,\n  effects = NULL,\n  annotations = NULL,\n  title = NULL,\n  subtitle = NULL,\n  caption = NULL,\n  footnote = NULL,\n  row_bold = NULL,\n  row_italic = NULL,\n  row_color = NULL,\n  row_bg = NULL,\n  row_badge = NULL,\n  row_icon = NULL,\n  row_indent = NULL,\n  row_type = NULL,\n  row_emphasis = NULL,\n  row_muted = NULL,\n  row_accent = NULL,\n  marker_color = NULL,\n  marker_shape = NULL,\n  marker_opacity = NULL,\n  marker_size = NULL,\n  theme = web_theme_default(),\n  interaction = web_interaction()\n)\n\n\nRequired Arguments\n\n\n\nArgument\nDescription\n\n\n\n\ndata\nA data.frame, data.table, or tibble\n\n\npoint\nColumn name for point estimates\n\n\nlower\nColumn name for lower confidence bounds\n\n\nupper\nColumn name for upper confidence bounds\n\n\n\n\n\nOptional Data Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nlabel\nColumn name for row labels\n\n\nlabel_header\nHeader text for the label column (default: \"Study\")\n\n\n\n\n\nGrouping\n\n\n\nArgument\nDescription\n\n\n\n\ngroup\nGrouping specification (see below)\n\n\n\nThe group argument supports three modes:\n\nSingle column: group = \"category\" — flat grouping by one column\nHierarchical: group = c(\"region\", \"country\") — nested grouping (region &gt; country)\nExplicit: group = list(web_group(...)) — full control over group definitions\n\n\n\nDisplay Arguments\n\n\n\nArgument\nDescription\n\n\n\n\ncolumns\nList of column specifications (use col_*() helpers)\n\n\nscale\nScale type: \"linear\" or \"log\"\n\n\nnull_value\nReference value (default: 0 for linear, 1 for log)\n\n\naxis_label\nLabel for the x-axis\n\n\ntitle\nPlot title\n\n\nsubtitle\nPlot subtitle\n\n\ncaption\nPlot caption\n\n\nfootnote\nPlot footnote\n\n\n\n\n\nRow Styling Arguments\nAll row styling arguments accept column names containing the styling values:\n\n\n\n\n\n\n\nArgument\nColumn Contains\n\n\n\n\nrow_type\nRow type: \"header\", \"data\", \"summary\", \"spacer\"\n\n\nrow_bold\nTRUE/FALSE for bold text\n\n\nrow_italic\nTRUE/FALSE for italic text\n\n\nrow_color\nCSS color strings (e.g., \"#1a365d\")\n\n\nrow_bg\nBackground color strings\n\n\nrow_badge\nBadge text to display\n\n\nrow_icon\nEmoji or unicode icons\n\n\nrow_indent\nIndentation levels (0, 1, 2, …)\n\n\nrow_emphasis\nTRUE/FALSE for emphasis styling (bold + primary color)\n\n\nrow_muted\nTRUE/FALSE for muted styling (lighter, reduced prominence)\n\n\nrow_accent\nTRUE/FALSE for accent styling (theme accent color)\n\n\n\n\n\nMarker Styling Arguments\n\n\n\n\n\n\n\nArgument\nColumn Contains\n\n\n\n\nmarker_color\nCSS color strings for marker fill\n\n\nmarker_shape\nShape values: \"square\", \"circle\", \"diamond\", \"triangle\"\n\n\nmarker_opacity\nOpacity values from 0 to 1\n\n\nmarker_size\nSize multipliers (1 = default size)\n\n\n\n\n\nAdvanced Arguments\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\neffects\nList of web_effect() objects for multi-effect plots\n\n\nannotations\nList of annotation objects (forest_refline(), forest_annotation())\n\n\ntheme\nTheme object (default: web_theme_default())\n\n\ninteraction\nInteraction settings (default: web_interaction())"
   },
   {
     "objectID": "reference/web_spec.html#group-specification",
     "href": "reference/web_spec.html#group-specification",
-    "title": "Specification Objects",
+    "title": "Advanced: Specification Objects",
     "section": "Group Specification",
-    "text": "Group Specification\n\nweb_group\nDefine a row group with optional nesting.\nweb_group(id, label = id, parent = NULL, collapsed = FALSE)\n\n\n\nArgument\nDescription\n\n\n\n\nid\nUnique identifier for the group\n\n\nlabel\nDisplay label (defaults to id)\n\n\nparent\nParent group ID for nesting\n\n\ncollapsed\nWhether the group starts collapsed"
+    "text": "Group Specification\n\nweb_group\nDefine a row group with optional nesting. Use this for explicit control over group structure when automatic grouping from column values isn’t sufficient.\nweb_group(id, label = id, parent = NULL, collapsed = FALSE)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nid\nUnique identifier for the group (must match values in your data)\n\n\nlabel\nDisplay label (defaults to id)\n\n\nparent\nParent group ID for creating nested hierarchies\n\n\ncollapsed\nWhether the group starts collapsed (TRUE/FALSE)\n\n\n\nExample: Explicit Group Definitions\n\n\nCode\n# Data with group column\ndata &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Trial D\"),\n  group_id = c(\"cardio\", \"cardio\", \"renal\", \"renal\"),\n  hr = c(0.72, 0.85, 0.91, 0.78),\n  lower = c(0.55, 0.70, 0.75, 0.60),\n  upper = c(0.95, 1.03, 1.10, 1.00)\n)\n\n# Explicit groups with custom labels\nweb_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  group = list(\n    web_group(\"cardio\", label = \"Cardiovascular Outcomes\"),\n    web_group(\"renal\", label = \"Renal Outcomes\", collapsed = TRUE)\n  )\n)"
   },
   {
     "objectID": "reference/web_spec.html#effect-specification",
     "href": "reference/web_spec.html#effect-specification",
-    "title": "Specification Objects",
+    "title": "Advanced: Specification Objects",
     "section": "Effect Specification",
-    "text": "Effect Specification\n\nweb_effect\nDefine a single effect for multi-effect forest plots.\nweb_effect(point, lower, upper, label = NULL, color = NULL, shape = NULL, opacity = NULL)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\npoint\nColumn name for point estimates\n\n\nlower\nColumn name for lower bounds\n\n\nupper\nColumn name for upper bounds\n\n\nlabel\nDisplay label (defaults to point column name)\n\n\ncolor\nColor for this effect (hex string)\n\n\nshape\nMarker shape: \"square\", \"circle\", \"diamond\", \"triangle\"\n\n\nopacity\nMarker opacity (0-1)"
+    "text": "Effect Specification\n\nweb_effect\nDefine a single effect for multi-effect forest plots. Multi-effect plots display multiple intervals per row, useful for comparing different analyses (e.g., unadjusted vs. adjusted) or different outcomes.\nweb_effect(point, lower, upper, label = NULL, color = NULL, shape = NULL, opacity = NULL)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\npoint\nColumn name for point estimates\n\n\nlower\nColumn name for lower bounds\n\n\nupper\nColumn name for upper bounds\n\n\nlabel\nDisplay label for legend (defaults to point column name)\n\n\ncolor\nOverride color for this effect (CSS color string)\n\n\nshape\nOverride shape: \"square\", \"circle\", \"diamond\", \"triangle\"\n\n\nopacity\nOverride opacity (0–1)\n\n\n\nExample: Comparing Unadjusted and Adjusted Estimates\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\"),\n  # Unadjusted estimates\n  hr_unadj = c(0.75, 0.82, 0.88),\n  lo_unadj = c(0.58, 0.68, 0.72),\n  hi_unadj = c(0.97, 0.99, 1.07),\n  # Adjusted estimates\n  hr_adj = c(0.72, 0.79, 0.85),\n  lo_adj = c(0.55, 0.65, 0.70),\n  hi_adj = c(0.94, 0.96, 1.03)\n)\n\nweb_spec(data,\n  point = \"hr_unadj\", lower = \"lo_unadj\", upper = \"hi_unadj\",\n  label = \"study\",\n  effects = list(\n    web_effect(\"hr_unadj\", \"lo_unadj\", \"hi_unadj\",\n               label = \"Unadjusted\", color = \"#64748b\"),\n    web_effect(\"hr_adj\", \"lo_adj\", \"hi_adj\",\n               label = \"Adjusted\", color = \"#2563eb\")\n  ),\n  scale = \"log\", null_value = 1\n) |&gt;\n  forest_plot()"
   },
   {
     "objectID": "reference/web_spec.html#interaction-specification",
     "href": "reference/web_spec.html#interaction-specification",
-    "title": "Specification Objects",
+    "title": "Advanced: Specification Objects",
     "section": "Interaction Specification",
-    "text": "Interaction Specification\n\nweb_interaction\nConfigure interactive features and tooltips.\nweb_interaction(\n  tooltip_fields = NULL,\n  show_filters = FALSE,\n  show_legend = TRUE,\n  enable_sort = TRUE,\n  enable_collapse = TRUE,\n  enable_select = TRUE,\n  enable_hover = TRUE,\n  enable_resize = TRUE,\n  enable_export = TRUE\n)\n\n\n\n\n\n\n\n\nArgument\nDescription\nDefault\n\n\n\n\ntooltip_fields\nColumn names to show in hover tooltip\nNULL (no tooltip)\n\n\nshow_filters\nShow filter panel\nFALSE\n\n\nshow_legend\nShow legend\nTRUE\n\n\nenable_sort\nEnable column sorting\nTRUE\n\n\nenable_collapse\nEnable group collapsing\nTRUE\n\n\nenable_select\nEnable row selection\nTRUE\n\n\nenable_hover\nEnable hover effects\nTRUE\n\n\nenable_resize\nEnable column resizing\nTRUE\n\n\nenable_export\nEnable download/export button\nTRUE\n\n\n\n\n\nTooltips\nTooltips are opt-in. Specify column names to display when hovering over interval markers:\n# Show sample size and p-value on hover\nweb_interaction(\n  tooltip_fields = c(\"n\", \"events\", \"pvalue\")\n)\nThe tooltip displays: 1. Row label (study name) 2. Point estimate with CI 3. Each specified field as key-value pairs\n\n\nPresets\nweb_interaction_minimal()      # Hover only, no interactive features\nweb_interaction_publication()  # No interactive features at all"
+    "text": "Interaction Specification\n\nweb_interaction\nConfigure interactive features for the rendered widget.\nweb_interaction(\n  tooltip_fields = NULL,\n  show_filters = FALSE,\n  show_legend = TRUE,\n  enable_sort = TRUE,\n  enable_collapse = TRUE,\n  enable_select = TRUE,\n  enable_hover = TRUE,\n  enable_resize = TRUE,\n  enable_export = TRUE,\n  enable_themes = \"default\"\n)\n\n\n\n\n\n\n\n\nArgument\nDescription\nDefault\n\n\n\n\ntooltip_fields\nColumn names to show in hover tooltip\nNULL (no tooltip)\n\n\nshow_filters\nShow filter panel\nFALSE\n\n\nshow_legend\nShow legend\nTRUE\n\n\nenable_sort\nEnable column sorting\nTRUE\n\n\nenable_collapse\nEnable group collapsing\nTRUE\n\n\nenable_select\nEnable row selection\nTRUE\n\n\nenable_hover\nEnable hover effects\nTRUE\n\n\nenable_resize\nEnable column resizing\nTRUE\n\n\nenable_export\nEnable download/export button\nTRUE\n\n\nenable_themes\nTheme menu: \"default\", NULL, or list of WebTheme\n\"default\"\n\n\n\n\n\nTooltips\nTooltips are opt-in. Specify column names to display when hovering over interval markers:\nweb_interaction(\n  tooltip_fields = c(\"n\", \"events\", \"pvalue\")\n)\nThe tooltip displays the row label, point estimate with CI, and each specified field.\n\n\nPresets\n# Read-only: hover effects only, no interactive features\nweb_interaction_minimal()\n\n# Static: no interactive features at all (for publications)\nweb_interaction_publication()"
   },
   {
-    "objectID": "reference/web_spec.html#examples",
-    "href": "reference/web_spec.html#examples",
-    "title": "Specification Objects",
-    "section": "Examples",
-    "text": "Examples\n\nBasic Specification\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Study A\", \"Study B\", \"Study C\"),\n  hr = c(0.72, 0.85, 0.91),\n  lower = c(0.55, 0.70, 0.75),\n  upper = c(0.95, 1.03, 1.10)\n)\n\nspec &lt;- web_spec(data,\n  point = \"hr\",\n  lower = \"lower\",\n  upper = \"upper\",\n  label = \"study\",\n  scale = \"log\",\n  null_value = 1\n)\n\n# Render as forest plot\nforest_plot(spec)\n\n# Render as table only\nwebtable(spec)\n\n\n\n\nHierarchical Grouping\n\n\nCode\ndata &lt;- data.frame(\n  region = c(\"North\", \"North\", \"South\", \"South\"),\n  country = c(\"USA\", \"Canada\", \"Brazil\", \"Argentina\"),\n  hr = c(0.72, 0.85, 0.91, 0.78),\n  lower = c(0.55, 0.70, 0.75, 0.60),\n  upper = c(0.95, 1.03, 1.10, 1.00)\n)\n\n# Hierarchical grouping: Region &gt; Country\nspec &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\",\n  label = \"country\",\n  group = c(\"region\", \"country\"),\n  scale = \"log\", null_value = 1\n)\n\n\n\n\nMulti-Effect Plot\n\n\nCode\ndata &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\"),\n  or = c(1.5, 1.2),\n  or_lo = c(1.1, 0.9),\n  or_hi = c(2.0, 1.6),\n  hr = c(1.3, 1.1),\n  hr_lo = c(1.0, 0.8),\n  hr_hi = c(1.7, 1.5)\n)\n\nspec &lt;- web_spec(data,\n  point = \"or\", lower = \"or_lo\", upper = \"or_hi\",\n  label = \"study\",\n  effects = list(\n    web_effect(\"or\", \"or_lo\", \"or_hi\", label = \"Odds Ratio\", color = \"#3b82f6\"),\n    web_effect(\"hr\", \"hr_lo\", \"hr_hi\", label = \"Hazard Ratio\", color = \"#ef4444\")\n  ),\n  scale = \"log\", null_value = 1\n)"
-  },
-  {
-    "objectID": "reference/web_spec.html#fluent-api",
-    "href": "reference/web_spec.html#fluent-api",
-    "title": "Specification Objects",
-    "section": "Fluent API",
-    "text": "Fluent API\nModify specifications after creation using the pipe operator. See Customizing Plots guide for detailed usage.\n\nset_marker_style\nSet marker styling columns.\nspec |&gt; set_marker_style(color = NULL, shape = NULL, opacity = NULL, size = NULL)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\ncolor\nColumn name for marker fill colors (hex strings)\n\n\nshape\nColumn name for marker shapes: \"square\", \"circle\", \"diamond\", \"triangle\"\n\n\nopacity\nColumn name for marker opacity (0-1)\n\n\nsize\nColumn name for marker size multipliers (1 = default)\n\n\n\n\n\nset_row_style\nSet row styling columns.\nspec |&gt; set_row_style(\n  bold = NULL, italic = NULL, color = NULL, bg = NULL,\n  badge = NULL, icon = NULL, indent = NULL, type = NULL\n)\n\n\n\n\n\n\n\nArgument\nDescription\n\n\n\n\nbold\nColumn name for bold text (logical)\n\n\nitalic\nColumn name for italic text (logical)\n\n\ncolor\nColumn name for text color (hex string)\n\n\nbg\nColumn name for background color (hex string)\n\n\nbadge\nColumn name for badge text\n\n\nicon\nColumn name for icon (emoji/unicode)\n\n\nindent\nColumn name for indentation level (integer)\n\n\ntype\nColumn name for row type: \"data\", \"header\", \"summary\", \"spacer\"\n\n\n\n\n\nset_column_style\nSet per-cell styling for a specific column.\nspec |&gt; set_column_style(\n  column, bold = NULL, italic = NULL, color = NULL,\n  bg = NULL, badge = NULL, icon = NULL\n)\n\n\n\nArgument\nDescription\n\n\n\n\ncolumn\nField name of the column to style\n\n\nbold\nColumn name for bold text (logical)\n\n\nitalic\nColumn name for italic text (logical)\n\n\ncolor\nColumn name for text color (hex string)\n\n\nbg\nColumn name for background color (hex string)\n\n\nbadge\nColumn name for badge text\n\n\nicon\nColumn name for icon (emoji/unicode)"
+    "objectID": "reference/web_spec.html#programmatic-construction-patterns",
+    "href": "reference/web_spec.html#programmatic-construction-patterns",
+    "title": "Advanced: Specification Objects",
+    "section": "Programmatic Construction Patterns",
+    "text": "Programmatic Construction Patterns\n\nBuilding Specs in Functions\n\n\nCode\ncreate_forest_spec &lt;- function(data, effect_col, ci_cols, ...) {\n  web_spec(data,\n    point = effect_col,\n    lower = ci_cols[1],\n    upper = ci_cols[2],\n    ...\n  )\n}\n\n# Use it\nspec &lt;- create_forest_spec(my_data, \"hr\", c(\"lower\", \"upper\"),\n  label = \"study\", scale = \"log\", null_value = 1\n)\nforest_plot(spec)\n\n\n\n\nReusing Specs with Different Renderings\n\n\nCode\n# Create base specification once\nbase_spec &lt;- web_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  columns = list(col_n(\"n\"), col_interval(\"HR (95% CI)\")),\n  scale = \"log\", null_value = 1\n)\n\n# Render with different themes\nforest_plot(base_spec, theme = web_theme_jama())\nforest_plot(base_spec, theme = web_theme_lancet())\n\n# Render as table only\nwebtable(base_spec)\n\n# Export to file\nsave_plot(forest_plot(base_spec), \"forest.svg\")\n\n\n\n\nInspecting Specifications\n\n\nCode\nspec &lt;- web_spec(data, point = \"hr\", lower = \"lower\", upper = \"upper\")\n\n# Print summary\nprint(spec)\n\n# Convert to data frame\nas.data.frame(spec)\n\n# Access components\nspec@data       # Original data\nspec@theme      # Theme object\nspec@columns    # Column specifications"
   },
   {
     "objectID": "reference/web_spec.html#see-also",
     "href": "reference/web_spec.html#see-also",
-    "title": "Specification Objects",
+    "title": "Advanced: Specification Objects",
     "section": "See Also",
-    "text": "See Also\n\nforest_plot() for rendering specifications\nColumns for column types\nThemes for styling"
+    "text": "See Also\n\nforest_plot() — Primary function for creating plots (recommended)\nStyling Functions — Apply styling with set_*() functions\nColumns — Column type specifications\nThemes — Theme customization"
   },
   {
     "objectID": "cookbook.html",
@@ -1537,56 +1670,63 @@
     "href": "guide/fluent-api.html",
     "title": "Customizing Plots",
     "section": "",
-    "text": "webforest provides a fluent API that lets you build and customize plots step by step using R’s pipe operator (|&gt;)."
+    "text": "webforest provides a fluent API that lets you customize plots step by step using R’s pipe operator (|&gt;). This guide covers how to style your plots, whether you prefer specifying everything upfront or building incrementally."
   },
   {
-    "objectID": "guide/fluent-api.html#two-equivalent-approaches",
-    "href": "guide/fluent-api.html#two-equivalent-approaches",
+    "objectID": "guide/fluent-api.html#the-two-styling-approaches",
+    "href": "guide/fluent-api.html#the-two-styling-approaches",
     "title": "Customizing Plots",
-    "section": "Two Equivalent Approaches",
-    "text": "Two Equivalent Approaches\nwebforest offers two ways to achieve the same result:\n\nConstructor Arguments (All at Once)\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  row_type = \"rtype\",\n  row_bold = \"rbold\",\n  marker_color = \"effect_color\",\n  theme = web_theme_jama(),\n  scale = \"log\", null_value = 1\n)\n\n\n\n\nFluent API (Step by Step)\n\n\nCode\nweb_spec(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(type = \"rtype\", bold = \"rbold\") |&gt;\n  set_marker_style(color = \"effect_color\") |&gt;\n  forest_plot(theme = web_theme_jama())\n\n\nBoth produce identical output.\n\n\n\n\n\n\nNoteWhen to Use Which\n\n\n\n\n\n\nApproach\nBest When\n\n\n\n\nConstructor\nEverything is known upfront\n\n\nFluent API\nStyling depends on computation\n\n\nFluent API\nCreating multiple variants from one base\n\n\nFluent API\nConditional logic determines styling\n\n\nFluent API\nBuilding reusable pipelines"
+    "section": "The Two Styling Approaches",
+    "text": "The Two Styling Approaches\nwebforest offers two equivalent ways to style your forest plots. Both produce identical results—choose based on your workflow preferences.\n\nApproach 1: Direct Arguments in forest_plot()\nWhen you know all your styling upfront, pass everything directly to forest_plot():\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  row_type = \"rtype\",\n  row_bold = \"rbold\",\n  marker_color = \"effect_color\",\n  theme = web_theme_jama(),\n  scale = \"log\", null_value = 1\n)\n\n\nThis approach is concise and keeps all configuration in one place.\n\n\nApproach 2: Fluent API (Pipe-Based Styling)\nWhen styling depends on computation or you want to build incrementally, use set_*() functions:\n\n\nCode\nforest_plot(data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(type = \"rtype\", bold = \"rbold\") |&gt;\n  set_marker_style(color = \"effect_color\") |&gt;\n  set_theme(\"jama\")\n\n\nBoth produce identical output.\n\n\n\n\n\n\nNoteWhen to Use Which\n\n\n\n\n\n\nUse Constructor Arguments When\nUse Fluent API When\n\n\n\n\nEverything is known upfront\nStyling depends on computation\n\n\nSimple, static plots\nCreating multiple variants from one base\n\n\nFewer lines of code matter\nConditional logic determines styling\n\n\n\nBuilding reusable styling pipelines"
   },
   {
-    "objectID": "guide/fluent-api.html#core-modifier-functions",
-    "href": "guide/fluent-api.html#core-modifier-functions",
+    "objectID": "guide/fluent-api.html#the-fluent-pattern",
+    "href": "guide/fluent-api.html#the-fluent-pattern",
     "title": "Customizing Plots",
-    "section": "Core Modifier Functions",
-    "text": "Core Modifier Functions\n\nset_row_style()\nStyle entire rows based on column values:\nspec |&gt; set_row_style(\n  type = \"rtype\",     # \"header\", \"data\", \"summary\", \"spacer\"\n  bold = \"rbold\",     # Column with TRUE/FALSE\n  italic = \"ritalic\", # Column with TRUE/FALSE\n  color = \"rcolor\",   # Column with hex colors\n  bg = \"rbg\",         # Column with background colors\n  badge = \"rbadge\",   # Column with badge text\n  icon = \"ricon\",     # Column with emoji/unicode\n  indent = \"rindent\"  # Column with indent levels (0, 1, 2, ...)\n)\nExample:\n\n\nCode\nstyled_data &lt;- data.frame(\n  study = c(\"Primary\", \"  CV Death\", \"  MI\", \"Secondary\", \"  Stroke\"),\n  hr = c(NA, 0.82, 0.79, NA, 0.88),\n  lower = c(NA, 0.72, 0.68, NA, 0.74),\n  upper = c(NA, 0.94, 0.92, NA, 1.05),\n  rtype = c(\"header\", \"data\", \"data\", \"header\", \"data\"),\n  rbold = c(TRUE, FALSE, FALSE, TRUE, FALSE),\n  rindent = c(0, 1, 1, 0, 1)\n)\n\nweb_spec(styled_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(type = \"rtype\", bold = \"rbold\", indent = \"rindent\") |&gt;\n  forest_plot(theme = web_theme_modern())\n\n\n\n\n\n\n\n\nset_marker_style()\nStyle interval markers based on column values:\nspec |&gt; set_marker_style(\n  color = \"marker_color\",   # Column with hex colors\n  shape = \"marker_shape\",   # Column with \"square\", \"circle\", \"diamond\", \"triangle\"\n  opacity = \"marker_alpha\", # Column with 0-1 values\n  size = \"marker_size\"      # Column with size multipliers\n)\nExample:\n\n\nCode\nmarker_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Trial D\"),\n  hr = c(0.72, 0.95, 0.68, 1.15),\n  lower = c(0.55, 0.78, 0.52, 0.90),\n  upper = c(0.94, 1.15, 0.89, 1.47),\n  direction = c(\"benefit\", \"neutral\", \"benefit\", \"harm\")\n) |&gt;\n  mutate(\n    marker_color = case_when(\n      upper &lt; 1 ~ \"#16a34a\",  # Green for benefit\n      lower &gt; 1 ~ \"#dc2626\",  # Red for harm\n      TRUE ~ \"#64748b\"        # Gray for neutral\n    ),\n    marker_shape = ifelse(direction == \"benefit\", \"circle\", \"square\")\n  )\n\nweb_spec(marker_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_marker_style(color = \"marker_color\", shape = \"marker_shape\") |&gt;\n  forest_plot(theme = web_theme_modern())\n\n\n\n\n\n\n\n\nset_column_style()\nStyle individual column cells:\nspec |&gt; set_column_style(column = \"hr\",\n  bold = \"is_sig\",\n  color = \"hr_color\",\n  bg = \"hr_bg\"\n)\n\n\n\n\n\n\nTipStyling Priority\n\n\n\nWhen both row and column styles are set:\n\nColumn styles take precedence\nRow styles apply to all cells without column overrides\n\nThis lets you set row-wide defaults with column-specific overrides.\n\n\n\n\nset_theme() and Theme Modifiers\nApply or modify themes:\n# Apply by name\nspec |&gt; set_theme(\"jama\")\n\n# Apply by object\nspec |&gt; set_theme(web_theme_lancet())\n\n# Modify theme properties inline\nspec |&gt; set_colors(primary = \"#1a365d\")\nspec |&gt; set_spacing(row_height = 24)\nspec |&gt; set_axis(gridlines = TRUE)\nAll theme modifiers work on both WebSpec and htmlwidget objects."
+    "section": "The Fluent Pattern",
+    "text": "The Fluent Pattern\nThe fluent API follows a simple rule: every set_*() function returns a modified plot that can be piped into the next function.\nforest_plot(data, ...) |&gt;     # Create plot\n  set_row_style(...) |&gt;       # Modify rows\n  set_marker_style(...) |&gt;    # Modify markers\n  set_theme(...)              # Apply theme\n\n\n\n\n\n\nNoteImmutability Guarantee\n\n\n\nEach set_*() call returns a new modified plot, leaving the original unchanged. This makes it safe to create multiple variants without side effects."
   },
   {
-    "objectID": "guide/fluent-api.html#creating-variants",
-    "href": "guide/fluent-api.html#creating-variants",
+    "objectID": "guide/fluent-api.html#core-styling-functions",
+    "href": "guide/fluent-api.html#core-styling-functions",
     "title": "Customizing Plots",
-    "section": "Creating Variants",
-    "text": "Creating Variants\nA common pattern is creating multiple versions from one base:\n\n\nCode\nbase_spec &lt;- web_spec(marker_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n)\n\n# Variant 1: Color by significance\nplot_colored &lt;- base_spec |&gt;\n  set_marker_style(color = \"marker_color\") |&gt;\n  forest_plot(theme = \"modern\", title = \"Colored by Direction\")\n\n# Variant 2: Shape by design\nplot_shaped &lt;- base_spec |&gt;\n  set_marker_style(shape = \"marker_shape\") |&gt;\n  forest_plot(theme = \"modern\", title = \"Shaped by Design\")\n\n# Show one\nplot_colored\n\n\n\n\n\n\n\n\n\n\n\n\nNoteImmutable Specs\n\n\n\nEach set_*() call returns a new modified spec, leaving the original unchanged. This makes it safe to create multiple variants from the same base."
+    "section": "Core Styling Functions",
+    "text": "Core Styling Functions\n\nset_row_style()\nStyle entire rows based on column values. This is your primary tool for creating visual hierarchy—distinguishing headers from data rows, highlighting summaries, and showing nested structure through indentation.\nplot |&gt; set_row_style(\n  type = \"rtype\",     # \"header\", \"data\", \"summary\", \"spacer\"\n  bold = \"rbold\",     # Column with TRUE/FALSE\n  italic = \"ritalic\", # Column with TRUE/FALSE\n  color = \"rcolor\",   # Column with CSS colors\n  bg = \"rbg\",         # Column with background colors\n  badge = \"rbadge\",   # Column with badge text\n  icon = \"ricon\",     # Column with emoji/unicode\n  indent = \"rindent\"  # Column with indent levels (0, 1, 2, ...)\n)\nExample:\n\n\nCode\nstyled_data &lt;- data.frame(\n  study = c(\"Primary\", \"  CV Death\", \"  MI\", \"Secondary\", \"  Stroke\"),\n  hr = c(NA, 0.82, 0.79, NA, 0.88),\n  lower = c(NA, 0.72, 0.68, NA, 0.74),\n  upper = c(NA, 0.94, 0.92, NA, 1.05),\n  rtype = c(\"header\", \"data\", \"data\", \"header\", \"data\"),\n  rbold = c(TRUE, FALSE, FALSE, TRUE, FALSE),\n  rindent = c(0, 1, 1, 0, 1)\n)\n\nforest_plot(styled_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_row_style(type = \"rtype\", bold = \"rbold\", indent = \"rindent\") |&gt;\n  set_theme(\"modern\")\n\n\n\n\n\n\n\n\nset_marker_style()\nStyle interval markers (the points and lines representing effect estimates):\nplot |&gt; set_marker_style(\n  color = \"marker_color\",   # Column with CSS colors\n  shape = \"marker_shape\",   # \"square\", \"circle\", \"diamond\", \"triangle\"\n  opacity = \"marker_alpha\", # Column with 0-1 values\n  size = \"marker_size\"      # Column with size multipliers\n)\nExample:\n\n\nCode\nmarker_data &lt;- data.frame(\n  study = c(\"Trial A\", \"Trial B\", \"Trial C\", \"Trial D\"),\n  hr = c(0.72, 0.95, 0.68, 1.15),\n  lower = c(0.55, 0.78, 0.52, 0.90),\n  upper = c(0.94, 1.15, 0.89, 1.47),\n  direction = c(\"benefit\", \"neutral\", \"benefit\", \"harm\")\n) |&gt;\n  mutate(\n    marker_color = case_when(\n      upper &lt; 1 ~ \"#16a34a\",  # Green for benefit\n      lower &gt; 1 ~ \"#dc2626\",  # Red for harm\n      TRUE ~ \"#64748b\"        # Gray for neutral\n    ),\n    marker_shape = ifelse(direction == \"benefit\", \"circle\", \"square\")\n  )\n\nforest_plot(marker_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_marker_style(color = \"marker_color\", shape = \"marker_shape\") |&gt;\n  set_theme(\"modern\")\n\n\n\n\n\n\n\n\nset_column_style()\nStyle individual column cells (must be applied before rendering):\nplot |&gt; set_column_style(column = \"hr\",\n  bold = \"is_sig\",\n  color = \"hr_color\",\n  bg = \"hr_bg\"\n)\n\n\n\n\n\n\nTipStyling Priority\n\n\n\nWhen both row and column styles are set for the same cell:\n\nColumn styles take precedence\nRow styles apply to cells without column overrides\n\nThis lets you set row-wide defaults with column-specific highlights.\n\n\n\n\nset_theme() and Theme Modifiers\nApply or modify themes:\n# Apply by name\nplot |&gt; set_theme(\"jama\")\n\n# Apply by object\nplot |&gt; set_theme(web_theme_lancet())\n\n# Modify theme properties inline\nplot |&gt; set_colors(primary = \"#1a365d\")\nplot |&gt; set_spacing(row_height = 24)\nplot |&gt; set_axis(gridlines = TRUE)\nAll theme modifiers work on both plot widgets and theme objects."
+  },
+  {
+    "objectID": "guide/fluent-api.html#creating-multiple-variants",
+    "href": "guide/fluent-api.html#creating-multiple-variants",
+    "title": "Customizing Plots",
+    "section": "Creating Multiple Variants",
+    "text": "Creating Multiple Variants\nA powerful pattern is creating multiple plot versions from a common base:\n\n\nCode\n# Base plot\nbase_plot &lt;- forest_plot(marker_data,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n)\n\n# Variant 1: Color by significance\nplot_colored &lt;- base_plot |&gt;\n  set_marker_style(color = \"marker_color\") |&gt;\n  set_theme(\"modern\")\n\n# Variant 2: Shape by design\nplot_shaped &lt;- base_plot |&gt;\n  set_marker_style(shape = \"marker_shape\") |&gt;\n  set_theme(\"modern\")\n\n# Show one\nplot_colored\n\n\n\n\n\n\nSince each set_*() call returns a new object, base_plot remains unchanged and can be reused for each variant."
   },
   {
     "objectID": "guide/fluent-api.html#conditional-styling-with-dplyr",
     "href": "guide/fluent-api.html#conditional-styling-with-dplyr",
     "title": "Customizing Plots",
     "section": "Conditional Styling with dplyr",
-    "text": "Conditional Styling with dplyr\nA powerful pattern is computing style columns with dplyr before plotting:\n\n\nCode\nanalysis_data &lt;- data.frame(\n  study = c(\"EMPA-REG\", \"CANVAS\", \"DECLARE\", \"DAPA-HF\"),\n  hr = c(0.62, 0.86, 0.93, 0.74),\n  lower = c(0.49, 0.75, 0.84, 0.65),\n  upper = c(0.77, 0.97, 1.03, 0.85),\n  pval = c(0.0001, 0.02, 0.17, 0.0001)\n)\n\nstyled_analysis &lt;- analysis_data |&gt;\n  mutate(\n    # Significance styling\n    is_sig = pval &lt; 0.05,\n    sig_color = ifelse(is_sig, \"#16a34a\", \"#94a3b8\"),\n\n    # Effect direction\n    effect_dir = case_when(\n      upper &lt; 1 ~ \"benefit\",\n      lower &gt; 1 ~ \"harm\",\n      TRUE ~ \"neutral\"\n    )\n  )\n\nweb_spec(styled_analysis,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  columns = list(col_pvalue(\"pval\")),\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  set_row_style(bold = \"is_sig\") |&gt;\n  forest_plot(theme = \"modern\")\n\n\n\n\n\n\n\n\n\n\n\n\nTipStyle Column Naming Convention\n\n\n\nUse consistent suffixes for style columns:\n\n_bold for bold flags\n_color for text colors\n_bg for backgrounds\n_badge for badge text\n\nThis makes it clear which columns are data vs styling."
+    "text": "Conditional Styling with dplyr\nA powerful pattern is computing style columns with dplyr before plotting:\n\n\nCode\nanalysis_data &lt;- data.frame(\n  study = c(\"EMPA-REG\", \"CANVAS\", \"DECLARE\", \"DAPA-HF\"),\n  hr = c(0.62, 0.86, 0.93, 0.74),\n  lower = c(0.49, 0.75, 0.84, 0.65),\n  upper = c(0.77, 0.97, 1.03, 0.85),\n  pval = c(0.0001, 0.02, 0.17, 0.0001)\n)\n\nstyled_analysis &lt;- analysis_data |&gt;\n  mutate(\n    # Significance styling\n    is_sig = pval &lt; 0.05,\n    sig_color = ifelse(is_sig, \"#16a34a\", \"#94a3b8\"),\n\n    # Effect direction\n    effect_dir = case_when(\n      upper &lt; 1 ~ \"benefit\",\n      lower &gt; 1 ~ \"harm\",\n      TRUE ~ \"neutral\"\n    )\n  )\n\nforest_plot(styled_analysis,\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  columns = list(col_pvalue(\"pval\")),\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_marker_style(color = \"sig_color\") |&gt;\n  set_row_style(bold = \"is_sig\") |&gt;\n  set_theme(\"modern\")\n\n\n\n\n\n\n\n\n\n\n\n\nTipStyle Column Naming Convention\n\n\n\nUse consistent suffixes for style columns:\n\n_bold for bold flags\n_color for text colors\n_bg for backgrounds\n_badge for badge text\n\nThis makes it clear which columns are data vs styling."
   },
   {
-    "objectID": "guide/fluent-api.html#reusable-pipelines",
-    "href": "guide/fluent-api.html#reusable-pipelines",
+    "objectID": "guide/fluent-api.html#reusable-styling-pipelines",
+    "href": "guide/fluent-api.html#reusable-styling-pipelines",
     "title": "Customizing Plots",
-    "section": "Reusable Pipelines",
-    "text": "Reusable Pipelines\nCreate reusable styling functions:\n\n\nCode\n# Define a standard styling pipeline\napply_significance_style &lt;- function(spec) {\n  spec |&gt;\n    set_marker_style(color = \"sig_color\") |&gt;\n    set_row_style(bold = \"is_sig\") |&gt;\n    set_column_style(\"hr\", color = \"sig_color\")\n}\n\n# Use it on different datasets\nweb_spec(dataset1, ...) |&gt; apply_significance_style() |&gt; forest_plot()\nweb_spec(dataset2, ...) |&gt; apply_significance_style() |&gt; forest_plot()"
+    "section": "Reusable Styling Pipelines",
+    "text": "Reusable Styling Pipelines\nCreate functions that encapsulate your organization’s styling standards:\n\n\nCode\n# Define a standard styling pipeline\napply_clinical_style &lt;- function(plot) {\n  plot |&gt;\n    set_marker_style(color = \"sig_color\") |&gt;\n    set_row_style(bold = \"is_sig\") |&gt;\n    set_theme(\"jama\")\n}\n\n# Use it consistently across analyses\nforest_plot(trial_a, ...) |&gt; apply_clinical_style()\nforest_plot(trial_b, ...) |&gt; apply_clinical_style()\nforest_plot(pooled, ...) |&gt; apply_clinical_style()"
   },
   {
-    "objectID": "guide/fluent-api.html#post-render-modifications",
-    "href": "guide/fluent-api.html#post-render-modifications",
+    "objectID": "guide/fluent-api.html#theme-customization-example",
+    "href": "guide/fluent-api.html#theme-customization-example",
     "title": "Customizing Plots",
-    "section": "Post-Render Modifications",
-    "text": "Post-Render Modifications\nYou can modify plots after rendering:\n\n\nCode\n# Create a customized theme first\ncustom_theme &lt;- web_theme_lancet() |&gt;\n  set_axis(gridlines = TRUE) |&gt;\n  set_spacing(row_height = 32)\n\n# Then apply it to the plot\nforest_plot(analysis_data[1:3, ],\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_theme(custom_theme)\n\n\n\n\n\n\n\n\n\n\n\n\nWarningWidget Modifications Are Limited\n\n\n\nAfter forest_plot(), you can only modify theme properties (colors, spacing, axis). Row and marker styling must be set on the WebSpec before rendering."
+    "section": "Theme Customization Example",
+    "text": "Theme Customization Example\nCreate a customized theme and apply it:\n\n\nCode\n# Create a customized theme\ncustom_theme &lt;- web_theme_lancet() |&gt;\n  set_axis(gridlines = TRUE) |&gt;\n  set_spacing(row_height = 32)\n\n# Apply to plot\nforest_plot(analysis_data[1:3, ],\n  point = \"hr\", lower = \"lower\", upper = \"upper\", label = \"study\",\n  scale = \"log\", null_value = 1\n) |&gt;\n  set_theme(custom_theme)"
   },
   {
     "objectID": "guide/fluent-api.html#function-reference",
     "href": "guide/fluent-api.html#function-reference",
     "title": "Customizing Plots",
     "section": "Function Reference",
-    "text": "Function Reference\n\n\n\nFunction\nWorks On\nPurpose\n\n\n\n\nset_row_style()\nWebSpec, widget\nRow-level styling\n\n\nset_marker_style()\nWebSpec, widget\nInterval marker styling\n\n\nset_column_style()\nWebSpec\nPer-cell column styling\n\n\nset_theme()\nBoth\nApply theme by name/object\n\n\nset_colors()\nBoth\nModify color palette\n\n\nset_typography()\nBoth\nModify fonts\n\n\nset_spacing()\nBoth\nModify spacing\n\n\nset_shapes()\nBoth\nModify shapes\n\n\nset_axis()\nBoth\nModify axis settings\n\n\nset_layout()\nBoth\nModify layout\n\n\nset_group_headers()\nBoth\nModify group header hierarchy\n\n\nset_marker_colors()\nBoth\nSet multi-effect color palette\n\n\nset_marker_shapes()\nBoth\nSet multi-effect shape palette\n\n\n\nSee web_spec Reference for complete parameter documentation."
+    "text": "Function Reference\n\n\n\n\n\n\n\nFunction\nPurpose\n\n\n\n\nset_row_style()\nRow-level styling (bold, italic, color, type, indent)\n\n\nset_marker_style()\nInterval marker styling (color, shape, opacity, size)\n\n\nset_column_style()\nPer-cell column styling\n\n\nset_theme()\nApply theme by name or object\n\n\nset_colors()\nModify color palette\n\n\nset_typography()\nModify fonts\n\n\nset_spacing()\nModify spacing\n\n\nset_shapes()\nModify shapes\n\n\nset_axis()\nModify axis settings\n\n\nset_layout()\nModify layout\n\n\nset_group_headers()\nModify group header hierarchy\n\n\nset_marker_colors()\nSet multi-effect color palette\n\n\nset_marker_shapes()\nSet multi-effect shape palette\n\n\n\nSee Styling Reference for complete parameter documentation."
   },
   {
     "objectID": "guide/split-forest.html",
