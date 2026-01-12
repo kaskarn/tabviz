@@ -27,7 +27,8 @@ col_bar(
 
 \item{color}{Bar fill color (NULL = theme primary color)}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object

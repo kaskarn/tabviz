@@ -7,42 +7,7 @@ title: "Row Styling"
 library(webforest)
 ```
 
-Control the visual appearance of individual rows using `row_*` parameters. This gives you precise control over headers, summaries, indentation, colors, and badges—essential for creating publication-ready meta-analysis figures.
-
-## Row Types
-
-The `row_type` parameter controls fundamental row behavior. Each type renders differently:
-
-| Type | Behavior | Marker |
-|------|----------|--------|
-| `"data"` | Standard data row | Point with CI line |
-| `"header"` | Section header, spans full width | None |
-| `"summary"` | Pooled/subtotal row | Diamond shape |
-| `"spacer"` | Empty row for separation | None |
-
-```{r}
-type_demo <- data.frame(
-  label = c("Outcomes", "  Mortality", "  Hospitalization", "  Summary"),
-  hr = c(NA, 0.78, 0.85, 0.81),
-  lower = c(NA, 0.65, 0.72, 0.70),
-  upper = c(NA, 0.94, 1.00, 0.93),
-  rtype = c("header", "data", "data", "summary")
-)
-
-forest_plot(type_demo,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
-  row_type = "rtype",
-  null_value = 1, scale = "log"
-)
-```
-
-::: {.callout-important}
-## NA Values for Non-Data Rows
-
-Rows with `row_type = "header"` or `"spacer"` should have `NA` for `point`, `lower`, and `upper`. Summary rows need valid values to display the diamond.
-:::
-
----
+Control the visual appearance of individual rows using `row_*` parameters. This gives you precise control over text styling, indentation, colors, and badges—essential for creating publication-ready meta-analysis figures.
 
 ## Text Styling
 
@@ -169,6 +134,116 @@ These adapt automatically to any theme, so you don't need to update color values
 
 ---
 
+## Expression-Based Styling
+
+Instead of creating style columns in your data, you can use formula expressions that are evaluated on the fly. This is especially useful for conditional styling based on data values:
+
+```{r}
+expr_demo <- data.frame(
+  study = c("Alpha 2020", "Beta 2021", "Gamma 2022", "Delta 2023"),
+  hr = c(0.72, 0.85, 0.91, 0.68),
+  lower = c(0.55, 0.70, 0.75, 0.52),
+  upper = c(0.95, 1.03, 1.10, 0.89),
+  pval = c(0.01, 0.1, 0.3, 0.005)
+)
+
+forest_plot(expr_demo,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  # Formula expressions - no need for pre-computed columns
+  row_bold = ~ pval < 0.05,
+  row_color = ~ ifelse(pval < 0.05, "#166534", "#64748b"),
+  null_value = 1, scale = "log",
+  title = "Expression-Based Styling",
+  subtitle = "Bold + green color for significant results (p < 0.05)"
+)
+```
+
+### How It Works
+
+- Use the tilde (`~`) to start a formula expression
+- The expression is evaluated against your data frame
+- All column names in your data are available in the expression
+- Results should be logical (`TRUE`/`FALSE`) for boolean styles, or strings for colors
+
+### Multiple Conditions
+
+Combine conditions using `&` (and) or `|` (or):
+
+```{r}
+#| eval: false
+# Bold if significant AND large effect
+row_bold = ~ pval < 0.05 & hr < 0.8
+
+# Emphasize if significant OR key study
+row_emphasis = ~ pval < 0.05 | is_primary
+
+# Color based on effect direction and significance
+row_color = ~ case_when(
+  hr < 1 & pval < 0.05 ~ "#166534",  # Significant benefit - green
+  hr > 1 & pval < 0.05 ~ "#dc2626",  # Significant harm - red
+  TRUE ~ "#64748b"                    # Non-significant - gray
+)
+```
+
+::: {.callout-tip}
+## When to Use Expressions vs Columns
+
+**Use formulas** when:
+
+- Styling is based on simple conditions (`pval < 0.05`)
+- You want concise, readable code
+- Style logic is tightly coupled to the visualization
+
+**Use columns** when:
+
+- Style values are pre-computed or loaded from data
+- Same styling is reused across multiple plots
+- Complex logic is better computed separately
+:::
+
+---
+
+## Row Types
+
+The `row_type` parameter controls fundamental row behavior. This is a manual approach for creating structured layouts with headers, summaries, and spacers—useful when you need precise control over the document structure.
+
+| Type | Behavior | Marker |
+|------|----------|--------|
+| `"data"` | Standard data row | Point with CI line |
+| `"header"` | Section header, spans full width | None |
+| `"summary"` | Pooled/subtotal row | Diamond shape |
+| `"spacer"` | Empty row for separation | None |
+
+```{r}
+type_demo <- data.frame(
+  label = c("Outcomes", "  Mortality", "  Hospitalization", "  Summary"),
+  hr = c(NA, 0.78, 0.85, 0.81),
+  lower = c(NA, 0.65, 0.72, 0.70),
+  upper = c(NA, 0.94, 1.00, 0.93),
+  rtype = c("header", "data", "data", "summary")
+)
+
+forest_plot(type_demo,
+  point = "hr", lower = "lower", upper = "upper", label = "label",
+  row_type = "rtype",
+  null_value = 1, scale = "log"
+)
+```
+
+::: {.callout-important}
+## NA Values for Non-Data Rows
+
+Rows with `row_type = "header"` or `"spacer"` should have `NA` for `point`, `lower`, and `upper`. Summary rows need valid values to display the diamond.
+:::
+
+::: {.callout-tip}
+## Row Types vs Row Groups
+
+For automatic grouping based on a column in your data, consider using the `group` parameter instead—it creates collapsible sections without manually specifying row types. See [Row Groups](row-groups.qmd).
+:::
+
+---
+
 ## Complete Example: Meta-Analysis Figure
 
 Here's a publication-ready meta-analysis combining all row styling features:
@@ -236,15 +311,16 @@ forest_plot(data,
   )
 ```
 
-This is useful when building styling programmatically or creating multiple variants from a base plot. See [Customizing Plots](fluent-api.qmd) for more patterns.
+This is useful when building styling programmatically or creating multiple variants from a base plot. See [The Fluent API](fluent-api.qmd) for more patterns.
 
 ---
 
 ## Parameter Reference
 
+All `row_*` parameters accept either a **column name** (string) or a **formula expression** (`~ ...`).
+
 | Parameter | Column Contains | Description |
 |-----------|-----------------|-------------|
-| `row_type` | `"data"`, `"header"`, `"summary"`, `"spacer"` | Row behavior and marker type |
 | `row_bold` | `TRUE`/`FALSE` | Bold text |
 | `row_italic` | `TRUE`/`FALSE` | Italic text |
 | `row_color` | CSS color (e.g., `"#1a365d"`) | Text color |
@@ -255,11 +331,24 @@ This is useful when building styling programmatically or creating multiple varia
 | `row_emphasis` | `TRUE`/`FALSE` | Theme-aware emphasis styling |
 | `row_muted` | `TRUE`/`FALSE` | Theme-aware muted styling |
 | `row_accent` | `TRUE`/`FALSE` | Theme-aware accent styling |
+| `row_type` | `"data"`, `"header"`, `"summary"`, `"spacer"` | Row behavior and marker type |
+
+::: {.callout-note}
+## Formula Examples
+
+```r
+# Using column name
+row_bold = "is_significant"
+
+# Using formula expression
+row_bold = ~ pval < 0.05
+```
+:::
 
 ---
 
 ## See Also
 
-- [Grouping Studies](grouping.qmd) — Automatic collapsible sections from column values
+- [Row Groups](row-groups.qmd) — Automatic collapsible sections from column values
 - [Styling Functions](../reference/styling.qmd) — Complete `set_row_style()` reference
 - [forest_plot()](../reference/forest_plot.qmd) — All arguments

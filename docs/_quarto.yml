@@ -10,44 +10,39 @@ website:
     left:
       - text: "Guide"
         menu:
-          - text: "Quick Start"
+          - text: "1. Quick Start"
             href: guide/quick-start.qmd
-          - text: "Data Preparation"
-            href: guide/data-preparation.qmd
-          - text: "---"
-          - text: "Customizing Plots"
-            href: guide/fluent-api.qmd
-          - text: "Themes"
-            href: guide/themes.qmd
-          - text: "Columns"
+          - text: "2. Forest Plots"
+            href: guide/forest-plots.qmd
+          - text: "3. Columns"
             href: guide/columns.qmd
           - text: "---"
-          - text: "Grouping Studies"
-            href: guide/grouping.qmd
-          - text: "Row Styling"
+          - text: "4. Row Styling"
             href: guide/row-styling.qmd
-          - text: "Cell Styling"
+          - text: "5. Cell Styling"
             href: guide/cell-styling.qmd
-          - text: "Interactivity & Tooltips"
-            href: guide/interactivity.qmd
+          - text: "6. Row Groups"
+            href: guide/row-groups.qmd
+          - text: "7. Split Plots"
+            href: guide/split-plots.qmd
           - text: "---"
-          - text: "Split Forest Plots"
-            href: guide/split-forest.qmd
-          - text: "Axis & Annotations"
-            href: guide/axis-annotations.qmd
-          - text: "Exporting Plots"
-            href: guide/exporting.qmd
+          - text: "8. Themes"
+            href: guide/themes.qmd
+          - text: "9. The Fluent API"
+            href: guide/fluent-api.qmd
           - text: "---"
-          - text: "Shiny Integration"
+          - text: "10. Shiny Integration"
             href: guide/shiny.qmd
-          - text: "Troubleshooting"
-            href: guide/troubleshooting.qmd
-          - text: "Package Datasets"
-            href: guide/datasets.qmd
-      - text: "Cookbook"
-        href: cookbook.qmd
+          - text: "11. Package Data"
+            href: guide/package-data.qmd
+      - text: "Cheatsheet"
+        href: cheatsheet.qmd
       - text: "Gallery"
-        href: gallery.qmd
+        menu:
+          - text: "Basic Examples"
+            href: gallery-basic.qmd
+          - text: "Advanced Examples"
+            href: gallery-advanced.qmd
       - text: "Reference"
         menu:
           - text: "Overview"
@@ -76,6 +71,8 @@ website:
           - text: "---"
           - text: "Advanced: Specifications"
             href: reference/web_spec.qmd
+          - text: "Troubleshooting"
+            href: reference/troubleshooting.qmd
       - text: "Technical"
         menu:
           - text: "S7 Class Architecture"

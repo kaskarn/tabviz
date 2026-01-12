@@ -1,6 +1,7 @@
 ---
-title: "Package Datasets"
+title: "Package Data"
 ---
+
 ```{r}
 #| include: false
 library(webforest)
@@ -18,9 +19,11 @@ webforest includes four datasets for examples, testing, and learning. Each is de
 | `nba_efficiency` | 30 | Sports | Player stats, conference groups, badges |
 | `climate_temps` | 20 | Science | Minimal structure, uncertainty ranges |
 
+---
+
 ## glp1_trials
 
-GLP-1 agonist cardiovascular outcomes trials - ideal for meta-analysis examples.
+GLP-1 agonist cardiovascular outcomes trials—ideal for meta-analysis examples.
 
 ```{r}
 data(glp1_trials)
@@ -29,9 +32,10 @@ glimpse(glp1_trials)
 
 **Best for:** Meta-analyses, subgroup analyses, publication-style forest plots
 
+### Example
+
 ```{r}
 #| fig-height: 6
-# Filter to main trials only
 glp1_trials |>
   filter(group == "Main Trials") |>
   forest_plot(
@@ -52,9 +56,23 @@ glp1_trials |>
   )
 ```
 
+### Variables
+
+| Variable | Description |
+|----------|-------------|
+| `study` | Trial name and year |
+| `drug` | GLP-1 agonist name |
+| `hr`, `lower`, `upper` | Hazard ratio and 95% CI |
+| `n`, `events` | Sample size and event count |
+| `pvalue` | P-value |
+| `group` | Trial grouping (Main Trials, Subgroups) |
+| `row_type`, `row_bold` | Pre-computed row styling |
+
+---
+
 ## airline_delays
 
-Airline carrier performance data with trends - ideal for sparklines and bar charts.
+Airline carrier performance data with trends—ideal for sparklines and bar charts.
 
 ```{r}
 data(airline_delays)
@@ -63,8 +81,9 @@ glimpse(airline_delays)
 
 **Best for:** Sparkline columns, bar charts, grouped comparisons
 
+### Example
+
 ```{r}
-# Aggregate to carrier level for cleaner display
 airline_summary <- airline_delays |>
   group_by(carrier) |>
   summarise(
@@ -93,15 +112,32 @@ forest_plot(
 )
 ```
 
+### Variables
+
+| Variable | Description |
+|----------|-------------|
+| `carrier` | Airline name |
+| `delay_vs_avg`, `delay_lower`, `delay_upper` | Delay vs industry average and 95% CI |
+| `on_time_pct` | On-time arrival percentage |
+| `satisfaction` | Customer satisfaction (1-5) |
+| `flights` | Number of flights |
+| `trend` | List-column with 12-month delay trend |
+| `carrier_type` | Carrier category (Major, Regional, Budget) |
+
+---
+
 ## nba_efficiency
 
-NBA player statistics - a fun dataset for demonstrating grouped data and badges.
+NBA player statistics—a fun dataset for demonstrating grouped data and badges.
+
 ```{r}
 data(nba_efficiency)
 glimpse(nba_efficiency)
 ```
 
 **Best for:** Grouped data, badges, non-medical examples
+
+### Example
 
 ```{r}
 #| fig-height: 7
@@ -127,9 +163,22 @@ forest_plot(
 )
 ```
 
+### Variables
+
+| Variable | Description |
+|----------|-------------|
+| `player` | Player name |
+| `team`, `position` | Team abbreviation and position |
+| `conference` | Eastern or Western |
+| `per`, `per_lower`, `per_upper` | Player Efficiency Rating and 95% CI |
+| `ppg`, `games` | Points per game and games played |
+| `award` | Major awards (MVP, DPOY, etc.) for badge display |
+
+---
+
 ## climate_temps
 
-Regional temperature anomalies - minimal dataset for clean examples.
+Regional temperature anomalies—minimal dataset for clean examples.
 
 ```{r}
 data(climate_temps)
@@ -137,6 +186,8 @@ glimpse(climate_temps)
 ```
 
 **Best for:** Simple examples, minimal themes, uncertainty visualization
+
+### Example
 
 ```{r}
 climate_temps |>
@@ -159,7 +210,18 @@ climate_temps |>
   )
 ```
 
-## Using Datasets in Your Code
+### Variables
+
+| Variable | Description |
+|----------|-------------|
+| `region` | Geographic region name |
+| `category` | Region type (Global, Hemisphere, Continental, Ocean) |
+| `anomaly`, `lower`, `upper` | Temperature anomaly and uncertainty |
+| `certainty` | Confidence level (High, Medium, Low) |
+
+---
+
+## Using Datasets
 
 All datasets are lazy-loaded. Simply reference them after loading the package:
 
@@ -173,4 +235,19 @@ head(glp1_trials)
 data(glp1_trials)
 ```
 
-See `?glp1_trials`, `?airline_delays`, `?nba_efficiency`, and `?climate_temps` for full documentation.
+### Documentation
+
+See help files for full variable descriptions:
+
+- `?glp1_trials`
+- `?airline_delays`
+- `?nba_efficiency`
+- `?climate_temps`
+
+---
+
+## See Also
+
+- [Gallery](../gallery-basic.qmd) — Full examples using these datasets
+- [Columns](columns.qmd) — Column types for displaying data
+- [Themes](themes.qmd) — Theme options for styling

@@ -30,7 +30,8 @@ col_img(
 
 \item{shape}{Image shape: "square", "circle", or "rounded" (default "square")}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object
@@ -47,4 +48,7 @@ col_img("avatar_url", "Avatar", shape = "circle", width = 40)
 
 # With fallback
 col_img("thumbnail", fallback = "No image")
+
+# With per-cell styling
+col_img("logo_url", emphasis = "is_featured")
 }

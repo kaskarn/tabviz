@@ -37,7 +37,8 @@ col_pvalue(
 \item{abbrev_threshold}{Values below this display as "<threshold" (default NULL = off).
 For example, \code{abbrev_threshold = 0.0001} displays values below 0.0001 as "<0.0001".}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object

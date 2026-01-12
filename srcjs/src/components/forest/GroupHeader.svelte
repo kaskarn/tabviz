@@ -11,16 +11,17 @@
   let { group, rowCount, theme, level = 1 }: Props = $props();
 
   // Get level-specific styles from theme
+  // Note: Background is NOT applied here - it's handled by ForestPlot.svelte
+  // at the row level via getGroupBackground() for proper solid-color rendering
   function getLevelStyles(level: number, theme: WebTheme | undefined) {
     const gh = theme?.groupHeaders;
-    if (!gh) return { fontSize: undefined, fontWeight: undefined, italic: false, background: undefined, borderBottom: false };
+    if (!gh) return { fontSize: undefined, fontWeight: undefined, italic: false, borderBottom: false };
 
     if (level === 1) {
       return {
         fontSize: gh.level1FontSize,
         fontWeight: gh.level1FontWeight,
         italic: gh.level1Italic,
-        background: gh.level1Background ?? computeBackground(theme, 0.15),
         borderBottom: gh.level1BorderBottom,
       };
     } else if (level === 2) {
@@ -28,7 +29,6 @@
         fontSize: gh.level2FontSize,
         fontWeight: gh.level2FontWeight,
         italic: gh.level2Italic,
-        background: gh.level2Background ?? computeBackground(theme, 0.10),
         borderBottom: gh.level2BorderBottom,
       };
     } else {
@@ -36,21 +36,9 @@
         fontSize: gh.level3FontSize,
         fontWeight: gh.level3FontWeight,
         italic: gh.level3Italic,
-        background: gh.level3Background ?? computeBackground(theme, 0.06),
         borderBottom: gh.level3BorderBottom,
       };
     }
-  }
-
-  // Compute background from primary color with opacity
-  function computeBackground(theme: WebTheme | undefined, opacity: number): string {
-    const primary = theme?.colors?.primary ?? "#0891b2";
-    // Convert hex to rgba
-    const hex = primary.replace("#", "");
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
 
   const levelStyles = $derived(getLevelStyles(level, theme));

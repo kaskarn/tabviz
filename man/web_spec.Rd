@@ -84,35 +84,36 @@ to innermost, e.g., \code{c("region", "country")} creates region > country
 
 \item{footnote}{Footnote (displayed below caption, italicized)}
 
-\item{row_bold}{Column name for row-level bold styling (logical values)}
+\item{row_bold}{Row-level bold styling. Column name (character) or formula
+(e.g., \code{~ p_value < 0.05}) evaluating to logical values.}
 
-\item{row_italic}{Column name for row-level italic styling (logical values)}
+\item{row_italic}{Row-level italic styling. Column name or formula.}
 
-\item{row_color}{Column name for row text color (CSS color strings)}
+\item{row_color}{Row text color. Column name or formula returning CSS color strings.}
 
-\item{row_bg}{Column name for row background color (CSS color strings)}
+\item{row_bg}{Row background color. Column name or formula returning CSS color strings.}
 
-\item{row_badge}{Column name for label badges (text values)}
+\item{row_badge}{Label badges. Column name or formula returning text values.}
 
-\item{row_icon}{Column name for label icons (emoji/unicode)}
+\item{row_icon}{Label icons. Column name or formula returning emoji/unicode.}
 
-\item{row_indent}{Column name for row indentation (numeric values)}
+\item{row_indent}{Row indentation. Column name or formula returning numeric values.}
 
-\item{row_type}{Column name for row type ("data", "header", "summary", "spacer")}
+\item{row_type}{Row type. Column name or formula returning "data", "header", "summary", "spacer".}
 
-\item{row_emphasis}{Column name for emphasis styling (logical: bold, darker text)}
+\item{row_emphasis}{Emphasis styling (bold + foreground). Column name or formula (logical).}
 
-\item{row_muted}{Column name for muted styling (logical: lighter, reduced prominence)}
+\item{row_muted}{Muted styling (lighter, reduced prominence). Column name or formula (logical).}
 
-\item{row_accent}{Column name for accent styling (logical: theme accent color)}
+\item{row_accent}{Accent styling (theme accent color). Column name or formula (logical).}
 
-\item{marker_color}{Column name for marker fill color (CSS color strings)}
+\item{marker_color}{Marker fill color. Column name or formula returning CSS color strings.}
 
-\item{marker_shape}{Column name for marker shape ("square", "circle", "diamond", "triangle")}
+\item{marker_shape}{Marker shape. Column name or formula returning "square", "circle", "diamond", "triangle".}
 
-\item{marker_opacity}{Column name for marker opacity (numeric 0-1)}
+\item{marker_opacity}{Marker opacity. Column name or formula returning numeric 0-1.}
 
-\item{marker_size}{Column name for marker size multiplier (numeric)}
+\item{marker_size}{Marker size multiplier. Column name or formula returning numeric values.}
 
 \item{weight}{Deprecated: use marker_size instead}
 

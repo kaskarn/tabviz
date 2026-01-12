@@ -28,6 +28,7 @@
     ROW_SELECTED_OPACITY,
     ROW_SELECTED_HOVER_OPACITY,
     DEPTH_BASE_OPACITY,
+    TEXT_MEASUREMENT,
   } from "$lib/rendering-constants";
   import {
     formatNumber,
@@ -244,24 +245,43 @@
   }
 
   // Compute group header background color based on nesting level
+  // Uses solid colors (pre-blended with background) to avoid transparency artifacts
   function getGroupBackground(level: number, theme: WebTheme | undefined): string {
     const gh = theme?.groupHeaders;
     const primary = theme?.colors?.primary ?? "#0891b2";
+    const bg = theme?.colors?.background ?? "#ffffff";
 
     // Get explicit background if set, otherwise compute from primary
-    const opacities = [0.15, 0.10, 0.06]; // Increased for distinctiveness
-    const opacity = opacities[Math.min(level - 1, 2)];
-
     if (level === 1 && gh?.level1Background) return gh.level1Background;
     if (level === 2 && gh?.level2Background) return gh.level2Background;
     if (level >= 3 && gh?.level3Background) return gh.level3Background;
 
-    // Convert hex to rgba
-    const hex = primary.replace("#", "");
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    // Blend primary with background at different opacities per level
+    // This produces solid colors that look the same as rgba but without transparency artifacts
+    const opacities = [0.15, 0.10, 0.06];
+    const opacity = opacities[Math.min(level - 1, 2)];
+
+    // Parse hex colors
+    const parseHex = (hex: string) => {
+      const h = hex.replace("#", "");
+      return {
+        r: parseInt(h.substring(0, 2), 16),
+        g: parseInt(h.substring(2, 4), 16),
+        b: parseInt(h.substring(4, 6), 16),
+      };
+    };
+
+    const p = parseHex(primary);
+    const b = parseHex(bg);
+
+    // Blend: result = primary * opacity + background * (1 - opacity)
+    const blend = (fg: number, bg: number) => Math.round(fg * opacity + bg * (1 - opacity));
+
+    const r = blend(p.r, b.r);
+    const g = blend(p.g, b.g);
+    const bl = blend(p.b, b.b);
+
+    return `rgb(${r}, ${g}, ${bl})`;
   }
 
   // Calculate maximum header depth (number of header rows needed)
@@ -527,6 +547,11 @@
       --wf-summary-fill: ${theme.colors.summaryFill};
       --wf-summary-border: ${theme.colors.summaryBorder};
       --wf-accent: ${theme.colors.accent};
+      --wf-badge-success: #16a34a;
+      --wf-badge-warning: #f59e0b;
+      --wf-badge-error: #dc2626;
+      --wf-badge-info: #2563eb;
+      --wf-badge-muted: ${theme.colors.muted};
       --wf-font-family: ${theme.typography.fontFamily};
       --wf-font-size-sm: ${theme.typography.fontSizeSm};
       --wf-font-size-base: ${theme.typography.fontSizeBase};
@@ -544,7 +569,7 @@
       --wf-container-padding: ${theme.spacing.containerPadding}px;
       --wf-cell-padding-x: ${theme.spacing.cellPaddingX}px;
       --wf-cell-padding-y: ${theme.spacing.cellPaddingY}px;
-      --wf-axis-gap: ${theme.spacing.axisGap ?? 12}px;
+      --wf-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
       --wf-axis-height: ${layout.axisHeight}px;
       --wf-group-padding: ${theme.spacing.groupPadding ?? 8}px;
       --wf-plot-width: ${layout.forestWidth}px;
@@ -591,6 +616,7 @@
           <CellPvalue
             value={row.metadata[column.field] as number}
             options={column.options?.pvalue}
+            {cellStyle}
           />
         {:else if column.type === "sparkline"}
           <CellSparkline
@@ -721,6 +747,7 @@
           {@const rowDepth = displayRow.depth}
           {@const selected = row ? isSelected(row.id) : false}
           {@const rowClasses = row ? getRowClasses(row.style, rowDepth, i, hasGroups) : ""}
+          {@const rowStyles = row ? getRowStyles(row.style, rowDepth) : ""}
           {@const isSpacerRow = row?.style?.type === "spacer"}
           {@const gridRow = headerDepth + 1 + i}
           {@const groupBg = isGroupHeader ? getGroupBackground(rowDepth + 1, theme) : undefined}
@@ -735,6 +762,7 @@
             style:grid-row={gridRow}
             style:background-color={groupBg}
             style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
+            style={rowStyles || undefined}
             role={isGroupHeader ? "button" : undefined}
             tabindex={isGroupHeader ? 0 : undefined}
             onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => store.selectRow(row.id) : undefined}
@@ -768,6 +796,7 @@
               style:grid-row={gridRow}
               style:background-color={groupBg}
               style:text-align={column.align}
+              style={rowStyles || undefined}
               onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
               onmouseleave={row ? () => handleRowLeave() : undefined}
               onclick={row ? () => store.selectRow(row.id) : undefined}
@@ -788,6 +817,7 @@
               class:spacer-row={isSpacerRow}
               style:grid-row={gridRow}
               style:background-color={groupBg}
+              style={rowStyles || undefined}
               onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
               onmouseleave={row ? () => handleRowLeave() : undefined}
               onclick={row ? () => store.selectRow(row.id) : undefined}
@@ -806,6 +836,7 @@
               style:grid-row={gridRow}
               style:background-color={groupBg}
               style:text-align={column.align}
+              style={rowStyles || undefined}
               onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
               onmouseleave={row ? () => handleRowLeave() : undefined}
               onclick={row ? () => store.selectRow(row.id) : undefined}
@@ -829,7 +860,7 @@
 
         <!-- SVG overlay for plot markers (positioned over plot column, inside grid for correct positioning) -->
         {#if includeForest && layout.forestWidth > 0}
-        {@const axisGap = theme?.spacing.axisGap ?? 12}
+        {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
         <svg
           class="plot-overlay"
           width={layout.forestWidth}

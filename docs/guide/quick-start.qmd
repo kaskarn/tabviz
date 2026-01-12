@@ -222,10 +222,10 @@ forest_plot(direction_data,
 
 | Topic | What You'll Learn |
 |-------|-------------------|
-| [Customizing Plots](fluent-api.qmd) | Build plots step-by-step with the fluent API |
-| [Themes](themes.qmd) | Preset themes and customization |
-| [Columns](columns.qmd) | Data columns with special formatting |
-| [Grouping Studies](grouping.qmd) | Organize studies into collapsible groups |
+| [Forest Plots](forest-plots.qmd) | Data mapping, markers, axis control, exporting |
+| [Columns](columns.qmd) | Column types and column groups |
 | [Row Styling](row-styling.qmd) | Headers, summaries, indentation, and badges |
 | [Cell Styling](cell-styling.qmd) | Conditional formatting for individual cells |
-| [Exporting](exporting.qmd) | Save plots as SVG, PNG, or PDF |
+| [Row Groups](row-groups.qmd) | Organize studies into collapsible groups |
+| [Themes](themes.qmd) | Preset themes and customization |
+| [The Fluent API](fluent-api.qmd) | Build plots step-by-step with set_*() functions |

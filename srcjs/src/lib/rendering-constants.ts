@@ -48,6 +48,33 @@ export const ROW_SELECTED_HOVER_OPACITY = 0.22; // 22%
 export const GROUP_HEADER_HOVER_OPACITY = 0.15; // 15%
 
 // ============================================================================
+// Text Measurement Constants
+// ============================================================================
+
+export const TEXT_MEASUREMENT = {
+  /** Buffer for Canvas vs CSS text rendering differences */
+  RENDERING_BUFFER: 4,
+
+  /** Default axis gap fallback (should match theme.spacing.axisGap default) */
+  DEFAULT_AXIS_GAP: 12,
+} as const;
+
+// ============================================================================
+// Badge Constants (for label column width measurement)
+// ============================================================================
+
+export const BADGE = {
+  /** Font size multiplier relative to base font */
+  FONT_SCALE: 0.8,
+
+  /** Horizontal padding inside badge pill (one side) */
+  PADDING: 4,
+
+  /** Gap between label text and badge */
+  GAP: 6,
+} as const;
+
+// ============================================================================
 // Layout Constants
 // ============================================================================
 

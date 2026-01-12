@@ -41,6 +41,47 @@ Each theme is designed with a specific context in mind:
 | Markers | `set_marker_colors()`, `set_marker_shapes()` | Multi-effect default colors/shapes |
 
 
+## Color Architecture
+
+Colors serve different purposes in webforest:
+
+| Category | Purpose | Colors |
+|----------|---------|--------|
+| **Structural** | Define the canvas | `background`, `foreground`, `border` |
+| **Semantic** | Convey meaning through styling | `primary`, `accent`, `muted` |
+| **Data** | Visualize data elements | `interval`, `interval_line`, `summary_fill` |
+
+### How Palette Colors Connect to Styling
+
+The palette defines **what colors look like**. Semantic styles **apply those colors** to specific elements:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  PALETTE (set_colors)              STYLES (row_*/column)       │
+│  ─────────────────────             ────────────────────        │
+│  accent: "#8b5cf6"      ───────►   row_accent, cell accent     │
+│  muted: "#94a3b8"       ───────►   row_muted, cell muted       │
+│  foreground: "#333"     ───────►   row_emphasis (+ bold)       │
+│  primary: "#0891b2"     ───────►   group headers, hover        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key insight**: Changing `accent` in the theme automatically updates all `row_accent` and cell `accent` styling.
+
+::: {.callout-note}
+## Semantic Styles at Row and Cell Level
+
+The same semantic vocabulary works at both levels:
+
+| Style | Effect | Row Parameter | Cell Parameter |
+|-------|--------|---------------|----------------|
+| **Emphasis** | Bold + foreground color | `row_emphasis` | `emphasis` in `web_col()` |
+| **Muted** | Muted color (de-emphasized) | `row_muted` | `muted` in `web_col()` |
+| **Accent** | Accent color (highlighted) | `row_accent` | `accent` in `web_col()` |
+
+Row-level parameters accept column names with TRUE/FALSE values. Cell-level parameters in `web_col()` also accept column names.
+:::
+
 ## Preset Themes
 
 webforest includes 9 preset themes designed for different use cases. All themes can be customized using a fluent API.

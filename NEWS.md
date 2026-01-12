@@ -2,19 +2,43 @@
 
 ## New Features
 
-* **Package startup message**: Shows pre-release notice with link to report issues when the package is loaded.
+* **Container padding**: New `containerPadding` theme property via `set_layout(container_padding = ...)` adds left/right padding to the widget container, separate from plot area padding.
 
-* **Interactive theme selection documentation**: Added comprehensive documentation for `enable_themes` parameter in the interactivity guide, covering all configuration options.
+* **Header font scale**: New `headerFontScale` typography option via `set_typography(header_font_scale = ...)` controls header text size relative to base font (default: 1.05).
+
+* **Group header theming**: New `set_group_headers()` fluent API for per-level group header styling:
+  - Font size, weight, and italic per level
+  - Custom background colors per level
+  - Border bottom toggle per level
+  - All preset themes now include tasteful group header defaults
 
 ## Bug Fixes
 
-* **Split forest axis scaling**: Fixed x-axis being computed from all data instead of per-split subset. The axis now correctly scales to fit only the data in the currently displayed split. (Issue: switching themes caused axis to recompute correctly, revealing a reactivity issue in the store.)
+* **Column width calculation**: Fixed auto-width columns being too narrow when document has non-default font size. The rem-to-px conversion now uses actual document root font size instead of assuming 16px.
 
-* **SVG axis alignment**: Fixed SVG export axis not matching web view. The SVG generator now applies the same `AXIS_LABEL_PADDING` (30px) used in the web renderer, ensuring consistent axis positioning between interactive and exported plots.
+* **Group row background overlap**: Fixed visual artifact where semi-transparent backgrounds on adjacent cells created a darker band at cell boundaries. Group header backgrounds now use pre-computed solid colors.
+
+* **Symmetric axis opt-in**: Symmetric axis is no longer auto-triggered when effects span both sides of null. Use `set_axis(symmetric = TRUE)` explicitly when needed.
+
+* **Split forest axis scaling**: Fixed x-axis being computed from all data instead of per-split subset. The axis now correctly scales to fit only the data in the currently displayed split.
+
+* **SVG axis alignment**: Fixed SVG export axis not matching web view. The SVG generator now applies the same `AXIS_LABEL_PADDING` (30px) used in the web renderer.
+
+## Improvements
+
+* **UI polish**: Refined cell padding, header styling, hover states, and text wrapping behavior for a more polished appearance.
+
+* **Subtle group headers**: Default group header opacity reduced from 15%/10%/6% to more subtle values. Preset themes now have coordinated group header styling.
 
 ## Documentation
 
-* **Markdown formatting**: Fixed list formatting across all Quarto documentation files. Lists in callout boxes now render correctly with proper spacing.
+* **Documentation restructure**: Reorganized guides into focused topics (Quick Start, Themes, Columns, Row Styling, Row Groups, Forest Plots, Split Plots, Fluent API).
+
+* **New gallery pages**: Split gallery into Basic Examples and Advanced Examples for easier navigation.
+
+* **Troubleshooting guide**: Moved to Reference section with expanded content.
+
+* **Color usage guide**: Added documentation for accent/muted color semantics and group header configuration.
 
 ---
 

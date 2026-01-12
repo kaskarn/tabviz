@@ -27,7 +27,8 @@ col_reference(
 
 \item{icon}{Show external link icon when href_field is provided (default TRUE)}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object
@@ -44,4 +45,7 @@ col_reference("title", href_field = "doi_url", max_chars = 40)
 
 # Without link icon
 col_reference("source", href_field = "url", icon = FALSE)
+
+# With per-cell styling
+col_reference("citation", emphasis = "is_key")
 }

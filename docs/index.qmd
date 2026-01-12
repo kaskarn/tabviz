@@ -120,15 +120,20 @@ Learn how to use webforest:
 | Chapter | Description |
 |---------|-------------|
 | [Quick Start](guide/quick-start.qmd) | Installation and basic usage |
-| [Themes](guide/themes.qmd) | Preset themes and customization |
-| [Columns](guide/columns.qmd) | Data columns and special formatting |
-| [Grouping Studies](guide/grouping.qmd) | Collapsible groups from column values |
+| [Forest Plots](guide/forest-plots.qmd) | Data mapping, markers, axis control, exporting |
+| [Columns](guide/columns.qmd) | Column types, usage, and column groups |
 | [Row Styling](guide/row-styling.qmd) | Headers, summaries, indentation, and badges |
-| [Exporting](guide/exporting.qmd) | Save plots as SVG, PNG, or PDF |
-| [Axis & Annotations](guide/axis-annotations.qmd) | Axis control and reference lines |
+| [Cell Styling](guide/cell-styling.qmd) | Per-cell conditional formatting |
+| [Row Groups](guide/row-groups.qmd) | Collapsible sections from column values |
+| [Split Plots](guide/split-plots.qmd) | Sidebar navigation for subgroups |
+| [Themes](guide/themes.qmd) | Preset themes and customization |
+| [The Fluent API](guide/fluent-api.qmd) | Pipe-based workflows with set_*() |
+| [Shiny Integration](guide/shiny.qmd) | Reactive forest plots |
+| [Package Data](guide/package-data.qmd) | Built-in datasets and examples |
 
 ## More Resources
 
-- [Cookbook](cookbook.qmd) - Common tasks and patterns
-- [Gallery](gallery.qmd) - Interactive examples
-- [Reference](reference.qmd) - API documentation
+- [Cheatsheet](cheatsheet.qmd) - Quick reference
+- [Gallery - Basic](gallery-basic.qmd) - Simple examples
+- [Gallery - Advanced](gallery-advanced.qmd) - Complex examples
+- [Reference](reference/index.qmd) - API documentation

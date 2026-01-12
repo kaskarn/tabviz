@@ -13,7 +13,8 @@ col_text(field, header = NULL, width = NULL, ...)
 
 \item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object

@@ -37,7 +37,7 @@
 
 import type { ColumnSpec, Row, ColumnOptions, Group } from "../types";
 import { getColumnDisplayText } from "./formatters";
-import { AUTO_WIDTH, SPACING, GROUP_HEADER } from "./rendering-constants";
+import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "./rendering-constants";
 
 // ============================================================================
 // Text Width Measurement
@@ -119,7 +119,6 @@ export function calculateColumnAutoWidth(
   options: AutoWidthOptions
 ): number {
   const { fontSize, fontFamily, useCanvas = true, cellPadding = 20 } = options;
-  const RENDERING_BUFFER = 4;  // Small buffer for text measurement differences
 
   // Parse font size to number (assumes px units)
   const fontSizeNum = parseFloat(fontSize) || 14;
@@ -156,7 +155,7 @@ export function calculateColumnAutoWidth(
   // Apply padding and constraints
   // Use type-specific minimum for visual columns, else default minimum
   const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
-  const computedWidth = Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER);
+  const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
   return Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, computedWidth));
 }
 
@@ -208,7 +207,6 @@ export function calculateLabelColumnWidth(
   groups: Group[] = []
 ): number {
   const { fontSize, fontFamily, useCanvas = true, cellPadding = 20 } = options;
-  const RENDERING_BUFFER = 4;  // Small buffer for text measurement differences
   const fontSizeNum = parseFloat(fontSize) || 14;
 
   const measureText = (text: string): number => {
@@ -240,12 +238,10 @@ export function calculateLabelColumnWidth(
       // Account for badge width if present
       if (row.style?.badge) {
         const badgeText = String(row.style.badge);
-        const badgeFontSize = fontSizeNum * 0.8;
-        const badgePadding = 4;
-        const badgeGap = 6; // gap between label and badge
+        const badgeFontSize = fontSizeNum * BADGE.FONT_SCALE;
         const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
-        const badgeWidth = badgeTextWidth + badgePadding * 2;
-        rowWidth += badgeGap + badgeWidth;
+        const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
+        rowWidth += BADGE.GAP + badgeWidth;
       }
 
       maxWidth = Math.max(maxWidth, rowWidth);
@@ -300,7 +296,7 @@ export function calculateLabelColumnWidth(
   }
 
   // Apply padding and constraints (label column has higher max)
-  const computedWidth = Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER);
+  const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
   return Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, computedWidth));
 }
 

@@ -35,7 +35,8 @@ col_interval(
 the interval is considered imprecise and displayed as "—" instead.
 The forest plot marker is also hidden. Default is NULL (no threshold).}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object

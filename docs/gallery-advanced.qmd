@@ -1,9 +1,9 @@
 ---
-title: "Examples Gallery"
+title: "Gallery: Advanced Examples"
 code-fold: true
 ---
 
-A comprehensive showcase of webforest features. Each example focuses on demonstrating specific capabilities.
+Multi-feature combinations, publication templates, and specialized visualizations.
 
 ```{r}
 #| include: false
@@ -11,415 +11,11 @@ library(webforest)
 library(dplyr)
 ```
 
-# Single-Feature Showcases
-
-Each example highlights one key feature with maximum clarity.
-
-## 1. Nested Hierarchical Groups
-
-Three levels of nesting: Region → Country → Site. Click headers to collapse entire branches.
-
-```{r}
-nested_data <- tibble(
-  site = c(
-    "Boston General", "Mass Eye & Ear", "Johns Hopkins", "Cleveland Clinic",
-    "UCL Hospital", "Imperial College", "Charite Berlin", "LMU Munich",
-    "Tokyo University", "Osaka Medical", "Peking Union", "Shanghai Ruijin"
-  ),
-  region = c(
-    rep("americas", 4),
-    rep("europe", 4),
-    rep("asia_pacific", 4)
-  ),
-  country = c(
-    "usa", "usa", "usa", "usa",
-    "uk", "uk", "germany", "germany",
-    "japan", "japan", "china", "china"
-  ),
-  hr = c(0.72, 0.68, 0.75, 0.71, 0.78, 0.82, 0.69, 0.74, 0.65, 0.70, 0.67, 0.72),
-  lower = c(0.58, 0.52, 0.61, 0.56, 0.64, 0.68, 0.54, 0.59, 0.50, 0.55, 0.52, 0.57),
-  upper = c(0.89, 0.89, 0.92, 0.90, 0.95, 0.99, 0.88, 0.93, 0.85, 0.89, 0.86, 0.91),
-  n = c(245, 189, 312, 278, 156, 134, 298, 267, 445, 389, 512, 478)
-)
-
-forest_plot(
-  nested_data,
-  point = "hr", lower = "lower", upper = "upper",
-  label = "site",
-  group = c("region", "country"),  # Hierarchical: region > country
-
-columns = list(
-    col_n("n"),
-    col_interval("HR (95% CI)")
-  ),
-  theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio",
-  title = "Nested Hierarchical Groups",
-  subtitle = "Region → Country → Site (3 levels)",
-  caption = "Click any group header to collapse that branch and all children"
-)
-```
-
-## 2. Multiple Effects Per Row
-
-Five different analysis methods shown simultaneously. Vertical stacking reveals sensitivity.
-
-```{r}
-multi_effect_data <- tibble(
-  study = c("PIONEER", "SUMMIT", "HORIZON", "APEX", "ZENITH"),
-  n = c(2450, 1890, 3200, 1680, 2100),
-  # Primary (ITT)
-  itt_or = c(0.72, 0.78, 0.65, 0.81, 0.69),
-  itt_lo = c(0.58, 0.64, 0.52, 0.66, 0.55),
-  itt_hi = c(0.89, 0.95, 0.81, 0.99, 0.87),
-  # Multiple Imputation
-  mi_or = c(0.74, 0.80, 0.67, 0.83, 0.71),
-  mi_lo = c(0.60, 0.66, 0.54, 0.68, 0.57),
-  mi_hi = c(0.91, 0.97, 0.83, 1.01, 0.88),
-  # Complete Case
-  cc_or = c(0.70, 0.75, 0.63, 0.79, 0.67),
-  cc_lo = c(0.55, 0.60, 0.49, 0.63, 0.52),
-  cc_hi = c(0.89, 0.94, 0.81, 0.99, 0.86),
-  # Per-Protocol
-  pp_or = c(0.68, 0.73, 0.61, 0.77, 0.65),
-  pp_lo = c(0.53, 0.58, 0.47, 0.61, 0.50),
-  pp_hi = c(0.87, 0.92, 0.79, 0.97, 0.84),
-  # Tipping Point
-  tip_or = c(0.78, 0.84, 0.71, 0.87, 0.75),
-  tip_lo = c(0.63, 0.69, 0.57, 0.71, 0.60),
-  tip_hi = c(0.97, 1.02, 0.88, 1.07, 0.94)
-)
-
-forest_plot(
-  multi_effect_data,
-  point = "itt_or", lower = "itt_lo", upper = "itt_hi",
-  label = "study",
-  columns = list(
-    col_n("n"),
-    col_interval("Primary OR")
-  ),
-  effects = list(
-    web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT (Primary)", color = "#2563eb"),
-    web_effect("mi_or", "mi_lo", "mi_hi", label = "Multiple Imputation", color = "#7c3aed"),
-    web_effect("cc_or", "cc_lo", "cc_hi", label = "Complete Case", color = "#059669"),
-    web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#d97706"),
-    web_effect("tip_or", "tip_lo", "tip_hi", label = "Tipping Point", color = "#dc2626")
-  ),
-  theme = web_theme_modern() |> set_spacing(row_height = 40),
-  scale = "log", null_value = 1,
-  axis_label = "Odds Ratio (95% CI)",
-  title = "Multiple Effects Per Row",
-  subtitle = "5 sensitivity analyses displayed simultaneously",
-  footnote = "Blue=ITT, Purple=MI, Green=CC, Orange=PP, Red=Tipping"
-)
-```
-
-## 3. Table-Only Mode
-
-No forest plot. Pure interactive table with rich column types.
-
-```{r}
-table_data <- tibble(
-  metric = c("Revenue", "Gross Profit", "EBITDA", "Net Income", "Free Cash Flow",
-             "Customer Count", "Churn Rate", "NPS Score", "CAC", "LTV"),
-  category = c(rep("Financial", 5), rep("Operational", 5)),
-  q1 = c(142, 98, 45, 28, 22, 12500, 2.8, 72, 185, 920),
-  q2 = c(156, 108, 52, 32, 28, 13200, 2.5, 74, 178, 945),
-  q3 = c(168, 118, 58, 38, 35, 14100, 2.3, 76, 172, 980),
-  q4 = c(185, 132, 68, 45, 42, 15200, 2.1, 78, 165, 1020),
-  yoy_pct = c(18.5, 22.1, 28.4, 35.2, 42.8, 21.6, -25.0, 8.3, -10.8, 10.9),
-  trend = list(
-    c(128, 135, 142, 156, 168, 185), c(85, 90, 98, 108, 118, 132),
-    c(38, 42, 45, 52, 58, 68), c(22, 25, 28, 32, 38, 45),
-    c(18, 20, 22, 28, 35, 42), c(10200, 11000, 12500, 13200, 14100, 15200),
-    c(3.5, 3.2, 2.8, 2.5, 2.3, 2.1), c(68, 70, 72, 74, 76, 78),
-    c(210, 198, 185, 178, 172, 165), c(850, 880, 920, 945, 980, 1020)
-  ),
-  # Dummy effect data (required but not displayed)
-  effect = rep(1, 10), lower = rep(0.9, 10), upper = rep(1.1, 10)
-)
-
-webtable(
-  table_data,
-  point = "effect", lower = "lower", upper = "upper",
-  label = "metric", group = "category",
-  columns = list(
-    col_numeric("q4", "Q4 Actual", position = "left"),
-    col_bar("yoy_pct", "YoY %", position = "right"),
-    col_sparkline("trend", "6Q Trend", position = "right")
-  ),
-  theme = web_theme_modern(),
-  title = "Table-Only Mode",
-  subtitle = "No forest plot - pure data table with bars and sparklines",
-  caption = "Using webtable() instead of forest_plot()"
-)
-```
-
-## 4. Custom Theme Building
-
-Building a branded theme from scratch with the fluent API.
-
-```{r}
-# Build a "Terminal" theme step by step
-terminal_theme <- web_theme_default() |>
-  set_colors(
-    background = "#0c0c0c",
-    foreground = "#00ff00",
-    primary = "#00ff00",
-    secondary = "#008800",
-    muted = "#005500",
-    border = "#003300",
-    interval_positive = "#00ff00",
-    interval_negative = "#ff0000",
-    interval_line = "#00cc00",
-    summary_fill = "#00ff00",
-    summary_border = "#00aa00"
-  ) |>
-  set_typography(
-    font_family = "'Courier New', monospace",
-    font_size_base = "0.85rem"
-  ) |>
-  set_spacing(row_height = 28, header_height = 32) |>
-  set_shapes(point_size = 6, line_width = 1.5, border_radius = 0) |>
-  set_axis(gridlines = TRUE, gridline_style = "dotted")
-
-theme_demo_data <- tibble(
-  process = c("AUTH_SERVICE", "API_GATEWAY", "DB_PRIMARY", "CACHE_LAYER", "MSG_QUEUE"),
-  latency_ms = c(12, 45, 8, 3, 28),
-  latency_se = c(2, 8, 1.5, 0.5, 5),
-  uptime = c(99.99, 99.95, 99.999, 99.99, 99.97),
-  rps = c(12500, 8900, 45000, 125000, 3200)
-) |>
-  mutate(lower = latency_ms - 1.96 * latency_se, upper = latency_ms + 1.96 * latency_se)
-
-forest_plot(
-  theme_demo_data,
-  point = "latency_ms", lower = "lower", upper = "upper",
-  label = "process",
-  columns = list(
-    col_numeric("uptime", "Uptime %", position = "left"),
-    col_numeric("rps", "RPS", position = "left"),
-    col_interval("Latency ms (95% CI)")
-  ),
-  theme = terminal_theme,
-  null_value = 20,
-  axis_label = "Response Latency (ms)",
-  title = "Custom Theme: Terminal",
-  subtitle = "Built with set_colors(), set_typography(), set_spacing(), set_shapes()",
-  caption = "Monospace font, green-on-black, zero border radius"
-)
-```
-
-## 5. Sparklines & Bars
-
-Column visualizations for trends and magnitudes.
-
-```{r}
-viz_data <- tibble(
-  fund = c("Growth Fund A", "Value Fund B", "Index Fund C", "Bond Fund D", "REIT Fund E"),
-  return_1y = c(24.5, 12.8, 18.2, 4.5, 8.9),
-  return_se = c(4.2, 2.8, 3.1, 1.2, 2.5),
-  aum_b = c(45.2, 28.5, 125.8, 52.1, 18.9),
-  expense = c(0.85, 0.45, 0.03, 0.15, 0.65),
-  monthly_returns = list(
-    c(-2, 4, 3, -1, 5, 2, 4, -3, 6, 3, 2, 5),
-    c(1, 2, 1, 0, 2, 1, 1, 2, 1, 0, 1, 2),
-    c(1, 3, 2, 0, 3, 1, 2, -1, 4, 2, 1, 3),
-    c(0.5, 0.3, 0.4, 0.3, 0.4, 0.3, 0.4, 0.3, 0.4, 0.3, 0.4, 0.3),
-    c(1, -1, 2, 0, 1, 2, -1, 3, 0, 1, 1, 2)
-  ),
-  flow_trend = list(
-    c(2.1, 2.5, 3.2, 4.1, 4.8, 5.2),
-    c(1.8, 1.6, 1.4, 1.2, 1.1, 0.9),
-    c(8.5, 9.2, 10.1, 11.5, 12.8, 14.2),
-    c(3.2, 3.4, 3.5, 3.6, 3.7, 3.8),
-    c(1.2, 1.4, 1.5, 1.3, 1.6, 1.8)
-  )
-) |>
-  mutate(lower = return_1y - 1.96 * return_se, upper = return_1y + 1.96 * return_se)
-
-forest_plot(
-  viz_data,
-  point = "return_1y", lower = "lower", upper = "upper",
-  label = "fund",
-  columns = list(
-    col_group("Fund Info",
-      col_bar("aum_b", "AUM ($B)"),
-      col_numeric("expense", "Expense %"),
-      position = "left"
-    ),
-    col_group("Trends",
-      col_sparkline("monthly_returns", "12M Returns"),
-      col_sparkline("flow_trend", "6M Flows"),
-      position = "right"
-    ),
-    col_interval("1Y Return % (95% CI)")
-  ),
-  theme = web_theme_modern(),
-  null_value = 0,
-  axis_label = "1-Year Return (%)",
-  title = "Sparklines & Bars",
-  subtitle = "col_group() organizes related columns under shared headers",
-  caption = "Fund Info group on left, Trends group on right"
-)
-```
-
-## 6. Row Styling
-
-Headers, summaries, badges, indentation, and custom colors.
-
-```{r}
-styled_data <- tibble(
-  label = c(
-    "Primary Endpoint",
-    "  Composite MACE", "  CV Death", "  MI", "  Stroke",
-    "",
-    "Secondary Endpoints",
-    "  All-cause mortality", "  HF hospitalization",
-    "",
-    "Overall Summary"
-  ),
-  hr = c(NA, 0.82, 0.88, 0.79, 0.76, NA, NA, 0.91, 0.72, NA, 0.80),
-  lower = c(NA, 0.74, 0.76, 0.68, 0.62, NA, NA, 0.79, 0.61, NA, 0.73),
-  upper = c(NA, 0.91, 1.02, 0.92, 0.93, NA, NA, 1.05, 0.85, NA, 0.88),
-  events = c(NA, 856, 312, 298, 246, NA, NA, 445, 412, NA, 1268),
-  rtype = c("header", rep("data", 4), "spacer", "header", "data", "data", "spacer", "summary"),
-  rbold = c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE),
-  rindent = c(0, 1, 2, 2, 2, 0, 0, 1, 1, 0, 0),
-  rcolor = c("#2563eb", NA, NA, NA, NA, NA, "#2563eb", NA, NA, NA, "#16a34a"),
-  rbadge = c(NA, "Primary", NA, NA, NA, NA, NA, NA, "Key", NA, "Pooled")
-)
-
-forest_plot(
-  styled_data,
-  point = "hr", lower = "lower", upper = "upper",
-  label = "label",
-  columns = list(
-    col_numeric("events", "Events"),
-    col_interval("HR (95% CI)")
-  ),
-  row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
-  row_color = "rcolor", row_badge = "rbadge",
-  theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio",
-  title = "Row Styling Features",
-  subtitle = "row_type, row_bold, row_indent, row_color, row_badge",
-  caption = "Headers in blue, summary in green, with badges and indentation"
-)
-```
-
-## 7. Marker Styling
-
-Customize marker shapes, colors, and opacity per row.
-
-```{r}
-marker_data <- tibble(
-  study = c("RCT-001", "RCT-002", "RCT-003", "OBS-001", "OBS-002", "OBS-003"),
-  design = c("RCT", "RCT", "RCT", "Observational", "Observational", "Observational"),
-  hr = c(0.72, 0.68, 0.75, 0.82, 0.78, 0.85),
-  lower = c(0.58, 0.52, 0.61, 0.68, 0.64, 0.71),
-  upper = c(0.89, 0.89, 0.92, 0.99, 0.95, 1.02),
-  pvalue = c(0.002, 0.001, 0.008, 0.045, 0.022, 0.068),
-  n = c(1250, 980, 1420, 2100, 1890, 1650),
-  # Marker styling columns
-  marker_shape = ifelse(design == "RCT", "circle", "square"),
-  marker_color = ifelse(pvalue < 0.05, "#16a34a", "#94a3b8"),
-  marker_opacity = ifelse(pvalue < 0.01, 1, 0.7)
-)
-
-forest_plot(
-  marker_data,
-  point = "hr", lower = "lower", upper = "upper",
-  label = "study",
-  group = "design",
-  columns = list(
-    col_n("n"),
-    col_pvalue("pvalue", "P"),
-    col_interval("HR (95% CI)")
-  ),
-  marker_shape = "marker_shape",
-  marker_color = "marker_color",
-  marker_opacity = "marker_opacity",
-  theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio",
-  title = "Marker Styling",
-  subtitle = "Shape by study design, color by significance, opacity by p-value",
-  caption = "Circles = RCTs, Squares = Observational. Green = p<0.05, Gray = non-significant."
-)
-```
-
-## 8. Annotations & Reference Lines
-
-Custom reference lines with labels at specific values.
-
-```{r}
-annotation_data <- tibble(
-  study = c("LOW-DOSE", "MID-DOSE", "HIGH-DOSE", "COMBO-A", "COMBO-B"),
-  or = c(0.92, 0.75, 0.58, 0.62, 0.48),
-  lower = c(0.78, 0.62, 0.45, 0.50, 0.38),
-  upper = c(1.08, 0.91, 0.75, 0.77, 0.61),
-  dose_mg = c(50, 100, 200, 150, 250)
-)
-
-forest_plot(
-  annotation_data,
-  point = "or", lower = "lower", upper = "upper",
-  label = "study",
-  columns = list(
-    col_numeric("dose_mg", "Dose (mg)"),
-    col_interval("OR (95% CI)")
-  ),
-  annotations = list(
-    forest_refline(0.80, label = "Clinically meaningful", style = "dashed", color = "#16a34a"),
-    forest_refline(0.50, label = "Target effect", style = "solid", color = "#dc2626")
-  ),
-  theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Odds Ratio",
-  title = "Annotations & Reference Lines",
-  subtitle = "forest_refline() adds labeled vertical lines",
-  caption = "Green dashed = clinically meaningful threshold, Red solid = target"
-)
-```
-
-## 9. Axis Control
-
-Custom range, explicit ticks, and gridlines.
-
-```{r}
-axis_data <- tibble(
-  study = c("Study A", "Study B", "Study C", "Study D", "Study E"),
-  or = c(0.45, 0.72, 1.00, 1.35, 2.10),
-  lower = c(0.28, 0.55, 0.78, 1.05, 1.52),
-  upper = c(0.72, 0.94, 1.28, 1.74, 2.90)
-)
-
-forest_plot(
-  axis_data,
-  point = "or", lower = "lower", upper = "upper",
-  label = "study",
-  columns = list(col_interval("OR (95% CI)")),
-  theme = web_theme_modern() |> set_axis(gridlines = TRUE, gridline_style = "dashed"),
-  scale = "log", null_value = 1,
-  axis_range = c(0.25, 4.0),
-  axis_ticks = c(0.25, 0.5, 1, 2, 4),
-  axis_label = "Odds Ratio (log scale)",
-  title = "Axis Control",
-  subtitle = "axis_range, axis_ticks, and gridlines",
-  caption = "Custom range [0.25, 4.0] with explicit tick positions on log scale"
-)
-```
-
----
-
 # Combo Showcases
 
 Multiple features working together.
 
-## 10. Clinical Trial Program
+## 11. Clinical Trial Program
 
 Nested groups + multiple effects + sparklines + badges.
 
@@ -473,7 +69,9 @@ forest_plot(
 )
 ```
 
-## 11. Executive Dashboard
+---
+
+## 12. Executive Dashboard
 
 Table-only + bars + sparklines + row styling.
 
@@ -527,12 +125,13 @@ webtable(
 )
 ```
 
-## 12. Publication Meta-Analysis
+---
+
+## 13. Publication Meta-Analysis
 
 Row styling + annotations + axis control using the `glp1_trials` package dataset.
 
 ```{r}
-# Using the glp1_trials package dataset
 data(glp1_trials)
 
 forest_plot(
@@ -570,7 +169,9 @@ forest_plot(
 )
 ```
 
-## 13. The Full Monty
+---
+
+## 14. The Full Monty
 
 Everything at once. Maximum feature density.
 
@@ -651,7 +252,7 @@ forest_plot(
 
 Clean, professional examples for different contexts.
 
-## 14. JAMA Style
+## 15. JAMA Style
 
 Dense, minimal, black and white. Interaction p-values for subgroups.
 
@@ -697,7 +298,9 @@ forest_plot(
 )
 ```
 
-## 15. Lancet Style
+---
+
+## 16. Lancet Style
 
 Serif fonts, blue palette, with row grouping and column grouping.
 
@@ -748,7 +351,9 @@ forest_plot(
 )
 ```
 
-## 16. Minimal Print
+---
+
+## 17. Minimal Print
 
 Maximum density, pure black and white, with row and column grouping.
 
@@ -796,7 +401,7 @@ forest_plot(
 
 Navigate between subgroups using an interactive sidebar.
 
-## 17. Regional Subgroup Analysis
+## 18. Regional Subgroup Analysis
 
 Split by a single variable with floating sidebar navigation.
 
@@ -831,7 +436,9 @@ forest_plot(
 )
 ```
 
-## 18. Hierarchical Subgroups
+---
+
+## 19. Hierarchical Subgroups
 
 Two-level split: Sex > Age Group. Expanding tree navigation.
 
@@ -868,7 +475,9 @@ hierarchical_data |>
   )
 ```
 
-## 19. Three-Level Clinical Trial
+---
+
+## 20. Three-Level Clinical Trial
 
 Region > Country > Site with shared axis for consistent comparison.
 
@@ -914,7 +523,7 @@ forest_plot(
 
 Non-clinical examples showcasing webforest's versatility.
 
-## 20. NBA Player Efficiency
+## 21. NBA Player Efficiency
 
 Sports analytics using the `nba_efficiency` package dataset.
 
@@ -958,7 +567,9 @@ forest_plot(
 )
 ```
 
-## 21. Rich Column Types
+---
+
+## 22. Rich Column Types
 
 Showcasing badges, icons, stars, images, and ranges.
 
@@ -1005,9 +616,11 @@ forest_plot(
 )
 ```
 
-## 22. Airline Performance
+---
 
-Transportation analytics using the `airline_delays` package dataset, with row and column grouping.
+## 23. Airline Performance
+
+Transportation analytics using the `airline_delays` package dataset.
 
 ```{r}
 data(airline_delays)
@@ -1059,3 +672,11 @@ forest_plot(
   footnote = "Satisfaction on 1-5 scale"
 )
 ```
+
+---
+
+## See Also
+
+- [Gallery: Basic Examples](gallery-basic.qmd) — Single-feature showcases
+- [Guide](guide/quick-start.qmd) — Complete documentation
+- [Cheatsheet](cheatsheet.qmd) — Quick reference

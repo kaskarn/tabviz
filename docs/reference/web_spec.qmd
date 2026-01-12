@@ -132,30 +132,76 @@ The `group` argument supports three modes:
 
 ### Row Styling Arguments
 
-All row styling arguments accept column names containing the styling values:
+All row styling arguments accept **either a column name (string) or a formula expression (`~ ...`)**.
 
-| Argument | Column Contains |
-|----------|-----------------|
-| `row_type` | Row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
-| `row_bold` | `TRUE`/`FALSE` for bold text |
-| `row_italic` | `TRUE`/`FALSE` for italic text |
-| `row_color` | CSS color strings (e.g., `"#1a365d"`) |
-| `row_bg` | Background color strings |
-| `row_badge` | Badge text to display |
-| `row_icon` | Emoji or unicode icons |
-| `row_indent` | Indentation levels (0, 1, 2, ...) |
-| `row_emphasis` | `TRUE`/`FALSE` for emphasis styling (bold + primary color) |
-| `row_muted` | `TRUE`/`FALSE` for muted styling (lighter, reduced prominence) |
-| `row_accent` | `TRUE`/`FALSE` for accent styling (theme accent color) |
+| Argument | Value Type | Description |
+|----------|------------|-------------|
+| `row_type` | string | Row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
+| `row_bold` | logical | `TRUE`/`FALSE` for bold text |
+| `row_italic` | logical | `TRUE`/`FALSE` for italic text |
+| `row_color` | string | CSS color strings (e.g., `"#1a365d"`) |
+| `row_bg` | string | Background color strings |
+| `row_badge` | string | Badge text to display |
+| `row_icon` | string | Emoji or unicode icons |
+| `row_indent` | integer | Indentation levels (0, 1, 2, ...) |
+| `row_emphasis` | logical | `TRUE`/`FALSE` for emphasis styling (bold + primary color) |
+| `row_muted` | logical | `TRUE`/`FALSE` for muted styling (lighter, reduced prominence) |
+| `row_accent` | logical | `TRUE`/`FALSE` for accent styling (theme accent color) |
+
+**Formula expressions** let you compute styling from your data without pre-creating columns:
+
+```{r}
+#| eval: false
+# Column name approach (traditional)
+data <- data |> mutate(is_sig = pval < 0.05)
+web_spec(data, ..., row_bold = "is_sig")
+
+# Formula expression approach (NSE)
+web_spec(data, ..., row_bold = ~ pval < 0.05)
+```
+
+Formulas can reference any column in your data:
+
+```{r}
+#| eval: false
+# Simple condition
+row_bold = ~ pval < 0.05
+
+# Multiple conditions
+row_emphasis = ~ pval < 0.05 & hr < 0.8
+
+# Conditional colors
+row_color = ~ ifelse(pval < 0.05, "#16a34a", "#71717a")
+
+# Complex logic with case_when
+row_color = ~ case_when(
+  upper < 1 ~ "#16a34a",  # Significant benefit
+  lower > 1 ~ "#dc2626",  # Significant harm
+  TRUE ~ "#71717a"        # Non-significant
+)
+```
 
 ### Marker Styling Arguments
 
-| Argument | Column Contains |
-|----------|-----------------|
-| `marker_color` | CSS color strings for marker fill |
-| `marker_shape` | Shape values: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
-| `marker_opacity` | Opacity values from 0 to 1 |
-| `marker_size` | Size multipliers (1 = default size) |
+All marker styling arguments accept **either a column name (string) or a formula expression (`~ ...`)**.
+
+| Argument | Value Type | Description |
+|----------|------------|-------------|
+| `marker_color` | string | CSS color strings for marker fill |
+| `marker_shape` | string | Shape: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `marker_opacity` | numeric | Opacity values from 0 to 1 |
+| `marker_size` | numeric | Size multipliers (1 = default size) |
+
+**Example with formula expressions:**
+
+```{r}
+#| eval: false
+forest_plot(data, ...,
+  marker_shape = ~ ifelse(design == "RCT", "circle", "square"),
+  marker_color = ~ ifelse(pval < 0.05, "#16a34a", "#94a3b8"),
+  marker_opacity = ~ ifelse(pval < 0.01, 1, 0.7)
+)
+```
 
 ### Advanced Arguments
 

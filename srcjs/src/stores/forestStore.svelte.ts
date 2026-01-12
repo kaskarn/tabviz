@@ -16,7 +16,7 @@ import type {
 import { niceDomain, DOMAIN_PADDING } from "$lib/scale-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
-import { AUTO_WIDTH, SPACING, GROUP_HEADER, COLUMN_GROUP } from "$lib/rendering-constants";
+import { AUTO_WIDTH, SPACING, GROUP_HEADER, COLUMN_GROUP, TEXT_MEASUREMENT } from "$lib/rendering-constants";
 
 // Svelte 5 runes-based store
 export function createForestStore() {
@@ -436,7 +436,7 @@ export function createForestStore() {
 
     const rowHeight = spec.theme.spacing.rowHeight;
     const headerHeight = spec.theme.spacing.headerHeight;
-    const axisGap = spec.theme.spacing.axisGap ?? 12; // Gap between table and axis
+    const axisGap = spec.theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP; // Gap between table and axis
     const axisHeight = 32 + axisGap; // Axis content (32px) + configurable gap
     const includeForest = spec.data.includeForest;
     // Use override if set, otherwise calculate default (25% of width, min 200px)
@@ -540,10 +540,12 @@ export function createForestStore() {
     const fontFamily = spec.theme.typography.fontFamily;
     let fontSize = spec.theme.typography.fontSizeBase;
 
-    // Convert rem to px (assume 16px base, common browser default)
-    if (typeof fontSize === 'string' && fontSize.endsWith('rem')) {
-      const remValue = parseFloat(fontSize);
-      fontSize = `${remValue * 16}px`;
+    // Convert rem/em to px using actual document root font size
+    // (don't assume 16px - user may have accessibility settings or custom base)
+    if (typeof fontSize === 'string' && (fontSize.endsWith('rem') || fontSize.endsWith('em'))) {
+      const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const relValue = parseFloat(fontSize);
+      fontSize = `${relValue * rootFontSize}px`;
     }
 
     // Do initial measurement immediately
@@ -589,8 +591,6 @@ export function createForestStore() {
     const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
     // groupPadding is applied to both left and right of column group headers
     const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
-    // Small buffer for Canvas vs CSS text rendering differences (kerning, sub-pixel rounding)
-    const RENDERING_BUFFER = 4;
 
     // ========================================================================
     // COLUMN WIDTH MEASUREMENT
@@ -645,8 +645,9 @@ export function createForestStore() {
       // (but may be expanded later if a group header needs more space)
       if (typeof col.width === 'number') return;
 
-      // Only auto-size columns with width="auto" or null
-      if (col.width !== "auto" && col.width !== null) return;
+      // Only auto-size columns with width="auto", null, or undefined (omitted)
+      // Use != null to match both null and undefined (R's NULL may serialize as omitted property)
+      if (col.width != null && col.width !== "auto") return;
 
       let maxWidth = 0;
 
@@ -670,7 +671,7 @@ export function createForestStore() {
 
       // Apply padding (from theme) and constraints
       const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
-      const computedWidth = Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER)));
+      const computedWidth = Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)));
       columnWidths[col.id] = computedWidth;
     }
 
@@ -696,7 +697,7 @@ export function createForestStore() {
         if (col.header) {
           ctx!.font = headerFont;
           // Group header needs: text width + its own padding (from theme) + rendering buffer
-          const groupHeaderWidth = ctx!.measureText(col.header).width + groupPadding + RENDERING_BUFFER;
+          const groupHeaderWidth = ctx!.measureText(col.header).width + groupPadding + TEXT_MEASUREMENT.RENDERING_BUFFER;
 
           const leafCols = getLeafColumns(col);
           const childrenTotalWidth = leafCols.reduce((sum, leaf) => sum + getEffectiveWidth(leaf), 0);
@@ -827,7 +828,7 @@ export function createForestStore() {
       }
 
       // Apply padding (from theme) and constraints (label column has higher max)
-      const computedLabelWidth = Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, Math.ceil(maxLabelWidth + cellPadding + RENDERING_BUFFER)));
+      const computedLabelWidth = Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, Math.ceil(maxLabelWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)));
       columnWidths["__label__"] = computedLabelWidth;
     }
   }

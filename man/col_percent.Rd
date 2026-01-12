@@ -32,7 +32,8 @@ Set to FALSE if data is already on 0-100 scale.}
 
 \item{symbol}{Show \% symbol (default TRUE)}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object

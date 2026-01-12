@@ -13,17 +13,16 @@
 
 ## Package description
 
-webforest creates interactive, publication-ready forest plots rendered using
-modern web technologies (Svelte 5, D3.js). It targets researchers creating
-meta-analyses, regression summaries, and clinical trial results for R Markdown,
-Quarto, Shiny, and standalone HTML.
+Interactive, publication-ready forest plots for R. Built with Svelte 5 and D3.js
+for speed and flexibility. Web and Shiny-native with WYSIWYG static export (SVG/PDF/PNG).
 
 Key features:
-- Interactive forest plots with collapsible groups, sorting, and filtering
-- 9 preset themes (including JAMA, Lancet, Cochrane, Nature styles)
-- Split-by navigation for subgroup analysis
-- Static export to SVG/PDF/PNG via V8 JavaScript engine
-- Shiny integration with reactive updates
+- Simple interface: `forest_plot()` generates complex interactive plots with succinct parameters
+- Granular customization: Precise control over rendering at cell, row, and column levels
+- Themable: Full theming system with preset themes (JAMA, Lancet, Cochrane, Nature, and more)
+- Rich column types: Badges, star ratings, sparklines, images, p-values, and more
+- Versatile API: Standard argument passing or pipe-friendly workflow with `set_*()` modifiers
+- Portable: Export as interactive HTML or static images (SVG/PDF/PNG)
 
 ## Downstream dependencies
 

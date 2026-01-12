@@ -215,13 +215,22 @@ serialize_column <- function(col) {
   }
 
   # Build styleMapping from style_* properties
+  # Helper to check if a style value is set (not NULL, not NA)
+  has_style <- function(x) {
+    !is.null(x) && length(x) > 0 && !is.na(x[1])
+  }
+
   style_mapping <- list()
-  if (!is.na(col@style_bold)) style_mapping$bold <- col@style_bold
-  if (!is.na(col@style_italic)) style_mapping$italic <- col@style_italic
-  if (!is.na(col@style_color)) style_mapping$color <- col@style_color
-  if (!is.na(col@style_bg)) style_mapping$bg <- col@style_bg
-  if (!is.na(col@style_badge)) style_mapping$badge <- col@style_badge
-  if (!is.na(col@style_icon)) style_mapping$icon <- col@style_icon
+  if (has_style(col@style_bold)) style_mapping$bold <- col@style_bold
+  if (has_style(col@style_italic)) style_mapping$italic <- col@style_italic
+  if (has_style(col@style_color)) style_mapping$color <- col@style_color
+  if (has_style(col@style_bg)) style_mapping$bg <- col@style_bg
+  if (has_style(col@style_badge)) style_mapping$badge <- col@style_badge
+  if (has_style(col@style_icon)) style_mapping$icon <- col@style_icon
+  # Semantic styling
+  if (has_style(col@style_emphasis)) style_mapping$emphasis <- col@style_emphasis
+  if (has_style(col@style_muted)) style_mapping$muted <- col@style_muted
+  if (has_style(col@style_accent)) style_mapping$accent <- col@style_accent
 
   if (length(style_mapping) > 0) {
     result$styleMapping <- style_mapping
@@ -541,8 +550,10 @@ build_cell_styles <- function(row, columns) {
     cs <- list()
 
     # Helper to safely get value from column
+    # col_name can be NULL, NA, or a valid column name
     get_val <- function(col_name, type = "character") {
-      if (is.na(col_name) || !col_name %in% names(row)) return(NULL)
+      if (is.null(col_name) || length(col_name) == 0) return(NULL)
+      if (is.na(col_name[1]) || !col_name %in% names(row)) return(NULL)
       val <- row[[col_name]]
       if (is.na(val)) return(NULL)
       switch(type,
@@ -569,6 +580,16 @@ build_cell_styles <- function(row, columns) {
 
     val <- get_val(col@style_icon, "character")
     if (!is.null(val)) cs$icon <- val
+
+    # Semantic styling
+    val <- get_val(col@style_emphasis, "logical")
+    if (!is.null(val)) cs$emphasis <- val
+
+    val <- get_val(col@style_muted, "logical")
+    if (!is.null(val)) cs$muted <- val
+
+    val <- get_val(col@style_accent, "logical")
+    if (!is.null(val)) cs$accent <- val
 
     if (length(cs) > 0) {
       cell_styles[[field]] <- cs

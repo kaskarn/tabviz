@@ -14,12 +14,19 @@
   const isItalic = $derived(cellStyle?.italic ?? false);
   const textColor = $derived(cellStyle?.color ?? null);
   const bgColor = $derived(cellStyle?.bg ?? null);
+  // Semantic styling
+  const isEmphasis = $derived(cellStyle?.emphasis ?? false);
+  const isMuted = $derived(cellStyle?.muted ?? false);
+  const isAccent = $derived(cellStyle?.accent ?? false);
 </script>
 
 <span
   class="cell-content"
   class:cell-bold={isBold}
   class:cell-italic={isItalic}
+  class:cell-emphasis={isEmphasis}
+  class:cell-muted={isMuted}
+  class:cell-accent={isAccent}
   style:color={textColor}
   style:background-color={bgColor}
   title={String(value ?? "")}
@@ -42,6 +49,20 @@
 
   .cell-italic {
     font-style: italic;
+  }
+
+  /* Semantic styling - matches row-level classes */
+  .cell-emphasis {
+    font-weight: var(--wf-font-weight-bold, 600);
+    color: var(--wf-fg, #1a1a1a);
+  }
+
+  .cell-muted {
+    color: var(--wf-muted, #94a3b8);
+  }
+
+  .cell-accent {
+    color: var(--wf-accent, #8b5cf6);
   }
 
   .cell-icon {

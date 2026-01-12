@@ -28,21 +28,22 @@
 #' @param subtitle Subtitle (displayed below the title)
 #' @param caption Caption (displayed below the plot)
 #' @param footnote Footnote (displayed below caption, italicized)
-#' @param row_bold Column name for row-level bold styling (logical values)
-#' @param row_italic Column name for row-level italic styling (logical values)
-#' @param row_color Column name for row text color (CSS color strings)
-#' @param row_bg Column name for row background color (CSS color strings)
-#' @param row_badge Column name for label badges (text values)
-#' @param row_icon Column name for label icons (emoji/unicode)
-#' @param row_indent Column name for row indentation (numeric values)
-#' @param row_type Column name for row type ("data", "header", "summary", "spacer")
-#' @param row_emphasis Column name for emphasis styling (logical: bold, darker text)
-#' @param row_muted Column name for muted styling (logical: lighter, reduced prominence)
-#' @param row_accent Column name for accent styling (logical: theme accent color)
-#' @param marker_color Column name for marker fill color (CSS color strings)
-#' @param marker_shape Column name for marker shape ("square", "circle", "diamond", "triangle")
-#' @param marker_opacity Column name for marker opacity (numeric 0-1)
-#' @param marker_size Column name for marker size multiplier (numeric)
+#' @param row_bold Row-level bold styling. Column name (character) or formula
+#'   (e.g., `~ p_value < 0.05`) evaluating to logical values.
+#' @param row_italic Row-level italic styling. Column name or formula.
+#' @param row_color Row text color. Column name or formula returning CSS color strings.
+#' @param row_bg Row background color. Column name or formula returning CSS color strings.
+#' @param row_badge Label badges. Column name or formula returning text values.
+#' @param row_icon Label icons. Column name or formula returning emoji/unicode.
+#' @param row_indent Row indentation. Column name or formula returning numeric values.
+#' @param row_type Row type. Column name or formula returning "data", "header", "summary", "spacer".
+#' @param row_emphasis Emphasis styling (bold + foreground). Column name or formula (logical).
+#' @param row_muted Muted styling (lighter, reduced prominence). Column name or formula (logical).
+#' @param row_accent Accent styling (theme accent color). Column name or formula (logical).
+#' @param marker_color Marker fill color. Column name or formula returning CSS color strings.
+#' @param marker_shape Marker shape. Column name or formula returning "square", "circle", "diamond", "triangle".
+#' @param marker_opacity Marker opacity. Column name or formula returning numeric 0-1.
+#' @param marker_size Marker size multiplier. Column name or formula returning numeric values.
 #' @param weight Deprecated: use marker_size instead
 #' @param theme Theme object (use `web_theme_*()` functions)
 #' @param interaction Interaction settings (use `web_interaction()`)
@@ -289,6 +290,37 @@ web_spec <- function(
     annotations_list <- annotations
   }
 
+  # Resolve row styling expressions (supports formulas like ~ p_value < 0.05)
+  # This modifies `data` if computed columns are needed
+  style_resolved <- resolve_row_style_exprs(
+    data = data,
+    row_bold = row_bold,
+    row_italic = row_italic,
+    row_color = row_color,
+    row_bg = row_bg,
+    row_badge = row_badge,
+    row_icon = row_icon,
+    row_indent = row_indent,
+    row_type = row_type,
+    row_emphasis = row_emphasis,
+    row_muted = row_muted,
+    row_accent = row_accent,
+    marker_color = marker_color,
+    marker_shape = marker_shape,
+    marker_opacity = marker_opacity,
+    marker_size = marker_size,
+    weight = weight
+  )
+  data <- style_resolved$data
+
+  # Resolve column styling expressions (supports formulas like ~ .x < 0.05)
+  # For cell-level styling, .x refers to the column's own values
+  if (length(columns) > 0) {
+    col_resolved <- resolve_all_column_styles(columns, data, env = parent.frame())
+    columns <- col_resolved$columns
+    data <- col_resolved$data
+  }
+
   # Build and return WebSpec
   WebSpec(
     data = data,
@@ -309,22 +341,22 @@ web_spec <- function(
     interaction = interaction,
     labels = labels,
     annotations = annotations_list,
-    row_bold_col = row_bold %||% NA_character_,
-    row_italic_col = row_italic %||% NA_character_,
-    row_color_col = row_color %||% NA_character_,
-    row_bg_col = row_bg %||% NA_character_,
-    row_badge_col = row_badge %||% NA_character_,
-    row_icon_col = row_icon %||% NA_character_,
-    row_indent_col = row_indent %||% NA_character_,
-    row_type_col = row_type %||% NA_character_,
-    row_emphasis_col = row_emphasis %||% NA_character_,
-    row_muted_col = row_muted %||% NA_character_,
-    row_accent_col = row_accent %||% NA_character_,
-    marker_color_col = marker_color %||% NA_character_,
-    marker_shape_col = marker_shape %||% NA_character_,
-    marker_opacity_col = marker_opacity %||% NA_character_,
-    marker_size_col = marker_size %||% NA_character_,
-    weight_col = weight %||% NA_character_
+    row_bold_col = style_resolved$row_bold,
+    row_italic_col = style_resolved$row_italic,
+    row_color_col = style_resolved$row_color,
+    row_bg_col = style_resolved$row_bg,
+    row_badge_col = style_resolved$row_badge,
+    row_icon_col = style_resolved$row_icon,
+    row_indent_col = style_resolved$row_indent,
+    row_type_col = style_resolved$row_type,
+    row_emphasis_col = style_resolved$row_emphasis,
+    row_muted_col = style_resolved$row_muted,
+    row_accent_col = style_resolved$row_accent,
+    marker_color_col = style_resolved$marker_color,
+    marker_shape_col = style_resolved$marker_shape,
+    marker_opacity_col = style_resolved$marker_opacity,
+    marker_size_col = style_resolved$marker_size,
+    weight_col = style_resolved$weight
   )
 }
 

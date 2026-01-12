@@ -22,7 +22,10 @@ web_col(
   color = NULL,
   bg = NULL,
   badge = NULL,
-  icon = NULL
+  icon = NULL,
+  emphasis = NULL,
+  muted = NULL,
+  accent = NULL
 )
 }
 \arguments{
@@ -60,6 +63,12 @@ instead of being truncated with ellipsis.}
 \item{badge}{Column name containing text for per-cell badges}
 
 \item{icon}{Column name containing emoji/unicode for per-cell icons}
+
+\item{emphasis}{Column name containing logical values for emphasis styling (bold + foreground)}
+
+\item{muted}{Column name containing logical values for muted styling}
+
+\item{accent}{Column name containing logical values for accent styling}
 }
 \value{
 A ColumnSpec object

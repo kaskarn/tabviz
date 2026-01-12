@@ -37,6 +37,10 @@ export interface CellStyle {
   bg?: string | null;
   badge?: string | null;
   icon?: string | null;
+  // Semantic styling (same as row-level)
+  emphasis?: boolean;  // Bold + foreground color
+  muted?: boolean;     // Muted color
+  accent?: boolean;    // Accent color
 }
 
 // Maps style properties to column names containing values
@@ -47,6 +51,10 @@ export interface StyleMapping {
   bg?: string;
   badge?: string;
   icon?: string;
+  // Semantic styling mappings
+  emphasis?: string;
+  muted?: string;
+  accent?: string;
 }
 
 export interface Row {

@@ -18,6 +18,7 @@
   });
 
   // Get color based on: custom colors > variant mapping > default
+  // Uses CSS variables for themeable badge colors
   const badgeColor = $derived.by(() => {
     const strValue = String(value ?? "");
 
@@ -26,20 +27,20 @@
       return colors[strValue];
     }
 
-    // Then check variant mapping
+    // Then check variant mapping - use CSS variables for theme awareness
     if (variants && strValue in variants) {
       const variant = variants[strValue];
       switch (variant) {
         case "success":
-          return "#16a34a";
+          return "var(--wf-badge-success, #16a34a)";
         case "warning":
-          return "#f59e0b";
+          return "var(--wf-badge-warning, #f59e0b)";
         case "error":
-          return "#dc2626";
+          return "var(--wf-badge-error, #dc2626)";
         case "info":
-          return "#2563eb";
+          return "var(--wf-badge-info, #2563eb)";
         case "muted":
-          return "#64748b";
+          return "var(--wf-badge-muted, var(--wf-muted, #64748b))";
         default:
           return "var(--wf-primary, #2563eb)";
       }

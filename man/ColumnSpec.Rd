@@ -16,12 +16,15 @@ ColumnSpec(
   position = "left",
   sortable = TRUE,
   options = list(),
-  style_bold = NA_character_,
-  style_italic = NA_character_,
-  style_color = NA_character_,
-  style_bg = NA_character_,
-  style_badge = NA_character_,
-  style_icon = NA_character_
+  style_bold = NULL,
+  style_italic = NULL,
+  style_color = NULL,
+  style_bg = NULL,
+  style_badge = NULL,
+  style_icon = NULL,
+  style_emphasis = NULL,
+  style_muted = NULL,
+  style_accent = NULL
 )
 }
 \arguments{
@@ -58,6 +61,12 @@ ColumnSpec(
 \item{style_badge}{Column name containing text for per-cell badges}
 
 \item{style_icon}{Column name containing emoji/unicode for per-cell icons}
+
+\item{style_emphasis}{Column name containing logical values for per-cell emphasis (bold + foreground)}
+
+\item{style_muted}{Column name containing logical values for per-cell muted styling}
+
+\item{style_accent}{Column name containing logical values for per-cell accent styling}
 }
 \description{
 ColumnSpec: Specification for a table column

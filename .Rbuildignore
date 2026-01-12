@@ -3,7 +3,7 @@
 ^\.git$
 ^\.github$
 ^\.claude$
-^srcjs$
+^srcjs/
 ^scripts$
 ^pkgdown$
 ^docs$
@@ -12,7 +12,7 @@
 ^README\.Rmd$
 ^\.lintr$
 ^_pkgdown\.yml$
-^inst/scripts
+^inst/scripts/
 ^cran-comments\.md$
 ^data-raw$
 ^.*\.Rcheck$

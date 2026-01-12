@@ -400,6 +400,84 @@ col_range(min_field, max_field, header = NULL, width = NULL, separator = " – "
 col_range("age_min", "age_max", header = "Age Range")
 ```
 
+## Cell-Level Styling
+
+All `col_*()` functions support per-cell styling through these optional parameters:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `bold` | Column name or formula | Bold text when TRUE |
+| `italic` | Column name or formula | Italic text when TRUE |
+| `color` | Column name or formula | Text color (CSS color string) |
+| `bg` | Column name or formula | Background color (CSS color string) |
+| `badge` | Column name or formula | Badge label |
+| `icon` | Column name or formula | Emoji/unicode icon |
+| `emphasis` | Column name or formula | Theme-aware emphasis styling |
+| `muted` | Column name or formula | Theme-aware muted styling |
+| `accent` | Column name or formula | Theme-aware accent styling |
+
+### Formula Expressions with `.x`
+
+Style parameters accept formula expressions that are evaluated per row. Use **`.x`** to reference the column's own values:
+
+```{r}
+#| eval: false
+# Bold p-values below 0.05
+col_pvalue("pval", bold = ~ .x < 0.05)
+
+# Color HR values based on direction
+col_numeric("hr", "HR",
+  color = ~ ifelse(.x < 1, "#16a34a", "#dc2626")
+)
+
+# Complex conditional styling
+col_numeric("change", "% Change",
+  color = ~ case_when(
+    .x < -10 ~ "#16a34a",  # Strong improvement
+    .x > 5 ~ "#dc2626",    # Worsening
+    TRUE ~ "#71717a"       # Neutral
+  )
+)
+```
+
+### Referencing Other Columns
+
+Formulas can also reference other columns in your data:
+
+```{r}
+#| eval: false
+# Color HR based on significance
+col_numeric("hr", "HR",
+  color = ~ ifelse(pval < 0.05, "#16a34a", "#71717a")
+)
+
+# Bold based on combined conditions
+col_interval(
+  bold = ~ pval < 0.05 & hr < 1
+)
+```
+
+### Column Name vs Formula
+
+You can use either approach:
+
+```{r}
+#| eval: false
+# Column name approach (requires pre-computed column)
+data <- data |> mutate(is_sig = pval < 0.05)
+col_pvalue("pval", bold = "is_sig")
+
+# Formula approach (computed on the fly)
+col_pvalue("pval", bold = ~ .x < 0.05)
+```
+
+| Approach | Best For |
+|----------|----------|
+| **Formulas** | Simple conditions, self-referential logic |
+| **Column names** | Complex logic, reused across multiple columns |
+
+---
+
 ## Column Groups
 
 ### col_group {#col_group}
@@ -470,21 +548,32 @@ spec |> set_column_style(column, bold = NULL, italic = NULL, color = NULL, bg = 
 | Argument | Description |
 |----------|-------------|
 | `column` | Field name of the column to style |
-| `bold` | Column name for bold text (logical) |
-| `italic` | Column name for italic text (logical) |
-| `color` | Column name for text color (hex string) |
-| `bg` | Column name for background color (hex string) |
-| `badge` | Column name for badge text |
-| `icon` | Column name for icon (emoji/unicode) |
+| `bold` | Column name **or formula** for bold text |
+| `italic` | Column name **or formula** for italic text |
+| `color` | Column name **or formula** for text color |
+| `bg` | Column name **or formula** for background color |
+| `badge` | Column name **or formula** for badge text |
+| `icon` | Column name **or formula** for icon |
 
-Example:
+**Examples:**
 
 ```{r}
 #| eval: false
-web_spec(data, point = "hr", lower = "lower", upper = "upper", label = "study",
+# Using column names
+web_spec(data, ...,
   columns = list(col_numeric("hr", "HR"))
 ) |>
   set_column_style("hr", bold = "is_significant", color = "hr_color") |>
+  forest_plot()
+
+# Using formula expressions
+web_spec(data, ...,
+  columns = list(col_pvalue("pval"))
+) |>
+  set_column_style("pval",
+    bold = ~ .x < 0.05,
+    color = ~ ifelse(.x < 0.05, "#16a34a", "#71717a")
+  ) |>
   forest_plot()
 ```
 

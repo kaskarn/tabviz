@@ -30,7 +30,8 @@ col_stars(
 
 \item{half_stars}{Allow half-star increments (default FALSE)}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object
@@ -47,4 +48,7 @@ col_stars("quality", color = "#ef4444", empty_color = "#fee2e2")
 
 # Half-star increments
 col_stars("score", half_stars = TRUE)
+
+# With per-cell styling
+col_stars("rating", emphasis = "is_featured")
 }

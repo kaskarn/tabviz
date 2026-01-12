@@ -30,7 +30,8 @@ col_range(
 
 \item{show_bar}{Show visual bar representation (default FALSE)}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object
@@ -47,4 +48,7 @@ col_range("min", "max", separator = "–")
 
 # With decimals: "1.5 - 3.2"
 col_range("ci_lower", "ci_upper", decimals = 1)
+
+# With per-cell styling
+col_range("age_min", "age_max", emphasis = "is_key")
 }

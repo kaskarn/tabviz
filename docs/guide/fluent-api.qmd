@@ -1,5 +1,5 @@
 ---
-title: "Customizing Plots"
+title: "The Fluent API"
 ---
 
 ```{r}
@@ -8,7 +8,14 @@ library(webforest)
 library(dplyr)
 ```
 
-webforest provides a **fluent API** that lets you customize plots step by step using R's pipe operator (`|>`). This guide covers how to style your plots, whether you prefer specifying everything upfront or building incrementally.
+Throughout this guide, you've seen styling via direct arguments to `forest_plot()`. This chapter introduces the **fluent API**—a pipe-based alternative that lets you build and modify plots step by step using `set_*()` functions.
+
+Both approaches produce identical results. The fluent API shines when:
+
+- Styling depends on computed values
+- You're creating multiple variants from one base plot
+- You want reusable styling pipelines
+- Conditional logic determines styling
 
 ## The Two Styling Approaches
 

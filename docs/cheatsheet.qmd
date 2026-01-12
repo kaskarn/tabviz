@@ -1,0 +1,249 @@
+---
+title: "Cheatsheet"
+---
+
+Quick reference for webforest functions and arguments.
+
+## Visual Layout
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  [title]                                                                    │
+│  [subtitle]                                                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ [label column]  [left columns...]  │ FOREST PLOT │  [right columns...]     │
+│                                    │             │                         │
+│ ▼ Group Header                     │    null_    │                         │
+│   Study A        N    Events       │ ◆──●──◆     │   HR (95% CI)   P-val  │
+│   Study B        N    Events       │    ◆──●──◆  │   HR (95% CI)   P-val  │
+│   Study C        N    Events       │  ◆──●──◆    │   HR (95% CI)   P-val  │
+│                                    │     value   │                         │
+│ ▼ Another Group                    │      │      │                         │
+│   Study D        N    Events       │   ◆──●──◆   │   HR (95% CI)   P-val  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  [axis_label]                                                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  [caption]                                                   [footnote]     │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Core Function
+
+```r
+forest_plot(
+  x,                    # data.frame
+  point = "hr",         # column with point estimates
+  lower = "lower",      # column with lower CI
+  upper = "upper",      # column with upper CI
+  label = "study",      # column with row labels
+  group = "category",   # column(s) for grouping
+  columns = list(...),  # col_*() specifications
+  scale = "log",        # "log" or "linear"
+  null_value = 1,       # reference line value
+  axis_label = "HR",    # x-axis label
+  theme = web_theme_jama()
+)
+```
+
+---
+
+## Column Types
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `col_text()` | Text values | `col_text("category")` |
+| `col_numeric()` | Formatted numbers | `col_numeric("n", decimals = 0)` |
+| `col_interval()` | Point (CI) format | `col_interval("HR (95% CI)")` |
+| `col_n()` | Sample sizes | `col_n("n", abbreviate = TRUE)` |
+| `col_percent()` | Percentages | `col_percent("rate")` |
+| `col_events()` | Events/N format | `col_events("events", "n")` |
+| `col_pvalue()` | P-values with stars | `col_pvalue("pval", stars = TRUE)` |
+| `col_bar()` | Horizontal bars | `col_bar("weight")` |
+| `col_sparkline()` | Mini charts | `col_sparkline("trend")` |
+| `col_badge()` | Colored badges | `col_badge("status")` |
+| `col_icon()` | Icons/emoji | `col_icon("flag")` |
+| `col_stars()` | Star ratings | `col_stars("quality")` |
+| `col_img()` | Inline images | `col_img("logo_url")` |
+| `col_reference()` | Truncated links | `col_reference("doi")` |
+| `col_range()` | Min-max ranges | `col_range("min", "max")` |
+| `col_group()` | Group columns | `col_group("Results", col_interval(), col_pvalue("p"))` |
+
+---
+
+## Row Styling Arguments
+
+| Argument | Values | Effect |
+|----------|--------|--------|
+| `row_type` | `"data"`, `"header"`, `"summary"`, `"spacer"` | Row behavior |
+| `row_bold` | `TRUE`/`FALSE` | Bold text |
+| `row_italic` | `TRUE`/`FALSE` | Italic text |
+| `row_color` | CSS color | Text color |
+| `row_bg` | CSS color | Background color |
+| `row_indent` | `0`, `1`, `2`... | Indentation level |
+| `row_badge` | Text | Badge label |
+| `row_emphasis` | `TRUE`/`FALSE` | Bold + primary color |
+| `row_muted` | `TRUE`/`FALSE` | Lighter color |
+| `row_accent` | `TRUE`/`FALSE` | Accent color |
+
+All accept column names or formula expressions: `row_bold = ~ pval < 0.05`
+
+---
+
+## Marker Styling Arguments
+
+| Argument | Values | Effect |
+|----------|--------|--------|
+| `marker_color` | CSS color | Fill color |
+| `marker_shape` | `"square"`, `"circle"`, `"diamond"`, `"triangle"` | Shape |
+| `marker_opacity` | `0` to `1` | Transparency |
+| `marker_size` | Multiplier | Size (1 = default) |
+
+All accept column names or formula expressions: `marker_color = ~ ifelse(sig, "green", "gray")`
+
+---
+
+## Built-in Themes
+
+| Theme | Style |
+|-------|-------|
+| `web_theme_default()` | Clean, modern default |
+| `web_theme_jama()` | JAMA publication style |
+| `web_theme_lancet()` | Lancet publication style |
+| `web_theme_nature()` | Nature publication style |
+| `web_theme_cochrane()` | Cochrane review style |
+| `web_theme_modern()` | Contemporary with gradients |
+| `web_theme_presentation()` | Large text for slides |
+| `web_theme_dark()` | Dark mode |
+| `web_theme_minimal()` | Maximum density |
+
+---
+
+## Theme Modifier Functions
+
+```r
+forest_plot(..., theme = web_theme_default() |>
+  set_colors(primary = "#2563eb", ...) |>
+  set_typography(font_family = "Georgia", font_size_base = "0.9rem") |>
+  set_spacing(row_height = 28, header_height = 32) |>
+  set_shapes(point_size = 6, line_width = 1.5) |>
+  set_axis(gridlines = TRUE, gridline_style = "dashed")
+)
+```
+
+---
+
+## Fluent API (Pipe-Based)
+
+```r
+forest_plot(data, point = "hr", lower = "lower", upper = "upper", label = "study") |>
+  set_row_style(bold = ~ pval < 0.05, emphasis = "is_primary") |>
+  set_marker_style(color = ~ ifelse(upper < 1, "#16a34a", "#94a3b8")) |>
+  set_column_style("hr", bold = ~ .x < 1, color = ~ ifelse(.x < 1, "green", "red")) |>
+  set_theme("jama")
+```
+
+---
+
+## Formula Expressions (NSE)
+
+**Row/Marker styling** - reference any column:
+```r
+row_bold = ~ pval < 0.05
+marker_color = ~ case_when(
+  upper < 1 ~ "#16a34a",  # Significant benefit
+  lower > 1 ~ "#dc2626",  # Significant harm
+  TRUE ~ "#64748b"        # Not significant
+)
+```
+
+**Cell styling** - use `.x` for the column's own values:
+```r
+col_pvalue("pval", bold = ~ .x < 0.05)
+col_numeric("hr", color = ~ ifelse(.x < 1, "green", "red"))
+```
+
+---
+
+## Interactivity
+
+```r
+# Tooltips on hover
+interaction = web_interaction(tooltip_fields = c("n", "events", "pvalue"))
+
+# Read-only (no sorting/selection)
+interaction = web_interaction_minimal()
+
+# Fully static (for print)
+interaction = web_interaction_publication()
+```
+
+---
+
+## Multiple Effects
+
+```r
+effects = list(
+  web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
+  web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+)
+```
+
+---
+
+## Annotations
+
+```r
+annotations = list(
+  forest_refline(0.8, label = "Threshold", style = "dashed", color = "#e11d48")
+)
+```
+
+---
+
+## Split Plots
+
+```r
+# Single variable split
+forest_plot(data, ..., split_by = "region")
+
+# Hierarchical split
+forest_plot(data, ..., split_by = c("region", "country"), shared_axis = TRUE)
+```
+
+---
+
+## Exporting
+
+```r
+# Save to file
+p <- forest_plot(data, ...)
+save_plot(p, "plot.svg")               # Vector
+save_plot(p, "plot.png", scale = 2)    # Raster (2x resolution)
+save_plot(p, "plot.pdf")               # Print
+```
+
+---
+
+## Quick Patterns
+
+```r
+# Log scale for ratios
+scale = "log", null_value = 1
+
+# Linear scale for differences
+scale = "linear", null_value = 0
+
+# Significant results bold
+row_bold = ~ pval < 0.05
+
+# Color by direction
+marker_color = ~ ifelse(upper < 1, "#16a34a", "#94a3b8")
+
+# Column groups
+col_group("Treatment", col_n("n_tx"), col_events("ev_tx", "n_tx"), position = "left")
+
+# Hierarchical grouping
+group = c("region", "country")
+```

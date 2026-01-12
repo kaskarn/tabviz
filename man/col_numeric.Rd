@@ -33,7 +33,8 @@ use "," or other string to enable)}
 1 decimal place (e.g., 1100 -> "1.1K", 2500000 -> "2.5M", 11111111 -> "11.1M").
 Values >= 1 trillion will cause an error. Default FALSE.}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object

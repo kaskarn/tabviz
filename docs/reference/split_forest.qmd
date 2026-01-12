@@ -90,5 +90,5 @@ forest_plot(data,
 
 ## See Also
 
-- [Split Forest Guide](../guide/split-forest.qmd) for detailed usage
-- [Gallery Examples](../gallery.qmd#split-forest-plots) for visual examples
+- [Split Plots Guide](../guide/split-plots.qmd) for detailed usage
+- [Gallery - Advanced Examples](../gallery-advanced.qmd) for visual examples

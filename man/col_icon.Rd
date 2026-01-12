@@ -28,7 +28,8 @@ col_icon(
 
 \item{color}{Optional CSS color for the icon (default NULL, uses theme)}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object
@@ -46,4 +47,7 @@ col_icon("result", mapping = c("pass" = "Y", "fail" = "N", "pending" = "?"))
 
 # With color
 col_icon("status", color = "#16a34a")
+
+# With per-cell styling
+col_icon("status", emphasis = "is_important")
 }

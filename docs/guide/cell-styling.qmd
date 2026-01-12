@@ -66,14 +66,85 @@ Every `col_*()` function accepts these styling parameters:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `bold` | Column name (logical) | Bold text when TRUE |
-| `italic` | Column name (logical) | Italic text when TRUE |
-| `color` | Column name (CSS color) | Text color |
-| `bg` | Column name (CSS color) | Background color |
-| `badge` | Column name (text) | Badge label |
-| `icon` | Column name (text) | Emoji/unicode icon |
+| `bold` | Column name or formula | Bold text when TRUE |
+| `italic` | Column name or formula | Italic text when TRUE |
+| `color` | Column name or formula | Text color |
+| `bg` | Column name or formula | Background color |
+| `badge` | Column name or formula | Badge label |
+| `icon` | Column name or formula | Emoji/unicode icon |
+| `emphasis` | Column name or formula | Theme-aware emphasis (bold + foreground) |
+| `muted` | Column name or formula | Theme-aware muted styling |
+| `accent` | Column name or formula | Theme-aware accent styling |
 
-Each parameter takes a **column name** (not values directly). The values in that column control the styling for each row.
+Each parameter accepts either:
+
+- A **column name** (string): The values in that column control styling per row
+- A **formula expression** (`~ ...`): Evaluated on the fly to compute styling
+
+## Formula Expressions for Cell Styling
+
+Instead of pre-computing style columns, you can use formulas that reference your data. For cell-level styling, use `.x` to refer to the column's own values:
+
+```{r}
+# Data without any pre-computed style columns
+pval_demo <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C", "Trial D"),
+  hr = c(0.72, 0.85, 0.91, 0.68),
+  lower = c(0.55, 0.70, 0.75, 0.52),
+  upper = c(0.95, 1.03, 1.10, 0.89),
+  pval = c(0.001, 0.1, 0.3, 0.02)
+)
+
+forest_plot(pval_demo,
+  point = "hr", lower = "lower", upper = "upper", label = "study",
+  columns = list(
+    col_pvalue("pval",
+      # .x refers to the pval column values
+      bold = ~ .x < 0.05,
+      color = ~ ifelse(.x < 0.05, "#16a34a", "#71717a")
+    )
+  ),
+  scale = "log", null_value = 1
+)
+```
+
+### The `.x` Pronoun
+
+When using formulas in `col_*()` functions:
+
+- **`.x`** refers to the current column's values
+- You can also reference other columns by name
+
+```{r}
+#| eval: false
+# .x is the column's own values
+col_pvalue("pval", bold = ~ .x < 0.05)
+
+# You can also reference other columns
+col_numeric("hr", color = ~ ifelse(pval < 0.05, "green", "gray"))
+```
+
+### When to Use Formulas vs Columns
+
+| Approach | Best For |
+|----------|----------|
+| **Formulas** (`~ .x < 0.05`) | Simple conditions, self-referential logic, one-off styling |
+| **Column names** (`"is_sig"`) | Complex logic computed separately, reused across plots |
+
+::: {.callout-tip}
+## Formula Advantage
+
+Formulas keep styling logic close to where it's used, making your code more readable:
+
+```r
+# Without formulas - need to pre-compute
+data <- data |> mutate(pval_bold = pval < 0.05)
+col_pvalue("pval", bold = "pval_bold")
+
+# With formulas - logic inline
+col_pvalue("pval", bold = ~ .x < 0.05)
+```
+:::
 
 ## Basic Example
 

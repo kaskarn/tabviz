@@ -1,12 +1,22 @@
 <script lang="ts">
-  import type { PvalueColumnOptions } from "$types";
+  import type { PvalueColumnOptions, CellStyle } from "$types";
 
   interface Props {
     value: number | undefined | null;
     options?: PvalueColumnOptions;
+    cellStyle?: CellStyle;
   }
 
-  let { value, options }: Props = $props();
+  let { value, options, cellStyle }: Props = $props();
+
+  // Cell styling from NSE/formulas
+  const isBold = $derived(cellStyle?.bold ?? false);
+  const isItalic = $derived(cellStyle?.italic ?? false);
+  const textColor = $derived(cellStyle?.color ?? null);
+  const bgColor = $derived(cellStyle?.bg ?? null);
+  const isEmphasis = $derived(cellStyle?.emphasis ?? false);
+  const isMuted = $derived(cellStyle?.muted ?? false);
+  const isAccent = $derived(cellStyle?.accent ?? false);
 
   // Unicode superscript character mapping
   const SUPERSCRIPT_MAP: Record<string, string> = {
@@ -73,7 +83,17 @@
   const isSignificant = $derived(stars.length > 0);
 </script>
 
-<span class="cell-pvalue" class:significant={isSignificant}>
+<span
+  class="cell-pvalue"
+  class:significant={isSignificant}
+  class:cell-bold={isBold}
+  class:cell-italic={isItalic}
+  class:cell-emphasis={isEmphasis}
+  class:cell-muted={isMuted}
+  class:cell-accent={isAccent}
+  style:color={textColor}
+  style:background-color={bgColor}
+>
   <span class="pvalue-number">{formattedValue}</span>
   {#if stars}
     <span class="pvalue-stars">{stars}</span>
@@ -100,5 +120,27 @@
 
   .significant .pvalue-number {
     font-weight: 500;
+  }
+
+  /* Cell styling from NSE/formulas */
+  .cell-bold {
+    font-weight: var(--wf-font-weight-bold, 600);
+  }
+
+  .cell-italic {
+    font-style: italic;
+  }
+
+  .cell-emphasis {
+    font-weight: var(--wf-font-weight-bold, 600);
+    color: var(--wf-fg, #1a1a1a);
+  }
+
+  .cell-muted {
+    color: var(--wf-muted, #94a3b8);
+  }
+
+  .cell-accent {
+    color: var(--wf-accent, #8b5cf6);
   }
 </style>

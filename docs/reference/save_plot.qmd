@@ -135,4 +135,4 @@ data |>
 
 - [forest_plot()](forest_plot.qmd) for creating plots
 - [split_forest()](split_forest.qmd) for creating split forests
-- [Exporting Guide](../guide/exporting.qmd) for detailed export workflows
+- [Forest Plots Guide](../guide/forest-plots.qmd#exporting) for detailed export workflows

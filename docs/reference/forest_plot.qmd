@@ -176,16 +176,28 @@ See [Columns Reference](columns.qmd) for all available column types.
 
 ## Row Styling Arguments
 
-Style entire rows based on column values. Each argument accepts a column name containing the styling values.
+Style entire rows based on column values. Each argument accepts **either a column name (string) or a formula expression (`~ ...`)**.
 
-| Argument | Column Contains | Effect |
-|----------|-----------------|--------|
-| `row_type` | `"header"`, `"data"`, `"summary"`, `"spacer"` | Controls row behavior and marker display |
-| `row_bold` | `TRUE`/`FALSE` | Bold text |
-| `row_italic` | `TRUE`/`FALSE` | Italic text |
-| `row_color` | CSS color (e.g., `"#1a365d"`) | Text color |
-| `row_bg` | CSS color | Background color |
-| `row_indent` | Integer (0, 1, 2, ...) | Indentation level |
+| Argument | Value Type | Effect |
+|----------|------------|--------|
+| `row_type` | string | Controls row behavior: `"header"`, `"data"`, `"summary"`, `"spacer"` |
+| `row_bold` | logical | Bold text |
+| `row_italic` | logical | Italic text |
+| `row_color` | string | Text color (CSS color, e.g., `"#1a365d"`) |
+| `row_bg` | string | Background color |
+| `row_indent` | integer | Indentation level (0, 1, 2, ...) |
+
+### Formula Expressions
+
+Row styling arguments accept formula expressions for conditional styling without pre-computing columns:
+
+```{r}
+#| eval: false
+forest_plot(data, ...,
+  row_bold = ~ pval < 0.05,
+  row_color = ~ ifelse(hr < 1, "#16a34a", "#dc2626")
+)
+```
 
 ### Semantic Styling Shortcuts
 
@@ -227,14 +239,27 @@ Rows with `row_type = "header"` or `"spacer"` should have `NA` for point, lower,
 
 ## Marker Styling Arguments
 
-Control the appearance of interval markers (points and lines).
+Control the appearance of interval markers (points and lines). Each argument accepts **either a column name (string) or a formula expression (`~ ...`)**.
 
-| Argument | Column Contains | Effect |
-|----------|-----------------|--------|
-| `marker_color` | CSS color strings | Marker fill color |
-| `marker_shape` | `"square"`, `"circle"`, `"diamond"`, `"triangle"` | Marker shape |
-| `marker_opacity` | 0–1 | Transparency |
-| `marker_size` | Numeric multiplier | Size (1 = default, 2 = double) |
+| Argument | Value Type | Effect |
+|----------|------------|--------|
+| `marker_color` | string | CSS color for marker fill |
+| `marker_shape` | string | Shape: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `marker_opacity` | numeric | Transparency (0–1) |
+| `marker_size` | numeric | Size multiplier (1 = default, 2 = double) |
+
+### Using Formula Expressions
+
+```{r}
+#| eval: false
+forest_plot(data, ...,
+  marker_shape = ~ ifelse(design == "RCT", "circle", "square"),
+  marker_color = ~ ifelse(pval < 0.05, "#16a34a", "#94a3b8"),
+  marker_opacity = ~ ifelse(pval < 0.01, 1, 0.7)
+)
+```
+
+### Using Column Names
 
 ```{r}
 direction_data <- data.frame(

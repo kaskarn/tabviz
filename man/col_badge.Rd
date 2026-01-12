@@ -30,7 +30,8 @@ which override variants (e.g., \code{c("special" = "#ff5500")})}
 
 \item{size}{Badge size: "sm" or "base" (default "base")}
 
-\item{...}{Additional arguments passed to web_col}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
+\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
 }
 \value{
 A ColumnSpec object
@@ -55,4 +56,7 @@ col_badge("priority", colors = c(
   "medium" = "#f59e0b",
   "low" = "#22c55e"
 ))
+
+# With per-cell styling
+col_badge("status", emphasis = "is_key")
 }

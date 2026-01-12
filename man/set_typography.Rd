@@ -13,7 +13,8 @@ set_typography(
   font_weight_normal = NULL,
   font_weight_medium = NULL,
   font_weight_bold = NULL,
-  line_height = NULL
+  line_height = NULL,
+  header_font_scale = NULL
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ set_typography(
 \item{font_weight_bold}{Bold font weight (default: 600)}
 
 \item{line_height}{Line height multiplier (default: 1.5)}
+
+\item{header_font_scale}{Scale factor for header cell font size relative to base (default: 1.05)}
 }
 \value{
 Modified WebTheme object

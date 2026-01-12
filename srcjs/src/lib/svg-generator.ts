@@ -25,6 +25,8 @@ import {
   AUTO_WIDTH,
   GROUP_HEADER,
   COLUMN_GROUP,
+  TEXT_MEASUREMENT,
+  BADGE,
   ROW_ODD_OPACITY,
   GROUP_HEADER_OPACITY,
   getDepthOpacity,
@@ -82,8 +84,6 @@ function calculateSvgAutoWidths(
   // Padding values from theme (not hardcoded magic numbers)
   const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
   const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
-  // Small buffer for text estimation imprecision
-  const RENDERING_BUFFER = 4;
 
   // ========================================================================
   // PHASE 1: Measure leaf column content
@@ -115,7 +115,7 @@ function calculateSvgAutoWidths(
     // Apply padding (from theme) and constraints
     // Use type-specific minimum for visual columns, else default minimum
     const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
-    const computedWidth = Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER);
+    const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
     widths.set(col.id, Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, computedWidth)));
   }
 
@@ -124,7 +124,7 @@ function calculateSvgAutoWidths(
   // ========================================================================
   // This matches the web view's doMeasurement() logic in forestStore.svelte.ts
   // Column group headers also use scaled font size (they inherit .header-cell)
-  expandColumnGroupWidths(spec.columns, widths, headerFontSize, groupPadding, RENDERING_BUFFER);
+  expandColumnGroupWidths(spec.columns, widths, headerFontSize, groupPadding, TEXT_MEASUREMENT.RENDERING_BUFFER);
 
   return widths;
 }
@@ -219,7 +219,6 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
   const fontSize = parseFontSize(spec.theme.typography.fontSizeBase);
   // Use theme-based padding (not hardcoded magic numbers)
   const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
-  const RENDERING_BUFFER = 4;  // Small buffer for text estimation differences
   let maxWidth = 0;
 
   // Build group depth map for calculating row indentation
@@ -254,12 +253,10 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
       // Account for badge width if present
       if (row.style?.badge) {
         const badgeText = String(row.style.badge);
-        const badgeFontSize = fontSize * 0.8;
-        const badgePadding = 4;
-        const badgeGap = 6; // gap between label and badge
+        const badgeFontSize = fontSize * BADGE.FONT_SCALE;
         const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
-        const badgeWidth = badgeTextWidth + badgePadding * 2;
-        rowWidth += badgeGap + badgeWidth;
+        const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
+        rowWidth += BADGE.GAP + badgeWidth;
       }
 
       maxWidth = Math.max(maxWidth, rowWidth);
@@ -299,7 +296,7 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
     }
   }
 
-  const computedWidth = Math.ceil(maxWidth + cellPadding + RENDERING_BUFFER);
+  const computedWidth = Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER);
   return Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, computedWidth));
 }
 
@@ -1314,15 +1311,13 @@ function renderTableRow(
     // Uses estimateTextWidth() for consistent width calculation with calculateSvgLabelWidth()
     if (row.style?.badge) {
       const badgeText = String(row.style.badge);
-      const badgeFontSize = fontSize * 0.8;
-      const badgePadding = 4;
-      const badgeGap = 6; // gap between label and badge
-      const badgeHeight = badgeFontSize + badgePadding * 2;
+      const badgeFontSize = fontSize * BADGE.FONT_SCALE;
+      const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
       // Use estimateTextWidth for accurate positioning (matches width calculation)
       const labelTextWidth = estimateTextWidth(row.label, fontSize);
-      const badgeX = currentX + SPACING.TEXT_PADDING + indent + labelTextWidth + badgeGap;
+      const badgeX = currentX + SPACING.TEXT_PADDING + indent + labelTextWidth + BADGE.GAP;
       const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
-      const badgeWidth = badgeTextWidth + badgePadding * 2;
+      const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
       const badgeY = y + (rowHeight - badgeHeight) / 2;
 
       lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"

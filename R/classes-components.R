@@ -19,6 +19,9 @@
 #' @param style_bg Column name containing CSS color strings for per-cell background color
 #' @param style_badge Column name containing text for per-cell badges
 #' @param style_icon Column name containing emoji/unicode for per-cell icons
+#' @param style_emphasis Column name containing logical values for per-cell emphasis (bold + foreground)
+#' @param style_muted Column name containing logical values for per-cell muted styling
+#' @param style_accent Column name containing logical values for per-cell accent styling
 #'
 #' @export
 ColumnSpec <- new_class(
@@ -35,13 +38,18 @@ ColumnSpec <- new_class(
     position = new_property(class_character, default = "left"),
     sortable = new_property(class_logical, default = TRUE),
     options = new_property(class_list, default = list()),
-    # Per-cell style mappings: column names containing style values
-    style_bold = new_property(class_character, default = NA_character_),
-    style_italic = new_property(class_character, default = NA_character_),
-    style_color = new_property(class_character, default = NA_character_),
-    style_bg = new_property(class_character, default = NA_character_),
-    style_badge = new_property(class_character, default = NA_character_),
-    style_icon = new_property(class_character, default = NA_character_)
+    # Per-cell style mappings: column names (character) or formulas (~)
+    # Formulas are resolved in web_spec() when data is available
+    style_bold = new_property(class_any, default = NULL),
+    style_italic = new_property(class_any, default = NULL),
+    style_color = new_property(class_any, default = NULL),
+    style_bg = new_property(class_any, default = NULL),
+    style_badge = new_property(class_any, default = NULL),
+    style_icon = new_property(class_any, default = NULL),
+    # Semantic styling (same as row-level)
+    style_emphasis = new_property(class_any, default = NULL),
+    style_muted = new_property(class_any, default = NULL),
+    style_accent = new_property(class_any, default = NULL)
   ),
   validator = function(self) {
     valid_types <- c("text", "numeric", "interval", "bar", "pvalue", "sparkline",
@@ -94,6 +102,9 @@ ColumnSpec <- new_class(
 #' @param bg Column name containing CSS color strings for per-cell background color
 #' @param badge Column name containing text for per-cell badges
 #' @param icon Column name containing emoji/unicode for per-cell icons
+#' @param emphasis Column name containing logical values for emphasis styling (bold + foreground)
+#' @param muted Column name containing logical values for muted styling
+#' @param accent Column name containing logical values for accent styling
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -115,7 +126,10 @@ web_col <- function(
     color = NULL,
     bg = NULL,
     badge = NULL,
-    icon = NULL) {
+    icon = NULL,
+    emphasis = NULL,
+    muted = NULL,
+    accent = NULL) {
   type <- match.arg(type)
   position <- match.arg(position)
 
@@ -153,12 +167,17 @@ web_col <- function(
     position = position,
     sortable = sortable,
     options = options,
-    style_bold = bold %||% NA_character_,
-    style_italic = italic %||% NA_character_,
-    style_color = color %||% NA_character_,
-    style_bg = bg %||% NA_character_,
-    style_badge = badge %||% NA_character_,
-    style_icon = icon %||% NA_character_
+    # Style properties: can be column name (character) or formula (~)
+    # Resolved in web_spec() when data is available
+    style_bold = bold,
+    style_italic = italic,
+    style_color = color,
+    style_bg = bg,
+    style_badge = badge,
+    style_icon = icon,
+    style_emphasis = emphasis,
+    style_muted = muted,
+    style_accent = accent
   )
 }
 
@@ -171,7 +190,8 @@ web_col <- function(
 #' @param field Field name
 #' @param header Column header
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -191,7 +211,8 @@ col_text <- function(field, header = NULL, width = NULL, ...) {
 #' @param abbreviate Logical. When TRUE, values >= 1000 are shortened with at most
 #'   1 decimal place (e.g., 1100 -> "1.1K", 2500000 -> "2.5M", 11111111 -> "11.1M").
 #'   Values >= 1 trillion will cause an error. Default FALSE.
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -241,7 +262,8 @@ col_numeric <- function(field, header = NULL, width = NULL, decimals = 2,
 #' @param thousands_sep Thousands separator (default "," for integer columns)
 #' @param abbreviate Logical. When TRUE, values >= 1000 are shortened with at most
 #'   1 decimal place (e.g., 1100 -> "1.1K", 12345 -> "12.3K"). Default FALSE.
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -288,7 +310,8 @@ col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
 #' @param imprecise_threshold When upper/lower ratio exceeds this threshold,
 #'   the interval is considered imprecise and displayed as "—" instead.
 #'   The forest plot marker is also hidden. Default is NULL (no threshold).
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -343,7 +366,8 @@ col_interval <- function(header = "95% CI", width = NULL, decimals = 2, sep = " 
 #' @param exp_threshold Values below this use exponential notation (default 0.001)
 #' @param abbrev_threshold Values below this display as "<threshold" (default NULL = off).
 #'   For example, `abbrev_threshold = 0.0001` displays values below 0.0001 as "<0.0001".
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -396,7 +420,8 @@ col_pvalue <- function(
 #' @param max_value Maximum value for the bar (NULL = auto-compute from data)
 #' @param show_label Show numeric label next to bar (default TRUE)
 #' @param color Bar fill color (NULL = theme primary color)
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -426,7 +451,8 @@ col_bar <- function(
 #' @param type Chart type: "line", "bar", or "area"
 #' @param height Chart height in pixels (default 20)
 #' @param color Chart color (NULL = theme primary color)
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -463,7 +489,8 @@ col_sparkline <- function(
 #' @param multiply Whether to multiply by 100 (default TRUE, expects proportions 0-1).
 #'   Set to FALSE if data is already on 0-100 scale.
 #' @param symbol Show % symbol (default TRUE)
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -518,7 +545,8 @@ col_percent <- function(
 #' @param thousands_sep Thousands separator (default ",")
 #' @param abbreviate Logical. When TRUE, values >= 1000 are shortened with at most
 #'   1 decimal place (e.g., "1.1K/12K" instead of "1,100/12,000"). Default FALSE.
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -575,7 +603,8 @@ col_events <- function(
 #'   (e.g., `c("yes" = "Y", "no" = "N")` or use actual emoji/unicode)
 #' @param size Icon size: "sm", "base", or "lg" (default "base")
 #' @param color Optional CSS color for the icon (default NULL, uses theme)
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -588,6 +617,9 @@ col_events <- function(
 #'
 #' # With color
 #' col_icon("status", color = "#16a34a")
+#'
+#' # With per-cell styling
+#' col_icon("status", emphasis = "is_important")
 col_icon <- function(
     field,
     header = NULL,
@@ -621,7 +653,8 @@ col_icon <- function(
 #' @param colors Named character vector mapping values to custom hex colors,
 #'   which override variants (e.g., `c("special" = "#ff5500")`)
 #' @param size Badge size: "sm" or "base" (default "base")
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -642,6 +675,9 @@ col_icon <- function(
 #'   "medium" = "#f59e0b",
 #'   "low" = "#22c55e"
 #' ))
+#'
+#' # With per-cell styling
+#' col_badge("status", emphasis = "is_key")
 col_badge <- function(
     field,
     header = NULL,
@@ -673,7 +709,8 @@ col_badge <- function(
 #' @param color CSS color for filled stars (default "#f59e0b", amber)
 #' @param empty_color CSS color for empty stars (default "#d1d5db", gray)
 #' @param half_stars Allow half-star increments (default FALSE)
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -686,6 +723,9 @@ col_badge <- function(
 #'
 #' # Half-star increments
 #' col_stars("score", half_stars = TRUE)
+#'
+#' # With per-cell styling
+#' col_stars("rating", emphasis = "is_featured")
 col_stars <- function(
     field,
     header = NULL,
@@ -718,7 +758,8 @@ col_stars <- function(
 #' @param max_width Maximum image width (default NULL, uses column width)
 #' @param fallback Fallback text or icon if image fails to load (default "📷")
 #' @param shape Image shape: "square", "circle", or "rounded" (default "square")
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -731,6 +772,9 @@ col_stars <- function(
 #'
 #' # With fallback
 #' col_img("thumbnail", fallback = "No image")
+#'
+#' # With per-cell styling
+#' col_img("logo_url", emphasis = "is_featured")
 col_img <- function(
     field,
     header = NULL,
@@ -763,7 +807,8 @@ col_img <- function(
 #' @param href_field Optional field name containing URLs for linking
 #' @param max_chars Maximum characters to display before truncating (default 30)
 #' @param icon Show external link icon when href_field is provided (default TRUE)
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -776,6 +821,9 @@ col_img <- function(
 #'
 #' # Without link icon
 #' col_reference("source", href_field = "url", icon = FALSE)
+#'
+#' # With per-cell styling
+#' col_reference("citation", emphasis = "is_key")
 col_reference <- function(
     field,
     header = "Reference",
@@ -805,7 +853,8 @@ col_reference <- function(
 #' @param separator Separator between min and max (default " - ")
 #' @param decimals Number of decimal places (default NULL for auto-detection)
 #' @param show_bar Show visual bar representation (default FALSE)
-#' @param ... Additional arguments passed to web_col
+#' @param ... Additional arguments passed to `web_col()`, including cell styling:
+#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -818,6 +867,9 @@ col_reference <- function(
 #'
 #' # With decimals: "1.5 - 3.2"
 #' col_range("ci_lower", "ci_upper", decimals = 1)
+#'
+#' # With per-cell styling
+#' col_range("age_min", "age_max", emphasis = "is_key")
 col_range <- function(
     min_field,
     max_field,
