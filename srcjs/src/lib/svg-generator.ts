@@ -29,9 +29,7 @@ import {
   COLUMN_GROUP,
   TEXT_MEASUREMENT,
   BADGE,
-  ROW_ODD_OPACITY,
   GROUP_HEADER_OPACITY,
-  getDepthOpacity,
   EFFECT,
   getEffectYOffset,
 } from "./rendering-constants";
@@ -2171,21 +2169,17 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       const depth = displayRow.depth;
       const isSpacerRow = row.style?.type === "spacer";
 
-      // Row background - depth-based when groups exist, alternating when no groups
-      // Matches web view logic in getRowClasses():
-      //   - With groups: use depth-based opacity (depth > 0 only)
-      //   - Without groups: use alternating odd row opacity
-      // Skip background for spacer rows
-      if (!isSpacerRow) {
-        const depthOpacity = getDepthOpacity(depth);
-        // Only apply alternating background when there are no groups
-        const oddOpacity = (!hasRowGroups && i % 2 === 1) ? ROW_ODD_OPACITY : 0;
-        const bgOpacity = Math.max(depthOpacity, oddOpacity);
-
-        if (bgOpacity > 0) {
+      // Row background - simple banding using rowBg/altBg theme colors
+      // Skip for spacer rows or rows with explicit bg styling
+      const hasExplicitBg = row.style?.bg;
+      if (!isSpacerRow && !hasExplicitBg && theme.layout.banding) {
+        const isOddRow = i % 2 === 1;
+        const bgColor = isOddRow ? theme.colors.altBg : theme.colors.rowBg;
+        // Only render if color differs from background (avoid overdraw)
+        if (bgColor !== theme.colors.background) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
-            fill="${theme.colors.muted}" opacity="${bgOpacity}"/>`);
+            fill="${bgColor}"/>`);
         }
       }
 

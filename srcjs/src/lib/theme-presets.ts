@@ -26,6 +26,8 @@ const DEFAULT_THEME: WebTheme = {
     accent: "#8b5cf6",
     muted: "#94a3b8",
     border: "#e2e8f0",
+    rowBg: "#ffffff",       // Even row background
+    altBg: "#f8fafc",       // Odd row background (slate-50)
     interval: "#0891b2",          // Unified marker color
     intervalPositive: "#0891b2",  // Match primary (deprecated)
     intervalNegative: "#dc2626",  // (deprecated)
@@ -86,6 +88,7 @@ const DEFAULT_THEME: WebTheme = {
     rowBorderStyle: "solid",
     containerBorder: false,
     containerBorderRadius: 8,
+    banding: true,
   },
   groupHeaders: {
     level1FontSize: "1rem",
@@ -120,6 +123,8 @@ const MINIMAL_THEME: WebTheme = {
     accent: "#000000",
     muted: "#666666",
     border: "#000000",           // Strong black borders
+    rowBg: "#ffffff",
+    altBg: "#fafafa",            // neutral-50
     interval: "#000000",         // Pure black markers
     intervalPositive: "#000000",
     intervalNegative: "#000000",
@@ -175,6 +180,8 @@ const DARK_THEME: WebTheme = {
     accent: "#f5c2e7",             // Catppuccin pink
     muted: "#6c7086",              // Catppuccin overlay0
     border: "#313244",             // Catppuccin surface0
+    rowBg: "#1e1e2e",              // Same as background
+    altBg: "#232334",              // Slightly lighter
     interval: "#89b4fa",           // Catppuccin blue
     intervalPositive: "#a6e3a1",   // Catppuccin green
     intervalNegative: "#f38ba8",   // Catppuccin red
@@ -230,6 +237,8 @@ const JAMA_THEME: WebTheme = {
     accent: "#000000",
     muted: "#555555",
     border: "#000000",             // Pure black borders
+    rowBg: "#ffffff",
+    altBg: "#f9fafb",              // gray-50
     interval: "#000000",           // Pure black markers
     intervalPositive: "#000000",
     intervalNegative: "#000000",
@@ -287,6 +296,8 @@ const LANCET_THEME: WebTheme = {
     accent: "#b8860b",               // Dark goldenrod
     muted: "#6b7c93",
     border: "#d4dce6",
+    rowBg: "#fdfcfb",                // Same as background
+    altBg: "#f8f7f6",                // Warm slate-50
     interval: "#00407a",
     intervalPositive: "#00407a",
     intervalNegative: "#9d2933",     // Deep crimson
@@ -344,6 +355,8 @@ const MODERN_THEME: WebTheme = {
     accent: "#8b5cf6",               // Violet-500
     muted: "#a1a1aa",
     border: "#d4d4d8",               // Slightly more visible
+    rowBg: "#fafafa",                // Same as background
+    altBg: "#f4f4f5",                // zinc-100
     interval: "#3b82f6",
     intervalPositive: "#22c55e",     // Green-500
     intervalNegative: "#ef4444",     // Red-500
@@ -401,6 +414,8 @@ const PRESENTATION_THEME: WebTheme = {
     accent: "#ea580c",               // Orange-600 for emphasis
     muted: "#64748b",
     border: "#94a3b8",               // More visible borders
+    rowBg: "#ffffff",
+    altBg: "#f8fafc",                // slate-50
     interval: "#0369a1",
     intervalPositive: "#047857",     // Emerald-700
     intervalNegative: "#be123c",     // Rose-700
@@ -457,6 +472,8 @@ const COCHRANE_THEME: WebTheme = {
     accent: "#006699",               // Darker teal for accents
     muted: "#888888",
     border: "#b3b3b3",
+    rowBg: "#ffffff",
+    altBg: "#f5f5f5",                // neutral-100
     interval: "#0099cc",
     intervalPositive: "#0099cc",
     intervalNegative: "#cc3333",
@@ -514,6 +531,8 @@ const NATURE_THEME: WebTheme = {
     accent: "#c62828",               // Refined red
     muted: "#616161",
     border: "#bdbdbd",               // Slightly stronger border
+    rowBg: "#ffffff",
+    altBg: "#fafafa",                // neutral-50
     interval: "#1976d2",
     intervalPositive: "#1976d2",
     intervalNegative: "#c62828",

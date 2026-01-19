@@ -1,3 +1,23 @@
+# webforest 0.2.3
+
+## New Features
+
+* **Row banding**: New dedicated `rowBg` and `altBg` theme colors for alternating row backgrounds:
+  - `set_colors(row_bg = ..., alt_bg = ...)` for explicit control
+  - `set_layout(banding = TRUE/FALSE)` to toggle striped rows (default: TRUE)
+  - Removed complex depth-based row shading in favor of simple alternation
+
+* **Cascading color defaults**: Theme colors now cascade intelligently when not explicitly set:
+  - Background chain: `background` → `row_bg` → `alt_bg`
+  - Marker chain: `primary` → `interval` → `summary_fill`
+  - Makes custom themes easier: set `primary` and `background`, get consistent colors everywhere
+
+## Improvements
+
+* **Tighter row heights**: All themes now have more compact, professional row heights while maintaining their relative character (minimal stays compact, presentation stays readable)
+
+---
+
 # webforest 0.2.2
 
 ## New Features

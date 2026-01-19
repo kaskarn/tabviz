@@ -256,6 +256,8 @@ serialize_theme <- function(theme) {
       accent = theme@colors@accent,
       muted = theme@colors@muted,
       border = theme@colors@border,
+      rowBg = theme@colors@row_bg,
+      altBg = theme@colors@alt_bg,
       interval = theme@colors@interval,
       intervalPositive = theme@colors@interval_positive,
       intervalNegative = theme@colors@interval_negative,
@@ -316,7 +318,8 @@ serialize_theme <- function(theme) {
       rowBorder = theme@layout@row_border,
       rowBorderStyle = theme@layout@row_border_style,
       containerBorder = theme@layout@container_border,
-      containerBorderRadius = theme@layout@container_border_radius
+      containerBorderRadius = theme@layout@container_border_radius,
+      banding = theme@layout@banding
     ),
     groupHeaders = list(
       level1FontSize = theme@group_headers@level1_font_size,

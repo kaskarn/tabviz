@@ -11,7 +11,8 @@ LayoutConfig(
   row_border = TRUE,
   row_border_style = "solid",
   container_border = FALSE,
-  container_border_radius = 8
+  container_border_radius = 8,
+  banding = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ LayoutConfig(
 \item{container_border}{Show border around the plot container (default: FALSE)}
 
 \item{container_border_radius}{Corner radius for container in pixels (default: 8)}
+
+\item{banding}{Enable alternating row background colors (default: TRUE)}
 }
 \description{
 LayoutConfig: Layout and visual configuration

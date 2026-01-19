@@ -280,6 +280,8 @@ export interface ColorPalette {
   accent: string;
   muted: string;
   border: string;
+  rowBg: string;      // Even row background
+  altBg: string;      // Odd row background (stripe/banding)
   interval: string;  // Unified marker color (new default)
   intervalPositive: string;  // Deprecated: kept for backwards compat
   intervalNegative: string;  // Deprecated: kept for backwards compat
@@ -347,6 +349,7 @@ export interface LayoutConfig {
   rowBorderStyle: "solid" | "dashed" | "dotted";
   containerBorder: boolean;
   containerBorderRadius: number;
+  banding: boolean;  // Alternating row backgrounds (default: true)
 }
 
 export interface GroupHeaderStyles {

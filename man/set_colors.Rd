@@ -13,6 +13,8 @@ set_colors(
   accent = NULL,
   muted = NULL,
   border = NULL,
+  row_bg = NULL,
+  alt_bg = NULL,
   interval = NULL,
   interval_positive = NULL,
   interval_negative = NULL,
@@ -29,7 +31,8 @@ set_colors(
 
 \item{foreground}{Primary text color (default: "#333333")}
 
-\item{primary}{Primary accent color for markers and highlights (default: "#0891b2")}
+\item{primary}{Primary accent color for markers and highlights (default: "#0891b2").
+Cascades to \code{interval} and \code{summary_fill} if not specified.}
 
 \item{secondary}{Secondary text/UI color (default: "#64748b")}
 
@@ -39,7 +42,16 @@ set_colors(
 
 \item{border}{Border color for containers and dividers (default: "#e2e8f0")}
 
-\item{interval}{Default marker/interval color (default: "#0891b2")}
+\item{row_bg}{Even row background color for banding. If not specified and
+\code{background} is set, inherits from \code{background}.}
+
+\item{alt_bg}{Odd row background color for banding/striping. If not specified
+and \code{background} or \code{row_bg} is set, inherits from \code{row_bg} (disabling
+visible banding). Set explicitly to enable striped rows on custom themes.}
+
+\item{interval}{Default marker/interval color (default: "#0891b2"). If not
+specified and \code{primary} is set, inherits from \code{primary}. Cascades to
+\code{summary_fill} if not specified.}
 
 \item{interval_positive}{Deprecated. Color for favorable effects.}
 
@@ -49,7 +61,8 @@ set_colors(
 
 \item{interval_line}{Confidence interval line color (default: "#475569")}
 
-\item{summary_fill}{Summary diamond fill color (default: "#0891b2")}
+\item{summary_fill}{Summary diamond fill color (default: "#0891b2"). If not
+specified and \code{interval} or \code{primary} is set, inherits from \code{interval}.}
 
 \item{summary_border}{Summary diamond border color (default: "#0e7490")}
 }
@@ -59,6 +72,21 @@ Modified WebTheme object
 \description{
 Pipe-friendly function to modify specific color properties of a theme.
 }
+\section{Cascading Defaults}{
+
+Several colors cascade when not explicitly set, making custom themes easier
+to create:
+\itemize{
+\item \strong{Background colors:} \code{background} → \code{row_bg} → \code{alt_bg}
+\item \strong{Marker colors:} \code{primary} → \code{interval} → \code{summary_fill}
+}
+
+For example, setting \code{primary = "#ff0000"} will automatically use red for
+markers and summary diamonds unless you override \code{interval} or \code{summary_fill}.
+Setting \code{background = "#1e1e2e"} for a dark theme will automatically set
+row backgrounds to match.
+}
+
 \examples{
 web_theme_jama() |>
   set_colors(primary = "#0066cc", border = "#999999")

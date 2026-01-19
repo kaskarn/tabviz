@@ -15,6 +15,9 @@ ColorPalette <- new_class(
     accent = new_property(class_character, default = "#8b5cf6"),
     muted = new_property(class_character, default = "#94a3b8"),
     border = new_property(class_character, default = "#e2e8f0"),
+    # Row banding colors
+    row_bg = new_property(class_character, default = "#ffffff"),      # Even row background
+    alt_bg = new_property(class_character, default = "#f8fafc"),      # Odd row background (stripe)
     # Interval visualization colors
     interval = new_property(class_character, default = "#0891b2"),  # Default marker color
     interval_line = new_property(class_character, default = "#475569"),
@@ -57,8 +60,8 @@ Typography <- new_class(
 Spacing <- new_class(
   "Spacing",
   properties = list(
-    row_height = new_property(class_numeric, default = 28),
-    header_height = new_property(class_numeric, default = 36),
+    row_height = new_property(class_numeric, default = 24),
+    header_height = new_property(class_numeric, default = 32),
     section_gap = new_property(class_numeric, default = 16),
     padding = new_property(class_numeric, default = 12),
     container_padding = new_property(class_numeric, default = 0),
@@ -179,6 +182,7 @@ AxisConfig <- new_class(
 #' @param row_border_style Style of row borders: "solid", "dashed", or "dotted" (default: "solid")
 #' @param container_border Show border around the plot container (default: FALSE)
 #' @param container_border_radius Corner radius for container in pixels (default: 8)
+#' @param banding Enable alternating row background colors (default: TRUE)
 #'
 #' @details
 #' Note: `cell_padding_x` and `cell_padding_y` have been moved to the [Spacing] class.
@@ -194,7 +198,8 @@ LayoutConfig <- new_class(
     row_border = new_property(class_logical, default = TRUE),
     row_border_style = new_property(class_character, default = "solid"),
     container_border = new_property(class_logical, default = FALSE),
-    container_border_radius = new_property(class_numeric, default = 8)
+    container_border_radius = new_property(class_numeric, default = 8),
+    banding = new_property(class_logical, default = TRUE)
   ),
   validator = function(self) {
     if (!self@plot_position %in% c("left", "right")) {
@@ -306,6 +311,8 @@ web_theme_minimal <- function() {
       accent = "#000000",
       muted = "#666666",
       border = "#000000",             # Strong black borders
+      row_bg = "#ffffff",
+      alt_bg = "#fafafa",             # Subtle grey stripe
       interval = "#000000",           # Pure black markers
       interval_line = "#000000",
       interval_positive = "#000000",
@@ -325,8 +332,8 @@ web_theme_minimal <- function() {
       line_height = 1.4
     ),
     spacing = Spacing(
-      row_height = 24,
-      header_height = 30,
+      row_height = 22,
+      header_height = 28,
       section_gap = 12,
       padding = 10
     ),
@@ -377,6 +384,8 @@ web_theme_dark <- function() {
       accent = "#f5c2e7",             # Catppuccin pink
       muted = "#6c7086",              # Catppuccin overlay0
       border = "#313244",             # Catppuccin surface0
+      row_bg = "#1e1e2e",             # Match background
+      alt_bg = "#232334",             # Slightly lighter stripe
       interval = "#89b4fa",           # Catppuccin blue
       interval_line = "#9399b2",      # Catppuccin overlay2
       interval_positive = "#a6e3a1",  # Catppuccin green
@@ -396,10 +405,10 @@ web_theme_dark <- function() {
       line_height = 1.5
     ),
     spacing = Spacing(
-      row_height = 30,                # Slightly taller for dark mode comfort
-      header_height = 38,
-      section_gap = 18,
-      padding = 14
+      row_height = 26,                # Comfortable for dark mode
+      header_height = 32,
+      section_gap = 16,
+      padding = 12
     ),
     shapes = Shapes(
       point_size = 6,
@@ -545,20 +554,41 @@ web_theme <- function(
 #'
 #' Pipe-friendly function to modify specific color properties of a theme.
 #'
+#' @section Cascading Defaults:
+#' Several colors cascade when not explicitly set, making custom themes easier
+#' to create:
+#'
+#' - **Background colors:** `background` → `row_bg` → `alt_bg`
+#' - **Marker colors:** `primary` → `interval` → `summary_fill`
+#'
+#' For example, setting `primary = "#ff0000"` will automatically use red for
+#' markers and summary diamonds unless you override `interval` or `summary_fill`.
+#' Setting `background = "#1e1e2e"` for a dark theme will automatically set
+#' row backgrounds to match.
+#'
 #' @param theme A WebTheme object
 #' @param background Background color (default: "#ffffff")
 #' @param foreground Primary text color (default: "#333333")
-#' @param primary Primary accent color for markers and highlights (default: "#0891b2")
+#' @param primary Primary accent color for markers and highlights (default: "#0891b2").
+#'   Cascades to `interval` and `summary_fill` if not specified.
 #' @param secondary Secondary text/UI color (default: "#64748b")
 #' @param accent Accent color for emphasis (default: "#8b5cf6")
 #' @param muted Muted/disabled text color (default: "#94a3b8")
 #' @param border Border color for containers and dividers (default: "#e2e8f0")
-#' @param interval Default marker/interval color (default: "#0891b2")
+#' @param row_bg Even row background color for banding. If not specified and
+#'   `background` is set, inherits from `background`.
+#' @param alt_bg Odd row background color for banding/striping. If not specified
+#'   and `background` or `row_bg` is set, inherits from `row_bg` (disabling
+#'   visible banding). Set explicitly to enable striped rows on custom themes.
+#' @param interval Default marker/interval color (default: "#0891b2"). If not
+#'   specified and `primary` is set, inherits from `primary`. Cascades to
+#'   `summary_fill` if not specified.
 #' @param interval_positive Deprecated. Color for favorable effects.
 #' @param interval_negative Deprecated. Color for unfavorable effects.
 #' @param interval_neutral Color for neutral effects (default: "#64748b")
 #' @param interval_line Confidence interval line color (default: "#475569")
-#' @param summary_fill Summary diamond fill color (default: "#0891b2")
+#' @param summary_fill Summary diamond fill color (default: "#0891b2"). If not
+#'   specified and `interval` or `primary` is set, inherits from `interval`.
 #' @param summary_border Summary diamond border color (default: "#0e7490")
 #'
 #' @return Modified WebTheme object
@@ -575,6 +605,8 @@ set_colors <- function(
     accent = NULL,
     muted = NULL,
     border = NULL,
+    row_bg = NULL,
+    alt_bg = NULL,
     interval = NULL,
     interval_positive = NULL,
     interval_negative = NULL,
@@ -593,12 +625,43 @@ set_colors <- function(
   if (!is.null(accent)) current@accent <- accent
   if (!is.null(muted)) current@muted <- muted
   if (!is.null(border)) current@border <- border
-  if (!is.null(interval)) current@interval <- interval
+
+  # Cascade row background colors:
+
+  # If background changed but row_bg not specified, derive row_bg from background
+  if (!is.null(background) && is.null(row_bg)) {
+    current@row_bg <- background
+  } else if (!is.null(row_bg)) {
+    current@row_bg <- row_bg
+  }
+
+  # If row_bg changed (explicitly or derived) but alt_bg not specified, derive alt_bg from row_bg
+  if ((!is.null(background) || !is.null(row_bg)) && is.null(alt_bg)) {
+    current@alt_bg <- current@row_bg
+  } else if (!is.null(alt_bg)) {
+    current@alt_bg <- alt_bg
+  }
+
+  # Cascade marker colors:
+
+  # If primary changed but interval not specified, derive interval from primary
+  if (!is.null(primary) && is.null(interval)) {
+    current@interval <- primary
+  } else if (!is.null(interval)) {
+    current@interval <- interval
+  }
+
+  # If interval changed (explicitly or derived) but summary_fill not specified, derive from interval
+  if ((!is.null(primary) || !is.null(interval)) && is.null(summary_fill)) {
+    current@summary_fill <- current@interval
+  } else if (!is.null(summary_fill)) {
+    current@summary_fill <- summary_fill
+  }
+
   if (!is.null(interval_positive)) current@interval_positive <- interval_positive
   if (!is.null(interval_negative)) current@interval_negative <- interval_negative
   if (!is.null(interval_neutral)) current@interval_neutral <- interval_neutral
   if (!is.null(interval_line)) current@interval_line <- interval_line
-  if (!is.null(summary_fill)) current@summary_fill <- summary_fill
   if (!is.null(summary_border)) current@summary_border <- summary_border
 
   theme@colors <- current
@@ -659,8 +722,8 @@ set_typography <- function(
 #' Pipe-friendly function to modify spacing values.
 #'
 #' @param theme A WebTheme object
-#' @param row_height Height of data rows in pixels (default: 28)
-#' @param header_height Height of header row in pixels (default: 36)
+#' @param row_height Height of data rows in pixels (default: 24)
+#' @param header_height Height of header row in pixels (default: 32)
 #' @param section_gap Gap between sections in pixels (default: 16)
 #' @param padding Padding around the forest plot SVG in pixels (default: 12)
 #' @param container_padding Left/right padding for the outer container in pixels (default: 0)
@@ -886,6 +949,8 @@ current <- theme@axis
 #' @param container_border Show border around the entire plot container (default: FALSE)
 #' @param container_border_radius Corner radius for container in pixels (default: 8).
 #'   Only visible when `container_border = TRUE`.
+#' @param banding Enable alternating row background colors (default: TRUE).
+#'   Uses `row_bg` and `alt_bg` from theme colors.
 #'
 #' @return Modified WebTheme object
 #' @export
@@ -897,6 +962,10 @@ current <- theme@axis
 #' # Add a border around the container
 #' web_theme_default() |>
 #'   set_layout(container_border = TRUE, container_border_radius = 4)
+#'
+#' # Disable row banding
+#' web_theme_default() |>
+#'   set_layout(banding = FALSE)
 set_layout <- function(
     theme,
     plot_position = NULL,
@@ -907,7 +976,8 @@ set_layout <- function(
     row_border = NULL,
     row_border_style = NULL,
     container_border = NULL,
-    container_border_radius = NULL
+    container_border_radius = NULL,
+    banding = NULL
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
   current <- theme@layout
@@ -942,6 +1012,7 @@ set_layout <- function(
   }
   if (!is.null(container_border)) current@container_border <- container_border
   if (!is.null(container_border_radius)) current@container_border_radius <- container_border_radius
+  if (!is.null(banding)) current@banding <- banding
 
   theme@layout <- current
   theme
@@ -1047,6 +1118,8 @@ web_theme_jama <- function() {
       accent = "#000000",
       muted = "#555555",
       border = "#000000",             # Pure black borders
+      row_bg = "#ffffff",
+      alt_bg = "#f9fafb",             # Very subtle grey
       interval = "#000000",           # Pure black markers
       interval_line = "#000000",
       interval_positive = "#000000",
@@ -1119,6 +1192,8 @@ web_theme_lancet <- function() {
       accent = "#b8860b",           # Dark goldenrod
       muted = "#6b7c93",
       border = "#d4dce6",
+      row_bg = "#fdfcfb",           # Match background
+      alt_bg = "#f8f7f5",           # Warm subtle stripe
       interval = "#00407a",
       interval_line = "#1e3a5f",
       interval_positive = "#00407a",
@@ -1138,12 +1213,12 @@ web_theme_lancet <- function() {
       line_height = 1.5             # More generous line height
     ),
     spacing = Spacing(
-      row_height = 26,              # Slightly taller
-      header_height = 34,
-      section_gap = 16,
+      row_height = 24,
+      header_height = 30,
+      section_gap = 14,
       padding = 12,
       cell_padding_x = 12,          # More breathing room
-      cell_padding_y = 5
+      cell_padding_y = 4
     ),
     shapes = Shapes(
       point_size = 5,
@@ -1193,6 +1268,8 @@ web_theme_modern <- function() {
       accent = "#8b5cf6",              # Violet-500
       muted = "#a1a1aa",
       border = "#d4d4d8",              # Slightly more visible
+      row_bg = "#fafafa",              # Match background
+      alt_bg = "#f5f5f5",              # Subtle zinc stripe
       interval = "#3b82f6",
       interval_line = "#27272a",       # Darker for contrast
       interval_positive = "#22c55e",   # Green-500
@@ -1212,12 +1289,12 @@ web_theme_modern <- function() {
       line_height = 1.5
     ),
     spacing = Spacing(
-      row_height = 36,                 # Taller rows
-      header_height = 44,
-      section_gap = 24,
-      padding = 16,
+      row_height = 30,                 # Spacious rows
+      header_height = 36,
+      section_gap = 20,
+      padding = 14,
       cell_padding_x = 12,
-      cell_padding_y = 6
+      cell_padding_y = 5
     ),
     shapes = Shapes(
       point_size = 8,                  # Larger markers
@@ -1265,6 +1342,8 @@ web_theme_presentation <- function() {
       accent = "#ea580c",            # Orange-600 for emphasis
       muted = "#64748b",
       border = "#94a3b8",            # More visible borders
+      row_bg = "#ffffff",
+      alt_bg = "#f8fafc",            # Subtle slate stripe
       interval = "#0369a1",
       interval_line = "#0f172a",     # Very dark for visibility
       interval_positive = "#047857", # Emerald-700
@@ -1284,12 +1363,12 @@ web_theme_presentation <- function() {
       line_height = 1.4
     ),
     spacing = Spacing(
-      row_height = 44,           # Extra tall rows
-      header_height = 52,        # Extra tall headers
-      section_gap = 28,
-      padding = 20,
+      row_height = 36,           # Tall rows for readability
+      header_height = 44,
+      section_gap = 24,
+      padding = 18,
       cell_padding_x = 14,       # More cell padding
-      cell_padding_y = 6
+      cell_padding_y = 5
     ),
     shapes = Shapes(
       point_size = 12,           # Oversized markers
@@ -1337,6 +1416,8 @@ web_theme_cochrane <- function() {
       accent = "#006699",              # Darker teal for accents
       muted = "#888888",
       border = "#b3b3b3",
+      row_bg = "#ffffff",
+      alt_bg = "#f5f5f5",              # Light grey stripe
       interval = "#0099cc",
       interval_line = "#2c2c2c",
       interval_positive = "#0099cc",
@@ -1411,6 +1492,8 @@ web_theme_nature <- function() {
       accent = "#c62828",              # Refined red
       muted = "#616161",
       border = "#bdbdbd",              # Slightly stronger border
+      row_bg = "#ffffff",
+      alt_bg = "#fafafa",              # Subtle grey stripe
       interval = "#1976d2",
       interval_line = "#1a1a1a",
       interval_positive = "#1976d2",
@@ -1430,8 +1513,8 @@ web_theme_nature <- function() {
       line_height = 1.35               # Tighter line height
     ),
     spacing = Spacing(
-      row_height = 24,                 # Slightly more compact
-      header_height = 32,
+      row_height = 22,                 # Compact
+      header_height = 28,
       section_gap = 12,
       padding = 10,
       cell_padding_x = 10,

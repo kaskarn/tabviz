@@ -22,12 +22,10 @@
   import CellRange from "$components/table/CellRange.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
   import {
-    ROW_ODD_OPACITY,
     GROUP_HEADER_OPACITY,
     ROW_HOVER_OPACITY,
     ROW_SELECTED_OPACITY,
     ROW_SELECTED_HOVER_OPACITY,
-    DEPTH_BASE_OPACITY,
     TEXT_MEASUREMENT,
   } from "$lib/rendering-constants";
   import {
@@ -54,6 +52,7 @@
   const axisComputation = $derived(store.axisComputation);
   const clipBounds = $derived(axisComputation.axisLimits);
   const theme = $derived(spec?.theme);
+  const bandingEnabled = $derived(theme?.layout?.banding ?? false);
   const includeForest = $derived(spec?.data.includeForest ?? true);
   const leftColumns = $derived(store.leftColumns);
   const rightColumns = $derived(store.rightColumns);
@@ -179,7 +178,6 @@
   }
 
   // Check if the data has any groups
-  const hasGroups = $derived((spec?.data.groups?.length ?? 0) > 0);
 
   // Compute row Y positions and heights for SVG overlay (must match CSS grid)
   // Returns arrays indexed by displayRow index
@@ -562,6 +560,8 @@
       --wf-secondary: ${theme.colors.secondary};
       --wf-muted: ${theme.colors.muted};
       --wf-border: ${theme.colors.border};
+      --wf-row-bg: ${theme.colors.rowBg};
+      --wf-alt-bg: ${theme.colors.altBg};
       --wf-interval-line: ${theme.colors.intervalLine};
       --wf-interval-positive: ${theme.colors.intervalPositive};
       --wf-interval-negative: ${theme.colors.intervalNegative};
@@ -599,12 +599,10 @@
       --wf-border-radius: ${theme.shapes.borderRadius}px;
       --wf-container-border: ${theme.layout.containerBorder ? `1px solid var(--wf-border)` : 'none'};
       --wf-container-border-radius: ${theme.layout.containerBorderRadius}px;
-      --wf-row-odd-opacity: ${ROW_ODD_OPACITY};
       --wf-group-header-opacity: ${GROUP_HEADER_OPACITY};
       --wf-row-hover-opacity: ${ROW_HOVER_OPACITY};
       --wf-row-selected-opacity: ${ROW_SELECTED_OPACITY};
       --wf-row-selected-hover-opacity: ${ROW_SELECTED_HOVER_OPACITY};
-      --wf-depth-base-opacity: ${DEPTH_BASE_OPACITY};
       --wf-actual-scale: ${actualScale};
       --wf-zoom: ${zoom};
     `.trim();
@@ -777,7 +775,7 @@
           {@const row = isGroupHeader ? null : displayRow.row}
           {@const rowDepth = displayRow.depth}
           {@const selected = row ? isSelected(row.id) : false}
-          {@const rowClasses = row ? getRowClasses(row.style, rowDepth, i, hasGroups) : ""}
+          {@const rowClasses = row ? getRowClasses(row.style, i, bandingEnabled) : ""}
           {@const rowStyles = row ? getRowStyles(row.style, rowDepth) : ""}
           {@const isSpacerRow = row?.style?.type === "spacer"}
           {@const gridRow = headerDepth + 1 + i}
@@ -1026,9 +1024,8 @@
 
   function getRowClasses(
     style?: RowStyle,
-    depth?: number,
     idx?: number,
-    hasGroups?: boolean
+    banding?: boolean
   ): string {
     const classes: string[] = [];
 
@@ -1045,14 +1042,9 @@
     if (style?.muted) classes.push("row-muted");
     if (style?.accent) classes.push("row-accent");
 
-    // Add depth-based banding class when there are groups (skip for styled rows)
-    if (!isStyledRow) {
-      if (depth && depth > 0) {
-        classes.push(`row-depth-${Math.min(depth, 4)}`);
-      } else if (!hasGroups && idx !== undefined) {
-        // Default alternating banding when no groups
-        if (idx % 2 === 1) classes.push("row-odd");
-      }
+    // Add alternating banding class (skip for styled rows)
+    if (!isStyledRow && banding && idx !== undefined) {
+      if (idx % 2 === 1) classes.push("row-odd");
     }
 
     return classes.join(" ");
@@ -1117,11 +1109,9 @@
    * rendering constants in src/lib/rendering-constants.ts:
    *
    *   5%  = GROUP_HEADER_OPACITY (0.05)
-   *   6%  = ROW_ODD_OPACITY (0.06)
-   *   8%  = ROW_HOVER_OPACITY / DEPTH_BASE_OPACITY * 2 (0.08)
-   *  12%  = ROW_SELECTED_OPACITY / DEPTH_BASE_OPACITY * 3 (0.12)
-   *  16%  = DEPTH_BASE_OPACITY * 4 (0.16)
-   *  18%  = ROW_SELECTED_HOVER_OPACITY (0.18)
+   *  12%  = ROW_HOVER_OPACITY (0.12)
+   *  16%  = ROW_SELECTED_OPACITY (0.16)
+   *  22%  = ROW_SELECTED_HOVER_OPACITY (0.22)
    *
    * CSS color-mix() doesn't support CSS custom properties for the percentage,
    * so these values are hardcoded but should be kept in sync with the constants.
@@ -1450,26 +1440,9 @@
     color: var(--wf-primary);
   }
 
-  /* Default alternating banding (when no groups) */
+  /* Alternating row banding */
   .row-odd {
-    background: color-mix(in srgb, var(--wf-muted) 6%, var(--wf-bg));
-  }
-
-  /* Depth-based banding for nested groups */
-  .row-depth-1 {
-    background: color-mix(in srgb, var(--wf-muted) 8%, var(--wf-bg));
-  }
-
-  .row-depth-2 {
-    background: color-mix(in srgb, var(--wf-muted) 12%, var(--wf-bg));
-  }
-
-  .row-depth-3 {
-    background: color-mix(in srgb, var(--wf-muted) 16%, var(--wf-bg));
-  }
-
-  .row-depth-4 {
-    background: color-mix(in srgb, var(--wf-muted) 20%, var(--wf-bg));
+    background: var(--wf-alt-bg);
   }
 
 </style>

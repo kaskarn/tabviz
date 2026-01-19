@@ -10,26 +10,11 @@
  */
 
 // ============================================================================
-// Row Background Opacity
+// Group Header Opacity
 // ============================================================================
-
-/** Opacity for alternating (odd) row backgrounds */
-export const ROW_ODD_OPACITY = 0.06; // 6%
 
 /** Opacity for group header row backgrounds (uses primary color) */
 export const GROUP_HEADER_OPACITY = 0.05; // 5%
-
-/** Base opacity for depth-based row backgrounds (multiplied by depth) */
-export const DEPTH_BASE_OPACITY = 0.04; // 4% per depth level
-
-/**
- * Get opacity for a row at a given depth
- * depth 0 = 0%, depth 1 = 8%, depth 2 = 12%, depth 3 = 16%, depth 4+ = 20%
- */
-export function getDepthOpacity(depth: number): number {
-  if (depth <= 0) return 0;
-  return DEPTH_BASE_OPACITY + depth * DEPTH_BASE_OPACITY;
-}
 
 // ============================================================================
 // Interactive State Opacity (web renderer only - SVG is static)
@@ -319,10 +304,8 @@ export function getEffectYOffset(index: number, total: number): number {
  */
 export function generateCSSVariables(): string {
   return `
-    --wf-row-odd-opacity: ${ROW_ODD_OPACITY};
     --wf-group-header-opacity: ${GROUP_HEADER_OPACITY};
     --wf-row-hover-opacity: ${ROW_HOVER_OPACITY};
     --wf-row-selected-opacity: ${ROW_SELECTED_OPACITY};
-    --wf-depth-base-opacity: ${DEPTH_BASE_OPACITY};
   `.trim();
 }

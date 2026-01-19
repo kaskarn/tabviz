@@ -20,9 +20,9 @@ set_spacing(
 \arguments{
 \item{theme}{A WebTheme object}
 
-\item{row_height}{Height of data rows in pixels (default: 28)}
+\item{row_height}{Height of data rows in pixels (default: 24)}
 
-\item{header_height}{Height of header row in pixels (default: 36)}
+\item{header_height}{Height of header row in pixels (default: 32)}
 
 \item{section_gap}{Gap between sections in pixels (default: 16)}
 

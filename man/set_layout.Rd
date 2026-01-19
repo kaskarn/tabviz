@@ -14,7 +14,8 @@ set_layout(
   row_border = NULL,
   row_border_style = NULL,
   container_border = NULL,
-  container_border_radius = NULL
+  container_border_radius = NULL,
+  banding = NULL
 )
 }
 \arguments{
@@ -38,6 +39,9 @@ set_layout(
 
 \item{container_border_radius}{Corner radius for container in pixels (default: 8).
 Only visible when \code{container_border = TRUE}.}
+
+\item{banding}{Enable alternating row background colors (default: TRUE).
+Uses \code{row_bg} and \code{alt_bg} from theme colors.}
 }
 \value{
 Modified WebTheme object
@@ -53,4 +57,8 @@ web_theme_default() |>
 # Add a border around the container
 web_theme_default() |>
   set_layout(container_border = TRUE, container_border_radius = 4)
+
+# Disable row banding
+web_theme_default() |>
+  set_layout(banding = FALSE)
 }
