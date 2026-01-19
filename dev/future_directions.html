@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>future_directions – tabviz</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-6d8a317f6d7170feb81ce6008a9cc2e3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-guide" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Guide</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-guide">    
+        <li>
+    <a class="dropdown-item" href="../guide/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/quick-start.html">
+ <span class="dropdown-text">1. Quick Start</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/package-data.html">
+ <span class="dropdown-text">2. Package Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/columns.html">
+ <span class="dropdown-text">3. Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/row-styling.html">
+ <span class="dropdown-text">4. Row Styling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/cell-styling.html">
+ <span class="dropdown-text">5. Cell Styling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/row-groups.html">
+ <span class="dropdown-text">6. Row Groups</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/titles.html">
+ <span class="dropdown-text">7. Titles and Labels</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/index.html">
+ <span class="dropdown-text">8. Visualizations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/forest-plots.html">
+ <span class="dropdown-text">9. Forest Plots</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/split-plots.html">
+ <span class="dropdown-text">10. Split Plots</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/themes.html">
+ <span class="dropdown-text">11. Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/shiny.html">
+ <span class="dropdown-text">12. Shiny Integration</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/export.html">
+ <span class="dropdown-text">13. Export</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#webforest-future-directions" id="toc-webforest-future-directions" class="nav-link active" data-scroll-target="#webforest-future-directions">WebForest Future Directions</a>
+  <ul class="collapse">
+  <li><a href="#current-state-summary" id="toc-current-state-summary" class="nav-link" data-scroll-target="#current-state-summary">Current State Summary</a></li>
+  <li><a href="#proposed-directions" id="toc-proposed-directions" class="nav-link" data-scroll-target="#proposed-directions">Proposed Directions</a>
+  <ul class="collapse">
+  <li><a href="#interactive-styling-interface" id="toc-interactive-styling-interface" class="nav-link" data-scroll-target="#interactive-styling-interface">1. Interactive Styling Interface</a></li>
+  <li><a href="#improved-resizing-rescaling" id="toc-improved-resizing-rescaling" class="nav-link" data-scroll-target="#improved-resizing-rescaling">2. Improved Resizing &amp; Rescaling</a></li>
+  <li><a href="#export-formats-markdown-xml-pptx" id="toc-export-formats-markdown-xml-pptx" class="nav-link" data-scroll-target="#export-formats-markdown-xml-pptx">3. Export Formats: Markdown, XML, PPTX</a></li>
+  <li><a href="#new-plot-types-boxplots-density-plots" id="toc-new-plot-types-boxplots-density-plots" class="nav-link" data-scroll-target="#new-plot-types-boxplots-density-plots">4. New Plot Types: Boxplots, Density Plots</a></li>
+  <li><a href="#embedded-subtables-expandable-rows" id="toc-embedded-subtables-expandable-rows" class="nav-link" data-scroll-target="#embedded-subtables-expandable-rows">5. Embedded Subtables (Expandable Rows)</a></li>
+  <li><a href="#interactive-columnrow-reordering" id="toc-interactive-columnrow-reordering" class="nav-link" data-scroll-target="#interactive-columnrow-reordering">6. Interactive Column/Row Reordering</a></li>
+  <li><a href="#enhanced-filtering-sorting" id="toc-enhanced-filtering-sorting" class="nav-link" data-scroll-target="#enhanced-filtering-sorting">7. Enhanced Filtering &amp; Sorting</a></li>
+  </ul></li>
+  <li><a href="#additional-suggested-directions" id="toc-additional-suggested-directions" class="nav-link" data-scroll-target="#additional-suggested-directions">Additional Suggested Directions</a>
+  <ul class="collapse">
+  <li><a href="#linked-brushing-coordinated-views" id="toc-linked-brushing-coordinated-views" class="nav-link" data-scroll-target="#linked-brushing-coordinated-views">8. Linked Brushing / Coordinated Views</a></li>
+  <li><a href="#animations-transitions" id="toc-animations-transitions" class="nav-link" data-scroll-target="#animations-transitions">9. Animations &amp; Transitions</a></li>
+  <li><a href="#accessibility-improvements" id="toc-accessibility-improvements" class="nav-link" data-scroll-target="#accessibility-improvements">10. Accessibility Improvements</a></li>
+  <li><a href="#custom-cell-renderers-plugin-system" id="toc-custom-cell-renderers-plugin-system" class="nav-link" data-scroll-target="#custom-cell-renderers-plugin-system">11. Custom Cell Renderers / Plugin System</a></li>
+  <li><a href="#statistical-annotations" id="toc-statistical-annotations" class="nav-link" data-scroll-target="#statistical-annotations">12. Statistical Annotations</a></li>
+  <li><a href="#printpublication-mode" id="toc-printpublication-mode" class="nav-link" data-scroll-target="#printpublication-mode">13. Print/Publication Mode</a></li>
+  <li><a href="#in-place-data-editing" id="toc-in-place-data-editing" class="nav-link" data-scroll-target="#in-place-data-editing">14. In-Place Data Editing</a></li>
+  <li><a href="#import-from-standard-formats" id="toc-import-from-standard-formats" class="nav-link" data-scroll-target="#import-from-standard-formats">15. Import from Standard Formats</a></li>
+  <li><a href="#funnel-plot-integration" id="toc-funnel-plot-integration" class="nav-link" data-scroll-target="#funnel-plot-integration">16. Funnel Plot Integration</a></li>
+  </ul></li>
+  <li><a href="#priority-matrix" id="toc-priority-matrix" class="nav-link" data-scroll-target="#priority-matrix">Priority Matrix</a></li>
+  <li><a href="#recommended-roadmap" id="toc-recommended-roadmap" class="nav-link" data-scroll-target="#recommended-roadmap">Recommended Roadmap</a>
+  <ul class="collapse">
+  <li><a href="#phase-1-polish-professional-quick-wins" id="toc-phase-1-polish-professional-quick-wins" class="nav-link" data-scroll-target="#phase-1-polish-professional-quick-wins">Phase 1: Polish &amp; Professional (Quick Wins)</a></li>
+  <li><a href="#phase-2-power-features" id="toc-phase-2-power-features" class="nav-link" data-scroll-target="#phase-2-power-features">Phase 2: Power Features</a></li>
+  <li><a href="#phase-3-advanced-visualization" id="toc-phase-3-advanced-visualization" class="nav-link" data-scroll-target="#phase-3-advanced-visualization">Phase 3: Advanced Visualization</a></li>
+  <li><a href="#phase-4-ecosystem" id="toc-phase-4-ecosystem" class="nav-link" data-scroll-target="#phase-4-ecosystem">Phase 4: Ecosystem</a></li>
+  </ul></li>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><h1 class="title display-7"></h1></header><div class="quarto-title-block"><div class="quarto-title-tools-only"><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+
+
+
+
+<section id="webforest-future-directions" class="level1">
+<h1>WebForest Future Directions</h1>
+<blockquote class="blockquote">
+<p>Strategic planning document for webforest development priorities. Last updated: 2026-01-16</p>
+</blockquote>
+<section id="current-state-summary" class="level2">
+<h2 class="anchored" data-anchor-id="current-state-summary">Current State Summary</h2>
+<p>WebForest is a mature forest plot package with: - <strong>Rich R data model</strong>: S7 classes, formula evaluation, column expressions - <strong>Interactive frontend</strong>: Svelte 5, hover/click/select/filter/sort/collapse - <strong>Publication theming</strong>: 9 presets (JAMA, Lancet, Nature, Cochrane, etc.) - <strong>Export</strong>: SVG, PDF, PNG - <strong>Shiny integration</strong>: Reactive proxy updates</p>
+<hr>
+</section>
+<section id="proposed-directions" class="level2">
+<h2 class="anchored" data-anchor-id="proposed-directions">Proposed Directions</h2>
+<section id="interactive-styling-interface" class="level3">
+<h3 class="anchored" data-anchor-id="interactive-styling-interface">1. Interactive Styling Interface</h3>
+<p><strong>Concept</strong>: On-hover toolbar allowing users to style cells/rows/columns visually (colors, bold, badges) without writing R code.</p>
+<p><strong>Design sketch</strong>:</p>
+<pre><code>┌─────────────────────────────────────────┐
+│ Study          │ OR (95% CI)   │ [plot] │
+├─────────────────────────────────────────┤
+│ Smith 2020 [🎨]│ 1.25 (0.8-1.9)│   ●──  │  ← hover shows toolbar
+│    ┌──────────────────────┐             │
+│    │ [B] [I] [🔴🟢🔵] [📌] │             │  ← inline style toolbar
+│    └──────────────────────┘             │</code></pre>
+<p><strong>Technical approach</strong>: - Toolbar component appears on hover (Svelte) - Actions dispatch to store, update row/cell metadata - “Export styles” button generates R code snippet - Optional: persist to localStorage for session continuity</p>
+<p><strong>Cost</strong>: HIGH - Complex UI (color picker, icon selector) - State synchronization challenges - Code generation for reproducibility - Accessibility considerations for toolbar</p>
+<p><strong>Benefit</strong>: MEDIUM-HIGH - Great for exploration/prototyping - Lowers barrier for non-programmers - But: most users are R programmers who prefer code</p>
+<p><strong>Priority</strong>: LOW - Nice to have, not core to package value</p>
+<hr>
+</section>
+<section id="improved-resizing-rescaling" class="level3">
+<h3 class="anchored" data-anchor-id="improved-resizing-rescaling">2. Improved Resizing &amp; Rescaling</h3>
+<p><strong>Concept</strong>: Better UX for resizing columns, forest plot area, and overall widget with intuitive drag handles and responsive behavior.</p>
+<p><strong>Current limitations</strong>: - Column resize exists but can feel clunky - Forest area resize triggers full re-render - No persistence of user adjustments</p>
+<p><strong>Design sketch</strong>:</p>
+<pre><code>┌────────────────────────────────────────────────────┐
+│ Study     ⋮│ OR        ⋮│ ←──── Forest ────→ ⋮│ P  │
+│           ⋮│           ⋮│        [drag]       ⋮│    │
+├───────────┴────────────┴──────────────────────┴────┤
+│ Total width: [━━━━━━━●━━━━━] 900px                 │  ← slider
+└────────────────────────────────────────────────────┘</code></pre>
+<p><strong>Technical approach</strong>: - Improve drag handle visibility/feedback - Add forest area resize handle (not just columns) - Debounced axis recalculation during resize - Persist widths to spec or localStorage - “Reset to auto” button</p>
+<p><strong>Cost</strong>: MEDIUM - Enhance existing infrastructure - UX design for handles/feedback - State persistence decisions</p>
+<p><strong>Benefit</strong>: HIGH - Core interaction, used constantly - Better fit to various container sizes - Professional feel</p>
+<p><strong>Priority</strong>: MEDIUM-HIGH - Worth doing well</p>
+<hr>
+</section>
+<section id="export-formats-markdown-xml-pptx" class="level3">
+<h3 class="anchored" data-anchor-id="export-formats-markdown-xml-pptx">3. Export Formats: Markdown, XML, PPTX</h3>
+<p><strong>Concept</strong>: Additional export formats beyond raster/vector graphics.</p>
+<p><strong>Formats</strong>: | Format | Use Case | Complexity | |——–|———-|————| | Markdown | Plain text, Git-friendly, accessibility | LOW | | HTML table | Email, web embedding | LOW | | CSV/TSV | Data extraction | LOW | | XML | Interoperability, archival | LOW | | PPTX | Presentations, Office workflows | MEDIUM | | DOCX | Word integration | MEDIUM |</p>
+<p><strong>Design sketch</strong> (Markdown output):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Study <span class="pp">|</span> OR (95% CI) <span class="pp">|</span> Forest <span class="pp">|</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------|-------------|--------|</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Smith 2020** <span class="pp">|</span> 1.25 (0.80, 1.95) <span class="pp">|</span> ●── <span class="pp">|</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Jones 2021 <span class="pp">|</span> 0.89 (0.65, 1.22) <span class="pp">|</span> ──● <span class="pp">|</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Overall** <span class="pp">|</span> 1.05 (0.88, 1.25) <span class="pp">|</span> ◆ <span class="pp">|</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Technical approach</strong>: - Table-only formats: extract from spec data, format strings - PPTX: use <code>officer</code> package, embed SVG or convert to EMF - Add <code>save_table(spec, file, format = "markdown")</code> function - Consider ASCII art forest for plain text (fun but low priority)</p>
+<p><strong>Cost</strong>: LOW-MEDIUM - Markdown/CSV: trivial - PPTX/DOCX: moderate (officer dependency, layout)</p>
+<p><strong>Benefit</strong>: MEDIUM - PPTX highly requested for presentations - Markdown good for documentation/Git - Niche but valuable for specific workflows</p>
+<p><strong>Priority</strong>: MEDIUM - PPTX would be high-value addition</p>
+<hr>
+</section>
+<section id="new-plot-types-boxplots-density-plots" class="level3">
+<h3 class="anchored" data-anchor-id="new-plot-types-boxplots-density-plots">4. New Plot Types: Boxplots, Density Plots</h3>
+<p><strong>Concept</strong>: Beyond point+CI, show full distributions for each row.</p>
+<p><strong>Visual options</strong>:</p>
+<pre><code>Point + CI (current):     ├────●────┤
+Boxplot:                  ├─┬─█─┬─┤
+Violin/density:           ╭──█──╮
+Dot plot:                 ·· ··●·· ··
+Gradient bar:             ▓▓▓██▓▓▓</code></pre>
+<p><strong>Design sketch</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot_type =</span> <span class="st">"boxplot"</span>,  <span class="co"># or "violin", "dots", "gradient"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">q1 =</span> <span class="st">"q1"</span>, <span class="at">q3 =</span> <span class="st">"q3"</span>, <span class="at">median =</span> <span class="st">"median"</span>,  <span class="co"># for boxplot</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># or</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution =</span> <span class="st">"dist_col"</span>  <span class="co"># column containing distribution data</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Technical approach</strong>: - New plot_type parameter in spec - Additional data columns for distribution quantiles - SVG rendering for new shapes - Handle mixed types? (some rows point+CI, some boxplot)</p>
+<p><strong>Cost</strong>: HIGH - New data model for distributions - Significant SVG rendering work - Space constraints in forest area - Scale calculation changes</p>
+<p><strong>Benefit</strong>: MEDIUM-HIGH - Richer visualization of uncertainty - Differentiator from other packages - Useful for Bayesian posteriors, simulation results</p>
+<p><strong>Priority</strong>: MEDIUM - Valuable but significant investment</p>
+<hr>
+</section>
+<section id="embedded-subtables-expandable-rows" class="level3">
+<h3 class="anchored" data-anchor-id="embedded-subtables-expandable-rows">5. Embedded Subtables (Expandable Rows)</h3>
+<p><strong>Concept</strong>: Click a row to reveal a sub-table or sub-plot below it, enabling drill-down exploration.</p>
+<p><strong>Design sketch</strong>:</p>
+<pre><code>┌─────────────────────────────────────────────────┐
+│ Region A        │ 1.15 (0.95, 1.40) │   ●──    │
+│ ▼ Smith 2020    │ 1.25 (0.80, 1.95) │   ●──    │  ← click to expand
+│   ┌─────────────────────────────────────────┐  │
+│   │ Subgroup    │ OR       │ [mini-forest]  │  │  ← embedded subtable
+│   │ Male        │ 1.30     │     ●──        │  │
+│   │ Female      │ 1.18     │    ●──         │  │
+│   └─────────────────────────────────────────┘  │
+│   Jones 2021    │ 0.89 (0.65, 1.22) │  ──●    │</code></pre>
+<p><strong>R interface options</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Option A: Explicit embed specification</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ...,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">embed =</span> <span class="fu">embed_spec</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">parent_col =</span> <span class="st">"study"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">child_data =</span> subgroup_data,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">match_by =</span> <span class="st">"study_id"</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Option B: Nested data frame column</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>subgroups <span class="ot">&lt;-</span> <span class="fu">list</span>(df1, df2, df3, <span class="cn">NULL</span>, ...)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">embed_col =</span> <span class="st">"subgroups"</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Option C: Flag column approach</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(combined_data, ...,</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">embed_flag =</span> <span class="st">"is_subgroup"</span>,  <span class="co"># TRUE = hidden child row</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">embed_parent =</span> <span class="st">"parent_id"</span>   <span class="co"># links child to parent</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Technical approach</strong>: - New row type: “expandable” with children - Recursive WebSpec or nested row structure - Animation for expand/collapse - Shared vs independent axis for subtable - Handle arbitrary depth? (probably limit to 1-2 levels)</p>
+<p><strong>Cost</strong>: HIGH - Significant data model changes - Complex UI interactions - State management for expand/collapse - Layout calculations with dynamic height</p>
+<p><strong>Benefit</strong>: HIGH - Powerful drill-down capability - Hides complexity until needed - Unique feature among forest plot packages</p>
+<p><strong>Priority</strong>: MEDIUM-HIGH - High value, high cost</p>
+<hr>
+</section>
+<section id="interactive-columnrow-reordering" class="level3">
+<h3 class="anchored" data-anchor-id="interactive-columnrow-reordering">6. Interactive Column/Row Reordering</h3>
+<p><strong>Concept</strong>: Drag-and-drop to reorder columns and rows.</p>
+<p><strong>Design sketch</strong>:</p>
+<pre><code>┌────────────────────────────────────────┐
+│ Study  ↕│ OR     ↕│ P-value ↕│ [plot] │  ← drag column headers
+├────────────────────────────────────────┤
+│ ≡ Smith │ 1.25   │ 0.032    │  ●──   │  ← drag row handles
+│ ≡ Jones │ 0.89   │ 0.156    │ ──●    │</code></pre>
+<p><strong>Technical approach</strong>: - Use Svelte drag-drop (svelte-dnd-action or similar) - Column reorder: update columnOrder in store - Row reorder: update data order (manual sort) - Visual feedback during drag - Persist order to spec or export as R code</p>
+<p><strong>Cost</strong>: MEDIUM - Drag-drop library integration - State management for order - Handle grouped rows (drag group vs individual)</p>
+<p><strong>Benefit</strong>: MEDIUM - Good for exploration - But: sorting usually preferred over manual reorder - Column reorder more valuable than row reorder</p>
+<p><strong>Priority</strong>: LOW-MEDIUM - Column reorder useful; row reorder niche</p>
+<hr>
+</section>
+<section id="enhanced-filtering-sorting" class="level3">
+<h3 class="anchored" data-anchor-id="enhanced-filtering-sorting">7. Enhanced Filtering &amp; Sorting</h3>
+<p><strong>Concept</strong>: More powerful filter UI, multi-column sort, saved filter presets.</p>
+<p><strong>Current state</strong>: Basic sort (single column), filter exists but limited UI.</p>
+<p><strong>Enhancements</strong>:</p>
+<pre><code>┌─ Filters ──────────────────────────────┐
+│ Study: [contains    ▼] [________]      │
+│ OR:    [between     ▼] [0.5] - [2.0]   │
+│ P:     [less than   ▼] [0.05]          │
+│ Region: [☑ Americas] [☑ Europe] [☐ Asia]│
+│                                        │
+│ Sort: OR ↑, then P-value ↓             │
+│ [Save preset ▼] [Clear all]            │
+└────────────────────────────────────────┘</code></pre>
+<p><strong>Technical approach</strong>: - Filter panel component with type-aware inputs - Multi-column sort with priority - Filter presets saved to localStorage or spec - URL query param integration for sharing</p>
+<p><strong>Cost</strong>: MEDIUM - UI components for filter types - Multi-sort logic (exists partially) - Preset storage/retrieval</p>
+<p><strong>Benefit</strong>: HIGH - Essential for large datasets - Power users expect this - Improves data exploration significantly</p>
+<p><strong>Priority</strong>: HIGH - Core interactive feature</p>
+<hr>
+</section>
+</section>
+<section id="additional-suggested-directions" class="level2">
+<h2 class="anchored" data-anchor-id="additional-suggested-directions">Additional Suggested Directions</h2>
+<section id="linked-brushing-coordinated-views" class="level3">
+<h3 class="anchored" data-anchor-id="linked-brushing-coordinated-views">8. Linked Brushing / Coordinated Views</h3>
+<p><strong>Concept</strong>: Select rows in one forest plot, highlight corresponding rows in another (split forests, Shiny dashboards).</p>
+<p><strong>Design sketch</strong>:</p>
+<pre><code>┌─ Region: Americas ─────┐    ┌─ Region: Europe ──────┐
+│ Smith [selected]  ●──  │    │ Smith [highlighted]●──│
+│ Jones             ──●  │    │ Jones            ──●  │
+└────────────────────────┘    └────────────────────────┘</code></pre>
+<p><strong>Technical approach</strong>: - Shared selection store across widgets - Shiny: use reactive values - Standalone: custom events or shared context - Match rows by ID or key column</p>
+<p><strong>Cost</strong>: MEDIUM - Cross-widget communication - ID matching logic - Visual feedback for “linked highlight” vs “selected”</p>
+<p><strong>Benefit</strong>: HIGH - Powerful for comparative analysis - Expected in modern visualization tools - Differentiator feature</p>
+<p><strong>Priority</strong>: MEDIUM-HIGH - Valuable for split forests &amp; Shiny</p>
+<hr>
+</section>
+<section id="animations-transitions" class="level3">
+<h3 class="anchored" data-anchor-id="animations-transitions">9. Animations &amp; Transitions</h3>
+<p><strong>Concept</strong>: Smooth transitions when sorting, filtering, expanding, or updating data.</p>
+<p><strong>Examples</strong>: - Rows slide into new positions when sorted - Rows fade in/out when filtered - Groups expand/collapse with accordion animation - Data updates crossfade</p>
+<p><strong>Technical approach</strong>: - Svelte <code>transition:</code> and <code>animate:</code> directives - FLIP animations for reordering - Configurable: <code>theme$animation = TRUE/FALSE</code> - Respect <code>prefers-reduced-motion</code></p>
+<p><strong>Cost</strong>: LOW-MEDIUM - Svelte has excellent animation support - Need to identify all transition points - Performance testing with large datasets</p>
+<p><strong>Benefit</strong>: MEDIUM - Professional, polished feel - Helps users track changes - But: some users prefer instant updates</p>
+<p><strong>Priority</strong>: MEDIUM - Polish feature, not critical</p>
+<hr>
+</section>
+<section id="accessibility-improvements" class="level3">
+<h3 class="anchored" data-anchor-id="accessibility-improvements">10. Accessibility Improvements</h3>
+<p><strong>Concept</strong>: Screen reader support, keyboard navigation, ARIA labels, high contrast.</p>
+<p><strong>Current issues</strong> (from build warnings): - Non-interactive elements with click handlers - Missing ARIA roles - Tabindex on non-interactive elements</p>
+<p><strong>Improvements needed</strong>: - Semantic HTML (buttons, not divs) - ARIA labels for forest plot elements - Keyboard navigation (arrow keys, Enter, Escape) - Focus indicators - High contrast theme option - Alt text for exported images</p>
+<p><strong>Cost</strong>: MEDIUM - Systematic audit required - Some refactoring of interactive elements - Testing with screen readers</p>
+<p><strong>Benefit</strong>: HIGH - Inclusive design - May be required for government/academic use - Improves keyboard-only users experience - SEO benefits for web deployment</p>
+<p><strong>Priority</strong>: HIGH - Important for professional package</p>
+<hr>
+</section>
+<section id="custom-cell-renderers-plugin-system" class="level3">
+<h3 class="anchored" data-anchor-id="custom-cell-renderers-plugin-system">11. Custom Cell Renderers / Plugin System</h3>
+<p><strong>Concept</strong>: Allow users to define custom column types with their own rendering logic.</p>
+<p><strong>Design sketch</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># R side: register custom renderer</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">register_column_renderer</span>(<span class="st">"heatmap"</span>, <span class="cf">function</span>(value, row, theme) {</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return SVG or HTML string</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Usage</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">web_column</span>(<span class="st">"expression"</span>, <span class="at">type =</span> <span class="st">"heatmap"</span>, ...)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Technical approach</strong>: - R: renderer registry, serialization of custom content - JS: safe HTML injection or Svelte component slots - Sandboxing concerns for arbitrary JS - Documentation &amp; examples for extension</p>
+<p><strong>Cost</strong>: HIGH - Security considerations (XSS) - API design complexity - Documentation burden</p>
+<p><strong>Benefit</strong>: MEDIUM - Infinite extensibility - But: current column types cover most needs - Niche advanced use case</p>
+<p><strong>Priority</strong>: LOW - Over-engineering risk</p>
+<hr>
+</section>
+<section id="statistical-annotations" class="level3">
+<h3 class="anchored" data-anchor-id="statistical-annotations">12. Statistical Annotations</h3>
+<p><strong>Concept</strong>: Auto-calculate and display common meta-analysis statistics.</p>
+<p><strong>Statistics</strong>: - Heterogeneity: I², τ², Q statistic, p-value - Subgroup tests: Q-between, interaction p-value - Prediction intervals - Egger’s test for publication bias</p>
+<p><strong>Design sketch</strong>:</p>
+<pre><code>┌─────────────────────────────────────────────────┐
+│ Study          │ OR (95% CI)     │   [forest]   │
+├─────────────────────────────────────────────────┤
+│ ...            │ ...             │   ...        │
+│ **Overall**    │ 1.05 (0.88-1.25)│      ◆       │
+├─────────────────────────────────────────────────┤
+│ Heterogeneity: I² = 45%, τ² = 0.02, p = 0.08   │
+│ Test for overall effect: z = 0.56, p = 0.58    │
+└─────────────────────────────────────────────────┘</code></pre>
+<p><strong>Technical approach</strong>: - R-side calculation (leverage metafor/meta packages?) - Store in spec, render in footer - Optional: user provides pre-calculated values - Careful about assumptions (fixed vs random effects)</p>
+<p><strong>Cost</strong>: MEDIUM - Statistics are well-defined - Need to handle missing data gracefully - Dependency decisions (metafor?)</p>
+<p><strong>Benefit</strong>: HIGH - Very common need in meta-analysis - Reduces manual calculation - Publication-ready output</p>
+<p><strong>Priority</strong>: MEDIUM-HIGH - High value for meta-analysis users</p>
+<hr>
+</section>
+<section id="printpublication-mode" class="level3">
+<h3 class="anchored" data-anchor-id="printpublication-mode">13. Print/Publication Mode</h3>
+<p><strong>Concept</strong>: Optimized rendering for print output with no interactive elements.</p>
+<p><strong>Features</strong>: - No hover states or tooltips - Higher default DPI - Print-optimized colors (avoid pure black) - Page break hints for long tables - Optional: grayscale mode</p>
+<p><strong>Technical approach</strong>: - <code>publication_mode = TRUE</code> parameter - CSS <code>@media print</code> rules - Theme modifier: <code>set_publication_mode()</code> - Affects export defaults</p>
+<p><strong>Cost</strong>: LOW - Mostly CSS/theme adjustments - Some conditional rendering</p>
+<p><strong>Benefit</strong>: MEDIUM - Better print output - Common request for academic use</p>
+<p><strong>Priority</strong>: MEDIUM - Quick win</p>
+<hr>
+</section>
+<section id="in-place-data-editing" class="level3">
+<h3 class="anchored" data-anchor-id="in-place-data-editing">14. In-Place Data Editing</h3>
+<p><strong>Concept</strong>: Edit cell values directly in the rendered table.</p>
+<p><strong>Design sketch</strong>:</p>
+<pre><code>┌─────────────────────────────────────────┐
+│ Study          │ OR        │ P-value   │
+├─────────────────────────────────────────┤
+│ Smith 2020     │ [1.25___] │ 0.032     │  ← click to edit
+│                │ ✓ ✗       │           │</code></pre>
+<p><strong>Technical approach</strong>: - Double-click or edit button to enter edit mode - Validate input type (numeric, text) - Sync back to R (Shiny) or track changes locally - Undo/redo support - Export changes as data frame</p>
+<p><strong>Cost</strong>: HIGH - Bidirectional data sync - Input validation - Undo/redo state management - Conflict with formula-based columns</p>
+<p><strong>Benefit</strong>: LOW-MEDIUM - Quick corrections useful - But: most users prefer code-based changes - Risk of losing reproducibility</p>
+<p><strong>Priority</strong>: LOW - Conflicts with reproducibility goals</p>
+<hr>
+</section>
+<section id="import-from-standard-formats" class="level3">
+<h3 class="anchored" data-anchor-id="import-from-standard-formats">15. Import from Standard Formats</h3>
+<p><strong>Concept</strong>: Read data from common meta-analysis file formats.</p>
+<p><strong>Formats</strong>: - RevMan 5 (.rm5) - Cochrane Review Manager - CMA files - Comprehensive Meta-Analysis - PRISMA checklist integration - Excel templates with standard structure</p>
+<p><strong>Technical approach</strong>: - R functions: <code>read_revman()</code>, <code>read_cma()</code>, etc. - Map to WebSpec structure - Handle format variations gracefully - Vignette with import workflows</p>
+<p><strong>Cost</strong>: MEDIUM - Format reverse-engineering - Edge case handling - Maintenance as formats evolve</p>
+<p><strong>Benefit</strong>: MEDIUM - Useful for Cochrane/systematic review community - But: most users have data in R already</p>
+<p><strong>Priority</strong>: LOW-MEDIUM - Niche but valuable for target audience</p>
+<hr>
+</section>
+<section id="funnel-plot-integration" class="level3">
+<h3 class="anchored" data-anchor-id="funnel-plot-integration">16. Funnel Plot Integration</h3>
+<p><strong>Concept</strong>: Add funnel plot as companion visualization for publication bias assessment.</p>
+<p><strong>Design sketch</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ...) <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_funnel_plot</span>(<span class="at">position =</span> <span class="st">"right"</span>)  <span class="co"># or "below", "panel"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Technical approach</strong>: - New plot type: funnel (effect size vs SE/precision) - Linked to main forest plot (shared selection) - Egger’s line, trim-and-fill visualization - Could be separate widget or integrated panel</p>
+<p><strong>Cost</strong>: MEDIUM - New SVG rendering - Layout integration decisions - Statistical calculations</p>
+<p><strong>Benefit</strong>: MEDIUM-HIGH - Standard companion to forest plots - Publication requirement for many journals</p>
+<p><strong>Priority</strong>: MEDIUM - Natural extension of package scope</p>
+<hr>
+</section>
+</section>
+<section id="priority-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="priority-matrix">Priority Matrix</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 12%">
+<col style="width: 19%">
+<col style="width: 21%">
+<col style="width: 23%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Direction</th>
+<th>Cost</th>
+<th>Benefit</th>
+<th>Priority</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>7. Enhanced filtering/sorting</td>
+<td>M</td>
+<td>H</td>
+<td><strong>HIGH</strong></td>
+<td>Core feature, broad impact</td>
+</tr>
+<tr class="even">
+<td>10. Accessibility</td>
+<td>M</td>
+<td>H</td>
+<td><strong>HIGH</strong></td>
+<td>Professional requirement</td>
+</tr>
+<tr class="odd">
+<td>2. Improved resizing</td>
+<td>M</td>
+<td>H</td>
+<td><strong>M-HIGH</strong></td>
+<td>UX polish, constant use</td>
+</tr>
+<tr class="even">
+<td>8. Linked brushing</td>
+<td>M</td>
+<td>H</td>
+<td><strong>M-HIGH</strong></td>
+<td>Split forest synergy</td>
+</tr>
+<tr class="odd">
+<td>12. Statistical annotations</td>
+<td>M</td>
+<td>H</td>
+<td><strong>M-HIGH</strong></td>
+<td>Meta-analysis core need</td>
+</tr>
+<tr class="even">
+<td>5. Embedded subtables</td>
+<td>H</td>
+<td>H</td>
+<td><strong>MEDIUM</strong></td>
+<td>Unique, but complex</td>
+</tr>
+<tr class="odd">
+<td>3. Export (PPTX focus)</td>
+<td>M</td>
+<td>M</td>
+<td><strong>MEDIUM</strong></td>
+<td>Specific high-value format</td>
+</tr>
+<tr class="even">
+<td>4. New plot types</td>
+<td>H</td>
+<td>M-H</td>
+<td><strong>MEDIUM</strong></td>
+<td>Differentiator, high cost</td>
+</tr>
+<tr class="odd">
+<td>16. Funnel plot</td>
+<td>M</td>
+<td>M-H</td>
+<td><strong>MEDIUM</strong></td>
+<td>Natural extension</td>
+</tr>
+<tr class="even">
+<td>13. Publication mode</td>
+<td>L</td>
+<td>M</td>
+<td><strong>MEDIUM</strong></td>
+<td>Quick win</td>
+</tr>
+<tr class="odd">
+<td>9. Animations</td>
+<td>L-M</td>
+<td>M</td>
+<td><strong>MEDIUM</strong></td>
+<td>Polish</td>
+</tr>
+<tr class="even">
+<td>6. Column/row reorder</td>
+<td>M</td>
+<td>M</td>
+<td><strong>LOW-M</strong></td>
+<td>Column useful, row niche</td>
+</tr>
+<tr class="odd">
+<td>15. Import formats</td>
+<td>M</td>
+<td>M</td>
+<td><strong>LOW-M</strong></td>
+<td>Niche audience</td>
+</tr>
+<tr class="even">
+<td>1. Interactive styling</td>
+<td>H</td>
+<td>M</td>
+<td><strong>LOW</strong></td>
+<td>Nice-to-have</td>
+</tr>
+<tr class="odd">
+<td>11. Plugin system</td>
+<td>H</td>
+<td>M</td>
+<td><strong>LOW</strong></td>
+<td>Over-engineering risk</td>
+</tr>
+<tr class="even">
+<td>14. In-place editing</td>
+<td>H</td>
+<td>L-M</td>
+<td><strong>LOW</strong></td>
+<td>Conflicts w/ reproducibility</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="recommended-roadmap" class="level2">
+<h2 class="anchored" data-anchor-id="recommended-roadmap">Recommended Roadmap</h2>
+<section id="phase-1-polish-professional-quick-wins" class="level3">
+<h3 class="anchored" data-anchor-id="phase-1-polish-professional-quick-wins">Phase 1: Polish &amp; Professional (Quick Wins)</h3>
+<ul>
+<li>Enhanced filtering/sorting UI</li>
+<li>Accessibility audit &amp; fixes</li>
+<li>Publication mode</li>
+<li>Animation/transitions</li>
+</ul>
+</section>
+<section id="phase-2-power-features" class="level3">
+<h3 class="anchored" data-anchor-id="phase-2-power-features">Phase 2: Power Features</h3>
+<ul>
+<li>Improved resizing UX</li>
+<li>Linked brushing for split forests</li>
+<li>Statistical annotations (I², etc.)</li>
+<li>PPTX export</li>
+</ul>
+</section>
+<section id="phase-3-advanced-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="phase-3-advanced-visualization">Phase 3: Advanced Visualization</h3>
+<ul>
+<li>Embedded subtables</li>
+<li>New plot types (boxplot, violin)</li>
+<li>Funnel plot integration</li>
+</ul>
+</section>
+<section id="phase-4-ecosystem" class="level3">
+<h3 class="anchored" data-anchor-id="phase-4-ecosystem">Phase 4: Ecosystem</h3>
+<ul>
+<li>Import from RevMan/CMA</li>
+<li>Custom renderer plugins (if demand exists)</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="notes" class="level2">
+<h2 class="anchored" data-anchor-id="notes">Notes</h2>
+<ul>
+<li>Priorities should be validated against user feedback</li>
+<li>Consider GitHub issues/discussions for demand signals</li>
+<li>Balance new features vs stability/documentation</li>
+<li>Some features may warrant separate packages (e.g., <code>webforest.meta</code> for statistical annotations)</li>
+</ul>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># WebForest Future Directions</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; Strategic planning document for webforest development priorities.</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; Last updated: 2026-01-16</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="fu">## Current State Summary</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>WebForest is a mature forest plot package with:</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Rich R data model**: S7 classes, formula evaluation, column expressions</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Interactive frontend**: Svelte 5, hover/click/select/filter/sort/collapse</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Publication theming**: 9 presets (JAMA, Lancet, Nature, Cochrane, etc.)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Export**: SVG, PDF, PNG</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Shiny integration**: Reactive proxy updates</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## Proposed Directions</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1. Interactive Styling Interface</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>**Concept**: On-hover toolbar allowing users to style cells/rows/columns visually (colors, bold, badges) without writing R code.</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="in">┌─────────────────────────────────────────┐</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="in">│ Study          │ OR (95% CI)   │ [plot] │</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="in">├─────────────────────────────────────────┤</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a><span class="in">│ Smith 2020 [🎨]│ 1.25 (0.8-1.9)│   ●──  │  ← hover shows toolbar</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="in">│    ┌──────────────────────┐             │</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="in">│    │ [B] [I] [🔴🟢🔵] [📌] │             │  ← inline style toolbar</span></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="in">│    └──────────────────────┘             │</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Toolbar component appears on hover (Svelte)</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Actions dispatch to store, update row/cell metadata</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>"Export styles" button generates R code snippet</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Optional: persist to localStorage for session continuity</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>**Cost**: HIGH</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Complex UI (color picker, icon selector)</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>State synchronization challenges</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Code generation for reproducibility</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Accessibility considerations for toolbar</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>**Benefit**: MEDIUM-HIGH</span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Great for exploration/prototyping</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Lowers barrier for non-programmers</span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>But: most users are R programmers who prefer code</span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a>**Priority**: LOW - Nice to have, not core to package value</span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2. Improved Resizing &amp; Rescaling</span></span>
+<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>**Concept**: Better UX for resizing columns, forest plot area, and overall widget with intuitive drag handles and responsive behavior.</span>
+<span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-59"><a href="#cb15-59" aria-hidden="true" tabindex="-1"></a>**Current limitations**:</span>
+<span id="cb15-60"><a href="#cb15-60" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Column resize exists but can feel clunky</span>
+<span id="cb15-61"><a href="#cb15-61" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Forest area resize triggers full re-render</span>
+<span id="cb15-62"><a href="#cb15-62" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>No persistence of user adjustments</span>
+<span id="cb15-63"><a href="#cb15-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-64"><a href="#cb15-64" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-65"><a href="#cb15-65" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a><span class="in">┌────────────────────────────────────────────────────┐</span></span>
+<span id="cb15-67"><a href="#cb15-67" aria-hidden="true" tabindex="-1"></a><span class="in">│ Study     ⋮│ OR        ⋮│ ←──── Forest ────→ ⋮│ P  │</span></span>
+<span id="cb15-68"><a href="#cb15-68" aria-hidden="true" tabindex="-1"></a><span class="in">│           ⋮│           ⋮│        [drag]       ⋮│    │</span></span>
+<span id="cb15-69"><a href="#cb15-69" aria-hidden="true" tabindex="-1"></a><span class="in">├───────────┴────────────┴──────────────────────┴────┤</span></span>
+<span id="cb15-70"><a href="#cb15-70" aria-hidden="true" tabindex="-1"></a><span class="in">│ Total width: [━━━━━━━●━━━━━] 900px                 │  ← slider</span></span>
+<span id="cb15-71"><a href="#cb15-71" aria-hidden="true" tabindex="-1"></a><span class="in">└────────────────────────────────────────────────────┘</span></span>
+<span id="cb15-72"><a href="#cb15-72" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-73"><a href="#cb15-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-74"><a href="#cb15-74" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-75"><a href="#cb15-75" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Improve drag handle visibility/feedback</span>
+<span id="cb15-76"><a href="#cb15-76" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add forest area resize handle (not just columns)</span>
+<span id="cb15-77"><a href="#cb15-77" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Debounced axis recalculation during resize</span>
+<span id="cb15-78"><a href="#cb15-78" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Persist widths to spec or localStorage</span>
+<span id="cb15-79"><a href="#cb15-79" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>"Reset to auto" button</span>
+<span id="cb15-80"><a href="#cb15-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-81"><a href="#cb15-81" aria-hidden="true" tabindex="-1"></a>**Cost**: MEDIUM</span>
+<span id="cb15-82"><a href="#cb15-82" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Enhance existing infrastructure</span>
+<span id="cb15-83"><a href="#cb15-83" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>UX design for handles/feedback</span>
+<span id="cb15-84"><a href="#cb15-84" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>State persistence decisions</span>
+<span id="cb15-85"><a href="#cb15-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-86"><a href="#cb15-86" aria-hidden="true" tabindex="-1"></a>**Benefit**: HIGH</span>
+<span id="cb15-87"><a href="#cb15-87" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Core interaction, used constantly</span>
+<span id="cb15-88"><a href="#cb15-88" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Better fit to various container sizes</span>
+<span id="cb15-89"><a href="#cb15-89" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Professional feel</span>
+<span id="cb15-90"><a href="#cb15-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-91"><a href="#cb15-91" aria-hidden="true" tabindex="-1"></a>**Priority**: MEDIUM-HIGH - Worth doing well</span>
+<span id="cb15-92"><a href="#cb15-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-93"><a href="#cb15-93" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-94"><a href="#cb15-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-95"><a href="#cb15-95" aria-hidden="true" tabindex="-1"></a><span class="fu">### 3. Export Formats: Markdown, XML, PPTX</span></span>
+<span id="cb15-96"><a href="#cb15-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-97"><a href="#cb15-97" aria-hidden="true" tabindex="-1"></a>**Concept**: Additional export formats beyond raster/vector graphics.</span>
+<span id="cb15-98"><a href="#cb15-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-99"><a href="#cb15-99" aria-hidden="true" tabindex="-1"></a>**Formats**:</span>
+<span id="cb15-100"><a href="#cb15-100" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Format <span class="pp">|</span> Use Case <span class="pp">|</span> Complexity <span class="pp">|</span></span>
+<span id="cb15-101"><a href="#cb15-101" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|----------|------------|</span></span>
+<span id="cb15-102"><a href="#cb15-102" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Markdown <span class="pp">|</span> Plain text, Git-friendly, accessibility <span class="pp">|</span> LOW <span class="pp">|</span></span>
+<span id="cb15-103"><a href="#cb15-103" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> HTML table <span class="pp">|</span> Email, web embedding <span class="pp">|</span> LOW <span class="pp">|</span></span>
+<span id="cb15-104"><a href="#cb15-104" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> CSV/TSV <span class="pp">|</span> Data extraction <span class="pp">|</span> LOW <span class="pp">|</span></span>
+<span id="cb15-105"><a href="#cb15-105" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> XML <span class="pp">|</span> Interoperability, archival <span class="pp">|</span> LOW <span class="pp">|</span></span>
+<span id="cb15-106"><a href="#cb15-106" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> PPTX <span class="pp">|</span> Presentations, Office workflows <span class="pp">|</span> MEDIUM <span class="pp">|</span></span>
+<span id="cb15-107"><a href="#cb15-107" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> DOCX <span class="pp">|</span> Word integration <span class="pp">|</span> MEDIUM <span class="pp">|</span></span>
+<span id="cb15-108"><a href="#cb15-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-109"><a href="#cb15-109" aria-hidden="true" tabindex="-1"></a>**Design sketch** (Markdown output):</span>
+<span id="cb15-110"><a href="#cb15-110" aria-hidden="true" tabindex="-1"></a><span class="in">```markdown</span></span>
+<span id="cb15-111"><a href="#cb15-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Study <span class="pp">|</span> OR (95% CI) <span class="pp">|</span> Forest <span class="pp">|</span></span>
+<span id="cb15-112"><a href="#cb15-112" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------|-------------|--------|</span></span>
+<span id="cb15-113"><a href="#cb15-113" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Smith 2020** <span class="pp">|</span> 1.25 (0.80, 1.95) <span class="pp">|</span> ●── <span class="pp">|</span></span>
+<span id="cb15-114"><a href="#cb15-114" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Jones 2021 <span class="pp">|</span> 0.89 (0.65, 1.22) <span class="pp">|</span> ──● <span class="pp">|</span></span>
+<span id="cb15-115"><a href="#cb15-115" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **Overall** <span class="pp">|</span> 1.05 (0.88, 1.25) <span class="pp">|</span> ◆ <span class="pp">|</span></span>
+<span id="cb15-116"><a href="#cb15-116" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-117"><a href="#cb15-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-118"><a href="#cb15-118" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-119"><a href="#cb15-119" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Table-only formats: extract from spec data, format strings</span>
+<span id="cb15-120"><a href="#cb15-120" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PPTX: use <span class="in">`officer`</span> package, embed SVG or convert to EMF</span>
+<span id="cb15-121"><a href="#cb15-121" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add <span class="in">`save_table(spec, file, format = "markdown")`</span> function</span>
+<span id="cb15-122"><a href="#cb15-122" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Consider ASCII art forest for plain text (fun but low priority)</span>
+<span id="cb15-123"><a href="#cb15-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-124"><a href="#cb15-124" aria-hidden="true" tabindex="-1"></a>**Cost**: LOW-MEDIUM</span>
+<span id="cb15-125"><a href="#cb15-125" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Markdown/CSV: trivial</span>
+<span id="cb15-126"><a href="#cb15-126" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PPTX/DOCX: moderate (officer dependency, layout)</span>
+<span id="cb15-127"><a href="#cb15-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-128"><a href="#cb15-128" aria-hidden="true" tabindex="-1"></a>**Benefit**: MEDIUM</span>
+<span id="cb15-129"><a href="#cb15-129" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PPTX highly requested for presentations</span>
+<span id="cb15-130"><a href="#cb15-130" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Markdown good for documentation/Git</span>
+<span id="cb15-131"><a href="#cb15-131" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Niche but valuable for specific workflows</span>
+<span id="cb15-132"><a href="#cb15-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-133"><a href="#cb15-133" aria-hidden="true" tabindex="-1"></a>**Priority**: MEDIUM - PPTX would be high-value addition</span>
+<span id="cb15-134"><a href="#cb15-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-135"><a href="#cb15-135" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-136"><a href="#cb15-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-137"><a href="#cb15-137" aria-hidden="true" tabindex="-1"></a><span class="fu">### 4. New Plot Types: Boxplots, Density Plots</span></span>
+<span id="cb15-138"><a href="#cb15-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-139"><a href="#cb15-139" aria-hidden="true" tabindex="-1"></a>**Concept**: Beyond point+CI, show full distributions for each row.</span>
+<span id="cb15-140"><a href="#cb15-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-141"><a href="#cb15-141" aria-hidden="true" tabindex="-1"></a>**Visual options**:</span>
+<span id="cb15-142"><a href="#cb15-142" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-143"><a href="#cb15-143" aria-hidden="true" tabindex="-1"></a><span class="in">Point + CI (current):     ├────●────┤</span></span>
+<span id="cb15-144"><a href="#cb15-144" aria-hidden="true" tabindex="-1"></a><span class="in">Boxplot:                  ├─┬─█─┬─┤</span></span>
+<span id="cb15-145"><a href="#cb15-145" aria-hidden="true" tabindex="-1"></a><span class="in">Violin/density:           ╭──█──╮</span></span>
+<span id="cb15-146"><a href="#cb15-146" aria-hidden="true" tabindex="-1"></a><span class="in">Dot plot:                 ·· ··●·· ··</span></span>
+<span id="cb15-147"><a href="#cb15-147" aria-hidden="true" tabindex="-1"></a><span class="in">Gradient bar:             ▓▓▓██▓▓▓</span></span>
+<span id="cb15-148"><a href="#cb15-148" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-149"><a href="#cb15-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-150"><a href="#cb15-150" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-151"><a href="#cb15-151" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb15-152"><a href="#cb15-152" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data,</span>
+<span id="cb15-153"><a href="#cb15-153" aria-hidden="true" tabindex="-1"></a>  <span class="at">plot_type =</span> <span class="st">"boxplot"</span>,  <span class="co"># or "violin", "dots", "gradient"</span></span>
+<span id="cb15-154"><a href="#cb15-154" aria-hidden="true" tabindex="-1"></a>  <span class="at">q1 =</span> <span class="st">"q1"</span>, <span class="at">q3 =</span> <span class="st">"q3"</span>, <span class="at">median =</span> <span class="st">"median"</span>,  <span class="co"># for boxplot</span></span>
+<span id="cb15-155"><a href="#cb15-155" aria-hidden="true" tabindex="-1"></a>  <span class="co"># or</span></span>
+<span id="cb15-156"><a href="#cb15-156" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution =</span> <span class="st">"dist_col"</span>  <span class="co"># column containing distribution data</span></span>
+<span id="cb15-157"><a href="#cb15-157" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-158"><a href="#cb15-158" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-159"><a href="#cb15-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-160"><a href="#cb15-160" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-161"><a href="#cb15-161" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>New plot_type parameter in spec</span>
+<span id="cb15-162"><a href="#cb15-162" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Additional data columns for distribution quantiles</span>
+<span id="cb15-163"><a href="#cb15-163" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>SVG rendering for new shapes</span>
+<span id="cb15-164"><a href="#cb15-164" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Handle mixed types? (some rows point+CI, some boxplot)</span>
+<span id="cb15-165"><a href="#cb15-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-166"><a href="#cb15-166" aria-hidden="true" tabindex="-1"></a>**Cost**: HIGH</span>
+<span id="cb15-167"><a href="#cb15-167" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>New data model for distributions</span>
+<span id="cb15-168"><a href="#cb15-168" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Significant SVG rendering work</span>
+<span id="cb15-169"><a href="#cb15-169" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Space constraints in forest area</span>
+<span id="cb15-170"><a href="#cb15-170" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Scale calculation changes</span>
+<span id="cb15-171"><a href="#cb15-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-172"><a href="#cb15-172" aria-hidden="true" tabindex="-1"></a>**Benefit**: MEDIUM-HIGH</span>
+<span id="cb15-173"><a href="#cb15-173" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Richer visualization of uncertainty</span>
+<span id="cb15-174"><a href="#cb15-174" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Differentiator from other packages</span>
+<span id="cb15-175"><a href="#cb15-175" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Useful for Bayesian posteriors, simulation results</span>
+<span id="cb15-176"><a href="#cb15-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-177"><a href="#cb15-177" aria-hidden="true" tabindex="-1"></a>**Priority**: MEDIUM - Valuable but significant investment</span>
+<span id="cb15-178"><a href="#cb15-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-179"><a href="#cb15-179" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-180"><a href="#cb15-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-181"><a href="#cb15-181" aria-hidden="true" tabindex="-1"></a><span class="fu">### 5. Embedded Subtables (Expandable Rows)</span></span>
+<span id="cb15-182"><a href="#cb15-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-183"><a href="#cb15-183" aria-hidden="true" tabindex="-1"></a>**Concept**: Click a row to reveal a sub-table or sub-plot below it, enabling drill-down exploration.</span>
+<span id="cb15-184"><a href="#cb15-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-185"><a href="#cb15-185" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-186"><a href="#cb15-186" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-187"><a href="#cb15-187" aria-hidden="true" tabindex="-1"></a><span class="in">┌─────────────────────────────────────────────────┐</span></span>
+<span id="cb15-188"><a href="#cb15-188" aria-hidden="true" tabindex="-1"></a><span class="in">│ Region A        │ 1.15 (0.95, 1.40) │   ●──    │</span></span>
+<span id="cb15-189"><a href="#cb15-189" aria-hidden="true" tabindex="-1"></a><span class="in">│ ▼ Smith 2020    │ 1.25 (0.80, 1.95) │   ●──    │  ← click to expand</span></span>
+<span id="cb15-190"><a href="#cb15-190" aria-hidden="true" tabindex="-1"></a><span class="in">│   ┌─────────────────────────────────────────┐  │</span></span>
+<span id="cb15-191"><a href="#cb15-191" aria-hidden="true" tabindex="-1"></a><span class="in">│   │ Subgroup    │ OR       │ [mini-forest]  │  │  ← embedded subtable</span></span>
+<span id="cb15-192"><a href="#cb15-192" aria-hidden="true" tabindex="-1"></a><span class="in">│   │ Male        │ 1.30     │     ●──        │  │</span></span>
+<span id="cb15-193"><a href="#cb15-193" aria-hidden="true" tabindex="-1"></a><span class="in">│   │ Female      │ 1.18     │    ●──         │  │</span></span>
+<span id="cb15-194"><a href="#cb15-194" aria-hidden="true" tabindex="-1"></a><span class="in">│   └─────────────────────────────────────────┘  │</span></span>
+<span id="cb15-195"><a href="#cb15-195" aria-hidden="true" tabindex="-1"></a><span class="in">│   Jones 2021    │ 0.89 (0.65, 1.22) │  ──●    │</span></span>
+<span id="cb15-196"><a href="#cb15-196" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-197"><a href="#cb15-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-198"><a href="#cb15-198" aria-hidden="true" tabindex="-1"></a>**R interface options**:</span>
+<span id="cb15-199"><a href="#cb15-199" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb15-200"><a href="#cb15-200" aria-hidden="true" tabindex="-1"></a><span class="co"># Option A: Explicit embed specification</span></span>
+<span id="cb15-201"><a href="#cb15-201" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ...,</span>
+<span id="cb15-202"><a href="#cb15-202" aria-hidden="true" tabindex="-1"></a>  <span class="at">embed =</span> <span class="fu">embed_spec</span>(</span>
+<span id="cb15-203"><a href="#cb15-203" aria-hidden="true" tabindex="-1"></a>    <span class="at">parent_col =</span> <span class="st">"study"</span>,</span>
+<span id="cb15-204"><a href="#cb15-204" aria-hidden="true" tabindex="-1"></a>    <span class="at">child_data =</span> subgroup_data,</span>
+<span id="cb15-205"><a href="#cb15-205" aria-hidden="true" tabindex="-1"></a>    <span class="at">match_by =</span> <span class="st">"study_id"</span></span>
+<span id="cb15-206"><a href="#cb15-206" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb15-207"><a href="#cb15-207" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-208"><a href="#cb15-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-209"><a href="#cb15-209" aria-hidden="true" tabindex="-1"></a><span class="co"># Option B: Nested data frame column</span></span>
+<span id="cb15-210"><a href="#cb15-210" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>subgroups <span class="ot">&lt;-</span> <span class="fu">list</span>(df1, df2, df3, <span class="cn">NULL</span>, ...)</span>
+<span id="cb15-211"><a href="#cb15-211" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">embed_col =</span> <span class="st">"subgroups"</span>)</span>
+<span id="cb15-212"><a href="#cb15-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-213"><a href="#cb15-213" aria-hidden="true" tabindex="-1"></a><span class="co"># Option C: Flag column approach</span></span>
+<span id="cb15-214"><a href="#cb15-214" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(combined_data, ...,</span>
+<span id="cb15-215"><a href="#cb15-215" aria-hidden="true" tabindex="-1"></a>  <span class="at">embed_flag =</span> <span class="st">"is_subgroup"</span>,  <span class="co"># TRUE = hidden child row</span></span>
+<span id="cb15-216"><a href="#cb15-216" aria-hidden="true" tabindex="-1"></a>  <span class="at">embed_parent =</span> <span class="st">"parent_id"</span>   <span class="co"># links child to parent</span></span>
+<span id="cb15-217"><a href="#cb15-217" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-218"><a href="#cb15-218" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-219"><a href="#cb15-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-220"><a href="#cb15-220" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-221"><a href="#cb15-221" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>New row type: "expandable" with children</span>
+<span id="cb15-222"><a href="#cb15-222" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Recursive WebSpec or nested row structure</span>
+<span id="cb15-223"><a href="#cb15-223" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Animation for expand/collapse</span>
+<span id="cb15-224"><a href="#cb15-224" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Shared vs independent axis for subtable</span>
+<span id="cb15-225"><a href="#cb15-225" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Handle arbitrary depth? (probably limit to 1-2 levels)</span>
+<span id="cb15-226"><a href="#cb15-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-227"><a href="#cb15-227" aria-hidden="true" tabindex="-1"></a>**Cost**: HIGH</span>
+<span id="cb15-228"><a href="#cb15-228" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Significant data model changes</span>
+<span id="cb15-229"><a href="#cb15-229" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Complex UI interactions</span>
+<span id="cb15-230"><a href="#cb15-230" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>State management for expand/collapse</span>
+<span id="cb15-231"><a href="#cb15-231" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Layout calculations with dynamic height</span>
+<span id="cb15-232"><a href="#cb15-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-233"><a href="#cb15-233" aria-hidden="true" tabindex="-1"></a>**Benefit**: HIGH</span>
+<span id="cb15-234"><a href="#cb15-234" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Powerful drill-down capability</span>
+<span id="cb15-235"><a href="#cb15-235" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hides complexity until needed</span>
+<span id="cb15-236"><a href="#cb15-236" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Unique feature among forest plot packages</span>
+<span id="cb15-237"><a href="#cb15-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-238"><a href="#cb15-238" aria-hidden="true" tabindex="-1"></a>**Priority**: MEDIUM-HIGH - High value, high cost</span>
+<span id="cb15-239"><a href="#cb15-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-240"><a href="#cb15-240" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-241"><a href="#cb15-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-242"><a href="#cb15-242" aria-hidden="true" tabindex="-1"></a><span class="fu">### 6. Interactive Column/Row Reordering</span></span>
+<span id="cb15-243"><a href="#cb15-243" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-244"><a href="#cb15-244" aria-hidden="true" tabindex="-1"></a>**Concept**: Drag-and-drop to reorder columns and rows.</span>
+<span id="cb15-245"><a href="#cb15-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-246"><a href="#cb15-246" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-247"><a href="#cb15-247" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-248"><a href="#cb15-248" aria-hidden="true" tabindex="-1"></a><span class="in">┌────────────────────────────────────────┐</span></span>
+<span id="cb15-249"><a href="#cb15-249" aria-hidden="true" tabindex="-1"></a><span class="in">│ Study  ↕│ OR     ↕│ P-value ↕│ [plot] │  ← drag column headers</span></span>
+<span id="cb15-250"><a href="#cb15-250" aria-hidden="true" tabindex="-1"></a><span class="in">├────────────────────────────────────────┤</span></span>
+<span id="cb15-251"><a href="#cb15-251" aria-hidden="true" tabindex="-1"></a><span class="in">│ ≡ Smith │ 1.25   │ 0.032    │  ●──   │  ← drag row handles</span></span>
+<span id="cb15-252"><a href="#cb15-252" aria-hidden="true" tabindex="-1"></a><span class="in">│ ≡ Jones │ 0.89   │ 0.156    │ ──●    │</span></span>
+<span id="cb15-253"><a href="#cb15-253" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-254"><a href="#cb15-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-255"><a href="#cb15-255" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-256"><a href="#cb15-256" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Use Svelte drag-drop (svelte-dnd-action or similar)</span>
+<span id="cb15-257"><a href="#cb15-257" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Column reorder: update columnOrder in store</span>
+<span id="cb15-258"><a href="#cb15-258" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Row reorder: update data order (manual sort)</span>
+<span id="cb15-259"><a href="#cb15-259" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Visual feedback during drag</span>
+<span id="cb15-260"><a href="#cb15-260" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Persist order to spec or export as R code</span>
+<span id="cb15-261"><a href="#cb15-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-262"><a href="#cb15-262" aria-hidden="true" tabindex="-1"></a>**Cost**: MEDIUM</span>
+<span id="cb15-263"><a href="#cb15-263" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Drag-drop library integration</span>
+<span id="cb15-264"><a href="#cb15-264" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>State management for order</span>
+<span id="cb15-265"><a href="#cb15-265" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Handle grouped rows (drag group vs individual)</span>
+<span id="cb15-266"><a href="#cb15-266" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-267"><a href="#cb15-267" aria-hidden="true" tabindex="-1"></a>**Benefit**: MEDIUM</span>
+<span id="cb15-268"><a href="#cb15-268" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Good for exploration</span>
+<span id="cb15-269"><a href="#cb15-269" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>But: sorting usually preferred over manual reorder</span>
+<span id="cb15-270"><a href="#cb15-270" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Column reorder more valuable than row reorder</span>
+<span id="cb15-271"><a href="#cb15-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-272"><a href="#cb15-272" aria-hidden="true" tabindex="-1"></a>**Priority**: LOW-MEDIUM - Column reorder useful; row reorder niche</span>
+<span id="cb15-273"><a href="#cb15-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-274"><a href="#cb15-274" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-275"><a href="#cb15-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-276"><a href="#cb15-276" aria-hidden="true" tabindex="-1"></a><span class="fu">### 7. Enhanced Filtering &amp; Sorting</span></span>
+<span id="cb15-277"><a href="#cb15-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-278"><a href="#cb15-278" aria-hidden="true" tabindex="-1"></a>**Concept**: More powerful filter UI, multi-column sort, saved filter presets.</span>
+<span id="cb15-279"><a href="#cb15-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-280"><a href="#cb15-280" aria-hidden="true" tabindex="-1"></a>**Current state**: Basic sort (single column), filter exists but limited UI.</span>
+<span id="cb15-281"><a href="#cb15-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-282"><a href="#cb15-282" aria-hidden="true" tabindex="-1"></a>**Enhancements**:</span>
+<span id="cb15-283"><a href="#cb15-283" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-284"><a href="#cb15-284" aria-hidden="true" tabindex="-1"></a><span class="in">┌─ Filters ──────────────────────────────┐</span></span>
+<span id="cb15-285"><a href="#cb15-285" aria-hidden="true" tabindex="-1"></a><span class="in">│ Study: [contains    ▼] [________]      │</span></span>
+<span id="cb15-286"><a href="#cb15-286" aria-hidden="true" tabindex="-1"></a><span class="in">│ OR:    [between     ▼] [0.5] - [2.0]   │</span></span>
+<span id="cb15-287"><a href="#cb15-287" aria-hidden="true" tabindex="-1"></a><span class="in">│ P:     [less than   ▼] [0.05]          │</span></span>
+<span id="cb15-288"><a href="#cb15-288" aria-hidden="true" tabindex="-1"></a><span class="in">│ Region: [☑ Americas] [☑ Europe] [☐ Asia]│</span></span>
+<span id="cb15-289"><a href="#cb15-289" aria-hidden="true" tabindex="-1"></a><span class="in">│                                        │</span></span>
+<span id="cb15-290"><a href="#cb15-290" aria-hidden="true" tabindex="-1"></a><span class="in">│ Sort: OR ↑, then P-value ↓             │</span></span>
+<span id="cb15-291"><a href="#cb15-291" aria-hidden="true" tabindex="-1"></a><span class="in">│ [Save preset ▼] [Clear all]            │</span></span>
+<span id="cb15-292"><a href="#cb15-292" aria-hidden="true" tabindex="-1"></a><span class="in">└────────────────────────────────────────┘</span></span>
+<span id="cb15-293"><a href="#cb15-293" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-294"><a href="#cb15-294" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-295"><a href="#cb15-295" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-296"><a href="#cb15-296" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Filter panel component with type-aware inputs</span>
+<span id="cb15-297"><a href="#cb15-297" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Multi-column sort with priority</span>
+<span id="cb15-298"><a href="#cb15-298" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Filter presets saved to localStorage or spec</span>
+<span id="cb15-299"><a href="#cb15-299" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>URL query param integration for sharing</span>
+<span id="cb15-300"><a href="#cb15-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-301"><a href="#cb15-301" aria-hidden="true" tabindex="-1"></a>**Cost**: MEDIUM</span>
+<span id="cb15-302"><a href="#cb15-302" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>UI components for filter types</span>
+<span id="cb15-303"><a href="#cb15-303" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Multi-sort logic (exists partially)</span>
+<span id="cb15-304"><a href="#cb15-304" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Preset storage/retrieval</span>
+<span id="cb15-305"><a href="#cb15-305" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-306"><a href="#cb15-306" aria-hidden="true" tabindex="-1"></a>**Benefit**: HIGH</span>
+<span id="cb15-307"><a href="#cb15-307" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Essential for large datasets</span>
+<span id="cb15-308"><a href="#cb15-308" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Power users expect this</span>
+<span id="cb15-309"><a href="#cb15-309" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Improves data exploration significantly</span>
+<span id="cb15-310"><a href="#cb15-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-311"><a href="#cb15-311" aria-hidden="true" tabindex="-1"></a>**Priority**: HIGH - Core interactive feature</span>
+<span id="cb15-312"><a href="#cb15-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-313"><a href="#cb15-313" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-314"><a href="#cb15-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-315"><a href="#cb15-315" aria-hidden="true" tabindex="-1"></a><span class="fu">## Additional Suggested Directions</span></span>
+<span id="cb15-316"><a href="#cb15-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-317"><a href="#cb15-317" aria-hidden="true" tabindex="-1"></a><span class="fu">### 8. Linked Brushing / Coordinated Views</span></span>
+<span id="cb15-318"><a href="#cb15-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-319"><a href="#cb15-319" aria-hidden="true" tabindex="-1"></a>**Concept**: Select rows in one forest plot, highlight corresponding rows in another (split forests, Shiny dashboards).</span>
+<span id="cb15-320"><a href="#cb15-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-321"><a href="#cb15-321" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-322"><a href="#cb15-322" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-323"><a href="#cb15-323" aria-hidden="true" tabindex="-1"></a><span class="in">┌─ Region: Americas ─────┐    ┌─ Region: Europe ──────┐</span></span>
+<span id="cb15-324"><a href="#cb15-324" aria-hidden="true" tabindex="-1"></a><span class="in">│ Smith [selected]  ●──  │    │ Smith [highlighted]●──│</span></span>
+<span id="cb15-325"><a href="#cb15-325" aria-hidden="true" tabindex="-1"></a><span class="in">│ Jones             ──●  │    │ Jones            ──●  │</span></span>
+<span id="cb15-326"><a href="#cb15-326" aria-hidden="true" tabindex="-1"></a><span class="in">└────────────────────────┘    └────────────────────────┘</span></span>
+<span id="cb15-327"><a href="#cb15-327" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-328"><a href="#cb15-328" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-329"><a href="#cb15-329" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-330"><a href="#cb15-330" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Shared selection store across widgets</span>
+<span id="cb15-331"><a href="#cb15-331" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Shiny: use reactive values</span>
+<span id="cb15-332"><a href="#cb15-332" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Standalone: custom events or shared context</span>
+<span id="cb15-333"><a href="#cb15-333" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Match rows by ID or key column</span>
+<span id="cb15-334"><a href="#cb15-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-335"><a href="#cb15-335" aria-hidden="true" tabindex="-1"></a>**Cost**: MEDIUM</span>
+<span id="cb15-336"><a href="#cb15-336" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Cross-widget communication</span>
+<span id="cb15-337"><a href="#cb15-337" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>ID matching logic</span>
+<span id="cb15-338"><a href="#cb15-338" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Visual feedback for "linked highlight" vs "selected"</span>
+<span id="cb15-339"><a href="#cb15-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-340"><a href="#cb15-340" aria-hidden="true" tabindex="-1"></a>**Benefit**: HIGH</span>
+<span id="cb15-341"><a href="#cb15-341" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Powerful for comparative analysis</span>
+<span id="cb15-342"><a href="#cb15-342" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Expected in modern visualization tools</span>
+<span id="cb15-343"><a href="#cb15-343" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Differentiator feature</span>
+<span id="cb15-344"><a href="#cb15-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-345"><a href="#cb15-345" aria-hidden="true" tabindex="-1"></a>**Priority**: MEDIUM-HIGH - Valuable for split forests &amp; Shiny</span>
+<span id="cb15-346"><a href="#cb15-346" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-347"><a href="#cb15-347" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-348"><a href="#cb15-348" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-349"><a href="#cb15-349" aria-hidden="true" tabindex="-1"></a><span class="fu">### 9. Animations &amp; Transitions</span></span>
+<span id="cb15-350"><a href="#cb15-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-351"><a href="#cb15-351" aria-hidden="true" tabindex="-1"></a>**Concept**: Smooth transitions when sorting, filtering, expanding, or updating data.</span>
+<span id="cb15-352"><a href="#cb15-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-353"><a href="#cb15-353" aria-hidden="true" tabindex="-1"></a>**Examples**:</span>
+<span id="cb15-354"><a href="#cb15-354" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Rows slide into new positions when sorted</span>
+<span id="cb15-355"><a href="#cb15-355" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Rows fade in/out when filtered</span>
+<span id="cb15-356"><a href="#cb15-356" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Groups expand/collapse with accordion animation</span>
+<span id="cb15-357"><a href="#cb15-357" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Data updates crossfade</span>
+<span id="cb15-358"><a href="#cb15-358" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-359"><a href="#cb15-359" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-360"><a href="#cb15-360" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Svelte <span class="in">`transition:`</span> and <span class="in">`animate:`</span> directives</span>
+<span id="cb15-361"><a href="#cb15-361" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>FLIP animations for reordering</span>
+<span id="cb15-362"><a href="#cb15-362" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Configurable: <span class="in">`theme$animation = TRUE/FALSE`</span></span>
+<span id="cb15-363"><a href="#cb15-363" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Respect <span class="in">`prefers-reduced-motion`</span></span>
+<span id="cb15-364"><a href="#cb15-364" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-365"><a href="#cb15-365" aria-hidden="true" tabindex="-1"></a>**Cost**: LOW-MEDIUM</span>
+<span id="cb15-366"><a href="#cb15-366" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Svelte has excellent animation support</span>
+<span id="cb15-367"><a href="#cb15-367" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Need to identify all transition points</span>
+<span id="cb15-368"><a href="#cb15-368" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Performance testing with large datasets</span>
+<span id="cb15-369"><a href="#cb15-369" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-370"><a href="#cb15-370" aria-hidden="true" tabindex="-1"></a>**Benefit**: MEDIUM</span>
+<span id="cb15-371"><a href="#cb15-371" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Professional, polished feel</span>
+<span id="cb15-372"><a href="#cb15-372" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Helps users track changes</span>
+<span id="cb15-373"><a href="#cb15-373" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>But: some users prefer instant updates</span>
+<span id="cb15-374"><a href="#cb15-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-375"><a href="#cb15-375" aria-hidden="true" tabindex="-1"></a>**Priority**: MEDIUM - Polish feature, not critical</span>
+<span id="cb15-376"><a href="#cb15-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-377"><a href="#cb15-377" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-378"><a href="#cb15-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-379"><a href="#cb15-379" aria-hidden="true" tabindex="-1"></a><span class="fu">### 10. Accessibility Improvements</span></span>
+<span id="cb15-380"><a href="#cb15-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-381"><a href="#cb15-381" aria-hidden="true" tabindex="-1"></a>**Concept**: Screen reader support, keyboard navigation, ARIA labels, high contrast.</span>
+<span id="cb15-382"><a href="#cb15-382" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-383"><a href="#cb15-383" aria-hidden="true" tabindex="-1"></a>**Current issues** (from build warnings):</span>
+<span id="cb15-384"><a href="#cb15-384" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Non-interactive elements with click handlers</span>
+<span id="cb15-385"><a href="#cb15-385" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Missing ARIA roles</span>
+<span id="cb15-386"><a href="#cb15-386" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Tabindex on non-interactive elements</span>
+<span id="cb15-387"><a href="#cb15-387" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-388"><a href="#cb15-388" aria-hidden="true" tabindex="-1"></a>**Improvements needed**:</span>
+<span id="cb15-389"><a href="#cb15-389" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Semantic HTML (buttons, not divs)</span>
+<span id="cb15-390"><a href="#cb15-390" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>ARIA labels for forest plot elements</span>
+<span id="cb15-391"><a href="#cb15-391" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Keyboard navigation (arrow keys, Enter, Escape)</span>
+<span id="cb15-392"><a href="#cb15-392" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Focus indicators</span>
+<span id="cb15-393"><a href="#cb15-393" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>High contrast theme option</span>
+<span id="cb15-394"><a href="#cb15-394" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Alt text for exported images</span>
+<span id="cb15-395"><a href="#cb15-395" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-396"><a href="#cb15-396" aria-hidden="true" tabindex="-1"></a>**Cost**: MEDIUM</span>
+<span id="cb15-397"><a href="#cb15-397" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Systematic audit required</span>
+<span id="cb15-398"><a href="#cb15-398" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Some refactoring of interactive elements</span>
+<span id="cb15-399"><a href="#cb15-399" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Testing with screen readers</span>
+<span id="cb15-400"><a href="#cb15-400" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-401"><a href="#cb15-401" aria-hidden="true" tabindex="-1"></a>**Benefit**: HIGH</span>
+<span id="cb15-402"><a href="#cb15-402" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Inclusive design</span>
+<span id="cb15-403"><a href="#cb15-403" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>May be required for government/academic use</span>
+<span id="cb15-404"><a href="#cb15-404" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Improves keyboard-only users experience</span>
+<span id="cb15-405"><a href="#cb15-405" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>SEO benefits for web deployment</span>
+<span id="cb15-406"><a href="#cb15-406" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-407"><a href="#cb15-407" aria-hidden="true" tabindex="-1"></a>**Priority**: HIGH - Important for professional package</span>
+<span id="cb15-408"><a href="#cb15-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-409"><a href="#cb15-409" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-410"><a href="#cb15-410" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-411"><a href="#cb15-411" aria-hidden="true" tabindex="-1"></a><span class="fu">### 11. Custom Cell Renderers / Plugin System</span></span>
+<span id="cb15-412"><a href="#cb15-412" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-413"><a href="#cb15-413" aria-hidden="true" tabindex="-1"></a>**Concept**: Allow users to define custom column types with their own rendering logic.</span>
+<span id="cb15-414"><a href="#cb15-414" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-415"><a href="#cb15-415" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-416"><a href="#cb15-416" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb15-417"><a href="#cb15-417" aria-hidden="true" tabindex="-1"></a><span class="co"># R side: register custom renderer</span></span>
+<span id="cb15-418"><a href="#cb15-418" aria-hidden="true" tabindex="-1"></a><span class="fu">register_column_renderer</span>(<span class="st">"heatmap"</span>, <span class="cf">function</span>(value, row, theme) {</span>
+<span id="cb15-419"><a href="#cb15-419" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return SVG or HTML string</span></span>
+<span id="cb15-420"><a href="#cb15-420" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb15-421"><a href="#cb15-421" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-422"><a href="#cb15-422" aria-hidden="true" tabindex="-1"></a><span class="co"># Usage</span></span>
+<span id="cb15-423"><a href="#cb15-423" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb15-424"><a href="#cb15-424" aria-hidden="true" tabindex="-1"></a>  <span class="fu">web_column</span>(<span class="st">"expression"</span>, <span class="at">type =</span> <span class="st">"heatmap"</span>, ...)</span>
+<span id="cb15-425"><a href="#cb15-425" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb15-426"><a href="#cb15-426" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-427"><a href="#cb15-427" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-428"><a href="#cb15-428" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-429"><a href="#cb15-429" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>R: renderer registry, serialization of custom content</span>
+<span id="cb15-430"><a href="#cb15-430" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>JS: safe HTML injection or Svelte component slots</span>
+<span id="cb15-431"><a href="#cb15-431" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Sandboxing concerns for arbitrary JS</span>
+<span id="cb15-432"><a href="#cb15-432" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Documentation &amp; examples for extension</span>
+<span id="cb15-433"><a href="#cb15-433" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-434"><a href="#cb15-434" aria-hidden="true" tabindex="-1"></a>**Cost**: HIGH</span>
+<span id="cb15-435"><a href="#cb15-435" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Security considerations (XSS)</span>
+<span id="cb15-436"><a href="#cb15-436" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>API design complexity</span>
+<span id="cb15-437"><a href="#cb15-437" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Documentation burden</span>
+<span id="cb15-438"><a href="#cb15-438" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-439"><a href="#cb15-439" aria-hidden="true" tabindex="-1"></a>**Benefit**: MEDIUM</span>
+<span id="cb15-440"><a href="#cb15-440" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Infinite extensibility</span>
+<span id="cb15-441"><a href="#cb15-441" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>But: current column types cover most needs</span>
+<span id="cb15-442"><a href="#cb15-442" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Niche advanced use case</span>
+<span id="cb15-443"><a href="#cb15-443" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-444"><a href="#cb15-444" aria-hidden="true" tabindex="-1"></a>**Priority**: LOW - Over-engineering risk</span>
+<span id="cb15-445"><a href="#cb15-445" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-446"><a href="#cb15-446" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-447"><a href="#cb15-447" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-448"><a href="#cb15-448" aria-hidden="true" tabindex="-1"></a><span class="fu">### 12. Statistical Annotations</span></span>
+<span id="cb15-449"><a href="#cb15-449" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-450"><a href="#cb15-450" aria-hidden="true" tabindex="-1"></a>**Concept**: Auto-calculate and display common meta-analysis statistics.</span>
+<span id="cb15-451"><a href="#cb15-451" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-452"><a href="#cb15-452" aria-hidden="true" tabindex="-1"></a>**Statistics**:</span>
+<span id="cb15-453"><a href="#cb15-453" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Heterogeneity: I², τ², Q statistic, p-value</span>
+<span id="cb15-454"><a href="#cb15-454" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Subgroup tests: Q-between, interaction p-value</span>
+<span id="cb15-455"><a href="#cb15-455" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Prediction intervals</span>
+<span id="cb15-456"><a href="#cb15-456" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Egger's test for publication bias</span>
+<span id="cb15-457"><a href="#cb15-457" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-458"><a href="#cb15-458" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-459"><a href="#cb15-459" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-460"><a href="#cb15-460" aria-hidden="true" tabindex="-1"></a><span class="in">┌─────────────────────────────────────────────────┐</span></span>
+<span id="cb15-461"><a href="#cb15-461" aria-hidden="true" tabindex="-1"></a><span class="in">│ Study          │ OR (95% CI)     │   [forest]   │</span></span>
+<span id="cb15-462"><a href="#cb15-462" aria-hidden="true" tabindex="-1"></a><span class="in">├─────────────────────────────────────────────────┤</span></span>
+<span id="cb15-463"><a href="#cb15-463" aria-hidden="true" tabindex="-1"></a><span class="in">│ ...            │ ...             │   ...        │</span></span>
+<span id="cb15-464"><a href="#cb15-464" aria-hidden="true" tabindex="-1"></a><span class="in">│ **Overall**    │ 1.05 (0.88-1.25)│      ◆       │</span></span>
+<span id="cb15-465"><a href="#cb15-465" aria-hidden="true" tabindex="-1"></a><span class="in">├─────────────────────────────────────────────────┤</span></span>
+<span id="cb15-466"><a href="#cb15-466" aria-hidden="true" tabindex="-1"></a><span class="in">│ Heterogeneity: I² = 45%, τ² = 0.02, p = 0.08   │</span></span>
+<span id="cb15-467"><a href="#cb15-467" aria-hidden="true" tabindex="-1"></a><span class="in">│ Test for overall effect: z = 0.56, p = 0.58    │</span></span>
+<span id="cb15-468"><a href="#cb15-468" aria-hidden="true" tabindex="-1"></a><span class="in">└─────────────────────────────────────────────────┘</span></span>
+<span id="cb15-469"><a href="#cb15-469" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-470"><a href="#cb15-470" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-471"><a href="#cb15-471" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-472"><a href="#cb15-472" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>R-side calculation (leverage metafor/meta packages?)</span>
+<span id="cb15-473"><a href="#cb15-473" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Store in spec, render in footer</span>
+<span id="cb15-474"><a href="#cb15-474" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Optional: user provides pre-calculated values</span>
+<span id="cb15-475"><a href="#cb15-475" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Careful about assumptions (fixed vs random effects)</span>
+<span id="cb15-476"><a href="#cb15-476" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-477"><a href="#cb15-477" aria-hidden="true" tabindex="-1"></a>**Cost**: MEDIUM</span>
+<span id="cb15-478"><a href="#cb15-478" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Statistics are well-defined</span>
+<span id="cb15-479"><a href="#cb15-479" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Need to handle missing data gracefully</span>
+<span id="cb15-480"><a href="#cb15-480" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Dependency decisions (metafor?)</span>
+<span id="cb15-481"><a href="#cb15-481" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-482"><a href="#cb15-482" aria-hidden="true" tabindex="-1"></a>**Benefit**: HIGH</span>
+<span id="cb15-483"><a href="#cb15-483" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Very common need in meta-analysis</span>
+<span id="cb15-484"><a href="#cb15-484" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Reduces manual calculation</span>
+<span id="cb15-485"><a href="#cb15-485" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Publication-ready output</span>
+<span id="cb15-486"><a href="#cb15-486" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-487"><a href="#cb15-487" aria-hidden="true" tabindex="-1"></a>**Priority**: MEDIUM-HIGH - High value for meta-analysis users</span>
+<span id="cb15-488"><a href="#cb15-488" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-489"><a href="#cb15-489" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-490"><a href="#cb15-490" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-491"><a href="#cb15-491" aria-hidden="true" tabindex="-1"></a><span class="fu">### 13. Print/Publication Mode</span></span>
+<span id="cb15-492"><a href="#cb15-492" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-493"><a href="#cb15-493" aria-hidden="true" tabindex="-1"></a>**Concept**: Optimized rendering for print output with no interactive elements.</span>
+<span id="cb15-494"><a href="#cb15-494" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-495"><a href="#cb15-495" aria-hidden="true" tabindex="-1"></a>**Features**:</span>
+<span id="cb15-496"><a href="#cb15-496" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>No hover states or tooltips</span>
+<span id="cb15-497"><a href="#cb15-497" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Higher default DPI</span>
+<span id="cb15-498"><a href="#cb15-498" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Print-optimized colors (avoid pure black)</span>
+<span id="cb15-499"><a href="#cb15-499" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Page break hints for long tables</span>
+<span id="cb15-500"><a href="#cb15-500" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Optional: grayscale mode</span>
+<span id="cb15-501"><a href="#cb15-501" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-502"><a href="#cb15-502" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-503"><a href="#cb15-503" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`publication_mode = TRUE`</span> parameter</span>
+<span id="cb15-504"><a href="#cb15-504" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>CSS <span class="in">`@media print`</span> rules</span>
+<span id="cb15-505"><a href="#cb15-505" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Theme modifier: <span class="in">`set_publication_mode()`</span></span>
+<span id="cb15-506"><a href="#cb15-506" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Affects export defaults</span>
+<span id="cb15-507"><a href="#cb15-507" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-508"><a href="#cb15-508" aria-hidden="true" tabindex="-1"></a>**Cost**: LOW</span>
+<span id="cb15-509"><a href="#cb15-509" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Mostly CSS/theme adjustments</span>
+<span id="cb15-510"><a href="#cb15-510" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Some conditional rendering</span>
+<span id="cb15-511"><a href="#cb15-511" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-512"><a href="#cb15-512" aria-hidden="true" tabindex="-1"></a>**Benefit**: MEDIUM</span>
+<span id="cb15-513"><a href="#cb15-513" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Better print output</span>
+<span id="cb15-514"><a href="#cb15-514" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Common request for academic use</span>
+<span id="cb15-515"><a href="#cb15-515" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-516"><a href="#cb15-516" aria-hidden="true" tabindex="-1"></a>**Priority**: MEDIUM - Quick win</span>
+<span id="cb15-517"><a href="#cb15-517" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-518"><a href="#cb15-518" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-519"><a href="#cb15-519" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-520"><a href="#cb15-520" aria-hidden="true" tabindex="-1"></a><span class="fu">### 14. In-Place Data Editing</span></span>
+<span id="cb15-521"><a href="#cb15-521" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-522"><a href="#cb15-522" aria-hidden="true" tabindex="-1"></a>**Concept**: Edit cell values directly in the rendered table.</span>
+<span id="cb15-523"><a href="#cb15-523" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-524"><a href="#cb15-524" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-525"><a href="#cb15-525" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-526"><a href="#cb15-526" aria-hidden="true" tabindex="-1"></a><span class="in">┌─────────────────────────────────────────┐</span></span>
+<span id="cb15-527"><a href="#cb15-527" aria-hidden="true" tabindex="-1"></a><span class="in">│ Study          │ OR        │ P-value   │</span></span>
+<span id="cb15-528"><a href="#cb15-528" aria-hidden="true" tabindex="-1"></a><span class="in">├─────────────────────────────────────────┤</span></span>
+<span id="cb15-529"><a href="#cb15-529" aria-hidden="true" tabindex="-1"></a><span class="in">│ Smith 2020     │ [1.25___] │ 0.032     │  ← click to edit</span></span>
+<span id="cb15-530"><a href="#cb15-530" aria-hidden="true" tabindex="-1"></a><span class="in">│                │ ✓ ✗       │           │</span></span>
+<span id="cb15-531"><a href="#cb15-531" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-532"><a href="#cb15-532" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-533"><a href="#cb15-533" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-534"><a href="#cb15-534" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Double-click or edit button to enter edit mode</span>
+<span id="cb15-535"><a href="#cb15-535" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Validate input type (numeric, text)</span>
+<span id="cb15-536"><a href="#cb15-536" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Sync back to R (Shiny) or track changes locally</span>
+<span id="cb15-537"><a href="#cb15-537" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Undo/redo support</span>
+<span id="cb15-538"><a href="#cb15-538" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Export changes as data frame</span>
+<span id="cb15-539"><a href="#cb15-539" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-540"><a href="#cb15-540" aria-hidden="true" tabindex="-1"></a>**Cost**: HIGH</span>
+<span id="cb15-541"><a href="#cb15-541" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Bidirectional data sync</span>
+<span id="cb15-542"><a href="#cb15-542" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Input validation</span>
+<span id="cb15-543"><a href="#cb15-543" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Undo/redo state management</span>
+<span id="cb15-544"><a href="#cb15-544" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Conflict with formula-based columns</span>
+<span id="cb15-545"><a href="#cb15-545" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-546"><a href="#cb15-546" aria-hidden="true" tabindex="-1"></a>**Benefit**: LOW-MEDIUM</span>
+<span id="cb15-547"><a href="#cb15-547" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Quick corrections useful</span>
+<span id="cb15-548"><a href="#cb15-548" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>But: most users prefer code-based changes</span>
+<span id="cb15-549"><a href="#cb15-549" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Risk of losing reproducibility</span>
+<span id="cb15-550"><a href="#cb15-550" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-551"><a href="#cb15-551" aria-hidden="true" tabindex="-1"></a>**Priority**: LOW - Conflicts with reproducibility goals</span>
+<span id="cb15-552"><a href="#cb15-552" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-553"><a href="#cb15-553" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-554"><a href="#cb15-554" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-555"><a href="#cb15-555" aria-hidden="true" tabindex="-1"></a><span class="fu">### 15. Import from Standard Formats</span></span>
+<span id="cb15-556"><a href="#cb15-556" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-557"><a href="#cb15-557" aria-hidden="true" tabindex="-1"></a>**Concept**: Read data from common meta-analysis file formats.</span>
+<span id="cb15-558"><a href="#cb15-558" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-559"><a href="#cb15-559" aria-hidden="true" tabindex="-1"></a>**Formats**:</span>
+<span id="cb15-560"><a href="#cb15-560" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>RevMan 5 (.rm5) - Cochrane Review Manager</span>
+<span id="cb15-561"><a href="#cb15-561" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>CMA files - Comprehensive Meta-Analysis</span>
+<span id="cb15-562"><a href="#cb15-562" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PRISMA checklist integration</span>
+<span id="cb15-563"><a href="#cb15-563" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Excel templates with standard structure</span>
+<span id="cb15-564"><a href="#cb15-564" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-565"><a href="#cb15-565" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-566"><a href="#cb15-566" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>R functions: <span class="in">`read_revman()`</span>, <span class="in">`read_cma()`</span>, etc.</span>
+<span id="cb15-567"><a href="#cb15-567" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Map to WebSpec structure</span>
+<span id="cb15-568"><a href="#cb15-568" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Handle format variations gracefully</span>
+<span id="cb15-569"><a href="#cb15-569" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Vignette with import workflows</span>
+<span id="cb15-570"><a href="#cb15-570" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-571"><a href="#cb15-571" aria-hidden="true" tabindex="-1"></a>**Cost**: MEDIUM</span>
+<span id="cb15-572"><a href="#cb15-572" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Format reverse-engineering</span>
+<span id="cb15-573"><a href="#cb15-573" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Edge case handling</span>
+<span id="cb15-574"><a href="#cb15-574" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Maintenance as formats evolve</span>
+<span id="cb15-575"><a href="#cb15-575" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-576"><a href="#cb15-576" aria-hidden="true" tabindex="-1"></a>**Benefit**: MEDIUM</span>
+<span id="cb15-577"><a href="#cb15-577" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Useful for Cochrane/systematic review community</span>
+<span id="cb15-578"><a href="#cb15-578" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>But: most users have data in R already</span>
+<span id="cb15-579"><a href="#cb15-579" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-580"><a href="#cb15-580" aria-hidden="true" tabindex="-1"></a>**Priority**: LOW-MEDIUM - Niche but valuable for target audience</span>
+<span id="cb15-581"><a href="#cb15-581" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-582"><a href="#cb15-582" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-583"><a href="#cb15-583" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-584"><a href="#cb15-584" aria-hidden="true" tabindex="-1"></a><span class="fu">### 16. Funnel Plot Integration</span></span>
+<span id="cb15-585"><a href="#cb15-585" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-586"><a href="#cb15-586" aria-hidden="true" tabindex="-1"></a>**Concept**: Add funnel plot as companion visualization for publication bias assessment.</span>
+<span id="cb15-587"><a href="#cb15-587" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-588"><a href="#cb15-588" aria-hidden="true" tabindex="-1"></a>**Design sketch**:</span>
+<span id="cb15-589"><a href="#cb15-589" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb15-590"><a href="#cb15-590" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ...) <span class="sc">|&gt;</span></span>
+<span id="cb15-591"><a href="#cb15-591" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_funnel_plot</span>(<span class="at">position =</span> <span class="st">"right"</span>)  <span class="co"># or "below", "panel"</span></span>
+<span id="cb15-592"><a href="#cb15-592" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb15-593"><a href="#cb15-593" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-594"><a href="#cb15-594" aria-hidden="true" tabindex="-1"></a>**Technical approach**:</span>
+<span id="cb15-595"><a href="#cb15-595" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>New plot type: funnel (effect size vs SE/precision)</span>
+<span id="cb15-596"><a href="#cb15-596" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Linked to main forest plot (shared selection)</span>
+<span id="cb15-597"><a href="#cb15-597" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Egger's line, trim-and-fill visualization</span>
+<span id="cb15-598"><a href="#cb15-598" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Could be separate widget or integrated panel</span>
+<span id="cb15-599"><a href="#cb15-599" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-600"><a href="#cb15-600" aria-hidden="true" tabindex="-1"></a>**Cost**: MEDIUM</span>
+<span id="cb15-601"><a href="#cb15-601" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>New SVG rendering</span>
+<span id="cb15-602"><a href="#cb15-602" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Layout integration decisions</span>
+<span id="cb15-603"><a href="#cb15-603" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Statistical calculations</span>
+<span id="cb15-604"><a href="#cb15-604" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-605"><a href="#cb15-605" aria-hidden="true" tabindex="-1"></a>**Benefit**: MEDIUM-HIGH</span>
+<span id="cb15-606"><a href="#cb15-606" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Standard companion to forest plots</span>
+<span id="cb15-607"><a href="#cb15-607" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Publication requirement for many journals</span>
+<span id="cb15-608"><a href="#cb15-608" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-609"><a href="#cb15-609" aria-hidden="true" tabindex="-1"></a>**Priority**: MEDIUM - Natural extension of package scope</span>
+<span id="cb15-610"><a href="#cb15-610" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-611"><a href="#cb15-611" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-612"><a href="#cb15-612" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-613"><a href="#cb15-613" aria-hidden="true" tabindex="-1"></a><span class="fu">## Priority Matrix</span></span>
+<span id="cb15-614"><a href="#cb15-614" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-615"><a href="#cb15-615" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Direction <span class="pp">|</span> Cost <span class="pp">|</span> Benefit <span class="pp">|</span> Priority <span class="pp">|</span> Rationale <span class="pp">|</span></span>
+<span id="cb15-616"><a href="#cb15-616" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|------|---------|----------|-----------|</span></span>
+<span id="cb15-617"><a href="#cb15-617" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 7. Enhanced filtering/sorting <span class="pp">|</span> M <span class="pp">|</span> H <span class="pp">|</span> **HIGH** <span class="pp">|</span> Core feature, broad impact <span class="pp">|</span></span>
+<span id="cb15-618"><a href="#cb15-618" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 10. Accessibility <span class="pp">|</span> M <span class="pp">|</span> H <span class="pp">|</span> **HIGH** <span class="pp">|</span> Professional requirement <span class="pp">|</span></span>
+<span id="cb15-619"><a href="#cb15-619" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 2. Improved resizing <span class="pp">|</span> M <span class="pp">|</span> H <span class="pp">|</span> **M-HIGH** <span class="pp">|</span> UX polish, constant use <span class="pp">|</span></span>
+<span id="cb15-620"><a href="#cb15-620" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 8. Linked brushing <span class="pp">|</span> M <span class="pp">|</span> H <span class="pp">|</span> **M-HIGH** <span class="pp">|</span> Split forest synergy <span class="pp">|</span></span>
+<span id="cb15-621"><a href="#cb15-621" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 12. Statistical annotations <span class="pp">|</span> M <span class="pp">|</span> H <span class="pp">|</span> **M-HIGH** <span class="pp">|</span> Meta-analysis core need <span class="pp">|</span></span>
+<span id="cb15-622"><a href="#cb15-622" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 5. Embedded subtables <span class="pp">|</span> H <span class="pp">|</span> H <span class="pp">|</span> **MEDIUM** <span class="pp">|</span> Unique, but complex <span class="pp">|</span></span>
+<span id="cb15-623"><a href="#cb15-623" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 3. Export (PPTX focus) <span class="pp">|</span> M <span class="pp">|</span> M <span class="pp">|</span> **MEDIUM** <span class="pp">|</span> Specific high-value format <span class="pp">|</span></span>
+<span id="cb15-624"><a href="#cb15-624" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 4. New plot types <span class="pp">|</span> H <span class="pp">|</span> M-H <span class="pp">|</span> **MEDIUM** <span class="pp">|</span> Differentiator, high cost <span class="pp">|</span></span>
+<span id="cb15-625"><a href="#cb15-625" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 16. Funnel plot <span class="pp">|</span> M <span class="pp">|</span> M-H <span class="pp">|</span> **MEDIUM** <span class="pp">|</span> Natural extension <span class="pp">|</span></span>
+<span id="cb15-626"><a href="#cb15-626" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 13. Publication mode <span class="pp">|</span> L <span class="pp">|</span> M <span class="pp">|</span> **MEDIUM** <span class="pp">|</span> Quick win <span class="pp">|</span></span>
+<span id="cb15-627"><a href="#cb15-627" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 9. Animations <span class="pp">|</span> L-M <span class="pp">|</span> M <span class="pp">|</span> **MEDIUM** <span class="pp">|</span> Polish <span class="pp">|</span></span>
+<span id="cb15-628"><a href="#cb15-628" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 6. Column/row reorder <span class="pp">|</span> M <span class="pp">|</span> M <span class="pp">|</span> **LOW-M** <span class="pp">|</span> Column useful, row niche <span class="pp">|</span></span>
+<span id="cb15-629"><a href="#cb15-629" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 15. Import formats <span class="pp">|</span> M <span class="pp">|</span> M <span class="pp">|</span> **LOW-M** <span class="pp">|</span> Niche audience <span class="pp">|</span></span>
+<span id="cb15-630"><a href="#cb15-630" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 1. Interactive styling <span class="pp">|</span> H <span class="pp">|</span> M <span class="pp">|</span> **LOW** <span class="pp">|</span> Nice-to-have <span class="pp">|</span></span>
+<span id="cb15-631"><a href="#cb15-631" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 11. Plugin system <span class="pp">|</span> H <span class="pp">|</span> M <span class="pp">|</span> **LOW** <span class="pp">|</span> Over-engineering risk <span class="pp">|</span></span>
+<span id="cb15-632"><a href="#cb15-632" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 14. In-place editing <span class="pp">|</span> H <span class="pp">|</span> L-M <span class="pp">|</span> **LOW** <span class="pp">|</span> Conflicts w/ reproducibility <span class="pp">|</span></span>
+<span id="cb15-633"><a href="#cb15-633" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-634"><a href="#cb15-634" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-635"><a href="#cb15-635" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-636"><a href="#cb15-636" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recommended Roadmap</span></span>
+<span id="cb15-637"><a href="#cb15-637" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-638"><a href="#cb15-638" aria-hidden="true" tabindex="-1"></a><span class="fu">### Phase 1: Polish &amp; Professional (Quick Wins)</span></span>
+<span id="cb15-639"><a href="#cb15-639" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Enhanced filtering/sorting UI</span>
+<span id="cb15-640"><a href="#cb15-640" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Accessibility audit &amp; fixes</span>
+<span id="cb15-641"><a href="#cb15-641" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Publication mode</span>
+<span id="cb15-642"><a href="#cb15-642" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Animation/transitions</span>
+<span id="cb15-643"><a href="#cb15-643" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-644"><a href="#cb15-644" aria-hidden="true" tabindex="-1"></a><span class="fu">### Phase 2: Power Features</span></span>
+<span id="cb15-645"><a href="#cb15-645" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Improved resizing UX</span>
+<span id="cb15-646"><a href="#cb15-646" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Linked brushing for split forests</span>
+<span id="cb15-647"><a href="#cb15-647" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Statistical annotations (I², etc.)</span>
+<span id="cb15-648"><a href="#cb15-648" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>PPTX export</span>
+<span id="cb15-649"><a href="#cb15-649" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-650"><a href="#cb15-650" aria-hidden="true" tabindex="-1"></a><span class="fu">### Phase 3: Advanced Visualization</span></span>
+<span id="cb15-651"><a href="#cb15-651" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Embedded subtables</span>
+<span id="cb15-652"><a href="#cb15-652" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>New plot types (boxplot, violin)</span>
+<span id="cb15-653"><a href="#cb15-653" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Funnel plot integration</span>
+<span id="cb15-654"><a href="#cb15-654" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-655"><a href="#cb15-655" aria-hidden="true" tabindex="-1"></a><span class="fu">### Phase 4: Ecosystem</span></span>
+<span id="cb15-656"><a href="#cb15-656" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Import from RevMan/CMA</span>
+<span id="cb15-657"><a href="#cb15-657" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Custom renderer plugins (if demand exists)</span>
+<span id="cb15-658"><a href="#cb15-658" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-659"><a href="#cb15-659" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb15-660"><a href="#cb15-660" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-661"><a href="#cb15-661" aria-hidden="true" tabindex="-1"></a><span class="fu">## Notes</span></span>
+<span id="cb15-662"><a href="#cb15-662" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-663"><a href="#cb15-663" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Priorities should be validated against user feedback</span>
+<span id="cb15-664"><a href="#cb15-664" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Consider GitHub issues/discussions for demand signals</span>
+<span id="cb15-665"><a href="#cb15-665" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Balance new features vs stability/documentation</span>
+<span id="cb15-666"><a href="#cb15-666" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Some features may warrant separate packages (e.g., <span class="in">`webforest.meta`</span> for statistical annotations)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
