@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Troubleshooting – webforest</title>
+<title>Troubleshooting – tabviz</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -116,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
-    <span class="navbar-title">webforest</span>
+    <span class="navbar-title">tabviz</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -131,18 +131,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-guide">    
         <li>
+    <a class="dropdown-item" href="../guide/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
     <a class="dropdown-item" href="../guide/quick-start.html">
  <span class="dropdown-text">1. Quick Start</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../guide/forest-plots.html">
- <span class="dropdown-text">2. Forest Plots</span></a>
+    <a class="dropdown-item" href="../guide/package-data.html">
+ <span class="dropdown-text">2. Package Data</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../guide/columns.html">
  <span class="dropdown-text">3. Columns</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/row-styling.html">
  <span class="dropdown-text">4. Row Styling</span></a>
@@ -156,26 +161,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">6. Row Groups</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../guide/titles.html">
+ <span class="dropdown-text">7. Titles and Labels</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/index.html">
+ <span class="dropdown-text">8. Visualizations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/forest-plots.html">
+ <span class="dropdown-text">9. Forest Plots</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../guide/split-plots.html">
- <span class="dropdown-text">7. Split Plots</span></a>
+ <span class="dropdown-text">10. Split Plots</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/themes.html">
- <span class="dropdown-text">8. Themes</span></a>
+ <span class="dropdown-text">11. Themes</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="../guide/fluent-api.html">
- <span class="dropdown-text">9. The Fluent API</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/shiny.html">
- <span class="dropdown-text">10. Shiny Integration</span></a>
+ <span class="dropdown-text">12. Shiny Integration</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../guide/package-data.html">
- <span class="dropdown-text">11. Package Data</span></a>
+    <a class="dropdown-item" href="../guide/export.html">
+ <span class="dropdown-text">13. Export</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
   </li>  
     </ul>
   </li>
@@ -189,12 +221,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
         <li>
-    <a class="dropdown-item" href="../gallery-basic.html">
- <span class="dropdown-text">Basic Examples</span></a>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../gallery-advanced.html">
- <span class="dropdown-text">Advanced Examples</span></a>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
   </li>  
     </ul>
   </li>
@@ -209,48 +250,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../reference/forest_plot.html">
- <span class="dropdown-text">forest_plot()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/styling.html">
- <span class="dropdown-text">Styling Functions</span></a>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="../reference/split_forest.html">
- <span class="dropdown-text">split_forest()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/webtable.html">
- <span class="dropdown-text">webtable()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/save_plot.html">
- <span class="dropdown-text">save_plot()</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="../reference/themes.html">
- <span class="dropdown-text">Themes</span></a>
-  </li>  
         <li>
     <a class="dropdown-item" href="../reference/columns.html">
  <span class="dropdown-text">Columns</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../reference/annotations.html">
  <span class="dropdown-text">Annotations</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../reference/shiny.html">
  <span class="dropdown-text">Shiny</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../reference/web_spec.html">
- <span class="dropdown-text">Advanced: Specifications</span></a>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../reference/troubleshooting.html">
  <span class="dropdown-text">Troubleshooting</span></a>
@@ -258,24 +287,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-technical" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Technical</span>
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
     </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-technical">    
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
         <li>
-    <a class="dropdown-item" href="../technical/s7-classes.html">
- <span class="dropdown-text">S7 Class Architecture</span></a>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../technical/export-system.html">
- <span class="dropdown-text">Export System</span></a>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
   </li>  
     </ul>
   </li>
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/kaskarn/webforest"> <i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -361,7 +390,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This guide covers common issues and their solutions when using webforest.</p>
+<p>This guide covers common issues and their solutions when using tabviz.</p>
 <section id="quick-diagnostic-checklist" class="level2">
 <h2 class="anchored" data-anchor-id="quick-diagnostic-checklist">Quick Diagnostic Checklist</h2>
 <p>When something isn’t working, check:</p>
@@ -590,10 +619,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reinstall the package</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"kaskarn/webforest"</span>, <span class="at">force =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"kaskarn/tabviz"</span>, <span class="at">force =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify installation</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">"js/svg-generator.js"</span>, <span class="at">package =</span> <span class="st">"webforest"</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">"js/svg-generator.js"</span>, <span class="at">package =</span> <span class="st">"tabviz"</span>)</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Should return a path, not ""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
@@ -728,50 +757,95 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create spec without rendering</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create spec without rendering (table-only spec)</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),</span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.2</span>),</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.9</span>),</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">1.1</span>, <span class="fl">1.6</span>)</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>, <span class="at">label =</span> <span class="st">"study"</span></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Print summary</span></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(spec)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">200</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="st">"HR"</span>),</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_n</span>(<span class="st">"n"</span>)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Print summary</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(spec)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt;webforest::WebSpec&gt;
- @ data              :'data.frame': 2 obs. of  4 variables:
+<pre><code>&lt;tabviz::WebSpec&gt;
+ @ data              :'data.frame': 2 obs. of  3 variables:
  .. $ study: chr  "A" "B"
  .. $ hr   : num  0.8 1.2
- .. $ lower: num  0.6 0.9
- .. $ upper: num  1.1 1.6
- @ point_col         : chr "hr"
- @ lower_col         : chr "lower"
- @ upper_col         : chr "upper"
+ .. $ n    : num  100 200
  @ label_col         : chr "study"
  @ label_header      : chr "Study"
  @ group_col         : chr NA
  @ group_cols        : chr(0) 
- @ columns           : list()
+ @ columns           :List of 2
+ .. $ : &lt;tabviz::ColumnSpec&gt;
+ ..  ..@ id            : chr "hr"
+ ..  ..@ header        : chr "HR"
+ ..  ..@ field         : chr "hr"
+ ..  ..@ type          : chr "numeric"
+ ..  ..@ width         : chr "auto"
+ ..  ..@ align         : chr "left"
+ ..  ..@ header_align  : chr "left"
+ ..  ..@ wrap          : logi FALSE
+ ..  ..@ sortable      : logi TRUE
+ ..  ..@ options       :List of 1
+ .. .. .. $ numeric:List of 4
+ .. .. ..  ..$ decimals    : num 2
+ .. .. ..  ..$ digits      : NULL
+ .. .. ..  ..$ thousandsSep: logi FALSE
+ .. .. ..  ..$ abbreviate  : logi FALSE
+ ..  ..@ style_bold    : chr NA
+ ..  ..@ style_italic  : chr NA
+ ..  ..@ style_color   : chr NA
+ ..  ..@ style_bg      : chr NA
+ ..  ..@ style_badge   : chr NA
+ ..  ..@ style_icon    : chr NA
+ ..  ..@ style_emphasis: chr NA
+ ..  ..@ style_muted   : chr NA
+ ..  ..@ style_accent  : chr NA
+ .. $ : &lt;tabviz::ColumnSpec&gt;
+ ..  ..@ id            : chr "n"
+ ..  ..@ header        : chr "N"
+ ..  ..@ field         : chr "n"
+ ..  ..@ type          : chr "numeric"
+ ..  ..@ width         : chr "auto"
+ ..  ..@ align         : chr "left"
+ ..  ..@ header_align  : chr "left"
+ ..  ..@ wrap          : logi FALSE
+ ..  ..@ sortable      : logi TRUE
+ ..  ..@ options       :List of 1
+ .. .. .. $ numeric:List of 4
+ .. .. ..  ..$ decimals    : num 0
+ .. .. ..  ..$ digits      : NULL
+ .. .. ..  ..$ thousandsSep: chr ","
+ .. .. ..  ..$ abbreviate  : logi FALSE
+ ..  ..@ style_bold    : chr NA
+ ..  ..@ style_italic  : chr NA
+ ..  ..@ style_color   : chr NA
+ ..  ..@ style_bg      : chr NA
+ ..  ..@ style_badge   : chr NA
+ ..  ..@ style_icon    : chr NA
+ ..  ..@ style_emphasis: chr NA
+ ..  ..@ style_muted   : chr NA
+ ..  ..@ style_accent  : chr NA
  @ groups            : list()
  @ summaries         : list()
- @ overall_summary   : &lt;webforest::GroupSummary&gt;
+ @ overall_summary   : &lt;tabviz::GroupSummary&gt;
  .. @ group_id: chr(0) 
  .. @ point   : int(0) 
  .. @ lower   : int(0) 
  .. @ upper   : int(0) 
  .. @ metadata: list()
- @ scale             : chr "linear"
- @ null_value        : num 0
- @ axis_label        : chr "Estimate"
- @ effects           : list()
- @ theme             : &lt;webforest::WebTheme&gt;
+ @ theme             : &lt;tabviz::WebTheme&gt;
  .. @ name         : chr "default"
- .. @ colors       : &lt;webforest::ColorPalette&gt;
+ .. @ colors       : &lt;tabviz::ColorPalette&gt;
  .. .. @ background       : chr "#ffffff"
  .. .. @ foreground       : chr "#333333"
  .. .. @ primary          : chr "#0891b2"
@@ -788,7 +862,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  .. .. @ interval_neutral : chr "#64748b"
  .. .. @ summary_fill     : chr "#0891b2"
  .. .. @ summary_border   : chr "#0e7490"
- .. @ typography   : &lt;webforest::Typography&gt;
+ .. @ typography   : &lt;tabviz::Typography&gt;
  .. .. @ font_family       : chr "system-ui, -apple-system, sans-serif"
  .. .. @ font_size_sm      : chr "0.75rem"
  .. .. @ font_size_base    : chr "0.875rem"
@@ -798,7 +872,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  .. .. @ font_weight_bold  : num 600
  .. .. @ line_height       : num 1.5
  .. .. @ header_font_scale : num 1.05
- .. @ spacing      : &lt;webforest::Spacing&gt;
+ .. @ spacing      : &lt;tabviz::Spacing&gt;
  .. .. @ row_height       : num 24
  .. .. @ header_height    : num 32
  .. .. @ section_gap      : num 16
@@ -808,14 +882,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  .. .. @ group_padding    : num 8
  .. .. @ cell_padding_x   : num 10
  .. .. @ cell_padding_y   : num 4
- .. @ shapes       : &lt;webforest::Shapes&gt;
+ .. @ shapes       : &lt;tabviz::Shapes&gt;
  .. .. @ point_size    : num 6
  .. .. @ summary_height: num 10
  .. .. @ line_width    : num 1.5
  .. .. @ border_radius : num 2
  .. .. @ marker_colors : NULL
  .. .. @ marker_shapes : chr [1:4] "square" "circle" "diamond" "triangle"
- .. @ axis         : &lt;webforest::AxisConfig&gt;
+ .. @ axis         : &lt;tabviz::AxisConfig&gt;
  .. .. @ range_min     : num NA
  .. .. @ range_max     : num NA
  .. .. @ tick_count    : num NA
@@ -827,7 +901,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  .. .. @ symmetric     : NULL
  .. .. @ null_tick     : logi TRUE
  .. .. @ marker_margin : logi TRUE
- .. @ layout       : &lt;webforest::LayoutConfig&gt;
+ .. @ layout       : &lt;tabviz::LayoutConfig&gt;
  .. .. @ plot_position          : chr "right"
  .. .. @ table_width            : chr "auto"
  .. .. @ plot_width             : chr "auto"
@@ -836,7 +910,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  .. .. @ container_border       : logi FALSE
  .. .. @ container_border_radius: num 8
  .. .. @ banding                : logi TRUE
- .. @ group_headers: &lt;webforest::GroupHeaderStyles&gt;
+ .. @ group_headers: &lt;tabviz::GroupHeaderStyles&gt;
  .. .. @ level1_font_size    : chr "0.9375rem"
  .. .. @ level1_font_weight  : num 600
  .. .. @ level1_italic       : logi FALSE
@@ -853,7 +927,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  .. .. @ level3_background   : NULL
  .. .. @ level3_border_bottom: logi FALSE
  .. .. @ indent_per_level    : num 16
- @ interaction       : &lt;webforest::InteractionSpec&gt;
+ @ interaction       : &lt;tabviz::InteractionSpec&gt;
  .. @ show_filters   : logi FALSE
  .. @ show_legend    : logi TRUE
  .. @ enable_sort    : logi TRUE
@@ -889,16 +963,68 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>data</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>  study  hr lower upper
-1     A 0.8   0.6   1.1
-2     B 1.2   0.9   1.6</code></pre>
+<pre><code>  study  hr   n
+1     A 0.8 100
+2     B 1.2 200</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>columns</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>list()</code></pre>
+<pre><code>[[1]]
+&lt;tabviz::ColumnSpec&gt;
+ @ id            : chr "hr"
+ @ header        : chr "HR"
+ @ field         : chr "hr"
+ @ type          : chr "numeric"
+ @ width         : chr "auto"
+ @ align         : chr "left"
+ @ header_align  : chr "left"
+ @ wrap          : logi FALSE
+ @ sortable      : logi TRUE
+ @ options       :List of 1
+ .. $ numeric:List of 4
+ ..  ..$ decimals    : num 2
+ ..  ..$ digits      : NULL
+ ..  ..$ thousandsSep: logi FALSE
+ ..  ..$ abbreviate  : logi FALSE
+ @ style_bold    : chr NA
+ @ style_italic  : chr NA
+ @ style_color   : chr NA
+ @ style_bg      : chr NA
+ @ style_badge   : chr NA
+ @ style_icon    : chr NA
+ @ style_emphasis: chr NA
+ @ style_muted   : chr NA
+ @ style_accent  : chr NA
+
+[[2]]
+&lt;tabviz::ColumnSpec&gt;
+ @ id            : chr "n"
+ @ header        : chr "N"
+ @ field         : chr "n"
+ @ type          : chr "numeric"
+ @ width         : chr "auto"
+ @ align         : chr "left"
+ @ header_align  : chr "left"
+ @ wrap          : logi FALSE
+ @ sortable      : logi TRUE
+ @ options       :List of 1
+ .. $ numeric:List of 4
+ ..  ..$ decimals    : num 0
+ ..  ..$ digits      : NULL
+ ..  ..$ thousandsSep: chr ","
+ ..  ..$ abbreviate  : logi FALSE
+ @ style_bold    : chr NA
+ @ style_italic  : chr NA
+ @ style_color   : chr NA
+ @ style_bg      : chr NA
+ @ style_badge   : chr NA
+ @ style_icon    : chr NA
+ @ style_emphasis: chr NA
+ @ style_muted   : chr NA
+ @ style_accent  : chr NA</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -963,7 +1089,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="getting-help">Getting Help</h2>
 <p>If you’ve tried the above and still have issues:</p>
 <ol type="1">
-<li>Check <a href="https://github.com/kaskarn/webforest/issues">GitHub Issues</a> for similar problems</li>
+<li>Check <a href="https://github.com/kaskarn/tabviz/issues">GitHub Issues</a> for similar problems</li>
 <li>Create a minimal reproducible example</li>
 <li>Include <code>sessionInfo()</code> output</li>
 <li>Open a new issue with your example and session info</li>
@@ -1432,11 +1558,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
 <span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(webforest)</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tabviz)</span>
 <span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>This guide covers common issues and their solutions when using webforest.</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>This guide covers common issues and their solutions when using tabviz.</span>
 <span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a><span class="fu">## Quick Diagnostic Checklist</span></span>
 <span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a></span>
@@ -1661,10 +1787,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb28-257"><a href="#cb28-257" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
 <span id="cb28-258"><a href="#cb28-258" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
 <span id="cb28-259"><a href="#cb28-259" aria-hidden="true" tabindex="-1"></a><span class="co"># Reinstall the package</span></span>
-<span id="cb28-260"><a href="#cb28-260" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"kaskarn/webforest"</span>, <span class="at">force =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb28-260"><a href="#cb28-260" aria-hidden="true" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"kaskarn/tabviz"</span>, <span class="at">force =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb28-261"><a href="#cb28-261" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-262"><a href="#cb28-262" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify installation</span></span>
-<span id="cb28-263"><a href="#cb28-263" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">"js/svg-generator.js"</span>, <span class="at">package =</span> <span class="st">"webforest"</span>)</span>
+<span id="cb28-263"><a href="#cb28-263" aria-hidden="true" tabindex="-1"></a><span class="fu">system.file</span>(<span class="st">"js/svg-generator.js"</span>, <span class="at">package =</span> <span class="st">"tabviz"</span>)</span>
 <span id="cb28-264"><a href="#cb28-264" aria-hidden="true" tabindex="-1"></a><span class="co"># Should return a path, not ""</span></span>
 <span id="cb28-265"><a href="#cb28-265" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb28-266"><a href="#cb28-266" aria-hidden="true" tabindex="-1"></a></span>
@@ -1792,79 +1918,82 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb28-400"><a href="#cb28-400" aria-hidden="true" tabindex="-1"></a><span class="fu">### Inspecting WebSpec</span></span>
 <span id="cb28-401"><a href="#cb28-401" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb28-404"><a href="#cb28-404" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb28-405"><a href="#cb28-405" aria-hidden="true" tabindex="-1"></a><span class="co"># Create spec without rendering</span></span>
+<span id="cb28-405"><a href="#cb28-405" aria-hidden="true" tabindex="-1"></a><span class="co"># Create spec without rendering (table-only spec)</span></span>
 <span id="cb28-406"><a href="#cb28-406" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(</span>
 <span id="cb28-407"><a href="#cb28-407" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
 <span id="cb28-408"><a href="#cb28-408" aria-hidden="true" tabindex="-1"></a>    <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>),</span>
 <span id="cb28-409"><a href="#cb28-409" aria-hidden="true" tabindex="-1"></a>    <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.2</span>),</span>
-<span id="cb28-410"><a href="#cb28-410" aria-hidden="true" tabindex="-1"></a>    <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.9</span>),</span>
-<span id="cb28-411"><a href="#cb28-411" aria-hidden="true" tabindex="-1"></a>    <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">1.1</span>, <span class="fl">1.6</span>)</span>
-<span id="cb28-412"><a href="#cb28-412" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb28-413"><a href="#cb28-413" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>, <span class="at">label =</span> <span class="st">"study"</span></span>
-<span id="cb28-414"><a href="#cb28-414" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb28-415"><a href="#cb28-415" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-416"><a href="#cb28-416" aria-hidden="true" tabindex="-1"></a><span class="co"># Print summary</span></span>
-<span id="cb28-417"><a href="#cb28-417" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(spec)</span>
+<span id="cb28-410"><a href="#cb28-410" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">200</span>)</span>
+<span id="cb28-411"><a href="#cb28-411" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb28-412"><a href="#cb28-412" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb28-413"><a href="#cb28-413" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb28-414"><a href="#cb28-414" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="st">"HR"</span>),</span>
+<span id="cb28-415"><a href="#cb28-415" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_n</span>(<span class="st">"n"</span>)</span>
+<span id="cb28-416"><a href="#cb28-416" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb28-417"><a href="#cb28-417" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb28-418"><a href="#cb28-418" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-419"><a href="#cb28-419" aria-hidden="true" tabindex="-1"></a><span class="co"># Access components</span></span>
-<span id="cb28-420"><a href="#cb28-420" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>data</span>
-<span id="cb28-421"><a href="#cb28-421" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>columns</span>
-<span id="cb28-422"><a href="#cb28-422" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>theme<span class="sc">@</span>name</span>
-<span id="cb28-423"><a href="#cb28-423" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb28-424"><a href="#cb28-424" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-425"><a href="#cb28-425" aria-hidden="true" tabindex="-1"></a><span class="fu">### Check Export Output</span></span>
-<span id="cb28-426"><a href="#cb28-426" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-429"><a href="#cb28-429" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb28-430"><a href="#cb28-430" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb28-431"><a href="#cb28-431" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate SVG and check structure</span></span>
-<span id="cb28-432"><a href="#cb28-432" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(spec, <span class="st">"debug.svg"</span>)</span>
-<span id="cb28-433"><a href="#cb28-433" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-434"><a href="#cb28-434" aria-hidden="true" tabindex="-1"></a><span class="co"># Read and inspect the SVG</span></span>
-<span id="cb28-435"><a href="#cb28-435" aria-hidden="true" tabindex="-1"></a>svg_content <span class="ot">&lt;-</span> <span class="fu">readLines</span>(<span class="st">"debug.svg"</span>)</span>
-<span id="cb28-436"><a href="#cb28-436" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(svg_content, <span class="dv">20</span>)</span>
-<span id="cb28-437"><a href="#cb28-437" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb28-438"><a href="#cb28-438" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-439"><a href="#cb28-439" aria-hidden="true" tabindex="-1"></a><span class="fu">### Browser Developer Tools</span></span>
-<span id="cb28-440"><a href="#cb28-440" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-441"><a href="#cb28-441" aria-hidden="true" tabindex="-1"></a>For debugging interactive widgets:</span>
-<span id="cb28-442"><a href="#cb28-442" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-443"><a href="#cb28-443" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Right-click the widget → "Inspect"</span>
-<span id="cb28-444"><a href="#cb28-444" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Check Console tab for JavaScript errors</span>
-<span id="cb28-445"><a href="#cb28-445" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Check Elements tab for DOM structure</span>
-<span id="cb28-446"><a href="#cb28-446" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Check Network tab for failed resources</span>
-<span id="cb28-447"><a href="#cb28-447" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-448"><a href="#cb28-448" aria-hidden="true" tabindex="-1"></a><span class="fu">### Minimal Reproducible Example</span></span>
-<span id="cb28-449"><a href="#cb28-449" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-450"><a href="#cb28-450" aria-hidden="true" tabindex="-1"></a>When reporting issues, create a minimal example:</span>
-<span id="cb28-451"><a href="#cb28-451" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-454"><a href="#cb28-454" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb28-455"><a href="#cb28-455" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb28-456"><a href="#cb28-456" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal data that reproduces the problem</span></span>
-<span id="cb28-457"><a href="#cb28-457" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb28-458"><a href="#cb28-458" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Test 1"</span>, <span class="st">"Test 2"</span>),</span>
-<span id="cb28-459"><a href="#cb28-459" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.2</span>),</span>
-<span id="cb28-460"><a href="#cb28-460" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.9</span>),</span>
-<span id="cb28-461"><a href="#cb28-461" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">1.1</span>, <span class="fl">1.6</span>)</span>
-<span id="cb28-462"><a href="#cb28-462" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb28-463"><a href="#cb28-463" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-464"><a href="#cb28-464" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal code</span></span>
-<span id="cb28-465"><a href="#cb28-465" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(test_data,</span>
-<span id="cb28-466"><a href="#cb28-466" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
-<span id="cb28-467"><a href="#cb28-467" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span></span>
-<span id="cb28-468"><a href="#cb28-468" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb28-469"><a href="#cb28-469" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-470"><a href="#cb28-470" aria-hidden="true" tabindex="-1"></a><span class="co"># Include session info</span></span>
-<span id="cb28-471"><a href="#cb28-471" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
-<span id="cb28-472"><a href="#cb28-472" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb28-473"><a href="#cb28-473" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-474"><a href="#cb28-474" aria-hidden="true" tabindex="-1"></a><span class="fu">## Getting Help</span></span>
-<span id="cb28-475"><a href="#cb28-475" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-476"><a href="#cb28-476" aria-hidden="true" tabindex="-1"></a>If you've tried the above and still have issues:</span>
-<span id="cb28-477"><a href="#cb28-477" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-478"><a href="#cb28-478" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Check <span class="co">[</span><span class="ot">GitHub Issues</span><span class="co">](https://github.com/kaskarn/webforest/issues)</span> for similar problems</span>
-<span id="cb28-479"><a href="#cb28-479" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Create a minimal reproducible example</span>
-<span id="cb28-480"><a href="#cb28-480" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Include <span class="in">`sessionInfo()`</span> output</span>
-<span id="cb28-481"><a href="#cb28-481" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Open a new issue with your example and session info</span>
+<span id="cb28-419"><a href="#cb28-419" aria-hidden="true" tabindex="-1"></a><span class="co"># Print summary</span></span>
+<span id="cb28-420"><a href="#cb28-420" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(spec)</span>
+<span id="cb28-421"><a href="#cb28-421" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-422"><a href="#cb28-422" aria-hidden="true" tabindex="-1"></a><span class="co"># Access components</span></span>
+<span id="cb28-423"><a href="#cb28-423" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>data</span>
+<span id="cb28-424"><a href="#cb28-424" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>columns</span>
+<span id="cb28-425"><a href="#cb28-425" aria-hidden="true" tabindex="-1"></a>spec<span class="sc">@</span>theme<span class="sc">@</span>name</span>
+<span id="cb28-426"><a href="#cb28-426" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb28-427"><a href="#cb28-427" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-428"><a href="#cb28-428" aria-hidden="true" tabindex="-1"></a><span class="fu">### Check Export Output</span></span>
+<span id="cb28-429"><a href="#cb28-429" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-432"><a href="#cb28-432" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb28-433"><a href="#cb28-433" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb28-434"><a href="#cb28-434" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate SVG and check structure</span></span>
+<span id="cb28-435"><a href="#cb28-435" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(spec, <span class="st">"debug.svg"</span>)</span>
+<span id="cb28-436"><a href="#cb28-436" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-437"><a href="#cb28-437" aria-hidden="true" tabindex="-1"></a><span class="co"># Read and inspect the SVG</span></span>
+<span id="cb28-438"><a href="#cb28-438" aria-hidden="true" tabindex="-1"></a>svg_content <span class="ot">&lt;-</span> <span class="fu">readLines</span>(<span class="st">"debug.svg"</span>)</span>
+<span id="cb28-439"><a href="#cb28-439" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(svg_content, <span class="dv">20</span>)</span>
+<span id="cb28-440"><a href="#cb28-440" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb28-441"><a href="#cb28-441" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-442"><a href="#cb28-442" aria-hidden="true" tabindex="-1"></a><span class="fu">### Browser Developer Tools</span></span>
+<span id="cb28-443"><a href="#cb28-443" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-444"><a href="#cb28-444" aria-hidden="true" tabindex="-1"></a>For debugging interactive widgets:</span>
+<span id="cb28-445"><a href="#cb28-445" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-446"><a href="#cb28-446" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Right-click the widget → "Inspect"</span>
+<span id="cb28-447"><a href="#cb28-447" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Check Console tab for JavaScript errors</span>
+<span id="cb28-448"><a href="#cb28-448" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Check Elements tab for DOM structure</span>
+<span id="cb28-449"><a href="#cb28-449" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Check Network tab for failed resources</span>
+<span id="cb28-450"><a href="#cb28-450" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-451"><a href="#cb28-451" aria-hidden="true" tabindex="-1"></a><span class="fu">### Minimal Reproducible Example</span></span>
+<span id="cb28-452"><a href="#cb28-452" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-453"><a href="#cb28-453" aria-hidden="true" tabindex="-1"></a>When reporting issues, create a minimal example:</span>
+<span id="cb28-454"><a href="#cb28-454" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-457"><a href="#cb28-457" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb28-458"><a href="#cb28-458" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb28-459"><a href="#cb28-459" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal data that reproduces the problem</span></span>
+<span id="cb28-460"><a href="#cb28-460" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb28-461"><a href="#cb28-461" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Test 1"</span>, <span class="st">"Test 2"</span>),</span>
+<span id="cb28-462"><a href="#cb28-462" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.2</span>),</span>
+<span id="cb28-463"><a href="#cb28-463" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.9</span>),</span>
+<span id="cb28-464"><a href="#cb28-464" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">1.1</span>, <span class="fl">1.6</span>)</span>
+<span id="cb28-465"><a href="#cb28-465" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-466"><a href="#cb28-466" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-467"><a href="#cb28-467" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal code</span></span>
+<span id="cb28-468"><a href="#cb28-468" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(test_data,</span>
+<span id="cb28-469"><a href="#cb28-469" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>,</span>
+<span id="cb28-470"><a href="#cb28-470" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span></span>
+<span id="cb28-471"><a href="#cb28-471" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-472"><a href="#cb28-472" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-473"><a href="#cb28-473" aria-hidden="true" tabindex="-1"></a><span class="co"># Include session info</span></span>
+<span id="cb28-474"><a href="#cb28-474" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
+<span id="cb28-475"><a href="#cb28-475" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb28-476"><a href="#cb28-476" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-477"><a href="#cb28-477" aria-hidden="true" tabindex="-1"></a><span class="fu">## Getting Help</span></span>
+<span id="cb28-478"><a href="#cb28-478" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-479"><a href="#cb28-479" aria-hidden="true" tabindex="-1"></a>If you've tried the above and still have issues:</span>
+<span id="cb28-480"><a href="#cb28-480" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-481"><a href="#cb28-481" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Check <span class="co">[</span><span class="ot">GitHub Issues</span><span class="co">](https://github.com/kaskarn/tabviz/issues)</span> for similar problems</span>
+<span id="cb28-482"><a href="#cb28-482" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>Create a minimal reproducible example</span>
+<span id="cb28-483"><a href="#cb28-483" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Include <span class="in">`sessionInfo()`</span> output</span>
+<span id="cb28-484"><a href="#cb28-484" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>Open a new issue with your example and session info</span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

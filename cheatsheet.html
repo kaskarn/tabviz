@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Cheatsheet – webforest</title>
+<title>Cheatsheet – tabviz</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -116,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">webforest</span>
+    <span class="navbar-title">tabviz</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -131,18 +131,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-guide">    
         <li>
+    <a class="dropdown-item" href="./guide/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
     <a class="dropdown-item" href="./guide/quick-start.html">
  <span class="dropdown-text">1. Quick Start</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="./guide/forest-plots.html">
- <span class="dropdown-text">2. Forest Plots</span></a>
+    <a class="dropdown-item" href="./guide/package-data.html">
+ <span class="dropdown-text">2. Package Data</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="./guide/columns.html">
  <span class="dropdown-text">3. Columns</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="./guide/row-styling.html">
  <span class="dropdown-text">4. Row Styling</span></a>
@@ -156,26 +161,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">6. Row Groups</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./guide/titles.html">
+ <span class="dropdown-text">7. Titles and Labels</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./guide/visualizations/index.html">
+ <span class="dropdown-text">8. Visualizations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./guide/visualizations/forest-plots.html">
+ <span class="dropdown-text">9. Forest Plots</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./guide/split-plots.html">
- <span class="dropdown-text">7. Split Plots</span></a>
+ <span class="dropdown-text">10. Split Plots</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="./guide/themes.html">
- <span class="dropdown-text">8. Themes</span></a>
+ <span class="dropdown-text">11. Themes</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="./guide/fluent-api.html">
- <span class="dropdown-text">9. The Fluent API</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="./guide/shiny.html">
- <span class="dropdown-text">10. Shiny Integration</span></a>
+ <span class="dropdown-text">12. Shiny Integration</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./guide/package-data.html">
- <span class="dropdown-text">11. Package Data</span></a>
+    <a class="dropdown-item" href="./guide/export.html">
+ <span class="dropdown-text">13. Export</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="./concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
   </li>  
     </ul>
   </li>
@@ -189,12 +221,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
         <li>
-    <a class="dropdown-item" href="./gallery-basic.html">
- <span class="dropdown-text">Basic Examples</span></a>
+    <a class="dropdown-item" href="./gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./gallery-advanced.html">
- <span class="dropdown-text">Advanced Examples</span></a>
+    <a class="dropdown-item" href="./gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
   </li>  
     </ul>
   </li>
@@ -209,48 +250,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="./reference/forest_plot.html">
- <span class="dropdown-text">forest_plot()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./reference/styling.html">
- <span class="dropdown-text">Styling Functions</span></a>
+    <a class="dropdown-item" href="./reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="./reference/split_forest.html">
- <span class="dropdown-text">split_forest()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./reference/webtable.html">
- <span class="dropdown-text">webtable()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="./reference/save_plot.html">
- <span class="dropdown-text">save_plot()</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="./reference/themes.html">
- <span class="dropdown-text">Themes</span></a>
-  </li>  
         <li>
     <a class="dropdown-item" href="./reference/columns.html">
  <span class="dropdown-text">Columns</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="./reference/annotations.html">
  <span class="dropdown-text">Annotations</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="./reference/shiny.html">
  <span class="dropdown-text">Shiny</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="./reference/web_spec.html">
- <span class="dropdown-text">Advanced: Specifications</span></a>
+    <a class="dropdown-item" href="./reference/export.html">
+ <span class="dropdown-text">Export</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="./reference/troubleshooting.html">
  <span class="dropdown-text">Troubleshooting</span></a>
@@ -258,24 +287,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-technical" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Technical</span>
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
     </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-technical">    
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
         <li>
-    <a class="dropdown-item" href="./technical/s7-classes.html">
- <span class="dropdown-text">S7 Class Architecture</span></a>
+    <a class="dropdown-item" href="./deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./technical/export-system.html">
- <span class="dropdown-text">Export System</span></a>
+    <a class="dropdown-item" href="./deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
   </li>  
     </ul>
   </li>
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/kaskarn/webforest"> <i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -296,7 +325,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#visual-layout" id="toc-visual-layout" class="nav-link active" data-scroll-target="#visual-layout">Visual Layout</a></li>
-  <li><a href="#core-function" id="toc-core-function" class="nav-link" data-scroll-target="#core-function">Core Function</a></li>
+  <li><a href="#core-functions" id="toc-core-functions" class="nav-link" data-scroll-target="#core-functions">Core Functions</a>
+  <ul class="collapse">
+  <li><a href="#tabviz---main-entry-point" id="toc-tabviz---main-entry-point" class="nav-link" data-scroll-target="#tabviz---main-entry-point"><code>tabviz()</code> - Main Entry Point</a></li>
+  <li><a href="#tabviz-with-col_forest---forest-plot" id="toc-tabviz-with-col_forest---forest-plot" class="nav-link" data-scroll-target="#tabviz-with-col_forest---forest-plot"><code>tabviz()</code> with <code>col_forest()</code> - Forest Plot</a></li>
+  </ul></li>
   <li><a href="#column-types" id="toc-column-types" class="nav-link" data-scroll-target="#column-types">Column Types</a></li>
   <li><a href="#row-styling-arguments" id="toc-row-styling-arguments" class="nav-link" data-scroll-target="#row-styling-arguments">Row Styling Arguments</a></li>
   <li><a href="#marker-styling-arguments" id="toc-marker-styling-arguments" class="nav-link" data-scroll-target="#marker-styling-arguments">Marker Styling Arguments</a></li>
@@ -335,45 +368,66 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Quick reference for webforest functions and arguments.</p>
+<p>Quick reference for tabviz functions and arguments.</p>
 <section id="visual-layout" class="level2">
 <h2 class="anchored" data-anchor-id="visual-layout">Visual Layout</h2>
-<pre><code>┌─────────────────────────────────────────────────────────────────────────────┐
-│  [title]                                                                    │
-│  [subtitle]                                                                 │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ [label column]  [left columns...]  │ FOREST PLOT │  [right columns...]     │
-│                                    │             │                         │
-│ ▼ Group Header                     │    null_    │                         │
-│   Study A        N    Events       │ ◆──●──◆     │   HR (95% CI)   P-val  │
-│   Study B        N    Events       │    ◆──●──◆  │   HR (95% CI)   P-val  │
-│   Study C        N    Events       │  ◆──●──◆    │   HR (95% CI)   P-val  │
-│                                    │     value   │                         │
-│ ▼ Another Group                    │      │      │                         │
-│   Study D        N    Events       │   ◆──●──◆   │   HR (95% CI)   P-val  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  [axis_label]                                                               │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  [caption]                                                   [footnote]     │
-└─────────────────────────────────────────────────────────────────────────────┘</code></pre>
+<pre><code>+---------------------------------------------------------------------------+
+|  [title]                                                                  |
+|  [subtitle]                                                               |
++---------------------------------------------------------------------------+
+| [label column]  [left columns...]  | FOREST PLOT |  [right columns...]    |
+|                                    |             |                        |
+| &gt; Group Header                     |    null_    |                        |
+|   Study A        N    Events       | &lt;--*--&gt;     |   HR (95% CI)   P-val  |
+|   Study B        N    Events       |    &lt;--*--&gt;  |   HR (95% CI)   P-val  |
+|   Study C        N    Events       |  &lt;--*--&gt;    |   HR (95% CI)   P-val  |
+|                                    |     value   |                        |
+| &gt; Another Group                    |      |      |                        |
+|   Study D        N    Events       |   &lt;--*--&gt;   |   HR (95% CI)   P-val  |
++---------------------------------------------------------------------------+
+|  [axis_label]                                                             |
++---------------------------------------------------------------------------+
+|  [caption]                                                  [footnote]    |
++---------------------------------------------------------------------------+</code></pre>
 <hr>
 </section>
-<section id="core-function" class="level2">
-<h2 class="anchored" data-anchor-id="core-function">Core Function</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  x,                    <span class="co"># data.frame</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>,         <span class="co"># column with point estimates</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="st">"lower"</span>,      <span class="co"># column with lower CI</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="st">"upper"</span>,      <span class="co"># column with upper CI</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,      <span class="co"># column with row labels</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,   <span class="co"># column(s) for grouping</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(...),  <span class="co"># col_*() specifications</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>,        <span class="co"># "log" or "linear"</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>,       <span class="co"># reference line value</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_label =</span> <span class="st">"HR"</span>,    <span class="co"># x-axis label</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_jama</span>()</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="core-functions" class="level2">
+<h2 class="anchored" data-anchor-id="core-functions">Core Functions</h2>
+<section id="tabviz---main-entry-point" class="level3">
+<h3 class="anchored" data-anchor-id="tabviz---main-entry-point"><code>tabviz()</code> - Main Entry Point</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  data,                 <span class="co"># data.frame</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,      <span class="co"># column with row labels</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,   <span class="co"># column(s) for grouping</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(       <span class="co"># col_*() specifications</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_text</span>(<span class="st">"category"</span>),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"n"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_jama</span>()</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="tabviz-with-col_forest---forest-plot" class="level3">
+<h3 class="anchored" data-anchor-id="tabviz-with-col_forest---forest-plot"><code>tabviz()</code> with <code>col_forest()</code> - Forest Plot</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  data,                 <span class="co"># data.frame</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,      <span class="co"># column with row labels</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,   <span class="co"># column(s) for grouping</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_forest</span>(</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">point =</span> <span class="st">"hr"</span>,     <span class="co"># column with point estimates</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">lower =</span> <span class="st">"lower"</span>,  <span class="co"># column with lower CI</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">upper =</span> <span class="st">"upper"</span>,  <span class="co"># column with upper CI</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">scale =</span> <span class="st">"log"</span>,    <span class="co"># "log" or "linear"</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">null_value =</span> <span class="dv">1</span>,   <span class="co"># reference line value</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis_label =</span> <span class="st">"HR"</span> <span class="co"># x-axis label</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    ...                 <span class="co"># additional col_*() specifications</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_jama</span>()</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
+</section>
 </section>
 <section id="column-types" class="level2">
 <h2 class="anchored" data-anchor-id="column-types">Column Types</h2>
@@ -404,72 +458,77 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td><code>col_interval()</code></td>
 <td>Point (CI) format</td>
-<td><code>col_interval("HR (95% CI)")</code></td>
+<td><code>col_interval(point = "hr", lower = "lo", upper = "hi")</code></td>
 </tr>
 <tr class="even">
+<td><code>col_forest()</code></td>
+<td>Forest plot column</td>
+<td><code>col_forest(point = "hr", lower = "lo", upper = "hi")</code></td>
+</tr>
+<tr class="odd">
 <td><code>col_n()</code></td>
 <td>Sample sizes</td>
 <td><code>col_n("n", abbreviate = TRUE)</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>col_percent()</code></td>
 <td>Percentages</td>
 <td><code>col_percent("rate")</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>col_events()</code></td>
 <td>Events/N format</td>
 <td><code>col_events("events", "n")</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>col_pvalue()</code></td>
 <td>P-values with stars</td>
 <td><code>col_pvalue("pval", stars = TRUE)</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>col_bar()</code></td>
 <td>Horizontal bars</td>
 <td><code>col_bar("weight")</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>col_sparkline()</code></td>
 <td>Mini charts</td>
 <td><code>col_sparkline("trend")</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>col_badge()</code></td>
 <td>Colored badges</td>
 <td><code>col_badge("status")</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>col_icon()</code></td>
 <td>Icons/emoji</td>
 <td><code>col_icon("flag")</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>col_stars()</code></td>
 <td>Star ratings</td>
 <td><code>col_stars("quality")</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>col_img()</code></td>
 <td>Inline images</td>
 <td><code>col_img("logo_url")</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>col_reference()</code></td>
 <td>Truncated links</td>
 <td><code>col_reference("doi")</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>col_range()</code></td>
 <td>Min-max ranges</td>
 <td><code>col_range("min", "max")</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>col_group()</code></td>
 <td>Group columns</td>
-<td><code>col_group("Results", col_interval(), col_pvalue("p"))</code></td>
+<td><code>col_group("Results", col_interval(point = "hr", lower = "lo", upper = "hi"), col_pvalue("p"))</code></td>
 </tr>
 </tbody>
 </table>
@@ -639,102 +698,107 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="theme-modifier-functions" class="level2">
 <h2 class="anchored" data-anchor-id="theme-modifier-functions">Theme Modifier Functions</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(..., <span class="at">theme =</span> <span class="fu">web_theme_default</span>() <span class="sc">|&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_colors</span>(<span class="at">primary =</span> <span class="st">"#2563eb"</span>, ...) <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_typography</span>(<span class="at">font_family =</span> <span class="st">"Georgia"</span>, <span class="at">font_size_base =</span> <span class="st">"0.9rem"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_spacing</span>(<span class="at">row_height =</span> <span class="dv">28</span>, <span class="at">header_height =</span> <span class="dv">32</span>) <span class="sc">|&gt;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_shapes</span>(<span class="at">point_size =</span> <span class="dv">6</span>, <span class="at">line_width =</span> <span class="fl">1.5</span>) <span class="sc">|&gt;</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_axis</span>(<span class="at">gridlines =</span> <span class="cn">TRUE</span>, <span class="at">gridline_style =</span> <span class="st">"dashed"</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(..., <span class="at">theme =</span> <span class="fu">web_theme_default</span>() <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_colors</span>(<span class="at">primary =</span> <span class="st">"#2563eb"</span>, ...) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_typography</span>(<span class="at">font_family =</span> <span class="st">"Georgia"</span>, <span class="at">font_size_base =</span> <span class="st">"0.9rem"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_spacing</span>(<span class="at">row_height =</span> <span class="dv">28</span>, <span class="at">header_height =</span> <span class="dv">32</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_shapes</span>(<span class="at">point_size =</span> <span class="dv">6</span>, <span class="at">line_width =</span> <span class="fl">1.5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_axis</span>(<span class="at">gridlines =</span> <span class="cn">TRUE</span>, <span class="at">gridline_style =</span> <span class="st">"dashed"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="fluent-api-pipe-based" class="level2">
 <h2 class="anchored" data-anchor-id="fluent-api-pipe-based">Fluent API (Pipe-Based)</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>, <span class="at">label =</span> <span class="st">"study"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="sc">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="at">emphasis =</span> <span class="st">"is_primary"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_column_style</span>(<span class="st">"hr"</span>, <span class="at">bold =</span> <span class="sc">~</span> .x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(.x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"green"</span>, <span class="st">"red"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme</span>(<span class="st">"jama"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(...))) <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="sc">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="at">emphasis =</span> <span class="st">"is_primary"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_column_style</span>(<span class="st">"hr"</span>, <span class="at">bold =</span> <span class="sc">~</span> .x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(.x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"green"</span>, <span class="st">"red"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme</span>(<span class="st">"jama"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="formula-expressions-nse" class="level2">
 <h2 class="anchored" data-anchor-id="formula-expressions-nse">Formula Expressions (NSE)</h2>
 <p><strong>Row/Marker styling</strong> - reference any column:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>row_bold <span class="ot">=</span> <span class="er">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>marker_color <span class="ot">=</span> <span class="er">~</span> <span class="fu">case_when</span>(</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,  <span class="co"># Significant benefit</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,  <span class="co"># Significant harm</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span>        <span class="co"># Not significant</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>row_bold <span class="ot">=</span> <span class="er">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>marker_color <span class="ot">=</span> <span class="er">~</span> <span class="fu">case_when</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,  <span class="co"># Significant benefit</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,  <span class="co"># Significant harm</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span>        <span class="co"># Not significant</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>Cell styling</strong> - use <code>.x</code> for the column’s own values:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">col_pvalue</span>(<span class="st">"pval"</span>, <span class="at">bold =</span> <span class="sc">~</span> .x <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(.x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"green"</span>, <span class="st">"red"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">col_pvalue</span>(<span class="st">"pval"</span>, <span class="at">bold =</span> <span class="sc">~</span> .x <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(.x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"green"</span>, <span class="st">"red"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="interactivity" class="level2">
 <h2 class="anchored" data-anchor-id="interactivity">Interactivity</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Tooltips on hover</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction</span>(<span class="at">tooltip_fields =</span> <span class="fu">c</span>(<span class="st">"n"</span>, <span class="st">"events"</span>, <span class="st">"pvalue"</span>))</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Read-only (no sorting/selection)</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction_minimal</span>()</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Fully static (for print)</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction_publication</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Tooltips on hover</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction</span>(<span class="at">tooltip_fields =</span> <span class="fu">c</span>(<span class="st">"n"</span>, <span class="st">"events"</span>, <span class="st">"pvalue"</span>))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Read-only (no sorting/selection)</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction_minimal</span>()</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Fully static (for print)</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction_publication</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="multiple-effects" class="level2">
 <h2 class="anchored" data-anchor-id="multiple-effects">Multiple Effects</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>effects <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">web_effect</span>(<span class="st">"itt_hr"</span>, <span class="st">"itt_lo"</span>, <span class="st">"itt_hi"</span>, <span class="at">label =</span> <span class="st">"ITT"</span>, <span class="at">color =</span> <span class="st">"#2563eb"</span>),</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">web_effect</span>(<span class="st">"pp_hr"</span>, <span class="st">"pp_lo"</span>, <span class="st">"pp_hi"</span>, <span class="at">label =</span> <span class="st">"Per-Protocol"</span>, <span class="at">color =</span> <span class="st">"#16a34a"</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_forest</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">effects =</span> <span class="fu">list</span>(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">web_effect</span>(<span class="st">"itt_hr"</span>, <span class="st">"itt_lo"</span>, <span class="st">"itt_hi"</span>, <span class="at">label =</span> <span class="st">"ITT"</span>, <span class="at">color =</span> <span class="st">"#2563eb"</span>),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">web_effect</span>(<span class="st">"pp_hr"</span>, <span class="st">"pp_lo"</span>, <span class="st">"pp_hi"</span>, <span class="at">label =</span> <span class="st">"Per-Protocol"</span>, <span class="at">color =</span> <span class="st">"#16a34a"</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="annotations" class="level2">
 <h2 class="anchored" data-anchor-id="annotations">Annotations</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>annotations <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_refline</span>(<span class="fl">0.8</span>, <span class="at">label =</span> <span class="st">"Threshold"</span>, <span class="at">style =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"#e11d48"</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>annotations <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_refline</span>(<span class="fl">0.8</span>, <span class="at">label =</span> <span class="st">"Threshold"</span>, <span class="at">style =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"#e11d48"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="split-plots" class="level2">
 <h2 class="anchored" data-anchor-id="split-plots">Split Plots</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Single variable split</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">split_by =</span> <span class="st">"region"</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical split</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">split_by =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>), <span class="at">shared_axis =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Single variable split</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(...)), <span class="at">split_by =</span> <span class="st">"region"</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical split</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(...)), <span class="at">split_by =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>), <span class="at">shared_axis =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="exporting" class="level2">
 <h2 class="anchored" data-anchor-id="exporting">Exporting</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to file</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">forest_plot</span>(data, ...)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.svg"</span>)               <span class="co"># Vector</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.png"</span>, <span class="at">scale =</span> <span class="dv">2</span>)    <span class="co"># Raster (2x resolution)</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.pdf"</span>)               <span class="co"># Print</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to file</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">tabviz</span>(data, ...)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.svg"</span>)               <span class="co"># Vector</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.png"</span>, <span class="at">scale =</span> <span class="dv">2</span>)    <span class="co"># Raster (2x resolution)</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.pdf"</span>)               <span class="co"># Print</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 </section>
 <section id="quick-patterns" class="level2">
 <h2 class="anchored" data-anchor-id="quick-patterns">Quick Patterns</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Log scale for ratios</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">=</span> <span class="st">"log"</span>, null_value <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear scale for differences</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">=</span> <span class="st">"linear"</span>, null_value <span class="ot">=</span> <span class="dv">0</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Significant results bold</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>row_bold <span class="ot">=</span> <span class="er">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Color by direction</span></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>marker_color <span class="ot">=</span> <span class="er">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>)</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Column groups</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="fu">col_group</span>(<span class="st">"Treatment"</span>, <span class="fu">col_n</span>(<span class="st">"n_tx"</span>), <span class="fu">col_events</span>(<span class="st">"ev_tx"</span>, <span class="st">"n_tx"</span>), <span class="at">position =</span> <span class="st">"left"</span>)</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical grouping</span></span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>group <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Log scale for ratios</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear scale for differences</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"md"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>, <span class="at">scale =</span> <span class="st">"linear"</span>, <span class="at">null_value =</span> <span class="dv">0</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Significant results bold</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>row_bold <span class="ot">=</span> <span class="er">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Color by direction</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>marker_color <span class="ot">=</span> <span class="er">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Column groups</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="fu">col_group</span>(<span class="st">"Treatment"</span>, <span class="fu">col_n</span>(<span class="st">"n_tx"</span>), <span class="fu">col_events</span>(<span class="st">"ev_tx"</span>, <span class="st">"n_tx"</span>))</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical grouping</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>group <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 <!-- -->
@@ -1193,255 +1257,283 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     }
   });
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Cheatsheet"</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>Quick reference for webforest functions and arguments.</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">## Visual Layout</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="in">┌─────────────────────────────────────────────────────────────────────────────┐</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="in">│  [title]                                                                    │</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="in">│  [subtitle]                                                                 │</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="in">├─────────────────────────────────────────────────────────────────────────────┤</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="in">│ [label column]  [left columns...]  │ FOREST PLOT │  [right columns...]     │</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="in">│                                    │             │                         │</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="in">│ ▼ Group Header                     │    null_    │                         │</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="in">│   Study A        N    Events       │ ◆──●──◆     │   HR (95% CI)   P-val  │</span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="in">│   Study B        N    Events       │    ◆──●──◆  │   HR (95% CI)   P-val  │</span></span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="in">│   Study C        N    Events       │  ◆──●──◆    │   HR (95% CI)   P-val  │</span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="in">│                                    │     value   │                         │</span></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="in">│ ▼ Another Group                    │      │      │                         │</span></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="in">│   Study D        N    Events       │   ◆──●──◆   │   HR (95% CI)   P-val  │</span></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="in">├─────────────────────────────────────────────────────────────────────────────┤</span></span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="in">│  [axis_label]                                                               │</span></span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="in">├─────────────────────────────────────────────────────────────────────────────┤</span></span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="in">│  [caption]                                                   [footnote]     │</span></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="in">└─────────────────────────────────────────────────────────────────────────────┘</span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Core Function</span></span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(</span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>  x,                    <span class="co"># data.frame</span></span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">point =</span> <span class="st">"hr"</span>,         <span class="co"># column with point estimates</span></span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="st">"lower"</span>,      <span class="co"># column with lower CI</span></span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="st">"upper"</span>,      <span class="co"># column with upper CI</span></span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,      <span class="co"># column with row labels</span></span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,   <span class="co"># column(s) for grouping</span></span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(...),  <span class="co"># col_*() specifications</span></span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">scale =</span> <span class="st">"log"</span>,        <span class="co"># "log" or "linear"</span></span>
-<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">null_value =</span> <span class="dv">1</span>,       <span class="co"># reference line value</span></span>
-<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis_label =</span> <span class="st">"HR"</span>,    <span class="co"># x-axis label</span></span>
-<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_jama</span>()</span>
-<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a><span class="fu">## Column Types</span></span>
-<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Purpose <span class="pp">|</span> Example <span class="pp">|</span></span>
-<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|---------|---------|</span></span>
-<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_text()`</span> <span class="pp">|</span> Text values <span class="pp">|</span> <span class="in">`col_text("category")`</span> <span class="pp">|</span></span>
-<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_numeric()`</span> <span class="pp">|</span> Formatted numbers <span class="pp">|</span> <span class="in">`col_numeric("n", decimals = 0)`</span> <span class="pp">|</span></span>
-<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_interval()`</span> <span class="pp">|</span> Point (CI) format <span class="pp">|</span> <span class="in">`col_interval("HR (95% CI)")`</span> <span class="pp">|</span></span>
-<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_n()`</span> <span class="pp">|</span> Sample sizes <span class="pp">|</span> <span class="in">`col_n("n", abbreviate = TRUE)`</span> <span class="pp">|</span></span>
-<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_percent()`</span> <span class="pp">|</span> Percentages <span class="pp">|</span> <span class="in">`col_percent("rate")`</span> <span class="pp">|</span></span>
-<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_events()`</span> <span class="pp">|</span> Events/N format <span class="pp">|</span> <span class="in">`col_events("events", "n")`</span> <span class="pp">|</span></span>
-<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_pvalue()`</span> <span class="pp">|</span> P-values with stars <span class="pp">|</span> <span class="in">`col_pvalue("pval", stars = TRUE)`</span> <span class="pp">|</span></span>
-<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_bar()`</span> <span class="pp">|</span> Horizontal bars <span class="pp">|</span> <span class="in">`col_bar("weight")`</span> <span class="pp">|</span></span>
-<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_sparkline()`</span> <span class="pp">|</span> Mini charts <span class="pp">|</span> <span class="in">`col_sparkline("trend")`</span> <span class="pp">|</span></span>
-<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_badge()`</span> <span class="pp">|</span> Colored badges <span class="pp">|</span> <span class="in">`col_badge("status")`</span> <span class="pp">|</span></span>
-<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_icon()`</span> <span class="pp">|</span> Icons/emoji <span class="pp">|</span> <span class="in">`col_icon("flag")`</span> <span class="pp">|</span></span>
-<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_stars()`</span> <span class="pp">|</span> Star ratings <span class="pp">|</span> <span class="in">`col_stars("quality")`</span> <span class="pp">|</span></span>
-<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_img()`</span> <span class="pp">|</span> Inline images <span class="pp">|</span> <span class="in">`col_img("logo_url")`</span> <span class="pp">|</span></span>
-<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_reference()`</span> <span class="pp">|</span> Truncated links <span class="pp">|</span> <span class="in">`col_reference("doi")`</span> <span class="pp">|</span></span>
-<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_range()`</span> <span class="pp">|</span> Min-max ranges <span class="pp">|</span> <span class="in">`col_range("min", "max")`</span> <span class="pp">|</span></span>
-<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_group()`</span> <span class="pp">|</span> Group columns <span class="pp">|</span> <span class="in">`col_group("Results", col_interval(), col_pvalue("p"))`</span> <span class="pp">|</span></span>
-<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a><span class="fu">## Row Styling Arguments</span></span>
-<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Values <span class="pp">|</span> Effect <span class="pp">|</span></span>
-<span id="cb13-78"><a href="#cb13-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|--------|--------|</span></span>
-<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_type`</span> <span class="pp">|</span> <span class="in">`"data"`</span>, <span class="in">`"header"`</span>, <span class="in">`"summary"`</span>, <span class="in">`"spacer"`</span> <span class="pp">|</span> Row behavior <span class="pp">|</span></span>
-<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_bold`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Bold text <span class="pp">|</span></span>
-<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_italic`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Italic text <span class="pp">|</span></span>
-<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_color`</span> <span class="pp">|</span> CSS color <span class="pp">|</span> Text color <span class="pp">|</span></span>
-<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_bg`</span> <span class="pp">|</span> CSS color <span class="pp">|</span> Background color <span class="pp">|</span></span>
-<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_indent`</span> <span class="pp">|</span> <span class="in">`0`</span>, <span class="in">`1`</span>, <span class="in">`2`</span>... <span class="pp">|</span> Indentation level <span class="pp">|</span></span>
-<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_badge`</span> <span class="pp">|</span> Text <span class="pp">|</span> Badge label <span class="pp">|</span></span>
-<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_emphasis`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Bold + primary color <span class="pp">|</span></span>
-<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_muted`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Lighter color <span class="pp">|</span></span>
-<span id="cb13-88"><a href="#cb13-88" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_accent`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Accent color <span class="pp">|</span></span>
-<span id="cb13-89"><a href="#cb13-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a>All accept column names or formula expressions: <span class="in">`row_bold = ~ pval &lt; 0.05`</span></span>
-<span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-94"><a href="#cb13-94" aria-hidden="true" tabindex="-1"></a><span class="fu">## Marker Styling Arguments</span></span>
-<span id="cb13-95"><a href="#cb13-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-96"><a href="#cb13-96" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Values <span class="pp">|</span> Effect <span class="pp">|</span></span>
-<span id="cb13-97"><a href="#cb13-97" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|--------|--------|</span></span>
-<span id="cb13-98"><a href="#cb13-98" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_color`</span> <span class="pp">|</span> CSS color <span class="pp">|</span> Fill color <span class="pp">|</span></span>
-<span id="cb13-99"><a href="#cb13-99" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_shape`</span> <span class="pp">|</span> <span class="in">`"square"`</span>, <span class="in">`"circle"`</span>, <span class="in">`"diamond"`</span>, <span class="in">`"triangle"`</span> <span class="pp">|</span> Shape <span class="pp">|</span></span>
-<span id="cb13-100"><a href="#cb13-100" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_opacity`</span> <span class="pp">|</span> <span class="in">`0`</span> to <span class="in">`1`</span> <span class="pp">|</span> Transparency <span class="pp">|</span></span>
-<span id="cb13-101"><a href="#cb13-101" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_size`</span> <span class="pp">|</span> Multiplier <span class="pp">|</span> Size (1 = default) <span class="pp">|</span></span>
-<span id="cb13-102"><a href="#cb13-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-103"><a href="#cb13-103" aria-hidden="true" tabindex="-1"></a>All accept column names or formula expressions: <span class="in">`marker_color = ~ ifelse(sig, "green", "gray")`</span></span>
-<span id="cb13-104"><a href="#cb13-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-105"><a href="#cb13-105" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-106"><a href="#cb13-106" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-107"><a href="#cb13-107" aria-hidden="true" tabindex="-1"></a><span class="fu">## Built-in Themes</span></span>
-<span id="cb13-108"><a href="#cb13-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-109"><a href="#cb13-109" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Theme <span class="pp">|</span> Style <span class="pp">|</span></span>
-<span id="cb13-110"><a href="#cb13-110" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------|-------|</span></span>
-<span id="cb13-111"><a href="#cb13-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_default()`</span> <span class="pp">|</span> Clean, modern default <span class="pp">|</span></span>
-<span id="cb13-112"><a href="#cb13-112" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_jama()`</span> <span class="pp">|</span> JAMA publication style <span class="pp">|</span></span>
-<span id="cb13-113"><a href="#cb13-113" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_lancet()`</span> <span class="pp">|</span> Lancet publication style <span class="pp">|</span></span>
-<span id="cb13-114"><a href="#cb13-114" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_nature()`</span> <span class="pp">|</span> Nature publication style <span class="pp">|</span></span>
-<span id="cb13-115"><a href="#cb13-115" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_cochrane()`</span> <span class="pp">|</span> Cochrane review style <span class="pp">|</span></span>
-<span id="cb13-116"><a href="#cb13-116" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_modern()`</span> <span class="pp">|</span> Contemporary with gradients <span class="pp">|</span></span>
-<span id="cb13-117"><a href="#cb13-117" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_presentation()`</span> <span class="pp">|</span> Large text for slides <span class="pp">|</span></span>
-<span id="cb13-118"><a href="#cb13-118" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_dark()`</span> <span class="pp">|</span> Dark mode <span class="pp">|</span></span>
-<span id="cb13-119"><a href="#cb13-119" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_minimal()`</span> <span class="pp">|</span> Maximum density <span class="pp">|</span></span>
-<span id="cb13-120"><a href="#cb13-120" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-121"><a href="#cb13-121" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-122"><a href="#cb13-122" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-123"><a href="#cb13-123" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme Modifier Functions</span></span>
-<span id="cb13-124"><a href="#cb13-124" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-125"><a href="#cb13-125" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-126"><a href="#cb13-126" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(..., <span class="at">theme =</span> <span class="fu">web_theme_default</span>() <span class="sc">|&gt;</span></span>
-<span id="cb13-127"><a href="#cb13-127" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_colors</span>(<span class="at">primary =</span> <span class="st">"#2563eb"</span>, ...) <span class="sc">|&gt;</span></span>
-<span id="cb13-128"><a href="#cb13-128" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_typography</span>(<span class="at">font_family =</span> <span class="st">"Georgia"</span>, <span class="at">font_size_base =</span> <span class="st">"0.9rem"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-129"><a href="#cb13-129" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_spacing</span>(<span class="at">row_height =</span> <span class="dv">28</span>, <span class="at">header_height =</span> <span class="dv">32</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-130"><a href="#cb13-130" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_shapes</span>(<span class="at">point_size =</span> <span class="dv">6</span>, <span class="at">line_width =</span> <span class="fl">1.5</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-131"><a href="#cb13-131" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_axis</span>(<span class="at">gridlines =</span> <span class="cn">TRUE</span>, <span class="at">gridline_style =</span> <span class="st">"dashed"</span>)</span>
-<span id="cb13-132"><a href="#cb13-132" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-133"><a href="#cb13-133" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-134"><a href="#cb13-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-135"><a href="#cb13-135" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-136"><a href="#cb13-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-137"><a href="#cb13-137" aria-hidden="true" tabindex="-1"></a><span class="fu">## Fluent API (Pipe-Based)</span></span>
-<span id="cb13-138"><a href="#cb13-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-139"><a href="#cb13-139" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-140"><a href="#cb13-140" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>, <span class="at">label =</span> <span class="st">"study"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-141"><a href="#cb13-141" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="sc">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="at">emphasis =</span> <span class="st">"is_primary"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-142"><a href="#cb13-142" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb13-143"><a href="#cb13-143" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_column_style</span>(<span class="st">"hr"</span>, <span class="at">bold =</span> <span class="sc">~</span> .x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(.x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"green"</span>, <span class="st">"red"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb13-144"><a href="#cb13-144" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme</span>(<span class="st">"jama"</span>)</span>
-<span id="cb13-145"><a href="#cb13-145" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-146"><a href="#cb13-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-147"><a href="#cb13-147" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-148"><a href="#cb13-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-149"><a href="#cb13-149" aria-hidden="true" tabindex="-1"></a><span class="fu">## Formula Expressions (NSE)</span></span>
-<span id="cb13-150"><a href="#cb13-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-151"><a href="#cb13-151" aria-hidden="true" tabindex="-1"></a>**Row/Marker styling** - reference any column:</span>
-<span id="cb13-152"><a href="#cb13-152" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-153"><a href="#cb13-153" aria-hidden="true" tabindex="-1"></a>row_bold <span class="ot">=</span> <span class="er">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span></span>
-<span id="cb13-154"><a href="#cb13-154" aria-hidden="true" tabindex="-1"></a>marker_color <span class="ot">=</span> <span class="er">~</span> <span class="fu">case_when</span>(</span>
-<span id="cb13-155"><a href="#cb13-155" aria-hidden="true" tabindex="-1"></a>  upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,  <span class="co"># Significant benefit</span></span>
-<span id="cb13-156"><a href="#cb13-156" aria-hidden="true" tabindex="-1"></a>  lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,  <span class="co"># Significant harm</span></span>
-<span id="cb13-157"><a href="#cb13-157" aria-hidden="true" tabindex="-1"></a>  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span>        <span class="co"># Not significant</span></span>
-<span id="cb13-158"><a href="#cb13-158" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-159"><a href="#cb13-159" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-160"><a href="#cb13-160" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-161"><a href="#cb13-161" aria-hidden="true" tabindex="-1"></a>**Cell styling** - use <span class="in">`.x`</span> for the column's own values:</span>
-<span id="cb13-162"><a href="#cb13-162" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-163"><a href="#cb13-163" aria-hidden="true" tabindex="-1"></a><span class="fu">col_pvalue</span>(<span class="st">"pval"</span>, <span class="at">bold =</span> <span class="sc">~</span> .x <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
-<span id="cb13-164"><a href="#cb13-164" aria-hidden="true" tabindex="-1"></a><span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(.x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"green"</span>, <span class="st">"red"</span>))</span>
-<span id="cb13-165"><a href="#cb13-165" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-166"><a href="#cb13-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-167"><a href="#cb13-167" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-168"><a href="#cb13-168" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-169"><a href="#cb13-169" aria-hidden="true" tabindex="-1"></a><span class="fu">## Interactivity</span></span>
-<span id="cb13-170"><a href="#cb13-170" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-171"><a href="#cb13-171" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-172"><a href="#cb13-172" aria-hidden="true" tabindex="-1"></a><span class="co"># Tooltips on hover</span></span>
-<span id="cb13-173"><a href="#cb13-173" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction</span>(<span class="at">tooltip_fields =</span> <span class="fu">c</span>(<span class="st">"n"</span>, <span class="st">"events"</span>, <span class="st">"pvalue"</span>))</span>
-<span id="cb13-174"><a href="#cb13-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-175"><a href="#cb13-175" aria-hidden="true" tabindex="-1"></a><span class="co"># Read-only (no sorting/selection)</span></span>
-<span id="cb13-176"><a href="#cb13-176" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction_minimal</span>()</span>
-<span id="cb13-177"><a href="#cb13-177" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-178"><a href="#cb13-178" aria-hidden="true" tabindex="-1"></a><span class="co"># Fully static (for print)</span></span>
-<span id="cb13-179"><a href="#cb13-179" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction_publication</span>()</span>
-<span id="cb13-180"><a href="#cb13-180" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-181"><a href="#cb13-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-182"><a href="#cb13-182" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-183"><a href="#cb13-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-184"><a href="#cb13-184" aria-hidden="true" tabindex="-1"></a><span class="fu">## Multiple Effects</span></span>
-<span id="cb13-185"><a href="#cb13-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-186"><a href="#cb13-186" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-187"><a href="#cb13-187" aria-hidden="true" tabindex="-1"></a>effects <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb13-188"><a href="#cb13-188" aria-hidden="true" tabindex="-1"></a>  <span class="fu">web_effect</span>(<span class="st">"itt_hr"</span>, <span class="st">"itt_lo"</span>, <span class="st">"itt_hi"</span>, <span class="at">label =</span> <span class="st">"ITT"</span>, <span class="at">color =</span> <span class="st">"#2563eb"</span>),</span>
-<span id="cb13-189"><a href="#cb13-189" aria-hidden="true" tabindex="-1"></a>  <span class="fu">web_effect</span>(<span class="st">"pp_hr"</span>, <span class="st">"pp_lo"</span>, <span class="st">"pp_hi"</span>, <span class="at">label =</span> <span class="st">"Per-Protocol"</span>, <span class="at">color =</span> <span class="st">"#16a34a"</span>)</span>
-<span id="cb13-190"><a href="#cb13-190" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-191"><a href="#cb13-191" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-192"><a href="#cb13-192" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-193"><a href="#cb13-193" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-194"><a href="#cb13-194" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-195"><a href="#cb13-195" aria-hidden="true" tabindex="-1"></a><span class="fu">## Annotations</span></span>
-<span id="cb13-196"><a href="#cb13-196" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-197"><a href="#cb13-197" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-198"><a href="#cb13-198" aria-hidden="true" tabindex="-1"></a>annotations <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb13-199"><a href="#cb13-199" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_refline</span>(<span class="fl">0.8</span>, <span class="at">label =</span> <span class="st">"Threshold"</span>, <span class="at">style =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"#e11d48"</span>)</span>
-<span id="cb13-200"><a href="#cb13-200" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb13-201"><a href="#cb13-201" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-202"><a href="#cb13-202" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-203"><a href="#cb13-203" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-204"><a href="#cb13-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-205"><a href="#cb13-205" aria-hidden="true" tabindex="-1"></a><span class="fu">## Split Plots</span></span>
-<span id="cb13-206"><a href="#cb13-206" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-207"><a href="#cb13-207" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-208"><a href="#cb13-208" aria-hidden="true" tabindex="-1"></a><span class="co"># Single variable split</span></span>
-<span id="cb13-209"><a href="#cb13-209" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">split_by =</span> <span class="st">"region"</span>)</span>
-<span id="cb13-210"><a href="#cb13-210" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-211"><a href="#cb13-211" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical split</span></span>
-<span id="cb13-212"><a href="#cb13-212" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">split_by =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>), <span class="at">shared_axis =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-213"><a href="#cb13-213" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-214"><a href="#cb13-214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-215"><a href="#cb13-215" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-216"><a href="#cb13-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-217"><a href="#cb13-217" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exporting</span></span>
-<span id="cb13-218"><a href="#cb13-218" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-219"><a href="#cb13-219" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-220"><a href="#cb13-220" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to file</span></span>
-<span id="cb13-221"><a href="#cb13-221" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">forest_plot</span>(data, ...)</span>
-<span id="cb13-222"><a href="#cb13-222" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.svg"</span>)               <span class="co"># Vector</span></span>
-<span id="cb13-223"><a href="#cb13-223" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.png"</span>, <span class="at">scale =</span> <span class="dv">2</span>)    <span class="co"># Raster (2x resolution)</span></span>
-<span id="cb13-224"><a href="#cb13-224" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.pdf"</span>)               <span class="co"># Print</span></span>
-<span id="cb13-225"><a href="#cb13-225" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb13-226"><a href="#cb13-226" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-227"><a href="#cb13-227" aria-hidden="true" tabindex="-1"></a>---</span>
-<span id="cb13-228"><a href="#cb13-228" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-229"><a href="#cb13-229" aria-hidden="true" tabindex="-1"></a><span class="fu">## Quick Patterns</span></span>
-<span id="cb13-230"><a href="#cb13-230" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-231"><a href="#cb13-231" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb13-232"><a href="#cb13-232" aria-hidden="true" tabindex="-1"></a><span class="co"># Log scale for ratios</span></span>
-<span id="cb13-233"><a href="#cb13-233" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">=</span> <span class="st">"log"</span>, null_value <span class="ot">=</span> <span class="dv">1</span></span>
-<span id="cb13-234"><a href="#cb13-234" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-235"><a href="#cb13-235" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear scale for differences</span></span>
-<span id="cb13-236"><a href="#cb13-236" aria-hidden="true" tabindex="-1"></a>scale <span class="ot">=</span> <span class="st">"linear"</span>, null_value <span class="ot">=</span> <span class="dv">0</span></span>
-<span id="cb13-237"><a href="#cb13-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-238"><a href="#cb13-238" aria-hidden="true" tabindex="-1"></a><span class="co"># Significant results bold</span></span>
-<span id="cb13-239"><a href="#cb13-239" aria-hidden="true" tabindex="-1"></a>row_bold <span class="ot">=</span> <span class="er">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span></span>
-<span id="cb13-240"><a href="#cb13-240" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-241"><a href="#cb13-241" aria-hidden="true" tabindex="-1"></a><span class="co"># Color by direction</span></span>
-<span id="cb13-242"><a href="#cb13-242" aria-hidden="true" tabindex="-1"></a>marker_color <span class="ot">=</span> <span class="er">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>)</span>
-<span id="cb13-243"><a href="#cb13-243" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-244"><a href="#cb13-244" aria-hidden="true" tabindex="-1"></a><span class="co"># Column groups</span></span>
-<span id="cb13-245"><a href="#cb13-245" aria-hidden="true" tabindex="-1"></a><span class="fu">col_group</span>(<span class="st">"Treatment"</span>, <span class="fu">col_n</span>(<span class="st">"n_tx"</span>), <span class="fu">col_events</span>(<span class="st">"ev_tx"</span>, <span class="st">"n_tx"</span>), <span class="at">position =</span> <span class="st">"left"</span>)</span>
-<span id="cb13-246"><a href="#cb13-246" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-247"><a href="#cb13-247" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical grouping</span></span>
-<span id="cb13-248"><a href="#cb13-248" aria-hidden="true" tabindex="-1"></a>group <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>)</span>
-<span id="cb13-249"><a href="#cb13-249" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Cheatsheet"</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>Quick reference for tabviz functions and arguments.</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="fu">## Visual Layout</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="in">+---------------------------------------------------------------------------+</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="in">|  [title]                                                                  |</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="in">|  [subtitle]                                                               |</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="in">+---------------------------------------------------------------------------+</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="in">| [label column]  [left columns...]  | FOREST PLOT |  [right columns...]    |</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="in">|                                    |             |                        |</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="in">| &gt; Group Header                     |    null_    |                        |</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="in">|   Study A        N    Events       | &lt;--*--&gt;     |   HR (95% CI)   P-val  |</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="in">|   Study B        N    Events       |    &lt;--*--&gt;  |   HR (95% CI)   P-val  |</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="in">|   Study C        N    Events       |  &lt;--*--&gt;    |   HR (95% CI)   P-val  |</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="in">|                                    |     value   |                        |</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="in">| &gt; Another Group                    |      |      |                        |</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a><span class="in">|   Study D        N    Events       |   &lt;--*--&gt;   |   HR (95% CI)   P-val  |</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="in">+---------------------------------------------------------------------------+</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a><span class="in">|  [axis_label]                                                             |</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a><span class="in">+---------------------------------------------------------------------------+</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a><span class="in">|  [caption]                                                  [footnote]    |</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a><span class="in">+---------------------------------------------------------------------------+</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Core Functions</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a><span class="fu">### `tabviz()` - Main Entry Point</span></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(</span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>  data,                 <span class="co"># data.frame</span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,      <span class="co"># column with row labels</span></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,   <span class="co"># column(s) for grouping</span></span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(       <span class="co"># col_*() specifications</span></span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_text</span>(<span class="st">"category"</span>),</span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>),</span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_numeric</span>(<span class="st">"n"</span>)</span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_jama</span>()</span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a><span class="fu">### `tabviz()` with `col_forest()` - Forest Plot</span></span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(</span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>  data,                 <span class="co"># data.frame</span></span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,      <span class="co"># column with row labels</span></span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,   <span class="co"># column(s) for grouping</span></span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_forest</span>(</span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a>      <span class="at">point =</span> <span class="st">"hr"</span>,     <span class="co"># column with point estimates</span></span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a>      <span class="at">lower =</span> <span class="st">"lower"</span>,  <span class="co"># column with lower CI</span></span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a>      <span class="at">upper =</span> <span class="st">"upper"</span>,  <span class="co"># column with upper CI</span></span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a>      <span class="at">scale =</span> <span class="st">"log"</span>,    <span class="co"># "log" or "linear"</span></span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a>      <span class="at">null_value =</span> <span class="dv">1</span>,   <span class="co"># reference line value</span></span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis_label =</span> <span class="st">"HR"</span> <span class="co"># x-axis label</span></span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true" tabindex="-1"></a>    ...                 <span class="co"># additional col_*() specifications</span></span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">web_theme_jama</span>()</span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a><span class="fu">## Column Types</span></span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Purpose <span class="pp">|</span> Example <span class="pp">|</span></span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|---------|---------|</span></span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_text()`</span> <span class="pp">|</span> Text values <span class="pp">|</span> <span class="in">`col_text("category")`</span> <span class="pp">|</span></span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_numeric()`</span> <span class="pp">|</span> Formatted numbers <span class="pp">|</span> <span class="in">`col_numeric("n", decimals = 0)`</span> <span class="pp">|</span></span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_interval()`</span> <span class="pp">|</span> Point (CI) format <span class="pp">|</span> <span class="in">`col_interval(point = "hr", lower = "lo", upper = "hi")`</span> <span class="pp">|</span></span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_forest()`</span> <span class="pp">|</span> Forest plot column <span class="pp">|</span> <span class="in">`col_forest(point = "hr", lower = "lo", upper = "hi")`</span> <span class="pp">|</span></span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_n()`</span> <span class="pp">|</span> Sample sizes <span class="pp">|</span> <span class="in">`col_n("n", abbreviate = TRUE)`</span> <span class="pp">|</span></span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_percent()`</span> <span class="pp">|</span> Percentages <span class="pp">|</span> <span class="in">`col_percent("rate")`</span> <span class="pp">|</span></span>
+<span id="cb14-84"><a href="#cb14-84" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_events()`</span> <span class="pp">|</span> Events/N format <span class="pp">|</span> <span class="in">`col_events("events", "n")`</span> <span class="pp">|</span></span>
+<span id="cb14-85"><a href="#cb14-85" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_pvalue()`</span> <span class="pp">|</span> P-values with stars <span class="pp">|</span> <span class="in">`col_pvalue("pval", stars = TRUE)`</span> <span class="pp">|</span></span>
+<span id="cb14-86"><a href="#cb14-86" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_bar()`</span> <span class="pp">|</span> Horizontal bars <span class="pp">|</span> <span class="in">`col_bar("weight")`</span> <span class="pp">|</span></span>
+<span id="cb14-87"><a href="#cb14-87" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_sparkline()`</span> <span class="pp">|</span> Mini charts <span class="pp">|</span> <span class="in">`col_sparkline("trend")`</span> <span class="pp">|</span></span>
+<span id="cb14-88"><a href="#cb14-88" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_badge()`</span> <span class="pp">|</span> Colored badges <span class="pp">|</span> <span class="in">`col_badge("status")`</span> <span class="pp">|</span></span>
+<span id="cb14-89"><a href="#cb14-89" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_icon()`</span> <span class="pp">|</span> Icons/emoji <span class="pp">|</span> <span class="in">`col_icon("flag")`</span> <span class="pp">|</span></span>
+<span id="cb14-90"><a href="#cb14-90" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_stars()`</span> <span class="pp">|</span> Star ratings <span class="pp">|</span> <span class="in">`col_stars("quality")`</span> <span class="pp">|</span></span>
+<span id="cb14-91"><a href="#cb14-91" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_img()`</span> <span class="pp">|</span> Inline images <span class="pp">|</span> <span class="in">`col_img("logo_url")`</span> <span class="pp">|</span></span>
+<span id="cb14-92"><a href="#cb14-92" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_reference()`</span> <span class="pp">|</span> Truncated links <span class="pp">|</span> <span class="in">`col_reference("doi")`</span> <span class="pp">|</span></span>
+<span id="cb14-93"><a href="#cb14-93" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_range()`</span> <span class="pp">|</span> Min-max ranges <span class="pp">|</span> <span class="in">`col_range("min", "max")`</span> <span class="pp">|</span></span>
+<span id="cb14-94"><a href="#cb14-94" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`col_group()`</span> <span class="pp">|</span> Group columns <span class="pp">|</span> <span class="in">`col_group("Results", col_interval(point = "hr", lower = "lo", upper = "hi"), col_pvalue("p"))`</span> <span class="pp">|</span></span>
+<span id="cb14-95"><a href="#cb14-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-96"><a href="#cb14-96" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-97"><a href="#cb14-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-98"><a href="#cb14-98" aria-hidden="true" tabindex="-1"></a><span class="fu">## Row Styling Arguments</span></span>
+<span id="cb14-99"><a href="#cb14-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-100"><a href="#cb14-100" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Values <span class="pp">|</span> Effect <span class="pp">|</span></span>
+<span id="cb14-101"><a href="#cb14-101" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|--------|--------|</span></span>
+<span id="cb14-102"><a href="#cb14-102" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_type`</span> <span class="pp">|</span> <span class="in">`"data"`</span>, <span class="in">`"header"`</span>, <span class="in">`"summary"`</span>, <span class="in">`"spacer"`</span> <span class="pp">|</span> Row behavior <span class="pp">|</span></span>
+<span id="cb14-103"><a href="#cb14-103" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_bold`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Bold text <span class="pp">|</span></span>
+<span id="cb14-104"><a href="#cb14-104" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_italic`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Italic text <span class="pp">|</span></span>
+<span id="cb14-105"><a href="#cb14-105" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_color`</span> <span class="pp">|</span> CSS color <span class="pp">|</span> Text color <span class="pp">|</span></span>
+<span id="cb14-106"><a href="#cb14-106" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_bg`</span> <span class="pp">|</span> CSS color <span class="pp">|</span> Background color <span class="pp">|</span></span>
+<span id="cb14-107"><a href="#cb14-107" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_indent`</span> <span class="pp">|</span> <span class="in">`0`</span>, <span class="in">`1`</span>, <span class="in">`2`</span>... <span class="pp">|</span> Indentation level <span class="pp">|</span></span>
+<span id="cb14-108"><a href="#cb14-108" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_badge`</span> <span class="pp">|</span> Text <span class="pp">|</span> Badge label <span class="pp">|</span></span>
+<span id="cb14-109"><a href="#cb14-109" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_emphasis`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Bold + primary color <span class="pp">|</span></span>
+<span id="cb14-110"><a href="#cb14-110" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_muted`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Lighter color <span class="pp">|</span></span>
+<span id="cb14-111"><a href="#cb14-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_accent`</span> <span class="pp">|</span> <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> <span class="pp">|</span> Accent color <span class="pp">|</span></span>
+<span id="cb14-112"><a href="#cb14-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-113"><a href="#cb14-113" aria-hidden="true" tabindex="-1"></a>All accept column names or formula expressions: <span class="in">`row_bold = ~ pval &lt; 0.05`</span></span>
+<span id="cb14-114"><a href="#cb14-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-115"><a href="#cb14-115" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-116"><a href="#cb14-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-117"><a href="#cb14-117" aria-hidden="true" tabindex="-1"></a><span class="fu">## Marker Styling Arguments</span></span>
+<span id="cb14-118"><a href="#cb14-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-119"><a href="#cb14-119" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Values <span class="pp">|</span> Effect <span class="pp">|</span></span>
+<span id="cb14-120"><a href="#cb14-120" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|--------|--------|</span></span>
+<span id="cb14-121"><a href="#cb14-121" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_color`</span> <span class="pp">|</span> CSS color <span class="pp">|</span> Fill color <span class="pp">|</span></span>
+<span id="cb14-122"><a href="#cb14-122" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_shape`</span> <span class="pp">|</span> <span class="in">`"square"`</span>, <span class="in">`"circle"`</span>, <span class="in">`"diamond"`</span>, <span class="in">`"triangle"`</span> <span class="pp">|</span> Shape <span class="pp">|</span></span>
+<span id="cb14-123"><a href="#cb14-123" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_opacity`</span> <span class="pp">|</span> <span class="in">`0`</span> to <span class="in">`1`</span> <span class="pp">|</span> Transparency <span class="pp">|</span></span>
+<span id="cb14-124"><a href="#cb14-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marker_size`</span> <span class="pp">|</span> Multiplier <span class="pp">|</span> Size (1 = default) <span class="pp">|</span></span>
+<span id="cb14-125"><a href="#cb14-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-126"><a href="#cb14-126" aria-hidden="true" tabindex="-1"></a>All accept column names or formula expressions: <span class="in">`marker_color = ~ ifelse(sig, "green", "gray")`</span></span>
+<span id="cb14-127"><a href="#cb14-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-128"><a href="#cb14-128" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-129"><a href="#cb14-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-130"><a href="#cb14-130" aria-hidden="true" tabindex="-1"></a><span class="fu">## Built-in Themes</span></span>
+<span id="cb14-131"><a href="#cb14-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-132"><a href="#cb14-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Theme <span class="pp">|</span> Style <span class="pp">|</span></span>
+<span id="cb14-133"><a href="#cb14-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|-------|-------|</span></span>
+<span id="cb14-134"><a href="#cb14-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_default()`</span> <span class="pp">|</span> Clean, modern default <span class="pp">|</span></span>
+<span id="cb14-135"><a href="#cb14-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_jama()`</span> <span class="pp">|</span> JAMA publication style <span class="pp">|</span></span>
+<span id="cb14-136"><a href="#cb14-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_lancet()`</span> <span class="pp">|</span> Lancet publication style <span class="pp">|</span></span>
+<span id="cb14-137"><a href="#cb14-137" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_nature()`</span> <span class="pp">|</span> Nature publication style <span class="pp">|</span></span>
+<span id="cb14-138"><a href="#cb14-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_cochrane()`</span> <span class="pp">|</span> Cochrane review style <span class="pp">|</span></span>
+<span id="cb14-139"><a href="#cb14-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_modern()`</span> <span class="pp">|</span> Contemporary with gradients <span class="pp">|</span></span>
+<span id="cb14-140"><a href="#cb14-140" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_presentation()`</span> <span class="pp">|</span> Large text for slides <span class="pp">|</span></span>
+<span id="cb14-141"><a href="#cb14-141" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_dark()`</span> <span class="pp">|</span> Dark mode <span class="pp">|</span></span>
+<span id="cb14-142"><a href="#cb14-142" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`web_theme_minimal()`</span> <span class="pp">|</span> Maximum density <span class="pp">|</span></span>
+<span id="cb14-143"><a href="#cb14-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-144"><a href="#cb14-144" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-145"><a href="#cb14-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-146"><a href="#cb14-146" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme Modifier Functions</span></span>
+<span id="cb14-147"><a href="#cb14-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-148"><a href="#cb14-148" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-149"><a href="#cb14-149" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(..., <span class="at">theme =</span> <span class="fu">web_theme_default</span>() <span class="sc">|&gt;</span></span>
+<span id="cb14-150"><a href="#cb14-150" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_colors</span>(<span class="at">primary =</span> <span class="st">"#2563eb"</span>, ...) <span class="sc">|&gt;</span></span>
+<span id="cb14-151"><a href="#cb14-151" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_typography</span>(<span class="at">font_family =</span> <span class="st">"Georgia"</span>, <span class="at">font_size_base =</span> <span class="st">"0.9rem"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-152"><a href="#cb14-152" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_spacing</span>(<span class="at">row_height =</span> <span class="dv">28</span>, <span class="at">header_height =</span> <span class="dv">32</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-153"><a href="#cb14-153" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_shapes</span>(<span class="at">point_size =</span> <span class="dv">6</span>, <span class="at">line_width =</span> <span class="fl">1.5</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-154"><a href="#cb14-154" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_axis</span>(<span class="at">gridlines =</span> <span class="cn">TRUE</span>, <span class="at">gridline_style =</span> <span class="st">"dashed"</span>)</span>
+<span id="cb14-155"><a href="#cb14-155" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-156"><a href="#cb14-156" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-157"><a href="#cb14-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-158"><a href="#cb14-158" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-159"><a href="#cb14-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-160"><a href="#cb14-160" aria-hidden="true" tabindex="-1"></a><span class="fu">## Fluent API (Pipe-Based)</span></span>
+<span id="cb14-161"><a href="#cb14-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-162"><a href="#cb14-162" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-163"><a href="#cb14-163" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(...))) <span class="sc">|&gt;</span></span>
+<span id="cb14-164"><a href="#cb14-164" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="sc">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="at">emphasis =</span> <span class="st">"is_primary"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-165"><a href="#cb14-165" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb14-166"><a href="#cb14-166" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_column_style</span>(<span class="st">"hr"</span>, <span class="at">bold =</span> <span class="sc">~</span> .x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(.x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"green"</span>, <span class="st">"red"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb14-167"><a href="#cb14-167" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme</span>(<span class="st">"jama"</span>)</span>
+<span id="cb14-168"><a href="#cb14-168" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-169"><a href="#cb14-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-170"><a href="#cb14-170" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-171"><a href="#cb14-171" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-172"><a href="#cb14-172" aria-hidden="true" tabindex="-1"></a><span class="fu">## Formula Expressions (NSE)</span></span>
+<span id="cb14-173"><a href="#cb14-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-174"><a href="#cb14-174" aria-hidden="true" tabindex="-1"></a>**Row/Marker styling** - reference any column:</span>
+<span id="cb14-175"><a href="#cb14-175" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-176"><a href="#cb14-176" aria-hidden="true" tabindex="-1"></a>row_bold <span class="ot">=</span> <span class="er">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span></span>
+<span id="cb14-177"><a href="#cb14-177" aria-hidden="true" tabindex="-1"></a>marker_color <span class="ot">=</span> <span class="er">~</span> <span class="fu">case_when</span>(</span>
+<span id="cb14-178"><a href="#cb14-178" aria-hidden="true" tabindex="-1"></a>  upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,  <span class="co"># Significant benefit</span></span>
+<span id="cb14-179"><a href="#cb14-179" aria-hidden="true" tabindex="-1"></a>  lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,  <span class="co"># Significant harm</span></span>
+<span id="cb14-180"><a href="#cb14-180" aria-hidden="true" tabindex="-1"></a>  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span>        <span class="co"># Not significant</span></span>
+<span id="cb14-181"><a href="#cb14-181" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-182"><a href="#cb14-182" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-183"><a href="#cb14-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-184"><a href="#cb14-184" aria-hidden="true" tabindex="-1"></a>**Cell styling** - use <span class="in">`.x`</span> for the column's own values:</span>
+<span id="cb14-185"><a href="#cb14-185" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-186"><a href="#cb14-186" aria-hidden="true" tabindex="-1"></a><span class="fu">col_pvalue</span>(<span class="st">"pval"</span>, <span class="at">bold =</span> <span class="sc">~</span> .x <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb14-187"><a href="#cb14-187" aria-hidden="true" tabindex="-1"></a><span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="at">color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(.x <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"green"</span>, <span class="st">"red"</span>))</span>
+<span id="cb14-188"><a href="#cb14-188" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-189"><a href="#cb14-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-190"><a href="#cb14-190" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-191"><a href="#cb14-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-192"><a href="#cb14-192" aria-hidden="true" tabindex="-1"></a><span class="fu">## Interactivity</span></span>
+<span id="cb14-193"><a href="#cb14-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-194"><a href="#cb14-194" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-195"><a href="#cb14-195" aria-hidden="true" tabindex="-1"></a><span class="co"># Tooltips on hover</span></span>
+<span id="cb14-196"><a href="#cb14-196" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction</span>(<span class="at">tooltip_fields =</span> <span class="fu">c</span>(<span class="st">"n"</span>, <span class="st">"events"</span>, <span class="st">"pvalue"</span>))</span>
+<span id="cb14-197"><a href="#cb14-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-198"><a href="#cb14-198" aria-hidden="true" tabindex="-1"></a><span class="co"># Read-only (no sorting/selection)</span></span>
+<span id="cb14-199"><a href="#cb14-199" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction_minimal</span>()</span>
+<span id="cb14-200"><a href="#cb14-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-201"><a href="#cb14-201" aria-hidden="true" tabindex="-1"></a><span class="co"># Fully static (for print)</span></span>
+<span id="cb14-202"><a href="#cb14-202" aria-hidden="true" tabindex="-1"></a>interaction <span class="ot">=</span> <span class="fu">web_interaction_publication</span>()</span>
+<span id="cb14-203"><a href="#cb14-203" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-204"><a href="#cb14-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-205"><a href="#cb14-205" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-206"><a href="#cb14-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-207"><a href="#cb14-207" aria-hidden="true" tabindex="-1"></a><span class="fu">## Multiple Effects</span></span>
+<span id="cb14-208"><a href="#cb14-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-209"><a href="#cb14-209" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-210"><a href="#cb14-210" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb14-211"><a href="#cb14-211" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_forest</span>(</span>
+<span id="cb14-212"><a href="#cb14-212" aria-hidden="true" tabindex="-1"></a>    <span class="at">effects =</span> <span class="fu">list</span>(</span>
+<span id="cb14-213"><a href="#cb14-213" aria-hidden="true" tabindex="-1"></a>      <span class="fu">web_effect</span>(<span class="st">"itt_hr"</span>, <span class="st">"itt_lo"</span>, <span class="st">"itt_hi"</span>, <span class="at">label =</span> <span class="st">"ITT"</span>, <span class="at">color =</span> <span class="st">"#2563eb"</span>),</span>
+<span id="cb14-214"><a href="#cb14-214" aria-hidden="true" tabindex="-1"></a>      <span class="fu">web_effect</span>(<span class="st">"pp_hr"</span>, <span class="st">"pp_lo"</span>, <span class="st">"pp_hi"</span>, <span class="at">label =</span> <span class="st">"Per-Protocol"</span>, <span class="at">color =</span> <span class="st">"#16a34a"</span>)</span>
+<span id="cb14-215"><a href="#cb14-215" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb14-216"><a href="#cb14-216" aria-hidden="true" tabindex="-1"></a>    <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span></span>
+<span id="cb14-217"><a href="#cb14-217" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb14-218"><a href="#cb14-218" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb14-219"><a href="#cb14-219" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-220"><a href="#cb14-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-221"><a href="#cb14-221" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-222"><a href="#cb14-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-223"><a href="#cb14-223" aria-hidden="true" tabindex="-1"></a><span class="fu">## Annotations</span></span>
+<span id="cb14-224"><a href="#cb14-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-225"><a href="#cb14-225" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-226"><a href="#cb14-226" aria-hidden="true" tabindex="-1"></a>annotations <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb14-227"><a href="#cb14-227" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_refline</span>(<span class="fl">0.8</span>, <span class="at">label =</span> <span class="st">"Threshold"</span>, <span class="at">style =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"#e11d48"</span>)</span>
+<span id="cb14-228"><a href="#cb14-228" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-229"><a href="#cb14-229" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-230"><a href="#cb14-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-231"><a href="#cb14-231" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-232"><a href="#cb14-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-233"><a href="#cb14-233" aria-hidden="true" tabindex="-1"></a><span class="fu">## Split Plots</span></span>
+<span id="cb14-234"><a href="#cb14-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-235"><a href="#cb14-235" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-236"><a href="#cb14-236" aria-hidden="true" tabindex="-1"></a><span class="co"># Single variable split</span></span>
+<span id="cb14-237"><a href="#cb14-237" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(...)), <span class="at">split_by =</span> <span class="st">"region"</span>)</span>
+<span id="cb14-238"><a href="#cb14-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-239"><a href="#cb14-239" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical split</span></span>
+<span id="cb14-240"><a href="#cb14-240" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(...)), <span class="at">split_by =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>), <span class="at">shared_axis =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-241"><a href="#cb14-241" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-242"><a href="#cb14-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-243"><a href="#cb14-243" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-244"><a href="#cb14-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-245"><a href="#cb14-245" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exporting</span></span>
+<span id="cb14-246"><a href="#cb14-246" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-247"><a href="#cb14-247" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-248"><a href="#cb14-248" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to file</span></span>
+<span id="cb14-249"><a href="#cb14-249" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">tabviz</span>(data, ...)</span>
+<span id="cb14-250"><a href="#cb14-250" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.svg"</span>)               <span class="co"># Vector</span></span>
+<span id="cb14-251"><a href="#cb14-251" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.png"</span>, <span class="at">scale =</span> <span class="dv">2</span>)    <span class="co"># Raster (2x resolution)</span></span>
+<span id="cb14-252"><a href="#cb14-252" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"plot.pdf"</span>)               <span class="co"># Print</span></span>
+<span id="cb14-253"><a href="#cb14-253" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-254"><a href="#cb14-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-255"><a href="#cb14-255" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-256"><a href="#cb14-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-257"><a href="#cb14-257" aria-hidden="true" tabindex="-1"></a><span class="fu">## Quick Patterns</span></span>
+<span id="cb14-258"><a href="#cb14-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-259"><a href="#cb14-259" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-260"><a href="#cb14-260" aria-hidden="true" tabindex="-1"></a><span class="co"># Log scale for ratios</span></span>
+<span id="cb14-261"><a href="#cb14-261" aria-hidden="true" tabindex="-1"></a><span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>, <span class="at">scale =</span> <span class="st">"log"</span>, <span class="at">null_value =</span> <span class="dv">1</span>)</span>
+<span id="cb14-262"><a href="#cb14-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-263"><a href="#cb14-263" aria-hidden="true" tabindex="-1"></a><span class="co"># Linear scale for differences</span></span>
+<span id="cb14-264"><a href="#cb14-264" aria-hidden="true" tabindex="-1"></a><span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"md"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>, <span class="at">scale =</span> <span class="st">"linear"</span>, <span class="at">null_value =</span> <span class="dv">0</span>)</span>
+<span id="cb14-265"><a href="#cb14-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-266"><a href="#cb14-266" aria-hidden="true" tabindex="-1"></a><span class="co"># Significant results bold</span></span>
+<span id="cb14-267"><a href="#cb14-267" aria-hidden="true" tabindex="-1"></a>row_bold <span class="ot">=</span> <span class="er">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span></span>
+<span id="cb14-268"><a href="#cb14-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-269"><a href="#cb14-269" aria-hidden="true" tabindex="-1"></a><span class="co"># Color by direction</span></span>
+<span id="cb14-270"><a href="#cb14-270" aria-hidden="true" tabindex="-1"></a>marker_color <span class="ot">=</span> <span class="er">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#94a3b8"</span>)</span>
+<span id="cb14-271"><a href="#cb14-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-272"><a href="#cb14-272" aria-hidden="true" tabindex="-1"></a><span class="co"># Column groups</span></span>
+<span id="cb14-273"><a href="#cb14-273" aria-hidden="true" tabindex="-1"></a><span class="fu">col_group</span>(<span class="st">"Treatment"</span>, <span class="fu">col_n</span>(<span class="st">"n_tx"</span>), <span class="fu">col_events</span>(<span class="st">"ev_tx"</span>, <span class="st">"n_tx"</span>))</span>
+<span id="cb14-274"><a href="#cb14-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-275"><a href="#cb14-275" aria-hidden="true" tabindex="-1"></a><span class="co"># Hierarchical grouping</span></span>
+<span id="cb14-276"><a href="#cb14-276" aria-hidden="true" tabindex="-1"></a>group <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"country"</span>)</span>
+<span id="cb14-277"><a href="#cb14-277" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="How webforest generates static images from both R and the browser">
+<meta name="description" content="How tabviz generates static images from both R and the browser">
 
-<title>Export System Architecture – webforest</title>
+<title>Export System Architecture – tabviz</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -117,7 +117,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
-    <span class="navbar-title">webforest</span>
+    <span class="navbar-title">tabviz</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -132,18 +132,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-guide">    
         <li>
+    <a class="dropdown-item" href="../guide/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
     <a class="dropdown-item" href="../guide/quick-start.html">
  <span class="dropdown-text">1. Quick Start</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../guide/forest-plots.html">
- <span class="dropdown-text">2. Forest Plots</span></a>
+    <a class="dropdown-item" href="../guide/package-data.html">
+ <span class="dropdown-text">2. Package Data</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../guide/columns.html">
  <span class="dropdown-text">3. Columns</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/row-styling.html">
  <span class="dropdown-text">4. Row Styling</span></a>
@@ -157,26 +162,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">6. Row Groups</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../guide/titles.html">
+ <span class="dropdown-text">7. Titles and Labels</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/index.html">
+ <span class="dropdown-text">8. Visualizations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/forest-plots.html">
+ <span class="dropdown-text">9. Forest Plots</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../guide/split-plots.html">
- <span class="dropdown-text">7. Split Plots</span></a>
+ <span class="dropdown-text">10. Split Plots</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/themes.html">
- <span class="dropdown-text">8. Themes</span></a>
+ <span class="dropdown-text">11. Themes</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="../guide/fluent-api.html">
- <span class="dropdown-text">9. The Fluent API</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/shiny.html">
- <span class="dropdown-text">10. Shiny Integration</span></a>
+ <span class="dropdown-text">12. Shiny Integration</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../guide/package-data.html">
- <span class="dropdown-text">11. Package Data</span></a>
+    <a class="dropdown-item" href="../guide/export.html">
+ <span class="dropdown-text">13. Export</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
   </li>  
     </ul>
   </li>
@@ -190,12 +222,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
         <li>
-    <a class="dropdown-item" href="../gallery-basic.html">
- <span class="dropdown-text">Basic Examples</span></a>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../gallery-advanced.html">
- <span class="dropdown-text">Advanced Examples</span></a>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
   </li>  
     </ul>
   </li>
@@ -210,48 +251,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../reference/forest_plot.html">
- <span class="dropdown-text">forest_plot()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/styling.html">
- <span class="dropdown-text">Styling Functions</span></a>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="../reference/split_forest.html">
- <span class="dropdown-text">split_forest()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/webtable.html">
- <span class="dropdown-text">webtable()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/save_plot.html">
- <span class="dropdown-text">save_plot()</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="../reference/themes.html">
- <span class="dropdown-text">Themes</span></a>
-  </li>  
         <li>
     <a class="dropdown-item" href="../reference/columns.html">
  <span class="dropdown-text">Columns</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../reference/annotations.html">
  <span class="dropdown-text">Annotations</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../reference/shiny.html">
  <span class="dropdown-text">Shiny</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../reference/web_spec.html">
- <span class="dropdown-text">Advanced: Specifications</span></a>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../reference/troubleshooting.html">
  <span class="dropdown-text">Troubleshooting</span></a>
@@ -259,24 +288,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-technical" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Technical</span>
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
     </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-technical">    
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
         <li>
-    <a class="dropdown-item" href="../technical/s7-classes.html">
- <span class="dropdown-text">S7 Class Architecture</span></a>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../technical/export-system.html">
- <span class="dropdown-text">Export System</span></a>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
   </li>  
     </ul>
   </li>
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/kaskarn/webforest"> <i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -343,7 +372,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div>
   <div class="description">
-    How webforest generates static images from both R and the browser
+    How tabviz generates static images from both R and the browser
   </div>
 </div>
 
@@ -362,7 +391,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>webforest uses a <strong>unified rendering architecture</strong> for static image export. The same JavaScript SVG generator powers both:</p>
+<p>tabviz uses a <strong>unified rendering architecture</strong> for static image export. The same JavaScript SVG generator powers both:</p>
 <ul>
 <li><strong>R-side</strong>: <code>save_plot()</code> function (via the V8 package)</li>
 <li><strong>Web-side</strong>: Download button in interactive plots</li>
@@ -470,7 +499,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>inst/htmlwidgets/webforest.js</code></td>
+<td><code>inst/htmlwidgets/tabviz.js</code></td>
 <td>Full widget bundle (includes Svelte UI)</td>
 <td>~142 KB</td>
 </tr>
@@ -1095,12 +1124,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Export System Architecture"</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "How webforest generates static images from both R and the browser"</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="an">description:</span><span class="co"> "How tabviz generates static images from both R and the browser"</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="fu">## Overview</span></span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>webforest uses a **unified rendering architecture** for static image export. The same JavaScript SVG generator powers both:</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>tabviz uses a **unified rendering architecture** for static image export. The same JavaScript SVG generator powers both:</span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**R-side**: <span class="in">`save_plot()`</span> function (via the V8 package)</span>
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Web-side**: Download button in interactive plots</span>
@@ -1204,7 +1233,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-109"><a href="#cb14-109" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-110"><a href="#cb14-110" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> File <span class="pp">|</span> Purpose <span class="pp">|</span> Size <span class="pp">|</span></span>
 <span id="cb14-111"><a href="#cb14-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|------|---------|------|</span></span>
-<span id="cb14-112"><a href="#cb14-112" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inst/htmlwidgets/webforest.js`</span> <span class="pp">|</span> Full widget bundle (includes Svelte UI) <span class="pp">|</span> ~142 KB <span class="pp">|</span></span>
+<span id="cb14-112"><a href="#cb14-112" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inst/htmlwidgets/tabviz.js`</span> <span class="pp">|</span> Full widget bundle (includes Svelte UI) <span class="pp">|</span> ~142 KB <span class="pp">|</span></span>
 <span id="cb14-113"><a href="#cb14-113" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inst/js/svg-generator.js`</span> <span class="pp">|</span> Standalone for V8 (export only) <span class="pp">|</span> ~11 KB <span class="pp">|</span></span>
 <span id="cb14-114"><a href="#cb14-114" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-115"><a href="#cb14-115" aria-hidden="true" tabindex="-1"></a>Build commands:</span>

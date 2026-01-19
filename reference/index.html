@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Function Reference – webforest</title>
+<title>Function Reference – tabviz</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -116,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
-    <span class="navbar-title">webforest</span>
+    <span class="navbar-title">tabviz</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -131,18 +131,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-guide">    
         <li>
+    <a class="dropdown-item" href="../guide/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
     <a class="dropdown-item" href="../guide/quick-start.html">
  <span class="dropdown-text">1. Quick Start</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../guide/forest-plots.html">
- <span class="dropdown-text">2. Forest Plots</span></a>
+    <a class="dropdown-item" href="../guide/package-data.html">
+ <span class="dropdown-text">2. Package Data</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../guide/columns.html">
  <span class="dropdown-text">3. Columns</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/row-styling.html">
  <span class="dropdown-text">4. Row Styling</span></a>
@@ -156,26 +161,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">6. Row Groups</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../guide/titles.html">
+ <span class="dropdown-text">7. Titles and Labels</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/index.html">
+ <span class="dropdown-text">8. Visualizations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/forest-plots.html">
+ <span class="dropdown-text">9. Forest Plots</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../guide/split-plots.html">
- <span class="dropdown-text">7. Split Plots</span></a>
+ <span class="dropdown-text">10. Split Plots</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/themes.html">
- <span class="dropdown-text">8. Themes</span></a>
+ <span class="dropdown-text">11. Themes</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="../guide/fluent-api.html">
- <span class="dropdown-text">9. The Fluent API</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/shiny.html">
- <span class="dropdown-text">10. Shiny Integration</span></a>
+ <span class="dropdown-text">12. Shiny Integration</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../guide/package-data.html">
- <span class="dropdown-text">11. Package Data</span></a>
+    <a class="dropdown-item" href="../guide/export.html">
+ <span class="dropdown-text">13. Export</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
   </li>  
     </ul>
   </li>
@@ -189,12 +221,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
         <li>
-    <a class="dropdown-item" href="../gallery-basic.html">
- <span class="dropdown-text">Basic Examples</span></a>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../gallery-advanced.html">
- <span class="dropdown-text">Advanced Examples</span></a>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
   </li>  
     </ul>
   </li>
@@ -209,48 +250,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../reference/forest_plot.html">
- <span class="dropdown-text">forest_plot()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/styling.html">
- <span class="dropdown-text">Styling Functions</span></a>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="../reference/split_forest.html">
- <span class="dropdown-text">split_forest()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/webtable.html">
- <span class="dropdown-text">webtable()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/save_plot.html">
- <span class="dropdown-text">save_plot()</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="../reference/themes.html">
- <span class="dropdown-text">Themes</span></a>
-  </li>  
         <li>
     <a class="dropdown-item" href="../reference/columns.html">
  <span class="dropdown-text">Columns</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../reference/annotations.html">
  <span class="dropdown-text">Annotations</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../reference/shiny.html">
  <span class="dropdown-text">Shiny</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../reference/web_spec.html">
- <span class="dropdown-text">Advanced: Specifications</span></a>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../reference/troubleshooting.html">
  <span class="dropdown-text">Troubleshooting</span></a>
@@ -258,24 +287,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-technical" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Technical</span>
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
     </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-technical">    
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
         <li>
-    <a class="dropdown-item" href="../technical/s7-classes.html">
- <span class="dropdown-text">S7 Class Architecture</span></a>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../technical/export-system.html">
- <span class="dropdown-text">Export System</span></a>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
   </li>  
     </ul>
   </li>
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/kaskarn/webforest"> <i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -296,26 +325,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#core-functions" id="toc-core-functions" class="nav-link active" data-scroll-target="#core-functions">Core Functions</a></li>
-  <li><a href="#styling-functions" id="toc-styling-functions" class="nav-link" data-scroll-target="#styling-functions">Styling Functions</a></li>
-  <li><a href="#themes" id="toc-themes" class="nav-link" data-scroll-target="#themes">Themes</a>
-  <ul class="collapse">
-  <li><a href="#preset-themes" id="toc-preset-themes" class="nav-link" data-scroll-target="#preset-themes">Preset Themes</a></li>
-  <li><a href="#custom-theme-creation" id="toc-custom-theme-creation" class="nav-link" data-scroll-target="#custom-theme-creation">Custom Theme Creation</a></li>
-  <li><a href="#theme-modifiers" id="toc-theme-modifiers" class="nav-link" data-scroll-target="#theme-modifiers">Theme Modifiers</a></li>
-  </ul></li>
-  <li><a href="#columns" id="toc-columns" class="nav-link" data-scroll-target="#columns">Columns</a>
+  <li><a href="#column-types" id="toc-column-types" class="nav-link" data-scroll-target="#column-types">Column Types</a>
   <ul class="collapse">
   <li><a href="#basic-columns" id="toc-basic-columns" class="nav-link" data-scroll-target="#basic-columns">Basic Columns</a></li>
   <li><a href="#visualization-columns" id="toc-visualization-columns" class="nav-link" data-scroll-target="#visualization-columns">Visualization Columns</a></li>
   <li><a href="#column-groups" id="toc-column-groups" class="nav-link" data-scroll-target="#column-groups">Column Groups</a></li>
   </ul></li>
+  <li><a href="#styling-functions" id="toc-styling-functions" class="nav-link" data-scroll-target="#styling-functions">Styling Functions</a></li>
+  <li><a href="#themes" id="toc-themes" class="nav-link" data-scroll-target="#themes">Themes</a>
+  <ul class="collapse">
+  <li><a href="#preset-themes" id="toc-preset-themes" class="nav-link" data-scroll-target="#preset-themes">Preset Themes</a></li>
+  <li><a href="#theme-modifiers" id="toc-theme-modifiers" class="nav-link" data-scroll-target="#theme-modifiers">Theme Modifiers</a></li>
+  </ul></li>
   <li><a href="#annotations" id="toc-annotations" class="nav-link" data-scroll-target="#annotations">Annotations</a></li>
   <li><a href="#shiny-integration" id="toc-shiny-integration" class="nav-link" data-scroll-target="#shiny-integration">Shiny Integration</a>
   <ul class="collapse">
-  <li><a href="#forest-plot" id="toc-forest-plot" class="nav-link" data-scroll-target="#forest-plot">Forest Plot</a></li>
-  <li><a href="#split-forest" id="toc-split-forest" class="nav-link" data-scroll-target="#split-forest">Split Forest</a></li>
+  <li><a href="#standard-tables" id="toc-standard-tables" class="nav-link" data-scroll-target="#standard-tables">Standard Tables</a></li>
+  <li><a href="#split-tables" id="toc-split-tables" class="nav-link" data-scroll-target="#split-tables">Split Tables</a></li>
   </ul></li>
-  <li><a href="#advanced-specification-objects" id="toc-advanced-specification-objects" class="nav-link" data-scroll-target="#advanced-specification-objects">Advanced: Specification Objects</a></li>
+  <li><a href="#advanced" id="toc-advanced" class="nav-link" data-scroll-target="#advanced">Advanced</a></li>
   </ul>
 </nav>
     </div>
@@ -341,10 +369,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Complete reference for all webforest functions, organized by category.</p>
+<p>Complete reference for all tabviz functions, organized by category.</p>
 <section id="core-functions" class="level2">
 <h2 class="anchored" data-anchor-id="core-functions">Core Functions</h2>
-<p>The main entry points for creating visualizations. <code>forest_plot()</code> is the primary function for most use cases.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -354,31 +381,135 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../reference/forest_plot.html"><code>forest_plot()</code></a></td>
-<td>Create interactive forest plots</td>
+<td><a href="../reference/tabviz.html"><code>tabviz()</code></a></td>
+<td><strong>Main entry point</strong> - Create interactive tables with any columns</td>
 </tr>
 <tr class="even">
-<td><a href="../reference/webtable.html"><code>webtable()</code></a></td>
-<td>Create table-only widgets (no forest plot)</td>
-</tr>
-<tr class="odd">
-<td><a href="../reference/split_forest.html"><code>split_forest()</code></a></td>
-<td>Create split forest with sidebar navigation</td>
-</tr>
-<tr class="even">
-<td><a href="../reference/save_plot.html"><code>save_plot()</code></a></td>
+<td><a href="../reference/export.html"><code>save_plot()</code></a></td>
 <td>Export to SVG, PNG, or PDF</td>
 </tr>
+</tbody>
+</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a table with a forest plot column</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="st">"HR"</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_pvalue</span>(<span class="st">"pval"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="column-types" class="level2">
+<h2 class="anchored" data-anchor-id="column-types">Column Types</h2>
+<section id="basic-columns" class="level3">
+<h3 class="anchored" data-anchor-id="basic-columns">Basic Columns</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
 <tr class="odd">
-<td><a href="../reference/save_plot.html#save_split_forest"><code>save_split_forest()</code></a></td>
-<td>Export split forest to directory</td>
+<td><a href="../reference/columns.html#col_text"><code>col_text()</code></a></td>
+<td>Text column</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_numeric"><code>col_numeric()</code></a></td>
+<td>Numeric column with formatting</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_n"><code>col_n()</code></a></td>
+<td>Sample size column</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_percent"><code>col_percent()</code></a></td>
+<td>Percentage column</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_interval"><code>col_interval()</code></a></td>
+<td>Confidence interval display</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_events"><code>col_events()</code></a></td>
+<td>Events/N format</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_pvalue"><code>col_pvalue()</code></a></td>
+<td>P-value with formatting</td>
 </tr>
 </tbody>
 </table>
 </section>
+<section id="visualization-columns" class="level3">
+<h3 class="anchored" data-anchor-id="visualization-columns">Visualization Columns</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_forest"><code>col_forest()</code></a></td>
+<td><strong>Forest plot column</strong> with intervals</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_bar"><code>col_bar()</code></a></td>
+<td>Horizontal bar chart</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_sparkline"><code>col_sparkline()</code></a></td>
+<td>Inline sparkline</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_badge"><code>col_badge()</code></a></td>
+<td>Colored status badges</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_stars"><code>col_stars()</code></a></td>
+<td>Star ratings</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_icon"><code>col_icon()</code></a></td>
+<td>Icon/emoji column</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_img"><code>col_img()</code></a></td>
+<td>Inline images</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_reference"><code>col_reference()</code></a></td>
+<td>Truncated references with links</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_range"><code>col_range()</code></a></td>
+<td>Min-max range display</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="column-groups" class="level3">
+<h3 class="anchored" data-anchor-id="column-groups">Column Groups</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_group"><code>col_group()</code></a></td>
+<td>Group columns under header</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
 <section id="styling-functions" class="level2">
 <h2 class="anchored" data-anchor-id="styling-functions">Styling Functions</h2>
-<p>Style your plots using the fluent API. These functions work on both <code>forest_plot()</code> widgets and <code>WebSpec</code> objects.</p>
+<p>Apply styling using the fluent API with pipes:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -389,7 +520,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><a href="../reference/styling.html#set_row_style"><code>set_row_style()</code></a></td>
-<td>Apply row-level styling (bold, italic, color, type, indent)</td>
+<td>Row-level styling (bold, italic, color, type, indent)</td>
 </tr>
 <tr class="even">
 <td><a href="../reference/styling.html#set_marker_style"><code>set_marker_style()</code></a></td>
@@ -397,7 +528,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td><a href="../reference/styling.html#set_column_style"><code>set_column_style()</code></a></td>
-<td>Apply per-cell styling to specific columns</td>
+<td>Per-cell styling for specific columns</td>
 </tr>
 <tr class="even">
 <td><a href="../reference/styling.html#set_theme"><code>set_theme()</code></a></td>
@@ -405,24 +536,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Constructor Arguments vs Fluent API
+<span class="screen-reader-only">Note</span>Constructor Arguments vs Fluent API
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Every styling function has equivalent direct arguments in <code>forest_plot()</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># These produce identical results:</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">row_bold =</span> <span class="st">"is_summary"</span>, <span class="at">marker_color =</span> <span class="st">"dir_color"</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ...) <span class="sc">|&gt;</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"dir_color"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Use direct arguments when configuration is known upfront. Use the fluent API when styling depends on computation or you need multiple variants.</p>
+<p>Every styling function has equivalent direct arguments in <code>tabviz()</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># These produce identical results:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, ..., <span class="at">row_bold =</span> <span class="st">"is_summary"</span>, <span class="at">marker_color =</span> <span class="st">"dir_color"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, ...) <span class="sc">|&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"dir_color"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Use direct arguments when configuration is known upfront. Use the fluent API when styling depends on computation.</p>
 </div>
 </div>
 </section>
@@ -430,7 +561,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="themes">Themes</h2>
 <section id="preset-themes" class="level3">
 <h3 class="anchored" data-anchor-id="preset-themes">Preset Themes</h3>
-<p>Nine publication-ready themes for different contexts:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -478,26 +608,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="custom-theme-creation" class="level3">
-<h3 class="anchored" data-anchor-id="custom-theme-creation">Custom Theme Creation</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Function</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="../reference/themes.html#web_theme"><code>web_theme()</code></a></td>
-<td>Create custom theme with overrides</td>
-</tr>
-</tbody>
-</table>
-</section>
 <section id="theme-modifiers" class="level3">
 <h3 class="anchored" data-anchor-id="theme-modifiers">Theme Modifiers</h3>
-<p>Fine-tune theme properties. These work on both themes and plots:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -508,7 +620,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><a href="../reference/themes.html#set_colors"><code>set_colors()</code></a></td>
-<td>Customize theme colors</td>
+<td>Customize colors</td>
 </tr>
 <tr class="even">
 <td><a href="../reference/themes.html#set_typography"><code>set_typography()</code></a></td>
@@ -523,14 +635,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Customize shapes</td>
 </tr>
 <tr class="odd">
-<td><a href="../reference/themes.html#set_marker_colors"><code>set_marker_colors()</code></a></td>
-<td>Set multi-effect marker colors</td>
-</tr>
-<tr class="even">
-<td><a href="../reference/themes.html#set_marker_shapes"><code>set_marker_shapes()</code></a></td>
-<td>Set multi-effect marker shapes</td>
-</tr>
-<tr class="odd">
 <td><a href="../reference/themes.html#set_axis"><code>set_axis()</code></a></td>
 <td>Customize axis</td>
 </tr>
@@ -541,112 +645,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td><a href="../reference/themes.html#set_group_headers"><code>set_group_headers()</code></a></td>
 <td>Customize group header hierarchy</td>
-</tr>
-</tbody>
-</table>
-</section>
-</section>
-<section id="columns" class="level2">
-<h2 class="anchored" data-anchor-id="columns">Columns</h2>
-<section id="basic-columns" class="level3">
-<h3 class="anchored" data-anchor-id="basic-columns">Basic Columns</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Function</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="../reference/columns.html#col_text"><code>col_text()</code></a></td>
-<td>Text column</td>
-</tr>
-<tr class="even">
-<td><a href="../reference/columns.html#col_numeric"><code>col_numeric()</code></a></td>
-<td>Numeric column with formatting</td>
-</tr>
-<tr class="odd">
-<td><a href="../reference/columns.html#col_n"><code>col_n()</code></a></td>
-<td>Sample size column</td>
-</tr>
-<tr class="even">
-<td><a href="../reference/columns.html#col_percent"><code>col_percent()</code></a></td>
-<td>Percentage column</td>
-</tr>
-<tr class="odd">
-<td><a href="../reference/columns.html#col_interval"><code>col_interval()</code></a></td>
-<td>Confidence interval display</td>
-</tr>
-<tr class="even">
-<td><a href="../reference/columns.html#col_events"><code>col_events()</code></a></td>
-<td>Events/N format</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="visualization-columns" class="level3">
-<h3 class="anchored" data-anchor-id="visualization-columns">Visualization Columns</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Function</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="../reference/columns.html#col_bar"><code>col_bar()</code></a></td>
-<td>Horizontal bar chart</td>
-</tr>
-<tr class="even">
-<td><a href="../reference/columns.html#col_pvalue"><code>col_pvalue()</code></a></td>
-<td>P-value with formatting</td>
-</tr>
-<tr class="odd">
-<td><a href="../reference/columns.html#col_sparkline"><code>col_sparkline()</code></a></td>
-<td>Inline sparkline</td>
-</tr>
-<tr class="even">
-<td><a href="../reference/columns.html#col_icon"><code>col_icon()</code></a></td>
-<td>Icon/emoji column</td>
-</tr>
-<tr class="odd">
-<td><a href="../reference/columns.html#col_badge"><code>col_badge()</code></a></td>
-<td>Colored status badges</td>
-</tr>
-<tr class="even">
-<td><a href="../reference/columns.html#col_stars"><code>col_stars()</code></a></td>
-<td>Star ratings</td>
-</tr>
-<tr class="odd">
-<td><a href="../reference/columns.html#col_img"><code>col_img()</code></a></td>
-<td>Inline images</td>
-</tr>
-<tr class="even">
-<td><a href="../reference/columns.html#col_reference"><code>col_reference()</code></a></td>
-<td>Truncated references with links</td>
-</tr>
-<tr class="odd">
-<td><a href="../reference/columns.html#col_range"><code>col_range()</code></a></td>
-<td>Min-max range display</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="column-groups" class="level3">
-<h3 class="anchored" data-anchor-id="column-groups">Column Groups</h3>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Function</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><a href="../reference/columns.html#col_group"><code>col_group()</code></a></td>
-<td>Group columns under header</td>
 </tr>
 </tbody>
 </table>
@@ -675,8 +673,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="shiny-integration" class="level2">
 <h2 class="anchored" data-anchor-id="shiny-integration">Shiny Integration</h2>
-<section id="forest-plot" class="level3">
-<h3 class="anchored" data-anchor-id="forest-plot">Forest Plot</h3>
+<section id="standard-tables" class="level3">
+<h3 class="anchored" data-anchor-id="standard-tables">Standard Tables</h3>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -699,7 +697,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td><a href="../reference/shiny.html#forest_update_data"><code>forest_update_data()</code></a></td>
-<td>Update plot data</td>
+<td>Update table data</td>
 </tr>
 <tr class="odd">
 <td><a href="../reference/shiny.html#forest_sort"><code>forest_sort()</code></a></td>
@@ -720,8 +718,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="split-forest" class="level3">
-<h3 class="anchored" data-anchor-id="split-forest">Split Forest</h3>
+<section id="split-tables" class="level3">
+<h3 class="anchored" data-anchor-id="split-tables">Split Tables</h3>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -732,27 +730,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td><a href="../reference/shiny.html#splitForestOutput"><code>splitForestOutput()</code></a></td>
-<td>Shiny UI output for split forest</td>
+<td>Shiny UI output for split view</td>
 </tr>
 <tr class="even">
 <td><a href="../reference/shiny.html#renderSplitForest"><code>renderSplitForest()</code></a></td>
-<td>Shiny server render for split forest</td>
+<td>Shiny server render for split view</td>
 </tr>
 <tr class="odd">
 <td><a href="../reference/shiny.html#splitForestProxy"><code>splitForestProxy()</code></a></td>
-<td>Create split forest proxy</td>
+<td>Create split view proxy</td>
 </tr>
 <tr class="even">
-<td><a href="../reference/shiny.html#split_forest_select"><code>split_forest_select()</code></a></td>
-<td>Select sub-plot programmatically</td>
+<td><a href="../reference/shiny.html#split_table_select"><code>split_table_select()</code></a></td>
+<td>Select sub-table programmatically</td>
 </tr>
 </tbody>
 </table>
 </section>
 </section>
-<section id="advanced-specification-objects" class="level2">
-<h2 class="anchored" data-anchor-id="advanced-specification-objects">Advanced: Specification Objects</h2>
-<p>For advanced use cases requiring programmatic plot construction, you can work with specification objects directly. Most users should use <code>forest_plot()</code> with direct arguments instead.</p>
+<section id="advanced" class="level2">
+<h2 class="anchored" data-anchor-id="advanced">Advanced</h2>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -762,28 +759,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../reference/web_spec.html#web_spec"><code>web_spec()</code></a></td>
-<td>Create plot specification programmatically</td>
+<td><a href="../reference/tabviz.html#grouping"><code>web_group()</code></a></td>
+<td>Define row group explicitly</td>
 </tr>
 <tr class="even">
-<td><a href="../reference/web_spec.html#web_group"><code>web_group()</code></a></td>
-<td>Define row group</td>
-</tr>
-<tr class="odd">
-<td><a href="../reference/web_spec.html#web_effect"><code>web_effect()</code></a></td>
+<td><a href="../reference/columns.html#col_forest"><code>web_effect()</code></a></td>
 <td>Define effect for multi-effect plots</td>
 </tr>
-<tr class="even">
-<td><a href="../reference/web_spec.html#web_interaction"><code>web_interaction()</code></a></td>
+<tr class="odd">
+<td><a href="../reference/tabviz.html"><code>web_interaction()</code></a></td>
 <td>Configure interaction settings</td>
 </tr>
-<tr class="odd">
-<td><a href="../reference/web_spec.html#web_interaction"><code>web_interaction_minimal()</code></a></td>
+<tr class="even">
+<td><a href="../reference/tabviz.html"><code>web_interaction_minimal()</code></a></td>
 <td>Minimal interactivity preset</td>
 </tr>
-<tr class="even">
-<td><a href="../reference/web_spec.html#web_interaction"><code>web_interaction_publication()</code></a></td>
-<td>Publication mode preset</td>
+<tr class="odd">
+<td><a href="../reference/tabviz.html"><code>web_interaction_publication()</code></a></td>
+<td>Publication mode (static)</td>
 </tr>
 </tbody>
 </table>
@@ -1245,168 +1238,158 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     }
   });
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Function Reference"</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>Complete reference for all webforest functions, organized by category.</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">## Core Functions</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>The main entry points for creating visualizations. <span class="in">`forest_plot()`</span> is the primary function for most use cases.</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_plot()`</span><span class="co">](forest_plot.qmd)</span> <span class="pp">|</span> Create interactive forest plots <span class="pp">|</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`webtable()`</span><span class="co">](webtable.qmd)</span> <span class="pp">|</span> Create table-only widgets (no forest plot) <span class="pp">|</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`split_forest()`</span><span class="co">](split_forest.qmd)</span> <span class="pp">|</span> Create split forest with sidebar navigation <span class="pp">|</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`save_plot()`</span><span class="co">](save_plot.qmd)</span> <span class="pp">|</span> Export to SVG, PNG, or PDF <span class="pp">|</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`save_split_forest()`</span><span class="co">](save_plot.qmd#save_split_forest)</span> <span class="pp">|</span> Export split forest to directory <span class="pp">|</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">## Styling Functions</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>Style your plots using the fluent API. These functions work on both <span class="in">`forest_plot()`</span> widgets and <span class="in">`WebSpec`</span> objects.</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_row_style()`</span><span class="co">](styling.qmd#set_row_style)</span> <span class="pp">|</span> Apply row-level styling (bold, italic, color, type, indent) <span class="pp">|</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_marker_style()`</span><span class="co">](styling.qmd#set_marker_style)</span> <span class="pp">|</span> Style interval markers (color, shape, opacity, size) <span class="pp">|</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_column_style()`</span><span class="co">](styling.qmd#set_column_style)</span> <span class="pp">|</span> Apply per-cell styling to specific columns <span class="pp">|</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_theme()`</span><span class="co">](styling.qmd#set_theme)</span> <span class="pp">|</span> Apply a theme by name or object <span class="pp">|</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## Constructor Arguments vs Fluent API</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>Every styling function has equivalent direct arguments in <span class="in">`forest_plot()`</span>:</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co"># These produce identical results:</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ..., <span class="at">row_bold =</span> <span class="st">"is_summary"</span>, <span class="at">marker_color =</span> <span class="st">"dir_color"</span>)</span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, ...) <span class="sc">|&gt;</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"dir_color"</span>)</span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>Use direct arguments when configuration is known upfront. Use the fluent API when styling depends on computation or you need multiple variants.</span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="fu">## Themes</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="fu">### Preset Themes</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>Nine publication-ready themes for different contexts:</span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_default()`</span><span class="co">](themes.qmd#web_theme_default)</span> <span class="pp">|</span> Clean, modern default theme <span class="pp">|</span></span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_jama()`</span><span class="co">](themes.qmd#web_theme_jama)</span> <span class="pp">|</span> JAMA journal style <span class="pp">|</span></span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_lancet()`</span><span class="co">](themes.qmd#web_theme_lancet)</span> <span class="pp">|</span> Lancet journal style <span class="pp">|</span></span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_nature()`</span><span class="co">](themes.qmd#web_theme_nature)</span> <span class="pp">|</span> Nature journal style <span class="pp">|</span></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_cochrane()`</span><span class="co">](themes.qmd#web_theme_cochrane)</span> <span class="pp">|</span> Cochrane Collaboration style <span class="pp">|</span></span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_modern()`</span><span class="co">](themes.qmd#web_theme_modern)</span> <span class="pp">|</span> Contemporary UI <span class="pp">|</span></span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_presentation()`</span><span class="co">](themes.qmd#web_theme_presentation)</span> <span class="pp">|</span> Large fonts for slides <span class="pp">|</span></span>
-<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_dark()`</span><span class="co">](themes.qmd#web_theme_dark)</span> <span class="pp">|</span> Dark mode <span class="pp">|</span></span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_minimal()`</span><span class="co">](themes.qmd#web_theme_minimal)</span> <span class="pp">|</span> Minimal B&amp;W <span class="pp">|</span></span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="fu">### Custom Theme Creation</span></span>
-<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme()`</span><span class="co">](themes.qmd#web_theme)</span> <span class="pp">|</span> Create custom theme with overrides <span class="pp">|</span></span>
-<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="fu">### Theme Modifiers</span></span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>Fine-tune theme properties. These work on both themes and plots:</span>
-<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_colors()`</span><span class="co">](themes.qmd#set_colors)</span> <span class="pp">|</span> Customize theme colors <span class="pp">|</span></span>
-<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_typography()`</span><span class="co">](themes.qmd#set_typography)</span> <span class="pp">|</span> Customize fonts <span class="pp">|</span></span>
-<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_spacing()`</span><span class="co">](themes.qmd#set_spacing)</span> <span class="pp">|</span> Customize spacing <span class="pp">|</span></span>
-<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_shapes()`</span><span class="co">](themes.qmd#set_shapes)</span> <span class="pp">|</span> Customize shapes <span class="pp">|</span></span>
-<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_marker_colors()`</span><span class="co">](themes.qmd#set_marker_colors)</span> <span class="pp">|</span> Set multi-effect marker colors <span class="pp">|</span></span>
-<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_marker_shapes()`</span><span class="co">](themes.qmd#set_marker_shapes)</span> <span class="pp">|</span> Set multi-effect marker shapes <span class="pp">|</span></span>
-<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_axis()`</span><span class="co">](themes.qmd#set_axis)</span> <span class="pp">|</span> Customize axis <span class="pp">|</span></span>
-<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_layout()`</span><span class="co">](themes.qmd#set_layout)</span> <span class="pp">|</span> Customize layout <span class="pp">|</span></span>
-<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_group_headers()`</span><span class="co">](themes.qmd#set_group_headers)</span> <span class="pp">|</span> Customize group header hierarchy <span class="pp">|</span></span>
-<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a><span class="fu">## Columns</span></span>
-<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="fu">### Basic Columns</span></span>
-<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_text()`</span><span class="co">](columns.qmd#col_text)</span> <span class="pp">|</span> Text column <span class="pp">|</span></span>
-<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_numeric()`</span><span class="co">](columns.qmd#col_numeric)</span> <span class="pp">|</span> Numeric column with formatting <span class="pp">|</span></span>
-<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_n()`</span><span class="co">](columns.qmd#col_n)</span> <span class="pp">|</span> Sample size column <span class="pp">|</span></span>
-<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_percent()`</span><span class="co">](columns.qmd#col_percent)</span> <span class="pp">|</span> Percentage column <span class="pp">|</span></span>
-<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_interval()`</span><span class="co">](columns.qmd#col_interval)</span> <span class="pp">|</span> Confidence interval display <span class="pp">|</span></span>
-<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_events()`</span><span class="co">](columns.qmd#col_events)</span> <span class="pp">|</span> Events/N format <span class="pp">|</span></span>
-<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a><span class="fu">### Visualization Columns</span></span>
-<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_bar()`</span><span class="co">](columns.qmd#col_bar)</span> <span class="pp">|</span> Horizontal bar chart <span class="pp">|</span></span>
-<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_pvalue()`</span><span class="co">](columns.qmd#col_pvalue)</span> <span class="pp">|</span> P-value with formatting <span class="pp">|</span></span>
-<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_sparkline()`</span><span class="co">](columns.qmd#col_sparkline)</span> <span class="pp">|</span> Inline sparkline <span class="pp">|</span></span>
-<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_icon()`</span><span class="co">](columns.qmd#col_icon)</span> <span class="pp">|</span> Icon/emoji column <span class="pp">|</span></span>
-<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_badge()`</span><span class="co">](columns.qmd#col_badge)</span> <span class="pp">|</span> Colored status badges <span class="pp">|</span></span>
-<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_stars()`</span><span class="co">](columns.qmd#col_stars)</span> <span class="pp">|</span> Star ratings <span class="pp">|</span></span>
-<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_img()`</span><span class="co">](columns.qmd#col_img)</span> <span class="pp">|</span> Inline images <span class="pp">|</span></span>
-<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_reference()`</span><span class="co">](columns.qmd#col_reference)</span> <span class="pp">|</span> Truncated references with links <span class="pp">|</span></span>
-<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_range()`</span><span class="co">](columns.qmd#col_range)</span> <span class="pp">|</span> Min-max range display <span class="pp">|</span></span>
-<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="fu">### Column Groups</span></span>
-<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_group()`</span><span class="co">](columns.qmd#col_group)</span> <span class="pp">|</span> Group columns under header <span class="pp">|</span></span>
-<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## Annotations</span></span>
-<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_refline()`</span><span class="co">](annotations.qmd#forest_refline)</span> <span class="pp">|</span> Add reference line <span class="pp">|</span></span>
-<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_annotation()`</span><span class="co">](annotations.qmd#forest_annotation)</span> <span class="pp">|</span> Custom annotation <span class="pp">|</span></span>
-<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a><span class="fu">## Shiny Integration</span></span>
-<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a><span class="fu">### Forest Plot</span></span>
-<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forestOutput()`</span><span class="co">](shiny.qmd#forestOutput)</span> <span class="pp">|</span> Shiny UI output <span class="pp">|</span></span>
-<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`renderForest()`</span><span class="co">](shiny.qmd#renderForest)</span> <span class="pp">|</span> Shiny server render <span class="pp">|</span></span>
-<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forestProxy()`</span><span class="co">](shiny.qmd#forestProxy)</span> <span class="pp">|</span> Create update proxy <span class="pp">|</span></span>
-<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_update_data()`</span><span class="co">](shiny.qmd#forest_update_data)</span> <span class="pp">|</span> Update plot data <span class="pp">|</span></span>
-<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_sort()`</span><span class="co">](shiny.qmd#forest_sort)</span> <span class="pp">|</span> Sort by column <span class="pp">|</span></span>
-<span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_filter()`</span><span class="co">](shiny.qmd#forest_filter)</span> <span class="pp">|</span> Filter rows <span class="pp">|</span></span>
-<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_clear_filter()`</span><span class="co">](shiny.qmd#forest_clear_filter)</span> <span class="pp">|</span> Clear filters <span class="pp">|</span></span>
-<span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_toggle_subgroup()`</span><span class="co">](shiny.qmd#forest_toggle_subgroup)</span> <span class="pp">|</span> Toggle group collapse <span class="pp">|</span></span>
-<span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-142"><a href="#cb2-142" aria-hidden="true" tabindex="-1"></a><span class="fu">### Split Forest</span></span>
-<span id="cb2-143"><a href="#cb2-143" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-144"><a href="#cb2-144" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-145"><a href="#cb2-145" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-146"><a href="#cb2-146" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`splitForestOutput()`</span><span class="co">](shiny.qmd#splitForestOutput)</span> <span class="pp">|</span> Shiny UI output for split forest <span class="pp">|</span></span>
-<span id="cb2-147"><a href="#cb2-147" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`renderSplitForest()`</span><span class="co">](shiny.qmd#renderSplitForest)</span> <span class="pp">|</span> Shiny server render for split forest <span class="pp">|</span></span>
-<span id="cb2-148"><a href="#cb2-148" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`splitForestProxy()`</span><span class="co">](shiny.qmd#splitForestProxy)</span> <span class="pp">|</span> Create split forest proxy <span class="pp">|</span></span>
-<span id="cb2-149"><a href="#cb2-149" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`split_forest_select()`</span><span class="co">](shiny.qmd#split_forest_select)</span> <span class="pp">|</span> Select sub-plot programmatically <span class="pp">|</span></span>
-<span id="cb2-150"><a href="#cb2-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-151"><a href="#cb2-151" aria-hidden="true" tabindex="-1"></a><span class="fu">## Advanced: Specification Objects</span></span>
-<span id="cb2-152"><a href="#cb2-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-153"><a href="#cb2-153" aria-hidden="true" tabindex="-1"></a>For advanced use cases requiring programmatic plot construction, you can work with specification objects directly. Most users should use <span class="in">`forest_plot()`</span> with direct arguments instead.</span>
-<span id="cb2-154"><a href="#cb2-154" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-155"><a href="#cb2-155" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
-<span id="cb2-156"><a href="#cb2-156" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
-<span id="cb2-157"><a href="#cb2-157" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_spec()`</span><span class="co">](web_spec.qmd#web_spec)</span> <span class="pp">|</span> Create plot specification programmatically <span class="pp">|</span></span>
-<span id="cb2-158"><a href="#cb2-158" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_group()`</span><span class="co">](web_spec.qmd#web_group)</span> <span class="pp">|</span> Define row group <span class="pp">|</span></span>
-<span id="cb2-159"><a href="#cb2-159" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_effect()`</span><span class="co">](web_spec.qmd#web_effect)</span> <span class="pp">|</span> Define effect for multi-effect plots <span class="pp">|</span></span>
-<span id="cb2-160"><a href="#cb2-160" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction()`</span><span class="co">](web_spec.qmd#web_interaction)</span> <span class="pp">|</span> Configure interaction settings <span class="pp">|</span></span>
-<span id="cb2-161"><a href="#cb2-161" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction_minimal()`</span><span class="co">](web_spec.qmd#web_interaction)</span> <span class="pp">|</span> Minimal interactivity preset <span class="pp">|</span></span>
-<span id="cb2-162"><a href="#cb2-162" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction_publication()`</span><span class="co">](web_spec.qmd#web_interaction)</span> <span class="pp">|</span> Publication mode preset <span class="pp">|</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Function Reference"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>Complete reference for all tabviz functions, organized by category.</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">## Core Functions</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`tabviz()`</span><span class="co">](tabviz.qmd)</span> <span class="pp">|</span> **Main entry point** - Create interactive tables with any columns <span class="pp">|</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`save_plot()`</span><span class="co">](export.qmd)</span> <span class="pp">|</span> Export to SVG, PNG, or PDF <span class="pp">|</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a table with a forest plot column</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>),</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="st">"HR"</span>),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_pvalue</span>(<span class="st">"pval"</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## Column Types</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="fu">### Basic Columns</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_text()`</span><span class="co">](columns.qmd#col_text)</span> <span class="pp">|</span> Text column <span class="pp">|</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_numeric()`</span><span class="co">](columns.qmd#col_numeric)</span> <span class="pp">|</span> Numeric column with formatting <span class="pp">|</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_n()`</span><span class="co">](columns.qmd#col_n)</span> <span class="pp">|</span> Sample size column <span class="pp">|</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_percent()`</span><span class="co">](columns.qmd#col_percent)</span> <span class="pp">|</span> Percentage column <span class="pp">|</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_interval()`</span><span class="co">](columns.qmd#col_interval)</span> <span class="pp">|</span> Confidence interval display <span class="pp">|</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_events()`</span><span class="co">](columns.qmd#col_events)</span> <span class="pp">|</span> Events/N format <span class="pp">|</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_pvalue()`</span><span class="co">](columns.qmd#col_pvalue)</span> <span class="pp">|</span> P-value with formatting <span class="pp">|</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="fu">### Visualization Columns</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_forest()`</span><span class="co">](columns.qmd#col_forest)</span> <span class="pp">|</span> **Forest plot column** with intervals <span class="pp">|</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_bar()`</span><span class="co">](columns.qmd#col_bar)</span> <span class="pp">|</span> Horizontal bar chart <span class="pp">|</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_sparkline()`</span><span class="co">](columns.qmd#col_sparkline)</span> <span class="pp">|</span> Inline sparkline <span class="pp">|</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_badge()`</span><span class="co">](columns.qmd#col_badge)</span> <span class="pp">|</span> Colored status badges <span class="pp">|</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_stars()`</span><span class="co">](columns.qmd#col_stars)</span> <span class="pp">|</span> Star ratings <span class="pp">|</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_icon()`</span><span class="co">](columns.qmd#col_icon)</span> <span class="pp">|</span> Icon/emoji column <span class="pp">|</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_img()`</span><span class="co">](columns.qmd#col_img)</span> <span class="pp">|</span> Inline images <span class="pp">|</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_reference()`</span><span class="co">](columns.qmd#col_reference)</span> <span class="pp">|</span> Truncated references with links <span class="pp">|</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_range()`</span><span class="co">](columns.qmd#col_range)</span> <span class="pp">|</span> Min-max range display <span class="pp">|</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="fu">### Column Groups</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_group()`</span><span class="co">](columns.qmd#col_group)</span> <span class="pp">|</span> Group columns under header <span class="pp">|</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a><span class="fu">## Styling Functions</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>Apply styling using the fluent API with pipes:</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_row_style()`</span><span class="co">](styling.qmd#set_row_style)</span> <span class="pp">|</span> Row-level styling (bold, italic, color, type, indent) <span class="pp">|</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_marker_style()`</span><span class="co">](styling.qmd#set_marker_style)</span> <span class="pp">|</span> Style interval markers (color, shape, opacity, size) <span class="pp">|</span></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_column_style()`</span><span class="co">](styling.qmd#set_column_style)</span> <span class="pp">|</span> Per-cell styling for specific columns <span class="pp">|</span></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_theme()`</span><span class="co">](styling.qmd#set_theme)</span> <span class="pp">|</span> Apply a theme by name or object <span class="pp">|</span></span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a><span class="fu">## Constructor Arguments vs Fluent API</span></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>Every styling function has equivalent direct arguments in <span class="in">`tabviz()`</span>:</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a><span class="co"># These produce identical results:</span></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, ..., <span class="at">row_bold =</span> <span class="st">"is_summary"</span>, <span class="at">marker_color =</span> <span class="st">"dir_color"</span>)</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, ...) <span class="sc">|&gt;</span></span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_row_style</span>(<span class="at">bold =</span> <span class="st">"is_summary"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_marker_style</span>(<span class="at">color =</span> <span class="st">"dir_color"</span>)</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>Use direct arguments when configuration is known upfront. Use the fluent API when styling depends on computation.</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a><span class="fu">## Themes</span></span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a><span class="fu">### Preset Themes</span></span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_default()`</span><span class="co">](themes.qmd#web_theme_default)</span> <span class="pp">|</span> Clean, modern default theme <span class="pp">|</span></span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_jama()`</span><span class="co">](themes.qmd#web_theme_jama)</span> <span class="pp">|</span> JAMA journal style <span class="pp">|</span></span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_lancet()`</span><span class="co">](themes.qmd#web_theme_lancet)</span> <span class="pp">|</span> Lancet journal style <span class="pp">|</span></span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_nature()`</span><span class="co">](themes.qmd#web_theme_nature)</span> <span class="pp">|</span> Nature journal style <span class="pp">|</span></span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_cochrane()`</span><span class="co">](themes.qmd#web_theme_cochrane)</span> <span class="pp">|</span> Cochrane Collaboration style <span class="pp">|</span></span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_modern()`</span><span class="co">](themes.qmd#web_theme_modern)</span> <span class="pp">|</span> Contemporary UI <span class="pp">|</span></span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_presentation()`</span><span class="co">](themes.qmd#web_theme_presentation)</span> <span class="pp">|</span> Large fonts for slides <span class="pp">|</span></span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_dark()`</span><span class="co">](themes.qmd#web_theme_dark)</span> <span class="pp">|</span> Dark mode <span class="pp">|</span></span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_minimal()`</span><span class="co">](themes.qmd#web_theme_minimal)</span> <span class="pp">|</span> Minimal B&amp;W <span class="pp">|</span></span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a><span class="fu">### Theme Modifiers</span></span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_colors()`</span><span class="co">](themes.qmd#set_colors)</span> <span class="pp">|</span> Customize colors <span class="pp">|</span></span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_typography()`</span><span class="co">](themes.qmd#set_typography)</span> <span class="pp">|</span> Customize fonts <span class="pp">|</span></span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_spacing()`</span><span class="co">](themes.qmd#set_spacing)</span> <span class="pp">|</span> Customize spacing <span class="pp">|</span></span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_shapes()`</span><span class="co">](themes.qmd#set_shapes)</span> <span class="pp">|</span> Customize shapes <span class="pp">|</span></span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_axis()`</span><span class="co">](themes.qmd#set_axis)</span> <span class="pp">|</span> Customize axis <span class="pp">|</span></span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_layout()`</span><span class="co">](themes.qmd#set_layout)</span> <span class="pp">|</span> Customize layout <span class="pp">|</span></span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_group_headers()`</span><span class="co">](themes.qmd#set_group_headers)</span> <span class="pp">|</span> Customize group header hierarchy <span class="pp">|</span></span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a><span class="fu">## Annotations</span></span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_refline()`</span><span class="co">](annotations.qmd#forest_refline)</span> <span class="pp">|</span> Add reference line <span class="pp">|</span></span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_annotation()`</span><span class="co">](annotations.qmd#forest_annotation)</span> <span class="pp">|</span> Custom annotation <span class="pp">|</span></span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## Shiny Integration</span></span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a><span class="fu">### Standard Tables</span></span>
+<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forestOutput()`</span><span class="co">](shiny.qmd#forestOutput)</span> <span class="pp">|</span> Shiny UI output <span class="pp">|</span></span>
+<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`renderForest()`</span><span class="co">](shiny.qmd#renderForest)</span> <span class="pp">|</span> Shiny server render <span class="pp">|</span></span>
+<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forestProxy()`</span><span class="co">](shiny.qmd#forestProxy)</span> <span class="pp">|</span> Create update proxy <span class="pp">|</span></span>
+<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_update_data()`</span><span class="co">](shiny.qmd#forest_update_data)</span> <span class="pp">|</span> Update table data <span class="pp">|</span></span>
+<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_sort()`</span><span class="co">](shiny.qmd#forest_sort)</span> <span class="pp">|</span> Sort by column <span class="pp">|</span></span>
+<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_filter()`</span><span class="co">](shiny.qmd#forest_filter)</span> <span class="pp">|</span> Filter rows <span class="pp">|</span></span>
+<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_clear_filter()`</span><span class="co">](shiny.qmd#forest_clear_filter)</span> <span class="pp">|</span> Clear filters <span class="pp">|</span></span>
+<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_toggle_subgroup()`</span><span class="co">](shiny.qmd#forest_toggle_subgroup)</span> <span class="pp">|</span> Toggle group collapse <span class="pp">|</span></span>
+<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a><span class="fu">### Split Tables</span></span>
+<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`splitForestOutput()`</span><span class="co">](shiny.qmd#splitForestOutput)</span> <span class="pp">|</span> Shiny UI output for split view <span class="pp">|</span></span>
+<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`renderSplitForest()`</span><span class="co">](shiny.qmd#renderSplitForest)</span> <span class="pp">|</span> Shiny server render for split view <span class="pp">|</span></span>
+<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`splitForestProxy()`</span><span class="co">](shiny.qmd#splitForestProxy)</span> <span class="pp">|</span> Create split view proxy <span class="pp">|</span></span>
+<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`split_table_select()`</span><span class="co">](shiny.qmd#split_table_select)</span> <span class="pp">|</span> Select sub-table programmatically <span class="pp">|</span></span>
+<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a><span class="fu">## Advanced</span></span>
+<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a><span class="pp">|----------|-------------|</span></span>
+<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_group()`</span><span class="co">](tabviz.qmd#grouping)</span> <span class="pp">|</span> Define row group explicitly <span class="pp">|</span></span>
+<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_effect()`</span><span class="co">](columns.qmd#col_forest)</span> <span class="pp">|</span> Define effect for multi-effect plots <span class="pp">|</span></span>
+<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction()`</span><span class="co">](tabviz.qmd)</span> <span class="pp">|</span> Configure interaction settings <span class="pp">|</span></span>
+<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction_minimal()`</span><span class="co">](tabviz.qmd)</span> <span class="pp">|</span> Minimal interactivity preset <span class="pp">|</span></span>
+<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction_publication()`</span><span class="co">](tabviz.qmd)</span> <span class="pp">|</span> Publication mode (static) <span class="pp">|</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

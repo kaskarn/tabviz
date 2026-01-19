@@ -8,7 +8,7 @@
 
 <meta name="description" content="Internal class system design using R’s S7 object-oriented framework">
 
-<title>S7 Class Architecture – webforest</title>
+<title>S7 Class Architecture – tabviz</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -117,7 +117,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
-    <span class="navbar-title">webforest</span>
+    <span class="navbar-title">tabviz</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -132,18 +132,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-guide">    
         <li>
+    <a class="dropdown-item" href="../guide/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
     <a class="dropdown-item" href="../guide/quick-start.html">
  <span class="dropdown-text">1. Quick Start</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../guide/forest-plots.html">
- <span class="dropdown-text">2. Forest Plots</span></a>
+    <a class="dropdown-item" href="../guide/package-data.html">
+ <span class="dropdown-text">2. Package Data</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../guide/columns.html">
  <span class="dropdown-text">3. Columns</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/row-styling.html">
  <span class="dropdown-text">4. Row Styling</span></a>
@@ -157,26 +162,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">6. Row Groups</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../guide/titles.html">
+ <span class="dropdown-text">7. Titles and Labels</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/index.html">
+ <span class="dropdown-text">8. Visualizations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/forest-plots.html">
+ <span class="dropdown-text">9. Forest Plots</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../guide/split-plots.html">
- <span class="dropdown-text">7. Split Plots</span></a>
+ <span class="dropdown-text">10. Split Plots</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/themes.html">
- <span class="dropdown-text">8. Themes</span></a>
+ <span class="dropdown-text">11. Themes</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="../guide/fluent-api.html">
- <span class="dropdown-text">9. The Fluent API</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../guide/shiny.html">
- <span class="dropdown-text">10. Shiny Integration</span></a>
+ <span class="dropdown-text">12. Shiny Integration</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../guide/package-data.html">
- <span class="dropdown-text">11. Package Data</span></a>
+    <a class="dropdown-item" href="../guide/export.html">
+ <span class="dropdown-text">13. Export</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
   </li>  
     </ul>
   </li>
@@ -190,12 +222,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
         <li>
-    <a class="dropdown-item" href="../gallery-basic.html">
- <span class="dropdown-text">Basic Examples</span></a>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../gallery-advanced.html">
- <span class="dropdown-text">Advanced Examples</span></a>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
   </li>  
     </ul>
   </li>
@@ -210,48 +251,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>  
         <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../reference/forest_plot.html">
- <span class="dropdown-text">forest_plot()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/styling.html">
- <span class="dropdown-text">Styling Functions</span></a>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
   </li>  
         <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="../reference/split_forest.html">
- <span class="dropdown-text">split_forest()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/webtable.html">
- <span class="dropdown-text">webtable()</span></a>
-  </li>  
-        <li>
-    <a class="dropdown-item" href="../reference/save_plot.html">
- <span class="dropdown-text">save_plot()</span></a>
-  </li>  
-        <li><hr class="dropdown-divider"></li>
-        <li>
-    <a class="dropdown-item" href="../reference/themes.html">
- <span class="dropdown-text">Themes</span></a>
-  </li>  
         <li>
     <a class="dropdown-item" href="../reference/columns.html">
  <span class="dropdown-text">Columns</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href="../reference/annotations.html">
  <span class="dropdown-text">Annotations</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../reference/shiny.html">
  <span class="dropdown-text">Shiny</span></a>
   </li>  
-        <li><hr class="dropdown-divider"></li>
         <li>
-    <a class="dropdown-item" href="../reference/web_spec.html">
- <span class="dropdown-text">Advanced: Specifications</span></a>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
         <li>
     <a class="dropdown-item" href="../reference/troubleshooting.html">
  <span class="dropdown-text">Troubleshooting</span></a>
@@ -259,24 +288,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-technical" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Technical</span>
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
     </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-technical">    
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
         <li>
-    <a class="dropdown-item" href="../technical/s7-classes.html">
- <span class="dropdown-text">S7 Class Architecture</span></a>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../technical/export-system.html">
- <span class="dropdown-text">Export System</span></a>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
   </li>  
     </ul>
   </li>
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/kaskarn/webforest"> <i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -368,7 +397,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<p>webforest uses <a href="https://rconsortium.github.io/S7/">S7</a>, R’s modern object-oriented system, for its internal data structures. S7 provides:</p>
+<p>tabviz uses <a href="https://rconsortium.github.io/S7/">S7</a>, R’s modern object-oriented system, for its internal data structures. S7 provides:</p>
 <ul>
 <li><strong>Type safety</strong> — Properties are validated at construction time</li>
 <li><strong>Composition</strong> — Complex objects built from simpler components</li>
@@ -766,17 +795,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="st">"text"</span>),</span>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NA_real_</span>),  <span class="co"># numeric or "auto"</span></span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">align =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="st">"left"</span>),</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">position =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="st">"left"</span>),</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">new_property</span>(class_list, <span class="at">default =</span> <span class="fu">list</span>()),</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Per-cell style mappings</span></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_bold =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_italic =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_color =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_bg =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_badge =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_icon =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>)</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">new_property</span>(class_list, <span class="at">default =</span> <span class="fu">list</span>()),</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Per-cell style mappings</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_bold =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_italic =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_color =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_bg =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_badge =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_icon =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="type-specific-options" class="level3">
 <h3 class="anchored" data-anchor-id="type-specific-options">Type-Specific Options</h3>
 <p>The <code>options</code> property holds type-specific configuration:</p>
@@ -797,15 +825,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>ColumnGroup <span class="ot">&lt;-</span> <span class="fu">new_class</span>(<span class="st">"ColumnGroup"</span>, <span class="at">properties =</span> <span class="fu">list</span>(</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> class_character,</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> class_character,</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">new_property</span>(class_list, <span class="at">default =</span> <span class="fu">list</span>()),</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">position =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="st">"left"</span>)</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">new_property</span>(class_list, <span class="at">default =</span> <span class="fu">list</span>())</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Usage:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">col_group</span>(<span class="st">"Results"</span>,</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_interval</span>(<span class="st">"OR (95% CI)"</span>),</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_pvalue</span>(<span class="st">"pvalue"</span>, <span class="st">"P"</span>),</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">position =</span> <span class="st">"right"</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_interval</span>(<span class="st">"OR (95% CI)"</span>, <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>),</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_pvalue</span>(<span class="st">"pvalue"</span>, <span class="st">"P"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="serialization-to-javascript" class="level2">
@@ -887,7 +913,7 @@ WebTheme                   →    { name: "...",        →    WebTheme interfac
 <span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="co"># In columns.R</span></span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>col_group <span class="ot">&lt;-</span> <span class="cf">function</span>(header, ..., <span class="at">position =</span> <span class="fu">c</span>(<span class="st">"left"</span>, <span class="st">"right"</span>)) {</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>col_group <span class="ot">&lt;-</span> <span class="cf">function</span>(header, ...) {</span>
 <span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>  columns <span class="ot">&lt;-</span> <span class="fu">list</span>(...)</span>
 <span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(columns)) {</span>
 <span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">S7_inherits</span>(columns[[i]], ColumnSpec)) {</span>
@@ -931,9 +957,9 @@ WebTheme                   →    { name: "...",        →    WebTheme interfac
 <span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(x)</span>
 <span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot method (renders as forest plot)</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot method (renders as tabviz with forest column)</span></span>
 <span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="fu">method</span>(plot, WebSpec) <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_plot</span>(x, ...)</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tabviz</span>(x<span class="sc">@</span>data, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(<span class="at">point =</span> x<span class="sc">@</span>point_col, <span class="at">lower =</span> x<span class="sc">@</span>lower_col, <span class="at">upper =</span> x<span class="sc">@</span>upper_col)), ...)</span>
 <span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="co"># as.data.frame method</span></span>
@@ -1442,7 +1468,7 @@ WebTheme                   →    { name: "...",        →    WebTheme interfac
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="fu">## Overview</span></span>
 <span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>webforest uses <span class="co">[</span><span class="ot">S7</span><span class="co">](https://rconsortium.github.io/S7/)</span>, R's modern object-oriented system, for its internal data structures. S7 provides:</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>tabviz uses <span class="co">[</span><span class="ot">S7</span><span class="co">](https://rconsortium.github.io/S7/)</span>, R's modern object-oriented system, for its internal data structures. S7 provides:</span>
 <span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Type safety** — Properties are validated at construction time</span>
 <span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Composition** — Complex objects built from simpler components</span>
@@ -1755,218 +1781,215 @@ WebTheme                   →    { name: "...",        →    WebTheme interfac
 <span id="cb25-318"><a href="#cb25-318" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="st">"text"</span>),</span>
 <span id="cb25-319"><a href="#cb25-319" aria-hidden="true" tabindex="-1"></a>  <span class="at">width =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NA_real_</span>),  <span class="co"># numeric or "auto"</span></span>
 <span id="cb25-320"><a href="#cb25-320" aria-hidden="true" tabindex="-1"></a>  <span class="at">align =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="st">"left"</span>),</span>
-<span id="cb25-321"><a href="#cb25-321" aria-hidden="true" tabindex="-1"></a>  <span class="at">position =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="st">"left"</span>),</span>
-<span id="cb25-322"><a href="#cb25-322" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">new_property</span>(class_list, <span class="at">default =</span> <span class="fu">list</span>()),</span>
-<span id="cb25-323"><a href="#cb25-323" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-324"><a href="#cb25-324" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Per-cell style mappings</span></span>
-<span id="cb25-325"><a href="#cb25-325" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_bold =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb25-326"><a href="#cb25-326" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_italic =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb25-327"><a href="#cb25-327" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_color =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb25-328"><a href="#cb25-328" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_bg =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb25-329"><a href="#cb25-329" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_badge =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>),</span>
-<span id="cb25-330"><a href="#cb25-330" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_icon =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="cn">NA_character_</span>)</span>
-<span id="cb25-331"><a href="#cb25-331" aria-hidden="true" tabindex="-1"></a>))</span>
-<span id="cb25-332"><a href="#cb25-332" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-333"><a href="#cb25-333" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-334"><a href="#cb25-334" aria-hidden="true" tabindex="-1"></a><span class="fu">### Type-Specific Options</span></span>
-<span id="cb25-335"><a href="#cb25-335" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-336"><a href="#cb25-336" aria-hidden="true" tabindex="-1"></a>The <span class="in">`options`</span> property holds type-specific configuration:</span>
-<span id="cb25-337"><a href="#cb25-337" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-338"><a href="#cb25-338" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-339"><a href="#cb25-339" aria-hidden="true" tabindex="-1"></a><span class="co"># Bar column</span></span>
-<span id="cb25-340"><a href="#cb25-340" aria-hidden="true" tabindex="-1"></a><span class="fu">col_bar</span>(<span class="st">"weight"</span>, <span class="at">max_value =</span> <span class="dv">100</span>, <span class="at">show_label =</span> <span class="cn">TRUE</span>, <span class="at">color =</span> <span class="st">"#3b82f6"</span>)</span>
-<span id="cb25-341"><a href="#cb25-341" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates: options = list(bar = list(maxValue = 100, showLabel = TRUE, color = "#3b82f6"))</span></span>
-<span id="cb25-342"><a href="#cb25-342" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-343"><a href="#cb25-343" aria-hidden="true" tabindex="-1"></a><span class="co"># P-value column</span></span>
-<span id="cb25-344"><a href="#cb25-344" aria-hidden="true" tabindex="-1"></a><span class="fu">col_pvalue</span>(<span class="st">"pval"</span>, <span class="at">stars =</span> <span class="cn">TRUE</span>, <span class="at">thresholds =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.01</span>, <span class="fl">0.001</span>))</span>
-<span id="cb25-345"><a href="#cb25-345" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates: options = list(pvalue = list(stars = TRUE, thresholds = c(0.05, 0.01, 0.001)))</span></span>
-<span id="cb25-346"><a href="#cb25-346" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-347"><a href="#cb25-347" aria-hidden="true" tabindex="-1"></a><span class="co"># Sparkline column</span></span>
-<span id="cb25-348"><a href="#cb25-348" aria-hidden="true" tabindex="-1"></a><span class="fu">col_sparkline</span>(<span class="st">"trend"</span>, <span class="at">type =</span> <span class="st">"area"</span>, <span class="at">height =</span> <span class="dv">24</span>)</span>
-<span id="cb25-349"><a href="#cb25-349" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates: options = list(sparkline = list(type = "area", height = 24))</span></span>
-<span id="cb25-350"><a href="#cb25-350" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-351"><a href="#cb25-351" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-352"><a href="#cb25-352" aria-hidden="true" tabindex="-1"></a><span class="fu">### ColumnGroup for Hierarchical Headers</span></span>
-<span id="cb25-353"><a href="#cb25-353" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-354"><a href="#cb25-354" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-355"><a href="#cb25-355" aria-hidden="true" tabindex="-1"></a>ColumnGroup <span class="ot">&lt;-</span> <span class="fu">new_class</span>(<span class="st">"ColumnGroup"</span>, <span class="at">properties =</span> <span class="fu">list</span>(</span>
-<span id="cb25-356"><a href="#cb25-356" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> class_character,</span>
-<span id="cb25-357"><a href="#cb25-357" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> class_character,</span>
-<span id="cb25-358"><a href="#cb25-358" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">new_property</span>(class_list, <span class="at">default =</span> <span class="fu">list</span>()),</span>
-<span id="cb25-359"><a href="#cb25-359" aria-hidden="true" tabindex="-1"></a>  <span class="at">position =</span> <span class="fu">new_property</span>(class_character, <span class="at">default =</span> <span class="st">"left"</span>)</span>
-<span id="cb25-360"><a href="#cb25-360" aria-hidden="true" tabindex="-1"></a>))</span>
-<span id="cb25-361"><a href="#cb25-361" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-362"><a href="#cb25-362" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-363"><a href="#cb25-363" aria-hidden="true" tabindex="-1"></a>Usage:</span>
-<span id="cb25-364"><a href="#cb25-364" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-365"><a href="#cb25-365" aria-hidden="true" tabindex="-1"></a><span class="fu">col_group</span>(<span class="st">"Results"</span>,</span>
-<span id="cb25-366"><a href="#cb25-366" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_interval</span>(<span class="st">"OR (95% CI)"</span>),</span>
-<span id="cb25-367"><a href="#cb25-367" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_pvalue</span>(<span class="st">"pvalue"</span>, <span class="st">"P"</span>),</span>
-<span id="cb25-368"><a href="#cb25-368" aria-hidden="true" tabindex="-1"></a>  <span class="at">position =</span> <span class="st">"right"</span></span>
-<span id="cb25-369"><a href="#cb25-369" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb25-370"><a href="#cb25-370" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-371"><a href="#cb25-371" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-372"><a href="#cb25-372" aria-hidden="true" tabindex="-1"></a><span class="fu">## Serialization to JavaScript</span></span>
-<span id="cb25-373"><a href="#cb25-373" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-374"><a href="#cb25-374" aria-hidden="true" tabindex="-1"></a>S7 objects are converted to JSON for the JavaScript frontend via <span class="in">`serialize_spec()`</span>:</span>
-<span id="cb25-375"><a href="#cb25-375" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-376"><a href="#cb25-376" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-377"><a href="#cb25-377" aria-hidden="true" tabindex="-1"></a><span class="in">R (S7 objects)                    JSON                      TypeScript</span></span>
-<span id="cb25-378"><a href="#cb25-378" aria-hidden="true" tabindex="-1"></a><span class="in">──────────────────────────────────────────────────────────────────────</span></span>
-<span id="cb25-379"><a href="#cb25-379" aria-hidden="true" tabindex="-1"></a><span class="in">WebSpec                    →    { data: {...},        →    WebSpec interface</span></span>
-<span id="cb25-380"><a href="#cb25-380" aria-hidden="true" tabindex="-1"></a><span class="in">  @data                         columns: [...],</span></span>
-<span id="cb25-381"><a href="#cb25-381" aria-hidden="true" tabindex="-1"></a><span class="in">  @columns                      theme: {...},</span></span>
-<span id="cb25-382"><a href="#cb25-382" aria-hidden="true" tabindex="-1"></a><span class="in">  @theme                        ... }</span></span>
-<span id="cb25-383"><a href="#cb25-383" aria-hidden="true" tabindex="-1"></a><span class="in">  ...</span></span>
-<span id="cb25-384"><a href="#cb25-384" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-385"><a href="#cb25-385" aria-hidden="true" tabindex="-1"></a><span class="in">WebTheme                   →    { name: "...",        →    WebTheme interface</span></span>
-<span id="cb25-386"><a href="#cb25-386" aria-hidden="true" tabindex="-1"></a><span class="in">  @colors                       colors: {...},</span></span>
-<span id="cb25-387"><a href="#cb25-387" aria-hidden="true" tabindex="-1"></a><span class="in">  @typography                   typography: {...},</span></span>
-<span id="cb25-388"><a href="#cb25-388" aria-hidden="true" tabindex="-1"></a><span class="in">  ...                           ... }</span></span>
-<span id="cb25-389"><a href="#cb25-389" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-390"><a href="#cb25-390" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-391"><a href="#cb25-391" aria-hidden="true" tabindex="-1"></a>Key transformations:</span>
-<span id="cb25-392"><a href="#cb25-392" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-393"><a href="#cb25-393" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> R Pattern <span class="pp">|</span> JSON Pattern <span class="pp">|</span></span>
-<span id="cb25-394"><a href="#cb25-394" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|--------------|</span></span>
-<span id="cb25-395"><a href="#cb25-395" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`snake_case`</span> property <span class="pp">|</span> <span class="in">`camelCase`</span> key <span class="pp">|</span></span>
-<span id="cb25-396"><a href="#cb25-396" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`NA_character_`</span> <span class="pp">|</span> <span class="in">`null`</span> <span class="pp">|</span></span>
-<span id="cb25-397"><a href="#cb25-397" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`NA_real_`</span> <span class="pp">|</span> <span class="in">`null`</span> <span class="pp">|</span></span>
-<span id="cb25-398"><a href="#cb25-398" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> S7 nested object <span class="pp">|</span> Nested JSON object <span class="pp">|</span></span>
-<span id="cb25-399"><a href="#cb25-399" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`class_list`</span> of S7 <span class="pp">|</span> Array of JSON objects <span class="pp">|</span></span>
-<span id="cb25-400"><a href="#cb25-400" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-401"><a href="#cb25-401" aria-hidden="true" tabindex="-1"></a>Example serialization:</span>
-<span id="cb25-402"><a href="#cb25-402" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-403"><a href="#cb25-403" aria-hidden="true" tabindex="-1"></a>serialize_theme <span class="ot">&lt;-</span> <span class="cf">function</span>(theme) {</span>
-<span id="cb25-404"><a href="#cb25-404" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
-<span id="cb25-405"><a href="#cb25-405" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> theme<span class="sc">@</span>name,</span>
-<span id="cb25-406"><a href="#cb25-406" aria-hidden="true" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">list</span>(</span>
-<span id="cb25-407"><a href="#cb25-407" aria-hidden="true" tabindex="-1"></a>      <span class="at">background =</span> theme<span class="sc">@</span>colors<span class="sc">@</span>background,</span>
-<span id="cb25-408"><a href="#cb25-408" aria-hidden="true" tabindex="-1"></a>      <span class="at">foreground =</span> theme<span class="sc">@</span>colors<span class="sc">@</span>foreground,</span>
-<span id="cb25-409"><a href="#cb25-409" aria-hidden="true" tabindex="-1"></a>      <span class="co"># snake_case → camelCase</span></span>
-<span id="cb25-410"><a href="#cb25-410" aria-hidden="true" tabindex="-1"></a>      <span class="at">intervalPositive =</span> theme<span class="sc">@</span>colors<span class="sc">@</span>interval_positive,</span>
-<span id="cb25-411"><a href="#cb25-411" aria-hidden="true" tabindex="-1"></a>      <span class="at">intervalNegative =</span> theme<span class="sc">@</span>colors<span class="sc">@</span>interval_negative,</span>
-<span id="cb25-412"><a href="#cb25-412" aria-hidden="true" tabindex="-1"></a>      ...</span>
-<span id="cb25-413"><a href="#cb25-413" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb25-414"><a href="#cb25-414" aria-hidden="true" tabindex="-1"></a>    ...</span>
-<span id="cb25-415"><a href="#cb25-415" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb25-416"><a href="#cb25-416" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb25-417"><a href="#cb25-417" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-418"><a href="#cb25-418" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-419"><a href="#cb25-419" aria-hidden="true" tabindex="-1"></a><span class="fu">## Type Checking Patterns</span></span>
-<span id="cb25-420"><a href="#cb25-420" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-421"><a href="#cb25-421" aria-hidden="true" tabindex="-1"></a><span class="fu">### S7_inherits for Runtime Checks</span></span>
-<span id="cb25-422"><a href="#cb25-422" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-423"><a href="#cb25-423" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-424"><a href="#cb25-424" aria-hidden="true" tabindex="-1"></a><span class="co"># In modifiers.R</span></span>
-<span id="cb25-425"><a href="#cb25-425" aria-hidden="true" tabindex="-1"></a>set_row_style <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
-<span id="cb25-426"><a href="#cb25-426" aria-hidden="true" tabindex="-1"></a>  spec <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">inherits</span>(x, <span class="st">"htmlwidget"</span>)) {</span>
-<span id="cb25-427"><a href="#cb25-427" aria-hidden="true" tabindex="-1"></a>    <span class="fu">attr</span>(x, <span class="st">"webspec"</span>)</span>
-<span id="cb25-428"><a href="#cb25-428" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">S7_inherits</span>(x, WebSpec)) {</span>
-<span id="cb25-429"><a href="#cb25-429" aria-hidden="true" tabindex="-1"></a>    x</span>
-<span id="cb25-430"><a href="#cb25-430" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb25-431"><a href="#cb25-431" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cli_abort</span>(<span class="st">"x must be a WebSpec or htmlwidget"</span>)</span>
-<span id="cb25-432"><a href="#cb25-432" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb25-433"><a href="#cb25-433" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb25-434"><a href="#cb25-434" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb25-435"><a href="#cb25-435" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-436"><a href="#cb25-436" aria-hidden="true" tabindex="-1"></a><span class="co"># In columns.R</span></span>
-<span id="cb25-437"><a href="#cb25-437" aria-hidden="true" tabindex="-1"></a>col_group <span class="ot">&lt;-</span> <span class="cf">function</span>(header, ..., <span class="at">position =</span> <span class="fu">c</span>(<span class="st">"left"</span>, <span class="st">"right"</span>)) {</span>
-<span id="cb25-438"><a href="#cb25-438" aria-hidden="true" tabindex="-1"></a>  columns <span class="ot">&lt;-</span> <span class="fu">list</span>(...)</span>
-<span id="cb25-439"><a href="#cb25-439" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(columns)) {</span>
-<span id="cb25-440"><a href="#cb25-440" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">S7_inherits</span>(columns[[i]], ColumnSpec)) {</span>
-<span id="cb25-441"><a href="#cb25-441" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cli_abort</span>(<span class="st">"All arguments must be ColumnSpec objects"</span>)</span>
-<span id="cb25-442"><a href="#cb25-442" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb25-443"><a href="#cb25-443" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb25-444"><a href="#cb25-444" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb25-445"><a href="#cb25-445" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb25-446"><a href="#cb25-446" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-447"><a href="#cb25-447" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-448"><a href="#cb25-448" aria-hidden="true" tabindex="-1"></a><span class="fu">### class_any Escape Hatch</span></span>
-<span id="cb25-449"><a href="#cb25-449" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-450"><a href="#cb25-450" aria-hidden="true" tabindex="-1"></a>Some properties use <span class="in">`class_any`</span> for flexibility:</span>
-<span id="cb25-451"><a href="#cb25-451" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-452"><a href="#cb25-452" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-453"><a href="#cb25-453" aria-hidden="true" tabindex="-1"></a><span class="co"># Allows NULL or WebTheme</span></span>
-<span id="cb25-454"><a href="#cb25-454" aria-hidden="true" tabindex="-1"></a>theme <span class="ot">=</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>)</span>
+<span id="cb25-321"><a href="#cb25-321" aria-hidden="true" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">new_property</span>(class_list, <span class="at">default =</span> <span class="fu">list</span>()),</span>
+<span id="cb25-322"><a href="#cb25-322" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-323"><a href="#cb25-323" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Per-cell style mappings</span></span>
+<span id="cb25-324"><a href="#cb25-324" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_bold =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb25-325"><a href="#cb25-325" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_italic =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb25-326"><a href="#cb25-326" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_color =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb25-327"><a href="#cb25-327" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_bg =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb25-328"><a href="#cb25-328" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_badge =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>),</span>
+<span id="cb25-329"><a href="#cb25-329" aria-hidden="true" tabindex="-1"></a>  <span class="at">style_icon =</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>)</span>
+<span id="cb25-330"><a href="#cb25-330" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb25-331"><a href="#cb25-331" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-332"><a href="#cb25-332" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-333"><a href="#cb25-333" aria-hidden="true" tabindex="-1"></a><span class="fu">### Type-Specific Options</span></span>
+<span id="cb25-334"><a href="#cb25-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-335"><a href="#cb25-335" aria-hidden="true" tabindex="-1"></a>The <span class="in">`options`</span> property holds type-specific configuration:</span>
+<span id="cb25-336"><a href="#cb25-336" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-337"><a href="#cb25-337" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb25-338"><a href="#cb25-338" aria-hidden="true" tabindex="-1"></a><span class="co"># Bar column</span></span>
+<span id="cb25-339"><a href="#cb25-339" aria-hidden="true" tabindex="-1"></a><span class="fu">col_bar</span>(<span class="st">"weight"</span>, <span class="at">max_value =</span> <span class="dv">100</span>, <span class="at">show_label =</span> <span class="cn">TRUE</span>, <span class="at">color =</span> <span class="st">"#3b82f6"</span>)</span>
+<span id="cb25-340"><a href="#cb25-340" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates: options = list(bar = list(maxValue = 100, showLabel = TRUE, color = "#3b82f6"))</span></span>
+<span id="cb25-341"><a href="#cb25-341" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-342"><a href="#cb25-342" aria-hidden="true" tabindex="-1"></a><span class="co"># P-value column</span></span>
+<span id="cb25-343"><a href="#cb25-343" aria-hidden="true" tabindex="-1"></a><span class="fu">col_pvalue</span>(<span class="st">"pval"</span>, <span class="at">stars =</span> <span class="cn">TRUE</span>, <span class="at">thresholds =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.01</span>, <span class="fl">0.001</span>))</span>
+<span id="cb25-344"><a href="#cb25-344" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates: options = list(pvalue = list(stars = TRUE, thresholds = c(0.05, 0.01, 0.001)))</span></span>
+<span id="cb25-345"><a href="#cb25-345" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-346"><a href="#cb25-346" aria-hidden="true" tabindex="-1"></a><span class="co"># Sparkline column</span></span>
+<span id="cb25-347"><a href="#cb25-347" aria-hidden="true" tabindex="-1"></a><span class="fu">col_sparkline</span>(<span class="st">"trend"</span>, <span class="at">type =</span> <span class="st">"area"</span>, <span class="at">height =</span> <span class="dv">24</span>)</span>
+<span id="cb25-348"><a href="#cb25-348" aria-hidden="true" tabindex="-1"></a><span class="co"># Creates: options = list(sparkline = list(type = "area", height = 24))</span></span>
+<span id="cb25-349"><a href="#cb25-349" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-350"><a href="#cb25-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-351"><a href="#cb25-351" aria-hidden="true" tabindex="-1"></a><span class="fu">### ColumnGroup for Hierarchical Headers</span></span>
+<span id="cb25-352"><a href="#cb25-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-353"><a href="#cb25-353" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb25-354"><a href="#cb25-354" aria-hidden="true" tabindex="-1"></a>ColumnGroup <span class="ot">&lt;-</span> <span class="fu">new_class</span>(<span class="st">"ColumnGroup"</span>, <span class="at">properties =</span> <span class="fu">list</span>(</span>
+<span id="cb25-355"><a href="#cb25-355" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> class_character,</span>
+<span id="cb25-356"><a href="#cb25-356" aria-hidden="true" tabindex="-1"></a>  <span class="at">header =</span> class_character,</span>
+<span id="cb25-357"><a href="#cb25-357" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">new_property</span>(class_list, <span class="at">default =</span> <span class="fu">list</span>())</span>
+<span id="cb25-358"><a href="#cb25-358" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb25-359"><a href="#cb25-359" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-360"><a href="#cb25-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-361"><a href="#cb25-361" aria-hidden="true" tabindex="-1"></a>Usage:</span>
+<span id="cb25-362"><a href="#cb25-362" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb25-363"><a href="#cb25-363" aria-hidden="true" tabindex="-1"></a><span class="fu">col_group</span>(<span class="st">"Results"</span>,</span>
+<span id="cb25-364"><a href="#cb25-364" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_interval</span>(<span class="st">"OR (95% CI)"</span>, <span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>),</span>
+<span id="cb25-365"><a href="#cb25-365" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_pvalue</span>(<span class="st">"pvalue"</span>, <span class="st">"P"</span>)</span>
+<span id="cb25-366"><a href="#cb25-366" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-367"><a href="#cb25-367" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-368"><a href="#cb25-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-369"><a href="#cb25-369" aria-hidden="true" tabindex="-1"></a><span class="fu">## Serialization to JavaScript</span></span>
+<span id="cb25-370"><a href="#cb25-370" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-371"><a href="#cb25-371" aria-hidden="true" tabindex="-1"></a>S7 objects are converted to JSON for the JavaScript frontend via <span class="in">`serialize_spec()`</span>:</span>
+<span id="cb25-372"><a href="#cb25-372" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-373"><a href="#cb25-373" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-374"><a href="#cb25-374" aria-hidden="true" tabindex="-1"></a><span class="in">R (S7 objects)                    JSON                      TypeScript</span></span>
+<span id="cb25-375"><a href="#cb25-375" aria-hidden="true" tabindex="-1"></a><span class="in">──────────────────────────────────────────────────────────────────────</span></span>
+<span id="cb25-376"><a href="#cb25-376" aria-hidden="true" tabindex="-1"></a><span class="in">WebSpec                    →    { data: {...},        →    WebSpec interface</span></span>
+<span id="cb25-377"><a href="#cb25-377" aria-hidden="true" tabindex="-1"></a><span class="in">  @data                         columns: [...],</span></span>
+<span id="cb25-378"><a href="#cb25-378" aria-hidden="true" tabindex="-1"></a><span class="in">  @columns                      theme: {...},</span></span>
+<span id="cb25-379"><a href="#cb25-379" aria-hidden="true" tabindex="-1"></a><span class="in">  @theme                        ... }</span></span>
+<span id="cb25-380"><a href="#cb25-380" aria-hidden="true" tabindex="-1"></a><span class="in">  ...</span></span>
+<span id="cb25-381"><a href="#cb25-381" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-382"><a href="#cb25-382" aria-hidden="true" tabindex="-1"></a><span class="in">WebTheme                   →    { name: "...",        →    WebTheme interface</span></span>
+<span id="cb25-383"><a href="#cb25-383" aria-hidden="true" tabindex="-1"></a><span class="in">  @colors                       colors: {...},</span></span>
+<span id="cb25-384"><a href="#cb25-384" aria-hidden="true" tabindex="-1"></a><span class="in">  @typography                   typography: {...},</span></span>
+<span id="cb25-385"><a href="#cb25-385" aria-hidden="true" tabindex="-1"></a><span class="in">  ...                           ... }</span></span>
+<span id="cb25-386"><a href="#cb25-386" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-387"><a href="#cb25-387" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-388"><a href="#cb25-388" aria-hidden="true" tabindex="-1"></a>Key transformations:</span>
+<span id="cb25-389"><a href="#cb25-389" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-390"><a href="#cb25-390" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> R Pattern <span class="pp">|</span> JSON Pattern <span class="pp">|</span></span>
+<span id="cb25-391"><a href="#cb25-391" aria-hidden="true" tabindex="-1"></a><span class="pp">|-----------|--------------|</span></span>
+<span id="cb25-392"><a href="#cb25-392" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`snake_case`</span> property <span class="pp">|</span> <span class="in">`camelCase`</span> key <span class="pp">|</span></span>
+<span id="cb25-393"><a href="#cb25-393" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`NA_character_`</span> <span class="pp">|</span> <span class="in">`null`</span> <span class="pp">|</span></span>
+<span id="cb25-394"><a href="#cb25-394" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`NA_real_`</span> <span class="pp">|</span> <span class="in">`null`</span> <span class="pp">|</span></span>
+<span id="cb25-395"><a href="#cb25-395" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> S7 nested object <span class="pp">|</span> Nested JSON object <span class="pp">|</span></span>
+<span id="cb25-396"><a href="#cb25-396" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`class_list`</span> of S7 <span class="pp">|</span> Array of JSON objects <span class="pp">|</span></span>
+<span id="cb25-397"><a href="#cb25-397" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-398"><a href="#cb25-398" aria-hidden="true" tabindex="-1"></a>Example serialization:</span>
+<span id="cb25-399"><a href="#cb25-399" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb25-400"><a href="#cb25-400" aria-hidden="true" tabindex="-1"></a>serialize_theme <span class="ot">&lt;-</span> <span class="cf">function</span>(theme) {</span>
+<span id="cb25-401"><a href="#cb25-401" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb25-402"><a href="#cb25-402" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> theme<span class="sc">@</span>name,</span>
+<span id="cb25-403"><a href="#cb25-403" aria-hidden="true" tabindex="-1"></a>    <span class="at">colors =</span> <span class="fu">list</span>(</span>
+<span id="cb25-404"><a href="#cb25-404" aria-hidden="true" tabindex="-1"></a>      <span class="at">background =</span> theme<span class="sc">@</span>colors<span class="sc">@</span>background,</span>
+<span id="cb25-405"><a href="#cb25-405" aria-hidden="true" tabindex="-1"></a>      <span class="at">foreground =</span> theme<span class="sc">@</span>colors<span class="sc">@</span>foreground,</span>
+<span id="cb25-406"><a href="#cb25-406" aria-hidden="true" tabindex="-1"></a>      <span class="co"># snake_case → camelCase</span></span>
+<span id="cb25-407"><a href="#cb25-407" aria-hidden="true" tabindex="-1"></a>      <span class="at">intervalPositive =</span> theme<span class="sc">@</span>colors<span class="sc">@</span>interval_positive,</span>
+<span id="cb25-408"><a href="#cb25-408" aria-hidden="true" tabindex="-1"></a>      <span class="at">intervalNegative =</span> theme<span class="sc">@</span>colors<span class="sc">@</span>interval_negative,</span>
+<span id="cb25-409"><a href="#cb25-409" aria-hidden="true" tabindex="-1"></a>      ...</span>
+<span id="cb25-410"><a href="#cb25-410" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb25-411"><a href="#cb25-411" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb25-412"><a href="#cb25-412" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb25-413"><a href="#cb25-413" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-414"><a href="#cb25-414" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-415"><a href="#cb25-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-416"><a href="#cb25-416" aria-hidden="true" tabindex="-1"></a><span class="fu">## Type Checking Patterns</span></span>
+<span id="cb25-417"><a href="#cb25-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-418"><a href="#cb25-418" aria-hidden="true" tabindex="-1"></a><span class="fu">### S7_inherits for Runtime Checks</span></span>
+<span id="cb25-419"><a href="#cb25-419" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-420"><a href="#cb25-420" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb25-421"><a href="#cb25-421" aria-hidden="true" tabindex="-1"></a><span class="co"># In modifiers.R</span></span>
+<span id="cb25-422"><a href="#cb25-422" aria-hidden="true" tabindex="-1"></a>set_row_style <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb25-423"><a href="#cb25-423" aria-hidden="true" tabindex="-1"></a>  spec <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">inherits</span>(x, <span class="st">"htmlwidget"</span>)) {</span>
+<span id="cb25-424"><a href="#cb25-424" aria-hidden="true" tabindex="-1"></a>    <span class="fu">attr</span>(x, <span class="st">"webspec"</span>)</span>
+<span id="cb25-425"><a href="#cb25-425" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">S7_inherits</span>(x, WebSpec)) {</span>
+<span id="cb25-426"><a href="#cb25-426" aria-hidden="true" tabindex="-1"></a>    x</span>
+<span id="cb25-427"><a href="#cb25-427" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb25-428"><a href="#cb25-428" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cli_abort</span>(<span class="st">"x must be a WebSpec or htmlwidget"</span>)</span>
+<span id="cb25-429"><a href="#cb25-429" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb25-430"><a href="#cb25-430" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb25-431"><a href="#cb25-431" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-432"><a href="#cb25-432" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-433"><a href="#cb25-433" aria-hidden="true" tabindex="-1"></a><span class="co"># In columns.R</span></span>
+<span id="cb25-434"><a href="#cb25-434" aria-hidden="true" tabindex="-1"></a>col_group <span class="ot">&lt;-</span> <span class="cf">function</span>(header, ...) {</span>
+<span id="cb25-435"><a href="#cb25-435" aria-hidden="true" tabindex="-1"></a>  columns <span class="ot">&lt;-</span> <span class="fu">list</span>(...)</span>
+<span id="cb25-436"><a href="#cb25-436" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(columns)) {</span>
+<span id="cb25-437"><a href="#cb25-437" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">S7_inherits</span>(columns[[i]], ColumnSpec)) {</span>
+<span id="cb25-438"><a href="#cb25-438" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cli_abort</span>(<span class="st">"All arguments must be ColumnSpec objects"</span>)</span>
+<span id="cb25-439"><a href="#cb25-439" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb25-440"><a href="#cb25-440" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb25-441"><a href="#cb25-441" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb25-442"><a href="#cb25-442" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-443"><a href="#cb25-443" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-444"><a href="#cb25-444" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-445"><a href="#cb25-445" aria-hidden="true" tabindex="-1"></a><span class="fu">### class_any Escape Hatch</span></span>
+<span id="cb25-446"><a href="#cb25-446" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-447"><a href="#cb25-447" aria-hidden="true" tabindex="-1"></a>Some properties use <span class="in">`class_any`</span> for flexibility:</span>
+<span id="cb25-448"><a href="#cb25-448" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-449"><a href="#cb25-449" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb25-450"><a href="#cb25-450" aria-hidden="true" tabindex="-1"></a><span class="co"># Allows NULL or WebTheme</span></span>
+<span id="cb25-451"><a href="#cb25-451" aria-hidden="true" tabindex="-1"></a>theme <span class="ot">=</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>)</span>
+<span id="cb25-452"><a href="#cb25-452" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-453"><a href="#cb25-453" aria-hidden="true" tabindex="-1"></a><span class="co"># Allows numeric or "auto" string</span></span>
+<span id="cb25-454"><a href="#cb25-454" aria-hidden="true" tabindex="-1"></a>width <span class="ot">=</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NA_real_</span>)</span>
 <span id="cb25-455"><a href="#cb25-455" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-456"><a href="#cb25-456" aria-hidden="true" tabindex="-1"></a><span class="co"># Allows numeric or "auto" string</span></span>
-<span id="cb25-457"><a href="#cb25-457" aria-hidden="true" tabindex="-1"></a>width <span class="ot">=</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NA_real_</span>)</span>
-<span id="cb25-458"><a href="#cb25-458" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-459"><a href="#cb25-459" aria-hidden="true" tabindex="-1"></a><span class="co"># Allows NULL or numeric vector</span></span>
-<span id="cb25-460"><a href="#cb25-460" aria-hidden="true" tabindex="-1"></a>tick_values <span class="ot">=</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>)</span>
-<span id="cb25-461"><a href="#cb25-461" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-462"><a href="#cb25-462" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-463"><a href="#cb25-463" aria-hidden="true" tabindex="-1"></a>A more type-safe approach would use unions:</span>
-<span id="cb25-464"><a href="#cb25-464" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-465"><a href="#cb25-465" aria-hidden="true" tabindex="-1"></a>theme <span class="ot">=</span> <span class="fu">new_property</span>(</span>
-<span id="cb25-466"><a href="#cb25-466" aria-hidden="true" tabindex="-1"></a>  <span class="fu">new_union</span>(WebTheme, class_missing),</span>
-<span id="cb25-467"><a href="#cb25-467" aria-hidden="true" tabindex="-1"></a>  <span class="at">default =</span> <span class="cn">NULL</span></span>
-<span id="cb25-468"><a href="#cb25-468" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb25-469"><a href="#cb25-469" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-470"><a href="#cb25-470" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-471"><a href="#cb25-471" aria-hidden="true" tabindex="-1"></a><span class="fu">## Method Dispatch</span></span>
-<span id="cb25-472"><a href="#cb25-472" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-473"><a href="#cb25-473" aria-hidden="true" tabindex="-1"></a>S7 methods are registered for generic functions:</span>
-<span id="cb25-474"><a href="#cb25-474" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-475"><a href="#cb25-475" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-476"><a href="#cb25-476" aria-hidden="true" tabindex="-1"></a><span class="co"># Print method for WebSpec</span></span>
-<span id="cb25-477"><a href="#cb25-477" aria-hidden="true" tabindex="-1"></a><span class="fu">method</span>(print, WebSpec) <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
-<span id="cb25-478"><a href="#cb25-478" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cli_inform</span>(<span class="fu">c</span>(</span>
-<span id="cb25-479"><a href="#cb25-479" aria-hidden="true" tabindex="-1"></a>    <span class="st">"A {.cls WebSpec} with {nrow(x@data)} row{?s}"</span>,</span>
-<span id="cb25-480"><a href="#cb25-480" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Point: {.field {x@point_col}}"</span>,</span>
-<span id="cb25-481"><a href="#cb25-481" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Interval: {.field {x@lower_col}} to {.field {x@upper_col}}"</span>,</span>
-<span id="cb25-482"><a href="#cb25-482" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Scale: {.val {x@scale}} (null = {x@null_value})"</span>,</span>
-<span id="cb25-483"><a href="#cb25-483" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Columns: {length(x@columns)}"</span>,</span>
-<span id="cb25-484"><a href="#cb25-484" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Groups: {length(x@groups)}"</span></span>
-<span id="cb25-485"><a href="#cb25-485" aria-hidden="true" tabindex="-1"></a>  ))</span>
-<span id="cb25-486"><a href="#cb25-486" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(x)</span>
-<span id="cb25-487"><a href="#cb25-487" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb25-488"><a href="#cb25-488" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-489"><a href="#cb25-489" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot method (renders as forest plot)</span></span>
-<span id="cb25-490"><a href="#cb25-490" aria-hidden="true" tabindex="-1"></a><span class="fu">method</span>(plot, WebSpec) <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
-<span id="cb25-491"><a href="#cb25-491" aria-hidden="true" tabindex="-1"></a>  <span class="fu">forest_plot</span>(x, ...)</span>
-<span id="cb25-492"><a href="#cb25-492" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb25-493"><a href="#cb25-493" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-494"><a href="#cb25-494" aria-hidden="true" tabindex="-1"></a><span class="co"># as.data.frame method</span></span>
-<span id="cb25-495"><a href="#cb25-495" aria-hidden="true" tabindex="-1"></a><span class="fu">method</span>(as.data.frame, WebSpec) <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
-<span id="cb25-496"><a href="#cb25-496" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">@</span>data</span>
-<span id="cb25-497"><a href="#cb25-497" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb25-498"><a href="#cb25-498" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb25-499"><a href="#cb25-499" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-500"><a href="#cb25-500" aria-hidden="true" tabindex="-1"></a><span class="fu">## Best Practices</span></span>
-<span id="cb25-501"><a href="#cb25-501" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-502"><a href="#cb25-502" aria-hidden="true" tabindex="-1"></a><span class="fu">### Creating New Classes</span></span>
-<span id="cb25-503"><a href="#cb25-503" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-504"><a href="#cb25-504" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Start with the helper function API**, then design the class to support it</span>
-<span id="cb25-505"><a href="#cb25-505" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Use `NA_*` for optional scalars**, <span class="in">`NULL`</span> for optional objects</span>
-<span id="cb25-506"><a href="#cb25-506" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Add validators** for invariants that can't be expressed as types</span>
-<span id="cb25-507"><a href="#cb25-507" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Document the helper**, not the class directly</span>
-<span id="cb25-508"><a href="#cb25-508" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-509"><a href="#cb25-509" aria-hidden="true" tabindex="-1"></a><span class="fu">### Modifying Existing Classes</span></span>
-<span id="cb25-510"><a href="#cb25-510" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-511"><a href="#cb25-511" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Add new properties with defaults** to maintain backward compatibility</span>
-<span id="cb25-512"><a href="#cb25-512" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Update serialization** in <span class="in">`utils-serialize.R`</span></span>
-<span id="cb25-513"><a href="#cb25-513" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Update TypeScript types** in <span class="in">`srcjs/src/types/index.ts`</span></span>
-<span id="cb25-514"><a href="#cb25-514" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Update fluent modifiers** if the property should be user-configurable</span>
-<span id="cb25-515"><a href="#cb25-515" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-516"><a href="#cb25-516" aria-hidden="true" tabindex="-1"></a><span class="fu">### Testing Classes</span></span>
-<span id="cb25-517"><a href="#cb25-517" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-518"><a href="#cb25-518" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb25-519"><a href="#cb25-519" aria-hidden="true" tabindex="-1"></a><span class="co"># Test construction</span></span>
-<span id="cb25-520"><a href="#cb25-520" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(df, <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>)</span>
-<span id="cb25-521"><a href="#cb25-521" aria-hidden="true" tabindex="-1"></a><span class="fu">expect_s7_class</span>(spec, WebSpec)</span>
-<span id="cb25-522"><a href="#cb25-522" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-523"><a href="#cb25-523" aria-hidden="true" tabindex="-1"></a><span class="co"># Test validation</span></span>
-<span id="cb25-524"><a href="#cb25-524" aria-hidden="true" tabindex="-1"></a><span class="fu">expect_error</span>(</span>
-<span id="cb25-525"><a href="#cb25-525" aria-hidden="true" tabindex="-1"></a>  <span class="fu">WebSpec</span>(<span class="at">data =</span> df, <span class="at">point_col =</span> <span class="st">"nonexistent"</span>, ...),</span>
-<span id="cb25-526"><a href="#cb25-526" aria-hidden="true" tabindex="-1"></a>  <span class="st">"not found in data"</span></span>
-<span id="cb25-527"><a href="#cb25-527" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb25-528"><a href="#cb25-528" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-529"><a href="#cb25-529" aria-hidden="true" tabindex="-1"></a><span class="co"># Test serialization round-trip</span></span>
-<span id="cb25-530"><a href="#cb25-530" aria-hidden="true" tabindex="-1"></a>json <span class="ot">&lt;-</span> <span class="fu">serialize_spec</span>(spec)</span>
-<span id="cb25-531"><a href="#cb25-531" aria-hidden="true" tabindex="-1"></a><span class="fu">expect_equal</span>(json<span class="sc">$</span>data<span class="sc">$</span>pointCol, <span class="st">"hr"</span>)</span>
-<span id="cb25-532"><a href="#cb25-532" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<span id="cb25-456"><a href="#cb25-456" aria-hidden="true" tabindex="-1"></a><span class="co"># Allows NULL or numeric vector</span></span>
+<span id="cb25-457"><a href="#cb25-457" aria-hidden="true" tabindex="-1"></a>tick_values <span class="ot">=</span> <span class="fu">new_property</span>(class_any, <span class="at">default =</span> <span class="cn">NULL</span>)</span>
+<span id="cb25-458"><a href="#cb25-458" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-459"><a href="#cb25-459" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-460"><a href="#cb25-460" aria-hidden="true" tabindex="-1"></a>A more type-safe approach would use unions:</span>
+<span id="cb25-461"><a href="#cb25-461" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb25-462"><a href="#cb25-462" aria-hidden="true" tabindex="-1"></a>theme <span class="ot">=</span> <span class="fu">new_property</span>(</span>
+<span id="cb25-463"><a href="#cb25-463" aria-hidden="true" tabindex="-1"></a>  <span class="fu">new_union</span>(WebTheme, class_missing),</span>
+<span id="cb25-464"><a href="#cb25-464" aria-hidden="true" tabindex="-1"></a>  <span class="at">default =</span> <span class="cn">NULL</span></span>
+<span id="cb25-465"><a href="#cb25-465" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-466"><a href="#cb25-466" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-467"><a href="#cb25-467" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-468"><a href="#cb25-468" aria-hidden="true" tabindex="-1"></a><span class="fu">## Method Dispatch</span></span>
+<span id="cb25-469"><a href="#cb25-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-470"><a href="#cb25-470" aria-hidden="true" tabindex="-1"></a>S7 methods are registered for generic functions:</span>
+<span id="cb25-471"><a href="#cb25-471" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-472"><a href="#cb25-472" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb25-473"><a href="#cb25-473" aria-hidden="true" tabindex="-1"></a><span class="co"># Print method for WebSpec</span></span>
+<span id="cb25-474"><a href="#cb25-474" aria-hidden="true" tabindex="-1"></a><span class="fu">method</span>(print, WebSpec) <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb25-475"><a href="#cb25-475" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cli_inform</span>(<span class="fu">c</span>(</span>
+<span id="cb25-476"><a href="#cb25-476" aria-hidden="true" tabindex="-1"></a>    <span class="st">"A {.cls WebSpec} with {nrow(x@data)} row{?s}"</span>,</span>
+<span id="cb25-477"><a href="#cb25-477" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Point: {.field {x@point_col}}"</span>,</span>
+<span id="cb25-478"><a href="#cb25-478" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Interval: {.field {x@lower_col}} to {.field {x@upper_col}}"</span>,</span>
+<span id="cb25-479"><a href="#cb25-479" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Scale: {.val {x@scale}} (null = {x@null_value})"</span>,</span>
+<span id="cb25-480"><a href="#cb25-480" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Columns: {length(x@columns)}"</span>,</span>
+<span id="cb25-481"><a href="#cb25-481" aria-hidden="true" tabindex="-1"></a>    <span class="st">"*"</span> <span class="ot">=</span> <span class="st">"Groups: {length(x@groups)}"</span></span>
+<span id="cb25-482"><a href="#cb25-482" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb25-483"><a href="#cb25-483" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(x)</span>
+<span id="cb25-484"><a href="#cb25-484" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-485"><a href="#cb25-485" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-486"><a href="#cb25-486" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot method (renders as tabviz with forest column)</span></span>
+<span id="cb25-487"><a href="#cb25-487" aria-hidden="true" tabindex="-1"></a><span class="fu">method</span>(plot, WebSpec) <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb25-488"><a href="#cb25-488" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tabviz</span>(x<span class="sc">@</span>data, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(<span class="at">point =</span> x<span class="sc">@</span>point_col, <span class="at">lower =</span> x<span class="sc">@</span>lower_col, <span class="at">upper =</span> x<span class="sc">@</span>upper_col)), ...)</span>
+<span id="cb25-489"><a href="#cb25-489" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-490"><a href="#cb25-490" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-491"><a href="#cb25-491" aria-hidden="true" tabindex="-1"></a><span class="co"># as.data.frame method</span></span>
+<span id="cb25-492"><a href="#cb25-492" aria-hidden="true" tabindex="-1"></a><span class="fu">method</span>(as.data.frame, WebSpec) <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb25-493"><a href="#cb25-493" aria-hidden="true" tabindex="-1"></a>  x<span class="sc">@</span>data</span>
+<span id="cb25-494"><a href="#cb25-494" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-495"><a href="#cb25-495" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb25-496"><a href="#cb25-496" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-497"><a href="#cb25-497" aria-hidden="true" tabindex="-1"></a><span class="fu">## Best Practices</span></span>
+<span id="cb25-498"><a href="#cb25-498" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-499"><a href="#cb25-499" aria-hidden="true" tabindex="-1"></a><span class="fu">### Creating New Classes</span></span>
+<span id="cb25-500"><a href="#cb25-500" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-501"><a href="#cb25-501" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Start with the helper function API**, then design the class to support it</span>
+<span id="cb25-502"><a href="#cb25-502" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Use `NA_*` for optional scalars**, <span class="in">`NULL`</span> for optional objects</span>
+<span id="cb25-503"><a href="#cb25-503" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Add validators** for invariants that can't be expressed as types</span>
+<span id="cb25-504"><a href="#cb25-504" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Document the helper**, not the class directly</span>
+<span id="cb25-505"><a href="#cb25-505" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-506"><a href="#cb25-506" aria-hidden="true" tabindex="-1"></a><span class="fu">### Modifying Existing Classes</span></span>
+<span id="cb25-507"><a href="#cb25-507" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-508"><a href="#cb25-508" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Add new properties with defaults** to maintain backward compatibility</span>
+<span id="cb25-509"><a href="#cb25-509" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Update serialization** in <span class="in">`utils-serialize.R`</span></span>
+<span id="cb25-510"><a href="#cb25-510" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Update TypeScript types** in <span class="in">`srcjs/src/types/index.ts`</span></span>
+<span id="cb25-511"><a href="#cb25-511" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Update fluent modifiers** if the property should be user-configurable</span>
+<span id="cb25-512"><a href="#cb25-512" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-513"><a href="#cb25-513" aria-hidden="true" tabindex="-1"></a><span class="fu">### Testing Classes</span></span>
+<span id="cb25-514"><a href="#cb25-514" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-515"><a href="#cb25-515" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb25-516"><a href="#cb25-516" aria-hidden="true" tabindex="-1"></a><span class="co"># Test construction</span></span>
+<span id="cb25-517"><a href="#cb25-517" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">web_spec</span>(df, <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>)</span>
+<span id="cb25-518"><a href="#cb25-518" aria-hidden="true" tabindex="-1"></a><span class="fu">expect_s7_class</span>(spec, WebSpec)</span>
+<span id="cb25-519"><a href="#cb25-519" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-520"><a href="#cb25-520" aria-hidden="true" tabindex="-1"></a><span class="co"># Test validation</span></span>
+<span id="cb25-521"><a href="#cb25-521" aria-hidden="true" tabindex="-1"></a><span class="fu">expect_error</span>(</span>
+<span id="cb25-522"><a href="#cb25-522" aria-hidden="true" tabindex="-1"></a>  <span class="fu">WebSpec</span>(<span class="at">data =</span> df, <span class="at">point_col =</span> <span class="st">"nonexistent"</span>, ...),</span>
+<span id="cb25-523"><a href="#cb25-523" aria-hidden="true" tabindex="-1"></a>  <span class="st">"not found in data"</span></span>
+<span id="cb25-524"><a href="#cb25-524" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-525"><a href="#cb25-525" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-526"><a href="#cb25-526" aria-hidden="true" tabindex="-1"></a><span class="co"># Test serialization round-trip</span></span>
+<span id="cb25-527"><a href="#cb25-527" aria-hidden="true" tabindex="-1"></a>json <span class="ot">&lt;-</span> <span class="fu">serialize_spec</span>(spec)</span>
+<span id="cb25-528"><a href="#cb25-528" aria-hidden="true" tabindex="-1"></a><span class="fu">expect_equal</span>(json<span class="sc">$</span>data<span class="sc">$</span>pointCol, <span class="st">"hr"</span>)</span>
+<span id="cb25-529"><a href="#cb25-529" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

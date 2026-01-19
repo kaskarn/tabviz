@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Data Flow – tabviz</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-6d8a317f6d7170feb81ce6008a9cc2e3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<meta name="mermaid-theme" content="neutral">
+<script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<link href="../site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="../site_libs/tabviz-styles-0.3.0/tabviz.css" rel="stylesheet">
+<script src="../site_libs/tabviz-binding-0.3.0/tabviz.js"></script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-guide" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Guide</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-guide">    
+        <li>
+    <a class="dropdown-item" href="../guide/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/quick-start.html">
+ <span class="dropdown-text">1. Quick Start</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/package-data.html">
+ <span class="dropdown-text">2. Package Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/columns.html">
+ <span class="dropdown-text">3. Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/row-styling.html">
+ <span class="dropdown-text">4. Row Styling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/cell-styling.html">
+ <span class="dropdown-text">5. Cell Styling</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/row-groups.html">
+ <span class="dropdown-text">6. Row Groups</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/titles.html">
+ <span class="dropdown-text">7. Titles and Labels</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/index.html">
+ <span class="dropdown-text">8. Visualizations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/visualizations/forest-plots.html">
+ <span class="dropdown-text">9. Forest Plots</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/split-plots.html">
+ <span class="dropdown-text">10. Split Plots</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../guide/themes.html">
+ <span class="dropdown-text">11. Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/shiny.html">
+ <span class="dropdown-text">12. Shiny Integration</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../guide/export.html">
+ <span class="dropdown-text">13. Export</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-pipeline" id="toc-the-pipeline" class="nav-link active" data-scroll-target="#the-pipeline">The Pipeline</a>
+  <ul class="collapse">
+  <li><a href="#stage-1-column-resolution" id="toc-stage-1-column-resolution" class="nav-link" data-scroll-target="#stage-1-column-resolution">Stage 1: Column Resolution</a></li>
+  <li><a href="#stage-2-style-evaluation" id="toc-stage-2-style-evaluation" class="nav-link" data-scroll-target="#stage-2-style-evaluation">Stage 2: Style Evaluation</a></li>
+  <li><a href="#stage-3-json-serialization" id="toc-stage-3-json-serialization" class="nav-link" data-scroll-target="#stage-3-json-serialization">Stage 3: JSON Serialization</a></li>
+  <li><a href="#stage-4-svelte-rendering" id="toc-stage-4-svelte-rendering" class="nav-link" data-scroll-target="#stage-4-svelte-rendering">Stage 4: Svelte Rendering</a></li>
+  </ul></li>
+  <li><a href="#data-requirements" id="toc-data-requirements" class="nav-link" data-scroll-target="#data-requirements">Data Requirements</a>
+  <ul class="collapse">
+  <li><a href="#required-structure" id="toc-required-structure" class="nav-link" data-scroll-target="#required-structure">Required Structure</a></li>
+  <li><a href="#column-types" id="toc-column-types" class="nav-link" data-scroll-target="#column-types">Column Types</a></li>
+  <li><a href="#missing-values" id="toc-missing-values" class="nav-link" data-scroll-target="#missing-values">Missing Values</a></li>
+  </ul></li>
+  <li><a href="#grouping-data" id="toc-grouping-data" class="nav-link" data-scroll-target="#grouping-data">Grouping Data</a>
+  <ul class="collapse">
+  <li><a href="#single-level-grouping" id="toc-single-level-grouping" class="nav-link" data-scroll-target="#single-level-grouping">Single-Level Grouping</a></li>
+  <li><a href="#hierarchical-grouping" id="toc-hierarchical-grouping" class="nav-link" data-scroll-target="#hierarchical-grouping">Hierarchical Grouping</a></li>
+  </ul></li>
+  <li><a href="#styling-data-flow" id="toc-styling-data-flow" class="nav-link" data-scroll-target="#styling-data-flow">Styling Data Flow</a></li>
+  <li><a href="#common-patterns" id="toc-common-patterns" class="nav-link" data-scroll-target="#common-patterns">Common Patterns</a>
+  <ul class="collapse">
+  <li><a href="#pre-computing-style-columns" id="toc-pre-computing-style-columns" class="nav-link" data-scroll-target="#pre-computing-style-columns">Pre-computing Style Columns</a></li>
+  <li><a href="#using-formula-expressions" id="toc-using-formula-expressions" class="nav-link" data-scroll-target="#using-formula-expressions">Using Formula Expressions</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Data Flow</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Understanding how data flows through tabviz helps you structure your data correctly and debug issues.</p>
+<section id="the-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="the-pipeline">The Pipeline</h2>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+    subgraph Input
+        A["data.frame"]
+    end
+
+    subgraph Processing
+        B["Column Resolution"]
+        C["Style Evaluation"]
+        D["JSON Serialization"]
+    end
+
+    subgraph Output
+        E["Svelte Component"]
+        F["Interactive Widget"]
+    end
+
+    A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; F
+
+    style D fill:#4f46e5,color:#fff
+    style E fill:#ff3e00,color:#fff
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<section id="stage-1-column-resolution" class="level3">
+<h3 class="anchored" data-anchor-id="stage-1-column-resolution">Stage 1: Column Resolution</h3>
+<p>tabviz maps your column specifications to data columns:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,  <span class="co"># Maps to data$study</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>)  <span class="co"># Maps to data$hr, data$lo, data$hi</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>At this stage: - String arguments become column lookups - Missing columns trigger errors - Data types are validated</p>
+</section>
+<section id="stage-2-style-evaluation" class="level3">
+<h3 class="anchored" data-anchor-id="stage-2-style-evaluation">Stage 2: Style Evaluation</h3>
+<p>Formula expressions are evaluated against your data:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  ...,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="sc">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>,  <span class="co"># Evaluates for each row</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#64748b"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>The formula <code>~ pval &lt; 0.05</code> becomes a vector of <code>TRUE</code>/<code>FALSE</code> values—one per row.</p>
+</section>
+<section id="stage-3-json-serialization" class="level3">
+<h3 class="anchored" data-anchor-id="stage-3-json-serialization">Stage 3: JSON Serialization</h3>
+<p>The configured specification converts to JSON for the JavaScript frontend:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"data"</span><span class="fu">:</span> <span class="ot">[</span><span class="er">...</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"columns"</span><span class="fu">:</span> <span class="ot">[</span><span class="er">...</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"theme"</span><span class="fu">:</span> <span class="fu">{</span><span class="er">...</span><span class="fu">},</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"styles"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"row_bold"</span><span class="fu">:</span> <span class="ot">[</span><span class="kw">true</span><span class="ot">,</span> <span class="kw">false</span><span class="ot">,</span> <span class="kw">true</span><span class="ot">,</span> <span class="er">...</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"marker_color"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"#16a34a"</span><span class="ot">,</span> <span class="st">"#64748b"</span><span class="ot">,</span> <span class="er">...</span><span class="ot">]</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="stage-4-svelte-rendering" class="level3">
+<h3 class="anchored" data-anchor-id="stage-4-svelte-rendering">Stage 4: Svelte Rendering</h3>
+<p>The Svelte component receives the JSON and renders the interactive table with: - Sortable columns - Collapsible groups - Hover tooltips - Export functionality</p>
+</section>
+</section>
+<section id="data-requirements" class="level2">
+<h2 class="anchored" data-anchor-id="data-requirements">Data Requirements</h2>
+<section id="required-structure" class="level3">
+<h3 class="anchored" data-anchor-id="required-structure">Required Structure</h3>
+<p>Your data.frame needs: - <strong>One row per item</strong> to display - <strong>Columns referenced</strong> by your column specifications</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal forest plot data</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>meta_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Smith 2020"</span>, <span class="st">"Jones 2021"</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="column-types" class="level3">
+<h3 class="anchored" data-anchor-id="column-types">Column Types</h3>
+<p>tabviz handles standard R types:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 53%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>R Type</th>
+<th>Column Functions</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>character</td>
+<td><code>col_text()</code>, <code>col_badge()</code></td>
+<td>Text display</td>
+</tr>
+<tr class="even">
+<td>numeric</td>
+<td><code>col_numeric()</code>, <code>col_n()</code>, <code>col_percent()</code></td>
+<td>Formatted numbers</td>
+</tr>
+<tr class="odd">
+<td>integer</td>
+<td><code>col_n()</code></td>
+<td>Sample sizes</td>
+</tr>
+<tr class="even">
+<td>logical</td>
+<td>Row/marker styling</td>
+<td>TRUE/FALSE conditions</td>
+</tr>
+<tr class="odd">
+<td>list</td>
+<td><code>col_sparkline()</code></td>
+<td>Nested numeric vectors</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="missing-values" class="level3">
+<h3 class="anchored" data-anchor-id="missing-values">Missing Values</h3>
+<p>NA handling varies by column type:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Context</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Forest points</td>
+<td>Row displays as label-only (no marker)</td>
+</tr>
+<tr class="even">
+<td>Numeric columns</td>
+<td>Displays as empty cell</td>
+</tr>
+<tr class="odd">
+<td>Text columns</td>
+<td>Displays as empty cell</td>
+</tr>
+<tr class="even">
+<td>Row styling</td>
+<td>NA rows skip that style</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="grouping-data" class="level2">
+<h2 class="anchored" data-anchor-id="grouping-data">Grouping Data</h2>
+<p>Grouping creates collapsible sections:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A["Flat data"] --&gt; B["group = 'category'"]
+    B --&gt; C["Grouped display"]
+
+    subgraph "Grouped display"
+        D["Group A Header"]
+        E["  Row 1"]
+        F["  Row 2"]
+        G["Group B Header"]
+        H["  Row 3"]
+    end
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<section id="single-level-grouping" class="level3">
+<h3 class="anchored" data-anchor-id="single-level-grouping">Single-Level Grouping</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>, <span class="st">"Trial D"</span>),</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">category =</span> <span class="fu">c</span>(<span class="st">"Drug X"</span>, <span class="st">"Drug X"</span>, <span class="st">"Drug Y"</span>, <span class="st">"Drug Y"</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>, <span class="fl">0.78</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>, <span class="fl">0.60</span>),</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>, <span class="fl">1.00</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,  <span class="co"># Groups by Drug X, Drug Y</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>))</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="hierarchical-grouping" class="level3">
+<h3 class="anchored" data-anchor-id="hierarchical-grouping">Hierarchical Grouping</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>region <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"North"</span>, <span class="st">"North"</span>, <span class="st">"South"</span>, <span class="st">"South"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"category"</span>),  <span class="co"># Region &gt; Category hierarchy</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(...))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="styling-data-flow" class="level2">
+<h2 class="anchored" data-anchor-id="styling-data-flow">Styling Data Flow</h2>
+<p>Styles resolve in order of specificity:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A["Theme defaults"] --&gt; B["Row styling"]
+    B --&gt; C["Cell styling"]
+    C --&gt; D["Marker styling"]
+    D --&gt; E["Final appearance"]
+
+    style E fill:#059669,color:#fff
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>See <a href="../concepts/styling-cascade.html">Styling Cascade</a> for details.</p>
+</section>
+<section id="common-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="common-patterns">Common Patterns</h2>
+<section id="pre-computing-style-columns" class="level3">
+<h3 class="anchored" data-anchor-id="pre-computing-style-columns">Pre-computing Style Columns</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>styled_data <span class="ot">&lt;-</span> meta_data <span class="sc">|&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_significant =</span> upper <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">direction_color =</span> <span class="fu">case_when</span>(</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>      upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,  <span class="co"># Green: benefit</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>      lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,  <span class="co"># Red: harm</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span>        <span class="co"># Gray: NS</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(styled_data,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>)),</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_significant"</span>,</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"direction_color"</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="tabviz html-widget html-fill-item" id="htmlwidget-3c1de740c782c76444ae" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-3c1de740c782c76444ae">{"x":{"data":{"rows":[{"id":"row_1","label":"Smith 2020","groupId":null,"metadata":{"study":"Smith 2020","hr":0.72,"lower":0.55,"upper":0.95,"is_significant":true,"direction_color":"#16a34a"},"style":{"bold":true},"markerStyle":{"color":"#16a34a"}},{"id":"row_2","label":"Jones 2021","groupId":null,"metadata":{"study":"Jones 2021","hr":0.85,"lower":0.7,"upper":1.03,"is_significant":false,"direction_color":"#64748b"},"style":{"bold":false},"markerStyle":{"color":"#64748b"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"labelCol":"study","labelHeader":"Study","groupCol":null,"weightCol":null},"columns":[{"id":"_forest_hr","header":"","field":"_forest_hr","type":"forest","width":"auto","align":"left","headerAlign":"left","wrap":false,"sortable":false,"isGroup":false,"options":{"forest":{"point":"hr","lower":"lower","upper":"upper","effects":null,"scale":"linear","nullValue":0,"axisLabel":"Effect","axisRange":null,"axisTicks":null,"axisGridlines":false,"showAxis":true,"annotations":null,"sharedAxis":null}}}],"annotations":[],"theme":{"name":"default","colors":{"background":"#ffffff","foreground":"#333333","primary":"#0891b2","secondary":"#64748b","accent":"#8b5cf6","muted":"#94a3b8","border":"#e2e8f0","rowBg":"#ffffff","altBg":"#f8fafc","interval":"#0891b2","intervalPositive":"#0891b2","intervalNegative":"#dc2626","intervalNeutral":"#64748b","intervalLine":"#475569","summaryFill":"#0891b2","summaryBorder":"#0e7490"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":24,"headerHeight":32,"sectionGap":16,"padding":12,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":2,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":8,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":600,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":16}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true,"tooltipFields":null,"enableThemes":{"default":{"name":"default","colors":{"background":"#ffffff","foreground":"#333333","primary":"#0891b2","secondary":"#64748b","accent":"#8b5cf6","muted":"#94a3b8","border":"#e2e8f0","rowBg":"#ffffff","altBg":"#f8fafc","interval":"#0891b2","intervalPositive":"#0891b2","intervalNegative":"#dc2626","intervalNeutral":"#64748b","intervalLine":"#475569","summaryFill":"#0891b2","summaryBorder":"#0e7490"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":24,"headerHeight":32,"sectionGap":16,"padding":12,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":2,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":8,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":600,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":16}},"minimal":{"name":"minimal","colors":{"background":"#ffffff","foreground":"#000000","primary":"#000000","secondary":"#333333","accent":"#000000","muted":"#666666","border":"#000000","rowBg":"#ffffff","altBg":"#fafafa","interval":"#000000","intervalPositive":"#000000","intervalNegative":"#000000","intervalNeutral":"#666666","intervalLine":"#000000","summaryFill":"#000000","summaryBorder":"#000000"},"typography":{"fontFamily":"Georgia, 'Times New Roman', serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.4,"headerFontScale":1.05},"spacing":{"rowHeight":22,"headerHeight":28,"sectionGap":12,"padding":10,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":5,"summaryHeight":8,"lineWidth":1,"borderRadius":0,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":0,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":14}},"dark":{"name":"dark","colors":{"background":"#1e1e2e","foreground":"#cdd6f4","primary":"#89b4fa","secondary":"#a6adc8","accent":"#f5c2e7","muted":"#6c7086","border":"#313244","rowBg":"#1e1e2e","altBg":"#232334","interval":"#89b4fa","intervalPositive":"#a6e3a1","intervalNegative":"#f38ba8","intervalNeutral":"#6c7086","intervalLine":"#9399b2","summaryFill":"#89b4fa","summaryBorder":"#74c7ec"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":26,"headerHeight":32,"sectionGap":16,"padding":12,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":4,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":8,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":600,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":18}},"jama":{"name":"jama","colors":{"background":"#ffffff","foreground":"#000000","primary":"#000000","secondary":"#333333","accent":"#000000","muted":"#555555","border":"#000000","rowBg":"#ffffff","altBg":"#f9fafb","interval":"#000000","intervalPositive":"#000000","intervalNegative":"#000000","intervalNeutral":"#555555","intervalLine":"#000000","summaryFill":"#000000","summaryBorder":"#000000"},"typography":{"fontFamily":"Arial, Helvetica, sans-serif","fontSizeSm":"8pt","fontSizeBase":"9pt","fontSizeLg":"10pt","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.2,"headerFontScale":1.05},"spacing":{"rowHeight":18,"headerHeight":24,"sectionGap":8,"padding":6,"containerPadding":0,"cellPaddingX":8,"cellPaddingY":2,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":4,"summaryHeight":7,"lineWidth":1.25,"borderRadius":0,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":0,"banding":true},"groupHeaders":{"level1FontSize":"9.5pt","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"9pt","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"9pt","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":12}},"lancet":{"name":"lancet","colors":{"background":"#fdfcfb","foreground":"#1e3a5f","primary":"#00407a","secondary":"#3d5a80","accent":"#b8860b","muted":"#6b7c93","border":"#d4dce6","rowBg":"#fdfcfb","altBg":"#f8f7f5","interval":"#00407a","intervalPositive":"#00407a","intervalNegative":"#9d2933","intervalNeutral":"#3d5a80","intervalLine":"#1e3a5f","summaryFill":"#00407a","summaryBorder":"#002d54"},"typography":{"fontFamily":"Georgia, 'Times New Roman', serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":24,"headerHeight":30,"sectionGap":14,"padding":12,"containerPadding":0,"cellPaddingX":12,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":5,"summaryHeight":9,"lineWidth":1.25,"borderRadius":0,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":0,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":true,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":18}},"modern":{"name":"modern","colors":{"background":"#fafafa","foreground":"#18181b","primary":"#3b82f6","secondary":"#52525b","accent":"#8b5cf6","muted":"#a1a1aa","border":"#d4d4d8","rowBg":"#fafafa","altBg":"#f5f5f5","interval":"#3b82f6","intervalPositive":"#22c55e","intervalNegative":"#ef4444","intervalNeutral":"#71717a","intervalLine":"#27272a","summaryFill":"#3b82f6","summaryBorder":"#2563eb"},"typography":{"fontFamily":"Inter, system-ui, -apple-system, sans-serif","fontSizeSm":"0.8125rem","fontSizeBase":"0.9375rem","fontSizeLg":"1.0625rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":30,"headerHeight":36,"sectionGap":20,"padding":14,"containerPadding":0,"cellPaddingX":12,"cellPaddingY":5,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":8,"summaryHeight":12,"lineWidth":1.75,"borderRadius":8,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":12,"banding":true},"groupHeaders":{"level1FontSize":"1rem","level1FontWeight":600,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.9375rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.9375rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":20}},"presentation":{"name":"presentation","colors":{"background":"#ffffff","foreground":"#0f172a","primary":"#0369a1","secondary":"#334155","accent":"#ea580c","muted":"#64748b","border":"#94a3b8","rowBg":"#ffffff","altBg":"#f8fafc","interval":"#0369a1","intervalPositive":"#047857","intervalNegative":"#be123c","intervalNeutral":"#334155","intervalLine":"#0f172a","summaryFill":"#0369a1","summaryBorder":"#0c4a6e"},"typography":{"fontFamily":"'Source Sans Pro', 'Segoe UI', Roboto, sans-serif","fontSizeSm":"1rem","fontSizeBase":"1.125rem","fontSizeLg":"1.25rem","fontWeightNormal":400,"fontWeightMedium":600,"fontWeightBold":700,"lineHeight":1.4,"headerFontScale":1.05},"spacing":{"rowHeight":36,"headerHeight":44,"sectionGap":24,"padding":18,"containerPadding":0,"cellPaddingX":14,"cellPaddingY":5,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":12,"summaryHeight":16,"lineWidth":2.5,"borderRadius":4,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":6,"banding":true},"groupHeaders":{"level1FontSize":"1.1875rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"1.125rem","level2FontWeight":600,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"1.125rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":24}},"cochrane":{"name":"cochrane","colors":{"background":"#ffffff","foreground":"#2c2c2c","primary":"#0099cc","secondary":"#555555","accent":"#006699","muted":"#888888","border":"#b3b3b3","rowBg":"#ffffff","altBg":"#f5f5f5","interval":"#0099cc","intervalPositive":"#0099cc","intervalNegative":"#cc3333","intervalNeutral":"#555555","intervalLine":"#2c2c2c","summaryFill":"#0099cc","summaryBorder":"#006699"},"typography":{"fontFamily":"Arial, Helvetica, sans-serif","fontSizeSm":"0.6875rem","fontSizeBase":"0.75rem","fontSizeLg":"0.8125rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.25,"headerFontScale":1.05},"spacing":{"rowHeight":20,"headerHeight":26,"sectionGap":8,"padding":6,"containerPadding":0,"cellPaddingX":6,"cellPaddingY":2,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":4,"summaryHeight":7,"lineWidth":1,"borderRadius":0,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":0,"banding":true},"groupHeaders":{"level1FontSize":"0.8125rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.75rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.75rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":10}},"nature":{"name":"nature","colors":{"background":"#ffffff","foreground":"#1a1a1a","primary":"#1976d2","secondary":"#424242","accent":"#c62828","muted":"#616161","border":"#bdbdbd","rowBg":"#ffffff","altBg":"#fafafa","interval":"#1976d2","intervalPositive":"#1976d2","intervalNegative":"#c62828","intervalNeutral":"#616161","intervalLine":"#1a1a1a","summaryFill":"#1976d2","summaryBorder":"#0d47a1"},"typography":{"fontFamily":"'Helvetica Neue', Helvetica, Arial, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.8125rem","fontSizeLg":"0.9375rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.35,"headerFontScale":1.05},"spacing":{"rowHeight":22,"headerHeight":28,"sectionGap":12,"padding":10,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":5,"summaryHeight":8,"lineWidth":1.25,"borderRadius":1,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":2,"banding":true},"groupHeaders":{"level1FontSize":"0.875rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.8125rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.8125rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":14}}}},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"},"zoom":1,"autoFit":true,"showZoomControls":true},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="using-formula-expressions" class="level3">
+<h3 class="anchored" data-anchor-id="using-formula-expressions">Using Formula Expressions</h3>
+<p>Equivalent approach without pre-computing:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta_data,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>)),</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="sc">~</span> upper <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="sc">~</span> <span class="fu">case_when</span>(</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="tabviz html-widget html-fill-item" id="htmlwidget-5ade09e9278b6eea53a0" style="width:100%;height:400px;"></div>
+<script type="application/json" data-for="htmlwidget-5ade09e9278b6eea53a0">{"x":{"data":{"rows":[{"id":"row_1","label":"Smith 2020","groupId":null,"metadata":{"study":"Smith 2020","hr":0.72,"lower":0.55,"upper":0.95,".wf_computed_row_bold_20135959.306":true,".wf_computed_marker_color_20135959.307":"#16a34a"},"style":{"bold":true},"markerStyle":{"color":"#16a34a"}},{"id":"row_2","label":"Jones 2021","groupId":null,"metadata":{"study":"Jones 2021","hr":0.85,"lower":0.7,"upper":1.03,".wf_computed_row_bold_20135959.306":false,".wf_computed_marker_color_20135959.307":"#64748b"},"style":{"bold":false},"markerStyle":{"color":"#64748b"}}],"groups":[],"summaries":[],"overall":{"point":[],"lower":[],"upper":[],"metadata":[]},"labelCol":"study","labelHeader":"Study","groupCol":null,"weightCol":null},"columns":[{"id":"_forest_hr","header":"","field":"_forest_hr","type":"forest","width":"auto","align":"left","headerAlign":"left","wrap":false,"sortable":false,"isGroup":false,"options":{"forest":{"point":"hr","lower":"lower","upper":"upper","effects":null,"scale":"linear","nullValue":0,"axisLabel":"Effect","axisRange":null,"axisTicks":null,"axisGridlines":false,"showAxis":true,"annotations":null,"sharedAxis":null}}}],"annotations":[],"theme":{"name":"default","colors":{"background":"#ffffff","foreground":"#333333","primary":"#0891b2","secondary":"#64748b","accent":"#8b5cf6","muted":"#94a3b8","border":"#e2e8f0","rowBg":"#ffffff","altBg":"#f8fafc","interval":"#0891b2","intervalPositive":"#0891b2","intervalNegative":"#dc2626","intervalNeutral":"#64748b","intervalLine":"#475569","summaryFill":"#0891b2","summaryBorder":"#0e7490"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":24,"headerHeight":32,"sectionGap":16,"padding":12,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":2,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":8,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":600,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":16}},"interaction":{"showFilters":false,"showLegend":true,"enableSort":true,"enableCollapse":true,"enableSelect":true,"enableHover":true,"enableResize":true,"enableExport":true,"tooltipFields":null,"enableThemes":{"default":{"name":"default","colors":{"background":"#ffffff","foreground":"#333333","primary":"#0891b2","secondary":"#64748b","accent":"#8b5cf6","muted":"#94a3b8","border":"#e2e8f0","rowBg":"#ffffff","altBg":"#f8fafc","interval":"#0891b2","intervalPositive":"#0891b2","intervalNegative":"#dc2626","intervalNeutral":"#64748b","intervalLine":"#475569","summaryFill":"#0891b2","summaryBorder":"#0e7490"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":24,"headerHeight":32,"sectionGap":16,"padding":12,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":2,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":8,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":600,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":16}},"minimal":{"name":"minimal","colors":{"background":"#ffffff","foreground":"#000000","primary":"#000000","secondary":"#333333","accent":"#000000","muted":"#666666","border":"#000000","rowBg":"#ffffff","altBg":"#fafafa","interval":"#000000","intervalPositive":"#000000","intervalNegative":"#000000","intervalNeutral":"#666666","intervalLine":"#000000","summaryFill":"#000000","summaryBorder":"#000000"},"typography":{"fontFamily":"Georgia, 'Times New Roman', serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.4,"headerFontScale":1.05},"spacing":{"rowHeight":22,"headerHeight":28,"sectionGap":12,"padding":10,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":5,"summaryHeight":8,"lineWidth":1,"borderRadius":0,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":0,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":14}},"dark":{"name":"dark","colors":{"background":"#1e1e2e","foreground":"#cdd6f4","primary":"#89b4fa","secondary":"#a6adc8","accent":"#f5c2e7","muted":"#6c7086","border":"#313244","rowBg":"#1e1e2e","altBg":"#232334","interval":"#89b4fa","intervalPositive":"#a6e3a1","intervalNegative":"#f38ba8","intervalNeutral":"#6c7086","intervalLine":"#9399b2","summaryFill":"#89b4fa","summaryBorder":"#74c7ec"},"typography":{"fontFamily":"system-ui, -apple-system, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":26,"headerHeight":32,"sectionGap":16,"padding":12,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":6,"summaryHeight":10,"lineWidth":1.5,"borderRadius":4,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":8,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":600,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":18}},"jama":{"name":"jama","colors":{"background":"#ffffff","foreground":"#000000","primary":"#000000","secondary":"#333333","accent":"#000000","muted":"#555555","border":"#000000","rowBg":"#ffffff","altBg":"#f9fafb","interval":"#000000","intervalPositive":"#000000","intervalNegative":"#000000","intervalNeutral":"#555555","intervalLine":"#000000","summaryFill":"#000000","summaryBorder":"#000000"},"typography":{"fontFamily":"Arial, Helvetica, sans-serif","fontSizeSm":"8pt","fontSizeBase":"9pt","fontSizeLg":"10pt","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.2,"headerFontScale":1.05},"spacing":{"rowHeight":18,"headerHeight":24,"sectionGap":8,"padding":6,"containerPadding":0,"cellPaddingX":8,"cellPaddingY":2,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":4,"summaryHeight":7,"lineWidth":1.25,"borderRadius":0,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":0,"banding":true},"groupHeaders":{"level1FontSize":"9.5pt","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"9pt","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"9pt","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":12}},"lancet":{"name":"lancet","colors":{"background":"#fdfcfb","foreground":"#1e3a5f","primary":"#00407a","secondary":"#3d5a80","accent":"#b8860b","muted":"#6b7c93","border":"#d4dce6","rowBg":"#fdfcfb","altBg":"#f8f7f5","interval":"#00407a","intervalPositive":"#00407a","intervalNegative":"#9d2933","intervalNeutral":"#3d5a80","intervalLine":"#1e3a5f","summaryFill":"#00407a","summaryBorder":"#002d54"},"typography":{"fontFamily":"Georgia, 'Times New Roman', serif","fontSizeSm":"0.75rem","fontSizeBase":"0.875rem","fontSizeLg":"1rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":24,"headerHeight":30,"sectionGap":14,"padding":12,"containerPadding":0,"cellPaddingX":12,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":5,"summaryHeight":9,"lineWidth":1.25,"borderRadius":0,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":0,"banding":true},"groupHeaders":{"level1FontSize":"0.9375rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.875rem","level2FontWeight":500,"level2Italic":true,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.875rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":18}},"modern":{"name":"modern","colors":{"background":"#fafafa","foreground":"#18181b","primary":"#3b82f6","secondary":"#52525b","accent":"#8b5cf6","muted":"#a1a1aa","border":"#d4d4d8","rowBg":"#fafafa","altBg":"#f5f5f5","interval":"#3b82f6","intervalPositive":"#22c55e","intervalNegative":"#ef4444","intervalNeutral":"#71717a","intervalLine":"#27272a","summaryFill":"#3b82f6","summaryBorder":"#2563eb"},"typography":{"fontFamily":"Inter, system-ui, -apple-system, sans-serif","fontSizeSm":"0.8125rem","fontSizeBase":"0.9375rem","fontSizeLg":"1.0625rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":600,"lineHeight":1.5,"headerFontScale":1.05},"spacing":{"rowHeight":30,"headerHeight":36,"sectionGap":20,"padding":14,"containerPadding":0,"cellPaddingX":12,"cellPaddingY":5,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":8,"summaryHeight":12,"lineWidth":1.75,"borderRadius":8,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":12,"banding":true},"groupHeaders":{"level1FontSize":"1rem","level1FontWeight":600,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.9375rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.9375rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":20}},"presentation":{"name":"presentation","colors":{"background":"#ffffff","foreground":"#0f172a","primary":"#0369a1","secondary":"#334155","accent":"#ea580c","muted":"#64748b","border":"#94a3b8","rowBg":"#ffffff","altBg":"#f8fafc","interval":"#0369a1","intervalPositive":"#047857","intervalNegative":"#be123c","intervalNeutral":"#334155","intervalLine":"#0f172a","summaryFill":"#0369a1","summaryBorder":"#0c4a6e"},"typography":{"fontFamily":"'Source Sans Pro', 'Segoe UI', Roboto, sans-serif","fontSizeSm":"1rem","fontSizeBase":"1.125rem","fontSizeLg":"1.25rem","fontWeightNormal":400,"fontWeightMedium":600,"fontWeightBold":700,"lineHeight":1.4,"headerFontScale":1.05},"spacing":{"rowHeight":36,"headerHeight":44,"sectionGap":24,"padding":18,"containerPadding":0,"cellPaddingX":14,"cellPaddingY":5,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":12,"summaryHeight":16,"lineWidth":2.5,"borderRadius":4,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":6,"banding":true},"groupHeaders":{"level1FontSize":"1.1875rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"1.125rem","level2FontWeight":600,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"1.125rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":24}},"cochrane":{"name":"cochrane","colors":{"background":"#ffffff","foreground":"#2c2c2c","primary":"#0099cc","secondary":"#555555","accent":"#006699","muted":"#888888","border":"#b3b3b3","rowBg":"#ffffff","altBg":"#f5f5f5","interval":"#0099cc","intervalPositive":"#0099cc","intervalNegative":"#cc3333","intervalNeutral":"#555555","intervalLine":"#2c2c2c","summaryFill":"#0099cc","summaryBorder":"#006699"},"typography":{"fontFamily":"Arial, Helvetica, sans-serif","fontSizeSm":"0.6875rem","fontSizeBase":"0.75rem","fontSizeLg":"0.8125rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.25,"headerFontScale":1.05},"spacing":{"rowHeight":20,"headerHeight":26,"sectionGap":8,"padding":6,"containerPadding":0,"cellPaddingX":6,"cellPaddingY":2,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":4,"summaryHeight":7,"lineWidth":1,"borderRadius":0,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":0,"banding":true},"groupHeaders":{"level1FontSize":"0.8125rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.75rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.75rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":10}},"nature":{"name":"nature","colors":{"background":"#ffffff","foreground":"#1a1a1a","primary":"#1976d2","secondary":"#424242","accent":"#c62828","muted":"#616161","border":"#bdbdbd","rowBg":"#ffffff","altBg":"#fafafa","interval":"#1976d2","intervalPositive":"#1976d2","intervalNegative":"#c62828","intervalNeutral":"#616161","intervalLine":"#1a1a1a","summaryFill":"#1976d2","summaryBorder":"#0d47a1"},"typography":{"fontFamily":"'Helvetica Neue', Helvetica, Arial, sans-serif","fontSizeSm":"0.75rem","fontSizeBase":"0.8125rem","fontSizeLg":"0.9375rem","fontWeightNormal":400,"fontWeightMedium":500,"fontWeightBold":700,"lineHeight":1.35,"headerFontScale":1.05},"spacing":{"rowHeight":22,"headerHeight":28,"sectionGap":12,"padding":10,"containerPadding":0,"cellPaddingX":10,"cellPaddingY":4,"axisGap":12,"groupPadding":8},"shapes":{"pointSize":5,"summaryHeight":8,"lineWidth":1.25,"borderRadius":1,"markerColors":null,"markerShapes":["square","circle","diamond","triangle"]},"axis":{"rangeMin":null,"rangeMax":null,"tickCount":null,"tickValues":null,"gridlines":false,"gridlineStyle":"dotted","ciClipFactor":2,"includeNull":true,"symmetric":null,"nullTick":true,"markerMargin":true},"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto","rowBorder":true,"rowBorderStyle":"solid","containerBorder":false,"containerBorderRadius":2,"banding":true},"groupHeaders":{"level1FontSize":"0.875rem","level1FontWeight":700,"level1Italic":false,"level1Background":null,"level1BorderBottom":false,"level2FontSize":"0.8125rem","level2FontWeight":500,"level2Italic":false,"level2Background":null,"level2BorderBottom":false,"level3FontSize":"0.8125rem","level3FontWeight":400,"level3Italic":false,"level3Background":null,"level3BorderBottom":false,"indentPerLevel":14}}}},"labels":null,"layout":{"plotPosition":"right","tableWidth":"auto","plotWidth":"auto"},"zoom":1,"autoFit":true,"showZoomControls":true},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>Both approaches produce identical output. Use formulas for concise one-offs; use pre-computed columns when reusing the same logic.</p>
+
+
+<!-- -->
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Data Flow"</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tabviz)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>Understanding how data flows through tabviz helps you structure your data correctly and debug issues.</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="fu">## The Pipeline</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    subgraph Input</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>        A[<span class="ot">"</span><span class="st">data.frame</span><span class="ot">"</span>]</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    end</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    subgraph Processing</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        B[<span class="ot">"</span><span class="st">Column Resolution</span><span class="ot">"</span>]</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        C[<span class="ot">"</span><span class="st">Style Evaluation</span><span class="ot">"</span>]</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        D[<span class="ot">"</span><span class="st">JSON Serialization</span><span class="ot">"</span>]</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    end</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    subgraph Output</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        E[<span class="ot">"</span><span class="st">Svelte Component</span><span class="ot">"</span>]</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>        F[<span class="ot">"</span><span class="st">Interactive Widget</span><span class="ot">"</span>]</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    end</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; F</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    style D fill:<span class="co">#4f46e5,color:#fff</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    style E fill:<span class="co">#ff3e00,color:#fff</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 1: Column Resolution</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>tabviz maps your column specifications to data columns:</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>),</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>),</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>),</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>)</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,  <span class="co"># Maps to data$study</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>)  <span class="co"># Maps to data$hr, data$lo, data$hi</span></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>At this stage:</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>String arguments become column lookups</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Missing columns trigger errors</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Data types are validated</span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 2: Style Evaluation</span></span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>Formula expressions are evaluated against your data:</span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>  ...,</span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="sc">~</span> pval <span class="sc">&lt;</span> <span class="fl">0.05</span>,  <span class="co"># Evaluates for each row</span></span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="sc">~</span> <span class="fu">ifelse</span>(upper <span class="sc">&lt;</span> <span class="dv">1</span>, <span class="st">"#16a34a"</span>, <span class="st">"#64748b"</span>)</span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>The formula <span class="in">`~ pval &lt; 0.05`</span> becomes a vector of <span class="in">`TRUE`</span>/<span class="in">`FALSE`</span> values—one per row.</span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 3: JSON Serialization</span></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>The configured specification converts to JSON for the JavaScript frontend:</span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a><span class="in">```json</span></span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a>  <span class="st">"data"</span><span class="op">:</span> [<span class="op">...</span>]<span class="op">,</span></span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>  <span class="st">"columns"</span><span class="op">:</span> [<span class="op">...</span>]<span class="op">,</span></span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>  <span class="st">"theme"</span><span class="op">:</span> {<span class="op">...</span>}<span class="op">,</span></span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>  <span class="st">"styles"</span><span class="op">:</span> {</span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>    <span class="st">"row_bold"</span><span class="op">:</span> [<span class="kw">true</span><span class="op">,</span> <span class="kw">false</span><span class="op">,</span> <span class="kw">true</span><span class="op">,</span> <span class="op">...</span>]<span class="op">,</span></span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>    <span class="st">"marker_color"</span><span class="op">:</span> [<span class="st">"#16a34a"</span><span class="op">,</span> <span class="st">"#64748b"</span><span class="op">,</span> <span class="op">...</span>]</span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stage 4: Svelte Rendering</span></span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>The Svelte component receives the JSON and renders the interactive table with:</span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Sortable columns</span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Collapsible groups</span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Hover tooltips</span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Export functionality</span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Requirements</span></span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a><span class="fu">### Required Structure</span></span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>Your data.frame needs:</span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**One row per item** to display</span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Columns referenced** by your column specifications</span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a><span class="co"># Minimal forest plot data</span></span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>meta_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Smith 2020"</span>, <span class="st">"Jones 2021"</span>),</span>
+<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>),</span>
+<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a>  <span class="at">lower =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>),</span>
+<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a>  <span class="at">upper =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>)</span>
+<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a><span class="fu">### Column Types</span></span>
+<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a>tabviz handles standard R types:</span>
+<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> R Type <span class="pp">|</span> Column Functions <span class="pp">|</span> Notes <span class="pp">|</span></span>
+<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|--------|-----------------|-------|</span></span>
+<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> character <span class="pp">|</span> <span class="in">`col_text()`</span>, <span class="in">`col_badge()`</span> <span class="pp">|</span> Text display <span class="pp">|</span></span>
+<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> numeric <span class="pp">|</span> <span class="in">`col_numeric()`</span>, <span class="in">`col_n()`</span>, <span class="in">`col_percent()`</span> <span class="pp">|</span> Formatted numbers <span class="pp">|</span></span>
+<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> integer <span class="pp">|</span> <span class="in">`col_n()`</span> <span class="pp">|</span> Sample sizes <span class="pp">|</span></span>
+<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> logical <span class="pp">|</span> Row/marker styling <span class="pp">|</span> TRUE/FALSE conditions <span class="pp">|</span></span>
+<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> list <span class="pp">|</span> <span class="in">`col_sparkline()`</span> <span class="pp">|</span> Nested numeric vectors <span class="pp">|</span></span>
+<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a><span class="fu">### Missing Values</span></span>
+<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a>NA handling varies by column type:</span>
+<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Context <span class="pp">|</span> Behavior <span class="pp">|</span></span>
+<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a><span class="pp">|---------|----------|</span></span>
+<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Forest points <span class="pp">|</span> Row displays as label-only (no marker) <span class="pp">|</span></span>
+<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Numeric columns <span class="pp">|</span> Displays as empty cell <span class="pp">|</span></span>
+<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Text columns <span class="pp">|</span> Displays as empty cell <span class="pp">|</span></span>
+<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Row styling <span class="pp">|</span> NA rows skip that style <span class="pp">|</span></span>
+<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a><span class="fu">## Grouping Data</span></span>
+<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a>Grouping creates collapsible sections:</span>
+<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
+<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a>    A[<span class="ot">"</span><span class="st">Flat data</span><span class="ot">"</span>] --&gt; B[<span class="ot">"</span><span class="st">group = 'category'</span><span class="ot">"</span>]</span>
+<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a>    B --&gt; C[<span class="ot">"</span><span class="st">Grouped display</span><span class="ot">"</span>]</span>
+<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a>    subgraph <span class="ot">"</span><span class="st">Grouped display</span><span class="ot">"</span></span>
+<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a>        D[<span class="ot">"</span><span class="st">Group A Header</span><span class="ot">"</span>]</span>
+<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a>        E[<span class="ot">"</span><span class="st">  Row 1</span><span class="ot">"</span>]</span>
+<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a>        F[<span class="ot">"</span><span class="st">  Row 2</span><span class="ot">"</span>]</span>
+<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>        G[<span class="ot">"</span><span class="st">Group B Header</span><span class="ot">"</span>]</span>
+<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a>        H[<span class="ot">"</span><span class="st">  Row 3</span><span class="ot">"</span>]</span>
+<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a>    end</span>
+<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a><span class="fu">### Single-Level Grouping</span></span>
+<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a>  <span class="at">study =</span> <span class="fu">c</span>(<span class="st">"Trial A"</span>, <span class="st">"Trial B"</span>, <span class="st">"Trial C"</span>, <span class="st">"Trial D"</span>),</span>
+<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a>  <span class="at">category =</span> <span class="fu">c</span>(<span class="st">"Drug X"</span>, <span class="st">"Drug X"</span>, <span class="st">"Drug Y"</span>, <span class="st">"Drug Y"</span>),</span>
+<span id="cb9-182"><a href="#cb9-182" aria-hidden="true" tabindex="-1"></a>  <span class="at">hr =</span> <span class="fu">c</span>(<span class="fl">0.72</span>, <span class="fl">0.85</span>, <span class="fl">0.91</span>, <span class="fl">0.78</span>),</span>
+<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a>  <span class="at">lo =</span> <span class="fu">c</span>(<span class="fl">0.55</span>, <span class="fl">0.70</span>, <span class="fl">0.75</span>, <span class="fl">0.60</span>),</span>
+<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a>  <span class="at">hi =</span> <span class="fu">c</span>(<span class="fl">0.95</span>, <span class="fl">1.03</span>, <span class="fl">1.10</span>, <span class="fl">1.00</span>)</span>
+<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="st">"category"</span>,  <span class="co"># Groups by Drug X, Drug Y</span></span>
+<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>))</span>
+<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a><span class="fu">### Hierarchical Grouping</span></span>
+<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>region <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"North"</span>, <span class="st">"North"</span>, <span class="st">"South"</span>, <span class="st">"South"</span>)</span>
+<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data,</span>
+<span id="cb9-203"><a href="#cb9-203" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb9-204"><a href="#cb9-204" aria-hidden="true" tabindex="-1"></a>  <span class="at">group =</span> <span class="fu">c</span>(<span class="st">"region"</span>, <span class="st">"category"</span>),  <span class="co"># Region &gt; Category hierarchy</span></span>
+<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(...))</span>
+<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-208"><a href="#cb9-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-209"><a href="#cb9-209" aria-hidden="true" tabindex="-1"></a><span class="fu">## Styling Data Flow</span></span>
+<span id="cb9-210"><a href="#cb9-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-211"><a href="#cb9-211" aria-hidden="true" tabindex="-1"></a>Styles resolve in order of specificity:</span>
+<span id="cb9-212"><a href="#cb9-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-215"><a href="#cb9-215" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
+<span id="cb9-216"><a href="#cb9-216" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb9-217"><a href="#cb9-217" aria-hidden="true" tabindex="-1"></a>    A[<span class="ot">"</span><span class="st">Theme defaults</span><span class="ot">"</span>] --&gt; B[<span class="ot">"</span><span class="st">Row styling</span><span class="ot">"</span>]</span>
+<span id="cb9-218"><a href="#cb9-218" aria-hidden="true" tabindex="-1"></a>    B --&gt; C[<span class="ot">"</span><span class="st">Cell styling</span><span class="ot">"</span>]</span>
+<span id="cb9-219"><a href="#cb9-219" aria-hidden="true" tabindex="-1"></a>    C --&gt; D[<span class="ot">"</span><span class="st">Marker styling</span><span class="ot">"</span>]</span>
+<span id="cb9-220"><a href="#cb9-220" aria-hidden="true" tabindex="-1"></a>    D --&gt; E[<span class="ot">"</span><span class="st">Final appearance</span><span class="ot">"</span>]</span>
+<span id="cb9-221"><a href="#cb9-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-222"><a href="#cb9-222" aria-hidden="true" tabindex="-1"></a>    style E fill:<span class="co">#059669,color:#fff</span></span>
+<span id="cb9-223"><a href="#cb9-223" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-224"><a href="#cb9-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-225"><a href="#cb9-225" aria-hidden="true" tabindex="-1"></a>See <span class="co">[</span><span class="ot">Styling Cascade</span><span class="co">](styling-cascade.qmd)</span> for details.</span>
+<span id="cb9-226"><a href="#cb9-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-227"><a href="#cb9-227" aria-hidden="true" tabindex="-1"></a><span class="fu">## Common Patterns</span></span>
+<span id="cb9-228"><a href="#cb9-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-229"><a href="#cb9-229" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pre-computing Style Columns</span></span>
+<span id="cb9-230"><a href="#cb9-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-233"><a href="#cb9-233" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-234"><a href="#cb9-234" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb9-235"><a href="#cb9-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-236"><a href="#cb9-236" aria-hidden="true" tabindex="-1"></a>styled_data <span class="ot">&lt;-</span> meta_data <span class="sc">|&gt;</span></span>
+<span id="cb9-237"><a href="#cb9-237" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-238"><a href="#cb9-238" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_significant =</span> upper <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb9-239"><a href="#cb9-239" aria-hidden="true" tabindex="-1"></a>    <span class="at">direction_color =</span> <span class="fu">case_when</span>(</span>
+<span id="cb9-240"><a href="#cb9-240" aria-hidden="true" tabindex="-1"></a>      upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,  <span class="co"># Green: benefit</span></span>
+<span id="cb9-241"><a href="#cb9-241" aria-hidden="true" tabindex="-1"></a>      lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,  <span class="co"># Red: harm</span></span>
+<span id="cb9-242"><a href="#cb9-242" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span>        <span class="co"># Gray: NS</span></span>
+<span id="cb9-243"><a href="#cb9-243" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-244"><a href="#cb9-244" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-245"><a href="#cb9-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-246"><a href="#cb9-246" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(styled_data,</span>
+<span id="cb9-247"><a href="#cb9-247" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb9-248"><a href="#cb9-248" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>)),</span>
+<span id="cb9-249"><a href="#cb9-249" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="st">"is_significant"</span>,</span>
+<span id="cb9-250"><a href="#cb9-250" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="st">"direction_color"</span></span>
+<span id="cb9-251"><a href="#cb9-251" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-252"><a href="#cb9-252" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-253"><a href="#cb9-253" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-254"><a href="#cb9-254" aria-hidden="true" tabindex="-1"></a><span class="fu">### Using Formula Expressions</span></span>
+<span id="cb9-255"><a href="#cb9-255" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-256"><a href="#cb9-256" aria-hidden="true" tabindex="-1"></a>Equivalent approach without pre-computing:</span>
+<span id="cb9-257"><a href="#cb9-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-260"><a href="#cb9-260" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-261"><a href="#cb9-261" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(meta_data,</span>
+<span id="cb9-262"><a href="#cb9-262" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb9-263"><a href="#cb9-263" aria-hidden="true" tabindex="-1"></a>  <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">col_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>)),</span>
+<span id="cb9-264"><a href="#cb9-264" aria-hidden="true" tabindex="-1"></a>  <span class="at">row_bold =</span> <span class="sc">~</span> upper <span class="sc">&lt;</span> <span class="dv">1</span>,</span>
+<span id="cb9-265"><a href="#cb9-265" aria-hidden="true" tabindex="-1"></a>  <span class="at">marker_color =</span> <span class="sc">~</span> <span class="fu">case_when</span>(</span>
+<span id="cb9-266"><a href="#cb9-266" aria-hidden="true" tabindex="-1"></a>    upper <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#16a34a"</span>,</span>
+<span id="cb9-267"><a href="#cb9-267" aria-hidden="true" tabindex="-1"></a>    lower <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"#dc2626"</span>,</span>
+<span id="cb9-268"><a href="#cb9-268" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"#64748b"</span></span>
+<span id="cb9-269"><a href="#cb9-269" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-270"><a href="#cb9-270" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-271"><a href="#cb9-271" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-272"><a href="#cb9-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-273"><a href="#cb9-273" aria-hidden="true" tabindex="-1"></a>Both approaches produce identical output. Use formulas for concise one-offs; use pre-computed columns when reusing the same logic.</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
