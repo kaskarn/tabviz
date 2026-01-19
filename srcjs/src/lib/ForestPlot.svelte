@@ -413,9 +413,11 @@
     // All columns in order, forest columns get their width from options or default
     for (const col of allColumns) {
       if (col.type === "forest") {
-        // Forest columns use configured width or fall back to layout.forestWidth
-        const forestWidth = col.options?.forest?.width ?? layout.forestWidth;
-        parts.push(typeof forestWidth === "number" ? `${forestWidth}px` : `${layout.forestWidth}px`);
+        // Forest columns: check col.width first (from R), then options, then layout default
+        const forestWidth = (typeof col.width === "number" ? col.width : null)
+          ?? col.options?.forest?.width
+          ?? layout.forestWidth;
+        parts.push(`${forestWidth}px`);
       } else {
         parts.push(getColWidth(col));
       }
