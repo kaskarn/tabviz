@@ -38,7 +38,7 @@ web_col(
 
 \item{align}{Text alignment for body cells}
 
-\item{header_align}{Text alignment for header (NULL to inherit from align)}
+\item{header_align}{Text alignment for header (default: "left")}
 
 \item{wrap}{Enable text wrapping (default FALSE). When TRUE, long text wraps
 instead of being truncated with ellipsis.}

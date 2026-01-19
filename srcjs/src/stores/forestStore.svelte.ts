@@ -1105,20 +1105,122 @@ export function createForestStore() {
 
     /**
      * Get current dimensions for export.
-     * Returns column widths, forest width, x-axis domain, clip bounds, zoom level, and total width.
-     * Zoom level is applied to export dimensions so exports match what user sees.
+     * Returns complete layout information for WYSIWYG SVG generation.
+     *
+     * Two export paths:
+     * - Browser download: precomputedLayout is used for exact WYSIWYG match
+     * - R save_plot(): Uses same algorithm but with text estimation (no DOM)
      */
     getExportDimensions() {
       // Get the current x-axis domain from xScale
       const domain = xScale.domain() as [number, number];
+
+      // Build column order and positions sequentially
+      const columnOrder: string[] = [];
+      const columnPositions: Record<string, number> = {};
+      const columnWidthsOut: Record<string, number> = {};
+
+      // Start after label column
+      const labelWidth = columnWidths["__label__"] ?? 150;
+      columnWidthsOut["__label__"] = labelWidth;
+      let currentX = labelWidth;
+
+      // Process all columns in order (forest columns are inline)
+      for (const col of allColumns) {
+        columnOrder.push(col.id);
+        columnPositions[col.id] = currentX;
+
+        let colWidth: number;
+        if (col.type === "forest") {
+          // Forest columns use their configured width or fall back to layout.forestWidth
+          colWidth = col.options?.forest?.width ?? layout.forestWidth;
+        } else {
+          colWidth = columnWidths[col.id] ?? (typeof col.width === "number" ? col.width : 100);
+        }
+        columnWidthsOut[col.id] = colWidth;
+        currentX += colWidth;
+      }
+
+      // Build forest column info with independent axis data
+      const forestColumnsData: Array<{
+        columnId: string;
+        xPosition: number;
+        width: number;
+        xDomain: [number, number];
+        clipBounds: [number, number];
+        ticks: number[];
+        scale: "linear" | "log";
+        nullValue: number;
+        axisLabel: string;
+      }> = [];
+
+      for (const fc of forestColumns) {
+        const col = fc.column;
+        const forestOpts = col.options?.forest;
+        const fcWidth = forestOpts?.width ?? layout.forestWidth;
+        const fcScale = forestOpts?.scale ?? "linear";
+        const fcNullValue = forestOpts?.nullValue ?? (fcScale === "log" ? 1 : 0);
+
+        // Use global axis computation for now (TODO: per-column axis computation)
+        forestColumnsData.push({
+          columnId: col.id,
+          xPosition: columnPositions[col.id],
+          width: fcWidth,
+          xDomain: domain,
+          clipBounds: axisComputation.axisLimits,
+          ticks: axisComputation.ticks,
+          scale: fcScale,
+          nullValue: fcNullValue,
+          axisLabel: forestOpts?.axisLabel ?? "Effect",
+        });
+      }
+
+      // Calculate row heights and positions
+      const rowHeights: number[] = [];
+      const rowPositions: number[] = [];
+      let totalRowsHeight = 0;
+
+      for (const displayRow of displayRows) {
+        const h = (displayRow.type === "data" && displayRow.row.style?.type === "spacer")
+          ? layout.rowHeight / 2
+          : layout.rowHeight;
+        rowPositions.push(totalRowsHeight);
+        rowHeights.push(h);
+        totalRowsHeight += h;
+      }
+
+      // Header depth (1 or 2 for column groups)
+      const headerDepth = allColumnDefs.some(c => c.isGroup) ? 2 : 1;
+
       return {
+        // Column layout (unified order)
+        columnOrder,
+        columnWidths: columnWidthsOut,
+        columnPositions,
+
+        // Forest columns (may be multiple)
+        forestColumns: forestColumnsData,
+
+        // Row layout
+        rowHeights,
+        rowPositions,
+        totalRowsHeight,
+
+        // Header
+        headerHeight: layout.headerHeight,
+        headerDepth,
+
+        // Overall dimensions
         width: naturalContentWidth * zoom,
         height: (scalableNaturalHeight || 400) * zoom,
-        columnWidths: { ...columnWidths },
+        naturalWidth: currentX,
+        naturalHeight: totalRowsHeight + layout.headerHeight + 52, // +52 for axis
+
+        // Legacy fields for backwards compatibility
         forestWidth: layout.forestWidth * zoom,
         xDomain: domain,
-        clipBounds: axisComputation.axisLimits,  // For CI clipping detection
-        scale: zoom,  // Pass zoom level for SVG generator
+        clipBounds: axisComputation.axisLimits,
+        scale: zoom,
       };
     },
 

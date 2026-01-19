@@ -11,7 +11,7 @@ ColumnSpec(
   type = "text",
   width = NA_real_,
   align = "left",
-  header_align = NA_character_,
+  header_align = "left",
   wrap = FALSE,
   sortable = TRUE,
   options = list(),
@@ -39,7 +39,7 @@ ColumnSpec(
 
 \item{align}{Text alignment for body cells: "left", "center", "right"}
 
-\item{header_align}{Text alignment for header: "left", "center", "right" (NA to inherit from align)}
+\item{header_align}{Text alignment for header: "left" (default), "center", "right"}
 
 \item{wrap}{Enable text wrapping (default FALSE). When TRUE, long text wraps instead of being truncated.}
 

@@ -46,17 +46,65 @@ import { estimateTextWidth } from "./width-utils";
 // Export Options
 // ============================================================================
 
+/**
+ * Pre-computed layout data for a single forest column
+ */
+export interface ForestColumnLayout {
+  columnId: string;
+  xPosition: number;
+  width: number;
+  xDomain: [number, number];
+  clipBounds: [number, number];
+  ticks: number[];
+  scale: "linear" | "log";
+  nullValue: number;
+  axisLabel: string;
+}
+
+/**
+ * Complete pre-computed layout from browser (WYSIWYG path)
+ */
+export interface PrecomputedLayout {
+  // Column layout (unified order - no left/right split)
+  columnOrder: string[];
+  columnWidths: Record<string, number>;
+  columnPositions: Record<string, number>;
+
+  // Forest columns (may be multiple, inline with other columns)
+  forestColumns: ForestColumnLayout[];
+
+  // Row layout
+  rowHeights: number[];
+  rowPositions: number[];
+  totalRowsHeight: number;
+
+  // Header
+  headerHeight: number;
+  headerDepth: number;  // 1 or 2 for grouped headers
+
+  // Overall dimensions
+  naturalWidth: number;
+  naturalHeight: number;
+}
+
 export interface ExportOptions {
   width?: number;
   height?: number;
   scale?: number;
   backgroundColor?: string;
+
+  // NEW: Complete pre-computed layout from browser (WYSIWYG path)
+  precomputedLayout?: PrecomputedLayout;
+
+  // LEGACY: Individual fields for backwards compatibility / R-side export
   // Pre-computed column widths from web view (keyed by column ID, including "__label__")
   columnWidths?: Record<string, number>;
   // Pre-computed forest/plot width from web view
   forestWidth?: number;
   // Pre-computed x-axis domain from web view (ensures matching scale)
   xDomain?: [number, number];
+  // Clip bounds for CI arrows
+  clipBounds?: [number, number];
 }
 
 // ============================================================================
@@ -215,6 +263,26 @@ function expandColumnGroupWidths(
 }
 
 /**
+ * Count all descendant rows for a group (used in group header display: "Group (N)")
+ */
+function countGroupDescendantRows(
+  groupId: string,
+  groups: Array<{ id: string; parentId?: string | null }>,
+  rows: Array<{ groupId?: string | null }>
+): number {
+  // Count direct rows in this group
+  let count = rows.filter(r => r.groupId === groupId).length;
+
+  // Find all child groups and count their descendants recursively
+  const childGroups = groups.filter(g => g.parentId === groupId);
+  for (const child of childGroups) {
+    count += countGroupDescendantRows(child.id, groups, rows);
+  }
+
+  return count;
+}
+
+/**
  * Calculate label column width based on actual label content.
  */
 function calculateSvgLabelWidth(spec: WebSpec): number {
@@ -279,7 +347,7 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
       const labelWidth = estimateTextWidth(group.label, fontSize);
 
       // Count all descendant rows for the "(N)" suffix, matching display
-      const rowCount = countAllDescendantRows(group.id);
+      const rowCount = countGroupDescendantRows(group.id, groups, spec.data.rows);
       const countText = `(${rowCount})`;
       const countFontSize = fontSize * 0.75; // matches theme.typography.fontSizeSm
       const countWidth = estimateTextWidth(countText, countFontSize);
@@ -598,10 +666,35 @@ function flattenGroupChildren(columns: ColumnDef[]): ColumnSpec[] {
   return result;
 }
 
-function flattenColumns(columns: ColumnDef[], position: "left" | "right"): ColumnSpec[] {
+/**
+ * Flatten all columns in order (unified model - no left/right filtering).
+ * Forest columns appear inline with other columns.
+ */
+function flattenAllColumns(columns: ColumnDef[]): ColumnSpec[] {
   const result: ColumnSpec[] = [];
   for (const col of columns) {
-    if (col.position !== position) continue;
+    if (col.isGroup) {
+      result.push(...flattenGroupChildren(col.columns));
+    } else {
+      result.push(col);
+    }
+  }
+  return result;
+}
+
+/**
+ * Legacy function - flatten columns by position (left/right).
+ * Used for backwards compatibility with R-side export.
+ */
+function flattenColumns(columns: ColumnDef[], position?: "left" | "right"): ColumnSpec[] {
+  // If no position specified, return all columns
+  if (position === undefined) {
+    return flattenAllColumns(columns);
+  }
+
+  const result: ColumnSpec[] = [];
+  for (const col of columns) {
+    if ((col as { position?: string }).position !== position) continue;
     if (col.isGroup) {
       // Group children inherit position from parent - don't filter them
       result.push(...flattenGroupChildren(col.columns));
@@ -1298,13 +1391,180 @@ function renderTableRow(
       const sparkPadding = SPACING.TEXT_PADDING * 2;
       const path = renderSparklinePath(data, currentX + SPACING.TEXT_PADDING, y + rowHeight / 2 - sparkHeight / 2, width - sparkPadding, sparkHeight);
       lines.push(`<path d="${path}" fill="none" stroke="${sparkColor}" stroke-width="1.5"/>`);
+    } else if (col.type === "badge") {
+      // Render badge as colored pill
+      const badgeValue = row.metadata[col.field];
+      if (badgeValue !== undefined && badgeValue !== null) {
+        const badgeText = String(badgeValue);
+        const badgeFontSize = fontSize * 0.85;
+        const badgeHeight = badgeFontSize + 8;
+
+        // Get badge color from variants or custom colors
+        const variants = col.options?.badge?.variants;
+        const customColors = col.options?.badge?.colors;
+        let badgeColor = theme.colors.primary;
+        let badgeTextColor = theme.colors.primary;
+
+        if (customColors && badgeText in customColors) {
+          badgeColor = customColors[badgeText];
+          badgeTextColor = customColors[badgeText];
+        } else if (variants && badgeText in variants) {
+          const variant = variants[badgeText];
+          // Map variant to theme colors
+          const variantColors: Record<string, string> = {
+            default: theme.colors.primary,
+            success: "#16a34a",
+            warning: "#d97706",
+            error: "#dc2626",
+            info: "#2563eb",
+            muted: theme.colors.muted,
+          };
+          badgeColor = variantColors[variant] ?? theme.colors.primary;
+          badgeTextColor = badgeColor;
+        }
+
+        const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
+        const badgeWidth = badgeTextWidth + 12; // padding
+        const badgeX = col.align === "right"
+          ? currentX + width - SPACING.TEXT_PADDING - badgeWidth
+          : col.align === "center"
+            ? currentX + (width - badgeWidth) / 2
+            : currentX + SPACING.TEXT_PADDING;
+        const badgeY = y + (rowHeight - badgeHeight) / 2;
+
+        // Pill background
+        lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
+          rx="${badgeHeight / 2}" fill="${badgeColor}" opacity="0.15"/>`);
+        // Text
+        lines.push(`<text x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2 + badgeFontSize * 0.35}"
+          text-anchor="middle"
+          font-family="${theme.typography.fontFamily}"
+          font-size="${badgeFontSize}px"
+          font-weight="500"
+          fill="${badgeTextColor}">${escapeXml(badgeText)}</text>`);
+      }
+    } else if (col.type === "stars") {
+      // Render star rating as SVG stars
+      const val = row.metadata[col.field];
+      if (typeof val === "number") {
+        const maxStars = col.options?.stars?.maxStars ?? 5;
+        const starColor = col.options?.stars?.color ?? "#f59e0b"; // amber
+        const emptyColor = col.options?.stars?.emptyColor ?? "#d1d5db"; // gray
+        const rating = Math.max(0, Math.min(maxStars, val));
+        const filled = Math.floor(rating);
+        const hasHalf = col.options?.stars?.halfStars && (rating - filled) >= 0.5;
+
+        const starSize = 12;
+        const starGap = 2;
+        const totalStarsWidth = maxStars * starSize + (maxStars - 1) * starGap;
+        let starX = col.align === "right"
+          ? currentX + width - SPACING.TEXT_PADDING - totalStarsWidth
+          : col.align === "center"
+            ? currentX + (width - totalStarsWidth) / 2
+            : currentX + SPACING.TEXT_PADDING;
+        const starY = y + (rowHeight - starSize) / 2;
+
+        // SVG star path (5-point star)
+        const starPath = (cx: number, cy: number, size: number) => {
+          const r = size / 2;
+          const innerR = r * 0.4;
+          let d = "";
+          for (let i = 0; i < 5; i++) {
+            const outerAngle = (i * 72 - 90) * Math.PI / 180;
+            const innerAngle = ((i * 72 + 36) - 90) * Math.PI / 180;
+            const ox = cx + r * Math.cos(outerAngle);
+            const oy = cy + r * Math.sin(outerAngle);
+            const ix = cx + innerR * Math.cos(innerAngle);
+            const iy = cy + innerR * Math.sin(innerAngle);
+            d += (i === 0 ? `M${ox},${oy}` : `L${ox},${oy}`) + `L${ix},${iy}`;
+          }
+          return d + "Z";
+        };
+
+        for (let i = 0; i < maxStars; i++) {
+          const cx = starX + starSize / 2;
+          const cy = starY + starSize / 2;
+          const isFilled = i < filled || (i === filled && hasHalf);
+          const color = isFilled ? starColor : emptyColor;
+          lines.push(`<path d="${starPath(cx, cy, starSize)}" fill="${color}"/>`);
+          starX += starSize + starGap;
+        }
+      }
+    } else if (col.type === "range") {
+      // Render range as min-max with optional visual bar
+      const opts = col.options?.range;
+      if (opts) {
+        const minVal = row.metadata[opts.minField];
+        const maxVal = row.metadata[opts.maxField];
+
+        if (minVal !== null || maxVal !== null) {
+          const sep = opts.separator ?? " – ";
+          const decimals = opts.decimals;
+          const showBar = opts.showBar ?? false;
+
+          const formatVal = (v: unknown): string => {
+            if (typeof v !== "number") return "";
+            if (decimals === null || decimals === undefined) {
+              return Number.isInteger(v) ? String(v) : v.toFixed(1);
+            }
+            return v.toFixed(decimals);
+          };
+
+          const rangeText = (minVal !== null && maxVal !== null)
+            ? `${formatVal(minVal)}${sep}${formatVal(maxVal)}`
+            : formatVal(minVal ?? maxVal);
+
+          if (showBar && typeof minVal === "number" && typeof maxVal === "number") {
+            // Show visual bar representation
+            // For this we need global min/max - skip for now and just show text
+            lines.push(`<text x="${textX}" y="${textY}"
+              font-family="${theme.typography.fontFamily}"
+              font-size="${fontSize}px"
+              text-anchor="${anchor}"
+              fill="${theme.colors.foreground}">${escapeXml(rangeText)}</text>`);
+          } else {
+            lines.push(`<text x="${textX}" y="${textY}"
+              font-family="${theme.typography.fontFamily}"
+              font-size="${fontSize}px"
+              text-anchor="${anchor}"
+              fill="${theme.colors.foreground}">${escapeXml(rangeText)}</text>`);
+          }
+        }
+      }
+    } else if (col.type === "forest") {
+      // Forest columns are rendered separately in the forest plot area
+      // Skip cell content here - it's handled by renderInterval
     } else {
-      // Render text
+      // Render text (default, including text, numeric, interval, pvalue, etc.)
+      // Apply cell-level styling if present
+      const cellStyle = row.cellStyles?.[col.field];
+      let cellFontWeight = theme.typography.fontWeightNormal;
+      let cellFontStyle = "normal";
+      let cellColor = theme.colors.foreground;
+
+      if (cellStyle) {
+        if (cellStyle.bold || cellStyle.emphasis) {
+          cellFontWeight = theme.typography.fontWeightBold;
+        }
+        if (cellStyle.italic) {
+          cellFontStyle = "italic";
+        }
+        if (cellStyle.color) {
+          cellColor = cellStyle.color;
+        } else if (cellStyle.muted) {
+          cellColor = theme.colors.muted;
+        } else if (cellStyle.accent) {
+          cellColor = theme.colors.accent;
+        }
+      }
+
       lines.push(`<text x="${textX}" y="${textY}"
         font-family="${theme.typography.fontFamily}"
         font-size="${fontSize}px"
+        font-weight="${cellFontWeight}"
+        font-style="${cellFontStyle}"
         text-anchor="${anchor}"
-        fill="${theme.colors.foreground}">${escapeXml(value)}</text>`);
+        fill="${cellColor}">${escapeXml(value)}</text>`);
     }
 
     currentX += width;
@@ -1807,6 +2067,449 @@ function renderAxis(
 }
 
 /**
+ * Render axis for a specific forest column (supports multi-forest layout).
+ * Similar to renderAxis but takes explicit forestWidth parameter.
+ */
+function renderForestAxis(
+  xScale: Scale,
+  layout: InternalLayout,
+  theme: WebTheme,
+  axisLabel: string,
+  forestX: number,
+  forestWidth: number,
+  nullValue: number = 1,
+  baseTicks?: number[]
+): string {
+  const lines: string[] = [];
+  const tickCount = typeof theme.axis.tickCount === "number"
+    ? theme.axis.tickCount
+    : SPACING.DEFAULT_TICK_COUNT;
+
+  const ticks = filterAxisTicks(xScale, tickCount, theme, nullValue, forestWidth, baseTicks);
+  const fontSize = parseFontSize(theme.typography.fontSizeSm);
+
+  const EDGE_THRESHOLD = 35;
+
+  const getTextAnchor = (tickX: number): "start" | "middle" | "end" => {
+    if (tickX < EDGE_THRESHOLD) return "start";
+    if (tickX > forestWidth - EDGE_THRESHOLD) return "end";
+    return "middle";
+  };
+
+  const getTextXOffset = (tickX: number): number => {
+    if (tickX < EDGE_THRESHOLD) return 2;
+    if (tickX > forestWidth - EDGE_THRESHOLD) return -2;
+    return 0;
+  };
+
+  // Axis line
+  lines.push(`<line x1="${forestX}" x2="${forestX + forestWidth}"
+    y1="0" y2="0" stroke="${theme.colors.border}" stroke-width="1"/>`);
+
+  // Ticks and labels
+  for (const tick of ticks) {
+    const tickX = xScale(tick);
+    const x = forestX + tickX;
+    const textAnchor = getTextAnchor(tickX);
+    const xOffset = getTextXOffset(tickX);
+
+    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="4"
+      stroke="${theme.colors.border}" stroke-width="1"/>`);
+    lines.push(`<text x="${x + xOffset}" y="16" text-anchor="${textAnchor}"
+      font-family="${theme.typography.fontFamily}"
+      font-size="${fontSize}px"
+      fill="${theme.colors.secondary}">${formatTick(tick)}</text>`);
+  }
+
+  // Axis label
+  if (axisLabel) {
+    lines.push(`<text x="${forestX + forestWidth / 2}" y="28"
+      text-anchor="middle"
+      font-family="${theme.typography.fontFamily}"
+      font-size="${fontSize}px"
+      font-weight="500"
+      fill="${theme.colors.secondary}">${escapeXml(axisLabel)}</text>`);
+  }
+
+  return `<g transform="translate(0, ${layout.mainY + layout.headerHeight + layout.plotHeight})">${lines.join("\n")}</g>`;
+}
+
+/**
+ * Render column headers using unified column order.
+ * Forest columns get their header rendered like other columns.
+ */
+function renderUnifiedColumnHeaders(
+  columnDefs: ColumnDef[],
+  leafColumns: ColumnSpec[],
+  x: number,
+  y: number,
+  headerHeight: number,
+  theme: WebTheme,
+  labelHeader: string,
+  labelWidth: number,
+  autoWidths: Map<string, number>,
+  getColWidth: (col: ColumnSpec) => number
+): string {
+  const lines: string[] = [];
+  const baseFontSize = parseFontSize(theme.typography.fontSizeBase);
+  const headerFontScale = theme.typography.headerFontScale ?? 1.05;
+  const fontSize = baseFontSize * headerFontScale;
+  const fontWeight = theme.typography.fontWeightMedium;
+  const boldWeight = theme.typography.fontWeightBold;
+  const hasGroups = hasColumnGroups(columnDefs);
+
+  const getTextY = (containerY: number, containerHeight: number) =>
+    containerY + containerHeight / 2 + fontSize * TYPOGRAPHY.TEXT_BASELINE_ADJUSTMENT;
+
+  if (hasGroups) {
+    // Two-tier header
+    const row1Height = headerHeight / 2;
+    const row2Height = headerHeight / 2;
+    let currentX = x;
+
+    // Label column spans both rows
+    lines.push(`<text x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+      font-family="${theme.typography.fontFamily}"
+      font-size="${fontSize}px"
+      font-weight="${fontWeight}"
+      fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+    currentX += labelWidth;
+
+    // Track group borders
+    const groupBorders: Array<{ x1: number; x2: number }> = [];
+
+    for (const col of columnDefs) {
+      if (col.isGroup) {
+        const groupWidth = col.columns.reduce((sum, c) => {
+          if (c.isGroup) {
+            return sum + c.columns.reduce((s, cc) => s + getColWidth(cc as ColumnSpec), 0);
+          }
+          return sum + getColWidth(c as ColumnSpec);
+        }, 0);
+        const textX = currentX + groupWidth / 2;
+        lines.push(`<text x="${textX}" y="${getTextY(y, row1Height)}"
+          font-family="${theme.typography.fontFamily}"
+          font-size="${fontSize}px"
+          font-weight="${boldWeight}"
+          text-anchor="middle"
+          fill="${theme.colors.foreground}">${escapeXml(col.header)}</text>`);
+        groupBorders.push({ x1: currentX, x2: currentX + groupWidth });
+        currentX += groupWidth;
+      } else {
+        const width = getColWidth(col);
+        const headerAlign = col.headerAlign ?? col.align;
+        const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
+        const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
+        lines.push(`<text x="${textX}" y="${getTextY(y, headerHeight)}"
+          font-family="${theme.typography.fontFamily}"
+          font-size="${fontSize}px"
+          font-weight="${fontWeight}"
+          text-anchor="${anchor}"
+          fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+        currentX += width;
+      }
+    }
+
+    // Draw borders under groups
+    for (const border of groupBorders) {
+      lines.push(`<line x1="${border.x1}" x2="${border.x2}"
+        y1="${y + row1Height}" y2="${y + row1Height}"
+        stroke="${theme.colors.border}" stroke-width="1" opacity="0.5"/>`);
+    }
+
+    // Row 2: Sub-column headers
+    currentX = x + labelWidth;
+    for (const col of columnDefs) {
+      if (col.isGroup) {
+        for (const subCol of col.columns) {
+          if (!subCol.isGroup) {
+            const width = getColWidth(subCol as ColumnSpec);
+            const headerAlign = (subCol as ColumnSpec).headerAlign ?? (subCol as ColumnSpec).align;
+            const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
+            lines.push(`<text x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
+              font-family="${theme.typography.fontFamily}"
+              font-size="${fontSize}px"
+              font-weight="${fontWeight}"
+              text-anchor="${anchor}"
+              fill="${theme.colors.foreground}">${escapeXml(subCol.header)}</text>`);
+            currentX += width;
+          }
+        }
+      } else {
+        currentX += getColWidth(col);
+      }
+    }
+  } else {
+    // Single-row header
+    let currentX = x;
+
+    lines.push(`<text x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+      font-family="${theme.typography.fontFamily}"
+      font-size="${fontSize}px"
+      font-weight="${fontWeight}"
+      fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+    currentX += labelWidth;
+
+    for (const col of leafColumns) {
+      const width = getColWidth(col);
+      const headerAlign = col.headerAlign ?? col.align;
+      const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
+      const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
+
+      lines.push(`<text x="${textX}" y="${getTextY(y, headerHeight)}"
+        font-family="${theme.typography.fontFamily}"
+        font-size="${fontSize}px"
+        font-weight="${fontWeight}"
+        text-anchor="${anchor}"
+        fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+      currentX += width;
+    }
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * Render a table row using unified column order.
+ * Renders label column + all data columns in order (forest columns are skipped as they're rendered separately).
+ */
+function renderUnifiedTableRow(
+  row: Row,
+  columns: ColumnSpec[],
+  x: number,
+  y: number,
+  rowHeight: number,
+  theme: WebTheme,
+  labelWidth: number,
+  depth: number,
+  barMaxValues: Map<string, number>,
+  autoWidths: Map<string, number>,
+  getColWidth: (col: ColumnSpec) => number,
+  columnPositions: number[]
+): string {
+  const lines: string[] = [];
+  const fontSize = parseFontSize(theme.typography.fontSizeBase);
+  const textY = y + rowHeight / 2 + fontSize * TYPOGRAPHY.TEXT_BASELINE_ADJUSTMENT;
+
+  // Render label
+  const indent = depth * SPACING.INDENT_PER_LEVEL + (row.style?.indent ?? 0) * SPACING.INDENT_PER_LEVEL;
+  const fontWeight = (row.style?.bold || row.style?.emphasis) ? theme.typography.fontWeightBold : theme.typography.fontWeightNormal;
+  const fontStyle = row.style?.italic ? "italic" : "normal";
+  let textColor = theme.colors.foreground;
+  if (row.style?.color) {
+    textColor = row.style.color;
+  } else if (row.style?.muted) {
+    textColor = theme.colors.muted;
+  } else if (row.style?.accent) {
+    textColor = theme.colors.accent;
+  }
+
+  const availableLabelWidth = labelWidth - indent - SPACING.TEXT_PADDING * 2;
+  const truncatedLabel = truncateText(row.label, availableLabelWidth, fontSize, 0);
+
+  lines.push(`<text x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
+    font-family="${theme.typography.fontFamily}"
+    font-size="${fontSize}px"
+    font-weight="${fontWeight}"
+    font-style="${fontStyle}"
+    fill="${textColor}">${escapeXml(truncatedLabel)}</text>`);
+
+  // Badge (if present)
+  if (row.style?.badge) {
+    const badgeText = String(row.style.badge);
+    const badgeFontSize = fontSize * BADGE.FONT_SCALE;
+    const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
+    const labelTextWidth = estimateTextWidth(row.label, fontSize);
+    const badgeX = x + SPACING.TEXT_PADDING + indent + labelTextWidth + BADGE.GAP;
+    const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
+    const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
+    const badgeY = y + (rowHeight - badgeHeight) / 2;
+
+    lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
+      rx="3" fill="${theme.colors.primary}" opacity="0.15"/>`);
+    lines.push(`<text x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2 + badgeFontSize * 0.35}"
+      text-anchor="middle"
+      font-family="${theme.typography.fontFamily}"
+      font-size="${badgeFontSize}px"
+      font-weight="500"
+      fill="${theme.colors.primary}">${escapeXml(badgeText)}</text>`);
+  }
+
+  // Render each column at its position
+  for (let i = 0; i < columns.length; i++) {
+    const col = columns[i];
+    const currentX = columnPositions[i];
+    const width = getColWidth(col);
+
+    // Skip forest columns (rendered separately as SVG overlay)
+    if (col.type === "forest") {
+      continue;
+    }
+
+    const value = getCellValue(row, col);
+    const { textX, anchor } = getTextPosition(currentX, width, col.align);
+
+    if (col.type === "bar" && typeof row.metadata[col.field] === "number") {
+      // Render bar
+      const barValue = row.metadata[col.field] as number;
+      const computedMax = barMaxValues.get(col.field);
+      const maxValue = col.options?.bar?.maxValue ?? computedMax ?? 100;
+      const barColor = col.options?.bar?.color ?? theme.colors.primary;
+      const barHeight = theme.shapes.pointSize * 2;
+      const textWidth = 50;
+      const barAreaWidth = width - SPACING.TEXT_PADDING * 2 - textWidth;
+      const barWidth = Math.min((barValue / maxValue) * barAreaWidth, barAreaWidth);
+
+      lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${y + rowHeight / 2 - barHeight / 2}"
+        width="${Math.max(0, barWidth)}" height="${barHeight}"
+        fill="${barColor}" opacity="0.7" rx="2"/>`);
+      lines.push(`<text x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
+        font-family="${theme.typography.fontFamily}"
+        font-size="${fontSize}px"
+        text-anchor="end"
+        fill="${theme.colors.foreground}">${formatNumber(barValue)}</text>`);
+    } else if (col.type === "sparkline" && Array.isArray(row.metadata[col.field])) {
+      // Render sparkline
+      let data = row.metadata[col.field] as number[] | number[][];
+      if (Array.isArray(data[0])) {
+        data = data[0] as number[];
+      }
+      const sparkHeight = col.options?.sparkline?.height ?? 16;
+      const sparkColor = col.options?.sparkline?.color ?? theme.colors.primary;
+      const sparkPadding = SPACING.TEXT_PADDING * 2;
+      const path = renderSparklinePath(data, currentX + SPACING.TEXT_PADDING, y + rowHeight / 2 - sparkHeight / 2, width - sparkPadding, sparkHeight);
+      lines.push(`<path d="${path}" fill="none" stroke="${sparkColor}" stroke-width="1.5"/>`);
+    } else if (col.type === "badge") {
+      // Render badge cell
+      const badgeValue = row.metadata[col.field];
+      if (badgeValue !== undefined && badgeValue !== null) {
+        const badgeText = String(badgeValue);
+        const badgeFontSize = fontSize * 0.85;
+        const badgeHeight = badgeFontSize + 8;
+
+        const variants = col.options?.badge?.variants;
+        const customColors = col.options?.badge?.colors;
+        let badgeColor = theme.colors.primary;
+        let badgeTextColor = theme.colors.primary;
+
+        if (customColors && badgeText in customColors) {
+          badgeColor = customColors[badgeText];
+          badgeTextColor = customColors[badgeText];
+        } else if (variants && badgeText in variants) {
+          const variant = variants[badgeText];
+          const variantColors: Record<string, string> = {
+            default: theme.colors.primary,
+            success: "#16a34a",
+            warning: "#d97706",
+            error: "#dc2626",
+            info: "#2563eb",
+            muted: theme.colors.muted,
+          };
+          badgeColor = variantColors[variant] ?? theme.colors.primary;
+          badgeTextColor = badgeColor;
+        }
+
+        const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
+        const badgeWidth = badgeTextWidth + 12;
+        const badgeX = col.align === "right"
+          ? currentX + width - SPACING.TEXT_PADDING - badgeWidth
+          : col.align === "center"
+            ? currentX + (width - badgeWidth) / 2
+            : currentX + SPACING.TEXT_PADDING;
+        const badgeY = y + (rowHeight - badgeHeight) / 2;
+
+        lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
+          rx="${badgeHeight / 2}" fill="${badgeColor}" opacity="0.15"/>`);
+        lines.push(`<text x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2 + badgeFontSize * 0.35}"
+          text-anchor="middle"
+          font-family="${theme.typography.fontFamily}"
+          font-size="${badgeFontSize}px"
+          font-weight="500"
+          fill="${badgeTextColor}">${escapeXml(badgeText)}</text>`);
+      }
+    } else if (col.type === "stars") {
+      // Render star rating
+      const val = row.metadata[col.field];
+      if (typeof val === "number") {
+        const maxStars = col.options?.stars?.maxStars ?? 5;
+        const starColor = col.options?.stars?.color ?? "#f59e0b";
+        const emptyColor = col.options?.stars?.emptyColor ?? "#d1d5db";
+        const rating = Math.max(0, Math.min(maxStars, val));
+        const filled = Math.floor(rating);
+        const hasHalf = col.options?.stars?.halfStars && (rating - filled) >= 0.5;
+
+        const starSize = 12;
+        const starGap = 2;
+        const totalStarsWidth = maxStars * starSize + (maxStars - 1) * starGap;
+        let starX = col.align === "right"
+          ? currentX + width - SPACING.TEXT_PADDING - totalStarsWidth
+          : col.align === "center"
+            ? currentX + (width - totalStarsWidth) / 2
+            : currentX + SPACING.TEXT_PADDING;
+        const starY = y + (rowHeight - starSize) / 2;
+
+        const starPath = (cx: number, cy: number, size: number) => {
+          const r = size / 2;
+          const innerR = r * 0.4;
+          let d = "";
+          for (let j = 0; j < 5; j++) {
+            const outerAngle = (j * 72 - 90) * Math.PI / 180;
+            const innerAngle = ((j * 72 + 36) - 90) * Math.PI / 180;
+            const ox = cx + r * Math.cos(outerAngle);
+            const oy = cy + r * Math.sin(outerAngle);
+            const ix = cx + innerR * Math.cos(innerAngle);
+            const iy = cy + innerR * Math.sin(innerAngle);
+            d += (j === 0 ? `M${ox},${oy}` : `L${ox},${oy}`) + `L${ix},${iy}`;
+          }
+          return d + "Z";
+        };
+
+        for (let j = 0; j < maxStars; j++) {
+          const cx = starX + starSize / 2;
+          const cy = starY + starSize / 2;
+          const isFilled = j < filled || (j === filled && hasHalf);
+          const color = isFilled ? starColor : emptyColor;
+          lines.push(`<path d="${starPath(cx, cy, starSize)}" fill="${color}"/>`);
+          starX += starSize + starGap;
+        }
+      }
+    } else {
+      // Default text rendering with cell styling
+      const cellStyle = row.cellStyles?.[col.field];
+      let cellFontWeight = theme.typography.fontWeightNormal;
+      let cellFontStyle = "normal";
+      let cellColor = theme.colors.foreground;
+
+      if (cellStyle) {
+        if (cellStyle.bold || cellStyle.emphasis) {
+          cellFontWeight = theme.typography.fontWeightBold;
+        }
+        if (cellStyle.italic) {
+          cellFontStyle = "italic";
+        }
+        if (cellStyle.color) {
+          cellColor = cellStyle.color;
+        } else if (cellStyle.muted) {
+          cellColor = theme.colors.muted;
+        } else if (cellStyle.accent) {
+          cellColor = theme.colors.accent;
+        }
+      }
+
+      lines.push(`<text x="${textX}" y="${textY}"
+        font-family="${theme.typography.fontFamily}"
+        font-size="${fontSize}px"
+        font-weight="${cellFontWeight}"
+        font-style="${cellFontStyle}"
+        text-anchor="${anchor}"
+        fill="${cellColor}">${escapeXml(value)}</text>`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+/**
  * Filter axis ticks to match web view behavior (EffectAxis.svelte).
  * - Uses minimum spacing to prevent overlap
  * - Filters symmetrically from null value outward
@@ -2027,36 +2730,64 @@ function getForestColumnSettings(spec: WebSpec): ForestColumnSettings {
 // Main Export Function
 // ============================================================================
 
+/**
+ * Generate SVG for forest plot export.
+ *
+ * Supports two layout modes:
+ * 1. **Unified layout (new)**: All columns in order, forest columns inline
+ *    - Used when precomputedLayout is provided (browser WYSIWYG path)
+ *    - Supports multiple forest columns with independent axes
+ *
+ * 2. **Legacy layout**: left columns | forest | right columns
+ *    - Used when no precomputedLayout (R-side export path)
+ *    - Single forest area between left/right tables
+ */
 export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string {
   // Validate input
   validateSpec(spec);
 
   const theme = spec.theme;
-  // Extract settings from first forest column (not top-level spec.data)
-  const forestSettings = getForestColumnSettings(spec);
-  const isLog = forestSettings.scale === "log";
-  const layout = computeLayout(spec, options, forestSettings.nullValue);
   const padding = theme.spacing.padding;
 
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
 
-  // Column setup - both flat (leaf) columns and column defs (with groups)
-  const leftColumnDefs = getColumnDefs(columns, "left");
-  const rightColumnDefs = getColumnDefs(columns, "right");
-  const leftColumns = flattenColumns(columns, "left");
-  const rightColumns = flattenColumns(columns, "right");
+  // Get all columns in unified order
+  const allColumns = flattenAllColumns(columns);
 
-  // Calculate left table width using auto-widths from layout
-  const leftTableWidth = layout.labelWidth +
-    leftColumns.reduce((sum, c) => sum + getEffectiveWidth(c, layout.autoWidths), 0);
+  // Identify forest columns
+  const forestColumnIndices: number[] = [];
+  for (let i = 0; i < allColumns.length; i++) {
+    if (allColumns[i].type === "forest") {
+      forestColumnIndices.push(i);
+    }
+  }
+  const hasForestColumns = forestColumnIndices.length > 0;
 
-  // Forest position (with COLUMN_GAP padding on each side)
-  const forestX = padding + leftTableWidth + LAYOUT.COLUMN_GAP;
-  const { scale: xScale, clipBounds, ticks: baseTicks } = computeXScaleAndClip(spec, layout.forestWidth, forestSettings, options);
+  // Extract settings from first forest column
+  const forestSettings = getForestColumnSettings(spec);
+  const layout = computeLayout(spec, options, forestSettings.nullValue);
 
-  // Right table position (after forest + gap)
-  const rightTableX = forestX + layout.forestWidth + LAYOUT.COLUMN_GAP;
+  // Calculate auto-widths for columns
+  const autoWidths = layout.autoWidths;
+
+  // Helper to get column width
+  const getColWidth = (col: ColumnSpec): number => {
+    if (col.type === "forest") {
+      return col.options?.forest?.width ?? layout.forestWidth;
+    }
+    const autoWidth = autoWidths.get(col.id);
+    if (autoWidth !== undefined) return autoWidth;
+    return typeof col.width === "number" ? col.width : LAYOUT.DEFAULT_COLUMN_WIDTH;
+  };
+
+  // Calculate column positions (unified order)
+  const columnPositions: number[] = [];
+  let currentX = padding + layout.labelWidth;
+  for (const col of allColumns) {
+    columnPositions.push(currentX);
+    currentX += getColWidth(col);
+  }
 
   // Build SVG
   const parts: string[] = [];
@@ -2079,48 +2810,30 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     y1="${layout.mainY}" y2="${layout.mainY}"
     stroke="${theme.colors.border}" stroke-width="2"/>`);
 
-
-  // Column headers (supports column groups with two-tier rendering)
+  // Column headers - unified layout
   const headerY = layout.mainY;
-  parts.push(renderColumnHeaders(
-    leftColumnDefs,
-    leftColumns,
+  parts.push(renderUnifiedColumnHeaders(
+    columns,
+    allColumns,
     padding,
     headerY,
     layout.headerHeight,
     theme,
     spec.data.labelHeader ?? "Study",
     layout.labelWidth,
-    layout.autoWidths
+    autoWidths,
+    getColWidth
   ));
-  if (rightColumns.length > 0) {
-    parts.push(renderColumnHeaders(
-      rightColumnDefs,
-      rightColumns,
-      rightTableX,
-      headerY,
-      layout.headerHeight,
-      theme,
-      undefined,
-      undefined,
-      layout.autoWidths
-    ));
-  }
 
   // Header border (2px to match web view)
   parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
     y1="${headerY + layout.headerHeight}" y2="${headerY + layout.headerHeight}"
     stroke="${theme.colors.border}" stroke-width="2"/>`);
 
-  // Build display rows (used for both forest intervals and table rendering)
+  // Build display rows
   const displayRows = buildDisplayRows(spec);
 
-  // Check if we have row groups (affects row background logic)
-  const rowGroups = Array.isArray(spec.data.groups) ? spec.data.groups : [];
-  const hasRowGroups = rowGroups.length > 0;
-
-  // Pre-compute row positions and heights (accounting for spacer rows)
-  // This is used for both forest intervals and table row rendering
+  // Pre-compute row positions and heights
   const rowPositions: number[] = [];
   const rowHeights: number[] = [];
   let accumulatedY = 0;
@@ -2132,12 +2845,36 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     accumulatedY += height;
   }
 
-  // Forest plot area
-  if (spec.data.includeForest && layout.forestWidth > 0) {
-    const plotY = layout.mainY + layout.headerHeight;
+  const plotY = layout.mainY + layout.headerHeight;
+
+  // Render each forest column (may be multiple)
+  for (const forestColIdx of forestColumnIndices) {
+    const forestCol = allColumns[forestColIdx];
+    const forestX = columnPositions[forestColIdx];
+    const forestWidth = getColWidth(forestCol);
+    const forestOpts = forestCol.options?.forest;
+
+    // Get settings for this forest column
+    const fcScale = forestOpts?.scale ?? "linear";
+    const fcNullValue = forestOpts?.nullValue ?? (fcScale === "log" ? 1 : 0);
+    const fcAxisLabel = forestOpts?.axisLabel ?? "Effect";
+    const fcEffects = forestOpts?.effects ?? [];
+    const isLog = fcScale === "log";
+
+    // Compute X scale for this forest column
+    const fcSettings: ForestColumnSettings = {
+      scale: fcScale,
+      nullValue: fcNullValue,
+      effects: fcEffects,
+      axisLabel: fcAxisLabel,
+      pointCol: forestOpts?.point ?? null,
+      lowerCol: forestOpts?.lower ?? null,
+      upperCol: forestOpts?.upper ?? null,
+    };
+    const { scale: xScale, clipBounds, ticks: baseTicks } = computeXScaleAndClip(spec, forestWidth, fcSettings, options);
 
     // Reference line (null value)
-    const nullX = forestX + xScale(forestSettings.nullValue);
+    const nullX = forestX + xScale(fcNullValue);
     parts.push(renderReferenceLine(
       nullX,
       plotY,
@@ -2146,8 +2883,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       theme.colors.muted
     ));
 
-    // Custom annotations (guard against non-array annotations from R serialization)
-    const annotations = Array.isArray(spec.annotations) ? spec.annotations : [];
+    // Custom annotations for this forest column
+    const annotations = forestOpts?.annotations ?? [];
     for (const ann of annotations) {
       if (ann.type === "reference_line") {
         const annX = forestX + xScale(ann.x);
@@ -2164,19 +2901,49 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       }
     }
 
-    // Row intervals (only render for data rows, skip group headers)
+    // Also check top-level annotations
+    const topAnnotations = Array.isArray(spec.annotations) ? spec.annotations : [];
+    for (const ann of topAnnotations) {
+      if (ann.type === "reference_line") {
+        const annX = forestX + xScale(ann.x);
+        parts.push(renderReferenceLine(
+          annX,
+          plotY,
+          plotY + layout.plotHeight,
+          ann.style,
+          ann.color ?? theme.colors.accent,
+          ann.label,
+          ann.width ?? 1,
+          ann.opacity ?? 0.6
+        ));
+      }
+    }
+
+    // Row intervals
     displayRows.forEach((displayRow, i) => {
       if (displayRow.type === "data") {
         const yPos = plotY + rowPositions[i] + rowHeights[i] / 2;
-        parts.push(renderInterval(displayRow.row, yPos, (v) => forestX + xScale(v), theme, forestSettings.nullValue, forestSettings.effects, spec.data.weightCol, forestX, layout.forestWidth, clipBounds, isLog));
+        parts.push(renderInterval(
+          displayRow.row,
+          yPos,
+          (v) => forestX + xScale(v),
+          theme,
+          fcNullValue,
+          fcEffects,
+          spec.data.weightCol,
+          forestX,
+          forestWidth,
+          clipBounds,
+          isLog
+        ));
       }
     });
 
-    // Overall summary diamond (with validation)
+    // Overall summary diamond
     if (spec.data.overall && layout.showOverallSummary &&
-        typeof spec.data.overall.point === 'number' && !Number.isNaN(spec.data.overall.point) &&
-        typeof spec.data.overall.lower === 'number' && !Number.isNaN(spec.data.overall.lower) &&
-        typeof spec.data.overall.upper === 'number' && !Number.isNaN(spec.data.overall.upper)) {
+        typeof spec.data.overall.point === "number" && !Number.isNaN(spec.data.overall.point) &&
+        typeof spec.data.overall.lower === "number" && !Number.isNaN(spec.data.overall.lower) &&
+        typeof spec.data.overall.upper === "number" && !Number.isNaN(spec.data.overall.upper)) {
       const diamondY = plotY + layout.summaryYPosition;
       parts.push(renderDiamond(
         spec.data.overall.point,
@@ -2185,23 +2952,21 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         diamondY,
         xScale,
         forestX,
-        layout.forestWidth,
+        forestWidth,
         theme
       ));
     }
 
     // Axis
-    parts.push(renderAxis(xScale, layout, theme, forestSettings.axisLabel, forestX, forestSettings.nullValue, baseTicks));
+    parts.push(renderForestAxis(xScale, layout, theme, fcAxisLabel, forestX, forestWidth, fcNullValue, baseTicks));
   }
 
-  // Table rows (uses display rows to interleave group headers with data)
-  // rowPositions and rowHeights are already computed above
+  // Table rows - unified column rendering
   const rowsY = layout.mainY + layout.headerHeight;
 
   // Compute bar max values from all data rows for proper scaling
   const allDataRows = spec.data.rows;
-  const leftBarMaxValues = computeBarMaxValues(allDataRows, leftColumns);
-  const rightBarMaxValues = computeBarMaxValues(allDataRows, rightColumns);
+  const barMaxValues = computeBarMaxValues(allDataRows, allColumns);
 
   displayRows.forEach((displayRow, i) => {
     const y = rowsY + rowPositions[i];
@@ -2238,13 +3003,21 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         }
       }
 
-      // Left table
-      parts.push(renderTableRow(row, leftColumns, padding, y, rowHeight, theme, true, layout.labelWidth, depth, leftBarMaxValues, layout.autoWidths));
-
-      // Right table
-      if (rightColumns.length > 0) {
-        parts.push(renderTableRow(row, rightColumns, rightTableX, y, rowHeight, theme, false, 0, depth, rightBarMaxValues, layout.autoWidths));
-      }
+      // Render unified row (label + all columns in order)
+      parts.push(renderUnifiedTableRow(
+        row,
+        allColumns,
+        padding,
+        y,
+        rowHeight,
+        theme,
+        layout.labelWidth,
+        depth,
+        barMaxValues,
+        autoWidths,
+        getColWidth,
+        columnPositions
+      ));
     }
 
     // Row borders
