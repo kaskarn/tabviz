@@ -289,13 +289,13 @@ col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
 #' The `point`, `lower`, and `upper` arguments specify which data columns
 #' contain the values to display.
 #'
+#' @param point Field name for the point estimate column (NULL to auto-detect from forest)
+#' @param lower Field name for the lower bound column (NULL to auto-detect from forest)
+#' @param upper Field name for the upper bound column (NULL to auto-detect from forest)
 #' @param header Column header (default "95% CI")
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param decimals Number of decimal places (default 2)
 #' @param sep Separator between point and CI (default " ")
-#' @param point Field name for the point estimate column
-#' @param lower Field name for the lower bound column
-#' @param upper Field name for the upper bound column
 #' @param imprecise_threshold When upper/lower ratio exceeds this threshold,
 #'   the interval is considered imprecise and displayed as "—" instead.
 #'   Default is NULL (no threshold).
@@ -305,19 +305,22 @@ col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
 #' @return A ColumnSpec object
 #' @export
 #' @examples
-#' # Default formatting
-#' col_interval()
+#' # Specify the data columns for point and interval bounds
+#' col_interval("hr", "lower", "upper")
+#'
+#' # With custom header
+#' col_interval("hr", "lower", "upper", "HR (95% CI)")
 #'
 #' # Custom decimals and separator
-#' col_interval("HR (95% CI)", decimals = 3, sep = ", ")
+#' col_interval("hr", "lower", "upper", "HR (95% CI)", decimals = 3, sep = ", ")
 #'
-#' # Override interval fields (show different effect than plot)
-#' col_interval("Per-Protocol", point = "pp_hr", lower = "pp_lower", upper = "pp_upper")
+#' # Just customize header (auto-detect columns from forest plot)
+#' col_interval(header = "95% CI")
 #'
 #' # Hide imprecise estimates (CI ratio > 10)
-#' col_interval(imprecise_threshold = 10)
-col_interval <- function(header = "95% CI", width = NULL, decimals = 2, sep = " ",
-                         point = NULL, lower = NULL, upper = NULL,
+#' col_interval("hr", "lower", "upper", imprecise_threshold = 10)
+col_interval <- function(point = NULL, lower = NULL, upper = NULL,
+                         header = "95% CI", width = NULL, decimals = 2, sep = " ",
                          imprecise_threshold = NULL, ...) {
   opts <- list(
     interval = list(

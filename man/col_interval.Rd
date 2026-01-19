@@ -5,18 +5,24 @@
 \title{Column helper: Interval display (e.g., "1.2 (0.9, 1.5)")}
 \usage{
 col_interval(
+  point = NULL,
+  lower = NULL,
+  upper = NULL,
   header = "95\% CI",
   width = NULL,
   decimals = 2,
   sep = " ",
-  point = NULL,
-  lower = NULL,
-  upper = NULL,
   imprecise_threshold = NULL,
   ...
 )
 }
 \arguments{
+\item{point}{Field name for the point estimate column (NULL to auto-detect from forest)}
+
+\item{lower}{Field name for the lower bound column (NULL to auto-detect from forest)}
+
+\item{upper}{Field name for the upper bound column (NULL to auto-detect from forest)}
+
 \item{header}{Column header (default "95\% CI")}
 
 \item{width}{Column width in pixels (NULL for auto-sizing based on content)}
@@ -24,12 +30,6 @@ col_interval(
 \item{decimals}{Number of decimal places (default 2)}
 
 \item{sep}{Separator between point and CI (default " ")}
-
-\item{point}{Field name for the point estimate column}
-
-\item{lower}{Field name for the lower bound column}
-
-\item{upper}{Field name for the upper bound column}
 
 \item{imprecise_threshold}{When upper/lower ratio exceeds this threshold,
 the interval is considered imprecise and displayed as "—" instead.
@@ -47,15 +47,18 @@ The \code{point}, \code{lower}, and \code{upper} arguments specify which data co
 contain the values to display.
 }
 \examples{
-# Default formatting
-col_interval()
+# Specify the data columns for point and interval bounds
+col_interval("hr", "lower", "upper")
+
+# With custom header
+col_interval("hr", "lower", "upper", "HR (95\% CI)")
 
 # Custom decimals and separator
-col_interval("HR (95\% CI)", decimals = 3, sep = ", ")
+col_interval("hr", "lower", "upper", "HR (95\% CI)", decimals = 3, sep = ", ")
 
-# Override interval fields (show different effect than plot)
-col_interval("Per-Protocol", point = "pp_hr", lower = "pp_lower", upper = "pp_upper")
+# Just customize header (auto-detect columns from forest plot)
+col_interval(header = "95\% CI")
 
 # Hide imprecise estimates (CI ratio > 10)
-col_interval(imprecise_threshold = 10)
+col_interval("hr", "lower", "upper", imprecise_threshold = 10)
 }
