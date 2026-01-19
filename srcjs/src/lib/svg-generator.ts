@@ -477,7 +477,9 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
 
   // Forest width calculation - "tables first" approach
   const baseWidth = options.width ?? LAYOUT.DEFAULT_WIDTH;
-  const includeForest = spec.data.includeForest;
+  // Check for forest columns (new API) OR legacy includeForest flag
+  const hasForestColumns = allColumns.some(c => c.type === "forest");
+  const includeForest = hasForestColumns || spec.data.includeForest;
   const totalTableWidth = leftTableWidth + rightTableWidth;
 
   // Calculate forest width based on remaining space after tables, or explicit layout settings
@@ -2774,6 +2776,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Helper to get column width
   const getColWidth = (col: ColumnSpec): number => {
     if (col.type === "forest") {
+      // Forest column width: check col.width first, then options.forest.width, then layout default
+      if (typeof col.width === "number") return col.width;
       return col.options?.forest?.width ?? layout.forestWidth;
     }
     const autoWidth = autoWidths.get(col.id);
