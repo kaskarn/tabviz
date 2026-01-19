@@ -2,53 +2,98 @@
 title: "Function Reference"
 ---
 
-Complete reference for all webforest functions, organized by category.
+Complete reference for all tabviz functions, organized by category.
 
 ## Core Functions
 
-The main entry points for creating visualizations. `forest_plot()` is the primary function for most use cases.
+| Function | Description |
+|----------|-------------|
+| [`tabviz()`](tabviz.qmd) | **Main entry point** - Create interactive tables with any columns |
+| [`forest_plot()`](forest_plot.qmd) | Convenience wrapper for quick forest plots |
+| [`save_plot()`](export.qmd) | Export to SVG, PNG, or PDF |
+
+::: {.callout-tip}
+## Which Function Should I Use?
+
+**Use `tabviz()`** for most cases - it gives you full control over columns and works for any table type.
+
+**Use `forest_plot()`** when you just need a quick forest plot and want to specify `point`, `lower`, `upper` directly without wrapping in `col_forest()`.
+
+```r
+# These are equivalent:
+tabviz(data, label = "study", columns = list(
+  col_forest(point = "hr", lower = "lo", upper = "hi")
+))
+
+forest_plot(data, point = "hr", lower = "lo", upper = "hi", label = "study")
+```
+:::
+
+## Column Types
+
+### Basic Columns
 
 | Function | Description |
 |----------|-------------|
-| [`forest_plot()`](forest_plot.qmd) | Create interactive forest plots |
-| [`webtable()`](webtable.qmd) | Create table-only widgets (no forest plot) |
-| [`split_forest()`](split_forest.qmd) | Create split forest with sidebar navigation |
-| [`save_plot()`](save_plot.qmd) | Export to SVG, PNG, or PDF |
-| [`save_split_forest()`](save_plot.qmd#save_split_forest) | Export split forest to directory |
+| [`col_text()`](columns.qmd#col_text) | Text column |
+| [`col_numeric()`](columns.qmd#col_numeric) | Numeric column with formatting |
+| [`col_n()`](columns.qmd#col_n) | Sample size column |
+| [`col_percent()`](columns.qmd#col_percent) | Percentage column |
+| [`col_interval()`](columns.qmd#col_interval) | Confidence interval display |
+| [`col_events()`](columns.qmd#col_events) | Events/N format |
+| [`col_pvalue()`](columns.qmd#col_pvalue) | P-value with formatting |
+
+### Visualization Columns
+
+| Function | Description |
+|----------|-------------|
+| [`col_forest()`](columns.qmd#col_forest) | **Forest plot column** with intervals |
+| [`col_bar()`](columns.qmd#col_bar) | Horizontal bar chart |
+| [`col_sparkline()`](columns.qmd#col_sparkline) | Inline sparkline |
+| [`col_badge()`](columns.qmd#col_badge) | Colored status badges |
+| [`col_stars()`](columns.qmd#col_stars) | Star ratings |
+| [`col_icon()`](columns.qmd#col_icon) | Icon/emoji column |
+| [`col_img()`](columns.qmd#col_img) | Inline images |
+| [`col_reference()`](columns.qmd#col_reference) | Truncated references with links |
+| [`col_range()`](columns.qmd#col_range) | Min-max range display |
+
+### Column Groups
+
+| Function | Description |
+|----------|-------------|
+| [`col_group()`](columns.qmd#col_group) | Group columns under header |
 
 ## Styling Functions
 
-Style your plots using the fluent API. These functions work on both `forest_plot()` widgets and `WebSpec` objects.
+Apply styling using the fluent API with pipes:
 
 | Function | Description |
 |----------|-------------|
-| [`set_row_style()`](styling.qmd#set_row_style) | Apply row-level styling (bold, italic, color, type, indent) |
+| [`set_row_style()`](styling.qmd#set_row_style) | Row-level styling (bold, italic, color, type, indent) |
 | [`set_marker_style()`](styling.qmd#set_marker_style) | Style interval markers (color, shape, opacity, size) |
-| [`set_column_style()`](styling.qmd#set_column_style) | Apply per-cell styling to specific columns |
+| [`set_column_style()`](styling.qmd#set_column_style) | Per-cell styling for specific columns |
 | [`set_theme()`](styling.qmd#set_theme) | Apply a theme by name or object |
 
-::: {.callout-tip}
+::: {.callout-note}
 ## Constructor Arguments vs Fluent API
 
-Every styling function has equivalent direct arguments in `forest_plot()`:
+Every styling function has equivalent direct arguments in `tabviz()`:
 
 ```r
 # These produce identical results:
-forest_plot(data, ..., row_bold = "is_summary", marker_color = "dir_color")
+tabviz(data, ..., row_bold = "is_summary", marker_color = "dir_color")
 
-forest_plot(data, ...) |>
+tabviz(data, ...) |>
   set_row_style(bold = "is_summary") |>
   set_marker_style(color = "dir_color")
 ```
 
-Use direct arguments when configuration is known upfront. Use the fluent API when styling depends on computation or you need multiple variants.
+Use direct arguments when configuration is known upfront. Use the fluent API when styling depends on computation.
 :::
 
 ## Themes
 
 ### Preset Themes
-
-Nine publication-ready themes for different contexts:
 
 | Function | Description |
 |----------|-------------|
@@ -62,60 +107,17 @@ Nine publication-ready themes for different contexts:
 | [`web_theme_dark()`](themes.qmd#web_theme_dark) | Dark mode |
 | [`web_theme_minimal()`](themes.qmd#web_theme_minimal) | Minimal B&W |
 
-### Custom Theme Creation
-
-| Function | Description |
-|----------|-------------|
-| [`web_theme()`](themes.qmd#web_theme) | Create custom theme with overrides |
-
 ### Theme Modifiers
 
-Fine-tune theme properties. These work on both themes and plots:
-
 | Function | Description |
 |----------|-------------|
-| [`set_colors()`](themes.qmd#set_colors) | Customize theme colors |
+| [`set_colors()`](themes.qmd#set_colors) | Customize colors |
 | [`set_typography()`](themes.qmd#set_typography) | Customize fonts |
 | [`set_spacing()`](themes.qmd#set_spacing) | Customize spacing |
 | [`set_shapes()`](themes.qmd#set_shapes) | Customize shapes |
-| [`set_marker_colors()`](themes.qmd#set_marker_colors) | Set multi-effect marker colors |
-| [`set_marker_shapes()`](themes.qmd#set_marker_shapes) | Set multi-effect marker shapes |
 | [`set_axis()`](themes.qmd#set_axis) | Customize axis |
 | [`set_layout()`](themes.qmd#set_layout) | Customize layout |
 | [`set_group_headers()`](themes.qmd#set_group_headers) | Customize group header hierarchy |
-
-## Columns
-
-### Basic Columns
-
-| Function | Description |
-|----------|-------------|
-| [`col_text()`](columns.qmd#col_text) | Text column |
-| [`col_numeric()`](columns.qmd#col_numeric) | Numeric column with formatting |
-| [`col_n()`](columns.qmd#col_n) | Sample size column |
-| [`col_percent()`](columns.qmd#col_percent) | Percentage column |
-| [`col_interval()`](columns.qmd#col_interval) | Confidence interval display |
-| [`col_events()`](columns.qmd#col_events) | Events/N format |
-
-### Visualization Columns
-
-| Function | Description |
-|----------|-------------|
-| [`col_bar()`](columns.qmd#col_bar) | Horizontal bar chart |
-| [`col_pvalue()`](columns.qmd#col_pvalue) | P-value with formatting |
-| [`col_sparkline()`](columns.qmd#col_sparkline) | Inline sparkline |
-| [`col_icon()`](columns.qmd#col_icon) | Icon/emoji column |
-| [`col_badge()`](columns.qmd#col_badge) | Colored status badges |
-| [`col_stars()`](columns.qmd#col_stars) | Star ratings |
-| [`col_img()`](columns.qmd#col_img) | Inline images |
-| [`col_reference()`](columns.qmd#col_reference) | Truncated references with links |
-| [`col_range()`](columns.qmd#col_range) | Min-max range display |
-
-### Column Groups
-
-| Function | Description |
-|----------|-------------|
-| [`col_group()`](columns.qmd#col_group) | Group columns under header |
 
 ## Annotations
 
@@ -126,37 +128,34 @@ Fine-tune theme properties. These work on both themes and plots:
 
 ## Shiny Integration
 
-### Forest Plot
+### Standard Tables
 
 | Function | Description |
 |----------|-------------|
 | [`forestOutput()`](shiny.qmd#forestOutput) | Shiny UI output |
 | [`renderForest()`](shiny.qmd#renderForest) | Shiny server render |
 | [`forestProxy()`](shiny.qmd#forestProxy) | Create update proxy |
-| [`forest_update_data()`](shiny.qmd#forest_update_data) | Update plot data |
+| [`forest_update_data()`](shiny.qmd#forest_update_data) | Update table data |
 | [`forest_sort()`](shiny.qmd#forest_sort) | Sort by column |
 | [`forest_filter()`](shiny.qmd#forest_filter) | Filter rows |
 | [`forest_clear_filter()`](shiny.qmd#forest_clear_filter) | Clear filters |
 | [`forest_toggle_subgroup()`](shiny.qmd#forest_toggle_subgroup) | Toggle group collapse |
 
-### Split Forest
+### Split Tables
 
 | Function | Description |
 |----------|-------------|
-| [`splitForestOutput()`](shiny.qmd#splitForestOutput) | Shiny UI output for split forest |
-| [`renderSplitForest()`](shiny.qmd#renderSplitForest) | Shiny server render for split forest |
-| [`splitForestProxy()`](shiny.qmd#splitForestProxy) | Create split forest proxy |
-| [`split_forest_select()`](shiny.qmd#split_forest_select) | Select sub-plot programmatically |
+| [`splitForestOutput()`](shiny.qmd#splitForestOutput) | Shiny UI output for split view |
+| [`renderSplitForest()`](shiny.qmd#renderSplitForest) | Shiny server render for split view |
+| [`splitForestProxy()`](shiny.qmd#splitForestProxy) | Create split view proxy |
+| [`split_table_select()`](shiny.qmd#split_table_select) | Select sub-table programmatically |
 
-## Advanced: Specification Objects
-
-For advanced use cases requiring programmatic plot construction, you can work with specification objects directly. Most users should use `forest_plot()` with direct arguments instead.
+## Advanced
 
 | Function | Description |
 |----------|-------------|
-| [`web_spec()`](web_spec.qmd#web_spec) | Create plot specification programmatically |
-| [`web_group()`](web_spec.qmd#web_group) | Define row group |
-| [`web_effect()`](web_spec.qmd#web_effect) | Define effect for multi-effect plots |
-| [`web_interaction()`](web_spec.qmd#web_interaction) | Configure interaction settings |
-| [`web_interaction_minimal()`](web_spec.qmd#web_interaction) | Minimal interactivity preset |
-| [`web_interaction_publication()`](web_spec.qmd#web_interaction) | Publication mode preset |
+| [`web_group()`](tabviz.qmd#grouping) | Define row group explicitly |
+| [`web_effect()`](columns.qmd#col_forest) | Define effect for multi-effect plots |
+| [`web_interaction()`](tabviz.qmd) | Configure interaction settings |
+| [`web_interaction_minimal()`](tabviz.qmd) | Minimal interactivity preset |
+| [`web_interaction_publication()`](tabviz.qmd) | Publication mode (static) |

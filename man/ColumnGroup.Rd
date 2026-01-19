@@ -4,12 +4,7 @@
 \alias{ColumnGroup}
 \title{ColumnGroup: A group of columns with a shared header}
 \usage{
-ColumnGroup(
-  id = character(0),
-  header = character(0),
-  columns = list(),
-  position = "left"
-)
+ColumnGroup(id = character(0), header = character(0), columns = list())
 }
 \arguments{
 \item{id}{Unique identifier for the group}
@@ -17,8 +12,6 @@ ColumnGroup(
 \item{header}{Display header text for the group}
 
 \item{columns}{List of ColumnSpec objects in this group}
-
-\item{position}{Column position: "left" or "right" of the forest plot}
 }
 \description{
 Used for creating hierarchical column headers.

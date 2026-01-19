@@ -4,7 +4,7 @@ title: "Shiny Integration"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 webforest works seamlessly with Shiny through the htmlwidgets framework. This guide covers basic integration, reactive patterns, and proxy functions for dynamic updates.
@@ -16,7 +16,7 @@ webforest works seamlessly with Shiny through the htmlwidgets framework. This gu
 Use `forestOutput()` in the UI and `renderForest()` in the server:
 ```r
 library(shiny)
-library(webforest)
+library(tabviz)
 
 ui <- fluidPage(
   titlePanel("Forest Plot Explorer"),
@@ -25,10 +25,12 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   output$forest <- renderForest({
-    forest_plot(meta_data,
-      point = "hr", lower = "lower", upper = "upper",
+    tabviz(meta_data,
       label = "study",
-      scale = "log", null_value = 1
+      columns = list(
+        col_forest(point = "hr", lower = "lower", upper = "upper",
+                   scale = "log", null_value = 1)
+      )
     )
   })
 }
@@ -68,10 +70,12 @@ server <- function(input, output, session) {
   })
 
   output$forest <- renderForest({
-    forest_plot(filtered_data(),
-      point = "hr", lower = "lower", upper = "upper",
+    tabviz(filtered_data(),
       label = "study",
-      scale = "log", null_value = 1
+      columns = list(
+        col_forest(point = "hr", lower = "lower", upper = "upper",
+                   scale = "log", null_value = 1)
+      )
     )
   })
 }
@@ -98,11 +102,13 @@ server <- function(input, output, session) {
       "lancet" = web_theme_lancet()
     )
 
-    forest_plot(data,
-      point = "hr", lower = "lower", upper = "upper",
+    tabviz(data,
       label = "study",
-      theme = theme,
-      scale = "log", null_value = 1
+      columns = list(
+        col_forest(point = "hr", lower = "lower", upper = "upper",
+                   scale = "log", null_value = 1)
+      ),
+      theme = theme
     )
   })
 }
@@ -124,7 +130,7 @@ server <- function(input, output, session) {
   })
 
   output$forest <- renderForest({
-    forest_plot(filtered_data(), ...)
+    tabviz(filtered_data(), ...)
   })
 }
 ```
@@ -217,11 +223,14 @@ Replace the entire dataset with `forest_update_data()`:
 ```r
 observeEvent(input$switch_dataset, {
   # Create new spec
-  new_spec <- web_spec(
+  new_spec <- tabviz(
     get_dataset(input$dataset_name),
-    point = "hr", lower = "lower", upper = "upper",
     label = "study",
-    scale = "log", null_value = 1
+    columns = list(
+      col_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1)
+    ),
+    .spec_only = TRUE
   )
 
   forestProxy("forest") |>
@@ -273,7 +282,7 @@ Here's a full example combining reactive data, proxy functions, and user control
 
 ```r
 library(shiny)
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Sample data
@@ -344,17 +353,16 @@ server <- function(input, output, session) {
 
   # Render the plot
   output$forest <- renderForest({
-    forest_plot(plot_data(),
-      point = "hr", lower = "lower", upper = "upper",
+    tabviz(plot_data(),
       label = "study",
       group = "drug_class",
       columns = list(
         col_numeric("n", "N"),
-        col_interval("HR (95% CI)")
+        col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+        col_forest(point = "hr", lower = "lower", upper = "upper",
+                   scale = "log", null_value = 1, axis_label = "Hazard Ratio")
       ),
-      theme = plot_theme(),
-      scale = "log", null_value = 1,
-      axis_label = "Hazard Ratio"
+      theme = plot_theme()
     )
   })
 

@@ -1,7 +1,7 @@
 # Gallery Example 6: Row Styling
 # Headers, summaries, badges, indentation, and custom colors
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 styled_data <- tibble(

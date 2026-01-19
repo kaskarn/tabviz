@@ -1,0 +1,8 @@
+# tabviz htmlwidgets configuration
+# The binding is tabviz.js (loaded automatically by htmlwidgets)
+# CSS is declared as a stylesheet dependency
+dependencies:
+  - name: tabviz-styles
+    version: "0.3.0"
+    src: htmlwidgets
+    stylesheet: tabviz.css

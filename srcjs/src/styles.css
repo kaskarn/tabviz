@@ -1,13 +1,13 @@
 /*
- * webforest base styles
+ * tabviz base styles
  *
  * All theme CSS variables (--wf-*) are generated dynamically by the Svelte component
  * based on the selected theme. This file contains only structural resets scoped to
  * the widget container to avoid affecting page-level styles.
  */
 
-/* Scoped reset - only apply normalizing styles inside webforest widgets. */
-.webforest-container {
+/* Scoped reset - only apply normalizing styles inside tabviz widgets. */
+.tabviz-container {
   /* Box-sizing reset */
   *,
   *::before,
@@ -50,6 +50,6 @@
 }
 
 /* Ensure SVG text inherits font */
-.webforest-canvas text {
+.tabviz-canvas text {
   font-family: inherit;
 }

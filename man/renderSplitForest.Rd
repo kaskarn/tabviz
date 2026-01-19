@@ -26,7 +26,7 @@ return either a SplitForest object or a forest_plot() call with split_by.
 output$split_plot <- renderSplitForest({
   data |>
     web_spec(point = "or", lower = "lower", upper = "upper") |>
-    split_forest(by = input$split_var) |>
+    split_table(by = input$split_var) |>
     forest_plot()
 })
 }

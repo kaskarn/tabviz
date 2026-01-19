@@ -4,7 +4,7 @@ title: "Shiny Integration"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 Functions for using forest plots in Shiny applications.
@@ -65,7 +65,7 @@ renderSplitForest(expr, env = parent.frame(), quoted = FALSE)
 
 | Argument | Description |
 |----------|-------------|
-| `expr` | Expression that returns a `split_forest()` result rendered with `forest_plot()` |
+| `expr` | Expression that returns a `split_table()` result rendered with `forest_plot()` |
 | `env` | Environment for evaluation |
 | `quoted` | Whether expr is already quoted |
 
@@ -82,17 +82,17 @@ splitForestProxy(id, session = shiny::getDefaultReactiveDomain())
 | `id` | The widget ID |
 | `session` | Shiny session (default: current session) |
 
-### split_forest_select {#split_forest_select}
+### split_table_select {#split_table_select}
 
 Select a specific sub-plot in a split forest.
 
 ```r
-split_forest_select(proxy, key)
+split_table_select(proxy, key)
 ```
 
 | Argument | Description |
 |----------|-------------|
-| `proxy` | A `split_forest_proxy` object |
+| `proxy` | A `split_table_proxy` object |
 | `key` | The key of the sub-plot to select (e.g., `"Americas"` or `"Female/Young"`) |
 
 ## Proxy Functions
@@ -183,7 +183,7 @@ forest_sort(proxy, column, direction)
 ```{r}
 #| eval: false
 library(shiny)
-library(webforest)
+library(tabviz)
 
 ui <- fluidPage(
   titlePanel("Forest Plot Demo"),
@@ -232,7 +232,7 @@ shinyApp(ui, server)
 ```{r}
 #| eval: false
 library(shiny)
-library(webforest)
+library(tabviz)
 
 ui <- fluidPage(
   forestOutput("forest"),
@@ -277,7 +277,7 @@ shinyApp(ui, server)
 ```{r}
 #| eval: false
 library(shiny)
-library(webforest)
+library(tabviz)
 
 server <- function(input, output, session) {
   # Reactive data source
@@ -304,5 +304,5 @@ server <- function(input, output, session) {
 ## See Also
 
 - [forest_plot()](forest_plot.qmd) for creating plots
-- [web_spec()](web_spec.qmd) for creating specifications
+- [tabviz()](tabviz.qmd) for the main entry point
 - [Shiny Guide](../guide/shiny.qmd) for detailed examples

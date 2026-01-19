@@ -4,7 +4,7 @@ title: "Row Groups"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 Organize your forest plot into collapsible sections using the `group` parameter. This is ideal for meta-analyses with natural categories like study design, region, or subpopulation.

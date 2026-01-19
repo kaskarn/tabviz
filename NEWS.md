@@ -1,3 +1,44 @@
+# tabviz 0.3.0
+
+## Breaking Changes
+
+* **Package renamed from `webforest` to `tabviz`**: All references updated. Users should update their code:
+  - `library(webforest)` → `library(tabviz)`
+  - Widget classes changed from `"webforest"` to `"tabviz"`
+
+* **Forest column configuration via `col_forest()`**: Forest plot columns are now defined using the `col_forest()` helper instead of top-level parameters. This unifies the column-based API:
+  ```r
+  # Old (deprecated)
+  forest_plot(data, point = "hr", lower = "lower", upper = "upper")
+
+  # New
+  forest_plot(data, columns = list(
+    col_text("study"),
+    col_forest(point = "hr", lower = "lower", upper = "upper")
+  ))
+  ```
+
+## Bug Fixes
+
+* **Axis calculation with col_forest()**: Fixed critical bug where x-axis defaulted to 0.1-10 regardless of actual data. The axis calculation now correctly uses column names specified in `col_forest()` (e.g., `point = "hr"`) to look up values in row metadata. Previously, it was using literal strings `"point"`, `"lower"`, `"upper"`.
+
+* **Svelte 5 $effect() outside component context**: Fixed JavaScript runtime errors in Shiny bindings where `$effect()` runes were used outside component initialization. Wrapped in `$effect.root()` to create proper reactive context.
+
+* **ciClipFactor default mismatch**: Fixed inconsistency where R documentation specified default of 2.0 but JavaScript fallback used 3.0. Now consistently uses 2.0.
+
+## Improvements
+
+* **S7 class validators**: Added validation for critical classes:
+  - `ColorPalette`: Validates all color properties are valid hex colors
+  - `GroupSummary`: Type-safe comparison of lower/upper bounds
+  - `InteractionSpec.enable_themes`: Validates list items are WebTheme objects
+
+* **Lifecycle dependency**: Package now properly depends on `lifecycle` for deprecation warnings.
+
+* **Unit tests for axis calculation**: Added comprehensive test suite (`axis-utils.test.ts`) covering linear/log scale ranges, CI clipping, custom column names, and tick generation.
+
+---
+
 # webforest 0.2.3
 
 ## New Features

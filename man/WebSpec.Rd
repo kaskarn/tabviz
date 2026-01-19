@@ -6,31 +6,19 @@
 \arguments{
 \item{data}{Processed data as a data.frame}
 
-\item{point_col}{Column name for point estimates}
-
-\item{lower_col}{Column name for lower bounds}
-
-\item{upper_col}{Column name for upper bounds}
-
 \item{label_col}{Column name for row labels}
 
 \item{group_col}{Column name for grouping (optional, deepest level)}
 
 \item{group_cols}{All group column names for hierarchical grouping (for composite ID building)}
 
-\item{columns}{List of ColumnSpec objects defining table columns}
+\item{columns}{List of ColumnSpec objects defining table columns (including col_forest)}
 
 \item{groups}{List of GroupSpec objects}
 
 \item{summaries}{List of GroupSummary objects}
 
 \item{overall_summary}{Optional overall summary (GroupSummary)}
-
-\item{scale}{Scale type: "linear" or "log"}
-
-\item{null_value}{Reference value for null effect (0 for linear, 1 for log)}
-
-\item{axis_label}{Label for the graphical axis}
 
 \item{theme}{WebTheme object}
 

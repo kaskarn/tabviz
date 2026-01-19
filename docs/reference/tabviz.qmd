@@ -1,0 +1,308 @@
+---
+title: "tabviz()"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+## Overview
+
+`tabviz()` is the main entry point for creating interactive tables with embedded visualizations. It returns an htmlwidget directly, making it the recommended function for building any table-based display.
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(
+    col_text("category"),
+    col_numeric("value", decimals = 1),
+    col_forest(point = "hr", lower = "lo", upper = "hi", scale = "log"),
+    col_sparkline("trend")
+  ),
+  theme = web_theme_jama()
+)
+```
+
+::: {.callout-tip}
+## When to Use Which Function
+
+| Function | Use Case |
+|----------|----------|
+| `tabviz()` | **Most cases** - Full control over columns, any table type |
+| `forest_plot()` | Quick forest plots when you just need point/lower/upper |
+:::
+
+---
+
+## Syntax
+
+```r
+tabviz(
+  data,
+  label = NULL,
+  label_header = "Study",
+  group = NULL,
+  columns = NULL,
+  annotations = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  footnote = NULL,
+  # Row styling
+  row_bold = NULL,
+  row_italic = NULL,
+  row_color = NULL,
+  row_bg = NULL,
+  row_badge = NULL,
+  row_icon = NULL,
+  row_indent = NULL,
+  row_type = NULL,
+  row_emphasis = NULL,
+  row_muted = NULL,
+  row_accent = NULL,
+  # Marker styling
+  marker_color = NULL,
+  marker_shape = NULL,
+  marker_opacity = NULL,
+  marker_size = NULL,
+  # Display options
+  weight = NULL,
+  theme = web_theme_default(),
+  interaction = web_interaction(),
+  # Rendering options
+  axis_range = NULL,
+  axis_ticks = NULL,
+  axis_gridlines = NULL,
+  plot_position = NULL,
+  row_height = NULL,
+  zoom = 1.0,
+  auto_fit = TRUE,
+  max_width = NULL,
+  max_height = NULL,
+  show_zoom_controls = TRUE,
+  width = NULL,
+  height = NULL,
+  elementId = NULL
+)
+```
+
+---
+
+## Arguments
+
+### Data Arguments
+
+| Argument | Type | Description |
+|----------|------|-------------|
+| `data` | data.frame | A data.frame, data.table, or tibble |
+| `label` | string | Column name for row labels (optional) |
+| `label_header` | string | Header text for the label column (default: `"Study"`) |
+| `group` | string/vector/list | Grouping specification (see [Grouping](#grouping)) |
+| `columns` | list | List of column specifications using `col_*()` functions |
+
+### Display Arguments
+
+| Argument | Type | Description |
+|----------|------|-------------|
+| `annotations` | list | List of annotation objects (`forest_refline()`, etc.) |
+| `title` | string | Plot title |
+| `subtitle` | string | Plot subtitle |
+| `caption` | string | Plot caption |
+| `footnote` | string | Plot footnote |
+
+### Row Styling Arguments
+
+All accept **column names (strings)** or **formula expressions** (`~ ...`):
+
+| Argument | Value Type | Description |
+|----------|------------|-------------|
+| `row_type` | string | Row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
+| `row_bold` | logical | `TRUE`/`FALSE` for bold text |
+| `row_italic` | logical | `TRUE`/`FALSE` for italic text |
+| `row_color` | string | CSS color strings (e.g., `"#1a365d"`) |
+| `row_bg` | string | Background color strings |
+| `row_badge` | string | Badge text to display |
+| `row_icon` | string | Emoji or unicode icons |
+| `row_indent` | integer | Indentation levels (0, 1, 2, ...) |
+| `row_emphasis` | logical | Bold + primary color |
+| `row_muted` | logical | Lighter, reduced prominence |
+| `row_accent` | logical | Theme accent color |
+
+**Example with formulas:**
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi")),
+  row_bold = ~ pval < 0.05,
+  row_color = ~ ifelse(upper < 1, "#16a34a", "#64748b")
+)
+```
+
+### Marker Styling Arguments
+
+All accept **column names (strings)** or **formula expressions** (`~ ...`):
+
+| Argument | Value Type | Description |
+|----------|------------|-------------|
+| `marker_color` | string | CSS color for marker fill |
+| `marker_shape` | string | `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `marker_opacity` | numeric | Opacity (0 to 1) |
+| `marker_size` | numeric | Size multiplier (1 = default) |
+
+### Rendering Arguments
+
+| Argument | Type | Default | Description |
+|----------|------|---------|-------------|
+| `axis_range` | numeric(2) | `NULL` | Fixed axis range `c(min, max)` |
+| `axis_ticks` | numeric | `NULL` | Custom tick positions |
+| `axis_gridlines` | logical | `NULL` | Show axis gridlines |
+| `plot_position` | string | `NULL` | Forest column position: `"left"`, `"right"`, `"center"` |
+| `row_height` | integer | `NULL` | Row height in pixels |
+| `zoom` | numeric | `1.0` | Zoom level (0.5 to 2.0) |
+| `auto_fit` | logical | `TRUE` | Auto-fit widget to content |
+| `max_width` | integer | `NULL` | Maximum width in pixels |
+| `max_height` | integer | `NULL` | Maximum height in pixels |
+| `show_zoom_controls` | logical | `TRUE` | Show zoom controls |
+| `width` | string | `NULL` | Widget width (CSS units) |
+| `height` | string | `NULL` | Widget height (CSS units) |
+| `elementId` | string | `NULL` | HTML element ID |
+
+### Theme & Interaction
+
+| Argument | Type | Default | Description |
+|----------|------|---------|-------------|
+| `theme` | WebTheme | `web_theme_default()` | Theme object |
+| `interaction` | list | `web_interaction()` | Interaction settings |
+
+---
+
+## Grouping {#grouping}
+
+The `group` argument supports three modes:
+
+### Single column grouping
+
+Flat grouping by one column:
+
+```{r}
+#| eval: false
+tabviz(data, group = "category", ...)
+```
+
+### Hierarchical grouping
+
+Nested grouping (region > country):
+
+```{r}
+#| eval: false
+tabviz(data, group = c("region", "country"), ...)
+```
+
+### Explicit groups
+
+Full control with `web_group()`:
+
+```{r}
+#| eval: false
+tabviz(data,
+  group = list(
+    web_group("cardio", label = "Cardiovascular"),
+    web_group("renal", label = "Renal Outcomes", collapsed = TRUE)
+  ),
+  ...
+)
+```
+
+---
+
+## Examples
+
+### Basic Table
+
+```{r}
+meta_data <- data.frame(
+  study = c("Smith 2020", "Jones 2021", "Lee 2022"),
+  category = c("Drug A", "Drug A", "Drug B"),
+  hr = c(0.72, 0.85, 0.91),
+  lower = c(0.55, 0.70, 0.75),
+  upper = c(0.95, 1.03, 1.10),
+  n = c(245, 180, 320)
+)
+
+tabviz(meta_data,
+  label = "study",
+  columns = list(
+    col_text("category", "Drug"),
+    col_n("n"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  )
+)
+```
+
+### With Row Styling
+
+```{r}
+styled_data <- data.frame(
+  label = c("Primary Endpoint", "  CV Death", "  MI", "Summary"),
+  hr = c(NA, 0.82, 0.79, 0.78),
+  lower = c(NA, 0.72, 0.68, 0.65),
+  upper = c(NA, 0.94, 0.92, 0.93),
+  rtype = c("header", "data", "data", "summary"),
+  rbold = c(TRUE, FALSE, FALSE, TRUE)
+)
+
+tabviz(styled_data,
+  label = "label",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  ),
+  row_type = "rtype",
+  row_bold = "rbold"
+)
+```
+
+### Dashboard Table (No Forest)
+
+```{r}
+#| eval: false
+tabviz(sales_data,
+  label = "product",
+  columns = list(
+    col_text("category"),
+    col_numeric("revenue", format = "currency"),
+    col_percent("growth"),
+    col_sparkline("trend"),
+    col_bar("market_share")
+  ),
+  theme = web_theme_modern()
+)
+```
+
+---
+
+## Return Value
+
+Returns an **htmlwidget** object that:
+
+- Renders in RStudio Viewer, R Markdown, Quarto, and Shiny
+- Can be saved with `save_plot()` to SVG, PNG, or PDF
+- Can be piped to `set_*()` functions for additional styling
+
+---
+
+## See Also
+
+- [forest_plot()](forest_plot.qmd) - Convenience wrapper for forest plots
+- [Columns](columns.qmd) - All `col_*()` column types
+- [Styling Functions](styling.qmd) - `set_row_style()`, `set_marker_style()`, etc.
+- [Themes](themes.qmd) - Theme presets and customization
+- [Export](export.qmd) - Saving to files

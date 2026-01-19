@@ -4,7 +4,7 @@ title: "Split Plots"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 library(dplyr)
 ```
 
@@ -64,35 +64,42 @@ subgroup_data <- data.frame(
 subgroup_data$lower <- subgroup_data$or * exp(-1.96 * 0.2)
 subgroup_data$upper <- subgroup_data$or * exp(1.96 * 0.2)
 
-forest_plot(subgroup_data,
-  point = "or", lower = "lower", upper = "upper",
+tabviz(subgroup_data,
   label = "study",
-  split_by = c("sex", "age_group"),  # Hierarchical: Sex > Age Group
-  scale = "log", null_value = 1,
-  theme = web_theme_modern(),
-  axis_label = "Odds Ratio"
-)
+  columns = list(
+    col_forest(
+      point = "or", lower = "lower", upper = "upper",
+      scale = "log", null_value = 1,
+      axis_label = "Odds Ratio"
+    )
+  ),
+  theme = web_theme_modern()
+) |>
+  split_table(by = c("sex", "age_group")) |>  # Hierarchical: Sex > Age Group
+  forest_plot()
 ```
 
 The sidebar shows "Sex" as the first level header, with "Age Group" nested under each sex.
 
-## Using split_forest() Directly
+## Adding Extra Columns
 
-For more control, use the `split_forest()` function with the pipe syntax:
+Use `columns` to add extra data columns alongside the forest plot:
 
 ```{r}
-subgroup_data |>
-  web_spec(
-    point = "or", lower = "lower", upper = "upper",
-    label = "study",
-    scale = "log", null_value = 1,
-    columns = list(
-      col_text("sex", header = "Sex"),
-      col_text("age_group", header = "Age"),
-      col_interval("OR (95% CI)")
+tabviz(subgroup_data,
+  label = "study",
+  columns = list(
+    col_text("sex", header = "Sex"),
+    col_text("age_group", header = "Age"),
+    col_interval("OR (95% CI)", point = "or", lower = "lower", upper = "upper"),
+    col_forest(
+      point = "or", lower = "lower", upper = "upper",
+      scale = "log", null_value = 1
     )
-  ) |>
-  split_forest(by = c("sex", "age_group")) |>
+  ),
+  theme = web_theme_modern()
+) |>
+  split_table(by = c("sex", "age_group")) |>
   forest_plot()
 ```
 
@@ -101,14 +108,18 @@ subgroup_data |>
 By default, each sub-plot auto-scales its axis. Use `shared_axis = TRUE` for consistent comparison:
 
 ```{r}
-forest_plot(trial_data,
-  point = "or", lower = "lower", upper = "upper",
+tabviz(trial_data,
   label = "study",
-  split_by = "region",
-  shared_axis = TRUE,  # Same axis range across all regions
-  scale = "log", null_value = 1,
+  columns = list(
+    col_forest(
+      point = "or", lower = "lower", upper = "upper",
+      scale = "log", null_value = 1
+    )
+  ),
   theme = web_theme_modern()
-)
+) |>
+  split_table(by = "region", shared_axis = TRUE) |>  # Same axis range across all regions
+  forest_plot()
 ```
 
 This ensures the same visual scale across all subgroups.
@@ -128,12 +139,18 @@ The sidebar includes:
 Export all sub-plots to a directory structure:
 
 ```r
-split_result <- data |>
-  web_spec(point = "or", lower = "lower", upper = "upper") |>
-  split_forest(by = c("sex", "age_group"))
+# Create split forest and save
+p <- tabviz(data,
+  label = "study",
+  columns = list(
+    col_forest(point = "or", lower = "lower", upper = "upper")
+  )
+) |>
+  split_table(by = c("sex", "age_group")) |>
+  forest_plot()
 
-# Exports to: output/Male/Male_Young.svg, etc.
-save_split_forest(split_result, "output", format = "svg")
+# Export all sub-plots to: output/Male/Male_Young.svg, etc.
+save_split_table(p, "output", format = "svg")
 ```
 
 The directory structure mirrors the split hierarchy.

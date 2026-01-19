@@ -64,7 +64,7 @@
 </script>
 
 {#if shouldShow}
-  <div bind:this={tooltipEl} class="webforest-tooltip" style={positionStyle}>
+  <div bind:this={tooltipEl} class="tabviz-tooltip" style={positionStyle}>
     <div class="tooltip-header">{row.label}</div>
     <div class="tooltip-body">
       <div class="tooltip-row tooltip-estimate">
@@ -84,7 +84,7 @@
 {/if}
 
 <style>
-  .webforest-tooltip {
+  .tabviz-tooltip {
     position: fixed;
     z-index: 1000;
     min-width: 160px;

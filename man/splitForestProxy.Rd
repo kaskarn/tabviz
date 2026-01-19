@@ -12,7 +12,7 @@ splitForestProxy(id, session = shiny::getDefaultReactiveDomain())
 \item{session}{The Shiny session (default: current session)}
 }
 \value{
-A split_forest_proxy object
+A split_table_proxy object
 }
 \description{
 Creates a proxy object that can be used to control a split forest plot in a

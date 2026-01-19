@@ -4,7 +4,7 @@ title: "Styling Functions"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 library(dplyr)
 ```
 

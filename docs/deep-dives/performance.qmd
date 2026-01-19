@@ -1,0 +1,300 @@
+---
+title: "Performance Tips"
+description: "Optimizing tabviz for large datasets and complex visualizations"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+This guide covers performance optimization for tabviz when working with large datasets or complex visualizations.
+
+## Performance Characteristics
+
+tabviz is designed for interactive visualization of tabular data. Performance depends on:
+
+| Factor | Impact | Typical Limit |
+|--------|--------|---------------|
+| Row count | High | ~5,000 rows |
+| Column count | Medium | ~30 columns |
+| Sparkline data | High | ~100 points per sparkline |
+| Formula expressions | Low | Minimal impact |
+| Theme complexity | Low | Minimal impact |
+
+## Large Dataset Strategies
+
+### 1. Pagination
+
+For very large datasets, display a subset with navigation:
+
+```{r}
+#| eval: false
+# Display 100 rows at a time
+page_size <- 100
+current_page <- 1
+
+tabviz(
+  data[(current_page - 1) * page_size + 1:page_size, ],
+  label = "study",
+  columns = list(col_forest(...))
+)
+```
+
+### 2. Aggregation
+
+Summarize data before visualization:
+
+```{r}
+#| eval: false
+library(dplyr)
+
+# Instead of 10,000 individual studies
+summary_data <- raw_data |>
+  group_by(category, subcategory) |>
+  summarize(
+    n_studies = n(),
+    pooled_hr = exp(mean(log(hr))),
+    pooled_lo = exp(mean(log(lower))),
+    pooled_hi = exp(mean(log(upper))),
+    .groups = "drop"
+  )
+
+tabviz(summary_data, ...)
+```
+
+### 3. Lazy Loading with Split Views
+
+For hierarchical data, use split views to load subsets on demand:
+
+```{r}
+#| eval: false
+# Only render the selected subset
+tabviz(data,
+  label = "study",
+  columns = list(col_forest(...)),
+  split_by = c("region", "country")  # Navigation loads subsets
+)
+```
+
+## Column Optimization
+
+### Expensive Column Types
+
+Some column types are more expensive than others:
+
+| Column Type | Cost | Optimization |
+|-------------|------|--------------|
+| `col_sparkline()` | High | Limit data points, use simple types |
+| `col_forest()` | Medium | Use shared axis ranges |
+| `col_bar()` | Low | Fast |
+| `col_text()` | Very Low | Fastest |
+
+### Sparkline Optimization
+
+```{r}
+#| eval: false
+# BAD: 1000 data points per sparkline
+data$trend <- lapply(1:nrow(data), function(i) rnorm(1000))
+
+# GOOD: 20-50 data points per sparkline
+data$trend <- lapply(1:nrow(data), function(i) {
+  full_data <- get_time_series(i)
+  # Downsample to 50 points
+  sample(full_data, min(50, length(full_data)))
+})
+```
+
+### Shared Axis Calculation
+
+When multiple forest columns exist, share axis ranges:
+
+```{r}
+#| eval: false
+# Pre-calculate axis range once
+all_values <- c(data$lower, data$upper)
+axis_range <- c(
+  floor(min(all_values, na.rm = TRUE) * 10) / 10,
+  ceiling(max(all_values, na.rm = TRUE) * 10) / 10
+)
+
+tabviz(data,
+  columns = list(
+    col_forest(..., axis_range = axis_range),
+    col_forest(..., axis_range = axis_range)  # Reuse
+  )
+)
+```
+
+## Formula Expression Optimization
+
+Formula expressions (`~ pval < 0.05`) are evaluated once during construction, not on every render:
+
+```{r}
+#| eval: false
+# This is efficient - formula evaluated once
+tabviz(data,
+  row_bold = ~ pval < 0.05,
+  marker_color = ~ case_when(
+    upper < 1 ~ "#16a34a",
+    lower > 1 ~ "#dc2626",
+    TRUE ~ "#64748b"
+  )
+)
+
+# Equivalent to pre-computing, same performance
+data <- data |>
+  mutate(
+    is_sig = pval < 0.05,
+    marker_col = case_when(...)
+  )
+tabviz(data, row_bold = "is_sig", marker_color = "marker_col")
+```
+
+## Export Performance
+
+### SVG vs PNG
+
+| Format | Speed | Memory | Use Case |
+|--------|-------|--------|----------|
+| SVG | Fast | Low | Interactive use, small-medium datasets |
+| PNG | Slow | High | Final figures, presentation |
+| PDF | Slow | High | Print publications |
+
+### Batch Export Optimization
+
+```{r}
+#| eval: false
+# Create widget once, export multiple formats
+p <- tabviz(data, ...)
+
+# Sequential export
+save_plot(p, "output.svg")  # Fastest
+save_plot(p, "output.pdf")
+save_plot(p, "output.png", scale = 2)
+```
+
+## Shiny Optimization
+
+### Debouncing Updates
+
+```{r}
+#| eval: false
+server <- function(input, output, session) {
+  # Debounce rapid filter changes
+  filtered_data <- reactive({
+    input$filter
+  }) |> debounce(300)  # Wait 300ms after last change
+
+  output$table <- renderForest({
+    tabviz(filtered_data(), ...)
+  })
+}
+```
+
+### Proxy Updates
+
+Use proxy for incremental updates instead of re-rendering:
+
+```{r}
+#| eval: false
+server <- function(input, output, session) {
+  output$table <- renderForest({
+    tabviz(initial_data, ...)
+  })
+
+  proxy <- forestProxy("table")
+
+  observeEvent(input$sort_column, {
+    # Update sort without re-rendering
+    forest_sort(proxy, input$sort_column)
+  })
+
+  observeEvent(input$filter, {
+    # Update filter without full re-render
+    forest_filter(proxy, input$filter)
+  })
+}
+```
+
+## Memory Management
+
+### Large Sparkline Data
+
+```{r}
+#| eval: false
+# BAD: Stores full data in every cell
+data$trend <- lapply(1:1000, function(i) get_full_series(i))
+
+# GOOD: Store only what's needed for visualization
+data$trend <- lapply(1:1000, function(i) {
+  series <- get_full_series(i)
+  # Keep last 30 days only
+  tail(series, 30)
+})
+```
+
+### Cleanup After Export
+
+```{r}
+#| eval: false
+# For batch processing
+for (subset in subsets) {
+  p <- tabviz(subset, ...)
+  save_plot(p, sprintf("output/%s.svg", subset$name))
+
+  # Clear from memory
+  rm(p)
+  gc()
+}
+```
+
+## Profiling
+
+### Identifying Bottlenecks
+
+```{r}
+#| eval: false
+library(profvis)
+
+profvis({
+  p <- tabviz(large_data,
+    label = "study",
+    columns = list(
+      col_sparkline("trend"),
+      col_forest(...)
+    ),
+    row_bold = ~ pval < 0.05
+  )
+})
+```
+
+### Timing Components
+
+```{r}
+#| eval: false
+# Time spec creation
+system.time({
+  spec <- tabviz(data, ..., .spec_only = TRUE)
+})
+
+# Time widget creation
+system.time({
+  widget <- forest_plot(spec)
+})
+
+# Time export
+system.time({
+  save_plot(widget, "output.svg")
+})
+```
+
+## Summary Recommendations
+
+| Scenario | Recommendation |
+|----------|----------------|
+| > 1,000 rows | Consider pagination or aggregation |
+| Many sparklines | Limit to 30-50 data points each |
+| Shiny with frequent updates | Use proxy methods |
+| Batch export | Use SVG when possible, cleanup memory |
+| Complex formulas | Pre-compute if reusing across multiple tables |

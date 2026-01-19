@@ -13,7 +13,6 @@ ColumnSpec(
   align = "left",
   header_align = NA_character_,
   wrap = FALSE,
-  position = "left",
   sortable = TRUE,
   options = list(),
   style_bold = NULL,
@@ -34,7 +33,7 @@ ColumnSpec(
 
 \item{field}{Data field name to display}
 
-\item{type}{Column type: "text", "numeric", "interval", "bar", "pvalue", "sparkline", "custom"}
+\item{type}{Column type: "text", "numeric", "interval", "bar", "pvalue", "sparkline", "forest", "custom"}
 
 \item{width}{Column width in pixels (NA for auto)}
 
@@ -43,8 +42,6 @@ ColumnSpec(
 \item{header_align}{Text alignment for header: "left", "center", "right" (NA to inherit from align)}
 
 \item{wrap}{Enable text wrapping (default FALSE). When TRUE, long text wraps instead of being truncated.}
-
-\item{position}{Column position relative to plot: "left" or "right"}
 
 \item{sortable}{Whether the column is sortable}
 

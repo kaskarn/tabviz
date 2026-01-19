@@ -4,15 +4,34 @@ title: "Forest Plots"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 library(dplyr)
 ```
 
-This chapter covers the core features for building forest plots: data mapping, scales, multiple effects, markers, axis control, interactivity, and exporting.
+This chapter covers adding forest plot columns to your tables using `col_forest()`. For quick forest plots, you can also use the `forest_plot()` convenience wrapper.
+
+::: {.callout-tip}
+## Two Ways to Add Forest Columns
+
+**With `tabviz()` + `col_forest()`** (recommended for control):
+```r
+tabviz(data, label = "study", columns = list(
+  col_forest(point = "hr", lower = "lo", upper = "hi", scale = "log", null_value = 1)
+))
+```
+
+**With `forest_plot()`** (quick shortcut):
+```r
+forest_plot(data, point = "hr", lower = "lo", upper = "hi", label = "study",
+            scale = "log", null_value = 1)
+```
+:::
+
+This chapter covers: data mapping, scales, multiple effects, markers, axis control, interactivity, and exporting.
 
 ## Data Mapping
 
-webforest uses a **column-mapping pattern**: you specify which columns contain your data, not the values themselves.
+tabviz uses a **column-mapping pattern**: you specify which columns contain your data, not the values themselves.
 
 ```{r}
 # Your data can have any column names
@@ -24,13 +43,10 @@ data <- data.frame(
 )
 
 # Just map them to the right arguments
-forest_plot(data,
-  point = "my_hr",
-  lower = "ci_lo",
-  upper = "ci_hi",
-  label = "study",
-  null_value = 1, scale = "log"
-)
+tabviz(data, label = "study", columns = list(
+  col_forest(point = "my_hr", lower = "ci_lo", upper = "ci_hi",
+             scale = "log", null_value = 1)
+))
 ```
 
 ### Required Mappings
@@ -47,7 +63,7 @@ The `label` argument is optional but almost always used to identify each row.
 
 ### Handling Missing Values (NA)
 
-webforest uses `NA` values strategically for structured layouts:
+tabviz uses `NA` values strategically for structured layouts:
 
 - **Header rows**: `row_type = "header"` with `NA` for effect estimates
 - **Spacer rows**: `row_type = "spacer"` for visual separation
@@ -63,10 +79,11 @@ structured <- data.frame(
   rbold = c(TRUE, FALSE, FALSE, FALSE, TRUE)
 )
 
-forest_plot(structured,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
-  row_type = "rtype", row_bold = "rbold",
-  scale = "log", null_value = 1
+tabviz(structured, label = "label", row_type = "rtype", row_bold = "rbold",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  )
 )
 ```
 
@@ -79,12 +96,10 @@ forest_plot(structured,
 Use for **ratios** (odds ratio, hazard ratio, risk ratio) where effects are multiplicative:
 
 ```{r}
-forest_plot(data,
-  point = "my_hr", lower = "ci_lo", upper = "ci_hi", label = "study",
-  scale = "log",
-  null_value = 1,  # Ratio of 1 = no effect
-  axis_label = "Hazard Ratio (95% CI)"
-)
+tabviz(data, label = "study", columns = list(
+  col_forest(point = "my_hr", lower = "ci_lo", upper = "ci_hi",
+             scale = "log", null_value = 1, axis_label = "Hazard Ratio (95% CI)")
+))
 ```
 
 ::: {.callout-warning}
@@ -105,13 +120,10 @@ diff_data <- data.frame(
   upper = c(-0.9, 2.8, 0.5)
 )
 
-forest_plot(diff_data,
-  point = "mean_diff", lower = "lower", upper = "upper",
-  label = "comparison",
-  scale = "linear",
-  null_value = 0,  # Difference of 0 = no effect
-  axis_label = "Mean Difference (95% CI)"
-)
+tabviz(diff_data, label = "comparison", columns = list(
+  col_forest(point = "mean_diff", lower = "lower", upper = "upper",
+             scale = "linear", null_value = 0, axis_label = "Mean Difference (95% CI)")
+))
 ```
 
 ---
@@ -134,19 +146,17 @@ multi_data <- data.frame(
   pp_hi = c(0.87, 0.92, 0.79)
 )
 
-forest_plot(multi_data,
-  point = "itt_or", lower = "itt_lo", upper = "itt_hi",
-  label = "study",
-  effects = list(
-    web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
-    web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
-  ),
+tabviz(multi_data, label = "study", title = "Sensitivity Analysis Comparison",
   columns = list(
     col_n("n"),
-    col_interval("Primary OR")
-  ),
-  scale = "log", null_value = 1,
-  title = "Sensitivity Analysis Comparison"
+    col_interval(point = "itt_or", lower = "itt_lo", upper = "itt_hi", header = "Primary OR"),
+    col_forest(
+      scale = "log", null_value = 1,
+      effects = list(
+        web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
+        web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+      ))
+  )
 )
 ```
 
@@ -177,15 +187,15 @@ marker_data <- data.frame(
   pvalue = c(0.002, 0.001, 0.045, 0.022)
 )
 
-forest_plot(marker_data,
-  point = "hr", lower = "lower", upper = "upper",
-  label = "study",
+tabviz(marker_data, label = "study", title = "Marker Styling with Formulas",
   # Formula expressions - no pre-computed columns needed
   marker_shape = ~ ifelse(design == "RCT", "circle", "square"),
   marker_color = ~ ifelse(pvalue < 0.05, "#16a34a", "#94a3b8"),
   marker_opacity = ~ ifelse(pvalue < 0.01, 1, 0.7),
-  scale = "log", null_value = 1,
-  title = "Marker Styling with Formulas"
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  )
 )
 ```
 
@@ -214,11 +224,10 @@ Marker styling can also be done with `set_marker_style()`. See [The Fluent API](
 By default, the axis range is auto-calculated. Override with `axis_range`:
 
 ```{r}
-forest_plot(data,
-  point = "my_hr", lower = "ci_lo", upper = "ci_hi", label = "study",
-  scale = "log", null_value = 1,
-  axis_range = c(0.3, 2.0)
-)
+tabviz(data, label = "study", columns = list(
+  col_forest(point = "my_hr", lower = "ci_lo", upper = "ci_hi",
+             scale = "log", null_value = 1, axis_range = c(0.3, 2.0))
+))
 ```
 
 ### Custom Tick Values
@@ -226,12 +235,11 @@ forest_plot(data,
 Specify exact tick positions with `axis_ticks`:
 
 ```{r}
-forest_plot(data,
-  point = "my_hr", lower = "ci_lo", upper = "ci_hi", label = "study",
-  scale = "log", null_value = 1,
-  axis_range = c(0.3, 2.0),
-  axis_ticks = c(0.5, 0.7, 1.0, 1.5, 2.0)
-)
+tabviz(data, label = "study", columns = list(
+  col_forest(point = "my_hr", lower = "ci_lo", upper = "ci_hi",
+             scale = "log", null_value = 1,
+             axis_range = c(0.3, 2.0), axis_ticks = c(0.5, 0.7, 1.0, 1.5, 2.0))
+))
 ```
 
 ### Gridlines
@@ -239,11 +247,10 @@ forest_plot(data,
 Add vertical gridlines at tick positions:
 
 ```{r}
-forest_plot(data,
-  point = "my_hr", lower = "ci_lo", upper = "ci_hi", label = "study",
-  scale = "log", null_value = 1,
-  axis_gridlines = TRUE
-)
+tabviz(data, label = "study", columns = list(
+  col_forest(point = "my_hr", lower = "ci_lo", upper = "ci_hi",
+             scale = "log", null_value = 1, axis_gridlines = TRUE)
+))
 ```
 
 ### Axis Summary
@@ -259,16 +266,34 @@ forest_plot(data,
 
 ## Reference Lines
 
-The `null_value` parameter draws a dashed vertical reference line. Add custom reference lines with `forest_refline()`:
+The `null_value` parameter draws a dashed vertical reference line. Add custom reference lines with `forest_refline()` inside `col_forest()`:
 
 ```{r}
-forest_plot(data,
-  point = "my_hr", lower = "ci_lo", upper = "ci_hi", label = "study",
-  scale = "log", null_value = 1,
-  annotations = list(
-    forest_refline(0.8, label = "Threshold", style = "dashed", color = "#e11d48")
-  ),
-  title = "With Custom Reference Line"
+tabviz(data, label = "study", title = "With Custom Reference Line",
+  columns = list(
+    col_forest(point = "my_hr", lower = "ci_lo", upper = "ci_hi",
+               scale = "log", null_value = 1,
+               annotations = list(
+                 forest_refline(0.8, label = "Threshold", style = "dashed", color = "#e11d48")
+               ))
+  )
+)
+```
+
+### Multiple Reference Lines
+
+Add multiple reference lines with custom styling:
+
+```{r}
+tabviz(data, label = "study", title = "Clinical Thresholds",
+  columns = list(
+    col_forest(point = "my_hr", lower = "ci_lo", upper = "ci_hi",
+               scale = "log", null_value = 1,
+               annotations = list(
+                 forest_refline(0.5, label = "Strong", style = "solid", color = "#16a34a"),
+                 forest_refline(0.8, label = "Moderate", style = "dashed", color = "#f59e0b")
+               ))
+  )
 )
 ```
 
@@ -280,20 +305,23 @@ forest_plot(data,
 | `label` | Optional label text |
 | `style` | `"solid"`, `"dashed"`, `"dotted"` |
 | `color` | Line color |
+| `width` | Line width (default: 1.5) |
+| `opacity` | Line opacity 0-1 (default: 0.6) |
 
 ---
 
 ## Titles and Labels
 
 ```{r}
-forest_plot(data,
-  point = "my_hr", lower = "ci_lo", upper = "ci_hi", label = "study",
-  scale = "log", null_value = 1,
+tabviz(data, label = "study",
   title = "Treatment Effect on Primary Outcome",
   subtitle = "Randomized controlled trials, 2020-2024",
   caption = "HR < 1 favors treatment",
   footnote = "Random effects meta-analysis",
-  axis_label = "Hazard Ratio (95% CI)"
+  columns = list(
+    col_forest(point = "my_hr", lower = "ci_lo", upper = "ci_hi",
+               scale = "log", null_value = 1, axis_label = "Hazard Ratio (95% CI)")
+  )
 )
 ```
 
@@ -312,7 +340,7 @@ forest_plot(data,
 ::: {.callout-note}
 ## Interactive by Default
 
-All webforest plots include these interactions out of the box:
+All tabviz widgets include these interactions out of the box:
 
 - **Hover highlighting** on rows
 - **Click to select** rows
@@ -337,14 +365,13 @@ tooltip_data <- data.frame(
   pvalue = c(0.0001, 0.02, 0.17)
 )
 
-forest_plot(tooltip_data,
-  point = "hr", lower = "lower", upper = "upper",
-  label = "study",
-  scale = "log", null_value = 1,
-  interaction = web_interaction(
-    tooltip_fields = c("n", "events", "pvalue")
-  ),
-  footnote = "Hover over markers to see tooltip"
+tabviz(tooltip_data, label = "study",
+  interaction = web_interaction(tooltip_fields = c("n", "events", "pvalue")),
+  footnote = "Hover over markers to see tooltip",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  )
 )
 ```
 
@@ -374,8 +401,9 @@ web_interaction(
 ```{r}
 #| eval: false
 # Publication-ready static output
-forest_plot(data, ...,
-  interaction = web_interaction_publication()
+tabviz(data, label = "study",
+  interaction = web_interaction_publication(),
+  columns = list(col_forest(point = "hr", lower = "lower", upper = "upper"))
 )
 ```
 
@@ -392,16 +420,16 @@ forest_plot(data, ...,
 
 ## Exporting Plots
 
-webforest supports exporting to SVG, PNG, and PDF.
+tabviz supports exporting to SVG, PNG, and PDF.
 
 ### Using save_plot()
 
 ```r
 # Create a plot
-p <- forest_plot(data,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  scale = "log", null_value = 1
-)
+p <- tabviz(data, label = "study", columns = list(
+  col_forest(point = "hr", lower = "lower", upper = "upper",
+             scale = "log", null_value = 1)
+))
 
 # Save as SVG (vector)
 save_plot(p, "forest_plot.svg")
@@ -489,7 +517,7 @@ library(metafor)
 # Run meta-analysis
 res <- rma(yi = log_or, sei = se, data = studies, method = "REML")
 
-# Convert to webforest format
+# Convert to tabviz format
 forest_data <- studies |>
   mutate(
     or = exp(log_or),
@@ -507,11 +535,11 @@ forest_data <- studies |>
     )
   )
 
-forest_plot(forest_data,
-  point = "or", lower = "lower", upper = "upper",
-  label = "study",
-  row_type = "rtype", row_bold = "rbold",
-  scale = "log", null_value = 1
+tabviz(forest_data, label = "study", row_type = "rtype", row_bold = "rbold",
+  columns = list(
+    col_forest(point = "or", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  )
 )
 ```
 

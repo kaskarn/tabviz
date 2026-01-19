@@ -87,6 +87,8 @@ export function createForestStore() {
 
   // Derived: axis computation (axis limits, plot region, ticks)
   // Uses the new modular axis calculation from axis-utils.ts
+  // NOTE: This computes a global axis based on first forest column for backwards compat.
+  // In practice, each forest column may have its own axis (handled in ForestPlot.svelte)
   const axisComputation = $derived.by((): AxisComputation => {
     if (!spec) {
       return {
@@ -96,31 +98,67 @@ export function createForestStore() {
       };
     }
 
+    // Check if we have any forest columns
+    const firstForest = forestColumns[0]?.column;
+    const hasForest = forestColumns.length > 0;
+
     // Use override if set, otherwise calculate default (25% of width, min 200px)
-    const forestWidth = spec.data.includeForest
+    const forestWidth = hasForest
       ? (plotWidthOverride ?? Math.max(effectiveWidth * 0.25, 200))
       : 0;
 
+    // Get scale and nullValue from first forest column options
+    const forestOptions = firstForest?.options?.forest;
+    const scale = forestOptions?.scale ?? "linear";
+    const nullValue = forestOptions?.nullValue ?? (scale === "log" ? 1 : 0);
+
+    // Get inline effects from first forest column (if any)
+    const effects = forestOptions?.effects ?? [];
+
+    // Get primary effect column names from forest options (for col_forest inline definition)
+    const pointCol = forestOptions?.point ?? null;
+    const lowerCol = forestOptions?.lower ?? null;
+    const upperCol = forestOptions?.upper ?? null;
+
+    // Merge forest column axis overrides into theme config
+    // This allows col_forest(axis_range=, axis_ticks=) to override theme defaults
+    const axisConfig = { ...spec.theme.axis };
+    if (forestOptions?.axisRange && Array.isArray(forestOptions.axisRange) && forestOptions.axisRange.length === 2) {
+      axisConfig.rangeMin = forestOptions.axisRange[0];
+      axisConfig.rangeMax = forestOptions.axisRange[1];
+    }
+    if (forestOptions?.axisTicks && Array.isArray(forestOptions.axisTicks)) {
+      axisConfig.tickValues = forestOptions.axisTicks;
+    }
+
     return computeAxis({
       rows: spec.data.rows,
-      config: spec.theme.axis,
-      scale: spec.data.scale,
-      nullValue: spec.data.nullValue,
+      config: axisConfig,
+      scale,
+      nullValue,
       forestWidth,
       pointSize: spec.theme.shapes.pointSize,
-      effects: spec.data.effects,
+      effects,
+      pointCol,
+      lowerCol,
+      upperCol,
     });
   });
 
   // Derived: x-scale (creates D3 scale from plot region)
+  // NOTE: This is a global scale for backwards compat. Each forest column may have its own scale.
   const xScale = $derived.by(() => {
     if (!spec) return scaleLinear().domain([0, 1]).range([0, 100]);
 
-    const isLog = spec.data.scale === "log";
+    // Get scale type from first forest column
+    const firstForest = forestColumns[0]?.column;
+    const forestOptions = firstForest?.options?.forest;
+    const isLog = (forestOptions?.scale ?? "linear") === "log";
     const { plotRegion } = axisComputation;
 
     // Use override if set, otherwise calculate default (25% of width, min 200px)
-    const forestWidth = spec.data.includeForest
+    const hasForest = forestColumns.length > 0;
+    const forestWidth = hasForest
       ? (plotWidthOverride ?? Math.max(effectiveWidth * 0.25, 200))
       : 0;
 
@@ -140,12 +178,12 @@ export function createForestStore() {
     return scaleLinear().domain(plotRegion).range([rangeStart, rangeEnd]);
   });
 
-  // Helper to flatten group children (no position filtering - children inherit from parent)
-  function flattenGroupChildren(columns: ColumnDef[]): ColumnSpec[] {
+  // Helper to flatten all columns into flat ColumnSpec array
+  function flattenAllColumns(columns: ColumnDef[]): ColumnSpec[] {
     const result: ColumnSpec[] = [];
     for (const col of columns) {
       if (col.isGroup) {
-        result.push(...flattenGroupChildren(col.columns));
+        result.push(...flattenAllColumns(col.columns));
       } else {
         result.push(col);
       }
@@ -153,42 +191,36 @@ export function createForestStore() {
     return result;
   }
 
-  // Helper to flatten column groups into flat ColumnSpec array
-  function flattenColumns(columns: ColumnDef[], position: "left" | "right"): ColumnSpec[] {
-    const result: ColumnSpec[] = [];
-    for (const col of columns) {
-      if (col.position !== position) continue;
-      if (col.isGroup) {
-        // Group children inherit position from parent - don't filter them
-        result.push(...flattenGroupChildren(col.columns));
-      } else {
-        result.push(col);
+  // Derived: all columns in order (flattened, no position filtering)
+  const allColumns = $derived.by((): ColumnSpec[] => {
+    if (!spec) return [];
+    return flattenAllColumns(spec.columns);
+  });
+
+  // Derived: all column definitions in order (for headers)
+  const allColumnDefs = $derived.by((): ColumnDef[] => {
+    if (!spec) return [];
+    return spec.columns;
+  });
+
+  // Derived: indices of forest columns (for SVG overlay positioning)
+  // Returns array of { index, column } for each forest column
+  const forestColumns = $derived.by((): { index: number; column: ColumnSpec }[] => {
+    if (!spec) return [];
+    const result: { index: number; column: ColumnSpec }[] = [];
+    const cols = allColumns;
+    for (let i = 0; i < cols.length; i++) {
+      if (cols[i].type === "forest") {
+        result.push({ index: i, column: cols[i] });
       }
     }
     return result;
-  }
-
-  // Derived: flattened columns by position
-  const leftColumns = $derived.by((): ColumnSpec[] => {
-    if (!spec) return [];
-    return flattenColumns(spec.columns, "left");
   });
 
-  const rightColumns = $derived.by((): ColumnSpec[] => {
-    if (!spec) return [];
-    return flattenColumns(spec.columns, "right");
-  });
+  // Derived: check if any explicit forest columns exist
+  const hasExplicitForestColumns = $derived(forestColumns.length > 0);
 
-  // Derived: raw column definitions by position (for headers)
-  const leftColumnDefs = $derived.by((): ColumnDef[] => {
-    if (!spec) return [];
-    return spec.columns.filter((c) => c.position === "left");
-  });
-
-  const rightColumnDefs = $derived.by((): ColumnDef[] => {
-    if (!spec) return [];
-    return spec.columns.filter((c) => c.position === "right");
-  });
+  // ============================================================================
 
   // Derived: group lookup map
   const groupMap = $derived.by((): Map<string, Group> => {
@@ -348,9 +380,9 @@ export function createForestStore() {
     const headerHeight = spec.theme.spacing.headerHeight;
     const axisGap = spec.theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP; // Gap between table and axis
     const axisHeight = 32 + axisGap; // Axis content (32px) + configurable gap
-    const includeForest = spec.data.includeForest;
+    const hasForest = forestColumns.length > 0;
     // Use override if set, otherwise calculate default (25% of width, min 200px)
-    const forestWidth = includeForest
+    const forestWidth = hasForest
       ? (plotWidthOverride ?? Math.max(effectiveWidth * 0.25, 200))
       : 0;
     const tableWidth = effectiveWidth - forestWidth;
@@ -378,6 +410,12 @@ export function createForestStore() {
     // Plot height: sum of all row heights + space for overall summary
     const plotHeight = cumulativeY + (hasOverall ? rowHeight * 1.5 : 0);
 
+    // Get nullValue from first forest column options
+    const firstForest = forestColumns[0]?.column;
+    const forestOptions = firstForest?.options?.forest;
+    const scale = forestOptions?.scale ?? "linear";
+    const nullValue = forestOptions?.nullValue ?? (scale === "log" ? 1 : 0);
+
     return {
       totalWidth: effectiveWidth,
       totalHeight: Math.max(effectiveHeight, plotHeight + headerHeight + axisHeight + spec.theme.spacing.padding * 2),
@@ -387,7 +425,7 @@ export function createForestStore() {
       rowHeight,
       plotHeight,
       axisHeight,
-      nullValue: spec.data.nullValue,
+      nullValue,
       summaryYPosition: plotHeight - rowHeight,
       showOverallSummary: hasOverall,
       rowPositions,
@@ -404,10 +442,11 @@ export function createForestStore() {
     const LABEL_COLUMN_WIDTH = 150;
     const DEFAULT_FOREST_WIDTH = 250;
 
-    // Calculate sum of all column widths
+    // Calculate sum of all column widths (excluding forest columns which have separate width)
     let totalColumnWidth = 0;
-    const allColumns = [...leftColumns, ...rightColumns];
     for (const col of allColumns) {
+      // Skip forest columns - they have their own width calculation
+      if (col.type === "forest") continue;
       // Use computed width if available, otherwise spec width, otherwise default
       const w = columnWidths[col.id]
         ?? (typeof col.width === 'number' ? col.width : null)
@@ -415,11 +454,12 @@ export function createForestStore() {
       totalColumnWidth += w;
     }
 
-    // Add label column (always present on left)
+    // Add label column (always present)
     totalColumnWidth += LABEL_COLUMN_WIDTH;
 
-    // Add forest plot width if included
-    const forestWidth = spec.data.includeForest
+    // Add forest plot width if we have forest columns
+    const hasForest = forestColumns.length > 0;
+    const forestWidth = hasForest
       ? (plotWidthOverride ?? DEFAULT_FOREST_WIDTH)
       : 0;
 
@@ -837,14 +877,6 @@ export function createForestStore() {
     spec = { ...spec, theme: newTheme };
   }
 
-  function toggleForestView() {
-    if (!spec) return;
-    spec = {
-      ...spec,
-      data: { ...spec.data, includeForest: !spec.data.includeForest },
-    };
-  }
-
   // ============================================================================
   // Zoom & Auto-fit Controls
   // ============================================================================
@@ -919,7 +951,7 @@ export function createForestStore() {
 
   function getStorageKey(): string | null {
     if (!containerElementId) return null;
-    return `webforest_zoom_${containerElementId}`;
+    return `tabviz_zoom_${containerElementId}`;
   }
 
   function persistZoomState() {
@@ -1018,17 +1050,17 @@ export function createForestStore() {
     get hoveredRowId() {
       return hoveredRowId;
     },
-    get leftColumns() {
-      return leftColumns;
+    get allColumns() {
+      return allColumns;
     },
-    get rightColumns() {
-      return rightColumns;
+    get allColumnDefs() {
+      return allColumnDefs;
     },
-    get leftColumnDefs() {
-      return leftColumnDefs;
+    get forestColumns() {
+      return forestColumns;
     },
-    get rightColumnDefs() {
-      return rightColumnDefs;
+    get hasExplicitForestColumns() {
+      return hasExplicitForestColumns;
     },
     get displayRows() {
       return displayRows;
@@ -1102,7 +1134,6 @@ export function createForestStore() {
     setColumnWidth,
     setPlotWidth,
     setTheme,
-    toggleForestView,
     // Zoom & auto-fit actions
     setZoom,
     resetZoom,

@@ -17,7 +17,7 @@ test_that("forest_plot returns htmlwidget from data.frame", {
   )
 
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("forest_plot accepts WebSpec object", {
@@ -30,16 +30,16 @@ test_that("forest_plot accepts WebSpec object", {
 
   spec <- web_spec(
     data,
-    point = "point",
-    lower = "lower",
-    upper = "upper",
-    label = "study"
+    label = "study",
+    columns = list(
+      col_forest(point = "point", lower = "lower", upper = "upper")
+    )
   )
 
   widget <- forest_plot(spec)
 
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("forest_plot accepts columns", {
@@ -104,21 +104,19 @@ test_that("forest_plot accepts theme", {
 test_that("webtable returns htmlwidget", {
   data <- data.frame(
     study = c("A", "B", "C"),
-    point = c(1.2, 0.8, 1.5),
-    lower = c(0.9, 0.5, 1.1),
-    upper = c(1.6, 1.2, 2.0)
+    value = c(1.2, 0.8, 1.5)
   )
 
   spec <- web_spec(
     data,
-    point = "point",
-    lower = "lower",
-    upper = "upper",
-    label = "study"
+    label = "study",
+    columns = list(
+      col_numeric("value")
+    )
   )
 
   widget <- webtable(spec)
 
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })

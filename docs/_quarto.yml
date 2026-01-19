@@ -3,85 +3,94 @@ project:
   output-dir: _site
 
 website:
-  title: "webforest"
-  description: "Interactive, web-native forest plots for R"
+  title: "tabviz"
+  description: "Interactive tables with embedded visualizations for R"
   navbar:
     background: light
     left:
       - text: "Guide"
         menu:
+          - text: "Overview"
+            href: guide/index.qmd
+          - text: "---"
           - text: "1. Quick Start"
             href: guide/quick-start.qmd
-          - text: "2. Forest Plots"
-            href: guide/forest-plots.qmd
-          - text: "3. Columns"
+          - text: "2. Columns"
             href: guide/columns.qmd
-          - text: "---"
-          - text: "4. Row Styling"
+          - text: "3. Row Styling"
             href: guide/row-styling.qmd
-          - text: "5. Cell Styling"
+          - text: "4. Cell Styling"
             href: guide/cell-styling.qmd
-          - text: "6. Row Groups"
+          - text: "5. Row Groups"
             href: guide/row-groups.qmd
+          - text: "---"
+          - text: "6. Forest Plots"
+            href: guide/forest-plots.qmd
           - text: "7. Split Plots"
             href: guide/split-plots.qmd
           - text: "---"
           - text: "8. Themes"
             href: guide/themes.qmd
-          - text: "9. The Fluent API"
-            href: guide/fluent-api.qmd
-          - text: "---"
-          - text: "10. Shiny Integration"
+          - text: "9. Shiny Integration"
             href: guide/shiny.qmd
-          - text: "11. Package Data"
-            href: guide/package-data.qmd
+          - text: "10. Export"
+            href: guide/export.qmd
+      - text: "Concepts"
+        menu:
+          - text: "Architecture Overview"
+            href: concepts/index.qmd
+          - text: "Data Flow"
+            href: concepts/data-flow.qmd
+          - text: "Styling Cascade"
+            href: concepts/styling-cascade.qmd
       - text: "Cheatsheet"
         href: cheatsheet.qmd
       - text: "Gallery"
         menu:
-          - text: "Basic Examples"
-            href: gallery-basic.qmd
-          - text: "Advanced Examples"
-            href: gallery-advanced.qmd
+          - text: "Gallery Overview"
+            href: gallery/index.qmd
+          - text: "---"
+          - text: "Clinical Examples"
+            href: gallery/clinical.qmd
+          - text: "Dashboard Examples"
+            href: gallery/dashboards.qmd
+          - text: "Feature Showcases"
+            href: gallery/showcases.qmd
       - text: "Reference"
         menu:
           - text: "Overview"
             href: reference/index.qmd
           - text: "---"
+          - text: "tabviz()"
+            href: reference/tabviz.qmd
           - text: "forest_plot()"
             href: reference/forest_plot.qmd
-          - text: "Styling Functions"
-            href: reference/styling.qmd
           - text: "---"
-          - text: "split_forest()"
-            href: reference/split_forest.qmd
-          - text: "webtable()"
-            href: reference/webtable.qmd
-          - text: "save_plot()"
-            href: reference/save_plot.qmd
-          - text: "---"
-          - text: "Themes"
-            href: reference/themes.qmd
           - text: "Columns"
             href: reference/columns.qmd
+          - text: "Styling Functions"
+            href: reference/styling.qmd
+          - text: "Themes"
+            href: reference/themes.qmd
           - text: "Annotations"
             href: reference/annotations.qmd
+          - text: "---"
           - text: "Shiny"
             href: reference/shiny.qmd
+          - text: "Export"
+            href: reference/export.qmd
           - text: "---"
-          - text: "Advanced: Specifications"
-            href: reference/web_spec.qmd
           - text: "Troubleshooting"
             href: reference/troubleshooting.qmd
-      - text: "Technical"
+      - text: "Deep Dives"
         menu:
-          - text: "S7 Class Architecture"
-            href: technical/s7-classes.qmd
-          - text: "Export System"
-            href: technical/export-system.qmd
+          - text: "S7 Architecture"
+            href: deep-dives/architecture.qmd
+          - text: "Performance Tips"
+            href: deep-dives/performance.qmd
     right:
       - icon: github
-        href: https://github.com/kaskarn/webforest
+        href: https://github.com/kaskarn/tabviz
 
 format:
   html:
@@ -93,6 +102,8 @@ format:
     code-fold: show
     code-tools: true
     highlight-style: github
+    mermaid:
+      theme: neutral
 
 execute:
   warning: false

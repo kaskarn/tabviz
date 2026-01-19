@@ -2,7 +2,7 @@
 % Please edit documentation in R/webtable.R
 \name{webtable}
 \alias{webtable}
-\title{Create an interactive web table}
+\title{Create an interactive web table (deprecated)}
 \usage{
 webtable(
   x,
@@ -20,9 +20,7 @@ webtable(
 \arguments{
 \item{x}{Either a WebSpec object or a data.frame/data.table/tibble}
 
-\item{...}{Arguments passed to \code{web_spec()} when x is a data frame.
-Common arguments: \code{point}, \code{lower}, \code{upper}, \code{label}, \code{group},
-\code{columns}, \code{theme}, \code{interaction}}
+\item{...}{Arguments passed to \code{tabviz()} when x is a data frame.}
 
 \item{zoom}{Initial zoom level (0.5 to 2.0, default 1.0)}
 
@@ -44,38 +42,45 @@ Common arguments: \code{point}, \code{lower}, \code{upper}, \code{label}, \code{
 An htmlwidget object
 }
 \description{
-\code{webtable()} renders a web-native, interactive table visualization
-without the forest plot graphical column. Useful for displaying
-tabular data with sorting, filtering, and other interactive features.
+\code{webtable()} is deprecated. Use \code{tabviz()} directly instead.
+}
+\details{
+The forest plot column is now controlled via \code{col_forest()} in the columns list.
+Tables without a forest column simply omit \code{col_forest()}.
 }
 \examples{
 \dontrun{
+# Modern approach - use tabviz() directly
 data <- data.frame(
   item = c("A", "B", "C"),
   value = c(1.2, 0.8, 1.5),
-  lo = c(0.9, 0.5, 1.1),
-  hi = c(1.6, 1.2, 2.0),
   n = c(100, 150, 75)
 )
 
-# Create spec
-spec <- web_spec(
+# Table with custom columns (no forest plot)
+tabviz(
   data,
-  point = "value",
-  lower = "lo",
-  upper = "hi",
   label = "item",
-  columns = list(col_n(), col_interval())
+  columns = list(
+    col_text("item"),
+    col_numeric("value"),
+    col_n("n")
+  )
 )
 
-# Table only (no forest column)
-webtable(spec)
-
-# With forest column
-forest_plot(spec)
+# Add forest plot by including col_forest()
+tabviz(
+  data,
+  label = "item",
+  columns = list(
+    col_text("item"),
+    col_forest(point = "value", lower = "lo", upper = "hi"),
+    col_n("n")
+  )
+)
 }
 
 }
 \seealso{
-\code{\link[=web_spec]{web_spec()}} for creating specifications, \code{\link[=forest_plot]{forest_plot()}} for forest plot rendering
+\code{\link[=tabviz]{tabviz()}} for the main entry point
 }

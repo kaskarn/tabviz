@@ -318,16 +318,15 @@ ColumnSpec <- new_class("ColumnSpec", properties = list(
   type = new_property(class_character, default = "text"),
   width = new_property(class_any, default = NA_real_),  # numeric or "auto"
   align = new_property(class_character, default = "left"),
-  position = new_property(class_character, default = "left"),
   options = new_property(class_list, default = list()),
 
   # Per-cell style mappings
-  style_bold = new_property(class_character, default = NA_character_),
-  style_italic = new_property(class_character, default = NA_character_),
-  style_color = new_property(class_character, default = NA_character_),
-  style_bg = new_property(class_character, default = NA_character_),
-  style_badge = new_property(class_character, default = NA_character_),
-  style_icon = new_property(class_character, default = NA_character_)
+  style_bold = new_property(class_any, default = NULL),
+  style_italic = new_property(class_any, default = NULL),
+  style_color = new_property(class_any, default = NULL),
+  style_bg = new_property(class_any, default = NULL),
+  style_badge = new_property(class_any, default = NULL),
+  style_icon = new_property(class_any, default = NULL)
 ))
 ```
 
@@ -355,17 +354,15 @@ col_sparkline("trend", type = "area", height = 24)
 ColumnGroup <- new_class("ColumnGroup", properties = list(
   id = class_character,
   header = class_character,
-  columns = new_property(class_list, default = list()),
-  position = new_property(class_character, default = "left")
+  columns = new_property(class_list, default = list())
 ))
 ```
 
 Usage:
 ```r
 col_group("Results",
-  col_interval("OR (95% CI)"),
-  col_pvalue("pvalue", "P"),
-  position = "right"
+  col_interval("OR (95% CI)", point = "or", lower = "lo", upper = "hi"),
+  col_pvalue("pvalue", "P")
 )
 ```
 
@@ -434,7 +431,7 @@ set_row_style <- function(x, ...) {
 }
 
 # In columns.R
-col_group <- function(header, ..., position = c("left", "right")) {
+col_group <- function(header, ...) {
   columns <- list(...)
   for (i in seq_along(columns)) {
     if (!S7_inherits(columns[[i]], ColumnSpec)) {
@@ -486,9 +483,9 @@ method(print, WebSpec) <- function(x, ...) {
   invisible(x)
 }
 
-# Plot method (renders as forest plot)
+# Plot method (renders as tabviz with forest column)
 method(plot, WebSpec) <- function(x, ...) {
-  forest_plot(x, ...)
+  tabviz(x@data, columns = list(col_forest(point = x@point_col, lower = x@lower_col, upper = x@upper_col)), ...)
 }
 
 # as.data.frame method

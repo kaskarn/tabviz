@@ -1,13 +1,12 @@
-#' Create an interactive web table
+#' Create an interactive web table (deprecated)
 #'
-#' `webtable()` renders a web-native, interactive table visualization
-#' without the forest plot graphical column. Useful for displaying
-#' tabular data with sorting, filtering, and other interactive features.
+#' `webtable()` is deprecated. Use `tabviz()` directly instead.
+#'
+#' The forest plot column is now controlled via `col_forest()` in the columns list.
+#' Tables without a forest column simply omit `col_forest()`.
 #'
 #' @param x Either a WebSpec object or a data.frame/data.table/tibble
-#' @param ... Arguments passed to `web_spec()` when x is a data frame.
-#'   Common arguments: `point`, `lower`, `upper`, `label`, `group`,
-#'   `columns`, `theme`, `interaction`
+#' @param ... Arguments passed to `tabviz()` when x is a data frame.
 #' @param zoom Initial zoom level (0.5 to 2.0, default 1.0)
 #' @param auto_fit When TRUE (default), shrink content to fit container if too large
 #' @param max_width Maximum container width in pixels (NULL for none)
@@ -21,32 +20,37 @@
 #'
 #' @examples
 #' \dontrun{
+#' # Modern approach - use tabviz() directly
 #' data <- data.frame(
 #'   item = c("A", "B", "C"),
 #'   value = c(1.2, 0.8, 1.5),
-#'   lo = c(0.9, 0.5, 1.1),
-#'   hi = c(1.6, 1.2, 2.0),
 #'   n = c(100, 150, 75)
 #' )
 #'
-#' # Create spec
-#' spec <- web_spec(
+#' # Table with custom columns (no forest plot)
+#' tabviz(
 #'   data,
-#'   point = "value",
-#'   lower = "lo",
-#'   upper = "hi",
 #'   label = "item",
-#'   columns = list(col_n(), col_interval())
+#'   columns = list(
+#'     col_text("item"),
+#'     col_numeric("value"),
+#'     col_n("n")
+#'   )
 #' )
 #'
-#' # Table only (no forest column)
-#' webtable(spec)
-#'
-#' # With forest column
-#' forest_plot(spec)
+#' # Add forest plot by including col_forest()
+#' tabviz(
+#'   data,
+#'   label = "item",
+#'   columns = list(
+#'     col_text("item"),
+#'     col_forest(point = "value", lower = "lo", upper = "hi"),
+#'     col_n("n")
+#'   )
+#' )
 #' }
 #'
-#' @seealso [web_spec()] for creating specifications, [forest_plot()] for forest plot rendering
+#' @seealso [tabviz()] for the main entry point
 #'
 #' @export
 webtable <- function(
@@ -61,54 +65,26 @@ webtable <- function(
     height = NULL,
     elementId = NULL) {
 
-  # Validate zoom parameters
-  checkmate::assert_number(zoom, lower = 0.5, upper = 2.0)
-  checkmate::assert_flag(auto_fit)
-  if (!is.null(max_width)) checkmate::assert_number(max_width, lower = 100)
-  if (!is.null(max_height)) checkmate::assert_number(max_height, lower = 100)
-  checkmate::assert_flag(show_zoom_controls)
-
   # Handle WebSpec or raw data
-  if (inherits(x, "webforest::WebSpec")) {
+  if (S7_inherits(x, WebSpec)) {
     spec <- x
   } else if (is.data.frame(x)) {
-    spec <- web_spec(x, ...)
+    spec <- tabviz(x, ..., .spec_only = TRUE)
   } else {
     cli_abort("{.arg x} must be a WebSpec object or a data frame")
   }
 
-  # Serialize to JSON-ready structure (without forest column)
-  payload <- serialize_spec(spec, include_forest = FALSE)
-
-  # Add zoom and sizing settings
-  payload$zoom <- zoom
-  payload$autoFit <- auto_fit
-  payload$maxWidth <- max_width
-  payload$maxHeight <- max_height
-  payload$showZoomControls <- show_zoom_controls
-
-  # Create widget (uses same JS, but with includeForest = FALSE)
-  widget <- htmlwidgets::createWidget(
-    name = "webforest",
-    x = payload,
+  # Use the shared rendering function with include_forest = FALSE
+  render_tabviz_widget(
+    spec,
+    zoom = zoom,
+    auto_fit = auto_fit,
+    max_width = max_width,
+    max_height = max_height,
+    show_zoom_controls = show_zoom_controls,
     width = width,
     height = height,
-    package = "webforest",
     elementId = elementId,
-    sizingPolicy = htmlwidgets::sizingPolicy(
-      defaultWidth = "100%",
-      defaultHeight = 300,
-      viewer.fill = TRUE,
-      browser.fill = TRUE,
-      knitr.figure = FALSE,
-      knitr.defaultWidth = "100%",
-      knitr.defaultHeight = 300
-    )
+    include_forest = FALSE
   )
-
-  # Attach WebSpec for fluent API and save_plot() to use
-  attr(widget, "webspec") <- spec
-  attr(widget, "widget_type") <- "webtable"
-
-  widget
 }

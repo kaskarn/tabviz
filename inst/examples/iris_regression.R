@@ -1,7 +1,7 @@
 # Example: Regression coefficients forest plot using iris
 # Demonstrates: grouped effects, modern theme, titles/captions
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 library(broom)
 
@@ -34,8 +34,8 @@ forest_plot(
   label = "term",
   group = "Species",
   columns = list(
-    col_interval("95% CI", position = "right"),
-    col_pvalue("pvalue", "P-value", position = "right")
+    col_interval("95% CI"),
+    col_pvalue("pvalue", "P-value")
   ),
   theme = web_theme_modern(),
   null_value = 0,

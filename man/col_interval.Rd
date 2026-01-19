@@ -25,15 +25,15 @@ col_interval(
 
 \item{sep}{Separator between point and CI (default " ")}
 
-\item{point}{Optional field name to override the point estimate column}
+\item{point}{Field name for the point estimate column}
 
-\item{lower}{Optional field name to override the lower bound column}
+\item{lower}{Field name for the lower bound column}
 
-\item{upper}{Optional field name to override the upper bound column}
+\item{upper}{Field name for the upper bound column}
 
 \item{imprecise_threshold}{When upper/lower ratio exceeds this threshold,
 the interval is considered imprecise and displayed as "—" instead.
-The forest plot marker is also hidden. Default is NULL (no threshold).}
+Default is NULL (no threshold).}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
@@ -42,9 +42,9 @@ The forest plot marker is also hidden. Default is NULL (no threshold).}
 A ColumnSpec object
 }
 \description{
-Display point estimates with confidence intervals. By default, uses the
-point/lower/upper columns defined at the plot level, but these can be
-overridden with the \code{point}, \code{lower}, and \code{upper} arguments.
+Display point estimates with confidence intervals as formatted text.
+The \code{point}, \code{lower}, and \code{upper} arguments specify which data columns
+contain the values to display.
 }
 \examples{
 # Default formatting

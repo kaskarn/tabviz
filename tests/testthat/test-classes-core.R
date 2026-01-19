@@ -1,6 +1,6 @@
 # Tests for core S7 classes
 
-test_that("WebSpec validates required columns exist", {
+test_that("WebSpec validates forest column data exists", {
   data <- data.frame(
     label = c("A", "B"),
     point = c(1.0, 2.0),
@@ -9,74 +9,57 @@ test_that("WebSpec validates required columns exist", {
   )
 
   expect_error(
-    WebSpec(
+    web_spec(
       data = data,
-      point_col = "point",
-      lower_col = "lower",
-      upper_col = "upper"  # doesn't exist
+      label = "label",
+      columns = list(
+        col_forest(point = "point", lower = "lower", upper = "upper")
+      )
     ),
     "upper"
   )
 })
 
-test_that("WebSpec validates scale value", {
-  data <- data.frame(
-    point = c(1.0, 2.0),
-    lower = c(0.5, 1.5),
-    upper = c(1.5, 2.5)
-  )
-
+test_that("col_forest validates scale value", {
   expect_error(
-    WebSpec(
-      data = data,
-      point_col = "point",
-      lower_col = "lower",
-      upper_col = "upper",
-      scale = "invalid"
-    ),
-    "scale"
+    col_forest(point = "point", lower = "lower", upper = "upper", scale = "invalid"),
+    "arg.*should be one of"
   )
 })
 
 test_that("WebSpec creates valid object with defaults", {
   data <- data.frame(
+    study = c("A", "B"),
     point = c(1.0, 2.0),
     lower = c(0.5, 1.5),
     upper = c(1.5, 2.5)
   )
 
-  spec <- WebSpec(
+  spec <- web_spec(
     data = data,
-    point_col = "point",
-    lower_col = "lower",
-    upper_col = "upper"
+    label = "study",
+    columns = list(
+      col_forest(point = "point", lower = "lower", upper = "upper")
+    )
   )
 
-  expect_true(inherits(spec, "webforest::WebSpec"))
-  expect_equal(spec@point_col, "point")
-  expect_equal(spec@scale, "linear")
-  expect_equal(spec@null_value, 0)
+  expect_true(inherits(spec, "tabviz::WebSpec"))
   expect_equal(nrow(spec@data), 2)
+  # Forest column should be in the columns list
+  expect_true(any(vapply(spec@columns, function(c) c@type == "forest", logical(1))))
 })
 
-test_that("WebSpec accepts log scale with positive null_value", {
-  data <- data.frame(
-    point = c(1.0, 2.0),
-    lower = c(0.5, 1.5),
-    upper = c(1.5, 2.5)
-  )
-
-  spec <- WebSpec(
-    data = data,
-    point_col = "point",
-    lower_col = "lower",
-    upper_col = "upper",
+test_that("col_forest accepts log scale with positive null_value", {
+  forest_col <- col_forest(
+    point = "point",
+    lower = "lower",
+    upper = "upper",
     scale = "log",
     null_value = 1
   )
 
-  expect_equal(spec@scale, "log")
-  expect_equal(spec@null_value, 1)
+  expect_equal(forest_col@options$forest$scale, "log")
+  expect_equal(forest_col@options$forest$nullValue, 1)
 })
 
 test_that("GroupSpec creates valid object", {
@@ -86,7 +69,7 @@ test_that("GroupSpec creates valid object", {
     collapsed = FALSE
   )
 
-  expect_true(inherits(group, "webforest::GroupSpec"))
+  expect_true(inherits(group, "tabviz::GroupSpec"))
   expect_equal(group@id, "group1")
   expect_equal(group@label, "Subgroup A")
   expect_false(group@collapsed)
@@ -100,7 +83,7 @@ test_that("GroupSummary creates valid object", {
     upper = 1.8
   )
 
-  expect_true(inherits(summary, "webforest::GroupSummary"))
+  expect_true(inherits(summary, "tabviz::GroupSummary"))
   expect_equal(summary@group_id, "group1")
   expect_equal(summary@point, 1.5)
 })
@@ -108,7 +91,7 @@ test_that("GroupSummary creates valid object", {
 # Theme preset tests
 test_that("web_theme_jama creates valid theme", {
   theme <- web_theme_jama()
-  expect_true(inherits(theme, "webforest::WebTheme"))
+  expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "jama")
   expect_equal(theme@colors@foreground, "#000000")
   expect_equal(theme@shapes@border_radius, 0)
@@ -116,24 +99,23 @@ test_that("web_theme_jama creates valid theme", {
 
 test_that("web_theme_lancet creates valid theme", {
   theme <- web_theme_lancet()
-  expect_true(inherits(theme, "webforest::WebTheme"))
+  expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "lancet")
   expect_equal(theme@colors@primary, "#00407a")
 })
 
 test_that("web_theme_modern creates valid theme", {
-
   theme <- web_theme_modern()
-  expect_true(inherits(theme, "webforest::WebTheme"))
+  expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "modern")
-  expect_equal(theme@spacing@row_height, 36)
+  expect_equal(theme@spacing@row_height, 30)
 })
 
 test_that("web_theme_presentation creates valid theme", {
   theme <- web_theme_presentation()
-  expect_true(inherits(theme, "webforest::WebTheme"))
+  expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "presentation")
-  expect_equal(theme@spacing@row_height, 44)
+  expect_equal(theme@spacing@row_height, 36)
   expect_equal(theme@shapes@point_size, 12)
 })
 
@@ -163,7 +145,7 @@ test_that("col_sparkline creates column with options", {
 
 test_that("web_theme_cochrane creates valid theme", {
   theme <- web_theme_cochrane()
-  expect_true(inherits(theme, "webforest::WebTheme"))
+  expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "cochrane")
   expect_equal(theme@colors@primary, "#0099cc")
   expect_equal(theme@shapes@border_radius, 0)
@@ -172,7 +154,7 @@ test_that("web_theme_cochrane creates valid theme", {
 
 test_that("web_theme_nature creates valid theme", {
   theme <- web_theme_nature()
-  expect_true(inherits(theme, "webforest::WebTheme"))
+  expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "nature")
   expect_equal(theme@colors@primary, "#1976d2")
   expect_equal(theme@shapes@border_radius, 1)
@@ -216,28 +198,28 @@ test_that("web_col supports na_text parameter", {
 # Dataset tests
 
 test_that("glp1_trials dataset loads correctly", {
-  data(glp1_trials, package = "webforest")
+  data(glp1_trials, package = "tabviz")
   expect_true(is.data.frame(glp1_trials))
   expect_true(nrow(glp1_trials) > 0)
   expect_true(all(c("study", "hr", "lower", "upper") %in% names(glp1_trials)))
 })
 
 test_that("airline_delays dataset loads correctly", {
-  data(airline_delays, package = "webforest")
+  data(airline_delays, package = "tabviz")
   expect_true(is.data.frame(airline_delays))
   expect_true(nrow(airline_delays) > 0)
   expect_true(all(c("carrier", "delay_vs_avg", "delay_lower", "delay_upper") %in% names(airline_delays)))
 })
 
 test_that("nba_efficiency dataset loads correctly", {
-  data(nba_efficiency, package = "webforest")
+  data(nba_efficiency, package = "tabviz")
   expect_true(is.data.frame(nba_efficiency))
   expect_true(nrow(nba_efficiency) > 0)
   expect_true(all(c("player", "per", "per_lower", "per_upper") %in% names(nba_efficiency)))
 })
 
 test_that("climate_temps dataset loads correctly", {
-  data(climate_temps, package = "webforest")
+  data(climate_temps, package = "tabviz")
   expect_true(is.data.frame(climate_temps))
   expect_true(nrow(climate_temps) > 0)
   expect_true(all(c("region", "anomaly", "lower", "upper") %in% names(climate_temps)))

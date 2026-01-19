@@ -4,7 +4,7 @@ title: "webtable"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 Create a table-only widget without the forest plot visualization.
@@ -53,18 +53,15 @@ An htmlwidget object displaying the table portion without the forest plot.
 data <- data.frame(
   study = c("Study A", "Study B", "Study C"),
   hr = c(0.72, 0.85, 0.91),
-  lower = c(0.55, 0.70, 0.75),
-  upper = c(0.95, 1.03, 1.10),
   n = c(245, 180, 320),
   pval = c(0.018, 0.092, 0.31)
 )
 
 webtable(data,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   columns = list(
     col_numeric("n", "N"),
-    col_interval("HR (95% CI)"),
+    col_numeric("hr", "HR"),
     col_pvalue("pval", "P-value")
   )
 )

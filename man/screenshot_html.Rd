@@ -27,7 +27,7 @@ screenshot_html(
 Invisibly returns the output file path
 }
 \description{
-Takes a screenshot of an HTML file containing a webforest widget using
+Takes a screenshot of an HTML file containing a tabviz widget using
 Puppeteer (headless Chrome). Useful for visual debugging and inspection.
 }
 \details{

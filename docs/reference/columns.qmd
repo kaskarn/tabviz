@@ -4,10 +4,10 @@ title: "Columns"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
-Column functions for defining table columns in forest plots.
+Column functions for defining table columns in tabviz.
 
 ## Basic Columns
 
@@ -16,7 +16,7 @@ Column functions for defining table columns in forest plots.
 Text column for displaying character data.
 
 ```r
-col_text(field, header = NULL, width = NULL, position = "left")
+col_text(field, header = NULL, width = NULL)
 ```
 
 | Argument | Description |
@@ -24,14 +24,13 @@ col_text(field, header = NULL, width = NULL, position = "left")
 | `field` | Column name in data |
 | `header` | Display header (defaults to field name) |
 | `width` | Column width in pixels |
-| `position` | `"left"` or `"right"` of forest plot |
 
 ### col_numeric {#col_numeric}
 
 Numeric column with automatic formatting, significant figures support, and large number abbreviation.
 
 ```r
-col_numeric(field, header = NULL, width = NULL, position = "left",
+col_numeric(field, header = NULL, width = NULL,
             decimals = 2, digits = NULL, abbreviate = FALSE)
 ```
 
@@ -40,7 +39,6 @@ col_numeric(field, header = NULL, width = NULL, position = "left",
 | `field` | Column name in data |
 | `header` | Display header |
 | `width` | Column width in pixels |
-| `position` | `"left"` or `"right"` |
 | `decimals` | Fixed decimal places (default: 2) |
 | `digits` | Significant figures (overrides decimals if set) |
 | `abbreviate` | Abbreviate large numbers with K/M/B suffixes |
@@ -63,40 +61,38 @@ col_numeric("population", abbreviate = TRUE)
 Confidence interval display showing point estimate with bounds.
 
 ```r
-col_interval(header = "95% CI", width = 160, position = "right",
-             decimals = 2, sep = " ",
-             point = NULL, lower = NULL, upper = NULL,
-             imprecise_threshold = NULL)
+col_interval(point, lower, upper, header = "95% CI", width = 160,
+             decimals = 2, sep = " ", imprecise_threshold = NULL)
 ```
 
 | Argument | Description |
 |----------|-------------|
+| `point` | Field name for point estimate (required) |
+| `lower` | Field name for lower bound (required) |
+| `upper` | Field name for upper bound (required) |
 | `header` | Column header (default: "95% CI") |
 | `width` | Column width in pixels (default: 160) |
-| `position` | Position relative to plot (default: "right") |
 | `decimals` | Decimal places for formatting (default: 2) |
 | `sep` | Separator between point and CI (default: " ") |
-| `point` | Override field for point estimate |
-| `lower` | Override field for lower bound |
-| `upper` | Override field for upper bound |
 | `imprecise_threshold` | When `upper/lower` ratio exceeds this threshold, display "—" instead |
-
-**Note**: By default, this column uses the `point`, `lower`, and `upper` values specified in `forest_plot()`. Use the override arguments to display different effect estimates.
 
 **Examples**:
 
 ```r
 # Default formatting
-col_interval("HR (95% CI)")
+col_interval(point = "hr", lower = "lower", upper = "upper")
 
-# Custom formatting: 1 decimal, comma separator
-col_interval("HR (95% CI)", decimals = 1, sep = ", ")
+# Custom header and formatting
+col_interval(point = "hr", lower = "lower", upper = "upper",
+             header = "HR (95% CI)", decimals = 1, sep = ", ")
 
 # Show alternative effect from different columns
-col_interval("Per-Protocol", point = "pp_hr", lower = "pp_lower", upper = "pp_upper")
+col_interval(point = "pp_hr", lower = "pp_lower", upper = "pp_upper",
+             header = "Per-Protocol")
 
 # Hide imprecise estimates where CI ratio > 10
-col_interval(imprecise_threshold = 10)
+col_interval(point = "hr", lower = "lower", upper = "upper",
+             imprecise_threshold = 10)
 ```
 
 ## Visualization Columns
@@ -452,7 +448,7 @@ col_numeric("hr", "HR",
 )
 
 # Bold based on combined conditions
-col_interval(
+col_interval(point = "hr", lower = "lower", upper = "upper",
   bold = ~ pval < 0.05 & hr < 1
 )
 ```
@@ -508,16 +504,16 @@ data <- data.frame(
   pval = c(0.018, 0.092, 0.003)
 )
 
-forest_plot(data,
-  point = "hr", lower = "lower", upper = "upper",
+tabviz(data,
   label = "study",
   columns = list(
     col_n("n"),
     col_bar("weight"),
-    col_interval("HR (95% CI)"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
     col_pvalue("pval")
-  ),
-  null_value = 1, scale = "log"
+  )
 )
 ```
 
@@ -529,7 +525,7 @@ columns = list(
   col_n("n"),
   col_group("Treatment Effect",
     col_numeric("hr", "HR"),
-    col_interval("95% CI")
+    col_interval("95% CI", point = "hr", lower = "lower", upper = "upper")
   ),
   col_pvalue("pval")
 )
@@ -559,26 +555,19 @@ spec |> set_column_style(column, bold = NULL, italic = NULL, color = NULL, bg = 
 
 ```{r}
 #| eval: false
-# Using column names
-web_spec(data, ...,
-  columns = list(col_numeric("hr", "HR"))
-) |>
-  set_column_style("hr", bold = "is_significant", color = "hr_color") |>
-  forest_plot()
-
 # Using formula expressions
-web_spec(data, ...,
+tabviz(data,
+  label = "study",
   columns = list(col_pvalue("pval"))
 ) |>
   set_column_style("pval",
     bold = ~ .x < 0.05,
     color = ~ ifelse(.x < 0.05, "#16a34a", "#71717a")
-  ) |>
-  forest_plot()
+  )
 ```
 
 ## See Also
 
-- [forest_plot()](forest_plot.qmd) for using columns
+- [tabviz()](tabviz.qmd) for the main entry point
 - [Columns Guide](../guide/columns.qmd) for detailed examples
 - [Customizing Plots](../guide/fluent-api.qmd) for pipe-based styling

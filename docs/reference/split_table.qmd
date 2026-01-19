@@ -1,10 +1,10 @@
 ---
-title: "split_forest()"
+title: "split_table()"
 ---
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 Create a collection of separate forest plots split by categorical variable values, with interactive sidebar navigation.
@@ -12,7 +12,7 @@ Create a collection of separate forest plots split by categorical variable value
 ## Usage
 
 ```r
-split_forest(x, by, shared_axis = FALSE, ...)
+split_table(x, by, shared_axis = FALSE, ...)
 ```
 
 ## Arguments
@@ -31,19 +31,19 @@ A `SplitForest` object containing multiple `WebSpec` objects, one per unique com
 
 ### Single Variable Split
 ```r
-split_forest(spec, by = "region")
+split_table(spec, by = "region")
 ```
 Creates one plot per unique value in the `region` column.
 
 ### Hierarchical Split
 ```r
-split_forest(spec, by = c("sex", "age_group"))
+split_table(spec, by = c("sex", "age_group"))
 ```
 Creates plots for each combination (e.g., Male/Young, Male/Old, Female/Young, Female/Old) with nested navigation.
 
 ### Shared Axis
 ```r
-split_forest(spec, by = "region", shared_axis = TRUE
+split_table(spec, by = "region", shared_axis = TRUE
 )
 ```
 Forces all sub-plots to use the same axis range, enabling visual comparison across subgroups.
@@ -62,22 +62,24 @@ data <- data.frame(
 data$lower <- data$or * exp(-1.96 * 0.25)
 data$upper <- data$or * exp(1.96 * 0.25)
 
-data |>
-  web_spec(point = "or", lower = "lower", upper = "upper",
-           label = "study", scale = "log", null_value = 1) |>
-  split_forest(by = "region") |>
-  forest_plot(theme = web_theme_modern())
+forest_plot(data,
+  point = "or", lower = "lower", upper = "upper",
+  label = "study",
+  split_by = "region",
+  scale = "log", null_value = 1,
+  theme = web_theme_modern()
+)
 ```
 
-### Via forest_plot() Parameter
+### Hierarchical Split
 
-You can also use `split_by` directly in `forest_plot()`:
+Use a vector of column names for nested navigation:
 
 ```r
 forest_plot(data,
   point = "or", lower = "lower", upper = "upper",
   label = "study",
-  split_by = "region",  # Equivalent to split_forest()
+  split_by = c("sex", "age_group"),  # Creates nested tree navigation
   scale = "log", null_value = 1
 )
 ```
@@ -85,7 +87,7 @@ forest_plot(data,
 ## Related Functions
 
 - `forest_plot()` - Render a forest plot (accepts `split_by` parameter)
-- `save_split_forest()` - Export all sub-plots to a directory
+- `save_split_table()` - Export all sub-plots to a directory
 - `web_spec()` - Create a plot specification
 
 ## See Also

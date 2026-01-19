@@ -1,0 +1,194 @@
+---
+title: "Clinical Examples"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Meta-analyses, forest plots, and clinical trial visualizations.
+
+## JAMA-Style Forest Plot
+
+Classic medical journal style with clean typography:
+
+```{r}
+data(glp1_trials)
+
+tabviz(
+  glp1_trials,
+  label = "study",
+  group = "group",
+  columns = list(
+    col_text("drug", "Drug"),
+    col_n("n"),
+    col_events("events", "n", "Events"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio (95% CI)"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_pvalue("pvalue", "P")
+  ),
+  row_type = "row_type",
+  row_bold = "row_bold",
+  theme = web_theme_jama(),
+  title = "GLP-1 Agonist Cardiovascular Outcomes",
+  subtitle = "Major adverse cardiovascular events (MACE)"
+)
+```
+
+## Lancet-Style Forest Plot
+
+```{r}
+tabviz(
+  glp1_trials,
+  label = "study",
+  group = "group",
+  columns = list(
+    col_text("drug", "Drug"),
+    col_n("n"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  ),
+  row_type = "row_type",
+  row_bold = "row_bold",
+  theme = web_theme_lancet(),
+  title = "Cardiovascular Outcomes Meta-Analysis"
+)
+```
+
+## Subgroup Analysis
+
+Forest plot with subgroup headers and indentation:
+
+```{r}
+subgroup_data <- tibble(
+  label = c(
+    "Overall Population", "",
+    "Age",
+    "  < 65 years", "  >= 65 years", "",
+    "Sex",
+    "  Male", "  Female", "",
+    "Prior CV Disease",
+    "  Yes", "  No"
+  ),
+  hr = c(0.78, NA, NA, 0.72, 0.85, NA, NA, 0.76, 0.82, NA, NA, 0.74, 0.81),
+  lower = c(0.68, NA, NA, 0.58, 0.72, NA, NA, 0.64, 0.68, NA, NA, 0.61, 0.66),
+  upper = c(0.89, NA, NA, 0.89, 1.00, NA, NA, 0.90, 0.99, NA, NA, 0.90, 0.99),
+  n = c(15234, NA, NA, 7821, 7413, NA, NA, 9140, 6094, NA, NA, 8542, 6692),
+  rtype = c("summary", "spacer", "header", "data", "data", "spacer",
+            "header", "data", "data", "spacer", "header", "data", "data"),
+  rbold = c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE,
+            TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)
+)
+
+tabviz(subgroup_data,
+  label = "label",
+  columns = list(
+    col_n("n"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  ),
+  row_type = "rtype",
+  row_bold = "rbold",
+  theme = web_theme_jama(),
+  title = "Subgroup Analysis"
+)
+```
+
+## Multi-Effect Plot
+
+Compare ITT vs Per-Protocol analyses:
+
+```{r}
+multi_effect <- data.frame(
+  study = c("TRIAL-1", "TRIAL-2", "TRIAL-3", "TRIAL-4", "TRIAL-5"),
+  itt_hr = c(0.78, 0.82, 0.91, 0.74, 0.85),
+  itt_lo = c(0.65, 0.68, 0.77, 0.61, 0.71),
+  itt_hi = c(0.94, 0.99, 1.08, 0.90, 1.02),
+  pp_hr = c(0.72, 0.78, 0.88, 0.70, 0.81),
+  pp_lo = c(0.58, 0.63, 0.73, 0.56, 0.66),
+  pp_hi = c(0.89, 0.97, 1.06, 0.88, 0.99),
+  n = c(1250, 980, 1560, 1100, 890)
+)
+
+tabviz(multi_effect,
+  label = "study",
+  columns = list(
+    col_n("n"),
+    col_forest(
+      effects = list(
+        web_effect("itt_hr", "itt_lo", "itt_hi",
+                   label = "ITT", color = "#2563eb"),
+        web_effect("pp_hr", "pp_lo", "pp_hi",
+                   label = "Per-Protocol", color = "#16a34a")
+      ),
+      scale = "log", null_value = 1,
+      axis_label = "Hazard Ratio"
+    )
+  ),
+  theme = web_theme_modern(),
+  title = "ITT vs Per-Protocol Analysis"
+)
+```
+
+## Cochrane-Style Forest Plot
+
+Traditional systematic review format:
+
+```{r}
+tabviz(
+  glp1_trials |> filter(row_type == "data"),
+  label = "study",
+  columns = list(
+    col_n("n", "N"),
+    col_events("events", "n", "Events"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_gridlines = TRUE),
+    col_interval("HR [95% CI]", point = "hr", lower = "lower", upper = "upper")
+  ),
+  theme = web_theme_cochrane(),
+  annotations = list(
+    forest_refline(1, label = "No effect", style = "solid"),
+    forest_refline(0.85, label = "Pooled", style = "dashed", color = "#2563eb")
+  ),
+  title = "Cochrane Review: Cardiovascular Outcomes"
+)
+```
+
+## Direction-Coded Results
+
+Color markers by statistical significance and direction:
+
+```{r}
+direction_data <- glp1_trials |>
+  filter(row_type == "data") |>
+  mutate(
+    marker_color = case_when(
+      upper < 1 ~ "#16a34a",  # Green: significant benefit
+      lower > 1 ~ "#dc2626",  # Red: significant harm
+      TRUE ~ "#64748b"        # Gray: not significant
+    )
+  )
+
+tabviz(direction_data,
+  label = "study",
+  columns = list(
+    col_text("drug", "Drug"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_pvalue("pvalue")
+  ),
+  marker_color = "marker_color",
+  row_bold = ~ pvalue < 0.05,
+  theme = web_theme_nature(),
+  title = "Results by Direction"
+)
+```

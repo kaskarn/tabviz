@@ -1,0 +1,138 @@
+---
+title: "Architecture Overview"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+This section explains the mental models behind tabviz. Understanding these concepts helps you build more sophisticated visualizations and troubleshoot issues.
+
+## Data Flow
+
+tabviz follows a simple pipeline from your data to interactive display:
+
+```{mermaid}
+flowchart LR
+    A["data.frame"] --> B["tabviz()"]
+    B --> C["htmlwidget"]
+    C --> D["Interactive display"]
+    C --> E["Static export"]
+
+    style B fill:#4f46e5,color:#fff
+    style C fill:#059669,color:#fff
+```
+
+1. **data.frame** - Your input data with columns for values, labels, and styling
+2. **tabviz()** - Creates a configured htmlwidget with columns, themes, and styling
+3. **htmlwidget** - Interactive JavaScript visualization
+4. **Output** - Display in RStudio, documents, or export to files
+
+## Core Components
+
+```{mermaid}
+flowchart TB
+    subgraph Input
+        D[data.frame]
+    end
+
+    subgraph Configuration
+        C[columns]
+        T[theme]
+        S[styling]
+    end
+
+    subgraph Output
+        W[htmlwidget]
+    end
+
+    D --> W
+    C --> W
+    T --> W
+    S --> W
+```
+
+### The Column System
+
+Columns define what data to display and how to format it:
+
+```{mermaid}
+flowchart TD
+    A[Column Type] --> B{Data Type?}
+    B -->|Text| C["col_text()"]
+    B -->|Numbers| D["col_numeric(), col_n(), col_percent()"]
+    B -->|Intervals| E["col_forest(), col_interval()"]
+    B -->|Visual| F["col_bar(), col_sparkline(), col_badge()"]
+    B -->|Scientific| G["col_pvalue(), col_events()"]
+```
+
+Each `col_*()` function creates a column specification:
+
+```r
+columns = list(
+  col_text("category"),           # Text column
+  col_n("sample_size"),           # Integer with abbreviation
+  col_forest(point = "hr", ...),  # Forest plot intervals
+  col_pvalue("p")                 # Scientific p-value formatting
+)
+```
+
+### Themes
+
+Themes control the visual appearance. They're composable objects:
+
+```{mermaid}
+flowchart LR
+    A["Preset theme"] --> B["set_*() modifiers"]
+    B --> C["Custom theme"]
+
+    style A fill:#e5e7eb
+    style B fill:#fbbf24
+    style C fill:#4f46e5,color:#fff
+```
+
+```r
+web_theme_jama() |>
+  set_colors(primary = "#2563eb") |>
+  set_typography(font_family = "Georgia") |>
+  set_spacing(row_height = 28)
+```
+
+## Two API Styles
+
+tabviz offers equivalent ways to configure your visualization:
+
+### 1. Constructor Arguments
+
+Pass everything to `tabviz()` directly:
+
+```r
+tabviz(data,
+  label = "study",
+  columns = list(col_forest(...)),
+  row_bold = ~ pval < 0.05,
+  marker_color = ~ ifelse(upper < 1, "green", "gray"),
+  theme = web_theme_jama()
+)
+```
+
+### 2. Fluent API (Pipe-Based)
+
+Build step-by-step using `set_*()` functions:
+
+```r
+tabviz(data, label = "study", columns = list(col_forest(...))) |>
+  set_row_style(bold = ~ pval < 0.05) |>
+  set_marker_style(color = ~ ifelse(upper < 1, "green", "gray")) |>
+  set_theme("jama")
+```
+
+Both approaches produce identical results. Use whichever feels more natural for your workflow.
+
+## Related Concepts
+
+| Page | What You'll Learn |
+|------|-------------------|
+| [Data Flow](data-flow.qmd) | How data transforms through the pipeline |
+| [Styling Cascade](styling-cascade.qmd) | How theme, row, cell, and marker styles combine |

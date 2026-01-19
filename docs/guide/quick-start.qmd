@@ -4,20 +4,21 @@ title: "Quick Start"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 library(dplyr)
 ```
 
 ## Installation
 
 ```r
-# install.packages("pak")
-pak::pak("kaskarn/webforest")
+# Install from GitHub using pak
+install.packages("pak")
+pak::pak("kaskarn/tabviz")
 ```
 
-## Your First Forest Plot
+## Your First Table
 
-Create a forest plot with a single function call using `forest_plot()`:
+Create an interactive table with `tabviz()`:
 
 ```{r}
 # Sample meta-analysis data
@@ -30,125 +31,90 @@ meta_data <- data.frame(
   events = c(42, 38, 55, 28, 45)
 )
 
-forest_plot(meta_data,
-  point = "hr",
-  lower = "lower",
-  upper = "upper",
+tabviz(meta_data,
   label = "study",
-  null_value = 1,
-  scale = "log",
-  axis_label = "Hazard Ratio (95% CI)"
+  columns = list(
+    col_n("n"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio (95% CI)"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  )
 )
 ```
 
-::: {.callout-important}
-## The Three Required Mappings
+---
 
-Every forest plot needs these three column mappings:
+## Understanding the Code
 
-| Argument | What it is | Example |
-|----------|------------|---------|
-| `point` | Point estimate | Hazard ratio, odds ratio, mean difference |
-| `lower` | Lower CI bound | 95% CI lower |
-| `upper` | Upper CI bound | 95% CI upper |
+### The Core Pattern
 
-The `label` argument is optional but almost always used to identify each row.
-:::
+```r
+tabviz(data,
+  label = "label_column",    # Row labels
+  columns = list(...)        # What columns to show
+)
+```
 
-### Common Options
+### Column Types
 
-| Argument | Description | Default |
-|----------|-------------|---------|
-| `null_value` | Reference line value (e.g., 1 for ratios, 0 for differences) | `NULL` |
-| `scale` | `"linear"` or `"log"` | `"linear"` |
-| `axis_label` | X-axis label text | `NULL` |
-| `theme` | Theme object from `web_theme_*()` | `web_theme_default()` |
+Each `col_*()` function defines a column:
 
-::: {.callout-tip}
-## Scale Selection Rule of Thumb
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `col_text()` | Text | `col_text("category")` |
+| `col_numeric()` | Numbers | `col_numeric("value", decimals = 1)` |
+| `col_n()` | Sample sizes | `col_n("n")` |
+| `col_forest()` | Forest plot | `col_forest(point = "hr", lower = "lo", upper = "hi")` |
+| `col_interval()` | CI display | `col_interval("HR", point = "hr", lower = "lo", upper = "hi")` |
+| `col_pvalue()` | P-values | `col_pvalue("pval")` |
 
-- **Log scale** (`scale = "log"`, `null_value = 1`): For ratios (OR, HR, RR) where effects are multiplicative
-- **Linear scale** (`scale = "linear"`, `null_value = 0`): For differences (MD, RD, SMD) where effects are additive
-:::
+See [Columns](columns.qmd) for all 16+ column types.
 
 ---
 
-## Adding Data Columns
-
-Display additional data alongside your forest plot using `col_*()` functions:
+## Adding More Columns
 
 ```{r}
-forest_plot(meta_data,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
+tabviz(meta_data,
+  label = "study",
   columns = list(
     col_n("n"),
     col_numeric("events", header = "Events"),
-    col_interval("HR (95% CI)")
-  ),
-  null_value = 1, scale = "log",
-  axis_label = "Hazard Ratio"
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  )
 )
 ```
-
-See [Columns](columns.qmd) for all available column types.
-
----
-
-## Styling Your Plot
-
-webforest offers two equivalent ways to style your plots—both produce identical results.
-
-### Option 1: Direct Arguments
-
-Pass styling options directly to `forest_plot()`:
-
-```{r}
-#| eval: false
-forest_plot(meta_data,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  row_bold = "is_summary",        # Column with TRUE/FALSE
-  marker_color = "effect_color",  # Column with hex colors
-  theme = web_theme_jama(),
-  scale = "log", null_value = 1
-)
-```
-
-### Option 2: Fluent API (Pipe-Based)
-
-Use `set_*()` functions for step-by-step styling:
-
-```{r}
-#| eval: false
-forest_plot(meta_data,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  scale = "log", null_value = 1
-) |>
-  set_row_style(bold = "is_summary") |>
-  set_marker_style(color = "effect_color") |>
-  set_theme("jama")
-```
-
-Use constructor arguments when everything is known upfront. Use the fluent API when styling depends on computation or you want to create variants.
 
 ---
 
 ## Applying Themes
 
-webforest includes 9 publication-ready themes:
+tabviz includes 9 publication-ready themes:
 
 ```{r}
 #| layout-ncol: 2
 #| fig-height: 3
 
-forest_plot(meta_data[1:3, ],
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  null_value = 1, scale = "log",
-  theme = web_theme_jama(), title = "JAMA")
+tabviz(meta_data[1:3, ],
+  label = "study",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  ),
+  theme = web_theme_jama(), title = "JAMA"
+)
 
-forest_plot(meta_data[1:3, ],
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  null_value = 1, scale = "log",
-  theme = web_theme_lancet(), title = "Lancet")
+tabviz(meta_data[1:3, ],
+  label = "study",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  ),
+  theme = web_theme_lancet(), title = "Lancet"
+)
 ```
 
 **Available themes**: `web_theme_default()`, `web_theme_jama()`, `web_theme_lancet()`, `web_theme_nature()`, `web_theme_cochrane()`, `web_theme_modern()`, `web_theme_presentation()`, `web_theme_dark()`, `web_theme_minimal()`
@@ -157,9 +123,9 @@ See [Themes](themes.qmd) for customization options.
 
 ---
 
-## Creating Visual Hierarchy
+## Row Styling
 
-Use row styling to distinguish headers, data rows, and summaries:
+Create visual hierarchy with row types and styling:
 
 ```{r}
 styled_data <- data.frame(
@@ -171,12 +137,15 @@ styled_data <- data.frame(
   rbold = c(TRUE, FALSE, FALSE, TRUE)
 )
 
-forest_plot(styled_data,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
+tabviz(styled_data,
+  label = "label",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  ),
   row_type = "rtype",
-  row_bold = "rbold",
-  columns = list(col_interval("HR (95% CI)")),
-  null_value = 1, scale = "log"
+  row_bold = "rbold"
 )
 ```
 
@@ -186,18 +155,33 @@ forest_plot(styled_data,
 | Type | Behavior |
 |------|----------|
 | `"data"` | Standard row with interval marker |
-| `"header"` | Section header, no interval displayed |
+| `"header"` | Section header, no marker |
 | `"summary"` | Summary row with diamond marker |
-| `"spacer"` | Empty row for visual separation |
+| `"spacer"` | Empty row for separation |
 
 Header and spacer rows should have `NA` for point, lower, and upper.
 :::
 
 ---
 
-## Conditional Marker Styling
+## Conditional Styling
 
-Color markers based on effect direction using computed columns:
+Style rows based on data values using formula expressions:
+
+```{r}
+tabviz(meta_data,
+  label = "study",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  ),
+  row_bold = ~ upper < 1,  # Bold if significant
+  marker_color = ~ ifelse(upper < 1, "#16a34a", "#64748b")  # Green if significant
+)
+```
+
+Or use pre-computed columns:
 
 ```{r}
 direction_data <- meta_data |>
@@ -209,10 +193,13 @@ direction_data <- meta_data |>
     )
   )
 
-forest_plot(direction_data,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  marker_color = "marker_color",
-  null_value = 1, scale = "log"
+tabviz(direction_data,
+  label = "study",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  ),
+  marker_color = "marker_color"
 )
 ```
 
@@ -222,10 +209,9 @@ forest_plot(direction_data,
 
 | Topic | What You'll Learn |
 |-------|-------------------|
-| [Forest Plots](forest-plots.qmd) | Data mapping, markers, axis control, exporting |
-| [Columns](columns.qmd) | Column types and column groups |
-| [Row Styling](row-styling.qmd) | Headers, summaries, indentation, and badges |
+| [Columns](columns.qmd) | All 16+ column types |
+| [Row Styling](row-styling.qmd) | Headers, summaries, indentation, badges |
 | [Cell Styling](cell-styling.qmd) | Conditional formatting for individual cells |
-| [Row Groups](row-groups.qmd) | Organize studies into collapsible groups |
+| [Row Groups](row-groups.qmd) | Collapsible groups |
+| [Forest Plots](forest-plots.qmd) | Advanced forest column options |
 | [Themes](themes.qmd) | Preset themes and customization |
-| [The Fluent API](fluent-api.qmd) | Build plots step-by-step with set_*() functions |

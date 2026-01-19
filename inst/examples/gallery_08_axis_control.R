@@ -1,7 +1,7 @@
 # Gallery Example 8: Axis Control and CI Clipping
 # Demonstrates axis range handling with widely varying confidence intervals
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Use the effect_sizes stress test dataset

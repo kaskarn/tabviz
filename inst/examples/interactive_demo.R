@@ -2,7 +2,7 @@
 # Demonstrates: Group headers, tooltips on hover, click to select, collapse/expand
 # TIP: Hover over intervals for tooltips, click rows to select, click group headers to collapse
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Clinical trial meta-analysis with treatment classes
@@ -62,11 +62,11 @@ forest_plot(
   label_header = "Trial",
   group = "drug_class",
   columns = list(
-    col_numeric("year", "Year", position = "left"),
-    col_numeric("n", "N", position = "left"),
-    col_numeric("events", "Events", position = "left"),
+    col_numeric("year", "Year"),
+    col_numeric("n", "N"),
+    col_numeric("events", "Events"),
     col_interval("HR (95% CI)"),
-    col_bar("n", "Sample Size", position = "right")
+    col_bar("n", "Sample Size")
   ),
   theme = web_theme_modern(),
   scale = "log",

@@ -2,7 +2,7 @@
 
 #' Screenshot an HTML widget file
 #'
-#' Takes a screenshot of an HTML file containing a webforest widget using
+#' Takes a screenshot of an HTML file containing a tabviz widget using
 #' Puppeteer (headless Chrome). Useful for visual debugging and inspection.
 #'
 #' @param html_file Path to HTML file to screenshot
@@ -48,7 +48,7 @@ screenshot_html <- function(html_file, output_file = NULL, width = 1200,
   script_path <- "srcjs/scripts/screenshot.js"
   if (!file.exists(script_path)) {
     # Check inst/scripts (for installed package)
-    script_path <- system.file("scripts/screenshot.js", package = "webforest")
+    script_path <- system.file("scripts/screenshot.js", package = "tabviz")
   }
 
   if (!file.exists(script_path) || script_path == "") {

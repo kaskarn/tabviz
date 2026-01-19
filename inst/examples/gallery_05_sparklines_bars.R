@@ -1,7 +1,7 @@
 # Gallery Example 5: Sparklines & Bars
 # Column visualizations for trends and magnitudes
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 viz_data <- tibble(
@@ -32,10 +32,10 @@ forest_plot(
   point = "return_1y", lower = "lower", upper = "upper",
   label = "fund",
   columns = list(
-    col_bar("aum_b", "AUM ($B)", position = "left"),
-    col_numeric("expense", "Expense %", position = "left"),
-    col_sparkline("monthly_returns", "12M Returns", position = "right"),
-    col_sparkline("flow_trend", "6M Flows", position = "right"),
+    col_bar("aum_b", "AUM ($B)"),
+    col_numeric("expense", "Expense %"),
+    col_sparkline("monthly_returns", "12M Returns"),
+    col_sparkline("flow_trend", "6M Flows"),
     col_interval("1Y Return % (95% CI)")
   ),
   theme = web_theme_modern(),

@@ -1,7 +1,7 @@
 # Example: Multiple stacked effects per row
 # Demonstrates: web_effect() for displaying multiple related estimates on same axis
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Create data with multiple effect estimates per study
@@ -42,9 +42,9 @@ forest_plot(
   upper = "itt_upper",
   label = "study",
   columns = list(
-    col_numeric("n_itt", "N (ITT)", position = "left"),
-    col_numeric("n_pp", "N (PP)", position = "left"),
-    col_interval("ITT OR", position = "right")
+    col_numeric("n_itt", "N (ITT)"),
+    col_numeric("n_pp", "N (PP)"),
+    col_interval("ITT OR")
   ),
   # Define multiple effects to display stacked on same axis
   effects = list(

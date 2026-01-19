@@ -1,7 +1,7 @@
 # Gallery Example 7: Annotations & Reference Lines
 # Custom reference lines with labels at specific values
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 annotation_data <- tibble(
@@ -18,7 +18,7 @@ forest_plot(
   label = "study",
   columns = list(
     col_numeric("dose_mg", "Dose (mg)", width = 100),
-    col_interval("OR (95% CI)", position = "right")
+    col_interval("OR (95% CI)")
   ),
   annotations = list(
     forest_refline(0.80, label = "Clinically meaningful", style = "dashed", color = "#16a34a"),

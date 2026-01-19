@@ -1,38 +1,43 @@
 ---
-title: "webforest"
-subtitle: "Interactive Forest Plots for R"
+title: "tabviz"
+subtitle: "Interactive Tables with Embedded Visualizations for R"
 ---
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 ## Overview
 
-**webforest** is an R htmlwidgets package for creating interactive, web-native forest plots. While traditionally used for meta-analysis, it supports any data with point estimates and confidence intervals.
+**tabviz** is an R htmlwidgets package for creating interactive tables with embedded visualizations. Build dashboard tables, forest plots, and rich data displays with 16+ column types including sparklines, bar charts, badges, and confidence intervals.
 
 ```{r}
 #| echo: false
 # GLP-1 cardiovascular outcomes meta-analysis
 data(glp1_trials)
 
-forest_plot(
+tabviz(
   glp1_trials,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   group = "group",
   columns = list(
     col_group("Study Info",
       col_text("drug", "Drug"),
-      col_n("n"),
-      position = "left"
+      col_n("n")
+    ),
+    col_forest(
+      point = "hr", lower = "lower", upper = "upper",
+      scale = "log", null_value = 1,
+      axis_label = "Hazard Ratio (95% CI)",
+      axis_range = c(0.4, 1.5),
+      axis_ticks = c(0.5, 0.75, 1.0, 1.25),
+      axis_gridlines = TRUE
     ),
     col_group("Results",
       col_events("events", "n", "Events"),
-      col_interval("HR (95% CI)"),
-      col_pvalue("pvalue", "P"),
-      position = "right"
+      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_pvalue("pvalue", "P")
     )
   ),
   annotations = list(
@@ -40,13 +45,26 @@ forest_plot(
   ),
   row_type = "row_type", row_bold = "row_bold",
   theme = web_theme_nature(),
-  scale = "log", null_value = 1,
-  axis_range = c(0.4, 1.5),
-  axis_ticks = c(0.5, 0.75, 1.0, 1.25),
-  axis_gridlines = TRUE,
-  axis_label = "Hazard Ratio (95% CI)",
   title = "GLP-1 Agonist Cardiovascular Outcomes",
   subtitle = "Major adverse cardiovascular events (MACE)"
+)
+```
+
+## Creating Tables
+
+Use `tabviz()` with explicit column definitions:
+
+```r
+tabviz(data,
+  label = "study",
+  columns = list(
+    col_text("category"),
+    col_numeric("value"),
+    col_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi"),
+    col_sparkline("trend")
+  )
 )
 ```
 
@@ -94,45 +112,47 @@ forest_plot(
 
 ```r
 # install.packages("pak")
-pak::pak("kaskarn/webforest")
+pak::pak("kaskarn/tabviz")
 ```
 
 ## Quick Example
 
 ```r
-library(webforest)
+library(tabviz)
 
-forest_plot(data,
-  point = "estimate",
-  lower = "ci_lower",
-  upper = "ci_upper",
+tabviz(data,
   label = "study",
-  null_value = 1,
-  scale = "log"
+  columns = list(
+    col_text("category"),
+    col_forest(point = "estimate", lower = "ci_lower", upper = "ci_upper",
+               scale = "log", null_value = 1),
+    col_interval("Est (95% CI)", point = "estimate",
+                 lower = "ci_lower", upper = "ci_upper"),
+    col_numeric("n")
+  )
 )
 ```
 
 ## Guide
 
-Learn how to use webforest:
+Learn how to use tabviz:
 
 | Chapter | Description |
 |---------|-------------|
 | [Quick Start](guide/quick-start.qmd) | Installation and basic usage |
-| [Forest Plots](guide/forest-plots.qmd) | Data mapping, markers, axis control, exporting |
 | [Columns](guide/columns.qmd) | Column types, usage, and column groups |
 | [Row Styling](guide/row-styling.qmd) | Headers, summaries, indentation, and badges |
 | [Cell Styling](guide/cell-styling.qmd) | Per-cell conditional formatting |
 | [Row Groups](guide/row-groups.qmd) | Collapsible sections from column values |
+| [Forest Plots](guide/forest-plots.qmd) | Adding forest columns with col_forest() |
 | [Split Plots](guide/split-plots.qmd) | Sidebar navigation for subgroups |
 | [Themes](guide/themes.qmd) | Preset themes and customization |
-| [The Fluent API](guide/fluent-api.qmd) | Pipe-based workflows with set_*() |
-| [Shiny Integration](guide/shiny.qmd) | Reactive forest plots |
-| [Package Data](guide/package-data.qmd) | Built-in datasets and examples |
+| [Shiny Integration](guide/shiny.qmd) | Reactive tables |
+| [Export](guide/export.qmd) | SVG, PNG, PDF output |
 
 ## More Resources
 
+- [Concepts](concepts/index.qmd) - Architecture and mental models
 - [Cheatsheet](cheatsheet.qmd) - Quick reference
-- [Gallery - Basic](gallery-basic.qmd) - Simple examples
-- [Gallery - Advanced](gallery-advanced.qmd) - Complex examples
+- [Gallery](gallery/index.qmd) - Examples by domain
 - [Reference](reference/index.qmd) - API documentation

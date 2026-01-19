@@ -11,8 +11,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/index.svelte.ts"),
-      name: "webforest",
-      fileName: () => "webforest.js",
+      name: "tabviz",
+      fileName: () => "tabviz.js",
       formats: ["iife"],
     },
     outDir: path.resolve(__dirname, "../inst/htmlwidgets"),
@@ -21,7 +21,7 @@ export default defineConfig({
     ssr: false,
     rollupOptions: {
       output: {
-        assetFileNames: "webforest.[ext]",
+        assetFileNames: "tabviz.[ext]",
         inlineDynamicImports: true,
       },
     },

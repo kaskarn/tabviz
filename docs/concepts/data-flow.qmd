@@ -1,0 +1,251 @@
+---
+title: "Data Flow"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+Understanding how data flows through tabviz helps you structure your data correctly and debug issues.
+
+## The Pipeline
+
+```{mermaid}
+flowchart LR
+    subgraph Input
+        A["data.frame"]
+    end
+
+    subgraph Processing
+        B["Column Resolution"]
+        C["Style Evaluation"]
+        D["JSON Serialization"]
+    end
+
+    subgraph Output
+        E["Svelte Component"]
+        F["Interactive Widget"]
+    end
+
+    A --> B --> C --> D --> E --> F
+
+    style D fill:#4f46e5,color:#fff
+    style E fill:#ff3e00,color:#fff
+```
+
+### Stage 1: Column Resolution
+
+tabviz maps your column specifications to data columns:
+
+```{r}
+#| eval: false
+data <- data.frame(
+  study = c("Trial A", "Trial B"),
+  hr = c(0.72, 0.85),
+  lo = c(0.55, 0.70),
+  hi = c(0.95, 1.03)
+)
+
+tabviz(data,
+  label = "study",  # Maps to data$study
+  columns = list(
+    col_forest(point = "hr", lower = "lo", upper = "hi")  # Maps to data$hr, data$lo, data$hi
+  )
+)
+```
+
+At this stage:
+- String arguments become column lookups
+- Missing columns trigger errors
+- Data types are validated
+
+### Stage 2: Style Evaluation
+
+Formula expressions are evaluated against your data:
+
+```{r}
+#| eval: false
+tabviz(data,
+  ...,
+  row_bold = ~ pval < 0.05,  # Evaluates for each row
+  marker_color = ~ ifelse(upper < 1, "#16a34a", "#64748b")
+)
+```
+
+The formula `~ pval < 0.05` becomes a vector of `TRUE`/`FALSE` values—one per row.
+
+### Stage 3: JSON Serialization
+
+The configured specification converts to JSON for the JavaScript frontend:
+
+```json
+{
+  "data": [...],
+  "columns": [...],
+  "theme": {...},
+  "styles": {
+    "row_bold": [true, false, true, ...],
+    "marker_color": ["#16a34a", "#64748b", ...]
+  }
+}
+```
+
+### Stage 4: Svelte Rendering
+
+The Svelte component receives the JSON and renders the interactive table with:
+- Sortable columns
+- Collapsible groups
+- Hover tooltips
+- Export functionality
+
+## Data Requirements
+
+### Required Structure
+
+Your data.frame needs:
+- **One row per item** to display
+- **Columns referenced** by your column specifications
+
+```{r}
+# Minimal forest plot data
+meta_data <- data.frame(
+  study = c("Smith 2020", "Jones 2021"),
+  hr = c(0.72, 0.85),
+  lower = c(0.55, 0.70),
+  upper = c(0.95, 1.03)
+)
+```
+
+### Column Types
+
+tabviz handles standard R types:
+
+| R Type | Column Functions | Notes |
+|--------|-----------------|-------|
+| character | `col_text()`, `col_badge()` | Text display |
+| numeric | `col_numeric()`, `col_n()`, `col_percent()` | Formatted numbers |
+| integer | `col_n()` | Sample sizes |
+| logical | Row/marker styling | TRUE/FALSE conditions |
+| list | `col_sparkline()` | Nested numeric vectors |
+
+### Missing Values
+
+NA handling varies by column type:
+
+| Context | Behavior |
+|---------|----------|
+| Forest points | Row displays as label-only (no marker) |
+| Numeric columns | Displays as empty cell |
+| Text columns | Displays as empty cell |
+| Row styling | NA rows skip that style |
+
+## Grouping Data
+
+Grouping creates collapsible sections:
+
+```{mermaid}
+flowchart TD
+    A["Flat data"] --> B["group = 'category'"]
+    B --> C["Grouped display"]
+
+    subgraph "Grouped display"
+        D["Group A Header"]
+        E["  Row 1"]
+        F["  Row 2"]
+        G["Group B Header"]
+        H["  Row 3"]
+    end
+```
+
+### Single-Level Grouping
+
+```{r}
+#| eval: false
+data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C", "Trial D"),
+  category = c("Drug X", "Drug X", "Drug Y", "Drug Y"),
+  hr = c(0.72, 0.85, 0.91, 0.78),
+  lo = c(0.55, 0.70, 0.75, 0.60),
+  hi = c(0.95, 1.03, 1.10, 1.00)
+)
+
+tabviz(data,
+  label = "study",
+  group = "category",  # Groups by Drug X, Drug Y
+  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi"))
+)
+```
+
+### Hierarchical Grouping
+
+```{r}
+#| eval: false
+data$region <- c("North", "North", "South", "South")
+
+tabviz(data,
+  label = "study",
+  group = c("region", "category"),  # Region > Category hierarchy
+  columns = list(col_forest(...))
+)
+```
+
+## Styling Data Flow
+
+Styles resolve in order of specificity:
+
+```{mermaid}
+flowchart TD
+    A["Theme defaults"] --> B["Row styling"]
+    B --> C["Cell styling"]
+    C --> D["Marker styling"]
+    D --> E["Final appearance"]
+
+    style E fill:#059669,color:#fff
+```
+
+See [Styling Cascade](styling-cascade.qmd) for details.
+
+## Common Patterns
+
+### Pre-computing Style Columns
+
+```{r}
+library(dplyr)
+
+styled_data <- meta_data |>
+  mutate(
+    is_significant = upper < 1,
+    direction_color = case_when(
+      upper < 1 ~ "#16a34a",  # Green: benefit
+      lower > 1 ~ "#dc2626",  # Red: harm
+      TRUE ~ "#64748b"        # Gray: NS
+    )
+  )
+
+tabviz(styled_data,
+  label = "study",
+  columns = list(col_forest(point = "hr", lower = "lower", upper = "upper")),
+  row_bold = "is_significant",
+  marker_color = "direction_color"
+)
+```
+
+### Using Formula Expressions
+
+Equivalent approach without pre-computing:
+
+```{r}
+tabviz(meta_data,
+  label = "study",
+  columns = list(col_forest(point = "hr", lower = "lower", upper = "upper")),
+  row_bold = ~ upper < 1,
+  marker_color = ~ case_when(
+    upper < 1 ~ "#16a34a",
+    lower > 1 ~ "#dc2626",
+    TRUE ~ "#64748b"
+  )
+)
+```
+
+Both approaches produce identical output. Use formulas for concise one-offs; use pre-computed columns when reusing the same logic.

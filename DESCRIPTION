@@ -1,16 +1,16 @@
-Package: webforest
-Title: Web-Native Interactive Forest Plots
-Version: 0.2.3
+Package: tabviz
+Title: Interactive Tables with Embedded Visualizations
+Version: 0.3.0
 Authors@R:
     person("Antoine", "Baldassari", , "baldassarian@gmail.com", role = c("aut", "cre"))
 Author: Antoine Baldassari [aut, cre]
 Maintainer: Antoine Baldassari <baldassarian@gmail.com>
-Description: Create interactive, web-native forest plots and tables. Forest plots
-    visualize point estimates with intervals for any domain: meta-analysis,
-    regression results, QC measurements, and more. Rendered using modern web
+Description: Create interactive tables with embedded visualizations including
+    forest plots, sparklines, bar charts, and more. Ideal for meta-analysis,
+    regression results, dashboards, and data reports. Rendered using modern web
     technologies (Svelte, D3.js) for R Markdown, Quarto, Shiny, and standalone
-    HTML. Features include collapsible groups, customizable columns, sorting,
-    filtering, and rich theming.
+    HTML. Features include collapsible groups, 15+ column types, conditional
+    styling, publication-ready themes, and static export to SVG/PDF/PNG.
 License: MIT + file LICENSE
 Depends: R (>= 4.1.0)
 Encoding: UTF-8
@@ -18,7 +18,7 @@ Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Collate:
-    'webforest-package.R'
+    'tabviz-package.R'
     'classes-core.R'
     'classes-theme.R'
     'classes-annotations.R'
@@ -27,7 +27,7 @@ Collate:
     'utils-serialize.R'
     'modifiers.R'
     'web_spec.R'
-    'split_forest.R'
+    'split_table.R'
     'save_plot.R'
     'forest_plot.R'
     'webtable.R'
@@ -35,9 +35,11 @@ Collate:
     'regenerate_examples.R'
     'screenshot.R'
     'data.R'
+    'zzz.R'
 Imports:
     htmlwidgets (>= 1.6.0),
     jsonlite (>= 1.8.0),
+    lifecycle (>= 1.0.0),
     rlang (>= 1.1.0),
     S7 (>= 0.2.0),
     cli (>= 3.6.0),
@@ -52,6 +54,6 @@ Suggests:
     rsvg (>= 2.0.0),
     processx (>= 3.8.0)
 Config/testthat/edition: 3
-URL: https://github.com/kaskarn/webforest, https://kaskarn.github.io/webforest/
-BugReports: https://github.com/kaskarn/webforest/issues
+URL: https://github.com/kaskarn/tabviz, https://kaskarn.github.io/tabviz/
+BugReports: https://github.com/kaskarn/tabviz/issues
 LazyData: true

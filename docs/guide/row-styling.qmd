@@ -4,7 +4,7 @@ title: "Row Styling"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 Control the visual appearance of individual rows using `row_*` parameters. This gives you precise control over text styling, indentation, colors, and badges—essential for creating publication-ready meta-analysis figures.
@@ -24,12 +24,15 @@ text_demo <- data.frame(
   rcolor = c("#0369a1", "#64748b", "#64748b", "#166534")
 )
 
-forest_plot(text_demo,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
+tabviz(text_demo,
+  label = "label",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               null_value = 1, scale = "log")
+  ),
   row_bold = "rbold",
   row_italic = "ritalic",
-  row_color = "rcolor",
-  null_value = 1, scale = "log"
+  row_color = "rcolor"
 )
 ```
 
@@ -55,11 +58,14 @@ indent_demo <- data.frame(
   rbold = c(TRUE, TRUE, FALSE, FALSE, TRUE, FALSE, FALSE)
 )
 
-forest_plot(indent_demo,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
+tabviz(indent_demo,
+  label = "label",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               null_value = 1, scale = "log")
+  ),
   row_indent = "rindent",
   row_bold = "rbold",
-  null_value = 1, scale = "log",
   theme = web_theme_modern()
 )
 ```
@@ -80,11 +86,14 @@ badge_demo <- data.frame(
   rbold = c(TRUE, FALSE, FALSE, FALSE)
 )
 
-forest_plot(badge_demo,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
+tabviz(badge_demo,
+  label = "label",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               null_value = 1, scale = "log")
+  ),
   row_badge = "rbadge",
   row_bold = "rbold",
-  null_value = 1, scale = "log",
   theme = web_theme_modern()
 )
 ```
@@ -99,10 +108,13 @@ Highlight rows with `row_bg` for background colors:
 
 ```{r}
 #| eval: false
-forest_plot(data,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
-  row_bg = "background_color",  # Column with hex colors like "#f0f9ff"
-  null_value = 1, scale = "log"
+tabviz(data,
+  label = "label",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               null_value = 1, scale = "log")
+  ),
+  row_bg = "background_color"  # Column with hex colors like "#f0f9ff"
 )
 ```
 
@@ -122,11 +134,14 @@ For theme-aware styling that adapts automatically when you change themes, use se
 
 ```{r}
 #| eval: false
-forest_plot(data,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
+tabviz(data,
+  label = "label",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               null_value = 1, scale = "log")
+  ),
   row_emphasis = "is_primary",   # Column with TRUE/FALSE
-  row_muted = "is_secondary",    # Column with TRUE/FALSE
-  null_value = 1, scale = "log"
+  row_muted = "is_secondary"     # Column with TRUE/FALSE
 )
 ```
 
@@ -147,12 +162,15 @@ expr_demo <- data.frame(
   pval = c(0.01, 0.1, 0.3, 0.005)
 )
 
-forest_plot(expr_demo,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
+tabviz(expr_demo,
+  label = "study",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               null_value = 1, scale = "log")
+  ),
   # Formula expressions - no need for pre-computed columns
   row_bold = ~ pval < 0.05,
   row_color = ~ ifelse(pval < 0.05, "#166534", "#64748b"),
-  null_value = 1, scale = "log",
   title = "Expression-Based Styling",
   subtitle = "Bold + green color for significant results (p < 0.05)"
 )
@@ -223,10 +241,13 @@ type_demo <- data.frame(
   rtype = c("header", "data", "data", "summary")
 )
 
-forest_plot(type_demo,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
-  row_type = "rtype",
-  null_value = 1, scale = "log"
+tabviz(type_demo,
+  label = "label",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               null_value = 1, scale = "log")
+  ),
+  row_type = "rtype"
 )
 ```
 
@@ -271,11 +292,13 @@ meta_analysis <- data.frame(
   rbadge = c(NA, NA, NA, NA, "n=3", NA, NA, NA, NA, "n=2", NA, "n=5")
 )
 
-forest_plot(meta_analysis,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
+tabviz(meta_analysis,
+  label = "label",
   columns = list(
-    col_numeric("n", "N", position = "right"),
-    col_interval("HR (95% CI)", position = "right")
+    col_numeric("n", "N"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               null_value = 1, scale = "log", axis_label = "Hazard Ratio (95% CI)")
   ),
   row_type = "rtype",
   row_bold = "rbold",
@@ -283,8 +306,6 @@ forest_plot(meta_analysis,
   row_color = "rcolor",
   row_badge = "rbadge",
   theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio (95% CI)",
   title = "SGLT2 Inhibitors Meta-Analysis",
   subtitle = "Cardiovascular and renal outcomes"
 )
@@ -298,9 +319,12 @@ You can also apply row styling using `set_row_style()` for pipe-based workflows:
 
 ```{r}
 #| eval: false
-forest_plot(data,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
-  null_value = 1, scale = "log"
+tabviz(data,
+  label = "label",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               null_value = 1, scale = "log")
+  )
 ) |>
   set_row_style(
     type = "rtype",

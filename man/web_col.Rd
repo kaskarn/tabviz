@@ -8,12 +8,11 @@ web_col(
   field,
   header = NULL,
   type = c("text", "numeric", "interval", "bar", "pvalue", "sparkline", "icon", "badge",
-    "stars", "img", "reference", "range", "custom"),
+    "stars", "img", "reference", "range", "forest", "custom"),
   width = NULL,
   align = NULL,
   header_align = NULL,
   wrap = FALSE,
-  position = c("left", "right"),
   sortable = TRUE,
   options = list(),
   na_text = NULL,
@@ -43,8 +42,6 @@ web_col(
 
 \item{wrap}{Enable text wrapping (default FALSE). When TRUE, long text wraps
 instead of being truncated with ellipsis.}
-
-\item{position}{Column position: "left" or "right" of the forest plot}
 
 \item{sortable}{Whether sortable}
 

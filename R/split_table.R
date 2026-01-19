@@ -17,34 +17,41 @@
 #'
 #' @return A SplitForest object containing multiple WebSpec objects
 #'
+#' @importFrom lifecycle deprecate_warn
 #' @examples
 #' \dontrun{
 #' # Split by a single variable
 #' data |>
 #'   web_spec(point = "or", lower = "lower", upper = "upper") |>
-#'   split_forest(by = "region")
+#'   split_table(by = "region")
 #'
 #' # Split by multiple variables (hierarchical navigation)
 #' data |>
 #'   web_spec(point = "or", lower = "lower", upper = "upper") |>
-#'   split_forest(by = c("sex", "age_group"))
+#'   split_table(by = c("sex", "age_group"))
 #'
 #' # With shared axis for easier comparison
 #' data |>
 #'   web_spec(point = "or", lower = "lower", upper = "upper") |>
-#'   split_forest(by = "treatment_arm", shared_axis = TRUE)
+#'   split_table(by = "treatment_arm", shared_axis = TRUE)
 #' }
 #'
 #' @export
-split_forest <- function(x, by, shared_axis = FALSE, ...) {
-  # Handle input type
+split_table <- function(x, by, shared_axis = FALSE, ...) {
 
+  # Handle input type
   if (S7_inherits(x, WebSpec)) {
     base_spec <- x
+  } else if (inherits(x, "htmlwidget")) {
+    # Extract WebSpec from widget (tabviz() attaches it as attribute)
+    base_spec <- attr(x, "webspec")
+    if (is.null(base_spec) || !S7_inherits(base_spec, WebSpec)) {
+      cli_abort("{.arg x} widget does not have a valid WebSpec attached")
+    }
   } else if (is.data.frame(x)) {
     base_spec <- web_spec(x, ...)
   } else {
-    cli_abort("{.arg x} must be a WebSpec object or data frame")
+    cli_abort("{.arg x} must be a WebSpec, htmlwidget, or data frame")
   }
 
   # Validate split columns exist
@@ -96,6 +103,21 @@ split_forest <- function(x, by, shared_axis = FALSE, ...) {
     cli_abort("No valid subsets created from split")
   }
 
+  # Find the first forest column to get scale and column names
+  forest_col <- NULL
+  for (col in base_spec@columns) {
+    if (inherits(col, "tabviz::ColumnSpec") && col@type == "forest") {
+      forest_col <- col
+      break
+    }
+  }
+
+  # Determine effective shared_axis: column-level overrides split-level
+  effective_shared_axis <- shared_axis
+  if (!is.null(forest_col) && !is.null(forest_col@options$forest$sharedAxis)) {
+    effective_shared_axis <- forest_col@options$forest$sharedAxis
+  }
+
   # Compute shared axis range if requested
   # Respect user-set axis values from base spec
   base_axis <- base_spec@theme@axis
@@ -104,33 +126,68 @@ split_forest <- function(x, by, shared_axis = FALSE, ...) {
   has_explicit_ticks <- !is.null(base_axis@tick_values) && length(base_axis@tick_values) > 0
 
   axis_range <- c(NA_real_, NA_real_)
-  if (shared_axis) {
+  if (effective_shared_axis) {
     # Only calculate from data if user didn't set explicit values
     if (!has_explicit_min || !has_explicit_max) {
-      # Collect values from primary effect
-      all_lower <- unlist(lapply(specs, function(s) s@data[[s@lower_col]]))
-      all_upper <- unlist(lapply(specs, function(s) s@data[[s@upper_col]]))
-      all_point <- unlist(lapply(specs, function(s) s@data[[s@point_col]]))
 
-      # Also collect values from additional effects
-      for (effect in base_spec@effects) {
-        for (s in specs) {
-          if (effect@point_col %in% names(s@data)) {
-            all_point <- c(all_point, s@data[[effect@point_col]])
+      # Collect effect values from forest column and effects list
+      all_lower <- c()
+      all_upper <- c()
+      all_point <- c()
+
+      # Get values from forest column's point/lower/upper if defined
+      if (!is.null(forest_col) && !is.null(forest_col@options$forest)) {
+        fc_opts <- forest_col@options$forest
+
+        # Single effect mode: point/lower/upper columns
+        if (!is.null(fc_opts$point)) {
+          for (s in specs) {
+            all_point <- c(all_point, s@data[[fc_opts$point]])
           }
-          if (effect@lower_col %in% names(s@data)) {
-            all_lower <- c(all_lower, s@data[[effect@lower_col]])
+        }
+        if (!is.null(fc_opts$lower)) {
+          for (s in specs) {
+            all_lower <- c(all_lower, s@data[[fc_opts$lower]])
           }
-          if (effect@upper_col %in% names(s@data)) {
-            all_upper <- c(all_upper, s@data[[effect@upper_col]])
+        }
+        if (!is.null(fc_opts$upper)) {
+          for (s in specs) {
+            all_upper <- c(all_upper, s@data[[fc_opts$upper]])
+          }
+        }
+
+        # Multi-effect mode: effects list in forest column options
+        if (!is.null(fc_opts$effects) && is.list(fc_opts$effects)) {
+          for (effect in fc_opts$effects) {
+            for (s in specs) {
+              if (!is.null(effect$pointCol) && effect$pointCol %in% names(s@data)) {
+                all_point <- c(all_point, s@data[[effect$pointCol]])
+              }
+              if (!is.null(effect$lowerCol) && effect$lowerCol %in% names(s@data)) {
+                all_lower <- c(all_lower, s@data[[effect$lowerCol]])
+              }
+              if (!is.null(effect$upperCol) && effect$upperCol %in% names(s@data)) {
+                all_upper <- c(all_upper, s@data[[effect$upperCol]])
+              }
+            }
           }
         }
       }
 
-      # Get clip factor and scale from theme
+      # Get clip factor and scale from forest column or theme
       ci_clip_factor <- base_axis@ci_clip_factor %||% 3.0
-      is_log <- base_spec@scale == "log"
-      null_value <- base_spec@null_value %||% (if (is_log) 1 else 0)
+      is_log <- if (!is.null(forest_col) && !is.null(forest_col@options$forest$scale)) {
+        forest_col@options$forest$scale == "log"
+      } else {
+        FALSE
+      }
+      null_value <- if (!is.null(forest_col) && !is.null(forest_col@options$forest$nullValue)) {
+        forest_col@options$forest$nullValue
+      } else if (is_log) {
+        1
+      } else {
+        0
+      }
 
       # Filter out non-positive values for log scale (they can't be displayed)
       if (is_log) {
@@ -326,9 +383,6 @@ create_subset_spec <- function(base_spec, subset_data, label) {
 
   WebSpec(
     data = subset_data,
-    point_col = base_spec@point_col,
-    lower_col = base_spec@lower_col,
-    upper_col = base_spec@upper_col,
     label_col = base_spec@label_col,
     label_header = base_spec@label_header,
     group_col = base_spec@group_col,
@@ -337,10 +391,6 @@ create_subset_spec <- function(base_spec, subset_data, label) {
     groups = filtered_groups,
     summaries = filtered_summaries,
     # overall_summary is not set - uses default (missing)
-    scale = base_spec@scale,
-    null_value = base_spec@null_value,
-    axis_label = base_spec@axis_label,
-    effects = base_spec@effects,
     theme = base_spec@theme,
     interaction = base_spec@interaction,
     labels = new_labels,
@@ -531,4 +581,12 @@ nice_linear_domain <- function(domain) {
 
   # Round to fix floating point precision issues
   c(round(nice_min * 1e10) / 1e10, round(nice_max * 1e10) / 1e10)
+}
+
+#' @rdname split_table
+#' @usage NULL
+#' @export
+split_forest <- function(...) {
+ lifecycle::deprecate_warn("0.4.0", "split_forest()", "split_table()")
+ split_table(...)
 }

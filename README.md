@@ -1,15 +1,15 @@
-# webforest
+# tabviz
 
-[![R-CMD-check](https://github.com/kaskarn/webforest/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/kaskarn/webforest/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/kaskarn/tabviz/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/kaskarn/tabviz/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 
-**Interactive, publication-ready forest plots for R.** Built with Svelte 5 and D3.js for speed and flexibility.
+**Interactive tables with embedded visualizations for R.** Build forest plots, dashboards, and rich data displays with 16+ column types. Built with Svelte 5 and D3.js for speed and flexibility.
 
-[![webforest example](docs/images/hero-row-readme.png)](https://kaskarn.github.io/webforest/gallery.html)
+[![tabviz example](docs/images/hero-row-readme.png)](https://kaskarn.github.io/tabviz/gallery.html)
 
 *Click image to view interactive gallery*
 
-## Why webforest?
+## Why tabviz?
 
 - **Simple interface**: `forest_plot` function able to generate complex interactive plots with succinct parameters/arguments.
 - **Granular customization**: Multiple mechanisms provide precise control over rendering at the cell, row, and column levels.
@@ -24,13 +24,13 @@
 
 ```r
 # install.packages("pak")
-pak::pak("kaskarn/webforest")
+pak::pak("kaskarn/tabviz")
 ```
 
 ## Quick Start
 
 ```r
-library(webforest)
+library(tabviz)
 data(glp1_trials)                                    # included example dataset
 
 forest_plot(
@@ -174,10 +174,10 @@ server <- function(input, output) {
 
 ## Documentation
 
-- **[Quick Start Guide](https://kaskarn.github.io/webforest/guide/quick-start.html)** — Get up and running in 5 minutes
-- **[Interactive Gallery](https://kaskarn.github.io/webforest/gallery.html)** — 20+ examples with code
-- **[Cookbook](https://kaskarn.github.io/webforest/cookbook.html)** — Common patterns and recipes
-- **[Function Reference](https://kaskarn.github.io/webforest/reference.html)** — Full API documentation
+- **[Quick Start Guide](https://kaskarn.github.io/tabviz/guide/quick-start.html)** — Get up and running in 5 minutes
+- **[Interactive Gallery](https://kaskarn.github.io/tabviz/gallery.html)** — 20+ examples with code
+- **[Cookbook](https://kaskarn.github.io/tabviz/cookbook.html)** — Common patterns and recipes
+- **[Function Reference](https://kaskarn.github.io/tabviz/reference.html)** — Full API documentation
 
 ## License
 

@@ -4,7 +4,7 @@ title: "Package Data"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 library(dplyr)
 ```
 
@@ -38,20 +38,16 @@ glimpse(glp1_trials)
 #| fig-height: 6
 glp1_trials |>
   filter(group == "Main Trials") |>
-  forest_plot(
+  tabviz(
     label = "study",
-    point = "hr",
-    lower = "lower",
-    upper = "upper",
     columns = list(
       col_text("drug", "Drug"),
       col_n("n"),
-      col_interval("HR (95% CI)")
+      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1, axis_label = "Hazard Ratio")
     ),
-    scale = "log",
-    null_value = 1,
     theme = web_theme_lancet(),
-    axis_label = "Hazard Ratio",
     title = "GLP-1 Agonist Cardiovascular Outcomes"
   )
 ```
@@ -94,20 +90,17 @@ airline_summary <- airline_delays |>
     trend = list(unlist(trend[1]))
   )
 
-forest_plot(
+tabviz(
   airline_summary,
   label = "carrier",
-  point = "delay_vs_avg",
-  lower = "delay_lower",
-  upper = "delay_upper",
   columns = list(
     col_percent("on_time_pct", "On-Time %"),
     col_sparkline("trend", "12M Trend"),
-    col_interval("Delay (95% CI)")
+    col_interval("Delay (95% CI)", point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper"),
+    col_forest(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper",
+               null_value = 0, axis_label = "Delay vs. Average (minutes)")
   ),
-  null_value = 0,
   theme = web_theme_modern(),
-  axis_label = "Delay vs. Average (minutes)",
   title = "Airline Carrier Performance"
 )
 ```
@@ -141,22 +134,19 @@ glimpse(nba_efficiency)
 
 ```{r}
 #| fig-height: 7
-forest_plot(
+tabviz(
   nba_efficiency,
   label = "player",
-  point = "per",
-  lower = "per_lower",
-  upper = "per_upper",
   group = "conference",
   columns = list(
     col_text("team", "Team", width = 60),
     col_numeric("ppg", "PPG"),
-    col_interval("PER (95% CI)")
+    col_interval("PER (95% CI)", point = "per", lower = "per_lower", upper = "per_upper"),
+    col_forest(point = "per", lower = "per_lower", upper = "per_upper",
+               null_value = 15, axis_label = "Player Efficiency Rating")
   ),
   row_badge = "award",
-  null_value = 15,  # League average PER
   theme = web_theme_modern(),
-  axis_label = "Player Efficiency Rating",
   title = "NBA Player Efficiency",
   subtitle = "2023-24 Season",
   caption = "PER: 15 = league average"
@@ -192,19 +182,16 @@ glimpse(climate_temps)
 ```{r}
 climate_temps |>
   filter(category %in% c("Global", "Hemisphere", "Continental")) |>
-  forest_plot(
+  tabviz(
     label = "region",
-    point = "anomaly",
-    lower = "lower",
-    upper = "upper",
     group = "category",
     columns = list(
       col_text("certainty", "Confidence"),
-      col_interval("Anomaly (95% CI)")
+      col_interval("Anomaly (95% CI)", point = "anomaly", lower = "lower", upper = "upper"),
+      col_forest(point = "anomaly", lower = "lower", upper = "upper",
+                 null_value = 0, axis_label = "Temperature Anomaly (°C)")
     ),
-    null_value = 0,
     theme = web_theme_minimal(),
-    axis_label = "Temperature Anomaly (°C)",
     title = "Regional Temperature Anomalies",
     subtitle = "2023 vs. Pre-Industrial Baseline"
   )
@@ -226,7 +213,7 @@ climate_temps |>
 All datasets are lazy-loaded. Simply reference them after loading the package:
 
 ```r
-library(webforest)
+library(tabviz)
 
 # Datasets are available immediately
 head(glp1_trials)

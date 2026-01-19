@@ -34,7 +34,7 @@ Uses a shared JavaScript SVG generator via the V8 package for consistent
 output between R and web exports.
 }
 \details{
-For SplitForest objects, this function dispatches to \code{save_split_forest()}
+For SplitForest objects, this function dispatches to \code{save_split_table()}
 to export all sub-plots to a directory structure.
 }
 \examples{
@@ -66,7 +66,7 @@ save_plot(p, "forest.svg")
 # Save a SplitForest to a directory
 split_result <- data |>
   web_spec(point = "estimate", lower = "lower", upper = "upper") |>
-  split_forest(by = c("sex", "age_group"))
+  split_table(by = c("sex", "age_group"))
 
 save_plot(split_result, "output/plots")
 # Creates: output/plots/Male/Male_Young.svg, etc.

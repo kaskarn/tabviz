@@ -9,7 +9,7 @@ const storeRegistry = new Map<string, SplitForestStore>();
 
 // HTMLWidgets binding for split forest
 const binding: HTMLWidgetsBinding = {
-  name: "webforest_split",
+  name: "tabviz_split",
   type: "output",
   factory: (el: HTMLElement, width: number, height: number): WidgetInstance => {
     let component: ReturnType<typeof mount> | null = null;
@@ -53,19 +53,22 @@ const binding: HTMLWidgetsBinding = {
 
 // Set up Shiny input bindings
 function setupShinyBindings(widgetId: string, store: SplitForestStore) {
-  // Forward active plot selection events
-  $effect(() => {
-    const activeKey = store.activeKey;
-    window.Shiny?.setInputValue(`${widgetId}_active_plot`, activeKey, {
-      priority: "event",
+  // Use $effect.root() to create a reactive context outside component initialization
+  $effect.root(() => {
+    // Forward active plot selection events
+    $effect(() => {
+      const activeKey = store.activeKey;
+      window.Shiny?.setInputValue(`${widgetId}_active_plot`, activeKey, {
+        priority: "event",
+      });
     });
-  });
 
-  // Forward row selection from active store
-  $effect(() => {
-    const ids = store.activeStore.selectedRowIds;
-    window.Shiny?.setInputValue(`${widgetId}_selected`, Array.from(ids), {
-      priority: "event",
+    // Forward row selection from active store
+    $effect(() => {
+      const ids = store.activeStore.selectedRowIds;
+      window.Shiny?.setInputValue(`${widgetId}_selected`, Array.from(ids), {
+        priority: "event",
+      });
     });
   });
 }
@@ -78,7 +81,7 @@ if (typeof window !== "undefined" && window.HTMLWidgets) {
 // Shiny proxy message handler
 if (typeof window !== "undefined" && window.Shiny) {
   window.Shiny.addCustomMessageHandler(
-    "webforest-split-proxy",
+    "tabviz-split-proxy",
     (msg: { id: string; method: string; args: Record<string, unknown> }) => {
       const store = storeRegistry.get(msg.id);
       if (!store) return;

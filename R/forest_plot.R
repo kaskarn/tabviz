@@ -1,47 +1,36 @@
 #' Create an interactive forest plot
 #'
-#' `forest_plot()` renders a web-native, interactive forest plot visualization.
-#' It can accept either a WebSpec object (from `web_spec()`) or raw data.
+#' `forest_plot()` is a convenience wrapper around `tabviz()` that automatically
+#' creates a forest plot column from point/lower/upper arguments. For full control
+#' over columns and layout, use `tabviz()` directly with `col_forest()`.
 #'
-#' Forest plots display point estimates with intervals alongside tabular data.
+#' Forest plots display point estimates with confidence intervals alongside tabular data.
 #' While commonly used for meta-analysis, they work for any data with
 #' point + interval structure (QC measurements, regression coefficients, etc.).
 #'
 #' @param x Either a WebSpec object, a SplitForest object, or a data.frame/data.table/tibble
-#' @param point Column name for point estimates (string). Required when x is a data frame.
-#' @param lower Column name for lower bounds of intervals (string). Required when x is a data frame.
-#' @param upper Column name for upper bounds of intervals (string). Required when x is a data frame.
+#' @param point Column name for point estimates (string). Required when x is a data frame
+#'   and `effects` is not provided.
+#' @param lower Column name for lower bounds of intervals (string). Required when x is a
+#'   data frame and `effects` is not provided.
+#' @param upper Column name for upper bounds of intervals (string). Required when x is a
+#'   data frame and `effects` is not provided.
+#' @param effects List of `web_effect()` objects for multi-effect plots. When provided,
+#'   `point`, `lower`, and `upper` are ignored.
 #' @param label Column name for row labels (optional string)
 #' @param group Grouping column name(s) or list of `web_group()` objects
-#' @param columns List of column specifications (use `col_*()` helpers)
+#' @param columns Additional column specifications (use `col_*()` helpers).
+#'   These are added alongside the auto-generated forest column.
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param null_value Reference value for null effect. Default: 0 for linear, 1 for log
 #' @param axis_label Label for the graphical axis
 #' @param theme Theme object (use `web_theme_*()` functions)
-#' @param row_bg Column name for row background color (CSS color strings).
-#'   Use this for data-driven row highlighting.
-#' @param ... Additional arguments passed to `web_spec()` when x is a data frame.
-#'   See `?web_spec` for all available options including row styling, marker styling,
-#'   effects, annotations, and labels.
-#' @param split_by Column name(s) to split data into separate plots. When specified,
-#'   creates a SplitForest with sidebar navigation. Can be a single column name or
-#'   a character vector for hierarchical splits (e.g., `c("region", "age_group")`).
+#' @param ... Additional arguments passed to `tabviz()`.
+#'   See `?tabviz` for all available options including row styling, marker styling,
+#'   annotations, labels, and rendering options.
+#' @param split_by Column name(s) to split data into separate plots with sidebar navigation.
 #' @param shared_axis When `split_by` is used, whether to use the same axis range
-#'   across all split plots for easier comparison. Default is `FALSE`.
-#' @param axis_range Numeric vector c(min, max) to override axis range from theme
-#' @param axis_ticks Numeric vector of explicit tick positions
-#' @param axis_gridlines Logical to show/hide gridlines (overrides theme)
-#' @param plot_position "left" or "right" to override plot position from theme
-#' @param row_height Numeric row height in pixels (overrides theme)
-#' @param zoom Initial zoom level (0.5 to 2.0, default 1.0). Users can adjust interactively.
-#' @param auto_fit When TRUE (default), shrink content to fit container if too large.
-#'   Never enlarges content. When FALSE, render at zoom level with scrollbars if needed.
-#' @param max_width Maximum container width in pixels (NULL for none).
-#'   Content is centered when constrained.
-#' @param max_height Maximum container height in pixels (NULL for none).
-#'   Enables vertical scrolling when content exceeds this height.
-#' @param show_zoom_controls Show zoom controls on hover (default TRUE).
-#'   Set to FALSE to hide the zoom UI but still allow programmatic zoom.
+#'   across all split plots. Default is `FALSE`.
 #' @param width Widget width (default NULL for auto)
 #' @param height Widget height (default NULL for auto)
 #' @param elementId HTML element ID (optional)
@@ -50,42 +39,45 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Method 1: Direct from data
+#' # Quick forest plot from data
 #' data <- data.frame(
-#'   item = c("Line A", "Line B", "Line C"),
-#'   median = c(1.2, 0.8, 1.5),
-#'   min = c(0.9, 0.5, 1.1),
-#'   max = c(1.6, 1.2, 2.0)
+#'   study = c("Study A", "Study B", "Study C"),
+#'   hr = c(0.72, 0.85, 0.91),
+#'   lower = c(0.55, 0.70, 0.75),
+#'   upper = c(0.95, 1.03, 1.10)
 #' )
 #'
-#' forest_plot(data, point = "median", lower = "min", upper = "max", label = "item")
+#' forest_plot(data, point = "hr", lower = "lower", upper = "upper", label = "study")
 #'
-#' # Method 2: From WebSpec (more control)
-#' spec <- web_spec(
+#' # Log scale for odds/hazard ratios
+#' forest_plot(data, point = "hr", lower = "lower", upper = "upper",
+#'             label = "study", scale = "log", null_value = 1)
+#'
+#' # Multi-effect plot (e.g., ITT vs Per-Protocol)
+#' forest_plot(
 #'   data,
-#'   point = "median",
-#'   lower = "min",
-#'   upper = "max",
-#'   label = "item",
-#'   scale = "log",
-#'   null_value = 1
+#'   label = "study",
+#'   effects = list(
+#'     web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
+#'     web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+#'   ),
+#'   scale = "log", null_value = 1
 #' )
 #'
-#' # Inspect the spec
-#' print(spec)
-#' as.data.frame(spec)
-#'
-#' # Render as forest plot
-#' forest_plot(spec)
-#'
-#' # With visual overrides
-#' forest_plot(spec, axis_range = c(0.5, 2), axis_gridlines = TRUE)
-#'
-#' # Or as table only
-#' webtable(spec)
+#' # For more control, use tabviz() directly
+#' tabviz(
+#'   data,
+#'   label = "study",
+#'   columns = list(
+#'     col_text("study"),
+#'     col_forest(point = "hr", lower = "lower", upper = "upper",
+#'                scale = "log", null_value = 1),
+#'     col_numeric("n", header = "N")
+#'   )
+#' )
 #' }
 #'
-#' @seealso [web_spec()] for creating specifications, [webtable()] for table-only rendering
+#' @seealso [tabviz()] for full control, [col_forest()] for forest column options
 #'
 #' @export
 forest_plot <- function(
@@ -93,6 +85,7 @@ forest_plot <- function(
     point = NULL,
     lower = NULL,
     upper = NULL,
+    effects = NULL,
     label = NULL,
     group = NULL,
     columns = NULL,
@@ -100,146 +93,97 @@ forest_plot <- function(
     null_value = NULL,
     axis_label = NULL,
     theme = NULL,
-    row_bg = NULL,
     ...,
     split_by = NULL,
     shared_axis = FALSE,
-    axis_range = NULL,
-    axis_ticks = NULL,
-    axis_gridlines = NULL,
-    plot_position = NULL,
-    row_height = NULL,
-    zoom = 1.0,
-    auto_fit = TRUE,
-    max_width = NULL,
-    max_height = NULL,
-    show_zoom_controls = TRUE,
     width = NULL,
     height = NULL,
     elementId = NULL) {
-
-  # Validate zoom (0.5 to 2.0)
-  checkmate::assert_number(zoom, lower = 0.5, upper = 2.0)
-
-  # Validate auto_fit
-  checkmate::assert_flag(auto_fit)
-
-  # Validate max_width/max_height
-  if (!is.null(max_width)) {
-    checkmate::assert_number(max_width, lower = 100)
-  }
-  if (!is.null(max_height)) {
-    checkmate::assert_number(max_height, lower = 100)
-  }
-
-  # Validate show_zoom_controls
-  checkmate::assert_flag(show_zoom_controls)
 
   # Handle SplitForest objects directly
   if (S7_inherits(x, SplitForest)) {
     return(forest_plot_split(x, width = width, height = height, elementId = elementId))
   }
 
-  # Handle WebSpec or raw data
-  if (S7_inherits(x, WebSpec)) {
-    spec <- x
-  } else if (is.data.frame(x)) {
-    # Build args list from explicit parameters, omitting NULLs
-    spec_args <- list(data = x)
-    if (!is.null(point)) spec_args$point <- point
-    if (!is.null(lower)) spec_args$lower <- lower
-    if (!is.null(upper)) spec_args$upper <- upper
-    if (!is.null(label)) spec_args$label <- label
-    if (!is.null(group)) spec_args$group <- group
-    if (!is.null(columns)) spec_args$columns <- columns
-    if (!is.null(scale)) spec_args$scale <- scale
-    if (!is.null(null_value)) spec_args$null_value <- null_value
-    if (!is.null(axis_label)) spec_args$axis_label <- axis_label
-    if (!is.null(theme)) spec_args$theme <- theme
-    if (!is.null(row_bg)) spec_args$row_bg <- row_bg
+  # Handle WebSpec objects - render directly
+ if (S7_inherits(x, WebSpec)) {
+    # If split_by specified, create split forest
+    if (!is.null(split_by)) {
+      split_result <- split_table(x, by = split_by, shared_axis = shared_axis)
+      return(forest_plot_split(split_result, width = width, height = height, elementId = elementId))
+    }
 
-    # Add any extra args from ...
-    extra_args <- list(...)
-    spec_args <- c(spec_args, extra_args)
+    return(render_tabviz_widget(
+      x,
+      width = width,
+      height = height,
+      elementId = elementId,
+      ...
+    ))
+  }
 
-    spec <- do.call(web_spec, spec_args)
-  } else {
+  # Must be a data.frame at this point
+  if (!is.data.frame(x)) {
     cli_abort("{.arg x} must be a WebSpec object, SplitForest object, or a data frame")
   }
 
-  # If split_by is specified, create a SplitForest and render it
+  # Build columns list - auto-add col_forest() from point/lower/upper or effects
+  user_columns <- columns %||% list()
 
+  has_inline <- !is.null(point) && !is.null(lower) && !is.null(upper)
+  has_effects <- !is.null(effects) && length(effects) > 0
+
+  if (has_effects) {
+    # Multi-effect mode
+    forest_col <- col_forest(
+      effects = effects,
+      scale = scale %||% "linear",
+      null_value = null_value,
+      axis_label = axis_label %||% "Effect"
+    )
+    user_columns <- c(user_columns, list(forest_col))
+  } else if (has_inline) {
+    # Single effect mode
+    forest_col <- col_forest(
+      point = point,
+      lower = lower,
+      upper = upper,
+      scale = scale %||% "linear",
+      null_value = null_value,
+      axis_label = axis_label %||% "Effect"
+    )
+    user_columns <- c(user_columns, list(forest_col))
+  }
+
+  # Build tabviz args
+  tabviz_args <- list(
+    data = x,
+    label = label,
+    group = group,
+    columns = if (length(user_columns) > 0) user_columns else NULL,
+    theme = theme,
+    width = width,
+    height = height,
+    elementId = elementId,
+    .spec_only = !is.null(split_by)  # Only get spec if we need to split
+  )
+
+  # Add extra args from ...
+  extra_args <- list(...)
+  tabviz_args <- c(tabviz_args, extra_args)
+
+  # Remove NULLs
+  tabviz_args <- tabviz_args[!vapply(tabviz_args, is.null, logical(1))]
+
+  result <- do.call(tabviz, tabviz_args)
+
+  # If split_by specified, create and render split forest
   if (!is.null(split_by)) {
-    split_result <- split_forest(spec, by = split_by, shared_axis = shared_axis)
+    split_result <- split_table(result, by = split_by, shared_axis = shared_axis)
     return(forest_plot_split(split_result, width = width, height = height, elementId = elementId))
   }
 
-  # Apply visual overrides to theme
-  if (!is.null(axis_range) && length(axis_range) == 2) {
-    spec@theme@axis@range_min <- axis_range[1]
-    spec@theme@axis@range_max <- axis_range[2]
-  }
-  if (!is.null(axis_ticks)) {
-    # Filter ticks to axis_range if both are specified, with warning
-    if (!is.null(axis_range) && length(axis_range) == 2) {
-      in_range <- axis_ticks >= axis_range[1] & axis_ticks <= axis_range[2]
-      if (!all(in_range)) {
-        excluded <- axis_ticks[!in_range]
-        cli_warn(c(
-
-          "Some {.arg axis_ticks} values fall outside {.arg axis_range} and will be excluded.",
-          "i" = "Excluded ticks: {.val {excluded}}",
-          "i" = "axis_range: [{axis_range[1]}, {axis_range[2]}]"
-        ))
-        axis_ticks <- axis_ticks[in_range]
-      }
-    }
-    spec@theme@axis@tick_values <- axis_ticks
-  }
-  if (!is.null(axis_gridlines)) {
-    spec@theme@axis@gridlines <- axis_gridlines
-  }
-  if (!is.null(plot_position)) {
-    spec@theme@layout@plot_position <- plot_position
-  }
-  if (!is.null(row_height)) {
-    spec@theme@spacing@row_height <- row_height
-  }
-
-  # Serialize to JSON-ready structure
-  payload <- serialize_spec(spec, include_forest = TRUE)
-
-  # Add zoom and sizing settings
-  payload$zoom <- zoom
-  payload$autoFit <- auto_fit
-  payload$maxWidth <- max_width
-  payload$maxHeight <- max_height
-  payload$showZoomControls <- show_zoom_controls
-
-  # Create widget
-  widget <- htmlwidgets::createWidget(
-    name = "webforest",
-    x = payload,
-    width = width,
-    height = height,
-    package = "webforest",
-    elementId = elementId,
-    sizingPolicy = htmlwidgets::sizingPolicy(
-      defaultWidth = "100%",
-      defaultHeight = 400,
-      viewer.fill = TRUE,
-      browser.fill = TRUE,
-      knitr.figure = FALSE,
-      knitr.defaultWidth = "100%",
-      knitr.defaultHeight = 400
-    )
-  )
-
-  # Attach WebSpec for fluent API and save_plot() to use
-  attr(widget, "webspec") <- spec
-  attr(widget, "widget_type") <- "forest_plot"
-
-  widget
+  result
 }
 
 method(plot, WebSpec) <- function(x, ...) {
@@ -264,15 +208,15 @@ method(plot, SplitForest) <- function(x, ...) {
 forest_plot_split <- function(x, width = NULL, height = NULL, elementId = NULL) {
   # Serialize the SplitForest
 
-  payload <- serialize_split_forest(x, include_forest = TRUE)
+  payload <- serialize_split_table(x, include_forest = TRUE)
 
   # Create widget
   widget <- htmlwidgets::createWidget(
-    name = "webforest_split",
+    name = "tabviz_split",
     x = payload,
     width = width,
     height = height,
-    package = "webforest",
+    package = "tabviz",
     elementId = elementId,
     sizingPolicy = htmlwidgets::sizingPolicy(
       defaultWidth = "100%",

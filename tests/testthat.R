@@ -1,4 +1,4 @@
 library(testthat)
-library(webforest)
+library(tabviz)
 
-test_check("webforest")
+test_check("tabviz")

@@ -1,7 +1,7 @@
 # Gallery Example 14: Lancet Style
 # Serif fonts, blue palette, traditional academic presentation.
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 lancet_data <- tibble(

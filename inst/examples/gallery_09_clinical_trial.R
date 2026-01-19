@@ -1,7 +1,7 @@
 # Gallery Example 9: Clinical Trial Program
 # Nested groups + multiple effects + sparklines + badges
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 set.seed(2024)

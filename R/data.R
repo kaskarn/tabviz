@@ -149,16 +149,24 @@
 #' data(effect_sizes)
 #'
 #' # Basic plot - note how axis adapts to varying CI widths
-#' forest_plot(effect_sizes, hr, lower, upper, study, scale = "log")
+#' forest_plot(effect_sizes,
+#'             point = "hr", lower = "lower", upper = "upper",
+#'             label = "study", scale = "log")
 #'
 #' # Split by region to test subgroup navigation
-#' forest_plot(effect_sizes, hr, lower, upper, study,
-#'             scale = "log", split_by = "region")
+#' forest_plot(effect_sizes,
+#'             point = "hr", lower = "lower", upper = "upper",
+#'             label = "study", scale = "log", split_by = "region")
 #'
 #' # Split by multiple variables for hierarchical navigation
 #' effect_sizes |>
-#'   web_spec(hr, lower, upper, study, scale = "log") |>
-#'   split_forest(by = c("outcome", "treatment")) |>
+#'   web_spec(
+#'     label = "study",
+#'     columns = list(
+#'       col_forest(point = "hr", lower = "lower", upper = "upper", scale = "log")
+#'     )
+#'   ) |>
+#'   split_table(by = c("outcome", "treatment")) |>
 #'   forest_plot()
 #'
 "effect_sizes"

@@ -1,7 +1,7 @@
 # Example: Presentation-ready forest plot
 # Demonstrates: presentation theme, large fonts, bold colors, column positioning
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Create sample clinical trial data
@@ -28,10 +28,10 @@ forest_plot(
   upper = "upper",
   label = "study",
   columns = list(
-    col_numeric("n", "N", position = "left"),
-    col_numeric("events", "Events", position = "left"),
-    col_interval("OR (95% CI)", position = "right"),
-    col_pvalue("pvalue", "P", position = "right")
+    col_numeric("n", "N"),
+    col_numeric("events", "Events"),
+    col_interval("OR (95% CI)"),
+    col_pvalue("pvalue", "P")
   ),
   theme = web_theme_presentation(),
   scale = "log",

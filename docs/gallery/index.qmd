@@ -1,0 +1,100 @@
+---
+title: "Gallery"
+---
+
+Explore example visualizations organized by domain. Each example includes live interactive output and source code.
+
+## By Domain
+
+::: {.grid}
+::: {.g-col-4}
+### [Clinical Examples](clinical.qmd)
+
+Meta-analyses, forest plots, and clinical trial visualizations.
+
+- JAMA-style forest plots
+- Subgroup analyses
+- Multi-effect comparisons
+:::
+
+::: {.g-col-4}
+### [Dashboard Examples](dashboards.qmd)
+
+Business dashboards and KPI displays.
+
+- Executive dashboards
+- Sparklines and bars
+- Status indicators
+:::
+
+::: {.g-col-4}
+### [Feature Showcases](showcases.qmd)
+
+Demonstrations of specific tabviz features.
+
+- Row grouping
+- Themes
+- Split views
+:::
+:::
+
+## Quick Examples
+
+### Clinical Trial Meta-Analysis
+
+```{r}
+#| echo: false
+library(tabviz)
+data(glp1_trials)
+
+tabviz(
+  glp1_trials,
+  label = "study",
+  group = "group",
+  columns = list(
+    col_text("drug", "Drug"),
+    col_n("n"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_pvalue("pvalue", "P")
+  ),
+  row_type = "row_type",
+  row_bold = "row_bold",
+  theme = web_theme_nature()
+)
+```
+
+### Dashboard Table
+
+```{r}
+#| echo: false
+library(tabviz)
+data(nba_efficiency)
+
+tabviz(
+  nba_efficiency,
+  label = "player",
+  columns = list(
+    col_text("team", "Team"),
+    col_numeric("ppg", "PPG", decimals = 1),
+    col_percent("fg_pct", "FG%"),
+    col_sparkline("last_10", "Last 10"),
+    col_bar("efficiency", "Efficiency")
+  ),
+  theme = web_theme_modern()
+)
+```
+
+## Example Sources
+
+All examples are available as R scripts in the package:
+
+```r
+# List available examples
+list.files(system.file("examples", package = "tabviz"))
+
+# Run an example
+source(system.file("examples", "jama_style.R", package = "tabviz"))
+```

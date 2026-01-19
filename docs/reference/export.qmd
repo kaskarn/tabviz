@@ -1,0 +1,207 @@
+---
+title: "Export"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+Export tabviz widgets to static file formats (SVG, PNG, PDF).
+
+## save_plot() {#save_plot}
+
+Export any tabviz widget to a static file.
+
+### Usage
+
+```r
+save_plot(
+  x,
+  file,
+  width = 800,
+  height = NULL,
+  scale = 2
+)
+```
+
+### Arguments
+
+| Argument | Type | Description |
+|----------|------|-------------|
+| `x` | widget | A tabviz widget from `tabviz()`, `forest_plot()`, or `webtable()` |
+| `file` | string | Output file path. Extension determines format: `.svg`, `.png`, or `.pdf` |
+| `width` | integer | Width in pixels (default: 800) |
+| `height` | integer | Height in pixels (auto-calculated if NULL) |
+| `scale` | numeric | Scale factor for PNG resolution (default: 2) |
+
+### Examples
+
+```{r}
+#| eval: false
+# Create a widget
+p <- tabviz(data,
+  label = "study",
+  columns = list(
+    col_forest(point = "hr", lower = "lo", upper = "hi"),
+    col_interval(point = "hr", lower = "lo", upper = "hi", header = "HR (95% CI)")
+  )
+)
+
+# Export to SVG (vector, best for editing)
+save_plot(p, "my_plot.svg")
+
+# Export to PNG (raster, good for presentations)
+save_plot(p, "my_plot.png", width = 1200, scale = 3)
+
+# Export to PDF (best for print)
+save_plot(p, "my_plot.pdf", width = 800)
+```
+
+### Format Details
+
+| Format | Extension | Best For | Requirements |
+|--------|-----------|----------|--------------|
+| SVG | `.svg` | Web, editing, journals | None |
+| PNG | `.png` | Presentations, sharing | Chrome/Chromium |
+| PDF | `.pdf` | Print publications | Chrome/Chromium |
+
+### Resolution Guide
+
+For PNG exports, the `scale` parameter controls resolution:
+
+| Scale | Effective DPI | Use Case |
+|-------|---------------|----------|
+| 1 | ~72 DPI | Quick preview |
+| 2 | ~144 DPI | Standard web/screen |
+| 3 | ~216 DPI | Print quality |
+| 4 | ~288 DPI | High-resolution print |
+
+::: {.callout-note}
+## Browser Requirements
+
+PDF and PNG export require Chrome, Chromium, or Google Chrome to be installed. SVG export has no external dependencies.
+:::
+
+---
+
+## save_split_table() {#save_split_table}
+
+Export all sub-plots from a split view to a directory structure.
+
+### Usage
+
+```r
+save_split_table(
+  x,
+  path,
+  format = c("svg", "pdf", "png"),
+  width = 800,
+  height = NULL,
+  scale = 2
+)
+```
+
+### Arguments
+
+| Argument | Type | Description |
+|----------|------|-------------|
+| `x` | SplitForest | A split forest object |
+| `path` | string | Output directory path |
+| `format` | string | Output format: `"svg"`, `"pdf"`, or `"png"` |
+| `width` | integer | Width in pixels (default: 800) |
+| `height` | integer | Height in pixels (auto if NULL) |
+| `scale` | numeric | Scale factor for PNG (default: 2) |
+
+### Example
+
+```{r}
+#| eval: false
+# Create split forest
+tabviz(data,
+  label = "study",
+  columns = list(col_forest(point = "or", lower = "lower", upper = "upper")),
+  split_by = c("sex", "age_group")
+) |>
+  save_split_table("output/plots", format = "svg")
+
+# Creates directory structure:
+# output/plots/Male/Male_Young.svg
+# output/plots/Male/Male_Old.svg
+# output/plots/Female/Female_Young.svg
+# output/plots/Female/Female_Old.svg
+```
+
+### Directory Structure
+
+The output directory structure mirrors the split hierarchy:
+
+- **Single split** (`split_by = "region"`): `path/North.svg`, `path/South.svg`
+- **Hierarchical split** (`split_by = c("region", "age")`): `path/North/North_Young.svg`
+
+---
+
+## Workflow Examples
+
+### Publication Figure
+
+```{r}
+#| eval: false
+# Create publication-quality figure
+p <- tabviz(trial_data,
+  label = "study",
+  columns = list(
+    col_n("n"),
+    col_forest(point = "hr", lower = "lower", upper = "upper", scale = "log", null_value = 1),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)"),
+    col_pvalue("pval")
+  ),
+  theme = web_theme_jama(),
+  title = "Primary Analysis"
+)
+
+# Export at high resolution
+save_plot(p, "figures/figure1.pdf", width = 800)
+save_plot(p, "figures/figure1.png", width = 1600, scale = 3)
+```
+
+### Batch Export
+
+```{r}
+#| eval: false
+# Export multiple themes
+themes <- list(
+  jama = web_theme_jama(),
+  lancet = web_theme_lancet(),
+  nature = web_theme_nature()
+)
+
+for (name in names(themes)) {
+  p <- forest_plot(data, ..., theme = themes[[name]])
+  save_plot(p, sprintf("output/%s.svg", name))
+}
+```
+
+### Subgroup Analysis Export
+
+```{r}
+#| eval: false
+# Create split view
+split_view <- tabviz(data,
+  label = "study",
+  columns = list(col_forest(...)),
+  split_by = c("region", "subgroup"),
+  shared_axis = TRUE
+)
+
+# Export all at once
+save_split_table(split_view, "output/subgroups", format = "pdf")
+```
+
+---
+
+## See Also
+
+- [`tabviz()`](tabviz.qmd) - Create tables
+- [`forest_plot()`](forest_plot.qmd) - Create forest plots
+- [Themes](themes.qmd) - Style for publication

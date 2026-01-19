@@ -2,47 +2,69 @@
 title: "Cheatsheet"
 ---
 
-Quick reference for webforest functions and arguments.
+Quick reference for tabviz functions and arguments.
 
 ## Visual Layout
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  [title]                                                                    │
-│  [subtitle]                                                                 │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ [label column]  [left columns...]  │ FOREST PLOT │  [right columns...]     │
-│                                    │             │                         │
-│ ▼ Group Header                     │    null_    │                         │
-│   Study A        N    Events       │ ◆──●──◆     │   HR (95% CI)   P-val  │
-│   Study B        N    Events       │    ◆──●──◆  │   HR (95% CI)   P-val  │
-│   Study C        N    Events       │  ◆──●──◆    │   HR (95% CI)   P-val  │
-│                                    │     value   │                         │
-│ ▼ Another Group                    │      │      │                         │
-│   Study D        N    Events       │   ◆──●──◆   │   HR (95% CI)   P-val  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  [axis_label]                                                               │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  [caption]                                                   [footnote]     │
-└─────────────────────────────────────────────────────────────────────────────┘
++---------------------------------------------------------------------------+
+|  [title]                                                                  |
+|  [subtitle]                                                               |
++---------------------------------------------------------------------------+
+| [label column]  [left columns...]  | FOREST PLOT |  [right columns...]    |
+|                                    |             |                        |
+| > Group Header                     |    null_    |                        |
+|   Study A        N    Events       | <--*-->     |   HR (95% CI)   P-val  |
+|   Study B        N    Events       |    <--*-->  |   HR (95% CI)   P-val  |
+|   Study C        N    Events       |  <--*-->    |   HR (95% CI)   P-val  |
+|                                    |     value   |                        |
+| > Another Group                    |      |      |                        |
+|   Study D        N    Events       |   <--*-->   |   HR (95% CI)   P-val  |
++---------------------------------------------------------------------------+
+|  [axis_label]                                                             |
++---------------------------------------------------------------------------+
+|  [caption]                                                  [footnote]    |
++---------------------------------------------------------------------------+
 ```
 
 ---
 
-## Core Function
+## Core Functions
+
+### `tabviz()` - Main Entry Point
 
 ```r
-forest_plot(
-  x,                    # data.frame
-  point = "hr",         # column with point estimates
-  lower = "lower",      # column with lower CI
-  upper = "upper",      # column with upper CI
+tabviz(
+  data,                 # data.frame
   label = "study",      # column with row labels
   group = "category",   # column(s) for grouping
-  columns = list(...),  # col_*() specifications
-  scale = "log",        # "log" or "linear"
-  null_value = 1,       # reference line value
-  axis_label = "HR",    # x-axis label
+  columns = list(       # col_*() specifications
+    col_text("category"),
+    col_forest(point = "hr", lower = "lo", upper = "hi"),
+    col_numeric("n")
+  ),
+  theme = web_theme_jama()
+)
+```
+
+### `tabviz()` with `col_forest()` - Forest Plot
+
+```r
+tabviz(
+  data,                 # data.frame
+  label = "study",      # column with row labels
+  group = "category",   # column(s) for grouping
+  columns = list(
+    col_forest(
+      point = "hr",     # column with point estimates
+      lower = "lower",  # column with lower CI
+      upper = "upper",  # column with upper CI
+      scale = "log",    # "log" or "linear"
+      null_value = 1,   # reference line value
+      axis_label = "HR" # x-axis label
+    ),
+    ...                 # additional col_*() specifications
+  ),
   theme = web_theme_jama()
 )
 ```
@@ -55,7 +77,8 @@ forest_plot(
 |----------|---------|---------|
 | `col_text()` | Text values | `col_text("category")` |
 | `col_numeric()` | Formatted numbers | `col_numeric("n", decimals = 0)` |
-| `col_interval()` | Point (CI) format | `col_interval("HR (95% CI)")` |
+| `col_interval()` | Point (CI) format | `col_interval(point = "hr", lower = "lo", upper = "hi")` |
+| `col_forest()` | Forest plot column | `col_forest(point = "hr", lower = "lo", upper = "hi")` |
 | `col_n()` | Sample sizes | `col_n("n", abbreviate = TRUE)` |
 | `col_percent()` | Percentages | `col_percent("rate")` |
 | `col_events()` | Events/N format | `col_events("events", "n")` |
@@ -68,7 +91,7 @@ forest_plot(
 | `col_img()` | Inline images | `col_img("logo_url")` |
 | `col_reference()` | Truncated links | `col_reference("doi")` |
 | `col_range()` | Min-max ranges | `col_range("min", "max")` |
-| `col_group()` | Group columns | `col_group("Results", col_interval(), col_pvalue("p"))` |
+| `col_group()` | Group columns | `col_group("Results", col_interval(point = "hr", lower = "lo", upper = "hi"), col_pvalue("p"))` |
 
 ---
 
@@ -123,7 +146,7 @@ All accept column names or formula expressions: `marker_color = ~ ifelse(sig, "g
 ## Theme Modifier Functions
 
 ```r
-forest_plot(..., theme = web_theme_default() |>
+tabviz(..., theme = web_theme_default() |>
   set_colors(primary = "#2563eb", ...) |>
   set_typography(font_family = "Georgia", font_size_base = "0.9rem") |>
   set_spacing(row_height = 28, header_height = 32) |>
@@ -137,7 +160,7 @@ forest_plot(..., theme = web_theme_default() |>
 ## Fluent API (Pipe-Based)
 
 ```r
-forest_plot(data, point = "hr", lower = "lower", upper = "upper", label = "study") |>
+tabviz(data, label = "study", columns = list(col_forest(...))) |>
   set_row_style(bold = ~ pval < 0.05, emphasis = "is_primary") |>
   set_marker_style(color = ~ ifelse(upper < 1, "#16a34a", "#94a3b8")) |>
   set_column_style("hr", bold = ~ .x < 1, color = ~ ifelse(.x < 1, "green", "red")) |>
@@ -184,10 +207,15 @@ interaction = web_interaction_publication()
 ## Multiple Effects
 
 ```r
-effects = list(
-  web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
-  web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
-)
+tabviz(data, label = "study", columns = list(
+  col_forest(
+    effects = list(
+      web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
+      web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+    ),
+    scale = "log", null_value = 1
+  )
+))
 ```
 
 ---
@@ -206,10 +234,10 @@ annotations = list(
 
 ```r
 # Single variable split
-forest_plot(data, ..., split_by = "region")
+tabviz(data, label = "study", columns = list(col_forest(...)), split_by = "region")
 
 # Hierarchical split
-forest_plot(data, ..., split_by = c("region", "country"), shared_axis = TRUE)
+tabviz(data, label = "study", columns = list(col_forest(...)), split_by = c("region", "country"), shared_axis = TRUE)
 ```
 
 ---
@@ -218,7 +246,7 @@ forest_plot(data, ..., split_by = c("region", "country"), shared_axis = TRUE)
 
 ```r
 # Save to file
-p <- forest_plot(data, ...)
+p <- tabviz(data, ...)
 save_plot(p, "plot.svg")               # Vector
 save_plot(p, "plot.png", scale = 2)    # Raster (2x resolution)
 save_plot(p, "plot.pdf")               # Print
@@ -230,10 +258,10 @@ save_plot(p, "plot.pdf")               # Print
 
 ```r
 # Log scale for ratios
-scale = "log", null_value = 1
+col_forest(point = "hr", lower = "lo", upper = "hi", scale = "log", null_value = 1)
 
 # Linear scale for differences
-scale = "linear", null_value = 0
+col_forest(point = "md", lower = "lo", upper = "hi", scale = "linear", null_value = 0)
 
 # Significant results bold
 row_bold = ~ pval < 0.05
@@ -242,7 +270,7 @@ row_bold = ~ pval < 0.05
 marker_color = ~ ifelse(upper < 1, "#16a34a", "#94a3b8")
 
 # Column groups
-col_group("Treatment", col_n("n_tx"), col_events("ev_tx", "n_tx"), position = "left")
+col_group("Treatment", col_n("n_tx"), col_events("ev_tx", "n_tx"))
 
 # Hierarchical grouping
 group = c("region", "country")

@@ -1,7 +1,7 @@
 # Gallery Example 4: Custom Theme Building
 # Building a branded theme from scratch with the fluent API
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Build a "Terminal" theme step by step
@@ -41,8 +41,8 @@ forest_plot(
   point = "latency_ms", lower = "lower", upper = "upper",
   label = "process",
   columns = list(
-    col_numeric("uptime", "Uptime %", position = "left"),
-    col_numeric("rps", "RPS", position = "left"),
+    col_numeric("uptime", "Uptime %"),
+    col_numeric("rps", "RPS"),
     col_interval("Latency ms (95% CI)")
   ),
   theme = terminal_theme,

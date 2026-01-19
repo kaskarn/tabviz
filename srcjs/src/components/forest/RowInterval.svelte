@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Row, WebTheme, ComputedLayout, EffectSpec, MarkerShape } from "$types";
+  import type { Row, WebTheme, ComputedLayout, EffectSpec, MarkerShape, ForestColumnOptions } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
   import { AXIS_LABEL_PADDING } from "$lib/axis-utils";
@@ -12,12 +12,13 @@
     xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
     layout: ComputedLayout;
     theme: WebTheme | undefined;
-    effects?: EffectSpec[];
     weightCol?: string | null;
     /** Axis limits for CI clipping detection (domain units, not pixels) */
     clipBounds?: [number, number];
     /** Whether using log scale (for filtering non-positive values) */
     isLog?: boolean;
+    /** Forest column options (for explicit col_forest columns) */
+    forestColumnOptions?: ForestColumnOptions | null;
     onRowClick?: () => void;
     onRowHover?: (hovered: boolean, event?: MouseEvent) => void;
   }
@@ -28,10 +29,10 @@
     xScale,
     layout,
     theme,
-    effects = [],
     weightCol = null,
     clipBounds,
     isLog = false,
+    forestColumnOptions = null,
     onRowClick,
     onRowHover,
   }: Props = $props();
@@ -39,20 +40,29 @@
   // Arrow configuration (scales with theme line width)
   const arrowConfig = $derived(computeArrowDimensions(theme));
 
-  // Compute effective effects to render
-  // If no effects specified, create a default one from primary columns
+  // Compute effective effects to render from forest column options
+  // Each col_forest() now fully owns its effect definitions
   const effectsToRender = $derived.by(() => {
-    if (effects.length === 0) {
-      // Default effect from primary columns
-      // For log scale, filter non-positive values (consistent with svg-generator.ts)
-      const point = (!isLog || (row.point != null && row.point > 0)) ? row.point : null;
-      const lower = (!isLog || (row.lower != null && row.lower > 0)) ? row.lower : null;
-      const upper = (!isLog || (row.upper != null && row.upper > 0)) ? row.upper : null;
+    if (!forestColumnOptions) {
+      // No forest column options - no effects to render
+      return [];
+    }
+
+    const filterLog = forestColumnOptions.scale === "log" || isLog;
+
+    // Mode 1: Inline single effect (point/lower/upper columns specified)
+    if (forestColumnOptions.point && forestColumnOptions.lower && forestColumnOptions.upper) {
+      const pointVal = row.metadata[forestColumnOptions.point] as number | null | undefined;
+      const lowerVal = row.metadata[forestColumnOptions.lower] as number | null | undefined;
+      const upperVal = row.metadata[forestColumnOptions.upper] as number | null | undefined;
+      const point = (!filterLog || (pointVal != null && pointVal > 0)) ? pointVal : null;
+      const lower = (!filterLog || (lowerVal != null && lowerVal > 0)) ? lowerVal : null;
+      const upper = (!filterLog || (upperVal != null && upperVal > 0)) ? upperVal : null;
       return [{
-        id: "primary",
-        pointCol: "point",
-        lowerCol: "lower",
-        upperCol: "upper",
+        id: "inline",
+        pointCol: forestColumnOptions.point,
+        lowerCol: forestColumnOptions.lower,
+        upperCol: forestColumnOptions.upper,
         label: null,
         color: null,
         shape: null as MarkerShape | null,
@@ -63,14 +73,18 @@
       }];
     }
 
-    // Map effects with resolved values using shared utility
-    // Pass isLog to filter out non-positive values for log scale
-    return effects.map(effect => ({
-      ...effect,
-      point: getEffectValue(row.metadata, row.point, effect.pointCol, "point", isLog),
-      lower: getEffectValue(row.metadata, row.lower, effect.lowerCol, "lower", isLog),
-      upper: getEffectValue(row.metadata, row.upper, effect.upperCol, "upper", isLog),
-    }));
+    // Mode 2: Inline multiple effects (effects list in forest column options)
+    if (forestColumnOptions.effects && forestColumnOptions.effects.length > 0) {
+      return forestColumnOptions.effects.map(effect => ({
+        ...effect,
+        point: getEffectValue(row.metadata, null, effect.pointCol, "point", filterLog),
+        lower: getEffectValue(row.metadata, null, effect.lowerCol, "lower", filterLog),
+        upper: getEffectValue(row.metadata, null, effect.upperCol, "upper", filterLog),
+      }));
+    }
+
+    // No effects defined - return empty (no marker to render)
+    return [];
   });
 
   // Check if any effect has valid values

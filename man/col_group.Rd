@@ -4,14 +4,12 @@
 \alias{col_group}
 \title{Create a column group}
 \usage{
-col_group(header, ..., position = c("left", "right"))
+col_group(header, ...)
 }
 \arguments{
 \item{header}{Display header for the group}
 
 \item{...}{Column specifications (ColumnSpec objects)}
-
-\item{position}{Column position: "left" or "right" of the forest plot}
 }
 \value{
 A ColumnGroup object

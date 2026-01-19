@@ -1,4 +1,4 @@
-# Theme S7 classes for webforest
+# Theme S7 classes for tabviz
 # Generic theming system for web-native visualizations
 
 #' ColorPalette: Colors for visualizations
@@ -28,7 +28,27 @@ ColorPalette <- new_class(
     # Summary/aggregate colors
     summary_fill = new_property(class_character, default = "#0891b2"),
     summary_border = new_property(class_character, default = "#0e7490")
-  )
+  ),
+  validator = function(self) {
+    # Regex for valid CSS hex colors: #RGB, #RRGGBB, or #RRGGBBAA
+    hex_pattern <- "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+    color_props <- c("background", "foreground", "primary", "secondary", "accent",
+                     "muted", "border", "row_bg", "alt_bg", "interval", "interval_line",
+                     "interval_positive", "interval_negative", "interval_neutral",
+                     "summary_fill", "summary_border")
+    invalid <- character()
+    for (prop in color_props) {
+      value <- S7::prop(self, prop)
+      if (!is.na(value) && !grepl(hex_pattern, value)) {
+        invalid <- c(invalid, paste0(prop, " = '", value, "'"))
+      }
+    }
+    if (length(invalid) > 0) {
+      return(paste("Invalid hex color values:", paste(invalid, collapse = ", "),
+                   "- colors must be hex format like #RGB, #RRGGBB, or #RRGGBBAA"))
+    }
+    NULL
+  }
 )
 
 #' Typography: Font settings

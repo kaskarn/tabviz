@@ -13,8 +13,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/index-split.svelte.ts"),
-      name: "webforest_split",
-      fileName: () => "webforest_split.js",
+      name: "tabviz_split",
+      fileName: () => "tabviz_split.js",
       formats: ["iife"],
     },
     outDir: path.resolve(__dirname, "../inst/htmlwidgets"),
@@ -23,7 +23,7 @@ export default defineConfig({
     ssr: false,
     rollupOptions: {
       output: {
-        assetFileNames: "webforest_split.[ext]",
+        assetFileNames: "tabviz_split.[ext]",
         inlineDynamicImports: true,
       },
     },

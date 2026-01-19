@@ -1,7 +1,7 @@
 # Example: Dark theme forest plot
 # Demonstrates: Dark theme styling, row badges, custom colors
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Oncology trial data with quality indicators
@@ -37,9 +37,9 @@ forest_plot(
   label_header = "Trial",
   group = "tumor",
   columns = list(
-    col_numeric("n", "N", position = "left"),
-    col_numeric("median_fu", "Follow-up (mo)", position = "left"),
-    col_text("quality", "Quality", position = "left"),
+    col_numeric("n", "N"),
+    col_numeric("median_fu", "Follow-up (mo)"),
+    col_text("quality", "Quality"),
     col_interval("HR (95% CI)"),
     col_pvalue("pvalue", "P")
   ),

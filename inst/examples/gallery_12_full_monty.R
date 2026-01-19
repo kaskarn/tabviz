@@ -1,7 +1,7 @@
 # Gallery Example 12: The Full Monty
 # Everything at once - maximum feature density
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 full_monty <- tibble(
@@ -50,10 +50,9 @@ forest_plot(
     col_bar("weight"),
     col_group("Results",
       col_interval("HR (95% CI)"),
-      col_pvalue("pvalue", "P"),
-      position = "right"
+      col_pvalue("pvalue", "P")
     ),
-    col_sparkline("trend", "Trend", position = "right")
+    col_sparkline("trend", "Trend")
   ),
   effects = list(
     web_effect("primary_hr", "primary_lo", "primary_hi", label = "Primary", color = "#22c55e"),

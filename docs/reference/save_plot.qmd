@@ -4,7 +4,7 @@ title: "save_plot"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 Export a forest plot, webtable, or split forest to static file formats.
@@ -81,21 +81,21 @@ When saving a SplitForest, all sub-plots are exported to a directory structure m
 ```r
 split_result <- data |>
   web_spec(point = "hr", lower = "lo", upper = "hi") |>
-  split_forest(by = c("region", "age_group"))
+  split_table(by = c("region", "age_group"))
 
 # Export all plots to a directory
 save_plot(split_result, "output/plots")
 # Creates: output/plots/North/North_Young.svg, etc.
 ```
 
-## save_split_forest
+## save_split_table
 
 Export all sub-plots from a SplitForest to a directory structure.
 
 ### Usage
 
 ```r
-save_split_forest(x, path, format = c("svg", "pdf", "png"),
+save_split_table(x, path, format = c("svg", "pdf", "png"),
                   width = 800, height = NULL, scale = 2)
 ```
 
@@ -121,8 +121,8 @@ Creates a directory structure matching the split hierarchy:
 ```r
 data |>
   web_spec(point = "or", lower = "lower", upper = "upper", label = "study") |>
-  split_forest(by = c("sex", "age_group")) |>
-  save_split_forest("output/plots", format = "svg")
+  split_table(by = c("sex", "age_group")) |>
+  save_split_table("output/plots", format = "svg")
 
 # Creates:
 # output/plots/Male/Male_Young.svg
@@ -134,5 +134,5 @@ data |>
 ## See Also
 
 - [forest_plot()](forest_plot.qmd) for creating plots
-- [split_forest()](split_forest.qmd) for creating split forests
+- [split_table()](split_table.qmd) for creating split forests
 - [Forest Plots Guide](../guide/forest-plots.qmd#exporting) for detailed export workflows

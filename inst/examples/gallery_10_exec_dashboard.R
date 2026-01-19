@@ -1,7 +1,7 @@
 # Gallery Example 10: Executive Dashboard
 # Table-only + bars + sparklines + row styling
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 exec_dashboard <- tibble(
@@ -26,7 +26,6 @@ exec_dashboard <- tibble(
     c(490, 505, 520, 532, 542, 550), c(280, 290, 300, 308, 315, 320),
     c(210, 215, 220, 224, 227, 230)
   ),
-  effect = rep(1, 14), lower = rep(0.9, 14), upper = rep(1.1, 14),
   rtype = c("summary", "spacer", "header", rep("data", 3), "spacer",
             "header", "data", "data", "spacer", "header", "data", "data"),
   rbold = c(TRUE, FALSE, TRUE, rep(FALSE, 3), FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
@@ -36,14 +35,13 @@ exec_dashboard <- tibble(
 
 webtable(
   exec_dashboard,
-  point = "effect", lower = "lower", upper = "upper",
   label = "department",
   columns = list(
-    col_numeric("headcount", "HC", position = "left"),
-    col_numeric("revenue_m", "Rev $M", position = "left"),
-    col_bar("growth", "Growth %", position = "right"),
-    col_numeric("satisfaction", "eNPS", position = "right"),
-    col_sparkline("trend", "6M Trend", position = "right")
+    col_numeric("headcount", "HC"),
+    col_numeric("revenue_m", "Rev $M"),
+    col_bar("growth", "Growth %"),
+    col_numeric("satisfaction", "eNPS"),
+    col_sparkline("trend", "6M Trend")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent", row_color = "rcolor",
   theme = web_theme_modern(),

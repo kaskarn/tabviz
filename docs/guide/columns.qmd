@@ -4,7 +4,7 @@ title: "Columns"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 ## Overview
@@ -33,14 +33,14 @@ demo_data <- data.frame(
   pval = c(0.042, 0.23, 0.008, 0.61)
 )
 
-forest_plot(demo_data,
-  point = "or", lower = "lower", upper = "upper",
-  label = "study", null_value = 1,
+tabviz(demo_data,
+  label = "study",
   columns = list(
     col_numeric("n", header = "N", width = 60),
     col_bar("weight", header = "Weight %", width = 80),
+    col_forest(point = "or", lower = "lower", upper = "upper", null_value = 1),
     col_pvalue("pval", header = "P-value", width = 80),
-    col_interval(header = "OR (95% CI)", width = 120, position = "right")
+    col_interval(point = "or", lower = "lower", upper = "upper", header = "OR (95% CI)", width = 120)
   ),
   theme = web_theme_modern()
 )
@@ -67,24 +67,25 @@ forest_plot(demo_data,
 | `col_range()` | Min-max ranges | Age ranges, value bounds |
 | `col_group()` | Group header | Organize related columns |
 
-## Column Positioning
+## Column Ordering
 
-Columns can appear on the left or right side of the forest plot:
+Columns appear in the order they're listed. Place `col_forest()` wherever you want the forest plot:
 
 ```r
 columns = list(
-  col_numeric("n", "N", position = "left"),       # Left of forest
-  col_interval("OR (95% CI)", position = "right") # Right of forest
+  col_numeric("n", "N"),           # Left of forest
+  col_forest(point = "hr", lower = "lower", upper = "upper"),  # Forest plot in middle
+  col_interval(point = "hr", lower = "lower", upper = "upper", header = "OR (95% CI)")  # Right of forest
 )
 ```
 
 ::: {.callout-note}
-## Default Position
+## Convention
 
-Most column types default to `position = "right"`. The convention is:
+A common layout convention for forest plots:
 
-- **Left**: Study metadata (sample size, events, weights)
-- **Right**: Results and effect estimates (intervals, p-values)
+- **Left of forest**: Study metadata (sample size, events, weights)
+- **Right of forest**: Results and effect estimates (intervals, p-values)
 :::
 
 ## Core Column Types
@@ -126,7 +127,7 @@ Use `digits` for values spanning multiple orders of magnitude.
 Show the point estimate and confidence interval in formatted text:
 
 ```r
-col_interval(header = "OR (95% CI)", width = 120)
+col_interval(point = "or", lower = "lower", upper = "upper", header = "OR (95% CI)", width = 120)
 ```
 
 This automatically formats as `"0.85 (0.70, 1.03)"` using the `point`, `lower`, and `upper` values from each row.
@@ -135,13 +136,13 @@ This automatically formats as `"0.85 (0.70, 1.03)"` using the `point`, `lower`, 
 
 ```r
 # Custom formatting
-col_interval("HR (95% CI)", decimals = 1, sep = ", ")
+col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)", decimals = 1, sep = ", ")
 
 # Override with different columns
 col_interval("Per-Protocol", point = "pp_hr", lower = "pp_lower", upper = "pp_upper")
 
 # Hide imprecise estimates (CI ratio > 10)
-col_interval(imprecise_threshold = 10)
+col_interval(point = "hr", lower = "lower", upper = "upper", imprecise_threshold = 10)
 ```
 
 ## Visualization Columns
@@ -329,19 +330,17 @@ outcomes_data <- data.frame(
   cvdeath_p = c(0.001, 0.029, 0.382)
 )
 
-forest_plot(outcomes_data,
-  point = "primary_hr", lower = "primary_lower", upper = "primary_upper",
-  label = "study", null_value = 1, scale = "log",
+tabviz(outcomes_data,
+  label = "study",
   columns = list(
+    col_forest(point = "primary_hr", lower = "primary_lower", upper = "primary_upper", null_value = 1, scale = "log"),
     col_group("Primary Endpoint",
-      col_interval("HR (95% CI)"),
-      col_pvalue("primary_p", "P"),
-      position = "right"
+      col_interval(point = "primary_hr", lower = "primary_lower", upper = "primary_upper", header = "HR (95% CI)"),
+      col_pvalue("primary_p", "P")
     ),
     col_group("CV Death",
       col_numeric("cvdeath_hr", "HR"),
-      col_pvalue("cvdeath_p", "P"),
-      position = "right"
+      col_pvalue("cvdeath_p", "P")
     )
   ),
   theme = web_theme_modern()

@@ -19,7 +19,7 @@ regenerate_examples <- function(output_dir = "examples_output", open_browser = F
   }
 
   # Get example files
- example_dir <- system.file("examples", package = "webforest")
+ example_dir <- system.file("examples", package = "tabviz")
   if (example_dir == "") {
     # Fallback for development
     example_dir <- "inst/examples"

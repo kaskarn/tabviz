@@ -30,7 +30,7 @@ serialize_data <- function(spec, include_forest = TRUE) {
   df <- spec@data
   n <- nrow(df)
 
-  # Build rows
+  # Build rows - data now lives entirely in metadata
   rows <- lapply(seq_len(n), function(i) {
     row <- df[i, , drop = FALSE]
 
@@ -59,7 +59,7 @@ serialize_data <- function(spec, include_forest = TRUE) {
       NULL
     }
 
-    # Build metadata from all columns
+    # Build metadata from all columns - ALL data lives here
     metadata <- as.list(row)
     names(metadata) <- names(row)
 
@@ -75,9 +75,6 @@ serialize_data <- function(spec, include_forest = TRUE) {
     result <- list(
       id = paste0("row_", i),
       label = label,
-      point = row[[spec@point_col]],
-      lower = row[[spec@lower_col]],
-      upper = row[[spec@upper_col]],
       groupId = group_id,
       metadata = metadata
     )
@@ -136,37 +133,15 @@ serialize_data <- function(spec, include_forest = TRUE) {
     NULL
   }
 
-  # Serialize effects
-  effects <- lapply(spec@effects, function(e) {
-    list(
-      id = e@id,
-      pointCol = e@point_col,
-      lowerCol = e@lower_col,
-      upperCol = e@upper_col,
-      label = if (is.na(e@label)) NULL else e@label,
-      color = if (is.na(e@color)) NULL else e@color,
-      shape = if (is.na(e@shape)) NULL else e@shape,
-      opacity = if (is.na(e@opacity)) NULL else e@opacity
-    )
-  })
-
   list(
     rows = rows,
     groups = groups,
     summaries = summaries,
     overall = overall,
-    pointCol = spec@point_col,
-    lowerCol = spec@lower_col,
-    upperCol = spec@upper_col,
     labelCol = if (is.na(spec@label_col)) NULL else spec@label_col,
     labelHeader = spec@label_header,
     groupCol = if (is.na(spec@group_col)) NULL else spec@group_col,
-    weightCol = if (is.na(spec@weight_col)) NULL else spec@weight_col,
-    scale = spec@scale,
-    nullValue = spec@null_value,
-    axisLabel = spec@axis_label,
-    effects = effects,
-    includeForest = include_forest
+    weightCol = if (is.na(spec@weight_col)) NULL else spec@weight_col
   )
 }
 
@@ -180,7 +155,6 @@ serialize_column <- function(col) {
       id = col@id,
       header = col@header,
       isGroup = TRUE,
-      position = col@position,
       columns = lapply(col@columns, serialize_column)
     ))
   }
@@ -204,7 +178,6 @@ serialize_column <- function(col) {
     align = col@align,
     headerAlign = if (is.na(col@header_align)) NULL else col@header_align,
     wrap = col@wrap,
-    position = col@position,
     sortable = col@sortable,
     isGroup = FALSE
   )
@@ -650,28 +623,28 @@ serialize_annotation <- function(ann) {
 #' Converts a SplitForest object containing multiple WebSpec objects into
 #' a format suitable for the split forest htmlwidget.
 #'
-#' @param split_forest A SplitForest object
+#' @param split_table A SplitForest object
 #' @param include_forest Whether to include forest plot data in each spec
 #' @return A nested list suitable for jsonlite::toJSON
 #' @keywords internal
-serialize_split_forest <- function(split_forest, include_forest = TRUE) {
+serialize_split_table <- function(split_table, include_forest = TRUE) {
   # Serialize each spec
   serialized_specs <- list()
-  for (key in names(split_forest@specs)) {
-    spec <- split_forest@specs[[key]]
+  for (key in names(split_table@specs)) {
+    spec <- split_table@specs[[key]]
     serialized_specs[[key]] <- serialize_spec(spec, include_forest = include_forest)
   }
 
   list(
-    type = "split_forest",
-    splitVars = I(split_forest@split_vars),  # Force array serialization even for length-1
-    navTree = serialize_nav_tree(split_forest@split_tree),
+    type = "split_table",
+    splitVars = I(split_table@split_vars),  # Force array serialization even for length-1
+    navTree = serialize_nav_tree(split_table@split_tree),
     specs = serialized_specs,
-    sharedAxis = split_forest@shared_axis,
-    axisRange = if (any(is.na(split_forest@axis_range))) {
+    sharedAxis = split_table@shared_axis,
+    axisRange = if (any(is.na(split_table@axis_range))) {
       NULL
     } else {
-      list(min = split_forest@axis_range[1], max = split_forest@axis_range[2])
+      list(min = split_table@axis_range[1], max = split_table@axis_range[2])
     }
   )
 }

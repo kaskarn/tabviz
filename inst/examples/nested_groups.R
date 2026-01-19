@@ -1,7 +1,7 @@
 # Example: Nested groups with visual banding
 # Demonstrates: web_group() with parent hierarchy, depth-based indentation and banding
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Create hierarchical data with nested geographic regions
@@ -64,8 +64,8 @@ forest_plot(
   label = "study",
   group = "country",  # Group by country (will show nested structure)
   columns = list(
-    col_numeric("n", "N", position = "left"),
-    col_interval("OR (95% CI)", position = "right")
+    col_numeric("n", "N"),
+    col_interval("OR (95% CI)")
   ),
   theme = web_theme_modern(),
   scale = "log",

@@ -6,7 +6,7 @@
 #' Uses a shared JavaScript SVG generator via the V8 package for consistent
 #' output between R and web exports.
 #'
-#' For SplitForest objects, this function dispatches to `save_split_forest()`
+#' For SplitForest objects, this function dispatches to `save_split_table()`
 #' to export all sub-plots to a directory structure.
 #'
 #' @param x A WebSpec object, forest_plot() htmlwidget output, or SplitForest
@@ -51,7 +51,7 @@
 #' # Save a SplitForest to a directory
 #' split_result <- data |>
 #'   web_spec(point = "estimate", lower = "lower", upper = "upper") |>
-#'   split_forest(by = c("sex", "age_group"))
+#'   split_table(by = c("sex", "age_group"))
 #'
 #' save_plot(split_result, "output/plots")
 #' # Creates: output/plots/Male/Male_Young.svg, etc.
@@ -64,7 +64,7 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
     cli_abort("{.arg file} is required")
   }
 
-  # Dispatch to save_split_forest() if x is a SplitForest
+  # Dispatch to save_split_table() if x is a SplitForest
   if (S7_inherits(x, SplitForest)) {
     # Determine format and path from file argument
     ext <- tolower(tools::file_ext(file))
@@ -77,7 +77,7 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
       path <- file
       format <- "svg"
     }
-    return(save_split_forest(x, path = path, format = format,
+    return(save_split_table(x, path = path, format = format,
                              width = width, height = height, scale = scale, ...))
   }
 
@@ -175,12 +175,12 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
 #' @noRd
 generate_svg_v8 <- function(spec_json, options = list()) {
   # Get path to bundled JS
-  js_file <- system.file("js/svg-generator.js", package = "webforest")
+  js_file <- system.file("js/svg-generator.js", package = "tabviz")
 
   if (js_file == "" || !file.exists(js_file)) {
     # Fallback for development
     js_file <- file.path(
-      system.file(package = "webforest"),
+      system.file(package = "tabviz"),
       "..", "..", "inst", "js", "svg-generator.js"
     )
     if (!file.exists(js_file)) {
@@ -263,10 +263,10 @@ extract_webspec <- function(x) {
 #' # Create a split forest
 #' split_result <- data |>
 #'   web_spec(point = "or", lower = "lower", upper = "upper") |>
-#'   split_forest(by = c("sex", "age_group"))
+#'   split_table(by = c("sex", "age_group"))
 #'
 #' # Export to directory
-#' save_split_forest(split_result, "output/plots")
+#' save_split_table(split_result, "output/plots")
 #'
 #' # Creates:
 #' # output/plots/Male/Male_Young.svg
@@ -276,18 +276,18 @@ extract_webspec <- function(x) {
 #' }
 #'
 #' @export
-save_split_forest <- function(x, path, format = c("svg", "pdf", "png"),
+save_split_table <- function(x, path, format = c("svg", "pdf", "png"),
                                width = 800, height = NULL, scale = 2, ...) {
   # Match format argument
   format <- match.arg(format)
 
   # Extract SplitForest from input
-  split_forest <- extract_splitforest(x)
+  split_table <- extract_splitforest(x)
 
-  if (is.null(split_forest)) {
+  if (is.null(split_table)) {
     cli_abort(c(
       "{.arg x} must be a SplitForest object or forest_plot() output with split_by",
-      "i" = "Create with {.fn split_forest} or use {.code split_by} in {.fn forest_plot}"
+      "i" = "Create with {.fn split_table} or use {.code split_by} in {.fn forest_plot}"
     ))
   }
 
@@ -300,8 +300,8 @@ save_split_forest <- function(x, path, format = c("svg", "pdf", "png"),
   exported_files <- character()
 
  # Export each spec
-  for (key in names(split_forest@specs)) {
-    spec <- split_forest@specs[[key]]
+  for (key in names(split_table@specs)) {
+    spec <- split_table@specs[[key]]
 
     # Build file path from key (hierarchical)
     # e.g., "Male__Young" -> "Male/Male_Young.svg"

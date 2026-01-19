@@ -146,11 +146,11 @@
 
 {#if hasGroups}
   <!-- Two-row header for hierarchical columns using CSS Grid -->
-  <div class="webforest-header-grid" style:grid-template-columns={gridTemplateColumns}>
+  <div class="tabviz-header-grid" style:grid-template-columns={gridTemplateColumns}>
     <!-- Row 1: Label + Group headers -->
     {#if showLabel}
       <div
-        class="webforest-label-col header-cell group-row"
+        class="tabviz-label-col header-cell group-row"
         style:grid-row="1 / 3"
         style:width={getLabelWidth() ? `${getLabelWidth()}px` : undefined}
       >
@@ -167,14 +167,14 @@
     {#each columnDefs as col (col.id)}
       {#if col.isGroup}
         <div
-          class="webforest-col header-cell group-header group-row"
+          class="tabviz-col header-cell group-header group-row"
           style:grid-column="{getGridColumnStart(col)} / span {getColspan(col)}"
         >
           {col.header}
         </div>
       {:else}
         <div
-          class="webforest-col header-cell group-row"
+          class="tabviz-col header-cell group-row"
           style:grid-column={getGridColumnStart(col)}
           style:grid-row="1 / 3"
           style:text-align={col.headerAlign ?? col.align}
@@ -197,7 +197,7 @@
         {#each col.columns as subCol (subCol.id)}
           {#if !subCol.isGroup}
             <div
-              class="webforest-col header-cell column-row"
+              class="tabviz-col header-cell column-row"
               style:text-align={subCol.headerAlign ?? subCol.align}
             >
               <span class="header-text">{subCol.header}</span>
@@ -216,10 +216,10 @@
   </div>
 {:else}
   <!-- Single-row header for flat columns -->
-  <div class="webforest-table-header">
+  <div class="tabviz-table-header">
     {#if showLabel}
       <div
-        class="webforest-label-col"
+        class="tabviz-label-col"
         style:width={getLabelWidth() ? `${getLabelWidth()}px` : undefined}
         style:flex={getLabelWidth() ? 'none' : '1'}
       >
@@ -235,7 +235,7 @@
     {/if}
     {#each leafColumns as column (column.id)}
       <div
-        class="webforest-col"
+        class="tabviz-col"
         class:explicit-width={hasExplicitWidth(column)}
         style:width={getColWidth(column) ? `${getColWidth(column)}px` : "auto"}
         style:text-align={column.headerAlign ?? column.align}
@@ -254,7 +254,7 @@
 {/if}
 
 <style>
-  .webforest-table-header {
+  .tabviz-table-header {
     display: flex;
     height: var(--wf-header-height);
     align-items: center;
@@ -266,7 +266,7 @@
     color: var(--wf-secondary);
   }
 
-  .webforest-header-grid {
+  .tabviz-header-grid {
     display: grid;
     grid-template-rows: calc(var(--wf-header-height) / 2) calc(var(--wf-header-height) / 2);
     /* Removed padding: 0 4px - was causing width mismatch with data rows */
@@ -297,7 +297,7 @@
     padding-right: var(--wf-group-padding, 8px);
   }
 
-  .webforest-label-col {
+  .tabviz-label-col {
     flex: 1;
     min-width: 120px;
     padding: 0 10px;
@@ -307,7 +307,7 @@
     position: relative;
   }
 
-  .webforest-col {
+  .tabviz-col {
     padding: 0 10px;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;

@@ -7,7 +7,7 @@ Multi-feature combinations, publication templates, and specialized visualization
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 library(dplyr)
 ```
 
@@ -46,23 +46,24 @@ trial_program <- tibble(
   badge = c("Lead Site", NA, NA, NA, NA, NA, "Top Recruiter", NA, NA)
 )
 
-forest_plot(
+tabviz(
   trial_program,
-  point = "itt_hr", lower = "itt_lo", upper = "itt_hi",
   label = "site", group = c("region", "country"),
   columns = list(
     col_n("n"),
     col_sparkline("trend", "HR Trend"),
-    col_interval("ITT HR (95% CI)")
-  ),
-  effects = list(
-    web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
-    web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+    col_forest(
+      effects = list(
+        web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
+        web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+      ),
+      scale = "log", null_value = 1,
+      axis_label = "Hazard Ratio"
+    ),
+    col_interval(point = "itt_hr", lower = "itt_lo", upper = "itt_hi", header = "ITT HR (95% CI)")
   ),
   row_badge = "badge",
   theme = web_theme_dark(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio",
   title = "Clinical Trial Program",
   subtitle = "Nested groups + dual effects + sparklines + badges",
   caption = "Combining hierarchical structure with sensitivity analysis"
@@ -106,22 +107,21 @@ exec_dashboard <- tibble(
   rcolor = c("#16a34a", NA, "#2563eb", NA, NA, NA, NA, "#2563eb", NA, NA, NA, "#2563eb", NA, NA)
 )
 
-webtable(
+tabviz(
   exec_dashboard,
-  point = "effect", lower = "lower", upper = "upper",
   label = "department",
   columns = list(
-    col_numeric("headcount", "HC", position = "left"),
-    col_numeric("revenue_m", "Rev $M", position = "left"),
-    col_bar("growth", "Growth %", position = "right"),
-    col_numeric("satisfaction", "eNPS", position = "right"),
-    col_sparkline("trend", "6M Trend", position = "right")
+    col_numeric("headcount", "HC"),
+    col_numeric("revenue_m", "Rev $M"),
+    col_bar("growth", "Growth %"),
+    col_numeric("satisfaction", "eNPS"),
+    col_sparkline("trend", "6M Trend")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent", row_color = "rcolor",
   theme = web_theme_modern(),
   title = "Executive Dashboard",
   subtitle = "Table-only with hierarchical org structure",
-  caption = "Combining webtable() with row styling for org charts"
+  caption = "Using tabviz() with row styling for org charts"
 )
 ```
 
@@ -134,22 +134,25 @@ Row styling + annotations + axis control using the `glp1_trials` package dataset
 ```{r}
 data(glp1_trials)
 
-forest_plot(
+tabviz(
   glp1_trials,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   group = "group",
   columns = list(
     col_group("Study Info",
       col_text("drug", "Drug"),
-      col_n("n"),
-      position = "left"
+      col_n("n")
     ),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_range = c(0.4, 1.5),
+               axis_ticks = c(0.5, 0.75, 1.0, 1.25),
+               axis_gridlines = TRUE,
+               axis_label = "Hazard Ratio (95% CI)"),
     col_group("Results",
       col_events("events", "n", "Events"),
-      col_interval("HR (95% CI)"),
-      col_pvalue("pvalue", "P"),
-      position = "right"
+      col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)"),
+      col_pvalue("pvalue", "P")
     )
   ),
   annotations = list(
@@ -157,11 +160,6 @@ forest_plot(
   ),
   row_type = "row_type", row_bold = "row_bold",
   theme = web_theme_lancet(),
-  scale = "log", null_value = 1,
-  axis_range = c(0.4, 1.5),
-  axis_ticks = c(0.5, 0.75, 1.0, 1.25),
-  axis_gridlines = TRUE,
-  axis_label = "Hazard Ratio (95% CI)",
   title = "GLP-1 Agonist Cardiovascular Outcomes",
   subtitle = "Row grouping by trial type + column grouping for Study Info / Results",
   caption = "Major adverse cardiovascular events (MACE)",
@@ -212,33 +210,33 @@ monty_theme <- web_theme_dark() |>
   set_spacing(row_height = 38) |>
   set_axis(gridlines = TRUE, gridline_style = "dotted")
 
-forest_plot(
+tabviz(
   full_monty,
-  point = "primary_hr", lower = "primary_lo", upper = "primary_hi",
   label = "study", group = c("program", "phase"),
   columns = list(
     col_n("n"),
     col_bar("weight"),
-    col_group("Results",
-      col_interval("HR (95% CI)"),
-      col_pvalue("pvalue", "P"),
-      position = "right"
+    col_forest(
+      effects = list(
+        web_effect("primary_hr", "primary_lo", "primary_hi", label = "Primary", color = "#22c55e"),
+        web_effect("secondary_hr", "secondary_lo", "secondary_hi", label = "Secondary", color = "#3b82f6"),
+        web_effect("safety_hr", "safety_lo", "safety_hi", label = "Safety", color = "#f59e0b")
+      ),
+      scale = "log", null_value = 1,
+      axis_range = c(0.4, 1.2),
+      axis_label = "Hazard Ratio"
     ),
-    col_sparkline("trend", "Trend", position = "right")
-  ),
-  effects = list(
-    web_effect("primary_hr", "primary_lo", "primary_hi", label = "Primary", color = "#22c55e"),
-    web_effect("secondary_hr", "secondary_lo", "secondary_hi", label = "Secondary", color = "#3b82f6"),
-    web_effect("safety_hr", "safety_lo", "safety_hi", label = "Safety", color = "#f59e0b")
+    col_group("Results",
+      col_interval(point = "primary_hr", lower = "primary_lo", upper = "primary_hi", header = "HR (95% CI)"),
+      col_pvalue("pvalue", "P")
+    ),
+    col_sparkline("trend", "Trend")
   ),
   annotations = list(
     forest_refline(0.75, label = "Target", style = "dashed", color = "#a855f7")
   ),
   row_badge = "badge",
   theme = monty_theme,
-  scale = "log", null_value = 1,
-  axis_range = c(0.4, 1.2),
-  axis_label = "Hazard Ratio",
   title = "The Full Monty",
   subtitle = "Nested groups + 3 effects + sparklines + weights + annotations + custom theme",
   caption = "Every major feature combined in one visualization",
@@ -280,19 +278,19 @@ jama_data <- tibble(
   rindent = c(0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1)
 )
 
-forest_plot(
+tabviz(
   jama_data,
-  point = "hr", lower = "lower", upper = "upper",
   label = "subgroup",
   columns = list(
     col_numeric("n", "No."),
-    col_interval("HR (95% CI)"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio (95% CI)"),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)"),
     col_pvalue("p_int", "P Interaction")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   theme = web_theme_jama(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio (95% CI)",
   title = "Figure 2. Subgroup Analyses",
   footnote = "HR indicates hazard ratio. P values are for interaction."
 )
@@ -323,27 +321,25 @@ lancet_data <- tibble(
   n_ctrl = c(2371, 2371, 2371, 2371, 2180)
 )
 
-forest_plot(
+tabviz(
   lancet_data,
-  point = "hr", lower = "lower", upper = "upper",
   label = "outcome",
   group = "category",
   columns = list(
     col_group("Treatment",
       col_n("events_tx", "Events"),
-      col_n("n_tx", "N"),
-      position = "left"
+      col_n("n_tx", "N")
     ),
     col_group("Control",
       col_n("events_ctrl", "Events"),
-      col_n("n_ctrl", "N"),
-      position = "left"
+      col_n("n_ctrl", "N")
     ),
-    col_interval("HR (95% CI)")
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio (95% CI)"),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
   ),
   theme = web_theme_lancet(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio (95% CI)",
   title = "Figure 3: Efficacy Outcomes",
   subtitle = "Row groups by endpoint type + column groups by treatment arm",
   caption = "HR<1 favours treatment.",
@@ -369,26 +365,24 @@ minimal_data <- tibble(
   weight = c(17.2, 16.8, 19.5, 21.2, 10.1, 15.2)
 )
 
-forest_plot(
+tabviz(
   minimal_data,
-  point = "hr", lower = "lower", upper = "upper",
   label = "trial",
   group = "phase",
   columns = list(
     col_group("Sample",
       col_n("n"),
-      col_numeric("events", "Events"),
-      position = "left"
+      col_numeric("events", "Events")
     ),
     col_group("Results",
       col_bar("weight"),
-      col_interval("HR (95% CI)"),
-      position = "right"
+      col_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1,
+                 axis_label = "Hazard Ratio"),
+      col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
     )
   ),
   theme = web_theme_minimal(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio",
   title = "Forest Plot",
   subtitle = "Row groups by phase + column groups for Sample / Results",
   footnote = "Random-effects model. Weights from inverse variance."
@@ -409,20 +403,20 @@ Split by region with shared axis to enable cross-region comparison. Extreme CIs 
 # Use effect_sizes stress test dataset - widely varying CI widths
 data(effect_sizes)
 
-forest_plot(
+tabviz(
   effect_sizes,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   split_by = "region",
   shared_axis = TRUE,
   columns = list(
     col_text("treatment", "Treatment"),
     col_n("n"),
-    col_interval("HR (95% CI)")
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio (95% CI)"),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
   ),
-  scale = "log", null_value = 1,
   theme = web_theme_modern(),
-  axis_label = "Hazard Ratio (95% CI)",
   title = "Treatment Effect by Region",
   subtitle = "Click sidebar to navigate between regions",
   caption = "Arrows indicate CIs beyond 3× the estimate bounds"
@@ -438,20 +432,20 @@ Two-level split: Outcome > Treatment. The sidebar expands into a tree structure.
 ```{r}
 data(effect_sizes)
 
-forest_plot(
+tabviz(
   effect_sizes,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   split_by = c("outcome", "treatment"),
   columns = list(
     col_text("region", "Region"),
     col_text("phase", "Phase"),
     col_n("n"),
-    col_interval("HR (95% CI)")
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio"),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
   ),
-  scale = "log", null_value = 1,
   theme = web_theme_modern(),
-  axis_label = "Hazard Ratio",
   title = "Hierarchical Subgroup Analysis",
   subtitle = "Outcome > Treatment navigation tree",
   caption = "Expand tree nodes to drill into subgroups"
@@ -467,21 +461,21 @@ When `shared_axis = TRUE`, all subgroups use the same axis range for visual comp
 ```{r}
 data(effect_sizes)
 
-forest_plot(
+tabviz(
   effect_sizes,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   split_by = "outcome",
   shared_axis = TRUE,
   columns = list(
     col_text("treatment", "Treatment"),
     col_text("phase", "Phase"),
-    col_interval("HR (95% CI)")
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio"),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
   ),
-  scale = "log", null_value = 1,
   theme = web_theme_dark() |>
     set_axis(gridlines = TRUE, gridline_style = "dotted"),
-  axis_label = "Hazard Ratio",
   title = "Shared Axis Comparison",
   subtitle = "shared_axis = TRUE ensures consistent scale across outcomes",
   caption = "Compare Primary, Secondary, and Exploratory outcomes on identical scales"
@@ -492,7 +486,7 @@ forest_plot(
 
 # Fun Examples
 
-Non-clinical examples showcasing webforest's versatility.
+Non-clinical examples showcasing tabviz's versatility.
 
 ## 21. NBA Player Efficiency
 
@@ -502,35 +496,31 @@ Sports analytics using the `nba_efficiency` package dataset.
 #| fig-height: 8
 data(nba_efficiency)
 
-forest_plot(
+tabviz(
   nba_efficiency,
   label = "player",
-  point = "per",
-  lower = "per_lower",
-  upper = "per_upper",
   group = "conference",
   columns = list(
     col_group("Player Info",
       col_text("team", "Team", width = 50),
-      col_text("position", "Pos", width = 40),
-      position = "left"
+      col_text("position", "Pos", width = 40)
     ),
     col_group("Stats",
       col_numeric("ppg", "PPG"),
-      col_numeric("games", "GP", decimals = 0),
-      position = "left"
+      col_numeric("games", "GP", decimals = 0)
     ),
-    col_interval("PER (95% CI)")
+    col_forest(point = "per", lower = "per_lower", upper = "per_upper",
+               null_value = 15,
+               axis_label = "Player Efficiency Rating"),
+    col_interval(point = "per", lower = "per_lower", upper = "per_upper", header = "PER (95% CI)")
   ),
   row_badge = "award",
-  null_value = 15,  # League average PER
   theme = web_theme_modern() |>
     set_colors(
       primary = "#C9082A",  # NBA red
       interval_positive = "#17408B",  # NBA blue
       interval_negative = "#C9082A"
     ),
-  axis_label = "Player Efficiency Rating",
   title = "NBA Player Efficiency Ratings",
   subtitle = "Row groups by conference + column groups for Player Info / Stats",
   caption = "PER = 15 is league average. Badge shows major awards.",
@@ -560,27 +550,26 @@ rich_columns_data <- tibble(
   upper = c(0.88, 0.92, 0.84, 0.95, 0.87)
 )
 
-forest_plot(
+tabviz(
   rich_columns_data,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   columns = list(
     col_badge("status", "Status",
-      variants = list(Published = "success", Draft = "warning", `In Review` = "info"),
-      position = "left"
+      variants = list(Published = "success", Draft = "warning", `In Review` = "info")
     ),
-    col_stars("quality", "Quality", position = "left"),
-    col_range("age_min", "age_max", header = "Age", position = "left"),
+    col_stars("quality", "Quality"),
+    col_range("age_min", "age_max", header = "Age"),
     col_icon("validated", "Valid",
       mapping = list(yes = "✓", no = "✗"),
-      color = "#16a34a", position = "left"
+      color = "#16a34a"
     ),
-    col_reference("doi", "DOI", max_chars = 20, position = "right"),
-    col_interval("HR (95% CI)")
+    col_reference("doi", "DOI", max_chars = 20),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio"),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
   ),
   theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio",
   title = "Rich Column Types",
   subtitle = "Badges, stars, ranges, icons, and references",
   caption = "New column types for enhanced data presentation"
@@ -611,32 +600,28 @@ carrier_summary <- airline_delays |>
   ) |>
   arrange(carrier_type, delay_vs_avg)
 
-forest_plot(
+tabviz(
   carrier_summary,
   label = "carrier",
-  point = "delay_vs_avg",
-  lower = "delay_lower",
-  upper = "delay_upper",
   group = "carrier_type",
   columns = list(
     col_group("Service",
       col_percent("on_time_pct", "On-Time", decimals = 0),
-      col_numeric("satisfaction", "Rating", decimals = 1),
-      position = "left"
+      col_numeric("satisfaction", "Rating", decimals = 1)
     ),
     col_group("Trends",
       col_sparkline("trend", "12M"),
-      col_interval("Delay (min)"),
-      position = "right"
+      col_forest(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper",
+                 null_value = 0,
+                 axis_label = "Delay vs. Industry Average (minutes)"),
+      col_interval(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper", header = "Delay (min)")
     )
   ),
-  null_value = 0,
   theme = web_theme_modern() |>
     set_colors(
       interval_positive = "#16a34a",  # Green = good (early)
       interval_negative = "#dc2626"   # Red = bad (late)
     ),
-  axis_label = "Delay vs. Industry Average (minutes)",
   title = "Airline Carrier Performance",
   subtitle = "Row groups by carrier type + column groups for Service / Trends",
   caption = "Negative values = ahead of schedule",
@@ -653,9 +638,8 @@ Using `climate_temps` with split navigation to explore temperature anomalies acr
 ```{r}
 data(climate_temps)
 
-forest_plot(
+tabviz(
   climate_temps,
-  point = "anomaly", lower = "lower", upper = "upper",
   label = "region",
   split_by = "category",
   shared_axis = TRUE,
@@ -664,16 +648,17 @@ forest_plot(
     col_badge("certainty", "Confidence",
       variants = list(High = "success", Medium = "warning")
     ),
-    col_interval("Anomaly °C")
+    col_forest(point = "anomaly", lower = "lower", upper = "upper",
+               null_value = 0,
+               axis_label = "Temperature Anomaly (°C vs. baseline)"),
+    col_interval(point = "anomaly", lower = "lower", upper = "upper", header = "Anomaly °C")
   ),
-  null_value = 0,
   theme = web_theme_modern() |>
     set_colors(
       interval_positive = "#dc2626",  # Red = warming
       interval_negative = "#3b82f6"   # Blue = cooling
     ) |>
     set_axis(gridlines = TRUE),
-  axis_label = "Temperature Anomaly (°C vs. baseline)",
   title = "Global Temperature Change Evidence",
   subtitle = "Split by geographic category with shared axis",
   caption = "Navigate between Global, Hemisphere, and Continental measurements"
@@ -698,26 +683,27 @@ effect_sizes_multi <- effect_sizes |>
     upper_sens = upper * 1.08
   )
 
-forest_plot(
+tabviz(
   effect_sizes_multi,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   split_by = c("region", "treatment"),
   shared_axis = TRUE,
   columns = list(
     col_text("phase", "Phase"),
     col_n("n"),
-    col_interval("HR (95% CI)")
+    col_forest(
+      effects = list(
+        web_effect("hr", "lower", "upper", label = "Primary", color = "#2563eb"),
+        web_effect("hr_sens", "lower_sens", "upper_sens", label = "Sensitivity", color = "#f59e0b")
+      ),
+      scale = "log", null_value = 1,
+      axis_label = "Hazard Ratio"
+    ),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
   ),
-  effects = list(
-    web_effect("hr", "lower", "upper", label = "Primary", color = "#2563eb"),
-    web_effect("hr_sens", "lower_sens", "upper_sens", label = "Sensitivity", color = "#f59e0b")
-  ),
-  scale = "log", null_value = 1,
   theme = web_theme_dark() |>
     set_axis(gridlines = TRUE, ci_clip_factor = 2) |>
     set_spacing(row_height = 36),
-  axis_label = "Hazard Ratio",
   title = "Comprehensive Stress Test",
   subtitle = "Region > Treatment split + dual effects + tight clipping",
   caption = "ci_clip_factor = 2 clips CIs beyond 2× the estimate bounds"

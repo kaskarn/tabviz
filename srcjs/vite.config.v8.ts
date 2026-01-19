@@ -11,7 +11,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/v8-entry.ts"),
-      name: "webforestV8",
+      name: "tabvizV8",
       fileName: () => "svg-generator.js",
       formats: ["iife"],
     },

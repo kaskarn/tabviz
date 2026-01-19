@@ -4,7 +4,7 @@ title: "Themes"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 Theme functions for customizing forest plot appearance.

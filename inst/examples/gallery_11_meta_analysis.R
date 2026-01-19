@@ -1,7 +1,7 @@
 # Gallery Example 11: Publication Meta-Analysis
 # Row styling + annotations + axis control + weight column
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 meta_analysis <- tibble(

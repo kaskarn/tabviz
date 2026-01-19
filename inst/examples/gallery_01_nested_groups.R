@@ -1,7 +1,7 @@
 # Gallery Example 1: Nested Hierarchical Groups
 # Three levels of nesting: Region > Country > Site
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 nested_data <- tibble(

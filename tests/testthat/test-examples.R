@@ -4,15 +4,15 @@
 # 2. Visual testing: Regenerate HTML files for manual inspection
 #
 # To regenerate all examples for visual inspection, run:
-#   webforest::regenerate_examples()
+#   tabviz::regenerate_examples()
 #
 # Or from the package root:
-#   R -e "webforest::regenerate_examples()"
+#   R -e "tabviz::regenerate_examples()"
 
 # Helper: Get all example file paths
 get_example_files <- function() {
 
-  example_dir <- system.file("examples", package = "webforest")
+  example_dir <- system.file("examples", package = "tabviz")
   if (example_dir == "") {
     # Fallback for development
     example_dir <- "inst/examples"
@@ -85,7 +85,7 @@ test_that("column_groups example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("dark_theme example produces valid widget", {
@@ -95,7 +95,7 @@ test_that("dark_theme example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("interactive_demo example produces valid widget", {
@@ -105,7 +105,7 @@ test_that("interactive_demo example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("iris_regression example produces valid widget", {
@@ -115,7 +115,7 @@ test_that("iris_regression example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("jama_style example produces valid widget", {
@@ -125,7 +125,7 @@ test_that("jama_style example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("lancet_style example produces valid widget", {
@@ -135,7 +135,7 @@ test_that("lancet_style example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("mtcars_meta example produces valid widget", {
@@ -145,7 +145,7 @@ test_that("mtcars_meta example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("multi_effect example produces valid widget", {
@@ -155,7 +155,7 @@ test_that("multi_effect example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("nested_groups example produces valid widget", {
@@ -165,7 +165,7 @@ test_that("nested_groups example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("presentation_demo example produces valid widget", {
@@ -175,7 +175,7 @@ test_that("presentation_demo example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 test_that("row_styling example produces valid widget", {
@@ -185,7 +185,7 @@ test_that("row_styling example produces valid widget", {
 
   widget <- run_example(ex[1])
   expect_s3_class(widget, "htmlwidget")
-  expect_s3_class(widget, "webforest")
+  expect_s3_class(widget, "tabviz")
 })
 
 # Meta-test: all examples should produce valid widgets

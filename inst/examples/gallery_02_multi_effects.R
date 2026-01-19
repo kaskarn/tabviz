@@ -1,7 +1,7 @@
 # Gallery Example 2: Multiple Effects Per Row
 # Five different analysis methods shown simultaneously
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 multi_effect_data <- tibble(

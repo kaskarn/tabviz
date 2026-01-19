@@ -7,7 +7,7 @@ Single-feature showcases demonstrating key webforest capabilities.
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 library(dplyr)
 ```
 
@@ -38,18 +38,17 @@ nested_data <- tibble(
   n = c(245, 189, 312, 278, 156, 134, 298, 267, 445, 389, 512, 478)
 )
 
-forest_plot(
+tabviz(
   nested_data,
-  point = "hr", lower = "lower", upper = "upper",
   label = "site",
   group = c("region", "country"),  # Hierarchical: region > country
   columns = list(
     col_n("n"),
-    col_interval("HR (95% CI)")
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
   theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio",
   title = "Nested Hierarchical Groups",
   subtitle = "Region > Country > Site (3 levels)",
   caption = "Click any group header to collapse that branch and all children"
@@ -88,24 +87,24 @@ multi_effect_data <- tibble(
   tip_hi = c(0.97, 1.02, 0.88, 1.07, 0.94)
 )
 
-forest_plot(
+tabviz(
   multi_effect_data,
-  point = "itt_or", lower = "itt_lo", upper = "itt_hi",
   label = "study",
   columns = list(
     col_n("n"),
-    col_interval("Primary OR")
-  ),
-  effects = list(
-    web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT (Primary)", color = "#2563eb"),
-    web_effect("mi_or", "mi_lo", "mi_hi", label = "Multiple Imputation", color = "#7c3aed"),
-    web_effect("cc_or", "cc_lo", "cc_hi", label = "Complete Case", color = "#059669"),
-    web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#d97706"),
-    web_effect("tip_or", "tip_lo", "tip_hi", label = "Tipping Point", color = "#dc2626")
+    col_interval("Primary OR", point = "itt_or", lower = "itt_lo", upper = "itt_hi"),
+    col_forest(
+      effects = list(
+        web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT (Primary)", color = "#2563eb"),
+        web_effect("mi_or", "mi_lo", "mi_hi", label = "Multiple Imputation", color = "#7c3aed"),
+        web_effect("cc_or", "cc_lo", "cc_hi", label = "Complete Case", color = "#059669"),
+        web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#d97706"),
+        web_effect("tip_or", "tip_lo", "tip_hi", label = "Tipping Point", color = "#dc2626")
+      ),
+      scale = "log", null_value = 1, axis_label = "Odds Ratio (95% CI)"
+    )
   ),
   theme = web_theme_modern() |> set_spacing(row_height = 40),
-  scale = "log", null_value = 1,
-  axis_label = "Odds Ratio (95% CI)",
   title = "Multiple Effects Per Row",
   subtitle = "5 sensitivity analyses displayed simultaneously",
   footnote = "Blue=ITT, Purple=MI, Green=CC, Orange=PP, Red=Tipping"
@@ -134,24 +133,21 @@ table_data <- tibble(
     c(18, 20, 22, 28, 35, 42), c(10200, 11000, 12500, 13200, 14100, 15200),
     c(3.5, 3.2, 2.8, 2.5, 2.3, 2.1), c(68, 70, 72, 74, 76, 78),
     c(210, 198, 185, 178, 172, 165), c(850, 880, 920, 945, 980, 1020)
-  ),
-  # Dummy effect data (required but not displayed)
-  effect = rep(1, 10), lower = rep(0.9, 10), upper = rep(1.1, 10)
+  )
 )
 
-webtable(
+tabviz(
   table_data,
-  point = "effect", lower = "lower", upper = "upper",
   label = "metric", group = "category",
   columns = list(
-    col_numeric("q4", "Q4 Actual", position = "left"),
-    col_bar("yoy_pct", "YoY %", position = "right"),
-    col_sparkline("trend", "6Q Trend", position = "right")
+    col_numeric("q4", "Q4 Actual"),
+    col_bar("yoy_pct", "YoY %"),
+    col_sparkline("trend", "6Q Trend")
   ),
   theme = web_theme_modern(),
   title = "Table-Only Mode",
   subtitle = "No forest plot - pure data table with bars and sparklines",
-  caption = "Using webtable() instead of forest_plot()"
+  caption = "Using tabviz() for table-only display"
 )
 ```
 
@@ -194,18 +190,17 @@ theme_demo_data <- tibble(
 ) |>
   mutate(lower = latency_ms - 1.96 * latency_se, upper = latency_ms + 1.96 * latency_se)
 
-forest_plot(
+tabviz(
   theme_demo_data,
-  point = "latency_ms", lower = "lower", upper = "upper",
   label = "process",
   columns = list(
-    col_numeric("uptime", "Uptime %", position = "left"),
-    col_numeric("rps", "RPS", position = "left"),
-    col_interval("Latency ms (95% CI)")
+    col_numeric("uptime", "Uptime %"),
+    col_numeric("rps", "RPS"),
+    col_interval("Latency ms (95% CI)", point = "latency_ms", lower = "lower", upper = "upper"),
+    col_forest(point = "latency_ms", lower = "lower", upper = "upper",
+               null_value = 20, axis_label = "Response Latency (ms)")
   ),
   theme = terminal_theme,
-  null_value = 20,
-  axis_label = "Response Latency (ms)",
   title = "Custom Theme: Terminal",
   subtitle = "Built with set_colors(), set_typography(), set_spacing(), set_shapes()",
   caption = "Monospace font, green-on-black, zero border radius"
@@ -242,26 +237,23 @@ viz_data <- tibble(
 ) |>
   mutate(lower = return_1y - 1.96 * return_se, upper = return_1y + 1.96 * return_se)
 
-forest_plot(
+tabviz(
   viz_data,
-  point = "return_1y", lower = "lower", upper = "upper",
   label = "fund",
   columns = list(
     col_group("Fund Info",
       col_bar("aum_b", "AUM ($B)"),
-      col_numeric("expense", "Expense %"),
-      position = "left"
+      col_numeric("expense", "Expense %")
     ),
     col_group("Trends",
       col_sparkline("monthly_returns", "12M Returns"),
-      col_sparkline("flow_trend", "6M Flows"),
-      position = "right"
+      col_sparkline("flow_trend", "6M Flows")
     ),
-    col_interval("1Y Return % (95% CI)")
+    col_interval("1Y Return % (95% CI)", point = "return_1y", lower = "lower", upper = "upper"),
+    col_forest(point = "return_1y", lower = "lower", upper = "upper",
+               null_value = 0, axis_label = "1-Year Return (%)")
   ),
   theme = web_theme_modern(),
-  null_value = 0,
-  axis_label = "1-Year Return (%)",
   title = "Sparklines & Bars",
   subtitle = "col_group() organizes related columns under shared headers",
   caption = "Fund Info group on left, Trends group on right"
@@ -296,19 +288,18 @@ styled_data <- tibble(
   rbadge = c(NA, "Primary", NA, NA, NA, NA, NA, NA, "Key", NA, "Pooled")
 )
 
-forest_plot(
+tabviz(
   styled_data,
-  point = "hr", lower = "lower", upper = "upper",
   label = "label",
   columns = list(
     col_numeric("events", "Events"),
-    col_interval("HR (95% CI)")
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   row_color = "rcolor", row_badge = "rbadge",
   theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio",
   title = "Row Styling Features",
   subtitle = "row_type, row_bold, row_indent, row_color, row_badge",
   caption = "Headers in blue, summary in green, with badges and indentation"
@@ -332,23 +323,22 @@ marker_data <- tibble(
   n = c(1250, 980, 1420, 2100, 1890, 1650)
 )
 
-forest_plot(
+tabviz(
   marker_data,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   group = "design",
   columns = list(
     col_n("n"),
     col_pvalue("pvalue", "P"),
-    col_interval("HR (95% CI)")
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
   # Formula expressions - no pre-computed columns needed
   marker_shape = ~ ifelse(design == "RCT", "circle", "square"),
   marker_color = ~ ifelse(pvalue < 0.05, "#16a34a", "#94a3b8"),
   marker_opacity = ~ ifelse(pvalue < 0.01, 1, 0.7),
   theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio",
   title = "Marker Styling with Formulas",
   subtitle = "Shape by study design, color by significance, opacity by p-value",
   caption = "Using formula expressions: ~ ifelse(design == \"RCT\", \"circle\", \"square\")"
@@ -371,9 +361,8 @@ cell_style_data <- tibble(
   change = c(-18.5, 8.2, -12.4, -1.2, -5.8)
 )
 
-forest_plot(
+tabviz(
   cell_style_data,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   columns = list(
     # .x refers to the column's own values
@@ -392,11 +381,11 @@ forest_plot(
         TRUE ~ "#71717a"
       )
     ),
-    col_interval("HR (95% CI)")
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
-  scale = "log", null_value = 1,
   theme = web_theme_modern(),
-  axis_label = "Hazard Ratio",
   title = "Cell-Level Formula Styling",
   subtitle = "Using .x to style cells based on their own values",
   caption = ".x < 0.05 applies per-cell: bold = ~ .x < 0.05"
@@ -418,21 +407,20 @@ annotation_data <- tibble(
   dose_mg = c(50, 100, 200, 150, 250)
 )
 
-forest_plot(
+tabviz(
   annotation_data,
-  point = "or", lower = "lower", upper = "upper",
   label = "study",
   columns = list(
     col_numeric("dose_mg", "Dose (mg)"),
-    col_interval("OR (95% CI)")
+    col_interval("OR (95% CI)", point = "or", lower = "lower", upper = "upper"),
+    col_forest(point = "or", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1, axis_label = "Odds Ratio")
   ),
   annotations = list(
     forest_refline(0.80, label = "Clinically meaningful", style = "dashed", color = "#16a34a"),
     forest_refline(0.50, label = "Target effect", style = "solid", color = "#dc2626")
   ),
   theme = web_theme_modern(),
-  scale = "log", null_value = 1,
-  axis_label = "Odds Ratio",
   title = "Annotations & Reference Lines",
   subtitle = "forest_refline() adds labeled vertical lines",
   caption = "Green dashed = clinically meaningful threshold, Red solid = target"
@@ -449,19 +437,18 @@ The `ci_clip_factor` controls how far CIs can extend beyond estimate bounds. For
 # Use the effect_sizes stress test dataset - contains studies with widely varying CI widths
 data(effect_sizes)
 
-forest_plot(
+tabviz(
   effect_sizes,
-  point = "hr", lower = "lower", upper = "upper",
   label = "study",
   columns = list(
     col_text("phase", "Phase"),
     col_n("n"),
-    col_interval("HR (95% CI)")
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1, axis_label = "Hazard Ratio (log scale)")
   ),
   theme = web_theme_modern() |>
     set_axis(gridlines = TRUE, gridline_style = "dotted"),  # default ci_clip_factor = 3
-  scale = "log", null_value = 1,
-  axis_label = "Hazard Ratio (log scale)",
   title = "Axis Control & CI Clipping",
   subtitle = "Default ci_clip_factor = 3 allows CIs up to 3× beyond estimates",
   caption = "Arrows indicate CIs clipped beyond axis limits"
@@ -477,15 +464,16 @@ Non-clinical example showing temperature anomalies—webforest works for any int
 ```{r}
 data(climate_temps)
 
-forest_plot(
+tabviz(
   climate_temps,
-  point = "anomaly", lower = "lower", upper = "upper",
   label = "region",
   group = "category",
   columns = list(
     col_text("period", "Period"),
     col_text("certainty", "Confidence"),
-    col_interval("Anomaly °C (95% CI)")
+    col_interval("Anomaly °C (95% CI)", point = "anomaly", lower = "lower", upper = "upper"),
+    col_forest(point = "anomaly", lower = "lower", upper = "upper",
+               null_value = 0, axis_label = "Temperature Anomaly (°C vs. pre-industrial)")
   ),
   marker_shape = ~ ifelse(certainty == "High", "circle", "square"),
   marker_color = ~ ifelse(anomaly > 1.5, "#dc2626", ifelse(anomaly > 1.0, "#f59e0b", "#3b82f6")),
@@ -495,8 +483,6 @@ forest_plot(
       interval_negative = "#3b82f6"   # Blue for cooling
     ) |>
     set_axis(gridlines = TRUE),
-  null_value = 0,  # Pre-industrial baseline
-  axis_label = "Temperature Anomaly (°C vs. pre-industrial)",
   title = "Regional Temperature Anomalies",
   subtitle = "Grouped by geographic category, shaped by confidence level",
   caption = "Red = significant warming, Blue = cooling or below baseline"

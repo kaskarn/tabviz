@@ -4,7 +4,7 @@ title: "Troubleshooting"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 library(dplyr)
 ```
 
@@ -364,15 +364,18 @@ web_theme_default() |>
 ### Inspecting WebSpec
 
 ```{r}
-# Create spec without rendering
+# Create spec without rendering (table-only spec)
 spec <- web_spec(
   data.frame(
     study = c("A", "B"),
     hr = c(0.8, 1.2),
-    lower = c(0.6, 0.9),
-    upper = c(1.1, 1.6)
+    n = c(100, 200)
   ),
-  point = "hr", lower = "lower", upper = "upper", label = "study"
+  label = "study",
+  columns = list(
+    col_numeric("hr", "HR"),
+    col_n("n")
+  )
 )
 
 # Print summary

@@ -1,7 +1,7 @@
 # Example: Row-level styling with row_* parameters
 # Demonstrates: headers, summaries, bold/italic, colors, indentation, icons, badges
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Create a structured meta-analysis table with row-level styling
@@ -62,8 +62,8 @@ forest_plot(
   upper = "upper",
   label = "study",
   columns = list(
-    col_numeric("n", "N", position = "right"),
-    col_interval("HR (95% CI)", position = "right")
+    col_numeric("n", "N"),
+    col_interval("HR (95% CI)")
   ),
   # Row styling: reference columns by name
   row_type = "row_type",

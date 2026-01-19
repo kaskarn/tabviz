@@ -331,7 +331,7 @@ interface InternalLayout extends ComputedLayout {
   labelWidth: number;               // Calculated label column width
 }
 
-function computeLayout(spec: WebSpec, options: ExportOptions): InternalLayout {
+function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number = 0): InternalLayout {
   const theme = spec.theme;
   const rowHeight = theme.spacing.rowHeight;
   const padding = theme.spacing.padding;
@@ -447,7 +447,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions): InternalLayout {
     rowHeight,
     plotHeight,
     axisHeight: LAYOUT.AXIS_HEIGHT,
-    nullValue: spec.data.nullValue,
+    nullValue,
     summaryYPosition: plotHeight - rowHeight,
     showOverallSummary: hasOverall,
     headerTextHeight,
@@ -791,8 +791,8 @@ interface ScaleAndClip {
   ticks: number[];
 }
 
-function computeXScaleAndClip(spec: WebSpec, forestWidth: number, options?: ExportOptions): ScaleAndClip {
-  const isLog = spec.data.scale === "log";
+function computeXScaleAndClip(spec: WebSpec, forestWidth: number, forestSettings: ForestColumnSettings, options?: ExportOptions): ScaleAndClip {
+  const isLog = forestSettings.scale === "log";
   const axisLabelPadding = SPACING.AXIS_LABEL_PADDING;
   const rangeStart = axisLabelPadding;
   const rangeEnd = Math.max(forestWidth - axisLabelPadding, rangeStart + 50);
@@ -805,8 +805,8 @@ function computeXScaleAndClip(spec: WebSpec, forestWidth: number, options?: Expo
     const ticks = generateTicks(
       clipBounds,
       spec.theme.axis,
-      spec.data.scale,
-      spec.data.nullValue
+      forestSettings.scale,
+      forestSettings.nullValue
     );
     if (isLog) {
       return {
@@ -829,11 +829,14 @@ function computeXScaleAndClip(spec: WebSpec, forestWidth: number, options?: Expo
   const axisResult = computeAxis({
     rows: spec.data.rows,
     config: spec.theme.axis,
-    scale: spec.data.scale,
-    nullValue: spec.data.nullValue,
+    scale: forestSettings.scale,
+    nullValue: forestSettings.nullValue,
     forestWidth,
     pointSize: spec.theme.shapes.pointSize,
-    effects: spec.data.effects,
+    effects: forestSettings.effects,
+    pointCol: forestSettings.pointCol,
+    lowerCol: forestSettings.lowerCol,
+    upperCol: forestSettings.upperCol,
   });
 
   const { plotRegion, axisLimits, ticks } = axisResult;
@@ -1971,6 +1974,56 @@ function validateSpec(spec: unknown): asserts spec is WebSpec {
 }
 
 // ============================================================================
+// Forest Column Settings Extraction
+// ============================================================================
+
+interface ForestColumnSettings {
+  scale: "linear" | "log";
+  nullValue: number;
+  effects: EffectSpec[];
+  axisLabel: string;
+  pointCol: string | null;
+  lowerCol: string | null;
+  upperCol: string | null;
+}
+
+/**
+ * Extract forest column settings from first forest column.
+ * Falls back to sensible defaults if no forest column exists.
+ */
+function getForestColumnSettings(spec: WebSpec): ForestColumnSettings {
+  // Find first forest column
+  const allColumns = flattenColumns(spec.columns, undefined);
+  const forestColumn = allColumns.find(c => c.type === "forest");
+
+  if (!forestColumn || !forestColumn.options?.forest) {
+    // No forest column - return defaults
+    return {
+      scale: "linear",
+      nullValue: 0,
+      effects: [],
+      axisLabel: "Effect",
+      pointCol: null,
+      lowerCol: null,
+      upperCol: null,
+    };
+  }
+
+  const opts = forestColumn.options.forest;
+  const scale = (opts.scale as "linear" | "log") ?? "linear";
+
+  return {
+    scale,
+    nullValue: opts.nullValue ?? (scale === "log" ? 1 : 0),
+    effects: opts.effects ?? [],
+    axisLabel: opts.axisLabel ?? "Effect",
+    pointCol: opts.point ?? null,
+    lowerCol: opts.lower ?? null,
+    upperCol: opts.upper ?? null,
+  };
+}
+
+// ============================================================================
 // Main Export Function
 // ============================================================================
 
@@ -1979,8 +2032,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   validateSpec(spec);
 
   const theme = spec.theme;
-  const isLog = spec.data.scale === "log";
-  const layout = computeLayout(spec, options);
+  // Extract settings from first forest column (not top-level spec.data)
+  const forestSettings = getForestColumnSettings(spec);
+  const isLog = forestSettings.scale === "log";
+  const layout = computeLayout(spec, options, forestSettings.nullValue);
   const padding = theme.spacing.padding;
 
   // Ensure columns is an array (guard against R serialization issues)
@@ -1998,7 +2053,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   // Forest position (with COLUMN_GAP padding on each side)
   const forestX = padding + leftTableWidth + LAYOUT.COLUMN_GAP;
-  const { scale: xScale, clipBounds, ticks: baseTicks } = computeXScaleAndClip(spec, layout.forestWidth, options);
+  const { scale: xScale, clipBounds, ticks: baseTicks } = computeXScaleAndClip(spec, layout.forestWidth, forestSettings, options);
 
   // Right table position (after forest + gap)
   const rightTableX = forestX + layout.forestWidth + LAYOUT.COLUMN_GAP;
@@ -2082,7 +2137,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     const plotY = layout.mainY + layout.headerHeight;
 
     // Reference line (null value)
-    const nullX = forestX + xScale(spec.data.nullValue);
+    const nullX = forestX + xScale(forestSettings.nullValue);
     parts.push(renderReferenceLine(
       nullX,
       plotY,
@@ -2113,7 +2168,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     displayRows.forEach((displayRow, i) => {
       if (displayRow.type === "data") {
         const yPos = plotY + rowPositions[i] + rowHeights[i] / 2;
-        parts.push(renderInterval(displayRow.row, yPos, (v) => forestX + xScale(v), theme, spec.data.nullValue, spec.data.effects, spec.data.weightCol, forestX, layout.forestWidth, clipBounds, isLog));
+        parts.push(renderInterval(displayRow.row, yPos, (v) => forestX + xScale(v), theme, forestSettings.nullValue, forestSettings.effects, spec.data.weightCol, forestX, layout.forestWidth, clipBounds, isLog));
       }
     });
 
@@ -2136,7 +2191,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     }
 
     // Axis
-    parts.push(renderAxis(xScale, layout, theme, spec.data.axisLabel, forestX, spec.data.nullValue, baseTicks));
+    parts.push(renderAxis(xScale, layout, theme, forestSettings.axisLabel, forestX, forestSettings.nullValue, baseTicks));
   }
 
   // Table rows (uses display rows to interleave group headers with data)

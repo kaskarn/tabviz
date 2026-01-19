@@ -1,7 +1,7 @@
 # Gallery Example 13: JAMA Style
 # Dense, minimal, black and white. Interaction p-values for subgroups.
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 jama_data <- tibble(

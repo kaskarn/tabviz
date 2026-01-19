@@ -1,8 +1,0 @@
-# webforest htmlwidgets configuration
-# The binding is webforest.js (loaded automatically by htmlwidgets)
-# CSS is declared as a stylesheet dependency
-dependencies:
-  - name: webforest-styles
-    version: "0.0.2"
-    src: htmlwidgets
-    stylesheet: webforest.css

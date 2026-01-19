@@ -4,7 +4,7 @@ title: "Themes"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 
 # Sample data for examples
 meta_data <- data.frame(

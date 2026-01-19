@@ -1,4 +1,4 @@
-// Core types for webforest
+// Core types for tabviz
 // Generic table + interval visualization
 
 // ============================================================================
@@ -60,13 +60,10 @@ export interface StyleMapping {
 export interface Row {
   id: string;
   label: string;
-  point: number;
-  lower: number;
-  upper: number;
   groupId?: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, unknown>;  // ALL data lives here
   style?: RowStyle;
-  // Marker styling for primary effect (color, shape, opacity, size)
+  // Marker styling (color, shape, opacity, size) - for per-row marker customization
   markerStyle?: MarkerStyle;
   // Per-cell styles keyed by column field name
   cellStyles?: Record<string, CellStyle>;
@@ -111,18 +108,10 @@ export interface WebData {
   groups: Group[];
   summaries: GroupSummary[];
   overall?: OverallSummary | null;
-  pointCol: string;
-  lowerCol: string;
-  upperCol: string;
   labelCol?: string | null;
   labelHeader?: string | null;
   groupCol?: string | null;
   weightCol?: string | null;
-  scale: "linear" | "log";
-  nullValue: number;
-  axisLabel: string;
-  effects: EffectSpec[];
-  includeForest: boolean;
 }
 
 // ============================================================================
@@ -224,6 +213,23 @@ export interface RangeColumnOptions {
   showBar?: boolean;
 }
 
+export interface ForestColumnOptions {
+  point?: string | null;       // Column name for point estimate (inline single effect)
+  lower?: string | null;       // Column name for lower bound (inline single effect)
+  upper?: string | null;       // Column name for upper bound (inline single effect)
+  effects?: EffectSpec[] | null;  // Inline effects for multi-effect display
+  scale: "linear" | "log";
+  nullValue: number;           // Reference line value (0 for linear, 1 for log)
+  axisLabel: string;
+  axisRange?: [number, number] | null;  // Explicit axis limits [min, max]
+  axisTicks?: number[] | null;          // Explicit tick positions
+  axisGridlines?: boolean;              // Show gridlines
+  showAxis: boolean;
+  width?: number | null;       // Width in pixels (null for auto from layout.forestWidth)
+  annotations?: Annotation[] | null;    // Reference lines and other annotations
+  sharedAxis?: boolean | null; // In split forests: share axis across splits (null = inherit from split-level)
+}
+
 export interface ColumnOptions {
   numeric?: NumericColumnOptions;
   percent?: PercentColumnOptions;
@@ -238,6 +244,7 @@ export interface ColumnOptions {
   img?: ImgColumnOptions;
   reference?: ReferenceColumnOptions;
   range?: RangeColumnOptions;
+  forest?: ForestColumnOptions;
   naText?: string;  // Custom text for NA/missing values
 }
 
@@ -245,12 +252,11 @@ export interface ColumnSpec {
   id: string;
   header: string;
   field: string;
-  type: "text" | "numeric" | "interval" | "bar" | "pvalue" | "sparkline" | "icon" | "badge" | "stars" | "img" | "reference" | "range" | "custom";
+  type: "text" | "numeric" | "interval" | "bar" | "pvalue" | "sparkline" | "icon" | "badge" | "stars" | "img" | "reference" | "range" | "forest" | "custom";
   width?: number | "auto" | null;  // "auto" for content-based width calculation
   align: "left" | "center" | "right";
   headerAlign?: "left" | "center" | "right" | null;  // Header alignment (defaults to align if not specified)
   wrap?: boolean;  // Enable text wrapping (default false)
-  position: "left" | "right";
   sortable: boolean;
   options?: ColumnOptions;
   isGroup: false;
@@ -262,7 +268,6 @@ export interface ColumnGroup {
   id: string;
   header: string;
   isGroup: true;
-  position: "left" | "right";
   columns: ColumnDef[];
 }
 
@@ -573,6 +578,6 @@ export interface HTMLWidgetsBinding {
 }
 
 export interface WidgetInstance {
-  renderValue: (x: WebSpec) => void;
+  renderValue: (x: unknown) => void;
   resize: (width: number, height: number) => void;
 }

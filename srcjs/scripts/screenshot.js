@@ -17,7 +17,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Take a screenshot of an HTML file containing a webforest widget
+ * Take a screenshot of an HTML file containing a tabviz widget
  */
 async function screenshot(htmlPath, outputPath, options = {}) {
   const width = options.width || 1200;
@@ -47,13 +47,13 @@ async function screenshot(htmlPath, outputPath, options = {}) {
     });
 
     // Wait for the widget to render
-    await page.waitForSelector(".webforest-container", { timeout: 10000 });
+    await page.waitForSelector(".tabviz-container", { timeout: 10000 });
 
     // Small delay for any animations to complete
     await new Promise((r) => setTimeout(r, 500));
 
     // Screenshot just the widget element
-    const element = await page.$(".webforest-container");
+    const element = await page.$(".tabviz-container");
 
     if (element) {
       await element.screenshot({

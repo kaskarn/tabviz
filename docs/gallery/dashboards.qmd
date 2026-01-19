@@ -1,0 +1,177 @@
+---
+title: "Dashboard Examples"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Business dashboards, KPI displays, and data tables with embedded visualizations.
+
+## NBA Player Efficiency
+
+Performance dashboard using Player Efficiency Rating (PER):
+
+```{r}
+data(nba_efficiency)
+
+tabviz(
+  nba_efficiency,
+  label = "player",
+  columns = list(
+    col_text("team", "Team"),
+    col_text("position", "Pos"),
+    col_numeric("ppg", "PPG", decimals = 1),
+    col_numeric("games", "GP"),
+    col_forest(point = "per", lower = "per_lower", upper = "per_upper",
+               scale = "linear", null_value = 15,
+               axis_label = "PER"),
+    col_interval("PER (95% CI)", point = "per", lower = "per_lower", upper = "per_upper"),
+    col_badge("award", "Award")
+  ),
+  row_bold = ~ per > 25,
+  theme = web_theme_modern(),
+  title = "Player Efficiency Rating Dashboard"
+)
+```
+
+## Climate Temperature Anomalies
+
+Scientific data showing temperature anomaly trends:
+
+```{r}
+data(climate_temps)
+
+tabviz(
+  climate_temps,
+  label = "region",
+  columns = list(
+    col_text("period", "Period"),
+    col_numeric("anomaly", "Anomaly (°C)", decimals = 2),
+    col_forest(point = "anomaly", lower = "lower", upper = "upper",
+               scale = "linear", null_value = 0,
+               axis_label = "Temperature Anomaly"),
+    col_interval("95% CI", point = "anomaly", lower = "lower", upper = "upper"),
+    col_text("certainty", "Confidence"),
+    col_badge("category", "Type")
+  ),
+  row_color = ~ ifelse(anomaly > 1.5, "#dc2626", "#64748b"),
+  theme = web_theme_minimal(),
+  title = "Global Temperature Anomalies"
+)
+```
+
+## Airline Performance
+
+Airline delay metrics analysis:
+
+```{r}
+data(airline_delays)
+
+# Show one row per carrier (first month)
+airline_summary <- airline_delays |>
+  filter(month == "Apr") |>
+  select(carrier, carrier_type, on_time_pct, delay_vs_avg, satisfaction, flights, trend)
+
+tabviz(
+  airline_summary,
+  label = "carrier",
+  columns = list(
+    col_text("carrier_type", "Type"),
+    col_numeric("flights", "Flights", abbreviate = TRUE),
+    col_percent("on_time_pct", "On-Time"),
+    col_numeric("delay_vs_avg", "Delay vs Avg", decimals = 1),
+    col_sparkline("trend", "12-Month Trend"),
+    col_numeric("satisfaction", "Rating", decimals = 1)
+  ),
+  row_bg = ~ case_when(
+    on_time_pct > 85 ~ "#dcfce7",
+    on_time_pct < 75 ~ "#fee2e2",
+    TRUE ~ NA_character_
+  ),
+  theme = web_theme_modern(),
+  title = "Airline Performance Dashboard"
+)
+```
+
+## Executive Summary Table
+
+Minimal table for C-suite presentations:
+
+```{r}
+exec_data <- data.frame(
+  metric = c("Revenue", "Profit", "Customers", "Retention", "NPS"),
+  current = c("$142M", "$28M", "45.2K", "92%", "72"),
+  change = c(12.5, 8.3, 15.2, 2.1, 5),
+  trend = I(list(
+    c(120, 125, 130, 128, 135, 142),
+    c(22, 24, 23, 26, 27, 28),
+    c(38, 40, 41, 43, 44, 45.2),
+    c(88, 89, 90, 91, 91, 92),
+    c(65, 67, 68, 70, 71, 72)
+  )),
+  status = c("above", "above", "above", "on_track", "above")
+)
+
+tabviz(exec_data,
+  label = "metric",
+  columns = list(
+    col_text("current", "Current"),
+    col_percent("change", "YoY Change"),
+    col_sparkline("trend", "6-Month Trend"),
+    col_badge("status", "Status")
+  ),
+  row_color = ~ ifelse(change > 10, "#16a34a", "#64748b"),
+  theme = web_theme_presentation(),
+  title = "Q4 Executive Summary"
+)
+```
+
+## Dark Mode Dashboard
+
+Modern dark theme for monitoring displays:
+
+```{r}
+tabviz(
+  nba_efficiency[1:8, ],
+  label = "player",
+  columns = list(
+    col_text("team", "Team"),
+    col_numeric("ppg", "PPG"),
+    col_forest(point = "per", lower = "per_lower", upper = "per_upper",
+               scale = "linear", null_value = 15),
+    col_interval("PER", point = "per", lower = "per_lower", upper = "per_upper"),
+    col_badge("award", "Award")
+  ),
+  theme = web_theme_dark(),
+  title = "Live Performance Monitor"
+)
+```
+
+## Comparison Table
+
+Side-by-side product/feature comparison:
+
+```{r}
+comparison_data <- data.frame(
+  feature = c("Price", "Storage", "CPU Cores", "Memory", "Support", "Rating"),
+  plan_a = c("$99/mo", "100 GB", "4", "16 GB", "Email", "4.2"),
+  plan_b = c("$199/mo", "500 GB", "8", "32 GB", "24/7 Phone", "4.7"),
+  plan_c = c("$399/mo", "2 TB", "16", "64 GB", "Dedicated", "4.9"),
+  recommendation = c(NA, NA, "Best Value", NA, NA, "Highest Rated")
+)
+
+tabviz(comparison_data,
+  label = "feature",
+  columns = list(
+    col_text("plan_a", "Basic"),
+    col_text("plan_b", "Pro"),
+    col_text("plan_c", "Enterprise"),
+    col_badge("recommendation", "Note")
+  ),
+  theme = web_theme_minimal(),
+  title = "Plan Comparison"
+)
+```

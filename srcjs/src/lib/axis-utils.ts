@@ -33,16 +33,20 @@ export interface AxisComputeOptions {
   forestWidth: number;
   pointSize: number;
   effects?: EffectSpec[];  // Additional effects to include in axis calculation
+  // Primary effect column names (from col_forest inline definition)
+  pointCol?: string | null;
+  lowerCol?: string | null;
+  upperCol?: string | null;
 }
 
 /**
  * Main entry point: compute all axis-related values
  */
 export function computeAxis(options: AxisComputeOptions): AxisComputation {
-  const { rows, config, scale, nullValue, forestWidth, pointSize, effects = [] } = options;
+  const { rows, config, scale, nullValue, forestWidth, pointSize, effects = [], pointCol, lowerCol, upperCol } = options;
 
   // Step 1: Compute axis limits (this is also the clipping boundary)
-  const axisLimits = computeAxisLimits(rows, config, scale, nullValue, effects);
+  const axisLimits = computeAxisLimits(rows, config, scale, nullValue, effects, pointCol, lowerCol, upperCol);
 
   // Step 2: Compute plot region (axis limits + marker margin)
   const plotRegion = computePlotRegion(
@@ -76,7 +80,10 @@ export function computeAxisLimits(
   config: AxisConfig,
   scale: "linear" | "log",
   nullValue: number,
-  effects: EffectSpec[] = []
+  effects: EffectSpec[] = [],
+  pointCol?: string | null,
+  lowerCol?: string | null,
+  upperCol?: string | null
 ): [number, number] {
   // Priority 1: Explicit limits override everything
   const hasExplicitMin = config.rangeMin != null;
@@ -90,15 +97,18 @@ export function computeAxisLimits(
   const pointEstimates: number[] = [];
   const isLog = scale === "log";
 
+  // Determine primary column name - use passed column name or fall back to "point"
+  const primaryPointColName = pointCol || "point";
+
   for (const row of rows) {
-    // Primary effect
-    const primaryPoint = getEffectValue(row.metadata, row.point, "point", "point", isLog);
+    // Primary effect - use the actual column name from forest options
+    const primaryPoint = getEffectValue(row.metadata, undefined, primaryPointColName, "point", isLog);
     if (primaryPoint != null) {
       pointEstimates.push(primaryPoint);
     }
     // Additional effects
     for (const effect of effects) {
-      const val = getEffectValue(row.metadata, row.point, effect.pointCol, "point", isLog);
+      const val = getEffectValue(row.metadata, undefined, effect.pointCol, "point", isLog);
       if (val != null) {
         pointEstimates.push(val);
       }
@@ -162,7 +172,7 @@ export function computeAxisLimits(
   //   Lower limit = niceMinEst - span * ci_clip_factor
   //   Upper limit = niceMaxEst + span * ci_clip_factor
   //
-  const ciClipFactor = config.ciClipFactor ?? 3.0;
+  const ciClipFactor = config.ciClipFactor ?? 2.0;
 
   // Use nice-rounded values for clip boundary calculation
   let minEst = niceMinEst;
@@ -172,23 +182,27 @@ export function computeAxisLimits(
   const lowerBounds: number[] = [];
   const upperBounds: number[] = [];
 
+  // Determine primary column names - use passed column names or fall back to defaults
+  const primaryLowerColName = lowerCol || "lower";
+  const primaryUpperColName = upperCol || "upper";
+
   for (const row of rows) {
-    // Primary effect
-    const primaryLower = getEffectValue(row.metadata, row.lower, "lower", "lower", isLog);
+    // Primary effect - use the actual column names from forest options
+    const primaryLower = getEffectValue(row.metadata, undefined, primaryLowerColName, "lower", isLog);
     if (primaryLower != null) {
       lowerBounds.push(primaryLower);
     }
-    const primaryUpper = getEffectValue(row.metadata, row.upper, "upper", "upper", isLog);
+    const primaryUpper = getEffectValue(row.metadata, undefined, primaryUpperColName, "upper", isLog);
     if (primaryUpper != null) {
       upperBounds.push(primaryUpper);
     }
     // Additional effects
     for (const effect of effects) {
-      const lower = getEffectValue(row.metadata, row.lower, effect.lowerCol, "lower", isLog);
+      const lower = getEffectValue(row.metadata, undefined, effect.lowerCol, "lower", isLog);
       if (lower != null) {
         lowerBounds.push(lower);
       }
-      const upper = getEffectValue(row.metadata, row.upper, effect.upperCol, "upper", isLog);
+      const upper = getEffectValue(row.metadata, undefined, effect.upperCol, "upper", isLog);
       if (upper != null) {
         upperBounds.push(upper);
       }

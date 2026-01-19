@@ -9,10 +9,10 @@
 forestOutput <- function(outputId, width = "100%", height = "400px") {
   htmlwidgets::shinyWidgetOutput(
     outputId,
-    "webforest",
+    "tabviz",
     width,
     height,
-    package = "webforest"
+    package = "tabviz"
   )
 }
 
@@ -147,7 +147,7 @@ invoke_proxy_method <- function(proxy, method, args) {
   }
 
   msg <- list(id = proxy$id, method = method, args = args)
-  proxy$session$sendCustomMessage("webforest-proxy", msg)
+  proxy$session$sendCustomMessage("tabviz-proxy", msg)
 
   invisible(proxy)
 }
@@ -170,10 +170,10 @@ invoke_proxy_method <- function(proxy, method, args) {
 splitForestOutput <- function(outputId, width = "100%", height = "600px") {
   htmlwidgets::shinyWidgetOutput(
     outputId,
-    "webforest_split",
+    "tabviz_split",
     width,
     height,
-    package = "webforest"
+    package = "tabviz"
   )
 }
 
@@ -194,7 +194,7 @@ splitForestOutput <- function(outputId, width = "100%", height = "600px") {
 #' output$split_plot <- renderSplitForest({
 #'   data |>
 #'     web_spec(point = "or", lower = "lower", upper = "upper") |>
-#'     split_forest(by = input$split_var) |>
+#'     split_table(by = input$split_var) |>
 #'     forest_plot()
 #' })
 #' }
@@ -215,7 +215,7 @@ renderSplitForest <- function(expr, env = parent.frame(), quoted = FALSE) {
 #' @param id The widget ID
 #' @param session The Shiny session (default: current session)
 #'
-#' @return A split_forest_proxy object
+#' @return A split_table_proxy object
 #' @export
 splitForestProxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session)) {
@@ -224,7 +224,7 @@ splitForestProxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
 
   structure(
     list(id = id, session = session),
-    class = "split_forest_proxy"
+    class = "split_table_proxy"
   )
 }
 
@@ -233,18 +233,18 @@ splitForestProxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
 #' Programmatically select a different plot in the split forest sidebar
 #' navigation.
 #'
-#' @param proxy A split_forest_proxy object
+#' @param proxy A split_table_proxy object
 #' @param key The key of the plot to select (e.g., "Male" or "Male__Young")
 #'
 #' @return The proxy object (invisibly), for chaining
 #' @export
-split_forest_select <- function(proxy, key) {
-  if (!inherits(proxy, "split_forest_proxy")) {
-    cli_abort("proxy must be a split_forest_proxy object created with splitForestProxy()")
+split_table_select <- function(proxy, key) {
+  if (!inherits(proxy, "split_table_proxy")) {
+    cli_abort("proxy must be a split_table_proxy object created with splitForestProxy()")
   }
 
   msg <- list(id = proxy$id, method = "selectPlot", args = list(key = key))
-  proxy$session$sendCustomMessage("webforest-split-proxy", msg)
+  proxy$session$sendCustomMessage("tabviz-split-proxy", msg)
 
   invisible(proxy)
 }

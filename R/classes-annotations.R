@@ -1,4 +1,4 @@
-# Annotation S7 classes for webforest
+# Annotation S7 classes for tabviz
 
 #' ReferenceLine: Vertical reference line annotation
 #'

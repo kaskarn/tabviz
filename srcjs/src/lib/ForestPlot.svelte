@@ -53,11 +53,11 @@
   const clipBounds = $derived(axisComputation.axisLimits);
   const theme = $derived(spec?.theme);
   const bandingEnabled = $derived(theme?.layout?.banding ?? false);
-  const includeForest = $derived(spec?.data.includeForest ?? true);
-  const leftColumns = $derived(store.leftColumns);
-  const rightColumns = $derived(store.rightColumns);
-  const leftColumnDefs = $derived(store.leftColumnDefs);
-  const rightColumnDefs = $derived(store.rightColumnDefs);
+  // Column system: all columns in order (forest columns are inline)
+  const allColumns = $derived(store.allColumns);
+  const allColumnDefs = $derived(store.allColumnDefs);
+  const forestColumns = $derived(store.forestColumns);
+  const hasForestColumns = $derived(forestColumns.length > 0);
   const labelHeader = $derived(spec?.data.labelHeader || "Study");
 
   // Check if title/subtitle area is shown (for border styling)
@@ -65,7 +65,7 @@
 
   // Check if we have column groups (need two-row header)
   const hasColumnGroups = $derived(
-    leftColumnDefs.some(c => c.isGroup) || rightColumnDefs.some(c => c.isGroup)
+    allColumnDefs.some(c => c.isGroup)
   );
   const tooltipRow = $derived(store.tooltipRow);
   const tooltipPosition = $derived(store.tooltipPosition);
@@ -199,10 +199,9 @@
   // Total height of rows area for SVG sizing
   const rowsAreaHeight = $derived(rowLayout.totalHeight);
 
-  // Compute Y offsets for annotation labels to avoid collisions
+  // Helper to compute Y offsets for annotation labels to avoid collisions
   // Labels that are too close in x-space get staggered vertically
-  const annotationLabelOffsets = $derived.by(() => {
-    const annotations = spec?.annotations ?? [];
+  function computeAnnotationLabelOffsets(annotations: typeof spec.annotations): Record<string, number> {
     const labeledAnnotations = annotations
       .filter(a => a.type === "reference_line" && a.label)
       .map(a => ({ id: a.id, x: xScale(a.x), label: a.label }))
@@ -230,7 +229,7 @@
     }
 
     return offsets;
-  });
+  }
 
   // Helper to check if a row is selected
   function isSelected(rowId: string): boolean {
@@ -316,12 +315,12 @@
   }
 
   // Calculate maximum header depth (number of header rows needed)
-  const headerDepth = $derived(
-    Math.max(1, 1 + getMaxGroupDepth([...leftColumnDefs, ...rightColumnDefs]))
-  );
+  const headerDepth = $derived.by(() => {
+    return Math.max(1, 1 + getMaxGroupDepth(allColumnDefs));
+  });
 
   // Flatten column structure into render items with position info
-  // Each item has: col, gridColumnStart, colspan, rowStart, rowSpan
+  // Each item has: col, gridColumnStart, colspan, rowStart, rowSpan, isForest
   interface HeaderCell {
     col: ColumnDef;
     gridColumnStart: number;
@@ -329,6 +328,7 @@
     rowStart: number;
     rowSpan: number;
     isGroupHeader: boolean;
+    isForest: boolean;  // True for forest columns
   }
 
   const headerCells = $derived.by((): HeaderCell[] => {
@@ -348,6 +348,7 @@
           rowStart: depth + 1, // 1-based
           rowSpan: 1,
           isGroupHeader: true,
+          isForest: false,
         });
         // Process children at next depth
         for (const child of col.columns) {
@@ -355,6 +356,7 @@
         }
       } else {
         // Leaf column: spans from current depth to bottom
+        const isForest = !col.isGroup && col.type === "forest";
         cells.push({
           col,
           gridColumnStart: startCol,
@@ -362,33 +364,19 @@
           rowStart: depth + 1,
           rowSpan: headerDepth - depth,
           isGroupHeader: false,
+          isForest,
         });
         colIndex++;
       }
     }
 
-    // Process left columns
-    for (const col of leftColumnDefs) {
-      processColumn(col, 0);
-    }
-
-    // Skip plot column (handled separately)
-    if (includeForest) {
-      colIndex++;
-    }
-
-    // Process right columns
-    for (const col of rightColumnDefs) {
+    // Process all columns in order
+    for (const col of allColumnDefs) {
       processColumn(col, 0);
     }
 
     return cells;
   });
-
-  // Compute grid column index for plot header
-  const plotGridColumn = $derived(
-    1 + leftColumns.length + 1 // 1 for label + left columns + 1 for plot
-  );
 
   // Helper to get column width (dynamic or default)
   // Returns "max-content" for auto-width columns (sizes to content, won't shrink)
@@ -414,8 +402,7 @@
     return columnWidthsSnapshot["__label__"] ? "none" : "1";
   }
 
-  // Compute CSS grid template columns for unified layout
-  // Order: label | left columns | plot | right columns
+  // Compute CSS grid template columns: label | columns in order (forest cols included)
   const gridTemplateColumns = $derived.by(() => {
     const parts: string[] = [];
 
@@ -423,41 +410,45 @@
     const labelWidth = columnWidthsSnapshot["__label__"];
     parts.push(labelWidth ? `${labelWidth}px` : "max-content");
 
-    // Left columns
-    for (const col of leftColumns) {
-      parts.push(getColWidth(col));
-    }
-
-    // Plot column (if included)
-    if (includeForest) {
-      parts.push(`${layout.forestWidth}px`);
-    }
-
-    // Right columns
-    for (const col of rightColumns) {
-      parts.push(getColWidth(col));
+    // All columns in order, forest columns get their width from options or default
+    for (const col of allColumns) {
+      if (col.type === "forest") {
+        // Forest columns use configured width or fall back to layout.forestWidth
+        const forestWidth = col.options?.forest?.width ?? layout.forestWidth;
+        parts.push(typeof forestWidth === "number" ? `${forestWidth}px` : `${layout.forestWidth}px`);
+      } else {
+        parts.push(getColWidth(col));
+      }
     }
 
     return parts.join(" ");
   });
 
-  // Total column count for grid (label + left + plot + right)
-  const totalColumns = $derived(
-    1 + leftColumns.length + (includeForest ? 1 : 0) + rightColumns.length
-  );
+  // Total column count for grid (label + all columns)
+  const totalColumns = $derived(1 + allColumns.length);
 
-  // Plot column index (0-based, for grid-column positioning)
-  const plotColumnIndex = $derived(1 + leftColumns.length + 1); // 1-based for CSS grid
+  // Get grid column indices for forest columns (1-based for CSS grid)
+  // Returns array of { gridCol, column } for each forest column
+  const forestColumnGridIndices = $derived.by((): { gridCol: number; column: typeof allColumns[0] }[] => {
+    const result: { gridCol: number; column: typeof allColumns[0] }[] = [];
+    for (let i = 0; i < allColumns.length; i++) {
+      if (allColumns[i].type === "forest") {
+        result.push({ gridCol: 2 + i, column: allColumns[i] }); // +2 for 1-based + label column
+      }
+    }
+    return result;
+  });
 
-  // Ref to measure plot column position for SVG overlay
-  let plotHeaderRef: HTMLDivElement | undefined = $state();
-  let plotColumnLeft = $state(0);
+  // Refs to measure forest column positions for SVG overlays
+  // Maps column id to { element, left }
+  let forestColumnRefs = $state<Map<string, HTMLDivElement>>(new Map());
+  let forestColumnPositions = $state<Map<string, number>>(new Map());
 
   // Ref to measure actual header height (label header spans all header rows)
   let labelHeaderRef: HTMLDivElement | undefined = $state();
   let measuredHeaderHeight = $state(0);
 
-  // Update plot column position and header height when refs change or layout changes
+  // Update forest column positions and header height when refs change or layout changes
   $effect(() => {
     // Reference these to re-run when columns/plot resize
     const _ = columnWidthsSnapshot;
@@ -466,14 +457,33 @@
 
     // Wait for DOM to update before measuring
     tick().then(() => {
-      if (plotHeaderRef) {
-        plotColumnLeft = plotHeaderRef.offsetLeft;
+      // Measure forest column positions
+      const newPositions = new Map<string, number>();
+      for (const [id, el] of forestColumnRefs) {
+        if (el) {
+          newPositions.set(id, el.offsetLeft);
+        }
       }
+      forestColumnPositions = newPositions;
+      // Measure header height
       if (labelHeaderRef) {
         measuredHeaderHeight = labelHeaderRef.offsetHeight;
       }
     });
   });
+
+  // Svelte action to register forest column refs
+  function forestColumnRef(node: HTMLDivElement, id: string) {
+    forestColumnRefs.set(id, node);
+    forestColumnRefs = new Map(forestColumnRefs); // Trigger reactivity
+
+    return {
+      destroy() {
+        forestColumnRefs.delete(id);
+        forestColumnRefs = new Map(forestColumnRefs);
+      }
+    };
+  }
 
   // Use measured header height if available, otherwise fall back to theme value
   const actualHeaderHeight = $derived(measuredHeaderHeight > 0 ? measuredHeaderHeight : layout.headerHeight);
@@ -613,7 +623,7 @@
 
 <div
   bind:this={containerRef}
-  class="webforest-container"
+  class="tabviz-container"
   class:auto-fit={autoFit}
   class:has-max-width={maxWidth !== null}
   class:has-max-height={maxHeight !== null}
@@ -626,7 +636,7 @@
     <ControlToolbar {store} {enableExport} {enableThemes} {onThemeChange} />
 
     <!-- Scalable content wrapper (header + main + footer) -->
-    <div bind:this={scalableRef} class="webforest-scalable" style:margin-left="{centeringMargin}px">
+    <div bind:this={scalableRef} class="tabviz-scalable" style:margin-left="{centeringMargin}px">
       <!-- Plot header (title, subtitle) - only when there's a title/subtitle -->
       {#if hasPlotHeader}
         <PlotHeader title={spec.labels?.title} subtitle={spec.labels?.subtitle} />
@@ -690,9 +700,9 @@
           <CellContent value={formatEvents(row, column.options)} {cellStyle} />
         {:else if column.type === "interval"}
           <CellContent value={formatInterval(
-            column.options?.interval?.point ? row.metadata[column.options.interval.point] as number : row.point,
-            column.options?.interval?.lower ? row.metadata[column.options.interval.lower] as number : row.lower,
-            column.options?.interval?.upper ? row.metadata[column.options.interval.upper] as number : row.upper,
+            column.options?.interval?.point ? row.metadata[column.options.interval.point] as number : undefined,
+            column.options?.interval?.lower ? row.metadata[column.options.interval.lower] as number : undefined,
+            column.options?.interval?.upper ? row.metadata[column.options.interval.upper] as number : undefined,
             column.options
           )} {cellStyle} />
         {:else}
@@ -701,7 +711,7 @@
       {/snippet}
 
       <!-- CSS Grid layout: label | left cols | plot | right cols -->
-      <div class="webforest-main" class:has-header={hasPlotHeader} style:grid-template-columns={gridTemplateColumns}>
+      <div class="tabviz-main" class:has-header={hasPlotHeader} style:grid-template-columns={gridTemplateColumns}>
         <!-- Header cells (supports hierarchical column groups) -->
         <!-- Label header (spans all header rows) -->
         <div
@@ -730,6 +740,26 @@
             >
               <span class="header-text">{cell.col.header}</span>
             </div>
+          {:else if cell.isForest}
+            <!-- Forest column header (new mode) -->
+            {@const column = cell.col as ColumnSpec}
+            <div
+              use:forestColumnRef={column.id}
+              class="grid-cell header-cell plot-header"
+              style:grid-column="{cell.gridColumnStart}"
+              style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
+            >
+              {#if column.header}
+                <span class="header-text">{column.header}</span>
+              {/if}
+              {#if spec?.interaction.enableResize}
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div
+                  class="resize-handle"
+                  onpointerdown={startPlotResize}
+                ></div>
+              {/if}
+            </div>
           {:else}
             <!-- Leaf column header -->
             {@const column = cell.col as ColumnSpec}
@@ -750,24 +780,6 @@
             </div>
           {/if}
         {/each}
-
-        <!-- Plot header (spans all header rows) -->
-        {#if includeForest}
-          <div
-            bind:this={plotHeaderRef}
-            class="grid-cell header-cell plot-header"
-            style:grid-column={plotGridColumn}
-            style:grid-row="1 / span {headerDepth}"
-          >
-            {#if spec?.interaction.enableResize}
-              <!-- svelte-ignore a11y_no_static_element_interactions -->
-              <div
-                class="resize-handle"
-                onpointerdown={startPlotResize}
-              ></div>
-            {/if}
-          </div>
-        {/if}
 
         <!-- Data rows -->
         {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
@@ -813,181 +825,175 @@
             {/if}
           </div>
 
-          <!-- Left column cells -->
-          {#each leftColumns as column (column.id)}
-            <div
-              class="grid-cell data-cell {rowClasses}"
-              class:group-row={isGroupHeader}
-              class:selected
-              class:hovered={row && hoveredRowId === row.id}
-              class:spacer-row={isSpacerRow}
-              class:wrap-enabled={column.wrap}
-              style:grid-row={gridRow}
-              style:background-color={groupBg}
-              style:text-align={column.align}
-              style={rowStyles || undefined}
-              onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
-              onmouseleave={row ? () => handleRowLeave() : undefined}
-              onclick={row ? () => store.selectRow(row.id) : undefined}
-            >
-              {#if row}
-                {@render renderCellContent(row, column)}
-              {/if}
-            </div>
-          {/each}
-
-          <!-- Plot cell (empty - SVG overlays this) -->
-          {#if includeForest}
-            <div
-              class="grid-cell data-cell plot-cell {rowClasses}"
-              class:group-row={isGroupHeader}
-              class:selected
-              class:hovered={row && hoveredRowId === row.id}
-              class:spacer-row={isSpacerRow}
-              style:grid-row={gridRow}
-              style:background-color={groupBg}
-              style={rowStyles || undefined}
-              onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
-              onmouseleave={row ? () => handleRowLeave() : undefined}
-              onclick={row ? () => store.selectRow(row.id) : undefined}
-            ></div>
-          {/if}
-
-          <!-- Right column cells -->
-          {#each rightColumns as column (column.id)}
-            <div
-              class="grid-cell data-cell {rowClasses}"
-              class:group-row={isGroupHeader}
-              class:selected
-              class:hovered={row && hoveredRowId === row.id}
-              class:spacer-row={isSpacerRow}
-              class:wrap-enabled={column.wrap}
-              style:grid-row={gridRow}
-              style:background-color={groupBg}
-              style:text-align={column.align}
-              style={rowStyles || undefined}
-              onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
-              onmouseleave={row ? () => handleRowLeave() : undefined}
-              onclick={row ? () => store.selectRow(row.id) : undefined}
-            >
-              {#if row}
-                {@render renderCellContent(row, column)}
-              {/if}
-            </div>
+          <!-- Column cells: all columns in order -->
+          {#each allColumns as column (column.id)}
+            {#if column.type === "forest"}
+              <!-- Forest cell (empty - SVG overlays this) -->
+              <div
+                class="grid-cell data-cell plot-cell {rowClasses}"
+                class:group-row={isGroupHeader}
+                class:selected
+                class:hovered={row && hoveredRowId === row.id}
+                class:spacer-row={isSpacerRow}
+                style:grid-row={gridRow}
+                style:background-color={groupBg}
+                style={rowStyles || undefined}
+                onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
+                onmouseleave={row ? () => handleRowLeave() : undefined}
+                onclick={row ? () => store.selectRow(row.id) : undefined}
+              ></div>
+            {:else}
+              <!-- Regular column cell -->
+              <div
+                class="grid-cell data-cell {rowClasses}"
+                class:group-row={isGroupHeader}
+                class:selected
+                class:hovered={row && hoveredRowId === row.id}
+                class:spacer-row={isSpacerRow}
+                class:wrap-enabled={column.wrap}
+                style:grid-row={gridRow}
+                style:background-color={groupBg}
+                style:text-align={column.align}
+                style={rowStyles || undefined}
+                onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
+                onmouseleave={row ? () => handleRowLeave() : undefined}
+                onclick={row ? () => store.selectRow(row.id) : undefined}
+              >
+                {#if row}
+                  {@render renderCellContent(row, column)}
+                {/if}
+              </div>
+            {/if}
           {/each}
         {/each}
 
-        <!-- Axis row (spans under plot column) -->
-        {#if includeForest}
+        <!-- Axis row: one axis cell per forest column -->
+        {#if hasForestColumns}
           {@const axisRowNum = headerDepth + 1 + displayRows.length}
-          <div class="grid-cell axis-spacer" style:grid-column="1 / {plotColumnIndex}" style:grid-row={axisRowNum}></div>
-          <div class="grid-cell axis-cell" style:grid-row={axisRowNum}></div>
-          {#if rightColumns.length > 0}
-            <div class="grid-cell axis-spacer" style:grid-column="{plotColumnIndex + 1} / -1" style:grid-row={axisRowNum}></div>
-          {/if}
-        {/if}
-
-        <!-- SVG overlay for plot markers (positioned over plot column, inside grid for correct positioning) -->
-        {#if includeForest && layout.forestWidth > 0}
-        {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
-        <svg
-          class="plot-overlay"
-          width={layout.forestWidth}
-          height={rowsAreaHeight + layout.axisHeight}
-          viewBox="0 0 {layout.forestWidth} {rowsAreaHeight + layout.axisHeight}"
-          style:top="{actualHeaderHeight}px"
-          style:left="{plotColumnLeft}px"
-        >
-          <!-- Null value reference line -->
-          <line
-            x1={xScale(layout.nullValue)}
-            x2={xScale(layout.nullValue)}
-            y1={0}
-            y2={rowsAreaHeight}
-            stroke="var(--wf-muted)"
-            stroke-width="1"
-            stroke-dasharray="4,4"
-          />
-
-          <!-- Custom annotations (reference lines) -->
-          {#each spec.annotations as annotation (annotation.id)}
-            {#if annotation.type === "reference_line"}
-              <line
-                x1={xScale(annotation.x)}
-                x2={xScale(annotation.x)}
-                y1={0}
-                y2={rowsAreaHeight}
-                stroke={annotation.color ?? "var(--wf-accent)"}
-                stroke-width={annotation.width ?? 1.5}
-                stroke-opacity={annotation.opacity ?? 0.6}
-                stroke-dasharray={annotation.style === "dashed" ? "6,4" : annotation.style === "dotted" ? "2,2" : "none"}
-              />
-              {#if annotation.label}
-                {@const yOffset = annotationLabelOffsets[annotation.id] ?? 0}
-                <text
-                  x={xScale(annotation.x)}
-                  y={-4 + yOffset}
-                  text-anchor="middle"
-                  fill={annotation.color ?? "var(--wf-secondary)"}
-                  font-size="var(--wf-font-size-sm)"
-                  font-weight="500"
-                >
-                  {annotation.label}
-                </text>
-              {/if}
+          {#each allColumns as column, idx (column.id)}
+            {#if column.type === "forest"}
+              <div class="grid-cell axis-cell" style:grid-column={2 + idx} style:grid-row={axisRowNum}></div>
+            {:else}
+              <div class="grid-cell axis-spacer" style:grid-column={2 + idx} style:grid-row={axisRowNum}></div>
             {/if}
           {/each}
+          <!-- Label column spacer -->
+          <div class="grid-cell axis-spacer" style:grid-column="1" style:grid-row={axisRowNum}></div>
+        {/if}
 
-          <!-- Row intervals (markers) -->
-          {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
-            {#if displayRow.type === "data"}
-              {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
-              {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
-              <RowInterval
-                row={displayRow.row}
-                yPosition={rowY + rowH / 2}
+        <!-- SVG overlays: one per forest column -->
+        {#each forestColumns as fc (fc.column.id)}
+          {@const forestOpts = fc.column.options?.forest}
+          {@const forestWidth = forestOpts?.width ?? layout.forestWidth}
+          {@const forestLeft = forestColumnPositions.get(fc.column.id) ?? 0}
+          {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
+          {@const nullValue = forestOpts?.nullValue ?? layout.nullValue}
+          {@const axisLabel = forestOpts?.axisLabel ?? "Effect"}
+          {@const isLog = forestOpts?.scale === "log"}
+          <svg
+            class="plot-overlay"
+            width={forestWidth}
+            height={rowsAreaHeight + layout.axisHeight}
+            viewBox="0 0 {forestWidth} {rowsAreaHeight + layout.axisHeight}"
+            style:top="{actualHeaderHeight}px"
+            style:left="{forestLeft}px"
+          >
+            <!-- Null value reference line -->
+            <line
+              x1={xScale(nullValue)}
+              x2={xScale(nullValue)}
+              y1={0}
+              y2={rowsAreaHeight}
+              stroke="var(--wf-muted)"
+              stroke-width="1"
+              stroke-dasharray="4,4"
+            />
+
+            <!-- Custom annotations (reference lines) - combine spec-level and column-level -->
+            {#if true}
+              {@const allAnnotations = [...(spec.annotations ?? []), ...(forestOpts?.annotations ?? [])]}
+              {@const annotationLabelOffsets = computeAnnotationLabelOffsets(allAnnotations)}
+              {#each allAnnotations as annotation (annotation.id)}
+              {#if annotation.type === "reference_line"}
+                <line
+                  x1={xScale(annotation.x)}
+                  x2={xScale(annotation.x)}
+                  y1={0}
+                  y2={rowsAreaHeight}
+                  stroke={annotation.color ?? "var(--wf-accent)"}
+                  stroke-width={annotation.width ?? 1.5}
+                  stroke-opacity={annotation.opacity ?? 0.6}
+                  stroke-dasharray={annotation.style === "dashed" ? "6,4" : annotation.style === "dotted" ? "2,2" : "none"}
+                />
+                {#if annotation.label}
+                  {@const yOffset = annotationLabelOffsets[annotation.id] ?? 0}
+                  <text
+                    x={xScale(annotation.x)}
+                    y={-4 + yOffset}
+                    text-anchor="middle"
+                    fill={annotation.color ?? "var(--wf-secondary)"}
+                    font-size="var(--wf-font-size-sm)"
+                    font-weight="500"
+                  >
+                    {annotation.label}
+                  </text>
+                {/if}
+              {/if}
+              {/each}
+            {/if}
+
+            <!-- Row intervals (markers) -->
+            {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
+              {#if displayRow.type === "data"}
+                {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
+                {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+                <RowInterval
+                  row={displayRow.row}
+                  yPosition={rowY + rowH / 2}
+                  {xScale}
+                  {layout}
+                  {theme}
+                  {clipBounds}
+                  {isLog}
+                  weightCol={spec.data.weightCol}
+                  forestColumnOptions={forestOpts}
+                  onRowClick={() => store.selectRow(displayRow.row.id)}
+                  onRowHover={(hovered, event) => {
+                    store.setHovered(hovered ? displayRow.row.id : null);
+                    if (hovered && event) {
+                      store.setTooltip(displayRow.row.id, { x: event.clientX, y: event.clientY });
+                    } else {
+                      store.setTooltip(null, null);
+                    }
+                  }}
+                />
+              {/if}
+            {/each}
+
+            <!-- Overall summary diamond (positioned at end of rows) -->
+            {#if spec.data.overall && layout.showOverallSummary &&
+                 typeof spec.data.overall.point === 'number' && !Number.isNaN(spec.data.overall.point) &&
+                 typeof spec.data.overall.lower === 'number' && !Number.isNaN(spec.data.overall.lower) &&
+                 typeof spec.data.overall.upper === 'number' && !Number.isNaN(spec.data.overall.upper)}
+              <SummaryDiamond
+                point={spec.data.overall.point}
+                lower={spec.data.overall.lower}
+                upper={spec.data.overall.upper}
+                yPosition={rowsAreaHeight + layout.rowHeight / 2}
                 {xScale}
                 {layout}
                 {theme}
-                {clipBounds}
-                isLog={spec.data.scale === "log"}
-                effects={spec.data.effects}
-                weightCol={spec.data.weightCol}
-                onRowClick={() => store.selectRow(displayRow.row.id)}
-                onRowHover={(hovered, event) => {
-                  store.setHovered(hovered ? displayRow.row.id : null);
-                  if (hovered && event) {
-                    store.setTooltip(displayRow.row.id, { x: event.clientX, y: event.clientY });
-                  } else {
-                    store.setTooltip(null, null);
-                  }
-                }}
               />
             {/if}
-          {/each}
 
-          <!-- Overall summary diamond (positioned at end of rows) -->
-          {#if spec.data.overall && layout.showOverallSummary &&
-               typeof spec.data.overall.point === 'number' && !Number.isNaN(spec.data.overall.point) &&
-               typeof spec.data.overall.lower === 'number' && !Number.isNaN(spec.data.overall.lower) &&
-               typeof spec.data.overall.upper === 'number' && !Number.isNaN(spec.data.overall.upper)}
-            <SummaryDiamond
-              point={spec.data.overall.point}
-              lower={spec.data.overall.lower}
-              upper={spec.data.overall.upper}
-              yPosition={rowsAreaHeight + layout.rowHeight / 2}
-              {xScale}
-              {layout}
-              {theme}
-            />
-          {/if}
-
-          <!-- Axis at bottom (with axisGap spacing from rows) -->
-          <g transform="translate(0, {rowsAreaHeight + axisGap})">
-            <EffectAxis {xScale} {layout} {theme} axisLabel={spec.data.axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={axisComputation.ticks} />
-          </g>
-        </svg>
-        {/if}
+            <!-- Axis at bottom -->
+            {#if forestOpts?.showAxis !== false}
+              <g transform="translate(0, {rowsAreaHeight + axisGap})">
+                <EffectAxis {xScale} {layout} {theme} axisLabel={axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={axisComputation.ticks} />
+              </g>
+            {/if}
+          </svg>
+        {/each}
       </div>
 
       <!-- Plot footer (caption, footnote) -->
@@ -997,7 +1003,7 @@
     <!-- Tooltip (only shown if tooltipFields is specified) -->
     <Tooltip row={tooltipRow} position={tooltipPosition} fields={spec?.interaction?.tooltipFields} {theme} />
   {:else}
-    <div class="webforest-empty">No data</div>
+    <div class="tabviz-empty">No data</div>
   {/if}
 </div>
 
@@ -1118,14 +1124,14 @@
    */
 
   /* Ensure consistent box-sizing for all elements */
-  :global(.webforest-container),
-  :global(.webforest-container) *,
-  :global(.webforest-container) *::before,
-  :global(.webforest-container) *::after {
+  :global(.tabviz-container),
+  :global(.tabviz-container) *,
+  :global(.tabviz-container) *::before,
+  :global(.tabviz-container) *::after {
     box-sizing: border-box;
   }
 
-  :global(.webforest-container) {
+  :global(.tabviz-container) {
     position: relative; /* Needed for toolbar positioning */
     font-family: var(--wf-font-family);
     font-size: var(--wf-font-size-base);
@@ -1143,14 +1149,14 @@
      ============================================================================ */
 
   /* Auto-fit mode (default): scale down if content exceeds container */
-  :global(.webforest-container.auto-fit) {
+  :global(.tabviz-container.auto-fit) {
     width: 100%;
     padding: var(--wf-container-padding, 16px);
     /* Hide overflow - container is explicitly sized to scaled dimensions */
     overflow: hidden;
   }
 
-  :global(.webforest-container.auto-fit) .webforest-scalable {
+  :global(.tabviz-container.auto-fit) .tabviz-scalable {
     transform: scale(var(--wf-actual-scale, 1));
     transform-origin: top left;
     flex: none;
@@ -1159,43 +1165,43 @@
   }
 
   /* No auto-fit: render at zoom level, scrollbars if needed */
-  :global(.webforest-container:not(.auto-fit)) {
+  :global(.tabviz-container:not(.auto-fit)) {
     overflow: auto;
     padding: var(--wf-container-padding, 16px);
   }
 
-  :global(.webforest-container:not(.auto-fit)) .webforest-scalable {
+  :global(.tabviz-container:not(.auto-fit)) .tabviz-scalable {
     transform: scale(var(--wf-zoom, 1));
     transform-origin: top left;
     width: max-content;
   }
 
   /* Max-width constraint - centers content */
-  :global(.webforest-container.has-max-width) {
+  :global(.tabviz-container.has-max-width) {
     max-width: var(--wf-max-width);
     margin-left: auto;
     margin-right: auto;
   }
 
   /* Max-height constraint - enables vertical scroll */
-  :global(.webforest-container.has-max-height) {
+  :global(.tabviz-container.has-max-height) {
     max-height: var(--wf-max-height);
     overflow-y: auto !important; /* Override auto-fit's overflow: hidden */
   }
 
   /* Override htmlwidgets container height */
-  :global(.webforest:has(.webforest-container)) {
+  :global(.tabviz:has(.tabviz-container)) {
     height: auto !important;
     min-height: 0 !important;
   }
 
   /* In auto-fit mode, prevent inner scrollbars - container handles overflow */
-  :global(.webforest-container.auto-fit) .webforest-main {
+  :global(.tabviz-container.auto-fit) .tabviz-main {
     overflow: visible;
     width: max-content; /* Allow grid to expand to natural width */
   }
 
-  .webforest-scalable {
+  .tabviz-scalable {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -1204,7 +1210,7 @@
   }
 
   /* CSS Grid layout for unified table + plot */
-  .webforest-main {
+  .tabviz-main {
     display: grid;
     position: relative;
     overflow: auto;
@@ -1213,7 +1219,7 @@
   }
 
   /* Only show border when title/subtitle area is present */
-  .webforest-main.has-header {
+  .tabviz-main.has-header {
     border-top: 2px solid var(--wf-border);
   }
 
@@ -1388,7 +1394,7 @@
     visibility: visible; /* Keep plot cell visible for spacing */
   }
 
-  .webforest-empty {
+  .tabviz-empty {
     padding: 24px;
     text-align: center;
     color: var(--wf-muted);

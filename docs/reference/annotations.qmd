@@ -4,7 +4,7 @@ title: "Annotations"
 
 ```{r}
 #| include: false
-library(webforest)
+library(tabviz)
 ```
 
 Annotation functions for adding visual elements to forest plots.

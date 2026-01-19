@@ -1,7 +1,7 @@
 # Example: Hierarchical column headers with col_group()
 # Demonstrates: multi-level column headers, grouped statistics
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Create data with multiple related outcome columns
@@ -42,26 +42,23 @@ forest_plot(
   upper = "primary_upper",
   label = "study",
   columns = list(
-    col_numeric("n", "N", position = "left"),
+    col_numeric("n", "N"),
     # Group: Primary Endpoint
     col_group(
       "Primary Endpoint",
       col_interval("HR (95% CI)"),
-      col_pvalue("primary_p", "P"),
-      position = "right"
+      col_pvalue("primary_p", "P")
     ),
     # Group: Components (nested columns)
     col_group(
       "CV Death",
       col_numeric("cvdeath_hr", "HR"),
-      col_pvalue("cvdeath_p", "P"),
-      position = "right"
+      col_pvalue("cvdeath_p", "P")
     ),
     col_group(
       "HF Hosp",
       col_numeric("hfhosp_hr", "HR"),
-      col_pvalue("hfhosp_p", "P"),
-      position = "right"
+      col_pvalue("hfhosp_p", "P")
     )
   ),
   theme = web_theme_modern(),

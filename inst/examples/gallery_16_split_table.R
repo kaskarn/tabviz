@@ -2,7 +2,7 @@
 # Demonstrates splitting forest plots by categorical variables
 # for subgroup analysis with sidebar navigation
 
-library(webforest)
+library(tabviz)
 
 # Use the effect_sizes stress test dataset
 # This dataset has multiple grouping variables and widely varying CIs
@@ -28,17 +28,19 @@ single_split <- effect_sizes |>
 # Note how each subgroup may have different axis ranges due to varying CI widths
 hierarchical_split <- effect_sizes |>
   web_spec(
-    point = "hr", lower = "lower", upper = "upper",
     label = "study",
-    scale = "log", null_value = 1,
-    axis_label = "Hazard Ratio (95% CI)",
     columns = list(
       col_text("phase", header = "Phase"),
       col_numeric("n", header = "N"),
+      col_forest(
+        point = "hr", lower = "lower", upper = "upper",
+        scale = "log", null_value = 1,
+        axis_label = "Hazard Ratio (95% CI)"
+      ),
       col_interval("HR (95% CI)")
     )
   ) |>
-  split_forest(by = c("outcome", "treatment")) |>
+  split_table(by = c("outcome", "treatment")) |>
   forest_plot(
     title = "Subgroup Analysis",
     subtitle = "Hierarchical split: Outcome > Treatment"
@@ -49,12 +51,16 @@ hierarchical_split <- effect_sizes |>
 # This is especially useful when CI widths vary greatly between subgroups
 shared_axis_split <- effect_sizes |>
   web_spec(
-    point = "hr", lower = "lower", upper = "upper",
     label = "study",
-    scale = "log", null_value = 1,
-    axis_label = "Hazard Ratio"
+    columns = list(
+      col_forest(
+        point = "hr", lower = "lower", upper = "upper",
+        scale = "log", null_value = 1,
+        axis_label = "Hazard Ratio"
+      )
+    )
   ) |>
-  split_forest(by = "outcome", shared_axis = TRUE) |>
+  split_table(by = "outcome", shared_axis = TRUE) |>
   forest_plot(
     title = "Shared Axis Comparison",
     subtitle = "shared_axis = TRUE ensures consistent scale",
@@ -65,17 +71,19 @@ shared_axis_split <- effect_sizes |>
 # Demonstrates combining split_by with grouping in the table view
 treatment_split <- effect_sizes |>
   web_spec(
-    point = "hr", lower = "lower", upper = "upper",
     label = "study",
-    scale = "log", null_value = 1,
-    axis_label = "Hazard Ratio (95% CI)",
     columns = list(
       col_text("region", header = "Region"),
       col_text("phase", header = "Phase"),
+      col_forest(
+        point = "hr", lower = "lower", upper = "upper",
+        scale = "log", null_value = 1,
+        axis_label = "Hazard Ratio (95% CI)"
+      ),
       col_interval("HR (95% CI)")
     )
   ) |>
-  split_forest(by = "treatment") |>
+  split_table(by = "treatment") |>
   forest_plot(
     title = "Effect by Treatment Arm",
     subtitle = "Split by treatment, grouped by region in table"

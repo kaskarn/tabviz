@@ -1,7 +1,7 @@
 # Example: Lancet journal style forest plot
 # Demonstrates: Lancet theme, serif fonts, blue palette, left/right columns
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Create sample hazard ratio data for survival analysis
@@ -36,9 +36,9 @@ forest_plot(
   upper = "upper",
   label = "subgroup",
   columns = list(
-    col_text("n_total", "N (Tx/Ctrl)", position = "left"),
-    col_text("events", "Events", position = "left"),
-    col_interval("HR (95% CI)", position = "right")
+    col_text("n_total", "N (Tx/Ctrl)"),
+    col_text("events", "Events"),
+    col_interval("HR (95% CI)")
   ),
   theme = web_theme_lancet(),
   scale = "log",

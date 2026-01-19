@@ -36,7 +36,7 @@ const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unk
 
 // HTMLWidgets binding
 const binding: HTMLWidgetsBinding = {
-  name: "webforest",
+  name: "tabviz",
   type: "output",
   factory: (el: HTMLElement, width: number, height: number): WidgetInstance => {
     let component: ReturnType<typeof mount> | null = null;
@@ -102,19 +102,22 @@ const binding: HTMLWidgetsBinding = {
 
 // Set up Shiny input bindings
 function setupShinyBindings(widgetId: string, store: ForestStore) {
-  // Forward selection events
-  $effect(() => {
-    const ids = store.selectedRowIds;
-    window.Shiny?.setInputValue(`${widgetId}_selected`, Array.from(ids), {
-      priority: "event",
+  // Use $effect.root() to create a reactive context outside component initialization
+  $effect.root(() => {
+    // Forward selection events
+    $effect(() => {
+      const ids = store.selectedRowIds;
+      window.Shiny?.setInputValue(`${widgetId}_selected`, Array.from(ids), {
+        priority: "event",
+      });
     });
-  });
 
-  // Forward hover events
-  $effect(() => {
-    const hovered = store.hoveredRowId;
-    window.Shiny?.setInputValue(`${widgetId}_hover`, hovered, {
-      priority: "event",
+    // Forward hover events
+    $effect(() => {
+      const hovered = store.hoveredRowId;
+      window.Shiny?.setInputValue(`${widgetId}_hover`, hovered, {
+        priority: "event",
+      });
     });
   });
 }
@@ -127,7 +130,7 @@ if (typeof window !== "undefined" && window.HTMLWidgets) {
 // Shiny proxy message handler
 if (typeof window !== "undefined" && window.Shiny) {
   window.Shiny.addCustomMessageHandler(
-    "webforest-proxy",
+    "tabviz-proxy",
     (msg: { id: string; method: string; args: Record<string, unknown> }) => {
       const store = storeRegistry.get(msg.id);
       if (store && msg.method in proxyMethods) {

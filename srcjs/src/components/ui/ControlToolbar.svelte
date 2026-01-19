@@ -60,7 +60,7 @@
   }
 
   /* Floating mode - when placed outside header (absolute positioned) */
-  :global(.webforest-container > .control-toolbar) {
+  :global(.tabviz-container > .control-toolbar) {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -69,7 +69,7 @@
     transition: opacity 0.2s ease;
   }
 
-  :global(.webforest-container:hover > .control-toolbar) {
+  :global(.tabviz-container:hover > .control-toolbar) {
     opacity: 1;
   }
 </style>

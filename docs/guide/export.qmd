@@ -1,0 +1,237 @@
+---
+title: "Export"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+Export your tabviz widgets to static files for publications, presentations, and sharing.
+
+## Quick Start
+
+```{r}
+#| eval: false
+# Create a widget
+p <- tabviz(data,
+  label = "study",
+  columns = list(
+    col_forest(point = "hr", lower = "lo", upper = "hi"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
+  )
+)
+
+# Export to SVG (vector)
+save_plot(p, "my_table.svg")
+
+# Export to PNG (raster)
+save_plot(p, "my_table.png", scale = 2)
+
+# Export to PDF (print)
+save_plot(p, "my_table.pdf")
+```
+
+## Format Comparison
+
+| Format | Best For | Quality | File Size | Requirements |
+|--------|----------|---------|-----------|--------------|
+| SVG | Web, editing, journals | Vector (infinite) | Small | None |
+| PNG | Presentations, sharing | Raster (scale-dependent) | Medium | Chrome/Chromium |
+| PDF | Print publications | Vector (infinite) | Medium | Chrome/Chromium |
+
+## SVG Export
+
+SVG (Scalable Vector Graphics) is the recommended format for most uses:
+
+```{r}
+#| eval: false
+save_plot(p, "figure1.svg", width = 800)
+```
+
+**Advantages:**
+- Infinite scalability - looks sharp at any size
+- Small file size
+- Editable in Illustrator, Inkscape, etc.
+- No external dependencies
+
+**When to use:**
+- Journal submissions
+- Web display
+- Post-production editing
+- Archival
+
+## PNG Export
+
+PNG is a raster format, best for presentations and quick sharing:
+
+```{r}
+#| eval: false
+save_plot(p, "figure1.png", width = 1200, scale = 3)
+```
+
+### Resolution Control
+
+The `scale` parameter controls the output resolution:
+
+| Scale | Effective Resolution | Use Case |
+|-------|---------------------|----------|
+| 1 | 72 DPI | Quick preview |
+| 2 | 144 DPI | Web, email |
+| 3 | 216 DPI | Presentations |
+| 4 | 288 DPI | High-quality print |
+
+```{r}
+#| eval: false
+# Standard web resolution
+save_plot(p, "web.png", width = 800, scale = 2)
+
+# High-resolution for print
+save_plot(p, "print.png", width = 1600, scale = 4)
+```
+
+## PDF Export
+
+PDF is ideal for print publications:
+
+```{r}
+#| eval: false
+save_plot(p, "figure1.pdf", width = 800)
+```
+
+**Advantages:**
+- Vector quality
+- Universal compatibility
+- Print-ready
+
+## Width and Height
+
+Control dimensions with `width` and `height` (in pixels):
+
+```{r}
+#| eval: false
+# Fixed width, auto height
+save_plot(p, "output.svg", width = 800)
+
+# Fixed dimensions
+save_plot(p, "output.svg", width = 800, height = 600)
+```
+
+When `height` is NULL (default), it's calculated automatically based on content.
+
+## Publication Workflows
+
+### Journal Figure
+
+```{r}
+#| eval: false
+# Create publication-quality figure
+p <- tabviz(trial_data,
+  label = "study",
+  columns = list(
+    col_forest(point = "hr", lower = "lower", upper = "upper", scale = "log", null_value = 1),
+    col_n("n"),
+    col_events("events", "n"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_pvalue("pval")
+  ),
+  theme = web_theme_jama(),
+  title = "Figure 1. Primary Analysis"
+)
+
+# Export multiple formats
+save_plot(p, "figures/figure1.svg", width = 800)  # For editing
+save_plot(p, "figures/figure1.pdf", width = 800)  # For submission
+```
+
+### Presentation Slide
+
+```{r}
+#| eval: false
+# High-contrast theme for slides
+p <- tabviz(data, ...,
+  theme = web_theme_presentation()
+)
+
+# Export at high resolution
+save_plot(p, "slides/forest_plot.png", width = 1920, scale = 2)
+```
+
+### Batch Export
+
+```{r}
+#| eval: false
+# Export multiple analyses
+analyses <- list(
+  primary = data_primary,
+  sensitivity = data_sensitivity,
+  subgroup = data_subgroup
+)
+
+for (name in names(analyses)) {
+  p <- tabviz(analyses[[name]], ...)
+  save_plot(p, sprintf("output/%s.svg", name))
+}
+```
+
+## Split Forest Export
+
+Export all sub-plots from a split view:
+
+```{r}
+#| eval: false
+# Create split view
+p <- tabviz(data,
+  label = "study",
+  columns = list(col_forest(...)),
+  split_by = c("region", "age_group")
+)
+
+# Export all to directory
+save_split_table(p, "output/subgroups", format = "svg")
+
+# Creates:
+# output/subgroups/North/North_Young.svg
+# output/subgroups/North/North_Old.svg
+# output/subgroups/South/South_Young.svg
+# ...
+```
+
+## Requirements
+
+### SVG
+No external dependencies required.
+
+### PNG and PDF
+Requires Chrome, Chromium, or Google Chrome installed on your system.
+
+The export process:
+1. Renders the widget to SVG
+2. Uses headless Chrome to convert to PNG/PDF
+
+If you encounter issues, ensure Chrome is installed and accessible.
+
+## Troubleshooting
+
+### "Chrome not found"
+
+Install Google Chrome or Chromium, or set the `CHROMOTE_CHROME` environment variable:
+
+```r
+Sys.setenv(CHROMOTE_CHROME = "/path/to/chrome")
+```
+
+### Export looks different from viewer
+
+The export renders consistently regardless of browser. Small differences from the RStudio Viewer are normal due to different rendering engines.
+
+### Large files
+
+- Use SVG for vector outputs (smaller files)
+- Reduce `scale` for PNG exports
+- Simplify complex tables with many rows
+
+## See Also
+
+- [Themes](themes.qmd) - Style for publication
+- [Reference: export](../reference/export.qmd) - Complete API details

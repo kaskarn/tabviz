@@ -1,0 +1,261 @@
+---
+title: "Styling Cascade"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+tabviz applies styles in layers, from general to specific. Understanding this cascade helps you achieve precise control over your visualization's appearance.
+
+## The Cascade
+
+```{mermaid}
+flowchart TB
+    A["Theme defaults"] --> B["Row styling"]
+    B --> C["Cell styling"]
+    C --> D["Marker styling"]
+    D --> E["Final appearance"]
+
+    style A fill:#e5e7eb
+    style B fill:#93c5fd
+    style C fill:#6ee7b7
+    style D fill:#fbbf24
+    style E fill:#4f46e5,color:#fff
+```
+
+Later styles override earlier ones. A cell style beats a row style, which beats a theme default.
+
+## Layer 1: Theme Defaults
+
+Themes establish the baseline appearance for all elements:
+
+```{r}
+#| eval: false
+# Theme sets default colors, fonts, spacing
+tabviz(data,
+  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi",
+                           scale = "log", null_value = 1)),
+  theme = web_theme_jama()  # Sets primary color, font, spacing, etc.
+)
+```
+
+Theme defaults include:
+- **Colors**: Primary, accent, text, background
+- **Typography**: Font family, sizes, weights
+- **Spacing**: Row height, padding, margins
+- **Shapes**: Point size, line width
+
+### Modifying Theme Defaults
+
+```{r}
+#| eval: false
+web_theme_jama() |>
+  set_colors(primary = "#2563eb") |>
+  set_typography(font_size_base = "0.9rem") |>
+  set_spacing(row_height = 28)
+```
+
+## Layer 2: Row Styling
+
+Row styling applies to entire rows, overriding theme defaults:
+
+```{r}
+meta_data <- data.frame(
+  study = c("Primary Endpoint", "  Subgroup A", "  Subgroup B", "Summary"),
+  hr = c(NA, 0.72, 0.85, 0.78),
+  lo = c(NA, 0.55, 0.70, 0.65),
+  hi = c(NA, 0.95, 1.03, 0.93),
+  rtype = c("header", "data", "data", "summary"),
+  rbold = c(TRUE, FALSE, FALSE, TRUE)
+)
+
+tabviz(meta_data,
+  label = "study",
+  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi",
+                           scale = "log", null_value = 1)),
+  row_type = "rtype",
+  row_bold = "rbold"
+)
+```
+
+Row styling options:
+
+| Argument | Effect |
+|----------|--------|
+| `row_type` | Controls row behavior (header, data, summary, spacer) |
+| `row_bold` | Bold text |
+| `row_italic` | Italic text |
+| `row_color` | Text color |
+| `row_bg` | Background color |
+| `row_indent` | Indentation level |
+| `row_emphasis` | Theme-aware emphasis |
+| `row_muted` | Theme-aware de-emphasis |
+| `row_accent` | Theme accent color |
+
+## Layer 3: Cell Styling
+
+Cell styling targets specific columns, overriding row styles:
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(
+    col_pvalue("pval",
+      bold = ~ .x < 0.05,        # Bold if p < 0.05
+      color = ~ ifelse(.x < 0.05, "#16a34a", "#64748b")
+    ),
+    col_numeric("hr",
+      color = ~ ifelse(.x < 1, "#16a34a", "#dc2626")
+    ),
+    col_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1)
+  )
+)
+```
+
+Cell styling uses `.x` to reference the column's own values:
+
+```r
+# In cell context, .x = the column's value for that row
+col_numeric("hr", color = ~ ifelse(.x < 1, "green", "red"))
+
+# Equivalent to:
+# for each row: if (row$hr < 1) "green" else "red"
+```
+
+### set_column_style()
+
+Apply styling to any column after creation:
+
+```{r}
+#| eval: false
+tabviz(data, label = "study", columns = list(...)) |>
+  set_column_style("hr",
+    bold = ~ .x < 1,
+    color = ~ case_when(
+      .x < 0.8 ~ "#16a34a",
+      .x < 1.0 ~ "#86efac",
+      TRUE ~ "#64748b"
+    )
+  )
+```
+
+## Layer 4: Marker Styling
+
+Marker styling controls the forest plot points and lines, overriding all other layers:
+
+```{r}
+library(dplyr)
+
+marker_data <- data.frame(
+  study = c("Trial A", "Trial B", "Trial C", "Trial D"),
+  hr = c(0.72, 0.95, 0.68, 1.15),
+  lo = c(0.55, 0.78, 0.52, 0.90),
+  hi = c(0.94, 1.15, 0.89, 1.47),
+  design = c("RCT", "RCT", "Observational", "Observational")
+) |>
+  mutate(
+    marker_color = case_when(
+      hi < 1 ~ "#16a34a",
+      lo > 1 ~ "#dc2626",
+      TRUE ~ "#64748b"
+    ),
+    marker_shape = ifelse(design == "RCT", "circle", "square")
+  )
+
+tabviz(marker_data,
+  label = "study",
+  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi",
+                           scale = "log", null_value = 1)),
+  marker_color = "marker_color",
+  marker_shape = "marker_shape"
+)
+```
+
+Marker styling options:
+
+| Argument | Effect |
+|----------|--------|
+| `marker_color` | Fill color |
+| `marker_shape` | Shape (circle, square, diamond, triangle) |
+| `marker_opacity` | Transparency (0-1) |
+| `marker_size` | Size multiplier |
+
+## Cascade Examples
+
+### Example 1: Theme + Row Override
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi",
+                           scale = "log", null_value = 1)),
+  theme = web_theme_jama(),           # Sets default text color
+  row_color = ~ ifelse(pval < 0.05, "#16a34a", NULL)  # Overrides for significant rows
+)
+```
+
+- Theme sets default text color (black)
+- Row styling overrides to green for significant rows
+- Non-significant rows keep theme default
+
+### Example 2: Row + Cell Override
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(
+    col_numeric("hr", color = ~ ifelse(.x < 1, "green", "red"))  # Cell override
+  ),
+  row_color = "#333333"  # Row default
+)
+```
+
+- Row styling sets all text to dark gray
+- Cell styling overrides HR column to green/red based on value
+- Other columns keep the row style
+
+### Example 3: Full Cascade
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(
+    col_pvalue("pval", bold = ~ .x < 0.05),
+    col_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1)
+  ),
+  theme = web_theme_jama(),                    # Layer 1: Theme
+  row_bold = "is_summary",                     # Layer 2: Row
+  # col_pvalue bold is                         # Layer 3: Cell
+  marker_color = ~ ifelse(sig, "green", "gray") # Layer 4: Marker
+) |>
+  set_colors(primary = "#2563eb")              # Modifies Layer 1
+```
+
+## Debugging Styles
+
+When styles don't appear as expected:
+
+1. **Check layer order**: Is a later layer overriding?
+2. **Check NA values**: NA styling values fall through to the next layer
+3. **Inspect formula results**: Print `data |> mutate(result = ~ your_formula)` to see evaluated values
+4. **Simplify**: Remove styling layers one at a time to find conflicts
+
+```{r}
+#| eval: false
+# Debug a formula expression
+library(dplyr)
+data |>
+  mutate(
+    debug_bold = pval < 0.05,  # See what row_bold = ~ pval < 0.05 produces
+    debug_color = ifelse(upper < 1, "green", "gray")
+  ) |>
+  select(study, pval, upper, debug_bold, debug_color)
+```

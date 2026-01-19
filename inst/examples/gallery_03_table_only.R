@@ -1,7 +1,7 @@
 # Gallery Example 3: Table-Only Mode
 # No forest plot - pure interactive table with rich column types
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 table_data <- tibble(
@@ -19,19 +19,16 @@ table_data <- tibble(
     c(18, 20, 22, 28, 35, 42), c(10200, 11000, 12500, 13200, 14100, 15200),
     c(3.5, 3.2, 2.8, 2.5, 2.3, 2.1), c(68, 70, 72, 74, 76, 78),
     c(210, 198, 185, 178, 172, 165), c(850, 880, 920, 945, 980, 1020)
-  ),
-  # Dummy effect data (required but not displayed)
-  effect = rep(1, 10), lower = rep(0.9, 10), upper = rep(1.1, 10)
+  )
 )
 
 webtable(
   table_data,
-  point = "effect", lower = "lower", upper = "upper",
   label = "metric", group = "category",
   columns = list(
-    col_numeric("q4", "Q4 Actual", position = "left"),
-    col_bar("yoy_pct", "YoY %", position = "right"),
-    col_sparkline("trend", "6Q Trend", position = "right")
+    col_numeric("q4", "Q4 Actual"),
+    col_bar("yoy_pct", "YoY %"),
+    col_sparkline("trend", "6Q Trend")
   ),
   theme = web_theme_modern(),
   title = "Table-Only Mode",

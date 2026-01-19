@@ -1,16 +1,15 @@
-# Column and interaction S7 classes for webforest
+# Column and interaction S7 classes for tabviz
 
 #' ColumnSpec: Specification for a table column
 #'
 #' @param id Unique identifier for the column
 #' @param header Display header text
 #' @param field Data field name to display
-#' @param type Column type: "text", "numeric", "interval", "bar", "pvalue", "sparkline", "custom"
+#' @param type Column type: "text", "numeric", "interval", "bar", "pvalue", "sparkline", "forest", "custom"
 #' @param width Column width in pixels (NA for auto)
 #' @param align Text alignment for body cells: "left", "center", "right"
 #' @param header_align Text alignment for header: "left", "center", "right" (NA to inherit from align)
 #' @param wrap Enable text wrapping (default FALSE). When TRUE, long text wraps instead of being truncated.
-#' @param position Column position relative to plot: "left" or "right"
 #' @param sortable Whether the column is sortable
 #' @param options Named list of type-specific options
 #' @param style_bold Column name containing logical values for per-cell bold styling
@@ -35,7 +34,6 @@ ColumnSpec <- new_class(
     align = new_property(class_character, default = "left"),
     header_align = new_property(class_character, default = NA_character_),
     wrap = new_property(class_logical, default = FALSE),  # Enable text wrapping
-    position = new_property(class_character, default = "left"),
     sortable = new_property(class_logical, default = TRUE),
     options = new_property(class_list, default = list()),
     # Per-cell style mappings: column names (character) or formulas (~)
@@ -53,7 +51,7 @@ ColumnSpec <- new_class(
   ),
   validator = function(self) {
     valid_types <- c("text", "numeric", "interval", "bar", "pvalue", "sparkline",
-                     "icon", "badge", "stars", "img", "reference", "range", "custom")
+                     "icon", "badge", "stars", "img", "reference", "range", "forest", "custom")
     if (!self@type %in% valid_types) {
       return(paste("type must be one of:", paste(valid_types, collapse = ", ")))
     }
@@ -73,11 +71,6 @@ ColumnSpec <- new_class(
       return(paste("header_align must be one of:", paste(valid_aligns, collapse = ", ")))
     }
 
-    valid_positions <- c("left", "right")
-    if (!self@position %in% valid_positions) {
-      return(paste("position must be one of:", paste(valid_positions, collapse = ", ")))
-    }
-
     NULL
   }
 )
@@ -92,7 +85,6 @@ ColumnSpec <- new_class(
 #' @param header_align Text alignment for header (NULL to inherit from align)
 #' @param wrap Enable text wrapping (default FALSE). When TRUE, long text wraps
 #'   instead of being truncated with ellipsis.
-#' @param position Column position: "left" or "right" of the forest plot
 #' @param sortable Whether sortable
 #' @param options Named list of type-specific options
 #' @param na_text Text to display for NA/missing values (default "" for empty)
@@ -112,12 +104,11 @@ web_col <- function(
     field,
     header = NULL,
     type = c("text", "numeric", "interval", "bar", "pvalue", "sparkline",
-             "icon", "badge", "stars", "img", "reference", "range", "custom"),
+             "icon", "badge", "stars", "img", "reference", "range", "forest", "custom"),
     width = NULL,
     align = NULL,
     header_align = NULL,
     wrap = FALSE,
-    position = c("left", "right"),
     sortable = TRUE,
     options = list(),
     na_text = NULL,
@@ -131,7 +122,6 @@ web_col <- function(
     muted = NULL,
     accent = NULL) {
   type <- match.arg(type)
-  position <- match.arg(position)
 
   # Default header to field name
   header <- header %||% field
@@ -164,7 +154,6 @@ web_col <- function(
     align = align,
     header_align = header_align %||% NA_character_,
     wrap = wrap,
-    position = position,
     sortable = sortable,
     options = options,
     # Style properties: can be column name (character) or formula (~)
@@ -296,20 +285,20 @@ col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
 
 #' Column helper: Interval display (e.g., "1.2 (0.9, 1.5)")
 #'
-#' Display point estimates with confidence intervals. By default, uses the
-#' point/lower/upper columns defined at the plot level, but these can be
-#' overridden with the `point`, `lower`, and `upper` arguments.
+#' Display point estimates with confidence intervals as formatted text.
+#' The `point`, `lower`, and `upper` arguments specify which data columns
+#' contain the values to display.
 #'
 #' @param header Column header (default "95% CI")
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param decimals Number of decimal places (default 2)
 #' @param sep Separator between point and CI (default " ")
-#' @param point Optional field name to override the point estimate column
-#' @param lower Optional field name to override the lower bound column
-#' @param upper Optional field name to override the upper bound column
+#' @param point Field name for the point estimate column
+#' @param lower Field name for the lower bound column
+#' @param upper Field name for the upper bound column
 #' @param imprecise_threshold When upper/lower ratio exceeds this threshold,
 #'   the interval is considered imprecise and displayed as "—" instead.
-#'   The forest plot marker is also hidden. Default is NULL (no threshold).
+#'   Default is NULL (no threshold).
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -895,6 +884,185 @@ col_range <- function(
 }
 
 # ============================================================================
+# Forest Plot Column
+# ============================================================================
+
+#' Column helper: Forest plot column
+#'
+#' Renders a forest plot (point estimates with confidence intervals) as a
+#' table column. This allows explicit positioning of the forest plot within
+#' the column layout and supports multiple forest columns per table.
+#'
+#' Each `col_forest()` fully owns its effect definitions - no global effects
+#' list is needed. Use either inline column references (point/lower/upper) for
+#' a single effect, or a list of `web_effect()` objects for multiple effects.
+#'
+#' @param header Column header (default NULL, typically no header for plot)
+#' @param width Column width in pixels (NULL for auto-sizing based on available space)
+#' @param point Column name for point estimate. Use for single-effect plots.
+#' @param lower Column name for lower bound. Use for single-effect plots.
+#' @param upper Column name for upper bound. Use for single-effect plots.
+#' @param effects List of `web_effect()` objects for multi-effect display
+#'   (multiple markers overlaid in same column). Cannot be used with point/lower/upper.
+#' @param scale Scale type: "linear" (default) or "log"
+#' @param null_value Reference line value. Default is 0 for linear scale, 1 for log scale.
+#' @param axis_label Label for the x-axis (default "Effect")
+#' @param axis_range Numeric vector of length 2 specifying fixed axis limits c(min, max).
+#'   If NULL (default), axis range is computed automatically from data.
+#' @param axis_ticks Numeric vector specifying tick mark positions. If NULL (default),
+#'   ticks are computed automatically.
+#' @param axis_gridlines Logical; if TRUE, display vertical gridlines at tick positions
+#'   (default FALSE).
+#' @param show_axis Show the x-axis (default TRUE)
+#' @param annotations List of annotation objects (e.g., `forest_refline()`) for this column.
+#' @param shared_axis When used in a split forest, whether this column should use a shared
+#'   axis range across all splits. `NULL` (default) inherits from split-level setting,
+#'   `TRUE`/`FALSE` overrides.
+#' @param ... Additional arguments passed to `web_col()` (e.g., `sortable`)
+#'
+#' @return A ColumnSpec object with type = "forest"
+#' @export
+#'
+#' @examples
+#' # Single forest column with inline effect definition
+#' col_forest(point = "estimate", lower = "ci_lower", upper = "ci_upper")
+#'
+#' # Log scale with custom null line
+#' col_forest(point = "hr", lower = "hr_lo", upper = "hr_hi",
+#'            scale = "log", null_value = 1, axis_label = "Hazard Ratio")
+#'
+#' # Multiple effects overlaid in one column
+#' col_forest(
+#'   effects = list(
+#'     web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
+#'     web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+#'   ),
+#'   scale = "log",
+#'   null_value = 1,
+#'   axis_label = "Odds Ratio (95% CI)"
+#' )
+col_forest <- function(
+    header = NULL,
+    width = NULL,
+    point = NULL,
+    lower = NULL,
+    upper = NULL,
+    effects = NULL,
+    scale = c("linear", "log"),
+    null_value = NULL,
+    axis_label = "Effect",
+    axis_range = NULL,
+    axis_ticks = NULL,
+    axis_gridlines = FALSE,
+    show_axis = TRUE,
+    annotations = NULL,
+    shared_axis = NULL,
+    ...) {
+
+  scale <- match.arg(scale)
+
+  # Validate: must have either (point, lower, upper) OR effects list, not both
+
+  has_inline <- !is.null(point) && !is.null(lower) && !is.null(upper)
+  has_effects <- !is.null(effects) && length(effects) > 0
+
+  if (has_inline && has_effects) {
+    cli_abort(c(
+      "Cannot specify both inline columns and effects list",
+      "i" = "Use {.arg point}/{.arg lower}/{.arg upper} for a single effect,",
+      "i" = "or {.arg effects} for multiple overlaid effects (not both)."
+    ))
+  }
+
+  if (!has_inline && !has_effects) {
+    cli_abort(c(
+      "Forest column requires effect specification",
+      "i" = "Provide either {.arg point}/{.arg lower}/{.arg upper} columns,",
+      "i" = "or {.arg effects} = list(web_effect(...), ...) for multiple effects."
+    ))
+  }
+
+  # Validate effects list contains EffectSpec objects
+  if (has_effects) {
+    for (i in seq_along(effects)) {
+      if (!S7_inherits(effects[[i]], EffectSpec)) {
+        cli_abort(c(
+          "{.arg effects} must be a list of {.fn web_effect} objects",
+          "i" = "Element {i} is not an EffectSpec"
+        ))
+      }
+    }
+  }
+
+  # Default null_value based on scale
+  if (is.null(null_value)) {
+    null_value <- if (scale == "log") 1 else 0
+  }
+
+  # Serialize effects inline in the forest options
+  serialized_effects <- NULL
+  if (has_effects) {
+    serialized_effects <- lapply(effects, function(e) {
+      list(
+        id = e@id,
+        pointCol = e@point_col,
+        lowerCol = e@lower_col,
+        upperCol = e@upper_col,
+        label = if (is.na(e@label)) NULL else e@label,
+        color = if (is.na(e@color)) NULL else e@color,
+        shape = if (is.na(e@shape)) NULL else e@shape,
+        opacity = if (is.na(e@opacity)) NULL else e@opacity
+      )
+    })
+  }
+
+  # Serialize annotations if provided
+  serialized_annotations <- NULL
+  if (!is.null(annotations) && length(annotations) > 0) {
+    serialized_annotations <- lapply(annotations, serialize_annotation)
+  }
+
+  opts <- list(
+    forest = list(
+      point = point,
+      lower = lower,
+      upper = upper,
+      effects = serialized_effects,
+      scale = scale,
+      nullValue = null_value,
+      axisLabel = axis_label,
+      axisRange = axis_range,
+      axisTicks = axis_ticks,
+      axisGridlines = axis_gridlines,
+      showAxis = show_axis,
+      annotations = serialized_annotations,
+      sharedAxis = shared_axis
+    )
+  )
+
+  # Use a synthetic field for the forest column
+  synthetic_field <- if (has_effects) {
+    # Use first effect's point column for field name
+    paste0("_forest_", effects[[1]]@point_col)
+  } else {
+    paste0("_forest_", point)
+  }
+
+  # Default header to empty string (forest plots typically don't have text headers)
+  resolved_header <- if (is.null(header)) "" else header
+
+  web_col(
+    synthetic_field,
+    header = resolved_header,
+    type = "forest",
+    width = width,
+    sortable = FALSE,  # Forest columns are not sortable by default
+    options = opts,
+    ...
+  )
+}
+
+# ============================================================================
 # Column Groups (hierarchical headers)
 # ============================================================================
 
@@ -905,7 +1073,6 @@ col_range <- function(
 #' @param id Unique identifier for the group
 #' @param header Display header text for the group
 #' @param columns List of ColumnSpec objects in this group
-#' @param position Column position: "left" or "right" of the forest plot
 #'
 #' @export
 ColumnGroup <- new_class(
@@ -913,16 +1080,8 @@ ColumnGroup <- new_class(
   properties = list(
     id = class_character,
     header = class_character,
-    columns = new_property(class_list, default = list()),
-    position = new_property(class_character, default = "left")
-  ),
-  validator = function(self) {
-    valid_positions <- c("left", "right")
-    if (!self@position %in% valid_positions) {
-      return(paste("position must be one of:", paste(valid_positions, collapse = ", ")))
-    }
-    NULL
-  }
+    columns = new_property(class_list, default = list())
+  )
 )
 
 #' Create a column group
@@ -931,12 +1090,10 @@ ColumnGroup <- new_class(
 #'
 #' @param header Display header for the group
 #' @param ... Column specifications (ColumnSpec objects)
-#' @param position Column position: "left" or "right" of the forest plot
 #'
 #' @return A ColumnGroup object
 #' @export
-col_group <- function(header, ..., position = c("left", "right")) {
-  position <- match.arg(position)
+col_group <- function(header, ...) {
   columns <- list(...)
 
   # Validate all children are ColumnSpec
@@ -944,15 +1101,12 @@ col_group <- function(header, ..., position = c("left", "right")) {
     if (!S7_inherits(columns[[i]], ColumnSpec)) {
       cli_abort("All arguments to col_group must be ColumnSpec objects (use col_* helpers)")
     }
-    # Inherit position from group
-    columns[[i]]@position <- position
   }
 
   ColumnGroup(
     id = paste0("group_", gsub("[^a-zA-Z0-9]", "_", tolower(header))),
     header = header,
-    columns = columns,
-    position = position
+    columns = columns
   )
 }
 
@@ -990,7 +1144,23 @@ InteractionSpec <- new_class(
     enable_export = new_property(class_logical, default = TRUE),
     tooltip_fields = new_property(class_any, default = NULL),
     enable_themes = new_property(class_any, default = "default")  # NULL, "default", or list of themes
-  )
+  ),
+  validator = function(self) {
+    val <- self@enable_themes
+    # Valid values: NULL, "default", or a list of WebTheme objects
+    if (is.null(val)) return(NULL)
+    if (is.character(val) && length(val) == 1 && val == "default") return(NULL)
+    if (is.list(val)) {
+      # Check that all elements are WebTheme objects
+      invalid_idx <- which(!vapply(val, function(x) S7::S7_inherits(x, WebTheme), logical(1)))
+      if (length(invalid_idx) > 0) {
+        return(paste("enable_themes list must contain only WebTheme objects, invalid at indices:",
+                     paste(invalid_idx, collapse = ", ")))
+      }
+      return(NULL)
+    }
+    return("enable_themes must be NULL, 'default', or a list of WebTheme objects")
+  }
 )
 
 #' Create interaction specification

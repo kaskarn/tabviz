@@ -1,7 +1,7 @@
 # Example: Meta-analysis style forest plot using mtcars
 # Demonstrates: weight bars, p-values, theme presets, titles/captions, column positioning
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Transform mtcars into a meta-analysis style dataset
@@ -35,10 +35,10 @@ forest_plot(
   group = "group",
   weight = "weight",  # Scale marker sizes by inverse-variance weight
   columns = list(
-    col_numeric("hp", "HP", position = "left"),
-    col_numeric("wt", "Wt", position = "left"),
-    col_bar("weight", "Weight", position = "right"),
-    col_pvalue("pvalue", "P", position = "right")
+    col_numeric("hp", "HP"),
+    col_numeric("wt", "Wt"),
+    col_bar("weight", "Weight"),
+    col_pvalue("pvalue", "P")
   ),
   theme = web_theme_jama(),
   axis_label = "Standardized Effect (95% CI)",

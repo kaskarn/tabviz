@@ -1,8 +1,0 @@
-# webforest_split htmlwidgets configuration
-# Split forest widget with sidebar navigation
-# The binding is webforest_split.js (loaded automatically by htmlwidgets)
-dependencies:
-  - name: webforest-split-styles
-    version: "0.0.1"
-    src: htmlwidgets
-    stylesheet: webforest_split.css

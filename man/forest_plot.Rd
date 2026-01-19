@@ -9,6 +9,7 @@ forest_plot(
   point = NULL,
   lower = NULL,
   upper = NULL,
+  effects = NULL,
   label = NULL,
   group = NULL,
   columns = NULL,
@@ -16,20 +17,9 @@ forest_plot(
   null_value = NULL,
   axis_label = NULL,
   theme = NULL,
-  row_bg = NULL,
   ...,
   split_by = NULL,
   shared_axis = FALSE,
-  axis_range = NULL,
-  axis_ticks = NULL,
-  axis_gridlines = NULL,
-  plot_position = NULL,
-  row_height = NULL,
-  zoom = 1,
-  auto_fit = TRUE,
-  max_width = NULL,
-  max_height = NULL,
-  show_zoom_controls = TRUE,
   width = NULL,
   height = NULL,
   elementId = NULL
@@ -38,17 +28,24 @@ forest_plot(
 \arguments{
 \item{x}{Either a WebSpec object, a SplitForest object, or a data.frame/data.table/tibble}
 
-\item{point}{Column name for point estimates (string). Required when x is a data frame.}
+\item{point}{Column name for point estimates (string). Required when x is a data frame
+and \code{effects} is not provided.}
 
-\item{lower}{Column name for lower bounds of intervals (string). Required when x is a data frame.}
+\item{lower}{Column name for lower bounds of intervals (string). Required when x is a
+data frame and \code{effects} is not provided.}
 
-\item{upper}{Column name for upper bounds of intervals (string). Required when x is a data frame.}
+\item{upper}{Column name for upper bounds of intervals (string). Required when x is a
+data frame and \code{effects} is not provided.}
+
+\item{effects}{List of \code{web_effect()} objects for multi-effect plots. When provided,
+\code{point}, \code{lower}, and \code{upper} are ignored.}
 
 \item{label}{Column name for row labels (optional string)}
 
 \item{group}{Grouping column name(s) or list of \code{web_group()} objects}
 
-\item{columns}{List of column specifications (use \verb{col_*()} helpers)}
+\item{columns}{Additional column specifications (use \verb{col_*()} helpers).
+These are added alongside the auto-generated forest column.}
 
 \item{scale}{Scale type: "linear" (default) or "log"}
 
@@ -58,43 +55,14 @@ forest_plot(
 
 \item{theme}{Theme object (use \verb{web_theme_*()} functions)}
 
-\item{row_bg}{Column name for row background color (CSS color strings).
-Use this for data-driven row highlighting.}
+\item{...}{Additional arguments passed to \code{tabviz()}.
+See \code{?tabviz} for all available options including row styling, marker styling,
+annotations, labels, and rendering options.}
 
-\item{...}{Additional arguments passed to \code{web_spec()} when x is a data frame.
-See \code{?web_spec} for all available options including row styling, marker styling,
-effects, annotations, and labels.}
-
-\item{split_by}{Column name(s) to split data into separate plots. When specified,
-creates a SplitForest with sidebar navigation. Can be a single column name or
-a character vector for hierarchical splits (e.g., \code{c("region", "age_group")}).}
+\item{split_by}{Column name(s) to split data into separate plots with sidebar navigation.}
 
 \item{shared_axis}{When \code{split_by} is used, whether to use the same axis range
-across all split plots for easier comparison. Default is \code{FALSE}.}
-
-\item{axis_range}{Numeric vector c(min, max) to override axis range from theme}
-
-\item{axis_ticks}{Numeric vector of explicit tick positions}
-
-\item{axis_gridlines}{Logical to show/hide gridlines (overrides theme)}
-
-\item{plot_position}{"left" or "right" to override plot position from theme}
-
-\item{row_height}{Numeric row height in pixels (overrides theme)}
-
-\item{zoom}{Initial zoom level (0.5 to 2.0, default 1.0). Users can adjust interactively.}
-
-\item{auto_fit}{When TRUE (default), shrink content to fit container if too large.
-Never enlarges content. When FALSE, render at zoom level with scrollbars if needed.}
-
-\item{max_width}{Maximum container width in pixels (NULL for none).
-Content is centered when constrained.}
-
-\item{max_height}{Maximum container height in pixels (NULL for none).
-Enables vertical scrolling when content exceeds this height.}
-
-\item{show_zoom_controls}{Show zoom controls on hover (default TRUE).
-Set to FALSE to hide the zoom UI but still allow programmatic zoom.}
+across all split plots. Default is \code{FALSE}.}
 
 \item{width}{Widget width (default NULL for auto)}
 
@@ -106,52 +74,56 @@ Set to FALSE to hide the zoom UI but still allow programmatic zoom.}
 An htmlwidget object
 }
 \description{
-\code{forest_plot()} renders a web-native, interactive forest plot visualization.
-It can accept either a WebSpec object (from \code{web_spec()}) or raw data.
+\code{forest_plot()} is a convenience wrapper around \code{tabviz()} that automatically
+creates a forest plot column from point/lower/upper arguments. For full control
+over columns and layout, use \code{tabviz()} directly with \code{col_forest()}.
 }
 \details{
-Forest plots display point estimates with intervals alongside tabular data.
+Forest plots display point estimates with confidence intervals alongside tabular data.
 While commonly used for meta-analysis, they work for any data with
 point + interval structure (QC measurements, regression coefficients, etc.).
 }
 \examples{
 \dontrun{
-# Method 1: Direct from data
+# Quick forest plot from data
 data <- data.frame(
-  item = c("Line A", "Line B", "Line C"),
-  median = c(1.2, 0.8, 1.5),
-  min = c(0.9, 0.5, 1.1),
-  max = c(1.6, 1.2, 2.0)
+  study = c("Study A", "Study B", "Study C"),
+  hr = c(0.72, 0.85, 0.91),
+  lower = c(0.55, 0.70, 0.75),
+  upper = c(0.95, 1.03, 1.10)
 )
 
-forest_plot(data, point = "median", lower = "min", upper = "max", label = "item")
+forest_plot(data, point = "hr", lower = "lower", upper = "upper", label = "study")
 
-# Method 2: From WebSpec (more control)
-spec <- web_spec(
+# Log scale for odds/hazard ratios
+forest_plot(data, point = "hr", lower = "lower", upper = "upper",
+            label = "study", scale = "log", null_value = 1)
+
+# Multi-effect plot (e.g., ITT vs Per-Protocol)
+forest_plot(
   data,
-  point = "median",
-  lower = "min",
-  upper = "max",
-  label = "item",
-  scale = "log",
-  null_value = 1
+  label = "study",
+  effects = list(
+    web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
+    web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+  ),
+  scale = "log", null_value = 1
 )
 
-# Inspect the spec
-print(spec)
-as.data.frame(spec)
-
-# Render as forest plot
-forest_plot(spec)
-
-# With visual overrides
-forest_plot(spec, axis_range = c(0.5, 2), axis_gridlines = TRUE)
-
-# Or as table only
-webtable(spec)
+# For more control, use tabviz() directly
+tabviz(
+  data,
+  label = "study",
+  columns = list(
+    col_text("study"),
+    col_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1),
+    col_numeric("n", header = "N")
+  )
+)
 }
 
 }
 \seealso{
-\code{\link[=web_spec]{web_spec()}} for creating specifications, \code{\link[=webtable]{webtable()}} for table-only rendering
+\code{\link[=tabviz]{tabviz()}} for full control, \code{\link[=col_forest]{col_forest()}} for forest column options
 }

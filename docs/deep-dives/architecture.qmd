@@ -1,0 +1,308 @@
+---
+title: "S7 Architecture"
+description: "Internal class system design using R's S7 object-oriented framework"
+---
+
+## Overview
+
+tabviz uses [S7](https://rconsortium.github.io/S7/), R's modern object-oriented system, for its internal data structures. S7 provides:
+
+- **Type safety** — Properties are validated at construction time
+- **Composition** — Complex objects built from simpler components
+- **Method dispatch** — Generic functions that work across types
+- **Immutability by default** — Modifications create new objects
+
+```{mermaid}
+flowchart TB
+    subgraph WebSpec["WebSpec (Root)"]
+        data["data.frame"]
+        columns["List&lt;ColumnSpec&gt;"]
+        groups["List&lt;GroupSpec&gt;"]
+        theme["WebTheme"]
+        interaction["InteractionSpec"]
+        annotations["List&lt;Annotation&gt;"]
+    end
+
+    subgraph Theme["WebTheme"]
+        colors["ColorPalette"]
+        typography["Typography"]
+        spacing["Spacing"]
+        shapes["Shapes"]
+        axis["AxisConfig"]
+        layout["LayoutConfig"]
+    end
+
+    WebSpec --> Theme
+```
+
+## Class Hierarchy
+
+### Core Classes (`R/classes-core.R`)
+
+| Class | Purpose |
+|-------|---------|
+| `WebSpec` | Root specification containing all data and configuration |
+| `GroupSpec` | Row grouping definition with optional nesting |
+| `EffectSpec` | Multi-effect plot configuration (multiple intervals per row) |
+| `GroupSummary` | Aggregate statistics for a group |
+| `PlotLabels` | Title, subtitle, caption, footnote text |
+| `Heterogeneity` | Meta-analysis heterogeneity statistics (optional) |
+
+### Theme Classes (`R/classes-theme.R`)
+
+| Class | Purpose |
+|-------|---------|
+| `WebTheme` | Complete theme specification (composes all below) |
+| `ColorPalette` | All color definitions (background, foreground, intervals, etc.) |
+| `Typography` | Font family, sizes, weights |
+| `Spacing` | Row height, padding, gaps |
+| `Shapes` | Point size, line width, border radius |
+| `AxisConfig` | Axis range, ticks, gridlines |
+| `LayoutConfig` | Plot position, cell padding, borders |
+
+### Component Classes (`R/classes-components.R`)
+
+| Class | Purpose |
+|-------|---------|
+| `ColumnSpec` | Single column definition |
+| `ColumnGroup` | Hierarchical column header grouping |
+| `InteractionSpec` | UI interaction toggles (sort, collapse, select, etc.) |
+
+### Annotation Classes (`R/classes-annotations.R`)
+
+| Class | Purpose |
+|-------|---------|
+| `ReferenceLine` | Vertical reference line at specific x value |
+| `CustomAnnotation` | Shape annotation on specific rows |
+
+## Design Patterns
+
+### 1. Class + Helper Function Pattern
+
+Every S7 class has a corresponding helper function with a user-friendly API:
+
+```r
+# S7 class (internal)
+GroupSpec <- new_class("GroupSpec", properties = list(
+  id = class_character,
+  label = class_character,
+  collapsed = new_property(class_logical, default = FALSE),
+  parent_id = new_property(class_character, default = NA_character_)
+))
+
+# Helper function (user-facing)
+web_group <- function(id, label = id, parent = NULL, collapsed = FALSE) {
+  GroupSpec(
+    id = as.character(id),
+    label = as.character(label),
+    collapsed = collapsed,
+    parent_id = if (is.null(parent)) NA_character_ else as.character(parent)
+  )
+}
+```
+
+This pattern provides:
+
+- **Type coercion** — Helper handles `NULL` → `NA` conversion
+- **Defaults** — Sensible defaults without cluttering class definition
+- **Documentation** — roxygen docs on the helper, not the class
+- **Validation** — Additional business logic before construction
+
+### 2. Composition Over Inheritance
+
+`WebTheme` composes six sub-classes rather than inheriting or flattening:
+
+```r
+WebTheme <- new_class("WebTheme", properties = list(
+  name = new_property(class_character, default = "default"),
+  colors = new_property(ColorPalette, default = ColorPalette()),
+  typography = new_property(Typography, default = Typography()),
+  spacing = new_property(Spacing, default = Spacing()),
+  shapes = new_property(Shapes, default = Shapes()),
+  axis = new_property(AxisConfig, default = AxisConfig()),
+  layout = new_property(LayoutConfig, default = LayoutConfig())
+))
+```
+
+Benefits:
+
+- **Targeted modification** — Change only what you need: `theme@colors@primary`
+- **Reusable components** — `ColorPalette` could be used elsewhere
+- **Cleaner API** — 6 grouped settings vs 30+ flat properties
+
+### 3. Fluent Modifiers
+
+Theme modification uses pipe-friendly functions that return modified copies:
+
+```r
+web_theme_jama() |>
+  set_colors(primary = "#0066cc", border = "#999999") |>
+  set_spacing(row_height = 24) |>
+  set_axis(gridlines = TRUE)
+```
+
+### 4. NA vs NULL Convention
+
+The package follows a consistent pattern for optional values:
+
+| Type | Default | Meaning |
+|------|---------|---------|
+| Scalar optional (string, number) | `NA_character_` / `NA_real_` | "Not specified" |
+| Complex object optional | `NULL` | "Not present" |
+
+## WebSpec Deep Dive
+
+`WebSpec` is the central data structure created by `tabviz()`.
+
+### Core Data Properties
+
+```r
+WebSpec <- new_class("WebSpec", properties = list(
+  # Source data
+  data = class_data.frame,
+
+  # Column mappings (optional)
+  label_col = new_property(class_character, default = NA_character_),
+  group_col = new_property(class_character, default = NA_character_),
+  weight_col = new_property(class_character, default = NA_character_),
+
+  # Column specifications
+  columns = new_property(class_list, default = list()),
+
+  # Configuration
+  theme = new_property(class_any, default = NULL),
+  ...
+))
+```
+
+### Row Styling Column Mappings
+
+Row-level styling is controlled via column references:
+
+```r
+# We store the column name containing the values:
+row_bold_col = new_property(class_character, default = NA_character_)
+row_italic_col = new_property(class_character, default = NA_character_)
+row_color_col = new_property(class_character, default = NA_character_)
+row_bg_col = new_property(class_character, default = NA_character_)
+```
+
+Usage in `tabviz()`:
+```r
+tabviz(data,
+  label = "study",
+  columns = list(col_forest(...)),
+  row_bold = "is_summary",    # Column name, not values
+  row_badge = "significance"  # Column name
+)
+```
+
+This pattern:
+
+- Keeps data and configuration separate
+- Allows dynamic styling from data columns
+- Avoids duplicating data in the spec
+
+## ColumnSpec Design
+
+Columns support multiple types with type-specific options:
+
+```r
+ColumnSpec <- new_class("ColumnSpec", properties = list(
+  id = class_character,
+  header = class_character,
+  field = class_character,
+  type = new_property(class_character, default = "text"),
+  width = new_property(class_any, default = NA_real_),
+  align = new_property(class_character, default = "left"),
+  position = new_property(class_character, default = "left"),
+  options = new_property(class_list, default = list()),
+
+  # Per-cell style mappings
+  style_bold = new_property(class_character, default = NA_character_),
+  style_italic = new_property(class_character, default = NA_character_),
+  style_color = new_property(class_character, default = NA_character_),
+  ...
+))
+```
+
+### Type-Specific Options
+
+The `options` property holds type-specific configuration:
+
+```r
+# Bar column
+col_bar("weight", max_value = 100, show_label = TRUE)
+# Creates: options = list(bar = list(maxValue = 100, showLabel = TRUE))
+
+# P-value column
+col_pvalue("pval", stars = TRUE, thresholds = c(0.05, 0.01, 0.001))
+# Creates: options = list(pvalue = list(stars = TRUE, thresholds = ...))
+
+# Forest column
+col_forest(point = "hr", lower = "lo", upper = "hi", scale = "log")
+# Creates: options = list(forest = list(point = "hr", scale = "log", ...))
+```
+
+## Serialization to JavaScript
+
+S7 objects are converted to JSON for the Svelte frontend:
+
+```{mermaid}
+flowchart LR
+    A["R (S7 objects)"] --> B["serialize_spec()"]
+    B --> C["JSON"]
+    C --> D["TypeScript interfaces"]
+    D --> E["Svelte components"]
+```
+
+Key transformations:
+
+| R Pattern | JSON Pattern |
+|-----------|--------------|
+| `snake_case` property | `camelCase` key |
+| `NA_character_` | `null` |
+| S7 nested object | Nested JSON object |
+| `class_list` of S7 | Array of JSON objects |
+
+## Method Dispatch
+
+S7 methods are registered for generic functions:
+
+```r
+# Print method for WebSpec
+method(print, WebSpec) <- function(x, ...) {
+  cli_inform(c(
+    "A {.cls WebSpec} with {nrow(x@data)} row{?s}",
+    "*" = "Columns: {length(x@columns)}",
+    "*" = "Groups: {length(x@groups)}"
+  ))
+  invisible(x)
+}
+
+# Plot method (renders as widget)
+method(plot, WebSpec) <- function(x, ...) {
+  forest_plot(x, ...)
+}
+
+# as.data.frame method
+method(as.data.frame, WebSpec) <- function(x, ...) {
+  x@data
+}
+```
+
+## Best Practices
+
+### Creating New Classes
+
+1. **Start with the helper function API**, then design the class to support it
+2. **Use `NA_*` for optional scalars**, `NULL` for optional objects
+3. **Add validators** for invariants that can't be expressed as types
+4. **Document the helper**, not the class directly
+
+### Modifying Existing Classes
+
+1. **Add new properties with defaults** to maintain backward compatibility
+2. **Update serialization** in `utils-serialize.R`
+3. **Update TypeScript types** in `srcjs/src/types/index.ts`
+4. **Update fluent modifiers** if the property should be user-configurable

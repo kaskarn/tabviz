@@ -1,7 +1,7 @@
 # Example: JAMA journal style
 # Demonstrates: JAMA theme, minimal styling, professional appearance
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 # Intervention study data
@@ -38,8 +38,8 @@ forest_plot(
   label = "subgroup",
   label_header = "Subgroup",
   columns = list(
-    col_numeric("n_int", "Intervention (n)", position = "left"),
-    col_numeric("n_ctrl", "Control (n)", position = "left"),
+    col_numeric("n_int", "Intervention (n)"),
+    col_numeric("n_ctrl", "Control (n)"),
     col_interval("RR (95% CI)"),
     col_pvalue("p_int", "P Value")
   ),

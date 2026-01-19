@@ -1,4 +1,4 @@
-# Core S7 classes for webforest
+# Core S7 classes for tabviz
 # Generic table specification with point + interval data
 
 #' GroupSpec: A grouping/category of rows
@@ -129,7 +129,9 @@ GroupSummary <- new_class(
     metadata = new_property(class_list, default = list())
   ),
   validator = function(self) {
-    if (length(self@lower) > 0 && length(self@upper) > 0 &&
+    # Validate that lower and upper are numeric scalars before comparison
+    if (length(self@lower) == 1 && length(self@upper) == 1 &&
+        is.numeric(self@lower) && is.numeric(self@upper) &&
         !is.na(self@lower) && !is.na(self@upper)) {
       if (self@lower > self@upper) {
         return("lower must be <= upper")
@@ -165,19 +167,13 @@ PlotLabels <- new_class(
 #' - Other visualizations (upset plots, etc.)
 #'
 #' @param data Processed data as a data.frame
-#' @param point_col Column name for point estimates
-#' @param lower_col Column name for lower bounds
-#' @param upper_col Column name for upper bounds
 #' @param label_col Column name for row labels
 #' @param group_col Column name for grouping (optional, deepest level)
 #' @param group_cols All group column names for hierarchical grouping (for composite ID building)
-#' @param columns List of ColumnSpec objects defining table columns
+#' @param columns List of ColumnSpec objects defining table columns (including col_forest)
 #' @param groups List of GroupSpec objects
 #' @param summaries List of GroupSummary objects
 #' @param overall_summary Optional overall summary (GroupSummary)
-#' @param scale Scale type: "linear" or "log"
-#' @param null_value Reference value for null effect (0 for linear, 1 for log)
-#' @param axis_label Label for the graphical axis
 #' @param theme WebTheme object
 #' @param interaction InteractionSpec object
 #'
@@ -187,9 +183,6 @@ WebSpec <- new_class(
   "WebSpec",
   properties = list(
     data = class_data.frame,
-    point_col = class_character,
-    lower_col = class_character,
-    upper_col = class_character,
     label_col = new_property(class_character, default = NA_character_),
     label_header = new_property(class_character, default = "Study"),
     group_col = new_property(class_character, default = NA_character_),
@@ -201,10 +194,6 @@ WebSpec <- new_class(
       new_union(GroupSummary, class_missing),
       default = NULL
     ),
-    scale = new_property(class_character, default = "linear"),
-    null_value = new_property(class_numeric, default = 0),
-    axis_label = new_property(class_character, default = "Estimate"),
-    effects = new_property(class_list, default = list()),  # List of EffectSpec for multi-effect
     theme = new_property(class_any, default = NULL),  # Set in web_spec()
     interaction = new_property(class_any, default = NULL),  # Set in web_spec()
     labels = new_property(class_any, default = NULL),  # PlotLabels for title/subtitle/etc
@@ -231,20 +220,9 @@ WebSpec <- new_class(
     weight_col = new_property(class_character, default = NA_character_)
   ),
   validator = function(self) {
-    # Validate required columns exist
+    # Validate optional columns if specified
     cols <- names(self@data)
 
-    if (!self@point_col %in% cols) {
-      return(paste0("Column '", self@point_col, "' not found in data"))
-    }
-    if (!self@lower_col %in% cols) {
-      return(paste0("Column '", self@lower_col, "' not found in data"))
-    }
-    if (!self@upper_col %in% cols) {
-      return(paste0("Column '", self@upper_col, "' not found in data"))
-    }
-
-    # Validate optional columns if specified
     if (!is.na(self@label_col) && !self@label_col %in% cols) {
       return(paste0("Column '", self@label_col, "' not found in data"))
     }
@@ -252,41 +230,31 @@ WebSpec <- new_class(
       return(paste0("Column '", self@group_col, "' not found in data"))
     }
 
-    # Validate scale
-    if (!self@scale %in% c("linear", "log")) {
-      return("scale must be 'linear' or 'log'")
-    }
-
-    # Validate data values
-    points <- self@data[[self@point_col]]
-    lowers <- self@data[[self@lower_col]]
-    uppers <- self@data[[self@upper_col]]
-
-    if (any(lowers > uppers, na.rm = TRUE)) {
-      return("lower values must be <= upper values")
-    }
-
-    # For log scale, values must be positive
-
-if (self@scale == "log") {
-      if (any(points <= 0, na.rm = TRUE) ||
-          any(lowers <= 0, na.rm = TRUE) ||
-          any(uppers <= 0, na.rm = TRUE)) {
-        return("All point/lower/upper values must be positive for log scale")
-      }
-    }
-
     NULL
   }
 )
 
 method(print, WebSpec) <- function(x, ...) {
+  # Count forest columns and effects
+  n_forest <- 0
+  n_effects <- 0
+  for (col in x@columns) {
+    if (S7_inherits(col, ColumnSpec) && col@type == "forest") {
+      n_forest <- n_forest + 1
+      # Count inline effects in this forest column
+      forest_opts <- col@options$forest
+      if (!is.null(forest_opts$effects)) {
+        n_effects <- n_effects + length(forest_opts$effects)
+      } else if (!is.null(forest_opts$point)) {
+        n_effects <- n_effects + 1  # Single inline effect
+      }
+    }
+  }
+
   cli_inform(c(
     "A {.cls WebSpec} with {nrow(x@data)} row{?s}",
-    "*" = "Point: {.field {x@point_col}}",
-    "*" = "Interval: {.field {x@lower_col}} to {.field {x@upper_col}}",
-    "*" = "Scale: {.val {x@scale}} (null = {x@null_value})",
-    "*" = "Columns: {length(x@columns)}",
+    "*" = "Columns: {length(x@columns)} ({n_forest} forest)",
+    "*" = "Effects: {n_effects}",
     "*" = "Groups: {length(x@groups)}"
   ))
   invisible(x)

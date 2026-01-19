@@ -1,7 +1,7 @@
 # Gallery Example 15: Minimal Print
 # Maximum density, pure black and white, designed for journal figure panels.
 
-library(webforest)
+library(tabviz)
 library(dplyr)
 
 minimal_data <- tibble(
