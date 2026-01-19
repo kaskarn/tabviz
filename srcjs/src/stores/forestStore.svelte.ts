@@ -1132,8 +1132,11 @@ export function createForestStore() {
 
         let colWidth: number;
         if (col.type === "forest") {
-          // Forest columns use their configured width or fall back to layout.forestWidth
-          colWidth = col.options?.forest?.width ?? layout.forestWidth;
+          // Forest columns: check DOM width first, then col.width, then options, then layout default
+          colWidth = columnWidths[col.id]
+            ?? (typeof col.width === "number" ? col.width : null)
+            ?? col.options?.forest?.width
+            ?? layout.forestWidth;
         } else {
           colWidth = columnWidths[col.id] ?? (typeof col.width === "number" ? col.width : 100);
         }
@@ -1157,7 +1160,8 @@ export function createForestStore() {
       for (const fc of forestColumns) {
         const col = fc.column;
         const forestOpts = col.options?.forest;
-        const fcWidth = forestOpts?.width ?? layout.forestWidth;
+        // Use the width we already computed for this column
+        const fcWidth = columnWidthsOut[col.id] ?? layout.forestWidth;
         const fcScale = forestOpts?.scale ?? "linear";
         const fcNullValue = forestOpts?.nullValue ?? (fcScale === "log" ? 1 : 0);
 

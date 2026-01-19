@@ -446,9 +446,15 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   }
 
   // Calculate auto-widths for columns
+  // Support both legacy (left/right position) and new unified (no position) column models
   const leftColumns = flattenColumns(columns, "left");
   const rightColumns = flattenColumns(columns, "right");
-  const allColumns = [...leftColumns, ...rightColumns];
+  const unifiedColumns = flattenAllColumns(columns).filter(c =>
+    (c as { position?: string }).position === undefined
+  );
+
+  // allColumns includes both legacy positioned columns and unified columns
+  const allColumns = [...leftColumns, ...rightColumns, ...unifiedColumns];
 
   // Use pre-computed widths from web view if provided, otherwise calculate
   let autoWidths: Map<string, number>;
@@ -470,17 +476,25 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   }
 
   // Calculate table widths using effective widths
+  // For legacy model: left and right tables around forest
   const leftTableWidth = labelWidth +
     leftColumns.reduce((sum, c) => sum + getEffectiveWidth(c, autoWidths), 0);
   const rightTableWidth =
     rightColumns.reduce((sum, c) => sum + getEffectiveWidth(c, autoWidths), 0);
+
+  // For unified model: count non-forest columns width
+  const unifiedNonForestWidth = unifiedColumns
+    .filter(c => c.type !== "forest")
+    .reduce((sum, c) => sum + getEffectiveWidth(c, autoWidths), 0);
 
   // Forest width calculation - "tables first" approach
   const baseWidth = options.width ?? LAYOUT.DEFAULT_WIDTH;
   // Check for forest columns (new API) OR legacy includeForest flag
   const hasForestColumns = allColumns.some(c => c.type === "forest");
   const includeForest = hasForestColumns || spec.data.includeForest;
-  const totalTableWidth = leftTableWidth + rightTableWidth;
+
+  // Total table width includes legacy positioned columns AND unified non-forest columns
+  const totalTableWidth = leftTableWidth + rightTableWidth + unifiedNonForestWidth;
 
   // Calculate forest width based on remaining space after tables, or explicit layout settings
   let forestWidth: number;
