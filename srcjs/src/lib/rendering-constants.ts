@@ -218,7 +218,7 @@ export const AUTO_WIDTH = {
   MAX: 600,
 
   /** Maximum width for auto-sized label column */
-  LABEL_MAX: 500,
+  LABEL_MAX: 400,
 
   /** Minimum widths for visual column types (element width + cell padding) */
   VISUAL_MIN: {

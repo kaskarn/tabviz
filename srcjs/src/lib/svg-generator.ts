@@ -2320,15 +2320,14 @@ function renderUnifiedTableRow(
     textColor = theme.colors.accent;
   }
 
-  const availableLabelWidth = labelWidth - indent - SPACING.TEXT_PADDING * 2;
-  const truncatedLabel = truncateText(row.label, availableLabelWidth, fontSize, 0);
-
+  // Don't truncate labels - they're the primary row identifier and the width
+  // was already computed to fit them (either by browser measurement or SVG estimation)
   lines.push(`<text x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
     font-family="${theme.typography.fontFamily}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"
     font-style="${fontStyle}"
-    fill="${textColor}">${escapeXml(truncatedLabel)}</text>`);
+    fill="${textColor}">${escapeXml(row.label)}</text>`);
 
   // Badge (if present)
   if (row.style?.badge) {
