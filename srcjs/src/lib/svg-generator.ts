@@ -2865,6 +2865,31 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   const plotY = layout.mainY + layout.headerHeight;
 
+  // Render row backgrounds (banding) FIRST - before forest intervals
+  // This ensures forest markers aren't covered by banding rectangles
+  if (theme.layout.banding) {
+    displayRows.forEach((displayRow, i) => {
+      if (displayRow.type === "data") {
+        const row = displayRow.row;
+        const isSpacerRow = row.style?.type === "spacer";
+        const hasExplicitBg = row.style?.bg;
+
+        if (!isSpacerRow && !hasExplicitBg) {
+          const y = plotY + rowPositions[i];
+          const rowHeight = rowHeights[i];
+          const isOddRow = i % 2 === 1;
+          const bgColor = isOddRow ? theme.colors.altBg : theme.colors.rowBg;
+          // Only render if color differs from background
+          if (bgColor !== theme.colors.background) {
+            parts.push(`<rect x="${padding}" y="${y}"
+              width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
+              fill="${bgColor}"/>`);
+          }
+        }
+      }
+    });
+  }
+
   // Render each forest column (may be multiple)
   for (const forestColIdx of forestColumnIndices) {
     const forestCol = allColumns[forestColIdx];
@@ -3020,21 +3045,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render data row
       const row = displayRow.row;
       const depth = displayRow.depth;
-      const isSpacerRow = row.style?.type === "spacer";
 
-      // Row background - simple banding using rowBg/altBg theme colors
-      // Skip for spacer rows or rows with explicit bg styling
-      const hasExplicitBg = row.style?.bg;
-      if (!isSpacerRow && !hasExplicitBg && theme.layout.banding) {
-        const isOddRow = i % 2 === 1;
-        const bgColor = isOddRow ? theme.colors.altBg : theme.colors.rowBg;
-        // Only render if color differs from background (avoid overdraw)
-        if (bgColor !== theme.colors.background) {
-          parts.push(`<rect x="${padding}" y="${y}"
-            width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
-            fill="${bgColor}"/>`);
-        }
-      }
+      // Note: Row banding is rendered earlier (before forest intervals) to avoid covering markers
 
       // Render unified row (label + all columns in order)
       parts.push(renderUnifiedTableRow(
