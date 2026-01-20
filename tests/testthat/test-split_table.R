@@ -10,19 +10,19 @@ test_that("split_table creates valid SplitForest from WebSpec", {
     group = c("A", "A", "A", "B", "B", "B")
   )
 
-  # Create WebSpec
+  # Create WebSpec using new col_forest() API
   spec <- web_spec(
     test_data,
-    point = "effect",
-    lower = "lower",
-    upper = "upper",
-    label = "study"
+    label = "study",
+    columns = list(
+      col_forest(point = "effect", lower = "lower", upper = "upper")
+    )
   )
 
   # Split by group
   result <- split_table(spec, by = "group")
 
-  expect_s4_class(result, "SplitForest")
+  expect_true(S7_inherits(result, SplitForest))
   expect_equal(length(result@specs), 2)
   expect_true(all(c("A", "B") %in% names(result@specs)))
 })
@@ -37,10 +37,10 @@ test_that("split_table validates missing columns", {
 
   spec <- web_spec(
     test_data,
-    point = "effect",
-    lower = "lower",
-    upper = "upper",
-    label = "study"
+    label = "study",
+    columns = list(
+      col_forest(point = "effect", lower = "lower", upper = "upper")
+    )
   )
 
   expect_error(
@@ -61,13 +61,13 @@ test_that("split_table works with data.frame input", {
   result <- split_table(
     test_data,
     by = "group",
-    point = "effect",
-    lower = "lower",
-    upper = "upper",
-    label = "study"
+    label = "study",
+    columns = list(
+      col_forest(point = "effect", lower = "lower", upper = "upper")
+    )
   )
 
-  expect_s4_class(result, "SplitForest")
+  expect_true(S7_inherits(result, SplitForest))
   expect_equal(length(result@specs), 2)
 })
 
@@ -82,19 +82,20 @@ test_that("split_table with shared_axis flag", {
 
   spec <- web_spec(
     test_data,
-    point = "effect",
-    lower = "lower",
-    upper = "upper",
-    label = "study"
+    label = "study",
+    columns = list(
+      col_forest(point = "effect", lower = "lower", upper = "upper")
+    )
   )
 
   result <- split_table(spec, by = "group", shared_axis = TRUE)
 
-  expect_s4_class(result, "SplitForest")
+  expect_true(S7_inherits(result, SplitForest))
   expect_true(result@shared_axis)
 })
 
 test_that("split_table handles multiple split columns", {
+  set.seed(42)  # For reproducibility
   test_data <- data.frame(
     study = paste0("Study_", 1:8),
     effect = runif(8, 0.5, 1.5),
@@ -106,15 +107,15 @@ test_that("split_table handles multiple split columns", {
 
   spec <- web_spec(
     test_data,
-    point = "effect",
-    lower = "lower",
-    upper = "upper",
-    label = "study"
+    label = "study",
+    columns = list(
+      col_forest(point = "effect", lower = "lower", upper = "upper")
+    )
   )
 
   result <- split_table(spec, by = c("region", "sex"))
 
-  expect_s4_class(result, "SplitForest")
+  expect_true(S7_inherits(result, SplitForest))
   # Should have one spec per unique combination
   expect_equal(length(result@specs), 4)
 })

@@ -18,7 +18,7 @@ import { niceDomain } from "$lib/scale-utils";
 import { computeAxis, type AxisComputation, AXIS_LABEL_PADDING } from "$lib/axis-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
-import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT } from "$lib/rendering-constants";
+import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "$lib/rendering-constants";
 
 // Svelte 5 runes-based store
 export function createForestStore() {
@@ -734,16 +734,14 @@ export function createForestStore() {
           const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
           let rowWidth = ctx!.measureText(row.label).width + indentWidth;
 
-          // Account for badge width if present
+          // Account for badge width if present (uses shared BADGE constants)
           if (row.style?.badge) {
             const badgeText = String(row.style.badge);
-            const badgeFontSize = baseFontSize * 0.8;
-            const badgePadding = 4;
-            const badgeGap = 6; // gap between label and badge
+            const badgeFontSize = baseFontSize * BADGE.FONT_SCALE;
             ctx!.font = `${badgeFontSize}px ${fontFamily}`;
             const badgeTextWidth = ctx!.measureText(badgeText).width;
-            const badgeWidth = badgeTextWidth + badgePadding * 2;
-            rowWidth += badgeGap + badgeWidth;
+            const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
+            rowWidth += BADGE.GAP + badgeWidth;
             ctx!.font = dataFont; // restore font
           }
 
@@ -1218,7 +1216,7 @@ export function createForestStore() {
         width: naturalContentWidth * zoom,
         height: (scalableNaturalHeight || 400) * zoom,
         naturalWidth: currentX,
-        naturalHeight: totalRowsHeight + layout.headerHeight + 52, // +52 for axis
+        naturalHeight: totalRowsHeight + layout.headerHeight + layout.axisHeight,
 
         // Legacy fields for backwards compatibility
         forestWidth: layout.forestWidth * zoom,

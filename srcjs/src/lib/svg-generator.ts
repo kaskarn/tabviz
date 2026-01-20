@@ -32,6 +32,8 @@ import {
   GROUP_HEADER_OPACITY,
   EFFECT,
   getEffectYOffset,
+  AXIS,
+  BADGE_VARIANTS,
 } from "./rendering-constants";
 import {
   formatNumber,
@@ -968,13 +970,6 @@ function computeXScaleAndClip(spec: WebSpec, forestWidth: number, forestSettings
   };
 }
 
-/**
- * Legacy wrapper for backward compatibility - returns just the scale
- */
-function computeXScale(spec: WebSpec, forestWidth: number, options?: ExportOptions): Scale {
-  return computeXScaleAndClip(spec, forestWidth, options).scale;
-}
-
 // ============================================================================
 // SVG Renderers
 // ============================================================================
@@ -1024,164 +1019,6 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
       font-size="${fontSize}px"
       font-style="italic"
       fill="${theme.colors.muted}">${escapeXml(spec.labels.footnote)}</text>`);
-  }
-
-  return lines.join("\n");
-}
-
-/**
- * Render column headers with support for column groups (two-tier headers)
- */
-function renderColumnHeaders(
-  columnDefs: ColumnDef[],
-  leafColumns: ColumnSpec[],
-  x: number,
-  y: number,
-  headerHeight: number,
-  theme: WebTheme,
-  labelHeader?: string,
-  labelWidth?: number,
-  autoWidths?: Map<string, number>
-): string {
-  const lines: string[] = [];
-  // Header cells use scaled font size (theme.typography.headerFontScale, default 1.05)
-  const baseFontSize = parseFontSize(theme.typography.fontSizeBase);
-  const headerFontScale = theme.typography.headerFontScale ?? 1.05;
-  const fontSize = baseFontSize * headerFontScale;
-  const fontWeight = theme.typography.fontWeightMedium;
-  const boldWeight = theme.typography.fontWeightBold;
-  const hasGroups = hasColumnGroups(columnDefs);
-  const actualLabelWidth = labelWidth ?? LAYOUT.DEFAULT_LABEL_WIDTH;
-
-  // Helper to get effective column width
-  const getColWidth = (col: ColumnSpec): number => {
-    if (autoWidths) {
-      const autoWidth = autoWidths.get(col.id);
-      if (autoWidth !== undefined) return autoWidth;
-    }
-    return typeof col.width === 'number' ? col.width : LAYOUT.DEFAULT_COLUMN_WIDTH;
-  };
-
-  // Helper to get column def width (for groups)
-  const getDefWidth = (col: ColumnDef): number => {
-    if (!col.isGroup) return getColWidth(col as ColumnSpec);
-    return col.columns.reduce((sum, c) => sum + getDefWidth(c), 0);
-  };
-
-  // Helper to calculate text Y position for vertical centering
-  const getTextY = (containerY: number, containerHeight: number) =>
-    containerY + containerHeight / 2 + fontSize * TYPOGRAPHY.TEXT_BASELINE_ADJUSTMENT;
-
-  if (hasGroups) {
-    // Two-tier header: group headers on top, sub-column headers below
-    const row1Height = headerHeight / 2;
-    const row2Height = headerHeight / 2;
-    let currentX = x;
-
-    // Label column spans both rows
-    if (labelHeader) {
-      lines.push(`<text x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
-        font-family="${theme.typography.fontFamily}"
-        font-size="${fontSize}px"
-        font-weight="${fontWeight}"
-        fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
-      currentX += actualLabelWidth;
-    }
-
-    // Row 1: Group headers and non-grouped column headers
-    // Track positions of column groups to draw borders only under them
-    const groupBorders: Array<{ x1: number; x2: number }> = [];
-
-    for (const col of columnDefs) {
-      if (col.isGroup) {
-        // Group header spans its children
-        const groupWidth = getDefWidth(col);
-        const textX = currentX + groupWidth / 2;
-        lines.push(`<text x="${textX}" y="${getTextY(y, row1Height)}"
-          font-family="${theme.typography.fontFamily}"
-          font-size="${fontSize}px"
-          font-weight="${boldWeight}"
-          text-anchor="middle"
-          fill="${theme.colors.foreground}">${escapeXml(col.header)}</text>`);
-        // Track this column group for border drawing
-        groupBorders.push({ x1: currentX, x2: currentX + groupWidth });
-        currentX += groupWidth;
-      } else {
-        // Non-grouped column spans both rows
-        const width = getColWidth(col);
-        const headerAlign = col.headerAlign ?? col.align;
-        const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
-        const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
-        lines.push(`<text x="${textX}" y="${getTextY(y, headerHeight)}"
-          font-family="${theme.typography.fontFamily}"
-          font-size="${fontSize}px"
-          font-weight="${fontWeight}"
-          text-anchor="${anchor}"
-          fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
-        currentX += width;
-      }
-    }
-
-    // Draw borders only under actual column groups (not under spanning columns)
-    for (const border of groupBorders) {
-      lines.push(`<line x1="${border.x1}" x2="${border.x2}"
-        y1="${y + row1Height}" y2="${y + row1Height}"
-        stroke="${theme.colors.border}" stroke-width="1" opacity="0.5"/>`);
-    }
-
-    // Row 2: Sub-column headers (under groups)
-    currentX = x + (labelHeader ? actualLabelWidth : 0);
-    for (const col of columnDefs) {
-      if (col.isGroup) {
-        // Render sub-column headers
-        for (const subCol of col.columns) {
-          if (!subCol.isGroup) {
-            const width = getColWidth(subCol as ColumnSpec);
-            const headerAlign = subCol.headerAlign ?? subCol.align;
-            const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
-            lines.push(`<text x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
-              font-family="${theme.typography.fontFamily}"
-              font-size="${fontSize}px"
-              font-weight="${fontWeight}"
-              text-anchor="${anchor}"
-              fill="${theme.colors.foreground}">${escapeXml(subCol.header)}</text>`);
-            currentX += width;
-          }
-        }
-      } else {
-        // Skip non-grouped columns (already rendered spanning both rows)
-        const width = getColWidth(col);
-        currentX += width;
-      }
-    }
-  } else {
-    // Single-row header (no groups)
-    let currentX = x;
-
-    if (labelHeader) {
-      lines.push(`<text x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
-        font-family="${theme.typography.fontFamily}"
-        font-size="${fontSize}px"
-        font-weight="${fontWeight}"
-        fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
-      currentX += actualLabelWidth;
-    }
-
-    for (const col of leafColumns) {
-      const width = getColWidth(col);
-      // Use headerAlign if specified, otherwise fall back to align
-      const headerAlign = col.headerAlign ?? col.align;
-      const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
-      const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
-
-      lines.push(`<text x="${textX}" y="${getTextY(y, headerHeight)}"
-        font-family="${theme.typography.fontFamily}"
-        font-size="${fontSize}px"
-        font-weight="${fontWeight}"
-        text-anchor="${anchor}"
-        fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
-      currentX += width;
-    }
   }
 
   return lines.join("\n");
@@ -1281,312 +1118,6 @@ function computeBarMaxValues(rows: Row[], columns: ColumnSpec[]): Map<string, nu
     }
   }
   return maxValues;
-}
-
-function renderTableRow(
-  row: Row,
-  columns: ColumnSpec[],
-  x: number,
-  y: number,
-  rowHeight: number,
-  theme: WebTheme,
-  includeLabel: boolean,
-  labelWidth: number = LAYOUT.DEFAULT_LABEL_WIDTH,
-  depth: number = 0,
-  barMaxValues?: Map<string, number>,
-  autoWidths?: Map<string, number>
-): string {
-  const lines: string[] = [];
-  const fontSize = parseFontSize(theme.typography.fontSizeBase);
-  const textY = y + rowHeight / 2 + fontSize * TYPOGRAPHY.TEXT_BASELINE_ADJUSTMENT;
-  let currentX = x;
-
-  // Helper to get effective column width
-  const getColWidth = (col: ColumnSpec): number => {
-    if (autoWidths) {
-      const autoWidth = autoWidths.get(col.id);
-      if (autoWidth !== undefined) return autoWidth;
-    }
-    return typeof col.width === 'number' ? col.width : LAYOUT.DEFAULT_COLUMN_WIDTH;
-  };
-
-  // Label
-  if (includeLabel) {
-    // Use depth for indentation (overrides row.style.indent for grouped rows)
-    const indent = depth * SPACING.INDENT_PER_LEVEL + (row.style?.indent ?? 0) * SPACING.INDENT_PER_LEVEL;
-    // Emphasis and bold both apply bold font weight
-    const fontWeight = (row.style?.bold || row.style?.emphasis) ? theme.typography.fontWeightBold : theme.typography.fontWeightNormal;
-    const fontStyle = row.style?.italic ? "italic" : "normal";
-    // Color priority: explicit color > emphasis > muted > accent > default
-    let textColor = theme.colors.foreground;
-    if (row.style?.color) {
-      textColor = row.style.color;
-    } else if (row.style?.muted) {
-      textColor = theme.colors.muted;
-    } else if (row.style?.accent) {
-      textColor = theme.colors.accent;
-    }
-
-    // Truncate label if too long for column width
-    const availableLabelWidth = labelWidth - indent - SPACING.TEXT_PADDING * 2;
-    const truncatedLabel = truncateText(row.label, availableLabelWidth, fontSize, 0);
-
-    lines.push(`<text x="${currentX + SPACING.TEXT_PADDING + indent}" y="${textY}"
-      font-family="${theme.typography.fontFamily}"
-      font-size="${fontSize}px"
-      font-weight="${fontWeight}"
-      font-style="${fontStyle}"
-      fill="${textColor}">${escapeXml(truncatedLabel)}</text>`);
-
-    // Badge (if present)
-    // Uses estimateTextWidth() for consistent width calculation with calculateSvgLabelWidth()
-    if (row.style?.badge) {
-      const badgeText = String(row.style.badge);
-      const badgeFontSize = fontSize * BADGE.FONT_SCALE;
-      const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
-      // Use estimateTextWidth for accurate positioning (matches width calculation)
-      const labelTextWidth = estimateTextWidth(row.label, fontSize);
-      const badgeX = currentX + SPACING.TEXT_PADDING + indent + labelTextWidth + BADGE.GAP;
-      const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
-      const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
-      const badgeY = y + (rowHeight - badgeHeight) / 2;
-
-      lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
-        rx="3" fill="${theme.colors.primary}" opacity="0.15"/>`);
-      lines.push(`<text x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2 + badgeFontSize * 0.35}"
-        text-anchor="middle"
-        font-family="${theme.typography.fontFamily}"
-        font-size="${badgeFontSize}px"
-        font-weight="500"
-        fill="${theme.colors.primary}">${escapeXml(badgeText)}</text>`);
-    }
-
-    currentX += labelWidth;
-  }
-
-  // Columns
-  for (const col of columns) {
-    const width = getColWidth(col);
-    const value = getCellValue(row, col);
-    const { textX, anchor } = getTextPosition(currentX, width, col.align);
-
-    if (col.type === "bar" && typeof row.metadata[col.field] === "number") {
-      // Render bar with value label (bar on left, number on right)
-      const barValue = row.metadata[col.field] as number;
-      const computedMax = barMaxValues?.get(col.field);
-      const maxValue = col.options?.bar?.maxValue ?? computedMax ?? 100;
-      const barColor = col.options?.bar?.color ?? theme.colors.primary;
-      const barHeight = theme.shapes.pointSize * 2;
-
-      // Reserve space for the text label on the right
-      const textWidth = 50; // Space for the number
-      const barAreaWidth = width - SPACING.TEXT_PADDING * 2 - textWidth;
-      const barWidth = Math.min((barValue / maxValue) * barAreaWidth, barAreaWidth);
-
-      // Draw bar
-      lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${y + rowHeight / 2 - barHeight / 2}"
-        width="${Math.max(0, barWidth)}" height="${barHeight}"
-        fill="${barColor}" opacity="0.7" rx="2"/>`);
-
-      // Draw value label to the right of the bar area
-      const labelX = currentX + width - SPACING.TEXT_PADDING;
-      lines.push(`<text x="${labelX}" y="${textY}"
-        font-family="${theme.typography.fontFamily}"
-        font-size="${fontSize}px"
-        text-anchor="end"
-        fill="${theme.colors.foreground}">${formatNumber(barValue)}</text>`);
-    } else if (col.type === "sparkline" && Array.isArray(row.metadata[col.field])) {
-      // Render sparkline
-      // Handle nested arrays from R list columns: [[1,2,3]] -> [1,2,3]
-      let data = row.metadata[col.field] as number[] | number[][];
-      if (Array.isArray(data[0])) {
-        data = data[0] as number[];
-      }
-      const sparkHeight = col.options?.sparkline?.height ?? 16;
-      const sparkColor = col.options?.sparkline?.color ?? theme.colors.primary;
-      const sparkPadding = SPACING.TEXT_PADDING * 2;
-      const path = renderSparklinePath(data, currentX + SPACING.TEXT_PADDING, y + rowHeight / 2 - sparkHeight / 2, width - sparkPadding, sparkHeight);
-      lines.push(`<path d="${path}" fill="none" stroke="${sparkColor}" stroke-width="1.5"/>`);
-    } else if (col.type === "badge") {
-      // Render badge as colored pill
-      const badgeValue = row.metadata[col.field];
-      if (badgeValue !== undefined && badgeValue !== null) {
-        const badgeText = String(badgeValue);
-        const badgeFontSize = fontSize * 0.85;
-        const badgeHeight = badgeFontSize + 8;
-
-        // Get badge color from variants or custom colors
-        const variants = col.options?.badge?.variants;
-        const customColors = col.options?.badge?.colors;
-        let badgeColor = theme.colors.primary;
-        let badgeTextColor = theme.colors.primary;
-
-        if (customColors && badgeText in customColors) {
-          badgeColor = customColors[badgeText];
-          badgeTextColor = customColors[badgeText];
-        } else if (variants && badgeText in variants) {
-          const variant = variants[badgeText];
-          // Map variant to theme colors
-          const variantColors: Record<string, string> = {
-            default: theme.colors.primary,
-            success: "#16a34a",
-            warning: "#d97706",
-            error: "#dc2626",
-            info: "#2563eb",
-            muted: theme.colors.muted,
-          };
-          badgeColor = variantColors[variant] ?? theme.colors.primary;
-          badgeTextColor = badgeColor;
-        }
-
-        const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
-        const badgeWidth = badgeTextWidth + 12; // padding
-        const badgeX = col.align === "right"
-          ? currentX + width - SPACING.TEXT_PADDING - badgeWidth
-          : col.align === "center"
-            ? currentX + (width - badgeWidth) / 2
-            : currentX + SPACING.TEXT_PADDING;
-        const badgeY = y + (rowHeight - badgeHeight) / 2;
-
-        // Pill background
-        lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
-          rx="${badgeHeight / 2}" fill="${badgeColor}" opacity="0.15"/>`);
-        // Text
-        lines.push(`<text x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2 + badgeFontSize * 0.35}"
-          text-anchor="middle"
-          font-family="${theme.typography.fontFamily}"
-          font-size="${badgeFontSize}px"
-          font-weight="500"
-          fill="${badgeTextColor}">${escapeXml(badgeText)}</text>`);
-      }
-    } else if (col.type === "stars") {
-      // Render star rating as SVG stars
-      const val = row.metadata[col.field];
-      if (typeof val === "number") {
-        const maxStars = col.options?.stars?.maxStars ?? 5;
-        const starColor = col.options?.stars?.color ?? "#f59e0b"; // amber
-        const emptyColor = col.options?.stars?.emptyColor ?? "#d1d5db"; // gray
-        const rating = Math.max(0, Math.min(maxStars, val));
-        const filled = Math.floor(rating);
-        const hasHalf = col.options?.stars?.halfStars && (rating - filled) >= 0.5;
-
-        const starSize = 12;
-        const starGap = 2;
-        const totalStarsWidth = maxStars * starSize + (maxStars - 1) * starGap;
-        let starX = col.align === "right"
-          ? currentX + width - SPACING.TEXT_PADDING - totalStarsWidth
-          : col.align === "center"
-            ? currentX + (width - totalStarsWidth) / 2
-            : currentX + SPACING.TEXT_PADDING;
-        const starY = y + (rowHeight - starSize) / 2;
-
-        // SVG star path (5-point star)
-        const starPath = (cx: number, cy: number, size: number) => {
-          const r = size / 2;
-          const innerR = r * 0.4;
-          let d = "";
-          for (let i = 0; i < 5; i++) {
-            const outerAngle = (i * 72 - 90) * Math.PI / 180;
-            const innerAngle = ((i * 72 + 36) - 90) * Math.PI / 180;
-            const ox = cx + r * Math.cos(outerAngle);
-            const oy = cy + r * Math.sin(outerAngle);
-            const ix = cx + innerR * Math.cos(innerAngle);
-            const iy = cy + innerR * Math.sin(innerAngle);
-            d += (i === 0 ? `M${ox},${oy}` : `L${ox},${oy}`) + `L${ix},${iy}`;
-          }
-          return d + "Z";
-        };
-
-        for (let i = 0; i < maxStars; i++) {
-          const cx = starX + starSize / 2;
-          const cy = starY + starSize / 2;
-          const isFilled = i < filled || (i === filled && hasHalf);
-          const color = isFilled ? starColor : emptyColor;
-          lines.push(`<path d="${starPath(cx, cy, starSize)}" fill="${color}"/>`);
-          starX += starSize + starGap;
-        }
-      }
-    } else if (col.type === "range") {
-      // Render range as min-max with optional visual bar
-      const opts = col.options?.range;
-      if (opts) {
-        const minVal = row.metadata[opts.minField];
-        const maxVal = row.metadata[opts.maxField];
-
-        if (minVal !== null || maxVal !== null) {
-          const sep = opts.separator ?? " – ";
-          const decimals = opts.decimals;
-          const showBar = opts.showBar ?? false;
-
-          const formatVal = (v: unknown): string => {
-            if (typeof v !== "number") return "";
-            if (decimals === null || decimals === undefined) {
-              return Number.isInteger(v) ? String(v) : v.toFixed(1);
-            }
-            return v.toFixed(decimals);
-          };
-
-          const rangeText = (minVal !== null && maxVal !== null)
-            ? `${formatVal(minVal)}${sep}${formatVal(maxVal)}`
-            : formatVal(minVal ?? maxVal);
-
-          if (showBar && typeof minVal === "number" && typeof maxVal === "number") {
-            // Show visual bar representation
-            // For this we need global min/max - skip for now and just show text
-            lines.push(`<text x="${textX}" y="${textY}"
-              font-family="${theme.typography.fontFamily}"
-              font-size="${fontSize}px"
-              text-anchor="${anchor}"
-              fill="${theme.colors.foreground}">${escapeXml(rangeText)}</text>`);
-          } else {
-            lines.push(`<text x="${textX}" y="${textY}"
-              font-family="${theme.typography.fontFamily}"
-              font-size="${fontSize}px"
-              text-anchor="${anchor}"
-              fill="${theme.colors.foreground}">${escapeXml(rangeText)}</text>`);
-          }
-        }
-      }
-    } else if (col.type === "forest") {
-      // Forest columns are rendered separately in the forest plot area
-      // Skip cell content here - it's handled by renderInterval
-    } else {
-      // Render text (default, including text, numeric, interval, pvalue, etc.)
-      // Apply cell-level styling if present
-      const cellStyle = row.cellStyles?.[col.field];
-      let cellFontWeight = theme.typography.fontWeightNormal;
-      let cellFontStyle = "normal";
-      let cellColor = theme.colors.foreground;
-
-      if (cellStyle) {
-        if (cellStyle.bold || cellStyle.emphasis) {
-          cellFontWeight = theme.typography.fontWeightBold;
-        }
-        if (cellStyle.italic) {
-          cellFontStyle = "italic";
-        }
-        if (cellStyle.color) {
-          cellColor = cellStyle.color;
-        } else if (cellStyle.muted) {
-          cellColor = theme.colors.muted;
-        } else if (cellStyle.accent) {
-          cellColor = theme.colors.accent;
-        }
-      }
-
-      lines.push(`<text x="${textX}" y="${textY}"
-        font-family="${theme.typography.fontFamily}"
-        font-size="${fontSize}px"
-        font-weight="${cellFontWeight}"
-        font-style="${cellFontStyle}"
-        text-anchor="${anchor}"
-        fill="${cellColor}">${escapeXml(value)}</text>`);
-    }
-
-    currentX += width;
-  }
-
-  return lines.join("\n");
 }
 
 function getCellValue(row: Row, col: ColumnSpec): string {
@@ -2015,76 +1546,9 @@ function renderDiamond(
     stroke-width="1"/>`;
 }
 
-function renderAxis(
-  xScale: Scale,
-  layout: InternalLayout,
-  theme: WebTheme,
-  axisLabel: string,
-  forestX: number,
-  nullValue: number = 1,
-  baseTicks?: number[]
-): string {
-  const lines: string[] = [];
-  // Guard against R serialization returning {} instead of null
-  const tickCount = typeof theme.axis.tickCount === "number"
-    ? theme.axis.tickCount
-    : SPACING.DEFAULT_TICK_COUNT;
-
-  // Generate filtered ticks matching web view logic (EffectAxis.svelte)
-  const ticks = filterAxisTicks(xScale, tickCount, theme, nullValue, layout.forestWidth, baseTicks);
-  const fontSize = parseFontSize(theme.typography.fontSizeSm);
-
-  // Edge threshold for text anchor adjustment (matches EffectAxis.svelte EDGE_THRESHOLD)
-  const EDGE_THRESHOLD = 35;
-
-  // Helper functions for edge label handling (matches EffectAxis.svelte)
-  const getTextAnchor = (tickX: number): "start" | "middle" | "end" => {
-    if (tickX < EDGE_THRESHOLD) return "start";
-    if (tickX > layout.forestWidth - EDGE_THRESHOLD) return "end";
-    return "middle";
-  };
-
-  const getTextXOffset = (tickX: number): number => {
-    if (tickX < EDGE_THRESHOLD) return 2;
-    if (tickX > layout.forestWidth - EDGE_THRESHOLD) return -2;
-    return 0;
-  };
-
-  // Axis line
-  lines.push(`<line x1="${forestX}" x2="${forestX + layout.forestWidth}"
-    y1="0" y2="0" stroke="${theme.colors.border}" stroke-width="1"/>`);
-
-  // Ticks and labels
-  for (const tick of ticks) {
-    const tickX = xScale(tick); // Position relative to forest plot
-    const x = forestX + tickX;  // Absolute position in SVG
-    const textAnchor = getTextAnchor(tickX);
-    const xOffset = getTextXOffset(tickX);
-
-    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="4"
-      stroke="${theme.colors.border}" stroke-width="1"/>`);
-    lines.push(`<text x="${x + xOffset}" y="16" text-anchor="${textAnchor}"
-      font-family="${theme.typography.fontFamily}"
-      font-size="${fontSize}px"
-      fill="${theme.colors.secondary}">${formatTick(tick)}</text>`);
-  }
-
-  // Axis label
-  if (axisLabel) {
-    lines.push(`<text x="${forestX + layout.forestWidth / 2}" y="28"
-      text-anchor="middle"
-      font-family="${theme.typography.fontFamily}"
-      font-size="${fontSize}px"
-      font-weight="500"
-      fill="${theme.colors.secondary}">${escapeXml(axisLabel)}</text>`);
-  }
-
-  return `<g transform="translate(0, ${layout.mainY + layout.headerHeight + layout.plotHeight})">${lines.join("\n")}</g>`;
-}
-
 /**
- * Render axis for a specific forest column (supports multi-forest layout).
- * Similar to renderAxis but takes explicit forestWidth parameter.
+ * Render axis for a forest column.
+ * Supports multi-forest layout with independent axes per forest column.
  */
 function renderForestAxis(
   xScale: Scale,
@@ -2104,7 +1568,7 @@ function renderForestAxis(
   const ticks = filterAxisTicks(xScale, tickCount, theme, nullValue, forestWidth, baseTicks);
   const fontSize = parseFontSize(theme.typography.fontSizeSm);
 
-  const EDGE_THRESHOLD = 35;
+  const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
 
   const getTextAnchor = (tickX: number): "start" | "middle" | "end" => {
     if (tickX < EDGE_THRESHOLD) return "start";
@@ -2411,13 +1875,10 @@ function renderUnifiedTableRow(
           badgeColor = customColors[badgeText];
           badgeTextColor = customColors[badgeText];
         } else if (variants && badgeText in variants) {
-          const variant = variants[badgeText];
+          const variant = variants[badgeText] as keyof typeof BADGE_VARIANTS | "default" | "muted";
           const variantColors: Record<string, string> = {
             default: theme.colors.primary,
-            success: "#16a34a",
-            warning: "#d97706",
-            error: "#dc2626",
-            info: "#2563eb",
+            ...BADGE_VARIANTS,
             muted: theme.colors.muted,
           };
           badgeColor = variantColors[variant] ?? theme.colors.primary;
@@ -2556,7 +2017,7 @@ function filterAxisTicks(
   const shouldIncludeNull = theme.axis.nullTick !== false;
   const nullInDomain = nullValue >= domainMin && nullValue <= domainMax;
 
-  const minSpacing = 50; // Minimum pixels between tick labels (matches web view)
+  const minSpacing = AXIS.MIN_TICK_SPACING;
   const maxTicks = Math.max(2, Math.floor(forestWidth / minSpacing));
   const effectiveTickCount = Math.min(tickCount, Math.min(7, maxTicks));
 

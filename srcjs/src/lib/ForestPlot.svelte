@@ -27,6 +27,7 @@
     ROW_SELECTED_OPACITY,
     ROW_SELECTED_HOVER_OPACITY,
     TEXT_MEASUREMENT,
+    BADGE_VARIANTS,
   } from "$lib/rendering-constants";
   import {
     formatNumber,
@@ -580,10 +581,10 @@
       --wf-summary-fill: ${theme.colors.summaryFill};
       --wf-summary-border: ${theme.colors.summaryBorder};
       --wf-accent: ${theme.colors.accent};
-      --wf-badge-success: #16a34a;
-      --wf-badge-warning: #f59e0b;
-      --wf-badge-error: #dc2626;
-      --wf-badge-info: #2563eb;
+      --wf-badge-success: ${BADGE_VARIANTS.success};
+      --wf-badge-warning: ${BADGE_VARIANTS.warning};
+      --wf-badge-error: ${BADGE_VARIANTS.error};
+      --wf-badge-info: ${BADGE_VARIANTS.info};
       --wf-badge-muted: ${theme.colors.muted};
       --wf-font-family: ${theme.typography.fontFamily};
       --wf-font-size-sm: ${theme.typography.fontSizeSm};

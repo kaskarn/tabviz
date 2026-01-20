@@ -50,7 +50,9 @@
 #'
 #' # Save a SplitForest to a directory
 #' split_result <- data |>
-#'   web_spec(point = "estimate", lower = "lower", upper = "upper") |>
+#'   tabviz(label = "study", columns = list(
+#'     col_forest(point = "estimate", lower = "lower", upper = "upper")
+#'   )) |>
 #'   split_table(by = c("sex", "age_group"))
 #'
 #' save_plot(split_result, "output/plots")
@@ -262,7 +264,9 @@ extract_webspec <- function(x) {
 #' \dontrun{
 #' # Create a split forest
 #' split_result <- data |>
-#'   web_spec(point = "or", lower = "lower", upper = "upper") |>
+#'   tabviz(label = "study", columns = list(
+#'     col_forest(point = "or", lower = "lower", upper = "upper")
+#'   )) |>
 #'   split_table(by = c("sex", "age_group"))
 #'
 #' # Export to directory

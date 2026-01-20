@@ -279,6 +279,34 @@ export const EFFECT = {
   SPACING: 6,
 } as const;
 
+// ============================================================================
+// Axis Rendering Constants
+// ============================================================================
+
+export const AXIS = {
+  /** Threshold for adjusting tick label alignment at plot edges (pixels) */
+  EDGE_THRESHOLD: 35,
+
+  /** Minimum spacing between tick labels to prevent overlap (pixels) */
+  MIN_TICK_SPACING: 50,
+} as const;
+
+// ============================================================================
+// Badge Variant Colors
+// ============================================================================
+
+/**
+ * Semantic color variants for badge columns.
+ * Used in SVG export where CSS variables aren't available.
+ * Svelte components use CSS variables (--wf-badge-*) with these as fallbacks.
+ */
+export const BADGE_VARIANTS = {
+  success: "#16a34a",
+  warning: "#d97706",
+  error: "#dc2626",
+  info: "#2563eb",
+} as const;
+
 /**
  * Calculate vertical offset for each effect (centered around yPosition).
  * When multiple effects are shown on the same row, they are vertically
