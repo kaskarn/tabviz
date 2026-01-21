@@ -1,3 +1,49 @@
+# tabviz 0.4.0
+
+## Breaking Changes
+
+* **`markerColors` → `effectColors`**: Unified theme property for cycling colors across all visualization types (forest, bar, boxplot, violin). This is a clean rename with no backward compatibility:
+  - R: `marker_colors` property removed from `Shapes` class, replaced by `effect_colors`
+  - R: `set_marker_colors()` removed, use `set_effect_colors()` instead
+  - TypeScript: `shapes.markerColors` → `shapes.effectColors` in theme type
+
+* **Effect color cascade**: All viz components now use the same color resolution:
+  1. `effect.color` (explicit per-effect override)
+  2. `theme.shapes.effectColors[idx]` (cycle through theme palette)
+  3. Built-in fallback array
+
+## New Features
+
+* **Curated effect color palettes**: Each built-in theme now includes a curated 5-color `effectColors` palette designed for multi-effect visualizations:
+  - **default**: Cyan/green/amber/red/purple (`#0891b2`, `#16a34a`, `#f59e0b`, `#ef4444`, `#8b5cf6`)
+  - **modern**: Blue/green/amber/red/purple
+  - **jama**: Grayscale progression
+  - **lancet**: Classic Lancet journal colors
+  - **nature**: Nature family warm tones
+  - **cochrane**: Cochrane review colors
+  - **dark**: Pastel tones for dark backgrounds
+  - **minimal**: Slate grayscale
+  - **presentation**: High-contrast primary colors
+
+## Bug Fixes
+
+* **Interactive dropdown clipping**: Fixed zoom controls, theme switcher, and download button dropdowns being clipped when the plot container is small or has `overflow: hidden`. Dropdowns now use viewport-relative fixed positioning to escape clipping containers.
+
+## Improvements
+
+* **Badge column styling**: Refined badge appearance with better vertical proportions:
+  - Removed vertical padding for tighter fit within rows
+  - Increased font weight (600) for better legibility
+  - Uses relative font sizing (0.77em for base, 0.7em for small)
+
+## Documentation
+
+* **Effect colors guide**: Added comprehensive effect_colors palette table showing all 9 theme palettes with visual swatches
+* **Visualizations index**: Updated guide to explain unified effectColors system for multi-effect styling
+* **Fluent API reference**: Updated `set_effect_colors()` documentation with examples
+
+---
+
 # tabviz 0.3.0
 
 ## Breaking Changes

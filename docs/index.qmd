@@ -26,7 +26,7 @@ tabviz(
       col_text("drug", "Drug"),
       col_n("n")
     ),
-    col_forest(
+    viz_forest(
       point = "hr", lower = "lower", upper = "upper",
       scale = "log", null_value = 1,
       axis_label = "Hazard Ratio (95% CI)",
@@ -60,7 +60,7 @@ tabviz(data,
   columns = list(
     col_text("category"),
     col_numeric("value"),
-    col_forest(point = "hr", lower = "lo", upper = "hi",
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1),
     col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi"),
     col_sparkline("trend")
@@ -124,7 +124,7 @@ tabviz(data,
   label = "study",
   columns = list(
     col_text("category"),
-    col_forest(point = "estimate", lower = "ci_lower", upper = "ci_upper",
+    viz_forest(point = "estimate", lower = "ci_lower", upper = "ci_upper",
                scale = "log", null_value = 1),
     col_interval("Est (95% CI)", point = "estimate",
                  lower = "ci_lower", upper = "ci_upper"),
@@ -144,7 +144,7 @@ Learn how to use tabviz:
 | [Row Styling](guide/row-styling.qmd) | Headers, summaries, indentation, and badges |
 | [Cell Styling](guide/cell-styling.qmd) | Per-cell conditional formatting |
 | [Row Groups](guide/row-groups.qmd) | Collapsible sections from column values |
-| [Forest Plots](guide/visualizations/forest-plots.qmd) | Adding forest columns with col_forest() |
+| [Forest Plots](guide/visualizations/forest-plots.qmd) | Adding forest columns with viz_forest() |
 | [Split Plots](guide/split-plots.qmd) | Sidebar navigation for subgroups |
 | [Themes](guide/themes.qmd) | Preset themes and customization |
 | [Shiny Integration](guide/shiny.qmd) | Reactive tables |

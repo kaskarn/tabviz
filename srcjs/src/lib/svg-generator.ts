@@ -1327,23 +1327,23 @@ function renderInterval(
     const isPrimary = idx === 0;
     const markerStyle = row.markerStyle;
 
-    // Theme marker defaults for multi-effect plots
-    const themeMarkerColors = theme.shapes.markerColors;
+    // Theme effect defaults for multi-effect plots
+    const themeEffectColors = theme.shapes.effectColors;
     const themeMarkerShapes = theme.shapes.markerShapes;
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
     // Color priority:
     // 1. Primary effect: row.markerStyle.color (if set)
     // 2. effect.color (if set)
-    // 3. theme.shapes.markerColors[idx] (if defined)
+    // 3. theme.shapes.effectColors[idx] (if defined)
     // 4. theme.colors.interval (fallback)
     let color: string;
     if (isPrimary && markerStyle?.color) {
       color = markerStyle.color;
     } else if (effect.color) {
       color = effect.color;
-    } else if (themeMarkerColors && themeMarkerColors.length > 0) {
-      color = themeMarkerColors[idx % themeMarkerColors.length];
+    } else if (themeEffectColors && themeEffectColors.length > 0) {
+      color = themeEffectColors[idx % themeEffectColors.length];
     } else {
       color = theme.colors.interval ?? theme.colors.primary ?? "#2563eb";
     }

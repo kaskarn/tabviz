@@ -1,0 +1,95 @@
+---
+title: "Bar Charts"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Horizontal bar charts for comparing magnitude across rows. Bars share a common axis for direct visual comparison.
+
+## Basic Usage
+
+```{r}
+bar_data <- data.frame(
+  metric = c("Response Rate", "Completion Rate", "Retention Rate", "Satisfaction"),
+  value = c(78, 92, 85, 88),
+  category = c("Primary", "Primary", "Secondary", "Secondary")
+)
+
+tabviz(bar_data, label = "metric",
+  columns = list(
+    col_text("category", "Category"),
+    viz_bar(
+      viz_bar_effect("value"),
+      header = "Rate (%)",
+      width = 200,
+      axis_range = c(0, 100)
+    ),
+    col_numeric("value", "%", width = 60)
+  ),
+  title = "Performance Metrics"
+)
+```
+
+---
+
+## Multiple Effects
+
+Compare multiple values per row with grouped bars:
+
+```{r}
+comparison_data <- data.frame(
+  region = c("North America", "Europe", "Asia Pacific", "Latin America"),
+  q1_sales = c(245, 189, 312, 98),
+  q2_sales = c(278, 215, 345, 125),
+  q3_sales = c(312, 242, 398, 156)
+)
+
+tabviz(comparison_data, label = "region",
+  columns = list(
+    viz_bar(
+      viz_bar_effect("q1_sales", label = "Q1", color = "#3b82f6"),
+      viz_bar_effect("q2_sales", label = "Q2", color = "#22c55e"),
+      viz_bar_effect("q3_sales", label = "Q3", color = "#f59e0b"),
+      header = "Quarterly Sales ($K)",
+      width = 250
+    )
+  ),
+  title = "Regional Sales Comparison"
+)
+```
+
+---
+
+## viz_bar() Arguments
+
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `header` | Column header text | `NULL` |
+| `width` | Column width in pixels | `150` |
+| `scale` | `"linear"` or `"log"` | `"linear"` |
+| `axis_range` | Fixed axis range `c(min, max)` | Auto |
+| `axis_ticks` | Custom tick positions | Auto |
+| `axis_gridlines` | Show vertical gridlines | `FALSE` |
+| `axis_label` | Label text below axis | `"Value"` |
+| `show_axis` | Show the axis | `TRUE` |
+
+## viz_bar_effect() Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `value` | Column name containing the bar value |
+| `label` | Display label (for legend with multiple effects) |
+| `color` | Bar fill color |
+| `opacity` | Bar opacity (0-1, default: 0.85) |
+
+---
+
+## See Also
+
+- [Visualizations Overview](index.qmd) — Interactivity, tooltips, export
+- [Boxplots](boxplots.qmd) — Distribution summaries with `viz_boxplot()`
+- [Violin Plots](violin-plots.qmd) — Full distributions with `viz_violin()`

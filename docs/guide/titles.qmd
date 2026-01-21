@@ -26,7 +26,7 @@ glp1_trials |>
     footnote = "Data from published trial results",
     columns = list(
       col_text("drug", "Drug"),
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1),
       col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
     )
@@ -93,7 +93,7 @@ tabviz(demo_data,
 
 ## Axis Labels
 
-For forest plot columns, use `axis_label` within `col_forest()` to label the x-axis:
+For forest plot columns, use `axis_label` within `viz_forest()` to label the x-axis:
 
 ```{r}
 glp1_trials |>
@@ -103,7 +103,7 @@ glp1_trials |>
     label = "study",
     title = "Treatment Effect",
     columns = list(
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1,
                  axis_label = "Hazard Ratio (95% CI)")
     )

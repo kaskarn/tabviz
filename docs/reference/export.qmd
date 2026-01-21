@@ -43,7 +43,7 @@ save_plot(
 p <- tabviz(data,
   label = "study",
   columns = list(
-    col_forest(point = "hr", lower = "lo", upper = "hi"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi"),
     col_interval(point = "hr", lower = "lo", upper = "hi", header = "HR (95% CI)")
   )
 )
@@ -120,7 +120,7 @@ save_split_table(
 # Create split forest
 tabviz(data,
   label = "study",
-  columns = list(col_forest(point = "or", lower = "lower", upper = "upper")),
+  columns = list(viz_forest(point = "or", lower = "lower", upper = "upper")),
   split_by = c("sex", "age_group")
 ) |>
   save_split_table("output/plots", format = "svg")
@@ -152,7 +152,7 @@ p <- tabviz(trial_data,
   label = "study",
   columns = list(
     col_n("n"),
-    col_forest(point = "hr", lower = "lower", upper = "upper", scale = "log", null_value = 1),
+    viz_forest(point = "hr", lower = "lower", upper = "upper", scale = "log", null_value = 1),
     col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)"),
     col_pvalue("pval")
   ),
@@ -189,7 +189,7 @@ for (name in names(themes)) {
 # Create split view
 split_view <- tabviz(data,
   label = "study",
-  columns = list(col_forest(...)),
+  columns = list(viz_forest(...)),
   split_by = c("region", "subgroup"),
   shared_axis = TRUE
 )

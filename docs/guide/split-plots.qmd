@@ -67,7 +67,7 @@ subgroup_data$upper <- subgroup_data$or * exp(1.96 * 0.2)
 tabviz(subgroup_data,
   label = "study",
   columns = list(
-    col_forest(
+    viz_forest(
       point = "or", lower = "lower", upper = "upper",
       scale = "log", null_value = 1,
       axis_label = "Odds Ratio"
@@ -92,7 +92,7 @@ tabviz(subgroup_data,
     col_text("sex", header = "Sex"),
     col_text("age_group", header = "Age"),
     col_interval("OR (95% CI)", point = "or", lower = "lower", upper = "upper"),
-    col_forest(
+    viz_forest(
       point = "or", lower = "lower", upper = "upper",
       scale = "log", null_value = 1
     )
@@ -111,7 +111,7 @@ By default, each sub-plot auto-scales its axis. Use `shared_axis = TRUE` for con
 tabviz(trial_data,
   label = "study",
   columns = list(
-    col_forest(
+    viz_forest(
       point = "or", lower = "lower", upper = "upper",
       scale = "log", null_value = 1
     )
@@ -143,7 +143,7 @@ Export all sub-plots to a directory structure:
 p <- tabviz(data,
   label = "study",
   columns = list(
-    col_forest(point = "or", lower = "lower", upper = "upper")
+    viz_forest(point = "or", lower = "lower", upper = "upper")
   )
 ) |>
   split_table(by = c("sex", "age_group")) |>

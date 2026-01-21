@@ -28,7 +28,7 @@ server <- function(input, output, session) {
     tabviz(meta_data,
       label = "study",
       columns = list(
-        col_forest(point = "hr", lower = "lower", upper = "upper",
+        viz_forest(point = "hr", lower = "lower", upper = "upper",
                    scale = "log", null_value = 1)
       )
     )
@@ -73,7 +73,7 @@ server <- function(input, output, session) {
     tabviz(filtered_data(),
       label = "study",
       columns = list(
-        col_forest(point = "hr", lower = "lower", upper = "upper",
+        viz_forest(point = "hr", lower = "lower", upper = "upper",
                    scale = "log", null_value = 1)
       )
     )
@@ -105,7 +105,7 @@ server <- function(input, output, session) {
     tabviz(data,
       label = "study",
       columns = list(
-        col_forest(point = "hr", lower = "lower", upper = "upper",
+        viz_forest(point = "hr", lower = "lower", upper = "upper",
                    scale = "log", null_value = 1)
       ),
       theme = theme
@@ -227,7 +227,7 @@ observeEvent(input$switch_dataset, {
     get_dataset(input$dataset_name),
     label = "study",
     columns = list(
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1)
     ),
     .spec_only = TRUE
@@ -359,7 +359,7 @@ server <- function(input, output, session) {
       columns = list(
         col_numeric("n", "N"),
         col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-        col_forest(point = "hr", lower = "lower", upper = "upper",
+        viz_forest(point = "hr", lower = "lower", upper = "upper",
                    scale = "log", null_value = 1, axis_label = "Hazard Ratio")
       ),
       theme = plot_theme()

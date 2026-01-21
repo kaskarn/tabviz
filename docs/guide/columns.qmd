@@ -10,6 +10,54 @@ library(dplyr)
 
 Columns display data alongside the forest plot. Each column type has specialized formatting for different kinds of data.
 
+## Choosing Column Types
+
+Not sure which column type to use? This guide helps you choose.
+
+### For Numeric Values
+
+| Data Type | Recommended Column | Why |
+|-----------|-------------------|-----|
+| General number | `col_numeric()` | Flexible formatting with decimals/digits |
+| Sample size | `col_n()` | Handles abbreviation (e.g., "1.2K") |
+| Percentage | `col_percent()` | Auto-formats with % symbol |
+| P-value | `col_pvalue()` | Scientific notation, star indicators |
+| Count ratio | `col_events()` | Shows "45/120 (37.5%)" format |
+
+### For Effect Estimates
+
+| Data Type | Recommended Column | Why |
+|-----------|-------------------|-----|
+| Point estimate + CI text | `col_interval()` | Clean "0.85 (0.70, 1.03)" format |
+| Visual comparison | `viz_forest()` | Shows intervals graphically with shared axis |
+| **Publication tables** | **Both** | Use together for visual + numeric precision |
+
+### For Distributions
+
+| Question | Recommended | Notes |
+|----------|-------------|-------|
+| Compare single values across rows? | `viz_bar()` | Best for direct magnitude comparison |
+| Show spread and outliers? | `viz_boxplot()` | Shows quartiles, median, outliers |
+| Show full distribution shape? | `viz_violin()` | Reveals bimodal/skewed distributions |
+| Just need a simple inline bar? | `col_bar()` | No axis, fits in cell |
+| Show trends over time? | `col_sparkline()` | Compact line/area/bar charts |
+
+### For Status/Categories
+
+| Data Type | Recommended Column | Why |
+|-----------|-------------------|-----|
+| Status labels | `col_badge()` | Colored chips (success/warning/error) |
+| Quality scores | `col_stars()` | Visual star rating |
+| Single indicators | `col_icon()` | Emoji or symbol mapping |
+| Min-max ranges | `col_range()` | Shows "55 – 80" format |
+
+::: {.callout-tip}
+## When in Doubt
+Start with `col_text()` for any data, then upgrade to a specialized type when formatting becomes important.
+:::
+
+---
+
 ## Column Gallery
 
 Here's every column type in action:
@@ -43,7 +91,7 @@ tabviz(gallery_data,
     col_percent("on_time_pct", "Rate"),
     col_bar("weight", "Weight", width = 70),
     col_sparkline("trend", "Trend", width = 60),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, width = 140),
     col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)"),
     col_pvalue("pvalue", "P", stars = TRUE),
@@ -69,7 +117,7 @@ tabviz(gallery_data,
 | `col_range()` | Min–Max | `55 – 80` |
 | `col_bar()` | Horizontal bar | Visual weight |
 | `col_sparkline()` | Mini chart | Trends |
-| `col_forest()` | Forest plot | Effect estimates |
+| `viz_forest()` | Forest plot | Effect estimates |
 | `col_badge()` | Status badge | Labels |
 | `col_icon()` | Icons/emoji | Status |
 | `col_stars()` | Star rating | Quality |
@@ -137,7 +185,7 @@ glp1_trials |>
   tabviz(
     label = "study",
     columns = list(
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1, width = 180),
       col_interval(point = "hr", lower = "lower", upper = "upper",
                    header = "HR (95% CI)"),
@@ -255,7 +303,7 @@ status_data <- data.frame(
 tabviz(status_data,
   label = "study",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1),
     col_stars("quality", "Quality"),
     col_badge("status", "Status",
@@ -292,7 +340,7 @@ outcomes_data <- data.frame(
 tabviz(outcomes_data,
   label = "study",
   columns = list(
-    col_forest(point = "primary_hr", lower = "primary_lower", upper = "primary_upper",
+    viz_forest(point = "primary_hr", lower = "primary_lower", upper = "primary_upper",
                null_value = 1, scale = "log"),
     col_group("Primary Endpoint",
       col_interval(point = "primary_hr", lower = "primary_lower", upper = "primary_upper",
@@ -363,5 +411,5 @@ See [Cell Styling](cell-styling.qmd) for more conditional formatting patterns.
 ## See Also
 
 - [Package Data](package-data.qmd) — Built-in datasets for examples
-- [Forest Plots](visualizations/forest-plots.qmd) — Detailed `col_forest()` options
+- [Forest Plots](visualizations/forest-plots.qmd) — Detailed `viz_forest()` options
 - [Cell Styling](cell-styling.qmd) — Conditional formatting

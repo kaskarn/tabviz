@@ -10,7 +10,7 @@ set_shapes(
   summary_height = NULL,
   line_width = NULL,
   border_radius = NULL,
-  marker_colors = NULL,
+  effect_colors = NULL,
   marker_shapes = NULL
 )
 }
@@ -25,10 +25,11 @@ set_shapes(
 
 \item{border_radius}{Border radius for containers in pixels (default: 2)}
 
-\item{marker_colors}{Character vector of colors for multi-effect plots.
-Effects without explicit colors use these in order. NULL uses theme interval color.}
+\item{effect_colors}{Character vector of colors for multi-effect visualizations.
+Used by forest plots, bar charts, boxplots, and violin plots. Effects without
+explicit colors use these in order, cycling if needed.}
 
-\item{marker_shapes}{Character vector of shapes for multi-effect plots:
+\item{marker_shapes}{Character vector of shapes for multi-effect forest plots:
 "square", "circle", "diamond", "triangle" (default: all four in order)}
 }
 \value{

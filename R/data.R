@@ -44,7 +44,7 @@
 #'   \item{carrier_type}{Carrier classification: Legacy, Low-Cost, or Ultra Low-Cost}
 #'   \item{month}{Month of observation (Jan-Apr)}
 #'   \item{delay_vs_avg}{Delay in minutes relative to industry average}
-#'   \item{on_time_pct}{Percentage of flights arriving on time}
+#'   \item{on_time_pct}{Proportion of flights arriving on time (0-1)}
 #'   \item{satisfaction}{Customer satisfaction score (1-5 scale)}
 #'   \item{flights}{Number of flights operated}
 #'   \item{delay_lower}{Lower bound of delay estimate}

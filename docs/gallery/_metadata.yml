@@ -1,0 +1,5 @@
+# Gallery-specific settings
+# Code is collapsed by default to focus on visualizations
+format:
+  html:
+    code-fold: true

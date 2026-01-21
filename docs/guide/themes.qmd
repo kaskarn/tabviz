@@ -34,11 +34,11 @@ Each theme is designed with a specific context in mind:
 | Colors | `set_colors()` | background, foreground, primary, interval, interval_line |
 | Typography | `set_typography()` | font_family, font_size_*, font_weight_*, header_font_scale |
 | Spacing | `set_spacing()` | row_height, header_height, padding, container_padding, cell_padding_x/y |
-| Shapes | `set_shapes()` | point_size, summary_height, line_width, marker_colors, marker_shapes |
+| Shapes | `set_shapes()` | point_size, summary_height, line_width, effect_colors, marker_shapes |
 | Axis | `set_axis()` | range_min/max, tick_count, tick_values, gridlines, symmetric |
 | Layout | `set_layout()` | plot_position, row_border, container_border |
 | Group Headers | `set_group_headers()` | level*_font_size, level*_background, indent_per_level |
-| Markers | `set_marker_colors()`, `set_marker_shapes()` | Multi-effect default colors/shapes |
+| Effects | `set_effect_colors()`, `set_marker_shapes()` | Multi-effect default colors/shapes |
 
 
 ## Color Architecture
@@ -307,26 +307,60 @@ set_shapes(
   summary_height = 10,    # Summary diamond height
   line_width = 1.5,       # Confidence interval line width
   border_radius = 4,      # Container border radius
-  marker_colors = NULL,   # Default colors for multi-effect plots
+  effect_colors = NULL,   # Default colors for multi-effect visualizations
   marker_shapes = c("square", "circle", "diamond", "triangle")
 )
 ```
 
-### Multi-Effect Marker Defaults
+### Multi-Effect Color Defaults
 
-For plots with multiple effects per row (e.g., ITT vs Per-Protocol), markers cycle through theme-defined colors and shapes:
+For visualizations with multiple effects per row (forest plots, bar charts, boxplots, violin plots), colors cycle through theme-defined `effect_colors`:
 
 ```{r}
 #| eval: false
-# Set custom marker colors and shapes for multi-effect plots
+# Set custom effect colors and shapes for multi-effect visualizations
 custom_theme <- web_theme_default() |>
-  set_marker_colors(c("#2563eb", "#dc2626", "#16a34a")) |>
+  set_effect_colors(c("#2563eb", "#dc2626", "#16a34a")) |>
   set_marker_shapes(c("square", "circle", "diamond"))
 
 forest_plot(data, ..., theme = custom_theme)
 ```
 
-Effects without explicit `color` or `shape` in `web_effect()` use these theme defaults in order.
+Effects without explicit `color` in their specification use these theme defaults in order, cycling if there are more effects than colors.
+
+#### Built-in Theme Palettes
+
+Each theme includes a curated 5-color `effect_colors` palette:
+```{r}
+#| echo: false
+#| output: asis
+theme_colors <- data.frame(
+  Theme = c("default", "modern", "jama", "lancet", "nature", "cochrane", "dark", "minimal", "presentation"),
+  Colors = c(
+    "`#0891b2` `#16a34a` `#f59e0b` `#ef4444` `#8b5cf6`",
+    "`#3b82f6` `#22c55e` `#f59e0b` `#ef4444` `#8b5cf6`",
+    "`#1a1a1a` `#4a4a4a` `#7a7a7a` `#9a9a9a` `#bababa`",
+    "`#00468b` `#ed0000` `#42b540` `#0099b4` `#925e9f`",
+    "`#e64b35` `#4dbbd5` `#00a087` `#3c5488` `#f39b7f`",
+    "`#0c4da2` `#dd5129` `#1a8a4f` `#6d4e92` `#e89a47`",
+    "`#89b4fa` `#a6e3a1` `#fab387` `#f38ba8` `#cba6f7`",
+    "`#64748b` `#94a3b8` `#cbd5e1` `#475569` `#334155`",
+    "`#2563eb` `#16a34a` `#ea580c` `#dc2626` `#7c3aed`"
+  ),
+  Style = c(
+    "Balanced, accessible",
+    "Vibrant blue-first",
+    "Grayscale for print",
+    "Journal-inspired reds/blues",
+    "Warm coral palette",
+    "Strong primaries",
+    "Pastel for dark mode",
+    "Subtle slate tones",
+    "High-contrast for slides"
+  )
+)
+knitr::kable(theme_colors, col.names = c("Theme", "Effect Colors", "Style"))
+```
 
 ### Axis
 

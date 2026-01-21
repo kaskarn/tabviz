@@ -1,0 +1,290 @@
+---
+title: "Business Examples"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Business dashboards, survey analysis, and performance metrics. These examples demonstrate tabviz for non-clinical use cases.
+
+## Survey Results with Likert Scales
+
+Visualize survey response distributions with stacked bars:
+
+```{r}
+survey_results <- data.frame(
+  question = c("Product Quality", "Customer Service", "Value for Money", "Ease of Use", "Would Recommend"),
+  strongly_disagree = c(5, 8, 12, 3, 6),
+  disagree = c(10, 12, 18, 8, 10),
+  neutral = c(20, 15, 22, 12, 18),
+  agree = c(35, 32, 28, 42, 38),
+  strongly_agree = c(30, 33, 20, 35, 28),
+  mean_score = c(3.75, 3.70, 3.26, 3.98, 3.72)
+)
+
+tabviz(survey_results, label = "question",
+  columns = list(
+    viz_bar(
+      # Likert scale requires semantic colors: red=disagree, yellow=neutral, green=agree
+      viz_bar_effect("strongly_disagree", label = "Strongly Disagree", color = "#ef4444"),
+      viz_bar_effect("disagree", label = "Disagree", color = "#f97316"),
+      viz_bar_effect("neutral", label = "Neutral", color = "#eab308"),
+      viz_bar_effect("agree", label = "Agree", color = "#84cc16"),
+      viz_bar_effect("strongly_agree", label = "Strongly Agree", color = "#22c55e"),
+      header = "Response Distribution (%)",
+      axis_range = c(0, 100)
+    ),
+    col_numeric("mean_score", "Mean", decimals = 2)
+  ),
+  theme = web_theme_modern(),
+  title = "Customer Satisfaction Survey Results"
+)
+```
+
+---
+
+## Product Metrics Dashboard
+
+Track product KPIs with bars, sparklines, and trend indicators:
+
+```{r}
+product_metrics <- data.frame(
+  product = c("Widget Pro", "Widget Lite", "Widget Plus", "Widget Max", "Widget Mini"),
+  revenue = c(2450000, 1890000, 3200000, 1560000, 980000),
+  growth = c(0.12, -0.05, 0.28, 0.08, 0.15),
+  margin = c(0.35, 0.42, 0.28, 0.38, 0.45),
+  units_sold = c(12500, 9800, 18200, 7800, 15600),
+  satisfaction = c(4.2, 3.8, 4.5, 4.1, 4.3)
+)
+
+# Add sparkline trend data
+product_metrics$trend <- list(
+  c(180, 195, 210, 205, 225, 240, 235, 250, 260, 275, 290, 305),
+  c(220, 215, 205, 210, 200, 195, 190, 185, 188, 182, 180, 178),
+  c(200, 220, 240, 260, 290, 320, 340, 360, 380, 400, 420, 440),
+  c(120, 125, 130, 128, 135, 140, 138, 145, 150, 148, 155, 160),
+  c(60, 68, 75, 82, 88, 95, 100, 108, 115, 122, 128, 135)
+)
+
+tabviz(product_metrics, label = "product",
+  columns = list(
+    col_n("revenue", "Revenue", abbreviate = TRUE),
+    col_percent("growth", "YoY"),
+    col_percent("margin", "Margin"),
+    viz_bar(
+      viz_bar_effect("units_sold"),
+      header = "Units Sold",
+      axis_range = c(0, 20000)
+    ),
+    col_sparkline("trend", "12M Trend"),
+    col_stars("satisfaction", "Rating", max_stars = 5)
+  ),
+  theme = web_theme_modern(),
+  title = "Product Performance Dashboard"
+)
+```
+
+---
+
+## A/B Test Results
+
+Compare conversion rates across experiment variants with confidence intervals:
+
+```{r}
+ab_test_results <- data.frame(
+  variant = c("Control", "Variant A", "Variant B", "Variant C"),
+  visitors = c(50000, 48500, 51200, 47800),
+  conversions = c(2500, 2910, 2816, 2629),
+  rate = c(0.050, 0.060, 0.055, 0.055),
+  lift = c(0, 0.20, 0.10, 0.10),
+  lower = c(NA, 0.08, -0.02, -0.03),
+  upper = c(NA, 0.32, 0.22, 0.23),
+  pvalue = c(NA, 0.002, 0.12, 0.15),
+  row_type = c("summary", "data", "data", "data"),
+  row_bold = c(TRUE, FALSE, FALSE, FALSE)
+)
+
+tabviz(ab_test_results, label = "variant",
+  columns = list(
+    col_n("visitors", "Visitors", abbreviate = TRUE),
+    col_n("conversions", "Conversions"),
+    col_percent("rate", "CVR"),
+    viz_forest(
+      point = "lift", lower = "lower", upper = "upper",
+      null_value = 0,
+      axis_label = "Lift vs Control"
+    ),
+    col_percent("lift", "Lift"),
+    col_pvalue("pvalue", "P", stars = TRUE)
+  ),
+  row_type = "row_type",
+  row_bold = "row_bold",
+  marker_color = ~ ifelse(is.na(lower), "#64748b",
+                          ifelse(lower > 0, "#16a34a", "#64748b")),
+  theme = web_theme_nature(),
+  title = "Homepage Redesign A/B Test"
+)
+```
+
+---
+
+## Team Performance Comparison
+
+Compare team metrics with distributions:
+
+```{r}
+set.seed(42)
+team_data <- data.frame(
+  team = c("Engineering", "Sales", "Marketing", "Support", "Operations"),
+  headcount = c(45, 32, 18, 24, 15),
+  avg_tenure = c(3.2, 2.1, 2.8, 1.9, 4.1),
+  satisfaction = c(4.2, 3.8, 4.0, 3.5, 4.3),
+  productivity = I(list(
+    rnorm(45, 85, 12),
+    rnorm(32, 92, 15),
+    rnorm(18, 78, 18),
+    rnorm(24, 72, 20),
+    rnorm(15, 88, 10)
+  )),
+  scores = I(list(
+    c(78, 82, 85, 88, 90, 92, 94, 96),
+    c(80, 85, 88, 92, 95, 98, 100, 102),
+    c(65, 70, 72, 75, 78, 80, 82, 85),
+    c(60, 65, 68, 70, 72, 75, 78, 80),
+    c(82, 85, 88, 90, 92, 94, 95, 96)
+  ))
+)
+
+tabviz(team_data, label = "team",
+  columns = list(
+    col_n("headcount", "Size"),
+    col_numeric("avg_tenure", "Tenure (yr)", decimals = 1),
+    viz_bar(
+      viz_bar_effect("satisfaction"),
+      header = "Satisfaction",
+      axis_range = c(0, 5)
+    ),
+    viz_boxplot(
+      viz_boxplot_effect(data = "productivity"),
+      header = "Productivity Score",
+      show_outliers = TRUE
+    ),
+    col_sparkline("scores", "Quarterly")
+  ),
+  theme = web_theme_modern(),
+  title = "Team Performance Overview"
+)
+```
+
+---
+
+## Sales Pipeline Analysis
+
+Track deal progress with status indicators and visual metrics:
+
+```{r}
+pipeline_data <- data.frame(
+  opportunity = c("Enterprise Deal A", "Mid-Market B", "SMB Package C", "Enterprise Deal D", "Strategic E"),
+  stage = c("Negotiation", "Proposal", "Discovery", "Closed Won", "Qualification"),
+  value = c(450000, 125000, 35000, 280000, 890000),
+  probability = c(0.75, 0.50, 0.25, 1.00, 0.15),
+  days_in_stage = c(12, 8, 3, 0, 5),
+  next_action = c("Contract review", "Follow-up call", "Demo scheduled", "Onboarding", "Needs analysis")
+)
+
+tabviz(pipeline_data, label = "opportunity",
+  columns = list(
+    col_badge("stage", "Stage",
+      variants = list(
+        Qualification = "info",
+        Discovery = "info",
+        Proposal = "warning",
+        Negotiation = "warning",
+        `Closed Won` = "success"
+      )),
+    col_n("value", "Value", abbreviate = TRUE),
+    viz_bar(
+      viz_bar_effect("probability"),
+      header = "Win Prob",
+      axis_range = c(0, 1)
+    ),
+    col_numeric("days_in_stage", "Days"),
+    col_text("next_action", "Next Action")
+  ),
+  theme = web_theme_modern(),
+  title = "Sales Pipeline Overview"
+)
+```
+
+---
+
+## Funnel Analysis
+
+Visualize conversion funnel stages:
+
+```{r}
+funnel_data <- data.frame(
+  stage = c("Visitors", "Sign-ups", "Activated", "Subscribed", "Retained (M3)"),
+  users = c(100000, 15000, 8500, 2100, 1680),
+  rate = c(1.00, 0.15, 0.567, 0.247, 0.80),
+  cumulative = c(1.00, 0.15, 0.085, 0.021, 0.0168)
+)
+
+tabviz(funnel_data, label = "stage",
+  columns = list(
+    col_n("users", "Users", abbreviate = TRUE),
+    viz_bar(
+      viz_bar_effect("users"),
+      header = "Volume",
+      axis_range = c(0, 100000)
+    ),
+    col_percent("rate", "Stage Rate"),
+    col_percent("cumulative", "Cumulative")
+  ),
+  theme = web_theme_minimal(),
+  title = "User Acquisition Funnel"
+)
+```
+
+---
+
+## Financial Performance
+
+Compare financial metrics across business units:
+
+```{r}
+financial_data <- data.frame(
+  division = c("North America", "Europe", "Asia Pacific", "Latin America"),
+  revenue = c(12500000, 8900000, 15200000, 3400000),
+  budget_var = c(0.08, -0.03, 0.15, -0.12),
+  budget_lower = c(0.02, -0.08, 0.08, -0.20),
+  budget_upper = c(0.14, 0.02, 0.22, -0.04),
+  margin = c(0.32, 0.28, 0.35, 0.22),
+  headcount = c(450, 320, 580, 120)
+)
+
+tabviz(financial_data, label = "division",
+  columns = list(
+    col_n("revenue", "Revenue", abbreviate = TRUE),
+    col_n("headcount", "FTEs"),
+    viz_forest(
+      point = "budget_var", lower = "budget_lower", upper = "budget_upper",
+      null_value = 0,
+      axis_label = "Budget Variance"
+    ),
+    col_percent("budget_var", "Var %"),
+    viz_bar(
+      viz_bar_effect("margin"),
+      header = "Margin",
+      axis_range = c(0, 0.5)
+    )
+  ),
+  marker_color = ~ ifelse(budget_lower > 0, "#16a34a",
+                          ifelse(budget_upper < 0, "#dc2626", "#64748b")),
+  theme = web_theme_nature(),
+  title = "Q4 Financial Performance by Division"
+)
+```

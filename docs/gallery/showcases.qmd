@@ -25,7 +25,7 @@ tabviz(
       col_text("drug", "Drug"),
       col_n("n")
     ),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1),
     col_group("Results",
       col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
@@ -36,6 +36,108 @@ tabviz(
   title = "Column Groups Example"
 )
 ```
+
+---
+
+## Distribution Visualizations
+
+### Bar Charts with viz_bar
+
+Compare values across rows with horizontal bars:
+
+```{r}
+performance_data <- data.frame(
+  department = c("Engineering", "Sales", "Marketing", "Operations", "HR"),
+  q1_score = c(87, 92, 78, 85, 90),
+  q2_score = c(91, 88, 82, 87, 88),
+  target = rep(85, 5)
+)
+
+tabviz(performance_data, label = "department",
+  columns = list(
+    viz_bar(
+      viz_bar_effect("q1_score", label = "Q1"),
+      viz_bar_effect("q2_score", label = "Q2"),
+      header = "Performance Score",
+      axis_range = c(0, 100)
+    ),
+    col_numeric("q1_score", "Q1"),
+    col_numeric("q2_score", "Q2")
+  ),
+  theme = web_theme_modern(),
+  title = "Quarterly Performance vs Target"
+)
+```
+
+### Box Plots with viz_boxplot
+
+Show distribution summaries with quartiles and outliers:
+
+```{r}
+set.seed(123)
+lab_data <- data.frame(
+  biomarker = c("CRP", "IL-6", "TNF-alpha", "Albumin"),
+  treatment = I(list(
+    c(rnorm(40, 5, 2), runif(5, 12, 15)),
+    rnorm(45, 25, 8),
+    c(rnorm(35, 15, 4), runif(5, 28, 32)),
+    rnorm(45, 40, 5)
+  )),
+  control = I(list(
+    c(rnorm(40, 8, 3), runif(5, 16, 20)),
+    rnorm(45, 35, 10),
+    c(rnorm(35, 22, 6), runif(5, 38, 45)),
+    rnorm(45, 38, 6)
+  ))
+)
+
+tabviz(lab_data, label = "biomarker",
+  columns = list(
+    viz_boxplot(
+      viz_boxplot_effect(data = "treatment", label = "Treatment"),
+      viz_boxplot_effect(data = "control", label = "Control"),
+      header = "Distribution (mg/L)",
+      show_outliers = TRUE
+    )
+  ),
+  theme = web_theme_nature(),
+  title = "Biomarker Distributions by Treatment Group"
+)
+```
+
+### Violin Plots with viz_violin
+
+Visualize distribution shapes with kernel density estimation:
+
+```{r}
+set.seed(456)
+survey_data <- data.frame(
+  question = c("Overall Satisfaction", "Ease of Use", "Value for Money", "Would Recommend"),
+  responses = I(list(
+    c(rnorm(80, 7.5, 1.2), rnorm(20, 4, 1.5)),  # Bimodal
+    rnorm(100, 8.2, 0.8),                         # Tight normal
+    c(runif(50, 3, 10), rnorm(50, 6, 1.5)),      # Mixed
+    c(rnorm(70, 8.5, 1), rnorm(30, 5, 1.2))      # Skewed
+  )),
+  mean_score = c(6.8, 8.2, 6.1, 7.4)
+)
+
+tabviz(survey_data, label = "question",
+  columns = list(
+    viz_violin(
+      viz_violin_effect(data = "responses"),
+      header = "Score Distribution",
+      show_median = TRUE,
+      show_quartiles = TRUE
+    ),
+    col_numeric("mean_score", "Mean", decimals = 1)
+  ),
+  theme = web_theme_minimal(),
+  title = "Customer Survey Response Distributions"
+)
+```
+
+---
 
 ## Collapsible Row Groups
 
@@ -58,7 +160,7 @@ tabviz(grouped_data,
   label = "study",
   group = c("category", "subcategory"),
   columns = list(
-    col_forest(point = "hr", lower = "lo", upper = "hi",
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1),
     col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
   ),
@@ -66,6 +168,8 @@ tabviz(grouped_data,
   title = "Nested Grouping"
 )
 ```
+
+---
 
 ## All Theme Variants
 
@@ -84,7 +188,7 @@ sample_data <- data.frame(
 
 make_plot <- function(theme_fn, name) {
   tabviz(sample_data, label = "study",
-    columns = list(col_forest(point = "hr", lower = "lo", upper = "hi",
+    columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
                              scale = "log", null_value = 1)),
     theme = theme_fn(), title = name
   )
@@ -101,6 +205,8 @@ make_plot(web_theme_dark, "Dark")
 make_plot(web_theme_minimal, "Minimal")
 ```
 
+---
+
 ## Reference Lines and Annotations
 
 Custom annotations on forest plots:
@@ -110,7 +216,7 @@ tabviz(
   glp1_trials |> filter(row_type == "data"),
   label = "study",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_gridlines = TRUE)
   ),
@@ -123,6 +229,8 @@ tabviz(
   title = "Reference Lines"
 )
 ```
+
+---
 
 ## Cell-Level Styling
 
@@ -154,6 +262,8 @@ tabviz(cell_data,
 )
 ```
 
+---
+
 ## Marker Customization
 
 Different shapes and colors per row:
@@ -172,7 +282,7 @@ tabviz(marker_data,
   label = "study",
   columns = list(
     col_text("design", "Design"),
-    col_forest(point = "hr", lower = "lo", upper = "hi",
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1)
   ),
   marker_shape = ~ case_when(
@@ -192,6 +302,8 @@ tabviz(marker_data,
 )
 ```
 
+---
+
 ## Row Banding
 
 Alternating row backgrounds for readability:
@@ -209,12 +321,255 @@ banding_data <- data.frame(
 tabviz(banding_data,
   label = "study",
   columns = list(
-    col_forest(point = "hr", lower = "lo", upper = "hi",
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1),
     col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
   ),
   row_bg = ~ ifelse(row_num %% 2 == 0, "#f8fafc", NA_character_),
   theme = web_theme_minimal(),
   title = "Row Banding"
+)
+```
+
+---
+
+## Rich Column Types
+
+Showcase diverse column types beyond text and numbers:
+
+```{r}
+rich_columns_data <- data.frame(
+  item = c("Project Alpha", "Project Beta", "Project Gamma", "Project Delta"),
+  status = c("Active", "On Hold", "Completed", "At Risk"),
+  priority = c(5, 3, 4, 5),
+  progress = c(0.75, 0.35, 1.00, 0.45),
+  lead = c("A. Smith", "B. Jones", "C. Davis", "D. Wilson"),
+  flag = c("On Track", "Delayed", "Done", "Blocked"),
+  age_min = c(30, 45, 25, 50),
+  age_max = c(65, 80, 55, 75),
+  last_quarter = I(list(
+    c(72, 78, 82, 85, 88, 90, 92, 95),
+    c(50, 48, 45, 42, 40, 38, 36, 35),
+    c(60, 70, 80, 85, 90, 95, 98, 100),
+    c(55, 52, 48, 50, 47, 45, 48, 45)
+  ))
+)
+
+tabviz(rich_columns_data, label = "item",
+  columns = list(
+    col_badge("status", "Status",
+      variants = list(
+        Active = "success",
+        `On Hold` = "warning",
+        Completed = "info",
+        `At Risk` = "error"
+      )),
+    col_stars("priority", "Priority"),
+    col_bar("progress", "Progress", width = 80),
+    col_icon("flag", "Flag",
+      mapping = list(
+        `On Track` = "OK",
+        Delayed = "!",
+        Done = "OK",
+        Blocked = "X"
+      )),
+    col_range("age_min", "age_max", header = "Age Range"),
+    col_sparkline("last_quarter", "Trend", width = 80)
+  ),
+  theme = web_theme_modern(),
+  title = "Rich Column Types Showcase"
+)
+```
+
+---
+
+## Split Plots
+
+Use `split_by` to create faceted views with sidebar navigation:
+
+```{r}
+set.seed(789)
+regional_data <- data.frame(
+  study = rep(paste0("Study ", 1:4), 3),
+  region = rep(c("North America", "Europe", "Asia Pacific"), each = 4),
+  hr = c(0.72, 0.85, 0.68, 0.91,
+         0.78, 0.82, 0.75, 0.88,
+         0.65, 0.71, 0.62, 0.79),
+  lo = c(0.55, 0.70, 0.52, 0.75,
+         0.62, 0.68, 0.58, 0.72,
+         0.48, 0.55, 0.45, 0.62),
+  hi = c(0.95, 1.03, 0.89, 1.10,
+         0.98, 0.99, 0.97, 1.08,
+         0.88, 0.92, 0.86, 1.01)
+)
+
+tabviz(regional_data, label = "study",
+  columns = list(
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
+  ),
+  split_by = "region",
+  shared_axis = TRUE,
+  theme = web_theme_jama(),
+  title = "Treatment Effect by Region"
+)
+```
+
+### Hierarchical Splits
+
+Split by multiple variables for nested navigation:
+
+```{r}
+set.seed(321)
+multi_split_data <- data.frame(
+  outcome = rep(c("Primary", "Primary", "Secondary", "Secondary"), 2),
+  population = rep(c("ITT", "Per-Protocol"), each = 4),
+  analysis = rep(c("Unadjusted", "Adjusted", "Unadjusted", "Adjusted"), 2),
+  hr = c(0.72, 0.68, 0.85, 0.82, 0.75, 0.71, 0.88, 0.84),
+  lo = c(0.55, 0.52, 0.68, 0.65, 0.58, 0.54, 0.72, 0.68),
+  hi = c(0.95, 0.89, 1.06, 1.03, 0.97, 0.93, 1.08, 1.04)
+)
+
+tabviz(multi_split_data, label = "analysis",
+  columns = list(
+    col_text("outcome", "Outcome"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
+  ),
+  split_by = "population",
+  shared_axis = TRUE,
+  theme = web_theme_nature(),
+  title = "Sensitivity Analyses"
+)
+```
+
+---
+
+## Combined Visualizations
+
+Mix multiple visualization types for comprehensive dashboards:
+
+```{r}
+set.seed(654)
+clinical_dashboard <- data.frame(
+  site = c("Boston", "London", "Tokyo", "Sydney", "Toronto"),
+  enrollment = c(245, 189, 312, 156, 198),
+  completion_rate = c(0.87, 0.92, 0.78, 0.95, 0.89),
+  hr = c(0.72, 0.85, 0.68, 0.91, 0.78),
+  lo = c(0.55, 0.70, 0.52, 0.75, 0.62),
+  hi = c(0.95, 1.03, 0.89, 1.10, 0.98),
+  response_times = I(list(
+    rnorm(50, 5.2, 1.1),
+    rnorm(50, 4.8, 0.9),
+    rnorm(50, 6.1, 1.5),
+    rnorm(50, 4.5, 0.8),
+    rnorm(50, 5.5, 1.2)
+  ))
+)
+
+tabviz(clinical_dashboard, label = "site",
+  columns = list(
+    viz_bar(
+      viz_bar_effect("enrollment"),
+      header = "Enrolled",
+      axis_range = c(0, 350)
+    ),
+    viz_bar(
+      viz_bar_effect("completion_rate"),
+      header = "Completion",
+      axis_range = c(0, 1)
+    ),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1,
+               header = "Treatment Effect"),
+    viz_violin(
+      viz_violin_effect(data = "response_times"),
+      header = "Response (days)",
+      show_median = TRUE
+    )
+  ),
+  theme = web_theme_modern(),
+  title = "Clinical Site Performance Dashboard"
+)
+```
+
+### Forest + Boxplot Comparison
+
+Side-by-side forest plot and distribution data:
+
+```{r}
+set.seed(987)
+combined_analysis <- data.frame(
+  study = c("PIONEER", "SUMMIT", "HORIZON", "ELEVATE"),
+  hr = c(0.72, 0.78, 0.65, 0.82),
+  lo = c(0.58, 0.64, 0.50, 0.68),
+  hi = c(0.89, 0.95, 0.85, 0.99),
+  n = c(2450, 1890, 3200, 1560),
+  posterior = I(list(
+    rnorm(500, 0.72, 0.08),
+    rnorm(500, 0.78, 0.09),
+    rnorm(500, 0.65, 0.10),
+    rnorm(500, 0.82, 0.08)
+  ))
+)
+
+tabviz(combined_analysis, label = "study",
+  columns = list(
+    col_n("n"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1,
+               header = "Frequentist CI"),
+    viz_violin(
+      viz_violin_effect(data = "posterior"),
+      header = "Bayesian Posterior",
+      show_median = TRUE,
+      show_quartiles = TRUE,
+      axis_range = c(0.4, 1.2)
+    ),
+    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
+  ),
+  theme = web_theme_lancet(),
+  title = "Frequentist vs Bayesian Analysis"
+)
+```
+
+---
+
+## Multi-Effect Comparisons
+
+### Multiple Treatment Arms
+
+```{r}
+multi_arm_data <- data.frame(
+  endpoint = c("Overall Survival", "Progression-Free", "Response Rate", "Quality of Life"),
+  std_hr = c(0.72, 0.68, 0.75, 0.85),
+  std_lo = c(0.58, 0.54, 0.60, 0.70),
+  std_hi = c(0.89, 0.86, 0.94, 1.03),
+  high_hr = c(0.65, 0.62, 0.68, 0.78),
+  high_lo = c(0.50, 0.47, 0.52, 0.62),
+  high_hi = c(0.85, 0.82, 0.89, 0.98)
+)
+
+tabviz(multi_arm_data, label = "endpoint",
+  columns = list(
+    viz_forest(
+      effects = list(
+        web_effect("std_hr", "std_lo", "std_hi", label = "Standard Dose"),
+        web_effect("high_hr", "high_lo", "high_hi", label = "High Dose")
+      ),
+      scale = "log", null_value = 1,
+      header = "Hazard Ratio"
+    ),
+    col_group("Standard Dose",
+      col_interval("HR (95% CI)", point = "std_hr", lower = "std_lo", upper = "std_hi")
+    ),
+    col_group("High Dose",
+      col_interval("HR (95% CI)", point = "high_hr", lower = "high_lo", upper = "high_hi")
+    )
+  ),
+  theme = web_theme_cochrane(),
+  title = "Dose-Response Analysis"
 )
 ```

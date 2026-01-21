@@ -65,7 +65,9 @@ save_plot(p, "forest.svg")
 
 # Save a SplitForest to a directory
 split_result <- data |>
-  web_spec(point = "estimate", lower = "lower", upper = "upper") |>
+  tabviz(label = "study", columns = list(
+    col_forest(point = "estimate", lower = "lower", upper = "upper")
+  )) |>
   split_table(by = c("sex", "age_group"))
 
 save_plot(split_result, "output/plots")

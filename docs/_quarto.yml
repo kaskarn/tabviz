@@ -5,43 +5,12 @@ project:
 website:
   title: "tabviz"
   description: "Interactive tables with embedded visualizations for R"
+  reader-mode: true
   navbar:
     background: light
     left:
       - text: "Guide"
-        menu:
-          - text: "Overview"
-            href: guide/index.qmd
-          - text: "---"
-          - text: "1. Quick Start"
-            href: guide/quick-start.qmd
-          - text: "---"
-          - text: "2. Package Data"
-            href: guide/package-data.qmd
-          - text: "3. Columns"
-            href: guide/columns.qmd
-          - text: "4. Row Styling"
-            href: guide/row-styling.qmd
-          - text: "5. Cell Styling"
-            href: guide/cell-styling.qmd
-          - text: "6. Row Groups"
-            href: guide/row-groups.qmd
-          - text: "7. Titles and Labels"
-            href: guide/titles.qmd
-          - text: "---"
-          - text: "8. Visualizations"
-            href: guide/visualizations/index.qmd
-          - text: "9. Forest Plots"
-            href: guide/visualizations/forest-plots.qmd
-          - text: "10. Split Plots"
-            href: guide/split-plots.qmd
-          - text: "---"
-          - text: "11. Themes"
-            href: guide/themes.qmd
-          - text: "12. Shiny Integration"
-            href: guide/shiny.qmd
-          - text: "13. Export"
-            href: guide/export.qmd
+        href: guide/index.qmd
       - text: "Concepts"
         menu:
           - text: "Architecture Overview"
@@ -59,6 +28,8 @@ website:
           - text: "---"
           - text: "Clinical Examples"
             href: gallery/clinical.qmd
+          - text: "Business Examples"
+            href: gallery/business.qmd
           - text: "Dashboard Examples"
             href: gallery/dashboards.qmd
           - text: "Feature Showcases"
@@ -70,6 +41,8 @@ website:
           - text: "---"
           - text: "tabviz()"
             href: reference/tabviz.qmd
+          - text: "forest_plot()"
+            href: reference/forest_plot.qmd
           - text: "---"
           - text: "Columns"
             href: reference/columns.qmd
@@ -79,6 +52,8 @@ website:
             href: reference/themes.qmd
           - text: "Annotations"
             href: reference/annotations.qmd
+          - text: "Interaction Settings"
+            href: reference/interaction.qmd
           - text: "---"
           - text: "Shiny"
             href: reference/shiny.qmd
@@ -96,6 +71,62 @@ website:
     right:
       - icon: github
         href: https://github.com/kaskarn/tabviz
+
+  sidebar:
+    - id: guide
+      title: "Guide"
+      style: docked
+      collapse-level: 1
+      contents:
+        - text: "Overview"
+          href: guide/index.qmd
+        - text: "Quick Start"
+          href: guide/quick-start.qmd
+        - text: "---"
+        - section: "Structure"
+          contents:
+            - text: "Column Types"
+              href: guide/columns.qmd
+            - text: "Row Groups"
+              href: guide/row-groups.qmd
+            - text: "Titles & Labels"
+              href: guide/titles.qmd
+            - text: "Split Plots"
+              href: guide/split-plots.qmd
+        - section: "Styling"
+          href: guide/styling/index.qmd
+          contents:
+            - text: "Row Styling"
+              href: guide/row-styling.qmd
+            - text: "Cell Styling"
+              href: guide/cell-styling.qmd
+            - text: "Themes"
+              href: guide/themes.qmd
+        - text: "Fluent API"
+          href: guide/fluent-api.qmd
+        - text: "---"
+        - section: "Visualizations"
+          href: guide/visualizations/index.qmd
+          contents:
+            - text: "Forest Plots"
+              href: guide/visualizations/forest-plots.qmd
+            - text: "Bar Charts"
+              href: guide/visualizations/bar-charts.qmd
+            - text: "Boxplots"
+              href: guide/visualizations/boxplots.qmd
+            - text: "Violin Plots"
+              href: guide/visualizations/violin-plots.qmd
+        - text: "Interactivity"
+          href: guide/interactivity.qmd
+        - text: "---"
+        - section: "Integration"
+          contents:
+            - text: "Shiny"
+              href: guide/shiny.qmd
+        - text: "Export"
+          href: guide/export.qmd
+        - text: "Package Data"
+          href: guide/package-data.qmd
 
 format:
   html:

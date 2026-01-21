@@ -1,0 +1,138 @@
+---
+title: "Distribution Plots"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Distribution plots display statistical summaries and distributions inline within table rows. tabviz provides three visualization types for different data patterns.
+
+## Choosing the Right Visualization
+
+| Visualization | Best For | Data Requirements |
+|--------------|----------|-------------------|
+| [`viz_bar()`](bar-charts.qmd) | Comparing single values across rows | One numeric value per row |
+| [`viz_boxplot()`](boxplots.qmd) | Showing spread and outliers | Array of values OR pre-computed summary stats |
+| [`viz_violin()`](violin-plots.qmd) | Showing distribution shape | Array of values per row |
+
+---
+
+## Quick Examples
+
+### Bar Charts
+
+```{r}
+bar_data <- data.frame(
+  metric = c("Response Rate", "Completion Rate", "Retention Rate"),
+  value = c(78, 92, 85)
+)
+
+tabviz(bar_data, label = "metric",
+  columns = list(
+    viz_bar(viz_bar_effect("value"), header = "Rate (%)", axis_range = c(0, 100)),
+    col_numeric("value", "%")
+  )
+)
+```
+
+### Boxplots
+
+```{r}
+set.seed(42)
+box_data <- data.frame(
+  group = c("Control", "Treatment"),
+  values = I(list(rnorm(50, 100, 15), rnorm(50, 120, 20)))
+)
+
+tabviz(box_data, label = "group",
+  columns = list(
+    viz_boxplot(viz_boxplot_effect(data = "values", color = "#8b5cf6"), header = "Distribution")
+  )
+)
+```
+
+### Violin Plots
+
+```{r}
+set.seed(456)
+violin_data <- data.frame(
+  group = c("A", "B"),
+  scores = I(list(c(rnorm(80, 72, 8), rnorm(20, 90, 5)), rnorm(100, 68, 12)))
+)
+
+tabviz(violin_data, label = "group",
+  columns = list(
+    viz_violin(viz_violin_effect(data = "scores", color = "#f59e0b"), header = "Scores", show_median = TRUE)
+  )
+)
+```
+
+---
+
+## Combining Visualizations
+
+Mix different viz columns for comprehensive data displays:
+
+```{r}
+set.seed(321)
+combined_data <- data.frame(
+  site = c("Site A", "Site B", "Site C", "Site D"),
+  enrollment = c(245, 189, 312, 156),
+  completion_rate = c(0.87, 0.92, 0.78, 0.95),
+  response_times = I(list(
+    rnorm(50, 5.2, 1.1),
+    rnorm(50, 4.8, 0.9),
+    rnorm(50, 6.1, 1.5),
+    rnorm(50, 4.5, 0.8)
+  ))
+)
+
+tabviz(combined_data, label = "site",
+  columns = list(
+    viz_bar(
+      viz_bar_effect("enrollment", color = "#3b82f6"),
+      header = "Enrollment",
+      width = 140,
+      axis_range = c(0, 350)
+    ),
+    viz_bar(
+      viz_bar_effect("completion_rate", color = "#22c55e"),
+      header = "Completion",
+      width = 120,
+      axis_range = c(0, 1)
+    ),
+    viz_violin(
+      viz_violin_effect(data = "response_times", color = "#f59e0b"),
+      header = "Response Time (days)",
+      width = 180,
+      show_median = TRUE
+    )
+  ),
+  title = "Clinical Site Performance Dashboard"
+)
+```
+
+---
+
+## Common Options
+
+All `viz_*` functions share these options:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `header` | Column header text | `NULL` |
+| `width` | Column width in pixels | `150` |
+| `scale` | `"linear"` or `"log"` | `"linear"` |
+| `domain` | Fixed axis range `c(min, max)` | Auto |
+
+---
+
+## See Also
+
+- [Bar Charts](bar-charts.qmd) — Full `viz_bar()` documentation
+- [Boxplots](boxplots.qmd) — Full `viz_boxplot()` documentation
+- [Violin Plots](violin-plots.qmd) — Full `viz_violin()` documentation
+- [Forest Plots](forest-plots.qmd) — Confidence intervals with `viz_forest()`

@@ -22,7 +22,7 @@ When you know all styling upfront, pass it directly to the constructor:
 #| eval: false
 tabviz(data, label = "study",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
   row_bold = "is_summary",
@@ -42,7 +42,7 @@ When styling depends on computation, when you're creating multiple variants, or 
 #| eval: false
 tabviz(data, label = "study",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 ) |>

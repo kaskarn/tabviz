@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
   import { exportToSVG, exportToPNG, triggerDownload, generateFilename } from "$lib/export";
+  import { autoPosition } from "$lib/dropdown-position";
 
   interface Props {
     store: ForestStore;
@@ -10,6 +11,7 @@
 
   let dropdownOpen = $state(false);
   let isExporting = $state(false);
+  let triggerEl: HTMLButtonElement | null = $state(null);
 
   function closeDropdown() {
     dropdownOpen = false;
@@ -63,6 +65,7 @@
 
 <div class="download-button-wrapper">
   <button
+    bind:this={triggerEl}
     class="download-btn"
     onclick={() => (dropdownOpen = !dropdownOpen)}
     aria-label="Download plot"
@@ -83,7 +86,7 @@
   </button>
 
   {#if dropdownOpen}
-    <div class="download-dropdown">
+    <div class="download-dropdown" use:autoPosition={{ triggerEl }}>
       <button class="dropdown-item" onclick={handleExportSVG} disabled={isExporting}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -133,16 +136,14 @@
   }
 
   .download-dropdown {
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
+    /* position: fixed set dynamically by autoPosition to escape clipping */
     min-width: 140px;
     padding: 4px;
     background: var(--wf-bg, #ffffff);
     border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    z-index: 101;
+    z-index: 10001;  /* High z-index to appear above everything */
   }
 
   .dropdown-item {

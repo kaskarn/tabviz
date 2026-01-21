@@ -15,7 +15,7 @@ import type {
   ZoomState,
 } from "$types";
 import { niceDomain } from "$lib/scale-utils";
-import { computeAxis, type AxisComputation, AXIS_LABEL_PADDING } from "$lib/axis-utils";
+import { computeAxis, type AxisComputation, VIZ_MARGIN } from "$lib/axis-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "$lib/rendering-constants";
@@ -163,8 +163,8 @@ export function createForestStore() {
       : 0;
 
     // Add padding to range so edge labels don't get clipped
-    const rangeStart = AXIS_LABEL_PADDING;
-    const rangeEnd = Math.max(forestWidth - AXIS_LABEL_PADDING, rangeStart + 50);
+    const rangeStart = VIZ_MARGIN;
+    const rangeEnd = Math.max(forestWidth - VIZ_MARGIN, rangeStart + 50);
 
     if (isLog) {
       // Ensure domain is positive for log scale
@@ -219,6 +219,24 @@ export function createForestStore() {
 
   // Derived: check if any explicit forest columns exist
   const hasExplicitForestColumns = $derived(forestColumns.length > 0);
+
+  // Derived: all viz columns (forest, viz_bar, viz_boxplot, viz_violin)
+  // These all require SVG overlays
+  const vizColumns = $derived.by((): { index: number; column: ColumnSpec }[] => {
+    if (!spec) return [];
+    const result: { index: number; column: ColumnSpec }[] = [];
+    const cols = allColumns;
+    const vizTypes = ["forest", "viz_bar", "viz_boxplot", "viz_violin"];
+    for (let i = 0; i < cols.length; i++) {
+      if (vizTypes.includes(cols[i].type)) {
+        result.push({ index: i, column: cols[i] });
+      }
+    }
+    return result;
+  });
+
+  // Derived: check if any viz columns exist (need SVG overlays)
+  const hasVizColumns = $derived(vizColumns.length > 0);
 
   // ============================================================================
 
@@ -1059,6 +1077,12 @@ export function createForestStore() {
     },
     get hasExplicitForestColumns() {
       return hasExplicitForestColumns;
+    },
+    get vizColumns() {
+      return vizColumns;
+    },
+    get hasVizColumns() {
+      return hasVizColumns;
     },
     get displayRows() {
       return displayRows;

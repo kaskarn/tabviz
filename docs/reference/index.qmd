@@ -8,16 +8,20 @@ Complete reference for all tabviz functions, organized by category.
 
 | Function | Description |
 |----------|-------------|
-| [`tabviz()`](tabviz.qmd) | **Main entry point** - Create interactive tables with any columns |
+| [`tabviz()`](tabviz.qmd) | **Main entry point** — Create interactive tables with any columns |
+| [`forest_plot()`](forest_plot.qmd) | Convenience wrapper for quick forest plots |
 | [`save_plot()`](export.qmd) | Export to SVG, PNG, or PDF |
 
 ```r
 # Create a table with a forest plot column
 tabviz(data, label = "study", columns = list(
-  col_forest(point = "hr", lower = "lo", upper = "hi"),
+  viz_forest(point = "hr", lower = "lo", upper = "hi"),
   col_numeric("hr", "HR"),
   col_pvalue("pval")
 ))
+
+# Quick forest plot (auto-creates viz_forest column)
+forest_plot(data, point = "hr", lower = "lo", upper = "hi", label = "study")
 ```
 
 ## Column Types
@@ -38,8 +42,11 @@ tabviz(data, label = "study", columns = list(
 
 | Function | Description |
 |----------|-------------|
-| [`col_forest()`](columns.qmd#col_forest) | **Forest plot column** with intervals |
-| [`col_bar()`](columns.qmd#col_bar) | Horizontal bar chart |
+| [`viz_forest()`](columns.qmd#viz_forest) | **Forest plot column** with intervals |
+| [`viz_bar()`](columns.qmd#viz_bar) | Horizontal bar chart with axis |
+| [`viz_boxplot()`](columns.qmd#viz_boxplot) | Box-and-whisker plots |
+| [`viz_violin()`](columns.qmd#viz_violin) | Violin/density plots |
+| [`col_bar()`](columns.qmd#col_bar) | Simple inline bar |
 | [`col_sparkline()`](columns.qmd#col_sparkline) | Inline sparkline |
 | [`col_badge()`](columns.qmd#col_badge) | Colored status badges |
 | [`col_stars()`](columns.qmd#col_stars) | Star ratings |
@@ -47,6 +54,15 @@ tabviz(data, label = "study", columns = list(
 | [`col_img()`](columns.qmd#col_img) | Inline images |
 | [`col_reference()`](columns.qmd#col_reference) | Truncated references with links |
 | [`col_range()`](columns.qmd#col_range) | Min-max range display |
+
+### Effect Specifications
+
+| Function | Description |
+|----------|-------------|
+| [`web_effect()`](columns.qmd#viz_forest) | Define effect for multi-effect forest plots |
+| [`viz_bar_effect()`](columns.qmd#viz_bar) | Define bar in `viz_bar()` |
+| [`viz_boxplot_effect()`](columns.qmd#viz_boxplot) | Define boxplot in `viz_boxplot()` |
+| [`viz_violin_effect()`](columns.qmd#viz_violin) | Define violin in `viz_violin()` |
 
 ### Column Groups
 
@@ -117,6 +133,14 @@ Use direct arguments when configuration is known upfront. Use the fluent API whe
 | [`forest_refline()`](annotations.qmd#forest_refline) | Add reference line |
 | [`forest_annotation()`](annotations.qmd#forest_annotation) | Custom annotation |
 
+## Interaction Settings
+
+| Function | Description |
+|----------|-------------|
+| [`web_interaction()`](interaction.qmd#web_interaction) | Full control over interaction settings |
+| [`web_interaction_minimal()`](interaction.qmd#web_interaction_minimal) | Hover only preset |
+| [`web_interaction_publication()`](interaction.qmd#web_interaction_publication) | Static/print preset |
+
 ## Shiny Integration
 
 ### Standard Tables
@@ -145,8 +169,5 @@ Use direct arguments when configuration is known upfront. Use the fluent API whe
 
 | Function | Description |
 |----------|-------------|
+| [`split_table()`](tabviz.qmd#split_table) | Split data into multiple sub-tables |
 | [`web_group()`](tabviz.qmd#grouping) | Define row group explicitly |
-| [`web_effect()`](columns.qmd#col_forest) | Define effect for multi-effect plots |
-| [`web_interaction()`](tabviz.qmd) | Configure interaction settings |
-| [`web_interaction_minimal()`](tabviz.qmd) | Minimal interactivity preset |
-| [`web_interaction_publication()`](tabviz.qmd) | Publication mode (static) |

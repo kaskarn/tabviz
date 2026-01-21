@@ -127,7 +127,7 @@ forest_plot <- function(
     cli_abort("{.arg x} must be a WebSpec object, SplitForest object, or a data frame")
   }
 
-  # Build columns list - auto-add col_forest() from point/lower/upper or effects
+  # Build columns list - auto-add viz_forest() from point/lower/upper or effects
   user_columns <- columns %||% list()
 
   has_inline <- !is.null(point) && !is.null(lower) && !is.null(upper)
@@ -135,7 +135,7 @@ forest_plot <- function(
 
   if (has_effects) {
     # Multi-effect mode
-    forest_col <- col_forest(
+    forest_col <- viz_forest(
       effects = effects,
       scale = scale %||% "linear",
       null_value = null_value,
@@ -144,7 +144,7 @@ forest_plot <- function(
     user_columns <- c(user_columns, list(forest_col))
   } else if (has_inline) {
     # Single effect mode
-    forest_col <- col_forest(
+    forest_col <- viz_forest(
       point = point,
       lower = lower,
       upper = upper,

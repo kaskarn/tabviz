@@ -1,0 +1,232 @@
+---
+title: "Interaction Settings"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Control interactive behavior of tabviz widgets using `web_interaction()` and preset functions.
+
+## Overview
+
+All tabviz widgets are interactive by default. Use interaction settings to:
+
+- Enable/disable specific interactions
+- Configure hover tooltips
+- Control theme selection menu
+- Create static publication-ready output
+
+## Quick Reference
+
+| Function | Use Case |
+|----------|----------|
+| `web_interaction()` | Full control over all settings |
+| `web_interaction_minimal()` | Hover only, no sorting/selection |
+| `web_interaction_publication()` | Fully static for print |
+
+---
+
+## web_interaction()
+
+Create a custom interaction specification:
+
+```{r}
+#| eval: false
+tabviz(data, label = "study",
+  interaction = web_interaction(
+    show_filters = FALSE,
+    show_legend = TRUE,
+    enable_sort = TRUE,
+    enable_collapse = TRUE,
+    enable_select = TRUE,
+    enable_hover = TRUE,
+    enable_resize = TRUE,
+    enable_export = TRUE,
+    tooltip_fields = c("n", "pvalue"),
+    enable_themes = "default"
+  ),
+  columns = list(...)
+)
+```
+
+### Arguments
+
+| Argument | Type | Default | Description |
+|----------|------|---------|-------------|
+| `show_filters` | logical | FALSE | Show filter panel |
+| `show_legend` | logical | TRUE | Show legend for multi-effect plots |
+| `enable_sort` | logical | TRUE | Click headers to sort |
+| `enable_collapse` | logical | TRUE | Click group headers to collapse/expand |
+| `enable_select` | logical | TRUE | Click rows to select |
+| `enable_hover` | logical | TRUE | Highlight rows on hover |
+| `enable_resize` | logical | TRUE | Drag column borders to resize |
+| `enable_export` | logical | TRUE | Show download button on hover |
+| `tooltip_fields` | character vector | NULL | Column names for hover tooltip |
+| `enable_themes` | string, NULL, or list | "default" | Theme menu control |
+
+### Theme Menu Control
+
+The `enable_themes` argument accepts three types of values:
+
+```r
+# Default: Show menu with all package themes
+web_interaction(enable_themes = "default")
+
+# Disable: Hide theme menu entirely
+web_interaction(enable_themes = NULL)
+
+# Custom: Show menu with specific themes only
+web_interaction(enable_themes = list(
+  web_theme_jama(),
+  web_theme_nature(),
+  web_theme_modern()
+))
+```
+
+---
+
+## web_interaction_minimal()
+
+Preset for viewing with minimal interaction—hover highlighting only:
+
+```{r}
+data(glp1_trials)
+
+glp1_trials |>
+  filter(row_type == "data") |>
+  head(4) |>
+  tabviz(label = "study",
+    interaction = web_interaction_minimal(),
+    columns = list(
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1)
+    )
+  )
+```
+
+Equivalent to:
+
+```r
+web_interaction(
+  enable_sort = FALSE,
+  enable_collapse = FALSE,
+  enable_select = FALSE,
+  enable_hover = TRUE,
+  enable_resize = FALSE,
+  enable_export = FALSE
+)
+```
+
+---
+
+## web_interaction_publication()
+
+Preset for static, publication-ready output:
+
+```{r}
+#| eval: false
+tabviz(data, label = "study",
+  interaction = web_interaction_publication(),
+  columns = list(
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  )
+)
+```
+
+Equivalent to:
+
+```r
+web_interaction(
+  show_legend = FALSE,
+  enable_sort = FALSE,
+  enable_collapse = FALSE,
+  enable_select = FALSE,
+  enable_hover = FALSE,
+  enable_resize = FALSE,
+  enable_export = FALSE
+)
+```
+
+Use this when:
+
+- Exporting for print publications
+- Embedding in static documents
+- Screenshots for presentations
+
+---
+
+## Hover Tooltips
+
+Add custom tooltips that appear when hovering over markers:
+
+```{r}
+data(glp1_trials)
+
+tooltip_demo <- glp1_trials |>
+  filter(row_type == "data") |>
+  head(4)
+
+tabviz(tooltip_demo, label = "study",
+  interaction = web_interaction(
+    tooltip_fields = c("drug", "n", "events", "pvalue")
+  ),
+  footnote = "Hover over markers to see details",
+  columns = list(
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  )
+)
+```
+
+::: {.callout-note}
+Tooltips are opt-in. Without `tooltip_fields`, no tooltip appears on hover.
+:::
+
+---
+
+## Examples
+
+### Disable Sorting Only
+
+```r
+tabviz(data, label = "study",
+  interaction = web_interaction(enable_sort = FALSE),
+  columns = list(...)
+)
+```
+
+### Disable Export Button
+
+```r
+tabviz(data, label = "study",
+  interaction = web_interaction(enable_export = FALSE),
+  columns = list(...)
+)
+```
+
+### Custom Theme Menu
+
+```r
+tabviz(data, label = "study",
+  interaction = web_interaction(
+    enable_themes = list(
+      web_theme_jama(),
+      web_theme_lancet()
+    )
+  ),
+  columns = list(...)
+)
+```
+
+---
+
+## See Also
+
+- [Visualizations Overview](../guide/visualizations/index.qmd#interactivity) — Interactivity guide
+- [Export](export.qmd) — Exporting to SVG/PNG/PDF
+- [`tabviz()`](tabviz.qmd) — Main entry point

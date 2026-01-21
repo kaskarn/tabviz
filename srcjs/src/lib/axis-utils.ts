@@ -13,8 +13,9 @@
 import type { Row, AxisConfig, EffectSpec } from "../types";
 import { niceDomain, getEffectValue, NICE_Q } from "./scale-utils";
 
-// Axis label padding (pixels) - space at edges for tick labels
-export const AXIS_LABEL_PADDING = 20;
+// Viz column margin (pixels) - space from cell edges for all viz content (axis line, ticks, markers)
+// This creates visual separation between adjacent viz columns
+export const VIZ_MARGIN = 12;
 
 export interface AxisComputation {
   /** Axis limits - where the axis line starts/ends, also used for clipping */
@@ -302,7 +303,7 @@ export function computePlotRegion(
     return axisLimits;
   }
 
-  const pixelRange = forestWidth - 2 * AXIS_LABEL_PADDING;
+  const pixelRange = forestWidth - 2 * VIZ_MARGIN;
   if (pixelRange <= 0) {
     return axisLimits;
   }

@@ -46,7 +46,7 @@ glp1_trials |>
       col_text("drug", "Drug"),
       col_n("n"),
       col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1, axis_label = "Hazard Ratio")
     ),
     theme = web_theme_lancet(),
@@ -99,7 +99,7 @@ tabviz(
     col_percent("on_time_pct", "On-Time %"),
     col_sparkline("trend", "12M Trend"),
     col_interval("Delay (95% CI)", point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper"),
-    col_forest(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper",
+    viz_forest(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper",
                null_value = 0, axis_label = "Delay vs. Average (minutes)")
   ),
   theme = web_theme_modern(),
@@ -113,7 +113,7 @@ tabviz(
 |----------|-------------|
 | `carrier` | Airline name |
 | `delay_vs_avg`, `delay_lower`, `delay_upper` | Delay vs industry average and 95% CI |
-| `on_time_pct` | On-time arrival percentage |
+| `on_time_pct` | Proportion of on-time arrivals (0-1) |
 | `satisfaction` | Customer satisfaction (1-5) |
 | `flights` | Number of flights |
 | `trend` | List-column with 12-month delay trend |
@@ -144,7 +144,7 @@ tabviz(
     col_text("team", "Team", width = 60),
     col_numeric("ppg", "PPG"),
     col_interval("PER (95% CI)", point = "per", lower = "per_lower", upper = "per_upper"),
-    col_forest(point = "per", lower = "per_lower", upper = "per_upper",
+    viz_forest(point = "per", lower = "per_lower", upper = "per_upper",
                null_value = 15, axis_label = "Player Efficiency Rating")
   ),
   row_badge = "award",
@@ -190,7 +190,7 @@ climate_temps |>
     columns = list(
       col_text("certainty", "Confidence"),
       col_interval("Anomaly (95% CI)", point = "anomaly", lower = "lower", upper = "upper"),
-      col_forest(point = "anomaly", lower = "lower", upper = "upper",
+      viz_forest(point = "anomaly", lower = "lower", upper = "upper",
                  null_value = 0, axis_label = "Temperature Anomaly (°C)")
     ),
     theme = web_theme_minimal(),
@@ -232,7 +232,7 @@ effect_sizes |>
     group = "region",
     columns = list(
       col_n("n"),
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1, width = 200)
     ),
     marker_color = ~ ifelse(significant, "#16a34a", "#94a3b8"),

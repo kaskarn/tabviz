@@ -46,7 +46,7 @@ flowchart LR
 
 | Chapter | What You'll Learn |
 |---------|-------------------|
-| [Forest Plots](visualizations/forest-plots.qmd) | Add interval visualizations with `col_forest()` |
+| [Forest Plots](visualizations/forest-plots.qmd) | Add interval visualizations with `viz_forest()` |
 | [Split Plots](split-plots.qmd) | Sidebar navigation for subgroups |
 
 ### Customization & Output
@@ -71,7 +71,7 @@ tabviz(data,
   columns = list(
     col_text("category"),
     col_numeric("value"),
-    col_forest(point = "hr", lower = "lo", upper = "hi"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi"),
     col_sparkline("trend")
   )
 )

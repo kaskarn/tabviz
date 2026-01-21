@@ -214,7 +214,7 @@ set_shapes(
   summary_height = NULL,
   line_width = NULL,
   border_radius = NULL,
-  marker_colors = NULL,
+  effect_colors = NULL,
   marker_shapes = NULL
 )
 ```
@@ -225,15 +225,15 @@ set_shapes(
 | `summary_height` | `10` | Summary diamond height in pixels |
 | `line_width` | `1.5` | Confidence interval line width |
 | `border_radius` | `2` | Border radius for containers |
-| `marker_colors` | `NULL` | Vector of colors for multi-effect plots |
-| `marker_shapes` | `c("square", ...)` | Vector of shapes for multi-effect plots |
+| `effect_colors` | `NULL` | Vector of colors for multi-effect visualizations (forest, bar, boxplot, violin) |
+| `marker_shapes` | `c("square", ...)` | Vector of shapes for multi-effect forest plots |
 
-### set_marker_colors {#set_marker_colors}
+### set_effect_colors {#set_effect_colors}
 
-Set default marker colors for multi-effect plots.
+Set default colors for multi-effect visualizations (forest plots, bar charts, boxplots, violin plots).
 
 ```r
-set_marker_colors(theme, colors)
+set_effect_colors(theme, colors)
 ```
 
 | Argument | Description |
@@ -244,7 +244,7 @@ set_marker_colors(theme, colors)
 **Example**:
 ```r
 web_theme_default() |>
-  set_marker_colors(c("#2563eb", "#dc2626", "#16a34a"))
+  set_effect_colors(c("#2563eb", "#dc2626", "#16a34a"))
 ```
 
 ### set_marker_shapes {#set_marker_shapes}

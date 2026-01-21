@@ -2,7 +2,7 @@
   import type { Row, WebTheme, ComputedLayout, EffectSpec, MarkerShape, ForestColumnOptions } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
-  import { AXIS_LABEL_PADDING } from "$lib/axis-utils";
+  import { VIZ_MARGIN } from "$lib/axis-utils";
   import { getEffectValue } from "$lib/scale-utils";
   import { getEffectYOffset } from "$lib/rendering-constants";
 
@@ -121,10 +121,10 @@
   // Arrow x positions - should be at actual axis limits, not hardcoded padding
   // This ensures arrows align precisely with where the axis line starts/ends
   const leftArrowX = $derived(
-    clipBounds ? xScale(clipBounds[0]) : AXIS_LABEL_PADDING
+    clipBounds ? xScale(clipBounds[0]) : VIZ_MARGIN
   );
   const rightArrowX = $derived(
-    clipBounds ? xScale(clipBounds[1]) : layout.forestWidth - AXIS_LABEL_PADDING
+    clipBounds ? xScale(clipBounds[1]) : layout.forestWidth - VIZ_MARGIN
   );
 
   // Diamond height for summary rows
@@ -162,24 +162,24 @@
     const isPrimary = idx === 0;
     const markerStyle = row.markerStyle;
 
-    // Theme marker defaults for multi-effect plots
-    const themeMarkerColors = theme?.shapes.markerColors;
+    // Theme effect defaults for multi-effect plots
+    const themeEffectColors = theme?.shapes.effectColors;
     const themeMarkerShapes = theme?.shapes.markerShapes;
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
     // Color priority:
     // 1. Primary effect: row.markerStyle.color (if set)
     // 2. effect.color (if set)
-    // 3. theme.shapes.markerColors[idx] (if defined)
+    // 3. theme.shapes.effectColors[idx] (if defined)
     // 4. theme.colors.interval (fallback)
     let color: string;
     if (isPrimary && markerStyle?.color) {
       color = markerStyle.color;
     } else if (effect.color) {
       color = effect.color;
-    } else if (themeMarkerColors && themeMarkerColors.length > 0) {
-      // Cycle through marker colors if more effects than colors defined
-      color = themeMarkerColors[idx % themeMarkerColors.length];
+    } else if (themeEffectColors && themeEffectColors.length > 0) {
+      // Cycle through effect colors if more effects than colors defined
+      color = themeEffectColors[idx % themeEffectColors.length];
     } else {
       color = theme?.colors.interval ?? theme?.colors.primary ?? "#2563eb";
     }

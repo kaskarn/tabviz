@@ -269,14 +269,15 @@ serialize_theme <- function(theme) {
       cellPaddingX = theme@spacing@cell_padding_x,
       cellPaddingY = theme@spacing@cell_padding_y,
       axisGap = theme@spacing@axis_gap,
-      groupPadding = theme@spacing@group_padding
+      groupPadding = theme@spacing@group_padding,
+      columnGap = theme@spacing@column_gap
     ),
     shapes = list(
       pointSize = theme@shapes@point_size,
       summaryHeight = theme@shapes@summary_height,
       lineWidth = theme@shapes@line_width,
       borderRadius = theme@shapes@border_radius,
-      markerColors = theme@shapes@marker_colors,
+      effectColors = theme@shapes@effect_colors,
       markerShapes = theme@shapes@marker_shapes
     ),
     axis = list(

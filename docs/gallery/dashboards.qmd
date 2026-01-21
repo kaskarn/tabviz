@@ -25,7 +25,7 @@ tabviz(
     col_text("position", "Pos"),
     col_numeric("ppg", "PPG", decimals = 1),
     col_numeric("games", "GP"),
-    col_forest(point = "per", lower = "per_lower", upper = "per_upper",
+    viz_forest(point = "per", lower = "per_lower", upper = "per_upper",
                scale = "linear", null_value = 15,
                axis_label = "PER"),
     col_interval("PER (95% CI)", point = "per", lower = "per_lower", upper = "per_upper"),
@@ -50,7 +50,7 @@ tabviz(
   columns = list(
     col_text("period", "Period"),
     col_numeric("anomaly", "Anomaly (°C)", decimals = 2),
-    col_forest(point = "anomaly", lower = "lower", upper = "upper",
+    viz_forest(point = "anomaly", lower = "lower", upper = "upper",
                scale = "linear", null_value = 0,
                axis_label = "Temperature Anomaly"),
     col_interval("95% CI", point = "anomaly", lower = "lower", upper = "upper"),
@@ -140,7 +140,7 @@ tabviz(
   columns = list(
     col_text("team", "Team"),
     col_numeric("ppg", "PPG"),
-    col_forest(point = "per", lower = "per_lower", upper = "per_upper",
+    viz_forest(point = "per", lower = "per_lower", upper = "per_upper",
                scale = "linear", null_value = 15),
     col_interval("PER", point = "per", lower = "per_lower", upper = "per_upper"),
     col_badge("award", "Award")

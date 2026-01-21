@@ -14,10 +14,10 @@ Forest plots display point estimates with confidence intervals—the standard vi
 ::: {.callout-tip}
 ## Two Ways to Add Forest Columns
 
-**With `tabviz()` + `col_forest()`** (recommended for control):
+**With `tabviz()` + `viz_forest()`** (recommended for control):
 ```r
 tabviz(data, label = "study", columns = list(
-  col_forest(point = "hr", lower = "lo", upper = "hi", scale = "log", null_value = 1)
+  viz_forest(point = "hr", lower = "lo", upper = "hi", scale = "log", null_value = 1)
 ))
 ```
 
@@ -38,7 +38,7 @@ data(effect_sizes)
 effect_sizes |>
   head(4) |>
   tabviz(label = "study", columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ))
 ```
@@ -67,7 +67,7 @@ glp1_trials |>
   head(5) |>
   tabviz(label = "study", row_type = "row_type", row_bold = "row_bold",
     columns = list(
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1)
     )
   )
@@ -86,7 +86,7 @@ effect_sizes |>
   filter(outcome == "Primary") |>
   head(4) |>
   tabviz(label = "study", columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Hazard Ratio (95% CI)")
   ))
 ```
@@ -110,7 +110,7 @@ diff_data <- data.frame(
 )
 
 tabviz(diff_data, label = "comparison", columns = list(
-  col_forest(point = "mean_diff", lower = "lower", upper = "upper",
+  viz_forest(point = "mean_diff", lower = "lower", upper = "upper",
              scale = "linear", null_value = 0, axis_label = "Mean Difference (95% CI)")
 ))
 ```
@@ -137,7 +137,7 @@ tabviz(multi_data, label = "study", title = "Sensitivity Analysis Comparison",
   columns = list(
     col_n("n"),
     col_interval(point = "itt_or", lower = "itt_lo", upper = "itt_hi", header = "Primary OR"),
-    col_forest(
+    viz_forest(
       scale = "log", null_value = 1,
       effects = list(
         web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
@@ -160,7 +160,7 @@ tabviz(multi_data, label = "study", title = "Sensitivity Analysis Comparison",
 
 ### Side-by-Side Forest Columns
 
-When comparing entirely different outcomes or analyses, multiple `col_forest()` columns can be more effective:
+When comparing entirely different outcomes or analyses, multiple `viz_forest()` columns can be more effective:
 
 ```{r}
 comparison_data <- data.frame(
@@ -176,9 +176,9 @@ comparison_data <- data.frame(
 tabviz(comparison_data, label = "study",
   title = "Regional Comparison: North America vs Europe",
   columns = list(
-    col_forest(point = "na_hr", lower = "na_lo", upper = "na_hi",
+    viz_forest(point = "na_hr", lower = "na_lo", upper = "na_hi",
                header = "North America", scale = "log", null_value = 1, width = 180),
-    col_forest(point = "eu_hr", lower = "eu_lo", upper = "eu_hi",
+    viz_forest(point = "eu_hr", lower = "eu_lo", upper = "eu_hi",
                header = "Europe", scale = "log", null_value = 1, width = 180)
   )
 )
@@ -187,7 +187,7 @@ tabviz(comparison_data, label = "study",
 ::: {.callout-tip}
 ## When to Use Side-by-Side vs Multi-Effect
 
-**Use side-by-side `col_forest()` columns when:**
+**Use side-by-side `viz_forest()` columns when:**
 
 - Comparing different outcomes (primary vs secondary endpoint)
 - Showing different populations (ITT vs as-treated)
@@ -216,7 +216,7 @@ effect_sizes |>
     marker_opacity = ~ ifelse(n > 200, 1, 0.7),
     columns = list(
       col_text("phase", "Phase"),
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1)
     )
   )
@@ -250,7 +250,7 @@ Override the auto-calculated range:
 
 ```{r}
 tabviz(axis_demo, label = "study", columns = list(
-  col_forest(point = "hr", lower = "lower", upper = "upper",
+  viz_forest(point = "hr", lower = "lower", upper = "upper",
              scale = "log", null_value = 1, axis_range = c(0.3, 2.0))
 ))
 ```
@@ -261,7 +261,7 @@ Specify exact tick positions:
 
 ```{r}
 tabviz(axis_demo, label = "study", columns = list(
-  col_forest(point = "hr", lower = "lower", upper = "upper",
+  viz_forest(point = "hr", lower = "lower", upper = "upper",
              scale = "log", null_value = 1,
              axis_range = c(0.3, 2.0), axis_ticks = c(0.5, 0.7, 1.0, 1.5, 2.0))
 ))
@@ -273,7 +273,7 @@ Add vertical gridlines at tick positions:
 
 ```{r}
 tabviz(axis_demo, label = "study", columns = list(
-  col_forest(point = "hr", lower = "lower", upper = "upper",
+  viz_forest(point = "hr", lower = "lower", upper = "upper",
              scale = "log", null_value = 1, axis_gridlines = TRUE)
 ))
 ```
@@ -296,7 +296,7 @@ The `null_value` parameter draws a dashed vertical reference line. Add custom re
 ```{r}
 tabviz(axis_demo, label = "study", title = "With Custom Reference Line",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                annotations = list(
                  forest_refline(0.8, label = "Threshold", style = "dashed", color = "#e11d48")
@@ -310,7 +310,7 @@ tabviz(axis_demo, label = "study", title = "With Custom Reference Line",
 ```{r}
 tabviz(axis_demo, label = "study", title = "Clinical Thresholds",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                annotations = list(
                  forest_refline(0.5, label = "Strong", style = "solid", color = "#16a34a"),
@@ -395,7 +395,7 @@ forest_data <- studies |>
 
 tabviz(forest_data, label = "study", row_type = "row_type", row_bold = "row_bold",
   columns = list(
-    col_forest(point = "or", lower = "lower", upper = "upper",
+    viz_forest(point = "or", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 )

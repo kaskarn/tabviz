@@ -29,7 +29,7 @@ When you know all your styling upfront, pass everything directly to `tabviz()`:
 #| eval: false
 tabviz(data, label = "study",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
   row_type = "rtype",
@@ -49,7 +49,7 @@ When styling depends on computation or you want to build incrementally, use `set
 #| eval: false
 tabviz(data, label = "study",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 ) |>
@@ -94,6 +94,24 @@ Each `set_*()` call returns a **new** modified plot, leaving the original unchan
 
 ## Core Styling Functions
 
+All `set_*()` functions accept either **column names** (strings) or **formula expressions** (`~ ...`):
+
+```r
+# Using column names (pre-computed)
+plot |> set_row_style(bold = "is_significant")
+
+# Using formula expressions (computed on the fly)
+plot |> set_row_style(bold = ~ pvalue < 0.05)
+
+# Mix both approaches
+plot |> set_marker_style(
+  color = ~ ifelse(upper < 1, "#16a34a", "#64748b"),
+  shape = "marker_shape_column"
+)
+```
+
+See [Row Styling](row-styling.qmd#expression-based-styling) and [Cell Styling](cell-styling.qmd#formula-expressions-for-cell-styling) for detailed formula documentation.
+
 ### set_row_style()
 
 Style entire rows based on column values. This is your primary tool for creating visual hierarchy—distinguishing headers from data rows, highlighting summaries, and showing nested structure through indentation.
@@ -101,13 +119,13 @@ Style entire rows based on column values. This is your primary tool for creating
 ```r
 plot |> set_row_style(
   type = "rtype",     # "header", "data", "summary", "spacer"
-  bold = "rbold",     # Column with TRUE/FALSE
-  italic = "ritalic", # Column with TRUE/FALSE
-  color = "rcolor",   # Column with CSS colors
-  bg = "rbg",         # Column with background colors
-  badge = "rbadge",   # Column with badge text
-  icon = "ricon",     # Column with emoji/unicode
-  indent = "rindent"  # Column with indent levels (0, 1, 2, ...)
+  bold = "rbold",     # Column name or formula (~ pval < 0.05)
+  italic = "ritalic", # Column name or formula
+  color = "rcolor",   # Column name or formula (CSS colors)
+  bg = "rbg",         # Column name or formula (background colors)
+  badge = "rbadge",   # Column name or formula (badge text)
+  icon = "ricon",     # Column name or formula (emoji/unicode)
+  indent = "rindent"  # Column name or formula (indent levels: 0, 1, 2, ...)
 )
 ```
 
@@ -354,7 +372,7 @@ forest_plot(analysis_data[1:3, ],
 | `set_axis()` | Modify axis settings |
 | `set_layout()` | Modify layout |
 | `set_group_headers()` | Modify group header hierarchy |
-| `set_marker_colors()` | Set multi-effect color palette |
+| `set_effect_colors()` | Set multi-effect color palette |
 | `set_marker_shapes()` | Set multi-effect shape palette |
 
 See [Styling Reference](../reference/styling.qmd) for complete parameter documentation.

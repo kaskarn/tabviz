@@ -25,7 +25,7 @@ tabviz(
     col_text("drug", "Drug"),
     col_n("n"),
     col_events("events", "n", "Events"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio (95% CI)"),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
@@ -39,26 +39,12 @@ tabviz(
 )
 ```
 
-## Lancet-Style Forest Plot
+::: {.callout-tip}
+## Theme Variations
+The same data structure works with any theme. Try `web_theme_lancet()`, `web_theme_nature()`, or `web_theme_cochrane()` for different journal styles. See [Feature Showcases](showcases.qmd#all-theme-variants) for a visual comparison of all 9 built-in themes.
+:::
 
-```{r}
-tabviz(
-  glp1_trials,
-  label = "study",
-  group = "group",
-  columns = list(
-    col_text("drug", "Drug"),
-    col_n("n"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
-  ),
-  row_type = "row_type",
-  row_bold = "row_bold",
-  theme = web_theme_lancet(),
-  title = "Cardiovascular Outcomes Meta-Analysis"
-)
-```
+---
 
 ## Subgroup Analysis
 
@@ -89,7 +75,7 @@ tabviz(subgroup_data,
   label = "label",
   columns = list(
     col_n("n"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
@@ -100,6 +86,8 @@ tabviz(subgroup_data,
   title = "Subgroup Analysis"
 )
 ```
+
+---
 
 ## Multi-Effect Plot
 
@@ -121,12 +109,10 @@ tabviz(multi_effect,
   label = "study",
   columns = list(
     col_n("n"),
-    col_forest(
+    viz_forest(
       effects = list(
-        web_effect("itt_hr", "itt_lo", "itt_hi",
-                   label = "ITT", color = "#2563eb"),
-        web_effect("pp_hr", "pp_lo", "pp_hi",
-                   label = "Per-Protocol", color = "#16a34a")
+        web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT"),
+        web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol")
       ),
       scale = "log", null_value = 1,
       axis_label = "Hazard Ratio"
@@ -137,30 +123,7 @@ tabviz(multi_effect,
 )
 ```
 
-## Cochrane-Style Forest Plot
-
-Traditional systematic review format:
-
-```{r}
-tabviz(
-  glp1_trials |> filter(row_type == "data"),
-  label = "study",
-  columns = list(
-    col_n("n", "N"),
-    col_events("events", "n", "Events"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1,
-               axis_gridlines = TRUE),
-    col_interval("HR [95% CI]", point = "hr", lower = "lower", upper = "upper")
-  ),
-  theme = web_theme_cochrane(),
-  annotations = list(
-    forest_refline(1, label = "No effect", style = "solid"),
-    forest_refline(0.85, label = "Pooled", style = "dashed", color = "#2563eb")
-  ),
-  title = "Cochrane Review: Cardiovascular Outcomes"
-)
-```
+---
 
 ## Direction-Coded Results
 
@@ -181,7 +144,7 @@ tabviz(direction_data,
   label = "study",
   columns = list(
     col_text("drug", "Drug"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
     col_pvalue("pvalue")
@@ -190,5 +153,32 @@ tabviz(direction_data,
   row_bold = ~ pvalue < 0.05,
   theme = web_theme_nature(),
   title = "Results by Direction"
+)
+```
+
+---
+
+## Reference Lines with Annotations
+
+Add clinical thresholds and pooled estimates:
+
+```{r}
+tabviz(
+  glp1_trials |> filter(row_type == "data"),
+  label = "study",
+  columns = list(
+    col_n("n", "N"),
+    col_events("events", "n", "Events"),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_gridlines = TRUE),
+    col_interval("HR [95% CI]", point = "hr", lower = "lower", upper = "upper")
+  ),
+  theme = web_theme_cochrane(),
+  annotations = list(
+    forest_refline(1, label = "No effect", style = "solid"),
+    forest_refline(0.85, label = "Pooled", style = "dashed", color = "#2563eb")
+  ),
+  title = "Cardiovascular Outcomes with Reference Lines"
 )
 ```

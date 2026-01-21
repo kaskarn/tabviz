@@ -230,6 +230,95 @@ export interface ForestColumnOptions {
   sharedAxis?: boolean | null; // In split forests: share axis across splits (null = inherit from split-level)
 }
 
+// ============================================================================
+// Viz Column Types (focal visualization columns with axes)
+// ============================================================================
+
+/** Base interface for all viz column types */
+export interface VizColumnOptionsBase {
+  scale?: "linear" | "log";
+  nullValue?: number;
+  axisRange?: [number, number] | null;
+  axisTicks?: number[] | null;
+  axisGridlines?: boolean;
+  axisLabel?: string;
+  showAxis?: boolean;
+}
+
+/** Effect definition for viz_bar */
+export interface VizBarEffect {
+  value: string;              // Column name for the bar value
+  label?: string | null;      // Legend label
+  color?: string | null;      // Bar color
+  opacity?: number | null;    // Bar opacity (0-1)
+}
+
+/** Options for viz_bar column */
+export interface VizBarColumnOptions extends VizColumnOptionsBase {
+  type: "bar";
+  effects: VizBarEffect[];
+  barWidth?: number;          // Width of each bar in pixels
+  barGap?: number;            // Gap between grouped bars
+  orientation?: "horizontal" | "vertical";
+}
+
+/** Effect definition for viz_boxplot - supports both array data and pre-computed stats */
+export interface VizBoxplotEffect {
+  data?: string | null;       // Column name for array data (raw values)
+  min?: string | null;        // Column name for pre-computed min
+  q1?: string | null;         // Column name for pre-computed Q1
+  median?: string | null;     // Column name for pre-computed median
+  q3?: string | null;         // Column name for pre-computed Q3
+  max?: string | null;        // Column name for pre-computed max
+  outliers?: string | null;   // Column name for outlier array
+  label?: string | null;      // Legend label
+  color?: string | null;      // Box fill color
+  fillOpacity?: number | null;// Box fill opacity (0-1)
+}
+
+/** Options for viz_boxplot column */
+export interface VizBoxplotColumnOptions extends VizColumnOptionsBase {
+  type: "boxplot";
+  effects: VizBoxplotEffect[];
+  showOutliers?: boolean;
+  whiskerType?: "iqr" | "minmax";  // IQR-based (1.5×IQR) or min/max whiskers
+  boxWidth?: number;          // Width of the box in pixels
+}
+
+/** Effect definition for viz_violin */
+export interface VizViolinEffect {
+  data: string;               // Column name for array data (required)
+  label?: string | null;      // Legend label
+  color?: string | null;      // Fill color
+  fillOpacity?: number | null;// Fill opacity (0-1)
+}
+
+/** Options for viz_violin column */
+export interface VizViolinColumnOptions extends VizColumnOptionsBase {
+  type: "violin";
+  effects: VizViolinEffect[];
+  bandwidth?: number | null;  // KDE bandwidth (null = Silverman's rule)
+  showMedian?: boolean;       // Show median line
+  showQuartiles?: boolean;    // Show Q1/Q3 lines
+  maxWidth?: number;          // Max width of violin in pixels
+}
+
+/** Computed boxplot statistics */
+export interface BoxplotStats {
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  outliers: number[];
+}
+
+/** KDE result for violin plots */
+export interface KDEResult {
+  x: number[];
+  y: number[];
+}
+
 export interface ColumnOptions {
   numeric?: NumericColumnOptions;
   percent?: PercentColumnOptions;
@@ -245,6 +334,10 @@ export interface ColumnOptions {
   reference?: ReferenceColumnOptions;
   range?: RangeColumnOptions;
   forest?: ForestColumnOptions;
+  // New viz column types
+  vizBar?: VizBarColumnOptions;
+  vizBoxplot?: VizBoxplotColumnOptions;
+  vizViolin?: VizViolinColumnOptions;
   naText?: string;  // Custom text for NA/missing values
 }
 
@@ -252,7 +345,7 @@ export interface ColumnSpec {
   id: string;
   header: string;
   field: string;
-  type: "text" | "numeric" | "interval" | "bar" | "pvalue" | "sparkline" | "icon" | "badge" | "stars" | "img" | "reference" | "range" | "forest" | "custom";
+  type: "text" | "numeric" | "interval" | "bar" | "pvalue" | "sparkline" | "icon" | "badge" | "stars" | "img" | "reference" | "range" | "forest" | "viz_bar" | "viz_boxplot" | "viz_violin" | "custom";
   width?: number | "auto" | null;  // "auto" for content-based width calculation
   align: "left" | "center" | "right";
   headerAlign?: "left" | "center" | "right" | null;  // Header alignment (defaults to align if not specified)
@@ -318,6 +411,7 @@ export interface Spacing {
   cellPaddingY: number;
   axisGap: number;  // Gap between table and x-axis (default ~12px)
   groupPadding: number;  // Left/right padding for column group headers (default 8px)
+  columnGap: number;  // Gap between grid columns (default 8px)
 }
 
 export interface Shapes {
@@ -325,8 +419,8 @@ export interface Shapes {
   summaryHeight: number;
   lineWidth: number;
   borderRadius: number;
-  // Multi-effect marker defaults (colors and shapes for effects 1, 2, 3, ...)
-  markerColors?: string[] | null;  // null = use theme.colors.interval as first color
+  // Multi-effect defaults (colors for forest markers, bars, boxplots, violins)
+  effectColors?: string[] | null;  // null = use built-in fallback colors
   markerShapes?: MarkerShape[] | null;  // Shapes for each effect (cycles if more effects than shapes)
 }
 

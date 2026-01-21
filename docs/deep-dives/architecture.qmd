@@ -191,7 +191,7 @@ Usage in `tabviz()`:
 ```r
 tabviz(data,
   label = "study",
-  columns = list(col_forest(...)),
+  columns = list(viz_forest(...)),
   row_bold = "is_summary",    # Column name, not values
   row_badge = "significance"  # Column name
 )
@@ -240,7 +240,7 @@ col_pvalue("pval", stars = TRUE, thresholds = c(0.05, 0.01, 0.001))
 # Creates: options = list(pvalue = list(stars = TRUE, thresholds = ...))
 
 # Forest column
-col_forest(point = "hr", lower = "lo", upper = "hi", scale = "log")
+viz_forest(point = "hr", lower = "lo", upper = "hi", scale = "log")
 # Creates: options = list(forest = list(point = "hr", scale = "log", ...))
 ```
 

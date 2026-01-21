@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
+  import { autoPosition } from "$lib/dropdown-position";
 
   interface Props {
     store: ForestStore;
@@ -8,6 +9,7 @@
   let { store }: Props = $props();
 
   let dropdownOpen = $state(false);
+  let triggerEl: HTMLButtonElement | null = $state(null);
 
   const zoom = $derived(store.zoom);
   const autoFit = $derived(store.autoFit);
@@ -74,6 +76,7 @@
 <div class="zoom-controls-wrapper">
   <!-- Trigger button showing current actual scale -->
   <button
+    bind:this={triggerEl}
     class="zoom-trigger-btn"
     onclick={() => (dropdownOpen = !dropdownOpen)}
     aria-label="Zoom and display options"
@@ -91,7 +94,7 @@
   </button>
 
   {#if dropdownOpen}
-    <div class="zoom-dropdown">
+    <div class="zoom-dropdown" use:autoPosition={{ triggerEl }}>
       <!-- Zoom slider row -->
       <div class="zoom-row">
         <button
@@ -248,16 +251,14 @@
   }
 
   .zoom-dropdown {
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
+    /* position: fixed set dynamically by autoPosition to escape clipping */
     min-width: 200px;
     padding: 8px;
     background: var(--wf-bg, #ffffff);
     border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 8px;
     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.08);
-    z-index: 101;
+    z-index: 10001;  /* High z-index to appear above everything */
   }
 
   .zoom-row {

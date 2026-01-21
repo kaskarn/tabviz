@@ -6,7 +6,7 @@
 \description{
 Configures marker shapes and sizes for forest plots.
 
-The \code{marker_colors} and \code{marker_shapes} properties define the default
+The \code{effect_colors} and \code{marker_shapes} properties define the default
 appearance for multi-effect plots. When effects don't specify their own
 color or shape, they use these defaults in order (effect 1 uses index 1, etc.).
 }

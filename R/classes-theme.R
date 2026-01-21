@@ -88,7 +88,8 @@ Spacing <- new_class(
     axis_gap = new_property(class_numeric, default = 12),
     group_padding = new_property(class_numeric, default = 8),
     cell_padding_x = new_property(class_numeric, default = 10),
-    cell_padding_y = new_property(class_numeric, default = 4)
+    cell_padding_y = new_property(class_numeric, default = 4),
+    column_gap = new_property(class_numeric, default = 8)
   )
 )
 
@@ -97,7 +98,7 @@ Spacing <- new_class(
 #' @description
 #' Configures marker shapes and sizes for forest plots.
 #'
-#' The `marker_colors` and `marker_shapes` properties define the default
+#' The `effect_colors` and `marker_shapes` properties define the default
 #' appearance for multi-effect plots. When effects don't specify their own
 #' color or shape, they use these defaults in order (effect 1 uses index 1, etc.).
 #'
@@ -110,8 +111,8 @@ Shapes <- new_class(
     summary_height = new_property(class_numeric, default = 10),
     line_width = new_property(class_numeric, default = 1.5),
     border_radius = new_property(class_numeric, default = 2),
-    # Multi-effect marker defaults (colors cycle from theme.colors.interval)
-    marker_colors = new_property(class_any, default = NULL),  # NULL = use theme.colors.interval
+    # Multi-effect defaults (colors cycle for bar, boxplot, violin, and forest markers)
+    effect_colors = new_property(class_any, default = NULL),  # NULL = use built-in fallback
     marker_shapes = new_property(
       class_any,
       default = c("square", "circle", "diamond", "triangle")
@@ -309,7 +310,12 @@ WebTheme <- new_class(
 #' @return A WebTheme object with default settings
 #' @export
 web_theme_default <- function() {
-  WebTheme(name = "default")
+  WebTheme(
+    name = "default",
+    shapes = Shapes(
+      effect_colors = c("#0891b2", "#16a34a", "#f59e0b", "#ef4444", "#8b5cf6")
+    )
+  )
 }
 
 #' Create a minimal/clean theme
@@ -361,7 +367,8 @@ web_theme_minimal <- function() {
       point_size = 5,
       summary_height = 8,
       line_width = 1,
-      border_radius = 0               # Sharp corners
+      border_radius = 0,              # Sharp corners
+      effect_colors = c("#64748b", "#94a3b8", "#cbd5e1", "#475569", "#334155")
     ),
     layout = LayoutConfig(
       row_border = TRUE,
@@ -434,7 +441,8 @@ web_theme_dark <- function() {
       point_size = 6,
       summary_height = 10,
       line_width = 1.5,
-      border_radius = 4               # Soft rounded corners
+      border_radius = 4,              # Soft rounded corners
+      effect_colors = c("#89b4fa", "#a6e3a1", "#fab387", "#f38ba8", "#cba6f7")
     ),
     layout = LayoutConfig(
       row_border = TRUE,
@@ -751,6 +759,7 @@ set_typography <- function(
 #' @param group_padding Left/right padding for column group headers in pixels (default: 8)
 #' @param cell_padding_x Horizontal cell padding in pixels (default: 10)
 #' @param cell_padding_y Vertical cell padding in pixels (default: 4)
+#' @param column_gap Gap between grid columns in pixels (default: 8)
 #'
 #' @return Modified WebTheme object
 #' @export
@@ -767,7 +776,8 @@ set_spacing <- function(
     axis_gap = NULL,
     group_padding = NULL,
     cell_padding_x = NULL,
-    cell_padding_y = NULL
+    cell_padding_y = NULL,
+    column_gap = NULL
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
   current <- theme@spacing
@@ -781,6 +791,7 @@ set_spacing <- function(
   if (!is.null(group_padding)) current@group_padding <- group_padding
   if (!is.null(cell_padding_x)) current@cell_padding_x <- cell_padding_x
   if (!is.null(cell_padding_y)) current@cell_padding_y <- cell_padding_y
+  if (!is.null(column_gap)) current@column_gap <- column_gap
 
   theme@spacing <- current
   theme
@@ -795,9 +806,10 @@ set_spacing <- function(
 #' @param summary_height Summary diamond height in pixels (default: 10)
 #' @param line_width Confidence interval line width in pixels (default: 1.5)
 #' @param border_radius Border radius for containers in pixels (default: 2)
-#' @param marker_colors Character vector of colors for multi-effect plots.
-#'   Effects without explicit colors use these in order. NULL uses theme interval color.
-#' @param marker_shapes Character vector of shapes for multi-effect plots:
+#' @param effect_colors Character vector of colors for multi-effect visualizations.
+#'   Used by forest plots, bar charts, boxplots, and violin plots. Effects without
+#'   explicit colors use these in order, cycling if needed.
+#' @param marker_shapes Character vector of shapes for multi-effect forest plots:
 #'   "square", "circle", "diamond", "triangle" (default: all four in order)
 #'
 #' @return Modified WebTheme object
@@ -811,7 +823,7 @@ set_shapes <- function(
     summary_height = NULL,
     line_width = NULL,
     border_radius = NULL,
-    marker_colors = NULL,
+    effect_colors = NULL,
     marker_shapes = NULL
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
@@ -821,9 +833,9 @@ set_shapes <- function(
   if (!is.null(summary_height)) current@summary_height <- summary_height
   if (!is.null(line_width)) current@line_width <- line_width
   if (!is.null(border_radius)) current@border_radius <- border_radius
-  if (!is.null(marker_colors)) {
-    checkmate::assert_character(marker_colors, min.len = 1)
-    current@marker_colors <- marker_colors
+  if (!is.null(effect_colors)) {
+    checkmate::assert_character(effect_colors, min.len = 1)
+    current@effect_colors <- effect_colors
   }
   if (!is.null(marker_shapes)) {
     valid_shapes <- c("square", "circle", "diamond", "triangle")
@@ -835,10 +847,11 @@ set_shapes <- function(
   theme
 }
 
-#' Set marker colors for multi-effect plots
+#' Set effect colors for multi-effect visualizations
 #'
-#' Convenience function to set theme marker colors for multi-effect forest plots.
-#' Effects without an explicit color will use these colors in order.
+#' Convenience function to set theme colors for multi-effect visualizations.
+#' Used by forest plots, bar charts, boxplots, and violin plots. Effects
+#' without an explicit color will use these colors in order, cycling if needed.
 #'
 #' @param theme A WebTheme object
 #' @param colors Character vector of colors for effects (e.g., c("#2563eb", "#dc2626"))
@@ -847,11 +860,11 @@ set_shapes <- function(
 #' @export
 #' @examples
 #' web_theme_default() |>
-#'   set_marker_colors(c("#0891b2", "#dc2626", "#16a34a"))
-set_marker_colors <- function(theme, colors) {
+#'   set_effect_colors(c("#0891b2", "#dc2626", "#16a34a"))
+set_effect_colors <- function(theme, colors) {
   stopifnot(S7_inherits(theme, WebTheme))
   checkmate::assert_character(colors, min.len = 1)
-  theme@shapes@marker_colors <- colors
+  theme@shapes@effect_colors <- colors
   theme
 }
 
@@ -1170,7 +1183,8 @@ web_theme_jama <- function() {
       point_size = 4,                 # Small markers
       summary_height = 7,
       line_width = 1.25,              # Slightly thicker for visibility
-      border_radius = 0
+      border_radius = 0,
+      effect_colors = c("#1a1a1a", "#4a4a4a", "#7a7a7a", "#9a9a9a", "#bababa")
     ),
     layout = LayoutConfig(
       row_border = TRUE,
@@ -1244,7 +1258,8 @@ web_theme_lancet <- function() {
       point_size = 5,
       summary_height = 9,
       line_width = 1.25,
-      border_radius = 0             # Sharp corners for academic feel
+      border_radius = 0,            # Sharp corners for academic feel
+      effect_colors = c("#00468b", "#ed0000", "#42b540", "#0099b4", "#925e9f")
     ),
     layout = LayoutConfig(
       row_border = TRUE,
@@ -1320,7 +1335,8 @@ web_theme_modern <- function() {
       point_size = 8,                  # Larger markers
       summary_height = 12,
       line_width = 1.75,
-      border_radius = 8                # More rounded
+      border_radius = 8,               # More rounded
+      effect_colors = c("#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6")
     ),
     layout = LayoutConfig(
       row_border = TRUE,
@@ -1394,7 +1410,8 @@ web_theme_presentation <- function() {
       point_size = 12,           # Oversized markers
       summary_height = 16,       # Larger diamonds
       line_width = 2.5,          # Thick lines
-      border_radius = 4
+      border_radius = 4,
+      effect_colors = c("#2563eb", "#16a34a", "#ea580c", "#dc2626", "#7c3aed")
     ),
     layout = LayoutConfig(
       row_border = TRUE,
@@ -1468,7 +1485,8 @@ web_theme_cochrane <- function() {
       point_size = 4,                  # Small markers
       summary_height = 7,
       line_width = 1,
-      border_radius = 0
+      border_radius = 0,
+      effect_colors = c("#0c4da2", "#dd5129", "#1a8a4f", "#6d4e92", "#e89a47")
     ),
     layout = LayoutConfig(
       row_border = TRUE,
@@ -1544,7 +1562,8 @@ web_theme_nature <- function() {
       point_size = 5,
       summary_height = 8,
       line_width = 1.25,
-      border_radius = 1                # Almost sharp corners
+      border_radius = 1,               # Almost sharp corners
+      effect_colors = c("#e64b35", "#4dbbd5", "#00a087", "#3c5488", "#f39b7f")
     ),
     layout = LayoutConfig(
       row_border = TRUE,

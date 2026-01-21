@@ -36,17 +36,23 @@ comparing results across subgroups, regions, or other categorical variables.
 \dontrun{
 # Split by a single variable
 data |>
-  web_spec(point = "or", lower = "lower", upper = "upper") |>
+  tabviz(label = "study", columns = list(
+    col_forest(point = "or", lower = "lower", upper = "upper")
+  )) |>
   split_table(by = "region")
 
 # Split by multiple variables (hierarchical navigation)
 data |>
-  web_spec(point = "or", lower = "lower", upper = "upper") |>
+  tabviz(label = "study", columns = list(
+    col_forest(point = "or", lower = "lower", upper = "upper")
+  )) |>
   split_table(by = c("sex", "age_group"))
 
 # With shared axis for easier comparison
 data |>
-  web_spec(point = "or", lower = "lower", upper = "upper") |>
+  tabviz(label = "study", columns = list(
+    col_forest(point = "or", lower = "lower", upper = "upper")
+  )) |>
   split_table(by = "treatment_arm", shared_axis = TRUE)
 }
 

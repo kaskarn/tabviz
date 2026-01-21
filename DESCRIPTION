@@ -1,6 +1,6 @@
 Package: tabviz
 Title: Interactive Tables with Embedded Visualizations
-Version: 0.3.0
+Version: 0.4.0
 Authors@R:
     person("Antoine", "Baldassari", , "baldassarian@gmail.com", role = c("aut", "cre"))
 Author: Antoine Baldassari [aut, cre]

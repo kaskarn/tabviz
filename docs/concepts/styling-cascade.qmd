@@ -35,7 +35,7 @@ Themes establish the baseline appearance for all elements:
 #| eval: false
 # Theme sets default colors, fonts, spacing
 tabviz(data,
-  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi",
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
                            scale = "log", null_value = 1)),
   theme = web_theme_jama()  # Sets primary color, font, spacing, etc.
 )
@@ -73,7 +73,7 @@ meta_data <- data.frame(
 
 tabviz(meta_data,
   label = "study",
-  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi",
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
                            scale = "log", null_value = 1)),
   row_type = "rtype",
   row_bold = "rbold"
@@ -110,7 +110,7 @@ tabviz(data,
     col_numeric("hr",
       color = ~ ifelse(.x < 1, "#16a34a", "#dc2626")
     ),
-    col_forest(point = "hr", lower = "lo", upper = "hi",
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1)
   )
 )
@@ -168,7 +168,7 @@ marker_data <- data.frame(
 
 tabviz(marker_data,
   label = "study",
-  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi",
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
                            scale = "log", null_value = 1)),
   marker_color = "marker_color",
   marker_shape = "marker_shape"
@@ -192,7 +192,7 @@ Marker styling options:
 #| eval: false
 tabviz(data,
   label = "study",
-  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi",
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
                            scale = "log", null_value = 1)),
   theme = web_theme_jama(),           # Sets default text color
   row_color = ~ ifelse(pval < 0.05, "#16a34a", NULL)  # Overrides for significant rows
@@ -228,7 +228,7 @@ tabviz(data,
   label = "study",
   columns = list(
     col_pvalue("pval", bold = ~ .x < 0.05),
-    col_forest(point = "hr", lower = "lo", upper = "hi",
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1)
   ),
   theme = web_theme_jama(),                    # Layer 1: Theme

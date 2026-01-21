@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { WebTheme, ComputedLayout } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
-
+  
   interface Props {
     xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
     layout: ComputedLayout;
@@ -11,17 +11,19 @@
     plotHeight?: number;
     /** Precomputed base ticks from axis-utils (will be filtered for spacing) */
     baseTicks?: number[];
+    /** Override gridlines display (if undefined, falls back to theme.axis.gridlines) */
+    gridlines?: boolean;
   }
 
-  let { xScale, layout, theme, axisLabel, position = "bottom", plotHeight = 0, baseTicks }: Props = $props();
+  let { xScale, layout, theme, axisLabel, position = "bottom", plotHeight = 0, baseTicks, gridlines }: Props = $props();
 
   // Get axis config from theme
   const axisConfig = $derived(theme?.axis);
-  const showGridlines = $derived(axisConfig?.gridlines ?? false);
+  const showGridlines = $derived(gridlines ?? axisConfig?.gridlines ?? false);
   const gridlineStyle = $derived(axisConfig?.gridlineStyle ?? "dotted");
 
   // Edge threshold for text anchor adjustment (prevents clipping at boundaries)
-  // Should be >= AXIS_LABEL_PADDING from forestStore to ensure edge labels are detected
+  // Should be >= VIZ_MARGIN to ensure edge labels are detected
   const EDGE_THRESHOLD = 35;
 
   // Extract nullTick config (default: true)
@@ -153,10 +155,10 @@
 </script>
 
 <g class="effect-axis">
-  <!-- Axis line -->
+  <!-- Axis line (matches scale range which already includes VIZ_MARGIN from cell edges) -->
   <line
-    x1={0}
-    x2={layout.forestWidth}
+    x1={xScale.range()[0]}
+    x2={xScale.range()[1]}
     y1={axisY}
     y2={axisY}
     stroke="var(--wf-border, #e2e8f0)"

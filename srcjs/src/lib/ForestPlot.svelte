@@ -21,6 +21,12 @@
   import CellReference from "$components/table/CellReference.svelte";
   import CellRange from "$components/table/CellRange.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
+  import VizBar from "$components/viz/VizBar.svelte";
+  import VizBoxplot from "$components/viz/VizBoxplot.svelte";
+  import VizViolin from "$components/viz/VizViolin.svelte";
+  import { scaleLinear, scaleLog } from "d3-scale";
+  import { computeBoxplotStats } from "$lib/viz-utils";
+  import { VIZ_MARGIN } from "$lib/axis-utils";
   import {
     GROUP_HEADER_OPACITY,
     ROW_HOVER_OPACITY,
@@ -59,6 +65,8 @@
   const allColumnDefs = $derived(store.allColumnDefs);
   const forestColumns = $derived(store.forestColumns);
   const hasForestColumns = $derived(forestColumns.length > 0);
+  const vizColumns = $derived(store.vizColumns);
+  const hasVizColumns = $derived(vizColumns.length > 0);
   const labelHeader = $derived(spec?.data.labelHeader || "Study");
 
   // Check if title/subtitle area is shown (for border styling)
@@ -357,7 +365,7 @@
         }
       } else {
         // Leaf column: spans from current depth to bottom
-        const isForest = !col.isGroup && col.type === "forest";
+        const isVizColumn = !col.isGroup && vizColumnTypes.includes(col.type);
         cells.push({
           col,
           gridColumnStart: startCol,
@@ -365,7 +373,7 @@
           rowStart: depth + 1,
           rowSpan: headerDepth - depth,
           isGroupHeader: false,
-          isForest,
+          isForest: isVizColumn,  // Treat all viz columns like forest for header styling
         });
         colIndex++;
       }
@@ -403,6 +411,9 @@
     return columnWidthsSnapshot["__label__"] ? "none" : "1";
   }
 
+  // Viz column types that need fixed widths
+  const vizColumnTypes = ["forest", "viz_bar", "viz_boxplot", "viz_violin"];
+
   // Compute CSS grid template columns: label | columns in order (forest cols included)
   const gridTemplateColumns = $derived.by(() => {
     const parts: string[] = [];
@@ -411,14 +422,29 @@
     const labelWidth = columnWidthsSnapshot["__label__"];
     parts.push(labelWidth ? `${labelWidth}px` : "max-content");
 
-    // All columns in order, forest columns get their width from options or default
+    // All columns in order, viz columns get fixed widths
     for (const col of allColumns) {
-      if (col.type === "forest") {
-        // Forest columns: check col.width first (from R), then options, then layout default
-        const forestWidth = (typeof col.width === "number" ? col.width : null)
-          ?? col.options?.forest?.width
-          ?? layout.forestWidth;
-        parts.push(`${forestWidth}px`);
+      if (vizColumnTypes.includes(col.type)) {
+        // Viz columns: check dynamic width first, then col.width (from R), then type-specific options, then layout default
+        const dynamicWidth = columnWidthsSnapshot[col.id];
+        let vizWidth: number;
+
+        if (typeof dynamicWidth === "number") {
+          vizWidth = dynamicWidth;
+        } else if (typeof col.width === "number") {
+          vizWidth = col.width;
+        } else if (col.type === "forest") {
+          vizWidth = col.options?.forest?.width ?? layout.forestWidth;
+        } else if (col.type === "viz_bar") {
+          vizWidth = col.options?.vizBar?.width ?? layout.forestWidth;
+        } else if (col.type === "viz_boxplot") {
+          vizWidth = col.options?.vizBoxplot?.width ?? layout.forestWidth;
+        } else if (col.type === "viz_violin") {
+          vizWidth = col.options?.vizViolin?.width ?? layout.forestWidth;
+        } else {
+          vizWidth = layout.forestWidth;
+        }
+        parts.push(`${vizWidth}px`);
       } else {
         parts.push(getColWidth(col));
       }
@@ -430,17 +456,20 @@
   // Total column count for grid (label + all columns)
   const totalColumns = $derived(1 + allColumns.length);
 
-  // Get grid column indices for forest columns (1-based for CSS grid)
-  // Returns array of { gridCol, column } for each forest column
-  const forestColumnGridIndices = $derived.by((): { gridCol: number; column: typeof allColumns[0] }[] => {
+  // Get grid column indices for viz columns (1-based for CSS grid)
+  // Returns array of { gridCol, column } for each viz column
+  const vizColumnGridIndices = $derived.by((): { gridCol: number; column: typeof allColumns[0] }[] => {
     const result: { gridCol: number; column: typeof allColumns[0] }[] = [];
     for (let i = 0; i < allColumns.length; i++) {
-      if (allColumns[i].type === "forest") {
+      if (vizColumnTypes.includes(allColumns[i].type)) {
         result.push({ gridCol: 2 + i, column: allColumns[i] }); // +2 for 1-based + label column
       }
     }
     return result;
   });
+
+  // For backwards compatibility, keep forestColumnGridIndices as reference
+  const forestColumnGridIndices = vizColumnGridIndices;
 
   // Refs to measure forest column positions for SVG overlays
   // Maps column id to { element, left }
@@ -490,6 +519,189 @@
 
   // Use measured header height if available, otherwise fall back to theme value
   const actualHeaderHeight = $derived(measuredHeaderHeight > 0 ? measuredHeaderHeight : layout.headerHeight);
+
+  // Compute shared scales for viz columns (so all rows share the same scale)
+  const vizColumnScales = $derived.by(() => {
+    const scales = new Map<string, ReturnType<typeof scaleLinear<number, number>>>();
+    // Use consistent padding for all viz column scales
+    const vizPadding = VIZ_MARGIN;
+
+    for (const vc of vizColumns) {
+      const col = vc.column;
+      const padding = vizPadding;
+
+      if (col.type === "viz_bar") {
+        const opts = col.options?.vizBar;
+        if (!opts) continue;
+
+        // Check dynamic width first, then static width, then options, then layout default
+        const dynamicWidth = columnWidthsSnapshot[col.id];
+        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : (opts.width ?? layout.forestWidth));
+
+        // If axisRange is specified, use it; otherwise compute from all rows
+        let domainMin = opts.axisRange?.[0];
+        let domainMax = opts.axisRange?.[1];
+
+        if (domainMin == null || domainMax == null) {
+          const allValues: number[] = [];
+          for (const dRow of displayRows) {
+            if (dRow.type === "data") {
+              for (const effect of opts.effects) {
+                const val = dRow.row.metadata[effect.value] as number | undefined;
+                if (val != null && !Number.isNaN(val)) {
+                  allValues.push(val);
+                }
+              }
+            }
+          }
+          if (allValues.length > 0) {
+            domainMin = domainMin ?? Math.min(0, ...allValues);
+            domainMax = domainMax ?? Math.max(...allValues) * 1.1;
+          } else {
+            domainMin = domainMin ?? 0;
+            domainMax = domainMax ?? 100;
+          }
+        }
+
+        const scale = opts.scale === "log"
+          ? scaleLog().domain([Math.max(0.01, domainMin), domainMax]).range([padding, vizWidth - padding])
+          : scaleLinear().domain([domainMin, domainMax]).range([padding, vizWidth - padding]);
+        scales.set(col.id, scale);
+
+      } else if (col.type === "viz_boxplot") {
+        const opts = col.options?.vizBoxplot;
+        if (!opts) continue;
+
+        // Check dynamic width first, then static width, then options, then layout default
+        const dynamicWidth = columnWidthsSnapshot[col.id];
+        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : (opts.width ?? layout.forestWidth));
+
+        let domainMin = opts.axisRange?.[0];
+        let domainMax = opts.axisRange?.[1];
+
+        if (domainMin == null || domainMax == null) {
+          const allValues: number[] = [];
+          for (const dRow of displayRows) {
+            if (dRow.type === "data") {
+              for (const effect of opts.effects) {
+                // Array data mode
+                if (effect.data) {
+                  const data = dRow.row.metadata[effect.data] as number[] | undefined;
+                  if (data && Array.isArray(data)) {
+                    const stats = computeBoxplotStats(data);
+                    allValues.push(stats.min, stats.max);
+                    if (opts.showOutliers !== false) allValues.push(...stats.outliers);
+                  }
+                }
+                // Pre-computed stats mode
+                else if (effect.min && effect.max) {
+                  const min = dRow.row.metadata[effect.min] as number;
+                  const max = dRow.row.metadata[effect.max] as number;
+                  if (min != null && !Number.isNaN(min)) allValues.push(min);
+                  if (max != null && !Number.isNaN(max)) allValues.push(max);
+                }
+              }
+            }
+          }
+          if (allValues.length > 0) {
+            const dataMin = Math.min(...allValues);
+            const dataMax = Math.max(...allValues);
+            const range = dataMax - dataMin;
+            domainMin = domainMin ?? dataMin - range * 0.05;
+            domainMax = domainMax ?? dataMax + range * 0.05;
+          } else {
+            domainMin = domainMin ?? 0;
+            domainMax = domainMax ?? 100;
+          }
+        }
+
+        const scale = opts.scale === "log"
+          ? scaleLog().domain([Math.max(0.01, domainMin), domainMax]).range([padding, vizWidth - padding])
+          : scaleLinear().domain([domainMin, domainMax]).range([padding, vizWidth - padding]);
+        scales.set(col.id, scale);
+
+      } else if (col.type === "viz_violin") {
+        const opts = col.options?.vizViolin;
+        if (!opts) continue;
+
+        // Check dynamic width first, then static width, then options, then layout default
+        const dynamicWidth = columnWidthsSnapshot[col.id];
+        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : (opts.width ?? layout.forestWidth));
+
+        let domainMin = opts.axisRange?.[0];
+        let domainMax = opts.axisRange?.[1];
+
+        if (domainMin == null || domainMax == null) {
+          const allValues: number[] = [];
+          for (const dRow of displayRows) {
+            if (dRow.type === "data") {
+              for (const effect of opts.effects) {
+                const data = dRow.row.metadata[effect.data] as number[] | undefined;
+                if (data && Array.isArray(data)) {
+                  allValues.push(...data.filter(v => v != null && !Number.isNaN(v)));
+                }
+              }
+            }
+          }
+          if (allValues.length > 0) {
+            domainMin = domainMin ?? Math.min(...allValues);
+            domainMax = domainMax ?? Math.max(...allValues);
+            // Add padding for KDE tails
+            const range = domainMax - domainMin;
+            domainMin = domainMin - range * 0.1;
+            domainMax = domainMax + range * 0.1;
+          } else {
+            domainMin = domainMin ?? 0;
+            domainMax = domainMax ?? 100;
+          }
+        }
+
+        const scale = opts.scale === "log"
+          ? scaleLog().domain([Math.max(0.01, domainMin), domainMax]).range([padding, vizWidth - padding])
+          : scaleLinear().domain([domainMin, domainMax]).range([padding, vizWidth - padding]);
+        scales.set(col.id, scale);
+      }
+    }
+
+    return scales;
+  });
+
+  // Compute per-column scales for forest columns (to handle custom widths and dynamic resizing)
+  const forestColumnScales = $derived.by(() => {
+    const scales = new Map<string, ReturnType<typeof scaleLinear<number, number>> | ReturnType<typeof scaleLog<number, number>>>();
+    // Use consistent padding for all viz column scales
+    const forestPadding = VIZ_MARGIN;
+
+    for (const fc of forestColumns) {
+      const col = fc.column;
+      const forestOpts = col.options?.forest;
+      // Check dynamic width first, then static width, then type-specific options, then layout default
+      const dynamicWidth = columnWidthsSnapshot[col.id];
+      const colWidth = typeof dynamicWidth === "number"
+        ? dynamicWidth
+        : typeof col.width === "number"
+        ? col.width
+        : (forestOpts?.width ?? layout.forestWidth);
+      const isLog = forestOpts?.scale === "log";
+
+      // Use the global domain from axisComputation
+      const domain = axisComputation.axisLimits;
+      const rangeStart = forestPadding;
+      const rangeEnd = Math.max(colWidth - forestPadding, rangeStart + 50);
+
+      if (isLog) {
+        const safeDomain: [number, number] = [
+          Math.max(domain[0], 0.01),
+          Math.max(domain[1], 0.02),
+        ];
+        scales.set(col.id, scaleLog().domain(safeDomain).range([rangeStart, rangeEnd]));
+      } else {
+        scales.set(col.id, scaleLinear().domain(domain).range([rangeStart, rangeEnd]));
+      }
+    }
+
+    return scales;
+  });
 
   // Plot resize state and handlers
   let resizingPlot = $state(false);
@@ -606,6 +818,7 @@
       --wf-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
       --wf-axis-height: ${layout.axisHeight}px;
       --wf-group-padding: ${theme.spacing.groupPadding ?? 8}px;
+      --wf-column-gap: ${theme.spacing.columnGap ?? 8}px;
       --wf-plot-width: ${layout.forestWidth}px;
       --wf-point-size: ${theme.shapes.pointSize}px;
       --wf-line-width: ${theme.shapes.lineWidth}px;
@@ -744,8 +957,17 @@
               <span class="header-text">{cell.col.header}</span>
             </div>
           {:else if cell.isForest}
-            <!-- Forest column header (new mode) -->
+            <!-- Viz column header (forest, bar, boxplot, violin) -->
             {@const column = cell.col as ColumnSpec}
+            {@const vizDefaultWidth = column.type === "forest"
+              ? (column.options?.forest?.width ?? layout.forestWidth)
+              : column.type === "viz_bar"
+              ? (column.options?.vizBar?.width ?? layout.forestWidth)
+              : column.type === "viz_boxplot"
+              ? (column.options?.vizBoxplot?.width ?? layout.forestWidth)
+              : column.type === "viz_violin"
+              ? (column.options?.vizViolin?.width ?? layout.forestWidth)
+              : layout.forestWidth}
             <div
               use:forestColumnRef={column.id}
               class="grid-cell header-cell plot-header"
@@ -759,7 +981,7 @@
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div
                   class="resize-handle"
-                  onpointerdown={startPlotResize}
+                  onpointerdown={(e) => startColumnResize(e, column.id, columnWidthsSnapshot[column.id] ?? vizDefaultWidth)}
                 ></div>
               {/if}
             </div>
@@ -830,8 +1052,8 @@
 
           <!-- Column cells: all columns in order -->
           {#each allColumns as column (column.id)}
-            {#if column.type === "forest"}
-              <!-- Forest cell (empty - SVG overlays this) -->
+            {#if vizColumnTypes.includes(column.type)}
+              <!-- Viz cell (empty - SVG overlays this) -->
               <div
                 class="grid-cell data-cell plot-cell {rowClasses}"
                 class:group-row={isGroupHeader}
@@ -870,11 +1092,11 @@
           {/each}
         {/each}
 
-        <!-- Axis row: one axis cell per forest column -->
-        {#if hasForestColumns}
+        <!-- Axis row: one axis cell per viz column -->
+        {#if hasVizColumns}
           {@const axisRowNum = headerDepth + 1 + displayRows.length}
           {#each allColumns as column, idx (column.id)}
-            {#if column.type === "forest"}
+            {#if vizColumnTypes.includes(column.type)}
               <div class="grid-cell axis-cell" style:grid-column={2 + idx} style:grid-row={axisRowNum}></div>
             {:else}
               <div class="grid-cell axis-spacer" style:grid-column={2 + idx} style:grid-row={axisRowNum}></div>
@@ -887,12 +1109,14 @@
         <!-- SVG overlays: one per forest column -->
         {#each forestColumns as fc (fc.column.id)}
           {@const forestOpts = fc.column.options?.forest}
-          {@const forestWidth = forestOpts?.width ?? layout.forestWidth}
+          {@const dynamicForestWidth = columnWidthsSnapshot[fc.column.id]}
+          {@const forestWidth = typeof dynamicForestWidth === "number" ? dynamicForestWidth : (typeof fc.column.width === "number" ? fc.column.width : (forestOpts?.width ?? layout.forestWidth))}
           {@const forestLeft = forestColumnPositions.get(fc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const nullValue = forestOpts?.nullValue ?? layout.nullValue}
           {@const axisLabel = forestOpts?.axisLabel ?? "Effect"}
           {@const isLog = forestOpts?.scale === "log"}
+          {@const colScale = forestColumnScales.get(fc.column.id) ?? xScale}
           <svg
             class="plot-overlay"
             width={forestWidth}
@@ -903,8 +1127,8 @@
           >
             <!-- Null value reference line -->
             <line
-              x1={xScale(nullValue)}
-              x2={xScale(nullValue)}
+              x1={colScale(nullValue)}
+              x2={colScale(nullValue)}
               y1={0}
               y2={rowsAreaHeight}
               stroke="var(--wf-muted)"
@@ -919,8 +1143,8 @@
               {#each allAnnotations as annotation (annotation.id)}
               {#if annotation.type === "reference_line"}
                 <line
-                  x1={xScale(annotation.x)}
-                  x2={xScale(annotation.x)}
+                  x1={colScale(annotation.x)}
+                  x2={colScale(annotation.x)}
                   y1={0}
                   y2={rowsAreaHeight}
                   stroke={annotation.color ?? "var(--wf-accent)"}
@@ -931,7 +1155,7 @@
                 {#if annotation.label}
                   {@const yOffset = annotationLabelOffsets[annotation.id] ?? 0}
                   <text
-                    x={xScale(annotation.x)}
+                    x={colScale(annotation.x)}
                     y={-4 + yOffset}
                     text-anchor="middle"
                     fill={annotation.color ?? "var(--wf-secondary)"}
@@ -953,8 +1177,8 @@
                 <RowInterval
                   row={displayRow.row}
                   yPosition={rowY + rowH / 2}
-                  {xScale}
-                  {layout}
+                  xScale={colScale}
+                  layout={{...layout, forestWidth: forestWidth}}
                   {theme}
                   {clipBounds}
                   {isLog}
@@ -983,8 +1207,8 @@
                 lower={spec.data.overall.lower}
                 upper={spec.data.overall.upper}
                 yPosition={rowsAreaHeight + layout.rowHeight / 2}
-                {xScale}
-                {layout}
+                xScale={colScale}
+                layout={{...layout, forestWidth: forestWidth}}
                 {theme}
               />
             {/if}
@@ -992,10 +1216,169 @@
             <!-- Axis at bottom -->
             {#if forestOpts?.showAxis !== false}
               <g transform="translate(0, {rowsAreaHeight + axisGap})">
-                <EffectAxis {xScale} {layout} {theme} axisLabel={axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={axisComputation.ticks} />
+                <EffectAxis xScale={colScale} layout={{...layout, forestWidth: forestWidth}} {theme} axisLabel={axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={axisComputation.ticks} />
               </g>
             {/if}
           </svg>
+        {/each}
+
+        <!-- SVG overlays: viz_bar columns -->
+        {#each vizColumns.filter(vc => vc.column.type === "viz_bar") as vc (vc.column.id)}
+          {@const vizOpts = vc.column.options?.vizBar}
+          {@const dynamicVizWidth = columnWidthsSnapshot[vc.column.id]}
+          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (vc.column.width ?? vizOpts?.width ?? layout.forestWidth)}
+          {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
+          {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
+          {@const sharedScale = vizColumnScales.get(vc.column.id)}
+          {#if vizOpts}
+            <svg
+              class="plot-overlay"
+              width={vizWidth}
+              height={rowsAreaHeight + layout.axisHeight}
+              viewBox="0 0 {vizWidth} {rowsAreaHeight + layout.axisHeight}"
+              style:top="{actualHeaderHeight}px"
+              style:left="{vizLeft}px"
+            >
+              <!-- Bar charts for each row -->
+              {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
+                {#if displayRow.type === "data"}
+                  {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
+                  {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+                  <VizBar
+                    row={displayRow.row}
+                    yPosition={rowY + rowH / 2}
+                    rowHeight={rowH}
+                    width={vizWidth}
+                    options={vizOpts}
+                    {theme}
+                    {sharedScale}
+                  />
+                {/if}
+              {/each}
+
+              <!-- Axis at bottom -->
+              {#if vizOpts.showAxis !== false && sharedScale}
+                <g transform="translate(0, {rowsAreaHeight + axisGap})">
+                  <EffectAxis
+                    xScale={sharedScale}
+                    layout={{ ...layout, forestWidth: vizWidth, nullValue: 0 }}
+                    {theme}
+                    axisLabel={vizOpts.axisLabel ?? "Value"}
+                    position="bottom"
+                    plotHeight={rowsAreaHeight}
+                    baseTicks={vizOpts.axisTicks}
+                    gridlines={vizOpts.axisGridlines}
+                  />
+                </g>
+              {/if}
+            </svg>
+          {/if}
+        {/each}
+
+        <!-- SVG overlays: viz_boxplot columns -->
+        {#each vizColumns.filter(vc => vc.column.type === "viz_boxplot") as vc (vc.column.id)}
+          {@const vizOpts = vc.column.options?.vizBoxplot}
+          {@const dynamicVizWidth = columnWidthsSnapshot[vc.column.id]}
+          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (vc.column.width ?? vizOpts?.width ?? layout.forestWidth)}
+          {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
+          {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
+          {@const sharedScale = vizColumnScales.get(vc.column.id)}
+          {#if vizOpts}
+            <svg
+              class="plot-overlay"
+              width={vizWidth}
+              height={rowsAreaHeight + layout.axisHeight}
+              viewBox="0 0 {vizWidth} {rowsAreaHeight + layout.axisHeight}"
+              style:top="{actualHeaderHeight}px"
+              style:left="{vizLeft}px"
+            >
+              <!-- Boxplots for each row -->
+              {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
+                {#if displayRow.type === "data"}
+                  {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
+                  {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+                  <VizBoxplot
+                    row={displayRow.row}
+                    yPosition={rowY + rowH / 2}
+                    rowHeight={rowH}
+                    width={vizWidth}
+                    options={vizOpts}
+                    {theme}
+                    {sharedScale}
+                  />
+                {/if}
+              {/each}
+
+              <!-- Axis at bottom -->
+              {#if vizOpts.showAxis !== false && sharedScale}
+                <g transform="translate(0, {rowsAreaHeight + axisGap})">
+                  <EffectAxis
+                    xScale={sharedScale}
+                    layout={{ ...layout, forestWidth: vizWidth, nullValue: 0 }}
+                    {theme}
+                    axisLabel={vizOpts.axisLabel ?? "Value"}
+                    position="bottom"
+                    plotHeight={rowsAreaHeight}
+                    baseTicks={vizOpts.axisTicks}
+                    gridlines={vizOpts.axisGridlines}
+                  />
+                </g>
+              {/if}
+            </svg>
+          {/if}
+        {/each}
+
+        <!-- SVG overlays: viz_violin columns -->
+        {#each vizColumns.filter(vc => vc.column.type === "viz_violin") as vc (vc.column.id)}
+          {@const vizOpts = vc.column.options?.vizViolin}
+          {@const dynamicVizWidth = columnWidthsSnapshot[vc.column.id]}
+          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (vc.column.width ?? vizOpts?.width ?? layout.forestWidth)}
+          {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
+          {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
+          {@const sharedScale = vizColumnScales.get(vc.column.id)}
+          {#if vizOpts}
+            <svg
+              class="plot-overlay"
+              width={vizWidth}
+              height={rowsAreaHeight + layout.axisHeight}
+              viewBox="0 0 {vizWidth} {rowsAreaHeight + layout.axisHeight}"
+              style:top="{actualHeaderHeight}px"
+              style:left="{vizLeft}px"
+            >
+              <!-- Violins for each row -->
+              {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
+                {#if displayRow.type === "data"}
+                  {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
+                  {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+                  <VizViolin
+                    row={displayRow.row}
+                    yPosition={rowY + rowH / 2}
+                    rowHeight={rowH}
+                    width={vizWidth}
+                    options={vizOpts}
+                    {theme}
+                    {sharedScale}
+                  />
+                {/if}
+              {/each}
+
+              <!-- Axis at bottom -->
+              {#if vizOpts.showAxis !== false && sharedScale}
+                <g transform="translate(0, {rowsAreaHeight + axisGap})">
+                  <EffectAxis
+                    xScale={sharedScale}
+                    layout={{ ...layout, forestWidth: vizWidth, nullValue: 0 }}
+                    {theme}
+                    axisLabel={vizOpts.axisLabel ?? "Value"}
+                    position="bottom"
+                    plotHeight={rowsAreaHeight}
+                    baseTicks={vizOpts.axisTicks}
+                    gridlines={vizOpts.axisGridlines}
+                  />
+                </g>
+              {/if}
+            </svg>
+          {/if}
         {/each}
       </div>
 

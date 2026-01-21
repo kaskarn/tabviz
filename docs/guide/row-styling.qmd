@@ -30,7 +30,7 @@ tabviz(text_demo,
   label = "study",
   columns = list(
     col_text("drug", "Drug"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                null_value = 1, scale = "log")
   ),
   row_bold = "row_bold",
@@ -64,7 +64,7 @@ indent_demo <- data.frame(
 tabviz(indent_demo,
   label = "label",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                null_value = 1, scale = "log")
   ),
   row_indent = "rindent",
@@ -91,7 +91,7 @@ nba_efficiency |>
     columns = list(
       col_text("team", "Team", width = 60),
       col_numeric("ppg", "PPG"),
-      col_forest(point = "per", lower = "per_lower", upper = "per_upper",
+      viz_forest(point = "per", lower = "per_lower", upper = "per_upper",
                  null_value = 15, axis_label = "PER")
     ),
     row_badge = "award",
@@ -118,7 +118,7 @@ Highlight rows with `row_bg` for background colors:
 tabviz(data,
   label = "label",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                null_value = 1, scale = "log")
   ),
   row_bg = "background_color"  # Column with hex colors like "#f0f9ff"
@@ -144,7 +144,7 @@ For theme-aware styling that adapts automatically when you change themes, use se
 tabviz(data,
   label = "label",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                null_value = 1, scale = "log")
   ),
   row_emphasis = "is_primary",   # Column with TRUE/FALSE
@@ -172,7 +172,7 @@ expr_demo <- data.frame(
 tabviz(expr_demo,
   label = "study",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                null_value = 1, scale = "log")
   ),
   # Formula expressions - no need for pre-computed columns
@@ -247,7 +247,7 @@ glp1_trials |>
   tabviz(
     label = "study",
     columns = list(
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  null_value = 1, scale = "log")
     ),
     row_type = "row_type"
@@ -305,7 +305,7 @@ tabviz(meta_analysis,
   columns = list(
     col_numeric("n", "N"),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                null_value = 1, scale = "log", axis_label = "Hazard Ratio (95% CI)")
   ),
   row_type = "rtype",
@@ -330,7 +330,7 @@ You can also apply row styling using `set_row_style()` for pipe-based workflows:
 tabviz(data,
   label = "label",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                null_value = 1, scale = "log")
   )
 ) |>

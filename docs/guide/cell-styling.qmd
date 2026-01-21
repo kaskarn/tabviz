@@ -103,7 +103,7 @@ tabviz(pval_demo,
       bold = ~ .x < 0.05,
       color = ~ ifelse(.x < 0.05, "#16a34a", "#71717a")
     ),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 )
@@ -167,7 +167,7 @@ tabviz(data,
   columns = list(
     col_numeric("hr", "HR", color = "dir_color", bold = "sig_bold"),
     col_pvalue("pval", bold = "sig_bold"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 )
@@ -198,7 +198,7 @@ tabviz(styled,
   columns = list(
     col_interval(point = "hr", lower = "lower", upper = "upper",
                  color = "effect_color"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 )
@@ -225,7 +225,7 @@ tabviz(trials,
   columns = list(
     col_numeric("hr", "HR", bold = "is_sig", bg = "sig_bg"),
     col_pvalue("pval", badge = "sig_badge"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 )
@@ -265,7 +265,7 @@ tabviz(outcomes,
     col_numeric("hr", "HR", color = "text_color"),
     col_interval(point = "hr", lower = "lower", upper = "upper",
                  color = "text_color"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 )
@@ -297,7 +297,7 @@ tabviz(combined,
   columns = list(
     col_numeric("hr", "HR", color = "hr_color"),
     col_interval(point = "hr", lower = "lower", upper = "upper"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 )
@@ -315,7 +315,7 @@ tabviz(data,
   columns = list(
     col_numeric("hr", "HR"),
     col_interval(point = "hr", lower = "lower", upper = "upper"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
   .spec_only = TRUE
@@ -371,7 +371,7 @@ tabviz(styled_results,
     col_interval(point = "hr", lower = "lower", upper = "upper",
                  color = "effect_color"),
     col_pvalue("pval", badge = "sig_stars"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
 )

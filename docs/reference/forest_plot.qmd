@@ -1,0 +1,220 @@
+---
+title: "forest_plot()"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+`forest_plot()` is a convenience wrapper around `tabviz()` that automatically creates a forest plot column from point/lower/upper arguments.
+
+## When to Use
+
+| Scenario | Recommended |
+|----------|-------------|
+| Quick visualization with minimal code | `forest_plot()` |
+| Full control over columns and layout | `tabviz()` with `viz_forest()` |
+| Multiple visualization types in one table | `tabviz()` |
+| Custom column ordering | `tabviz()` |
+
+## Basic Usage
+
+```{r}
+data <- data.frame(
+  study = c("Study A", "Study B", "Study C", "Study D"),
+  hr = c(0.72, 0.85, 0.91, 0.68),
+  lower = c(0.55, 0.70, 0.75, 0.52),
+  upper = c(0.95, 1.03, 1.10, 0.89)
+)
+
+forest_plot(data,
+  point = "hr",
+  lower = "lower",
+  upper = "upper",
+  label = "study"
+)
+```
+
+---
+
+## Arguments
+
+### Required Arguments
+
+| Argument | Type | Description |
+|----------|------|-------------|
+| `x` | data.frame, WebSpec, or SplitForest | Data source |
+| `point` | string | Column name for point estimates |
+| `lower` | string | Column name for lower bounds |
+| `upper` | string | Column name for upper bounds |
+
+### Optional Arguments
+
+| Argument | Type | Default | Description |
+|----------|------|---------|-------------|
+| `label` | string | NULL | Column name for row labels |
+| `group` | string or vector | NULL | Grouping column name(s) |
+| `columns` | list | NULL | Additional `col_*()` columns |
+| `scale` | "linear" or "log" | "linear" | Axis scale type |
+| `null_value` | numeric | 0 (linear), 1 (log) | Reference line value |
+| `axis_label` | string | "Effect" | Label for the axis |
+| `theme` | WebTheme | NULL | Theme object |
+| `split_by` | string | NULL | Column for split views |
+| `shared_axis` | logical | FALSE | Share axis across splits |
+| `width` | numeric | NULL | Widget width in pixels |
+| `height` | numeric | NULL | Widget height in pixels |
+| `...` | | | Additional args passed to `tabviz()` |
+
+---
+
+## Log Scale for Ratios
+
+For odds ratios, hazard ratios, or risk ratios, use log scale with `null_value = 1`:
+
+```{r}
+forest_plot(data,
+  point = "hr",
+  lower = "lower",
+  upper = "upper",
+  label = "study",
+  scale = "log",
+  null_value = 1,
+  axis_label = "Hazard Ratio"
+)
+```
+
+---
+
+## Adding Columns
+
+Add columns alongside the auto-generated forest plot:
+
+```{r}
+data_with_n <- data |>
+  mutate(n = c(1250, 980, 1560, 1100))
+
+forest_plot(data_with_n,
+  point = "hr",
+  lower = "lower",
+  upper = "upper",
+  label = "study",
+  scale = "log",
+  null_value = 1,
+  columns = list(
+    col_n("n"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+  )
+)
+```
+
+---
+
+## Multi-Effect Plots
+
+Use the `effects` argument for comparing multiple effects per row:
+
+```{r}
+multi_data <- data.frame(
+  study = c("TRIAL-1", "TRIAL-2", "TRIAL-3"),
+  itt_hr = c(0.78, 0.82, 0.74),
+  itt_lo = c(0.65, 0.68, 0.61),
+  itt_hi = c(0.94, 0.99, 0.90),
+  pp_hr = c(0.72, 0.78, 0.70),
+  pp_lo = c(0.58, 0.63, 0.56),
+  pp_hi = c(0.89, 0.97, 0.88)
+)
+
+forest_plot(multi_data,
+  label = "study",
+  effects = list(
+    web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
+    web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+  ),
+  scale = "log",
+  null_value = 1
+)
+```
+
+---
+
+## Applying Themes
+
+```{r}
+forest_plot(data,
+  point = "hr",
+  lower = "lower",
+  upper = "upper",
+  label = "study",
+  scale = "log",
+  null_value = 1,
+  theme = web_theme_jama(),
+  title = "Treatment Effect Analysis"
+)
+```
+
+---
+
+## Using Split Views
+
+Create faceted views with sidebar navigation:
+
+```{r}
+regional_data <- data.frame(
+  study = rep(c("Study 1", "Study 2", "Study 3"), 2),
+  region = rep(c("North America", "Europe"), each = 3),
+  hr = c(0.72, 0.85, 0.78, 0.68, 0.82, 0.75),
+  lo = c(0.55, 0.70, 0.62, 0.52, 0.68, 0.58),
+  hi = c(0.95, 1.03, 0.98, 0.89, 0.99, 0.97)
+)
+
+forest_plot(regional_data,
+  point = "hr",
+  lower = "lo",
+  upper = "hi",
+  label = "study",
+  scale = "log",
+  null_value = 1,
+  split_by = "region",
+  shared_axis = TRUE
+)
+```
+
+---
+
+## Equivalent tabviz() Call
+
+`forest_plot()` is syntactic sugar. This:
+
+```r
+forest_plot(data, point = "hr", lower = "lo", upper = "hi",
+            label = "study", scale = "log", null_value = 1)
+```
+
+Is equivalent to:
+
+```r
+tabviz(data, label = "study",
+  columns = list(
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1)
+  )
+)
+```
+
+Use `tabviz()` directly when you need:
+
+- Custom column ordering (forest column in middle)
+- Multiple visualization columns
+- Complex layouts with column groups
+- Full control over all options
+
+---
+
+## See Also
+
+- [`tabviz()`](tabviz.qmd) — Main entry point with full control
+- [`viz_forest()`](columns.qmd#viz_forest) — Forest column specification
+- [`web_effect()`](columns.qmd#viz_forest) — Multi-effect specification
+- [Forest Plots Guide](../guide/visualizations/forest-plots.qmd) — Detailed guide

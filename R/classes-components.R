@@ -51,7 +51,8 @@ ColumnSpec <- new_class(
   ),
   validator = function(self) {
     valid_types <- c("text", "numeric", "interval", "bar", "pvalue", "sparkline",
-                     "icon", "badge", "stars", "img", "reference", "range", "forest", "custom")
+                     "icon", "badge", "stars", "img", "reference", "range", "forest",
+                     "viz_bar", "viz_boxplot", "viz_violin", "custom")
     if (!self@type %in% valid_types) {
       return(paste("type must be one of:", paste(valid_types, collapse = ", ")))
     }
@@ -104,7 +105,8 @@ web_col <- function(
     field,
     header = NULL,
     type = c("text", "numeric", "interval", "bar", "pvalue", "sparkline",
-             "icon", "badge", "stars", "img", "reference", "range", "forest", "custom"),
+             "icon", "badge", "stars", "img", "reference", "range", "forest",
+             "viz_bar", "viz_boxplot", "viz_violin", "custom"),
     width = NULL,
     align = NULL,
     header_align = NULL,
@@ -890,13 +892,13 @@ col_range <- function(
 # Forest Plot Column
 # ============================================================================
 
-#' Column helper: Forest plot column
+#' Visualization column: Forest plot
 #'
 #' Renders a forest plot (point estimates with confidence intervals) as a
 #' table column. This allows explicit positioning of the forest plot within
 #' the column layout and supports multiple forest columns per table.
 #'
-#' Each `col_forest()` fully owns its effect definitions - no global effects
+#' Each `viz_forest()` fully owns its effect definitions - no global effects
 #' list is needed. Use either inline column references (point/lower/upper) for
 #' a single effect, or a list of `web_effect()` objects for multiple effects.
 #'
@@ -928,14 +930,14 @@ col_range <- function(
 #'
 #' @examples
 #' # Single forest column with inline effect definition
-#' col_forest(point = "estimate", lower = "ci_lower", upper = "ci_upper")
+#' viz_forest(point = "estimate", lower = "ci_lower", upper = "ci_upper")
 #'
 #' # Log scale with custom null line
-#' col_forest(point = "hr", lower = "hr_lo", upper = "hr_hi",
+#' viz_forest(point = "hr", lower = "hr_lo", upper = "hr_hi",
 #'            scale = "log", null_value = 1, axis_label = "Hazard Ratio")
 #'
 #' # Multiple effects overlaid in one column
-#' col_forest(
+#' viz_forest(
 #'   effects = list(
 #'     web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
 #'     web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
@@ -944,7 +946,7 @@ col_range <- function(
 #'   null_value = 1,
 #'   axis_label = "Odds Ratio (95% CI)"
 #' )
-col_forest <- function(
+viz_forest <- function(
     header = NULL,
     width = NULL,
     point = NULL,
@@ -1025,23 +1027,28 @@ col_forest <- function(
     serialized_annotations <- lapply(annotations, serialize_annotation)
   }
 
-  opts <- list(
-    forest = list(
-      point = point,
-      lower = lower,
-      upper = upper,
-      effects = serialized_effects,
-      scale = scale,
-      nullValue = null_value,
-      axisLabel = axis_label,
-      axisRange = axis_range,
-      axisTicks = axis_ticks,
-      axisGridlines = axis_gridlines,
-      showAxis = show_axis,
-      annotations = serialized_annotations,
-      sharedAxis = shared_axis
-    )
+  # Build forest options, only including width when explicitly set
+  # (NULL width would become JSON null, which JavaScript's ?? operator won't replace)
+  forest_opts <- list(
+    point = point,
+    lower = lower,
+    upper = upper,
+    effects = serialized_effects,
+    scale = scale,
+    nullValue = null_value,
+    axisLabel = axis_label,
+    axisRange = axis_range,
+    axisTicks = axis_ticks,
+    axisGridlines = axis_gridlines,
+    showAxis = show_axis,
+    annotations = serialized_annotations,
+    sharedAxis = shared_axis
   )
+  if (!is.null(width)) {
+    forest_opts$width <- as.numeric(width)
+  }
+
+  opts <- list(forest = forest_opts)
 
   # Use a synthetic field for the forest column
   synthetic_field <- if (has_effects) {
@@ -1061,6 +1068,61 @@ col_forest <- function(
     width = width,
     sortable = FALSE,  # Forest columns are not sortable by default
     options = opts,
+    ...
+  )
+}
+
+#' Column helper: Forest plot column (deprecated)
+#'
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' `col_forest()` was renamed to [viz_forest()] to better reflect its role as a
+#' focal visualization column with its own axis/scale (as opposed to `col_*`
+#' functions which render inline cell content).
+#'
+#' @inheritParams viz_forest
+#' @export
+#' @keywords internal
+col_forest <- function(
+    header = NULL,
+    width = NULL,
+    point = NULL,
+    lower = NULL,
+    upper = NULL,
+    effects = NULL,
+    scale = c("linear", "log"),
+    null_value = NULL,
+    axis_label = "Effect",
+    axis_range = NULL,
+    axis_ticks = NULL,
+    axis_gridlines = FALSE,
+    show_axis = TRUE,
+    annotations = NULL,
+    shared_axis = NULL,
+    ...) {
+  lifecycle::deprecate_warn(
+    "0.2.0",
+    "col_forest()",
+    "viz_forest()",
+    id = "col_forest"
+  )
+  viz_forest(
+    header = header,
+    width = width,
+    point = point,
+    lower = lower,
+    upper = upper,
+    effects = effects,
+    scale = scale,
+    null_value = null_value,
+    axis_label = axis_label,
+    axis_range = axis_range,
+    axis_ticks = axis_ticks,
+    axis_gridlines = axis_gridlines,
+    show_axis = show_axis,
+    annotations = annotations,
+    shared_axis = shared_axis,
     ...
   )
 }
@@ -1236,5 +1298,504 @@ web_interaction_publication <- function() {
     enable_hover = FALSE,
     enable_resize = FALSE,
     enable_export = FALSE
+  )
+}
+
+# ============================================================================
+# Viz Column Effect Classes
+# ============================================================================
+
+#' VizBarEffect: Specification for a bar effect in viz_bar
+#'
+#' @param value Column name containing the bar value
+#' @param label Display label for this effect in legends
+#' @param color Optional color for this bar
+#' @param opacity Optional opacity (0-1)
+#'
+#' @export
+VizBarEffect <- new_class(
+  "VizBarEffect",
+  properties = list(
+    value = class_character,
+    label = new_property(class_character, default = NA_character_),
+    color = new_property(class_character, default = NA_character_),
+    opacity = new_property(class_numeric, default = NA_real_)
+  ),
+  validator = function(self) {
+    if (!is.na(self@opacity) && (self@opacity < 0 || self@opacity > 1)) {
+      return("opacity must be between 0 and 1")
+    }
+    NULL
+  }
+)
+
+#' Create a bar effect specification
+#'
+#' Defines a single bar effect for viz_bar columns.
+#'
+#' @param value Column name containing the bar value
+#' @param label Display label (defaults to value column name)
+#' @param color Color for this bar (optional)
+#' @param opacity Bar opacity from 0 to 1 (optional)
+#'
+#' @return A VizBarEffect object
+#' @export
+viz_bar_effect <- function(value, label = NULL, color = NULL, opacity = NULL) {
+  VizBarEffect(
+    value = value,
+    label = label %||% value,
+    color = color %||% NA_character_,
+    opacity = opacity %||% NA_real_
+  )
+}
+
+#' VizBoxplotEffect: Specification for a boxplot effect
+#'
+#' Supports two modes:
+#' - Array data: provide `data` column containing numeric arrays
+#' - Pre-computed: provide `min`, `q1`, `median`, `q3`, `max` columns
+#'
+#' @param data Column name containing array data (raw values)
+#' @param min Column name for pre-computed minimum
+#' @param q1 Column name for pre-computed Q1 (25th percentile)
+#' @param median Column name for pre-computed median
+#' @param q3 Column name for pre-computed Q3 (75th percentile)
+#' @param max Column name for pre-computed maximum
+#' @param outliers Column name for outlier array (optional)
+#' @param label Display label for this effect
+#' @param color Fill color for the box
+#' @param fill_opacity Fill opacity (0-1)
+#'
+#' @export
+VizBoxplotEffect <- new_class(
+  "VizBoxplotEffect",
+  properties = list(
+    data = new_property(class_character, default = NA_character_),
+    min = new_property(class_character, default = NA_character_),
+    q1 = new_property(class_character, default = NA_character_),
+    median = new_property(class_character, default = NA_character_),
+    q3 = new_property(class_character, default = NA_character_),
+    max = new_property(class_character, default = NA_character_),
+    outliers = new_property(class_character, default = NA_character_),
+    label = new_property(class_character, default = NA_character_),
+    color = new_property(class_character, default = NA_character_),
+    fill_opacity = new_property(class_numeric, default = 0.7)
+  ),
+  validator = function(self) {
+    # Must have either data OR all five summary stats
+    has_data <- !is.na(self@data)
+    has_stats <- !is.na(self@min) && !is.na(self@q1) && !is.na(self@median) &&
+                 !is.na(self@q3) && !is.na(self@max)
+
+    if (!has_data && !has_stats) {
+      return("Must provide either 'data' column or all five summary stats (min, q1, median, q3, max)")
+    }
+
+    if (self@fill_opacity < 0 || self@fill_opacity > 1) {
+      return("fill_opacity must be between 0 and 1")
+    }
+    NULL
+  }
+)
+
+#' Create a boxplot effect specification
+#'
+#' Defines a boxplot effect. Use either `data` for raw array data (quartiles
+#' computed automatically), or provide pre-computed summary statistics.
+#'
+#' @param data Column name containing array data (raw values)
+#' @param min Column name for pre-computed minimum
+#' @param q1 Column name for pre-computed Q1 (25th percentile)
+#' @param median Column name for pre-computed median
+#' @param q3 Column name for pre-computed Q3 (75th percentile)
+#' @param max Column name for pre-computed maximum
+#' @param outliers Column name for outlier array (optional)
+#' @param label Display label (optional)
+#' @param color Fill color for the box (optional)
+#' @param fill_opacity Fill opacity from 0 to 1 (default 0.7)
+#'
+#' @return A VizBoxplotEffect object
+#' @export
+viz_boxplot_effect <- function(
+    data = NULL,
+    min = NULL, q1 = NULL, median = NULL, q3 = NULL, max = NULL,
+    outliers = NULL,
+    label = NULL,
+    color = NULL,
+    fill_opacity = 0.7) {
+  VizBoxplotEffect(
+    data = data %||% NA_character_,
+    min = min %||% NA_character_,
+    q1 = q1 %||% NA_character_,
+    median = median %||% NA_character_,
+    q3 = q3 %||% NA_character_,
+    max = max %||% NA_character_,
+    outliers = outliers %||% NA_character_,
+    label = label %||% NA_character_,
+    color = color %||% NA_character_,
+    fill_opacity = fill_opacity
+  )
+}
+
+#' VizViolinEffect: Specification for a violin effect
+#'
+#' @param data Column name containing array data (required)
+#' @param label Display label for this effect
+#' @param color Fill color for the violin
+#' @param fill_opacity Fill opacity (0-1)
+#'
+#' @export
+VizViolinEffect <- new_class(
+  "VizViolinEffect",
+  properties = list(
+    data = class_character,
+    label = new_property(class_character, default = NA_character_),
+    color = new_property(class_character, default = NA_character_),
+    fill_opacity = new_property(class_numeric, default = 0.5)
+  ),
+  validator = function(self) {
+    if (self@fill_opacity < 0 || self@fill_opacity > 1) {
+      return("fill_opacity must be between 0 and 1")
+    }
+    NULL
+  }
+)
+
+#' Create a violin effect specification
+#'
+#' Defines a violin effect. Requires array data column for KDE computation.
+#'
+#' @param data Column name containing array data (required)
+#' @param label Display label (optional)
+#' @param color Fill color for the violin (optional)
+#' @param fill_opacity Fill opacity from 0 to 1 (default 0.5)
+#'
+#' @return A VizViolinEffect object
+#' @export
+viz_violin_effect <- function(data, label = NULL, color = NULL, fill_opacity = 0.5) {
+  VizViolinEffect(
+    data = data,
+    label = label %||% NA_character_,
+    color = color %||% NA_character_,
+    fill_opacity = fill_opacity
+  )
+}
+
+# ============================================================================
+# Viz Column Helper Functions
+# ============================================================================
+
+#' Visualization column: Bar chart
+#'
+#' Renders horizontal bar charts with support for multiple effects (grouped bars).
+#' Each row displays one or more bars based on data values.
+#'
+#' @param ... One or more `viz_bar_effect()` objects defining the bars to display
+#' @param header Column header (default "")
+#' @param width Column width in pixels (default 150)
+#' @param scale Scale type: "linear" (default) or "log"
+#' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
+#'   If NULL (default), range is computed automatically from data.
+#' @param axis_ticks Numeric vector of explicit tick positions. If NULL (default),
+#'   ticks are computed automatically.
+#' @param axis_gridlines Show gridlines at tick positions (default FALSE)
+#' @param axis_label Label for the x-axis (default "Value")
+#' @param show_axis Show the x-axis (default TRUE)
+#'
+#' @return A ColumnSpec object with type = "viz_bar"
+#' @export
+#'
+#' @examples
+#' # Single bar per row
+#' viz_bar(viz_bar_effect("value"))
+#'
+#' # Multiple bars per row (grouped)
+#' viz_bar(
+#'   viz_bar_effect("baseline", label = "Baseline", color = "#3b82f6"),
+#'   viz_bar_effect("followup", label = "Follow-up", color = "#22c55e")
+#' )
+viz_bar <- function(
+    ...,
+    header = "",
+    width = 150,
+    scale = c("linear", "log"),
+    axis_range = NULL,
+    axis_ticks = NULL,
+    axis_gridlines = FALSE,
+    axis_label = "Value",
+    show_axis = TRUE) {
+
+  scale <- match.arg(scale)
+  effects <- list(...)
+
+  # Validate effects
+  if (length(effects) == 0) {
+    cli_abort("viz_bar requires at least one viz_bar_effect()")
+  }
+
+  for (i in seq_along(effects)) {
+    if (!S7_inherits(effects[[i]], VizBarEffect)) {
+      cli_abort(c(
+        "All arguments to viz_bar must be {.fn viz_bar_effect} objects",
+        "i" = "Argument {i} is not a VizBarEffect"
+      ))
+    }
+  }
+
+  # Serialize effects
+  serialized_effects <- lapply(effects, function(e) {
+    list(
+      value = e@value,
+      label = if (is.na(e@label)) NULL else e@label,
+      color = if (is.na(e@color)) NULL else e@color,
+      opacity = if (is.na(e@opacity)) NULL else e@opacity
+    )
+  })
+
+  opts <- list(
+    vizBar = list(
+      type = "bar",
+      effects = serialized_effects,
+      scale = scale,
+      axisRange = axis_range,
+      axisTicks = axis_ticks,
+      axisGridlines = axis_gridlines,
+      axisLabel = axis_label,
+      showAxis = show_axis
+    )
+  )
+
+  # Synthetic field name
+  synthetic_field <- paste0("_viz_bar_", effects[[1]]@value)
+
+  web_col(
+    synthetic_field,
+    header = header,
+    type = "viz_bar",
+    width = width,
+    sortable = FALSE,
+    options = opts
+  )
+}
+
+#' Visualization column: Box plot
+#'
+#' Renders box-and-whisker plots. Supports either raw array data (quartiles
+#' computed automatically) or pre-computed summary statistics.
+#'
+#' @param ... One or more `viz_boxplot_effect()` objects defining the boxplots
+#' @param header Column header (default "")
+#' @param width Column width in pixels (default 150)
+#' @param scale Scale type: "linear" (default) or "log"
+#' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
+#'   If NULL (default), range is computed automatically from data.
+#' @param axis_ticks Numeric vector of explicit tick positions. If NULL (default),
+#'   ticks are computed automatically.
+#' @param axis_gridlines Show gridlines at tick positions (default FALSE)
+#' @param show_outliers Show outlier points beyond whiskers (default TRUE)
+#' @param whisker_type Whisker calculation: "iqr" (1.5*IQR, default) or "minmax"
+#' @param axis_label Label for the x-axis (default "Value")
+#' @param show_axis Show the x-axis (default TRUE)
+#'
+#' @return A ColumnSpec object with type = "viz_boxplot"
+#' @export
+#'
+#' @examples
+#' # Boxplot from array data (quartiles computed automatically)
+#' viz_boxplot(viz_boxplot_effect(data = "values"))
+#'
+#' # Boxplot from pre-computed statistics
+#' viz_boxplot(viz_boxplot_effect(
+#'   min = "min_val", q1 = "q1_val", median = "median_val",
+#'   q3 = "q3_val", max = "max_val"
+#' ))
+#'
+#' # Multiple boxplots per row
+#' viz_boxplot(
+#'   viz_boxplot_effect(data = "group_a", label = "Group A", color = "#3b82f6"),
+#'   viz_boxplot_effect(data = "group_b", label = "Group B", color = "#22c55e")
+#' )
+viz_boxplot <- function(
+    ...,
+    header = "",
+    width = 150,
+    scale = c("linear", "log"),
+    axis_range = NULL,
+    axis_ticks = NULL,
+    axis_gridlines = FALSE,
+    show_outliers = TRUE,
+    whisker_type = c("iqr", "minmax"),
+    axis_label = "Value",
+    show_axis = TRUE) {
+
+  scale <- match.arg(scale)
+  whisker_type <- match.arg(whisker_type)
+  effects <- list(...)
+
+  # Validate effects
+  if (length(effects) == 0) {
+    cli_abort("viz_boxplot requires at least one viz_boxplot_effect()")
+  }
+
+  for (i in seq_along(effects)) {
+    if (!S7_inherits(effects[[i]], VizBoxplotEffect)) {
+      cli_abort(c(
+        "All arguments to viz_boxplot must be {.fn viz_boxplot_effect} objects",
+        "i" = "Argument {i} is not a VizBoxplotEffect"
+      ))
+    }
+  }
+
+  # Serialize effects
+  serialized_effects <- lapply(effects, function(e) {
+    list(
+      data = if (is.na(e@data)) NULL else e@data,
+      min = if (is.na(e@min)) NULL else e@min,
+      q1 = if (is.na(e@q1)) NULL else e@q1,
+      median = if (is.na(e@median)) NULL else e@median,
+      q3 = if (is.na(e@q3)) NULL else e@q3,
+      max = if (is.na(e@max)) NULL else e@max,
+      outliers = if (is.na(e@outliers)) NULL else e@outliers,
+      label = if (is.na(e@label)) NULL else e@label,
+      color = if (is.na(e@color)) NULL else e@color,
+      fillOpacity = e@fill_opacity
+    )
+  })
+
+  opts <- list(
+    vizBoxplot = list(
+      type = "boxplot",
+      effects = serialized_effects,
+      scale = scale,
+      axisRange = axis_range,
+      axisTicks = axis_ticks,
+      axisGridlines = axis_gridlines,
+      showOutliers = show_outliers,
+      whiskerType = whisker_type,
+      axisLabel = axis_label,
+      showAxis = show_axis
+    )
+  )
+
+  # Synthetic field name
+  first_effect <- effects[[1]]
+  first_field <- if (!is.na(first_effect@data)) {
+    first_effect@data
+  } else {
+    first_effect@median
+  }
+  synthetic_field <- paste0("_viz_boxplot_", first_field)
+
+  web_col(
+    synthetic_field,
+    header = header,
+    type = "viz_boxplot",
+    width = width,
+    sortable = FALSE,
+    options = opts
+  )
+}
+
+#' Visualization column: Violin plot
+#'
+#' Renders violin plots (kernel density estimation). Requires raw array data
+#' for each row.
+#'
+#' @param ... One or more `viz_violin_effect()` objects defining the violins
+#' @param header Column header (default "")
+#' @param width Column width in pixels (default 150)
+#' @param scale Scale type: "linear" (default) or "log"
+#' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
+#'   If NULL (default), range is computed automatically from data.
+#' @param axis_ticks Numeric vector of explicit tick positions. If NULL (default),
+#'   ticks are computed automatically.
+#' @param axis_gridlines Show gridlines at tick positions (default FALSE)
+#' @param bandwidth KDE bandwidth. NULL (default) uses Silverman's rule of thumb.
+#' @param show_median Show median indicator line (default TRUE)
+#' @param show_quartiles Show Q1/Q3 indicator lines (default FALSE)
+#' @param axis_label Label for the x-axis (default "Value")
+#' @param show_axis Show the x-axis (default TRUE)
+#'
+#' @return A ColumnSpec object with type = "viz_violin"
+#' @export
+#'
+#' @examples
+#' # Single violin per row
+#' viz_violin(viz_violin_effect(data = "values"))
+#'
+#' # Multiple violins per row
+#' viz_violin(
+#'   viz_violin_effect(data = "treatment", label = "Treatment", color = "#3b82f6"),
+#'   viz_violin_effect(data = "control", label = "Control", color = "#22c55e"),
+#'   show_median = TRUE,
+#'   show_quartiles = TRUE
+#' )
+viz_violin <- function(
+    ...,
+    header = "",
+    width = 150,
+    scale = c("linear", "log"),
+    axis_range = NULL,
+    axis_ticks = NULL,
+    axis_gridlines = FALSE,
+    bandwidth = NULL,
+    show_median = TRUE,
+    show_quartiles = FALSE,
+    axis_label = "Value",
+    show_axis = TRUE) {
+
+  scale <- match.arg(scale)
+  effects <- list(...)
+
+  # Validate effects
+  if (length(effects) == 0) {
+    cli_abort("viz_violin requires at least one viz_violin_effect()")
+  }
+
+  for (i in seq_along(effects)) {
+    if (!S7_inherits(effects[[i]], VizViolinEffect)) {
+      cli_abort(c(
+        "All arguments to viz_violin must be {.fn viz_violin_effect} objects",
+        "i" = "Argument {i} is not a VizViolinEffect"
+      ))
+    }
+  }
+
+  # Serialize effects
+  serialized_effects <- lapply(effects, function(e) {
+    list(
+      data = e@data,
+      label = if (is.na(e@label)) NULL else e@label,
+      color = if (is.na(e@color)) NULL else e@color,
+      fillOpacity = e@fill_opacity
+    )
+  })
+
+  opts <- list(
+    vizViolin = list(
+      type = "violin",
+      effects = serialized_effects,
+      scale = scale,
+      axisRange = axis_range,
+      axisTicks = axis_ticks,
+      axisGridlines = axis_gridlines,
+      bandwidth = bandwidth,
+      showMedian = show_median,
+      showQuartiles = show_quartiles,
+      axisLabel = axis_label,
+      showAxis = show_axis
+    )
+  )
+
+  # Synthetic field name
+  synthetic_field <- paste0("_viz_violin_", effects[[1]]@data)
+
+  web_col(
+    synthetic_field,
+    header = header,
+    type = "viz_violin",
+    width = width,
+    sortable = FALSE,
+    options = opts
   )
 }

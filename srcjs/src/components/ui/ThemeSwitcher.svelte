@@ -2,6 +2,7 @@
   import type { ForestStore } from "$stores/forestStore.svelte";
   import type { WebTheme } from "$types";
   import { THEME_NAMES, THEME_LABELS, THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
+  import { autoPosition } from "$lib/dropdown-position";
 
   interface Props {
     store: ForestStore;
@@ -12,6 +13,7 @@
   let { store, availableThemes, onThemeChange }: Props = $props();
 
   let dropdownOpen = $state(false);
+  let triggerEl: HTMLButtonElement | null = $state(null);
 
   const currentTheme = $derived(store.spec?.theme?.name ?? "default");
 
@@ -67,6 +69,7 @@
 
 <div class="theme-switcher-wrapper">
   <button
+    bind:this={triggerEl}
     class="theme-btn"
     onclick={() => (dropdownOpen = !dropdownOpen)}
     aria-label="Switch theme"
@@ -79,7 +82,7 @@
   </button>
 
   {#if dropdownOpen}
-    <div class="theme-dropdown">
+    <div class="theme-dropdown" use:autoPosition={{ triggerEl }}>
       {#each themeEntries as [themeName, label]}
         <button
           class="dropdown-item"
@@ -126,16 +129,14 @@
   }
 
   .theme-dropdown {
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
+    /* position: fixed set dynamically by autoPosition to escape clipping */
     min-width: 140px;
     padding: 4px;
     background: var(--wf-bg, #ffffff);
     border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    z-index: 101;
+    z-index: 10001;  /* High z-index to appear above everything */
   }
 
   .dropdown-item {

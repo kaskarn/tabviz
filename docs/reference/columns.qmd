@@ -95,11 +95,161 @@ col_interval(point = "hr", lower = "lower", upper = "upper",
              imprecise_threshold = 10)
 ```
 
-## Visualization Columns
+## Focal Visualization Columns (`viz_*`)
+
+Focal visualization columns have their own axes and scales, designed for direct visual comparison across rows.
+
+### viz_forest {#viz_forest}
+
+Forest plot column showing point estimates with confidence intervals.
+
+```r
+viz_forest(
+  point = NULL, lower = NULL, upper = NULL,
+  effects = NULL,
+  header = NULL, width = 200,
+  scale = "linear", null_value = NULL,
+  axis_label = NULL, axis_range = NULL, axis_ticks = NULL, axis_gridlines = FALSE,
+  annotations = NULL
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `point` | Column name for point estimates (single effect mode) |
+| `lower` | Column name for lower CI bounds (single effect mode) |
+| `upper` | Column name for upper CI bounds (single effect mode) |
+| `effects` | List of `web_effect()` objects (multi-effect mode) |
+| `header` | Column header text |
+| `width` | Column width in pixels (default: 200) |
+| `scale` | `"linear"` or `"log"` |
+| `null_value` | Reference line value (typically 0 for linear, 1 for log) |
+| `axis_label` | Label text below the axis |
+| `axis_range` | Fixed range as `c(min, max)` |
+| `axis_ticks` | Custom tick positions |
+| `axis_gridlines` | Show vertical gridlines |
+| `annotations` | List of `forest_refline()` objects |
+
+::: {.callout-note}
+`col_forest()` is available as an alias for backward compatibility.
+:::
+
+### viz_bar {#viz_bar}
+
+Horizontal bar chart with shared axis for comparing values across rows.
+
+```r
+viz_bar(
+  effects,
+  header = NULL, width = 150,
+  scale = "linear",
+  axis_range = NULL, axis_ticks = NULL, axis_gridlines = FALSE,
+  axis_label = "Value", show_axis = TRUE
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `effects` | List of `viz_bar_effect()` objects |
+| `header` | Column header text |
+| `width` | Column width in pixels (default: 150) |
+| `scale` | `"linear"` or `"log"` |
+| `axis_range` | Fixed axis range as `c(min, max)` |
+| `axis_ticks` | Custom tick positions |
+| `axis_gridlines` | Show vertical gridlines (default: FALSE) |
+| `axis_label` | Label text below axis (default: "Value") |
+| `show_axis` | Show the axis (default: TRUE) |
+
+**Effect helper:**
+
+```r
+viz_bar_effect(value, label = NULL, color = NULL, opacity = 0.85)
+```
+
+### viz_boxplot {#viz_boxplot}
+
+Box-and-whisker plot showing median, quartiles, and outliers.
+
+```r
+viz_boxplot(
+  effects,
+  header = NULL, width = 150,
+  scale = "linear",
+  axis_range = NULL, axis_ticks = NULL, axis_gridlines = FALSE,
+  show_outliers = TRUE, whisker_type = "iqr",
+  axis_label = "Value", show_axis = TRUE
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `effects` | List of `viz_boxplot_effect()` objects |
+| `header` | Column header text |
+| `width` | Column width in pixels (default: 150) |
+| `scale` | `"linear"` or `"log"` |
+| `axis_range` | Fixed axis range as `c(min, max)` |
+| `axis_ticks` | Custom tick positions |
+| `axis_gridlines` | Show vertical gridlines (default: FALSE) |
+| `show_outliers` | Show outlier points (default: TRUE) |
+| `whisker_type` | `"iqr"` (1.5×IQR) or `"minmax"` (default: "iqr") |
+| `axis_label` | Label text below axis (default: "Value") |
+| `show_axis` | Show the axis (default: TRUE) |
+
+**Effect helper (two modes):**
+
+```r
+# Mode 1: From array data (auto-compute stats)
+viz_boxplot_effect(data = "values_column", label = NULL, color = NULL, fill_opacity = 0.7)
+
+# Mode 2: From pre-computed summary stats
+viz_boxplot_effect(min = "min_col", q1 = "q1_col", median = "med_col",
+                   q3 = "q3_col", max = "max_col", outliers = "outliers_col",
+                   label = NULL, color = NULL, fill_opacity = 0.7)
+```
+
+### viz_violin {#viz_violin}
+
+Violin plot showing distribution shape via kernel density estimation.
+
+```r
+viz_violin(
+  effects,
+  header = NULL, width = 150,
+  scale = "linear",
+  axis_range = NULL, axis_ticks = NULL, axis_gridlines = FALSE,
+  bandwidth = NULL, show_median = TRUE, show_quartiles = FALSE,
+  axis_label = "Value", show_axis = TRUE
+)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `effects` | List of `viz_violin_effect()` objects |
+| `header` | Column header text |
+| `width` | Column width in pixels (default: 150) |
+| `scale` | `"linear"` or `"log"` |
+| `axis_range` | Fixed axis range as `c(min, max)` |
+| `axis_ticks` | Custom tick positions |
+| `axis_gridlines` | Show vertical gridlines (default: FALSE) |
+| `bandwidth` | KDE bandwidth (NULL = auto via Silverman's rule) |
+| `show_median` | Show median line (default: TRUE) |
+| `show_quartiles` | Show Q1/Q3 dashed lines (default: FALSE) |
+| `axis_label` | Label text below axis (default: "Value") |
+| `show_axis` | Show the axis (default: TRUE) |
+
+**Effect helper:**
+
+```r
+viz_violin_effect(data, label = NULL, color = NULL, fill_opacity = 0.5)
+```
+
+---
+
+## Inline Visualization Columns
 
 ### col_bar {#col_bar}
 
-Horizontal bar chart for showing magnitude.
+Simple horizontal bar chart for showing magnitude (inline, no shared axis).
 
 ```r
 col_bar(
@@ -509,7 +659,7 @@ tabviz(data,
   columns = list(
     col_n("n"),
     col_bar("weight"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
     col_pvalue("pval")
@@ -570,4 +720,6 @@ tabviz(data,
 
 - [tabviz()](tabviz.qmd) for the main entry point
 - [Columns Guide](../guide/columns.qmd) for detailed examples
+- [Forest Plots Guide](../guide/visualizations/forest-plots.qmd) for `viz_forest()` examples
+- [Distribution Plots Guide](../guide/visualizations/distribution-plots.qmd) for `viz_bar()`, `viz_boxplot()`, `viz_violin()` examples
 - [Customizing Plots](../guide/fluent-api.qmd) for pipe-based styling

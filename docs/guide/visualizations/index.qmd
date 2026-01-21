@@ -10,13 +10,57 @@ library(dplyr)
 
 tabviz supports embedded visualizations within table columns. This section covers the visualization column types and their common features.
 
+## Choosing the Right Visualization
+
+| Question | Recommended | Example Use Case |
+|----------|-------------|------------------|
+| Comparing point estimates with uncertainty? | `viz_forest()` | Meta-analysis, treatment effects, regression coefficients |
+| Comparing single values across rows? | `viz_bar()` | Scores, counts, percentages |
+| Showing distribution spread and outliers? | `viz_boxplot()` | Response distributions, measurement variability |
+| Showing full distribution shape? | `viz_violin()` | Survey responses, bimodal data, comparing shapes |
+| Just need a simple inline bar? | `col_bar()` | Weight indicators, progress bars |
+| Showing trends over time? | `col_sparkline()` | Stock prices, metrics over time |
+
+::: {.callout-tip}
+## When to Use What
+
+- **Forest plots** are ideal when you have point estimates with confidence/credible intervals and want to visually compare effect sizes
+- **Bar charts** work best when comparing single numeric values where the magnitude matters
+- **Box plots** summarize distributions when you care about median, spread, and outliers
+- **Violin plots** reveal distribution shapes—use when you suspect bimodality or skewness
+:::
+
+---
+
 ## Visualization Column Types
+
+### Focal Visualizations (`viz_*`)
+
+These column types display data with their own axes and scales, designed for direct visual comparison across rows:
 
 | Column | Purpose | Guide |
 |--------|---------|-------|
-| `col_forest()` | Forest plots with confidence intervals | [Forest Plots](forest-plots.qmd) |
-| `col_bar()` | Horizontal bars | [Columns](../columns.qmd#visualizations) |
+| `viz_forest()` | Forest plots with confidence intervals | [Forest Plots](forest-plots.qmd) |
+| `viz_bar()` | Horizontal bar charts with shared axis | [Distribution Plots](distribution-plots.qmd) |
+| `viz_boxplot()` | Box-and-whisker plots | [Distribution Plots](distribution-plots.qmd) |
+| `viz_violin()` | Violin/density plots | [Distribution Plots](distribution-plots.qmd) |
+
+### Inline Visualizations (`col_*`)
+
+Compact visualizations that fit within cells without dedicated axes:
+
+| Column | Purpose | Guide |
+|--------|---------|-------|
+| `col_bar()` | Simple inline bars | [Columns](../columns.qmd#visualizations) |
 | `col_sparkline()` | Mini line/area/bar charts | [Columns](../columns.qmd#visualizations) |
+
+::: {.callout-note}
+## Naming Convention
+- **`viz_*`** functions create focal visualization columns with their own axes and scales
+- **`col_*`** functions create inline cell content (text, numbers, simple graphics)
+
+The previous `col_forest()` function is now `viz_forest()` (with `col_forest()` still available as an alias for backward compatibility).
+:::
 
 ## Common Features
 
@@ -26,6 +70,21 @@ All visualization columns share these capabilities:
 - **Interactivity** — Hover, tooltips, zoom
 - **Theming** — Colors adapt to the active theme
 - **Export** — SVG, PNG, PDF output
+
+::: {.callout-tip}
+## Theme Effect Colors
+
+When you have multiple effects per row (e.g., multiple bar series, boxplot groups, or forest plot effects), colors are assigned from the theme's `effect_colors` palette. Each built-in theme has a curated 5-color palette designed to work well together.
+
+You can customize with `set_effect_colors()`:
+
+```r
+web_theme_default() |>
+  set_effect_colors(c("#2563eb", "#dc2626", "#16a34a"))
+```
+
+Individual effects can still override theme colors via their `color` parameter.
+:::
 
 ---
 
@@ -58,7 +117,7 @@ glp1_trials |>
     interaction = web_interaction(tooltip_fields = c("n", "events", "pvalue")),
     footnote = "Hover over markers to see tooltip",
     columns = list(
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1)
     )
   )
@@ -93,7 +152,7 @@ web_interaction(
 # Publication-ready static output
 tabviz(data, label = "study",
   interaction = web_interaction_publication(),
-  columns = list(col_forest(...))
+  columns = list(viz_forest(...))
 )
 ```
 
@@ -131,7 +190,7 @@ tabviz supports exporting to SVG, PNG, and PDF.
 ```r
 # Create a visualization
 p <- tabviz(data, label = "study", columns = list(
-  col_forest(point = "hr", lower = "lower", upper = "upper",
+  viz_forest(point = "hr", lower = "lower", upper = "upper",
              scale = "log", null_value = 1)
 ))
 
@@ -165,7 +224,8 @@ Interactive plots include a download button (visible on hover in top-right):
 
 ## See Also
 
-- [Forest Plots](forest-plots.qmd) — Detailed `col_forest()` guide
+- [Forest Plots](forest-plots.qmd) — Confidence intervals with `viz_forest()`
+- [Distribution Plots](distribution-plots.qmd) — Bars, boxplots, and violins with `viz_bar()`, `viz_boxplot()`, `viz_violin()`
 - [Columns](../columns.qmd) — All column types including `col_bar()` and `col_sparkline()`
 - [Export](../export.qmd) — Advanced export options
 - [Shiny Integration](../shiny.qmd) — Interactive applications

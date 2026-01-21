@@ -40,7 +40,9 @@ the split hierarchy. Each sub-plot is saved as a separate file.
 \dontrun{
 # Create a split forest
 split_result <- data |>
-  web_spec(point = "or", lower = "lower", upper = "upper") |>
+  tabviz(label = "study", columns = list(
+    col_forest(point = "or", lower = "lower", upper = "upper")
+  )) |>
   split_table(by = c("sex", "age_group"))
 
 # Export to directory

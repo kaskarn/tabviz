@@ -1,0 +1,172 @@
+---
+title: "Boxplots"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Box plots summarize distributions showing median, quartiles, and outliers. They work with either raw array data or pre-computed summary statistics.
+
+::: {.callout-tip}
+## When to Use Boxplots
+Best for comparing distribution summaries across groups when you care about:
+
+- Median and spread
+- Quartile ranges
+- Outliers
+
+Use **violin plots** instead if you need to see full distribution shapes (bimodality, skewness).
+:::
+
+::: {.callout-important}
+## Data Format for Array Columns
+Array columns require the `I()` wrapper to preserve list structure:
+
+```r
+# Create a data frame with array column
+data <- data.frame(
+  group = c("A", "B", "C"),
+  values = I(list(
+    c(1, 2, 3, 4, 5),
+    c(2, 4, 6, 8, 10),
+    c(3, 5, 7, 9, 11)
+  ))
+)
+```
+
+Without `I()`, R will try to unlist the vectors and fail.
+:::
+
+## From Array Data
+
+When your data contains arrays of values per row, boxplot stats are computed automatically:
+
+```{r}
+set.seed(42)
+boxplot_data <- data.frame(
+  treatment = c("Control", "Low Dose", "Medium Dose", "High Dose"),
+  response = I(list(
+    rnorm(50, mean = 100, sd = 15),
+    rnorm(50, mean = 110, sd = 18),
+    rnorm(50, mean = 125, sd = 20),
+    rnorm(50, mean = 140, sd = 25)
+  )),
+  n = c(50, 50, 50, 50)
+)
+
+tabviz(boxplot_data, label = "treatment",
+  columns = list(
+    col_n("n"),
+    viz_boxplot(
+      viz_boxplot_effect(data = "response", color = "#8b5cf6"),
+      header = "Response Distribution",
+      width = 250,
+      show_outliers = TRUE
+    )
+  ),
+  title = "Dose-Response Distribution"
+)
+```
+
+---
+
+## From Pre-computed Statistics
+
+If you already have quartile statistics computed, map them directly:
+
+```{r}
+summary_data <- data.frame(
+  study = c("Study A", "Study B", "Study C", "Study D"),
+  min = c(45, 52, 38, 60),
+  q1 = c(62, 68, 55, 72),
+  median = c(78, 82, 71, 85),
+  q3 = c(89, 94, 86, 95),
+  max = c(105, 112, 98, 108)
+)
+
+tabviz(summary_data, label = "study",
+  columns = list(
+    viz_boxplot(
+      viz_boxplot_effect(
+        min = "min", q1 = "q1", median = "median", q3 = "q3", max = "max",
+        color = "#22c55e"
+      ),
+      header = "Score Distribution",
+      width = 220
+    ),
+    col_numeric("median", "Median")
+  ),
+  title = "Study Score Distributions"
+)
+```
+
+---
+
+## Multiple Effects
+
+Compare distributions across conditions:
+
+```{r}
+set.seed(123)
+multi_box_data <- data.frame(
+  timepoint = c("Baseline", "Week 4", "Week 8", "Week 12"),
+  placebo = I(list(
+    rnorm(40, 50, 12), rnorm(40, 52, 13), rnorm(40, 51, 14), rnorm(40, 53, 12)
+  )),
+  treatment = I(list(
+    rnorm(40, 50, 12), rnorm(40, 62, 14), rnorm(40, 70, 15), rnorm(40, 75, 13)
+  ))
+)
+
+tabviz(multi_box_data, label = "timepoint",
+  columns = list(
+    viz_boxplot(
+      viz_boxplot_effect(data = "placebo", label = "Placebo", color = "#94a3b8"),
+      viz_boxplot_effect(data = "treatment", label = "Treatment", color = "#3b82f6"),
+      header = "Score by Treatment Arm",
+      width = 280,
+      show_outliers = TRUE
+    )
+  ),
+  title = "Treatment Effect Over Time"
+)
+```
+
+---
+
+## viz_boxplot() Arguments
+
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `header` | Column header text | `NULL` |
+| `width` | Column width in pixels | `150` |
+| `scale` | `"linear"` or `"log"` | `"linear"` |
+| `axis_range` | Fixed axis range `c(min, max)` | Auto |
+| `axis_ticks` | Custom tick positions | Auto |
+| `axis_gridlines` | Show vertical gridlines | `FALSE` |
+| `show_outliers` | Display outlier points | `TRUE` |
+| `whisker_type` | `"iqr"` (1.5×IQR) or `"minmax"` | `"iqr"` |
+| `axis_label` | Label text below axis | `"Value"` |
+| `show_axis` | Show the axis | `TRUE` |
+
+## viz_boxplot_effect() Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `data` | Column containing array of values (mode 1) |
+| `min`, `q1`, `median`, `q3`, `max` | Column names for pre-computed stats (mode 2) |
+| `outliers` | Column containing outlier values (optional, mode 2) |
+| `label` | Display label for legend |
+| `color` | Box fill color |
+| `fill_opacity` | Box fill opacity (default: 0.7) |
+
+---
+
+## See Also
+
+- [Visualizations Overview](index.qmd) — Interactivity, tooltips, export
+- [Bar Charts](bar-charts.qmd) — Single values with `viz_bar()`
+- [Violin Plots](violin-plots.qmd) — Full distributions with `viz_violin()`

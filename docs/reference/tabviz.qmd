@@ -18,7 +18,7 @@ tabviz(data,
   columns = list(
     col_text("category"),
     col_numeric("value", decimals = 1),
-    col_forest(point = "hr", lower = "lo", upper = "hi", scale = "log"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi", scale = "log"),
     col_sparkline("trend")
   ),
   theme = web_theme_jama()
@@ -136,7 +136,7 @@ All accept **column names (strings)** or **formula expressions** (`~ ...`):
 #| eval: false
 tabviz(data,
   label = "study",
-  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi")),
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi")),
   row_bold = ~ pval < 0.05,
   row_color = ~ ifelse(upper < 1, "#16a34a", "#64748b")
 )
@@ -238,7 +238,7 @@ tabviz(meta_data,
   columns = list(
     col_text("category", "Drug"),
     col_n("n"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
@@ -261,7 +261,7 @@ styled_data <- data.frame(
 tabviz(styled_data,
   label = "label",
   columns = list(
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
   ),

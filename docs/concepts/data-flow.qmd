@@ -50,7 +50,7 @@ data <- data.frame(
 tabviz(data,
   label = "study",  # Maps to data$study
   columns = list(
-    col_forest(point = "hr", lower = "lo", upper = "hi")  # Maps to data$hr, data$lo, data$hi
+    viz_forest(point = "hr", lower = "lo", upper = "hi")  # Maps to data$hr, data$lo, data$hi
   )
 )
 ```
@@ -173,7 +173,7 @@ data <- data.frame(
 tabviz(data,
   label = "study",
   group = "category",  # Groups by Drug X, Drug Y
-  columns = list(col_forest(point = "hr", lower = "lo", upper = "hi"))
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi"))
 )
 ```
 
@@ -186,7 +186,7 @@ data$region <- c("North", "North", "South", "South")
 tabviz(data,
   label = "study",
   group = c("region", "category"),  # Region > Category hierarchy
-  columns = list(col_forest(...))
+  columns = list(viz_forest(...))
 )
 ```
 
@@ -225,7 +225,7 @@ styled_data <- meta_data |>
 
 tabviz(styled_data,
   label = "study",
-  columns = list(col_forest(point = "hr", lower = "lower", upper = "upper")),
+  columns = list(viz_forest(point = "hr", lower = "lower", upper = "upper")),
   row_bold = "is_significant",
   marker_color = "direction_color"
 )
@@ -238,7 +238,7 @@ Equivalent approach without pre-computing:
 ```{r}
 tabviz(meta_data,
   label = "study",
-  columns = list(col_forest(point = "hr", lower = "lower", upper = "upper")),
+  columns = list(viz_forest(point = "hr", lower = "lower", upper = "upper")),
   row_bold = ~ upper < 1,
   marker_color = ~ case_when(
     upper < 1 ~ "#16a34a",

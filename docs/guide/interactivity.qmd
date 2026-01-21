@@ -1,0 +1,220 @@
+---
+title: "Interactivity"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+tabviz widgets are interactive by default. This chapter covers the built-in interaction features and how to customize them.
+
+## Default Interactions
+
+Every tabviz widget includes these interactions out of the box:
+
+| Interaction | Action |
+|------------|--------|
+| **Sort** | Click column headers to sort |
+| **Select** | Click rows to select/deselect |
+| **Hover** | Hover to highlight rows |
+| **Collapse** | Click group headers to collapse/expand |
+| **Resize** | Drag column borders to resize |
+| **Export** | Download menu in header (hover to reveal) |
+| **Zoom** | Zoom controls in header |
+| **Theme** | Theme switcher in header |
+
+```{r}
+data(glp1_trials)
+
+# Default: all interactions enabled
+glp1_trials |>
+  filter(row_type == "data", group == "Main Trials") |>
+  head(5) |>
+  tabviz(
+    label = "study",
+    columns = list(
+      col_text("drug", "Drug"),
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1, width = 160),
+      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    ),
+    theme = web_theme_jama(),
+    footnote = "Try: click headers to sort, hover over rows, drag column borders"
+  )
+```
+
+## Customizing Interactions
+
+Use `web_interaction()` to control which interactions are enabled:
+
+```{r}
+# Disable sorting and selection
+glp1_trials |>
+  filter(row_type == "data") |>
+  head(4) |>
+  tabviz(
+    label = "study",
+    columns = list(
+      col_text("drug", "Drug"),
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1, width = 160)
+    ),
+    interaction = web_interaction(
+      enable_sort = FALSE,
+      enable_select = FALSE
+    ),
+    theme = web_theme_jama()
+  )
+```
+
+### Available Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `enable_sort` | TRUE | Click headers to sort |
+| `enable_select` | TRUE | Click rows to select |
+| `enable_hover` | TRUE | Highlight rows on hover |
+| `enable_collapse` | TRUE | Collapse/expand groups |
+| `enable_resize` | TRUE | Drag to resize columns |
+| `enable_export` | TRUE | Show download button |
+| `show_legend` | TRUE | Show legend for multi-effect plots |
+| `show_filters` | FALSE | Show filter panel |
+| `enable_themes` | "default" | Theme menu control |
+
+## Hover Tooltips
+
+Add tooltips that appear when hovering over forest plot markers:
+
+```{r}
+glp1_trials |>
+  filter(row_type == "data") |>
+  head(4) |>
+  tabviz(
+    label = "study",
+    columns = list(
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1, width = 180),
+      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    ),
+    interaction = web_interaction(
+      tooltip_fields = c("drug", "n", "events", "pvalue")
+    ),
+    theme = web_theme_jama(),
+    footnote = "Hover over markers to see details"
+  )
+```
+
+Tooltips show the values from the specified columns for each row.
+
+## Presets
+
+tabviz includes preset configurations for common use cases:
+
+### Minimal Interaction
+
+Use `web_interaction_minimal()` for viewing-only mode with just hover highlighting:
+
+```{r}
+glp1_trials |>
+  filter(row_type == "data") |>
+  head(4) |>
+  tabviz(
+    label = "study",
+    columns = list(
+      col_text("drug", "Drug"),
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1, width = 160)
+    ),
+    interaction = web_interaction_minimal(),
+    theme = web_theme_jama()
+  )
+```
+
+This disables sorting, selection, resize, and export—only hover highlighting remains.
+
+### Publication Mode
+
+Use `web_interaction_publication()` for completely static output:
+
+```{r}
+#| eval: false
+tabviz(data, label = "study",
+  columns = list(...),
+  interaction = web_interaction_publication()
+)
+```
+
+This removes all interactivity, creating a static visualization suitable for:
+
+- Print publications
+- Static documents
+- Screenshots
+
+## Theme Menu
+
+Control the theme switcher in the header:
+
+```{r}
+#| eval: false
+# Default: show all package themes
+tabviz(data, interaction = web_interaction(enable_themes = "default"), ...)
+
+# Hide theme menu
+tabviz(data, interaction = web_interaction(enable_themes = NULL), ...)
+
+# Show specific themes only
+tabviz(data, interaction = web_interaction(
+  enable_themes = list(
+    web_theme_jama(),
+    web_theme_nature(),
+    web_theme_modern()
+  )
+), ...)
+```
+
+## Row Selection
+
+Selected rows are tracked internally and can be styled differently. Selection state persists during sorting and filtering.
+
+```{r}
+sample_data <- data.frame(
+  item = c("Alpha", "Beta", "Gamma", "Delta"),
+  value = c(10, 25, 15, 30),
+  change = c(0.05, -0.12, 0.08, 0.22)
+)
+
+tabviz(sample_data, label = "item",
+  columns = list(
+    col_numeric("value", "Value"),
+    col_percent("change", "Change")
+  ),
+  theme = web_theme_modern(),
+  footnote = "Click rows to select (indicated by left border)"
+)
+```
+
+## Sorting
+
+Click any column header to sort. Click again to reverse sort order.
+
+- Text columns: alphabetical
+- Numeric columns: numeric order
+- Forest columns: sort by point estimate
+
+Sorting preserves group structure—rows within each group are sorted while maintaining group order.
+
+## Zoom and Scale
+
+The zoom control in the header adjusts the display scale:
+
+- Use for fitting large tables in limited space
+- Zoom level persists during interaction
+- Export captures the current zoom level
+
+## See Also
+
+- [Reference: Interaction Settings](../reference/interaction.qmd) — Full API reference
+- [Export](export.qmd) — Exporting interactive tables
+- [Shiny Integration](shiny.qmd) — Interactivity in Shiny apps

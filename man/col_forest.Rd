@@ -2,7 +2,7 @@
 % Please edit documentation in R/classes-components.R
 \name{col_forest}
 \alias{col_forest}
-\title{Column helper: Forest plot column}
+\title{Column helper: Forest plot column (deprecated)}
 \usage{
 col_forest(
   header = NULL,
@@ -62,35 +62,11 @@ axis range across all splits. \code{NULL} (default) inherits from split-level se
 
 \item{...}{Additional arguments passed to \code{web_col()} (e.g., \code{sortable})}
 }
-\value{
-A ColumnSpec object with type = "forest"
-}
 \description{
-Renders a forest plot (point estimates with confidence intervals) as a
-table column. This allows explicit positioning of the forest plot within
-the column layout and supports multiple forest columns per table.
-}
-\details{
-Each \code{col_forest()} fully owns its effect definitions - no global effects
-list is needed. Use either inline column references (point/lower/upper) for
-a single effect, or a list of \code{web_effect()} objects for multiple effects.
-}
-\examples{
-# Single forest column with inline effect definition
-col_forest(point = "estimate", lower = "ci_lower", upper = "ci_upper")
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
-# Log scale with custom null line
-col_forest(point = "hr", lower = "hr_lo", upper = "hr_hi",
-           scale = "log", null_value = 1, axis_label = "Hazard Ratio")
-
-# Multiple effects overlaid in one column
-col_forest(
-  effects = list(
-    web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
-    web_effect("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
-  ),
-  scale = "log",
-  null_value = 1,
-  axis_label = "Odds Ratio (95\% CI)"
-)
+\code{col_forest()} was renamed to \code{\link[=viz_forest]{viz_forest()}} to better reflect its role as a
+focal visualization column with its own axis/scale (as opposed to \verb{col_*}
+functions which render inline cell content).
 }
+\keyword{internal}

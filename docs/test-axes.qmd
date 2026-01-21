@@ -1,0 +1,38 @@
+---
+title: "Axis Test"
+format: html
+---
+
+```{r}
+#| include: false
+devtools::load_all("..")
+```
+
+```{r}
+set.seed(789)
+regional_data <- data.frame(
+  study = rep(paste0("Study ", 1:4), 3),
+  region = rep(c("North America", "Europe", "Asia Pacific"), each = 4),
+  hr = c(0.72, 0.85, 0.68, 0.91,
+         0.78, 0.82, 0.75, 0.88,
+         0.65, 0.71, 0.62, 0.79),
+  lo = c(0.55, 0.70, 0.52, 0.75,
+         0.62, 0.68, 0.58, 0.72,
+         0.48, 0.55, 0.45, 0.62),
+  hi = c(0.95, 1.03, 0.89, 1.10,
+         0.98, 0.99, 0.97, 1.08,
+         0.88, 0.92, 0.86, 1.01)
+)
+
+tabviz(regional_data, label = "study",
+  columns = list(
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1),
+    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
+  ),
+  split_by = "region",
+  shared_axis = TRUE,
+  theme = web_theme_jama(),
+  title = "Treatment Effect by Region"
+)
+```

@@ -37,7 +37,7 @@ current_page <- 1
 tabviz(
   data[(current_page - 1) * page_size + 1:page_size, ],
   label = "study",
-  columns = list(col_forest(...))
+  columns = list(viz_forest(...))
 )
 ```
 
@@ -72,7 +72,7 @@ For hierarchical data, use split views to load subsets on demand:
 # Only render the selected subset
 tabviz(data,
   label = "study",
-  columns = list(col_forest(...)),
+  columns = list(viz_forest(...)),
   split_by = c("region", "country")  # Navigation loads subsets
 )
 ```
@@ -86,7 +86,7 @@ Some column types are more expensive than others:
 | Column Type | Cost | Optimization |
 |-------------|------|--------------|
 | `col_sparkline()` | High | Limit data points, use simple types |
-| `col_forest()` | Medium | Use shared axis ranges |
+| `viz_forest()` | Medium | Use shared axis ranges |
 | `col_bar()` | Low | Fast |
 | `col_text()` | Very Low | Fastest |
 
@@ -120,8 +120,8 @@ axis_range <- c(
 
 tabviz(data,
   columns = list(
-    col_forest(..., axis_range = axis_range),
-    col_forest(..., axis_range = axis_range)  # Reuse
+    viz_forest(..., axis_range = axis_range),
+    viz_forest(..., axis_range = axis_range)  # Reuse
   )
 )
 ```
@@ -262,7 +262,7 @@ profvis({
     label = "study",
     columns = list(
       col_sparkline("trend"),
-      col_forest(...)
+      viz_forest(...)
     ),
     row_bold = ~ pval < 0.05
   )

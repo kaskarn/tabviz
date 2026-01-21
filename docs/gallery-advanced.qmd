@@ -52,7 +52,7 @@ tabviz(
   columns = list(
     col_n("n"),
     col_sparkline("trend", "HR Trend"),
-    col_forest(
+    viz_forest(
       effects = list(
         web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
         web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
@@ -143,7 +143,7 @@ tabviz(
       col_text("drug", "Drug"),
       col_n("n")
     ),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_range = c(0.4, 1.5),
                axis_ticks = c(0.5, 0.75, 1.0, 1.25),
@@ -216,7 +216,7 @@ tabviz(
   columns = list(
     col_n("n"),
     col_bar("weight"),
-    col_forest(
+    viz_forest(
       effects = list(
         web_effect("primary_hr", "primary_lo", "primary_hi", label = "Primary", color = "#22c55e"),
         web_effect("secondary_hr", "secondary_lo", "secondary_hi", label = "Secondary", color = "#3b82f6"),
@@ -283,7 +283,7 @@ tabviz(
   label = "subgroup",
   columns = list(
     col_numeric("n", "No."),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio (95% CI)"),
     col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)"),
@@ -334,7 +334,7 @@ tabviz(
       col_n("events_ctrl", "Events"),
       col_n("n_ctrl", "N")
     ),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio (95% CI)"),
     col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
@@ -376,7 +376,7 @@ tabviz(
     ),
     col_group("Results",
       col_bar("weight"),
-      col_forest(point = "hr", lower = "lower", upper = "upper",
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1,
                  axis_label = "Hazard Ratio"),
       col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
@@ -411,7 +411,7 @@ tabviz(
   columns = list(
     col_text("treatment", "Treatment"),
     col_n("n"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio (95% CI)"),
     col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
@@ -440,7 +440,7 @@ tabviz(
     col_text("region", "Region"),
     col_text("phase", "Phase"),
     col_n("n"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
     col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
@@ -469,7 +469,7 @@ tabviz(
   columns = list(
     col_text("treatment", "Treatment"),
     col_text("phase", "Phase"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
     col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
@@ -509,7 +509,7 @@ tabviz(
       col_numeric("ppg", "PPG"),
       col_numeric("games", "GP", decimals = 0)
     ),
-    col_forest(point = "per", lower = "per_lower", upper = "per_upper",
+    viz_forest(point = "per", lower = "per_lower", upper = "per_upper",
                null_value = 15,
                axis_label = "Player Efficiency Rating"),
     col_interval(point = "per", lower = "per_lower", upper = "per_upper", header = "PER (95% CI)")
@@ -564,7 +564,7 @@ tabviz(
       color = "#16a34a"
     ),
     col_reference("doi", "DOI", max_chars = 20),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
     col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
@@ -611,7 +611,7 @@ tabviz(
     ),
     col_group("Trends",
       col_sparkline("trend", "12M"),
-      col_forest(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper",
+      viz_forest(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper",
                  null_value = 0,
                  axis_label = "Delay vs. Industry Average (minutes)"),
       col_interval(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper", header = "Delay (min)")
@@ -648,7 +648,7 @@ tabviz(
     col_badge("certainty", "Confidence",
       variants = list(High = "success", Medium = "warning")
     ),
-    col_forest(point = "anomaly", lower = "lower", upper = "upper",
+    viz_forest(point = "anomaly", lower = "lower", upper = "upper",
                null_value = 0,
                axis_label = "Temperature Anomaly (°C vs. baseline)"),
     col_interval(point = "anomaly", lower = "lower", upper = "upper", header = "Anomaly °C")
@@ -691,7 +691,7 @@ tabviz(
   columns = list(
     col_text("phase", "Phase"),
     col_n("n"),
-    col_forest(
+    viz_forest(
       effects = list(
         web_effect("hr", "lower", "upper", label = "Primary", color = "#2563eb"),
         web_effect("hr_sens", "lower_sens", "upper_sens", label = "Sensitivity", color = "#f59e0b")

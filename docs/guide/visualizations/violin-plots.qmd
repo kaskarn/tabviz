@@ -1,0 +1,141 @@
+---
+title: "Violin Plots"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Violin plots show the full distribution shape using kernel density estimation. They're ideal for revealing multimodal distributions and comparing distribution shapes across groups.
+
+::: {.callout-tip}
+## When to Use Violin Plots
+Best for visualizing distribution shapes when you need to see:
+
+- Bimodal or multimodal distributions
+- Skewness and asymmetry
+- Detailed distribution comparisons
+
+Use **boxplots** instead if you only need to compare medians, quartiles, and outliers.
+:::
+
+::: {.callout-important}
+## Data Format for Array Columns
+Array columns require the `I()` wrapper to preserve list structure:
+
+```r
+# Create a data frame with array column
+data <- data.frame(
+  group = c("A", "B", "C"),
+  values = I(list(
+    rnorm(100, mean = 5, sd = 2),
+    rnorm(100, mean = 8, sd = 3),
+    c(rnorm(50, 4, 1), rnorm(50, 10, 1))  # Bimodal
+  ))
+)
+```
+
+Without `I()`, R will try to unlist the vectors and fail.
+:::
+
+## Basic Usage
+
+```{r}
+set.seed(456)
+violin_data <- data.frame(
+  group = c("Young Adults", "Middle Age", "Seniors"),
+  scores = I(list(
+    c(rnorm(80, 72, 8), rnorm(20, 90, 5)),  # Bimodal
+    rnorm(100, 68, 12),                       # Normal
+    c(rnorm(70, 60, 10), runif(30, 40, 80))  # Skewed
+  )),
+  n = c(100, 100, 100)
+)
+
+tabviz(violin_data, label = "group",
+  columns = list(
+    col_n("n"),
+    viz_violin(
+      viz_violin_effect(data = "scores", color = "#f59e0b"),
+      header = "Score Distribution",
+      width = 250,
+      show_median = TRUE,
+      show_quartiles = TRUE
+    )
+  ),
+  title = "Score Distributions by Age Group"
+)
+```
+
+---
+
+## Comparing Distributions
+
+```{r}
+set.seed(789)
+compare_violin <- data.frame(
+  condition = c("Healthy", "Mild", "Moderate", "Severe"),
+  biomarker_a = I(list(
+    rnorm(60, 25, 5),
+    rnorm(60, 35, 8),
+    rnorm(60, 50, 12),
+    rnorm(60, 70, 15)
+  )),
+  biomarker_b = I(list(
+    rnorm(60, 30, 6),
+    rnorm(60, 40, 7),
+    rnorm(60, 55, 10),
+    rnorm(60, 65, 18)
+  ))
+)
+
+tabviz(compare_violin, label = "condition",
+  columns = list(
+    viz_violin(
+      viz_violin_effect(data = "biomarker_a", label = "Biomarker A", color = "#3b82f6"),
+      viz_violin_effect(data = "biomarker_b", label = "Biomarker B", color = "#ef4444"),
+      header = "Biomarker Distributions",
+      width = 280,
+      show_median = TRUE
+    )
+  ),
+  title = "Biomarker Profiles by Disease Severity"
+)
+```
+
+---
+
+## viz_violin() Arguments
+
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `header` | Column header text | `NULL` |
+| `width` | Column width in pixels | `150` |
+| `scale` | `"linear"` or `"log"` | `"linear"` |
+| `axis_range` | Fixed axis range `c(min, max)` | Auto |
+| `axis_ticks` | Custom tick positions | Auto |
+| `axis_gridlines` | Show vertical gridlines | `FALSE` |
+| `bandwidth` | KDE bandwidth (NULL = auto via Silverman's rule) | `NULL` |
+| `show_median` | Show median line | `TRUE` |
+| `show_quartiles` | Show Q1/Q3 dashed lines | `FALSE` |
+| `axis_label` | Label text below axis | `"Value"` |
+| `show_axis` | Show the axis | `TRUE` |
+
+## viz_violin_effect() Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `data` | Column containing array of values (required) |
+| `label` | Display label for legend |
+| `color` | Violin fill color |
+| `fill_opacity` | Fill opacity (default: 0.5) |
+
+---
+
+## See Also
+
+- [Visualizations Overview](index.qmd) — Interactivity, tooltips, export
+- [Bar Charts](bar-charts.qmd) — Single values with `viz_bar()`
+- [Boxplots](boxplots.qmd) — Distribution summaries with `viz_boxplot()`

@@ -143,7 +143,7 @@ airline_delays <- do.call(rbind, lapply(carriers, function(carrier) {
     carrier_type = carrier_type,
     month = months,
     delay_vs_avg = round(base_delay + rnorm(4, 0, 2), 1),
-    on_time_pct = round(pmin(98, pmax(65, 82 - base_delay + rnorm(4, 0, 3))), 1),
+    on_time_pct = round(pmin(0.98, pmax(0.65, 0.82 - base_delay/100 + rnorm(4, 0, 0.03))), 3),
     satisfaction = round(pmin(5, pmax(2, 3.8 - base_delay/5 + rnorm(4, 0, 0.3))), 1),
     flights = round(runif(4, 5000, 50000)),
     stringsAsFactors = FALSE

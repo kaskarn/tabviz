@@ -45,7 +45,7 @@ tabviz(
   columns = list(
     col_n("n"),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
   theme = web_theme_modern(),
@@ -93,7 +93,7 @@ tabviz(
   columns = list(
     col_n("n"),
     col_interval("Primary OR", point = "itt_or", lower = "itt_lo", upper = "itt_hi"),
-    col_forest(
+    viz_forest(
       effects = list(
         web_effect("itt_or", "itt_lo", "itt_hi", label = "ITT (Primary)", color = "#2563eb"),
         web_effect("mi_or", "mi_lo", "mi_hi", label = "Multiple Imputation", color = "#7c3aed"),
@@ -197,7 +197,7 @@ tabviz(
     col_numeric("uptime", "Uptime %"),
     col_numeric("rps", "RPS"),
     col_interval("Latency ms (95% CI)", point = "latency_ms", lower = "lower", upper = "upper"),
-    col_forest(point = "latency_ms", lower = "lower", upper = "upper",
+    viz_forest(point = "latency_ms", lower = "lower", upper = "upper",
                null_value = 20, axis_label = "Response Latency (ms)")
   ),
   theme = terminal_theme,
@@ -250,7 +250,7 @@ tabviz(
       col_sparkline("flow_trend", "6M Flows")
     ),
     col_interval("1Y Return % (95% CI)", point = "return_1y", lower = "lower", upper = "upper"),
-    col_forest(point = "return_1y", lower = "lower", upper = "upper",
+    viz_forest(point = "return_1y", lower = "lower", upper = "upper",
                null_value = 0, axis_label = "1-Year Return (%)")
   ),
   theme = web_theme_modern(),
@@ -294,7 +294,7 @@ tabviz(
   columns = list(
     col_numeric("events", "Events"),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
@@ -331,7 +331,7 @@ tabviz(
     col_n("n"),
     col_pvalue("pvalue", "P"),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
   # Formula expressions - no pre-computed columns needed
@@ -382,7 +382,7 @@ tabviz(
       )
     ),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
   theme = web_theme_modern(),
@@ -413,7 +413,7 @@ tabviz(
   columns = list(
     col_numeric("dose_mg", "Dose (mg)"),
     col_interval("OR (95% CI)", point = "or", lower = "lower", upper = "upper"),
-    col_forest(point = "or", lower = "lower", upper = "upper",
+    viz_forest(point = "or", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Odds Ratio")
   ),
   annotations = list(
@@ -444,7 +444,7 @@ tabviz(
     col_text("phase", "Phase"),
     col_n("n"),
     col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-    col_forest(point = "hr", lower = "lower", upper = "upper",
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Hazard Ratio (log scale)")
   ),
   theme = web_theme_modern() |>
@@ -472,7 +472,7 @@ tabviz(
     col_text("period", "Period"),
     col_text("certainty", "Confidence"),
     col_interval("Anomaly °C (95% CI)", point = "anomaly", lower = "lower", upper = "upper"),
-    col_forest(point = "anomaly", lower = "lower", upper = "upper",
+    viz_forest(point = "anomaly", lower = "lower", upper = "upper",
                null_value = 0, axis_label = "Temperature Anomaly (°C vs. pre-industrial)")
   ),
   marker_shape = ~ ifelse(certainty == "High", "circle", "square"),

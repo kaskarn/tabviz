@@ -73,12 +73,14 @@
   }
 
   .badge-sm {
-    padding: 1px 6px;
-    font-size: var(--wf-font-size-sm, 0.75rem);
+    padding: 0 8px;
+    font-size: 0.7em;
+    font-weight: 600;
   }
 
   .badge-base {
-    padding: 2px 8px;
-    font-size: var(--wf-font-size-base, 0.875rem);
+    padding: 0 10px;
+    font-size: 0.77em;
+    font-weight: 600;
   }
 </style>

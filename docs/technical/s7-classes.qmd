@@ -485,7 +485,7 @@ method(print, WebSpec) <- function(x, ...) {
 
 # Plot method (renders as tabviz with forest column)
 method(plot, WebSpec) <- function(x, ...) {
-  tabviz(x@data, columns = list(col_forest(point = x@point_col, lower = x@lower_col, upper = x@upper_col)), ...)
+  tabviz(x@data, columns = list(viz_forest(point = x@point_col, lower = x@lower_col, upper = x@upper_col)), ...)
 }
 
 # as.data.frame method

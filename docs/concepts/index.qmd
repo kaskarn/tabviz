@@ -62,7 +62,7 @@ flowchart TD
     A[Column Type] --> B{Data Type?}
     B -->|Text| C["col_text()"]
     B -->|Numbers| D["col_numeric(), col_n(), col_percent()"]
-    B -->|Intervals| E["col_forest(), col_interval()"]
+    B -->|Intervals| E["viz_forest(), col_interval()"]
     B -->|Visual| F["col_bar(), col_sparkline(), col_badge()"]
     B -->|Scientific| G["col_pvalue(), col_events()"]
 ```
@@ -73,7 +73,7 @@ Each `col_*()` function creates a column specification:
 columns = list(
   col_text("category"),           # Text column
   col_n("sample_size"),           # Integer with abbreviation
-  col_forest(point = "hr", ...),  # Forest plot intervals
+  viz_forest(point = "hr", ...),  # Forest plot intervals
   col_pvalue("p")                 # Scientific p-value formatting
 )
 ```
@@ -110,7 +110,7 @@ Pass everything to `tabviz()` directly:
 ```r
 tabviz(data,
   label = "study",
-  columns = list(col_forest(...)),
+  columns = list(viz_forest(...)),
   row_bold = ~ pval < 0.05,
   marker_color = ~ ifelse(upper < 1, "green", "gray"),
   theme = web_theme_jama()
@@ -122,7 +122,7 @@ tabviz(data,
 Build step-by-step using `set_*()` functions:
 
 ```r
-tabviz(data, label = "study", columns = list(col_forest(...))) |>
+tabviz(data, label = "study", columns = list(viz_forest(...))) |>
   set_row_style(bold = ~ pval < 0.05) |>
   set_marker_style(color = ~ ifelse(upper < 1, "green", "gray")) |>
   set_theme("jama")

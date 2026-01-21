@@ -40,14 +40,14 @@ tabviz(
   group = "category",   # column(s) for grouping
   columns = list(       # col_*() specifications
     col_text("category"),
-    col_forest(point = "hr", lower = "lo", upper = "hi"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi"),
     col_numeric("n")
   ),
   theme = web_theme_jama()
 )
 ```
 
-### `tabviz()` with `col_forest()` - Forest Plot
+### `tabviz()` with `viz_forest()` - Forest Plot
 
 ```r
 tabviz(
@@ -55,7 +55,7 @@ tabviz(
   label = "study",      # column with row labels
   group = "category",   # column(s) for grouping
   columns = list(
-    col_forest(
+    viz_forest(
       point = "hr",     # column with point estimates
       lower = "lower",  # column with lower CI
       upper = "upper",  # column with upper CI
@@ -71,19 +71,31 @@ tabviz(
 
 ---
 
-## Column Types
+## Visualization Columns (`viz_*`)
+
+Focal visualizations with their own axes and scales:
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `viz_forest()` | Forest plots with CI | `viz_forest(point = "hr", lower = "lo", upper = "hi", scale = "log")` |
+| `viz_bar()` | Bar charts with axis | `viz_bar(viz_bar_effect("value"))` |
+| `viz_boxplot()` | Box-and-whisker plots | `viz_boxplot(viz_boxplot_effect(data = "values"))` |
+| `viz_violin()` | Violin/density plots | `viz_violin(viz_violin_effect(data = "values"))` |
+
+---
+
+## Data Columns (`col_*`)
 
 | Function | Purpose | Example |
 |----------|---------|---------|
 | `col_text()` | Text values | `col_text("category")` |
 | `col_numeric()` | Formatted numbers | `col_numeric("n", decimals = 0)` |
 | `col_interval()` | Point (CI) format | `col_interval(point = "hr", lower = "lo", upper = "hi")` |
-| `col_forest()` | Forest plot column | `col_forest(point = "hr", lower = "lo", upper = "hi")` |
 | `col_n()` | Sample sizes | `col_n("n", abbreviate = TRUE)` |
 | `col_percent()` | Percentages | `col_percent("rate")` |
 | `col_events()` | Events/N format | `col_events("events", "n")` |
 | `col_pvalue()` | P-values with stars | `col_pvalue("pval", stars = TRUE)` |
-| `col_bar()` | Horizontal bars | `col_bar("weight")` |
+| `col_bar()` | Inline horizontal bars | `col_bar("weight")` |
 | `col_sparkline()` | Mini charts | `col_sparkline("trend")` |
 | `col_badge()` | Colored badges | `col_badge("status")` |
 | `col_icon()` | Icons/emoji | `col_icon("flag")` |
@@ -91,7 +103,7 @@ tabviz(
 | `col_img()` | Inline images | `col_img("logo_url")` |
 | `col_reference()` | Truncated links | `col_reference("doi")` |
 | `col_range()` | Min-max ranges | `col_range("min", "max")` |
-| `col_group()` | Group columns | `col_group("Results", col_interval(point = "hr", lower = "lo", upper = "hi"), col_pvalue("p"))` |
+| `col_group()` | Group columns | `col_group("Results", col_interval(...), col_pvalue("p"))` |
 
 ---
 
@@ -160,7 +172,7 @@ tabviz(..., theme = web_theme_default() |>
 ## Fluent API (Pipe-Based)
 
 ```r
-tabviz(data, label = "study", columns = list(col_forest(...))) |>
+tabviz(data, label = "study", columns = list(viz_forest(...))) |>
   set_row_style(bold = ~ pval < 0.05, emphasis = "is_primary") |>
   set_marker_style(color = ~ ifelse(upper < 1, "#16a34a", "#94a3b8")) |>
   set_column_style("hr", bold = ~ .x < 1, color = ~ ifelse(.x < 1, "green", "red")) |>
@@ -204,11 +216,11 @@ interaction = web_interaction_publication()
 
 ---
 
-## Multiple Effects
+## Multiple Effects (Forest)
 
 ```r
 tabviz(data, label = "study", columns = list(
-  col_forest(
+  viz_forest(
     effects = list(
       web_effect("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
       web_effect("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
@@ -216,6 +228,35 @@ tabviz(data, label = "study", columns = list(
     scale = "log", null_value = 1
   )
 ))
+```
+
+---
+
+## Distribution Visualizations
+
+```r
+# Bar chart
+viz_bar(
+  viz_bar_effect("value", color = "#3b82f6"),
+  axis_range = c(0, 100)
+)
+
+# Boxplot from array data
+viz_boxplot(
+  viz_boxplot_effect(data = "measurements", color = "#8b5cf6"),
+  show_outliers = TRUE
+)
+
+# Boxplot from pre-computed stats
+viz_boxplot(
+  viz_boxplot_effect(min = "min", q1 = "q1", median = "median", q3 = "q3", max = "max")
+)
+
+# Violin plot
+viz_violin(
+  viz_violin_effect(data = "scores", color = "#f59e0b"),
+  show_median = TRUE, show_quartiles = TRUE
+)
 ```
 
 ---
@@ -234,10 +275,10 @@ annotations = list(
 
 ```r
 # Single variable split
-tabviz(data, label = "study", columns = list(col_forest(...)), split_by = "region")
+tabviz(data, label = "study", columns = list(viz_forest(...)), split_by = "region")
 
 # Hierarchical split
-tabviz(data, label = "study", columns = list(col_forest(...)), split_by = c("region", "country"), shared_axis = TRUE)
+tabviz(data, label = "study", columns = list(viz_forest(...)), split_by = c("region", "country"), shared_axis = TRUE)
 ```
 
 ---
@@ -258,10 +299,10 @@ save_plot(p, "plot.pdf")               # Print
 
 ```r
 # Log scale for ratios
-col_forest(point = "hr", lower = "lo", upper = "hi", scale = "log", null_value = 1)
+viz_forest(point = "hr", lower = "lo", upper = "hi", scale = "log", null_value = 1)
 
 # Linear scale for differences
-col_forest(point = "md", lower = "lo", upper = "hi", scale = "linear", null_value = 0)
+viz_forest(point = "md", lower = "lo", upper = "hi", scale = "linear", null_value = 0)
 
 # Significant results bold
 row_bold = ~ pval < 0.05

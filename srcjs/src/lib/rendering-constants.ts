@@ -227,6 +227,11 @@ export const AUTO_WIDTH = {
     stars: 84, // 5 stars at ~12px each + 32px padding
     range: 84, // visual element + 32px padding
     badge: 74, // minimum for short badges + pill padding
+    // Viz columns (full visualization with axis) need larger minimums
+    forest: 200, // forest plot with axis
+    viz_bar: 150, // bar chart with axis
+    viz_boxplot: 150, // boxplot with axis
+    viz_violin: 150, // violin plot with axis
   } as Record<string, number>,
 } as const;
 
