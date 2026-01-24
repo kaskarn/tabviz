@@ -1127,7 +1127,8 @@ function renderGroupHeader(
     background = `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
 
-  const textY = y + rowHeight / 2 + fontSize * TYPOGRAPHY.TEXT_BASELINE_ADJUSTMENT;
+  // Use row center - dominant-baseline:central handles vertical alignment
+  const textY = y + rowHeight / 2;
   const indent = depth * (gh?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL);
 
   // Group header background
@@ -1144,7 +1145,7 @@ function renderGroupHeader(
   // Group header text (label)
   const fontStyle = italic ? ' font-style="italic"' : '';
   const labelX = x + SPACING.TEXT_PADDING + indent;
-  lines.push(`<text x="${labelX}" y="${textY}"
+  lines.push(`<text class="cell-text" x="${labelX}" y="${textY}"
     font-family="${theme.typography.fontFamily}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"${fontStyle}
@@ -1158,7 +1159,7 @@ function renderGroupHeader(
     const labelWidth = label.length * avgCharWidth;
     const countX = labelX + labelWidth + 6; // 6px gap
     const countFontSize = parseFontSize(theme.typography.fontSizeSm ?? "0.75rem");
-    lines.push(`<text x="${countX}" y="${textY}"
+    lines.push(`<text class="cell-text" x="${countX}" y="${textY}"
       font-family="${theme.typography.fontFamily}"
       font-size="${countFontSize}px"
       font-weight="${theme.typography.fontWeightNormal}"
@@ -2228,8 +2229,9 @@ function renderUnifiedColumnHeaders(
   const boldWeight = theme.typography.fontWeightBold;
   const hasGroups = hasColumnGroups(columnDefs);
 
+  // Use row center - dominant-baseline:central handles vertical alignment
   const getTextY = (containerY: number, containerHeight: number) =>
-    containerY + containerHeight / 2 + fontSize * TYPOGRAPHY.TEXT_BASELINE_ADJUSTMENT;
+    containerY + containerHeight / 2;
 
   if (hasGroups) {
     // Two-tier header
@@ -2238,7 +2240,7 @@ function renderUnifiedColumnHeaders(
     let currentX = x;
 
     // Label column spans both rows
-    lines.push(`<text x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+    lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
       font-family="${theme.typography.fontFamily}"
       font-size="${fontSize}px"
       font-weight="${fontWeight}"
@@ -2257,7 +2259,7 @@ function renderUnifiedColumnHeaders(
           return sum + getColWidth(c as ColumnSpec);
         }, 0);
         const textX = currentX + groupWidth / 2;
-        lines.push(`<text x="${textX}" y="${getTextY(y, row1Height)}"
+        lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, row1Height)}"
           font-family="${theme.typography.fontFamily}"
           font-size="${fontSize}px"
           font-weight="${boldWeight}"
@@ -2270,7 +2272,7 @@ function renderUnifiedColumnHeaders(
         const headerAlign = col.headerAlign ?? col.align;
         const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
         const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
-        lines.push(`<text x="${textX}" y="${getTextY(y, headerHeight)}"
+        lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
           font-family="${theme.typography.fontFamily}"
           font-size="${fontSize}px"
           font-weight="${fontWeight}"
@@ -2296,7 +2298,7 @@ function renderUnifiedColumnHeaders(
             const width = getColWidth(subCol as ColumnSpec);
             const headerAlign = (subCol as ColumnSpec).headerAlign ?? (subCol as ColumnSpec).align;
             const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
-            lines.push(`<text x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
+            lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
               font-family="${theme.typography.fontFamily}"
               font-size="${fontSize}px"
               font-weight="${fontWeight}"
@@ -2313,7 +2315,7 @@ function renderUnifiedColumnHeaders(
     // Single-row header
     let currentX = x;
 
-    lines.push(`<text x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+    lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
       font-family="${theme.typography.fontFamily}"
       font-size="${fontSize}px"
       font-weight="${fontWeight}"
@@ -2326,7 +2328,7 @@ function renderUnifiedColumnHeaders(
       const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
       const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
 
-      lines.push(`<text x="${textX}" y="${getTextY(y, headerHeight)}"
+      lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
         font-family="${theme.typography.fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
@@ -2359,7 +2361,8 @@ function renderUnifiedTableRow(
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.typography.fontSizeBase);
-  const textY = y + rowHeight / 2 + fontSize * TYPOGRAPHY.TEXT_BASELINE_ADJUSTMENT;
+  // Use row center for text positioning - dominant-baseline:central handles vertical alignment
+  const textY = y + rowHeight / 2;
 
   // Render label
   const indent = depth * SPACING.INDENT_PER_LEVEL + (row.style?.indent ?? 0) * SPACING.INDENT_PER_LEVEL;
@@ -2376,7 +2379,7 @@ function renderUnifiedTableRow(
 
   // Don't truncate labels - they're the primary row identifier and the width
   // was already computed to fit them (either by browser measurement or SVG estimation)
-  lines.push(`<text x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
+  lines.push(`<text class="cell-text" x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
     font-family="${theme.typography.fontFamily}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"
@@ -2396,7 +2399,7 @@ function renderUnifiedTableRow(
 
     lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
       rx="3" fill="${theme.colors.primary}" opacity="0.15"/>`);
-    lines.push(`<text x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2 + badgeFontSize * 0.35}"
+    lines.push(`<text class="cell-text" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
       text-anchor="middle"
       font-family="${theme.typography.fontFamily}"
       font-size="${badgeFontSize}px"
@@ -2438,7 +2441,7 @@ function renderUnifiedTableRow(
       lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${y + rowHeight / 2 - barHeight / 2}"
         width="${Math.max(0, barWidth)}" height="${barHeight}"
         fill="${barColor}" opacity="0.7" rx="2"/>`);
-      lines.push(`<text x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
+      lines.push(`<text class="cell-text" x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
         font-family="${theme.typography.fontFamily}"
         font-size="${fontSize}px"
         font-weight="${barFontWeight}"
@@ -2493,7 +2496,7 @@ function renderUnifiedTableRow(
 
         lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
           rx="${badgeHeight / 2}" fill="${badgeColor}" opacity="0.15"/>`);
-        lines.push(`<text x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2 + badgeFontSize * 0.35}"
+        lines.push(`<text class="cell-text" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
           text-anchor="middle"
           font-family="${theme.typography.fontFamily}"
           font-size="${badgeFontSize}px"
@@ -2584,7 +2587,7 @@ function renderUnifiedTableRow(
         cellColor = theme.colors.accent;
       }
 
-      lines.push(`<text x="${textX}" y="${textY}"
+      lines.push(`<text class="cell-text" x="${textX}" y="${textY}"
         font-family="${theme.typography.fontFamily}"
         font-size="${fontSize}px"
         font-weight="${cellFontWeight}"
@@ -2930,7 +2933,11 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   width="${layout.totalWidth}" height="${layout.totalHeight}"
   viewBox="0 0 ${layout.totalWidth} ${layout.totalHeight}">
 <style>
-  text { font-variant-numeric: tabular-nums; }
+  text {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Use dominant-baseline for cell text to match CSS flex centering */
+  .cell-text { dominant-baseline: central; }
 </style>`);
 
   // Background

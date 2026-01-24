@@ -112,8 +112,15 @@ export const TYPOGRAPHY = {
   /** Base rem size for font calculations */
   REM_BASE: 16,
 
-  /** Baseline adjustment factor for vertical text centering */
-  TEXT_BASELINE_ADJUSTMENT: 1 / 3,
+  /**
+   * Baseline adjustment factor for vertical text centering.
+   * @deprecated Use dominant-baseline="central" in SVG instead for proper centering.
+   * Kept for backwards compatibility with legacy positioning code.
+   */
+  TEXT_BASELINE_ADJUSTMENT: 0.35,
+
+  /** Average character width as ratio of font size (for rough text width estimation) */
+  AVG_CHAR_WIDTH_RATIO: 0.55,
 } as const;
 
 // ============================================================================
