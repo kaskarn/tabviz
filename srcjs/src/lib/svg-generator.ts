@@ -1076,6 +1076,7 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
 function renderGroupHeader(
   label: string,
   depth: number,
+  rowCount: number,
   x: number,
   y: number,
   rowHeight: number,
@@ -1140,13 +1141,29 @@ function renderGroupHeader(
       stroke="${theme.colors.border}" stroke-width="1" opacity="0.5"/>`);
   }
 
-  // Group header text
+  // Group header text (label)
   const fontStyle = italic ? ' font-style="italic"' : '';
-  lines.push(`<text x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
+  const labelX = x + SPACING.TEXT_PADDING + indent;
+  lines.push(`<text x="${labelX}" y="${textY}"
     font-family="${theme.typography.fontFamily}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"${fontStyle}
     fill="${theme.colors.foreground}">${escapeXml(label)}</text>`);
+
+  // Row count (e.g., "(15)") - smaller muted text after label
+  // Web CSS: font-weight: normal, color: muted, font-size: 0.75rem
+  if (rowCount > 0) {
+    // Estimate label width for positioning count
+    const avgCharWidth = fontSize * TYPOGRAPHY.AVG_CHAR_WIDTH_RATIO;
+    const labelWidth = label.length * avgCharWidth;
+    const countX = labelX + labelWidth + 6; // 6px gap
+    const countFontSize = parseFontSize(theme.typography.fontSizeSm ?? "0.75rem");
+    lines.push(`<text x="${countX}" y="${textY}"
+      font-family="${theme.typography.fontFamily}"
+      font-size="${countFontSize}px"
+      font-weight="${theme.typography.fontWeightNormal}"
+      fill="${theme.colors.muted}">(${rowCount})</text>`);
+  }
 
   return lines.join("\n");
 }
@@ -1519,8 +1536,9 @@ function renderInterval(
       // Build left end: whisker or arrow.
       let leftEnd = "";
       if (clippedLeft) {
-        // Arrow pointing left with scaled dimensions
-        leftEnd = `<path d="${renderArrowPath("left", leftArrowX, effectY, arrowConfig)}" fill="${arrowConfig.color}"/>`;
+        // Arrow pointing left with scaled dimensions (include opacity from theme)
+        const arrowOpacity = arrowConfig.opacity < 1 ? ` fill-opacity="${arrowConfig.opacity}"` : "";
+        leftEnd = `<path d="${renderArrowPath("left", leftArrowX, effectY, arrowConfig)}" fill="${arrowConfig.color}"${arrowOpacity}/>`;
       } else {
         // Normal whisker (use scaled whisker height matching arrow)
         leftEnd = `<line x1="${clampedX1}" x2="${clampedX1}" y1="${effectY - arrowHalfHeight}" y2="${effectY + arrowHalfHeight}" stroke="${lineColor}" stroke-width="${lineWidth}"/>`;
@@ -1529,8 +1547,9 @@ function renderInterval(
       // Build right end: whisker or arrow
       let rightEnd = "";
       if (clippedRight) {
-        // Arrow pointing right with scaled dimensions
-        rightEnd = `<path d="${renderArrowPath("right", rightArrowX, effectY, arrowConfig)}" fill="${arrowConfig.color}"/>`;
+        // Arrow pointing right with scaled dimensions (include opacity from theme)
+        const arrowOpacity = arrowConfig.opacity < 1 ? ` fill-opacity="${arrowConfig.opacity}"` : "";
+        rightEnd = `<path d="${renderArrowPath("right", rightArrowX, effectY, arrowConfig)}" fill="${arrowConfig.color}"${arrowOpacity}/>`;
       } else {
         // Normal whisker
         rightEnd = `<line x1="${clampedX2}" x2="${clampedX2}" y1="${effectY - arrowHalfHeight}" y2="${effectY + arrowHalfHeight}" stroke="${lineColor}" stroke-width="${lineWidth}"/>`;
@@ -2918,6 +2937,16 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const bgColor = options.backgroundColor ?? theme.colors.background;
   parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
 
+  // Container border (if enabled in theme)
+  // Web CSS: border: var(--wf-container-border, none); border-radius: var(--wf-container-border-radius, 8px);
+  if (theme.layout.containerBorder !== false) {
+    const borderRadius = theme.layout.containerBorderRadius ?? 8;
+    parts.push(`<rect x="0.5" y="0.5"
+      width="${layout.totalWidth - 1}" height="${layout.totalHeight - 1}"
+      fill="none" stroke="${theme.colors.border}" stroke-width="1"
+      rx="${borderRadius}" ry="${borderRadius}"/>`);
+  }
+
   // Header (title, subtitle)
   parts.push(renderHeader(spec, layout, theme));
 
@@ -2966,22 +2995,35 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   const plotY = layout.mainY + layout.headerHeight;
 
-  // Render row backgrounds (banding) FIRST - before forest intervals
-  // This ensures forest markers aren't covered by banding rectangles
-  if (theme.layout.banding) {
-    displayRows.forEach((displayRow, i) => {
-      if (displayRow.type === "data") {
-        const row = displayRow.row;
-        // Styled rows (header, summary, spacer) are excluded from banding
-        // This matches web view's getRowClasses() logic
-        const isStyledRow = row.style?.type === "header" ||
-                           row.style?.type === "summary" ||
-                           row.style?.type === "spacer";
-        const hasExplicitBg = row.style?.bg;
+  // Render row backgrounds FIRST - before forest intervals
+  // This ensures forest markers aren't covered by background rectangles
+  displayRows.forEach((displayRow, i) => {
+    if (displayRow.type === "data") {
+      const row = displayRow.row;
+      const y = plotY + rowPositions[i];
+      const rowHeight = rowHeights[i];
 
-        if (!isStyledRow && !hasExplicitBg) {
-          const y = plotY + rowPositions[i];
-          const rowHeight = rowHeights[i];
+      // 1. Explicit row background (style.bg) - highest priority
+      if (row.style?.bg) {
+        parts.push(`<rect x="${padding}" y="${y}"
+          width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
+          fill="${row.style.bg}"/>`);
+      }
+      // 2. Header-type rows get a subtle muted background
+      // Web: background: color-mix(in srgb, var(--wf-muted) 10%, var(--wf-bg))
+      else if (row.style?.type === "header") {
+        // Approximate color-mix with 10% opacity on muted color
+        parts.push(`<rect x="${padding}" y="${y}"
+          width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
+          fill="${theme.colors.muted}" fill-opacity="0.1"/>`);
+      }
+      // 3. Alternating row banding (if enabled)
+      else if (theme.layout.banding) {
+        // Styled rows (summary, spacer) are excluded from banding
+        const isStyledRow = row.style?.type === "summary" ||
+                           row.style?.type === "spacer";
+
+        if (!isStyledRow) {
           const isOddRow = i % 2 === 1;
           const bgColor = isOddRow ? theme.colors.altBg : theme.colors.rowBg;
           // Only render if color differs from background
@@ -2992,8 +3034,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           }
         }
       }
-    });
-  }
+    }
+  });
 
   // Render each forest column (may be multiple)
   for (const forestColIdx of forestColumnIndices) {
@@ -3245,6 +3287,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       parts.push(renderGroupHeader(
         displayRow.label,
         displayRow.depth,
+        displayRow.rowCount,
         padding,
         y,
         rowHeight,
