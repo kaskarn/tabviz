@@ -50,98 +50,86 @@
 <rect x="14" y="307"
               width="772" height="30"
               fill="#f5f5f5"/>
-<line x1="689.479630313147" x2="689.479630313147" y1="112" y2="457"
+<line x1="570.7025159085395" x2="570.7025159085395" y1="112" y2="457"
     stroke="#a1a1aa" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
 
         <g class="interval effect-0">
-          <line x1="535.882420474709" x2="641.370655832449" y1="157" y2="157"
+          <line x1="487.073752361982" x2="544.5087194486586" y1="157" y2="157"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="535.882420474709" x2="535.882420474709" y1="153.5" y2="160.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="641.370655832449" x2="641.370655832449" y1="153.5" y2="160.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="580.2474983821389" y="149" width="16" height="16" fill="#3b82f6"/>
+          <line x1="487.073752361982" x2="487.073752361982" y1="153.5" y2="160.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="544.5087194486586" x2="544.5087194486586" y1="153.5" y2="160.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="507.58486088422546" y="149" width="16" height="16" fill="#3b82f6"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="549.4862034769499" x2="699.5811808118177" y1="187" y2="187"
+          <line x1="494.48057669967494" x2="576.202486767356" y1="187" y2="187"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="549.4862034769499" x2="549.4862034769499" y1="183.5" y2="190.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="699.5811808118177" x2="699.5811808118177" y1="183.5" y2="190.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="616.2703407371348" y="179" width="16" height="16" fill="#3b82f6"/>
+          <line x1="494.48057669967494" x2="494.48057669967494" y1="183.5" y2="190.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="576.202486767356" x2="576.202486767356" y1="183.5" y2="190.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="527.1981453231136" y="179" width="16" height="16" fill="#3b82f6"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="492.7487133950454" x2="646.9457018217128" y1="217" y2="217"
+          <line x1="463.5888297253929" x2="547.5441535121272" y1="217" y2="217"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="492.7487133950454" x2="492.7487133950454" y1="213.5" y2="220.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="646.9457018217128" x2="646.9457018217128" y1="213.5" y2="220.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="561.2349264102997" y="209" width="16" height="16" fill="#3b82f6"/>
+          <line x1="463.5888297253929" x2="463.5888297253929" y1="213.5" y2="220.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="547.5441535121272" x2="547.5441535121272" y1="213.5" y2="220.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="497.2331241077743" y="209" width="16" height="16" fill="#3b82f6"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="445.62800844629675" x2="652.4604758630692" y1="247" y2="247"
+          <line x1="437.93311438752323" x2="550.5467714294864" y1="247" y2="247"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="445.62800844629675" x2="445.62800844629675" y1="243.5" y2="250.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="652.4604758630692" x2="652.4604758630692" y1="243.5" y2="250.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="541.4862034769499" y="239" width="16" height="16" fill="#3b82f6"/>
+          <line x1="437.93311438752323" x2="437.93311438752323" y1="243.5" y2="250.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="550.5467714294864" x2="550.5467714294864" y1="243.5" y2="250.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="486.48057669967494" y="239" width="16" height="16" fill="#3b82f6"/>
         </g>
 
 
 
         <g class="interval effect-0">
-          <line x1="569.2349264102997" x2="714.3680605110446" y1="322" y2="322"
+          <line x1="505.2331241077743" x2="584.2534693812901" y1="322" y2="322"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="569.2349264102997" x2="569.2349264102997" y1="318.5" y2="325.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="714.3680605110446" x2="714.3680605110446" y1="318.5" y2="325.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="633.370655832449" y="314" width="16" height="16" fill="#3b82f6"/>
+          <line x1="505.2331241077743" x2="505.2331241077743" y1="318.5" y2="325.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="584.2534693812901" x2="584.2534693812901" y1="318.5" y2="325.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="536.5087194486586" y="314" width="16" height="16" fill="#3b82f6"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="437.3333276312584" x2="606.5768341963721" y1="352" y2="352"
+          <line x1="433.4169262269137" x2="525.5645974457575" y1="352" y2="352"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="437.3333276312584" x2="437.3333276312584" y1="348.5" y2="355.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="606.5768341963721" x2="606.5768341963721" y1="348.5" y2="355.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="513.905885076984" y="344" width="16" height="16" fill="#3b82f6"/>
+          <line x1="433.4169262269137" x2="433.4169262269137" y1="348.5" y2="355.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="525.5645974457575" x2="525.5645974457575" y1="348.5" y2="355.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="471.4639762781203" y="344" width="16" height="16" fill="#3b82f6"/>
         </g>
 
 
         <g class="interval effect-0 summary">
-          <polygon points="528.9420191202229,397 575.6515095118203,391 624.2703407371348,397 575.6515095118203,403"
+          <polygon points="483.2949260121867,397 508.7267481881749,391 535.1981453231136,397 508.7267481881749,403"
             fill="#3b82f6" stroke="#2563eb" stroke-width="1"/>
         </g>
-<g transform="translate(0, 457)"><line x1="413" x2="754"
+<g transform="translate(0, 457)"><line x1="413" x2="613"
     y1="0" y2="0" stroke="#d4d4d8" stroke-width="1"/>
-<line x1="428.9015384615384" x2="428.9015384615384" y1="0" y2="4"
+<line x1="428.82608695652175" x2="428.82608695652175" y1="0" y2="4"
       stroke="#d4d4d8" stroke-width="1"/>
-<text x="430.9015384615384" y="16" text-anchor="start"
+<text x="430.82608695652175" y="16" text-anchor="start"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       fill="#52525b">0.60</text>
-<line x1="507.5355930942722" x2="507.5355930942722" y1="0" y2="4"
+<line x1="508.7267481881749" x2="508.7267481881749" y1="0" y2="4"
       stroke="#d4d4d8" stroke-width="1"/>
-<text x="507.5355930942722" y="16" text-anchor="middle"
-      font-family="Inter, system-ui, -apple-system, sans-serif"
-      font-size="13px"
-      fill="#52525b">0.70</text>
-<line x1="575.6515095118203" x2="575.6515095118203" y1="0" y2="4"
-      stroke="#d4d4d8" stroke-width="1"/>
-<text x="575.6515095118203" y="16" text-anchor="middle"
+<text x="508.7267481881749" y="16" text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       fill="#52525b">0.80</text>
-<line x1="635.7340058783108" x2="635.7340058783108" y1="0" y2="4"
+<line x1="570.7025159085395" x2="570.7025159085395" y1="0" y2="4"
       stroke="#d4d4d8" stroke-width="1"/>
-<text x="635.7340058783108" y="16" text-anchor="middle"
-      font-family="Inter, system-ui, -apple-system, sans-serif"
-      font-size="13px"
-      fill="#52525b">0.90</text>
-<line x1="689.479630313147" x2="689.479630313147" y1="0" y2="4"
-      stroke="#d4d4d8" stroke-width="1"/>
-<text x="689.479630313147" y="16" text-anchor="middle"
+<text x="570.7025159085395" y="16" text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       fill="#52525b">1.00</text>
-<text x="583.5" y="28"
+<text x="513" y="28"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"

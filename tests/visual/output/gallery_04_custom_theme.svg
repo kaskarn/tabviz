@@ -47,87 +47,69 @@
 <line x1="12" x2="788"
     y1="104" y2="104"
     stroke="#003300" stroke-width="2"/>
-<line x1="501.23458196838055" x2="501.23458196838055" y1="104" y2="286"
+<line x1="447.8258521139877" x2="447.8258521139877" y1="104" y2="286"
     stroke="#005500" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
-          <line x1="431.5125138869107" x2="477.3699814841191" y1="118" y2="118"
+          <line x1="413.440126653008" x2="436.0562413857329" y1="118" y2="118"
             stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="431.5125138869107" x2="431.5125138869107" y1="115" y2="121" stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="477.3699814841191" x2="477.3699814841191" y1="115" y2="121" stroke="#00cc00" stroke-width="1.5"/>
-          <rect x="448.4412476855149" y="112" width="12" height="12" fill="#0891b2"/>
+          <line x1="413.440126653008" x2="413.440126653008" y1="115" y2="121" stroke="#00cc00" stroke-width="1.5"/>
+          <line x1="436.0562413857329" x2="436.0562413857329" y1="115" y2="121" stroke="#00cc00" stroke-width="1.5"/>
+          <rect x="418.74818401937046" y="112" width="12" height="12" fill="#0891b2"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="555.7488164079191" x2="739.1786867967526" y1="146" y2="146"
+          <line x1="474.7113354442168" x2="565.1757943751164" y1="146" y2="146"
             stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="555.7488164079191" x2="555.7488164079191" y1="143" y2="149" stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="739.1786867967526" x2="739.1786867967526" y1="143" y2="149" stroke="#00cc00" stroke-width="1.5"/>
-          <rect x="641.4637516023358" y="140" width="12" height="12" fill="#0891b2"/>
+          <line x1="474.7113354442168" x2="474.7113354442168" y1="143" y2="149" stroke="#00cc00" stroke-width="1.5"/>
+          <line x1="565.1757943751164" x2="565.1757943751164" y1="143" y2="149" stroke="#00cc00" stroke-width="1.5"/>
+          <rect x="513.9435649096665" y="140" width="12" height="12" fill="#0891b2"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="413.8480301951289" x2="448.2411308930352" y1="174" y2="174"
+          <line x1="404.72830694729" x2="421.6903929968337" y1="174" y2="174"
             stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="413.8480301951289" x2="413.8480301951289" y1="171" y2="177" stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="448.2411308930352" x2="448.2411308930352" y1="171" y2="177" stroke="#00cc00" stroke-width="1.5"/>
-          <rect x="425.044580544082" y="168" width="12" height="12" fill="#0891b2"/>
+          <line x1="404.72830694729" x2="404.72830694729" y1="171" y2="177" stroke="#00cc00" stroke-width="1.5"/>
+          <line x1="421.6903929968337" x2="421.6903929968337" y1="171" y2="177" stroke="#00cc00" stroke-width="1.5"/>
+          <rect x="407.20934997206183" y="168" width="12" height="12" fill="#0891b2"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="396.0665631676399" x2="407.530930066942" y1="202" y2="202"
+          <line x1="395.95879307133544" x2="401.6128217545167" y1="202" y2="202"
             stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="396.0665631676399" x2="396.0665631676399" y1="199" y2="205" stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="407.530930066942" x2="407.530930066942" y1="199" y2="205" stroke="#00cc00" stroke-width="1.5"/>
-          <rect x="395.798746617291" y="196" width="12" height="12" fill="#0891b2"/>
+          <line x1="395.95879307133544" x2="395.95879307133544" y1="199" y2="205" stroke="#00cc00" stroke-width="1.5"/>
+          <line x1="401.6128217545167" x2="401.6128217545167" y1="199" y2="205" stroke="#00cc00" stroke-width="1.5"/>
+          <rect x="392.78580741292603" y="196" width="12" height="12" fill="#0891b2"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="490.7060817547358" x2="605.3497507477567" y1="230" y2="230"
+          <line x1="442.6333767926988" x2="499.17366362451105" y1="230" y2="230"
             stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="490.7060817547358" x2="490.7060817547358" y1="227" y2="233" stroke="#00cc00" stroke-width="1.5"/>
-          <line x1="605.3497507477567" x2="605.3497507477567" y1="227" y2="233" stroke="#00cc00" stroke-width="1.5"/>
-          <rect x="542.0279162512463" y="224" width="12" height="12" fill="#0891b2"/>
+          <line x1="442.6333767926988" x2="442.6333767926988" y1="227" y2="233" stroke="#00cc00" stroke-width="1.5"/>
+          <line x1="499.17366362451105" x2="499.17366362451105" y1="227" y2="233" stroke="#00cc00" stroke-width="1.5"/>
+          <rect x="464.90352020860496" y="224" width="12" height="12" fill="#0891b2"/>
         </g>
-<g transform="translate(0, 286)"><line x1="381" x2="756"
+<g transform="translate(0, 286)"><line x1="381" x2="581"
     y1="0" y2="0" stroke="#003300" stroke-width="1"/>
-<line x1="442.74291411479845" x2="442.74291411479845" y1="0" y2="4"
+<line x1="447.8258521139877" x2="447.8258521139877" y1="0" y2="4"
       stroke="#003300" stroke-width="1"/>
-<text x="442.74291411479845" y="16" text-anchor="middle"
-      font-family="'Courier New', monospace"
-      font-size="12px"
-      fill="#008800">10.0</text>
-<line x1="501.23458196838055" x2="501.23458196838055" y1="0" y2="4"
-      stroke="#003300" stroke-width="1"/>
-<text x="501.23458196838055" y="16" text-anchor="middle"
+<text x="447.8258521139877" y="16" text-anchor="middle"
       font-family="'Courier New', monospace"
       font-size="12px"
       fill="#008800">20.0</text>
-<line x1="559.7262498219627" x2="559.7262498219627" y1="0" y2="4"
+<line x1="505.52002235053084" x2="505.52002235053084" y1="0" y2="4"
       stroke="#003300" stroke-width="1"/>
-<text x="559.7262498219627" y="16" text-anchor="middle"
-      font-family="'Courier New', monospace"
-      font-size="12px"
-      fill="#008800">30.0</text>
-<line x1="618.2179176755448" x2="618.2179176755448" y1="0" y2="4"
-      stroke="#003300" stroke-width="1"/>
-<text x="618.2179176755448" y="16" text-anchor="middle"
+<text x="505.52002235053084" y="16" text-anchor="middle"
       font-family="'Courier New', monospace"
       font-size="12px"
       fill="#008800">40.0</text>
-<line x1="676.7095855291269" x2="676.7095855291269" y1="0" y2="4"
+<line x1="563.214192587074" x2="563.214192587074" y1="0" y2="4"
       stroke="#003300" stroke-width="1"/>
-<text x="676.7095855291269" y="16" text-anchor="middle"
-      font-family="'Courier New', monospace"
-      font-size="12px"
-      fill="#008800">50.0</text>
-<line x1="735.201253382709" x2="735.201253382709" y1="0" y2="4"
-      stroke="#003300" stroke-width="1"/>
-<text x="733.201253382709" y="16" text-anchor="end"
+<text x="561.214192587074" y="16" text-anchor="end"
       font-family="'Courier New', monospace"
       font-size="12px"
       fill="#008800">60.0</text>
-<text x="568.5" y="28"
+<text x="481" y="28"
       text-anchor="middle"
       font-family="'Courier New', monospace"
       font-size="12px"

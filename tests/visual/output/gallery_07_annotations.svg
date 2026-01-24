@@ -47,87 +47,75 @@
 <rect x="14" y="202"
               width="772" height="30"
               fill="#f5f5f5"/>
-<line x1="707.1796147155112" x2="707.1796147155112" y1="112" y2="307"
+<line x1="472.82459286458305" x2="472.82459286458305" y1="112" y2="307"
     stroke="#a1a1aa" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
-<line x1="634.850402131676" x2="634.850402131676" y1="112" y2="307"
-    stroke="#16a34a" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/><text x="634.850402131676" y="108" text-anchor="middle"
+<line x1="443.91192932022295" x2="443.91192932022295" y1="112" y2="307"
+    stroke="#16a34a" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/><text x="443.91192932022295" y="108" text-anchor="middle"
       font-size="10px" fill="#16a34a">Clinically meaningful</text>
-<line x1="482.5045592216997" x2="482.5045592216997" y1="112" y2="307"
-    stroke="#dc2626" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="none"/><text x="482.5045592216997" y="108" text-anchor="middle"
+<line x1="383.01365680920014" x2="383.01365680920014" y1="112" y2="307"
+    stroke="#dc2626" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="none"/><text x="383.01365680920014" y="108" text-anchor="middle"
       font-size="10px" fill="#dc2626">Target effect</text>
 
         <g class="interval effect-0">
-          <line x1="626.6439489087735" x2="732.125580988003" y1="127" y2="127"
+          <line x1="440.63150620416457" x2="482.7964189616738" y1="127" y2="127"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="626.6439489087735" x2="626.6439489087735" y1="123.5" y2="130.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="732.125580988003" x2="732.125580988003" y1="123.5" y2="130.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="672.1525010793987" y="119" width="16" height="16" fill="#3b82f6"/>
+          <line x1="440.63150620416457" x2="440.63150620416457" y1="123.5" y2="130.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="482.7964189616738" x2="482.7964189616738" y1="123.5" y2="130.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="454.0208551323303" y="119" width="16" height="16" fill="#3b82f6"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="552.2302430421908" x2="676.609978513943" y1="157" y2="157"
+          <line x1="410.88559353691784" x2="460.60477773601406" y1="157" y2="157"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="552.2302430421908" x2="552.2302430421908" y1="153.5" y2="160.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="676.609978513943" x2="676.609978513943" y1="153.5" y2="160.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="605.9310415330242" y="149" width="16" height="16" fill="#3b82f6"/>
+          <line x1="410.88559353691784" x2="410.88559353691784" y1="153.5" y2="160.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="460.60477773601406" x2="460.60477773601406" y1="153.5" y2="160.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="427.5496865562648" y="149" width="16" height="16" fill="#3b82f6"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="448.3532557667021" x2="613.9310415330242" y1="187" y2="187"
+          <line x1="369.36211670358637" x2="435.5496865562648" y1="187" y2="187"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="448.3532557667021" x2="448.3532557667021" y1="183.5" y2="190.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="613.9310415330242" x2="613.9310415330242" y1="183.5" y2="190.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="522.6130617469523" y="179" width="16" height="16" fill="#3b82f6"/>
+          <line x1="369.36211670358637" x2="369.36211670358637" y1="183.5" y2="190.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="435.5496865562648" x2="435.5496865562648" y1="183.5" y2="190.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="394.24440601061605" y="179" width="16" height="16" fill="#3b82f6"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="482.5045592216997" x2="622.4614703834699" y1="217" y2="217"
+          <line x1="383.01365680920014" x2="438.95961472264935" y1="217" y2="217"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="482.5045592216997" x2="482.5045592216997" y1="213.5" y2="220.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="622.4614703834699" x2="622.4614703834699" y1="213.5" y2="220.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="544.2302430421908" y="209" width="16" height="16" fill="#3b82f6"/>
+          <line x1="383.01365680920014" x2="383.01365680920014" y1="213.5" y2="220.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="438.95961472264935" x2="438.95961472264935" y1="213.5" y2="220.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="402.88559353691784" y="209" width="16" height="16" fill="#3b82f6"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="393.5492618954097" x2="546.9595970211333" y1="247" y2="247"
+          <line x1="347.4549317767318" x2="408.7787212286976" y1="247" y2="247"
             stroke="#27272a" stroke-width="1.75"/>
-          <line x1="393.5492618954097" x2="393.5492618954097" y1="243.5" y2="250.5" stroke="#27272a" stroke-width="1.75"/>
-          <line x1="546.9595970211333" x2="546.9595970211333" y1="243.5" y2="250.5" stroke="#27272a" stroke-width="1.75"/>
-          <rect x="461.27261636535394" y="239" width="16" height="16" fill="#3b82f6"/>
+          <line x1="347.4549317767318" x2="347.4549317767318" y1="243.5" y2="250.5" stroke="#27272a" stroke-width="1.75"/>
+          <line x1="408.7787212286976" x2="408.7787212286976" y1="243.5" y2="250.5" stroke="#27272a" stroke-width="1.75"/>
+          <rect x="369.7243594675445" y="239" width="16" height="16" fill="#3b82f6"/>
         </g>
-<g transform="translate(0, 307)"><line x1="301" x2="754"
+<g transform="translate(0, 307)"><line x1="301" x2="501"
     y1="0" y2="0" stroke="#d4d4d8" stroke-width="1"/>
-<line x1="316.92677345537754" x2="316.92677345537754" y1="0" y2="4"
+<line x1="316.82608695652175" x2="316.82608695652175" y1="0" y2="4"
       stroke="#d4d4d8" stroke-width="1"/>
-<text x="318.92677345537754" y="16" text-anchor="start"
+<text x="318.82608695652175" y="16" text-anchor="start"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       fill="#52525b">0.30</text>
-<line x1="482.5045592216997" x2="482.5045592216997" y1="0" y2="4"
+<line x1="406.63702301190466" x2="406.63702301190466" y1="0" y2="4"
       stroke="#d4d4d8" stroke-width="1"/>
-<text x="482.5045592216997" y="16" text-anchor="middle"
-      font-family="Inter, system-ui, -apple-system, sans-serif"
-      font-size="13px"
-      fill="#52525b">0.50</text>
-<line x1="541.6018289491891" x2="541.6018289491891" y1="0" y2="4"
-      stroke="#d4d4d8" stroke-width="1"/>
-<text x="541.6018289491891" y="16" text-anchor="middle"
+<text x="406.63702301190466" y="16" text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       fill="#52525b">0.60</text>
-<line x1="634.850402131676" x2="634.850402131676" y1="0" y2="4"
+<line x1="472.82459286458305" x2="472.82459286458305" y1="0" y2="4"
       stroke="#d4d4d8" stroke-width="1"/>
-<text x="634.850402131676" y="16" text-anchor="middle"
-      font-family="Inter, system-ui, -apple-system, sans-serif"
-      font-size="13px"
-      fill="#52525b">0.80</text>
-<line x1="707.1796147155112" x2="707.1796147155112" y1="0" y2="4"
-      stroke="#d4d4d8" stroke-width="1"/>
-<text x="707.1796147155112" y="16" text-anchor="middle"
+<text x="470.82459286458305" y="16" text-anchor="end"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       fill="#52525b">1.00</text>
-<text x="527.5" y="28"
+<text x="401" y="28"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"

@@ -2797,20 +2797,29 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Helper to get column width
   const getColWidth = (col: ColumnSpec): number => {
     if (col.type === "forest") {
-      // Forest column width: check col.width first, then options.forest.width, then layout default
+      // Forest column width: check autoWidths (from web view) first, then col.width, then options, then layout
+      // autoWidths includes the resized width if user manually resized the forest column
+      const precomputed = autoWidths.get(col.id);
+      if (precomputed !== undefined) return precomputed;
       if (typeof col.width === "number") return col.width;
       return col.options?.forest?.width ?? layout.forestWidth;
     }
-    // Viz column widths: check col.width first, then options width, then layout default
+    // Viz column widths: check autoWidths first, then col.width, then options width, then layout default
     if (col.type === "viz_bar") {
+      const precomputed = autoWidths.get(col.id);
+      if (precomputed !== undefined) return precomputed;
       if (typeof col.width === "number") return col.width;
       return col.options?.vizBar?.width ?? layout.forestWidth;
     }
     if (col.type === "viz_boxplot") {
+      const precomputed = autoWidths.get(col.id);
+      if (precomputed !== undefined) return precomputed;
       if (typeof col.width === "number") return col.width;
       return col.options?.vizBoxplot?.width ?? layout.forestWidth;
     }
     if (col.type === "viz_violin") {
+      const precomputed = autoWidths.get(col.id);
+      if (precomputed !== undefined) return precomputed;
       if (typeof col.width === "number") return col.width;
       return col.options?.vizViolin?.width ?? layout.forestWidth;
     }
