@@ -60,15 +60,15 @@ function measureTextWidth(
   fontWeight: number = 400
 ): number {
   // Try canvas measurement first (only works in browser)
-  const fontString = `${fontWeight} ${fontSize}px ${fontFamily}`;
-  const canvasWidth = measureTextWidthCanvas(text, `${fontSize}px`, fontFamily);
+  // Canvas now includes font-weight for accurate bold text measurement
+  const canvasWidth = measureTextWidthCanvas(text, `${fontSize}px`, fontFamily, fontWeight);
   if (canvasWidth !== null) {
-    // Canvas doesn't account for font-weight well, apply multiplier
-    const weightMultiplier = 1 + Math.max(0, (fontWeight - 400) / 100) * 0.03;
-    return canvasWidth * weightMultiplier;
+    return canvasWidth;
   }
   // Fall back to character-class estimation (V8/Node)
-  return estimateTextWidth(text, fontSize);
+  // Apply weight multiplier since estimation doesn't account for bold
+  const weightMultiplier = 1 + Math.max(0, (fontWeight - 400) / 100) * 0.02;
+  return estimateTextWidth(text, fontSize) * weightMultiplier;
 }
 import {
   computeBoxplotStats,

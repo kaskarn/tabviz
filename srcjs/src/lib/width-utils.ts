@@ -93,7 +93,8 @@ export function estimateTextWidth(text: string, fontSize: number): number {
 export function measureTextWidthCanvas(
   text: string,
   fontSize: string,
-  fontFamily: string
+  fontFamily: string,
+  fontWeight: number = 400
 ): number | null {
   if (typeof document === "undefined") return null;
 
@@ -101,7 +102,8 @@ export function measureTextWidthCanvas(
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
-  ctx.font = `${fontSize} ${fontFamily}`;
+  // Canvas font syntax: "[font-weight] [font-size] [font-family]"
+  ctx.font = `${fontWeight} ${fontSize} ${fontFamily}`;
   return ctx.measureText(text).width;
 }
 

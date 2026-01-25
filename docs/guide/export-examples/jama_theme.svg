@@ -23,13 +23,13 @@
       font-size="12.6px"
       font-weight="700"
       fill="#000000">Study</text>
-<text class="cell-text" x="96" y="52"
+<text class="cell-text" x="101" y="52"
         font-family="Arial, Helvetica, sans-serif"
         font-size="12.6px"
         font-weight="700"
         text-anchor="start"
         fill="#000000"></text>
-<text class="cell-text" x="256" y="52"
+<text class="cell-text" x="261" y="52"
         font-family="Arial, Helvetica, sans-serif"
         font-size="12.6px"
         font-weight="700"
@@ -44,57 +44,57 @@
 <rect x="6" y="118"
               width="488" height="18"
               fill="#f9fafb"/>
-<line x1="204.54355931222545" x2="204.54355931222545" y1="64" y2="163"
+<line x1="209.54355931222545" x2="209.54355931222545" y1="64" y2="163"
     stroke="#555555" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
-          <line x1="122.34046213464428" x2="196.80304653226486" y1="73" y2="73"
+          <line x1="127.34046213464428" x2="201.80304653226486" y1="73" y2="73"
             stroke="#000000" stroke-width="1.25"/>
-          <line x1="122.34046213464428" x2="122.34046213464428" y1="70" y2="76" stroke="#000000" stroke-width="1.25"/>
-          <line x1="196.80304653226486" x2="196.80304653226486" y1="70" y2="76" stroke="#000000" stroke-width="1.25"/>
-          <rect x="155.10471888222077" y="69" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="127.34046213464428" x2="127.34046213464428" y1="70" y2="76" stroke="#000000" stroke-width="1.25"/>
+          <line x1="201.80304653226486" x2="201.80304653226486" y1="70" y2="76" stroke="#000000" stroke-width="1.25"/>
+          <rect x="160.10471888222077" y="69" width="8" height="8" fill="#1a1a1a"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="119.71592790781395" x2="220.2922072004033" y1="91" y2="91"
+          <line x1="124.71592790781395" x2="225.2922072004033" y1="91" y2="91"
             stroke="#000000" stroke-width="1.25"/>
-          <line x1="119.71592790781395" x2="119.71592790781395" y1="88" y2="94" stroke="#000000" stroke-width="1.25"/>
-          <line x1="220.2922072004033" x2="220.2922072004033" y1="88" y2="94" stroke="#000000" stroke-width="1.25"/>
-          <rect x="164.9714293305562" y="87" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="124.71592790781395" x2="124.71592790781395" y1="88" y2="94" stroke="#000000" stroke-width="1.25"/>
+          <line x1="225.2922072004033" x2="225.2922072004033" y1="88" y2="94" stroke="#000000" stroke-width="1.25"/>
+          <rect x="169.9714293305562" y="87" width="8" height="8" fill="#1a1a1a"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="167.0490222593821" x2="199.94705429889018" y1="109" y2="109"
+          <line x1="172.0490222593821" x2="204.94705429889018" y1="109" y2="109"
             stroke="#000000" stroke-width="1.25"/>
-          <line x1="167.0490222593821" x2="167.0490222593821" y1="106" y2="112" stroke="#000000" stroke-width="1.25"/>
-          <line x1="199.94705429889018" x2="199.94705429889018" y1="106" y2="112" stroke="#000000" stroke-width="1.25"/>
-          <rect x="179.52795045282684" y="105" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="172.0490222593821" x2="172.0490222593821" y1="106" y2="112" stroke="#000000" stroke-width="1.25"/>
+          <line x1="204.94705429889018" x2="204.94705429889018" y1="106" y2="112" stroke="#000000" stroke-width="1.25"/>
+          <rect x="184.52795045282684" y="105" width="8" height="8" fill="#1a1a1a"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="168.9714293305562" x2="203.02689414096272" y1="127" y2="127"
+          <line x1="173.9714293305562" x2="208.02689414096272" y1="127" y2="127"
             stroke="#000000" stroke-width="1.25"/>
-          <line x1="168.9714293305562" x2="168.9714293305562" y1="124" y2="130" stroke="#000000" stroke-width="1.25"/>
-          <line x1="203.02689414096272" x2="203.02689414096272" y1="124" y2="130" stroke="#000000" stroke-width="1.25"/>
-          <rect x="181.2526196739659" y="123" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="173.9714293305562" x2="173.9714293305562" y1="124" y2="130" stroke="#000000" stroke-width="1.25"/>
+          <line x1="208.02689414096272" x2="208.02689414096272" y1="124" y2="130" stroke="#000000" stroke-width="1.25"/>
+          <rect x="186.2526196739659" y="123" width="8" height="8" fill="#1a1a1a"/>
         </g>
-<g transform="translate(0, 163)"><line x1="86" x2="246"
+<g transform="translate(0, 163)"><line x1="91" x2="251"
     y1="0" y2="0" stroke="#000000" stroke-width="1"/>
-<line x1="127.45644068777456" x2="127.45644068777456" y1="0" y2="4"
+<line x1="132.45644068777455" x2="132.45644068777455" y1="0" y2="4"
       stroke="#000000" stroke-width="1"/>
-<text x="127.45644068777456" y="16" text-anchor="middle"
+<text x="132.45644068777455" y="16" text-anchor="middle"
       font-family="Arial, Helvetica, sans-serif"
       font-size="10.67px"
       font-weight="400"
       fill="#333333">0.60</text>
-<line x1="204.54355931222545" x2="204.54355931222545" y1="0" y2="4"
+<line x1="209.54355931222545" x2="209.54355931222545" y1="0" y2="4"
       stroke="#000000" stroke-width="1"/>
-<text x="204.54355931222545" y="16" text-anchor="middle"
+<text x="209.54355931222545" y="16" text-anchor="middle"
       font-family="Arial, Helvetica, sans-serif"
       font-size="10.67px"
       font-weight="400"
       fill="#333333">1.00</text>
-<text x="166" y="28"
+<text x="171" y="28"
       text-anchor="middle"
       font-family="Arial, Helvetica, sans-serif"
       font-size="10.67px"
@@ -106,7 +106,7 @@
     font-weight="400"
     font-style="normal"
     fill="#000000">SUSTAIN-6</text>
-<text class="cell-text" x="256" y="73"
+<text class="cell-text" x="261" y="73"
         font-family="Arial, Helvetica, sans-serif"
         font-size="12px"
         font-weight="400"
@@ -122,7 +122,7 @@
     font-weight="400"
     font-style="normal"
     fill="#000000">PIONEER 6</text>
-<text class="cell-text" x="256" y="91"
+<text class="cell-text" x="261" y="91"
         font-family="Arial, Helvetica, sans-serif"
         font-size="12px"
         font-weight="400"
@@ -138,7 +138,7 @@
     font-weight="400"
     font-style="normal"
     fill="#000000">LEADER</text>
-<text class="cell-text" x="256" y="109"
+<text class="cell-text" x="261" y="109"
         font-family="Arial, Helvetica, sans-serif"
         font-size="12px"
         font-weight="400"
@@ -154,7 +154,7 @@
     font-weight="400"
     font-style="normal"
     fill="#000000">REWIND</text>
-<text class="cell-text" x="256" y="127"
+<text class="cell-text" x="261" y="127"
         font-family="Arial, Helvetica, sans-serif"
         font-size="12px"
         font-weight="400"

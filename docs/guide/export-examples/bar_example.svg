@@ -23,13 +23,13 @@
       font-size="15.75px"
       font-weight="600"
       fill="#18181b">Department</text>
-<text class="cell-text" x="139" y="74"
+<text class="cell-text" x="141" y="74"
         font-family="Inter, system-ui, -apple-system, sans-serif"
         font-size="15.75px"
         font-weight="600"
         text-anchor="start"
         fill="#18181b">Enrollment</text>
-<text class="cell-text" x="319" y="74"
+<text class="cell-text" x="321" y="74"
         font-family="Inter, system-ui, -apple-system, sans-serif"
         font-size="15.75px"
         font-weight="600"
@@ -45,71 +45,71 @@
               width="472" height="30"
               fill="#f5f5f5"/>
 <rect
-      x="141" y="96.5"
+      x="143" y="96.5"
       width="109.2" height="21"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="141" y="126.5"
+      x="143" y="126.5"
       width="139.06285714285715" height="21"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="141" y="156.5"
+      x="143" y="156.5"
       width="84.24000000000001" height="21"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="141" y="186.5"
+      x="143" y="186.5"
       width="69.53142857142858" height="21"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <g transform="translate(0, 257)">
-<line x1="129" x2="309"
+<line x1="131" x2="311"
     y1="0" y2="0" stroke="#d4d4d8" stroke-width="1"/>
-<line x1="141" x2="141" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
-<text x="143" y="14"
+<line x1="143" x2="143" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
+<text x="145" y="14"
       text-anchor="start"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       font-weight="400"
       fill="#18181b">0</text>
-<line x1="172.2" x2="172.2" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
-<text x="172.2" y="14"
+<line x1="174.2" x2="174.2" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
+<text x="174.2" y="14"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       font-weight="400"
       fill="#18181b">70</text>
-<line x1="203.4" x2="203.4" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
-<text x="203.4" y="14"
+<line x1="205.4" x2="205.4" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
+<text x="205.4" y="14"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       font-weight="400"
       fill="#18181b">140</text>
-<line x1="234.60000000000002" x2="234.60000000000002" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
-<text x="234.60000000000002" y="14"
+<line x1="236.60000000000002" x2="236.60000000000002" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
+<text x="236.60000000000002" y="14"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       font-weight="400"
       fill="#18181b">210</text>
-<line x1="265.8" x2="265.8" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
-<text x="265.8" y="14"
+<line x1="267.8" x2="267.8" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
+<text x="267.8" y="14"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       font-weight="400"
       fill="#18181b">280</text>
-<line x1="297" x2="297" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
-<text x="295" y="14"
+<line x1="299" x2="299" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
+<text x="297" y="14"
       text-anchor="end"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
       font-weight="400"
       fill="#18181b">350</text>
-<text x="219" y="28"
+<text x="221" y="28"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="13px"
@@ -122,7 +122,7 @@
     font-weight="400"
     font-style="normal"
     fill="#18181b">Cardiology</text>
-<text class="cell-text" x="319" y="107"
+<text class="cell-text" x="321" y="107"
         font-family="Inter, system-ui, -apple-system, sans-serif"
         font-size="15px"
         font-weight="400"
@@ -138,7 +138,7 @@
     font-weight="400"
     font-style="normal"
     fill="#18181b">Oncology</text>
-<text class="cell-text" x="319" y="137"
+<text class="cell-text" x="321" y="137"
         font-family="Inter, system-ui, -apple-system, sans-serif"
         font-size="15px"
         font-weight="400"
@@ -154,7 +154,7 @@
     font-weight="400"
     font-style="normal"
     fill="#18181b">Neurology</text>
-<text class="cell-text" x="319" y="167"
+<text class="cell-text" x="321" y="167"
         font-family="Inter, system-ui, -apple-system, sans-serif"
         font-size="15px"
         font-weight="400"
@@ -170,7 +170,7 @@
     font-weight="400"
     font-style="normal"
     fill="#18181b">Pediatrics</text>
-<text class="cell-text" x="319" y="197"
+<text class="cell-text" x="321" y="197"
         font-family="Inter, system-ui, -apple-system, sans-serif"
         font-size="15px"
         font-weight="400"

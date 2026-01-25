@@ -23,13 +23,13 @@
       font-size="14.7px"
       font-weight="600"
       fill="#cdd6f4">Study</text>
-<text class="cell-text" x="117" y="68"
+<text class="cell-text" x="122" y="68"
         font-family="system-ui, -apple-system, sans-serif"
         font-size="14.7px"
         font-weight="600"
         text-anchor="start"
         fill="#cdd6f4"></text>
-<text class="cell-text" x="277" y="68"
+<text class="cell-text" x="282" y="68"
         font-family="system-ui, -apple-system, sans-serif"
         font-size="14.7px"
         font-weight="600"
@@ -44,57 +44,57 @@
 <rect x="12" y="162"
               width="476" height="26"
               fill="#232334"/>
-<line x1="225.0006922796589" x2="225.0006922796589" y1="84" y2="227"
+<line x1="230.0006922796589" x2="230.0006922796589" y1="84" y2="227"
     stroke="#6c7086" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
-          <line x1="143.95538520317044" x2="217.36920080645828" y1="97" y2="97"
+          <line x1="148.95538520317044" x2="222.36920080645828" y1="97" y2="97"
             stroke="#9399b2" stroke-width="1.5"/>
-          <line x1="143.95538520317044" x2="143.95538520317044" y1="94" y2="100" stroke="#9399b2" stroke-width="1.5"/>
-          <line x1="217.36920080645828" x2="217.36920080645828" y1="94" y2="100" stroke="#9399b2" stroke-width="1.5"/>
-          <rect x="174.20183551768244" y="91" width="12" height="12" fill="#89b4fa"/>
+          <line x1="148.95538520317044" x2="148.95538520317044" y1="94" y2="100" stroke="#9399b2" stroke-width="1.5"/>
+          <line x1="222.36920080645828" x2="222.36920080645828" y1="94" y2="100" stroke="#9399b2" stroke-width="1.5"/>
+          <rect x="179.20183551768244" y="91" width="12" height="12" fill="#89b4fa"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="141.36781624714052" x2="240.52752822574973" y1="123" y2="123"
+          <line x1="146.36781624714052" x2="245.52752822574973" y1="123" y2="123"
             stroke="#9399b2" stroke-width="1.5"/>
-          <line x1="141.36781624714052" x2="141.36781624714052" y1="120" y2="126" stroke="#9399b2" stroke-width="1.5"/>
-          <line x1="240.52752822574973" x2="240.52752822574973" y1="120" y2="126" stroke="#9399b2" stroke-width="1.5"/>
-          <rect x="183.92957821322443" y="117" width="12" height="12" fill="#89b4fa"/>
+          <line x1="146.36781624714052" x2="146.36781624714052" y1="120" y2="126" stroke="#9399b2" stroke-width="1.5"/>
+          <line x1="245.52752822574973" x2="245.52752822574973" y1="120" y2="126" stroke="#9399b2" stroke-width="1.5"/>
+          <rect x="188.92957821322443" y="117" width="12" height="12" fill="#89b4fa"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="188.03424729798235" x2="220.46892677355368" y1="149" y2="149"
+          <line x1="193.03424729798235" x2="225.46892677355368" y1="149" y2="149"
             stroke="#9399b2" stroke-width="1.5"/>
-          <line x1="188.03424729798235" x2="188.03424729798235" y1="146" y2="152" stroke="#9399b2" stroke-width="1.5"/>
-          <line x1="220.46892677355368" x2="220.46892677355368" y1="146" y2="152" stroke="#9399b2" stroke-width="1.5"/>
-          <rect x="198.28107791123773" y="143" width="12" height="12" fill="#89b4fa"/>
+          <line x1="193.03424729798235" x2="193.03424729798235" y1="146" y2="152" stroke="#9399b2" stroke-width="1.5"/>
+          <line x1="225.46892677355368" x2="225.46892677355368" y1="146" y2="152" stroke="#9399b2" stroke-width="1.5"/>
+          <rect x="203.28107791123773" y="143" width="12" height="12" fill="#89b4fa"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="189.92957821322443" x2="223.50538858968153" y1="175" y2="175"
+          <line x1="194.92957821322443" x2="228.50538858968153" y1="175" y2="175"
             stroke="#9399b2" stroke-width="1.5"/>
-          <line x1="189.92957821322443" x2="189.92957821322443" y1="172" y2="178" stroke="#9399b2" stroke-width="1.5"/>
-          <line x1="223.50538858968153" x2="223.50538858968153" y1="172" y2="178" stroke="#9399b2" stroke-width="1.5"/>
-          <rect x="199.9814560165861" y="169" width="12" height="12" fill="#89b4fa"/>
+          <line x1="194.92957821322443" x2="194.92957821322443" y1="172" y2="178" stroke="#9399b2" stroke-width="1.5"/>
+          <line x1="228.50538858968153" x2="228.50538858968153" y1="172" y2="178" stroke="#9399b2" stroke-width="1.5"/>
+          <rect x="204.9814560165861" y="169" width="12" height="12" fill="#89b4fa"/>
         </g>
-<g transform="translate(0, 227)"><line x1="107" x2="267"
+<g transform="translate(0, 227)"><line x1="112" x2="272"
     y1="0" y2="0" stroke="#313244" stroke-width="1"/>
-<line x1="148.9993077203411" x2="148.9993077203411" y1="0" y2="4"
+<line x1="153.9993077203411" x2="153.9993077203411" y1="0" y2="4"
       stroke="#313244" stroke-width="1"/>
-<text x="148.9993077203411" y="16" text-anchor="middle"
+<text x="153.9993077203411" y="16" text-anchor="middle"
       font-family="system-ui, -apple-system, sans-serif"
       font-size="12px"
       font-weight="400"
       fill="#a6adc8">0.60</text>
-<line x1="225.0006922796589" x2="225.0006922796589" y1="0" y2="4"
+<line x1="230.0006922796589" x2="230.0006922796589" y1="0" y2="4"
       stroke="#313244" stroke-width="1"/>
-<text x="225.0006922796589" y="16" text-anchor="middle"
+<text x="230.0006922796589" y="16" text-anchor="middle"
       font-family="system-ui, -apple-system, sans-serif"
       font-size="12px"
       font-weight="400"
       fill="#a6adc8">1.00</text>
-<text x="187" y="28"
+<text x="192" y="28"
       text-anchor="middle"
       font-family="system-ui, -apple-system, sans-serif"
       font-size="12px"
@@ -106,7 +106,7 @@
     font-weight="400"
     font-style="normal"
     fill="#cdd6f4">SUSTAIN-6</text>
-<text class="cell-text" x="277" y="97"
+<text class="cell-text" x="282" y="97"
         font-family="system-ui, -apple-system, sans-serif"
         font-size="14px"
         font-weight="400"
@@ -122,7 +122,7 @@
     font-weight="400"
     font-style="normal"
     fill="#cdd6f4">PIONEER 6</text>
-<text class="cell-text" x="277" y="123"
+<text class="cell-text" x="282" y="123"
         font-family="system-ui, -apple-system, sans-serif"
         font-size="14px"
         font-weight="400"
@@ -138,7 +138,7 @@
     font-weight="400"
     font-style="normal"
     fill="#cdd6f4">LEADER</text>
-<text class="cell-text" x="277" y="149"
+<text class="cell-text" x="282" y="149"
         font-family="system-ui, -apple-system, sans-serif"
         font-size="14px"
         font-weight="400"
@@ -154,7 +154,7 @@
     font-weight="400"
     font-style="normal"
     fill="#cdd6f4">REWIND</text>
-<text class="cell-text" x="277" y="175"
+<text class="cell-text" x="282" y="175"
         font-family="system-ui, -apple-system, sans-serif"
         font-size="14px"
         font-weight="400"
