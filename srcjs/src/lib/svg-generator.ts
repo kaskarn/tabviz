@@ -47,7 +47,29 @@ import {
   formatPvalue,
   getColumnDisplayText,
 } from "./formatters";
-import { estimateTextWidth } from "./width-utils";
+import { estimateTextWidth, measureTextWidthCanvas } from "./width-utils";
+
+/**
+ * Measure text width - uses canvas when available (browser), falls back to estimation (V8/Node).
+ * This gives accurate measurements in browser while still working in DOM-free environments.
+ */
+function measureTextWidth(
+  text: string,
+  fontSize: number,
+  fontFamily: string,
+  fontWeight: number = 400
+): number {
+  // Try canvas measurement first (only works in browser)
+  const fontString = `${fontWeight} ${fontSize}px ${fontFamily}`;
+  const canvasWidth = measureTextWidthCanvas(text, `${fontSize}px`, fontFamily);
+  if (canvasWidth !== null) {
+    // Canvas doesn't account for font-weight well, apply multiplier
+    const weightMultiplier = 1 + Math.max(0, (fontWeight - 400) / 100) * 0.03;
+    return canvasWidth * weightMultiplier;
+  }
+  // Fall back to character-class estimation (V8/Node)
+  return estimateTextWidth(text, fontSize);
+}
 import {
   computeBoxplotStats,
   computeKDE,
@@ -1157,10 +1179,9 @@ function renderGroupHeader(
   // Row count (e.g., "(15)") - smaller muted text after label
   // Web CSS: font-weight: normal, color: muted, font-size: 0.75rem
   if (rowCount > 0) {
-    // Estimate label width - apply weight-based multiplier since heavier fonts render wider
-    // Scale: 400 (normal) = 1.0, 500 = 1.03, 600 = 1.06, 700 = 1.09
-    const weightMultiplier = 1 + Math.max(0, (fontWeight - 400) / 100) * 0.03;
-    const labelWidth = estimateTextWidth(label, fontSize) * weightMultiplier;
+    // Use smart measurement: canvas in browser, estimation in V8/Node
+    // measureTextWidth handles font-weight adjustment internally
+    const labelWidth = measureTextWidth(label, fontSize, theme.typography.fontFamily, fontWeight);
     const countX = labelX + labelWidth + 6; // 6px gap (matches web's flex gap)
     const countFontSize = parseFontSize(theme.typography.fontSizeSm ?? "0.75rem");
     lines.push(`<text class="cell-text" x="${countX}" y="${textY}"
@@ -2395,9 +2416,10 @@ function renderUnifiedTableRow(
     const badgeText = String(row.style.badge);
     const badgeFontSize = fontSize * BADGE.FONT_SCALE;
     const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
-    const labelTextWidth = estimateTextWidth(row.label, fontSize);
+    // Use smart measurement for accurate label width
+    const labelTextWidth = measureTextWidth(row.label, fontSize, theme.typography.fontFamily, fontWeight);
     const badgeX = x + SPACING.TEXT_PADDING + indent + labelTextWidth + BADGE.GAP;
-    const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
+    const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.typography.fontFamily, theme.typography.fontWeightBold);
     const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
     const badgeY = y + (rowHeight - badgeHeight) / 2;
 
@@ -2489,7 +2511,7 @@ function renderUnifiedTableRow(
           badgeTextColor = badgeColor;
         }
 
-        const badgeTextWidth = estimateTextWidth(badgeText, badgeFontSize);
+        const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.typography.fontFamily, theme.typography.fontWeightBold);
         const badgeWidth = badgeTextWidth + 12;
         const badgeX = col.align === "right"
           ? currentX + width - SPACING.TEXT_PADDING - badgeWidth
