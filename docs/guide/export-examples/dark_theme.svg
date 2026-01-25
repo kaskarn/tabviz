@@ -15,6 +15,9 @@
       font-size="16px"
       font-weight="600"
       fill="#cdd6f4">Dark Theme Export</text>
+<line x1="12" x2="488"
+    y1="52" y2="52"
+    stroke="#313244" stroke-width="2"/>
 <text class="cell-text" x="22" y="68"
       font-family="system-ui, -apple-system, sans-serif"
       font-size="14.7px"
