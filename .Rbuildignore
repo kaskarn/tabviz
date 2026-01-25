@@ -19,3 +19,4 @@
 ^.*\.tar\.gz$
 ^\.quarto$
 ^CRAN-SUBMISSION$
+^tests/visual$
