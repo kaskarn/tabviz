@@ -1057,9 +1057,9 @@ function renderHeader(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
       fill="${theme.colors.secondary}">${escapeXml(spec.labels.subtitle)}</text>`);
   }
 
-  // Thin separator line only when BOTH title AND subtitle exist
+  // Thin separator line between title and subtitle (only when both exist)
   if (spec.labels?.title && spec.labels?.subtitle) {
-    const separatorY = layout.mainY - 4; // 4px above the table
+    const separatorY = layout.subtitleY - 10; // Above subtitle text
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${separatorY}" y2="${separatorY}"
       stroke="${theme.colors.border}" stroke-width="1"/>`);

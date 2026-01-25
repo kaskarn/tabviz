@@ -37,12 +37,6 @@
     padding: 12px 8px 4px 2px;
   }
 
-  /* Separator line only when both title AND subtitle exist */
-  .header-area.has-both {
-    border-bottom: 1px solid var(--wf-border, #e2e8f0);
-    padding-bottom: 8px;
-    margin-bottom: 4px;
-  }
 
   .title-area {
     flex: 1;
@@ -77,5 +71,12 @@
     line-height: 1.4;
     white-space: normal;
     word-wrap: break-word;
+  }
+
+  /* Subtle separator above subtitle when both title and subtitle exist */
+  .has-both .plot-subtitle {
+    border-top: 1px solid var(--wf-border, #e2e8f0);
+    padding-top: 6px;
+    margin-top: 6px;
   }
 </style>

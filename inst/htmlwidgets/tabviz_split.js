@@ -48,7 +48,7 @@ ${i}
       font-family="${r.typography.fontFamily}"
       font-size="${l}px"
       font-weight="${r.typography.fontWeightNormal}"
-      fill="${r.colors.secondary}">${an(t.labels.subtitle)}</text>`)}if((c=t.labels)!=null&&c.title&&((f=t.labels)!=null&&f.subtitle)){const l=e.mainY-4;o.push(`<line x1="${i}" x2="${e.totalWidth-i}"
+      fill="${r.colors.secondary}">${an(t.labels.subtitle)}</text>`)}if((c=t.labels)!=null&&c.title&&((f=t.labels)!=null&&f.subtitle)){const l=e.subtitleY-10;o.push(`<line x1="${i}" x2="${e.totalWidth-i}"
       y1="${l}" y2="${l}"
       stroke="${r.colors.border}" stroke-width="1"/>`)}return o.join(`
 `)}function Zg(t,e,r){var c,f,l,u;const o=[],i=r.spacing.padding;let a=e.footerY;if(!!((c=t.labels)!=null&&c.caption)||!!((f=t.labels)!=null&&f.footnote)){const h=e.footerY-8;o.push(`<line x1="${i}" x2="${e.totalWidth-i}"
