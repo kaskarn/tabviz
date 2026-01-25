@@ -59,6 +59,7 @@
 
   .plot-title {
     margin: 0;
+    padding: 0 0 0.15rem 0;
     border: none;
     font-size: var(--wf-font-size-lg, 1rem);
     font-weight: var(--wf-font-weight-bold, 600);
