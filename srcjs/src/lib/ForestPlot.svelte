@@ -69,10 +69,8 @@
   const hasVizColumns = $derived(vizColumns.length > 0);
   const labelHeader = $derived(spec?.data.labelHeader || "Study");
 
-  // Check if title/subtitle area is shown
+  // Check if title/subtitle area is shown (for header area and top table border)
   const hasPlotHeader = $derived(!!spec?.labels?.title || !!spec?.labels?.subtitle);
-  // Border between header and table only when subtitle exists (title alone uses container border)
-  const hasSubtitle = $derived(!!spec?.labels?.subtitle);
 
   // Check if we have column groups (need two-row header)
   const hasColumnGroups = $derived(
@@ -929,7 +927,7 @@
       {/snippet}
 
       <!-- CSS Grid layout: label | left cols | plot | right cols -->
-      <div class="tabviz-main" class:has-header={hasSubtitle} style:grid-template-columns={gridTemplateColumns}>
+      <div class="tabviz-main" style:grid-template-columns={gridTemplateColumns}>
         <!-- Header cells (supports hierarchical column groups) -->
         <!-- Label header (spans all header rows) -->
         <div
@@ -1606,8 +1604,8 @@
     min-height: 0;
   }
 
-  /* Only show border when subtitle is present - title alone uses container border */
-  .tabviz-main.has-header {
+  /* Top border frames column headers (symmetric with header bottom border) */
+  .tabviz-main {
     border-top: 2px solid var(--wf-border);
   }
 

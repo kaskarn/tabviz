@@ -2983,13 +2983,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Header (title, subtitle)
   parts.push(renderHeader(spec, layout, theme));
 
-  // Table separator line (only when subtitle is present - title alone uses container border)
-  const hasSubtitle = !!spec.labels?.subtitle;
-  if (hasSubtitle) {
-    parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
-      y1="${layout.mainY}" y2="${layout.mainY}"
-      stroke="${theme.colors.border}" stroke-width="2"/>`);
-  }
+  // Top table border - frames column headers (symmetric with header bottom border)
+  parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
+    y1="${layout.mainY}" y2="${layout.mainY}"
+    stroke="${theme.colors.border}" stroke-width="2"/>`);
 
   // Column headers - unified layout
   const headerY = layout.mainY;
