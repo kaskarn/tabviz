@@ -35,3 +35,4 @@ cran-comments.md
 # Test artifacts
 srcjs/*.html
 tests/visual/output/
+tests/visual/
