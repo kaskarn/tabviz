@@ -50,30 +50,36 @@ import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "./re
  * This uses font-specific average character widths rather than a single multiplier.
  */
 export function estimateTextWidth(text: string, fontSize: number): number {
-  // Character width categories:
-  // Very narrow: superscript/subscript characters (used in scientific notation)
-  // Narrow: i, l, 1, punctuation, space
-  // Wide: m, w, M, W, @, %
-  // Medium digits: 0-9 (tabular numbers)
-  // Normal: everything else
+  // Character width categories (proportions of fontSize):
+  // Very narrow: superscript/subscript characters (0.3)
+  // Narrow: i, l, I, 1, punctuation, space (0.35)
+  // Math operators: ×, − (0.5)
+  // Normal lowercase: a-z except i,l,m,w (0.55)
+  // Digits: 0-9 tabular (0.6)
+  // Uppercase: A-Z except I,M,W (0.68) - capitals are wider than lowercase
+  // Wide: m, w, M, W, @, % (0.85)
   const SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻";
+  const NARROW = "ilI1.,;:|!()[]{}' -";
+  const WIDE = "mwMW@%";
+  const UPPERCASE = "ABCDEFGHJKLNOPQRSTUVXYZ"; // excluding I, M, W (handled separately)
 
   let width = 0;
   for (const char of text) {
     if (SUPERSCRIPTS.includes(char)) {
-      // Superscript characters are very narrow
       width += fontSize * 0.3;
-    } else if ("il1.,;:|!()[]{}' ".includes(char)) {
+    } else if (NARROW.includes(char)) {
       width += fontSize * 0.35;
     } else if ("×−".includes(char)) {
-      // Math operators (multiplication sign, minus sign)
       width += fontSize * 0.5;
-    } else if ("mwMW@%".includes(char)) {
+    } else if (WIDE.includes(char)) {
       width += fontSize * 0.85;
     } else if (char >= "0" && char <= "9") {
-      // Tabular numbers have consistent width
       width += fontSize * 0.6;
+    } else if (UPPERCASE.includes(char)) {
+      // Uppercase letters are wider than lowercase
+      width += fontSize * 0.68;
     } else {
+      // Lowercase and other characters
       width += fontSize * 0.55;
     }
   }
