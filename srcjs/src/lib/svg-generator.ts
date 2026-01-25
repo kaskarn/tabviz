@@ -1157,8 +1157,10 @@ function renderGroupHeader(
   // Row count (e.g., "(15)") - smaller muted text after label
   // Web CSS: font-weight: normal, color: muted, font-size: 0.75rem
   if (rowCount > 0) {
-    // Use proper text width estimation for positioning count
-    const labelWidth = estimateTextWidth(label, fontSize);
+    // Estimate label width - apply weight-based multiplier since heavier fonts render wider
+    // Scale: 400 (normal) = 1.0, 500 = 1.03, 600 = 1.06, 700 = 1.09
+    const weightMultiplier = 1 + Math.max(0, (fontWeight - 400) / 100) * 0.03;
+    const labelWidth = estimateTextWidth(label, fontSize) * weightMultiplier;
     const countX = labelX + labelWidth + 6; // 6px gap (matches web's flex gap)
     const countFontSize = parseFontSize(theme.typography.fontSizeSm ?? "0.75rem");
     lines.push(`<text class="cell-text" x="${countX}" y="${textY}"
