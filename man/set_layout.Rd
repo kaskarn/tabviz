@@ -31,9 +31,9 @@ set_layout(
 
 \item{cell_padding_y}{Deprecated. Use \code{\link[=set_spacing]{set_spacing()}} instead.}
 
-\item{row_border}{Show horizontal borders between rows (default: TRUE)}
+\item{row_border}{Deprecated and ignored (removed in v0.4.1). Row borders are always rendered.}
 
-\item{row_border_style}{Row border style: "solid", "dashed", or "dotted" (default: "solid")}
+\item{row_border_style}{Deprecated and ignored (removed in v0.4.1).}
 
 \item{container_border}{Show border around the entire plot container (default: FALSE)}
 

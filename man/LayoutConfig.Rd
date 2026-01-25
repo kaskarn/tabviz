@@ -8,8 +8,6 @@ LayoutConfig(
   plot_position = "right",
   table_width = "auto",
   plot_width = "auto",
-  row_border = TRUE,
-  row_border_style = "solid",
   container_border = FALSE,
   container_border_radius = 8,
   banding = TRUE
@@ -21,10 +19,6 @@ LayoutConfig(
 \item{table_width}{Width of table area: "auto" or numeric pixels (default: "auto")}
 
 \item{plot_width}{Width of plot area: "auto" or numeric pixels (default: "auto")}
-
-\item{row_border}{Show horizontal borders between rows (default: TRUE)}
-
-\item{row_border_style}{Style of row borders: "solid", "dashed", or "dotted" (default: "solid")}
 
 \item{container_border}{Show border around the plot container (default: FALSE)}
 
@@ -38,4 +32,7 @@ LayoutConfig: Layout and visual configuration
 \details{
 Note: \code{cell_padding_x} and \code{cell_padding_y} have been moved to the \link{Spacing} class.
 Use \code{\link[=set_spacing]{set_spacing()}} to modify cell padding.
+
+Note: Row borders are always rendered as solid 1px lines. The \code{row_border} and
+\code{row_border_style} properties were removed in v0.4.1 as they were never implemented.
 }

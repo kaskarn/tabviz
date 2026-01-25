@@ -30,3 +30,4 @@ examples_output/
 # Quarto
 docs/_site/
 .quarto/
+cran-comments.md
