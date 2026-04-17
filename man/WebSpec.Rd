@@ -14,6 +14,13 @@
 
 \item{columns}{List of ColumnSpec objects defining table columns (including viz_forest)}
 
+\item{extra_columns}{List of ColumnSpec objects hidden by default but available in the
+interactive column picker. Authors use this to pre-configure how specific optional
+columns should render when a user adds them.}
+
+\item{available_exclude}{Character vector of data column names to exclude from the
+interactive column picker (e.g. sensitive fields that should never be surfaced).}
+
 \item{groups}{List of GroupSpec objects}
 
 \item{summaries}{List of GroupSummary objects}

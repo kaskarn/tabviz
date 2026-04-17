@@ -127,6 +127,8 @@ export interface NumericColumnOptions {
   digits?: number;    // Significant figures (takes precedence over decimals)
   thousandsSep?: string | false;  // Thousands separator (default: "," for integers, false for decimals)
   abbreviate?: boolean | number;  // Abbreviate large numbers (true or sigfig count: 1.1M, 5.3K)
+  prefix?: string;    // Text prepended to formatted value (e.g., "$")
+  suffix?: string;    // Text appended to formatted value (e.g., "%")
 }
 
 export interface IntervalColumnOptions {

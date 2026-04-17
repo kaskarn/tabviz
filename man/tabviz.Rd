@@ -11,6 +11,8 @@ tabviz(
   label_header = "Study",
   group = NULL,
   columns = NULL,
+  extra_columns = NULL,
+  available_exclude = NULL,
   title = NULL,
   subtitle = NULL,
   caption = NULL,
@@ -70,6 +72,13 @@ to innermost, e.g., \code{c("region", "country")} creates region > country
 
 \item{columns}{List of column specifications (use \verb{col_*()} helpers).
 Include \code{viz_forest()} to add a forest plot column.}
+
+\item{extra_columns}{List of column specifications that are hidden by default but
+available in the interactive column picker. Pre-configured formatting for optional
+columns; users can surface them at runtime.}
+
+\item{available_exclude}{Character vector of data columns to omit from the interactive
+column picker (for sensitive or internal-only fields).}
 
 \item{title}{Main title (displayed above the plot)}
 

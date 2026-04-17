@@ -1,3 +1,19 @@
+# tabviz (development version)
+
+## Column editor UX
+
+* **Type picker is now a cascading dropdown, not a chip grid.** Right-click → Insert column after… opens a compact menu: *Text* (leaf) / *Numbers* ▸ / *Composite* ▸ / *Visual* ▸ / *Icons* ▸. Visual types are split into *Simple* (bar, fill bar, sparkline, heatmap, stars) and *Complex* (forest plot) subgroups. Submenus open on hover with a short delay, or on click, and flip to the left when near the viewport edge.
+* **Numeric presets baked into the menu.** *Number / Integer / Percent / Currency / P-value* each seed the editor with sensible defaults (e.g. Integer → `decimals: 0`, Percent → `suffix: "%"`, Currency → `prefix: "$"`) so most inserts commit in one or two clicks.
+* **Editor popover is trimmed** — the Step-1 type grid is gone; what remains is just the field slots and type-specific options, with a small *Change type…* link that reopens the cascading menu.
+* **Numeric prefix/suffix fields** are now editable from the popover, making it easy to fine-tune currency symbols or percentage displays after insertion.
+
+## Internals
+
+* `NumericColumnOptions` now declares the `prefix` / `suffix` fields that the runtime formatter has been reading — type definition catches up with actual behavior.
+* Cleaned up 89 pre-existing `svelte-check` errors for CRAN readiness — all dead-code removals and type tightening, no behavior changes. Added R-side tests pinning the `viz_forest()` all-or-none contract the TS fallback relies on.
+
+---
+
 # tabviz 0.8.0
 
 ## Interactive column add / remove / configure

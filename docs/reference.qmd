@@ -1,7 +1,5 @@
 ---
 title: "Function Reference"
-aliases:
-  - reference.html
 ---
 
 ```{=html}

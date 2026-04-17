@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { ColumnSpec as _ColumnSpec } from "$types";
+  import type { ColumnSpec as _ColumnSpec, ColumnType as _ColumnType } from "$types";
 
   export interface EditorTarget {
     mode: "insert" | "configure";
@@ -9,6 +9,13 @@
     afterId?: string;
     // For "configure": the existing column spec being edited.
     existing?: _ColumnSpec;
+    // Pre-selected visual type (from ColumnTypeMenu). The editor no longer
+    // renders a type grid — the type is fixed once the editor opens.
+    type?: _ColumnType;
+    // Human label for the chosen preset (e.g. "Integer") — shown in the header.
+    presetLabel?: string;
+    // Options bundle pre-seeded from the preset (e.g. { numeric: { decimals: 0 } }).
+    seedOptions?: _ColumnSpec["options"];
   }
 </script>
 
@@ -20,10 +27,8 @@
     VisualTypeDef,
   } from "$types";
   import {
-    VISUAL_TYPES,
     getVisualTypeDef,
     slotCompatibleFields,
-    isTypeSatisfiable,
     autoPairSlots,
   } from "$lib/column-compat";
 
@@ -32,9 +37,12 @@
     available: AvailableField[];
     onCommit: (spec: ColumnSpec, mode: "insert" | "configure", afterId?: string) => void;
     onClose: () => void;
+    // Reopens the ColumnTypeMenu at the same anchor so the user can pick a
+    // different type. Optional: if absent, the "Change type…" link is hidden.
+    onRequestChangeType?: () => void;
   }
 
-  let { target, available, onCommit, onClose }: Props = $props();
+  let { target, available, onCommit, onClose, onRequestChangeType }: Props = $props();
 
   // Local editor state. Reinitialized whenever `target` changes.
   let selectedType = $state<ColumnType>("numeric");
@@ -47,6 +55,8 @@
   let optMaxValue = $state<string>("");
   let optShowPct = $state(false);
   let optSparklineType = $state<"line" | "bar" | "area">("line");
+  let optPrefix = $state<string>("");
+  let optSuffix = $state<string>("");
 
   let popoverEl: HTMLDivElement | null = $state(null);
   let resolvedLeft = $state(0);
@@ -63,12 +73,13 @@
       slotValues = slotsFromExistingSpec(ex);
       hydrateOptionsFromExisting(ex);
     } else {
-      // Insert mode: pick the first satisfiable type as default.
-      const firstOk = VISUAL_TYPES.find((t) => isTypeSatisfiable(t, available));
-      selectedType = firstOk?.type ?? "text";
+      // Insert mode: type is fixed by the upstream type menu.
+      selectedType = target.type ?? "text";
       slotValues = {};
       headerText = "";
       resetOptions();
+      // Apply any seed options provided by the type menu (e.g. Integer → decimals=0).
+      if (target.seedOptions) hydrateOptionsFromBundle(selectedType, target.seedOptions);
     }
   });
 
@@ -79,20 +90,30 @@
     optMaxValue = "";
     optShowPct = false;
     optSparklineType = "line";
+    optPrefix = "";
+    optSuffix = "";
+  }
+
+  // Pull option defaults out of a partial options bundle into the editor state.
+  function hydrateOptionsFromBundle(type: ColumnType, o: NonNullable<ColumnSpec["options"]>) {
+    if (type === "numeric") {
+      if (o.numeric?.decimals != null) optDecimals = String(o.numeric.decimals);
+      if (o.numeric?.prefix != null) optPrefix = o.numeric.prefix;
+      if (o.numeric?.suffix != null) optSuffix = o.numeric.suffix;
+    }
+    if (type === "pvalue" && o.pvalue?.stars != null) optStars = !!o.pvalue.stars;
+    if (type === "bar" && o.bar?.maxValue != null) optMaxValue = String(o.bar.maxValue);
+    if (type === "progress" && o.progress?.maxValue != null) optMaxValue = String(o.progress.maxValue);
+    if (type === "heatmap" && o.heatmap?.decimals != null) optDecimals = String(o.heatmap.decimals);
+    if (type === "forest" && o.forest?.scale) optScale = o.forest.scale;
+    if (type === "interval" && o.interval?.decimals != null) optDecimals = String(o.interval.decimals);
+    if (type === "sparkline" && o.sparkline?.type) optSparklineType = o.sparkline.type;
+    if (type === "custom" && o.events?.showPct != null) optShowPct = !!o.events.showPct;
   }
 
   function hydrateOptionsFromExisting(ex: ColumnSpec) {
     resetOptions();
-    const o = ex.options ?? {};
-    if (ex.type === "numeric" && o.numeric?.decimals != null) optDecimals = String(o.numeric.decimals);
-    if (ex.type === "pvalue") optStars = !!o.pvalue?.stars;
-    if (ex.type === "bar" && o.bar?.maxValue != null) optMaxValue = String(o.bar.maxValue);
-    if (ex.type === "progress" && o.progress?.maxValue != null) optMaxValue = String(o.progress.maxValue);
-    if (ex.type === "heatmap" && o.heatmap?.decimals != null) optDecimals = String(o.heatmap.decimals);
-    if (ex.type === "forest" && o.forest?.scale) optScale = o.forest.scale;
-    if (ex.type === "interval" && o.interval?.decimals != null) optDecimals = String(o.interval.decimals);
-    if (ex.type === "sparkline" && o.sparkline?.type) optSparklineType = o.sparkline.type;
-    if (ex.type === "custom" && o.events?.showPct != null) optShowPct = !!o.events.showPct;
+    if (ex.options) hydrateOptionsFromBundle(ex.type, ex.options);
   }
 
   // Reconstruct slot→field mapping from an existing ColumnSpec.
@@ -186,9 +207,14 @@
 
     const options: ColumnSpec["options"] = {};
     switch (selectedType) {
-      case "numeric":
-        if (optDecimals !== "") options.numeric = { decimals: Number(optDecimals) };
+      case "numeric": {
+        const num: NonNullable<NonNullable<ColumnSpec["options"]>["numeric"]> = {};
+        if (optDecimals !== "") num.decimals = Number(optDecimals);
+        if (optPrefix !== "") num.prefix = optPrefix;
+        if (optSuffix !== "") num.suffix = optSuffix;
+        if (Object.keys(num).length > 0) options.numeric = num;
         break;
+      }
       case "pvalue":
         options.pvalue = { stars: optStars };
         break;
@@ -301,22 +327,11 @@
     }
   }
 
-  // Group visual types by category for Step 1 display.
-  const typesByCategory = $derived.by(() => {
-    const order: Array<VisualTypeDef["category"]> = ["text", "numeric", "interval", "viz", "icon"];
-    const labels: Record<VisualTypeDef["category"], string> = {
-      text: "Text",
-      numeric: "Number",
-      interval: "Interval",
-      viz: "Viz",
-      icon: "Icon",
-    };
-    return order.map((cat) => ({
-      category: cat,
-      label: labels[cat],
-      types: VISUAL_TYPES.filter((t) => t.category === cat),
-    }));
-  });
+  // Human-friendly display name for the current type. Prefer the menu-provided
+  // preset label (e.g. "Integer") over the generic type label when available.
+  const displayTypeLabel = $derived(
+    target?.presetLabel ?? currentDef?.label ?? selectedType
+  );
 </script>
 
 <svelte:window onpointerdown={handlePointerDown} onkeydown={handleKeydown} />
@@ -333,42 +348,22 @@
   >
     <div class="editor-header">
       <div class="editor-title">
-        {target.mode === "insert" ? "Insert column" : "Configure column"}
+        <span class="mode-label">{target.mode === "insert" ? "Insert" : "Configure"}</span>
+        <span class="type-badge">{displayTypeLabel}</span>
       </div>
+      {#if onRequestChangeType}
+        <button
+          type="button"
+          class="change-type-link"
+          onclick={onRequestChangeType}
+          title="Pick a different column type"
+        >
+          Change type…
+        </button>
+      {/if}
     </div>
 
-    <!-- Step 1: visual type picker -->
-    <div class="type-picker">
-      {#each typesByCategory as group (group.category)}
-        <div class="type-group">
-          <div class="type-group-label">{group.label}</div>
-          <div class="type-list">
-            {#each group.types as t (t.type)}
-              {@const satisfiable = isTypeSatisfiable(t, available)}
-              <!-- Keep author-only types visible but greyed so users see what's possible. -->
-              <button
-                type="button"
-                class="type-chip"
-                class:selected={selectedType === t.type}
-                class:disabled={!satisfiable}
-                disabled={!satisfiable}
-                title={satisfiable ? t.description : `${t.description} — not compatible with the available data`}
-                onclick={() => {
-                  if (!satisfiable) return;
-                  selectedType = t.type;
-                  slotValues = {};
-                  resetOptions();
-                }}
-              >
-                {t.label}
-              </button>
-            {/each}
-          </div>
-        </div>
-      {/each}
-    </div>
-
-    <!-- Step 2: slot filler + options -->
+    <!-- Slot filler + type-specific options -->
     {#if currentDef}
       <div class="editor-body">
         {#each currentDef.slots as slot, i (slot.key)}
@@ -412,6 +407,19 @@
               placeholder="auto"
             />
           </label>
+        {/if}
+
+        {#if selectedType === "numeric"}
+          <div class="editor-row">
+            <label class="editor-field">
+              <span>Prefix</span>
+              <input type="text" bind:value={optPrefix} placeholder="e.g. $" maxlength="4" />
+            </label>
+            <label class="editor-field">
+              <span>Suffix</span>
+              <input type="text" bind:value={optSuffix} placeholder="e.g. %" maxlength="4" />
+            </label>
+          </div>
         {/if}
 
         {#if selectedType === "pvalue"}
@@ -496,57 +504,53 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--wf-border, #e2e8f0);
   }
   .editor-title {
-    font-weight: 600;
-    font-size: 13px;
-  }
-  .type-picker {
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 6px;
-    border-bottom: 1px solid var(--wf-border, #e2e8f0);
-    padding-bottom: 8px;
+    font-size: 12.5px;
+    min-width: 0;
   }
-  .type-group {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .type-group-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  .mode-label {
     color: var(--wf-secondary, #64748b);
+    font-weight: 500;
+  }
+  .type-badge {
     font-weight: 600;
-  }
-  .type-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  .type-chip {
-    background: transparent;
-    border: 1px solid var(--wf-border, #e2e8f0);
-    border-radius: 999px;
-    padding: 3px 10px;
-    font-family: inherit;
-    font-size: 11px;
     color: var(--wf-fg, #1a1a1a);
+    background: color-mix(in srgb, var(--wf-primary, #3b82f6) 12%, transparent);
+    padding: 1px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+  .change-type-link {
+    background: transparent;
+    border: none;
+    color: var(--wf-primary, #3b82f6);
+    font-size: 11px;
     cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: inherit;
     white-space: nowrap;
   }
-  .type-chip:hover:not(.disabled) {
-    background: var(--wf-border, #f1f5f9);
+  .change-type-link:hover {
+    background: var(--wf-hover, #eef2ff);
   }
-  .type-chip.selected {
-    background: var(--wf-primary, #2563eb);
-    border-color: var(--wf-primary, #2563eb);
-    color: #ffffff;
+  .editor-row {
+    display: flex;
+    gap: 8px;
   }
-  .type-chip.disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
+  .editor-row .editor-field {
+    flex: 1;
+    min-width: 0;
   }
   .editor-body {
     display: flex;

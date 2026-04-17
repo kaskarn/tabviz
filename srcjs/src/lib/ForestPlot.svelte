@@ -29,6 +29,7 @@
   import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
   import HeaderContextMenu, { type ContextMenuTarget } from "$components/controls/HeaderContextMenu.svelte";
   import ColumnEditorPopover, { type EditorTarget } from "$components/controls/ColumnEditorPopover.svelte";
+  import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
   import DropIndicator from "$components/controls/DropIndicator.svelte";
   import { hitTestRowGaps } from "$lib/dnd-utils";
   import EditableCell from "$components/controls/EditableCell.svelte";
@@ -107,9 +108,12 @@
   let containerRef: HTMLDivElement | undefined = $state();
   let scalableRef: HTMLDivElement | undefined = $state();
 
-  // Interactive column-editor state: right-click menu + editor popover.
+  // Interactive column-editor state: right-click menu → type menu → editor popover.
   let headerContextMenu = $state<ContextMenuTarget | null>(null);
+  let columnTypeMenuTarget = $state<TypeMenuTarget | null>(null);
   let columnEditorTarget = $state<EditorTarget | null>(null);
+  // Remembered anchor + afterId so "Change type…" can reopen the menu where it was.
+  let typeMenuMemory = $state<{ anchorX: number; anchorY: number; afterId?: string; existingId?: string } | null>(null);
 
   function openHeaderContextMenu(column: ColumnSpec, e: MouseEvent) {
     if (!spec?.interaction.enableEdit) return;
@@ -134,15 +138,12 @@
       return;
     }
     if (action === "insert") {
-      columnEditorTarget = {
-        mode: "insert",
-        anchorX: target.anchorX,
-        anchorY: target.anchorY,
-        afterId: target.columnId,
-      };
+      typeMenuMemory = { anchorX: target.anchorX, anchorY: target.anchorY, afterId: target.columnId };
+      columnTypeMenuTarget = { anchorX: target.anchorX, anchorY: target.anchorY, afterId: target.columnId };
       return;
     }
     if (action === "configure" && col) {
+      typeMenuMemory = { anchorX: target.anchorX, anchorY: target.anchorY, existingId: col.id };
       columnEditorTarget = {
         mode: "configure",
         anchorX: target.anchorX,
@@ -150,6 +151,55 @@
         existing: col,
       };
     }
+  }
+
+  function handleTypePick(pick: TypePick) {
+    const mem = typeMenuMemory;
+    columnTypeMenuTarget = null;
+    if (!mem) return;
+    if (mem.existingId) {
+      // "Change type" flow: find the existing column, open editor in configure mode
+      // but with the new type + seeded options replacing its config.
+      const existing = store.allColumns.find((c) => c.id === mem.existingId);
+      if (!existing) return;
+      columnEditorTarget = {
+        mode: "configure",
+        anchorX: mem.anchorX,
+        anchorY: mem.anchorY,
+        existing: { ...existing, type: pick.type, options: pick.seedOptions },
+        type: pick.type,
+        presetLabel: pick.presetLabel,
+        seedOptions: pick.seedOptions,
+      };
+    } else {
+      columnEditorTarget = {
+        mode: "insert",
+        anchorX: mem.anchorX,
+        anchorY: mem.anchorY,
+        afterId: mem.afterId,
+        type: pick.type,
+        presetLabel: pick.presetLabel,
+        seedOptions: pick.seedOptions,
+      };
+    }
+  }
+
+  function handleRequestChangeType() {
+    const cur = columnEditorTarget;
+    if (!cur) return;
+    typeMenuMemory = {
+      anchorX: cur.anchorX,
+      anchorY: cur.anchorY,
+      afterId: cur.afterId,
+      existingId: cur.existing?.id,
+    };
+    columnEditorTarget = null;
+    columnTypeMenuTarget = {
+      anchorX: cur.anchorX,
+      anchorY: cur.anchorY,
+      afterId: cur.afterId,
+      existingId: cur.existing?.id,
+    };
   }
 
   function handleEditorCommit(
@@ -163,6 +213,7 @@
       store.updateColumn(newSpec.id, newSpec);
     }
     columnEditorTarget = null;
+    typeMenuMemory = null;
   }
 
   // Local state for dimensions (measured by ResizeObserver)
@@ -1684,17 +1735,24 @@
     <!-- Column filter popover (rendered at root so it escapes the scaled wrapper) -->
     <ColumnFilterPopover {store} />
 
-    <!-- Right-click column menu + interactive column editor -->
+    <!-- Right-click column menu → type menu → interactive column editor -->
     <HeaderContextMenu
       target={headerContextMenu}
       onAction={handleContextMenuAction}
       onClose={() => (headerContextMenu = null)}
     />
+    <ColumnTypeMenu
+      target={columnTypeMenuTarget}
+      available={store.availableFields}
+      onPick={handleTypePick}
+      onClose={() => { columnTypeMenuTarget = null; typeMenuMemory = null; }}
+    />
     <ColumnEditorPopover
       target={columnEditorTarget}
       available={store.availableFields}
       onCommit={handleEditorCommit}
-      onClose={() => (columnEditorTarget = null)}
+      onClose={() => { columnEditorTarget = null; typeMenuMemory = null; }}
+      onRequestChangeType={handleRequestChangeType}
     />
   {:else}
     <div class="tabviz-empty">No data</div>
