@@ -1454,6 +1454,34 @@ web_interaction_publication <- function() {
   )
 }
 
+#' Choose a sensible default `InteractionSpec` based on the theme
+#'
+#' Dashboard/general-purpose themes (default, modern, dark, presentation,
+#' nature) get `web_interaction_full()` so the widget feels alive out of
+#' the box. Publication-style themes (jama, lancet, cochrane, minimal)
+#' get `web_interaction_publication()` so the output stays clean for
+#' print-quality figures.
+#'
+#' Users who want a different policy can always pass an explicit
+#' `interaction = web_interaction(...)` argument.
+#'
+#' @param theme A `WebTheme` object.
+#' @return An `InteractionSpec` suitable for the theme.
+#' @keywords internal
+#' @export
+default_interaction_for_theme <- function(theme) {
+  # Publication-style themes stay quiet by default; dashboard-style themes
+  # light up with full interactivity.
+  publication_themes <- c("jama", "lancet", "cochrane", "minimal")
+  theme_name <- tryCatch(theme@name, error = function(e) "default")
+  if (is.null(theme_name) || !nzchar(theme_name)) theme_name <- "default"
+  if (theme_name %in% publication_themes) {
+    web_interaction_publication()
+  } else {
+    web_interaction_full()
+  }
+}
+
 #' @rdname web_interaction
 #' @export
 web_interaction_full <- function() {

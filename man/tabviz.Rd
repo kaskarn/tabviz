@@ -32,7 +32,7 @@ tabviz(
   marker_size = NULL,
   weight = NULL,
   theme = web_theme_default(),
-  interaction = web_interaction(),
+  interaction = NULL,
   axis_range = NULL,
   axis_ticks = NULL,
   axis_gridlines = NULL,

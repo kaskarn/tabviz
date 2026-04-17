@@ -139,7 +139,7 @@ tabviz <- function(
     marker_size = NULL,
     weight = NULL,
     theme = web_theme_default(),
-    interaction = web_interaction(),
+    interaction = NULL,
     # Rendering options
     axis_range = NULL,
     axis_ticks = NULL,
@@ -157,6 +157,13 @@ tabviz <- function(
     split_by = NULL,
     shared_axis = FALSE,
     .spec_only = FALSE) {
+  # Resolve a theme-appropriate interaction default when none was supplied.
+  # Publication themes (jama, lancet, cochrane, minimal) stay read-only;
+  # dashboard-style themes get full interactivity.
+  if (is.null(interaction)) {
+    interaction <- default_interaction_for_theme(theme)
+  }
+
   # Handle WebSpec input (from fluent API modifiers)
   if (S7_inherits(data, WebSpec)) {
     spec <- data

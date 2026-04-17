@@ -1,3 +1,15 @@
+# tabviz 0.7.3
+
+## Theme-driven interaction defaults
+
+* **Widgets now feel interactive out of the box.** When `tabviz()` is called without an explicit `interaction` argument, the default interaction preset is chosen based on the theme:
+  - **Dashboard-style themes** (`default`, `modern`, `dark`, `presentation`, `nature`) → `web_interaction_full()` (sort, filters, drag-and-drop, inline editing, hover effects all on).
+  - **Publication-style themes** (`jama`, `lancet`, `cochrane`, `minimal`) → `web_interaction_publication()` (everything off — clean static output suitable for print).
+* Users can still override at any time by passing an explicit `interaction = web_interaction(...)`.
+* New exported helper `default_interaction_for_theme(theme)` returns the matching preset for a given theme, if you want to derive from it in custom code.
+
+---
+
 # tabviz 0.7.2
 
 ## Polish
