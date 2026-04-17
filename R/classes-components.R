@@ -1289,7 +1289,7 @@ col_group <- function(header, ...) {
 
 #' InteractionSpec: Interaction settings
 #'
-#' @param show_filters Show filter panel
+#' @param show_filters (Deprecated) Alias for `enable_filters`
 #' @param show_legend Show legend
 #' @param enable_sort Enable column sorting
 #' @param enable_collapse Enable group collapsing
@@ -1297,6 +1297,14 @@ col_group <- function(header, ...) {
 #' @param enable_hover Enable hover effects
 #' @param enable_resize Enable column resizing
 #' @param enable_export Enable download/export button
+#' @param enable_filters Enable per-column filter popovers in column headers
+#' @param enable_reorder_rows Enable drag-and-drop reordering of rows (within a group)
+#'   and row-groups (among siblings sharing a parent). Session-only; WYSIWYG export
+#'   reflects the reorder automatically.
+#' @param enable_reorder_columns Enable drag-and-drop reordering of columns (within a
+#'   column group) and column-groups (among top-level siblings).
+#' @param enable_edit Enable double-click inline editing for text/numeric/label cells,
+#'   and a popover editor for forest-cell numerics (estimate / lower / upper).
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)
 #' @param enable_themes Control theme selection menu:
 #'   - `"default"` (default): Enable theme menu with all `package_themes()`
@@ -1315,6 +1323,10 @@ InteractionSpec <- new_class(
     enable_hover = new_property(class_logical, default = TRUE),
     enable_resize = new_property(class_logical, default = TRUE),
     enable_export = new_property(class_logical, default = TRUE),
+    enable_filters = new_property(class_logical, default = FALSE),
+    enable_reorder_rows = new_property(class_logical, default = FALSE),
+    enable_reorder_columns = new_property(class_logical, default = FALSE),
+    enable_edit = new_property(class_logical, default = FALSE),
     tooltip_fields = new_property(class_any, default = NULL),
     enable_themes = new_property(class_any, default = "default")  # NULL, "default", or list of themes
   ),
@@ -1338,7 +1350,7 @@ InteractionSpec <- new_class(
 
 #' Create interaction specification
 #'
-#' @param show_filters Show filter panel
+#' @param show_filters (Deprecated) Alias for `enable_filters`.
 #' @param show_legend Show legend
 #' @param enable_sort Enable column sorting
 #' @param enable_collapse Enable group collapsing
@@ -1346,6 +1358,13 @@ InteractionSpec <- new_class(
 #' @param enable_hover Enable hover effects
 #' @param enable_resize Enable column resizing
 #' @param enable_export Enable download/export button
+#' @param enable_filters Enable per-column filter popovers in column headers.
+#' @param enable_reorder_rows Enable drag-and-drop reordering of rows (within a group)
+#'   and row-groups (among siblings). Session-only; exported SVG/PNG reflects reorders.
+#' @param enable_reorder_columns Enable drag-and-drop reordering of columns (within a
+#'   column group) and column-groups (among top-level siblings).
+#' @param enable_edit Enable double-click inline editing for text/numeric/label cells
+#'   plus a popover editor for forest-cell numerics.
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)
 #' @param enable_themes Control theme selection menu:
 #'   - `"default"` (default): Enable theme menu with all `package_themes()`
@@ -1363,8 +1382,16 @@ web_interaction <- function(
     enable_hover = TRUE,
     enable_resize = TRUE,
     enable_export = TRUE,
+    enable_filters = FALSE,
+    enable_reorder_rows = FALSE,
+    enable_reorder_columns = FALSE,
+    enable_edit = FALSE,
     tooltip_fields = NULL,
     enable_themes = "default") {
+  # Deprecation: show_filters maps to enable_filters if the caller supplied it.
+  if (isTRUE(show_filters) && !isTRUE(enable_filters)) {
+    enable_filters <- TRUE
+  }
   InteractionSpec(
     show_filters = show_filters,
     show_legend = show_legend,
@@ -1374,6 +1401,10 @@ web_interaction <- function(
     enable_hover = enable_hover,
     enable_resize = enable_resize,
     enable_export = enable_export,
+    enable_filters = enable_filters,
+    enable_reorder_rows = enable_reorder_rows,
+    enable_reorder_columns = enable_reorder_columns,
+    enable_edit = enable_edit,
     tooltip_fields = tooltip_fields,
     enable_themes = enable_themes
   )
@@ -1390,7 +1421,11 @@ web_interaction_minimal <- function() {
     enable_select = FALSE,
     enable_hover = TRUE,
     enable_resize = FALSE,
-    enable_export = FALSE
+    enable_export = FALSE,
+    enable_filters = FALSE,
+    enable_reorder_rows = FALSE,
+    enable_reorder_columns = FALSE,
+    enable_edit = FALSE
   )
 }
 
@@ -1405,7 +1440,31 @@ web_interaction_publication <- function() {
     enable_select = FALSE,
     enable_hover = FALSE,
     enable_resize = FALSE,
-    enable_export = FALSE
+    enable_export = FALSE,
+    enable_filters = FALSE,
+    enable_reorder_rows = FALSE,
+    enable_reorder_columns = FALSE,
+    enable_edit = FALSE
+  )
+}
+
+#' @rdname web_interaction
+#' @export
+web_interaction_full <- function() {
+  # All interactivity on — drag rows/columns, sort, filter, edit cells, WYSIWYG export.
+  web_interaction(
+    show_filters = FALSE,
+    show_legend = TRUE,
+    enable_sort = TRUE,
+    enable_collapse = TRUE,
+    enable_select = TRUE,
+    enable_hover = TRUE,
+    enable_resize = TRUE,
+    enable_export = TRUE,
+    enable_filters = TRUE,
+    enable_reorder_rows = TRUE,
+    enable_reorder_columns = TRUE,
+    enable_edit = TRUE
   )
 }
 

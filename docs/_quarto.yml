@@ -26,6 +26,8 @@ website:
           - text: "Gallery Overview"
             href: gallery/index.qmd
           - text: "---"
+          - text: "Interactivity"
+            href: gallery/interactive.qmd
           - text: "Clinical Examples"
             href: gallery/clinical.qmd
           - text: "Dashboard Examples"

@@ -2,12 +2,28 @@
 title: "Gallery"
 ---
 
-Explore example visualizations organized by use case. Each example includes live interactive output and source code.
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Explore example visualizations organized by use case. Each example below is a live widget — sort columns, click filter funnels, drag rows or columns where enabled, double-click to edit.
 
 ## By Category
 
 ::: {.grid}
-::: {.g-col-6 .g-col-md-4}
+::: {.g-col-6 .g-col-md-3}
+### [Interactivity](interactive.qmd)
+
+Sort, filter, drag-and-drop, and double-click editing — with WYSIWYG export.
+
+- Full-interactivity tour
+- Filter + sort dashboard
+- In-place forest cell editing
+:::
+
+::: {.g-col-6 .g-col-md-3}
 ### [Clinical Examples](clinical.qmd)
 
 Meta-analyses, forest plots, and clinical trial visualizations.
@@ -17,7 +33,7 @@ Meta-analyses, forest plots, and clinical trial visualizations.
 - Multi-arm dose-response
 :::
 
-::: {.g-col-6 .g-col-md-4}
+::: {.g-col-6 .g-col-md-3}
 ### [Dashboard Examples](dashboards.qmd)
 
 Business dashboards, KPIs, and data tables.
@@ -27,7 +43,7 @@ Business dashboards, KPIs, and data tables.
 - Executive summaries
 :::
 
-::: {.g-col-6 .g-col-md-4}
+::: {.g-col-6 .g-col-md-3}
 ### [Feature Showcases](showcases.qmd)
 
 Demonstrations of specific tabviz features.
@@ -40,14 +56,50 @@ Demonstrations of specific tabviz features.
 
 ---
 
-## Project Portfolio Dashboard
+## Row Groups × Column Groups
 
-A data-rich dashboard combining new column types — heatmaps, progress bars, currency, dates, badges, and sparklines — without a single forest plot:
+One widget, two axes of grouping: rows grouped by treatment arm (collapsible), columns grouped by purpose ("Demographics", "Efficacy"). Drag rows inside a treatment group to reorder; drag columns inside a column group without disturbing the other group.
 
 ```{r}
-#| echo: true
-library(tabviz)
+data(effect_sizes)
 
+tabviz(effect_sizes,
+  label = "study",
+  group = "treatment",
+  columns = list(
+    col_group("Demographics",
+      col_text("region", "Region"),
+      col_text("phase", "Phase"),
+      col_n("n", "N")
+    ),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio"),
+    col_group("Efficacy",
+      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_badge("direction", "Direction",
+        variants = list(
+          `Favors Treatment` = "success",
+          `Favors Control` = "error",
+          `No Effect` = "muted"
+        )),
+      col_badge("significant", "Signif",
+        variants = list(`TRUE` = "success", `FALSE` = "muted"))
+    )
+  ),
+  interaction = web_interaction_full(),
+  theme = web_theme_default(),
+  title = "Row groups and column groups on the same plot"
+)
+```
+
+---
+
+## Project Portfolio Dashboard
+
+A data-rich dashboard combining heatmaps, progress bars, currency, dates, badges, and sparklines — no forest plot needed. Full interactivity is on; try filtering the "Status" column.
+
+```{r}
 portfolio <- data.frame(
   project = c("Cloud Migration", "Mobile App v3", "Data Platform",
                "Security Audit", "API Gateway", "ML Pipeline"),
@@ -55,8 +107,6 @@ portfolio <- data.frame(
   budget = c(2400000, 890000, 1250000, 340000, 720000, 1800000),
   spent_pct = c(0.62, 0.88, 1.00, 0.45, 0.71, 0.33),
   health = c(92, 58, 100, 85, 42, 78),
-  start_date = as.Date(c("2025-03-15", "2025-01-10", "2024-09-01",
-                          "2025-06-01", "2025-02-20", "2025-07-01")),
   due_date = as.Date(c("2025-12-31", "2025-09-30", "2025-06-15",
                         "2025-08-31", "2025-11-15", "2026-03-31")),
   team_size = c(12, 8, 6, 4, 9, 7),
@@ -88,6 +138,7 @@ tabviz(portfolio, label = "project",
     col_n("team_size", "Team"),
     col_sparkline("velocity", "Velocity (12w)")
   ),
+  interaction = web_interaction_full(),
   theme = web_theme_modern(),
   title = "Project Portfolio Dashboard"
 )

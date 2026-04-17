@@ -77,26 +77,3 @@ export function renderArrowPath(
     return `M ${x} ${y} L ${x - width} ${y - halfHeight} L ${x - width} ${y + halfHeight} Z`;
   }
 }
-
-/**
- * Check if a CI bound is clipped (extends beyond axis limits)
- *
- * @param value - The CI bound value (lower or upper)
- * @param axisLimits - The axis limits [min, max]
- * @returns "left" if clipped on left, "right" if clipped on right, null if not clipped
- */
-export function getClipDirection(
-  value: number,
-  axisLimits: [number, number]
-): "left" | "right" | null {
-  if (value < axisLimits[0]) return "left";
-  if (value > axisLimits[1]) return "right";
-  return null;
-}
-
-/**
- * Clamp a value to axis limits for rendering
- */
-export function clampToAxisLimits(value: number, axisLimits: [number, number]): number {
-  return Math.max(axisLimits[0], Math.min(axisLimits[1], value));
-}

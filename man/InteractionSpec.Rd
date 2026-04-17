@@ -13,12 +13,16 @@ InteractionSpec(
   enable_hover = TRUE,
   enable_resize = TRUE,
   enable_export = TRUE,
+  enable_filters = FALSE,
+  enable_reorder_rows = FALSE,
+  enable_reorder_columns = FALSE,
+  enable_edit = FALSE,
   tooltip_fields = NULL,
   enable_themes = "default"
 )
 }
 \arguments{
-\item{show_filters}{Show filter panel}
+\item{show_filters}{(Deprecated) Alias for \code{enable_filters}}
 
 \item{show_legend}{Show legend}
 
@@ -33,6 +37,18 @@ InteractionSpec(
 \item{enable_resize}{Enable column resizing}
 
 \item{enable_export}{Enable download/export button}
+
+\item{enable_filters}{Enable per-column filter popovers in column headers}
+
+\item{enable_reorder_rows}{Enable drag-and-drop reordering of rows (within a group)
+and row-groups (among siblings sharing a parent). Session-only; WYSIWYG export
+reflects the reorder automatically.}
+
+\item{enable_reorder_columns}{Enable drag-and-drop reordering of columns (within a
+column group) and column-groups (among top-level siblings).}
+
+\item{enable_edit}{Enable double-click inline editing for text/numeric/label cells,
+and a popover editor for forest-cell numerics (estimate / lower / upper).}
 
 \item{tooltip_fields}{Character vector of column names to show in hover tooltip (NULL = no tooltip)}
 

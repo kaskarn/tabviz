@@ -1,0 +1,220 @@
+---
+title: "Interactivity Showcase"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Every widget below is live. Sort, filter, drag, edit — any change flows through to the
+SVG/PNG export at the click of the download button (WYSIWYG).
+
+```{r}
+#| include: false
+# Convenience: a one-liner that enables everything
+full <- web_interaction_full
+```
+
+## The whole kitchen sink
+
+Sort, filter, column reorder, row reorder, double-click edit, hover tooltips — one plot, every feature on.
+
+```{r}
+data(glp1_trials)
+
+tabviz(
+  glp1_trials,
+  label = "study",
+  group = "group",
+  columns = list(
+    col_group("Study Info",
+      col_text("drug", "Drug"),
+      col_n("year", "Year"),
+      col_n("n"),
+      col_events("events", "n", "Events")
+    ),
+    viz_forest(
+      point = "hr", lower = "lower", upper = "upper",
+      scale = "log", null_value = 1,
+      axis_label = "Hazard Ratio (95% CI)",
+      axis_range = c(0.4, 1.5),
+      axis_ticks = c(0.5, 0.75, 1.0, 1.25),
+      axis_gridlines = TRUE,
+      annotations = list(
+        refline(0.85, label = "Pooled HR", style = "dashed", color = "#00407a")
+      )
+    ),
+    col_group("Results",
+      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_pvalue("pvalue", "P", stars = TRUE)
+    )
+  ),
+  row_type = "row_type",
+  row_bold = "row_bold",
+  interaction = web_interaction_full(),
+  theme = web_theme_nature(),
+  title = "GLP-1 Agonist Cardiovascular Outcomes",
+  subtitle = "All interactivity on — try everything"
+)
+```
+
+::: {.callout-tip}
+## How to try each feature
+- **Sort** → click a column header. Click again for descending, again to clear.
+- **Filter** → click the funnel icon next to a header. You'll get a text / numeric / categorical UI depending on the column.
+- **Reorder rows** → hover a row, grab the drag handle on the left, drop within the same group.
+- **Reorder columns** → hover a header, grab its drag handle. Columns inside "Study Info" stay inside "Study Info".
+- **Edit** → double-click a cell (label, numeric, text) or a forest marker (gets a 3-field popover).
+- **Export** → download SVG or PNG; the file reflects your current state exactly.
+:::
+
+---
+
+## Filter + sort on a dashboard
+
+Large-ish dashboard where filters really pay off — apply any combination of filters and the export matches the filtered view.
+
+```{r}
+data(airline_delays)
+
+tabviz(airline_delays, label = "carrier",
+  group = "month",
+  columns = list(
+    col_group("Carrier",
+      col_badge("carrier_type", "Type",
+        variants = list(
+          Legacy = "info",
+          `Low-Cost` = "success",
+          `Ultra Low-Cost` = "warning"
+        )),
+      col_n("flights", "Flights", abbreviate = TRUE)
+    ),
+    col_group("Performance",
+      col_heatmap("on_time_pct", "On-Time",
+        palette = c("#fee2e2", "#dcfce7"),
+        min_value = 0.65, max_value = 0.95,
+        decimals = 2, show_value = TRUE),
+      col_progress("satisfaction", "Satisfaction", max_value = 5),
+      col_numeric("delay_vs_avg", "Delay", decimals = 1)
+    ),
+    viz_forest(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper",
+               null_value = 0,
+               axis_label = "Delay vs avg (min)"),
+    col_sparkline("trend", "12-month trend")
+  ),
+  interaction = web_interaction_full(),
+  theme = web_theme_modern(),
+  title = "Airline Performance by Month",
+  subtitle = "Try filtering by carrier_type or on_time_pct; export matches the view"
+)
+```
+
+---
+
+## Drag to reorder within column groups
+
+Columns inside "Baseline" and "Efficacy" swap cleanly; the forest column stays where it is. Whole column groups can also be dragged among top-level siblings.
+
+```{r}
+set.seed(42)
+n_studies <- 8
+trial_data <- data.frame(
+  study = paste0("Trial-", LETTERS[1:n_studies]),
+  arm = rep(c("Active", "Control"), length.out = n_studies),
+  n_baseline = sample(200:800, n_studies),
+  age_mean = round(runif(n_studies, 55, 72), 1),
+  female_pct = round(runif(n_studies, 0.35, 0.65), 2),
+  response_rate = round(runif(n_studies, 0.3, 0.8), 2),
+  median_duration_months = round(runif(n_studies, 8, 24), 1),
+  hr = round(runif(n_studies, 0.55, 1.05), 2)
+) |>
+  mutate(
+    lo = pmax(0.3, hr - 0.2),
+    hi = pmin(1.4, hr + 0.2)
+  )
+
+tabviz(trial_data, label = "study",
+  columns = list(
+    col_badge("arm", "Arm",
+      variants = list(Active = "success", Control = "muted")),
+    col_group("Baseline",
+      col_n("n_baseline", "N"),
+      col_numeric("age_mean", "Age"),
+      col_percent("female_pct", "Female")
+    ),
+    col_group("Efficacy",
+      col_percent("response_rate", "Response"),
+      col_numeric("median_duration_months", "Dur (mo)", decimals = 1)
+    ),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1,
+               axis_label = "HR"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
+  ),
+  interaction = web_interaction_full(),
+  theme = web_theme_cochrane(),
+  title = "Reorder within column groups",
+  subtitle = "Try dragging columns inside \"Baseline\" — they stay inside"
+)
+```
+
+---
+
+## Edit forest cell values in place
+
+Double-click any marker to pop up the estimate / lower / upper editor. The marker moves, and the export picks up the edit.
+
+```{r}
+set.seed(11)
+effects <- data.frame(
+  metric = c("Mortality", "MI", "Stroke", "HF Hospitalization",
+             "CV Death", "All-cause Death"),
+  hr = c(0.74, 0.81, 0.92, 0.68, 0.71, 0.85),
+  lo = c(0.62, 0.68, 0.77, 0.54, 0.58, 0.72),
+  hi = c(0.88, 0.95, 1.10, 0.85, 0.87, 0.99),
+  events = c(412, 289, 174, 356, 298, 512),
+  n = c(12800, 12800, 12800, 12800, 12800, 12800),
+  pvalue = c(0.001, 0.02, 0.22, 0.0004, 0.002, 0.04)
+)
+
+tabviz(effects, label = "metric",
+  columns = list(
+    col_n("n", "N"),
+    col_events("events", "n", "Events"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1,
+               axis_range = c(0.4, 1.4),
+               axis_label = "Hazard Ratio"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi"),
+    col_pvalue("pvalue", "P", stars = TRUE)
+  ),
+  interaction = web_interaction_full(),
+  theme = web_theme_jama(),
+  title = "Double-click a forest marker to edit",
+  subtitle = "Estimate / Lower / Upper popover; export reflects edits"
+)
+```
+
+---
+
+## Enable only what you need
+
+`web_interaction()` takes any combination of flags. Use `web_interaction_full()` for everything on, `web_interaction_minimal()` for a read-only widget, `web_interaction_publication()` for no UI chrome at all, or dial it in yourself:
+
+```r
+web_interaction(
+  enable_sort          = TRUE,
+  enable_filters       = TRUE,
+  enable_reorder_rows  = TRUE,   # drag rows within their group
+  enable_reorder_columns = FALSE,
+  enable_edit          = TRUE,   # double-click to edit
+  enable_select        = TRUE,
+  enable_hover         = TRUE,
+  enable_resize        = TRUE,
+  enable_export        = TRUE
+)
+```
+
+All reorder / edit state lives in the browser session. SVG/PNG exports capture the current view, but a page reload returns to the server-supplied data. For Shiny round-trips, the `${id}_selected` and `${id}_hover` inputs fire on selection/hover changes, and the `tabviz-proxy` message handler accepts `applyFilter`, `clearFilter`, `sortBy`, and `toggleGroup` methods.

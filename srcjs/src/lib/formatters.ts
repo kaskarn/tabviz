@@ -63,7 +63,7 @@ const SUPERSCRIPT_MAP: Record<string, string> = {
 };
 
 /** Convert string to Unicode superscript */
-function toSuperscript(str: string): string {
+export function toSuperscript(str: string): string {
   return str.split("").map(c => SUPERSCRIPT_MAP[c] ?? c).join("");
 }
 

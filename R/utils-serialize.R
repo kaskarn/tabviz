@@ -377,6 +377,10 @@ serialize_interaction <- function(interaction) {
     enableHover = interaction@enable_hover,
     enableResize = interaction@enable_resize,
     enableExport = interaction@enable_export,
+    enableFilters = interaction@enable_filters || interaction@show_filters,
+    enableReorderRows = interaction@enable_reorder_rows,
+    enableReorderColumns = interaction@enable_reorder_columns,
+    enableEdit = interaction@enable_edit,
     tooltipFields = interaction@tooltip_fields,
     enableThemes = themes_config
   )

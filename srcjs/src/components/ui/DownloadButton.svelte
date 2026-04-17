@@ -18,13 +18,14 @@
   }
 
   async function handleExportSVG() {
-    if (!store.spec) return;
+    // Use exportSpec (WYSIWYG): reflects current filter/sort/reorder/edits
+    const activeSpec = store.exportSpec ?? store.spec;
+    if (!activeSpec) return;
 
     try {
       isExporting = true;
-      // Get current dimensions from store to match web view
       const dimensions = store.getExportDimensions();
-      const svgString = exportToSVG(store.spec, dimensions);
+      const svgString = exportToSVG(activeSpec, dimensions);
       const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
       triggerDownload(blob, generateFilename("svg"));
     } catch (error) {
@@ -36,13 +37,13 @@
   }
 
   async function handleExportPNG() {
-    if (!store.spec) return;
+    const activeSpec = store.exportSpec ?? store.spec;
+    if (!activeSpec) return;
 
     try {
       isExporting = true;
-      // Get current dimensions from store to match web view
       const dimensions = store.getExportDimensions();
-      const blob = await exportToPNG(store.spec, dimensions, 2);
+      const blob = await exportToPNG(activeSpec, dimensions, 2);
       triggerDownload(blob, generateFilename("png"));
     } catch (error) {
       console.error("Failed to export PNG:", error);
@@ -70,6 +71,7 @@
     onclick={() => (dropdownOpen = !dropdownOpen)}
     aria-label="Download plot"
     aria-expanded={dropdownOpen}
+    data-tooltip="Download SVG or PNG"
     disabled={isExporting}
   >
     {#if isExporting}

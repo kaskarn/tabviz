@@ -1,3 +1,58 @@
+# tabviz 0.6.0
+
+## Interactivity Revamp
+
+A major expansion of the browser-side interaction surface, with WYSIWYG exports preserved throughout.
+
+### New interactions
+
+* **Column sort** is now wired end-to-end: click a header to cycle asc → desc → none. Indicator chevron shown next to the header text. Sort is applied *within* row groups so grouped tables keep their structure. Enabled via `enable_sort = TRUE`.
+
+* **Per-column filter popovers**: click the funnel icon on a column header to open a small text / numeric-range / categorical-checklist popover. Supports `contains`, `eq`, `neq`, `gt`, `lt`, `gte`, `lte`, `between`, `in`, `empty`, `notEmpty`. Kind is auto-detected from column type and sample values. Enabled via `enable_filters = TRUE`.
+
+* **Drag-and-drop rows**: grab the handle on the left of a row and reorder within the same group. Group headers are themselves draggable among sibling groups sharing a parent. Enabled via `enable_reorder_rows = TRUE`.
+
+* **Drag-and-drop columns**: grab a column header's handle to reorder within its column group. Column groups reorder among top-level siblings. The label column is structural and stays anchored. Enabled via `enable_reorder_columns = TRUE`.
+
+* **Inline cell editing**: double-click a label, text, or numeric cell for an overlay `<input>` with validation and Enter/Esc/blur handling. Double-click a forest marker for a three-field estimate / lower / upper popover with keyboard trap. Enabled via `enable_edit = TRUE`.
+
+* **Edit mode toggle** (toolbar, pencil icon): all interaction chrome (sort chevrons, filter funnels, drag handles, edit triggers) is hidden by default. Toggle on to enter an editing session. Column resize stays available in both modes. Default off.
+
+* **Screenshot-quality exports**: SVG/PNG downloads always use the clean, icon-free layout with tight column widths — regardless of whether edit mode is currently active. Internally, a second `columnWidthsCompact` dictionary is measured alongside the interactive widths.
+
+### WYSIWYG export
+
+* A new `exportSpec` derived bakes all user changes (filter + sort + row reorder + column reorder + cell edits) into a fresh `WebSpec` consumed by the SVG/PNG generator. What you see is exactly what you get — the download captures the current view.
+
+### Column width measurement
+
+* Auto-width measurement now budgets the px cost of interaction icons (sort chevron, filter funnel, drag handle) when edit mode is on, so headers never clip. The compact widths path used by the export keeps the icon budget at zero.
+* Manual column resizes (via the resize handle) are tracked in a `userResizedIds` set and preserved across edit-mode toggles and spec re-measurement.
+
+### R API
+
+* New `InteractionSpec` flags serialized to the widget:
+  - `enable_filters` (renamed from deprecated `show_filters`, still accepted as alias)
+  - `enable_reorder_rows`
+  - `enable_reorder_columns`
+  - `enable_edit`
+* New `web_interaction_full()` helper enables every interaction in one call, as a peer of `web_interaction_minimal()` and `web_interaction_publication()`.
+* All interactivity is session-only in the Svelte store; no R round-trip required. Existing Shiny proxy methods (`applyFilter`, `clearFilter`, `sortBy`, `toggleGroup`) continue to work and accept both the legacy single-field `FilterConfig` and the new per-column `ColumnFilter` shapes.
+
+### Toolbar polish
+
+* Tooltips on every toolbar button (zoom, theme, reset, edit mode, download), rendered instantly on hover via a pure CSS `data-tooltip` system.
+* Filter popover now mounts at the widget root rather than inside the transform-scaled content wrapper, so it never gets clipped and always draws above everything else. Auto-flips above the trigger when near the bottom of the viewport.
+* Obsolete "table mode" (`ViewToggle`) removed — it referenced a method that no longer exists.
+
+### Docs
+
+* New `docs/gallery/interactive.qmd` — dedicated showcase page for the full interactivity tour, filter + sort dashboard, column-group reorder, and forest-cell editing. Linked from the Gallery menu and the landing page.
+* Landing page hero now runs the full-interactivity demo with a "Try the interactivity" callout.
+* Gallery index adds a Row-Groups × Column-Groups feature showcase.
+
+---
+
 # tabviz 0.5.0
 
 ## New Column Types

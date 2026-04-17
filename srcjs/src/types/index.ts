@@ -509,6 +509,10 @@ export interface InteractionSpec {
   enableHover: boolean;
   enableResize: boolean;
   enableExport?: boolean;
+  enableReorderRows?: boolean;      // Drag rows within a group; drag row-groups among siblings
+  enableReorderColumns?: boolean;   // Drag columns within a column-group; drag column-groups among siblings
+  enableEdit?: boolean;             // Double-click to edit cells / labels / forest numerics
+  enableFilters?: boolean;          // Render per-column filter popovers (supersedes showFilters)
   tooltipFields?: string[] | null;  // Column names to show in hover tooltip (opt-in)
   enableThemes?: Record<string, WebTheme> | null;  // Available themes for switching (null = disable)
 }
@@ -624,6 +628,78 @@ export interface FilterConfig {
   field: string;
   operator: "eq" | "neq" | "gt" | "lt" | "contains";
   value: unknown;
+}
+
+// Multi-column filter state (keyed by column field).
+// Replaces FilterConfig for multi-filter UX; FilterConfig kept for Shiny proxy compat.
+export type FilterOperator =
+  | "contains"
+  | "eq"
+  | "neq"
+  | "gt"
+  | "lt"
+  | "gte"
+  | "lte"
+  | "between"
+  | "in"
+  | "empty"
+  | "notEmpty";
+
+export type ColumnKind = "text" | "numeric" | "categorical";
+
+export interface ColumnFilter {
+  field: string;
+  kind: ColumnKind;
+  operator: FilterOperator;
+  value: unknown; // string | number | [number, number] | unknown[]
+}
+
+export type FiltersState = Record<string, ColumnFilter>;
+
+// Row-order overrides (drag-and-drop). Scope key is the groupId, or "__root__" for
+// rows/groups with no parent.
+export interface RowOrderOverrides {
+  byGroup: Record<string, string[]>;           // scopeKey -> rowId[]
+  groupOrderByParent: Record<string, string[]>; // parentKey -> groupId[]
+}
+
+// Column-order overrides (drag-and-drop). topLevel covers the mixed top-level
+// siblings (standalone leaf columns + column groups); byGroup reorders the
+// children inside a named column group.
+export interface ColumnOrderOverrides {
+  topLevel: string[] | null;
+  byGroup: Record<string, string[]>;
+}
+
+// Sparse cell edits (session-only).
+export type EditValue = string | number | null;
+export interface CellEdits {
+  cells: Record<string, Record<string, EditValue>>; // rowId -> field -> value
+  labels: Record<string, string>;                    // rowId -> new label
+}
+
+// Transient UI state for drag gestures.
+export type DragKind = "row" | "row_group" | "column" | "column_group";
+export interface DragState {
+  kind: DragKind;
+  id: string;
+  scopeKey: string;               // groupId/columnGroupId or "__root__"
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+  indicatorIndex: number | null;  // drop index within scope; null when invalid
+  threshold: number;              // px to distinguish drag from click
+  active: boolean;                // true once threshold crossed
+}
+
+// Transient UI state for inline editing.
+export interface EditTarget {
+  rowId: string;
+  // "__label__" = row label; "__forest__:<colId>" = est/lo/hi popover; else column field.
+  field: string;
+  x?: number;                     // popover anchor (forest only)
+  y?: number;
 }
 
 // ============================================================================

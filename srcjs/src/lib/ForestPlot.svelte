@@ -23,6 +23,13 @@
   import CellHeatmap from "$components/table/CellHeatmap.svelte";
   import CellProgress from "$components/table/CellProgress.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
+  import SortIndicator from "$components/controls/SortIndicator.svelte";
+  import ColumnFilterButton from "$components/controls/ColumnFilterButton.svelte";
+  import ColumnFilterPopover from "$components/controls/ColumnFilterPopover.svelte";
+  import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
+  import RowDragHandle from "$components/controls/RowDragHandle.svelte";
+  import DropIndicator from "$components/controls/DropIndicator.svelte";
+  import EditableCell from "$components/controls/EditableCell.svelte";
   import VizBar from "$components/viz/VizBar.svelte";
   import VizBoxplot from "$components/viz/VizBoxplot.svelte";
   import VizViolin from "$components/viz/VizViolin.svelte";
@@ -415,6 +422,44 @@
 
   // Viz column types that need fixed widths
   const vizColumnTypes = ["forest", "viz_bar", "viz_boxplot", "viz_violin"];
+  const editableColumnTypes = new Set(["text", "numeric", "percent", "events", "pvalue", "interval", "date"]);
+  const isEditableColumn = (col: ColumnSpec) => editableColumnTypes.has(col.type);
+
+  // Compute the drop-indicator position/extent for a column-DnD target index.
+  function computeColumnBand(siblingIds: string[], targetIndex: number): { x: number; start: number; end: number } | null {
+    if (!containerRef || siblingIds.length === 0) return null;
+    const els: HTMLElement[] = [];
+    for (const id of siblingIds) {
+      const el = containerRef.querySelector<HTMLElement>(`[data-header-id="${CSS.escape(id)}"]`);
+      if (el) els.push(el);
+    }
+    if (els.length === 0) return null;
+    const rects = els.map((el) => el.getBoundingClientRect());
+    const idx = Math.max(0, Math.min(rects.length, targetIndex));
+    const x = idx === 0 ? rects[0].left : rects[idx - 1].right;
+    // Extend the line from the header top down through the table body.
+    const start = Math.min(...rects.map((r) => r.top));
+    const containerRect = containerRef.getBoundingClientRect();
+    const end = containerRect.bottom;
+    return { x, start, end };
+  }
+
+  // Compute the drop-indicator position/extent for a row-DnD target index.
+  function computeRowBand(allowedIndices: number[], targetIndex: number): { y: number; start: number; end: number } | null {
+    if (!containerRef || allowedIndices.length === 0) return null;
+    const els: HTMLElement[] = [];
+    for (const di of allowedIndices) {
+      const el = containerRef.querySelector<HTMLElement>(`[data-display-index="${di}"]`);
+      if (el) els.push(el);
+    }
+    if (els.length === 0) return null;
+    const rects = els.map((el) => el.getBoundingClientRect());
+    const idx = Math.max(0, Math.min(rects.length, targetIndex));
+    const y = idx === 0 ? rects[0].top : rects[idx - 1].bottom;
+    // Extend across the current container width so the line spans the whole table.
+    const containerRect = containerRef.getBoundingClientRect();
+    return { y, start: containerRect.left, end: containerRect.right };
+  }
 
   // Compute CSS grid template columns: label | columns in order (forest cols included)
   const gridTemplateColumns = $derived.by(() => {
@@ -861,82 +906,85 @@
       {/if}
 
       <!-- Snippet for rendering cell content based on column type -->
-      {#snippet renderCellContent(row: DataRow['row'], column: ColumnSpec)}
-        {@const cellStyle = getCellStyle(row, column)}
+      {#snippet renderCellContent(rowArg: DataRow['row'], column: ColumnSpec)}
+        {@const cellStyle = getCellStyle(rowArg, column)}
+        {@const editedFields = store.cellEdits.cells[rowArg.id]}
+        {@const metadata = editedFields ? { ...rowArg.metadata, ...editedFields } : rowArg.metadata}
+        {@const row = editedFields ? { ...rowArg, metadata } : rowArg}
         {#if column.type === "bar"}
           <CellBar
-            value={row.metadata[column.field] as number}
+            value={metadata[column.field] as number}
             maxValue={getMaxValueForColumn(visibleRows, column)}
             options={column.options?.bar}
           />
         {:else if column.type === "pvalue"}
           <CellPvalue
-            value={row.metadata[column.field] as number}
+            value={metadata[column.field] as number}
             options={column.options?.pvalue}
             {cellStyle}
           />
         {:else if column.type === "sparkline"}
           <CellSparkline
-            data={row.metadata[column.field] as number[]}
+            data={metadata[column.field] as number[]}
             options={column.options?.sparkline}
           />
         {:else if column.type === "icon"}
           <CellIcon
-            value={row.metadata[column.field]}
+            value={metadata[column.field]}
             options={column.options?.icon}
           />
         {:else if column.type === "badge"}
           <CellBadge
-            value={row.metadata[column.field]}
+            value={metadata[column.field]}
             options={column.options?.badge}
           />
         {:else if column.type === "stars"}
           <CellStars
-            value={row.metadata[column.field] as number}
+            value={metadata[column.field] as number}
             options={column.options?.stars}
           />
         {:else if column.type === "img"}
           <CellImg
-            value={row.metadata[column.field] as string}
+            value={metadata[column.field] as string}
             options={column.options?.img}
           />
         {:else if column.type === "reference"}
           <CellReference
-            value={row.metadata[column.field] as string}
-            metadata={row.metadata}
+            value={metadata[column.field] as string}
+            metadata={metadata}
             options={column.options?.reference}
           />
         {:else if column.type === "range"}
           <CellRange
-            value={row.metadata[column.field]}
-            metadata={row.metadata}
+            value={metadata[column.field]}
+            metadata={metadata}
             options={column.options?.range}
           />
         {:else if column.type === "heatmap"}
           <CellHeatmap
-            value={row.metadata[column.field] as number}
+            value={metadata[column.field] as number}
             options={column.options?.heatmap}
             minValue={getMinValueForColumn(visibleRows, column)}
             maxValue={getMaxValueForColumn(visibleRows, column)}
           />
         {:else if column.type === "progress"}
           <CellProgress
-            value={row.metadata[column.field] as number}
+            value={metadata[column.field] as number}
             options={column.options?.progress}
           />
         {:else if column.type === "numeric"}
-          <CellContent value={formatNumber(row.metadata[column.field] as number, column.options)} {cellStyle} />
+          <CellContent value={formatNumber(metadata[column.field] as number, column.options)} {cellStyle} />
         {:else if column.type === "custom" && column.options?.events}
           <CellContent value={formatEvents(row, column.options)} {cellStyle} />
         {:else if column.type === "interval"}
           <CellContent value={formatInterval(
-            column.options?.interval?.point ? row.metadata[column.options.interval.point] as number : undefined,
-            column.options?.interval?.lower ? row.metadata[column.options.interval.lower] as number : undefined,
-            column.options?.interval?.upper ? row.metadata[column.options.interval.upper] as number : undefined,
+            column.options?.interval?.point ? metadata[column.options.interval.point] as number : undefined,
+            column.options?.interval?.lower ? metadata[column.options.interval.lower] as number : undefined,
+            column.options?.interval?.upper ? metadata[column.options.interval.upper] as number : undefined,
             column.options
           )} {cellStyle} />
         {:else}
-          <CellContent value={row.metadata[column.field] ?? ""} {cellStyle} />
+          <CellContent value={metadata[column.field] ?? ""} {cellStyle} />
         {/if}
       {/snippet}
 
@@ -965,9 +1013,13 @@
             <!-- Group header -->
             <div
               class="grid-cell header-cell column-group-header"
+              data-header-id={cell.col.id}
               style:grid-column="{cell.gridColumnStart} / span {cell.colspan}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
             >
+              {#if store.editMode && spec?.interaction.enableReorderColumns}
+                <ColumnDragHandle {store} kind="column_group" id={cell.col.id} root={containerRef} />
+              {/if}
               <span class="header-text">{cell.col.header}</span>
             </div>
           {:else if cell.isForest}
@@ -985,9 +1037,13 @@
             <div
               use:forestColumnRef={column.id}
               class="grid-cell header-cell plot-header"
+              data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
             >
+              {#if store.editMode && spec?.interaction.enableReorderColumns}
+                <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />
+              {/if}
               {#if column.header}
                 <span class="header-text">{column.header}</span>
               {/if}
@@ -1002,13 +1058,33 @@
           {:else}
             <!-- Leaf column header -->
             {@const column = cell.col as ColumnSpec}
+            {@const canSort = store.editMode && !!spec?.interaction.enableSort && column.sortable && column.type !== "forest"}
+            {@const sortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
               class="grid-cell header-cell"
+              class:sortable={canSort}
+              data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
               style:text-align={column.headerAlign ?? column.align}
+              onclick={canSort ? (e) => {
+                const target = e.target as HTMLElement;
+                if (target.closest('.resize-handle') || target.closest('.drag-handle')) return;
+                store.toggleSort(column.field);
+              } : undefined}
             >
+              {#if store.editMode && spec?.interaction.enableReorderColumns}
+                <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />
+              {/if}
               <span class="header-text">{column.header}</span>
+              {#if canSort}
+                <SortIndicator direction={sortDir} />
+              {/if}
+              {#if store.editMode && (spec?.interaction.enableFilters || spec?.interaction.showFilters) && !vizColumnTypes.includes(column.type)}
+                <ColumnFilterButton {store} field={column.field} header={column.header} />
+              {/if}
               {#if spec?.interaction.enableResize}
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div
@@ -1039,6 +1115,9 @@
             class:selected
             class:hovered={row && hoveredRowId === row.id}
             class:spacer-row={isSpacerRow}
+            data-display-index={i}
+            data-row-id={row ? row.id : undefined}
+            data-field={row ? "__label__" : undefined}
             style:grid-row={gridRow}
             style:background-color={groupBg}
             style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
@@ -1046,11 +1125,21 @@
             role={isGroupHeader ? "button" : undefined}
             tabindex={isGroupHeader ? 0 : undefined}
             onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => store.selectRow(row.id) : undefined}
+            ondblclick={!isGroupHeader && row && store.editMode && spec?.interaction.enableEdit ? () => store.startEdit({ rowId: row.id, field: "__label__" }) : undefined}
             onkeydown={isGroupHeader ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id) : undefined}
             onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
             onmouseleave={row ? () => handleRowLeave() : undefined}
           >
             {#if isGroupHeader}
+              {#if store.editMode && spec?.interaction.enableReorderRows}
+                <RowDragHandle
+                  {store}
+                  kind="row_group"
+                  id={displayRow.group.id}
+                  scopeKey={displayRow.group.parentId ?? "__root__"}
+                  root={containerRef}
+                />
+              {/if}
               <GroupHeader
                 group={displayRow.group}
                 rowCount={displayRow.rowCount}
@@ -1058,8 +1147,17 @@
                 {theme}
               />
             {:else if row}
+              {#if store.editMode && spec?.interaction.enableReorderRows}
+                <RowDragHandle
+                  {store}
+                  kind="row"
+                  id={row.id}
+                  scopeKey={row.groupId ?? "__root__"}
+                  root={containerRef}
+                />
+              {/if}
               {#if row.style?.icon}<span class="row-icon">{row.style.icon}</span>{/if}
-              {row.label}
+              {store.getLabel(row)}
               {#if row.style?.badge}<span class="row-badge">{row.style.badge}</span>{/if}
             {/if}
           </div>
@@ -1083,6 +1181,7 @@
               ></div>
             {:else}
               <!-- Regular column cell -->
+              {@const editableHere = !!(row && store.editMode && spec?.interaction.enableEdit && !isGroupHeader && isEditableColumn(column))}
               <div
                 class="grid-cell data-cell {rowClasses}"
                 class:group-row={isGroupHeader}
@@ -1090,6 +1189,9 @@
                 class:hovered={row && hoveredRowId === row.id}
                 class:spacer-row={isSpacerRow}
                 class:wrap-enabled={column.wrap}
+                class:editable={editableHere}
+                data-row-id={row ? row.id : undefined}
+                data-field={column.field}
                 style:grid-row={gridRow}
                 style:background-color={groupBg}
                 style:text-align={column.align}
@@ -1097,6 +1199,7 @@
                 onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
                 onmouseleave={row ? () => handleRowLeave() : undefined}
                 onclick={row ? () => store.selectRow(row.id) : undefined}
+                ondblclick={editableHere && row ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
               >
                 {#if row}
                   {@render renderCellContent(row, column)}
@@ -1402,6 +1505,34 @@
 
     <!-- Tooltip (only shown if tooltipFields is specified) -->
     <Tooltip row={tooltipRow} position={tooltipPosition} fields={spec?.interaction?.tooltipFields} {theme} />
+
+    <!-- Drop indicator for drag-and-drop (rendered at root; fixed-positioned) -->
+    {#if store.dragState?.active && store.dragState.indicatorIndex != null}
+      {@const dragKind = store.dragState.kind}
+      {#if dragKind === "column" || dragKind === "column_group"}
+        {@const siblings = store.siblingsForColumnScope(store.dragState.scopeKey).map(s => s.id)}
+        {@const band = computeColumnBand(siblings, store.dragState.indicatorIndex)}
+        {#if band}
+          <DropIndicator orientation="vertical" x={band.x} start={band.start} end={band.end} />
+        {/if}
+      {:else}
+        {@const indices = dragKind === "row"
+          ? (() => { const ids = new Set(store.siblingsForRowScope(store.dragState.scopeKey)); const r: number[] = []; store.displayRows.forEach((dr, i) => { if (dr.type === "data" && ids.has(dr.row.id)) r.push(i); }); return r; })()
+          : (() => { const ids = new Set(store.siblingsForRowGroupScope(store.dragState.scopeKey)); const r: number[] = []; store.displayRows.forEach((dr, i) => { if (dr.type === "group_header" && ids.has(dr.group.id)) r.push(i); }); return r; })()}
+        {@const band = computeRowBand(indices, store.dragState.indicatorIndex)}
+        {#if band}
+          <DropIndicator orientation="horizontal" y={band.y} start={band.start} end={band.end} />
+        {/if}
+      {/if}
+    {/if}
+
+    <!-- Editable cell overlay -->
+    {#if store.editingTarget}
+      <EditableCell {store} target={store.editingTarget} root={containerRef} />
+    {/if}
+
+    <!-- Column filter popover (rendered at root so it escapes the scaled wrapper) -->
+    <ColumnFilterPopover {store} />
   {:else}
     <div class="tabviz-empty">No data</div>
   {/if}
@@ -1663,6 +1794,14 @@
     border-bottom: 1px solid var(--wf-border);
     background: var(--wf-bg);
     position: relative;
+  }
+
+  .header-cell.sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+  .header-cell.sortable:hover {
+    background: var(--wf-border, #f1f5f9);
   }
 
   /* Label header gets thicker bottom border (spans all rows, so border is at bottom) */

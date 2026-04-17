@@ -4,6 +4,7 @@
 \alias{web_interaction}
 \alias{web_interaction_minimal}
 \alias{web_interaction_publication}
+\alias{web_interaction_full}
 \title{Create interaction specification}
 \usage{
 web_interaction(
@@ -15,6 +16,10 @@ web_interaction(
   enable_hover = TRUE,
   enable_resize = TRUE,
   enable_export = TRUE,
+  enable_filters = FALSE,
+  enable_reorder_rows = FALSE,
+  enable_reorder_columns = FALSE,
+  enable_edit = FALSE,
   tooltip_fields = NULL,
   enable_themes = "default"
 )
@@ -22,9 +27,11 @@ web_interaction(
 web_interaction_minimal()
 
 web_interaction_publication()
+
+web_interaction_full()
 }
 \arguments{
-\item{show_filters}{Show filter panel}
+\item{show_filters}{(Deprecated) Alias for \code{enable_filters}.}
 
 \item{show_legend}{Show legend}
 
@@ -39,6 +46,17 @@ web_interaction_publication()
 \item{enable_resize}{Enable column resizing}
 
 \item{enable_export}{Enable download/export button}
+
+\item{enable_filters}{Enable per-column filter popovers in column headers.}
+
+\item{enable_reorder_rows}{Enable drag-and-drop reordering of rows (within a group)
+and row-groups (among siblings). Session-only; exported SVG/PNG reflects reorders.}
+
+\item{enable_reorder_columns}{Enable drag-and-drop reordering of columns (within a
+column group) and column-groups (among top-level siblings).}
+
+\item{enable_edit}{Enable double-click inline editing for text/numeric/label cells
+plus a popover editor for forest-cell numerics.}
 
 \item{tooltip_fields}{Character vector of column names to show in hover tooltip (NULL = no tooltip)}
 

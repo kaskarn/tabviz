@@ -126,7 +126,6 @@ tabviz(clinical_dashboard, label = "site",
 Combine `col_group()` headers with `split_by` for faceted views with organized columns:
 
 ```{r}
-set.seed(789)
 regional_data <- data.frame(
   study = rep(paste0("Study ", 1:4), 3),
   region = rep(c("North America", "Europe", "Asia Pacific"), each = 4),

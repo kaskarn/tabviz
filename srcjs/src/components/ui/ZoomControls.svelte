@@ -81,7 +81,7 @@
     onclick={() => (dropdownOpen = !dropdownOpen)}
     aria-label="Zoom and display options"
     aria-expanded={dropdownOpen}
-    title="Zoom: {displayPercent}%"
+    data-tooltip="Zoom & sizing ({displayPercent}%)"
   >
     <!-- Zoom/magnifier icon -->
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PvalueColumnOptions, CellStyle } from "$types";
+  import { toSuperscript } from "$lib/formatters";
 
   interface Props {
     value: number | undefined | null;
@@ -17,29 +18,6 @@
   const isEmphasis = $derived(cellStyle?.emphasis ?? false);
   const isMuted = $derived(cellStyle?.muted ?? false);
   const isAccent = $derived(cellStyle?.accent ?? false);
-
-  // Unicode superscript character mapping
-  const SUPERSCRIPT_MAP: Record<string, string> = {
-    "0": "⁰",
-    "1": "¹",
-    "2": "²",
-    "3": "³",
-    "4": "⁴",
-    "5": "⁵",
-    "6": "⁶",
-    "7": "⁷",
-    "8": "⁸",
-    "9": "⁹",
-    "-": "⁻",
-    "+": "⁺",
-  };
-
-  function toSuperscript(str: string): string {
-    return str
-      .split("")
-      .map((c) => SUPERSCRIPT_MAP[c] ?? c)
-      .join("");
-  }
 
   const showStars = $derived(options?.stars ?? false);
   const thresholds = $derived(options?.thresholds ?? [0.05, 0.01, 0.001]);

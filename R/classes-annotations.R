@@ -77,6 +77,7 @@ refline <- function(
   )
 }
 
+# TODO: Frontend rendering not implemented. Annotation type defined but not rendered.
 #' CustomAnnotation: Custom shape annotation
 #'
 #' @param study_id Study to annotate
@@ -106,6 +107,7 @@ CustomAnnotation <- new_class(
   }
 )
 
+# TODO: Frontend rendering not implemented. Annotation type defined but not rendered.
 #' Create a custom annotation
 #'
 #' @param study_id Study to annotate

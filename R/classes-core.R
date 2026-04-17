@@ -320,33 +320,3 @@ method(print, SplitForest) <- function(x, ...) {
   ))
   invisible(x)
 }
-
-# ============================================================================
-# Meta-analysis convenience classes (optional add-ons)
-# ============================================================================
-
-#' Heterogeneity: Meta-analysis heterogeneity statistics
-#'
-#' Optional metadata for meta-analysis use cases.
-#'
-#' @param i2 I-squared statistic (0-100)
-#' @param q Cochran's Q statistic
-#' @param q_pvalue P-value for Q statistic
-#' @param tau2 Tau-squared (between-study variance)
-#'
-#' @export
-Heterogeneity <- new_class(
-  "Heterogeneity",
-  properties = list(
-    i2 = new_property(class_numeric, default = NA_real_),
-    q = new_property(class_numeric, default = NA_real_),
-    q_pvalue = new_property(class_numeric, default = NA_real_),
-    tau2 = new_property(class_numeric, default = NA_real_)
-  ),
-  validator = function(self) {
-    if (!is.na(self@i2) && (self@i2 < 0 || self@i2 > 100)) {
-      return("i2 must be between 0 and 100")
-    }
-    NULL
-  }
-)

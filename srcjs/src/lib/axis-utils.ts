@@ -505,10 +505,3 @@ export function isClipped(
   if (value > axisLimits[1]) return "right";
   return null;
 }
-
-/**
- * Clamp a value to axis limits
- */
-export function clampToAxis(value: number, axisLimits: [number, number]): number {
-  return Math.max(axisLimits[0], Math.min(axisLimits[1], value));
-}

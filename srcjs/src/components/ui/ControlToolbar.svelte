@@ -3,16 +3,15 @@
   import type { ThemeName } from "$lib/theme-presets";
   import type { WebTheme } from "$types";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
-  import ViewToggle from "./ViewToggle.svelte";
   import DownloadButton from "./DownloadButton.svelte";
   import ResetButton from "./ResetButton.svelte";
   import ZoomControls from "./ZoomControls.svelte";
+  import EditModeToggle from "./EditModeToggle.svelte";
 
   interface Props {
     store: ForestStore;
     enableExport?: boolean;
     enableThemes?: Record<string, WebTheme> | null;  // Available themes (null = disabled)
-    enableViewToggle?: boolean;
     enableZoomControls?: boolean;
     enableReset?: boolean;
     onThemeChange?: (themeName: ThemeName) => void;
@@ -22,7 +21,6 @@
     store,
     enableExport = true,
     enableThemes = undefined,  // undefined = show all themes (default behavior)
-    enableViewToggle = true,
     enableZoomControls = true,
     enableReset = true,
     onThemeChange,
@@ -41,12 +39,10 @@
   {#if showThemeSwitcher}
     <ThemeSwitcher {store} availableThemes={enableThemes} {onThemeChange} />
   {/if}
-  {#if enableViewToggle}
-    <ViewToggle {store} />
-  {/if}
   {#if enableReset}
     <ResetButton {store} />
   {/if}
+  <EditModeToggle {store} />
   {#if enableExport}
     <DownloadButton {store} />
   {/if}
@@ -71,5 +67,65 @@
 
   :global(.tabviz-container:hover > .control-toolbar) {
     opacity: 1;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Instant hover tooltips for toolbar buttons.                        */
+  /* Each button inside .control-toolbar that carries a data-tooltip    */
+  /* attribute gets a small label below it on hover.                    */
+  /* ------------------------------------------------------------------ */
+  :global(.control-toolbar button[data-tooltip]),
+  :global(.control-toolbar .download-button-wrapper),
+  :global(.control-toolbar .theme-switcher-wrapper) {
+    position: relative;
+  }
+
+  :global(.control-toolbar [data-tooltip]::after) {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: rgba(17, 24, 39, 0.95);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    padding: 5px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity 80ms ease-out, transform 80ms ease-out;
+    z-index: 10004;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  :global(.control-toolbar [data-tooltip]::before) {
+    content: "";
+    position: absolute;
+    top: calc(100% + 1px);
+    right: 10px;
+    border: 4px solid transparent;
+    border-bottom-color: rgba(17, 24, 39, 0.95);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity 80ms ease-out, transform 80ms ease-out;
+    z-index: 10004;
+  }
+
+  :global(.control-toolbar [data-tooltip]:hover::after),
+  :global(.control-toolbar [data-tooltip]:hover::before) {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Hide tooltip while the trigger's own dropdown is open
+     (so the menu doesn't collide with the tooltip). */
+  :global(.control-toolbar [data-tooltip][aria-expanded="true"]::after),
+  :global(.control-toolbar [data-tooltip][aria-expanded="true"]::before) {
+    opacity: 0;
   }
 </style>

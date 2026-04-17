@@ -6,15 +6,17 @@ subtitle: "Interactive Tables with Embedded Visualizations for R"
 ```{r}
 #| include: false
 library(tabviz)
+library(dplyr)
 ```
 
 ## Overview
 
-**tabviz** is an R htmlwidgets package for creating interactive tables with embedded visualizations. Build dashboard tables, forest plots, and rich data displays with 16+ column types including sparklines, bar charts, badges, and confidence intervals.
+**tabviz** is an R htmlwidgets package for building interactive tables with embedded visualizations. It turns a data frame into a publication-quality, fully interactive widget — sortable, filterable, draggable, and editable — with SVG/PNG export that captures exactly what you see on screen.
 
 ```{r}
 #| echo: false
-# GLP-1 cardiovascular outcomes meta-analysis
+# Full-interactivity hero: drag rows within groups, drag columns within groups,
+# click headers to sort, click the funnel to filter, double-click cells to edit.
 data(glp1_trials)
 
 tabviz(
@@ -24,7 +26,8 @@ tabviz(
   columns = list(
     col_group("Study Info",
       col_text("drug", "Drug"),
-      col_n("n")
+      col_n("n"),
+      col_events("events", "n", "Events")
     ),
     viz_forest(
       point = "hr", lower = "lower", upper = "upper",
@@ -38,33 +41,152 @@ tabviz(
       )
     ),
     col_group("Results",
-      col_events("events", "n", "Events"),
       col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-      col_pvalue("pvalue", "P")
+      col_pvalue("pvalue", "P", stars = TRUE)
     )
   ),
   row_type = "row_type", row_bold = "row_bold",
+  interaction = web_interaction_full(),
   theme = web_theme_nature(),
   title = "GLP-1 Agonist Cardiovascular Outcomes",
   subtitle = "Major adverse cardiovascular events (MACE)"
 )
 ```
 
-## Creating Tables
+::: {.callout-tip}
+## Try the interactivity
+- **Sort** — click any column header (chevron appears)
+- **Filter** — click the funnel icon in a header and pick a text / numeric / categorical filter
+- **Reorder rows** — hover a row, grab the drag handle, drop inside the same group
+- **Reorder columns** — hover a column header, grab its handle; columns stay within their group ("Study Info" / "Results")
+- **Edit values** — double-click any label, text, or numeric cell; double-click a forest marker for an estimate / lower / upper popover
+- **Export** — the download button's SVG & PNG capture exactly your current view
+:::
 
-Use `tabviz()` with explicit column definitions:
+## Build any table in a few lines
+
+Use `tabviz()` with explicit column definitions — the declarative API mirrors the output:
 
 ```r
 tabviz(data,
   label = "study",
   columns = list(
-    col_text("category"),
-    col_numeric("value"),
+    col_group("Demographics",
+      col_text("site"),
+      col_n("n")
+    ),
     viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1),
-    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi"),
-    col_sparkline("trend")
-  )
+    col_group("Results",
+      col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi"),
+      col_pvalue("pvalue", "P")
+    )
+  ),
+  interaction = web_interaction_full()
+)
+```
+
+## Feature highlights
+
+A few of tabviz's strengths, each in a compact example:
+
+### Row groups + column groups together
+
+```{r}
+#| echo: false
+data(effect_sizes)
+
+tabviz(effect_sizes,
+  label = "study",
+  group = "treatment",       # collapsible row groups (Drug A, Drug B, ...)
+  columns = list(
+    col_group("Trial",
+      col_text("region", "Region"),
+      col_text("phase", "Phase"),
+      col_n("n")
+    ),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio"),
+    col_group("Effect",
+      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_badge("direction", "Direction",
+        variants = list(
+          `Favors Treatment` = "success",
+          `Favors Control` = "error",
+          `No Effect` = "muted"
+        ))
+    )
+  ),
+  interaction = web_interaction_full(),
+  theme = web_theme_default(),
+  title = "Row Groups × Column Groups",
+  subtitle = "Click a group header to collapse; drag within any group to reorder"
+)
+```
+
+### Multiple effects per row
+
+```{r}
+#| echo: false
+dose <- data.frame(
+  endpoint = c("Overall Survival", "Progression-Free Survival",
+               "Objective Response", "Quality of Life"),
+  low_hr  = c(0.88, 0.82, 0.85, 0.92),
+  low_lo  = c(0.74, 0.68, 0.70, 0.78),
+  low_hi  = c(1.05, 0.99, 1.03, 1.08),
+  mid_hr  = c(0.76, 0.71, 0.74, 0.83),
+  mid_lo  = c(0.62, 0.58, 0.60, 0.69),
+  mid_hi  = c(0.93, 0.87, 0.91, 1.00),
+  high_hr = c(0.65, 0.60, 0.62, 0.75),
+  high_lo = c(0.51, 0.46, 0.48, 0.61),
+  high_hi = c(0.83, 0.78, 0.80, 0.92)
+)
+
+tabviz(dose, label = "endpoint",
+  columns = list(
+    viz_forest(
+      effects = list(
+        effect_forest("low_hr", "low_lo", "low_hi", label = "Low"),
+        effect_forest("mid_hr", "mid_lo", "mid_hi", label = "Standard"),
+        effect_forest("high_hr", "high_lo", "high_hi", label = "High")
+      ),
+      scale = "log", null_value = 1,
+      axis_label = "Hazard Ratio"
+    )
+  ),
+  interaction = web_interaction(enable_sort = TRUE, enable_filters = TRUE,
+                                enable_reorder_rows = TRUE),
+  theme = web_theme_cochrane(),
+  title = "Dose-Response (three arms per row)"
+)
+```
+
+### Rich dashboards — heatmaps, progress, sparklines, badges
+
+```{r}
+#| echo: false
+data(airline_delays)
+april <- airline_delays |>
+  filter(month == "Apr") |>
+  select(carrier, carrier_type, on_time_pct, satisfaction, flights, delay_vs_avg, trend)
+
+tabviz(april, label = "carrier",
+  columns = list(
+    col_badge("carrier_type", "Type",
+      variants = list(Legacy = "info", `Low-Cost` = "success",
+                      `Ultra Low-Cost` = "warning")),
+    col_n("flights", "Flights", abbreviate = TRUE),
+    col_heatmap("on_time_pct", "On-Time",
+      palette = c("#fee2e2", "#dcfce7"),
+      min_value = 0.65, max_value = 0.95, decimals = 2, show_value = TRUE),
+    col_progress("satisfaction", "Satisfaction", max_value = 5),
+    col_numeric("delay_vs_avg", "Delay vs Avg", decimals = 1),
+    col_sparkline("trend", "12-Month Trend")
+  ),
+  interaction = web_interaction_full(),
+  theme = web_theme_modern(),
+  title = "Airline Performance (April)"
 )
 ```
 
@@ -74,19 +196,20 @@ tabviz(data,
 ::: {.g-col-6}
 **Visualization**
 
-- 9 preset themes (JAMA, Lancet, Nature, etc.)
-- 16+ column types (bars, p-values, sparklines)
-- Hierarchical grouping with collapsible sections
-- Multiple effects per row (ITT vs Per-Protocol)
+- 9 preset themes (JAMA, Lancet, Nature, Cochrane, …)
+- 20+ column types — forest plots, bars, p-values, sparklines, heatmaps, progress bars, currency, dates, badges, icons, stars
+- Hierarchical row groups and column groups with collapsible sections
+- Multiple effects per row for dose-response and multi-arm designs
 :::
 
 ::: {.g-col-6}
 **Interactivity**
 
+- Sort columns by header click (grouped tables preserve group structure)
+- Per-column filter popovers (text / numeric range / categorical)
+- Drag-and-drop reordering of rows, row groups, columns, and column groups
+- Double-click to edit any label, text, or numeric cell; forest cells get an estimate / lower / upper popover
 - Hover tooltips with custom content
-- Column sorting and resizing
-- Row selection and highlighting
-- Split view navigation for subgroups
 :::
 :::
 
@@ -94,9 +217,9 @@ tabviz(data,
 ::: {.g-col-6}
 **Export**
 
-- SVG, PNG, PDF output
-- Publication-quality figures at 300 DPI
-- Consistent rendering between web and export
+- SVG, PNG, PDF output at publication quality
+- **WYSIWYG**: exports capture your current sort / filter / reorder / edits
+- Same layout engine drives both browser view and headless export
 :::
 
 ::: {.g-col-6}
@@ -104,7 +227,8 @@ tabviz(data,
 
 - Fluent API with R pipes
 - Declarative column system
-- Type-safe styling with column mapping
+- Type-safe styling via NSE column mapping (`row_bold = ~ pvalue < 0.05`)
+- Shiny integration with proxy methods for reactive updates
 :::
 :::
 
@@ -129,7 +253,8 @@ tabviz(data,
     col_interval("Est (95% CI)", point = "estimate",
                  lower = "ci_lower", upper = "ci_upper"),
     col_numeric("n")
-  )
+  ),
+  interaction = web_interaction_full()
 )
 ```
 
@@ -152,7 +277,7 @@ Learn how to use tabviz:
 
 ## More Resources
 
-- [Concepts](concepts/index.qmd) - Architecture and mental models
-- [Cheatsheet](cheatsheet.qmd) - Quick reference
-- [Gallery](gallery/index.qmd) - Examples by domain
-- [Reference](reference/index.qmd) - API documentation
+- [Concepts](concepts/index.qmd) — architecture and mental models
+- [Cheatsheet](cheatsheet.qmd) — quick reference
+- [Gallery](gallery/index.qmd) — examples by domain, including a dedicated interactivity tour
+- [Reference](reference/index.qmd) — API documentation

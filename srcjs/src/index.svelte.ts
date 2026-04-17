@@ -21,10 +21,21 @@ const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unk
     );
   },
   applyFilter: (store, args) => {
-    store.setFilter(args.filter as Parameters<ForestStore["setFilter"]>[0]);
+    // Accepts either legacy FilterConfig { field, operator, value } or
+    // new multi-column { field, filter: ColumnFilter }.
+    if (args.filter && typeof args.filter === "object") {
+      const f = args.filter as Record<string, unknown>;
+      if ("kind" in f) {
+        store.setColumnFilter(f.field as string, f as Parameters<ForestStore["setColumnFilter"]>[1]);
+        return;
+      }
+      store.setFilter(args.filter as Parameters<ForestStore["setFilter"]>[0]);
+    } else if (args.field && "filter" in args) {
+      store.setColumnFilter(args.field as string, args.filter as Parameters<ForestStore["setColumnFilter"]>[1]);
+    }
   },
   clearFilter: (store) => {
-    store.setFilter(null);
+    store.clearAllFilters();
   },
   sortBy: (store, args) => {
     store.sortBy(

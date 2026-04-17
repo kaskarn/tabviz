@@ -8,6 +8,16 @@ import type {
   ColumnGroup,
   SortConfig,
   FilterConfig,
+  FiltersState,
+  ColumnFilter,
+  ColumnKind,
+  FilterOperator,
+  RowOrderOverrides,
+  ColumnOrderOverrides,
+  CellEdits,
+  EditValue,
+  DragState,
+  EditTarget,
   ComputedLayout,
   DisplayRow,
   GroupHeaderRow,
@@ -34,7 +44,28 @@ export function createForestStore() {
   let collapsedGroups = $state<Set<string>>(new Set());
   let sortConfig = $state<SortConfig | null>(null);
   let filterConfig = $state<FilterConfig | null>(null);
+  let filters = $state<FiltersState>({});
   let hoveredRowId = $state<string | null>(null);
+
+  // User-modified view state (session-only; feeds exportSpec for WYSIWYG)
+  let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
+  let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
+  let cellEdits = $state<CellEdits>({ cells: {}, labels: {} });
+
+  // Transient UI state for DnD / edit / filter overlays
+  let dragState = $state<DragState | null>(null);
+  let editingTarget = $state<EditTarget | null>(null);
+  let filterPopoverTarget = $state<{ field: string; header: string; anchorX: number; anchorY: number } | null>(null);
+
+  // Edit mode — OFF by default (clean read-only view, tight column widths). When ON,
+  // interaction chrome (drag handles, sort/filter icons, edit triggers) becomes visible
+  // and auto-width columns expand to accommodate the icons. Export always uses the
+  // tight (edit-mode-off) widths, so the exported SVG/PNG matches the clean view.
+  let editMode = $state<boolean>(false);
+
+  // Tight column widths — computed as if editMode were off. Used by the export path
+  // so downloads always produce the clean, icon-free layout regardless of edit mode.
+  let columnWidthsCompact = $state<Record<string, number>>({});
 
   // Tooltip state
   let tooltipRowId = $state<string | null>(null);
@@ -42,6 +73,10 @@ export function createForestStore() {
 
   // Column width state (for resize)
   let columnWidths = $state<Record<string, number>>({});
+  // Track columns whose width was set manually by the user (via resize drag).
+  // Auto-measurement (doMeasurement) skips these so user resizes survive
+  // re-measurement triggered by screenshot-mode toggling.
+  let userResizedIds = $state<Set<string>>(new Set());
 
   // Plot width override (for resizing the forest plot area)
   let plotWidthOverride = $state<number | null>(null);
@@ -72,14 +107,19 @@ export function createForestStore() {
 
     let rows = [...spec.data.rows];
 
-    // Apply filter
+    // Legacy single-filter (Shiny proxy backward-compat)
     if (filterConfig) {
       rows = applyFilter(rows, filterConfig);
     }
 
-    // Apply sort
+    // New multi-column filter state (per-header popovers)
+    if (Object.keys(filters).length > 0) {
+      rows = applyFilters(rows, filters);
+    }
+
+    // Apply sort within group boundaries so grouped tables don't lose structure
     if (sortConfig) {
-      rows = applySort(rows, sortConfig);
+      rows = applySortWithinGroups(rows, sortConfig);
     }
 
     return rows;
@@ -191,16 +231,47 @@ export function createForestStore() {
     return result;
   }
 
-  // Derived: all columns in order (flattened, no position filtering)
-  const allColumns = $derived.by((): ColumnSpec[] => {
+  // Helper: apply columnOrderOverrides to a ColumnDef[] (top-level or a group's children).
+  // New/missing ids are tolerated: unknown ids in the override are dropped; previously-unknown
+  // columns are appended in their original order.
+  function applyColumnOrder(defs: ColumnDef[], order: string[] | null | undefined): ColumnDef[] {
+    if (!order || order.length === 0) return defs;
+    const byId = new Map<string, ColumnDef>();
+    for (const d of defs) byId.set(d.id, d);
+    const result: ColumnDef[] = [];
+    const seen = new Set<string>();
+    for (const id of order) {
+      const d = byId.get(id);
+      if (d) { result.push(d); seen.add(id); }
+    }
+    for (const d of defs) if (!seen.has(d.id)) result.push(d);
+    return result;
+  }
+
+  // Derived: column definitions reflecting user reorder overrides.
+  // Applied recursively: top-level sibling order, then each column-group's child order.
+  const effectiveColumnDefs = $derived.by((): ColumnDef[] => {
     if (!spec) return [];
-    return flattenAllColumns(spec.columns);
+    const topOrdered = applyColumnOrder(spec.columns, columnOrderOverrides.topLevel);
+    return topOrdered.map((def) => {
+      if (def.isGroup) {
+        const childOrder = columnOrderOverrides.byGroup[def.id];
+        const reorderedChildren = applyColumnOrder(def.columns, childOrder);
+        return { ...def, columns: reorderedChildren };
+      }
+      return def;
+    });
   });
 
-  // Derived: all column definitions in order (for headers)
-  const allColumnDefs = $derived.by((): ColumnDef[] => {
+  // Derived: all columns in order (flattened, reflects reorder overrides)
+  const allColumns = $derived.by((): ColumnSpec[] => {
     if (!spec) return [];
-    return spec.columns;
+    return flattenAllColumns(effectiveColumnDefs);
+  });
+
+  // Derived: all column definitions in order (for headers, reflects reorder overrides)
+  const allColumnDefs = $derived.by((): ColumnDef[] => {
+    return effectiveColumnDefs;
   });
 
   // Derived: indices of forest columns (for SVG overlay positioning)
@@ -291,12 +362,25 @@ export function createForestStore() {
 
     const result: DisplayRow[] = [];
 
-    // 1. Group rows by groupId
+    // 1. Group rows by groupId, then apply any per-group reorder override.
+    //    Row-reorder overrides take precedence over sort within their scope.
     const rowsByGroup = new Map<string | null, Row[]>();
     for (const row of visibleRows) {
       const key = row.groupId ?? null;
       if (!rowsByGroup.has(key)) rowsByGroup.set(key, []);
       rowsByGroup.get(key)!.push(row);
+    }
+    for (const [key, bucket] of rowsByGroup) {
+      const scopeKey = key ?? "__root__";
+      const override = rowOrderOverrides.byGroup[scopeKey];
+      if (!override) continue;
+      const idx: Record<string, number> = {};
+      override.forEach((id, i) => (idx[id] = i));
+      bucket.sort((a, b) => {
+        const ai = idx[a.id] ?? Number.POSITIVE_INFINITY;
+        const bi = idx[b.id] ?? Number.POSITIVE_INFINITY;
+        return ai - bi;
+      });
     }
 
     // 2. Collect all groups that need headers (data groups + their ancestors)
@@ -311,10 +395,20 @@ export function createForestStore() {
       }
     }
 
-    // 3. Helper to get child groups of a parent
+    // 3. Helper to get child groups of a parent (applying any reorder override)
     function getChildGroups(parentId: string | null): Group[] {
-      return spec!.data.groups
+      const matches = spec!.data.groups
         .filter(g => (g.parentId ?? null) === parentId && groupsWithHeaders.has(g.id));
+      const parentKey = parentId ?? "__root__";
+      const order = rowOrderOverrides.groupOrderByParent[parentKey];
+      if (!order) return matches;
+      const idx: Record<string, number> = {};
+      order.forEach((id, i) => (idx[id] = i));
+      return [...matches].sort((a, b) => {
+        const ai = idx[a.id] ?? Number.POSITIVE_INFINITY;
+        const bi = idx[b.id] ?? Number.POSITIVE_INFINITY;
+        return ai - bi;
+      });
     }
 
     // 3b. Helper to count all rows (direct + all descendants) for a group
@@ -542,20 +636,32 @@ export function createForestStore() {
       fontSize = `${relValue * rootFontSize}px`;
     }
 
-    // Do initial measurement immediately
-    doMeasurement(fontSize, fontFamily);
+    // Two passes: interactive widths (respect editMode) + compact widths (always editMode=off).
+    // Compact widths feed the export path so downloads are always tight regardless of mode.
+    doMeasurement(fontSize, fontFamily, columnWidths, editMode);
+    doMeasurement(fontSize, fontFamily, columnWidthsCompact, false);
 
     // Then wait for fonts to load and re-measure for accuracy
     // This ensures custom/web fonts are properly measured
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
-        doMeasurement(fontSize as string, fontFamily, true);
+        doMeasurement(fontSize as string, fontFamily, columnWidths, editMode, true);
+        doMeasurement(fontSize as string, fontFamily, columnWidthsCompact, false, true);
       });
     }
   }
 
-  // Perform the actual column width measurement
-  function doMeasurement(fontSize: string, fontFamily: string, isFontLoaded = false) {
+  // Perform the actual column width measurement.
+  // `target` is the widths dict to write into; `iconsVisible` controls whether
+  // interaction-icon budget is included. Keeps `columnWidths` (interactive, respects
+  // edit mode) and `columnWidthsCompact` (always icons-off, used by export) in sync.
+  function doMeasurement(
+    fontSize: string,
+    fontFamily: string,
+    target: Record<string, number>,
+    iconsVisibleArg: boolean,
+    isFontLoaded = false,
+  ) {
     if (!spec) return;
 
     const canvas = document.createElement('canvas');
@@ -585,6 +691,44 @@ export function createForestStore() {
     const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
     // groupPadding is applied to both left and right of column group headers
     const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
+
+    // ------------------------------------------------------------------
+    // Interaction-chrome width budget
+    // ------------------------------------------------------------------
+    // Sort chevron, filter funnel, and drag handle all live INSIDE the header
+    // cell at render time and compete with the header text for horizontal space.
+    // When the user enables one of these features we bake its px contribution
+    // into the auto-width measurement so:
+    //   - browser view: header text + icons fits without clipping
+    //   - SVG/PNG export: same column widths (they live in columnWidths); the
+    //     exported file has extra slack that simply appears as whitespace on
+    //     the right, preserving WYSIWYG column alignment with the interactive view.
+    // Icons are hidden in screenshotMode; widths stay the same (harmless slack).
+    //
+    // Rough pixel costs (SortIndicator/funnel/grip each have a small margin).
+    // Icons are only rendered when edit mode is on (and the corresponding flag is set).
+    const I = spec.interaction;
+    const SORT_PX = 14;              // chevron (10) + left margin (4)
+    const FUNNEL_PX = 20;            // funnel button (18) + left margin (2)
+    const COL_GRIP_PX = 16;          // column drag handle (14) + right margin (2)
+    const GROUP_GRIP_PX = 16;        // group-header drag handle
+    const filtersOn = !!(I.enableFilters || I.showFilters);
+    const iconsVisible = iconsVisibleArg;
+    function leafIconBudget(col: ColumnSpec): number {
+      if (!iconsVisible) return 0;
+      let px = 0;
+      if (I.enableSort && col.sortable && col.type !== "forest") px += SORT_PX;
+      if (filtersOn && col.type !== "forest"
+          && col.type !== "viz_bar" && col.type !== "viz_boxplot" && col.type !== "viz_violin") {
+        px += FUNNEL_PX;
+      }
+      if (I.enableReorderColumns) px += COL_GRIP_PX;
+      return px;
+    }
+    function groupIconBudget(): number {
+      if (!iconsVisible) return 0;
+      return I.enableReorderColumns ? GROUP_GRIP_PX : 0;
+    }
 
     // ========================================================================
     // COLUMN WIDTH MEASUREMENT
@@ -620,8 +764,8 @@ export function createForestStore() {
      * Priority: computed width > explicit width > default minimum
      */
     function getEffectiveWidth(col: ColumnSpec): number {
-      if (columnWidths[col.id] !== undefined) {
-        return columnWidths[col.id];
+      if (target[col.id] !== undefined) {
+        return target[col.id];
       }
       if (typeof col.width === 'number') {
         return col.width;
@@ -643,6 +787,9 @@ export function createForestStore() {
       // Use != null to match both null and undefined (R's NULL may serialize as omitted property)
       if (col.width != null && col.width !== "auto") return;
 
+      // Respect manual resizes — skip columns the user has resized themselves.
+      if (userResizedIds.has(col.id)) return;
+
       let maxWidth = 0;
 
       // Measure header text with bold font
@@ -663,10 +810,16 @@ export function createForestStore() {
         }
       }
 
-      // Apply padding (from theme) and constraints
+      // Apply padding (from theme), interaction-icon budget, and constraints.
+      // Icons sit alongside the header text in the same cell, so they count against
+      // the cell's content width rather than against data-row content widths.
+      const iconBudget = leafIconBudget(col);
       const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
-      const computedWidth = Math.min(AUTO_WIDTH.MAX, Math.max(typeMin, Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)));
-      columnWidths[col.id] = computedWidth;
+      const computedWidth = Math.min(
+        AUTO_WIDTH.MAX,
+        Math.max(typeMin, Math.ceil(maxWidth + iconBudget + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)),
+      );
+      target[col.id] = computedWidth;
     }
 
     /**
@@ -691,17 +844,19 @@ export function createForestStore() {
         if (col.header) {
           ctx!.font = headerFont;
           // Group header needs: text width + its own padding (from theme) + rendering buffer
-          const groupHeaderWidth = ctx!.measureText(col.header).width + groupPadding + TEXT_MEASUREMENT.RENDERING_BUFFER;
+          // + a drag-handle budget when enableReorderColumns is on (handle sits alongside label).
+          const groupHeaderWidth = ctx!.measureText(col.header).width + groupIconBudget() + groupPadding + TEXT_MEASUREMENT.RENDERING_BUFFER;
 
           const leafCols = getLeafColumns(col);
           const childrenTotalWidth = leafCols.reduce((sum, leaf) => sum + getEffectiveWidth(leaf), 0);
 
-          // If group header needs more width, distribute extra to ALL children
-          // (including explicit-width columns - we override to ensure header fits)
-          if (groupHeaderWidth > childrenTotalWidth && leafCols.length > 0) {
-            const extraPerChild = Math.ceil((groupHeaderWidth - childrenTotalWidth) / leafCols.length);
-            for (const leaf of leafCols) {
-              columnWidths[leaf.id] = getEffectiveWidth(leaf) + extraPerChild;
+          // If group header needs more width, distribute extra to children that
+          // haven't been resized by the user. User-resized columns keep their width.
+          const resizable = leafCols.filter((l) => !userResizedIds.has(l.id));
+          if (groupHeaderWidth > childrenTotalWidth && resizable.length > 0) {
+            const extraPerChild = Math.ceil((groupHeaderWidth - childrenTotalWidth) / resizable.length);
+            for (const leaf of resizable) {
+              target[leaf.id] = getEffectiveWidth(leaf) + extraPerChild;
             }
           }
         }
@@ -718,8 +873,12 @@ export function createForestStore() {
     }
 
     // Measure label column width
-    if (spec.data.labelCol) {
+    if (spec.data.labelCol && !userResizedIds.has("__label__")) {
       let maxLabelWidth = 0;
+      // Row-drag-handle budget: when row reorder is on, a grip icon is rendered
+      // inside every data-row label cell and group-header label.
+      const ROW_GRIP_PX = 18; // 14px handle + 4px right margin
+      const rowGripBudget = (iconsVisible && I.enableReorderRows) ? ROW_GRIP_PX : 0;
 
       // Build group depth map for calculating row indentation
       const groupDepths = new Map<string, number>();
@@ -750,7 +909,7 @@ export function createForestStore() {
           const rowIndent = row.style?.indent ?? 0;
           const totalIndent = depth + rowIndent;
           const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
-          let rowWidth = ctx!.measureText(row.label).width + indentWidth;
+          let rowWidth = ctx!.measureText(row.label).width + indentWidth + rowGripBudget;
 
           // Account for badge width if present (uses shared BADGE constants)
           if (row.style?.badge) {
@@ -807,7 +966,9 @@ export function createForestStore() {
           ctx!.font = headerFont;
 
           // Total: all components from GroupHeader.svelte layout
+          // (plus a row-drag-handle budget when row-group reorder is on)
           const totalWidth = indentWidth
+            + rowGripBudget
             + GROUP_HEADER.CHEVRON_WIDTH
             + GROUP_HEADER.GAP
             + labelWidth
@@ -821,7 +982,7 @@ export function createForestStore() {
 
       // Apply padding (from theme) and constraints (label column has higher max)
       const computedLabelWidth = Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, Math.ceil(maxLabelWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)));
-      columnWidths["__label__"] = computedLabelWidth;
+      target["__label__"] = computedLabelWidth;
     }
   }
 
@@ -858,9 +1019,363 @@ export function createForestStore() {
     sortConfig = direction === "none" ? null : { column, direction };
   }
 
+  // Cycle sort state for a column: none → asc → desc → none
+  function toggleSort(column: string) {
+    if (!sortConfig || sortConfig.column !== column) {
+      sortConfig = { column, direction: "asc" };
+    } else if (sortConfig.direction === "asc") {
+      sortConfig = { column, direction: "desc" };
+    } else {
+      sortConfig = null;
+    }
+  }
+
   function setFilter(filter: FilterConfig | null) {
     filterConfig = filter;
   }
+
+  // Multi-column filter API (per-header popovers)
+  function setColumnFilter(field: string, filter: ColumnFilter | null) {
+    if (filter === null) {
+      const { [field]: _removed, ...rest } = filters;
+      filters = rest;
+    } else {
+      filters = { ...filters, [field]: filter };
+    }
+  }
+
+  function clearAllFilters() {
+    filters = {};
+    filterConfig = null;
+  }
+
+  function getColumnFilter(field: string): ColumnFilter | null {
+    return filters[field] ?? null;
+  }
+
+  // Detect filter UI kind for a column: numeric range / categorical checklist / text contains.
+  function detectColumnKind(field: string): ColumnKind {
+    if (!spec) return "text";
+    const col = allColumns.find((c) => c.field === field);
+    const numericTypes: ColumnSpec["type"][] = [
+      "numeric", "percent", "events", "bar", "pvalue", "heatmap", "progress", "range",
+    ];
+    if (col && numericTypes.includes(col.type)) return "numeric";
+
+    // Sample non-null values
+    const sample: unknown[] = [];
+    for (const row of spec.data.rows) {
+      const v = readField(row, field);
+      if (v !== undefined && v !== null) sample.push(v);
+      if (sample.length >= 200) break;
+    }
+    if (sample.length === 0) return "text";
+    const allNum = sample.every((v) => typeof v === "number");
+    if (allNum) return "numeric";
+
+    const distinct = new Set(sample.map((v) => String(v)));
+    const rowsN = spec.data.rows.length || sample.length;
+    const maxCat = Math.max(20, Math.floor(rowsN / 5));
+    if (distinct.size <= maxCat) return "categorical";
+    return "text";
+  }
+
+  function getColumnValues(field: string): unknown[] {
+    if (!spec) return [];
+    const seen = new Set<string>();
+    const out: unknown[] = [];
+    for (const row of spec.data.rows) {
+      const v = readField(row, field);
+      if (v === undefined || v === null || v === "") continue;
+      const key = String(v);
+      if (!seen.has(key)) { seen.add(key); out.push(v); }
+    }
+    out.sort((a, b) => {
+      if (typeof a === "number" && typeof b === "number") return a - b;
+      return String(a).localeCompare(String(b));
+    });
+    return out;
+  }
+
+  function getColumnNumericRange(field: string): [number, number] | null {
+    if (!spec) return null;
+    let lo = Infinity;
+    let hi = -Infinity;
+    let any = false;
+    for (const row of spec.data.rows) {
+      const v = readField(row, field);
+      if (typeof v === "number" && Number.isFinite(v)) {
+        if (v < lo) lo = v;
+        if (v > hi) hi = v;
+        any = true;
+      }
+    }
+    return any ? [lo, hi] : null;
+  }
+
+  // =========================================================================
+  // DnD scope helpers and actions
+  // =========================================================================
+
+  // Find scope key for a column id: parent column-group id, or "__root__" if top-level.
+  function findColumnScope(id: string): string | null {
+    if (!spec) return null;
+    for (const def of effectiveColumnDefs) {
+      if (def.id === id) return "__root__";
+      if (def.isGroup) {
+        for (const child of def.columns) {
+          if (child.id === id) return def.id;
+        }
+      }
+    }
+    return null;
+  }
+
+  function siblingsForColumnScope(scopeKey: string): ColumnDef[] {
+    if (scopeKey === "__root__") return effectiveColumnDefs;
+    const group = effectiveColumnDefs.find((d) => d.isGroup && d.id === scopeKey) as ColumnGroup | undefined;
+    return group ? group.columns : [];
+  }
+
+  function beginDrag(partial: Omit<DragState, "threshold" | "active" | "indicatorIndex" | "currentX" | "currentY">) {
+    dragState = {
+      ...partial,
+      currentX: partial.startX,
+      currentY: partial.startY,
+      threshold: 4,
+      active: false,
+      indicatorIndex: null,
+    };
+  }
+
+  function updateDrag(clientX: number, clientY: number, indicatorIndex: number | null) {
+    if (!dragState) return;
+    const dx = clientX - dragState.startX;
+    const dy = clientY - dragState.startY;
+    const active = dragState.active || Math.hypot(dx, dy) > dragState.threshold;
+    dragState = { ...dragState, currentX: clientX, currentY: clientY, active, indicatorIndex };
+  }
+
+  function endDrag(commit: (state: DragState) => void) {
+    if (!dragState) return;
+    if (dragState.active && dragState.indicatorIndex != null) commit(dragState);
+    dragState = null;
+  }
+
+  function cancelDrag() {
+    dragState = null;
+  }
+
+  // Move a column (leaf or group) to `newIndex` within its scope.
+  // For leaves, scope = parent column-group id or "__root__"; for groups, scope = "__root__".
+  function moveColumnItem(itemId: string, newIndex: number) {
+    const scope = findColumnScope(itemId) ?? (effectiveColumnDefs.some((d) => d.id === itemId) ? "__root__" : null);
+    if (!scope) return;
+    const siblings = siblingsForColumnScope(scope);
+    const order = siblings.map((d) => d.id);
+    const fromIdx = order.indexOf(itemId);
+    if (fromIdx === -1) return;
+
+    order.splice(fromIdx, 1);
+    const targetIdx = newIndex > fromIdx ? newIndex - 1 : newIndex;
+    const clamped = Math.max(0, Math.min(order.length, targetIdx));
+    order.splice(clamped, 0, itemId);
+
+    if (scope === "__root__") {
+      columnOrderOverrides = { ...columnOrderOverrides, topLevel: order };
+    } else {
+      columnOrderOverrides = {
+        ...columnOrderOverrides,
+        byGroup: { ...columnOrderOverrides.byGroup, [scope]: order },
+      };
+    }
+  }
+
+  // Find the group id of a row-group, given the group id itself.
+  // Returns parent id or "__root__".
+  function findRowGroupScope(groupId: string): string {
+    if (!spec) return "__root__";
+    const g = spec.data.groups.find((x) => x.id === groupId);
+    return g?.parentId ?? "__root__";
+  }
+
+  // Ordered sibling ids for a row-scope (row's groupId) in the current display.
+  function siblingsForRowScope(scopeKey: string): string[] {
+    if (!spec) return [];
+    const result: string[] = [];
+    for (const dr of displayRows) {
+      if (dr.type === "data") {
+        const gid = dr.row.groupId ?? "__root__";
+        if (gid === scopeKey) result.push(dr.row.id);
+      }
+    }
+    return result;
+  }
+
+  function siblingsForRowGroupScope(parentKey: string): string[] {
+    if (!spec) return [];
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const dr of displayRows) {
+      if (dr.type === "group_header") {
+        const parent = dr.group.parentId ?? "__root__";
+        if (parent === parentKey && !seen.has(dr.group.id)) {
+          seen.add(dr.group.id);
+          result.push(dr.group.id);
+        }
+      }
+    }
+    return result;
+  }
+
+  function moveRowItem(rowId: string, newIndex: number) {
+    if (!spec) return;
+    const row = spec.data.rows.find((r) => r.id === rowId);
+    if (!row) return;
+    const scope = row.groupId ?? "__root__";
+    const currentOrder = rowOrderOverrides.byGroup[scope] ?? siblingsForRowScope(scope);
+    const order = currentOrder.includes(rowId) ? [...currentOrder] : [...siblingsForRowScope(scope)];
+    const fromIdx = order.indexOf(rowId);
+    if (fromIdx === -1) return;
+    order.splice(fromIdx, 1);
+    const targetIdx = newIndex > fromIdx ? newIndex - 1 : newIndex;
+    const clamped = Math.max(0, Math.min(order.length, targetIdx));
+    order.splice(clamped, 0, rowId);
+    rowOrderOverrides = {
+      ...rowOrderOverrides,
+      byGroup: { ...rowOrderOverrides.byGroup, [scope]: order },
+    };
+  }
+
+  function moveRowGroupItem(groupId: string, newIndex: number) {
+    if (!spec) return;
+    const parentKey = findRowGroupScope(groupId);
+    const existing = rowOrderOverrides.groupOrderByParent[parentKey] ?? siblingsForRowGroupScope(parentKey);
+    const order = [...existing];
+    const fromIdx = order.indexOf(groupId);
+    if (fromIdx === -1) return;
+    order.splice(fromIdx, 1);
+    const targetIdx = newIndex > fromIdx ? newIndex - 1 : newIndex;
+    const clamped = Math.max(0, Math.min(order.length, targetIdx));
+    order.splice(clamped, 0, groupId);
+    rowOrderOverrides = {
+      ...rowOrderOverrides,
+      groupOrderByParent: { ...rowOrderOverrides.groupOrderByParent, [parentKey]: order },
+    };
+  }
+
+  function clearRowReorder(groupId?: string) {
+    if (groupId) {
+      const { [groupId]: _omit, ...rest } = rowOrderOverrides.byGroup;
+      rowOrderOverrides = { ...rowOrderOverrides, byGroup: rest };
+    } else {
+      rowOrderOverrides = { byGroup: {}, groupOrderByParent: {} };
+    }
+  }
+
+  function clearColumnReorder() {
+    columnOrderOverrides = { topLevel: null, byGroup: {} };
+  }
+
+  // =========================================================================
+  // Edit actions
+  // =========================================================================
+
+  function startEdit(target: EditTarget) {
+    editingTarget = target;
+  }
+
+  function endEdit() {
+    editingTarget = null;
+  }
+
+  function setCellValue(rowId: string, field: string, value: EditValue) {
+    const current = cellEdits.cells[rowId] ?? {};
+    cellEdits = {
+      ...cellEdits,
+      cells: { ...cellEdits.cells, [rowId]: { ...current, [field]: value } },
+    };
+  }
+
+  function clearCellEdit(rowId: string, field: string) {
+    const current = cellEdits.cells[rowId];
+    if (!current) return;
+    const { [field]: _omit, ...rest } = current;
+    const cells = Object.keys(rest).length
+      ? { ...cellEdits.cells, [rowId]: rest }
+      : (() => { const { [rowId]: _r, ...rm } = cellEdits.cells; return rm; })();
+    cellEdits = { ...cellEdits, cells };
+  }
+
+  function setRowLabel(rowId: string, label: string) {
+    cellEdits = { ...cellEdits, labels: { ...cellEdits.labels, [rowId]: label } };
+  }
+
+  function setForestCellValues(
+    rowId: string,
+    forestColId: string,
+    est: EditValue,
+    lo: EditValue,
+    hi: EditValue,
+  ) {
+    if (!spec) return;
+    const col = allColumns.find((c) => c.id === forestColId);
+    const forestOpts = col?.options?.forest;
+    // Primary field names come from the column's forest options when set,
+    // otherwise fall back to conventional metadata keys ("est","lo","hi").
+    const pointField = forestOpts?.point ?? "est";
+    const lowerField = forestOpts?.lower ?? "lo";
+    const upperField = forestOpts?.upper ?? "hi";
+    const current = cellEdits.cells[rowId] ?? {};
+    cellEdits = {
+      ...cellEdits,
+      cells: {
+        ...cellEdits.cells,
+        [rowId]: { ...current, [pointField]: est, [lowerField]: lo, [upperField]: hi },
+      },
+    };
+  }
+
+  function getDisplayValue(row: Row, field: string): unknown {
+    const edited = cellEdits.cells[row.id]?.[field];
+    return edited !== undefined ? edited : row.metadata[field];
+  }
+
+  function getLabel(row: Row): string {
+    return cellEdits.labels[row.id] ?? row.label;
+  }
+
+  function clearAllEdits() {
+    cellEdits = { cells: {}, labels: {} };
+  }
+
+  // Filter-popover plumbing (rendered at widget root so it's not clipped or
+  // transform-scaled by the interactive content's zoom wrapper).
+  function openFilterPopover(field: string, header: string, triggerEl: HTMLElement | null) {
+    if (!triggerEl) return;
+    const r = triggerEl.getBoundingClientRect();
+    filterPopoverTarget = {
+      field,
+      header,
+      anchorX: r.left,
+      anchorY: r.bottom,
+    };
+  }
+
+  function closeFilterPopover() {
+    filterPopoverTarget = null;
+  }
+
+  // Edit mode toggle. Off = clean read-only view (no icons, tight widths).
+  // On = interaction chrome visible, auto-width columns expanded to fit icons.
+  // Re-measures the interactive width dictionary; the compact (export) widths
+  // are untouched so downloads always use the clean layout.
+  function setEditMode(v: boolean) {
+    if (editMode === v) return;
+    editMode = v;
+    measureAutoColumns();
+  }
+  function toggleEditMode() { setEditMode(!editMode); }
 
   function setHovered(id: string | null) {
     hoveredRowId = id;
@@ -872,7 +1387,16 @@ export function createForestStore() {
   }
 
   function setColumnWidth(columnId: string, width: number) {
-    columnWidths[columnId] = Math.max(40, width); // min 40px
+    const w = Math.max(40, width); // min 40px
+    columnWidths[columnId] = w;
+    // Propagate to compact widths so export honors user resizes too.
+    columnWidthsCompact[columnId] = w;
+    // Mark as user-resized so edit-mode re-measurement doesn't overwrite it.
+    if (!userResizedIds.has(columnId)) {
+      const next = new Set(userResizedIds);
+      next.add(columnId);
+      userResizedIds = next;
+    }
   }
 
   function getColumnWidth(columnId: string): number | undefined {
@@ -1016,6 +1540,8 @@ export function createForestStore() {
     sortConfig = null;
     filterConfig = null;
     columnWidths = {};
+    columnWidthsCompact = {};
+    userResizedIds = new Set();
     plotWidthOverride = null;
     zoom = 1.0;
     autoFit = true;
@@ -1032,6 +1558,50 @@ export function createForestStore() {
   const tooltipRow = $derived.by((): Row | null => {
     if (!tooltipRowId || !spec) return null;
     return spec.data.rows.find((r) => r.id === tooltipRowId) ?? null;
+  });
+
+  // Derived: exportSpec — WYSIWYG spec reflecting the user's current view state.
+  // Both the interactive renderer and the SVG/PNG export consume this (via different paths),
+  // keeping them in lock-step by construction. See the interactivity plan for details.
+  const exportSpec = $derived.by((): WebSpec | null => {
+    if (!spec) return null;
+
+    // 1. Flatten displayRows to an ordered Row[]. This already reflects:
+    //    filter + sort + collapse-driven omission + (future) row-reorder.
+    //    Group headers are skipped — they're reconstructed from `groups` on export.
+    const orderedRows: Row[] = [];
+    for (const dr of displayRows) {
+      if (dr.type === "data") {
+        const base = dr.row;
+        const editedMeta = cellEdits.cells[base.id];
+        const editedLabel = cellEdits.labels[base.id];
+        if (editedMeta || editedLabel !== undefined) {
+          orderedRows.push({
+            ...base,
+            label: editedLabel ?? base.label,
+            metadata: editedMeta ? { ...base.metadata, ...editedMeta } : base.metadata,
+          });
+        } else {
+          orderedRows.push(base);
+        }
+      }
+    }
+
+    // 2. Sync group collapse state onto groups so export mirrors what's visible.
+    const groupsOut = spec.data.groups.map((g) => ({
+      ...g,
+      collapsed: collapsedGroups.has(g.id) || g.collapsed,
+    }));
+
+    return {
+      ...spec,
+      columns: effectiveColumnDefs,
+      data: {
+        ...spec.data,
+        rows: orderedRows,
+        groups: groupsOut,
+      },
+    };
   });
 
   return {
@@ -1121,6 +1691,42 @@ export function createForestStore() {
     get naturalContentWidth() {
       return naturalContentWidth;
     },
+    get sortConfig() {
+      return sortConfig;
+    },
+    get filterConfig() {
+      return filterConfig;
+    },
+    get filters() {
+      return filters;
+    },
+    get rowOrderOverrides() {
+      return rowOrderOverrides;
+    },
+    get columnOrderOverrides() {
+      return columnOrderOverrides;
+    },
+    get cellEdits() {
+      return cellEdits;
+    },
+    get dragState() {
+      return dragState;
+    },
+    get editingTarget() {
+      return editingTarget;
+    },
+    get filterPopoverTarget() {
+      return filterPopoverTarget;
+    },
+    get editMode() {
+      return editMode;
+    },
+    get columnWidthsCompact() {
+      return columnWidthsCompact;
+    },
+    get exportSpec() {
+      return exportSpec;
+    },
     getRowDepth,
     getColumnWidth,
     getPlotWidth,
@@ -1142,8 +1748,14 @@ export function createForestStore() {
       const columnPositions: Record<string, number> = {};
       const columnWidthsOut: Record<string, number> = {};
 
+      // Export always uses the compact (edit-mode-off) widths so downloads look
+      // identical to the clean view, regardless of whether the user is currently
+      // in edit mode. User-resized columns are already mirrored into compact widths
+      // by setColumnWidth(), so they're honored here too.
+      const widths = columnWidthsCompact;
+
       // Start after label column
-      const labelWidth = columnWidths["__label__"] ?? 150;
+      const labelWidth = widths["__label__"] ?? 150;
       columnWidthsOut["__label__"] = labelWidth;
       let currentX = labelWidth;
 
@@ -1155,12 +1767,12 @@ export function createForestStore() {
         let colWidth: number;
         if (col.type === "forest") {
           // Forest columns: check DOM width first, then col.width, then options, then layout default
-          colWidth = columnWidths[col.id]
+          colWidth = widths[col.id]
             ?? (typeof col.width === "number" ? col.width : null)
             ?? col.options?.forest?.width
             ?? layout.forestWidth;
         } else {
-          colWidth = columnWidths[col.id] ?? (typeof col.width === "number" ? col.width : 100);
+          colWidth = widths[col.id] ?? (typeof col.width === "number" ? col.width : 100);
         }
         columnWidthsOut[col.id] = colWidth;
         currentX += colWidth;
@@ -1257,7 +1869,44 @@ export function createForestStore() {
     selectRow,
     toggleGroup,
     sortBy,
+    toggleSort,
     setFilter,
+    setColumnFilter,
+    clearAllFilters,
+    getColumnFilter,
+    detectColumnKind,
+    getColumnValues,
+    getColumnNumericRange,
+    // DnD
+    findColumnScope,
+    siblingsForColumnScope,
+    findRowGroupScope,
+    siblingsForRowScope,
+    siblingsForRowGroupScope,
+    beginDrag,
+    updateDrag,
+    endDrag,
+    cancelDrag,
+    moveColumnItem,
+    moveRowItem,
+    moveRowGroupItem,
+    clearRowReorder,
+    clearColumnReorder,
+    // Edit
+    startEdit,
+    endEdit,
+    setCellValue,
+    clearCellEdit,
+    setRowLabel,
+    setForestCellValues,
+    getDisplayValue,
+    getLabel,
+    clearAllEdits,
+    // Filter popover + edit mode
+    openFilterPopover,
+    closeFilterPopover,
+    setEditMode,
+    toggleEditMode,
     setHovered,
     setTooltip,
     setColumnWidth,
@@ -1281,6 +1930,58 @@ export function createForestStore() {
 }
 
 export type ForestStore = ReturnType<typeof createForestStore>;
+
+// Apply all column filters (AND across columns).
+function applyFilters(rows: Row[], state: FiltersState): Row[] {
+  const filterList = Object.values(state);
+  if (filterList.length === 0) return rows;
+  return rows.filter((row) => filterList.every((f) => matchColumnFilter(row, f)));
+}
+
+function readField(row: Row, field: string): unknown {
+  return row.metadata[field] ?? (row as Record<string, unknown>)[field];
+}
+
+function matchColumnFilter(row: Row, f: ColumnFilter): boolean {
+  const value = readField(row, f.field);
+  switch (f.operator) {
+    case "contains":
+      if (value == null) return false;
+      return String(value).toLowerCase().includes(String(f.value ?? "").toLowerCase());
+    case "eq":
+      return value === f.value;
+    case "neq":
+      return value !== f.value;
+    case "gt":
+      return typeof value === "number" && typeof f.value === "number" && value > f.value;
+    case "lt":
+      return typeof value === "number" && typeof f.value === "number" && value < f.value;
+    case "gte":
+      return typeof value === "number" && typeof f.value === "number" && value >= f.value;
+    case "lte":
+      return typeof value === "number" && typeof f.value === "number" && value <= f.value;
+    case "between": {
+      if (typeof value !== "number") return false;
+      const range = f.value as [number | null, number | null] | null | undefined;
+      if (!range) return true;
+      const [lo, hi] = range;
+      if (lo != null && value < lo) return false;
+      if (hi != null && value > hi) return false;
+      return true;
+    }
+    case "in": {
+      const arr = f.value as unknown[] | null | undefined;
+      if (!arr || arr.length === 0) return true;
+      return arr.includes(value);
+    }
+    case "empty":
+      return value == null || value === "";
+    case "notEmpty":
+      return !(value == null || value === "");
+    default:
+      return true;
+  }
+}
 
 // Helper functions
 function applyFilter(rows: Row[], config: FilterConfig): Row[] {
@@ -1326,4 +2027,32 @@ function applySort(rows: Row[], config: SortConfig): Row[] {
   });
 
   return sorted;
+}
+
+// Sort rows within each group bucket so grouping structure is preserved.
+// Rows with the same groupId stay contiguous and retain their relative group order.
+function applySortWithinGroups(rows: Row[], config: SortConfig): Row[] {
+  const buckets = new Map<string, { positions: number[]; rows: Row[] }>();
+  const bucketOrder: string[] = [];
+  rows.forEach((row, idx) => {
+    const key = row.groupId ?? "__root__";
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = { positions: [], rows: [] };
+      buckets.set(key, bucket);
+      bucketOrder.push(key);
+    }
+    bucket.positions.push(idx);
+    bucket.rows.push(row);
+  });
+
+  const result: Row[] = new Array(rows.length);
+  for (const key of bucketOrder) {
+    const { positions, rows: bucketRows } = buckets.get(key)!;
+    const sortedBucket = applySort(bucketRows, config);
+    positions.forEach((pos, i) => {
+      result[pos] = sortedBucket[i];
+    });
+  }
+  return result;
 }
