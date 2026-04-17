@@ -83,18 +83,30 @@
 </span>
 
 <style>
+  /* Absolute-positioned so it doesn't consume flow width. Hidden until the
+     header cell is hovered. Sits LEFT of the resize handle on the far right. */
   .column-drag-handle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 14px;
     height: 14px;
-    margin-right: 2px;
     color: var(--wf-secondary, #64748b);
     cursor: grab;
-    opacity: 0.4;
+    opacity: 0;
     transition: opacity 0.12s ease;
     touch-action: none;
+    pointer-events: none;
+    z-index: 5;
+  }
+  :global(.tabviz-container .header-cell:hover) .column-drag-handle,
+  :global(.tabviz-container .column-group-header:hover) .column-drag-handle {
+    opacity: 0.75;
+    pointer-events: auto;
   }
   .column-drag-handle:hover { opacity: 1; }
   .column-drag-handle:active { cursor: grabbing; }

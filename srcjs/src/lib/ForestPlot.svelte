@@ -27,8 +27,8 @@
   import ColumnFilterButton from "$components/controls/ColumnFilterButton.svelte";
   import ColumnFilterPopover from "$components/controls/ColumnFilterPopover.svelte";
   import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
-  import RowDragHandle from "$components/controls/RowDragHandle.svelte";
   import DropIndicator from "$components/controls/DropIndicator.svelte";
+  import { hitTestRowGaps } from "$lib/dnd-utils";
   import EditableCell from "$components/controls/EditableCell.svelte";
   import VizBar from "$components/viz/VizBar.svelte";
   import VizBoxplot from "$components/viz/VizBoxplot.svelte";
@@ -424,6 +424,89 @@
   const vizColumnTypes = ["forest", "viz_bar", "viz_boxplot", "viz_violin"];
   const editableColumnTypes = new Set(["text", "numeric", "percent", "events", "pvalue", "interval", "date"]);
   const isEditableColumn = (col: ColumnSpec) => editableColumnTypes.has(col.type);
+
+  // ===========================================================================
+  // Whole-row drag-to-reorder (no visible grip handle)
+  //
+  // pointerdown on the row's label cell starts a drag candidate; document-level
+  // pointermove/pointerup track the gesture. Under the threshold the candidate
+  // is abandoned and the element's normal onclick fires (toggleGroup / selectRow).
+  // Over the threshold, a drag is committed on pointerup and the pending click
+  // is swallowed by a one-shot capturing listener.
+  // ===========================================================================
+  const ROW_DRAG_THRESHOLD = 6;
+  let rowDragSuppressClick = false;
+  let rowDragMoveHandler: ((e: PointerEvent) => void) | null = null;
+  let rowDragUpHandler: (() => void) | null = null;
+
+  function startRowPointerDown(
+    e: PointerEvent,
+    kind: "row" | "row_group",
+    id: string,
+    scopeKey: string,
+  ) {
+    if (e.button !== 0) return;
+    if (!spec?.interaction.enableReorderRows) return;
+    // Don't hijack pointerdowns that originated on a nested control (e.g. a
+    // dblclick target, badge link, etc.).
+    const target = e.target as HTMLElement;
+    if (target.closest("button, input, select, textarea, a, .resize-handle")) return;
+
+    store.beginDrag({ kind, id, scopeKey, startX: e.clientX, startY: e.clientY });
+    store.dragState!.threshold = ROW_DRAG_THRESHOLD;
+    rowDragSuppressClick = false;
+
+    rowDragMoveHandler = (ev: PointerEvent) => {
+      const drag = store.dragState;
+      if (!drag) return;
+      const allowed = getAllowedRowIndices(kind, scopeKey);
+      const hit = (allowed.length > 0)
+        ? hitTestRowGaps(ev.clientX, ev.clientY, allowed, (di) => containerRef?.querySelector<HTMLElement>(`[data-display-index="${di}"]`) ?? null)
+        : null;
+      store.updateDrag(ev.clientX, ev.clientY, hit ? hit.index : null);
+      if (store.dragState?.active) rowDragSuppressClick = true;
+    };
+
+    rowDragUpHandler = () => {
+      if (rowDragMoveHandler) document.removeEventListener("pointermove", rowDragMoveHandler);
+      if (rowDragUpHandler) document.removeEventListener("pointerup", rowDragUpHandler);
+      rowDragMoveHandler = null;
+      rowDragUpHandler = null;
+      store.endDrag((state) => {
+        if (state.indicatorIndex == null) return;
+        if (state.kind === "row") store.moveRowItem(state.id, state.indicatorIndex);
+        else if (state.kind === "row_group") store.moveRowGroupItem(state.id, state.indicatorIndex);
+      });
+      if (rowDragSuppressClick) {
+        const swallow = (ev: MouseEvent) => {
+          ev.stopPropagation();
+          ev.preventDefault();
+          window.removeEventListener("click", swallow, true);
+        };
+        window.addEventListener("click", swallow, true);
+      }
+    };
+
+    document.addEventListener("pointermove", rowDragMoveHandler);
+    document.addEventListener("pointerup", rowDragUpHandler);
+  }
+
+  function getAllowedRowIndices(kind: "row" | "row_group", scopeKey: string): number[] {
+    const rows = store.displayRows;
+    const indices: number[] = [];
+    if (kind === "row") {
+      const siblingIds = new Set(store.siblingsForRowScope(scopeKey));
+      rows.forEach((dr, i) => {
+        if (dr.type === "data" && siblingIds.has(dr.row.id)) indices.push(i);
+      });
+    } else {
+      const siblingIds = new Set(store.siblingsForRowGroupScope(scopeKey));
+      rows.forEach((dr, i) => {
+        if (dr.type === "group_header" && siblingIds.has(dr.group.id)) indices.push(i);
+      });
+    }
+    return indices;
+  }
 
   // Compute the drop-indicator position/extent for a column-DnD target index.
   function computeColumnBand(siblingIds: string[], targetIndex: number): { x: number; start: number; end: number } | null {
@@ -1017,7 +1100,7 @@
               style:grid-column="{cell.gridColumnStart} / span {cell.colspan}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
             >
-              {#if store.editMode && spec?.interaction.enableReorderColumns}
+              {#if spec?.interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column_group" id={cell.col.id} root={containerRef} />
               {/if}
               <span class="header-text">{cell.col.header}</span>
@@ -1041,7 +1124,7 @@
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
             >
-              {#if store.editMode && spec?.interaction.enableReorderColumns}
+              {#if spec?.interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />
               {/if}
               {#if column.header}
@@ -1058,7 +1141,7 @@
           {:else}
             <!-- Leaf column header -->
             {@const column = cell.col as ColumnSpec}
-            {@const canSort = store.editMode && !!spec?.interaction.enableSort && column.sortable && column.type !== "forest"}
+            {@const canSort = !!spec?.interaction.enableSort && column.sortable && column.type !== "forest"}
             {@const sortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -1075,14 +1158,14 @@
                 store.toggleSort(column.field);
               } : undefined}
             >
-              {#if store.editMode && spec?.interaction.enableReorderColumns}
+              {#if spec?.interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />
               {/if}
               <span class="header-text">{column.header}</span>
-              {#if canSort}
+              {#if canSort && sortDir !== "none"}
                 <SortIndicator direction={sortDir} />
               {/if}
-              {#if store.editMode && (spec?.interaction.enableFilters || spec?.interaction.showFilters) && !vizColumnTypes.includes(column.type)}
+              {#if (spec?.interaction.enableFilters || spec?.interaction.showFilters) && !vizColumnTypes.includes(column.type)}
                 <ColumnFilterButton {store} field={column.field} header={column.header} />
               {/if}
               {#if spec?.interaction.enableResize}
@@ -1108,13 +1191,15 @@
           {@const gridRow = headerDepth + 1 + i}
           {@const groupBg = isGroupHeader ? getGroupBackground(rowDepth + 1, theme) : undefined}
 
-          <!-- Label cell -->
+          <!-- Label cell — doubles as the drag surface (whole-row reorder)
+               when spec.interaction.enableReorderRows is on. -->
           <div
             class="grid-cell data-cell label-cell {rowClasses}"
             class:group-row={isGroupHeader}
             class:selected
             class:hovered={row && hoveredRowId === row.id}
             class:spacer-row={isSpacerRow}
+            class:reorderable={spec?.interaction.enableReorderRows}
             data-display-index={i}
             data-row-id={row ? row.id : undefined}
             data-field={row ? "__label__" : undefined}
@@ -1124,22 +1209,17 @@
             style={rowStyles || undefined}
             role={isGroupHeader ? "button" : undefined}
             tabindex={isGroupHeader ? 0 : undefined}
+            onpointerdown={spec?.interaction.enableReorderRows ? (e) => {
+              if (isGroupHeader) startRowPointerDown(e, "row_group", displayRow.group.id, displayRow.group.parentId ?? "__root__");
+              else if (row) startRowPointerDown(e, "row", row.id, row.groupId ?? "__root__");
+            } : undefined}
             onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => store.selectRow(row.id) : undefined}
-            ondblclick={!isGroupHeader && row && store.editMode && spec?.interaction.enableEdit ? () => store.startEdit({ rowId: row.id, field: "__label__" }) : undefined}
+            ondblclick={!isGroupHeader && row && spec?.interaction.enableEdit ? () => store.startEdit({ rowId: row.id, field: "__label__" }) : undefined}
             onkeydown={isGroupHeader ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id) : undefined}
             onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
             onmouseleave={row ? () => handleRowLeave() : undefined}
           >
             {#if isGroupHeader}
-              {#if store.editMode && spec?.interaction.enableReorderRows}
-                <RowDragHandle
-                  {store}
-                  kind="row_group"
-                  id={displayRow.group.id}
-                  scopeKey={displayRow.group.parentId ?? "__root__"}
-                  root={containerRef}
-                />
-              {/if}
               <GroupHeader
                 group={displayRow.group}
                 rowCount={displayRow.rowCount}
@@ -1147,15 +1227,6 @@
                 {theme}
               />
             {:else if row}
-              {#if store.editMode && spec?.interaction.enableReorderRows}
-                <RowDragHandle
-                  {store}
-                  kind="row"
-                  id={row.id}
-                  scopeKey={row.groupId ?? "__root__"}
-                  root={containerRef}
-                />
-              {/if}
               {#if row.style?.icon}<span class="row-icon">{row.style.icon}</span>{/if}
               {store.getLabel(row)}
               {#if row.style?.badge}<span class="row-badge">{row.style.badge}</span>{/if}
@@ -1181,7 +1252,7 @@
               ></div>
             {:else}
               <!-- Regular column cell -->
-              {@const editableHere = !!(row && store.editMode && spec?.interaction.enableEdit && !isGroupHeader && isEditableColumn(column))}
+              {@const editableHere = !!(row && spec?.interaction.enableEdit && !isGroupHeader && isEditableColumn(column))}
               <div
                 class="grid-cell data-cell {rowClasses}"
                 class:group-row={isGroupHeader}
@@ -1860,6 +1931,13 @@
   .label-cell {
     min-width: 120px;
   }
+  .label-cell.reorderable {
+    cursor: grab;
+    touch-action: none;
+  }
+  .label-cell.reorderable:active {
+    cursor: grabbing;
+  }
 
   /* Plot cell (empty - SVG overlays this) */
   .plot-cell {
@@ -1926,6 +2004,15 @@
   .data-cell.hovered {
     background: color-mix(in srgb, var(--wf-accent) 12%, var(--wf-bg));
     cursor: pointer;
+  }
+
+  /* Editable cells: cursor + faint tint on hover so users know to double-click */
+  .data-cell.editable:hover {
+    background: color-mix(in srgb, var(--wf-primary) 6%, var(--wf-bg));
+    cursor: text;
+  }
+  .data-cell.editable.hovered:hover {
+    background: color-mix(in srgb, var(--wf-accent) 12%, color-mix(in srgb, var(--wf-primary) 6%, var(--wf-bg)));
   }
 
   /* Selected row styling */

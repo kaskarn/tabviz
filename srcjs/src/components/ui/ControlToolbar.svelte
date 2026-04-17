@@ -6,7 +6,6 @@
   import DownloadButton from "./DownloadButton.svelte";
   import ResetButton from "./ResetButton.svelte";
   import ZoomControls from "./ZoomControls.svelte";
-  import EditModeToggle from "./EditModeToggle.svelte";
 
   interface Props {
     store: ForestStore;
@@ -42,7 +41,6 @@
   {#if enableReset}
     <ResetButton {store} />
   {/if}
-  <EditModeToggle {store} />
   {#if enableExport}
     <DownloadButton {store} />
   {/if}

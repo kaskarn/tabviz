@@ -1,3 +1,44 @@
+# tabviz 0.7.0
+
+## Interactivity Redesign: one mode, no layout shifts
+
+User feedback on the 0.6.0 edit/view mode dichotomy was negative — mode confusion, jarring column re-flow on toggle, header clutter. This release removes the mode entirely.
+
+### What's new
+
+* **No more edit mode.** The pencil-icon toggle is gone. Every interaction is available whenever its R-side feature flag is on (`enable_sort`, `enable_filters`, `enable_reorder_rows`, `enable_reorder_columns`, `enable_edit`). Zero in-widget state to manage.
+
+* **Zero layout shift.** The interaction chrome (filter funnel, column drag grip) now renders in absolutely-positioned overlays that appear on header hover. Column auto-widths are measured once, identical on screen and in export. The dual-measurement `columnWidthsCompact` dictionary is gone.
+
+* **Hover-reveal affordances.** On header hover: filter funnel + column drag grip fade in at the right edge (absolutely positioned, no flow impact). Leave the header → they fade out.
+
+* **Whole-row drag.** The row drag grip icon is gone. Clicking a row still collapses (group header) or selects (data row); dragging it reorders. Disambiguation is threshold-based — a drag only commits if the pointer travels > 6 px before release. Cursor changes to `grab` when `enable_reorder_rows` is on.
+
+* **Active-state indicators only.** Sort chevron appears inline only on the currently-sorted column. Filter funnel stays visible (persistently, full opacity) on columns that have an active filter. Other columns stay visually quiet at rest.
+
+* **Editable cells get a subtle tint + text cursor** on hover, so double-click discoverability doesn't require an icon.
+
+### Removed
+
+* `EditModeToggle` component + `setEditMode` / `toggleEditMode` / `editMode` store state.
+* `RowDragHandle` component — whole-row drag replaces it.
+* `columnWidthsCompact` dictionary and the dual-pass measurement.
+* Per-column icon width budget in `doMeasurement()`.
+
+### Preserved
+
+* R API is unchanged — every `enable_*` flag on `web_interaction()` works the same. Existing widgets don't need to change.
+* WYSIWYG export still reflects the current view (filter + sort + reorder + edits), via the `exportSpec` derived.
+* Shiny proxy methods (`applyFilter`, `clearFilter`, `sortBy`, `toggleGroup`) unchanged.
+* Column resize still works (never mode-gated).
+
+### Migration notes
+
+* If you relied on the pencil-icon toggle to expose interactions, they're now live by default whenever the feature flag is set. Simplify.
+* If you were using edit-mode-off as a "screenshot mode", the new default IS the clean state. Active sort/filter indicators still show, which matches the "show me what's being queried" intent of a screenshot.
+
+---
+
 # tabviz 0.6.1
 
 ## Bug Fixes

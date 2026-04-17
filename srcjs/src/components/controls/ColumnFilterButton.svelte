@@ -37,14 +37,34 @@
 </button>
 
 <style>
+  /* Absolute-positioned inside the header cell. Reveal on header hover;
+     stay persistent when a filter is applied so the user sees the active
+     state at rest. Sits LEFT of the resize handle and LEFT of the drag grip. */
   .filter-btn {
+    position: absolute;
+    top: 50%;
+    right: 24px;
+    transform: translateY(-50%);
     display: inline-flex; align-items: center; justify-content: center;
-    width: 18px; height: 18px; margin-left: 2px; padding: 0;
+    width: 18px; height: 18px; padding: 0;
     border: none; background: transparent; color: var(--wf-secondary, #64748b);
-    cursor: pointer; border-radius: 3px; opacity: 0.55; transition: opacity .12s, background-color .12s;
-    vertical-align: middle;
+    cursor: pointer; border-radius: 3px;
+    opacity: 0;
+    transition: opacity .12s, background-color .12s;
+    pointer-events: none;
+    z-index: 5;
+  }
+  /* Reveal on header hover */
+  :global(.tabviz-container .header-cell:hover) .filter-btn {
+    opacity: 0.75;
+    pointer-events: auto;
   }
   .filter-btn:hover { opacity: 1; background: var(--wf-border, #f1f5f9); }
-  .filter-btn.active { color: var(--wf-primary, #2563eb); opacity: 1; }
+  /* Active filter: stay fully visible at rest */
+  .filter-btn.active {
+    opacity: 1;
+    pointer-events: auto;
+    color: var(--wf-primary, #2563eb);
+  }
   .filter-btn.open { background: var(--wf-border, #f1f5f9); opacity: 1; }
 </style>

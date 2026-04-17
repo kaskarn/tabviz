@@ -57,16 +57,6 @@ export function createForestStore() {
   let editingTarget = $state<EditTarget | null>(null);
   let filterPopoverTarget = $state<{ field: string; header: string; anchorX: number; anchorY: number } | null>(null);
 
-  // Edit mode — OFF by default (clean read-only view, tight column widths). When ON,
-  // interaction chrome (drag handles, sort/filter icons, edit triggers) becomes visible
-  // and auto-width columns expand to accommodate the icons. Export always uses the
-  // tight (edit-mode-off) widths, so the exported SVG/PNG matches the clean view.
-  let editMode = $state<boolean>(false);
-
-  // Tight column widths — computed as if editMode were off. Used by the export path
-  // so downloads always produce the clean, icon-free layout regardless of edit mode.
-  let columnWidthsCompact = $state<Record<string, number>>({});
-
   // Tooltip state
   let tooltipRowId = $state<string | null>(null);
   let tooltipPosition = $state<{ x: number; y: number } | null>(null);
@@ -636,30 +626,26 @@ export function createForestStore() {
       fontSize = `${relValue * rootFontSize}px`;
     }
 
-    // Two passes: interactive widths (respect editMode) + compact widths (always editMode=off).
-    // Compact widths feed the export path so downloads are always tight regardless of mode.
-    doMeasurement(fontSize, fontFamily, columnWidths, editMode);
-    doMeasurement(fontSize, fontFamily, columnWidthsCompact, false);
+    // Single measurement pass — interaction chrome lives in absolute overlays,
+    // so it doesn't consume flow width. Same widths on screen and in export.
+    doMeasurement(fontSize, fontFamily, columnWidths);
 
     // Then wait for fonts to load and re-measure for accuracy
-    // This ensures custom/web fonts are properly measured
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
-        doMeasurement(fontSize as string, fontFamily, columnWidths, editMode, true);
-        doMeasurement(fontSize as string, fontFamily, columnWidthsCompact, false, true);
+        doMeasurement(fontSize as string, fontFamily, columnWidths, true);
       });
     }
   }
 
   // Perform the actual column width measurement.
-  // `target` is the widths dict to write into; `iconsVisible` controls whether
-  // interaction-icon budget is included. Keeps `columnWidths` (interactive, respects
-  // edit mode) and `columnWidthsCompact` (always icons-off, used by export) in sync.
+  // `target` is the widths dict to write into. Only one dict is used now
+  // (`columnWidths`), since interaction chrome renders in absolute overlays
+  // and therefore doesn't affect flow-width measurement.
   function doMeasurement(
     fontSize: string,
     fontFamily: string,
     target: Record<string, number>,
-    iconsVisibleArg: boolean,
     isFontLoaded = false,
   ) {
     if (!spec) return;
@@ -692,43 +678,14 @@ export function createForestStore() {
     // groupPadding is applied to both left and right of column group headers
     const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
 
-    // ------------------------------------------------------------------
-    // Interaction-chrome width budget
-    // ------------------------------------------------------------------
-    // Sort chevron, filter funnel, and drag handle all live INSIDE the header
-    // cell at render time and compete with the header text for horizontal space.
-    // When the user enables one of these features we bake its px contribution
-    // into the auto-width measurement so:
-    //   - browser view: header text + icons fits without clipping
-    //   - SVG/PNG export: same column widths (they live in columnWidths); the
-    //     exported file has extra slack that simply appears as whitespace on
-    //     the right, preserving WYSIWYG column alignment with the interactive view.
-    // Icons are hidden in screenshotMode; widths stay the same (harmless slack).
-    //
-    // Rough pixel costs (SortIndicator/funnel/grip each have a small margin).
-    // Icons are only rendered when edit mode is on (and the corresponding flag is set).
-    const I = spec.interaction;
-    const SORT_PX = 14;              // chevron (10) + left margin (4)
-    const FUNNEL_PX = 20;            // funnel button (18) + left margin (2)
-    const COL_GRIP_PX = 16;          // column drag handle (14) + right margin (2)
-    const GROUP_GRIP_PX = 16;        // group-header drag handle
-    const filtersOn = !!(I.enableFilters || I.showFilters);
-    const iconsVisible = iconsVisibleArg;
-    function leafIconBudget(col: ColumnSpec): number {
-      if (!iconsVisible) return 0;
-      let px = 0;
-      if (I.enableSort && col.sortable && col.type !== "forest") px += SORT_PX;
-      if (filtersOn && col.type !== "forest"
-          && col.type !== "viz_bar" && col.type !== "viz_boxplot" && col.type !== "viz_violin") {
-        px += FUNNEL_PX;
-      }
-      if (I.enableReorderColumns) px += COL_GRIP_PX;
-      return px;
-    }
-    function groupIconBudget(): number {
-      if (!iconsVisible) return 0;
-      return I.enableReorderColumns ? GROUP_GRIP_PX : 0;
-    }
+    // Interaction chrome (sort chevron, filter funnel, drag grip) renders in
+    // absolute-positioned hover overlays that do not consume flow width, so
+    // measurement only accounts for header text and data content.
+    // Persistent active-state indicators (sort chevron on a sorted column,
+    // filter dot on a filtered column) DO sit in flow, but only on columns
+    // that are actively queried — a blanket budget would over-size every
+    // column for an indicator that only appears on 0-1 of them.
+    void isFontLoaded;
 
     // ========================================================================
     // COLUMN WIDTH MEASUREMENT
@@ -810,14 +767,11 @@ export function createForestStore() {
         }
       }
 
-      // Apply padding (from theme), interaction-icon budget, and constraints.
-      // Icons sit alongside the header text in the same cell, so they count against
-      // the cell's content width rather than against data-row content widths.
-      const iconBudget = leafIconBudget(col);
+      // Apply padding (from theme) and constraints.
       const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;
       const computedWidth = Math.min(
         AUTO_WIDTH.MAX,
-        Math.max(typeMin, Math.ceil(maxWidth + iconBudget + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)),
+        Math.max(typeMin, Math.ceil(maxWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)),
       );
       target[col.id] = computedWidth;
     }
@@ -843,9 +797,8 @@ export function createForestStore() {
         // Check if group header needs more width than children provide
         if (col.header) {
           ctx!.font = headerFont;
-          // Group header needs: text width + its own padding (from theme) + rendering buffer
-          // + a drag-handle budget when enableReorderColumns is on (handle sits alongside label).
-          const groupHeaderWidth = ctx!.measureText(col.header).width + groupIconBudget() + groupPadding + TEXT_MEASUREMENT.RENDERING_BUFFER;
+          // Group header needs: text width + its own padding (from theme) + rendering buffer.
+          const groupHeaderWidth = ctx!.measureText(col.header).width + groupPadding + TEXT_MEASUREMENT.RENDERING_BUFFER;
 
           const leafCols = getLeafColumns(col);
           const childrenTotalWidth = leafCols.reduce((sum, leaf) => sum + getEffectiveWidth(leaf), 0);
@@ -875,10 +828,9 @@ export function createForestStore() {
     // Measure label column width
     if (spec.data.labelCol && !userResizedIds.has("__label__")) {
       let maxLabelWidth = 0;
-      // Row-drag-handle budget: when row reorder is on, a grip icon is rendered
-      // inside every data-row label cell and group-header label.
-      const ROW_GRIP_PX = 18; // 14px handle + 4px right margin
-      const rowGripBudget = (iconsVisible && I.enableReorderRows) ? ROW_GRIP_PX : 0;
+      // No row-drag-handle budget — dragging happens via pointerdown on the
+      // whole label cell, not a visible grip icon.
+      const rowGripBudget = 0;
 
       // Build group depth map for calculating row indentation
       const groupDepths = new Map<string, number>();
@@ -1366,17 +1318,6 @@ export function createForestStore() {
     filterPopoverTarget = null;
   }
 
-  // Edit mode toggle. Off = clean read-only view (no icons, tight widths).
-  // On = interaction chrome visible, auto-width columns expanded to fit icons.
-  // Re-measures the interactive width dictionary; the compact (export) widths
-  // are untouched so downloads always use the clean layout.
-  function setEditMode(v: boolean) {
-    if (editMode === v) return;
-    editMode = v;
-    measureAutoColumns();
-  }
-  function toggleEditMode() { setEditMode(!editMode); }
-
   function setHovered(id: string | null) {
     hoveredRowId = id;
   }
@@ -1389,9 +1330,7 @@ export function createForestStore() {
   function setColumnWidth(columnId: string, width: number) {
     const w = Math.max(40, width); // min 40px
     columnWidths[columnId] = w;
-    // Propagate to compact widths so export honors user resizes too.
-    columnWidthsCompact[columnId] = w;
-    // Mark as user-resized so edit-mode re-measurement doesn't overwrite it.
+    // Mark as user-resized so future measurement passes don't overwrite it.
     if (!userResizedIds.has(columnId)) {
       const next = new Set(userResizedIds);
       next.add(columnId);
@@ -1540,7 +1479,6 @@ export function createForestStore() {
     sortConfig = null;
     filterConfig = null;
     columnWidths = {};
-    columnWidthsCompact = {};
     userResizedIds = new Set();
     plotWidthOverride = null;
     zoom = 1.0;
@@ -1752,12 +1690,6 @@ export function createForestStore() {
     get filterPopoverTarget() {
       return filterPopoverTarget;
     },
-    get editMode() {
-      return editMode;
-    },
-    get columnWidthsCompact() {
-      return columnWidthsCompact;
-    },
     get exportSpec() {
       return exportSpec;
     },
@@ -1782,11 +1714,9 @@ export function createForestStore() {
       const columnPositions: Record<string, number> = {};
       const columnWidthsOut: Record<string, number> = {};
 
-      // Export always uses the compact (edit-mode-off) widths so downloads look
-      // identical to the clean view, regardless of whether the user is currently
-      // in edit mode. User-resized columns are already mirrored into compact widths
-      // by setColumnWidth(), so they're honored here too.
-      const widths = columnWidthsCompact;
+      // Widths are measured once (no dual pass) since interaction chrome lives
+      // in absolute overlays that don't consume flow width.
+      const widths = columnWidths;
 
       // Start after label column
       const labelWidth = widths["__label__"] ?? 150;
@@ -1936,11 +1866,9 @@ export function createForestStore() {
     getDisplayValue,
     getLabel,
     clearAllEdits,
-    // Filter popover + edit mode
+    // Filter popover
     openFilterPopover,
     closeFilterPopover,
-    setEditMode,
-    toggleEditMode,
     setHovered,
     setTooltip,
     setColumnWidth,
