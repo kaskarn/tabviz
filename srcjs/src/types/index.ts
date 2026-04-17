@@ -67,6 +67,10 @@ export interface Row {
   markerStyle?: MarkerStyle;
   // Per-cell styles keyed by column field name
   cellStyles?: Record<string, CellStyle>;
+  // Forest plot primary effect values (when not using custom field names)
+  point?: number;
+  lower?: number;
+  upper?: number;
 }
 
 export interface Group {

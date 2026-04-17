@@ -27,6 +27,40 @@ test_that("viz_forest validates scale value", {
   )
 })
 
+# The frontend SVG generator (srcjs/src/lib/svg-generator.ts) relies on the
+# invariant that R emits forest effects with non-null pointCol/lowerCol/upperCol.
+# If this contract ever loosened, the TS fallback would silently look up wrong
+# fields. Lock the contract here.
+test_that("viz_forest requires all three of point/lower/upper or none", {
+  expect_error(viz_forest(point = "x"), "Forest column requires effect specification")
+  expect_error(viz_forest(point = "x", lower = "y"), "Forest column requires effect specification")
+  expect_error(viz_forest(lower = "y", upper = "z"), "Forest column requires effect specification")
+  expect_error(viz_forest(), "Forest column requires effect specification")
+})
+
+test_that("serialized forest effects always have non-null pointCol/lowerCol/upperCol", {
+  col <- viz_forest(point = "hr", lower = "hr_lo", upper = "hr_hi")
+  # Single-effect path: point/lower/upper stored directly in options
+  expect_equal(col@options$forest$point, "hr")
+  expect_equal(col@options$forest$lower, "hr_lo")
+  expect_equal(col@options$forest$upper, "hr_hi")
+
+  # Multi-effect path: serialized effects list each have pointCol/lowerCol/upperCol
+  col2 <- viz_forest(
+    effects = list(
+      effect_forest("or", "or_lo", "or_hi"),
+      effect_forest("hr", "hr_lo", "hr_hi")
+    )
+  )
+  effects <- col2@options$forest$effects
+  expect_length(effects, 2)
+  for (e in effects) {
+    expect_false(is.null(e$pointCol))
+    expect_false(is.null(e$lowerCol))
+    expect_false(is.null(e$upperCol))
+  }
+})
+
 test_that("WebSpec creates valid object with defaults", {
   data <- data.frame(
     study = c("A", "B"),

@@ -21,7 +21,8 @@ const binding: HTMLWidgetsBinding = {
     }
 
     return {
-      renderValue: (x: SplitForestPayload) => {
+      renderValue: (raw: unknown) => {
+        const x = raw as SplitForestPayload;
         store.setPayload(x);
         store.setDimensions(width, height);
 
@@ -82,7 +83,8 @@ if (typeof window !== "undefined" && window.HTMLWidgets) {
 if (typeof window !== "undefined" && window.Shiny) {
   window.Shiny.addCustomMessageHandler(
     "tabviz-split-proxy",
-    (msg: { id: string; method: string; args: Record<string, unknown> }) => {
+    (raw: unknown) => {
+      const msg = raw as { id: string; method: string; args: Record<string, unknown> };
       const store = storeRegistry.get(msg.id);
       if (!store) return;
 

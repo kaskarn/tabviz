@@ -139,8 +139,8 @@
           <div class="section-header nested" style="--depth: {depth}">{formatHeader(splitVars[depth + 1])}</div>
         {/if}
         <ul class="tree-list nested">
-          {#each node.children as child, i}
-            {@render treeNode(child, depth + 1, i === node.children.length - 1)}
+          {#each node.children ?? [] as child, i}
+            {@render treeNode(child, depth + 1, i === (node.children?.length ?? 0) - 1)}
           {/each}
         </ul>
       </div>

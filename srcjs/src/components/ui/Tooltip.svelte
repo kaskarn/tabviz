@@ -63,7 +63,7 @@
   const shouldShow = $derived(row && position && fields && fields.length > 0);
 </script>
 
-{#if shouldShow}
+{#if shouldShow && row}
   <div bind:this={tooltipEl} class="tabviz-tooltip" style={positionStyle}>
     <div class="tooltip-header">{row.label}</div>
     <div class="tooltip-body">

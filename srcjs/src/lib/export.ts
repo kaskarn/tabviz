@@ -5,7 +5,7 @@
  */
 
 import type { WebSpec } from "$types";
-import { generateSVG, svgToBlob } from "./svg-generator";
+import { generateSVG, svgToBlob, type ExportOptions } from "./svg-generator";
 
 export type { ExportOptions } from "./svg-generator";
 

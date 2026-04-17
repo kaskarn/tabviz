@@ -2,7 +2,7 @@
   import { tick } from "svelte";
   import type { ForestStore } from "$stores/forestStore.svelte";
   import type { ThemeName } from "$lib/theme-presets";
-  import type { WebTheme, ColumnSpec, ColumnDef, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle } from "$types";
+  import type { WebTheme, ColumnSpec, ColumnDef, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle, Annotation } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
   import EffectAxis from "$components/forest/EffectAxis.svelte";
   import SummaryDiamond from "$components/forest/SummaryDiamond.svelte";
@@ -279,9 +279,9 @@
 
   // Helper to compute Y offsets for annotation labels to avoid collisions
   // Labels that are too close in x-space get staggered vertically
-  function computeAnnotationLabelOffsets(annotations: typeof spec.annotations): Record<string, number> {
+  function computeAnnotationLabelOffsets(annotations: Annotation[]): Record<string, number> {
     const labeledAnnotations = annotations
-      .filter(a => a.type === "reference_line" && a.label)
+      .filter((a): a is Annotation & { type: "reference_line"; label: string } => a.type === "reference_line" && !!a.label)
       .map(a => ({ id: a.id, x: xScale(a.x), label: a.label }))
       .sort((a, b) => a.x - b.x);
 
@@ -645,12 +645,6 @@
           vizWidth = col.width;
         } else if (col.type === "forest") {
           vizWidth = col.options?.forest?.width ?? layout.forestWidth;
-        } else if (col.type === "viz_bar") {
-          vizWidth = col.options?.vizBar?.width ?? layout.forestWidth;
-        } else if (col.type === "viz_boxplot") {
-          vizWidth = col.options?.vizBoxplot?.width ?? layout.forestWidth;
-        } else if (col.type === "viz_violin") {
-          vizWidth = col.options?.vizViolin?.width ?? layout.forestWidth;
         } else {
           vizWidth = layout.forestWidth;
         }
@@ -746,7 +740,7 @@
 
         // Check dynamic width first, then static width, then options, then layout default
         const dynamicWidth = columnWidthsSnapshot[col.id];
-        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : (opts.width ?? layout.forestWidth));
+        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : layout.forestWidth);
 
         // If axisRange is specified, use it; otherwise compute from all rows
         let domainMin = opts.axisRange?.[0];
@@ -784,7 +778,7 @@
 
         // Check dynamic width first, then static width, then options, then layout default
         const dynamicWidth = columnWidthsSnapshot[col.id];
-        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : (opts.width ?? layout.forestWidth));
+        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : layout.forestWidth);
 
         let domainMin = opts.axisRange?.[0];
         let domainMax = opts.axisRange?.[1];
@@ -836,7 +830,7 @@
 
         // Check dynamic width first, then static width, then options, then layout default
         const dynamicWidth = columnWidthsSnapshot[col.id];
-        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : (opts.width ?? layout.forestWidth));
+        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : layout.forestWidth);
 
         let domainMin = opts.axisRange?.[0];
         let domainMax = opts.axisRange?.[1];
@@ -1190,12 +1184,6 @@
             {@const column = cell.col as ColumnSpec}
             {@const vizDefaultWidth = column.type === "forest"
               ? (column.options?.forest?.width ?? layout.forestWidth)
-              : column.type === "viz_bar"
-              ? (column.options?.vizBar?.width ?? layout.forestWidth)
-              : column.type === "viz_boxplot"
-              ? (column.options?.vizBoxplot?.width ?? layout.forestWidth)
-              : column.type === "viz_violin"
-              ? (column.options?.vizViolin?.width ?? layout.forestWidth)
               : layout.forestWidth}
             <div
               use:forestColumnRef={column.id}
@@ -1505,7 +1493,7 @@
         {#each vizColumns.filter(vc => vc.column.type === "viz_bar") as vc (vc.column.id)}
           {@const vizOpts = vc.column.options?.vizBar}
           {@const dynamicVizWidth = columnWidthsSnapshot[vc.column.id]}
-          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (vc.column.width ?? vizOpts?.width ?? layout.forestWidth)}
+          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (typeof vc.column.width === "number" ? vc.column.width : layout.forestWidth)}
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
@@ -1545,7 +1533,7 @@
                     axisLabel={vizOpts.axisLabel ?? "Value"}
                     position="bottom"
                     plotHeight={rowsAreaHeight}
-                    baseTicks={vizOpts.axisTicks}
+                    baseTicks={vizOpts.axisTicks ?? undefined}
                     gridlines={vizOpts.axisGridlines}
                   />
                 </g>
@@ -1558,7 +1546,7 @@
         {#each vizColumns.filter(vc => vc.column.type === "viz_boxplot") as vc (vc.column.id)}
           {@const vizOpts = vc.column.options?.vizBoxplot}
           {@const dynamicVizWidth = columnWidthsSnapshot[vc.column.id]}
-          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (vc.column.width ?? vizOpts?.width ?? layout.forestWidth)}
+          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (typeof vc.column.width === "number" ? vc.column.width : layout.forestWidth)}
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
@@ -1598,7 +1586,7 @@
                     axisLabel={vizOpts.axisLabel ?? "Value"}
                     position="bottom"
                     plotHeight={rowsAreaHeight}
-                    baseTicks={vizOpts.axisTicks}
+                    baseTicks={vizOpts.axisTicks ?? undefined}
                     gridlines={vizOpts.axisGridlines}
                   />
                 </g>
@@ -1611,7 +1599,7 @@
         {#each vizColumns.filter(vc => vc.column.type === "viz_violin") as vc (vc.column.id)}
           {@const vizOpts = vc.column.options?.vizViolin}
           {@const dynamicVizWidth = columnWidthsSnapshot[vc.column.id]}
-          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (vc.column.width ?? vizOpts?.width ?? layout.forestWidth)}
+          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (typeof vc.column.width === "number" ? vc.column.width : layout.forestWidth)}
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
@@ -1651,7 +1639,7 @@
                     axisLabel={vizOpts.axisLabel ?? "Value"}
                     position="bottom"
                     plotHeight={rowsAreaHeight}
-                    baseTicks={vizOpts.axisTicks}
+                    baseTicks={vizOpts.axisTicks ?? undefined}
                     gridlines={vizOpts.axisGridlines}
                   />
                 </g>
@@ -1714,7 +1702,7 @@
 </div>
 
 <script lang="ts" module>
-  import type { Row, ColumnSpec, RowStyle, DisplayRow } from "$types";
+  import type { RowStyle } from "$types";
 
   // Note: formatNumber, formatEvents, formatInterval, addThousandsSep, abbreviateNumber are imported from $lib/formatters
 

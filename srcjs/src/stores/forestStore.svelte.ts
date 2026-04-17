@@ -1064,7 +1064,7 @@ export function createForestStore() {
     if (!spec) return "text";
     const col = allColumns.find((c) => c.field === field);
     const numericTypes: ColumnSpec["type"][] = [
-      "numeric", "percent", "events", "bar", "pvalue", "heatmap", "progress", "range",
+      "numeric", "bar", "pvalue", "heatmap", "progress", "range",
     ];
     if (col && numericTypes.includes(col.type)) return "numeric";
 
@@ -2035,7 +2035,7 @@ function applyFilters(rows: Row[], state: FiltersState): Row[] {
 }
 
 function readField(row: Row, field: string): unknown {
-  return row.metadata[field] ?? (row as Record<string, unknown>)[field];
+  return row.metadata[field] ?? (row as unknown as Record<string, unknown>)[field];
 }
 
 function matchColumnFilter(row: Row, f: ColumnFilter): boolean {
@@ -2082,7 +2082,7 @@ function matchColumnFilter(row: Row, f: ColumnFilter): boolean {
 // Helper functions
 function applyFilter(rows: Row[], config: FilterConfig): Row[] {
   return rows.filter((row) => {
-    const value = row.metadata[config.field] ?? (row as Record<string, unknown>)[config.field];
+    const value = row.metadata[config.field] ?? (row as unknown as Record<string, unknown>)[config.field];
 
     switch (config.operator) {
       case "eq":
@@ -2109,8 +2109,8 @@ function applySort(rows: Row[], config: SortConfig): Row[] {
   const { column, direction } = config;
 
   sorted.sort((a, b) => {
-    const aVal = a.metadata[column] ?? (a as Record<string, unknown>)[column];
-    const bVal = b.metadata[column] ?? (b as Record<string, unknown>)[column];
+    const aVal = a.metadata[column] ?? (a as unknown as Record<string, unknown>)[column];
+    const bVal = b.metadata[column] ?? (b as unknown as Record<string, unknown>)[column];
 
     let comparison = 0;
     if (typeof aVal === "number" && typeof bVal === "number") {

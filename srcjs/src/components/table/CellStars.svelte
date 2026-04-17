@@ -19,7 +19,7 @@
   const HALF_STAR = "⯪"; // Alternative: ★ with half-filled effect via CSS
 
   const starDisplay = $derived.by(() => {
-    if (value === undefined || value === null) return "";
+    if (value === undefined || value === null) return [];
 
     const rating = Math.max(0, Math.min(maxStars, value));
     const stars: Array<{ char: string; filled: "full" | "half" | "empty" }> = [];

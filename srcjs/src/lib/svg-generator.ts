@@ -488,12 +488,17 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const displayRows = buildDisplayRows(spec);
   const hasOverall = !!spec.data.overall;
 
-  // Calculate rows height (display rows only, not including overall summary)
+  // Calculate rows height and per-row positions (display rows only, not including overall summary)
   // This matches web view's rowsAreaHeight which excludes overall
   let rowsHeight = 0;
+  const rowPositions: number[] = [];
+  const rowHeights: number[] = [];
   for (const dr of displayRows) {
     const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
-    rowsHeight += isSpacerRow ? rowHeight / 2 : rowHeight;
+    const h = isSpacerRow ? rowHeight / 2 : rowHeight;
+    rowPositions.push(rowsHeight);
+    rowHeights.push(h);
+    rowsHeight += h;
   }
   // plotHeight includes overall summary area (for total height calculations)
   const plotHeight = rowsHeight + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
@@ -542,9 +547,9 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
 
   // Forest width calculation - "tables first" approach
   const baseWidth = options.width ?? LAYOUT.DEFAULT_WIDTH;
-  // Check for forest columns (new API) OR legacy includeForest flag
+  // Check for forest columns
   const hasForestColumns = allColumns.some(c => c.type === "forest");
-  const includeForest = hasForestColumns || spec.data.includeForest;
+  const includeForest = hasForestColumns;
 
   // Total table width includes legacy positioned columns AND unified non-forest columns
   const totalTableWidth = leftTableWidth + rightTableWidth + unifiedNonForestWidth;
@@ -609,6 +614,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     rowsHeight,
     autoWidths,
     labelWidth,
+    rowPositions,
+    rowHeights,
   };
 }
 
@@ -646,7 +653,7 @@ function buildDisplayRows(spec: WebSpec): DisplayRow[] {
   }
 
   // Build group lookup maps
-  const groupMap = new Map<string, { id: string; label: string; depth: number; parentId?: string }>();
+  const groupMap = new Map<string, { id: string; label: string; depth: number; parentId?: string | null }>();
   for (const group of groups) {
     groupMap.set(group.id, group);
   }
@@ -666,7 +673,7 @@ function buildDisplayRows(spec: WebSpec): DisplayRow[] {
     let current: string | undefined = groupId;
     while (current) {
       groupsWithHeaders.add(current);
-      current = groupMap.get(current)?.parentId;
+      current = groupMap.get(current)?.parentId ?? undefined;
     }
   }
 
@@ -790,7 +797,7 @@ function flattenColumns(columns: ColumnDef[], position?: "left" | "right"): Colu
 
 /** Get column definitions (preserving groups) filtered by position */
 function getColumnDefs(columns: ColumnDef[], position: "left" | "right"): ColumnDef[] {
-  return columns.filter((c) => c.position === position);
+  return columns.filter((c) => (c as any).position === position);
 }
 
 /** Check if any column definitions contain groups */
@@ -909,7 +916,7 @@ function createLinearScale(domain: [number, number], range: [number, number]): S
     return r0 + (value - d0) * ratio;
   };
 
-  scale.domain = () => domain;
+  scale.domain = (): [number, number] => domain;
   scale.range = () => range;
   scale.ticks = (count: number): number[] => {
     const step = (d1 - d0) / (count - 1);
@@ -935,7 +942,7 @@ function createLogScale(domain: [number, number], range: [number, number]): Scal
     return r0 + (logValue - logD0) * ratio;
   };
 
-  scale.domain = () => [d0, d1];
+  scale.domain = (): [number, number] => [d0, d1];
   scale.range = () => range;
   scale.ticks = (count: number): number[] => {
     // Generate log-spaced ticks at nice values (powers of 10 and 2x, 5x multiples)
@@ -1348,7 +1355,7 @@ function renderSparklinePath(data: number[], x: number, y: number, width: number
 function renderInterval(
   row: Row,
   yPosition: number,
-  xScale: Scale,
+  xScale: (value: number) => number,
   theme: WebTheme,
   nullValue: number,
   effects: EffectSpec[] = [],
@@ -1373,9 +1380,9 @@ function renderInterval(
   if (effects.length === 0) {
     // Default effect from primary columns
     // For log scale, filter non-positive values
-    const point = (!isLog || (row.point != null && row.point > 0)) ? row.point : null;
-    const lower = (!isLog || (row.lower != null && row.lower > 0)) ? row.lower : null;
-    const upper = (!isLog || (row.upper != null && row.upper > 0)) ? row.upper : null;
+    const point = (!isLog || (row.point != null && row.point > 0)) ? (row.point ?? null) : null;
+    const lower = (!isLog || (row.lower != null && row.lower > 0)) ? (row.lower ?? null) : null;
+    const upper = (!isLog || (row.upper != null && row.upper > 0)) ? (row.upper ?? null) : null;
     effectsToRender = [{
       point,
       lower,
@@ -2501,10 +2508,8 @@ function renderUnifiedTableRow(
         fill="${theme.colors.foreground}">${formatNumber(barValue)}</text>`);
     } else if (col.type === "sparkline" && Array.isArray(row.metadata[col.field])) {
       // Render sparkline
-      let data = row.metadata[col.field] as number[] | number[][];
-      if (Array.isArray(data[0])) {
-        data = data[0] as number[];
-      }
+      const raw = row.metadata[col.field] as number[] | number[][];
+      const data: number[] = Array.isArray(raw[0]) ? (raw[0] as number[]) : (raw as number[]);
       const sparkHeight = col.options?.sparkline?.height ?? 16;
       const sparkColor = col.options?.sparkline?.color ?? theme.colors.primary;
       const sparkPadding = SPACING.TEXT_PADDING * 2;
@@ -3030,24 +3035,12 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       if (typeof col.width === "number") return col.width;
       return col.options?.forest?.width ?? layout.forestWidth;
     }
-    // Viz column widths: check autoWidths first, then col.width, then options width, then layout default
-    if (col.type === "viz_bar") {
+    // Viz column widths: check autoWidths first, then col.width, then layout default
+    if (col.type === "viz_bar" || col.type === "viz_boxplot" || col.type === "viz_violin") {
       const precomputed = autoWidths.get(col.id);
       if (precomputed !== undefined) return precomputed;
       if (typeof col.width === "number") return col.width;
-      return col.options?.vizBar?.width ?? layout.forestWidth;
-    }
-    if (col.type === "viz_boxplot") {
-      const precomputed = autoWidths.get(col.id);
-      if (precomputed !== undefined) return precomputed;
-      if (typeof col.width === "number") return col.width;
-      return col.options?.vizBoxplot?.width ?? layout.forestWidth;
-    }
-    if (col.type === "viz_violin") {
-      const precomputed = autoWidths.get(col.id);
-      if (precomputed !== undefined) return precomputed;
-      if (typeof col.width === "number") return col.width;
-      return col.options?.vizViolin?.width ?? layout.forestWidth;
+      return layout.forestWidth;
     }
     const autoWidth = autoWidths.get(col.id);
     if (autoWidth !== undefined) return autoWidth;
@@ -3123,17 +3116,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Build display rows
   const displayRows = buildDisplayRows(spec);
 
-  // Pre-compute row positions and heights
-  const rowPositions: number[] = [];
-  const rowHeights: number[] = [];
-  let accumulatedY = 0;
-  for (const dr of displayRows) {
-    const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
-    const height = isSpacerRow ? layout.rowHeight / 2 : layout.rowHeight;
-    rowPositions.push(accumulatedY);
-    rowHeights.push(height);
-    accumulatedY += height;
-  }
+  // Row positions and heights are pre-computed in the layout pass
+  const { rowPositions, rowHeights } = layout;
 
   const plotY = layout.mainY + layout.headerHeight;
 
@@ -3199,12 +3183,14 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     const fcLowerCol = forestOpts?.lower ?? null;
     const fcUpperCol = forestOpts?.upper ?? null;
 
-    // If forest column specifies custom columns but no effects, create a default effect
+    // If forest column specifies custom columns but no effects, create a default effect.
+    // Null cols fall back to the primary field name so getEffectValue uses row.point/lower/upper.
     if (fcEffects.length === 0 && (fcPointCol || fcLowerCol || fcUpperCol)) {
       fcEffects = [{
-        pointCol: fcPointCol,
-        lowerCol: fcLowerCol,
-        upperCol: fcUpperCol,
+        id: "default",
+        pointCol: fcPointCol ?? "point",
+        lowerCol: fcLowerCol ?? "lower",
+        upperCol: fcUpperCol ?? "upper",
       }];
     }
 

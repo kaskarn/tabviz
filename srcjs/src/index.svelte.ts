@@ -38,7 +38,7 @@ const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unk
     if (args.filter && typeof args.filter === "object") {
       const f = args.filter as Record<string, unknown>;
       if ("kind" in f) {
-        store.setColumnFilter(f.field as string, f as Parameters<ForestStore["setColumnFilter"]>[1]);
+        store.setColumnFilter(f.field as string, f as unknown as Parameters<ForestStore["setColumnFilter"]>[1]);
         return;
       }
       store.setFilter(args.filter as Parameters<ForestStore["setFilter"]>[0]);
@@ -71,13 +71,14 @@ const binding: HTMLWidgetsBinding = {
     }
 
     return {
-      renderValue: (x: WebSpec & {
-        zoom?: number;
-        autoFit?: boolean;
-        maxWidth?: number | null;
-        maxHeight?: number | null;
-        showZoomControls?: boolean;
-      }) => {
+      renderValue: (raw: unknown) => {
+        const x = raw as WebSpec & {
+          zoom?: number;
+          autoFit?: boolean;
+          maxWidth?: number | null;
+          maxHeight?: number | null;
+          showZoomControls?: boolean;
+        };
         store.setSpec(x);
         store.setDimensions(width, height);
 
@@ -154,7 +155,8 @@ if (typeof window !== "undefined" && window.HTMLWidgets) {
 if (typeof window !== "undefined" && window.Shiny) {
   window.Shiny.addCustomMessageHandler(
     "tabviz-proxy",
-    (msg: { id: string; method: string; args: Record<string, unknown> }) => {
+    (raw: unknown) => {
+      const msg = raw as { id: string; method: string; args: Record<string, unknown> };
       const store = storeRegistry.get(msg.id);
       if (store && msg.method in proxyMethods) {
         proxyMethods[msg.method](store, msg.args);
