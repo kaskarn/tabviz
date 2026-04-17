@@ -53,3 +53,14 @@
 .tabviz-canvas text {
   font-family: inherit;
 }
+
+/* Suppress text selection across the whole document while a row drag is
+   in flight. The widget's row-drag logic adds this class to <body> on
+   pointerdown and removes it on pointerup. Without this, the browser
+   happily highlights stray text that the pointer crosses during the drag. */
+body.tabviz-dragging-rows,
+body.tabviz-dragging-rows * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  cursor: grabbing !important;
+}

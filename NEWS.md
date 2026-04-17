@@ -1,3 +1,16 @@
+# tabviz 0.7.2
+
+## Polish
+
+* **Row drag: no more highlighted text.** Dragging a row no longer triggers the browser's native text selection. The fix combines three layers: `user-select: none` on the draggable label cell, a document-level `body.tabviz-dragging-rows` class that suppresses selection everywhere for the duration of the drag, and `e.preventDefault()` + `getSelection().removeAllRanges()` on pointerdown.
+
+* **Visual feedback during and after drag.**
+  * While a drag is active, the source row's label cell fades to ~55% opacity and picks up an inset primary-color bar on the left — the user can see exactly what they're moving without relying on the drop-indicator line alone.
+  * On release, the row that just landed briefly tints in the primary color (~560 ms keyframe flash). The reorder feels confirmed rather than instantaneous.
+  * Cursor switches to `grabbing` globally while a drag is in flight.
+
+---
+
 # tabviz 0.7.1
 
 ## Changes

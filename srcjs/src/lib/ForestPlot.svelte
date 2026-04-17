@@ -438,6 +438,10 @@
   let rowDragSuppressClick = false;
   let rowDragMoveHandler: ((e: PointerEvent) => void) | null = null;
   let rowDragUpHandler: (() => void) | null = null;
+  // Tracks the row (or group) most recently dropped, used to briefly flash
+  // the destination so the reorder feels confirmed rather than abrupt.
+  let recentlyDroppedId = $state<string | null>(null);
+  let recentlyDroppedTimer: ReturnType<typeof setTimeout> | null = null;
 
   function startRowPointerDown(
     e: PointerEvent,
@@ -452,13 +456,24 @@
     const target = e.target as HTMLElement;
     if (target.closest("button, input, select, textarea, a, .resize-handle")) return;
 
+    // Kill the browser's native drag-selection behavior so the user doesn't
+    // see text highlighted while dragging. user-select: none on the cell
+    // handles the hover case; preventDefault here handles the active drag.
+    e.preventDefault();
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    if (typeof window !== "undefined") window.getSelection?.()?.removeAllRanges?.();
+
     store.beginDrag({ kind, id, scopeKey, startX: e.clientX, startY: e.clientY });
     store.dragState!.threshold = ROW_DRAG_THRESHOLD;
     rowDragSuppressClick = false;
+    document.body.classList.add("tabviz-dragging-rows");
 
     rowDragMoveHandler = (ev: PointerEvent) => {
       const drag = store.dragState;
       if (!drag) return;
+      // During active drag, reassert suppression of text selection in case a
+      // modifier key or drag outside the widget reawakens it.
+      if (drag.active) window.getSelection?.()?.removeAllRanges?.();
       const allowed = getAllowedRowIndices(kind, scopeKey);
       const hit = (allowed.length > 0)
         ? hitTestRowGaps(ev.clientX, ev.clientY, allowed, (di) => containerRef?.querySelector<HTMLElement>(`[data-display-index="${di}"]`) ?? null)
@@ -472,10 +487,15 @@
       if (rowDragUpHandler) document.removeEventListener("pointerup", rowDragUpHandler);
       rowDragMoveHandler = null;
       rowDragUpHandler = null;
+      document.body.classList.remove("tabviz-dragging-rows");
       store.endDrag((state) => {
         if (state.indicatorIndex == null) return;
         if (state.kind === "row") store.moveRowItem(state.id, state.indicatorIndex);
         else if (state.kind === "row_group") store.moveRowGroupItem(state.id, state.indicatorIndex);
+        // Flash the dropped row briefly so the user sees where it landed.
+        recentlyDroppedId = state.id;
+        if (recentlyDroppedTimer) clearTimeout(recentlyDroppedTimer);
+        recentlyDroppedTimer = setTimeout(() => { recentlyDroppedId = null; }, 600);
       });
       if (rowDragSuppressClick) {
         const swallow = (ev: MouseEvent) => {
@@ -1193,6 +1213,14 @@
 
           <!-- Label cell — doubles as the drag surface (whole-row reorder)
                when spec.interaction.enableReorderRows is on. -->
+          {@const isDragSource = !!(store.dragState?.active && (
+            (store.dragState.kind === "row" && !isGroupHeader && row && store.dragState.id === row.id) ||
+            (store.dragState.kind === "row_group" && isGroupHeader && store.dragState.id === displayRow.group.id)
+          ))}
+          {@const justDropped = !!recentlyDroppedId && (
+            (!isGroupHeader && row && recentlyDroppedId === row.id) ||
+            (isGroupHeader && recentlyDroppedId === displayRow.group.id)
+          )}
           <div
             class="grid-cell data-cell label-cell {rowClasses}"
             class:group-row={isGroupHeader}
@@ -1200,6 +1228,8 @@
             class:hovered={row && hoveredRowId === row.id}
             class:spacer-row={isSpacerRow}
             class:reorderable={spec?.interaction.enableReorderRows}
+            class:drag-source={isDragSource}
+            class:just-dropped={justDropped}
             data-display-index={i}
             data-row-id={row ? row.id : undefined}
             data-field={row ? "__label__" : undefined}
@@ -1934,9 +1964,31 @@
   .label-cell.reorderable {
     cursor: grab;
     touch-action: none;
+    /* Suppress native drag-selection on the draggable cell so the browser
+       doesn't highlight label text while the user drags the row. */
+    user-select: none;
+    -webkit-user-select: none;
   }
   .label-cell.reorderable:active {
     cursor: grabbing;
+  }
+
+  /* Source row while a drag is in flight — subtle fade + inset accent bar so
+     the user sees exactly what they're moving. */
+  .label-cell.drag-source {
+    opacity: 0.55;
+    transition: opacity 120ms ease-out;
+    box-shadow: inset 3px 0 0 var(--wf-primary, #2563eb);
+  }
+
+  /* Destination flash — brief tint on the row that just landed, to make the
+     reorder feel confirmed rather than instantaneous. */
+  .label-cell.just-dropped {
+    animation: tabviz-row-drop-flash 560ms ease-out 1;
+  }
+  @keyframes tabviz-row-drop-flash {
+    0%   { background-color: color-mix(in srgb, var(--wf-primary, #2563eb) 28%, transparent); }
+    100% { background-color: transparent; }
   }
 
   /* Plot cell (empty - SVG overlays this) */
