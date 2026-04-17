@@ -74,13 +74,17 @@
   /* Each button inside .control-toolbar that carries a data-tooltip    */
   /* attribute gets a small label below it on hover.                    */
   /* ------------------------------------------------------------------ */
-  :global(.control-toolbar button[data-tooltip]),
-  :global(.control-toolbar .download-button-wrapper),
-  :global(.control-toolbar .theme-switcher-wrapper) {
+  /* Every tooltip rule is scoped under .tabviz-container so it can't match
+     host-page elements that happen to carry a .control-toolbar or data-tooltip
+     attribute (e.g. Bootstrap/Quarto themes). */
+  :global(.tabviz-container .control-toolbar button[data-tooltip]),
+  :global(.tabviz-container .control-toolbar .download-button-wrapper),
+  :global(.tabviz-container .control-toolbar .theme-switcher-wrapper),
+  :global(.tabviz-container .control-toolbar .zoom-controls-wrapper) {
     position: relative;
   }
 
-  :global(.control-toolbar [data-tooltip]::after) {
+  :global(.tabviz-container .control-toolbar [data-tooltip]::after) {
     content: attr(data-tooltip);
     position: absolute;
     top: calc(100% + 6px);
@@ -102,7 +106,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
-  :global(.control-toolbar [data-tooltip]::before) {
+  :global(.tabviz-container .control-toolbar [data-tooltip]::before) {
     content: "";
     position: absolute;
     top: calc(100% + 1px);
@@ -116,16 +120,14 @@
     z-index: 10004;
   }
 
-  :global(.control-toolbar [data-tooltip]:hover::after),
-  :global(.control-toolbar [data-tooltip]:hover::before) {
+  :global(.tabviz-container .control-toolbar [data-tooltip]:hover::after),
+  :global(.tabviz-container .control-toolbar [data-tooltip]:hover::before) {
     opacity: 1;
     transform: translateY(0);
   }
 
-  /* Hide tooltip while the trigger's own dropdown is open
-     (so the menu doesn't collide with the tooltip). */
-  :global(.control-toolbar [data-tooltip][aria-expanded="true"]::after),
-  :global(.control-toolbar [data-tooltip][aria-expanded="true"]::before) {
+  :global(.tabviz-container .control-toolbar [data-tooltip][aria-expanded="true"]::after),
+  :global(.tabviz-container .control-toolbar [data-tooltip][aria-expanded="true"]::before) {
     opacity: 0;
   }
 </style>

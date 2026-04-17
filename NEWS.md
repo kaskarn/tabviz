@@ -5,6 +5,13 @@
 * **Row/group reorder export**: `exportSpec` now reorders `data.groups` by `rowOrderOverrides.groupOrderByParent`, so dragging a row-group to a new position among siblings is correctly reflected in the SVG/PNG download. Row-within-group reorders were already preserved; this closes the gap for group-level reorders. Added `srcjs/scripts/test-reorder-export.js` as a headless Puppeteer check for the reorder → export pipeline.
 * **Debug hooks**: exposed `window.__tabvizStoreRegistry` and `window.__tabvizExports` (read-only helpers) for automated testing and DevTools inspection.
 
+## CSS Encapsulation
+
+* Tightened `:global(...)` selectors so they no longer match host-page elements that happen to use generic class names. Specifically:
+  - `RowDragHandle.svelte`: `:global(.data-cell:hover)` / `:global(.group-row:hover)` now prefixed with `.tabviz-container`.
+  - `ControlToolbar.svelte`: every tooltip rule (`.control-toolbar [data-tooltip]…`) is scoped under `.tabviz-container`.
+* Confirmed via audit that every rule in the distributed `inst/htmlwidgets/tabviz.css` is either Svelte-hash-scoped or prefixed with `.tabviz-*` — no naked global selectors leak out. Theme CSS custom properties (`--wf-*`) are set inline on the container via a `style` attribute, so they shadow any outer `--wf-*` the host page might define.
+
 ---
 
 # tabviz 0.6.0

@@ -112,8 +112,10 @@
     touch-action: none;
     vertical-align: middle;
   }
-  :global(.data-cell:hover) .row-drag-handle,
-  :global(.group-row:hover) .row-drag-handle {
+  /* Scoped to the widget root — `.data-cell` / `.group-row` are generic
+     enough that an unprefixed :global could match a host page's elements. */
+  :global(.tabviz-container .data-cell:hover) .row-drag-handle,
+  :global(.tabviz-container .group-row:hover) .row-drag-handle {
     opacity: 0.55;
   }
   .row-drag-handle:hover { opacity: 1 !important; }
