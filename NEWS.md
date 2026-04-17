@@ -1,3 +1,36 @@
+# tabviz 0.8.0
+
+## Interactive column add / remove / configure
+
+* **Right-click any column header to reshape the table at runtime.** The new header context menu offers three actions:
+  - **Hide** — drop the column from view (reversible via the Reset button).
+  - **Insert column after…** — open the new column editor anchored after the clicked header.
+  - **Configure…** — re-open the editor on an existing column to swap its type, fields, or options in place.
+* **Two-step column editor.** Step 1 picks a visual type from a compact chip-grid, categorized into Text / Number / Interval / Viz / Icon. Types that can't be built from the current data (e.g. violin with no array columns) are greyed out with an explanation tooltip. Step 2 fills in the type's typed field slots, with each slot dropdown filtered to compatible data columns. Composites (forest, interval, range, events) **auto-pair sibling fields** from naming patterns — picking `hr` pre-fills `hr_lo` / `hr_hi` / etc. Users can always override.
+* **All data columns stay available in the picker**, even ones already on display. The same field can now be surfaced twice with different visuals (e.g. `hr` as formatted number *and* as a bar chart).
+* **No payload bloat.** The widget already ships the full input data frame in each row's metadata — adding a column is purely a client-side act.
+
+## R-side API
+
+* New `extra_columns = list(col_*())` parameter on `tabviz()` / `web_spec()`. Authors can pre-configure optional columns with custom formatting / headers / options; users surfacing them via the picker get the author's spec instead of inferred defaults.
+* New `available_exclude = c(...)` parameter to redact sensitive or internal-only fields from the picker.
+* New `availableFields` manifest in the serialized payload (name, inferred category) — computed by the new internal helper `infer_field_category()`. Categories: `numeric`, `integer`, `string`, `logical`, `date`, `array-numeric`, `other`.
+
+## Implementation
+
+* Gated on `interaction@enable_edit`: publication themes stay read-only, dashboard-style themes get the full editing UX by default.
+* `resetState()` now also clears all user-driven column add/hide/configure edits, so the existing Reset button covers the new feature out of the box.
+* New frontend modules: `lib/column-compat.ts` (visual-type registry + slot compatibility + auto-pair), `components/controls/HeaderContextMenu.svelte`, `components/controls/ColumnEditorPopover.svelte`.
+* Store extensions in `forestStore.svelte.ts`: `insertColumn`, `hideColumn`, `updateColumn`, `clearColumnEdits`, plus `availableFields` / `extraColumns` getters. The existing `effectiveColumnDefs` derivation applies hides / inserts / overrides recursively, so column groups participate too.
+* `tsconfig.json`: explicit `$types` alias mapping so `svelte-check` stops flagging valid imports (Vite was resolving correctly at runtime already).
+
+## Known gaps
+
+* Keyboard-only and touch-device users have no alternative entry point yet (right-click only).
+* Dynamic-cardinality viz types (multi-effect forest, multi-series viz_bar/boxplot/violin) are author-only — they can be shipped via `extra_columns` but not built from scratch in the runtime editor.
+
+---
+
 # tabviz 0.7.3
 
 ## Theme-driven interaction defaults

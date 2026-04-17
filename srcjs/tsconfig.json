@@ -18,6 +18,7 @@
       "$lib/*": ["./src/lib/*"],
       "$components/*": ["./src/components/*"],
       "$stores/*": ["./src/stores/*"],
+      "$types": ["./src/types/index.ts"],
       "$types/*": ["./src/types/*"]
     }
   },
