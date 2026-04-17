@@ -17,6 +17,7 @@ InteractionSpec(
   enable_reorder_rows = FALSE,
   enable_reorder_columns = FALSE,
   enable_edit = FALSE,
+  show_group_counts = FALSE,
   tooltip_fields = NULL,
   enable_themes = "default"
 )
@@ -49,6 +50,9 @@ column group) and column-groups (among top-level siblings).}
 
 \item{enable_edit}{Enable double-click inline editing for text/numeric/label cells,
 and a popover editor for forest-cell numerics (estimate / lower / upper).}
+
+\item{show_group_counts}{Show the row count in parentheses next to each row-group
+header label (e.g. "Main Trials (12)"). Default \code{FALSE}.}
 
 \item{tooltip_fields}{Character vector of column names to show in hover tooltip (NULL = no tooltip)}
 

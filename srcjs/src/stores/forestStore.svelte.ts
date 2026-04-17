@@ -903,28 +903,31 @@ export function createForestStore() {
         return count;
       }
 
+      // Only include the count width when group counts will actually be rendered.
+      const showGroupCounts = !!spec.interaction.showGroupCounts;
       ctx!.font = headerFont;
       for (const group of spec.data.groups) {
         if (group.label) {
           const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
           const labelWidth = ctx!.measureText(group.label).width;
 
-          // Row count (e.g., "(3)") includes all descendants, matching display
-          const rowCount = countAllDescendantRowsForGroup(group.id);
-          const countText = `(${rowCount})`;
-          const countFontSize = baseFontSize * 0.75; // font-size-sm
-          ctx!.font = `${countFontSize}px ${fontFamily}`;
-          const countWidth = ctx!.measureText(countText).width;
-          ctx!.font = headerFont;
+          // Row count "(n)" is optional — budget 0 when hidden.
+          let countWidth = 0;
+          if (showGroupCounts) {
+            const rowCount = countAllDescendantRowsForGroup(group.id);
+            const countText = `(${rowCount})`;
+            const countFontSize = baseFontSize * 0.75; // font-size-sm
+            ctx!.font = `${countFontSize}px ${fontFamily}`;
+            countWidth = ctx!.measureText(countText).width + GROUP_HEADER.GAP;
+            ctx!.font = headerFont;
+          }
 
           // Total: all components from GroupHeader.svelte layout
-          // (plus a row-drag-handle budget when row-group reorder is on)
           const totalWidth = indentWidth
             + rowGripBudget
             + GROUP_HEADER.CHEVRON_WIDTH
             + GROUP_HEADER.GAP
             + labelWidth
-            + GROUP_HEADER.GAP
             + countWidth
             + GROUP_HEADER.SAFETY_MARGIN;
 

@@ -1305,6 +1305,8 @@ col_group <- function(header, ...) {
 #'   column group) and column-groups (among top-level siblings).
 #' @param enable_edit Enable double-click inline editing for text/numeric/label cells,
 #'   and a popover editor for forest-cell numerics (estimate / lower / upper).
+#' @param show_group_counts Show the row count in parentheses next to each row-group
+#'   header label (e.g. "Main Trials (12)"). Default `FALSE`.
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)
 #' @param enable_themes Control theme selection menu:
 #'   - `"default"` (default): Enable theme menu with all `package_themes()`
@@ -1327,6 +1329,7 @@ InteractionSpec <- new_class(
     enable_reorder_rows = new_property(class_logical, default = FALSE),
     enable_reorder_columns = new_property(class_logical, default = FALSE),
     enable_edit = new_property(class_logical, default = FALSE),
+    show_group_counts = new_property(class_logical, default = FALSE),
     tooltip_fields = new_property(class_any, default = NULL),
     enable_themes = new_property(class_any, default = "default")  # NULL, "default", or list of themes
   ),
@@ -1365,6 +1368,7 @@ InteractionSpec <- new_class(
 #'   column group) and column-groups (among top-level siblings).
 #' @param enable_edit Enable double-click inline editing for text/numeric/label cells
 #'   plus a popover editor for forest-cell numerics.
+#' @param show_group_counts Show `(n)` after each row-group label. Default `FALSE`.
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)
 #' @param enable_themes Control theme selection menu:
 #'   - `"default"` (default): Enable theme menu with all `package_themes()`
@@ -1386,6 +1390,7 @@ web_interaction <- function(
     enable_reorder_rows = FALSE,
     enable_reorder_columns = FALSE,
     enable_edit = FALSE,
+    show_group_counts = FALSE,
     tooltip_fields = NULL,
     enable_themes = "default") {
   # Deprecation: show_filters maps to enable_filters if the caller supplied it.
@@ -1405,6 +1410,7 @@ web_interaction <- function(
     enable_reorder_rows = enable_reorder_rows,
     enable_reorder_columns = enable_reorder_columns,
     enable_edit = enable_edit,
+    show_group_counts = show_group_counts,
     tooltip_fields = tooltip_fields,
     enable_themes = enable_themes
   )

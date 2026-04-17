@@ -381,6 +381,7 @@ serialize_interaction <- function(interaction) {
     enableReorderRows = interaction@enable_reorder_rows,
     enableReorderColumns = interaction@enable_reorder_columns,
     enableEdit = interaction@enable_edit,
+    showGroupCounts = interaction@show_group_counts,
     tooltipFields = interaction@tooltip_fields,
     enableThemes = themes_config
   )

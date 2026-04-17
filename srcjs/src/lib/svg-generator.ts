@@ -377,24 +377,25 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
   // See GROUP_HEADER constants in rendering-constants.ts
   // This must match the web view measurement in forestStore.svelte.ts
   // ========================================================================
+  const showGroupCounts = !!spec.interaction?.showGroupCounts;
   for (const group of groups) {
     if (group.label) {
       const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
       const labelWidth = estimateTextWidth(group.label, fontSize);
 
-      // Count all descendant rows for the "(N)" suffix, matching display
-      const rowCount = countGroupDescendantRows(group.id, groups, spec.data.rows);
-      const countText = `(${rowCount})`;
-      const countFontSize = fontSize * 0.75; // matches theme.typography.fontSizeSm
-      const countWidth = estimateTextWidth(countText, countFontSize);
+      // Count "(N)" suffix is optional — budget 0 when hidden.
+      let countWidth = 0;
+      if (showGroupCounts) {
+        const rowCount = countGroupDescendantRows(group.id, groups, spec.data.rows);
+        const countText = `(${rowCount})`;
+        const countFontSize = fontSize * 0.75; // matches theme.typography.fontSizeSm
+        countWidth = estimateTextWidth(countText, countFontSize) + GROUP_HEADER.GAP;
+      }
 
-      // Total width: all components from GroupHeader.svelte layout
-      // [indent] + [chevron] + [gap] + [label] + [gap] + [count] + [safety margin]
       const totalWidth = indentWidth
         + GROUP_HEADER.CHEVRON_WIDTH
         + GROUP_HEADER.GAP
         + labelWidth
-        + GROUP_HEADER.GAP
         + countWidth
         + GROUP_HEADER.SAFETY_MARGIN;
 
@@ -3406,11 +3407,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     const rowHeight = rowHeights[i];
 
     if (displayRow.type === "group_header") {
-      // Render group header
+      // Render group header. Pass rowCount=0 when the spec has group counts off,
+      // so renderGroupHeader's `if (rowCount > 0)` gate skips the "(n)" text.
+      const showCounts = !!spec.interaction?.showGroupCounts;
       parts.push(renderGroupHeader(
         displayRow.label,
         displayRow.depth,
-        displayRow.rowCount,
+        showCounts ? displayRow.rowCount : 0,
         padding,
         y,
         rowHeight,

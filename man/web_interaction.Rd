@@ -20,6 +20,7 @@ web_interaction(
   enable_reorder_rows = FALSE,
   enable_reorder_columns = FALSE,
   enable_edit = FALSE,
+  show_group_counts = FALSE,
   tooltip_fields = NULL,
   enable_themes = "default"
 )
@@ -57,6 +58,8 @@ column group) and column-groups (among top-level siblings).}
 
 \item{enable_edit}{Enable double-click inline editing for text/numeric/label cells
 plus a popover editor for forest-cell numerics.}
+
+\item{show_group_counts}{Show \code{(n)} after each row-group label. Default \code{FALSE}.}
 
 \item{tooltip_fields}{Character vector of column names to show in hover tooltip (NULL = no tooltip)}
 

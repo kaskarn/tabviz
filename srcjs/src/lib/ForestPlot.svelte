@@ -1222,7 +1222,7 @@
             {#if isGroupHeader}
               <GroupHeader
                 group={displayRow.group}
-                rowCount={displayRow.rowCount}
+                rowCount={spec?.interaction.showGroupCounts ? displayRow.rowCount : undefined}
                 level={displayRow.depth + 1}
                 {theme}
               />

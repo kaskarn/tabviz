@@ -513,6 +513,7 @@ export interface InteractionSpec {
   enableReorderColumns?: boolean;   // Drag columns within a column-group; drag column-groups among siblings
   enableEdit?: boolean;             // Double-click to edit cells / labels / forest numerics
   enableFilters?: boolean;          // Render per-column filter popovers (supersedes showFilters)
+  showGroupCounts?: boolean;        // Show "(n)" next to row-group labels (default: false)
   tooltipFields?: string[] | null;  // Column names to show in hover tooltip (opt-in)
   enableThemes?: Record<string, WebTheme> | null;  // Available themes for switching (null = disable)
 }

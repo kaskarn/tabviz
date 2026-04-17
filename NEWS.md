@@ -1,3 +1,18 @@
+# tabviz 0.7.1
+
+## Changes
+
+* **Row-group counts `(n)` are now opt-in and off by default.** Previously every row-group header showed its descendant count (e.g. `Main Trials (12)`). That's now gated behind a new `show_group_counts` flag on `InteractionSpec` / `web_interaction()` and defaults to `FALSE`. To get the old behavior, pass `interaction = web_interaction(show_group_counts = TRUE)`.
+
+## Implementation
+
+* R-side: new `show_group_counts` property on `InteractionSpec`, passed through `web_interaction()`, serialized to `showGroupCounts` in the JSON payload.
+* Browser: `ForestPlot.svelte` passes `rowCount` to `GroupHeader` only when the flag is on; otherwise `undefined` (the existing `{#if rowCount !== undefined}` gate in `GroupHeader.svelte` handles the rest).
+* SVG export: `renderGroupHeader` is called with `rowCount = 0` when the flag is off, and the existing `if (rowCount > 0)` gate skips the "(n)" text.
+* Label-column measurement (both browser-side canvas measurement and V8 headless estimation) now adds the count width only when the flag is on — auto-widths tighten up.
+
+---
+
 # tabviz 0.7.0
 
 ## Interactivity Redesign: one mode, no layout shifts
