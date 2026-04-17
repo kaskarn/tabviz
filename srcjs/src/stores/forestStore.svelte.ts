@@ -1587,11 +1587,45 @@ export function createForestStore() {
       }
     }
 
-    // 2. Sync group collapse state onto groups so export mirrors what's visible.
-    const groupsOut = spec.data.groups.map((g) => ({
+    // 2. Sync group collapse state + apply group reorder overrides so export
+    //    mirrors what's visible. Groups are reordered hierarchically by their
+    //    parentId, using rowOrderOverrides.groupOrderByParent.
+    const syncedGroups = spec.data.groups.map((g) => ({
       ...g,
       collapsed: collapsedGroups.has(g.id) || g.collapsed,
     }));
+    const groupsOut: typeof syncedGroups = [];
+    const byParent = new Map<string, typeof syncedGroups>();
+    for (const g of syncedGroups) {
+      const p = g.parentId ?? "__root__";
+      if (!byParent.has(p)) byParent.set(p, []);
+      byParent.get(p)!.push(g);
+    }
+    // Sort each parent bucket by groupOrderByParent override
+    for (const [parentKey, bucket] of byParent) {
+      const override = rowOrderOverrides.groupOrderByParent[parentKey];
+      if (!override) continue;
+      const idx: Record<string, number> = {};
+      override.forEach((id, i) => (idx[id] = i));
+      bucket.sort((a, b) => {
+        const ai = idx[a.id] ?? Number.POSITIVE_INFINITY;
+        const bi = idx[b.id] ?? Number.POSITIVE_INFINITY;
+        return ai - bi;
+      });
+    }
+    // Walk hierarchy in reordered order, depth-first.
+    function emitGroupsUnder(parentKey: string) {
+      const children = byParent.get(parentKey);
+      if (!children) return;
+      for (const g of children) {
+        groupsOut.push(g);
+        emitGroupsUnder(g.id);
+      }
+    }
+    emitGroupsUnder("__root__");
+    // Safety net: any group not emitted (e.g. due to orphan parent) gets appended.
+    const seen = new Set(groupsOut.map((g) => g.id));
+    for (const g of syncedGroups) if (!seen.has(g.id)) groupsOut.push(g);
 
     return {
       ...spec,

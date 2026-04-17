@@ -1,11 +1,23 @@
 import type { WebSpec, HTMLWidgetsBinding, WidgetInstance } from "$types";
 import ForestPlot from "$lib/ForestPlot.svelte";
 import { createForestStore, type ForestStore } from "$stores/forestStore.svelte";
+import { exportToSVG, exportToPNG } from "$lib/export";
 import { mount, unmount } from "svelte";
 import "./styles.css";
 
+// Development hook: expose export helpers under window.__tabvizExports
+if (typeof window !== "undefined") {
+  (window as unknown as { __tabvizExports: { exportToSVG: typeof exportToSVG; exportToPNG: typeof exportToPNG } }).__tabvizExports = { exportToSVG, exportToPNG };
+}
+
 // Store registry for Shiny proxy support
 const storeRegistry = new Map<string, ForestStore>();
+
+// Expose the registry (and a few helpers) to window for debugging / automated tests.
+// This is a development aid; safe to leave in production — the surface is read-only.
+if (typeof window !== "undefined") {
+  (window as unknown as { __tabvizStoreRegistry: Map<string, ForestStore> }).__tabvizStoreRegistry = storeRegistry;
+}
 
 // Proxy method handlers
 const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unknown>) => void> = {

@@ -1,3 +1,12 @@
+# tabviz 0.6.1
+
+## Bug Fixes
+
+* **Row/group reorder export**: `exportSpec` now reorders `data.groups` by `rowOrderOverrides.groupOrderByParent`, so dragging a row-group to a new position among siblings is correctly reflected in the SVG/PNG download. Row-within-group reorders were already preserved; this closes the gap for group-level reorders. Added `srcjs/scripts/test-reorder-export.js` as a headless Puppeteer check for the reorder → export pipeline.
+* **Debug hooks**: exposed `window.__tabvizStoreRegistry` and `window.__tabvizExports` (read-only helpers) for automated testing and DevTools inspection.
+
+---
+
 # tabviz 0.6.0
 
 ## Interactivity Revamp
