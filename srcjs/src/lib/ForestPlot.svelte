@@ -27,6 +27,8 @@
   import ColumnFilterButton from "$components/controls/ColumnFilterButton.svelte";
   import ColumnFilterPopover from "$components/controls/ColumnFilterPopover.svelte";
   import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
+  import HeaderContextMenu, { type ContextMenuTarget } from "$components/controls/HeaderContextMenu.svelte";
+  import ColumnEditorPopover, { type EditorTarget } from "$components/controls/ColumnEditorPopover.svelte";
   import DropIndicator from "$components/controls/DropIndicator.svelte";
   import { hitTestRowGaps } from "$lib/dnd-utils";
   import EditableCell from "$components/controls/EditableCell.svelte";
@@ -104,6 +106,64 @@
   // Container refs for dimension tracking
   let containerRef: HTMLDivElement | undefined = $state();
   let scalableRef: HTMLDivElement | undefined = $state();
+
+  // Interactive column-editor state: right-click menu + editor popover.
+  let headerContextMenu = $state<ContextMenuTarget | null>(null);
+  let columnEditorTarget = $state<EditorTarget | null>(null);
+
+  function openHeaderContextMenu(column: ColumnSpec, e: MouseEvent) {
+    if (!spec?.interaction.enableEdit) return;
+    e.preventDefault();
+    columnEditorTarget = null;
+    headerContextMenu = {
+      columnId: column.id,
+      columnHeader: column.header ?? column.field,
+      anchorX: e.clientX,
+      anchorY: e.clientY,
+      canHide: true,
+    };
+  }
+
+  function handleContextMenuAction(action: "hide" | "insert" | "configure") {
+    const target = headerContextMenu;
+    if (!target) return;
+    const col = store.allColumns.find((c) => c.id === target.columnId);
+    headerContextMenu = null;
+    if (action === "hide") {
+      store.hideColumn(target.columnId);
+      return;
+    }
+    if (action === "insert") {
+      columnEditorTarget = {
+        mode: "insert",
+        anchorX: target.anchorX,
+        anchorY: target.anchorY,
+        afterId: target.columnId,
+      };
+      return;
+    }
+    if (action === "configure" && col) {
+      columnEditorTarget = {
+        mode: "configure",
+        anchorX: target.anchorX,
+        anchorY: target.anchorY,
+        existing: col,
+      };
+    }
+  }
+
+  function handleEditorCommit(
+    newSpec: ColumnSpec,
+    mode: "insert" | "configure",
+    afterId?: string,
+  ) {
+    if (mode === "insert") {
+      store.insertColumn(newSpec, afterId ?? "__start__");
+    } else {
+      store.updateColumn(newSpec.id, newSpec);
+    }
+    columnEditorTarget = null;
+  }
 
   // Local state for dimensions (measured by ResizeObserver)
   let containerContentWidth = $state(0);
@@ -1172,6 +1232,7 @@
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
               style:text-align={column.headerAlign ?? column.align}
+              oncontextmenu={(e) => openHeaderContextMenu(column, e)}
               onclick={canSort ? (e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest('.resize-handle') || target.closest('.drag-handle')) return;
@@ -1634,6 +1695,19 @@
 
     <!-- Column filter popover (rendered at root so it escapes the scaled wrapper) -->
     <ColumnFilterPopover {store} />
+
+    <!-- Right-click column menu + interactive column editor -->
+    <HeaderContextMenu
+      target={headerContextMenu}
+      onAction={handleContextMenuAction}
+      onClose={() => (headerContextMenu = null)}
+    />
+    <ColumnEditorPopover
+      target={columnEditorTarget}
+      available={store.availableFields}
+      onCommit={handleEditorCommit}
+      onClose={() => (columnEditorTarget = null)}
+    />
   {:else}
     <div class="tabviz-empty">No data</div>
   {/if}

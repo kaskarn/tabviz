@@ -52,6 +52,18 @@ export function createForestStore() {
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
   let cellEdits = $state<CellEdits>({ cells: {}, labels: {} });
 
+  // User-added columns (runtime insertions via the interactive column editor).
+  // `afterId` identifies the sibling column that the new column is inserted after
+  // ("__start__" for position 0). Stored separately from spec.columns so
+  // clearColumnEdits() and exportSpec see the same source of truth.
+  type InsertedColumn = { afterId: string; def: ColumnSpec };
+  let userInsertedColumns = $state<InsertedColumn[]>([]);
+  // User-hidden columns (by id). Hide is reversible via ResetButton.
+  let hiddenColumnIds = $state<Set<string>>(new Set());
+  // User-overridden column specs keyed by id (used by Configure…).
+  // When present, takes precedence over the original spec.columns entry.
+  let columnSpecOverrides = $state<Record<string, ColumnSpec>>({});
+
   // Transient UI state for DnD / edit / filter overlays
   let dragState = $state<DragState | null>(null);
   let editingTarget = $state<EditTarget | null>(null);
@@ -238,16 +250,53 @@ export function createForestStore() {
     return result;
   }
 
-  // Derived: column definitions reflecting user reorder overrides.
+  // Apply the user's runtime column edits to a ColumnDef list:
+  //   1. replace specs the user Configure'd
+  //   2. drop anything the user Hide'd
+  //   3. insert user-added columns after their anchor id
+  // Applied at every level so hides/inserts inside column groups still work.
+  // `isRoot` lets us honor "__start__" as the top-of-table anchor only once.
+  function applyColumnEdits(defs: ColumnDef[], isRoot: boolean): ColumnDef[] {
+    const swappedOrHidden: ColumnDef[] = [];
+    for (const def of defs) {
+      if (hiddenColumnIds.has(def.id)) continue;
+      if (!def.isGroup) {
+        const override = columnSpecOverrides[def.id];
+        if (override) {
+          swappedOrHidden.push(override);
+          continue;
+        }
+      }
+      swappedOrHidden.push(def);
+    }
+
+    const out: ColumnDef[] = [];
+    if (isRoot) {
+      for (const ins of userInsertedColumns) {
+        if (ins.afterId === "__start__") out.push(ins.def as ColumnDef);
+      }
+    }
+    for (const def of swappedOrHidden) {
+      out.push(def);
+      for (const ins of userInsertedColumns) {
+        if (ins.afterId === def.id) out.push(ins.def as ColumnDef);
+      }
+    }
+    return out;
+  }
+
+  // Derived: column definitions reflecting user reorder overrides + edits.
   // Applied recursively: top-level sibling order, then each column-group's child order.
   const effectiveColumnDefs = $derived.by((): ColumnDef[] => {
     if (!spec) return [];
     const topOrdered = applyColumnOrder(spec.columns, columnOrderOverrides.topLevel);
-    return topOrdered.map((def) => {
+    const withEdits = applyColumnEdits(topOrdered, true);
+    return withEdits.map((def) => {
       if (def.isGroup) {
         const childOrder = columnOrderOverrides.byGroup[def.id];
         const reorderedChildren = applyColumnOrder(def.columns, childOrder);
-        return { ...def, columns: reorderedChildren };
+        const childrenWithEdits = applyColumnEdits(reorderedChildren, false);
+        return { ...def, columns: childrenWithEdits };
       }
       return def;
     });
@@ -606,6 +655,8 @@ export function createForestStore() {
     collapsedGroups = new Set(
       newSpec.data.groups.filter((g) => g.collapsed).map((g) => g.id)
     );
+    // A fresh spec supersedes any prior interactive column edits.
+    clearColumnEdits();
     // Measure auto-width columns
     measureAutoColumns();
   }
@@ -1233,6 +1284,62 @@ export function createForestStore() {
   }
 
   // =========================================================================
+  // Interactive column add / remove / configure
+  // =========================================================================
+
+  // Pick an id that isn't already taken anywhere in the effective tree.
+  function mintUniqueColumnId(base: string): string {
+    const taken = new Set<string>();
+    const walk = (defs: ColumnDef[]) => {
+      for (const d of defs) {
+        taken.add(d.id);
+        if (d.isGroup) walk(d.columns);
+      }
+    };
+    if (spec) walk(spec.columns);
+    walk(userInsertedColumns.map((i) => i.def) as ColumnDef[]);
+
+    if (!taken.has(base)) return base;
+    let i = 2;
+    while (taken.has(`${base}_${i}`)) i++;
+    return `${base}_${i}`;
+  }
+
+  // Insert a new column after `afterId`. Pass "__start__" to insert at position 0.
+  function insertColumn(def: ColumnSpec, afterId: string) {
+    const id = mintUniqueColumnId(def.id || def.field);
+    userInsertedColumns = [...userInsertedColumns, { afterId, def: { ...def, id } }];
+  }
+
+  // Hide a column (reversible via clearColumnEdits).
+  function hideColumn(id: string) {
+    if (hiddenColumnIds.has(id)) return;
+    const next = new Set(hiddenColumnIds);
+    next.add(id);
+    hiddenColumnIds = next;
+  }
+
+  // Replace an existing column's spec. Works for both author-defined and
+  // user-inserted columns (the latter are updated in place in userInsertedColumns).
+  function updateColumn(id: string, newSpec: ColumnSpec) {
+    const insertedIdx = userInsertedColumns.findIndex((c) => c.def.id === id);
+    if (insertedIdx >= 0) {
+      const next = userInsertedColumns.slice();
+      next[insertedIdx] = { ...next[insertedIdx], def: { ...newSpec, id } };
+      userInsertedColumns = next;
+      return;
+    }
+    columnSpecOverrides = { ...columnSpecOverrides, [id]: { ...newSpec, id } };
+  }
+
+  // Drop all user-driven add/hide/configure edits.
+  function clearColumnEdits() {
+    userInsertedColumns = [];
+    hiddenColumnIds = new Set();
+    columnSpecOverrides = {};
+  }
+
+  // =========================================================================
   // Edit actions
   // =========================================================================
 
@@ -1491,6 +1598,9 @@ export function createForestStore() {
     hoveredRowId = null;
     tooltipRowId = null;
     tooltipPosition = null;
+    userInsertedColumns = [];
+    hiddenColumnIds = new Set();
+    columnSpecOverrides = {};
     // Note: spec theme is not reset here - use setSpec to fully reset
     // Note: showZoomControls is not reset - it's a UI preference
   }
@@ -1616,6 +1726,22 @@ export function createForestStore() {
     },
     get allColumnDefs() {
       return allColumnDefs;
+    },
+    get availableFields() {
+      return spec?.availableFields ?? [];
+    },
+    get extraColumns() {
+      return spec?.extraColumns ?? [];
+    },
+    get hiddenColumnIds() {
+      return hiddenColumnIds;
+    },
+    get hasColumnEdits() {
+      return (
+        userInsertedColumns.length > 0 ||
+        hiddenColumnIds.size > 0 ||
+        Object.keys(columnSpecOverrides).length > 0
+      );
     },
     get forestColumns() {
       return forestColumns;
@@ -1859,6 +1985,11 @@ export function createForestStore() {
     moveRowGroupItem,
     clearRowReorder,
     clearColumnReorder,
+    // Interactive column edits
+    insertColumn,
+    hideColumn,
+    updateColumn,
+    clearColumnEdits,
     // Edit
     startEdit,
     endEdit,

@@ -358,11 +358,16 @@ export interface ColumnOptions {
   naText?: string;  // Custom text for NA/missing values
 }
 
+export type ColumnType =
+  | "text" | "numeric" | "interval" | "bar" | "pvalue" | "sparkline"
+  | "icon" | "badge" | "stars" | "img" | "reference" | "range" | "forest"
+  | "heatmap" | "progress" | "viz_bar" | "viz_boxplot" | "viz_violin" | "custom";
+
 export interface ColumnSpec {
   id: string;
   header: string;
   field: string;
-  type: "text" | "numeric" | "interval" | "bar" | "pvalue" | "sparkline" | "icon" | "badge" | "stars" | "img" | "reference" | "range" | "forest" | "heatmap" | "progress" | "viz_bar" | "viz_boxplot" | "viz_violin" | "custom";
+  type: ColumnType;
   width?: number | "auto" | null;  // "auto" for content-based width calculation
   align: "left" | "center" | "right";
   headerAlign?: "left" | "center" | "right" | null;  // Header alignment (defaults to align if not specified)
@@ -542,10 +547,53 @@ export interface PlotLabels {
 export interface WebSpec {
   data: WebData;
   columns: ColumnDef[];
+  extraColumns?: ColumnDef[];
+  availableFields?: AvailableField[];
   theme: WebTheme;
   interaction: InteractionSpec;
   layout: LayoutSpec;
   labels?: PlotLabels;
+}
+
+// ============================================================================
+// Interactive column picker types
+// ============================================================================
+
+export type FieldCategory =
+  | "numeric"
+  | "integer"
+  | "string"
+  | "logical"
+  | "date"
+  | "array-numeric"
+  | "other";
+
+export interface AvailableField {
+  field: string;
+  label: string;
+  category: FieldCategory;
+}
+
+export interface SlotSpec {
+  key: string;                 // e.g. "point", "lower", "upper", "events", "n"
+  label: string;               // human-readable slot label
+  accepts: FieldCategory[];    // categories allowed in this slot
+  required: boolean;
+  // Optional naming patterns to use when auto-pairing siblings off the primary slot
+  autoPair?: { suffixes: string[] };
+}
+
+export type VisualCategory = "text" | "numeric" | "interval" | "viz" | "icon";
+
+export interface VisualTypeDef {
+  type: ColumnType;
+  label: string;
+  description: string;
+  category: VisualCategory;
+  slots: SlotSpec[];
+  // Dynamic-cardinality viz types (viz_bar, multi-effect forest/violin/boxplot)
+  // are authored-only for now — authors ship them via `extra_columns`.
+  authorOnly?: boolean;
 }
 
 // ============================================================================

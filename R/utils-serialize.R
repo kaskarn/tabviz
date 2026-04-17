@@ -12,6 +12,8 @@ serialize_spec <- function(spec, include_forest = TRUE) {
   list(
     data = serialize_data(spec, include_forest),
     columns = lapply(spec@columns, serialize_column),
+    extraColumns = lapply(spec@extra_columns, serialize_column),
+    availableFields = serialize_available_fields(spec),
     theme = serialize_theme(theme),
     interaction = serialize_interaction(spec@interaction),
     labels = serialize_labels(spec@labels),
@@ -21,6 +23,57 @@ serialize_spec <- function(spec, include_forest = TRUE) {
       plotWidth = theme@layout@plot_width
     )
   )
+}
+
+#' Infer a field category for a data column
+#'
+#' Returns one of: "numeric", "integer", "string", "logical", "date",
+#' "array-numeric", "other". Used by the frontend column picker to filter
+#' which data columns are compatible with which visual types.
+#'
+#' @param x A column vector from the data frame
+#' @return A single character: the inferred category
+#' @keywords internal
+infer_field_category <- function(x) {
+  if (is.list(x) && !is.data.frame(x)) {
+    # List-column: check whether all non-NULL entries are numeric vectors
+    non_null <- Filter(function(v) !is.null(v) && length(v) > 0, x)
+    if (length(non_null) > 0 && all(vapply(non_null, is.numeric, logical(1)))) {
+      return("array-numeric")
+    }
+    return("other")
+  }
+  if (inherits(x, "Date") || inherits(x, "POSIXct") || inherits(x, "POSIXlt")) {
+    return("date")
+  }
+  if (is.logical(x)) return("logical")
+  if (is.integer(x)) return("integer")
+  if (is.numeric(x)) return("numeric")
+  if (is.character(x) || is.factor(x)) return("string")
+  "other"
+}
+
+#' Serialize the available-fields manifest
+#'
+#' @param spec A WebSpec object
+#' @return A list of `{field, label, category}` entries, one per data column
+#'   (minus any excluded via `available_exclude`).
+#' @keywords internal
+serialize_available_fields <- function(spec) {
+  df <- spec@data
+  excluded <- spec@available_exclude
+  fields <- setdiff(names(df), excluded)
+
+  lapply(fields, function(nm) {
+    col <- df[[nm]]
+    lbl <- attr(col, "label")
+    if (is.null(lbl) || !nzchar(lbl)) lbl <- nm
+    list(
+      field = nm,
+      label = as.character(lbl),
+      category = infer_field_category(col)
+    )
+  })
 }
 
 #' Serialize WebSpec data

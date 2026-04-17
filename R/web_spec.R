@@ -24,6 +24,11 @@
 #'   - List of `web_group()` objects for explicit control over labels and structure
 #' @param columns List of column specifications (use `col_*()` helpers).
 #'   Include `viz_forest()` to add a forest plot column.
+#' @param extra_columns List of column specifications that are hidden by default but
+#'   available in the interactive column picker. Pre-configured formatting for optional
+#'   columns; users can surface them at runtime.
+#' @param available_exclude Character vector of data columns to omit from the interactive
+#'   column picker (for sensitive or internal-only fields).
 #' @param title Main title (displayed above the plot)
 #' @param subtitle Subtitle (displayed below the title)
 #' @param caption Caption (displayed below the plot)
@@ -118,6 +123,8 @@ tabviz <- function(
     label_header = "Study",
     group = NULL,
     columns = NULL,
+    extra_columns = NULL,
+    available_exclude = NULL,
     title = NULL,
     subtitle = NULL,
     caption = NULL,
@@ -336,6 +343,36 @@ tabviz <- function(
     })
   }
 
+  # Process extra_columns (hidden-but-available pre-configured specs)
+  if (is.null(extra_columns)) {
+    extra_columns <- list()
+  } else {
+    extra_columns <- lapply(extra_columns, function(col) {
+      if (S7_inherits(col, ColumnSpec) || S7_inherits(col, ColumnGroup)) {
+        col
+      } else if (is.character(col)) {
+        col_text(col)
+      } else {
+        cli_abort("{.arg extra_columns} must be ColumnSpec objects or column names")
+      }
+    })
+  }
+
+  # Validate available_exclude
+  if (is.null(available_exclude)) {
+    available_exclude <- character(0)
+  } else {
+    checkmate::assert_character(available_exclude, any.missing = FALSE)
+    unknown <- setdiff(available_exclude, names(data))
+    if (length(unknown) > 0) {
+      cli_warn(c(
+        "{.arg available_exclude} references columns not in data: {.val {unknown}}",
+        "i" = "They will be ignored."
+      ))
+      available_exclude <- intersect(available_exclude, names(data))
+    }
+  }
+
   # Build labels if any are provided
   labels <- NULL
   if (!is.null(title) || !is.null(subtitle) || !is.null(caption) || !is.null(footnote)) {
@@ -386,6 +423,8 @@ tabviz <- function(
     group_col = group_col,
     group_cols = group_cols,
     columns = columns,
+    extra_columns = extra_columns,
+    available_exclude = available_exclude,
     groups = resolved_groups,
     theme = theme,
     interaction = interaction,

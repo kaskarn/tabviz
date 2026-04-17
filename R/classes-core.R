@@ -172,6 +172,11 @@ PlotLabels <- new_class(
 #' @param group_col Column name for grouping (optional, deepest level)
 #' @param group_cols All group column names for hierarchical grouping (for composite ID building)
 #' @param columns List of ColumnSpec objects defining table columns (including viz_forest)
+#' @param extra_columns List of ColumnSpec objects hidden by default but available in the
+#'   interactive column picker. Authors use this to pre-configure how specific optional
+#'   columns should render when a user adds them.
+#' @param available_exclude Character vector of data column names to exclude from the
+#'   interactive column picker (e.g. sensitive fields that should never be surfaced).
 #' @param groups List of GroupSpec objects
 #' @param summaries List of GroupSummary objects
 #' @param overall_summary Optional overall summary (GroupSummary)
@@ -189,6 +194,8 @@ WebSpec <- new_class(
     group_col = new_property(class_character, default = NA_character_),
     group_cols = new_property(class_character, default = character(0)),
     columns = new_property(class_list, default = list()),
+    extra_columns = new_property(class_list, default = list()),
+    available_exclude = new_property(class_character, default = character(0)),
     groups = new_property(class_list, default = list()),
     summaries = new_property(class_list, default = list()),
     overall_summary = new_property(
