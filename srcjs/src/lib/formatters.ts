@@ -17,6 +17,22 @@ export function addThousandsSep(numStr: string, separator: string): string {
 }
 
 /**
+ * Truncate a string to at most maxChars visible characters, replacing the tail
+ * with an ellipsis when shortening. Returns str unchanged when it already fits
+ * or when maxChars is nullish / non-positive.
+ */
+export function truncateString(
+  str: string,
+  maxChars: number | null | undefined
+): string {
+  if (str == null) return "";
+  if (maxChars == null || !Number.isFinite(maxChars) || maxChars <= 0) return str;
+  if (str.length <= maxChars) return str;
+  if (maxChars === 1) return "\u2026";
+  return str.slice(0, maxChars - 1) + "\u2026";
+}
+
+/**
  * Abbreviate large numbers with at most 1 decimal place.
  * Examples: 11111111 -> "11.1M", 5300 -> "5.3K", 1000 -> "1K"
  * Throws error for values >= 1e12 (trillions not supported).
@@ -329,7 +345,11 @@ export function getColumnDisplayText(
       return barValue.toFixed(2);
     }
 
-    case "text":
+    case "text": {
+      const raw = String(row.metadata[field] ?? "");
+      return truncateString(raw, options?.text?.maxChars);
+    }
+
     default:
       return String(row.metadata[field] ?? "");
   }

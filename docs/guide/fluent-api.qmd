@@ -8,22 +8,16 @@ library(tabviz)
 library(dplyr)
 ```
 
-Throughout this guide, you've seen styling via direct arguments to `tabviz()`. This chapter introduces the **fluent API**—a pipe-based alternative that lets you build and modify plots step by step using `set_*()` functions.
-
-Both approaches produce identical results. The fluent API shines when:
-
-- Styling depends on computed values
-- You're creating multiple variants from one base plot
-- You want reusable styling pipelines
-- Conditional logic determines styling
+tabviz exposes a single, unified fluent API for every kind of modification
+you'd want to make — styling, column structure, row ordering, data, theme,
+zoom, and cell edits. Every verb returns the modified object and dispatches
+on input type, so the same call works on a static `WebSpec`, a rendered
+htmlwidget, or a live Shiny proxy.
 
 ## The Two Styling Approaches
 
-tabviz offers two equivalent ways to style your tables. Both produce identical results—choose based on your workflow preferences.
-
-### Approach 1: Direct Arguments in tabviz()
-
-When you know all your styling upfront, pass everything directly to `tabviz()`:
+When styling is simple and known upfront, you can pass everything directly
+to `tabviz()`:
 
 ```{r}
 #| eval: false
@@ -39,11 +33,8 @@ tabviz(data, label = "study",
 )
 ```
 
-This approach is concise and keeps all configuration in one place.
-
-### Approach 2: Fluent API (Pipe-Based Styling)
-
-When styling depends on computation or you want to build incrementally, use `set_*()` functions:
+When styling depends on computation, or you're composing multiple variants,
+use the fluent API instead:
 
 ```{r}
 #| eval: false
@@ -61,40 +52,82 @@ tabviz(data, label = "study",
 Both produce identical output.
 
 ::: {.callout-note}
-## When to Use Which
+## When to use which
 
-| Use Constructor Arguments When | Use Fluent API When |
-|-------------------------------|---------------------|
+| Use constructor args when | Use fluent verbs when |
+|---------------------------|-----------------------|
 | Everything is known upfront | Styling depends on computation |
-| Simple, static plots | Creating multiple variants from one base |
-| Fewer lines of code matter | Conditional logic determines styling |
-|  | Building reusable styling pipelines |
+| Simple, static plots | Building multiple variants from one base |
+| You prefer fewer lines | Conditional logic drives styling |
+|  | You want reusable styling pipelines |
+|  | You're updating a running Shiny widget |
 :::
+
+## Static vs Proxy Dispatch
+
+Every fluent verb accepts three kinds of input and behaves accordingly:
+
+| Input type | What happens |
+|------------|--------------|
+| **`WebSpec`** (from `tabviz(..., .spec_only = TRUE)`) | Returns a new `WebSpec` with the change applied in R. |
+| **htmlwidget** (from `tabviz(...)`) | Returns a new widget with the change baked into its spec. |
+| **`tabviz_proxy`** (from `tabviz_proxy("id")`) | Sends a custom message to the running widget in Shiny — no re-render. |
+
+```r
+# Static WebSpec
+spec <- tabviz(data, label = "study", .spec_only = TRUE) |>
+  sort_rows("hr", "desc") |>
+  add_column(col_numeric("n", "N"), after = "study")
+
+# htmlwidget — same verbs
+widget <- tabviz(data, ...) |>
+  set_theme("jama") |>
+  resize_column("hr", width = 140)
+
+# Shiny proxy — same verbs
+observeEvent(input$sort_hr, {
+  tabviz_proxy("plot") |>
+    sort_rows("hr", "desc")
+})
+```
+
+A handful of verbs are **proxy-only** because they depend on row identity
+post-render (`set_cell`, `set_row_label`, `clear_edits`). On a static
+input they emit a warning and leave the object unchanged.
 
 ---
 
 ## The Fluent Pattern
 
-The fluent API follows a simple rule: **every `set_*()` function returns a modified plot that can be piped into the next function**.
+Every verb returns the modified object, so calls chain:
 
 ```r
 tabviz(data, ...) |>     # Create plot
-  set_row_style(...) |>       # Modify rows
-  set_marker_style(...) |>    # Modify markers
-  set_theme(...)              # Apply theme
+  set_row_style(...) |>  # Modify rows
+  add_column(...) |>     # Add a column
+  sort_rows(...) |>      # Reorder rows
+  set_theme(...)         # Apply theme
 ```
 
 ::: {.callout-note}
-## Immutability Guarantee
+## Immutability
 
-Each `set_*()` call returns a **new** modified plot, leaving the original unchanged. This makes it safe to create multiple variants without side effects.
+Each verb returns a **new** object; the input is unchanged. Safe to derive
+multiple variants from a single base:
+
+```r
+base <- tabviz(data, ...)
+jama   <- base |> set_theme("jama")
+lancet <- base |> set_theme("lancet")
+```
 :::
 
 ---
 
-## Core Styling Functions
+## Styling Verbs
 
-All `set_*()` functions accept either **column names** (strings) or **formula expressions** (`~ ...`):
+All styling verbs accept either **column names** (strings) or **formula
+expressions** (`~ ...`):
 
 ```r
 # Using column names (pre-computed)
@@ -103,33 +136,40 @@ plot |> set_row_style(bold = "is_significant")
 # Using formula expressions (computed on the fly)
 plot |> set_row_style(bold = ~ pvalue < 0.05)
 
-# Mix both approaches
+# Mix both
 plot |> set_marker_style(
   color = ~ ifelse(upper < 1, "#16a34a", "#64748b"),
   shape = "marker_shape_column"
 )
 ```
 
-See [Row Styling](row-styling.qmd#expression-based-styling) and [Cell Styling](cell-styling.qmd#formula-expressions-for-cell-styling) for detailed formula documentation.
+See [Row Styling](row-styling.qmd#expression-based-styling) and
+[Cell Styling](cell-styling.qmd#formula-expressions-for-cell-styling) for
+formula details.
 
 ### set_row_style()
 
-Style entire rows based on column values. This is your primary tool for creating visual hierarchy—distinguishing headers from data rows, highlighting summaries, and showing nested structure through indentation.
+Row-level styling. Your primary tool for visual hierarchy — distinguishing
+headers from data rows, highlighting summaries, showing nested structure.
 
 ```r
 plot |> set_row_style(
-  type = "rtype",     # "header", "data", "summary", "spacer"
-  bold = "rbold",     # Column name or formula (~ pval < 0.05)
-  italic = "ritalic", # Column name or formula
-  color = "rcolor",   # Column name or formula (CSS colors)
-  bg = "rbg",         # Column name or formula (background colors)
-  badge = "rbadge",   # Column name or formula (badge text)
-  icon = "ricon",     # Column name or formula (emoji/unicode)
-  indent = "rindent"  # Column name or formula (indent levels: 0, 1, 2, ...)
+  type    = "rtype",    # "header", "data", "summary", "spacer"
+  bold    = "rbold",
+  italic  = "ritalic",
+  color   = "rcolor",   # CSS colors
+  bg      = "rbg",
+  badge   = "rbadge",   # text label anchored to first column
+  icon    = "ricon",    # emoji/unicode anchored to first column
+  indent  = "rindent"   # 0, 1, 2, ...
 )
 ```
 
-**Example**:
+::: {.callout-warning}
+`badge` and `icon` render into the **first visible text column's cell**.
+If you reorder columns, they re-anchor to the new first column. See
+[Binding rules](row-styling.qmd#binding-rules) for details.
+:::
 
 ```{r}
 styled_data <- data.frame(
@@ -152,18 +192,16 @@ forest_plot(styled_data,
 
 ### set_marker_style()
 
-Style interval markers (the points and lines representing effect estimates):
+Interval marker styling (points and lines for effect estimates):
 
 ```r
 plot |> set_marker_style(
-  color = "marker_color",   # Column with CSS colors
-  shape = "marker_shape",   # "square", "circle", "diamond", "triangle"
-  opacity = "marker_alpha", # Column with 0-1 values
-  size = "marker_size"      # Column with size multipliers
+  color   = "marker_color",  # CSS colors
+  shape   = "marker_shape",  # "square", "circle", "diamond", "triangle"
+  opacity = "marker_alpha",  # 0–1
+  size    = "marker_size"    # size multiplier
 )
 ```
-
-**Example**:
 
 ```{r}
 marker_data <- data.frame(
@@ -175,9 +213,9 @@ marker_data <- data.frame(
 ) |>
   mutate(
     marker_color = case_when(
-      upper < 1 ~ "#16a34a",  # Green for benefit
-      lower > 1 ~ "#dc2626",  # Red for harm
-      TRUE ~ "#64748b"        # Gray for neutral
+      upper < 1 ~ "#16a34a",
+      lower > 1 ~ "#dc2626",
+      TRUE ~ "#64748b"
     ),
     marker_shape = ifelse(direction == "benefit", "circle", "square")
   )
@@ -192,30 +230,25 @@ forest_plot(marker_data,
 
 ### set_column_style()
 
-Style individual column cells (must be applied before rendering):
+Per-cell styling for a specific column:
 
 ```r
 plot |> set_column_style(column = "hr",
-  bold = "is_sig",
+  bold  = "is_sig",
   color = "hr_color",
-  bg = "hr_bg"
+  bg    = "hr_bg"
 )
 ```
 
 ::: {.callout-tip}
-## Styling Priority
+## Styling priority
 
-When both row and column styles are set for the same cell:
-
-1. Column styles take precedence
-2. Row styles apply to cells without column overrides
-
-This lets you set row-wide defaults with column-specific highlights.
+When both row and column styles target the same cell, **column styles
+win**. Row styles apply to cells without column overrides — so you can set
+row-wide defaults with column-specific highlights.
 :::
 
-### set_theme() and Theme Modifiers
-
-Apply or modify themes:
+### set_theme() and theme modifiers
 
 ```r
 # Apply by name
@@ -224,48 +257,190 @@ plot |> set_theme("jama")
 # Apply by object
 plot |> set_theme(web_theme_lancet())
 
-# Modify theme properties inline
+# Modify theme properties
 plot |> set_colors(primary = "#1a365d")
 plot |> set_spacing(row_height = 24)
 plot |> set_axis(gridlines = TRUE)
 ```
 
-All theme modifiers work on both plot widgets and theme objects.
+Theme modifiers (`set_colors`, `set_typography`, `set_spacing`, `set_shapes`,
+`set_axis`, `set_layout`, `set_group_headers`, `set_effect_colors`,
+`set_marker_shapes`) work on both plots and standalone `WebTheme` objects.
+See [Styling reference](../reference/styling.qmd) for parameter tables.
 
 ---
 
-## Creating Multiple Variants
+## Column Operations
 
-A powerful pattern is creating multiple plot versions from a common base:
+Restructure the columns of a running plot without re-rendering.
 
-```{r}
-# Base plot
-base_plot <- forest_plot(marker_data,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  scale = "log", null_value = 1
-)
+### add_column()
 
-# Variant 1: Color by significance
-plot_colored <- base_plot |>
-  set_marker_style(color = "marker_color") |>
-  set_theme("modern")
+Insert a new column. Use `after` to position it; `NULL` appends.
 
-# Variant 2: Shape by design
-plot_shaped <- base_plot |>
-  set_marker_style(shape = "marker_shape") |>
-  set_theme("modern")
-
-# Show one
-plot_colored
+```r
+plot |> add_column(col_numeric("year", "Year"), after = "n")
+plot |> add_column(viz_forest(point = "hr", lower = "lower", upper = "upper"))
 ```
 
-Since each `set_*()` call returns a new object, `base_plot` remains unchanged and can be reused for each variant.
+**Static:**
+
+```{r}
+df <- data.frame(
+  study = c("A", "B", "C"),
+  hr = c(0.8, 1.1, 1.4),
+  n = c(100, 200, 150)
+)
+tabviz(df, label = "study",
+  columns = list(col_numeric("hr", "HR"))
+) |>
+  add_column(col_numeric("n", "N"), after = "hr")
+```
+
+**Proxy:**
+
+```r
+observeEvent(input$show_year, {
+  tabviz_proxy("plot") |>
+    add_column(col_numeric("year", "Year"), after = "n")
+})
+```
+
+### remove_column()
+
+```r
+plot |> remove_column("notes")
+```
+
+On a proxy this hides the column without dropping data; it can be re-added
+later.
+
+### move_column()
+
+```r
+# Numeric index (1-based on R side; verb converts to 0-based for the store)
+plot |> move_column("notes", to = 1)
+
+# Or position relative to another column
+plot |> move_column("notes", before = "hr")
+```
+
+### resize_column()
+
+```r
+plot |> resize_column("hr", width = 140)   # pixels
+```
+
+### update_column()
+
+Change column properties — header, alignment, wrap, width, or any option
+in the column's `options` list:
+
+```r
+plot |> update_column("hr", header = "Hazard Ratio", align = "right")
+plot |> update_column("hr", options = list(decimals = 3))
+```
+
+Unknown keys are merged into `options`, matching R-side semantics.
+
+---
+
+## Row & Data Operations
+
+### sort_rows()
+
+```r
+plot |> sort_rows("hr", direction = "asc")
+plot |> sort_rows("hr", direction = "desc")
+plot |> sort_rows("hr", direction = "none")   # restore original order
+```
+
+On a static `WebSpec`, `direction = "none"` is a no-op. On a proxy it
+clears the sort.
+
+### filter_rows() and clear_filters()
+
+Operators: `"eq"`, `"neq"`, `"gt"`, `"lt"`, `"contains"`.
+
+```r
+plot |> filter_rows("n", operator = "gt", value = 100)
+plot |> filter_rows("drug_class", operator = "eq", value = "SGLT2i")
+
+plot |> clear_filters()
+```
+
+On a `WebSpec`, `filter_rows()` mutates `@data` in place. On a proxy it
+applies a display-only filter — the original data is preserved.
+
+### select_rows() and move_row()
+
+```r
+plot |> select_rows(c("study_A", "study_B"))       # by row id
+plot |> move_row("study_C", to = 1)                # to top
+```
+
+`select_rows()` on a proxy forwards selection state to any Shiny input
+bindings tied to the widget.
+
+### update_data()
+
+Replace the underlying data. On a proxy, this requires a full `WebSpec`
+(not just a data frame) because column types must be re-serialized:
+
+```r
+new_spec <- tabviz(new_df, label = "study", columns = list(...),
+                  .spec_only = TRUE)
+tabviz_proxy("plot") |> update_data(new_spec)
+```
+
+---
+
+## Groups & Zoom
+
+### toggle_group()
+
+Collapse or expand a group header:
+
+```r
+plot |> toggle_group("North America")               # flip current state
+plot |> toggle_group("North America", collapsed = TRUE)
+plot |> toggle_group("Europe",        collapsed = FALSE)
+```
+
+### set_zoom()
+
+```r
+plot |> set_zoom(zoom = 0.8)
+plot |> set_zoom(zoom = 1.0, auto_fit = TRUE)
+plot |> set_zoom(max_width = 900, max_height = 600)
+plot |> set_zoom(show_zoom_controls = FALSE)
+```
+
+Any subset of arguments may be passed; unchanged knobs are left alone.
+
+---
+
+## Cell Edits (proxy-only)
+
+These verbs mutate rendered state and require a live widget. On a static
+`WebSpec` they warn and return unchanged.
+
+```r
+# Change a single cell value
+tabviz_proxy("plot") |> set_cell("row_id", "hr", 1.23)
+
+# Rename a row's label
+tabviz_proxy("plot") |> set_row_label("row_id", "Renamed")
+
+# Drop all in-browser edits
+tabviz_proxy("plot") |> clear_edits()
+```
 
 ---
 
 ## Conditional Styling with dplyr
 
-A powerful pattern is computing style columns with dplyr before plotting:
+Compute style columns with dplyr before plotting:
 
 ```{r}
 analysis_data <- data.frame(
@@ -278,16 +453,8 @@ analysis_data <- data.frame(
 
 styled_analysis <- analysis_data |>
   mutate(
-    # Significance styling
     is_sig = pval < 0.05,
-    sig_color = ifelse(is_sig, "#16a34a", "#94a3b8"),
-
-    # Effect direction
-    effect_dir = case_when(
-      upper < 1 ~ "benefit",
-      lower > 1 ~ "harm",
-      TRUE ~ "neutral"
-    )
+    sig_color = ifelse(is_sig, "#16a34a", "#94a3b8")
   )
 
 forest_plot(styled_analysis,
@@ -301,27 +468,20 @@ forest_plot(styled_analysis,
 ```
 
 ::: {.callout-tip}
-## Style Column Naming Convention
+## Style column naming
 
-Use consistent suffixes for style columns:
-
-- `_bold` for bold flags
-- `_color` for text colors
-- `_bg` for backgrounds
-- `_badge` for badge text
-
-This makes it clear which columns are data vs styling.
+Use consistent suffixes: `_bold`, `_color`, `_bg`, `_badge`. Makes it
+clear which columns are data vs styling.
 :::
 
 ---
 
-## Reusable Styling Pipelines
+## Reusable Pipelines
 
-Create functions that encapsulate your organization's styling standards:
+Encapsulate your organization's styling standards as a function:
 
 ```{r}
 #| eval: false
-# Define a standard styling pipeline
 apply_clinical_style <- function(plot) {
   plot |>
     set_marker_style(color = "sig_color") |>
@@ -329,50 +489,55 @@ apply_clinical_style <- function(plot) {
     set_theme("jama")
 }
 
-# Use it consistently across analyses
 forest_plot(trial_a, ...) |> apply_clinical_style()
 forest_plot(trial_b, ...) |> apply_clinical_style()
-forest_plot(pooled, ...) |> apply_clinical_style()
 ```
 
 ---
 
-## Theme Customization Example
+## Verb Reference
 
-Create a customized theme and apply it:
+**Styling**
 
-```{r}
-# Create a customized theme
-custom_theme <- web_theme_lancet() |>
-  set_axis(gridlines = TRUE) |>
-  set_spacing(row_height = 32)
-
-# Apply to plot
-forest_plot(analysis_data[1:3, ],
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  scale = "log", null_value = 1
-) |>
-  set_theme(custom_theme)
-```
-
----
-
-## Function Reference
-
-| Function | Purpose |
-|----------|---------|
-| `set_row_style()` | Row-level styling (bold, italic, color, type, indent) |
-| `set_marker_style()` | Interval marker styling (color, shape, opacity, size) |
-| `set_column_style()` | Per-cell column styling |
+| Verb | Purpose |
+|------|---------|
+| `set_row_style()` | Row-level (bold, italic, color, type, indent, badge, icon) |
+| `set_marker_style()` | Interval marker (color, shape, opacity, size) |
+| `set_column_style()` | Per-cell styling for one column |
 | `set_theme()` | Apply theme by name or object |
-| `set_colors()` | Modify color palette |
-| `set_typography()` | Modify fonts |
-| `set_spacing()` | Modify spacing |
-| `set_shapes()` | Modify shapes |
-| `set_axis()` | Modify axis settings |
-| `set_layout()` | Modify layout |
-| `set_group_headers()` | Modify group header hierarchy |
-| `set_effect_colors()` | Set multi-effect color palette |
-| `set_marker_shapes()` | Set multi-effect shape palette |
+| `set_colors()`, `set_typography()`, `set_spacing()`, `set_shapes()`, `set_axis()`, `set_layout()`, `set_group_headers()`, `set_effect_colors()`, `set_marker_shapes()` | Theme-level modifiers |
 
-See [Styling Reference](../reference/styling.qmd) for complete parameter documentation.
+**Columns**
+
+| Verb | Purpose |
+|------|---------|
+| `add_column()` | Insert at a position |
+| `remove_column()` | Drop / hide |
+| `move_column()` | Reorder by index or relative position |
+| `resize_column()` | Set width in pixels |
+| `update_column()` | Modify header, alignment, options |
+
+**Rows & data**
+
+| Verb | Purpose |
+|------|---------|
+| `sort_rows()` | Sort by a column |
+| `filter_rows()` | Apply a predicate |
+| `clear_filters()` | Remove all filters |
+| `select_rows()` | Set the selected-row set |
+| `move_row()` | Reorder by index |
+| `update_data()` | Replace underlying data (WebSpec on proxy) |
+
+**Groups, cells, global**
+
+| Verb | Purpose |
+|------|---------|
+| `toggle_group()` | Collapse/expand a group header |
+| `set_cell()` | Change a cell value *(proxy-only)* |
+| `set_row_label()` | Rename a row's label *(proxy-only)* |
+| `clear_edits()` | Drop in-browser edits *(proxy-only)* |
+| `set_zoom()` | Zoom / auto-fit / dimensions |
+
+See [Styling reference](../reference/styling.qmd) and
+[Data-ops reference](../reference/data-ops.qmd) for complete parameter
+documentation.

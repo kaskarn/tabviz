@@ -14,7 +14,7 @@ set_zoom(
 )
 }
 \arguments{
-\item{x}{An htmlwidget created by \code{tabviz()}}
+\item{x}{An htmlwidget created by \code{tabviz()} or a \code{tabviz_proxy}}
 
 \item{zoom}{Zoom level (0.5 to 2.0, default 1.0)}
 
@@ -28,24 +28,16 @@ Never enlarges content. When FALSE, render at zoom level with scrollbars if need
 \item{show_controls}{Show zoom controls on hover}
 }
 \value{
-The modified htmlwidget
+The modified htmlwidget or proxy (invisibly)
 }
 \description{
 Provides a fluent API for controlling zoom level and container size constraints.
+Static inputs rewrite the widget payload directly. On a proxy, sends a
+setZoom message.
 }
 \examples{
 \dontrun{
-# Zoom to 80\% with auto-fit
-forest_plot(data, point, lower, upper) |>
-  set_zoom(zoom = 0.8)
-
-# Constrain to max 800px width
-forest_plot(data, point, lower, upper) |>
-  set_zoom(max_width = 800)
-
-# Disable auto-fit, hide controls
-forest_plot(data, point, lower, upper) |>
-  set_zoom(auto_fit = FALSE, show_controls = FALSE)
+tabviz(data, label = "study") |> set_zoom(zoom = 0.8)
 }
 
 }

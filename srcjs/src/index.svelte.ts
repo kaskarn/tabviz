@@ -1,4 +1,4 @@
-import type { WebSpec, HTMLWidgetsBinding, WidgetInstance } from "$types";
+import type { WebSpec, HTMLWidgetsBinding, WidgetInstance, ColumnSpec, ThemeName } from "$types";
 import ForestPlot from "$lib/ForestPlot.svelte";
 import { createForestStore, type ForestStore } from "$stores/forestStore.svelte";
 import { exportToSVG, exportToPNG } from "$lib/export";
@@ -19,8 +19,10 @@ if (typeof window !== "undefined") {
   (window as unknown as { __tabvizStoreRegistry: Map<string, ForestStore> }).__tabvizStoreRegistry = storeRegistry;
 }
 
-// Proxy method handlers
-const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unknown>) => void> = {
+// Proxy method handlers. Keys match the method names sent from R's
+// invoke_proxy_method(); values read the JSON-decoded args and dispatch
+// into the Svelte store. Keep this table flat — one entry per verb.
+export const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unknown>) => void> = {
   updateData: (store, args) => {
     if (args.spec) {
       store.setSpec(args.spec as WebSpec);
@@ -54,6 +56,124 @@ const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unk
       args.column as string,
       args.direction as "asc" | "desc" | "none"
     );
+  },
+
+  // ---- Column ops ----
+  addColumn: (store, args) => {
+    const column = args.column as ColumnSpec | undefined;
+    if (!column) return;
+    const afterId = typeof args.afterId === "string" ? args.afterId : "";
+    store.insertColumn(column, afterId);
+  },
+  hideColumn: (store, args) => {
+    if (typeof args.id === "string") store.hideColumn(args.id);
+  },
+  moveColumn: (store, args) => {
+    const itemId = args.itemId as string | undefined;
+    if (!itemId) return;
+    let newIndex: number | undefined;
+    if (typeof args.newIndex === "number" && Number.isFinite(args.newIndex)) {
+      newIndex = args.newIndex;
+    } else if (typeof args.before === "string" && args.before) {
+      // Position relative to another column id.
+      const scope = store.findColumnScope(itemId) ?? "__root__";
+      const siblings = store.siblingsForColumnScope(scope).map((d) => d.id);
+      const targetIdx = siblings.indexOf(args.before);
+      if (targetIdx >= 0) newIndex = targetIdx;
+    }
+    if (newIndex === undefined) return;
+    store.moveColumnItem(itemId, newIndex);
+  },
+  setColumnWidth: (store, args) => {
+    if (typeof args.columnId === "string" && typeof args.width === "number") {
+      store.setColumnWidth(args.columnId, args.width);
+    }
+  },
+  updateColumn: (store, args) => {
+    const id = args.id as string | undefined;
+    if (!id) return;
+    // R sends a `changes` payload of named properties to merge. Resolve the
+    // current ColumnSpec from the store's effective column defs, merge, and
+    // write back via updateColumn(id, newSpec).
+    const current = store.allColumns.find((c) => c.id === id);
+    if (!current) return;
+    const changes = (args.changes as Record<string, unknown>) ?? {};
+    const topProps = new Set([
+      "header", "align", "headerAlign", "header_align", "wrap",
+      "sortable", "width", "type", "field",
+    ]);
+    const next: ColumnSpec = { ...current };
+    for (const [k, v] of Object.entries(changes)) {
+      if (k === "options" && typeof v === "object" && v !== null) {
+        next.options = { ...(next.options ?? {}), ...(v as Record<string, unknown>) };
+      } else if (topProps.has(k)) {
+        const destKey = k === "header_align" ? "headerAlign" : k;
+        (next as unknown as Record<string, unknown>)[destKey] = v;
+      } else {
+        // Unknown key falls into options (mirrors R-side semantics).
+        next.options = { ...(next.options ?? {}), [k]: v };
+      }
+    }
+    store.updateColumn(id, next);
+  },
+
+  // ---- Row ops ----
+  selectRows: (store, args) => {
+    const ids = Array.isArray(args.rowIds) ? (args.rowIds as unknown[]).map(String) : [];
+    store.setSelectedRows(ids);
+  },
+  moveRow: (store, args) => {
+    const rowId = args.rowId as string | undefined;
+    if (!rowId) return;
+    let newIndex: number | undefined;
+    if (typeof args.newIndex === "number" && Number.isFinite(args.newIndex)) {
+      newIndex = args.newIndex;
+    } else if (typeof args.before === "string" && args.before) {
+      // Need row's scope to resolve an id-relative position.
+      // Store doesn't expose a direct getter, but siblings-for-scope can be
+      // derived via spec.data.rows. Keep this simple: only numeric moves for now.
+      return;
+    }
+    if (newIndex === undefined) return;
+    store.moveRowItem(rowId, newIndex);
+  },
+
+  // ---- Cell edits ----
+  setCell: (store, args) => {
+    if (typeof args.rowId === "string" && typeof args.field === "string") {
+      store.setCellValue(args.rowId, args.field, args.value as Parameters<ForestStore["setCellValue"]>[2]);
+    }
+  },
+  setRowLabel: (store, args) => {
+    if (typeof args.rowId === "string" && typeof args.label === "string") {
+      store.setRowLabel(args.rowId, args.label);
+    }
+  },
+  clearEdits: (store) => {
+    store.clearAllEdits();
+  },
+
+  // ---- Global ----
+  setTheme: (store, args) => {
+    if (typeof args.name === "string") {
+      store.setTheme(args.name as ThemeName);
+    }
+    // Full WebTheme payloads are not yet applied runtime-side; silently
+    // accept so the proxy call doesn't error, and let the future wire-up
+    // populate `args.theme` into a store method.
+  },
+  setZoom: (store, args) => {
+    if (typeof args.zoom === "number") store.setZoom(args.zoom);
+    if (typeof args.autoFit === "boolean") store.setAutoFit(args.autoFit);
+    if (args.maxWidth === null || typeof args.maxWidth === "number") {
+      store.setMaxWidth(args.maxWidth as number | null);
+    }
+    if (args.maxHeight === null || typeof args.maxHeight === "number") {
+      store.setMaxHeight(args.maxHeight as number | null);
+    }
+    if (typeof args.showZoomControls === "boolean") {
+      store.setShowZoomControls(args.showZoomControls);
+    }
   },
 };
 

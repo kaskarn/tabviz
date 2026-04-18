@@ -81,6 +81,22 @@ Apply styling using the fluent API with pipes:
 | [`set_column_style()`](styling.qmd#set_column_style) | Per-cell styling for specific columns |
 | [`set_theme()`](styling.qmd#set_theme) | Apply a theme by name or object |
 
+## Data Operations
+
+Add, remove, reorder, filter, sort, and edit table contents. See [Data Operations](data-ops.qmd) for the full reference.
+
+| Function | Purpose |
+|----------|---------|
+| [`add_column()`](data-ops.qmd#add_column) / [`remove_column()`](data-ops.qmd#remove_column) | Insert or remove columns |
+| [`move_column()`](data-ops.qmd#move_column) / [`resize_column()`](data-ops.qmd#resize_column) | Reposition and resize |
+| [`update_column()`](data-ops.qmd#update_column) | Edit column properties |
+| [`sort_rows()`](data-ops.qmd#sort_rows) / [`filter_rows()`](data-ops.qmd#filter_rows) | Order and filter rows |
+| [`select_rows()`](data-ops.qmd#select_rows) / [`move_row()`](data-ops.qmd#move_row) | Runtime row controls |
+| [`update_data()`](data-ops.qmd#update_data) | Replace the data frame |
+| [`toggle_group()`](data-ops.qmd#toggle_group) | Collapse/expand groups |
+| [`set_cell()`](data-ops.qmd#set_cell) / [`set_row_label()`](data-ops.qmd#set_row_label) / [`clear_edits()`](data-ops.qmd#clear_edits) | In-widget cell edits (proxy only) |
+| [`set_zoom()`](data-ops.qmd#set_zoom) | Zoom & container constraints |
+
 ::: {.callout-note}
 ## Constructor Arguments vs Fluent API
 
@@ -147,23 +163,23 @@ Use direct arguments when configuration is known upfront. Use the fluent API whe
 
 | Function | Description |
 |----------|-------------|
-| [`forestOutput()`](shiny.qmd#forestOutput) | Shiny UI output |
-| [`renderForest()`](shiny.qmd#renderForest) | Shiny server render |
-| [`forestProxy()`](shiny.qmd#forestProxy) | Create update proxy |
-| [`forest_update_data()`](shiny.qmd#forest_update_data) | Update table data |
-| [`forest_sort()`](shiny.qmd#forest_sort) | Sort by column |
-| [`forest_filter()`](shiny.qmd#forest_filter) | Filter rows |
-| [`forest_clear_filter()`](shiny.qmd#forest_clear_filter) | Clear filters |
-| [`forest_toggle_subgroup()`](shiny.qmd#forest_toggle_subgroup) | Toggle group collapse |
+| [`tabvizOutput()`](shiny.qmd#tabvizOutput) | Shiny UI output |
+| [`renderTabviz()`](shiny.qmd#renderTabviz) | Shiny server render |
+| [`tabviz_proxy()`](shiny.qmd#tabviz_proxy) | Create update proxy |
+| [`update_data()`](data-ops.qmd#update_data) | Update table data (proxy or static) |
+| [`sort_rows()`](data-ops.qmd#sort_rows) | Sort by column |
+| [`filter_rows()`](data-ops.qmd#filter_rows) | Filter rows |
+| [`clear_filters()`](data-ops.qmd#clear_filters) | Clear filters |
+| [`toggle_group()`](data-ops.qmd#toggle_group) | Toggle group collapse |
 
 ### Split Tables
 
 | Function | Description |
 |----------|-------------|
-| [`splitForestOutput()`](shiny.qmd#splitForestOutput) | Shiny UI output for split view |
-| [`renderSplitForest()`](shiny.qmd#renderSplitForest) | Shiny server render for split view |
-| [`splitForestProxy()`](shiny.qmd#splitForestProxy) | Create split view proxy |
-| [`split_table_select()`](shiny.qmd#split_table_select) | Select sub-table programmatically |
+| [`splitTabvizOutput()`](shiny.qmd#splitTabvizOutput) | Shiny UI output for split view |
+| [`renderSplitTabviz()`](shiny.qmd#renderSplitTabviz) | Shiny server render for split view |
+| [`split_tabviz_proxy()`](shiny.qmd#split_tabviz_proxy) | Create split view proxy |
+| [`split_tabviz_select()`](shiny.qmd#split_tabviz_select) | Select sub-table programmatically |
 
 ## Advanced
 

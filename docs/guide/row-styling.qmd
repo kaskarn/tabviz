@@ -102,6 +102,12 @@ nba_efficiency |>
 
 Badges are useful for marking awards, flagging key results, or indicating data quality.
 
+::: {.callout-warning}
+## Badge and icon anchor to the first column
+
+`row_badge` and `row_icon` render into the leftmost visible text column's cell — they do not belong to the row itself. If you call `move_column()` or insert a new column with `add_column(..., after = "__start__")`, the badge will re-attach to the new first column without warning. To keep a stable anchor, keep your label/study column in position 1. See [Binding Rules](#binding-rules) below.
+:::
+
 ::: {.callout-tip}
 ## See Also
 For more examples with badge data, see [Package Data](package-data.qmd#nba_efficiency).
@@ -344,6 +350,48 @@ tabviz(data,
 ```
 
 This is useful when building styling programmatically or creating multiple variants from a base plot. See [The Fluent API](fluent-api.qmd) for more patterns.
+
+---
+
+## Binding Rules {#binding-rules}
+
+Not every row-level parameter is anchored the same way. Some attach to the *row* (stable under column reordering); others render into a specific *cell* (can re-attach when columns move). Knowing which is which prevents surprises when you use `move_column()`, `add_column(..., after = "__start__")`, or `remove_column()`.
+
+| Parameter | Bound to | Stable under column reorder? |
+|-----------|----------|------------------------------|
+| `row_bold`, `row_italic`, `row_color`, `row_bg` | Row CSS class | ✅ Yes |
+| `row_emphasis`, `row_muted`, `row_accent` | Row CSS class (theme-aware) | ✅ Yes |
+| `row_indent` | Row CSS class (applies to label column) | ✅ Yes |
+| `row_type` (`"data"`, `"header"`, `"summary"`, `"spacer"`) | Row CSS class | ✅ Yes |
+| **`row_badge`, `row_icon`** | First visible text column's cell | ⚠️ No — re-attaches if first column changes |
+| `marker_color`, `marker_shape`, `marker_size`, `marker_opacity` | SVG marker on the forest column | ✅ Yes |
+| `set_row_label()` edits (proxy) | Label column | ⚠️ Lost if label column is removed |
+
+### Why badge and icon are special
+
+Badges and icons visually extend the row label — they always need a specific cell to anchor inside. rather than hard-coding them to a named column, tabviz resolves their target at serialization time by picking the first visible text column. This keeps the API simple (no extra `column =` argument on `set_row_style()`) at the cost of quiet coupling to column order.
+
+**In practice:**
+
+- Keep your label column in position 1. This is the common case and nothing will surprise you.
+- If you call `move_column("tier", to = 1)` or `add_column(col_icon("flag"), after = "__start__")`, expect badges/icons to re-render on the new leftmost column.
+- If you rebuild a plot via `update_data()` with a `WebSpec` whose columns are in a different order, the same re-anchoring applies.
+
+### Stable anchoring
+
+If you need a badge that stays with a specific column regardless of layout, use `set_column_style()` with `badge = "col"` on the target column instead of `set_row_style()`. Column-level badges are bound to their column and unaffected by row-level re-anchoring.
+
+```{r}
+#| eval: false
+# Row-level: anchors to leftmost column (may move)
+tabviz(data, ...) |>
+  set_row_style(badge = "sig")
+
+# Column-level: anchors to "study" column (stable)
+web_spec(data, ...) |>
+  set_column_style("study", badge = "sig") |>
+  tabviz()
+```
 
 ---
 

@@ -53,6 +53,7 @@
     formatInterval,
     addThousandsSep,
     abbreviateNumber,
+    truncateString,
   } from "$lib/formatters";
 
   interface Props {
@@ -79,7 +80,7 @@
   const hasForestColumns = $derived(forestColumns.length > 0);
   const vizColumns = $derived(store.vizColumns);
   const hasVizColumns = $derived(vizColumns.length > 0);
-  const labelHeader = $derived(spec?.data.labelHeader || "Study");
+  const primaryColumnId = $derived(store.primaryColumnId);
 
   // Check if title/subtitle area is shown (for header area and top table border)
   const hasPlotHeader = $derived(!!spec?.labels?.title || !!spec?.labels?.subtitle);
@@ -462,7 +463,9 @@
 
   const headerCells = $derived.by((): HeaderCell[] => {
     const cells: HeaderCell[] = [];
-    let colIndex = 2; // Start at 2 (1 = label column)
+    // Grid-columns are 1-indexed; the primary column is allColumns[0] and
+    // occupies grid-column 1 just like any other column.
+    let colIndex = 1;
 
     function processColumn(col: ColumnDef, depth: number) {
       const colspan = getColspan(col);
@@ -518,17 +521,18 @@
     return "max-content";
   }
 
-  // Helper to get label column width
-  // Uses columnWidthsSnapshot to ensure Svelte 5 reactivity
+  // Helper: width of the primary (leftmost) column, for legacy callers that
+  // still want a "label width". Returns undefined if the primary column is
+  // not yet measured or is missing.
   function getLabelWidth(): string | undefined {
-    const width = columnWidthsSnapshot["__label__"];
+    if (!primaryColumnId) return undefined;
+    const width = columnWidthsSnapshot[primaryColumnId];
     return width ? `${width}px` : undefined;
   }
 
-  // Helper to get label column flex
-  // Uses columnWidthsSnapshot to ensure Svelte 5 reactivity
   function getLabelFlex(): string {
-    return columnWidthsSnapshot["__label__"] ? "none" : "1";
+    if (!primaryColumnId) return "1";
+    return columnWidthsSnapshot[primaryColumnId] ? "none" : "1";
   }
 
   // Viz column types that need fixed widths
@@ -675,13 +679,9 @@
     return { y, start: containerRect.left, end: containerRect.right };
   }
 
-  // Compute CSS grid template columns: label | columns in order (forest cols included)
+  // Compute CSS grid template columns: columns in order (primary column first).
   const gridTemplateColumns = $derived.by(() => {
     const parts: string[] = [];
-
-    // Label column - max-content sizes to content (won't shrink when space is limited)
-    const labelWidth = columnWidthsSnapshot["__label__"];
-    parts.push(labelWidth ? `${labelWidth}px` : "max-content");
 
     // All columns in order, viz columns get fixed widths
     for (const col of allColumns) {
@@ -708,8 +708,8 @@
     return parts.join(" ");
   });
 
-  // Total column count for grid (label + all columns)
-  const totalColumns = $derived(1 + allColumns.length);
+  // Total column count for grid (positional — leftmost column is the primary)
+  const totalColumns = $derived(allColumns.length);
 
   // Get grid column indices for viz columns (1-based for CSS grid)
   // Returns array of { gridCol, column } for each viz column
@@ -717,7 +717,7 @@
     const result: { gridCol: number; column: typeof allColumns[0] }[] = [];
     for (let i = 0; i < allColumns.length; i++) {
       if (vizColumnTypes.includes(allColumns[i].type)) {
-        result.push({ gridCol: 2 + i, column: allColumns[i] }); // +2 for 1-based + label column
+        result.push({ gridCol: 1 + i, column: allColumns[i] });
       }
     }
     return result;
@@ -731,9 +731,23 @@
   let forestColumnRefs = $state<Map<string, HTMLDivElement>>(new Map());
   let forestColumnPositions = $state<Map<string, number>>(new Map());
 
-  // Ref to measure actual header height (label header spans all header rows)
+  // Ref to measure actual header height (primary column header)
   let labelHeaderRef: HTMLDivElement | undefined = $state();
   let measuredHeaderHeight = $state(0);
+
+  // Svelte action: capture the primary header node for height measurement.
+  function primaryHeaderRef(node: HTMLDivElement, isPrimary: boolean) {
+    if (isPrimary) labelHeaderRef = node;
+    return {
+      update(next: boolean) {
+        if (next) labelHeaderRef = node;
+        else if (labelHeaderRef === node) labelHeaderRef = undefined;
+      },
+      destroy() {
+        if (labelHeaderRef === node) labelHeaderRef = undefined;
+      }
+    };
+  }
 
   // Update forest column positions and header height when refs change or layout changes
   $effect(() => {
@@ -1192,29 +1206,16 @@
             column.options
           )} {cellStyle} />
         {:else}
-          <CellContent value={metadata[column.field] ?? ""} {cellStyle} />
+          {@const rawText = String(metadata[column.field] ?? "")}
+          {@const maxChars = column.type === "text" ? column.options?.text?.maxChars : null}
+          {@const displayText = maxChars ? truncateString(rawText, maxChars) : rawText}
+          <CellContent value={displayText} title={rawText} {cellStyle} />
         {/if}
       {/snippet}
 
-      <!-- CSS Grid layout: label | left cols | plot | right cols -->
+      <!-- CSS Grid layout: columns in order (leftmost = primary) -->
       <div class="tabviz-main" style:grid-template-columns={gridTemplateColumns}>
         <!-- Header cells (supports hierarchical column groups) -->
-        <!-- Label header (spans all header rows) -->
-        <div
-          bind:this={labelHeaderRef}
-          class="grid-cell header-cell label-header"
-          style:grid-row="1 / span {headerDepth}"
-        >
-          <span class="header-text">{labelHeader}</span>
-          {#if spec?.interaction.enableResize}
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <div
-              class="resize-handle"
-              onpointerdown={(e) => startColumnResize(e, "__label__", columnWidthsSnapshot["__label__"] ?? 150)}
-            ></div>
-          {/if}
-        </div>
-
         <!-- Column headers (groups and leaf columns) -->
         {#each headerCells as cell (cell.col.id)}
           {#if cell.isGroupHeader}
@@ -1262,11 +1263,14 @@
             {@const column = cell.col as ColumnSpec}
             {@const canSort = !!spec?.interaction.enableSort && column.sortable && column.type !== "forest"}
             {@const sortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
+            {@const isPrimaryHeader = column.id === primaryColumnId}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
+              use:primaryHeaderRef={isPrimaryHeader}
               class="grid-cell header-cell"
               class:sortable={canSort}
+              class:primary-header={isPrimaryHeader}
               data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
@@ -1311,8 +1315,6 @@
           {@const gridRow = headerDepth + 1 + i}
           {@const groupBg = isGroupHeader ? getGroupBackground(rowDepth + 1, theme) : undefined}
 
-          <!-- Label cell — doubles as the drag surface (whole-row reorder)
-               when spec.interaction.enableReorderRows is on. -->
           {@const isDragSource = !!(store.dragState?.active && (
             (store.dragState.kind === "row" && !isGroupHeader && row && store.dragState.id === row.id) ||
             (store.dragState.kind === "row_group" && isGroupHeader && store.dragState.id === displayRow.group.id)
@@ -1321,51 +1323,55 @@
             (!isGroupHeader && row && recentlyDroppedId === row.id) ||
             (isGroupHeader && recentlyDroppedId === displayRow.group.id)
           )}
-          <div
-            class="grid-cell data-cell label-cell {rowClasses}"
-            class:group-row={isGroupHeader}
-            class:selected
-            class:hovered={row && hoveredRowId === row.id}
-            class:spacer-row={isSpacerRow}
-            class:reorderable={spec?.interaction.enableReorderRows}
-            class:drag-source={isDragSource}
-            class:just-dropped={justDropped}
-            data-display-index={i}
-            data-row-id={row ? row.id : undefined}
-            data-field={row ? "__label__" : undefined}
-            style:grid-row={gridRow}
-            style:background-color={groupBg}
-            style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
-            style={rowStyles || undefined}
-            role={isGroupHeader ? "button" : undefined}
-            tabindex={isGroupHeader ? 0 : undefined}
-            onpointerdown={spec?.interaction.enableReorderRows ? (e) => {
-              if (isGroupHeader) startRowPointerDown(e, "row_group", displayRow.group.id, displayRow.group.parentId ?? "__root__");
-              else if (row) startRowPointerDown(e, "row", row.id, row.groupId ?? "__root__");
-            } : undefined}
-            onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => store.selectRow(row.id) : undefined}
-            ondblclick={!isGroupHeader && row && spec?.interaction.enableEdit ? () => store.startEdit({ rowId: row.id, field: "__label__" }) : undefined}
-            onkeydown={isGroupHeader ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id) : undefined}
-            onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
-            onmouseleave={row ? () => handleRowLeave() : undefined}
-          >
-            {#if isGroupHeader}
-              <GroupHeader
-                group={displayRow.group}
-                rowCount={spec?.interaction.showGroupCounts ? displayRow.rowCount : undefined}
-                level={displayRow.depth + 1}
-                {theme}
-              />
-            {:else if row}
-              {#if row.style?.icon}<span class="row-icon">{row.style.icon}</span>{/if}
-              {store.getLabel(row)}
-              {#if row.style?.badge}<span class="row-badge">{row.style.badge}</span>{/if}
-            {/if}
-          </div>
 
-          <!-- Column cells: all columns in order -->
+          <!-- Column cells: all columns in order. The leftmost (primary) column
+               doubles as the drag surface for whole-row reorder and carries the
+               group-header / icon / badge chrome. -->
           {#each allColumns as column (column.id)}
-            {#if vizColumnTypes.includes(column.type)}
+            {@const isPrimary = column.id === primaryColumnId}
+            {#if isPrimary}
+              <div
+                class="grid-cell data-cell primary-cell {rowClasses}"
+                class:group-row={isGroupHeader}
+                class:selected
+                class:hovered={row && hoveredRowId === row.id}
+                class:spacer-row={isSpacerRow}
+                class:reorderable={spec?.interaction.enableReorderRows}
+                class:drag-source={isDragSource}
+                class:just-dropped={justDropped}
+                data-display-index={i}
+                data-row-id={row ? row.id : undefined}
+                data-field={row ? column.field : undefined}
+                style:grid-row={gridRow}
+                style:background-color={groupBg}
+                style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
+                style={rowStyles || undefined}
+                role={isGroupHeader ? "button" : undefined}
+                tabindex={isGroupHeader ? 0 : undefined}
+                onpointerdown={spec?.interaction.enableReorderRows ? (e) => {
+                  if (isGroupHeader) startRowPointerDown(e, "row_group", displayRow.group.id, displayRow.group.parentId ?? "__root__");
+                  else if (row) startRowPointerDown(e, "row", row.id, row.groupId ?? "__root__");
+                } : undefined}
+                onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => store.selectRow(row.id) : undefined}
+                ondblclick={!isGroupHeader && row && spec?.interaction.enableEdit && isEditableColumn(column) ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
+                onkeydown={isGroupHeader ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id) : undefined}
+                onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
+                onmouseleave={row ? () => handleRowLeave() : undefined}
+              >
+                {#if isGroupHeader}
+                  <GroupHeader
+                    group={displayRow.group}
+                    rowCount={spec?.interaction.showGroupCounts ? displayRow.rowCount : undefined}
+                    level={displayRow.depth + 1}
+                    {theme}
+                  />
+                {:else if row}
+                  {#if row.style?.icon}<span class="row-icon">{row.style.icon}</span>{/if}
+                  {@render renderCellContent(row, column)}
+                  {#if row.style?.badge}<span class="row-badge">{row.style.badge}</span>{/if}
+                {/if}
+              </div>
+            {:else if vizColumnTypes.includes(column.type)}
               <!-- Viz cell (empty - SVG overlays this) -->
               <div
                 class="grid-cell data-cell plot-cell {rowClasses}"
@@ -1415,13 +1421,11 @@
           {@const axisRowNum = headerDepth + 1 + displayRows.length}
           {#each allColumns as column, idx (column.id)}
             {#if vizColumnTypes.includes(column.type)}
-              <div class="grid-cell axis-cell" style:grid-column={2 + idx} style:grid-row={axisRowNum}></div>
+              <div class="grid-cell axis-cell" style:grid-column={1 + idx} style:grid-row={axisRowNum}></div>
             {:else}
-              <div class="grid-cell axis-spacer" style:grid-column={2 + idx} style:grid-row={axisRowNum}></div>
+              <div class="grid-cell axis-spacer" style:grid-column={1 + idx} style:grid-row={axisRowNum}></div>
             {/if}
           {/each}
-          <!-- Label column spacer -->
-          <div class="grid-cell axis-spacer" style:grid-column="1" style:grid-row={axisRowNum}></div>
         {/if}
 
         <!-- SVG overlays: one per forest column -->
@@ -2025,8 +2029,8 @@
     background: var(--wf-border, #f1f5f9);
   }
 
-  /* Label header gets thicker bottom border (spans all rows, so border is at bottom) */
-  .label-header {
+  /* Primary (leftmost) column header gets thicker bottom border */
+  .primary-header {
     border-bottom: 2px solid var(--wf-border);
   }
 
@@ -2040,7 +2044,7 @@
   }
 
   /* Last row of headers gets thicker border */
-  .header-cell:not(.column-group-header):not(.label-header):not(.plot-header) {
+  .header-cell:not(.column-group-header):not(.primary-header):not(.plot-header) {
     border-bottom: 2px solid var(--wf-border);
   }
 
@@ -2077,33 +2081,27 @@
     height: var(--wf-row-height);
   }
 
-  /* Label column (first column) */
-  .label-cell {
+  /* Primary (leftmost) column cell — row identifier, drag surface */
+  .primary-cell {
     min-width: 120px;
   }
-  .label-cell.reorderable {
+  .primary-cell.reorderable {
     cursor: grab;
     touch-action: none;
-    /* Suppress native drag-selection on the draggable cell so the browser
-       doesn't highlight label text while the user drags the row. */
     user-select: none;
     -webkit-user-select: none;
   }
-  .label-cell.reorderable:active {
+  .primary-cell.reorderable:active {
     cursor: grabbing;
   }
 
-  /* Source row while a drag is in flight — subtle fade + inset accent bar so
-     the user sees exactly what they're moving. */
-  .label-cell.drag-source {
+  .primary-cell.drag-source {
     opacity: 0.55;
     transition: opacity 120ms ease-out;
     box-shadow: inset 3px 0 0 var(--wf-primary, #2563eb);
   }
 
-  /* Destination flash — brief tint on the row that just landed, to make the
-     reorder feel confirmed rather than instantaneous. */
-  .label-cell.just-dropped {
+  .primary-cell.just-dropped {
     animation: tabviz-row-drop-flash 560ms ease-out 1;
   }
   @keyframes tabviz-row-drop-flash {

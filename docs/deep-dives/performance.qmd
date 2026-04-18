@@ -186,7 +186,7 @@ server <- function(input, output, session) {
     input$filter
   }) |> debounce(300)  # Wait 300ms after last change
 
-  output$table <- renderForest({
+  output$table <- renderTabviz({
     tabviz(filtered_data(), ...)
   })
 }
@@ -199,20 +199,18 @@ Use proxy for incremental updates instead of re-rendering:
 ```{r}
 #| eval: false
 server <- function(input, output, session) {
-  output$table <- renderForest({
+  output$table <- renderTabviz({
     tabviz(initial_data, ...)
   })
 
-  proxy <- forestProxy("table")
+  proxy <- tabviz_proxy("table")
 
   observeEvent(input$sort_column, {
-    # Update sort without re-rendering
-    forest_sort(proxy, input$sort_column)
+    sort_rows(proxy, input$sort_column, "asc")
   })
 
   observeEvent(input$filter, {
-    # Update filter without full re-render
-    forest_filter(proxy, input$filter)
+    filter_rows(proxy, "region", "eq", input$filter)
   })
 }
 ```

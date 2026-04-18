@@ -13,6 +13,7 @@ col_heatmap(
   max_value = NULL,
   decimals = 2,
   show_value = TRUE,
+  scale = c("linear", "log", "sqrt"),
   ...
 )
 }
@@ -33,6 +34,9 @@ col_heatmap(
 \item{decimals}{Number of decimal places (default 2)}
 
 \item{show_value}{Show the numeric value over the color (default TRUE)}
+
+\item{scale}{Scale type: "linear" (default), "log", or "sqrt". Controls how
+values map to palette position.}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

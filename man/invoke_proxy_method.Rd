@@ -2,11 +2,12 @@
 % Please edit documentation in R/shiny.R
 \name{invoke_proxy_method}
 \alias{invoke_proxy_method}
-\title{Internal: Invoke a proxy method}
+\title{Internal: invoke a proxy method}
 \usage{
 invoke_proxy_method(proxy, method, args)
 }
 \description{
-Internal: Invoke a proxy method
+Sends a \code{tabviz-proxy} custom message to the running widget with
+\code{list(id, method, args)}.
 }
 \keyword{internal}

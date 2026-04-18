@@ -1,0 +1,270 @@
+---
+title: "Recipes"
+description: "Short 'how do I…' snippets for common tabviz patterns"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+library(shiny)
+```
+
+Short, self-contained snippets for specific tasks. Each recipe is a single pattern you can lift into your own code. For broader patterns see the [Fluent API guide](fluent-api.qmd); for full parameter references see the [reference section](../reference/index.qmd).
+
+---
+
+## Color rows by significance threshold
+
+Bold + green for `p < 0.05`, muted gray otherwise.
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(viz_forest("hr", "lower", "upper", null_value = 1, scale = "log")),
+  row_bold  = ~ pval < 0.05,
+  row_color = ~ ifelse(pval < 0.05, "#166534", "#64748b")
+)
+```
+
+---
+
+## Badge the top-N rows
+
+Rank by weight, tag the top 3.
+
+```{r}
+#| eval: false
+data |>
+  mutate(
+    rank  = rank(-weight),
+    badge = ifelse(rank <= 3, paste0("#", rank), NA_character_)
+  ) |>
+  tabviz(
+    label = "study",
+    columns = list(viz_forest("hr", "lower", "upper", null_value = 1, scale = "log")),
+    row_badge = "badge"
+  )
+```
+
+---
+
+## Switch themes mid-Shiny-session
+
+Use `set_theme()` on a proxy to re-skin without a full re-render.
+
+```{r}
+#| eval: false
+server <- function(input, output, session) {
+  output$plot <- renderTabviz({
+    tabviz(data, label = "study",
+           columns = list(viz_forest("hr", "lower", "upper")))
+  })
+
+  observeEvent(input$theme, {
+    tabviz_proxy("plot") |> set_theme(input$theme)
+  })
+}
+```
+
+---
+
+## Filter via a slider in Shiny
+
+Proxy-dispatched `filter_rows()` updates in place.
+
+```{r}
+#| eval: false
+ui <- fluidPage(
+  sliderInput("max_p", "Max p-value", min = 0, max = 1, value = 0.1),
+  tabvizOutput("plot")
+)
+
+server <- function(input, output, session) {
+  output$plot <- renderTabviz({ tabviz(data, ...) })
+
+  observeEvent(input$max_p, {
+    proxy <- tabviz_proxy("plot")
+    proxy |>
+      clear_filters() |>
+      filter_rows("pval", "lt", input$max_p)
+  })
+}
+```
+
+---
+
+## Format p-values with thresholds
+
+Smart formatting: `<0.001`, scientific notation for very small, decimals otherwise.
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(
+    col_pvalue("pval", "P",
+               threshold = 0.001,       # shows "<0.001" below this
+               scientific_below = 1e-4, # scientific notation below this
+               show_stars = TRUE)       # optional ★ ★★ ★★★ trailing
+  )
+)
+```
+
+---
+
+## Pin an annotation line at the null value
+
+Use `refline()` in `viz_forest()`'s `annotations` list.
+
+```{r}
+#| eval: false
+viz_forest(
+  point = "hr", lower = "lower", upper = "upper",
+  scale = "log", null_value = 1,
+  annotations = list(
+    refline(1,    label = "No effect",  style = "solid",  color = "#111"),
+    refline(0.85, label = "Pooled HR", style = "dashed", color = "#0066cc")
+  )
+)
+```
+
+---
+
+## Split by subgroup with a shared axis
+
+Hierarchical navigation; every pane uses the same scale.
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(viz_forest("hr", "lower", "upper", null_value = 1, scale = "log")),
+  split_by     = c("region", "country"),
+  shared_axis  = TRUE
+)
+```
+
+---
+
+## Export a static plot at 2× resolution
+
+`scale` controls the pixel density of raster output.
+
+```{r}
+#| eval: false
+plot <- tabviz(data, ...)
+
+save_plot(plot, "forest.svg")                    # vector
+save_plot(plot, "forest.png", scale = 2)         # retina PNG
+save_plot(plot, "forest.pdf", width = 8, height = 6)
+```
+
+---
+
+## Build a table-only view (no forest column)
+
+Drop `viz_forest()` — any table works without a visualization column.
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  columns = list(
+    col_text("drug", "Drug"),
+    col_n("n"),
+    col_events("events", "n", "Events"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_pvalue("pval", "P")
+  )
+)
+```
+
+---
+
+## Show multiple effect sizes side-by-side
+
+Stack `viz_forest()` columns with a shared axis range.
+
+```{r}
+#| eval: false
+axis_range <- c(0.4, 2.0)
+
+tabviz(data,
+  label = "study",
+  columns = list(
+    viz_forest("hr_primary", "primary_lo", "primary_hi",
+               header = "Primary outcome",
+               axis_range = axis_range, null_value = 1, scale = "log"),
+    viz_forest("hr_secondary", "secondary_lo", "secondary_hi",
+               header = "Secondary outcome",
+               axis_range = axis_range, null_value = 1, scale = "log")
+  )
+)
+```
+
+---
+
+## Preserve scroll/selection across proxy updates
+
+Proxy verbs (`sort_rows`, `filter_rows`, `update_column`, etc.) mutate state in place and preserve scroll position, open groups, and selection. Avoid `renderTabviz({ tabviz(...) })` for incremental changes — it re-renders the whole widget.
+
+```{r}
+#| eval: false
+# GOOD: incremental update keeps scroll/selection
+observeEvent(input$sort_col, {
+  tabviz_proxy("plot") |> sort_rows(input$sort_col, "desc")
+})
+
+# BAD: full re-render loses scroll position
+output$plot <- renderTabviz({
+  data |>
+    arrange(desc(.data[[input$sort_col]])) |>
+    tabviz(...)
+})
+```
+
+---
+
+## Change a column's header and width mid-session
+
+Use `update_column()` via a proxy — no re-render, no spec rebuild.
+
+```{r}
+#| eval: false
+observeEvent(input$relabel, {
+  tabviz_proxy("plot") |>
+    update_column("hr", header = "Hazard Ratio", width = 160)
+})
+```
+
+---
+
+## Compose reusable styling pipelines
+
+Wrap your organization's standards in a function. Works on both `WebSpec` and htmlwidget inputs because every `set_*()` returns the same type it received.
+
+```{r}
+#| eval: false
+house_style <- function(x) {
+  x |>
+    set_marker_style(color = "direction_color") |>
+    set_row_style(bold = "is_primary", type = "row_type") |>
+    set_theme("jama") |>
+    set_theme(web_theme_jama() |>
+                set_axis(gridlines = TRUE, gridline_style = "dotted"))
+}
+
+tabviz(trial_a, ...) |> house_style()
+tabviz(trial_b, ...) |> house_style()
+```
+
+---
+
+## See Also
+
+- [Fluent API guide](fluent-api.qmd) — composing verbs, static-vs-proxy dispatch
+- [Row styling](row-styling.qmd) — row-level parameters and binding rules
+- [Data operations reference](../reference/data-ops.qmd) — every column/row/data/cell verb
+- [Shiny integration](shiny.qmd) — proxy patterns end-to-end

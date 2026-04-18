@@ -31,6 +31,7 @@ Meta-analyses, forest plots, and clinical trial visualizations.
 - JAMA-style forest plots
 - Subgroup analyses
 - Multi-arm dose-response
+- Nested hierarchical groups
 :::
 
 ::: {.g-col-6 .g-col-md-3}
@@ -40,7 +41,8 @@ Business dashboards, KPIs, and data tables.
 
 - Product metrics
 - A/B test analysis
-- Executive summaries
+- Executive summaries and org charts
+- Sports and climate analytics
 :::
 
 ::: {.g-col-6 .g-col-md-3}
@@ -49,8 +51,9 @@ Business dashboards, KPIs, and data tables.
 Demonstrations of specific tabviz features.
 
 - Rich column types
-- Distribution plots
-- Theme customization
+- Publication templates (JAMA / Lancet / minimal)
+- Hierarchical split navigation
+- The full-monty comprehensive showcase
 :::
 :::
 

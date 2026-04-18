@@ -11,6 +11,7 @@ col_progress(
   max_value = 100,
   color = NULL,
   show_label = TRUE,
+  scale = c("linear", "log", "sqrt"),
   ...
 )
 }
@@ -26,6 +27,9 @@ col_progress(
 \item{color}{Bar fill color (NULL = theme primary color)}
 
 \item{show_label}{Show percentage label (default TRUE)}
+
+\item{scale}{Scale type: "linear" (default), "log", or "sqrt". Controls how
+values map to bar fill.}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

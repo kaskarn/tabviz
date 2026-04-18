@@ -57,6 +57,12 @@
   let optSparklineType = $state<"line" | "bar" | "area">("line");
   let optPrefix = $state<string>("");
   let optSuffix = $state<string>("");
+  let optThousandsSep = $state(false);
+  let optMaxChars = $state<string>("");
+  let optBarScale = $state<"linear" | "log" | "sqrt">("linear");
+  let optMaxStars = $state<string>("");
+  let optDomainMin = $state<string>("");
+  let optDomainMax = $state<string>("");
 
   let popoverEl: HTMLDivElement | null = $state(null);
   let resolvedLeft = $state(0);
@@ -92,6 +98,12 @@
     optSparklineType = "line";
     optPrefix = "";
     optSuffix = "";
+    optThousandsSep = false;
+    optMaxChars = "";
+    optBarScale = "linear";
+    optMaxStars = "";
+    optDomainMin = "";
+    optDomainMax = "";
   }
 
   // Pull option defaults out of a partial options bundle into the editor state.
@@ -100,11 +112,29 @@
       if (o.numeric?.decimals != null) optDecimals = String(o.numeric.decimals);
       if (o.numeric?.prefix != null) optPrefix = o.numeric.prefix;
       if (o.numeric?.suffix != null) optSuffix = o.numeric.suffix;
+      if (o.numeric?.thousandsSep) optThousandsSep = true;
     }
+    if (type === "text" && o.text?.maxChars != null) optMaxChars = String(o.text.maxChars);
     if (type === "pvalue" && o.pvalue?.stars != null) optStars = !!o.pvalue.stars;
-    if (type === "bar" && o.bar?.maxValue != null) optMaxValue = String(o.bar.maxValue);
-    if (type === "progress" && o.progress?.maxValue != null) optMaxValue = String(o.progress.maxValue);
-    if (type === "heatmap" && o.heatmap?.decimals != null) optDecimals = String(o.heatmap.decimals);
+    if (type === "bar") {
+      if (o.bar?.maxValue != null) optMaxValue = String(o.bar.maxValue);
+      if (o.bar?.scale) optBarScale = o.bar.scale;
+    }
+    if (type === "progress") {
+      if (o.progress?.maxValue != null) optMaxValue = String(o.progress.maxValue);
+      if (o.progress?.scale) optBarScale = o.progress.scale;
+    }
+    if (type === "heatmap") {
+      if (o.heatmap?.decimals != null) optDecimals = String(o.heatmap.decimals);
+      if (o.heatmap?.scale) optBarScale = o.heatmap.scale;
+    }
+    if (type === "stars") {
+      if (o.stars?.maxStars != null) optMaxStars = String(o.stars.maxStars);
+      if (o.stars?.domain) {
+        optDomainMin = String(o.stars.domain[0]);
+        optDomainMax = String(o.stars.domain[1]);
+      }
+    }
     if (type === "forest" && o.forest?.scale) optScale = o.forest.scale;
     if (type === "interval" && o.interval?.decimals != null) optDecimals = String(o.interval.decimals);
     if (type === "sparkline" && o.sparkline?.type) optSparklineType = o.sparkline.type;
@@ -212,21 +242,57 @@
         if (optDecimals !== "") num.decimals = Number(optDecimals);
         if (optPrefix !== "") num.prefix = optPrefix;
         if (optSuffix !== "") num.suffix = optSuffix;
+        if (optThousandsSep) num.thousandsSep = ",";
         if (Object.keys(num).length > 0) options.numeric = num;
+        break;
+      }
+      case "text": {
+        if (optMaxChars !== "") options.text = { maxChars: Number(optMaxChars) };
         break;
       }
       case "pvalue":
         options.pvalue = { stars: optStars };
         break;
-      case "bar":
-        if (optMaxValue !== "") options.bar = { maxValue: Number(optMaxValue) };
+      case "bar": {
+        const bar: NonNullable<NonNullable<ColumnSpec["options"]>["bar"]> = {};
+        if (optMaxValue !== "") bar.maxValue = Number(optMaxValue);
+        if (optBarScale !== "linear") bar.scale = optBarScale;
+        if (Object.keys(bar).length > 0) options.bar = bar;
         break;
-      case "progress":
-        if (optMaxValue !== "") options.progress = { maxValue: Number(optMaxValue) };
+      }
+      case "progress": {
+        const prog: NonNullable<NonNullable<ColumnSpec["options"]>["progress"]> = {};
+        if (optMaxValue !== "") prog.maxValue = Number(optMaxValue);
+        if (optBarScale !== "linear") prog.scale = optBarScale;
+        if (Object.keys(prog).length > 0) options.progress = prog;
         break;
-      case "heatmap":
-        if (optDecimals !== "") options.heatmap = { decimals: Number(optDecimals), showValue: true };
+      }
+      case "heatmap": {
+        const hm: NonNullable<NonNullable<ColumnSpec["options"]>["heatmap"]> = {};
+        if (optDecimals !== "") {
+          hm.decimals = Number(optDecimals);
+          hm.showValue = true;
+        }
+        if (optBarScale !== "linear") hm.scale = optBarScale;
+        if (Object.keys(hm).length > 0) options.heatmap = hm;
         break;
+      }
+      case "stars": {
+        const st: NonNullable<NonNullable<ColumnSpec["options"]>["stars"]> = {};
+        if (optMaxStars !== "") {
+          const n = Math.max(1, Math.min(20, Math.round(Number(optMaxStars))));
+          st.maxStars = n;
+        }
+        if (optDomainMin !== "" && optDomainMax !== "") {
+          const lo = Number(optDomainMin);
+          const hi = Number(optDomainMax);
+          if (Number.isFinite(lo) && Number.isFinite(hi) && hi > lo) {
+            st.domain = [lo, hi];
+          }
+        }
+        if (Object.keys(st).length > 0) options.stars = st;
+        break;
+      }
       case "sparkline":
         options.sparkline = { type: optSparklineType };
         break;
@@ -420,6 +486,22 @@
               <input type="text" bind:value={optSuffix} placeholder="e.g. %" maxlength="4" />
             </label>
           </div>
+          <label class="editor-check">
+            <input type="checkbox" bind:checked={optThousandsSep} />
+            <span>Group thousands (1,000)</span>
+          </label>
+        {/if}
+
+        {#if selectedType === "text"}
+          <label class="editor-field">
+            <span>Max characters</span>
+            <input
+              type="number"
+              min="1"
+              bind:value={optMaxChars}
+              placeholder="no limit"
+            />
+          </label>
         {/if}
 
         {#if selectedType === "pvalue"}
@@ -438,6 +520,40 @@
               placeholder={selectedType === "progress" ? "100" : "auto"}
             />
           </label>
+        {/if}
+
+        {#if selectedType === "bar" || selectedType === "progress" || selectedType === "heatmap"}
+          <label class="editor-field">
+            <span>Scale</span>
+            <select bind:value={optBarScale}>
+              <option value="linear">Linear</option>
+              <option value="log">Log</option>
+              <option value="sqrt">Sqrt</option>
+            </select>
+          </label>
+        {/if}
+
+        {#if selectedType === "stars"}
+          <label class="editor-field">
+            <span>Max stars</span>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              bind:value={optMaxStars}
+              placeholder="5"
+            />
+          </label>
+          <div class="editor-row">
+            <label class="editor-field">
+              <span>Domain min</span>
+              <input type="number" bind:value={optDomainMin} placeholder="optional" />
+            </label>
+            <label class="editor-field">
+              <span>Domain max</span>
+              <input type="number" bind:value={optDomainMax} placeholder="optional" />
+            </label>
+          </div>
         {/if}
 
         {#if selectedType === "forest"}

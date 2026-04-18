@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { HeatmapColumnOptions } from "$types";
+  import { normalizeValue } from "$lib/scale-utils";
 
   interface Props {
     value: number | undefined | null;
@@ -13,6 +14,7 @@
   const palette = $derived(options?.palette ?? ["#f7fbff", "#08306b"]);
   const decimals = $derived(options?.decimals ?? 2);
   const showValue = $derived(options?.showValue ?? true);
+  const scale = $derived(options?.scale ?? "linear");
 
   // Compute effective min/max (options override computed values)
   const effectiveMin = $derived(options?.minValue ?? minValue ?? 0);
@@ -22,7 +24,7 @@
   const normalized = $derived.by(() => {
     if (value === undefined || value === null || Number.isNaN(value)) return null;
     if (effectiveMax === effectiveMin) return 0.5;
-    return Math.max(0, Math.min(1, (value - effectiveMin) / (effectiveMax - effectiveMin)));
+    return normalizeValue(value, effectiveMin, effectiveMax, scale);
   });
 
   // Parse hex color to RGB

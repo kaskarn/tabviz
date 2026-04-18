@@ -7,16 +7,17 @@ title: "Shiny Integration"
 library(tabviz)
 ```
 
-Functions for using forest plots in Shiny applications.
+Functions for embedding tabviz plots in Shiny applications and updating them
+in place from server code.
 
 ## Output and Render
 
-### forestOutput {#forestOutput}
+### tabvizOutput {#tabvizOutput}
 
-Create a Shiny output element for a forest plot.
+Create a Shiny output element for a tabviz plot.
 
 ```r
-forestOutput(outputId, width = "100%", height = "400px")
+tabvizOutput(outputId, width = "100%", height = "400px")
 ```
 
 | Argument | Description |
@@ -25,160 +26,96 @@ forestOutput(outputId, width = "100%", height = "400px")
 | `width` | Widget width (CSS units) |
 | `height` | Widget height (CSS units) |
 
-### renderForest {#renderForest}
+### renderTabviz {#renderTabviz}
 
-Render a forest plot in Shiny.
+Render a tabviz plot in Shiny.
 
 ```r
-renderForest(expr, env = parent.frame(), quoted = FALSE)
+renderTabviz(expr, env = parent.frame(), quoted = FALSE)
 ```
 
 | Argument | Description |
 |----------|-------------|
-| `expr` | Expression that returns a `forest_plot()` |
+| `expr` | Expression that returns a widget from `tabviz()` |
 | `env` | Environment for evaluation |
-| `quoted` | Whether expr is already quoted |
+| `quoted` | Whether `expr` is already quoted |
 
-## Split Forest in Shiny
+## Proxy Updates
 
-### splitForestOutput {#splitForestOutput}
+### tabviz_proxy {#tabviz_proxy}
 
-Create a Shiny output element for a split forest plot.
+Create a proxy to update a running tabviz widget without re-rendering it.
+Pass the proxy to any fluent verb (`sort_rows()`, `filter_rows()`,
+`add_column()`, `set_theme()`, …) to dispatch an update.
 
 ```r
-splitForestOutput(outputId, width = "100%", height = "600px")
+tabviz_proxy(id, session = shiny::getDefaultReactiveDomain())
 ```
 
 | Argument | Description |
 |----------|-------------|
-| `outputId` | Output variable name |
-| `width` | Widget width (CSS units) |
-| `height` | Widget height (CSS units) |
+| `id` | The widget (output) ID |
+| `session` | Shiny session (default: current reactive domain) |
 
-### renderSplitForest {#renderSplitForest}
+Returns a `tabviz_proxy` object. Always create proxies inside a reactive
+context (`observe`, `observeEvent`, …), never at the top of `server`.
 
-Render a split forest plot in Shiny.
+### Verbs that accept a proxy
+
+All fluent verbs dispatch on input type: static `WebSpec` / `htmlwidget`
+objects are mutated in R; `tabviz_proxy` objects send a custom message to
+the browser. See the full list in [Styling](styling.qmd) and the
+[Fluent API guide](../guide/fluent-api.qmd).
+
+| Category | Verbs |
+|----------|-------|
+| Columns  | `add_column()`, `remove_column()`, `move_column()`, `resize_column()`, `update_column()` |
+| Rows     | `sort_rows()`, `filter_rows()`, `clear_filters()`, `select_rows()`, `move_row()` |
+| Data     | `update_data()` (proxy requires a `WebSpec`) |
+| Groups   | `toggle_group()` |
+| Cells    | `set_cell()`, `set_row_label()`, `clear_edits()` (proxy-only) |
+| Global   | `set_theme()`, `set_zoom()`, styling `set_*` verbs |
+
+## Split-Table Bindings
+
+### splitTabvizOutput {#splitTabvizOutput}
 
 ```r
-renderSplitForest(expr, env = parent.frame(), quoted = FALSE)
+splitTabvizOutput(outputId, width = "100%", height = "600px")
+```
+
+### renderSplitTabviz {#renderSplitTabviz}
+
+```r
+renderSplitTabviz(expr, env = parent.frame(), quoted = FALSE)
+```
+
+`expr` should return a widget created from a `split_table()` result.
+
+### split_tabviz_proxy {#split_tabviz_proxy}
+
+```r
+split_tabviz_proxy(id, session = shiny::getDefaultReactiveDomain())
+```
+
+Returns a `split_tabviz_proxy` object.
+
+### split_tabviz_select {#split_tabviz_select}
+
+Select a sub-plot in a split-table tabviz.
+
+```r
+split_tabviz_select(proxy, key)
 ```
 
 | Argument | Description |
 |----------|-------------|
-| `expr` | Expression that returns a `split_table()` result rendered with `forest_plot()` |
-| `env` | Environment for evaluation |
-| `quoted` | Whether expr is already quoted |
-
-### splitForestProxy {#splitForestProxy}
-
-Create a proxy object for an existing split forest plot.
-
-```r
-splitForestProxy(id, session = shiny::getDefaultReactiveDomain())
-```
-
-| Argument | Description |
-|----------|-------------|
-| `id` | The widget ID |
-| `session` | Shiny session (default: current session) |
-
-### split_table_select {#split_table_select}
-
-Select a specific sub-plot in a split forest.
-
-```r
-split_table_select(proxy, key)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `proxy` | A `split_table_proxy` object |
-| `key` | The key of the sub-plot to select (e.g., `"Americas"` or `"Female/Young"`) |
-
-## Proxy Functions
-
-Proxy functions allow updating a forest plot without full re-rendering.
-
-### forestProxy {#forestProxy}
-
-Create a proxy object for an existing forest plot.
-
-```r
-forestProxy(id, session = shiny::getDefaultReactiveDomain())
-```
-
-| Argument | Description |
-|----------|-------------|
-| `id` | The widget ID |
-| `session` | Shiny session (default: current session) |
-
-### forest_update_data {#forest_update_data}
-
-Update the data in an existing forest plot.
-
-```r
-forest_update_data(proxy, spec)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `proxy` | A `forest_proxy` object |
-| `spec` | A `WebSpec` object from `web_spec()` |
-
-### forest_toggle_subgroup {#forest_toggle_subgroup}
-
-Toggle a subgroup's collapse state.
-
-```r
-forest_toggle_subgroup(proxy, subgroup_id, collapsed = NULL)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `proxy` | A `forest_proxy` object |
-| `subgroup_id` | The subgroup ID to toggle |
-| `collapsed` | `TRUE` to collapse, `FALSE` to expand, `NULL` to toggle |
-
-### forest_filter {#forest_filter}
-
-Apply a filter to the forest plot.
-
-```r
-forest_filter(proxy, field, operator, value)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `proxy` | A `forest_proxy` object |
-| `field` | Field to filter on |
-| `operator` | Filter operator: `"eq"`, `"neq"`, `"gt"`, `"lt"`, `"contains"` |
-| `value` | Filter value |
-
-### forest_clear_filter {#forest_clear_filter}
-
-Clear all filters from the forest plot.
-
-```r
-forest_clear_filter(proxy)
-```
-
-### forest_sort {#forest_sort}
-
-Sort the forest plot by a column.
-
-```r
-forest_sort(proxy, column, direction)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `proxy` | A `forest_proxy` object |
-| `column` | Column to sort by |
-| `direction` | Sort direction: `"asc"`, `"desc"`, or `"none"` |
+| `proxy` | A `split_tabviz_proxy` object |
+| `key` | Key of the sub-plot (e.g., `"Americas"` or `"Female/Young"`) |
 
 ## Examples
 
-### Basic Shiny App
+### Basic Shiny app
 
 ```{r}
 #| eval: false
@@ -194,7 +131,7 @@ ui <- fluidPage(
       )
     ),
     mainPanel(
-      forestOutput("forest", height = "500px")
+      tabvizOutput("plot", height = "500px")
     )
   )
 )
@@ -202,23 +139,25 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   data <- data.frame(
     study = c("Study A", "Study B", "Study C"),
-    hr = c(0.72, 0.85, 0.91),
+    hr    = c(0.72, 0.85, 0.91),
     lower = c(0.55, 0.70, 0.75),
     upper = c(0.95, 1.03, 1.10)
   )
 
-  output$forest <- renderForest({
+  output$plot <- renderTabviz({
     theme <- switch(input$theme,
       "Default" = web_theme_default(),
-      "JAMA" = web_theme_jama(),
-      "Lancet" = web_theme_lancet(),
-      "Modern" = web_theme_modern()
+      "JAMA"    = web_theme_jama(),
+      "Lancet"  = web_theme_lancet(),
+      "Modern"  = web_theme_modern()
     )
 
-    forest_plot(data,
-      point = "hr", lower = "lower", upper = "upper",
+    tabviz(data,
       label = "study",
-      null_value = 1, scale = "log",
+      columns = list(
+        viz_forest(point = "hr", lower = "lower", upper = "upper",
+                   scale = "log", null_value = 1)
+      ),
       theme = theme
     )
   })
@@ -227,7 +166,7 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
-### Using Proxy for Updates
+### Proxy updates (no re-render)
 
 ```{r}
 #| eval: false
@@ -235,74 +174,61 @@ library(shiny)
 library(tabviz)
 
 ui <- fluidPage(
-  forestOutput("forest"),
+  tabvizOutput("plot"),
   actionButton("filter_btn", "Filter HR < 1"),
-  actionButton("clear_btn", "Clear Filter")
+  actionButton("clear_btn",  "Clear Filter"),
+  actionButton("sort_btn",   "Sort HR desc")
 )
 
 server <- function(input, output, session) {
-  data <- reactive({
-    data.frame(
-      study = c("Study A", "Study B", "Study C", "Study D"),
-      hr = c(0.72, 0.85, 1.15, 0.91),
-      lower = c(0.55, 0.70, 0.90, 0.75),
-      upper = c(0.95, 1.03, 1.45, 1.10)
-    )
-  })
+  data <- data.frame(
+    study = c("Study A", "Study B", "Study C", "Study D"),
+    hr    = c(0.72, 0.85, 1.15, 0.91),
+    lower = c(0.55, 0.70, 0.90, 0.75),
+    upper = c(0.95, 1.03, 1.45, 1.10)
+  )
 
-  output$forest <- renderForest({
-    forest_plot(data(),
-      point = "hr", lower = "lower", upper = "upper",
+  output$plot <- renderTabviz({
+    tabviz(data,
       label = "study",
-      null_value = 1, scale = "log"
+      columns = list(
+        viz_forest(point = "hr", lower = "lower", upper = "upper",
+                   scale = "log", null_value = 1)
+      )
     )
   })
 
-  observeEvent(input$filter_btn, {
-    forestProxy("forest") |>
-      forest_filter("hr", "lt", 1)
-  })
+  proxy <- tabviz_proxy("plot")
 
-  observeEvent(input$clear_btn, {
-    forestProxy("forest") |>
-      forest_clear_filter()
-  })
+  observeEvent(input$filter_btn, filter_rows(proxy, "hr", "lt", 1))
+  observeEvent(input$clear_btn,  clear_filters(proxy))
+  observeEvent(input$sort_btn,   sort_rows(proxy, "hr", "desc"))
 }
-
-shinyApp(ui, server)
 ```
 
-### Dynamic Data Updates
+### Replacing the dataset
+
+`update_data()` on a proxy requires a `WebSpec` (not a raw data frame) so
+the new columns/types can be serialized. Build one with `tabviz(..., .spec_only = TRUE)`.
 
 ```{r}
 #| eval: false
-library(shiny)
-library(tabviz)
-
-server <- function(input, output, session) {
-  # Reactive data source
-  filtered_data <- reactive({
-    base_data |>
-      filter(category == input$category)
-  })
-
-  # Update via proxy for smooth transitions
-  observe({
-    spec <- web_spec(
-      filtered_data(),
-      point = "hr", lower = "lower", upper = "upper",
-      label = "study",
-      scale = "log", null_value = 1
-    )
-
-    forestProxy("forest") |>
-      forest_update_data(spec)
-  })
-}
+observeEvent(input$switch_dataset, {
+  new_spec <- tabviz(
+    get_dataset(input$dataset_name),
+    label = "study",
+    columns = list(
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1)
+    ),
+    .spec_only = TRUE
+  )
+  update_data(tabviz_proxy("plot"), new_spec)
+})
 ```
 
 ## See Also
 
-- [tabviz()](tabviz.qmd) for creating plots
-- [tabviz()](tabviz.qmd) for the main entry point
-- [Shiny Guide](../guide/shiny.qmd) for detailed examples
+- [Shiny guide](../guide/shiny.qmd) — reactive patterns and a complete example.
+- [Fluent API guide](../guide/fluent-api.qmd) — full verb list and static/proxy dispatch.
+- [`tabviz()`](tabviz.qmd) — main entry point.

@@ -294,12 +294,12 @@ forest_plot(your_data, ...,
 )
 
 # For Shiny, use CSS units
-forestOutput("plot", width = "100%", height = "600px")
+tabvizOutput("plot", width = "100%", height = "600px")
 ```
 
 ### Shiny: Proxy Not Working
 
-**Symptom:** `forestProxy()` calls don't update the plot.
+**Symptom:** `tabviz_proxy()` calls don't update the plot.
 
 **Cause:** Proxy created outside reactive context.
 
@@ -307,12 +307,12 @@ forestOutput("plot", width = "100%", height = "600px")
 ```{r}
 #| eval: false
 # Wrong: proxy at top level
-# proxy <- forestProxy("forest")  # This will fail!
+# proxy <- tabviz_proxy("plot")  # This will fail!
 
 # Correct: proxy inside reactive context
 observeEvent(input$button, {
-  proxy <- forestProxy("forest")
-  forest_sort(proxy, "hr", "asc")
+  proxy <- tabviz_proxy("plot")
+  sort_rows(proxy, "hr", "asc")
 })
 ```
 

@@ -183,13 +183,44 @@ web_col <- function(
 #' @param field Field name
 #' @param header Column header
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
+#' @param max_chars Maximum characters to show before truncating with trailing
+#'   ellipsis. NULL (default) = no truncation.
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
-col_text <- function(field, header = NULL, width = NULL, ...) {
-  web_col(field, header, type = "text", width = width, ...)
+col_text <- function(field, header = NULL, width = NULL, max_chars = NULL, ...) {
+  checkmate::assert_integerish(max_chars, lower = 1, len = 1, null.ok = TRUE)
+  opts <- if (is.null(max_chars)) list() else list(text = list(maxChars = max_chars))
+  web_col(field, header, type = "text", width = width, options = opts, ...)
+}
+
+#' Column helper: Row-identifier (label) column
+#'
+#' Convenience wrapper over [col_text()] for defining the leftmost row-identifier
+#' column explicitly in a `columns` list. Behaves identically to `col_text()`;
+#' the leftmost visible column in a table is the "primary" column (sticky-left,
+#' row-drag surface, row tooltips), regardless of which helper created it.
+#'
+#' @param field Field name containing the row label / identifier
+#' @param header Column header (defaults to a prettified field name)
+#' @param width Column width in pixels (NULL for auto-sizing based on content)
+#' @param max_chars Maximum characters to show before truncating with trailing
+#'   ellipsis. NULL (default) = no truncation.
+#' @param ... Additional arguments passed to [web_col()]
+#'
+#' @return A ColumnSpec object
+#' @export
+col_label <- function(field, header = NULL, width = NULL, max_chars = NULL, ...) {
+  checkmate::assert_integerish(max_chars, lower = 1, len = 1, null.ok = TRUE)
+  if (is.null(header)) {
+    header <- gsub("_", " ", field)
+    header <- gsub("([a-z])([A-Z])", "\\1 \\2", header)
+    header <- tools::toTitleCase(header)
+  }
+  opts <- if (is.null(max_chars)) list() else list(text = list(maxChars = max_chars))
+  web_col(field, header, type = "text", width = width, options = opts, ...)
 }
 
 #' Column helper: Numeric column
@@ -416,6 +447,8 @@ col_pvalue <- function(
 #' @param max_value Maximum value for the bar (NULL = auto-compute from data)
 #' @param show_label Show numeric label next to bar (default TRUE)
 #' @param color Bar fill color (NULL = theme primary color)
+#' @param scale Scale type: "linear" (default), "log", or "sqrt". Controls how
+#'   values map to bar length.
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -428,12 +461,15 @@ col_bar <- function(
     max_value = NULL,
     show_label = TRUE,
     color = NULL,
+    scale = c("linear", "log", "sqrt"),
     ...) {
+  scale <- match.arg(scale)
   opts <- list(
     bar = list(
       maxValue = max_value,
       showLabel = show_label,
-      color = color
+      color = color,
+      scale = scale
     )
   )
   web_col(field, header, type = "bar", width = width, options = opts, ...)
@@ -701,10 +737,13 @@ col_badge <- function(
 #' @param field Field name containing numeric rating (1-5 or custom range)
 #' @param header Column header (default NULL, uses field name)
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
-#' @param max_stars Maximum number of stars (default 5)
+#' @param max_stars Maximum number of stars (default 5, max 20)
 #' @param color CSS color for filled stars (default "#f59e0b", amber)
 #' @param empty_color CSS color for empty stars (default "#d1d5db", gray)
 #' @param half_stars Allow half-star increments (default FALSE)
+#' @param domain Optional numeric length-2 vector `c(min, max)` to remap input
+#'   values from an arbitrary range into `[0, max_stars]`. For example,
+#'   `domain = c(0, 100)` with `max_stars = 5` maps a value of 75 to 3.75 stars.
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -730,13 +769,18 @@ col_stars <- function(
     color = "#f59e0b",
     empty_color = "#d1d5db",
     half_stars = FALSE,
+    domain = NULL,
     ...) {
+  checkmate::assert_integerish(max_stars, lower = 1, upper = 20, len = 1)
+  checkmate::assert_numeric(domain, len = 2, any.missing = FALSE,
+                            sorted = TRUE, null.ok = TRUE)
   opts <- list(
     stars = list(
       maxStars = max_stars,
       color = color,
       emptyColor = empty_color,
-      halfStars = half_stars
+      halfStars = half_stars,
+      domain = domain
     )
   )
   web_col(field, header, type = "stars", width = width, align = "center",
@@ -908,6 +952,8 @@ col_range <- function(
 #' @param max_value Maximum value for color scale (NULL = auto from data)
 #' @param decimals Number of decimal places (default 2)
 #' @param show_value Show the numeric value over the color (default TRUE)
+#' @param scale Scale type: "linear" (default), "log", or "sqrt". Controls how
+#'   values map to palette position.
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -928,7 +974,9 @@ col_range <- function(
 col_heatmap <- function(field, header = NULL, width = NULL,
                         palette = c("#f7fbff", "#08306b"),
                         min_value = NULL, max_value = NULL,
-                        decimals = 2, show_value = TRUE, ...) {
+                        decimals = 2, show_value = TRUE,
+                        scale = c("linear", "log", "sqrt"), ...) {
+  scale <- match.arg(scale)
   checkmate::assert_character(palette, min.len = 2)
   checkmate::assert_number(min_value, null.ok = TRUE)
   checkmate::assert_number(max_value, null.ok = TRUE)
@@ -937,7 +985,7 @@ col_heatmap <- function(field, header = NULL, width = NULL,
   opts <- list(
     heatmap = list(palette = palette, minValue = min_value,
                    maxValue = max_value, decimals = decimals,
-                   showValue = show_value)
+                   showValue = show_value, scale = scale)
   )
   web_col(field, header, type = "heatmap", width = width, options = opts, ...)
 }
@@ -952,6 +1000,8 @@ col_heatmap <- function(field, header = NULL, width = NULL,
 #' @param max_value Maximum value for the progress bar (default 100)
 #' @param color Bar fill color (NULL = theme primary color)
 #' @param show_label Show percentage label (default TRUE)
+#' @param scale Scale type: "linear" (default), "log", or "sqrt". Controls how
+#'   values map to bar fill.
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -968,12 +1018,15 @@ col_heatmap <- function(field, header = NULL, width = NULL,
 #' col_progress("pct", show_label = FALSE)
 col_progress <- function(field, header = NULL, width = NULL,
                          max_value = 100, color = NULL,
-                         show_label = TRUE, ...) {
+                         show_label = TRUE,
+                         scale = c("linear", "log", "sqrt"), ...) {
+  scale <- match.arg(scale)
   checkmate::assert_number(max_value, lower = 0)
   checkmate::assert_string(color, null.ok = TRUE)
   checkmate::assert_flag(show_label)
   opts <- list(
-    progress = list(maxValue = max_value, color = color, showLabel = show_label)
+    progress = list(maxValue = max_value, color = color,
+                    showLabel = show_label, scale = scale)
   )
   web_col(field, header, type = "progress", width = width, options = opts, ...)
 }

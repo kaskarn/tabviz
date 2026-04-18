@@ -64,6 +64,51 @@ tabviz(project_data, label = "task",
 
 ---
 
+## Statistical Models
+
+Forest plots aren't just for hazard ratios — any point estimate with a confidence interval fits. Here we visualize regression coefficients from a linear model of fuel economy on `mtcars`, with `null_value = 0` and a linear scale:
+
+```{r}
+model <- lm(mpg ~ cyl + disp + hp + wt + am, data = mtcars)
+coefs <- summary(model)$coefficients
+ci <- confint(model)
+
+reg_data <- data.frame(
+  term = rownames(coefs),
+  estimate = coefs[, "Estimate"],
+  std_error = coefs[, "Std. Error"],
+  conf.low = ci[, 1],
+  conf.high = ci[, 2],
+  p.value = coefs[, "Pr(>|t|)"],
+  row.names = NULL
+) |>
+  filter(term != "(Intercept)")
+
+tabviz(reg_data,
+  label = "term",
+  columns = list(
+    col_numeric("estimate", "Estimate", decimals = 3),
+    col_numeric("std_error", "SE", decimals = 3),
+    viz_forest(point = "estimate", lower = "conf.low", upper = "conf.high",
+               scale = "linear", null_value = 0,
+               axis_label = "Coefficient (95% CI)"),
+    col_interval("95% CI", point = "estimate", lower = "conf.low", upper = "conf.high"),
+    col_pvalue("p.value", "P", stars = TRUE)
+  ),
+  marker_color = ~ case_when(
+    conf.high < 0 ~ "#dc2626",
+    conf.low > 0 ~ "#16a34a",
+    TRUE ~ "#64748b"
+  ),
+  theme = web_theme_modern(),
+  title = "Linear Regression Coefficients",
+  subtitle = "lm(mpg ~ cyl + disp + hp + wt + am, data = mtcars)",
+  footnote = "Red = negative effect, green = positive effect, gray = not significant at alpha = 0.05."
+)
+```
+
+---
+
 ## Distribution Visualizations
 
 All three visualization types — `viz_bar`, `viz_boxplot`, and `viz_violin` — in one combined clinical site dashboard:
@@ -327,3 +372,250 @@ tabviz(theme_data,
 ## Available Modifiers
 The full set of `set_*` functions: `set_colors()`, `set_typography()`, `set_spacing()`, `set_shapes()`, `set_layout()`, `set_axis()`, `set_group_headers()`, `set_effect_colors()`, `set_marker_shapes()`. See [Fluent API](../guide/fluent-api.qmd) for full documentation.
 :::
+
+---
+
+## Publication Templates
+
+Three journal-style treatments of the same underlying forest-plot structure. The only thing that changes is the theme (`web_theme_jama`, `web_theme_lancet`, `web_theme_minimal`) and the row/column grouping — use these as drop-in templates for manuscript figures.
+
+### JAMA Style
+
+Dense, minimal, black and white. Interaction p-values for subgroups.
+
+```{r}
+jama_data <- tibble(
+  subgroup = c(
+    "Overall",
+    "",
+    "Age",
+    "  <65 years", "  >=65 years",
+    "",
+    "Sex",
+    "  Male", "  Female",
+    "",
+    "Baseline risk",
+    "  Low", "  Intermediate", "  High"
+  ),
+  hr = c(0.76, NA, NA, 0.72, 0.82, NA, NA, 0.74, 0.79, NA, NA, 0.85, 0.75, 0.68),
+  lower = c(0.68, NA, NA, 0.62, 0.70, NA, NA, 0.64, 0.67, NA, NA, 0.72, 0.63, 0.54),
+  upper = c(0.85, NA, NA, 0.84, 0.96, NA, NA, 0.86, 0.93, NA, NA, 1.00, 0.89, 0.86),
+  n = c(8500, NA, NA, 4200, 4300, NA, NA, 5200, 3300, NA, NA, 2800, 3400, 2300),
+  p_int = c(NA, NA, NA, NA, 0.18, NA, NA, NA, 0.42, NA, NA, NA, NA, 0.03),
+  rtype = c("summary", "spacer", "header", "data", "data", "spacer", "header", "data", "data", "spacer", "header", "data", "data", "data"),
+  rbold = c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE),
+  rindent = c(0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1)
+)
+
+tabviz(
+  jama_data,
+  label = "subgroup",
+  columns = list(
+    col_numeric("n", "No."),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio (95% CI)"),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)"),
+    col_pvalue("p_int", "P Interaction")
+  ),
+  row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
+  theme = web_theme_jama(),
+  title = "Figure 2. Subgroup Analyses",
+  footnote = "HR indicates hazard ratio. P values are for interaction."
+)
+```
+
+### Lancet Style
+
+Serif fonts, blue palette, with row grouping and column grouping.
+
+```{r}
+lancet_data <- tibble(
+  outcome = c(
+    "CV death or HF hospitalization",
+    "Cardiovascular death",
+    "HF hospitalization",
+    "All-cause mortality",
+    "Change in KCCQ score"
+  ),
+  category = c("Primary", "Components", "Components", "Secondary", "Secondary"),
+  hr = c(0.74, 0.82, 0.70, 0.88, 0.85),
+  lower = c(0.66, 0.72, 0.61, 0.76, 0.74),
+  upper = c(0.83, 0.94, 0.81, 1.02, 0.98),
+  events_tx = c(447, 156, 291, 222, NA),
+  events_ctrl = c(606, 199, 407, 253, NA),
+  n_tx = c(2373, 2373, 2373, 2373, 2200),
+  n_ctrl = c(2371, 2371, 2371, 2371, 2180)
+)
+
+tabviz(
+  lancet_data,
+  label = "outcome",
+  group = "category",
+  columns = list(
+    col_group("Treatment",
+      col_n("events_tx", "Events"),
+      col_n("n_tx", "N")
+    ),
+    col_group("Control",
+      col_n("events_ctrl", "Events"),
+      col_n("n_ctrl", "N")
+    ),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio (95% CI)"),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
+  ),
+  theme = web_theme_lancet(),
+  title = "Figure 3: Efficacy Outcomes",
+  subtitle = "Row groups by endpoint type + column groups by treatment arm",
+  caption = "HR<1 favours treatment.",
+  footnote = "Cox proportional hazards model stratified by region."
+)
+```
+
+### Minimal Print
+
+Maximum density, pure black and white, with row and column grouping.
+
+```{r}
+minimal_data <- tibble(
+  trial = c("ADVANCE", "CARDINAL", "ELEVATE", "FRONTIER", "GENESIS", "HORIZON"),
+  phase = c("Phase III", "Phase III", "Phase III", "Phase II", "Phase II", "Phase III"),
+  n = c(1680, 1520, 1890, 2100, 980, 1450),
+  events = c(168, 152, 189, 210, 98, 145),
+  hr = c(0.74, 0.78, 0.71, 0.82, 0.69, 0.76),
+  lower = c(0.62, 0.66, 0.60, 0.71, 0.55, 0.64),
+  upper = c(0.88, 0.92, 0.84, 0.95, 0.87, 0.90),
+  weight = c(17.2, 16.8, 19.5, 21.2, 10.1, 15.2)
+)
+
+tabviz(
+  minimal_data,
+  label = "trial",
+  group = "phase",
+  columns = list(
+    col_group("Sample",
+      col_n("n"),
+      col_numeric("events", "Events")
+    ),
+    col_group("Results",
+      col_bar("weight"),
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1,
+                 axis_label = "Hazard Ratio"),
+      col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
+    )
+  ),
+  theme = web_theme_minimal(),
+  title = "Forest Plot",
+  subtitle = "Row groups by phase + column groups for Sample / Results",
+  footnote = "Random-effects model. Weights from inverse variance."
+)
+```
+
+---
+
+## Hierarchical Split Navigation
+
+`split_by` with multiple variables turns the sidebar into an expandable tree (Outcome > Treatment here), letting you drill into nested subgroups without cluttering the main view.
+
+```{r}
+data(effect_sizes)
+
+tabviz(
+  effect_sizes,
+  label = "study",
+  split_by = c("outcome", "treatment"),
+  columns = list(
+    col_text("region", "Region"),
+    col_text("phase", "Phase"),
+    col_n("n"),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio"),
+    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
+  ),
+  theme = web_theme_modern(),
+  title = "Hierarchical Subgroup Analysis",
+  subtitle = "Outcome > Treatment navigation tree",
+  caption = "Expand tree nodes to drill into subgroups"
+)
+```
+
+---
+
+## The Full Monty
+
+Everything at once — nested row groups, three stacked effects, sparklines, weight bars, annotations, badges, and a custom dark theme. Useful as a smoke test and as a reference for how features compose.
+
+```{r}
+full_monty <- tibble(
+  study = c(
+    "ALPHA-01", "ALPHA-02",
+    "BETA-01", "BETA-02", "BETA-03",
+    "GAMMA-01", "GAMMA-02"
+  ),
+  program = c(rep("program_a", 2), rep("program_b", 3), rep("program_c", 2)),
+  phase = c("Phase_II", "Phase_II", "Phase_III", "Phase_III", "Phase_III", "Phase_II", "Phase_III"),
+  # Three effects
+  primary_hr = c(0.68, 0.72, 0.65, 0.71, 0.74, 0.78, 0.69),
+  primary_lo = c(0.52, 0.56, 0.50, 0.55, 0.58, 0.62, 0.53),
+  primary_hi = c(0.89, 0.93, 0.85, 0.92, 0.95, 0.98, 0.90),
+  secondary_hr = c(0.72, 0.76, 0.69, 0.75, 0.78, 0.82, 0.73),
+  secondary_lo = c(0.56, 0.60, 0.53, 0.59, 0.62, 0.66, 0.57),
+  secondary_hi = c(0.93, 0.96, 0.90, 0.95, 0.98, 1.02, 0.94),
+  safety_hr = c(0.85, 0.88, 0.82, 0.86, 0.89, 0.92, 0.84),
+  safety_lo = c(0.68, 0.72, 0.65, 0.69, 0.72, 0.75, 0.67),
+  safety_hi = c(1.06, 1.08, 1.04, 1.07, 1.10, 1.13, 1.05),
+  n = c(420, 380, 1250, 980, 1100, 560, 890),
+  weight = c(8, 7, 22, 18, 20, 10, 15),
+  pvalue = c(0.008, 0.015, 0.001, 0.004, 0.012, 0.042, 0.003),
+  trend = list(
+    c(0.85, 0.78, 0.72, 0.68), c(0.88, 0.82, 0.76, 0.72),
+    c(0.82, 0.75, 0.69, 0.65), c(0.86, 0.80, 0.75, 0.71),
+    c(0.88, 0.82, 0.78, 0.74), c(0.92, 0.88, 0.84, 0.78),
+    c(0.84, 0.78, 0.73, 0.69)
+  ),
+  badge = c("Lead", NA, "Pivotal", NA, NA, NA, "Fast Track")
+)
+
+# Custom theme
+monty_theme <- web_theme_dark() |>
+  set_colors(primary = "#f59e0b", interval_positive = "#22c55e", interval_negative = "#ef4444") |>
+  set_spacing(row_height = 38) |>
+  set_axis(gridlines = TRUE, gridline_style = "dotted")
+
+tabviz(
+  full_monty,
+  label = "study", group = c("program", "phase"),
+  columns = list(
+    col_n("n"),
+    col_bar("weight"),
+    viz_forest(
+      effects = list(
+        effect_forest("primary_hr", "primary_lo", "primary_hi", label = "Primary", color = "#22c55e"),
+        effect_forest("secondary_hr", "secondary_lo", "secondary_hi", label = "Secondary", color = "#3b82f6"),
+        effect_forest("safety_hr", "safety_lo", "safety_hi", label = "Safety", color = "#f59e0b")
+      ),
+      scale = "log", null_value = 1,
+      axis_range = c(0.4, 1.2),
+      axis_label = "Hazard Ratio",
+      annotations = list(
+        refline(0.75, label = "Target", style = "dashed", color = "#a855f7")
+      )
+    ),
+    col_group("Results",
+      col_interval(point = "primary_hr", lower = "primary_lo", upper = "primary_hi", header = "HR (95% CI)"),
+      col_pvalue("pvalue", "P")
+    ),
+    col_sparkline("trend", "Trend")
+  ),
+  row_badge = "badge",
+  theme = monty_theme,
+  title = "The Full Monty",
+  subtitle = "Nested groups + 3 effects + sparklines + weights + annotations + custom theme",
+  caption = "Every major feature combined in one visualization",
+  footnote = "Green=Primary, Blue=Secondary, Orange=Safety. Purple line=Target."
+)
+```

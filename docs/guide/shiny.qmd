@@ -7,24 +7,27 @@ title: "Shiny Integration"
 library(tabviz)
 ```
 
-tabviz works seamlessly with Shiny through the htmlwidgets framework. This guide covers basic integration, reactive patterns, and proxy functions for dynamic updates.
+tabviz works seamlessly with Shiny through the htmlwidgets framework. This
+guide covers basic integration, reactive patterns, and the proxy API for
+updating a running plot in place.
 
 ## Basic Usage
 
-### Output and Render
+### Output and render
 
-Use `forestOutput()` in the UI and `renderForest()` in the server:
+Use `tabvizOutput()` in the UI and `renderTabviz()` in the server:
+
 ```r
 library(shiny)
 library(tabviz)
 
 ui <- fluidPage(
   titlePanel("Forest Plot Explorer"),
-  forestOutput("forest", height = "500px")
+  tabvizOutput("plot", height = "500px")
 )
 
 server <- function(input, output, session) {
-  output$forest <- renderForest({
+  output$plot <- renderTabviz({
     tabviz(meta_data,
       label = "study",
       columns = list(
@@ -40,36 +43,28 @@ shinyApp(ui, server)
 
 ### Sizing
 
-`forestOutput()` accepts standard CSS sizing:
+`tabvizOutput()` accepts standard CSS sizing:
 
-| Argument | Default | Examples |
-|----------|---------|----------|
-| `width` | `"100%"` | `"800px"`, `"50vw"` |
+| Argument | Default   | Examples |
+|----------|-----------|----------|
+| `width`  | `"100%"`  | `"800px"`, `"50vw"` |
 | `height` | `"400px"` | `"600px"`, `"80vh"` |
-
-```r
-# Fixed size
-forestOutput("forest", width = "900px", height = "600px")
-
-# Responsive
-forestOutput("forest", width = "100%", height = "70vh")
-```
 
 ## Reactive Data Patterns
 
-### Basic Reactive Data
+### Basic reactive data
 
-Connect the plot to reactive data sources:
+Connect the plot to reactive data sources — the widget re-renders whenever
+the reactive changes:
 
 ```r
 server <- function(input, output, session) {
-  # Reactive data source
   filtered_data <- reactive({
     meta_data |>
-      filter(region == input$region)
+      dplyr::filter(region == input$region)
   })
 
-  output$forest <- renderForest({
+  output$plot <- renderTabviz({
     tabviz(filtered_data(),
       label = "study",
       columns = list(
@@ -81,148 +76,83 @@ server <- function(input, output, session) {
 }
 ```
 
-### Conditional Rendering
+### Debouncing rapid updates
 
-Show different plots based on user input:
-
-```r
-server <- function(input, output, session) {
-  output$forest <- renderForest({
-    # Select data based on input
-    data <- switch(input$analysis,
-      "primary" = primary_results,
-      "sensitivity" = sensitivity_results,
-      "subgroup" = subgroup_results
-    )
-
-    # Select theme based on input
-    theme <- switch(input$theme,
-      "default" = web_theme_default(),
-      "jama" = web_theme_jama(),
-      "lancet" = web_theme_lancet()
-    )
-
-    tabviz(data,
-      label = "study",
-      columns = list(
-        viz_forest(point = "hr", lower = "lower", upper = "upper",
-                   scale = "log", null_value = 1)
-      ),
-      theme = theme
-    )
-  })
-}
-```
-
-### Debouncing Rapid Updates
-
-For inputs that change frequently (like sliders), debounce to avoid excessive re-renders:
+For inputs that change frequently (sliders), debounce to avoid excessive
+re-renders:
 
 ```r
-server <- function(input, output, session) {
-  # Debounce the filter value
-  filter_value <- reactive(input$min_n) |>
-    debounce(300)  # Wait 300ms after last change
-
-  filtered_data <- reactive({
-    meta_data |>
-      filter(n >= filter_value())
-  })
-
-  output$forest <- renderForest({
-    tabviz(filtered_data(), ...)
-  })
-}
+filter_value <- reactive(input$min_n) |>
+  shiny::debounce(300)
 ```
 
-## Proxy Functions
+## The Proxy API
 
-Proxy functions update the plot **without full re-render**, providing smoother interactions for sorting, filtering, and data updates.
+Proxy functions update the plot **without full re-render**, keeping scroll
+position, selection state, and layout stable.
 
-### Creating a Proxy
+### Creating a proxy
 
 Create a proxy inside a reactive context:
 
 ```r
 observeEvent(input$some_button, {
-  proxy <- forestProxy("forest")
-  # Use proxy for updates...
+  proxy <- tabviz_proxy("plot")
+  sort_rows(proxy, "hr", "desc")
 })
 ```
 
-**Important:** Always create the proxy inside an `observe`, `observeEvent`, or other reactive context.
+Or create it once at the top of `server` and reuse — both patterns work
+because `tabviz_proxy()` is cheap and stateless.
 
-### Available Proxy Functions
+**Important:** never create a proxy at the top level of your app — only
+inside `server`.
 
-| Function | Purpose |
-|----------|---------|
-| `forest_update_data(proxy, spec)` | Replace data with new WebSpec |
-| `forest_sort(proxy, column, direction)` | Sort by column |
-| `forest_filter(proxy, field, operator, value)` | Apply filter |
-| `forest_clear_filter(proxy)` | Remove all filters |
-| `forest_toggle_subgroup(proxy, subgroup_id, collapsed)` | Expand/collapse group |
+### Unified verbs
+
+The same verbs work on `WebSpec`, `htmlwidget`, and `tabviz_proxy` inputs.
+On a static spec they mutate and return the same shape; on a proxy they
+send a custom message to the browser. See [Fluent API](fluent-api.qmd) for
+the full list.
+
+| Category | Verbs |
+|----------|-------|
+| Columns  | `add_column()`, `remove_column()`, `move_column()`, `resize_column()`, `update_column()` |
+| Rows     | `sort_rows()`, `filter_rows()`, `clear_filters()`, `select_rows()`, `move_row()` |
+| Data     | `update_data()` (proxy requires a `WebSpec`) |
+| Groups   | `toggle_group()` |
+| Cells    | `set_cell()`, `set_row_label()`, `clear_edits()` (proxy-only) |
+| Global   | `set_theme()`, `set_zoom()` |
 
 ### Sorting
 
 ```r
-# Sort by hazard ratio ascending
-observeEvent(input$sort_asc, {
-  forestProxy("forest") |>
-    forest_sort("hr", "asc")
-})
-
-# Sort descending
-observeEvent(input$sort_desc, {
-  forestProxy("forest") |>
-    forest_sort("hr", "desc")
-})
-
-# Clear sort (restore original order)
-observeEvent(input$sort_clear, {
-  forestProxy("forest") |>
-    forest_sort("hr", "none")
-})
+observeEvent(input$sort_asc,  sort_rows(tabviz_proxy("plot"), "hr", "asc"))
+observeEvent(input$sort_desc, sort_rows(tabviz_proxy("plot"), "hr", "desc"))
+observeEvent(input$sort_none, sort_rows(tabviz_proxy("plot"), "hr", "none"))
 ```
 
 ### Filtering
 
-Filter operators:
-
-| Operator | Meaning | Example |
-|----------|---------|---------|
-| `"eq"` | Equals | `value = "Phase 3"` |
-| `"neq"` | Not equals | `value = "Excluded"` |
-| `"gt"` | Greater than | `value = 100` |
-| `"lt"` | Less than | `value = 0.05` |
-| `"contains"` | String contains | `value = "SGLT2"` |
+Filter operators: `"eq"`, `"neq"`, `"gt"`, `"lt"`, `"contains"`.
 
 ```r
-# Filter to large studies
 observeEvent(input$filter_n, {
-  forestProxy("forest") |>
-    forest_filter("n", "gt", input$min_sample_size)
+  filter_rows(tabviz_proxy("plot"), "n", "gt", input$min_sample_size)
 })
 
-# Filter by region
-observeEvent(input$filter_region, {
-  forestProxy("forest") |>
-    forest_filter("region", "eq", input$selected_region)
-})
-
-# Clear all filters
 observeEvent(input$clear_filters, {
-  forestProxy("forest") |>
-    forest_clear_filter()
+  clear_filters(tabviz_proxy("plot"))
 })
 ```
 
-### Updating Data
+### Replacing the dataset
 
-Replace the entire dataset with `forest_update_data()`:
+`update_data()` on a proxy takes a `WebSpec`, not a raw data frame.
+Build one with `tabviz(..., .spec_only = TRUE)`:
 
 ```r
 observeEvent(input$switch_dataset, {
-  # Create new spec
   new_spec <- tabviz(
     get_dataset(input$dataset_name),
     label = "study",
@@ -232,190 +162,138 @@ observeEvent(input$switch_dataset, {
     ),
     .spec_only = TRUE
   )
-
-  forestProxy("forest") |>
-    forest_update_data(new_spec)
+  update_data(tabviz_proxy("plot"), new_spec)
 })
 ```
 
-### Toggling Subgroups
-
-Expand or collapse hierarchical groups:
+### Toggling groups
 
 ```r
-# Collapse a specific group
 observeEvent(input$collapse_north, {
-  forestProxy("forest") |>
-    forest_toggle_subgroup("North America", collapsed = TRUE)
+  toggle_group(tabviz_proxy("plot"), "North America", collapsed = TRUE)
 })
 
-# Expand a group
-observeEvent(input$expand_all, {
-  forestProxy("forest") |>
-    forest_toggle_subgroup("North America", collapsed = FALSE) |>
-    forest_toggle_subgroup("Europe", collapsed = FALSE)
-})
-
-# Toggle (flip current state)
 observeEvent(input$toggle_group, {
-  forestProxy("forest") |>
-    forest_toggle_subgroup(input$group_id, collapsed = NULL)
+  toggle_group(tabviz_proxy("plot"), input$group_id)  # flip current state
 })
 ```
 
-## Chaining Proxy Calls
+### Chaining
 
-Proxy functions return the proxy object, enabling method chaining:
+Every proxy verb returns the proxy invisibly, so calls chain:
 
 ```r
 observeEvent(input$reset_view, {
-  forestProxy("forest") |>
-    forest_clear_filter() |>
-    forest_sort("study", "none") |>
-    forest_toggle_subgroup("all", collapsed = FALSE)
+  tabviz_proxy("plot") |>
+    clear_filters() |>
+    sort_rows("study", "none") |>
+    toggle_group("all", collapsed = FALSE)
 })
 ```
 
 ## Complete Example App
-
-Here's a full example combining reactive data, proxy functions, and user controls:
 
 ```r
 library(shiny)
 library(tabviz)
 library(dplyr)
 
-# Sample data
 meta_data <- data.frame(
   study = c("ADVANCE", "SPRINT", "ACCORD", "ONTARGET", "HOPE-3",
             "EMPA-REG", "CANVAS", "DECLARE", "DAPA-HF", "EMPEROR"),
-  region = c("Global", "North America", "North America", "Global", "Global",
-             "Global", "Global", "Global", "Global", "Global"),
   drug_class = c("ACEi", "Intensive BP", "Intensive BP", "ARB", "Statin",
                  "SGLT2i", "SGLT2i", "SGLT2i", "SGLT2i", "SGLT2i"),
-  hr = c(0.91, 0.75, 0.88, 0.94, 0.90, 0.62, 0.86, 0.93, 0.74, 0.75),
+  hr    = c(0.91, 0.75, 0.88, 0.94, 0.90, 0.62, 0.86, 0.93, 0.74, 0.75),
   lower = c(0.83, 0.64, 0.76, 0.86, 0.82, 0.49, 0.75, 0.84, 0.65, 0.65),
   upper = c(1.01, 0.87, 1.01, 1.02, 0.98, 0.77, 0.97, 1.03, 0.85, 0.86),
-  n = c(11140, 9361, 10251, 25620, 12705, 7020, 10142, 17160, 4744, 3730)
+  n     = c(11140, 9361, 10251, 25620, 12705, 7020, 10142, 17160, 4744, 3730)
 )
 
 ui <- fluidPage(
   titlePanel("Interactive Forest Plot"),
-
   sidebarLayout(
     sidebarPanel(
       width = 3,
       h4("Filters"),
       selectInput("drug_class", "Drug Class",
-        choices = c("All", unique(meta_data$drug_class)),
-        selected = "All"
-      ),
+        choices = c("All", unique(meta_data$drug_class)), selected = "All"),
       sliderInput("min_n", "Minimum Sample Size",
-        min = 0, max = 20000, value = 0, step = 1000
-      ),
+        min = 0, max = 20000, value = 0, step = 1000),
       hr(),
       h4("Display"),
       selectInput("theme", "Theme",
-        choices = c("Default" = "default", "JAMA" = "jama", "Lancet" = "lancet")
-      ),
+        choices = c("Default" = "default", "JAMA" = "jama", "Lancet" = "lancet")),
       actionButton("sort_hr", "Sort by HR"),
-      actionButton("reset", "Reset View")
+      actionButton("reset",   "Reset View")
     ),
-
-    mainPanel(
-      width = 9,
-      forestOutput("forest", height = "600px")
-    )
+    mainPanel(width = 9, tabvizOutput("plot", height = "600px"))
   )
 )
 
 server <- function(input, output, session) {
-
-  # Reactive filtered data
   plot_data <- reactive({
     d <- meta_data
-
-    if (input$drug_class != "All") {
-      d <- d |> filter(drug_class == input$drug_class)
-    }
-
-    d |> filter(n >= input$min_n)
+    if (input$drug_class != "All") d <- dplyr::filter(d, drug_class == input$drug_class)
+    dplyr::filter(d, n >= input$min_n)
   })
 
-  # Reactive theme
-  plot_theme <- reactive({
-    switch(input$theme,
-      "jama" = web_theme_jama(),
-      "lancet" = web_theme_lancet(),
-      web_theme_default()
-    )
-  })
-
-  # Render the plot
-  output$forest <- renderForest({
+  output$plot <- renderTabviz({
     tabviz(plot_data(),
       label = "study",
       group = "drug_class",
       columns = list(
         col_numeric("n", "N"),
-        col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
         viz_forest(point = "hr", lower = "lower", upper = "upper",
                    scale = "log", null_value = 1, axis_label = "Hazard Ratio")
-      ),
-      theme = plot_theme()
+      )
     )
   })
 
-  # Sort button - uses proxy for smooth update
+  proxy <- tabviz_proxy("plot")
+
+  observe({
+    set_theme(proxy, switch(input$theme,
+      "jama" = "jama", "lancet" = "lancet", "default"))
+  })
+
   sort_state <- reactiveVal("none")
-
   observeEvent(input$sort_hr, {
-    current <- sort_state()
-    new_dir <- switch(current,
-      "none" = "asc",
-      "asc" = "desc",
-      "desc" = "none"
-    )
+    new_dir <- switch(sort_state(), "none" = "asc", "asc" = "desc", "desc" = "none")
     sort_state(new_dir)
-
-    forestProxy("forest") |>
-      forest_sort("hr", new_dir)
+    sort_rows(proxy, "hr", new_dir)
   })
 
-  # Reset button
   observeEvent(input$reset, {
     updateSelectInput(session, "drug_class", selected = "All")
     updateSliderInput(session, "min_n", value = 0)
     sort_state("none")
-
-    forestProxy("forest") |>
-      forest_clear_filter() |>
-      forest_sort("hr", "none")
+    clear_filters(proxy)
+    sort_rows(proxy, "hr", "none")
   })
 }
 
 shinyApp(ui, server)
 ```
 
-## When to Use Proxy vs Re-render
+## Proxy vs Re-render
 
 | Use Case | Approach | Reason |
 |----------|----------|--------|
-| Filter/sort existing data | **Proxy** | Smoother, no flicker |
-| Change dataset completely | **Re-render** | New data structure |
-| Change theme | **Re-render** | Theme affects all rendering |
-| Toggle subgroups | **Proxy** | UI state change only |
-| Add/remove columns | **Re-render** | Structural change |
+| Sort / filter existing rows | **Proxy** | Smooth, no flicker |
+| Change theme / zoom | **Proxy** | `set_theme()` / `set_zoom()` route through the store |
+| Add, remove, resize columns | **Proxy** | Column verbs are wired through the store |
+| Completely different dataset (new columns/types) | **Re-render** or `update_data()` with a fresh `WebSpec` |
+| Toggle groups | **Proxy** | UI-state only |
 
 ## Best Practices
 
-1. **Create proxies in reactive contexts** - Never create a proxy at the top level of your server function
-2. **Use debouncing for sliders** - Prevent excessive re-renders during drag
-3. **Prefer proxy for interactions** - Sorting, filtering, and toggling are smoother via proxy
-4. **Use reactive for data changes** - When the underlying data changes, let Shiny re-render
-5. **Combine proxy calls** - Chain multiple operations for atomic updates:
+1. Create proxies inside reactive contexts, not at app top level.
+2. Debounce slider-driven inputs (`shiny::debounce()`).
+3. Prefer proxy verbs for interactive updates; they preserve scroll and selection.
+4. Reach for full re-render only when the column structure or data schema changes.
+5. Chain proxy calls for atomic UI updates:
    ```r
-   forestProxy("forest") |>
-     forest_clear_filter() |>
-     forest_sort("hr", "asc")
+   tabviz_proxy("plot") |>
+     clear_filters() |>
+     sort_rows("hr", "asc")
    ```

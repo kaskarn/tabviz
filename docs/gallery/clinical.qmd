@@ -181,3 +181,108 @@ tabviz(annotated_data,
   subtitle = "Direction-coded markers: green = significant benefit, gray = non-significant"
 )
 ```
+
+---
+
+## Large-Scale Meta-Analysis
+
+A stress test: 150 synthetic studies split into four regional panels via `split_by`. With `shared_axis = TRUE`, all panels share a single x-axis range, and the sidebar becomes a navigable tree — no endless scroll.
+
+```{r}
+#| fig-height: 9
+set.seed(42)
+n_studies <- 150
+regions <- c("North America", "Europe", "Asia-Pacific", "Latin America")
+region_pool <- sample(regions, n_studies,
+                      replace = TRUE, prob = c(0.32, 0.30, 0.25, 0.13))
+
+large_meta <- data.frame(
+  study = sprintf("Study-%03d", seq_len(n_studies)),
+  region = region_pool,
+  n = round(pmax(60, rlnorm(n_studies, meanlog = 6.2, sdlog = 0.7))),
+  hr = round(exp(rnorm(n_studies, mean = -0.18, sd = 0.22)), 3)
+) |>
+  mutate(
+    se = 0.08 + 0.18 / sqrt(n / 200),
+    lower = round(exp(log(hr) - 1.96 * se), 3),
+    upper = round(exp(log(hr) + 1.96 * se), 3),
+    weight = round(1 / se^2, 1),
+    pvalue = round(2 * pnorm(-abs(log(hr) / se)), 4)
+  ) |>
+  select(-se)
+
+tabviz(large_meta,
+  label = "study",
+  split_by = "region",
+  shared_axis = TRUE,
+  columns = list(
+    col_n("n"),
+    col_bar("weight", "Weight"),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               axis_range = c(0.3, 2.5),
+               axis_label = "Hazard Ratio (95% CI)",
+               annotations = list(
+                 refline(1, label = "No effect", style = "solid"),
+                 refline(0.83, label = "Pooled", style = "dashed", color = "#2563eb")
+               )),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_pvalue("pvalue", "P", stars = TRUE)
+  ),
+  marker_color = ~ case_when(
+    upper < 1 ~ "#16a34a",
+    lower > 1 ~ "#dc2626",
+    TRUE ~ "#64748b"
+  ),
+  theme = web_theme_jama(),
+  title = "Large-Scale Regional Meta-Analysis",
+  subtitle = "150 synthetic studies across 4 regions, shared axis for cross-panel comparison",
+  footnote = "Use the sidebar tree to navigate regions. Pooled estimate shown as blue dashed reference line."
+)
+```
+
+---
+
+## Nested Hierarchical Groups
+
+Three levels of nesting (Region > Country > Site) give multi-center trial programs a compact, collapsible structure. Click any group header to collapse an entire branch and all its children.
+
+```{r}
+nested_data <- tibble(
+  site = c(
+    "Boston General", "Mass Eye & Ear", "Johns Hopkins", "Cleveland Clinic",
+    "UCL Hospital", "Imperial College", "Charite Berlin", "LMU Munich",
+    "Tokyo University", "Osaka Medical", "Peking Union", "Shanghai Ruijin"
+  ),
+  region = c(
+    rep("americas", 4),
+    rep("europe", 4),
+    rep("asia_pacific", 4)
+  ),
+  country = c(
+    "usa", "usa", "usa", "usa",
+    "uk", "uk", "germany", "germany",
+    "japan", "japan", "china", "china"
+  ),
+  hr = c(0.72, 0.68, 0.75, 0.71, 0.78, 0.82, 0.69, 0.74, 0.65, 0.70, 0.67, 0.72),
+  lower = c(0.58, 0.52, 0.61, 0.56, 0.64, 0.68, 0.54, 0.59, 0.50, 0.55, 0.52, 0.57),
+  upper = c(0.89, 0.89, 0.92, 0.90, 0.95, 0.99, 0.88, 0.93, 0.85, 0.89, 0.86, 0.91),
+  n = c(245, 189, 312, 278, 156, 134, 298, 267, 445, 389, 512, 478)
+)
+
+tabviz(
+  nested_data,
+  label = "site",
+  group = c("region", "country"),  # Hierarchical: region > country
+  columns = list(
+    col_n("n"),
+    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1, axis_label = "Hazard Ratio")
+  ),
+  theme = web_theme_modern(),
+  title = "Nested Hierarchical Groups",
+  subtitle = "Region > Country > Site (3 levels)",
+  caption = "Click any group header to collapse that branch and all children"
+)
+```

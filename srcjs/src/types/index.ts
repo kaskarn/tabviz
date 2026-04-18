@@ -112,8 +112,6 @@ export interface WebData {
   groups: Group[];
   summaries: GroupSummary[];
   overall?: OverallSummary | null;
-  labelCol?: string | null;
-  labelHeader?: string | null;
   groupCol?: string | null;
   weightCol?: string | null;
 }
@@ -160,6 +158,7 @@ export interface BarColumnOptions {
   maxValue?: number | null;
   showLabel?: boolean;
   color?: string | null;
+  scale?: "linear" | "log" | "sqrt";
 }
 
 export interface PvalueColumnOptions {
@@ -196,6 +195,7 @@ export interface StarsColumnOptions {
   color?: string;  // Filled star color
   emptyColor?: string;  // Empty star color
   halfStars?: boolean;
+  domain?: [number, number] | null;  // Remap raw values from [lo, hi] → [0, maxStars]
 }
 
 export interface ImgColumnOptions {
@@ -331,12 +331,18 @@ export interface HeatmapColumnOptions {
   maxValue?: number | null;
   decimals?: number;
   showValue?: boolean;
+  scale?: "linear" | "log" | "sqrt";
 }
 
 export interface ProgressColumnOptions {
   maxValue?: number;
   color?: string | null;
   showLabel?: boolean;
+  scale?: "linear" | "log" | "sqrt";
+}
+
+export interface TextColumnOptions {
+  maxChars?: number | null;
 }
 
 export interface ColumnOptions {
@@ -356,6 +362,7 @@ export interface ColumnOptions {
   forest?: ForestColumnOptions;
   heatmap?: HeatmapColumnOptions;
   progress?: ProgressColumnOptions;
+  text?: TextColumnOptions;
   date?: { format?: string };
   // New viz column types
   vizBar?: VizBarColumnOptions;
@@ -751,7 +758,7 @@ export interface DragState {
 // Transient UI state for inline editing.
 export interface EditTarget {
   rowId: string;
-  // "__label__" = row label; "__forest__:<colId>" = est/lo/hi popover; else column field.
+  // "__forest__:<colId>" = est/lo/hi popover; else column field (including the primary column).
   field: string;
   x?: number;                     // popover anchor (forest only)
   y?: number;

@@ -21,7 +21,7 @@ import type {
   BoxplotStats,
   KDEResult,
 } from "$types";
-import { niceDomain, DOMAIN_PADDING, getEffectValue } from "./scale-utils";
+import { niceDomain, DOMAIN_PADDING, getEffectValue, normalizeValue } from "./scale-utils";
 import { computeAxis, generateTicks, VIZ_MARGIN, type AxisComputation } from "./axis-utils";
 import { computeArrowDimensions, renderArrowPath } from "./arrow-utils";
 import {
@@ -46,6 +46,7 @@ import {
   formatInterval,
   formatPvalue,
   getColumnDisplayText,
+  truncateString,
 } from "./formatters";
 import { estimateTextWidth, measureTextWidthCanvas } from "./width-utils";
 
@@ -132,7 +133,7 @@ export interface ExportOptions {
   precomputedLayout?: PrecomputedLayout;
 
   // LEGACY: Individual fields for backwards compatibility / R-side export
-  // Pre-computed column widths from web view (keyed by column ID, including "__label__")
+  // Pre-computed column widths from web view (keyed by column ID)
   columnWidths?: Record<string, number>;
   // Pre-computed forest/plot width from web view
   forestWidth?: number;
@@ -319,9 +320,9 @@ function countGroupDescendantRows(
 }
 
 /**
- * Calculate label column width based on actual label content.
+ * Calculate primary (leftmost) column width based on actual label content.
  */
-function calculateSvgLabelWidth(spec: WebSpec): number {
+function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | undefined): number {
   const fontSize = parseFontSize(spec.theme.typography.fontSizeBase);
   // Use theme-based padding (not hardcoded magic numbers)
   const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
@@ -341,9 +342,9 @@ function calculateSvgLabelWidth(spec: WebSpec): number {
     return groupDepth + 1;
   };
 
-  // Measure label header
-  if (spec.data.labelHeader) {
-    maxWidth = Math.max(maxWidth, estimateTextWidth(spec.data.labelHeader, fontSize));
+  // Measure primary column header
+  if (primaryHeader) {
+    maxWidth = Math.max(maxWidth, estimateTextWidth(primaryHeader, fontSize));
   }
 
   // Measure all labels (including group depth, row indent, and badges)
@@ -507,8 +508,13 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Support both legacy (left/right position) and new unified (no position) column models
   const leftColumns = flattenColumns(columns, "left");
   const rightColumns = flattenColumns(columns, "right");
+
+  // The primary column is the first leaf and takes the "label" slot in the SVG
+  // layout. Exclude it from the unifiedColumns list so it isn't rendered twice.
+  const primaryCol = getPrimaryColumn(columns);
+  const primaryHeader = primaryCol?.header ?? "Study";
   const unifiedColumns = flattenAllColumns(columns).filter(c =>
-    (c as { position?: string }).position === undefined
+    (c as { position?: string }).position === undefined && c.id !== primaryCol?.id
   );
 
   // allColumns includes both legacy positioned columns and unified columns
@@ -521,16 +527,18 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   if (options.columnWidths) {
     // Use pre-computed widths from web view
     autoWidths = new Map<string, number>();
+    const primaryId = primaryCol?.id;
     for (const [id, width] of Object.entries(options.columnWidths)) {
-      if (id !== "__label__") {
+      if (id !== primaryId) {
         autoWidths.set(id, width);
       }
     }
-    labelWidth = options.columnWidths["__label__"] ?? calculateSvgLabelWidth(spec);
+    labelWidth = (primaryId ? options.columnWidths[primaryId] : undefined)
+      ?? calculateSvgLabelWidth(spec, primaryHeader);
   } else {
     // Calculate widths from scratch (R-side export path)
     autoWidths = calculateSvgAutoWidths(spec, allColumns);
-    labelWidth = calculateSvgLabelWidth(spec);
+    labelWidth = calculateSvgLabelWidth(spec, primaryHeader);
   }
 
   // Calculate table widths using effective widths
@@ -798,6 +806,14 @@ function flattenColumns(columns: ColumnDef[], position?: "left" | "right"): Colu
 /** Get column definitions (preserving groups) filtered by position */
 function getColumnDefs(columns: ColumnDef[], position: "left" | "right"): ColumnDef[] {
   return columns.filter((c) => (c as any).position === position);
+}
+
+/**
+ * The primary column is the first leaf in the column list. It acts as the
+ * row identifier and occupies the leftmost slot in the SVG layout.
+ */
+function getPrimaryColumn(columns: ColumnDef[]): ColumnSpec | null {
+  return flattenAllColumns(columns)[0] ?? null;
 }
 
 /** Check if any column definitions contain groups */
@@ -1283,8 +1299,14 @@ function getCellValue(row: Row, col: ColumnSpec): string {
   if (col.type === "stars") {
     const val = row.metadata[col.field];
     if (typeof val !== "number") return "";
-    const maxStars = col.options?.stars?.maxStars ?? 5;
-    const rating = Math.max(0, Math.min(maxStars, val));
+    const maxStars = Math.max(1, Math.min(20, col.options?.stars?.maxStars ?? 5));
+    const domain = col.options?.stars?.domain;
+    let raw = val;
+    if (domain && Number.isFinite(domain[0]) && Number.isFinite(domain[1]) && domain[1] > domain[0]) {
+      const clamped = Math.max(domain[0], Math.min(domain[1], raw));
+      raw = ((clamped - domain[0]) / (domain[1] - domain[0])) * maxStars;
+    }
+    const rating = Math.max(0, Math.min(maxStars, raw));
     const filled = Math.floor(rating);
     const empty = maxStars - filled;
     return "★".repeat(filled) + "☆".repeat(empty);
@@ -1324,7 +1346,11 @@ function getCellValue(row: Row, col: ColumnSpec): string {
     return `${formatVal(minVal)}${sep}${formatVal(maxVal)}`;
   }
   const val = row.metadata[col.field];
-  return val !== undefined && val !== null ? String(val) : (col.options?.naText ?? "");
+  const str = val !== undefined && val !== null ? String(val) : (col.options?.naText ?? "");
+  if (col.type === "text") {
+    return truncateString(str, col.options?.text?.maxChars);
+  }
+  return str;
 }
 
 function renderSparklinePath(data: number[], x: number, y: number, width: number, height: number): string {
@@ -2485,11 +2511,12 @@ function renderUnifiedTableRow(
       const barValue = row.metadata[col.field] as number;
       const computedMax = barMaxValues.get(col.field);
       const maxValue = col.options?.bar?.maxValue ?? computedMax ?? 100;
+      const barScale = col.options?.bar?.scale ?? "linear";
       const barColor = col.options?.bar?.color ?? theme.colors.primary;
       const barHeight = theme.shapes.pointSize * 2;
       const textWidth = 50;
       const barAreaWidth = width - SPACING.TEXT_PADDING * 2 - textWidth;
-      const barWidth = Math.min((barValue / maxValue) * barAreaWidth, barAreaWidth);
+      const barWidth = normalizeValue(barValue, 0, maxValue, barScale) * barAreaWidth;
 
       // Respect row styling for bar value text
       const rowStyle = row.style;
@@ -2564,10 +2591,16 @@ function renderUnifiedTableRow(
       // Render star rating
       const val = row.metadata[col.field];
       if (typeof val === "number") {
-        const maxStars = col.options?.stars?.maxStars ?? 5;
+        const maxStars = Math.max(1, Math.min(20, col.options?.stars?.maxStars ?? 5));
         const starColor = col.options?.stars?.color ?? "#f59e0b";
         const emptyColor = col.options?.stars?.emptyColor ?? "#d1d5db";
-        const rating = Math.max(0, Math.min(maxStars, val));
+        const domain = col.options?.stars?.domain;
+        let raw = val;
+        if (domain && Number.isFinite(domain[0]) && Number.isFinite(domain[1]) && domain[1] > domain[0]) {
+          const clamped = Math.max(domain[0], Math.min(domain[1], raw));
+          raw = ((clamped - domain[0]) / (domain[1] - domain[0])) * maxStars;
+        }
+        const rating = Math.max(0, Math.min(maxStars, raw));
         const filled = Math.floor(rating);
         const hasHalf = col.options?.stars?.halfStars && (rating - filled) >= 0.5;
 
@@ -2614,6 +2647,7 @@ function renderUnifiedTableRow(
         const palette = hmOpts?.palette ?? ["#f7fbff", "#08306b"];
         const hmDecimals = hmOpts?.decimals ?? 2;
         const showValue = hmOpts?.showValue ?? true;
+        const hmScale = hmOpts?.scale ?? "linear";
 
         // Compute min/max from all rows if not specified
         let hmMin = hmOpts?.minValue;
@@ -2627,8 +2661,9 @@ function renderUnifiedTableRow(
         }
 
         // Normalize to [0, 1]
-        const range = (hmMax as number) - (hmMin as number);
-        const normalized = range === 0 ? 0.5 : Math.max(0, Math.min(1, (hmValue - (hmMin as number)) / range));
+        const normalized = (hmMax as number) === (hmMin as number)
+          ? 0.5
+          : normalizeValue(hmValue, hmMin as number, hmMax as number, hmScale);
 
         // Interpolate color
         const parseHex = (hex: string) => {
@@ -2668,13 +2703,16 @@ function renderUnifiedTableRow(
         const progMax = progOpts?.maxValue ?? 100;
         const progColor = progOpts?.color ?? theme.colors.primary;
         const progShowLabel = progOpts?.showLabel ?? true;
+        const progScale = progOpts?.scale ?? "linear";
+        // Label shows raw percent-of-max (scale-independent), bar width uses the transform
         const pct = Math.min(100, Math.max(0, (progValue / progMax) * 100));
+        const ratio = normalizeValue(progValue, 0, progMax, progScale);
 
         const barHeight = 10;
         const barY = y + (rowHeight - barHeight) / 2;
         const labelWidth = progShowLabel ? 40 : 0;
         const barAreaWidth = width - SPACING.TEXT_PADDING * 2 - labelWidth;
-        const barWidth = (pct / 100) * barAreaWidth;
+        const barWidth = ratio * barAreaWidth;
 
         // Track
         lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${barY}" width="${barAreaWidth}" height="${barHeight}"
@@ -2992,8 +3030,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
 
-  // Get all columns in unified order
-  const allColumns = flattenAllColumns(columns);
+  // Get all columns in unified order, excluding the primary column — it is
+  // rendered in the prepended "label" slot by the SVG pipeline.
+  const primaryColFull = getPrimaryColumn(columns);
+  const allColumns = flattenAllColumns(columns).filter(c => c.id !== primaryColFull?.id);
 
   // Identify forest columns
   const forestColumnIndices: number[] = [];
@@ -3095,14 +3135,18 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   // Column headers - unified layout
   const headerY = layout.mainY;
+  // Exclude the primary column from columnDefs — it's rendered via labelHeader
+  const headerColumnDefs = primaryColFull
+    ? columns.filter(c => c.isGroup || (c as ColumnSpec).id !== primaryColFull.id)
+    : columns;
   parts.push(renderUnifiedColumnHeaders(
-    columns,
+    headerColumnDefs,
     allColumns,
     padding,
     headerY,
     layout.headerHeight,
     theme,
-    spec.data.labelHeader ?? "Study",
+    primaryColFull?.header ?? "Study",
     layout.labelWidth,
     autoWidths,
     getColWidth

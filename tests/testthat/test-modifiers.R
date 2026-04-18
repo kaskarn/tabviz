@@ -130,3 +130,128 @@ test_that("widget round-trip: forest_plot |> set_colors works", {
   # Returns an htmlwidget
   expect_true(inherits(updated_spec, "htmlwidget"))
 })
+
+# ----------------------------------------------------------------------------
+# New verbs (WebSpec static path)
+# ----------------------------------------------------------------------------
+
+make_spec <- function() {
+  data <- data.frame(
+    study = c("A", "B", "C"),
+    hr = c(0.8, 1.1, 1.4),
+    lower = c(0.6, 0.9, 1.0),
+    upper = c(1.0, 1.3, 1.8),
+    notes = c("x", "y", "z")
+  )
+  tabviz(
+    data, label = "study",
+    columns = list(
+      col_numeric("hr", "HR"),
+      col_text("notes", "Notes")
+    ),
+    .spec_only = TRUE
+  )
+}
+
+test_that("add_column on WebSpec appends by default", {
+  spec <- make_spec()
+  before <- length(spec@columns)
+  new_spec <- add_column(spec, col_text("lower", "Lower"))
+  expect_equal(length(new_spec@columns), before + 1L)
+  expect_equal(new_spec@columns[[length(new_spec@columns)]]@field, "lower")
+})
+
+test_that("add_column with after = field inserts after that column", {
+  spec <- make_spec()
+  # columns order: [label(study), hr, notes]  (tabviz prepends label)
+  new_spec <- add_column(spec, col_text("lower", "Lo"), after = "hr")
+  fields <- vapply(new_spec@columns, function(c) c@field, character(1))
+  hr_idx <- which(fields == "hr")
+  expect_equal(fields[hr_idx + 1L], "lower")
+})
+
+test_that("remove_column drops the named column", {
+  spec <- make_spec()
+  new_spec <- remove_column(spec, "notes")
+  fields <- vapply(new_spec@columns, function(c) c@field, character(1))
+  expect_false("notes" %in% fields)
+})
+
+test_that("remove_column errors on unknown field", {
+  expect_error(remove_column(make_spec(), "nope"), "not found")
+})
+
+test_that("move_column reorders top-level columns", {
+  spec <- make_spec()
+  # Before: [study, hr, notes]
+  new_spec <- move_column(spec, "notes", to = 1L)
+  fields <- vapply(new_spec@columns, function(c) c@field, character(1))
+  expect_equal(fields[1], "notes")
+})
+
+test_that("resize_column sets @width", {
+  spec <- make_spec()
+  new_spec <- resize_column(spec, "hr", 150)
+  hr_col <- Filter(function(c) c@field == "hr", new_spec@columns)[[1]]
+  expect_equal(hr_col@width, 150)
+})
+
+test_that("update_column changes top-level props and merges options", {
+  spec <- make_spec()
+  new_spec <- update_column(spec, "hr", header = "Hazard", align = "right")
+  hr_col <- Filter(function(c) c@field == "hr", new_spec@columns)[[1]]
+  expect_equal(hr_col@header, "Hazard")
+  expect_equal(hr_col@align, "right")
+})
+
+test_that("sort_rows reorders data by a column", {
+  spec <- make_spec()
+  new_spec <- sort_rows(spec, "hr", direction = "desc")
+  expect_equal(new_spec@data$hr, sort(spec@data$hr, decreasing = TRUE))
+})
+
+test_that("sort_rows direction=none is a no-op", {
+  spec <- make_spec()
+  new_spec <- sort_rows(spec, "hr", direction = "none")
+  expect_equal(new_spec@data$hr, spec@data$hr)
+})
+
+test_that("filter_rows keeps rows matching the predicate", {
+  spec <- make_spec()
+  new_spec <- filter_rows(spec, "hr", operator = "gt", value = 1)
+  expect_true(all(new_spec@data$hr > 1))
+})
+
+test_that("move_row reorders data by row id", {
+  spec <- make_spec()
+  new_spec <- move_row(spec, "C", to = 1L)
+  expect_equal(new_spec@data$study[1], "C")
+})
+
+test_that("update_data replaces the data frame", {
+  spec <- make_spec()
+  new_data <- spec@data
+  new_data$hr <- new_data$hr * 2
+  new_spec <- update_data(spec, new_data)
+  expect_equal(new_spec@data$hr, spec@data$hr * 2)
+})
+
+test_that("clear_filters is a no-op on WebSpec", {
+  spec <- make_spec()
+  new_spec <- clear_filters(spec)
+  expect_equal(new_spec@data, spec@data)
+})
+
+test_that("set_cell/set_row_label warn on static inputs", {
+  spec <- make_spec()
+  expect_warning(set_cell(spec, "A", "hr", 99), "runtime")
+  expect_warning(set_row_label(spec, "A", "X"), "runtime")
+  expect_warning(clear_edits(spec), "runtime")
+})
+
+test_that("htmlwidget round-trip: add_column returns htmlwidget", {
+  spec <- make_spec()
+  widget <- tabviz(spec)
+  updated <- add_column(widget, col_text("lower", "Lo"))
+  expect_true(inherits(updated, "htmlwidget"))
+})

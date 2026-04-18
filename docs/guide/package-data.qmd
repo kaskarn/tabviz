@@ -282,6 +282,6 @@ See help files for full variable descriptions:
 
 ## See Also
 
-- [Gallery](../gallery-basic.qmd) — Full examples using these datasets
+- [Gallery](../gallery/index.qmd) — Full examples using these datasets
 - [Columns](columns.qmd) — Column types for displaying data
 - [Themes](themes.qmd) — Theme options for styling

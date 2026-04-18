@@ -12,6 +12,7 @@ col_stars(
   color = "#f59e0b",
   empty_color = "#d1d5db",
   half_stars = FALSE,
+  domain = NULL,
   ...
 )
 }
@@ -22,13 +23,17 @@ col_stars(
 
 \item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
-\item{max_stars}{Maximum number of stars (default 5)}
+\item{max_stars}{Maximum number of stars (default 5, max 20)}
 
 \item{color}{CSS color for filled stars (default "#f59e0b", amber)}
 
 \item{empty_color}{CSS color for empty stars (default "#d1d5db", gray)}
 
 \item{half_stars}{Allow half-star increments (default FALSE)}
+
+\item{domain}{Optional numeric length-2 vector \code{c(min, max)} to remap input
+values from an arbitrary range into \verb{[0, max_stars]}. For example,
+\code{domain = c(0, 100)} with \code{max_stars = 5} maps a value of 75 to 3.75 stars.}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

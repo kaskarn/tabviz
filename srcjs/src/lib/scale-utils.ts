@@ -137,6 +137,58 @@ function niceLinearDomain(domain: [number, number]): [number, number] {
 /** Domain padding constant - how much extra space to add beyond data range */
 export const DOMAIN_PADDING = 0.08;
 
+/** Scale type used by bar / progress / heatmap cells to map values into [0, 1] */
+export type NormalizeScale = "linear" | "log" | "sqrt";
+
+/**
+ * Normalize a numeric value to a clamped [0, 1] ratio given a [lo, hi] domain
+ * and a scale type. Mirrors the logic shared between Svelte cells and the
+ * SVG exporter so they can't drift.
+ *
+ * - linear: (v - lo) / (hi - lo)
+ * - log:    log(v) normalized over log(hi) - log(lo); non-positive values
+ *           collapse to 0 (log undefined), lo <= 0 is clamped to a tiny
+ *           positive value so log(lo) is defined.
+ * - sqrt:   sqrt(max(0, v - lo)) normalized over sqrt(hi - lo).
+ *
+ * If hi <= lo, returns 0 (degenerate range).
+ * If value is not finite, returns 0.
+ */
+export function normalizeValue(
+  value: number | null | undefined,
+  lo: number,
+  hi: number,
+  scale: NormalizeScale = "linear"
+): number {
+  if (value == null || !Number.isFinite(value)) return 0;
+  if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) return 0;
+
+  if (scale === "log") {
+    const safeLo = lo > 0 ? lo : 1e-12;
+    if (value <= 0) return 0;
+    const num = Math.log(value) - Math.log(safeLo);
+    const den = Math.log(hi) - Math.log(safeLo);
+    if (den <= 0) return 0;
+    return clamp01(num / den);
+  }
+
+  if (scale === "sqrt") {
+    const shifted = Math.max(0, value - lo);
+    const span = hi - lo;
+    if (span <= 0) return 0;
+    return clamp01(Math.sqrt(shifted) / Math.sqrt(span));
+  }
+
+  return clamp01((value - lo) / (hi - lo));
+}
+
+function clamp01(x: number): number {
+  if (!Number.isFinite(x)) return 0;
+  if (x < 0) return 0;
+  if (x > 1) return 1;
+  return x;
+}
+
 /**
  * Get a numeric value from a row, checking metadata first then primary fields.
  *

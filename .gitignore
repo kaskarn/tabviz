@@ -29,6 +29,8 @@ examples_output/
 
 # Quarto
 docs/_site/
+docs/_freeze/
+docs/tests/
 .quarto/
 cran-comments.md
 

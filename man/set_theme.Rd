@@ -2,40 +2,30 @@
 % Please edit documentation in R/modifiers.R
 \name{set_theme}
 \alias{set_theme}
-\title{Set theme on a WebSpec}
+\title{Set theme on a WebSpec, htmlwidget, or forest proxy}
 \usage{
 set_theme(x, theme)
 }
 \arguments{
-\item{x}{A WebSpec object or an htmlwidget created by tabviz()}
+\item{x}{A WebSpec object, htmlwidget, or tabviz_proxy}
 
 \item{theme}{Either a WebTheme object or a string matching a built-in theme name:
 "default", "minimal", "dark", "jama", "lancet", "modern", "presentation",
 "cochrane", or "nature"}
 }
 \value{
-The modified WebSpec object (or widget)
+The modified WebSpec, htmlwidget, or proxy (invisibly)
 }
 \description{
-Provides a fluent API for setting or changing the theme on a WebSpec or widget.
-Accepts either a theme name (string) or a WebTheme object.
+Provides a fluent API for setting or changing the theme. Accepts either a
+theme name (string) or a WebTheme object. On a proxy, sends a message so
+the running widget swaps its theme without a full re-render.
 }
 \examples{
 \dontrun{
-# Using a theme name
 forest_data |>
-  web_spec(hr, lower, upper) |>
-  set_theme("jama") |>
-  forest_plot()
-
-# Using a WebTheme object
-my_theme <- web_theme_jama() |>
-  set_colors(interval = "#0066cc")
-
-forest_data |>
-  web_spec(hr, lower, upper) |>
-  set_theme(my_theme) |>
-  forest_plot()
+  tabviz(label = "study", columns = list(viz_forest("hr", "lo", "hi"))) |>
+  set_theme("jama")
 }
 
 }

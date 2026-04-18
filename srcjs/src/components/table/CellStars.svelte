@@ -8,10 +8,11 @@
 
   let { value, options }: Props = $props();
 
-  const maxStars = $derived(options?.maxStars ?? 5);
+  const maxStars = $derived(Math.max(1, Math.min(20, options?.maxStars ?? 5)));
   const filledColor = $derived(options?.color ?? "#f59e0b");
   const emptyColor = $derived(options?.emptyColor ?? "#d1d5db");
   const halfStars = $derived(options?.halfStars ?? false);
+  const domain = $derived(options?.domain ?? null);
 
   // Unicode characters for stars
   const FILLED_STAR = "★";
@@ -21,7 +22,13 @@
   const starDisplay = $derived.by(() => {
     if (value === undefined || value === null) return [];
 
-    const rating = Math.max(0, Math.min(maxStars, value));
+    let raw = value;
+    if (domain && Number.isFinite(domain[0]) && Number.isFinite(domain[1]) && domain[1] > domain[0]) {
+      const clamped = Math.max(domain[0], Math.min(domain[1], raw));
+      raw = ((clamped - domain[0]) / (domain[1] - domain[0])) * maxStars;
+    }
+
+    const rating = Math.max(0, Math.min(maxStars, raw));
     const stars: Array<{ char: string; filled: "full" | "half" | "empty" }> = [];
 
     for (let i = 1; i <= maxStars; i++) {

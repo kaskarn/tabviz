@@ -48,6 +48,8 @@ website:
             href: reference/columns.qmd
           - text: "Styling Functions"
             href: reference/styling.qmd
+          - text: "Data Operations"
+            href: reference/data-ops.qmd
           - text: "Themes"
             href: reference/themes.qmd
           - text: "Annotations"
@@ -104,6 +106,8 @@ website:
               href: guide/themes.qmd
         - text: "Fluent API"
           href: guide/fluent-api.qmd
+        - text: "Recipes"
+          href: guide/recipes.qmd
         - text: "---"
         - section: "Visualizations"
           href: guide/visualizations/index.qmd

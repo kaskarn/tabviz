@@ -344,6 +344,205 @@ tabviz(data, ...) |> set_theme(custom)
 
 ---
 
+## Theme Modifiers
+
+Theme modifiers edit a `WebTheme` object in place of swapping themes wholesale. They take a `WebTheme`, return a modified `WebTheme`, and compose with `|>`. Every argument is optional — unset fields keep their current value.
+
+All modifiers follow the same pattern:
+
+```{r}
+#| eval: false
+web_theme_default() |>
+  set_colors(primary = "#1a365d") |>
+  set_typography(font_family = "Georgia, serif") |>
+  set_spacing(row_height = 28) |>
+  set_axis(gridlines = TRUE)
+```
+
+### set_colors() {#set_colors}
+
+Change the theme color palette.
+
+| Argument | Description |
+|----------|-------------|
+| `background` | Page/container background color |
+| `foreground` | Default text color |
+| `primary`, `secondary`, `accent`, `muted` | Semantic palette entries used by row styling and markers |
+| `border` | Row and container border color |
+| `row_bg`, `alt_bg` | Base row background and zebra-stripe alternate |
+| `interval` | Default interval-line and marker color |
+| `interval_positive`, `interval_negative`, `interval_neutral` | Direction-aware interval colors |
+| `interval_line` | Override for the horizontal CI line |
+| `summary_fill`, `summary_border` | Colors for diamond summary markers |
+
+```{r}
+#| eval: false
+web_theme_default() |>
+  set_colors(
+    primary = "#0b3d91",
+    interval_positive = "#16a34a",
+    interval_negative = "#dc2626"
+  )
+```
+
+### set_typography() {#set_typography}
+
+Font family, sizes, weights.
+
+| Argument | Description |
+|----------|-------------|
+| `font_family` | CSS font stack (e.g., `"Georgia, 'Times New Roman', serif"`) |
+| `font_size_sm`, `font_size_base`, `font_size_lg` | Small / base / large font sizes (numeric, px) |
+| `font_weight_normal`, `font_weight_medium`, `font_weight_bold` | Weight values (100–900) |
+| `line_height` | Base line-height multiplier |
+| `header_font_scale` | Header font size relative to base (e.g., 1.1) |
+
+```{r}
+#| eval: false
+web_theme_jama() |>
+  set_typography(font_family = "Helvetica, Arial, sans-serif",
+                 font_size_base = 13)
+```
+
+### set_spacing() {#set_spacing}
+
+Cell and row spacing.
+
+| Argument | Description |
+|----------|-------------|
+| `row_height` | Data-row height (px) |
+| `header_height` | Header-row height (px) |
+| `section_gap` | Gap between top-level groups (px) |
+| `padding` | Legacy combined padding |
+| `container_padding` | Outer container padding (px) |
+| `axis_gap` | Gap between table and plot axis (px) |
+| `group_padding` | Extra padding inside collapsible groups |
+| `cell_padding_x`, `cell_padding_y` | Horizontal/vertical cell padding (px) |
+| `column_gap` | Gap between columns (px) |
+
+```{r}
+#| eval: false
+web_theme_minimal() |>
+  set_spacing(row_height = 22, cell_padding_x = 8, column_gap = 12)
+```
+
+### set_shapes() {#set_shapes}
+
+Marker geometry and default multi-effect palettes.
+
+| Argument | Description |
+|----------|-------------|
+| `point_size` | Default marker size (px) |
+| `summary_height` | Summary diamond height (px) |
+| `line_width` | CI line stroke width (px) |
+| `border_radius` | Row/marker rounding (px) |
+| `effect_colors` | Character vector — colors for successive effects in multi-effect plots |
+| `marker_shapes` | Character vector — one of `"square"`, `"circle"`, `"diamond"`, `"triangle"` per effect |
+
+```{r}
+#| eval: false
+web_theme_default() |>
+  set_shapes(
+    point_size = 10,
+    effect_colors = c("#0b3d91", "#dc2626", "#16a34a"),
+    marker_shapes = c("square", "circle", "diamond")
+  )
+```
+
+### set_axis() {#set_axis}
+
+Axis range, ticks, gridlines, and CI clipping behavior.
+
+| Argument | Description |
+|----------|-------------|
+| `range_min`, `range_max` | Axis endpoints. `NA` = auto from data |
+| `tick_count` | Target number of ticks (auto-computed positions) |
+| `tick_values` | Explicit tick positions (numeric vector) — overrides `tick_count` |
+| `gridlines` | Show vertical gridlines (default `FALSE`) |
+| `gridline_style` | `"solid"`, `"dashed"`, or `"dotted"` |
+| `ci_clip_factor` | Clip CIs extending beyond this multiple of the estimate range. `Inf` disables clipping |
+| `include_null` | Always include null value in axis range |
+| `symmetric` | Force symmetric range around `null_value` |
+| `null_tick` | Always draw a tick at the null value |
+| `marker_margin` | Extra horizontal margin around markers (px) |
+
+```{r}
+#| eval: false
+web_theme_default() |>
+  set_axis(
+    tick_values = c(0.5, 0.75, 1.0, 1.5, 2.0),
+    gridlines = TRUE,
+    gridline_style = "dotted"
+  )
+```
+
+### set_layout() {#set_layout}
+
+Table/plot geometry.
+
+| Argument | Description |
+|----------|-------------|
+| `plot_position` | `"left"` or `"right"` — where the forest column sits relative to the table |
+| `table_width`, `plot_width` | Pixel widths or CSS units for table / plot halves |
+| `cell_padding_x`, `cell_padding_y` | (Deprecated — forwards to `set_spacing()`) |
+| `row_border` | Row border width (px) |
+| `row_border_style` | `"solid"`, `"dashed"`, `"dotted"`, `"none"` |
+| `container_border` | Outer container border width |
+| `container_border_radius` | Outer container corner radius |
+| `banding` | Zebra-stripe rows (`TRUE`/`FALSE`) |
+
+```{r}
+#| eval: false
+web_theme_default() |>
+  set_layout(plot_position = "right", banding = TRUE, row_border_style = "dotted")
+```
+
+### set_group_headers() {#set_group_headers}
+
+Per-level styling of nested group headers (level 1 = outermost).
+
+| Argument | Description |
+|----------|-------------|
+| `levelN_font_size` | Font size for group level N (N = 1, 2, 3) |
+| `levelN_font_weight` | Weight for group level N |
+| `levelN_italic` | Italicize group level N |
+| `levelN_background` | Background color for group level N |
+| `levelN_border_bottom` | Bottom border spec for group level N |
+| `indent_per_level` | Pixel indent applied per nesting level |
+
+```{r}
+#| eval: false
+web_theme_default() |>
+  set_group_headers(
+    level1_font_weight = 700,
+    level1_background = "#f1f5f9",
+    level2_italic = TRUE,
+    indent_per_level = 12
+  )
+```
+
+### set_effect_colors() {#set_effect_colors}
+
+Shorthand for `set_shapes(effect_colors = ...)` — palette for multi-effect plots.
+
+```{r}
+#| eval: false
+web_theme_default() |>
+  set_effect_colors(c("#0b3d91", "#dc2626", "#16a34a"))
+```
+
+### set_marker_shapes() {#set_marker_shapes}
+
+Shorthand for `set_shapes(marker_shapes = ...)` — shape sequence for multi-effect plots.
+
+```{r}
+#| eval: false
+web_theme_default() |>
+  set_marker_shapes(c("square", "circle", "diamond"))
+```
+
+---
+
 ## Building Styling Pipelines
 
 ### Creating Variants
@@ -409,7 +608,16 @@ forest_plot(pooled, ...) |> apply_clinical_style()
 | `set_row_style()` | Widget, WebSpec | Row-level text styling, types, indentation |
 | `set_marker_style()` | Widget, WebSpec | Interval marker color, shape, opacity, size |
 | `set_column_style()` | WebSpec only | Per-cell styling for specific columns |
-| `set_theme()` | Widget, WebSpec | Apply complete theme |
+| `set_theme()` | Widget, WebSpec, proxy | Apply complete theme |
+| `set_colors()` | WebTheme | Theme color palette |
+| `set_typography()` | WebTheme | Fonts and text sizing |
+| `set_spacing()` | WebTheme | Row height, cell padding, column gaps |
+| `set_shapes()` | WebTheme | Marker geometry, multi-effect palette |
+| `set_axis()` | WebTheme | Ticks, gridlines, range, CI clipping |
+| `set_layout()` | WebTheme | Plot position, borders, banding |
+| `set_group_headers()` | WebTheme | Nested group header styling |
+| `set_effect_colors()` | WebTheme | Multi-effect color sequence |
+| `set_marker_shapes()` | WebTheme | Multi-effect shape sequence |
 
 ### Equivalent tabviz() Arguments
 
@@ -428,4 +636,6 @@ Every styling function has equivalent direct arguments in `forest_plot()`:
 
 - [tabviz()](tabviz.qmd) for core plot creation
 - [Themes](themes.qmd) for theme customization
+- [Data Operations](data-ops.qmd) for column/row/data manipulation verbs
+- [Row styling binding rules](../guide/row-styling.qmd#binding-rules) — how `badge` and `icon` anchor to the first column
 - [Customizing Plots Guide](../guide/fluent-api.qmd) for workflow patterns

@@ -11,6 +11,7 @@ col_bar(
   max_value = NULL,
   show_label = TRUE,
   color = NULL,
+  scale = c("linear", "log", "sqrt"),
   ...
 )
 }
@@ -26,6 +27,9 @@ col_bar(
 \item{show_label}{Show numeric label next to bar (default TRUE)}
 
 \item{color}{Bar fill color (NULL = theme primary color)}
+
+\item{scale}{Scale type: "linear" (default), "log", or "sqrt". Controls how
+values map to bar length.}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

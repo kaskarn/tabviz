@@ -60,11 +60,11 @@ generateSVG(spec: WebSpec, options?: ExportOptions): string
 
 // Internal helpers
 computeLayout(spec: WebSpec): Layout
-renderTableColumns(rows, columns, layout): string
-renderForestPlot(rows, xScale, layout, theme): string
+renderUnifiedTableRow(row, columns, layout, theme): string
 renderInterval(row, yPosition, xScale, theme): string
 renderDiamond(point, lower, upper, yPosition, ...): string
-renderAxis(xScale, layout, theme, axisLabel): string
+renderForestAxis(xScale, layout, theme, axisLabel): string
+renderVizBar(...) / renderVizBoxplot(...) / renderVizViolin(...): string
 ```
 
 **Design constraints:**

@@ -308,6 +308,14 @@ export function createForestStore() {
     return flattenAllColumns(effectiveColumnDefs);
   });
 
+  // Derived: ID of the leftmost visible column — the "primary" column. This
+  // column is sticky-left, serves as the row-drag surface, and renders row
+  // indentation / group-header chrome / badges. The role is positional: any
+  // column can become primary by being reordered to the front.
+  const primaryColumnId = $derived.by((): string | null => {
+    return allColumns[0]?.id ?? null;
+  });
+
   // Derived: all column definitions in order (for headers, reflects reorder overrides)
   const allColumnDefs = $derived.by((): ColumnDef[] => {
     return effectiveColumnDefs;
@@ -593,9 +601,9 @@ export function createForestStore() {
     if (!spec) return 800;
 
     const DEFAULT_COLUMN_WIDTH = 100;
-    const LABEL_COLUMN_WIDTH = 150;
 
-    // Calculate sum of all column widths (excluding forest columns which have separate width)
+    // Calculate sum of all column widths (excluding forest columns which have separate width).
+    // The primary (leftmost) column is part of allColumns — no separate label-column slot.
     let totalColumnWidth = 0;
     for (const col of allColumns) {
       // Skip forest columns - they have their own width calculation
@@ -606,9 +614,6 @@ export function createForestStore() {
         ?? DEFAULT_COLUMN_WIDTH;
       totalColumnWidth += w;
     }
-
-    // Add label column (always present)
-    totalColumnWidth += columnWidths["__label__"] ?? LABEL_COLUMN_WIDTH;
 
     // Use layout.forestWidth for consistent WYSIWYG export
     // This ensures SVG total width matches what user sees on screen
@@ -876,11 +881,14 @@ export function createForestStore() {
       processColumn(colDef);
     }
 
-    // Measure label column width
-    if (spec.data.labelCol && !userResizedIds.has("__label__")) {
+    // Measure the primary (leftmost) column's extra chrome — indentation,
+    // badges, and group-header rendering all live in the primary cell.
+    // We take the MAX of the regular leaf measurement and these enhancements.
+    const primaryCol = allColumns[0];
+    if (primaryCol && !userResizedIds.has(primaryCol.id)) {
       let maxLabelWidth = 0;
       // No row-drag-handle budget — dragging happens via pointerdown on the
-      // whole label cell, not a visible grip icon.
+      // whole primary cell, not a visible grip icon.
       const rowGripBudget = 0;
 
       // Build group depth map for calculating row indentation
@@ -896,10 +904,10 @@ export function createForestStore() {
         return groupDepth + 1;
       };
 
-      // Measure label header with bold font
-      if (spec.data.labelHeader) {
+      // Measure primary-column header with bold font
+      if (primaryCol.header) {
         ctx!.font = headerFont;
-        maxLabelWidth = Math.max(maxLabelWidth, ctx!.measureText(spec.data.labelHeader).width);
+        maxLabelWidth = Math.max(maxLabelWidth, ctx!.measureText(primaryCol.header).width);
       }
 
       // Measure all row labels with normal font (accounting for group depth, indent, and badges)
@@ -986,9 +994,15 @@ export function createForestStore() {
         }
       }
 
-      // Apply padding (from theme) and constraints (label column has higher max)
-      const computedLabelWidth = Math.min(AUTO_WIDTH.LABEL_MAX, Math.max(AUTO_WIDTH.MIN, Math.ceil(maxLabelWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)));
-      target["__label__"] = computedLabelWidth;
+      // Apply padding (from theme) and constraints (primary column has higher max).
+      // Take the MAX with any regular-column measurement — the primary column
+      // is measured like a normal leaf first, then widened here if its row-chrome
+      // (indent/badges/group chevron) demands more space.
+      const computedLabelWidth = Math.min(
+        AUTO_WIDTH.LABEL_MAX,
+        Math.max(AUTO_WIDTH.MIN, Math.ceil(maxLabelWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)),
+      );
+      target[primaryCol.id] = Math.max(target[primaryCol.id] ?? 0, computedLabelWidth);
     }
   }
 
@@ -1006,6 +1020,11 @@ export function createForestStore() {
       newSelection.add(id);
     }
     selectedRowIds = newSelection;
+  }
+
+  // Replace the current selection with the given row ids (used by the proxy).
+  function setSelectedRows(ids: string[]) {
+    selectedRowIds = new Set(ids);
   }
 
   function toggleGroup(id: string, collapsed?: boolean) {
@@ -1727,6 +1746,9 @@ export function createForestStore() {
     get allColumnDefs() {
       return allColumnDefs;
     },
+    get primaryColumnId() {
+      return primaryColumnId;
+    },
     get availableFields() {
       return spec?.availableFields ?? [];
     },
@@ -1847,10 +1869,8 @@ export function createForestStore() {
       // in absolute overlays that don't consume flow width.
       const widths = columnWidths;
 
-      // Start after label column
-      const labelWidth = widths["__label__"] ?? 150;
-      columnWidthsOut["__label__"] = labelWidth;
-      let currentX = labelWidth;
+      // The primary column is the leftmost entry in allColumns — no separate label slot.
+      let currentX = 0;
 
       // Process all columns in order (forest columns are inline)
       for (const col of allColumns) {
@@ -1960,6 +1980,7 @@ export function createForestStore() {
     setSpec,
     setDimensions,
     selectRow,
+    setSelectedRows,
     toggleGroup,
     sortBy,
     toggleSort,

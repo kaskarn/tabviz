@@ -222,20 +222,27 @@ tabviz <- function(
   # Validate forest column data columns exist
   validate_forest_columns(columns, data)
 
-  # Handle optional label column
-  label_col <- NA_character_
+  # Handle optional label column.
+  # The label column is a regular ColumnSpec prepended to `columns`. When no
+  # label is given, a synthetic row-number field is added to the data frame
+  # and used as the leftmost column.
+  label_field <- NULL
+  label_header_resolved <- NULL
   if (!is.null(label)) {
-    label_col <- check_column(label, "label", data)
-    # Auto-generate label_header from field name if still default
-    if (label_header == "Study") {
+    label_field <- check_column(label, "label", data)
+    if (identical(label_header, "Study")) {
       # Prettify: "study_name" -> "Study Name", "studyID" -> "Study ID"
-      label_header <- gsub("_", " ", label_col)
-      label_header <- gsub("([a-z])([A-Z])", "\\1 \\2", label_header)
-      label_header <- tools::toTitleCase(label_header)
+      label_header_resolved <- gsub("_", " ", label_field)
+      label_header_resolved <- gsub("([a-z])([A-Z])", "\\1 \\2", label_header_resolved)
+      label_header_resolved <- tools::toTitleCase(label_header_resolved)
+    } else {
+      label_header_resolved <- label_header
     }
   } else {
-    # No label column - use row numbers
-    label_header <- "#"
+    # No label column - auto-generate row numbers as a synthetic column.
+    label_field <- "__row_number__"
+    label_header_resolved <- "#"
+    data[[label_field]] <- as.character(seq_len(nrow(data)))
   }
 
   # Handle grouping - supports three modes via the `group` parameter:
@@ -326,22 +333,32 @@ tabviz <- function(
         cli_abort("columns must be ColumnSpec objects or column names")
       }
     })
-
-    # Ensure unique column IDs (same field used multiple times gets _2, _3, etc.)
-    seen_ids <- list()
-    columns <- lapply(columns, function(col) {
-      if (S7_inherits(col, ColumnSpec)) {
-        base_id <- col@id
-        if (is.null(seen_ids[[base_id]])) {
-          seen_ids[[base_id]] <<- 1
-        } else {
-          seen_ids[[base_id]] <<- seen_ids[[base_id]] + 1
-          col@id <- paste0(base_id, "_", seen_ids[[base_id]])
-        }
-      }
-      col
-    })
   }
+
+  # Prepend the label/row-identifier column. The leftmost column is the
+  # row-identifier ("primary") column in the frontend; making it a regular
+  # ColumnSpec removes all special-casing.
+  label_column <- col_text(
+    field = label_field,
+    header = label_header_resolved,
+    width = NULL
+  )
+  columns <- c(list(label_column), columns)
+
+  # Ensure unique column IDs (same field used multiple times gets _2, _3, etc.)
+  seen_ids <- list()
+  columns <- lapply(columns, function(col) {
+    if (S7_inherits(col, ColumnSpec)) {
+      base_id <- col@id
+      if (is.null(seen_ids[[base_id]])) {
+        seen_ids[[base_id]] <<- 1
+      } else {
+        seen_ids[[base_id]] <<- seen_ids[[base_id]] + 1
+        col@id <- paste0(base_id, "_", seen_ids[[base_id]])
+      }
+    }
+    col
+  })
 
   # Process extra_columns (hidden-but-available pre-configured specs)
   if (is.null(extra_columns)) {
@@ -418,8 +435,6 @@ tabviz <- function(
   # Build WebSpec
  spec <- WebSpec(
     data = data,
-    label_col = label_col,
-    label_header = label_header,
     group_col = group_col,
     group_cols = group_cols,
     columns = columns,

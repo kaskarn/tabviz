@@ -133,7 +133,7 @@ test_that("cell-level bold accepts formula with .x", {
                      col_pvalue("pval", bold = ~ .x < 0.05)
                    ))
 
-  col1 <- spec@columns[[1]]
+  col1 <- spec@columns[[2]]
   expect_true(grepl("^.wf_computed_pval_bold_", col1@style_bold))
   expect_true(col1@style_bold %in% names(spec@data))
   expect_equal(spec@data[[col1@style_bold]], c(TRUE, FALSE, FALSE))
@@ -153,7 +153,7 @@ test_that("cell-level color accepts formula with .x", {
                      col_pvalue("pval", color = ~ ifelse(.x < 0.05, "green", "gray"))
                    ))
 
-  col1 <- spec@columns[[1]]
+  col1 <- spec@columns[[2]]
   expect_true(grepl("^.wf_computed_pval_color_", col1@style_color))
   expect_equal(spec@data[[col1@style_color]], c("green", "gray", "gray"))
 })
@@ -174,7 +174,7 @@ test_that("cell-level formula can reference other columns via data", {
                      col_pvalue("pval", emphasis = ~ is_key)
                    ))
 
-  col1 <- spec@columns[[1]]
+  col1 <- spec@columns[[2]]
   expect_equal(spec@data[[col1@style_emphasis]], c(TRUE, FALSE, FALSE))
 })
 
@@ -193,7 +193,7 @@ test_that("cell-level styling still accepts column names (backwards compatibilit
                      col_pvalue("pval", bold = "is_bold")
                    ))
 
-  col1 <- spec@columns[[1]]
+  col1 <- spec@columns[[2]]
   # Column name is preserved, not computed
   expect_equal(col1@style_bold, "is_bold")
 })
@@ -236,7 +236,7 @@ test_that("multiple column styles can use formulas independently", {
                      )
                    ))
 
-  col1 <- spec@columns[[1]]
+  col1 <- spec@columns[[2]]
 
   # All three style columns should be created
   expect_true(grepl("^.wf_computed_", col1@style_bold))
@@ -272,7 +272,7 @@ test_that("row and cell level NSE can be used together", {
   expect_equal(spec@data[[spec@row_emphasis_col]], c(TRUE, FALSE, FALSE))
 
   # Cell-level
-  col1 <- spec@columns[[1]]
+  col1 <- spec@columns[[2]]
   expect_equal(spec@data[[col1@style_bold]], c(TRUE, FALSE, FALSE))
 })
 
@@ -297,7 +297,7 @@ test_that("NSE works for columns inside ColumnGroups", {
                    ))
 
   # Access the column inside the group
-  group1 <- spec@columns[[1]]
+  group1 <- spec@columns[[2]]
   expect_true(inherits(group1, "tabviz::ColumnGroup"))
 
   col1 <- group1@columns[[1]]

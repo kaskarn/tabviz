@@ -6,13 +6,12 @@
 \arguments{
 \item{data}{Processed data as a data.frame}
 
-\item{label_col}{Column name for row labels}
-
 \item{group_col}{Column name for grouping (optional, deepest level)}
 
 \item{group_cols}{All group column names for hierarchical grouping (for composite ID building)}
 
-\item{columns}{List of ColumnSpec objects defining table columns (including viz_forest)}
+\item{columns}{List of ColumnSpec objects defining table columns (including viz_forest).
+The leftmost visible column acts as the row identifier (sticky-left, row-drag surface).}
 
 \item{extra_columns}{List of ColumnSpec objects hidden by default but available in the
 interactive column picker. Authors use this to pre-configure how specific optional

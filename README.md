@@ -168,11 +168,11 @@ save_plot(plot, "forest.png", scale = 2)
 library(shiny)
 
 ui <- fluidPage(
-  forestOutput("plot")
+  tabvizOutput("plot")
 )
 
 server <- function(input, output) {
-  output$plot <- renderForest({
+  output$plot <- renderTabviz({
     tabviz(data, ...)
   })
 }

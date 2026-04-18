@@ -4,9 +4,10 @@
   interface Props {
     value: unknown;
     cellStyle?: CellStyle;
+    title?: string;
   }
 
-  let { value, cellStyle }: Props = $props();
+  let { value, cellStyle, title }: Props = $props();
 
   const hasBadge = $derived(!!cellStyle?.badge);
   const hasIcon = $derived(!!cellStyle?.icon);
@@ -29,7 +30,7 @@
   class:cell-accent={isAccent}
   style:color={textColor}
   style:background-color={bgColor}
-  title={String(value ?? "")}
+  title={title ?? String(value ?? "")}
 >
   {#if hasIcon}<span class="cell-icon">{cellStyle?.icon}</span>{/if}
   <span class="cell-value">{value ?? ""}</span>

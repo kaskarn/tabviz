@@ -104,15 +104,34 @@ serialize_data <- function(spec, include_forest = TRUE) {
     }
   }
 
+  # Resolve the "label" field from the first ColumnSpec in columns (the
+  # row-identifier column). The frontend still uses `row.label` for tooltips
+  # and accessibility text, so we compute it from whichever column is leftmost.
+  primary_field <- NA_character_
+  for (col in spec@columns) {
+    if (S7_inherits(col, ColumnSpec)) {
+      primary_field <- col@field
+      break
+    }
+    if (S7_inherits(col, ColumnGroup) && length(col@columns) > 0) {
+      for (child in col@columns) {
+        if (S7_inherits(child, ColumnSpec)) {
+          primary_field <- child@field
+          break
+        }
+      }
+      if (!is.na(primary_field)) break
+    }
+  }
+
   # Build rows - data now lives entirely in metadata
   rows <- lapply(seq_len(n), function(i) {
     row <- df[i, , drop = FALSE]
 
-    # Get label
-    label <- if (!is.na(spec@label_col)) {
-      as.character(row[[spec@label_col]])
+    # Get label from the primary (leftmost) column, falling back to row number
+    label <- if (!is.na(primary_field) && primary_field %in% names(row)) {
+      as.character(row[[primary_field]])
     } else {
-      # No label column - use row number
       as.character(i)
     }
 
@@ -222,8 +241,6 @@ serialize_data <- function(spec, include_forest = TRUE) {
     groups = groups,
     summaries = summaries,
     overall = overall,
-    labelCol = if (is.na(spec@label_col)) NULL else spec@label_col,
-    labelHeader = spec@label_header,
     groupCol = if (is.na(spec@group_col)) NULL else spec@group_col,
     weightCol = if (is.na(spec@weight_col)) NULL else spec@weight_col
   )

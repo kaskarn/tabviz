@@ -1,4 +1,16 @@
-#' Shiny output function for forest plot
+# Shiny bindings for tabviz.
+#
+# Public surface:
+#   - tabvizOutput() / renderTabviz() — htmlwidget output/render bindings.
+#   - tabviz_proxy() — build a proxy to update a running widget from server code.
+#   - splitTabvizOutput() / renderSplitTabviz() / split_tabviz_proxy() — the
+#     equivalent bindings for split-table plots.
+#   - split_tabviz_select() — select a split-table plot by key.
+#
+# High-level verbs that operate on a proxy live in R/modifiers.R
+# (sort_rows, filter_rows, add_column, set_theme, etc.).
+
+#' Shiny output function for a tabviz plot
 #'
 #' @param outputId Output variable name
 #' @param width Widget width (CSS units)
@@ -6,7 +18,7 @@
 #'
 #' @return A Shiny output element
 #' @export
-forestOutput <- function(outputId, width = "100%", height = "400px") {
+tabvizOutput <- function(outputId, width = "100%", height = "400px") {
   htmlwidgets::shinyWidgetOutput(
     outputId,
     "tabviz",
@@ -16,150 +28,63 @@ forestOutput <- function(outputId, width = "100%", height = "400px") {
   )
 }
 
-#' Shiny render function for forest plot
+#' Shiny render function for a tabviz plot
 #'
-#' @param expr An expression that returns a forest plot (from `forest_plot()`)
+#' @param expr An expression that returns a widget from `tabviz()`
 #' @param env The environment in which to evaluate expr
 #' @param quoted Is expr a quoted expression?
 #'
 #' @return A Shiny render function
 #' @export
-renderForest <- function(expr, env = parent.frame(), quoted = FALSE) {
+renderTabviz <- function(expr, env = parent.frame(), quoted = FALSE) {
   if (!quoted) {
     expr <- substitute(expr)
   }
-  htmlwidgets::shinyRenderWidget(expr, forestOutput, env, quoted = TRUE)
+  htmlwidgets::shinyRenderWidget(expr, tabvizOutput, env, quoted = TRUE)
 }
 
-#' Create a forest plot proxy object
+#' Create a tabviz proxy object
 #'
-#' Creates a proxy object that can be used to update a forest plot in a Shiny
-#' app without re-rendering the entire widget.
+#' Builds a proxy that can be used to update a tabviz plot in a Shiny app
+#' without re-rendering the entire widget. Pass the proxy to any fluent
+#' verb (`sort_rows()`, `filter_rows()`, `add_column()`, `set_theme()`, ...)
+#' to dispatch an update message to the running widget.
 #'
-#' @param id The widget ID
-#' @param session The Shiny session (default: current session)
+#' @param id The widget (output) id
+#' @param session The Shiny session (default: current reactive domain)
 #'
-#' @return A forest_proxy object
+#' @return A `tabviz_proxy` object
 #' @export
-forestProxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
+tabviz_proxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session)) {
-    cli_abort("forestProxy must be called from within a Shiny reactive context")
+    cli_abort("{.fn tabviz_proxy} must be called from within a Shiny reactive context")
   }
-
   structure(
     list(id = id, session = session),
-    class = "forest_proxy"
+    class = "tabviz_proxy"
   )
 }
 
-#' Update forest plot data via proxy
+#' Internal: invoke a proxy method
 #'
-#' @param proxy A forest_proxy object
-#' @param spec A WebSpec object (from `web_spec()`)
+#' Sends a `tabviz-proxy` custom message to the running widget with
+#' `list(id, method, args)`.
 #'
-#' @return The proxy object (invisibly), for chaining
-#' @export
-forest_update_data <- function(proxy, spec) {
- if (!S7_inherits(spec, WebSpec)) {
-    cli_abort("{.arg spec} must be a WebSpec object from {.fn web_spec}")
-  }
-
-  payload <- serialize_spec(spec, include_forest = TRUE)
-
-  invoke_proxy_method(proxy, "updateData", list(
-    spec = payload
-  ))
-}
-
-#' Toggle subgroup collapse state
-#'
-#' @param proxy A forest_proxy object
-#' @param subgroup_id The subgroup ID to toggle
-#' @param collapsed Whether to collapse (TRUE), expand (FALSE), or toggle (NULL)
-#'
-#' @return The proxy object (invisibly), for chaining
-#' @export
-forest_toggle_subgroup <- function(proxy, subgroup_id, collapsed = NULL) {
-  invoke_proxy_method(proxy, "toggleSubgroup", list(
-    subgroupId = subgroup_id,
-    collapsed = collapsed
-  ))
-}
-
-#' Apply a filter to the forest plot
-#'
-#' @param proxy A forest_proxy object
-#' @param field Field to filter on
-#' @param operator Filter operator: "eq", "neq", "gt", "lt", "contains"
-#' @param value Filter value
-#'
-#' @return The proxy object (invisibly), for chaining
-#' @export
-forest_filter <- function(
-    proxy,
-    field,
-    operator = c("eq", "neq", "gt", "lt", "contains"),
-    value) {
-  operator <- match.arg(operator)
-  invoke_proxy_method(proxy, "applyFilter", list(
-    filter = list(
-      field = field,
-      operator = operator,
-      value = value
-    )
-  ))
-}
-
-#' Clear filters from the forest plot
-#'
-#' @param proxy A forest_proxy object
-#'
-#' @return The proxy object (invisibly), for chaining
-#' @export
-forest_clear_filter <- function(proxy) {
-  invoke_proxy_method(proxy, "clearFilter", list())
-}
-
-#' Sort the forest plot by a column
-#'
-#' @param proxy A forest_proxy object
-#' @param column Column to sort by
-#' @param direction Sort direction: "asc", "desc", or "none"
-#'
-#' @return The proxy object (invisibly), for chaining
-#' @export
-forest_sort <- function(
-    proxy,
-    column,
-    direction = c("asc", "desc", "none")) {
-  direction <- match.arg(direction)
-  invoke_proxy_method(proxy, "sortBy", list(
-    column = column,
-    direction = direction
-  ))
-}
-
-#' Internal: Invoke a proxy method
 #' @keywords internal
 invoke_proxy_method <- function(proxy, method, args) {
-  if (!inherits(proxy, "forest_proxy")) {
-    cli_abort("proxy must be a forest_proxy object created with forestProxy()")
+  if (!inherits(proxy, "tabviz_proxy")) {
+    cli_abort("proxy must be a tabviz_proxy object created with {.fn tabviz_proxy}")
   }
-
   msg <- list(id = proxy$id, method = method, args = args)
   proxy$session$sendCustomMessage("tabviz-proxy", msg)
-
   invisible(proxy)
 }
 
 # ============================================================================
-# Split Forest Shiny Support
+# Split-table bindings
 # ============================================================================
 
-#' Shiny output function for split forest plot
-#'
-#' Creates a Shiny output element for displaying a split forest plot with
-#' sidebar navigation.
+#' Shiny output function for a split-table tabviz plot
 #'
 #' @param outputId Output variable name
 #' @param width Widget width (CSS units)
@@ -167,7 +92,7 @@ invoke_proxy_method <- function(proxy, method, args) {
 #'
 #' @return A Shiny output element
 #' @export
-splitForestOutput <- function(outputId, width = "100%", height = "600px") {
+splitTabvizOutput <- function(outputId, width = "100%", height = "600px") {
   htmlwidgets::shinyWidgetOutput(
     outputId,
     "tabviz_split",
@@ -177,76 +102,50 @@ splitForestOutput <- function(outputId, width = "100%", height = "600px") {
   )
 }
 
-#' Shiny render function for split forest plot
+#' Shiny render function for a split-table tabviz plot
 #'
-#' Renders a split forest plot in a Shiny application. The expression should
-#' return either a SplitForest object or a forest_plot() call with split_by.
-#'
-#' @param expr An expression that returns a split forest plot
+#' @param expr An expression that returns a split-table widget
 #' @param env The environment in which to evaluate expr
 #' @param quoted Is expr a quoted expression?
 #'
 #' @return A Shiny render function
-#'
-#' @examples
-#' \dontrun{
-#' # In server function:
-#' output$split_plot <- renderSplitForest({
-#'   data |>
-#'     tabviz(label = "study", columns = list(
-#'       viz_forest(point = "or", lower = "lower", upper = "upper")
-#'     )) |>
-#'     split_table(by = input$split_var) |>
-#'     forest_plot()
-#' })
-#' }
-#'
 #' @export
-renderSplitForest <- function(expr, env = parent.frame(), quoted = FALSE) {
+renderSplitTabviz <- function(expr, env = parent.frame(), quoted = FALSE) {
   if (!quoted) {
     expr <- substitute(expr)
   }
-  htmlwidgets::shinyRenderWidget(expr, splitForestOutput, env, quoted = TRUE)
+  htmlwidgets::shinyRenderWidget(expr, splitTabvizOutput, env, quoted = TRUE)
 }
 
-#' Create a split forest plot proxy object
+#' Create a split-table tabviz proxy object
 #'
-#' Creates a proxy object that can be used to control a split forest plot in a
-#' Shiny app without re-rendering the entire widget.
+#' @param id The widget (output) id
+#' @param session The Shiny session (default: current reactive domain)
 #'
-#' @param id The widget ID
-#' @param session The Shiny session (default: current session)
-#'
-#' @return A split_table_proxy object
+#' @return A `split_tabviz_proxy` object
 #' @export
-splitForestProxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
+split_tabviz_proxy <- function(id, session = shiny::getDefaultReactiveDomain()) {
   if (is.null(session)) {
-    cli_abort("splitForestProxy must be called from within a Shiny reactive context")
+    cli_abort("{.fn split_tabviz_proxy} must be called from within a Shiny reactive context")
   }
-
   structure(
     list(id = id, session = session),
-    class = "split_table_proxy"
+    class = "split_tabviz_proxy"
   )
 }
 
-#' Select a plot in the split forest via proxy
+#' Select a plot in a split-table tabviz via proxy
 #'
-#' Programmatically select a different plot in the split forest sidebar
-#' navigation.
-#'
-#' @param proxy A split_table_proxy object
-#' @param key The key of the plot to select (e.g., "Male" or "Male__Young")
+#' @param proxy A `split_tabviz_proxy` object
+#' @param key The key of the plot to select (e.g. "Male" or "Male__Young")
 #'
 #' @return The proxy object (invisibly), for chaining
 #' @export
-split_table_select <- function(proxy, key) {
-  if (!inherits(proxy, "split_table_proxy")) {
-    cli_abort("proxy must be a split_table_proxy object created with splitForestProxy()")
+split_tabviz_select <- function(proxy, key) {
+  if (!inherits(proxy, "split_tabviz_proxy")) {
+    cli_abort("proxy must be a split_tabviz_proxy object created with {.fn split_tabviz_proxy}")
   }
-
   msg <- list(id = proxy$id, method = "selectPlot", args = list(key = key))
   proxy$session$sendCustomMessage("tabviz-split-proxy", msg)
-
   invisible(proxy)
 }

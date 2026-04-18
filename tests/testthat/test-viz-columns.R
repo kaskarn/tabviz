@@ -112,5 +112,6 @@ test_that("viz columns integrate with web_spec", {
   )
 
   expect_true(inherits(spec, "tabviz::WebSpec"))
-  expect_equal(length(spec@columns), 3)
+  # Label column is auto-prepended, so length is user_columns + 1
+  expect_equal(length(spec@columns), 4)
 })

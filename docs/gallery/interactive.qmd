@@ -199,6 +199,84 @@ tabviz(effects, label = "metric",
 
 ---
 
+## Proxy-Driven Updates
+
+Inside a Shiny app, `tabviz_proxy()` exposes a fluent verb API — `add_column()`, `sort_rows()`, `filter_rows()`, `set_theme()`, `set_zoom()`, and more — that mutates the live widget without triggering a full re-render. The snippet below is excerpted from [`inst/examples/fluent_shiny_demo.R`](https://github.com/antoine-sachet/forest/blob/main/inst/examples/fluent_shiny_demo.R); Shiny apps can't execute inside Quarto, so the code is shown for reference only.
+
+```{r}
+#| eval: false
+library(shiny)
+library(tabviz)
+
+trial_data <- data.frame(
+  study = c("EMPA-REG", "CANVAS", "DECLARE", "CREDENCE", "LEADER", "SUSTAIN-6"),
+  hr    = c(0.86, 0.86, 0.93, 0.80, 0.87, 0.74),
+  lower = c(0.74, 0.75, 0.84, 0.67, 0.78, 0.58),
+  upper = c(0.99, 0.97, 1.03, 0.95, 0.97, 0.95),
+  n     = c(7020, 10142, 17160, 4401, 9340, 3297),
+  year  = c(2015, 2017, 2019, 2019, 2016, 2016)
+)
+
+ui <- fluidPage(
+  fluidRow(
+    column(3,
+      actionButton("sort_desc",    "Sort HR desc"),
+      actionButton("filter_hr",    "Filter HR < 0.9"),
+      actionButton("clear_flt",    "Clear filter"),
+      actionButton("theme_jama",   "Theme: JAMA"),
+      actionButton("theme_lancet", "Theme: Lancet"),
+      actionButton("add_col",      "Add 'year' column"),
+      actionButton("rename_hr",    "Rename HR to 'Hazard'")
+    ),
+    column(9, tabvizOutput("plot", height = "500px"))
+  )
+)
+
+server <- function(input, output, session) {
+  output$plot <- renderTabviz({
+    tabviz(trial_data, label = "study",
+      columns = list(
+        col_numeric("hr", "HR", decimals = 2),
+        col_numeric("n",  "N"),
+        viz_forest(point = "hr", lower = "lower", upper = "upper",
+                   header = "HR (95% CI)")
+      ),
+      null_value = 1, scale = "log"
+    )
+  })
+
+  proxy <- tabviz_proxy("plot")
+
+  # Each verb sends a custom message to the live widget — no re-render.
+  observeEvent(input$sort_desc,    sort_rows(proxy, "hr", direction = "desc"))
+  observeEvent(input$filter_hr,    filter_rows(proxy, "hr", operator = "lt", value = 0.9))
+  observeEvent(input$clear_flt,    clear_filters(proxy))
+  observeEvent(input$theme_jama,   set_theme(proxy, "jama"))
+  observeEvent(input$theme_lancet, set_theme(proxy, "lancet"))
+  observeEvent(input$add_col,      add_column(proxy, col_numeric("year", "Year"), after = "n"))
+  observeEvent(input$rename_hr,    update_column(proxy, "hr", header = "Hazard"))
+}
+
+shinyApp(ui, server)
+```
+
+What the demo shows:
+
+- **Sort / filter / clear** → row operations applied client-side via the proxy; the `${id}_filtered_rows` input updates so the server knows which rows are visible.
+- **Theme switch** → swaps colors, typography, and spacing in place without losing scroll or edit state.
+- **Add / rename / resize columns** → structural mutations with no full render.
+- **Zoom** → live scale change (0.8, 1.0, ...) on the whole widget.
+
+The same verbs (`add_column`, `sort_rows`, `set_theme`, ...) work on static `WebSpec` and htmlwidget objects too; on a proxy they dispatch a custom message, otherwise they mutate the spec in place.
+
+To run locally:
+
+```r
+shiny::runApp(system.file("examples/fluent_shiny_demo.R", package = "tabviz"))
+```
+
+---
+
 ## Enable only what you need
 
 `web_interaction()` takes any combination of flags. Use `web_interaction_full()` for everything on, `web_interaction_minimal()` for a read-only widget, `web_interaction_publication()` for no UI chrome at all, or dial it in yourself:

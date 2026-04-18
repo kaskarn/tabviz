@@ -168,10 +168,10 @@ PlotLabels <- new_class(
 #' - Other visualizations (upset plots, etc.)
 #'
 #' @param data Processed data as a data.frame
-#' @param label_col Column name for row labels
 #' @param group_col Column name for grouping (optional, deepest level)
 #' @param group_cols All group column names for hierarchical grouping (for composite ID building)
-#' @param columns List of ColumnSpec objects defining table columns (including viz_forest)
+#' @param columns List of ColumnSpec objects defining table columns (including viz_forest).
+#'   The leftmost visible column acts as the row identifier (sticky-left, row-drag surface).
 #' @param extra_columns List of ColumnSpec objects hidden by default but available in the
 #'   interactive column picker. Authors use this to pre-configure how specific optional
 #'   columns should render when a user adds them.
@@ -189,8 +189,6 @@ WebSpec <- new_class(
   "WebSpec",
   properties = list(
     data = class_data.frame,
-    label_col = new_property(class_character, default = NA_character_),
-    label_header = new_property(class_character, default = "Study"),
     group_col = new_property(class_character, default = NA_character_),
     group_cols = new_property(class_character, default = character(0)),
     columns = new_property(class_list, default = list()),
@@ -230,9 +228,6 @@ WebSpec <- new_class(
     # Validate optional columns if specified
     cols <- names(self@data)
 
-    if (!is.na(self@label_col) && !self@label_col %in% cols) {
-      return(paste0("Column '", self@label_col, "' not found in data"))
-    }
     if (!is.na(self@group_col) && !self@group_col %in% cols) {
       return(paste0("Column '", self@group_col, "' not found in data"))
     }

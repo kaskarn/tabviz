@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ProgressColumnOptions } from "$types";
+  import { normalizeValue } from "$lib/scale-utils";
 
   interface Props {
     value: number | undefined | null;
@@ -11,15 +12,18 @@
   const maxValue = $derived(options?.maxValue ?? 100);
   const showLabel = $derived(options?.showLabel ?? true);
   const barColor = $derived(options?.color ?? "var(--wf-primary, #2563eb)");
+  const scale = $derived(options?.scale ?? "linear");
 
-  const percentage = $derived.by(() => {
-    if (value === undefined || value === null || maxValue <= 0) return 0;
-    return Math.min(100, Math.max(0, (value / maxValue) * 100));
-  });
+  const percentage = $derived.by(() =>
+    normalizeValue(value, 0, maxValue, scale) * 100
+  );
 
   const formattedLabel = $derived.by(() => {
     if (value === undefined || value === null) return "";
-    return `${Math.round(percentage)}%`;
+    // Label shows raw percent-of-max (not the transformed ratio) so the number
+    // matches the user's data even when the bar uses log/sqrt scale.
+    if (maxValue <= 0) return "0%";
+    return `${Math.round(Math.min(100, Math.max(0, (value / maxValue) * 100)))}%`;
   });
 </script>
 

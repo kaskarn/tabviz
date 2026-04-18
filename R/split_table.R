@@ -389,8 +389,6 @@ create_subset_spec <- function(base_spec, subset_data, label) {
 
   WebSpec(
     data = subset_data,
-    label_col = base_spec@label_col,
-    label_header = base_spec@label_header,
     group_col = base_spec@group_col,
     group_cols = base_spec@group_cols,
     columns = base_spec@columns,

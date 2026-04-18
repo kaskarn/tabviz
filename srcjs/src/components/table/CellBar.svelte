@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { BarColumnOptions } from "$types";
+  import { normalizeValue } from "$lib/scale-utils";
 
   interface Props {
     value: number | undefined | null;
@@ -12,11 +13,11 @@
   const effectiveMax = $derived(options?.maxValue ?? maxValue);
   const showLabel = $derived(options?.showLabel ?? true);
   const barColor = $derived(options?.color ?? "var(--wf-primary, #2563eb)");
+  const scale = $derived(options?.scale ?? "linear");
 
-  const percentage = $derived(() => {
-    if (value === undefined || value === null || effectiveMax <= 0) return 0;
-    return Math.min(100, Math.max(0, (value / effectiveMax) * 100));
-  });
+  const percentage = $derived(() =>
+    normalizeValue(value, 0, effectiveMax, scale) * 100
+  );
 
   const formattedValue = $derived(() => {
     if (value === undefined || value === null) return "";

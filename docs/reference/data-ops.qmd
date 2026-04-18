@@ -1,0 +1,423 @@
+---
+title: "Data Operations"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+The data-operation verbs provide a fluent, pipe-friendly interface for adding, removing, rearranging, filtering, sorting, and editing the columns, rows, and cells of a table. Every verb dispatches on input type:
+
+- **`WebSpec`** — returns a new `WebSpec` with the change applied.
+- **htmlwidget** (returned by `tabviz()`) — extracts the spec, mutates it, re-wraps as a widget.
+- **`tabviz_proxy`** (Shiny only) — sends a targeted `sendCustomMessage()` to the running widget; no full re-render.
+
+This single surface means the same code can compose a static plot or drive a live Shiny widget.
+
+::: {.callout-tip}
+## See Also
+
+- [Styling functions](styling.qmd) for row/column/marker visual styling.
+- [Fluent API guide](../guide/fluent-api.qmd) for end-to-end workflows.
+- [Shiny integration](shiny.qmd) for proxy usage patterns.
+:::
+
+---
+
+## Column Operations
+
+### add_column() {#add_column}
+
+Insert a new column into the table.
+
+```r
+add_column(x, col, after = NULL)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `col` | A `ColumnSpec` from `col_text()`, `col_numeric()`, `col_bar()`, etc. |
+| `after` | Field/id of an existing column to insert after. `NULL` (default) appends; `"__start__"` prepends. |
+
+**Returns**: Modified input (same type).
+
+```{r}
+#| eval: false
+spec <- web_spec(data, columns = list(col_text("study"), col_numeric("hr")))
+
+# Append a column
+spec |> add_column(col_numeric("se", "SE"))
+
+# Insert after a specific field
+spec |> add_column(col_badge("sig"), after = "hr")
+
+# Prepend
+spec |> add_column(col_icon("flag"), after = "__start__")
+```
+
+### remove_column() {#remove_column}
+
+Remove a column by field or id.
+
+```r
+remove_column(x, field)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `field` | Field or id of the column to remove |
+
+On a proxy this sends `hideColumn`, which hides the column client-side without destroying its spec — `add_column()` with the same field will restore it.
+
+```{r}
+#| eval: false
+spec |> remove_column("notes")
+```
+
+### move_column() {#move_column}
+
+Change a column's position.
+
+```r
+move_column(x, field, to)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `field` | Field or id of the column to move |
+| `to` | 1-based integer index, or the field name of another column |
+
+On the R side, indices are 1-based. The proxy payload converts to 0-based before sending to JS — you do not need to adjust.
+
+```{r}
+#| eval: false
+# Move to position 3
+spec |> move_column("hr", to = 3L)
+
+# Move before the "pval" column
+spec |> move_column("hr", to = "pval")
+```
+
+::: {.callout-note}
+Within-group moves via static dispatch are currently unsupported — `move_column()` on a column that lives inside a `col_group()` will error. Use proxy dispatch or restructure groups.
+:::
+
+### resize_column() {#resize_column}
+
+Set a column's pixel width.
+
+```r
+resize_column(x, field, width)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `field` | Field or id of the column |
+| `width` | Width in pixels (≥ 40) |
+
+```{r}
+#| eval: false
+spec |> resize_column("study", width = 240)
+```
+
+### update_column() {#update_column}
+
+Edit properties of an existing column in place.
+
+```r
+update_column(x, field, ...)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `field` | Field or id of the column |
+| `...` | Named properties to update |
+
+Top-level slots written directly: `header`, `align`, `header_align`, `wrap`, `sortable`, `width`.
+Any other name is merged into the column's `options` list (useful for type-specific knobs such as `decimals`, `format`, `colors`).
+
+```{r}
+#| eval: false
+spec |>
+  update_column("hr",
+    header = "Hazard Ratio",
+    align = "right",
+    decimals = 3
+  )
+```
+
+---
+
+## Row & Data Operations
+
+### sort_rows() {#sort_rows}
+
+Order rows by a column's values.
+
+```r
+sort_rows(x, by, direction = c("asc", "desc", "none"))
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `by` | Field or id of the column to sort by |
+| `direction` | `"asc"`, `"desc"`, or `"none"` (clears sort on a proxy) |
+
+On static inputs, `direction = "none"` is a no-op; the spec data frame keeps its existing order.
+
+```{r}
+#| eval: false
+spec |> sort_rows("hr", direction = "desc")
+```
+
+### filter_rows() {#filter_rows}
+
+Keep rows that match a predicate.
+
+```r
+filter_rows(x, field, operator = c("eq", "neq", "gt", "lt", "contains"), value)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `field` | Field to filter on |
+| `operator` | `"eq"`, `"neq"`, `"gt"`, `"lt"`, or `"contains"` |
+| `value` | Scalar value to compare against |
+
+```{r}
+#| eval: false
+spec |> filter_rows("region", "eq", "North America")
+spec |> filter_rows("hr", "lt", 1)
+```
+
+On static inputs, rows where the predicate is `NA` are dropped.
+
+### clear_filters() {#clear_filters}
+
+Remove any runtime filters.
+
+```r
+clear_filters(x)
+```
+
+No-op for static inputs (there is no persisted filter state). On a proxy, sends `clearFilter` to reset the widget's filter stack.
+
+### select_rows() {#select_rows}
+
+Replace the current row selection (proxy only).
+
+```r
+select_rows(x, row_ids)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `tabviz_proxy` |
+| `row_ids` | Character vector of row ids to select |
+
+On static inputs, warns and returns the input unchanged — selection is a runtime concept with no spec-level representation.
+
+```{r}
+#| eval: false
+observeEvent(input$highlight, {
+  proxy <- tabviz_proxy("plot")
+  select_rows(proxy, c("Trial A", "Trial C"))
+})
+```
+
+### move_row() {#move_row}
+
+Reposition a row within the data frame.
+
+```r
+move_row(x, row_id, to)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `row_id` | Row id (the value in the leftmost label/id column) |
+| `to` | 1-based integer index, or another row id |
+
+```{r}
+#| eval: false
+spec |> move_row("Summary", to = 1L)
+```
+
+### update_data() {#update_data}
+
+Replace the entire underlying data frame.
+
+```r
+update_data(x, data)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `data` | A data frame (static inputs) or `WebSpec` (proxy) |
+
+For a proxy you must pass a complete `WebSpec`, not a raw data frame — column specs, themes, and annotations need to be re-serialized together. Build a fresh spec with `tabviz()` or `web_spec()` and pass it in.
+
+```{r}
+#| eval: false
+# Static: swap the data frame
+spec |> update_data(new_df)
+
+# Proxy: full re-specification
+observeEvent(input$refresh, {
+  proxy <- tabviz_proxy("plot")
+  fresh <- tabviz(reactive_data(), label = "study",
+                  columns = list(viz_forest("hr", "lo", "hi")))
+  update_data(proxy, attr(fresh, "webspec"))
+})
+```
+
+---
+
+## Group Operations
+
+### toggle_group() {#toggle_group}
+
+Collapse or expand a named group.
+
+```r
+toggle_group(x, group_id, collapsed = NULL)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | A `WebSpec`, htmlwidget, or `tabviz_proxy` |
+| `group_id` | Id of the group to toggle |
+| `collapsed` | `TRUE` to collapse, `FALSE` to expand, `NULL` to flip current state |
+
+Groups are defined via the `group` argument of `tabviz()`; if a spec has none, `toggle_group()` warns for static inputs.
+
+```{r}
+#| eval: false
+spec |> toggle_group("secondary_endpoints", collapsed = TRUE)
+```
+
+---
+
+## Cell Edits (Proxy Only)
+
+These verbs carry changes directly into a running widget. They have no spec-level counterpart — on static inputs they warn and return unchanged.
+
+### set_cell() {#set_cell}
+
+Overwrite a single cell.
+
+```r
+set_cell(x, row_id, field, value)
+```
+
+```{r}
+#| eval: false
+set_cell(proxy, row_id = "Trial A", field = "hr", value = 0.84)
+```
+
+### set_row_label() {#set_row_label}
+
+Rename a row's label.
+
+```r
+set_row_label(x, row_id, label)
+```
+
+```{r}
+#| eval: false
+set_row_label(proxy, "Trial A", "Trial A (updated)")
+```
+
+### clear_edits() {#clear_edits}
+
+Discard every in-widget cell and label edit applied since the last full render.
+
+```r
+clear_edits(x)
+```
+
+---
+
+## Global Controls
+
+### set_theme() {#set_theme}
+
+Swap the theme. Accepts a name (`"jama"`, `"lancet"`, etc.) or a `WebTheme` object. On a proxy this sends a `setTheme` message so the running widget re-skins without a full re-render. See the [styling reference](styling.qmd#set_theme) for parameters and examples.
+
+### set_zoom() {#set_zoom}
+
+Adjust zoom and container size constraints on a rendered widget.
+
+```r
+set_zoom(x, zoom = 1.0, auto_fit = TRUE,
+         max_width = NULL, max_height = NULL,
+         show_controls = TRUE)
+```
+
+| Argument | Description |
+|----------|-------------|
+| `x` | An htmlwidget or `tabviz_proxy` |
+| `zoom` | Zoom level (0.5 to 2.0) |
+| `auto_fit` | `TRUE` shrinks content to fit container; never enlarges |
+| `max_width`, `max_height` | Maximum container dimensions in pixels |
+| `show_controls` | Show zoom controls on hover |
+
+Works on rendered htmlwidgets and proxies only — not on bare `WebSpec` objects (zoom is a presentation concern, not a data concern).
+
+```{r}
+#| eval: false
+tabviz(data, ...) |> set_zoom(zoom = 0.8, max_width = 1000)
+```
+
+---
+
+## Verb Reference
+
+### Columns
+
+| Function | Purpose |
+|----------|---------|
+| `add_column()` | Insert a new column |
+| `remove_column()` | Remove a column (proxy: hide) |
+| `move_column()` | Change column position |
+| `resize_column()` | Set pixel width |
+| `update_column()` | Edit header, alignment, options |
+
+### Rows & data
+
+| Function | Purpose |
+|----------|---------|
+| `sort_rows()` | Order rows by a column |
+| `filter_rows()` | Keep rows matching a predicate |
+| `clear_filters()` | Clear runtime filters (proxy) |
+| `select_rows()` | Select rows (proxy) |
+| `move_row()` | Reposition a row |
+| `update_data()` | Replace the data frame |
+
+### Groups, cells, global
+
+| Function | Purpose |
+|----------|---------|
+| `toggle_group()` | Collapse/expand a group |
+| `set_cell()` | Overwrite a cell (proxy) |
+| `set_row_label()` | Rename a row (proxy) |
+| `clear_edits()` | Discard in-widget edits (proxy) |
+| `set_theme()` | Apply a theme |
+| `set_zoom()` | Zoom/container constraints |
+
+## See Also
+
+- [Styling functions](styling.qmd)
+- [Fluent API guide](../guide/fluent-api.qmd)
+- [Shiny integration](shiny.qmd)

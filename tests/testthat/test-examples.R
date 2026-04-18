@@ -188,9 +188,11 @@ test_that("row_styling example produces valid widget", {
   expect_s3_class(widget, "tabviz")
 })
 
-# Meta-test: all examples should produce valid widgets
+# Meta-test: all examples should produce valid widgets.
+# Shiny demos are excluded — they define ui/server instead of returning a widget.
 test_that("all examples produce valid widgets", {
   examples <- get_example_files()
+  examples <- examples[!grepl("_shiny_", basename(examples))]
   skip_if(length(examples) == 0, "No example files found")
 
   for (ex in examples) {

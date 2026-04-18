@@ -12,10 +12,9 @@
 
   let { store, target, root }: Props = $props();
 
-  // Determine mode: forest popover ("__forest__:colId"), label ("__label__"), or cell (field).
+  // Determine mode: forest popover ("__forest__:colId") or regular cell (field).
   const isForest = $derived(target.field.startsWith("__forest__:"));
   const forestColId = $derived(isForest ? target.field.slice("__forest__:".length) : "");
-  const isLabel = $derived(target.field === "__label__");
 
   const row = $derived.by(() => {
     if (!store.spec) return null;
@@ -24,7 +23,7 @@
 
   // Column (for inline cell edits) — used to choose numeric vs text input type.
   const column = $derived.by(() => {
-    if (isForest || isLabel) return null;
+    if (isForest) return null;
     return store.allColumns.find((c) => c.field === target.field) ?? null;
   });
 
@@ -34,12 +33,11 @@
     return numTypes.has(column.type);
   });
 
-  // Anchor element lookup — label and regular cells both carry data-row-id + data-field.
+  // Anchor element lookup — cells carry data-row-id + data-field.
   const anchorEl = $derived.by(() => {
     if (!root || isForest) return null;
-    const fieldAttr = isLabel ? "__label__" : target.field;
     return root.querySelector<HTMLElement>(
-      `[data-row-id="${CSS.escape(target.rowId)}"][data-field="${CSS.escape(fieldAttr)}"]`,
+      `[data-row-id="${CSS.escape(target.rowId)}"][data-field="${CSS.escape(target.field)}"]`,
     );
   });
 
@@ -65,9 +63,7 @@
 
   $effect(() => {
     if (!row) return;
-    if (isLabel) {
-      draft = store.getLabel(row);
-    } else if (isForest) {
+    if (isForest) {
       const col = store.allColumns.find((c) => c.id === forestColId);
       const opts = col?.options?.forest;
       const point = opts?.point ?? "est";
@@ -101,9 +97,7 @@
 
   function commitInline() {
     if (!row) return;
-    if (isLabel) {
-      store.setRowLabel(row.id, draft);
-    } else if (isNumericColumn) {
+    if (isNumericColumn) {
       const n = parseNumberOrNull(draft);
       if (Number.isNaN(n as number)) { invalid = true; return; }
       store.setCellValue(row.id, target.field, n as EditValue);

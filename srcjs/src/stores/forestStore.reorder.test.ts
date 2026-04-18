@@ -60,8 +60,6 @@ function buildSpec(): WebSpec {
         { id: "B", label: "Group B", collapsed: false, depth: 0 },
       ],
       summaries: [],
-      labelCol: "label",
-      labelHeader: "Study",
     },
     columns: [
       { id: "forest", header: "HR", field: "hr", type: "forest", align: "center",
