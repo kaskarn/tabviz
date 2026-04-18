@@ -30,6 +30,7 @@
   import HeaderContextMenu, { type ContextMenuTarget } from "$components/controls/HeaderContextMenu.svelte";
   import ColumnEditorPopover, { type EditorTarget } from "$components/controls/ColumnEditorPopover.svelte";
   import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
+  import { getVisualTypeDef } from "$lib/column-compat";
   import DropIndicator from "$components/controls/DropIndicator.svelte";
   import { hitTestRowGaps } from "$lib/dnd-utils";
   import EditableCell from "$components/controls/EditableCell.svelte";
@@ -120,12 +121,18 @@
     if (!spec?.interaction.enableEdit) return;
     e.preventDefault();
     columnEditorTarget = null;
+    const def = getVisualTypeDef(column.type);
+    // Only offer "Configure…" when the slot-based editor can round-trip this
+    // type. authorOnly viz types (viz_bar/viz_boxplot/viz_violin) have empty
+    // slot lists and must be configured in R via extra_columns.
+    const canConfigure = !!def && !def.authorOnly && def.slots.length > 0;
     headerContextMenu = {
       columnId: column.id,
       columnHeader: column.header ?? column.field,
       anchorX: e.clientX,
       anchorY: e.clientY,
       canHide: true,
+      canConfigure,
     };
   }
 
@@ -1237,12 +1244,14 @@
             {@const vizDefaultWidth = column.type === "forest"
               ? (column.options?.forest?.width ?? layout.forestWidth)
               : layout.forestWidth}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div
               use:forestColumnRef={column.id}
               class="grid-cell header-cell plot-header"
               data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
+              oncontextmenu={(e) => openHeaderContextMenu(column, e)}
             >
               {#if spec?.interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />

@@ -7,6 +7,9 @@
     // True for user-inserted or override-able columns; controls whether "Hide"
     // is offered. Currently all regular data columns are hideable.
     canHide: boolean;
+    // False for viz column types whose structure (multi-field, extra_columns)
+    // can't round-trip through the slot-based editor popover. Hides "Configure…".
+    canConfigure: boolean;
   }
 
   export type ContextMenuAction = "hide" | "insert" | "configure";
@@ -79,9 +82,11 @@
     aria-label="Column actions: {target.columnHeader}"
   >
     <div class="ctx-title" title={target.columnHeader}>{target.columnHeader}</div>
-    <button type="button" class="ctx-item" role="menuitem" onclick={() => pick("configure")}>
-      Configure…
-    </button>
+    {#if target.canConfigure}
+      <button type="button" class="ctx-item" role="menuitem" onclick={() => pick("configure")}>
+        Configure…
+      </button>
+    {/if}
     <button type="button" class="ctx-item" role="menuitem" onclick={() => pick("insert")}>
       Insert column after…
     </button>
