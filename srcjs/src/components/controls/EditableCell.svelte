@@ -12,18 +12,37 @@
 
   let { store, target, root }: Props = $props();
 
-  // Determine mode: forest popover ("__forest__:colId") or regular cell (field).
-  const isForest = $derived(target.field.startsWith("__forest__:"));
+  // Determine mode: group-header edit (groupId set), forest popover
+  // ("__forest__:colId"), or regular cell (field).
+  const isGroup = $derived(!!target.groupId);
+  const isForest = $derived(!isGroup && target.field.startsWith("__forest__:"));
   const forestColId = $derived(isForest ? target.field.slice("__forest__:".length) : "");
 
   const row = $derived.by(() => {
-    if (!store.spec) return null;
+    if (!store.spec || isGroup) return null;
     return store.spec.data.rows.find((r) => r.id === target.rowId) ?? null;
+  });
+
+  // Walk the column-def tree to find a group by id.
+  function findGroup(defs: { id: string; isGroup?: boolean; columns?: unknown[] }[], id: string): { id: string; header?: string } | null {
+    for (const d of defs) {
+      if (d.isGroup && d.id === id) return d as { id: string; header?: string };
+      if (d.isGroup && Array.isArray(d.columns)) {
+        const hit = findGroup(d.columns as { id: string; isGroup?: boolean; columns?: unknown[] }[], id);
+        if (hit) return hit;
+      }
+    }
+    return null;
+  }
+
+  const group = $derived.by(() => {
+    if (!isGroup || !target.groupId) return null;
+    return findGroup(store.allColumnDefs as unknown as { id: string; isGroup?: boolean; columns?: unknown[] }[], target.groupId);
   });
 
   // Column (for inline cell edits) — used to choose numeric vs text input type.
   const column = $derived.by(() => {
-    if (isForest) return null;
+    if (isForest || isGroup) return null;
     return store.allColumns.find((c) => c.field === target.field) ?? null;
   });
 
@@ -33,9 +52,15 @@
     return numTypes.has(column.type);
   });
 
-  // Anchor element lookup — cells carry data-row-id + data-field.
+  // Anchor element lookup — cells carry data-row-id + data-field; group
+  // headers carry data-header-id.
   const anchorEl = $derived.by(() => {
     if (!root || isForest) return null;
+    if (isGroup && target.groupId) {
+      return root.querySelector<HTMLElement>(
+        `[data-header-id="${CSS.escape(target.groupId)}"]`,
+      );
+    }
     return root.querySelector<HTMLElement>(
       `[data-row-id="${CSS.escape(target.rowId)}"][data-field="${CSS.escape(target.field)}"]`,
     );
@@ -62,6 +87,13 @@
   });
 
   $effect(() => {
+    if (isGroup) {
+      if (!target.groupId) return;
+      const current = store.cellEdits.groups[target.groupId] ?? group?.header ?? "";
+      draft = toStr(current);
+      tick().then(() => { inputEl?.focus(); inputEl?.select?.(); });
+      return;
+    }
     if (!row) return;
     if (isForest) {
       const col = store.allColumns.find((c) => c.id === forestColId);
@@ -95,7 +127,14 @@
     return Number.isFinite(n) ? n : NaN as unknown as number;
   }
 
+  function commitGroup() {
+    if (!target.groupId) return;
+    store.setGroupHeader(target.groupId, draft);
+    store.endEdit();
+  }
+
   function commitInline() {
+    if (isGroup) { commitGroup(); return; }
     if (!row) return;
     if (isNumericColumn) {
       const n = parseNumberOrNull(draft);

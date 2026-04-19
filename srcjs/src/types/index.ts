@@ -737,8 +737,8 @@ export interface ColumnOrderOverrides {
 // Sparse cell edits (session-only).
 export type EditValue = string | number | null;
 export interface CellEdits {
-  cells: Record<string, Record<string, EditValue>>; // rowId -> field -> value
-  labels: Record<string, string>;                    // rowId -> new label
+  cells: Record<string, Record<string, EditValue>>; // rowId -> field -> value (primary-column field doubles as the row label)
+  groups: Record<string, string>;                   // groupId -> new header text
 }
 
 // Transient UI state for drag gestures.
@@ -763,6 +763,9 @@ export interface EditTarget {
   field: string;
   x?: number;                     // popover anchor (forest only)
   y?: number;
+  // When set, the editor targets a column group's header text instead of a
+  // row cell. `rowId` and `field` are unused (pass empty strings).
+  groupId?: string;
 }
 
 // ============================================================================

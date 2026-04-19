@@ -66,7 +66,7 @@ tabviz(
 - **Filter** → click the funnel icon next to a header. You'll get a text / numeric / categorical UI depending on the column.
 - **Reorder rows** → hover a row, grab the drag handle on the left, drop within the same group.
 - **Reorder columns** → hover a header, grab its drag handle. Columns inside "Study Info" stay inside "Study Info".
-- **Edit** → double-click a cell (label, numeric, text) or a forest marker (gets a 3-field popover).
+- **Edit** → double-click an editable cell (text, numeric, percent, p-value, date, interval) to edit inline, or double-click a column-group header to rename the span.
 - **Export** → download SVG or PNG; the file reflects your current state exactly.
 :::
 

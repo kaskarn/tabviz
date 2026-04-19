@@ -59,7 +59,7 @@ tabviz(
 - **Filter** — click the funnel icon in a header and pick a text / numeric / categorical filter
 - **Reorder rows** — hover a row, grab the drag handle, drop inside the same group
 - **Reorder columns** — hover a column header, grab its handle; columns stay within their group ("Study Info" / "Results")
-- **Edit values** — double-click any label, text, or numeric cell; double-click a forest marker for an estimate / lower / upper popover
+- **Edit values** — double-click a text, numeric, percent, p-value, date, or interval cell to edit inline; double-click a column-group header to rename the span
 - **Export** — the download button's SVG & PNG capture exactly your current view
 :::
 
@@ -208,7 +208,7 @@ tabviz(april, label = "carrier",
 - Sort columns by header click (grouped tables preserve group structure)
 - Per-column filter popovers (text / numeric range / categorical)
 - Drag-and-drop reordering of rows, row groups, columns, and column groups
-- Double-click to edit any label, text, or numeric cell; forest cells get an estimate / lower / upper popover
+- Double-click any editable cell (text, numeric, percent, p-value, date, interval) for inline edit; double-click a column-group header to rename it
 - Hover tooltips with custom content
 :::
 :::

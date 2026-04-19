@@ -50,7 +50,7 @@ export function createForestStore() {
   // User-modified view state (session-only; feeds exportSpec for WYSIWYG)
   let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
-  let cellEdits = $state<CellEdits>({ cells: {}, labels: {} });
+  let cellEdits = $state<CellEdits>({ cells: {}, groups: {} });
 
   // User-added columns (runtime insertions via the interactive column editor).
   // `afterId` identifies the sibling column that the new column is inserted after
@@ -1389,7 +1389,15 @@ export function createForestStore() {
   }
 
   function setRowLabel(rowId: string, label: string) {
-    cellEdits = { ...cellEdits, labels: { ...cellEdits.labels, [rowId]: label } };
+    // The "row label" is the primary column's cell — resolving at call time
+    // means reordering columns doesn't migrate prior label edits.
+    const field = allColumns[0]?.field;
+    if (!field) return;
+    setCellValue(rowId, field, label);
+  }
+
+  function setGroupHeader(groupId: string, text: string) {
+    cellEdits = { ...cellEdits, groups: { ...cellEdits.groups, [groupId]: text } };
   }
 
   function setForestCellValues(
@@ -1423,11 +1431,13 @@ export function createForestStore() {
   }
 
   function getLabel(row: Row): string {
-    return cellEdits.labels[row.id] ?? row.label;
+    const field = allColumns[0]?.field;
+    const edited = field ? cellEdits.cells[row.id]?.[field] : undefined;
+    return edited !== undefined && edited !== null ? String(edited) : row.label;
   }
 
   function clearAllEdits() {
-    cellEdits = { cells: {}, labels: {} };
+    cellEdits = { cells: {}, groups: {} };
   }
 
   // Filter-popover plumbing (rendered at widget root so it's not clipped or
@@ -1624,10 +1634,18 @@ export function createForestStore() {
     // Note: showZoomControls is not reset - it's a UI preference
   }
 
-  // Derived: tooltip row
+  // Derived: tooltip row. Merges cell edits so the tooltip reflects the
+  // user's in-session changes (including the primary column, which doubles
+  // as the row label).
   const tooltipRow = $derived.by((): Row | null => {
     if (!tooltipRowId || !spec) return null;
-    return spec.data.rows.find((r) => r.id === tooltipRowId) ?? null;
+    const base = spec.data.rows.find((r) => r.id === tooltipRowId);
+    if (!base) return null;
+    const edited = cellEdits.cells[base.id];
+    if (!edited) return base;
+    const primaryField = allColumns[0]?.field;
+    const newLabel = primaryField && edited[primaryField] != null ? String(edited[primaryField]) : base.label;
+    return { ...base, label: newLabel, metadata: { ...base.metadata, ...edited } };
   });
 
   // Derived: exportSpec — WYSIWYG spec reflecting the user's current view state.
@@ -1640,16 +1658,19 @@ export function createForestStore() {
     //    filter + sort + collapse-driven omission + (future) row-reorder.
     //    Group headers are skipped — they're reconstructed from `groups` on export.
     const orderedRows: Row[] = [];
+    const primaryField = allColumns[0]?.field;
     for (const dr of displayRows) {
       if (dr.type === "data") {
         const base = dr.row;
         const editedMeta = cellEdits.cells[base.id];
-        const editedLabel = cellEdits.labels[base.id];
-        if (editedMeta || editedLabel !== undefined) {
+        if (editedMeta) {
+          const editedLabel = primaryField && editedMeta[primaryField] != null
+            ? String(editedMeta[primaryField])
+            : base.label;
           orderedRows.push({
             ...base,
-            label: editedLabel ?? base.label,
-            metadata: editedMeta ? { ...base.metadata, ...editedMeta } : base.metadata,
+            label: editedLabel,
+            metadata: { ...base.metadata, ...editedMeta },
           });
         } else {
           orderedRows.push(base);
@@ -2017,6 +2038,7 @@ export function createForestStore() {
     setCellValue,
     clearCellEdit,
     setRowLabel,
+    setGroupHeader,
     setForestCellValues,
     getDisplayValue,
     getLabel,

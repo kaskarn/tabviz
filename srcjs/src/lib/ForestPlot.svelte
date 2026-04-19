@@ -1237,14 +1237,18 @@
             <!-- Group header -->
             <div
               class="grid-cell header-cell column-group-header"
+              class:editable={spec?.interaction.enableEdit}
               data-header-id={cell.col.id}
               style:grid-column="{cell.gridColumnStart} / span {cell.colspan}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
+              ondblclick={spec?.interaction.enableEdit
+                ? () => store.startEdit({ rowId: "", field: "", groupId: cell.col.id })
+                : undefined}
             >
               {#if spec?.interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column_group" id={cell.col.id} root={containerRef} />
               {/if}
-              <span class="header-text">{cell.col.header}</span>
+              <span class="header-text">{store.cellEdits.groups[cell.col.id] ?? cell.col.header}</span>
             </div>
           {:else if cell.isForest}
             <!-- Viz column header (forest, bar, boxplot, violin) -->
