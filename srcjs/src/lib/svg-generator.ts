@@ -24,6 +24,7 @@ import type {
 import { niceDomain, DOMAIN_PADDING, getEffectValue, normalizeValue } from "./scale-utils";
 import { computeAxis, generateTicks, VIZ_MARGIN, type AxisComputation } from "./axis-utils";
 import { computeArrowDimensions, renderArrowPath } from "./arrow-utils";
+import { isVizType, resolveShowHeader } from "./column-compat";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -2352,15 +2353,17 @@ function renderUnifiedColumnHeaders(
         currentX += groupWidth;
       } else {
         const width = getColWidth(col);
-        const headerAlign = col.headerAlign ?? col.align;
-        const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
-        const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
-        lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
-          font-family="${theme.typography.fontFamily}"
-          font-size="${fontSize}px"
-          font-weight="${fontWeight}"
-          text-anchor="${anchor}"
-          fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+        const headerAlign = col.headerAlign ?? (isVizType(col.type) ? "center" : col.align);
+        if (resolveShowHeader(col.showHeader, col.header)) {
+          const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
+          const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
+          lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
+            font-family="${theme.typography.fontFamily}"
+            font-size="${fontSize}px"
+            font-weight="${fontWeight}"
+            text-anchor="${anchor}"
+            fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+        }
         currentX += width;
       }
     }
@@ -2378,15 +2381,18 @@ function renderUnifiedColumnHeaders(
       if (col.isGroup) {
         for (const subCol of col.columns) {
           if (!subCol.isGroup) {
-            const width = getColWidth(subCol as ColumnSpec);
-            const headerAlign = (subCol as ColumnSpec).headerAlign ?? (subCol as ColumnSpec).align;
-            const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
-            lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
-              font-family="${theme.typography.fontFamily}"
-              font-size="${fontSize}px"
-              font-weight="${fontWeight}"
-              text-anchor="${anchor}"
-              fill="${theme.colors.foreground}">${escapeXml(subCol.header)}</text>`);
+            const sub = subCol as ColumnSpec;
+            const width = getColWidth(sub);
+            const headerAlign = sub.headerAlign ?? (isVizType(sub.type) ? "center" : sub.align);
+            if (resolveShowHeader(sub.showHeader, sub.header)) {
+              const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
+              lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
+                font-family="${theme.typography.fontFamily}"
+                font-size="${fontSize}px"
+                font-weight="${fontWeight}"
+                text-anchor="${anchor}"
+                fill="${theme.colors.foreground}">${escapeXml(sub.header)}</text>`);
+            }
             currentX += width;
           }
         }
@@ -2407,16 +2413,18 @@ function renderUnifiedColumnHeaders(
 
     for (const col of leafColumns) {
       const width = getColWidth(col);
-      const headerAlign = col.headerAlign ?? col.align;
-      const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
-      const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
+      const headerAlign = col.headerAlign ?? (isVizType(col.type) ? "center" : col.align);
+      if (resolveShowHeader(col.showHeader, col.header)) {
+        const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
+        const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
 
-      lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
-        font-family="${theme.typography.fontFamily}"
-        font-size="${fontSize}px"
-        font-weight="${fontWeight}"
-        text-anchor="${anchor}"
-        fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+        lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
+          font-family="${theme.typography.fontFamily}"
+          font-size="${fontSize}px"
+          font-weight="${fontWeight}"
+          text-anchor="${anchor}"
+          fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+      }
       currentX += width;
     }
   }

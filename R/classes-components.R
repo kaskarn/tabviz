@@ -9,6 +9,9 @@
 #' @param width Column width in pixels (NA for auto)
 #' @param align Text alignment for body cells: "left", "center", "right"
 #' @param header_align Text alignment for header: "left" (default), "center", "right"
+#' @param show_header Whether to show the header cell. `NA` (default) follows
+#'   the "auto" rule: shown if `header` is a non-empty string. `TRUE` or `FALSE`
+#'   override.
 #' @param wrap Enable text wrapping (default FALSE). When TRUE, long text wraps instead of being truncated.
 #' @param sortable Whether the column is sortable
 #' @param options Named list of type-specific options
@@ -32,7 +35,8 @@ ColumnSpec <- new_class(
     type = new_property(class_character, default = "text"),
     width = new_property(class_any, default = NA_real_),  # numeric or "auto"
     align = new_property(class_character, default = "left"),
-    header_align = new_property(class_character, default = "left"),
+    header_align = new_property(class_character, default = NA_character_),
+    show_header = new_property(class_logical, default = NA),  # NA = auto (show iff header non-empty)
     wrap = new_property(class_logical, default = FALSE),  # Enable text wrapping
     sortable = new_property(class_logical, default = TRUE),
     options = new_property(class_list, default = list()),
@@ -85,6 +89,9 @@ ColumnSpec <- new_class(
 #' @param width Column width in pixels, or "auto" for content-based width
 #' @param align Text alignment for body cells
 #' @param header_align Text alignment for header (default: "left")
+#' @param show_header Whether to show the header cell. `NULL` / `NA` (default)
+#'   uses the auto rule (shown when `header` is non-empty). `TRUE` / `FALSE`
+#'   force the header on or off.
 #' @param wrap Enable text wrapping (default FALSE). When TRUE, long text wraps
 #'   instead of being truncated with ellipsis.
 #' @param sortable Whether sortable
@@ -112,6 +119,7 @@ web_col <- function(
     width = NULL,
     align = NULL,
     header_align = NULL,
+    show_header = NULL,
     wrap = FALSE,
     sortable = TRUE,
     options = list(),
@@ -156,7 +164,8 @@ web_col <- function(
     type = type,
     width = width_val,
     align = align,
-    header_align = header_align %||% "left",
+    header_align = if (is.null(header_align)) NA_character_ else as.character(header_align),
+    show_header = if (is.null(show_header)) NA else as.logical(show_header),
     wrap = wrap,
     sortable = sortable,
     options = options,
@@ -177,6 +186,18 @@ web_col <- function(
 # ============================================================================
 # Column helper functions
 # ============================================================================
+
+# Resolve a viz-column header. If the user passed NULL, use the provided
+# fallback (typically the first effect's label or field). Empty string stays
+# empty ("off" when combined with auto show_header). `show_header = FALSE`
+# suppresses even when a label is resolved.
+resolve_viz_header <- function(header, fallback) {
+  if (!is.null(header)) return(as.character(header))
+  if (is.null(fallback) || length(fallback) == 0) return("")
+  fb <- fallback[[1]]
+  if (is.na(fb) || !nzchar(fb)) return("")
+  as.character(fb)
+}
 
 #' Column helper: Text column
 #'
@@ -456,7 +477,7 @@ col_pvalue <- function(
 #' @export
 col_bar <- function(
     field = "weight",
-    header = "Weight",
+    header = NULL,
     width = NULL,
     max_value = NULL,
     show_label = TRUE,
@@ -1274,8 +1295,15 @@ viz_forest <- function(
     paste0("_forest_", point)
   }
 
-  # Default header to empty string (forest plots typically don't have text headers)
-  resolved_header <- if (is.null(header)) "" else header
+  # Default header to the effect label / axis label; "auto" show_header rule
+  # suppresses when the resolved header is empty.
+  forest_fallback <- if (has_effects) {
+    lbl <- effects[[1]]@label
+    if (!is.na(lbl) && nzchar(lbl)) lbl else effects[[1]]@point_col
+  } else {
+    point
+  }
+  resolved_header <- resolve_viz_header(header, forest_fallback)
 
   web_col(
     synthetic_field,
@@ -1773,7 +1801,7 @@ effect_violin <- function(data, label = NULL, color = NULL, fill_opacity = 0.5) 
 #' )
 viz_bar <- function(
     ...,
-    header = "",
+    header = NULL,
     width = 150,
     scale = c("linear", "log"),
     axis_range = NULL,
@@ -1825,9 +1853,12 @@ viz_bar <- function(
   # Synthetic field name
   synthetic_field <- paste0("_viz_bar_", effects[[1]]@value)
 
+  first_label <- effects[[1]]@label
+  viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else effects[[1]]@value
+
   web_col(
     synthetic_field,
-    header = header,
+    header = resolve_viz_header(header, viz_fallback),
     type = "viz_bar",
     width = width,
     sortable = FALSE,
@@ -1874,7 +1905,7 @@ viz_bar <- function(
 #' )
 viz_boxplot <- function(
     ...,
-    header = "",
+    header = NULL,
     width = 150,
     scale = c("linear", "log"),
     axis_range = NULL,
@@ -1943,9 +1974,12 @@ viz_boxplot <- function(
   }
   synthetic_field <- paste0("_viz_boxplot_", first_field)
 
+  first_label <- first_effect@label
+  viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else first_field
+
   web_col(
     synthetic_field,
-    header = header,
+    header = resolve_viz_header(header, viz_fallback),
     type = "viz_boxplot",
     width = width,
     sortable = FALSE,
@@ -1989,7 +2023,7 @@ viz_boxplot <- function(
 #' )
 viz_violin <- function(
     ...,
-    header = "",
+    header = NULL,
     width = 150,
     scale = c("linear", "log"),
     axis_range = NULL,
@@ -2047,9 +2081,12 @@ viz_violin <- function(
   # Synthetic field name
   synthetic_field <- paste0("_viz_violin_", effects[[1]]@data)
 
+  first_label <- effects[[1]]@label
+  viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else effects[[1]]@data
+
   web_col(
     synthetic_field,
-    header = header,
+    header = resolve_viz_header(header, viz_fallback),
     type = "viz_violin",
     width = width,
     sortable = FALSE,

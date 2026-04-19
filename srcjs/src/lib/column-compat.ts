@@ -253,6 +253,29 @@ export function getVisualTypeDef(type: string): VisualTypeDef | undefined {
   return VISUAL_TYPES.find((t) => t.type === type);
 }
 
+// Viz column types: render as inline SVG charts rather than formatted text.
+// Headers above these default to centered alignment.
+const VIZ_TYPES = new Set<string>([
+  "bar", "progress", "sparkline", "heatmap", "stars",
+  "forest", "viz_bar", "viz_boxplot", "viz_violin",
+]);
+
+export function isVizType(type: string | undefined | null): boolean {
+  if (!type) return false;
+  return VIZ_TYPES.has(type);
+}
+
+// Resolve the effective show-header flag given explicit `showHeader` (from
+// spec) and the column's header text. Returns true/false.
+export function resolveShowHeader(
+  showHeader: boolean | undefined,
+  header: string | undefined | null,
+): boolean {
+  if (showHeader === true) return true;
+  if (showHeader === false) return false;
+  return typeof header === "string" && header.length > 0;
+}
+
 export function slotCompatibleFields(
   slot: SlotSpec,
   available: AvailableField[],

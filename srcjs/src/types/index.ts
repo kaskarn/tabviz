@@ -384,6 +384,7 @@ export interface ColumnSpec {
   width?: number | "auto" | null;  // "auto" for content-based width calculation
   align: "left" | "center" | "right";
   headerAlign?: "left" | "center" | "right" | null;  // Header alignment (defaults to align if not specified)
+  showHeader?: boolean;  // undefined = auto (show iff header is non-empty)
   wrap?: boolean;  // Enable text wrapping (default false)
   sortable: boolean;
   options?: ColumnOptions;

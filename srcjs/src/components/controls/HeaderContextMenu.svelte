@@ -10,9 +10,12 @@
     // False for viz column types whose structure (multi-field, extra_columns)
     // can't round-trip through the slot-based editor popover. Hides "Configure…".
     canConfigure: boolean;
+    // Current effective visibility of the column's header cell; drives the
+    // "Hide header" / "Show header" toggle label.
+    headerShown: boolean;
   }
 
-  export type ContextMenuAction = "hide" | "insert" | "configure";
+  export type ContextMenuAction = "hide" | "insert" | "configure" | "toggle-header";
 </script>
 
 <script lang="ts">
@@ -87,12 +90,15 @@
         Configure…
       </button>
     {/if}
+    <button type="button" class="ctx-item" role="menuitem" onclick={() => pick("toggle-header")}>
+      {target.headerShown ? "Hide header" : "Show header"}
+    </button>
     <button type="button" class="ctx-item" role="menuitem" onclick={() => pick("insert")}>
       Insert column after…
     </button>
     {#if target.canHide}
       <button type="button" class="ctx-item destructive" role="menuitem" onclick={() => pick("hide")}>
-        Hide
+        Hide column
       </button>
     {/if}
   </div>

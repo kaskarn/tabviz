@@ -30,7 +30,7 @@
   import HeaderContextMenu, { type ContextMenuTarget } from "$components/controls/HeaderContextMenu.svelte";
   import ColumnEditorPopover, { type EditorTarget } from "$components/controls/ColumnEditorPopover.svelte";
   import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
-  import { getVisualTypeDef } from "$lib/column-compat";
+  import { getVisualTypeDef, isVizType, resolveShowHeader } from "$lib/column-compat";
   import DropIndicator from "$components/controls/DropIndicator.svelte";
   import { hitTestRowGaps } from "$lib/dnd-utils";
   import EditableCell from "$components/controls/EditableCell.svelte";
@@ -133,16 +133,22 @@
       anchorY: e.clientY,
       canHide: true,
       canConfigure,
+      headerShown: resolveShowHeader(column.showHeader, column.header),
     };
   }
 
-  function handleContextMenuAction(action: "hide" | "insert" | "configure") {
+  function handleContextMenuAction(action: "hide" | "insert" | "configure" | "toggle-header") {
     const target = headerContextMenu;
     if (!target) return;
     const col = store.allColumns.find((c) => c.id === target.columnId);
     headerContextMenu = null;
     if (action === "hide") {
       store.hideColumn(target.columnId);
+      return;
+    }
+    if (action === "toggle-header" && col) {
+      const next: ColumnSpec = { ...col, showHeader: !target.headerShown };
+      store.updateColumn(col.id, next);
       return;
     }
     if (action === "insert") {
@@ -1251,12 +1257,13 @@
               data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
+              style:text-align={column.headerAlign ?? (isVizType(column.type) ? "center" : column.align)}
               oncontextmenu={(e) => openHeaderContextMenu(column, e)}
             >
               {#if spec?.interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />
               {/if}
-              {#if column.header}
+              {#if resolveShowHeader(column.showHeader, column.header)}
                 <span class="header-text">{column.header}</span>
               {/if}
               {#if spec?.interaction.enableResize}
@@ -1283,7 +1290,7 @@
               data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
-              style:text-align={column.headerAlign ?? column.align}
+              style:text-align={column.headerAlign ?? (isVizType(column.type) ? "center" : column.align)}
               oncontextmenu={(e) => openHeaderContextMenu(column, e)}
               onclick={canSort ? (e) => {
                 const target = e.target as HTMLElement;
@@ -1294,7 +1301,9 @@
               {#if spec?.interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />
               {/if}
-              <span class="header-text">{column.header}</span>
+              {#if resolveShowHeader(column.showHeader, column.header)}
+                <span class="header-text">{column.header}</span>
+              {/if}
               {#if canSort && sortDir !== "none"}
                 <SortIndicator direction={sortDir} />
               {/if}

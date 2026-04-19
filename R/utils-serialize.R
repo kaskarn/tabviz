@@ -277,11 +277,20 @@ serialize_column <- function(col) {
     type = col@type,
     width = width_val,
     align = col@align,
-    headerAlign = col@header_align,
     wrap = col@wrap,
     sortable = col@sortable,
     isGroup = FALSE
   )
+
+  # Only include headerAlign when explicitly set (NA = follow default).
+  if (!is.na(col@header_align)) {
+    result$headerAlign <- col@header_align
+  }
+
+  # Only serialize showHeader when explicitly set (TRUE/FALSE); NA = auto, omitted.
+  if (isTRUE(col@show_header) || isFALSE(col@show_header)) {
+    result$showHeader <- as.logical(col@show_header)
+  }
 
   # Include options if present
   if (length(col@options) > 0) {

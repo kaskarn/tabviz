@@ -30,6 +30,7 @@
     getVisualTypeDef,
     slotCompatibleFields,
     autoPairSlots,
+    resolveShowHeader,
   } from "$lib/column-compat";
 
   interface Props {
@@ -48,6 +49,7 @@
   let selectedType = $state<ColumnType>("numeric");
   let slotValues = $state<Record<string, string>>({});
   let headerText = $state("");
+  let showHeader = $state(true);
   // Light options editor — covers the most common knobs per type.
   let optDecimals = $state<string>("");
   let optScale = $state<"linear" | "log">("linear");
@@ -76,6 +78,7 @@
       const ex = target.existing;
       selectedType = ex.type;
       headerText = ex.header ?? "";
+      showHeader = resolveShowHeader(ex.showHeader, ex.header);
       slotValues = slotsFromExistingSpec(ex);
       hydrateOptionsFromExisting(ex);
     } else {
@@ -83,6 +86,7 @@
       selectedType = target.type ?? "text";
       slotValues = {};
       headerText = "";
+      showHeader = true;
       resetOptions();
       // Apply any seed options provided by the type menu (e.g. Integer → decimals=0).
       if (target.seedOptions) hydrateOptionsFromBundle(selectedType, target.seedOptions);
@@ -233,6 +237,7 @@
       align,
       sortable: true,
       isGroup: false,
+      showHeader,
     };
 
     const options: ColumnSpec["options"] = {};
@@ -458,7 +463,13 @@
             type="text"
             bind:value={headerText}
             placeholder={slotValues[currentDef.slots[0]?.key] ?? "Column header"}
+            disabled={!showHeader}
           />
+        </label>
+
+        <label class="editor-check">
+          <input type="checkbox" bind:checked={showHeader} />
+          <span>Show header</span>
         </label>
 
         <!-- Type-specific options -->
