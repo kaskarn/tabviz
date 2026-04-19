@@ -6,7 +6,7 @@
 \usage{
 viz_boxplot(
   ...,
-  header = "",
+  header = NULL,
   width = 150,
   scale = c("linear", "log"),
   axis_range = NULL,
@@ -21,7 +21,9 @@ viz_boxplot(
 \arguments{
 \item{...}{One or more \code{effect_boxplot()} objects defining the boxplots}
 
-\item{header}{Column header (default "")}
+\item{header}{Column header. Defaults to \code{NULL}, which resolves at render
+time to the primary effect's label (or data field name). Pass \code{""} or
+set \code{show_header = FALSE} via \code{...} to hide.}
 
 \item{width}{Column width in pixels (default 150)}
 

@@ -342,32 +342,34 @@
   // Total height of rows area for SVG sizing
   const rowsAreaHeight = $derived(rowLayout.totalHeight);
 
-  // Helper to compute Y offsets for annotation labels to avoid collisions
-  // Labels that are too close in x-space get staggered vertically
+  // Helper to compute Y offsets for annotation labels to avoid collisions.
+  // For each label, pick the lowest tier whose occupied labels are all at
+  // least MIN_LABEL_SPACING away — handles 3+ adjacent collisions.
   function computeAnnotationLabelOffsets(annotations: Annotation[]): Record<string, number> {
     const labeledAnnotations = annotations
       .filter((a): a is Annotation & { type: "reference_line"; label: string } => a.type === "reference_line" && !!a.label)
       .map(a => ({ id: a.id, x: xScale(a.x), label: a.label }))
       .sort((a, b) => a.x - b.x);
 
-    const offsets: Record<string, number> = {};
-    // Labels are center-anchored, so we need generous spacing to avoid overlap
-    // A 100px label extends 50px in each direction from its anchor point
+    // Center-anchored labels: a ~100px label extends 50px each side of its anchor.
     const MIN_LABEL_SPACING = 120;
-    const STAGGER_OFFSET = -18; // Move labels up by ~1.5 line heights
+    const STAGGER_OFFSET = 16;
 
-    for (let i = 0; i < labeledAnnotations.length; i++) {
-      const current = labeledAnnotations[i];
-      offsets[current.id] = 0;
-
-      // Check for collision with previous label
-      if (i > 0) {
-        const prev = labeledAnnotations[i - 1];
-        const xDiff = current.x - prev.x;
-        if (xDiff < MIN_LABEL_SPACING) {
-          // Alternate labels above/below to avoid overlap
-          offsets[current.id] = offsets[prev.id] === 0 ? STAGGER_OFFSET : 0;
+    const offsets: Record<string, number> = {};
+    const tiers: number[][] = [];
+    for (const current of labeledAnnotations) {
+      let placed = false;
+      for (let tier = 0; tier < tiers.length; tier++) {
+        if (tiers[tier].every(x => Math.abs(current.x - x) >= MIN_LABEL_SPACING)) {
+          tiers[tier].push(current.x);
+          offsets[current.id] = tier * STAGGER_OFFSET;
+          placed = true;
+          break;
         }
+      }
+      if (!placed) {
+        tiers.push([current.x]);
+        offsets[current.id] = (tiers.length - 1) * STAGGER_OFFSET;
       }
     }
 
@@ -1490,13 +1492,13 @@
                   stroke={annotation.color ?? "var(--wf-accent)"}
                   stroke-width={annotation.width ?? 1.5}
                   stroke-opacity={annotation.opacity ?? 0.6}
-                  stroke-dasharray={annotation.style === "dashed" ? "6,4" : annotation.style === "dotted" ? "2,2" : "none"}
+                  stroke-dasharray={annotation.style === "dashed" ? "6,4" : annotation.style === "dotted" ? "2,2" : ""}
                 />
                 {#if annotation.label}
                   {@const yOffset = annotationLabelOffsets[annotation.id] ?? 0}
                   <text
                     x={colScale(annotation.x)}
-                    y={-4 + yOffset}
+                    y={rowsAreaHeight + axisGap + 56 + yOffset}
                     text-anchor="middle"
                     fill={annotation.color ?? "var(--wf-secondary)"}
                     font-size="var(--wf-font-size-sm)"

@@ -6,7 +6,7 @@
 \usage{
 viz_bar(
   ...,
-  header = "",
+  header = NULL,
   width = 150,
   scale = c("linear", "log"),
   axis_range = NULL,
@@ -19,7 +19,9 @@ viz_bar(
 \arguments{
 \item{...}{One or more \code{effect_bar()} objects defining the bars to display}
 
-\item{header}{Column header (default "")}
+\item{header}{Column header. Defaults to \code{NULL}, which resolves at render
+time to the primary effect's label (or the first effect's field name).
+Pass \code{""} to suppress, or set \code{show_header = FALSE} via \code{...} to hide.}
 
 \item{width}{Column width in pixels (default 150)}
 

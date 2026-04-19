@@ -1,4 +1,5 @@
-import type { WebSpec, HTMLWidgetsBinding, WidgetInstance, ColumnSpec, ThemeName } from "$types";
+import type { WebSpec, HTMLWidgetsBinding, WidgetInstance, ColumnSpec } from "$types";
+import type { ThemeName } from "$lib/theme-presets";
 import ForestPlot from "$lib/ForestPlot.svelte";
 import { createForestStore, type ForestStore } from "$stores/forestStore.svelte";
 import { exportToSVG, exportToPNG } from "$lib/export";

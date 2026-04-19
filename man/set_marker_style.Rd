@@ -15,7 +15,9 @@ set_marker_style(x, color = NULL, shape = NULL, opacity = NULL, size = NULL)
 
 \item{opacity}{Column name containing numeric values (0-1) for marker opacity}
 
-\item{size}{Column name containing numeric values for marker size multiplier}
+\item{size}{Column name containing numeric weight-like values driving
+marker size. Normalized by the renderer; pass raw weights, not a
+pre-normalized multiplier.}
 }
 \value{
 The modified WebSpec object (or widget)

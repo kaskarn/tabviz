@@ -48,7 +48,11 @@
 #' @param marker_color Marker fill color. Column name or formula returning CSS color strings.
 #' @param marker_shape Marker shape. Column name or formula returning "square", "circle", "diamond", "triangle".
 #' @param marker_opacity Marker opacity. Column name or formula returning numeric 0-1.
-#' @param marker_size Marker size multiplier. Column name or formula returning numeric values.
+#' @param marker_size Marker size driver. Column name or formula returning
+#'   numeric weight-like values (e.g. study weights 0-100). Values are
+#'   normalized by the renderer via `0.5 + sqrt(w/100) * 1.5` and clamped so
+#'   marker areas scale sensibly — pass the raw weight column, not a
+#'   pre-normalized multiplier.
 #' @param weight Deprecated: use marker_size instead
 #' @param theme Theme object (use `web_theme_*()` functions)
 #' @param interaction Interaction settings (use `web_interaction()`)

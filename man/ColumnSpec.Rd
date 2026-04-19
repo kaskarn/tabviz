@@ -11,7 +11,8 @@ ColumnSpec(
   type = "text",
   width = NA_real_,
   align = "left",
-  header_align = "left",
+  header_align = NA_character_,
+  show_header = NA,
   wrap = FALSE,
   sortable = TRUE,
   options = list(),
@@ -40,6 +41,10 @@ ColumnSpec(
 \item{align}{Text alignment for body cells: "left", "center", "right"}
 
 \item{header_align}{Text alignment for header: "left" (default), "center", "right"}
+
+\item{show_header}{Whether to show the header cell. \code{NA} (default) follows
+the "auto" rule: shown if \code{header} is a non-empty string. \code{TRUE} or \code{FALSE}
+override.}
 
 \item{wrap}{Enable text wrapping (default FALSE). When TRUE, long text wraps instead of being truncated.}
 

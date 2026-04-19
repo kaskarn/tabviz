@@ -71,6 +71,27 @@ test_that("row styling still accepts column names (backwards compatibility)", {
   expect_equal(spec@row_bold_col, "is_sig")
 })
 
+test_that("marker_size column serializes raw weights into markerStyle.size", {
+  df <- data.frame(
+    study = c("A", "B", "C"),
+    hr = c(0.72, 0.85, 0.91),
+    lower = c(0.55, 0.70, 0.75),
+    upper = c(0.95, 1.03, 1.10),
+    weight = c(18.5, 22.1, 15.8)
+  )
+
+  spec <- web_spec(df, label = "study", marker_size = "weight")
+  expect_equal(spec@marker_size_col, "weight")
+
+  serialized <- tabviz:::serialize_spec(spec)
+  sizes <- vapply(serialized$data$rows, function(r) r$markerStyle$size, numeric(1))
+  # Serializer passes raw values through; JS renderer normalizes via sqrt(w/100).
+  # The bug fixed in 0.8.x had these values being multiplied directly into
+  # baseSize, producing ~200px markers — guard against regression by asserting
+  # the serializer preserves raw numerics rather than pre-scaling.
+  expect_equal(sizes, c(18.5, 22.1, 15.8))
+})
+
 test_that("row styling formula can reference multiple columns", {
   df <- data.frame(
     study = c("A", "B", "C"),

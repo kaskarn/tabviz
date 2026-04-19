@@ -24,7 +24,11 @@ viz_forest(
 )
 }
 \arguments{
-\item{header}{Column header (default NULL, typically no header for plot)}
+\item{header}{Column header. Defaults to \code{NULL}, which resolves at render
+time to the single-effect field's label (or the point-column name). For
+multi-effect forests the fallback is blank — pass an explicit \code{header} if
+you want a label over the plot, or set \code{show_header = FALSE} via \code{...} to
+hide the header entirely.}
 
 \item{width}{Column width in pixels (NULL for auto-sizing based on available space)}
 

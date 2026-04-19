@@ -463,7 +463,9 @@ col_pvalue <- function(
 #' Column helper: Bar/weight column
 #'
 #' @param field Field name (default "weight")
-#' @param header Column header (default "Weight")
+#' @param header Column header. Defaults to `NULL`, which resolves to the
+#'   field's label (or field name) at render time. Pass `""` or set
+#'   `show_header = FALSE` via `...` to hide the header.
 #' @param width Column width in pixels (NULL for auto-sizing)
 #' @param max_value Maximum value for the bar (NULL = auto-compute from data)
 #' @param show_label Show numeric label next to bar (default TRUE)
@@ -1139,7 +1141,11 @@ col_date <- function(field, header = NULL, width = NULL,
 #' list is needed. Use either inline column references (point/lower/upper) for
 #' a single effect, or a list of `effect_forest()` objects for multiple effects.
 #'
-#' @param header Column header (default NULL, typically no header for plot)
+#' @param header Column header. Defaults to `NULL`, which resolves at render
+#'   time to the single-effect field's label (or the point-column name). For
+#'   multi-effect forests the fallback is blank — pass an explicit `header` if
+#'   you want a label over the plot, or set `show_header = FALSE` via `...` to
+#'   hide the header entirely.
 #' @param width Column width in pixels (NULL for auto-sizing based on available space)
 #' @param point Column name for point estimate. Use for single-effect plots.
 #' @param lower Column name for lower bound. Use for single-effect plots.
@@ -1296,10 +1302,16 @@ viz_forest <- function(
   }
 
   # Default header to the effect label / axis label; "auto" show_header rule
-  # suppresses when the resolved header is empty.
+  # suppresses when the resolved header is empty. For multi-effect plots the
+  # first effect's label would misrepresent the column, so fall back to blank
+  # and let the user opt in explicitly.
   forest_fallback <- if (has_effects) {
-    lbl <- effects[[1]]@label
-    if (!is.na(lbl) && nzchar(lbl)) lbl else effects[[1]]@point_col
+    if (length(effects) > 1) {
+      ""
+    } else {
+      lbl <- effects[[1]]@label
+      if (!is.na(lbl) && nzchar(lbl)) lbl else effects[[1]]@point_col
+    }
   } else {
     point
   }
@@ -1776,7 +1788,9 @@ effect_violin <- function(data, label = NULL, color = NULL, fill_opacity = 0.5) 
 #' Each row displays one or more bars based on data values.
 #'
 #' @param ... One or more `effect_bar()` objects defining the bars to display
-#' @param header Column header (default "")
+#' @param header Column header. Defaults to `NULL`, which resolves at render
+#'   time to the primary effect's label (or the first effect's field name).
+#'   Pass `""` to suppress, or set `show_header = FALSE` via `...` to hide.
 #' @param width Column width in pixels (default 150)
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
@@ -1872,7 +1886,9 @@ viz_bar <- function(
 #' computed automatically) or pre-computed summary statistics.
 #'
 #' @param ... One or more `effect_boxplot()` objects defining the boxplots
-#' @param header Column header (default "")
+#' @param header Column header. Defaults to `NULL`, which resolves at render
+#'   time to the primary effect's label (or data field name). Pass `""` or
+#'   set `show_header = FALSE` via `...` to hide.
 #' @param width Column width in pixels (default 150)
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
@@ -1993,7 +2009,9 @@ viz_boxplot <- function(
 #' for each row.
 #'
 #' @param ... One or more `effect_violin()` objects defining the violins
-#' @param header Column header (default "")
+#' @param header Column header. Defaults to `NULL`, which resolves at render
+#'   time to the primary effect's label (or data field name). Pass `""` or
+#'   set `show_header = FALSE` via `...` to hide.
 #' @param width Column width in pixels (default 150)
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).

@@ -20,6 +20,7 @@ import type {
   VizViolinColumnOptions,
   BoxplotStats,
   KDEResult,
+  AxisConfig,
 } from "$types";
 import { niceDomain, DOMAIN_PADDING, getEffectValue, normalizeValue } from "./scale-utils";
 import { computeAxis, generateTicks, VIZ_MARGIN, type AxisComputation } from "./axis-utils";
@@ -1453,9 +1454,12 @@ function renderInterval(
 
   // Helper to get point size for an effect
   function getPointSize(isPrimary: boolean): number {
-    // Check row-level marker size (only applies to primary effect)
+    // Row-level marker size (only applies to primary effect). Treated as a
+    // raw weight-like value and normalized the same way as legacy weight —
+    // keeps markers bounded even when users map a column with large values.
     if (isPrimary && row.markerStyle?.size != null) {
-      return baseSize * row.markerStyle.size;
+      const scale = 0.5 + Math.sqrt(row.markerStyle.size / 100) * 1.5;
+      return Math.min(Math.max(baseSize * scale, 3), baseSize * 2.5);
     }
     // Legacy weight column support
     const weight = weightCol ? (row.metadata[weightCol] as number | undefined) : undefined;
@@ -2153,7 +2157,8 @@ function renderVizAxis(
   axisLabel: string | undefined,
   vizX: number,
   vizWidth: number,
-  nullValue: number | undefined
+  nullValue: number | undefined,
+  isLog: boolean = false
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.typography.fontSizeSm);
@@ -2176,13 +2181,50 @@ function renderVizAxis(
   lines.push(`<line x1="${vizX}" x2="${vizX + vizWidth}"
     y1="0" y2="0" stroke="${theme.colors.border}" stroke-width="1"/>`);
 
-  // Generate ticks from scale domain
+  // Generate "nice" ticks sized to the column width, then filter to keep
+  // label spacing above the minimum pixel threshold.
   const domain = xScale.domain();
-  const tickCount = 5;
+  const minSpacing = AXIS.MIN_TICK_SPACING;
+  const targetCount = Math.max(2, Math.min(6, Math.floor(vizWidth / minSpacing)));
+  const vizAxisConfig: AxisConfig = {
+    rangeMin: null,
+    rangeMax: null,
+    tickCount: targetCount,
+    tickValues: null,
+    gridlines: false,
+    gridlineStyle: "solid",
+    ciClipFactor: 2.0,
+    includeNull: false,
+    symmetric: null,
+    nullTick: false,
+    markerMargin: false,
+  };
+  const rawTicks = generateTicks(
+    [domain[0], domain[1]],
+    vizAxisConfig,
+    isLog ? "log" : "linear",
+    nullValue ?? domain[0],
+  );
   const ticks: number[] = [];
-  const range = domain[1] - domain[0];
-  for (let i = 0; i <= tickCount; i++) {
-    ticks.push(domain[0] + (range * i) / tickCount);
+  let lastX = -Infinity;
+  for (const t of rawTicks) {
+    const tx = xScale(t);
+    if (tx - lastX >= minSpacing) {
+      ticks.push(t);
+      lastX = tx;
+    }
+  }
+  // Fallbacks for degenerate domains where generateTicks returned <2 values:
+  // always emit at least the domain endpoints so the axis isn't unlabeled.
+  if (ticks.length < 2) {
+    ticks.length = 0;
+    if (rawTicks.length >= 2) {
+      ticks.push(rawTicks[0], rawTicks[rawTicks.length - 1]);
+    } else if (domain[0] !== domain[1]) {
+      ticks.push(domain[0], domain[1]);
+    } else {
+      ticks.push(domain[0]);
+    }
   }
 
   // Tick marks and labels
@@ -2890,6 +2932,39 @@ function filterAxisTicks(
   return result;
 }
 
+// Compute vertical stagger offsets for refline labels whose x positions would
+// collide. For each label, pick the lowest tier whose occupied labels are all
+// at least MIN_LABEL_SPACING away in x — handles 3+ adjacent collisions.
+function computeRefLineLabelOffsets(
+  annotations: Array<{ id: string; x: number; label?: string }>,
+  xScale: (v: number) => number
+): Record<string, number> {
+  const MIN_LABEL_SPACING = 120;
+  const STAGGER_OFFSET = 16;
+  const labeled = annotations
+    .filter((a) => !!a.label)
+    .map((a) => ({ id: a.id, x: xScale(a.x) }))
+    .sort((a, b) => a.x - b.x);
+  const offsets: Record<string, number> = {};
+  const tiers: number[][] = []; // tiers[i] = array of x positions already placed on tier i
+  for (const current of labeled) {
+    let placed = false;
+    for (let tier = 0; tier < tiers.length; tier++) {
+      if (tiers[tier].every((x) => Math.abs(current.x - x) >= MIN_LABEL_SPACING)) {
+        tiers[tier].push(current.x);
+        offsets[current.id] = tier * STAGGER_OFFSET;
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) {
+      tiers.push([current.x]);
+      offsets[current.id] = (tiers.length - 1) * STAGGER_OFFSET;
+    }
+  }
+  return offsets;
+}
+
 function renderReferenceLine(
   x: number,
   y1: number,
@@ -2899,16 +2974,18 @@ function renderReferenceLine(
   theme: WebTheme,
   label?: string,
   width: number = 1,
-  opacity: number = 0.6
+  opacity: number = 0.6,
+  labelY?: number
 ): string {
-  const dashArray = style === "dashed" ? "6,4" : style === "dotted" ? "2,2" : "none";
+  const dashArray = style === "dashed" ? "6,4" : style === "dotted" ? "2,2" : "";
+  const dashAttr = dashArray ? ` stroke-dasharray="${dashArray}"` : "";
   let svg = `<line x1="${x}" x2="${x}" y1="${y1}" y2="${y2}"
-    stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}" stroke-dasharray="${dashArray}"/>`;
+    stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"${dashAttr}/>`;
 
   if (label) {
-    // Web uses secondary color for annotation labels (ForestPlot.svelte:1161)
     const labelColor = theme.colors.secondary;
-    svg += `<text x="${x}" y="${y1 - 4}" text-anchor="middle"
+    const ty = labelY ?? y1 - 4;
+    svg += `<text x="${x}" y="${ty}" text-anchor="middle"
       font-family="${theme.typography.fontFamily}"
       font-size="${theme.typography.fontSizeSm}"
       font-weight="${theme.typography.fontWeightMedium}"
@@ -3271,9 +3348,17 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
     // Custom annotations for this forest column (column-level only)
     const annotations = forestOpts?.annotations ?? [];
+    // Labels render below the axis label row to avoid collision with column
+    // headers above and axis tick labels below.
+    const annotationLabelBaseY = plotY + layout.rowsHeight + layout.axisGap + 56;
+    const labelStaggerOffsets = computeRefLineLabelOffsets(
+      annotations.filter((a): a is typeof a & { type: "reference_line" } => a.type === "reference_line"),
+      xScale
+    );
     for (const ann of annotations) {
       if (ann.type === "reference_line") {
         const annX = forestX + xScale(ann.x);
+        const labelYOffset = labelStaggerOffsets[ann.id] ?? 0;
         // Reflines stop at rowsHeight (not plotHeight) to match web view
         parts.push(renderReferenceLine(
           annX,
@@ -3284,7 +3369,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           theme,
           ann.label,
           ann.width ?? 1,
-          ann.opacity ?? 0.6
+          ann.opacity ?? 0.6,
+          annotationLabelBaseY + labelYOffset
         ));
       }
     }
@@ -3366,7 +3452,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
         parts.push(`<g transform="translate(0, ${plotY + layout.plotHeight})">`);
-        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue));
+        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
         parts.push("</g>");
       }
     } else if (vizColInfo.type === "viz_boxplot") {
@@ -3397,7 +3483,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
         parts.push(`<g transform="translate(0, ${plotY + layout.plotHeight})">`);
-        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue));
+        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
         parts.push("</g>");
       }
     } else if (vizColInfo.type === "viz_violin") {
@@ -3428,7 +3514,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
         parts.push(`<g transform="translate(0, ${plotY + layout.plotHeight})">`);
-        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue));
+        parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
         parts.push("</g>");
       }
     }

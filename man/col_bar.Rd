@@ -6,7 +6,7 @@
 \usage{
 col_bar(
   field = "weight",
-  header = "Weight",
+  header = NULL,
   width = NULL,
   max_value = NULL,
   show_label = TRUE,
@@ -18,7 +18,9 @@ col_bar(
 \arguments{
 \item{field}{Field name (default "weight")}
 
-\item{header}{Column header (default "Weight")}
+\item{header}{Column header. Defaults to \code{NULL}, which resolves to the
+field's label (or field name) at render time. Pass \code{""} or set
+\code{show_header = FALSE} via \code{...} to hide the header.}
 
 \item{width}{Column width in pixels (NULL for auto-sizing)}
 

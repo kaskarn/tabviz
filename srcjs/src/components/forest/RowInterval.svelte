@@ -136,9 +136,11 @@
 
   // Get point size for an effect (scaled by weight or markerStyle.size for primary)
   function getEffectSize(isPrimary: boolean): number {
-    // Check row-level marker size (only applies to primary effect)
+    // Row-level marker size (only applies to primary effect). Treated as a
+    // raw weight-like value and normalized the same way as legacy weight.
     if (isPrimary && row.markerStyle?.size != null) {
-      return basePointSize * row.markerStyle.size;
+      const scale = 0.5 + Math.sqrt(row.markerStyle.size / 100) * 1.5;
+      return Math.min(Math.max(basePointSize * scale, 3), basePointSize * 2.5);
     }
 
     // Legacy weight column support

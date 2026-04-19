@@ -117,7 +117,11 @@ column picker (for sensitive or internal-only fields).}
 
 \item{marker_opacity}{Marker opacity. Column name or formula returning numeric 0-1.}
 
-\item{marker_size}{Marker size multiplier. Column name or formula returning numeric values.}
+\item{marker_size}{Marker size driver. Column name or formula returning
+numeric weight-like values (e.g. study weights 0-100). Values are
+normalized by the renderer via \code{0.5 + sqrt(w/100) * 1.5} and clamped so
+marker areas scale sensibly — pass the raw weight column, not a
+pre-normalized multiplier.}
 
 \item{weight}{Deprecated: use marker_size instead}
 

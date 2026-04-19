@@ -13,6 +13,7 @@ web_col(
   width = NULL,
   align = NULL,
   header_align = NULL,
+  show_header = NULL,
   wrap = FALSE,
   sortable = TRUE,
   options = list(),
@@ -40,6 +41,10 @@ web_col(
 \item{align}{Text alignment for body cells}
 
 \item{header_align}{Text alignment for header (default: "left")}
+
+\item{show_header}{Whether to show the header cell. \code{NULL} / \code{NA} (default)
+uses the auto rule (shown when \code{header} is non-empty). \code{TRUE} / \code{FALSE}
+force the header on or off.}
 
 \item{wrap}{Enable text wrapping (default FALSE). When TRUE, long text wraps
 instead of being truncated with ellipsis.}

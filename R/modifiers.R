@@ -216,7 +216,9 @@ set_column_style <- function(
 #' @param color Column name containing CSS color strings for marker fill color
 #' @param shape Column name containing shape values ("square", "circle", "diamond", "triangle")
 #' @param opacity Column name containing numeric values (0-1) for marker opacity
-#' @param size Column name containing numeric values for marker size multiplier
+#' @param size Column name containing numeric weight-like values driving
+#'   marker size. Normalized by the renderer; pass raw weights, not a
+#'   pre-normalized multiplier.
 #'
 #' @return The modified WebSpec object (or widget)
 #'
