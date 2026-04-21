@@ -213,6 +213,22 @@ The zoom control in the header adjusts the display scale:
 - Zoom level persists during interaction
 - Export captures the current zoom level
 
+## Pan & Zoom on Visualization Columns
+
+Every viz column (`viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`) supports direct-manipulation pan and zoom on its x-axis:
+
+| Gesture | Action |
+|---------|--------|
+| **Mouse wheel** over the viz area | Zoom in/out, anchored on the cursor |
+| **Click and drag** | Pan the axis |
+| **Double-click** | Reset to the default domain |
+
+State is per column — two forest columns side-by-side can be inspected independently. It is session-only (refreshing the page resets everything); there is no R-side argument to persist a zoom level.
+
+Exports are WYSIWYG: zooming or panning in the browser changes what `save_plot()` writes to SVG/PNG and what the in-widget download button produces. Confidence intervals that fall outside the zoomed window are rendered with boundary arrows; marks on bar/boxplot/violin columns are clipped to the visible region.
+
+On log-scale forests (`viz_forest(scale = "log")`), gestures that would push the lower bound to zero or below are ignored.
+
 ## See Also
 
 - [Reference: Interaction Settings](../reference/interaction.qmd) — Full API reference

@@ -83,6 +83,10 @@ export function createForestStore() {
   // Plot width override (for resizing the forest plot area)
   let plotWidthOverride = $state<number | null>(null);
 
+  // Per-column pan/zoom overrides keyed by column id. Only viz columns
+  // (forest, viz_bar, viz_boxplot, viz_violin) consult this map. Session-only.
+  let axisZooms = $state<Record<string, { domain: [number, number] }>>({});
+
   // Zoom & sizing state
   let zoom = $state<number>(1.0);           // User's desired zoom (0.5-2.0)
   let autoFit = $state<boolean>(true);      // Shrink if content exceeds container
@@ -173,6 +177,11 @@ export function createForestStore() {
       axisConfig.tickValues = forestOptions.axisTicks;
     }
 
+    // Honor first forest column's pan/zoom override for the global scale.
+    // Per-column viz components consult axisZooms directly for their own axes.
+    const firstForestId = firstForest?.id;
+    const domainOverride = firstForestId ? axisZooms[firstForestId]?.domain ?? null : null;
+
     return computeAxis({
       rows: spec.data.rows,
       config: axisConfig,
@@ -184,6 +193,7 @@ export function createForestStore() {
       pointCol,
       lowerCol,
       upperCol,
+      domainOverride,
     });
   });
 
@@ -1489,6 +1499,32 @@ export function createForestStore() {
     return plotWidthOverride;
   }
 
+  // -- Per-column axis pan/zoom ------------------------------------------------
+  // Writes replace the whole map object so Svelte's $state detects the change.
+  function setAxisZoom(columnId: string, domain: [number, number]) {
+    // Guard against degenerate / inverted domains that would break d3 scales.
+    if (!Number.isFinite(domain[0]) || !Number.isFinite(domain[1])) return;
+    if (domain[0] >= domain[1]) return;
+    axisZooms = { ...axisZooms, [columnId]: { domain: [domain[0], domain[1]] } };
+  }
+
+  function resetAxisZoom(columnId: string) {
+    if (!(columnId in axisZooms)) return;
+    const next = { ...axisZooms };
+    delete next[columnId];
+    axisZooms = next;
+  }
+
+  function getAxisZoom(columnId: string): { domain: [number, number] } | null {
+    return axisZooms[columnId] ?? null;
+  }
+
+  // Returns the effective domain for a column: user override if present,
+  // otherwise the supplied default.
+  function getEffectiveDomain(columnId: string, defaultDomain: [number, number]): [number, number] {
+    return axisZooms[columnId]?.domain ?? defaultDomain;
+  }
+
   function setTheme(themeName: ThemeName) {
     const newTheme = THEME_PRESETS[themeName];
     if (!spec || !newTheme) return;
@@ -1630,6 +1666,7 @@ export function createForestStore() {
     userInsertedColumns = [];
     hiddenColumnIds = new Set();
     columnSpecOverrides = {};
+    axisZooms = {};
     // Note: spec theme is not reset here - use setSpec to fully reset
     // Note: showZoomControls is not reset - it's a UI preference
   }
@@ -1868,6 +1905,14 @@ export function createForestStore() {
     getRowDepth,
     getColumnWidth,
     getPlotWidth,
+    // Per-column pan/zoom
+    get axisZooms() {
+      return axisZooms;
+    },
+    setAxisZoom,
+    resetAxisZoom,
+    getAxisZoom,
+    getEffectiveDomain,
 
     /**
      * Get current dimensions for export.
@@ -1933,17 +1978,44 @@ export function createForestStore() {
         const fcScale = forestOpts?.scale ?? "linear";
         const fcNullValue = forestOpts?.nullValue ?? (fcScale === "log" ? 1 : 0);
 
-        // Use global axis computation for now (TODO: per-column axis computation)
+        // Apply per-column pan/zoom override if present. Clip bounds track the
+        // override so svg-generator's CI clipping + arrow logic matches view.
+        const override = axisZooms[col.id]?.domain;
+        const fcDomain: [number, number] = override ?? domain;
+        const fcClip: [number, number] = override ?? axisComputation.axisLimits;
+        let fcTicks = axisComputation.ticks;
+        if (override) {
+          // Regenerate ticks against the overridden domain so axis labels reflect zoom.
+          const tickScale = fcScale === "log"
+            ? scaleLog().domain([Math.max(override[0], 1e-9), Math.max(override[1], 1e-9)])
+            : scaleLinear().domain(override);
+          fcTicks = tickScale.ticks(6);
+        }
         forestColumnsData.push({
           columnId: col.id,
           xPosition: columnPositions[col.id],
           width: fcWidth,
-          xDomain: domain,
-          clipBounds: axisComputation.axisLimits,
-          ticks: axisComputation.ticks,
+          xDomain: fcDomain,
+          clipBounds: fcClip,
+          ticks: fcTicks,
           scale: fcScale,
           nullValue: fcNullValue,
           axisLabel: forestOpts?.axisLabel ?? "Effect",
+        });
+      }
+
+      // Non-forest viz column zoom overrides for the export pipeline. Only
+      // emit entries for columns the user has actually zoomed/panned — default
+      // rendering in svg-generator.ts computes its own domain from the data.
+      const vizColumnsData: Array<{ columnId: string; xDomain: [number, number]; clipBounds: [number, number] }> = [];
+      for (const vc of vizColumns) {
+        if (vc.column.type === "forest") continue;
+        const override = axisZooms[vc.column.id]?.domain;
+        if (!override) continue;
+        vizColumnsData.push({
+          columnId: vc.column.id,
+          xDomain: override,
+          clipBounds: override,
         });
       }
 
@@ -1972,6 +2044,9 @@ export function createForestStore() {
 
         // Forest columns (may be multiple)
         forestColumns: forestColumnsData,
+
+        // Non-forest viz columns with user pan/zoom overrides
+        vizColumns: vizColumnsData,
 
         // Row layout
         rowHeights,

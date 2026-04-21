@@ -38,16 +38,25 @@ export interface AxisComputeOptions {
   pointCol?: string | null;
   lowerCol?: string | null;
   upperCol?: string | null;
+  // Optional pan/zoom override. When set, replaces the computed axis limits
+  // verbatim (no nice-number snapping) so interactive pan/zoom feels continuous.
+  // Plot region still extends by marker margin; ticks regenerate for the
+  // zoomed domain (explicit tickValues are filtered to visible range).
+  domainOverride?: [number, number] | null;
 }
 
 /**
  * Main entry point: compute all axis-related values
  */
 export function computeAxis(options: AxisComputeOptions): AxisComputation {
-  const { rows, config, scale, nullValue, forestWidth, pointSize, effects = [], pointCol, lowerCol, upperCol } = options;
+  const { rows, config, scale, nullValue, forestWidth, pointSize, effects = [], pointCol, lowerCol, upperCol, domainOverride } = options;
 
-  // Step 1: Compute axis limits (this is also the clipping boundary)
-  const axisLimits = computeAxisLimits(rows, config, scale, nullValue, effects, pointCol, lowerCol, upperCol);
+  // Step 1: Compute axis limits (this is also the clipping boundary).
+  // A pan/zoom override bypasses the full data-driven pipeline; otherwise
+  // interactive zoom would re-snap to nice numbers and feel "sticky".
+  const axisLimits: [number, number] = domainOverride
+    ? [domainOverride[0], domainOverride[1]]
+    : computeAxisLimits(rows, config, scale, nullValue, effects, pointCol, lowerCol, upperCol);
 
   // Step 2: Compute plot region (axis limits + marker margin)
   const plotRegion = computePlotRegion(

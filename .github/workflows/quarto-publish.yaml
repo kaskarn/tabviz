@@ -34,11 +34,19 @@ jobs:
         uses: quarto-dev/quarto-actions/setup@v2
 
       - name: Render site
-        run: quarto render docs
+        env:
+          QUARTO_CACHE: "false"
+        run: |
+          rm -rf docs/_freeze docs/_site docs/.quarto
+          quarto render docs --cache-refresh
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          clean: false
+          clean: true
+          clean-exclude: |
+            .nojekyll
+            CNAME
+          single-commit: true
           branch: gh-pages
           folder: docs/_site

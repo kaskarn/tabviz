@@ -1,5 +1,20 @@
 # tabviz (development version)
 
+## Pan & zoom on viz columns
+
+* **Mouse wheel, drag, double-click** to inspect any visualization column at arbitrary scale. Wheel zooms in/out around the cursor, click-and-drag pans, double-click resets to the default domain. Applies to `viz_forest`, `viz_bar`, `viz_boxplot`, and `viz_violin`.
+* **Per-column state.** Two forest columns side-by-side can be zoomed independently; each column keeps its own effective domain.
+* **WYSIWYG export.** Zoom/pan state is plumbed through `PrecomputedLayout` to the SVG/PNG export path — `save_plot()` (and the in-widget download button) captures exactly what you see in the browser, including boundary arrows when CIs extend past the zoomed window and clipped marks on the non-forest viz types.
+* **Log-scale safe.** On `scale = "log"` forests the interaction rejects gestures that would push the lower bound to zero or below.
+* **Session-only.** No R-side arguments, no Shiny round-trip — refreshing resets all columns to their default domains.
+
+### Implementation notes
+
+* New `axisZooms` map in `forestStore.svelte.ts` keyed by column id; `getEffectiveDomain()` substitutes the override anywhere a scale is built. Ticks regenerate from the zoomed domain so axis labels stay readable.
+* New `zoomable` Svelte action in `srcjs/src/lib/zoom-interactions.ts` — scale-agnostic, handles linear vs log in the same code path.
+* SVG `<clipPath>` is emitted per viz cell in both the Svelte renderer and `svg-generator.ts`, so marks that fall outside the zoomed window are clipped identically in the browser and in exports.
+* `PrecomputedLayout` gains a sibling `vizColumns[]` array alongside the existing `forestColumns[]`, carrying per-column `xDomain` / `clipBounds`.
+
 ## Column editor UX
 
 * **Type picker is now a cascading dropdown, not a chip grid.** Right-click → Insert column after… opens a compact menu: *Text* (leaf) / *Numbers* ▸ / *Composite* ▸ / *Visual* ▸ / *Icons* ▸. Visual types are split into *Simple* (bar, fill bar, sparkline, heatmap, stars) and *Complex* (forest plot) subgroups. Submenus open on hover with a short delay, or on click, and flip to the left when near the viewport edge.

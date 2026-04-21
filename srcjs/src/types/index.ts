@@ -786,6 +786,14 @@ export interface ZoomState {
   version: number;
 }
 
+// Per-column pan/zoom override for a viz column's x-axis. Session-only;
+// reset via double-click or the axis reset affordance. Domain is stored
+// directly so it can be fed to d3 scales, tick generators, and the export
+// PrecomputedLayout without extra math.
+export interface AxisZoom {
+  domain: [number, number];
+}
+
 // ============================================================================
 // Split Forest Types
 // ============================================================================

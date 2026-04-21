@@ -100,6 +100,17 @@ export interface ForestColumnLayout {
 }
 
 /**
+ * Pre-computed layout data for a single non-forest viz column
+ * (viz_bar, viz_boxplot, viz_violin). Carries the zoomed-domain override
+ * for WYSIWYG export parity; clipBounds equals xDomain in this sprint.
+ */
+export interface VizColumnLayout {
+  columnId: string;
+  xDomain: [number, number];
+  clipBounds: [number, number];
+}
+
+/**
  * Complete pre-computed layout from browser (WYSIWYG path)
  */
 export interface PrecomputedLayout {
@@ -110,6 +121,9 @@ export interface PrecomputedLayout {
 
   // Forest columns (may be multiple, inline with other columns)
   forestColumns: ForestColumnLayout[];
+
+  // Non-forest viz columns with pan/zoom overrides (empty when none zoomed)
+  vizColumns?: VizColumnLayout[];
 
   // Row layout
   rowHeights: number[];
@@ -2017,10 +2031,20 @@ function renderVizViolin(
 function computeVizBarScale(
   rows: Row[],
   options: VizBarColumnOptions,
-  vizWidth: number
+  vizWidth: number,
+  domainOverride?: [number, number] | null
 ): Scale {
   const isLog = options.scale === "log";
   const padding = VIZ_MARGIN;
+
+  // Pan/zoom override from browser wins outright — we want bit-identical
+  // parity with what the user sees in the viewport.
+  if (domainOverride) {
+    if (isLog) {
+      return createLogScale([Math.max(0.01, domainOverride[0]), domainOverride[1]], [padding, vizWidth - padding]);
+    }
+    return createLinearScale([domainOverride[0], domainOverride[1]], [padding, vizWidth - padding]);
+  }
 
   let domainMin = options.axisRange?.[0];
   let domainMax = options.axisRange?.[1];
@@ -2056,10 +2080,18 @@ function computeVizBarScale(
 function computeVizBoxplotScale(
   rows: Row[],
   options: VizBoxplotColumnOptions,
-  vizWidth: number
+  vizWidth: number,
+  domainOverride?: [number, number] | null
 ): Scale {
   const isLog = options.scale === "log";
   const padding = VIZ_MARGIN;
+
+  if (domainOverride) {
+    if (isLog) {
+      return createLogScale([Math.max(0.01, domainOverride[0]), domainOverride[1]], [padding, vizWidth - padding]);
+    }
+    return createLinearScale([domainOverride[0], domainOverride[1]], [padding, vizWidth - padding]);
+  }
 
   let domainMin = options.axisRange?.[0];
   let domainMax = options.axisRange?.[1];
@@ -2110,10 +2142,18 @@ function computeVizBoxplotScale(
 function computeVizViolinScale(
   rows: Row[],
   options: VizViolinColumnOptions,
-  vizWidth: number
+  vizWidth: number,
+  domainOverride?: [number, number] | null
 ): Scale {
   const isLog = options.scale === "log";
   const padding = VIZ_MARGIN;
+
+  if (domainOverride) {
+    if (isLog) {
+      return createLogScale([Math.max(0.01, domainOverride[0]), domainOverride[1]], [padding, vizWidth - padding]);
+    }
+    return createLinearScale([domainOverride[0], domainOverride[1]], [padding, vizWidth - padding]);
+  }
 
   let domainMin = options.axisRange?.[0];
   let domainMax = options.axisRange?.[1];
@@ -3419,18 +3459,35 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   // Render viz columns (viz_bar, viz_boxplot, viz_violin)
   const allDataRows = spec.data.rows;
+  // Lookup table of per-column pan/zoom overrides from the browser. Present
+  // only for columns the user actively zoomed/panned; others fall back to
+  // data-driven domains.
+  const vizOverrides = new Map<string, [number, number]>();
+  if (options.precomputedLayout?.vizColumns) {
+    for (const vc of options.precomputedLayout.vizColumns) {
+      vizOverrides.set(vc.columnId, vc.xDomain);
+    }
+  }
   for (const vizColInfo of vizColumns) {
     const col = vizColInfo.column;
     const vizX = columnPositions[vizColInfo.index];
     const vizWidth = getColWidth(col);
+    const override = vizOverrides.get(col.id) ?? null;
+    // Per-column clipPath ensures marks zoomed outside the visible range don't
+    // bleed into neighbouring cells. Y bounds match the plot row band (no axis).
+    const clipId = `viz-clip-${col.id}`;
+    const clipRectX = vizX + VIZ_MARGIN;
+    const clipRectW = Math.max(vizWidth - 2 * VIZ_MARGIN, 0);
+    parts.push(`<defs><clipPath id="${clipId}"><rect x="${clipRectX}" y="${plotY}" width="${clipRectW}" height="${layout.rowsHeight}"/></clipPath></defs>`);
 
     if (vizColInfo.type === "viz_bar") {
       const opts = col.options?.vizBar as VizBarColumnOptions | undefined;
       if (!opts) continue;
 
       // Compute shared scale for all rows
-      const xScale = computeVizBarScale(allDataRows, opts, vizWidth);
+      const xScale = computeVizBarScale(allDataRows, opts, vizWidth, override);
 
+      parts.push(`<g clip-path="url(#${clipId})">`);
       // Render bars for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -3448,6 +3505,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           ));
         }
       });
+      parts.push(`</g>`);
 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
@@ -3460,8 +3518,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       if (!opts) continue;
 
       // Compute shared scale for all rows
-      const xScale = computeVizBoxplotScale(allDataRows, opts, vizWidth);
+      const xScale = computeVizBoxplotScale(allDataRows, opts, vizWidth, override);
 
+      parts.push(`<g clip-path="url(#${clipId})">`);
       // Render boxplots for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -3479,6 +3538,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           ));
         }
       });
+      parts.push(`</g>`);
 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
@@ -3491,8 +3551,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       if (!opts) continue;
 
       // Compute shared scale for all rows
-      const xScale = computeVizViolinScale(allDataRows, opts, vizWidth);
+      const xScale = computeVizViolinScale(allDataRows, opts, vizWidth, override);
 
+      parts.push(`<g clip-path="url(#${clipId})">`);
       // Render violins for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -3510,6 +3571,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           ));
         }
       });
+      parts.push(`</g>`);
 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {

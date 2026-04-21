@@ -40,6 +40,7 @@
   import { scaleLinear, scaleLog } from "d3-scale";
   import { computeBoxplotStats } from "$lib/viz-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
+  import { zoomable } from "$lib/zoom-interactions";
   import {
     GROUP_HEADER_OPACITY,
     ROW_HOVER_OPACITY,
@@ -847,9 +848,10 @@
           }
         }
 
+        const [zMin, zMax] = store.getEffectiveDomain(col.id, [domainMin, domainMax]);
         const scale = opts.scale === "log"
-          ? scaleLog().domain([Math.max(0.01, domainMin), domainMax]).range([padding, vizWidth - padding])
-          : scaleLinear().domain([domainMin, domainMax]).range([padding, vizWidth - padding]);
+          ? scaleLog().domain([Math.max(0.01, zMin), zMax]).range([padding, vizWidth - padding])
+          : scaleLinear().domain([zMin, zMax]).range([padding, vizWidth - padding]);
         scales.set(col.id, scale);
 
       } else if (col.type === "viz_boxplot") {
@@ -899,9 +901,10 @@
           }
         }
 
+        const [zMin, zMax] = store.getEffectiveDomain(col.id, [domainMin, domainMax]);
         const scale = opts.scale === "log"
-          ? scaleLog().domain([Math.max(0.01, domainMin), domainMax]).range([padding, vizWidth - padding])
-          : scaleLinear().domain([domainMin, domainMax]).range([padding, vizWidth - padding]);
+          ? scaleLog().domain([Math.max(0.01, zMin), zMax]).range([padding, vizWidth - padding])
+          : scaleLinear().domain([zMin, zMax]).range([padding, vizWidth - padding]);
         scales.set(col.id, scale);
 
       } else if (col.type === "viz_violin") {
@@ -940,9 +943,10 @@
           }
         }
 
+        const [zMin, zMax] = store.getEffectiveDomain(col.id, [domainMin, domainMax]);
         const scale = opts.scale === "log"
-          ? scaleLog().domain([Math.max(0.01, domainMin), domainMax]).range([padding, vizWidth - padding])
-          : scaleLinear().domain([domainMin, domainMax]).range([padding, vizWidth - padding]);
+          ? scaleLog().domain([Math.max(0.01, zMin), zMax]).range([padding, vizWidth - padding])
+          : scaleLinear().domain([zMin, zMax]).range([padding, vizWidth - padding]);
         scales.set(col.id, scale);
       }
     }
@@ -968,8 +972,11 @@
         : (forestOpts?.width ?? layout.forestWidth);
       const isLog = forestOpts?.scale === "log";
 
-      // Use the global domain from axisComputation
-      const domain = axisComputation.axisLimits;
+      // Use the global domain from axisComputation, then let any per-column
+      // pan/zoom override replace it. Store the override on a 1:1 basis so
+      // two forest columns with identical data can be inspected independently.
+      const baseDomain = axisComputation.axisLimits as [number, number];
+      const domain = store.getEffectiveDomain(col.id, baseDomain);
       const rangeStart = forestPadding;
       const rangeEnd = Math.max(colWidth - forestPadding, rangeStart + 50);
 
@@ -1463,6 +1470,7 @@
           {@const axisLabel = forestOpts?.axisLabel ?? "Effect"}
           {@const isLog = forestOpts?.scale === "log"}
           {@const colScale = forestColumnScales.get(fc.column.id) ?? xScale}
+          {@const fcClipId = `viz-clip-${fc.column.id}`}
           <svg
             class="plot-overlay"
             width={forestWidth}
@@ -1470,7 +1478,22 @@
             viewBox="0 0 {forestWidth} {rowsAreaHeight + layout.axisHeight}"
             style:top="{actualHeaderHeight}px"
             style:left="{forestLeft}px"
+            use:zoomable={{
+              columnId: fc.column.id,
+              isLog,
+              getDomain: () => colScale.domain() as [number, number],
+              getPixelRange: () => [VIZ_MARGIN, Math.max(forestWidth - VIZ_MARGIN, VIZ_MARGIN + 50)],
+              onChange: (d) => store.setAxisZoom(fc.column.id, d),
+              onReset: () => store.resetAxisZoom(fc.column.id),
+              enabled: true,
+            }}
           >
+            <defs>
+              <clipPath id={fcClipId}>
+                <rect x={VIZ_MARGIN} y={0} width={Math.max(forestWidth - 2 * VIZ_MARGIN, 0)} height={rowsAreaHeight} />
+              </clipPath>
+            </defs>
+            <g clip-path="url(#{fcClipId})">
             <!-- Null value reference line -->
             <line
               x1={colScale(nullValue)}
@@ -1526,7 +1549,7 @@
                   xScale={colScale}
                   layout={{...layout, forestWidth: forestWidth}}
                   {theme}
-                  {clipBounds}
+                  clipBounds={colScale.domain() as [number, number]}
                   {isLog}
                   weightCol={spec.data.weightCol}
                   forestColumnOptions={forestOpts}
@@ -1558,11 +1581,12 @@
                 {theme}
               />
             {/if}
+            </g>
 
-            <!-- Axis at bottom -->
+            <!-- Axis at bottom (not clipped; ticks reflect zoom via colScale) -->
             {#if forestOpts?.showAxis !== false}
               <g transform="translate(0, {rowsAreaHeight + axisGap})">
-                <EffectAxis xScale={colScale} layout={{...layout, forestWidth: forestWidth}} {theme} axisLabel={axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={axisComputation.ticks} />
+                <EffectAxis xScale={colScale} layout={{...layout, forestWidth: forestWidth}} {theme} axisLabel={axisLabel} position="bottom" plotHeight={layout.plotHeight} baseTicks={store.getAxisZoom(fc.column.id) ? undefined : axisComputation.ticks} />
               </g>
             {/if}
           </svg>
@@ -1576,6 +1600,8 @@
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
+          {@const vcClipId = `viz-clip-${vc.column.id}`}
+          {@const vcIsLog = vizOpts?.scale === "log"}
           {#if vizOpts}
             <svg
               class="plot-overlay"
@@ -1584,7 +1610,22 @@
               viewBox="0 0 {vizWidth} {rowsAreaHeight + layout.axisHeight}"
               style:top="{actualHeaderHeight}px"
               style:left="{vizLeft}px"
+              use:zoomable={{
+                columnId: vc.column.id,
+                isLog: vcIsLog,
+                getDomain: () => (sharedScale ? (sharedScale.domain() as [number, number]) : [0, 1]),
+                getPixelRange: () => [VIZ_MARGIN, Math.max(vizWidth - VIZ_MARGIN, VIZ_MARGIN + 50)],
+                onChange: (d) => store.setAxisZoom(vc.column.id, d),
+                onReset: () => store.resetAxisZoom(vc.column.id),
+                enabled: !!sharedScale,
+              }}
             >
+              <defs>
+                <clipPath id={vcClipId}>
+                  <rect x={VIZ_MARGIN} y={0} width={Math.max(vizWidth - 2 * VIZ_MARGIN, 0)} height={rowsAreaHeight} />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#{vcClipId})">
               <!-- Bar charts for each row -->
               {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
                 {#if displayRow.type === "data"}
@@ -1601,8 +1642,9 @@
                   />
                 {/if}
               {/each}
+              </g>
 
-              <!-- Axis at bottom -->
+              <!-- Axis at bottom (unclipped; ticks reflect current domain) -->
               {#if vizOpts.showAxis !== false && sharedScale}
                 <g transform="translate(0, {rowsAreaHeight + axisGap})">
                   <EffectAxis
@@ -1612,7 +1654,7 @@
                     axisLabel={vizOpts.axisLabel ?? "Value"}
                     position="bottom"
                     plotHeight={rowsAreaHeight}
-                    baseTicks={vizOpts.axisTicks ?? undefined}
+                    baseTicks={store.getAxisZoom(vc.column.id) ? undefined : (vizOpts.axisTicks ?? undefined)}
                     gridlines={vizOpts.axisGridlines}
                   />
                 </g>
@@ -1629,6 +1671,8 @@
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
+          {@const vcClipId = `viz-clip-${vc.column.id}`}
+          {@const vcIsLog = vizOpts?.scale === "log"}
           {#if vizOpts}
             <svg
               class="plot-overlay"
@@ -1637,7 +1681,22 @@
               viewBox="0 0 {vizWidth} {rowsAreaHeight + layout.axisHeight}"
               style:top="{actualHeaderHeight}px"
               style:left="{vizLeft}px"
+              use:zoomable={{
+                columnId: vc.column.id,
+                isLog: vcIsLog,
+                getDomain: () => (sharedScale ? (sharedScale.domain() as [number, number]) : [0, 1]),
+                getPixelRange: () => [VIZ_MARGIN, Math.max(vizWidth - VIZ_MARGIN, VIZ_MARGIN + 50)],
+                onChange: (d) => store.setAxisZoom(vc.column.id, d),
+                onReset: () => store.resetAxisZoom(vc.column.id),
+                enabled: !!sharedScale,
+              }}
             >
+              <defs>
+                <clipPath id={vcClipId}>
+                  <rect x={VIZ_MARGIN} y={0} width={Math.max(vizWidth - 2 * VIZ_MARGIN, 0)} height={rowsAreaHeight} />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#{vcClipId})">
               <!-- Boxplots for each row -->
               {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
                 {#if displayRow.type === "data"}
@@ -1654,8 +1713,9 @@
                   />
                 {/if}
               {/each}
+              </g>
 
-              <!-- Axis at bottom -->
+              <!-- Axis at bottom (unclipped; ticks reflect current domain) -->
               {#if vizOpts.showAxis !== false && sharedScale}
                 <g transform="translate(0, {rowsAreaHeight + axisGap})">
                   <EffectAxis
@@ -1665,7 +1725,7 @@
                     axisLabel={vizOpts.axisLabel ?? "Value"}
                     position="bottom"
                     plotHeight={rowsAreaHeight}
-                    baseTicks={vizOpts.axisTicks ?? undefined}
+                    baseTicks={store.getAxisZoom(vc.column.id) ? undefined : (vizOpts.axisTicks ?? undefined)}
                     gridlines={vizOpts.axisGridlines}
                   />
                 </g>
@@ -1682,6 +1742,8 @@
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
+          {@const vcClipId = `viz-clip-${vc.column.id}`}
+          {@const vcIsLog = vizOpts?.scale === "log"}
           {#if vizOpts}
             <svg
               class="plot-overlay"
@@ -1690,7 +1752,22 @@
               viewBox="0 0 {vizWidth} {rowsAreaHeight + layout.axisHeight}"
               style:top="{actualHeaderHeight}px"
               style:left="{vizLeft}px"
+              use:zoomable={{
+                columnId: vc.column.id,
+                isLog: vcIsLog,
+                getDomain: () => (sharedScale ? (sharedScale.domain() as [number, number]) : [0, 1]),
+                getPixelRange: () => [VIZ_MARGIN, Math.max(vizWidth - VIZ_MARGIN, VIZ_MARGIN + 50)],
+                onChange: (d) => store.setAxisZoom(vc.column.id, d),
+                onReset: () => store.resetAxisZoom(vc.column.id),
+                enabled: !!sharedScale,
+              }}
             >
+              <defs>
+                <clipPath id={vcClipId}>
+                  <rect x={VIZ_MARGIN} y={0} width={Math.max(vizWidth - 2 * VIZ_MARGIN, 0)} height={rowsAreaHeight} />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#{vcClipId})">
               <!-- Violins for each row -->
               {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
                 {#if displayRow.type === "data"}
@@ -1707,8 +1784,9 @@
                   />
                 {/if}
               {/each}
+              </g>
 
-              <!-- Axis at bottom -->
+              <!-- Axis at bottom (unclipped; ticks reflect current domain) -->
               {#if vizOpts.showAxis !== false && sharedScale}
                 <g transform="translate(0, {rowsAreaHeight + axisGap})">
                   <EffectAxis
@@ -1718,7 +1796,7 @@
                     axisLabel={vizOpts.axisLabel ?? "Value"}
                     position="bottom"
                     plotHeight={rowsAreaHeight}
-                    baseTicks={vizOpts.axisTicks ?? undefined}
+                    baseTicks={store.getAxisZoom(vc.column.id) ? undefined : (vizOpts.axisTicks ?? undefined)}
                     gridlines={vizOpts.axisGridlines}
                   />
                 </g>
@@ -2174,8 +2252,15 @@
   /* SVG overlay positioned absolutely over plot column */
   .plot-overlay {
     position: absolute;
-    pointer-events: none;
+    /* pointer-events: auto enables wheel/drag pan + dblclick reset on empty
+       axis space. Row-level interactions still work via child components that
+       set their own pointer-events. */
+    pointer-events: auto;
     overflow: visible; /* Allow axis label to extend beyond plot column */
+    cursor: grab;
+  }
+  .plot-overlay:active {
+    cursor: grabbing;
   }
 
   .plot-overlay :global(.interactive) {
