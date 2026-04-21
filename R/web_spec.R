@@ -168,6 +168,10 @@ tabviz <- function(
     split_by = NULL,
     shared_axis = FALSE,
     .spec_only = FALSE) {
+  # Lazy, once-per-day, fail-silent nudge when a newer minor version exists.
+  # Gated internally on interactive() + opt-outs; safe to call unconditionally.
+  check_for_update()
+
   # Resolve a theme-appropriate interaction default when none was supplied.
   # Publication themes (jama, lancet, cochrane, minimal) stay read-only;
   # dashboard-style themes get full interactivity.

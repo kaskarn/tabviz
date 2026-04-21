@@ -604,11 +604,16 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     forestWidth = totalWidth - totalTableWidth - padding * 2;
   }
 
-  // Total height: include full axis area (ticks + labels + axis label + gap)
+  // Total height: include full axis area only when a column actually renders
+  // an x-axis strip (forest or any viz_* column). Plain tabular tables have
+  // no bottom axis, so reserving ~76px of axis height caused truncation.
   const axisGap = theme.spacing.axisGap ?? 12;
-  // Axis content: tick labels at y=16, axis label at y=28, plus text descenders ~4px = ~32px
-  // Full axis area: axisGap (between plot and axis) + axis content + some breathing room
-  const webAxisHeight = axisGap + LAYOUT.AXIS_HEIGHT + LAYOUT.AXIS_LABEL_HEIGHT; // ~76px total
+  const hasAxisColumn = allColumns.some(
+    c => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
+  );
+  const webAxisHeight = hasAxisColumn
+    ? axisGap + LAYOUT.AXIS_HEIGHT + LAYOUT.AXIS_LABEL_HEIGHT
+    : 0;
   const totalHeight = headerTextHeight + padding +
     headerHeight + plotHeight +
     webAxisHeight +
@@ -2435,7 +2440,7 @@ function renderUnifiedColumnHeaders(
         currentX += groupWidth;
       } else {
         const width = getColWidth(col);
-        const headerAlign = col.headerAlign ?? (isVizType(col.type) ? "center" : col.align);
+        const headerAlign = col.headerAlign ?? col.align;
         if (resolveShowHeader(col.showHeader, col.header)) {
           const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
           const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
@@ -2465,7 +2470,7 @@ function renderUnifiedColumnHeaders(
           if (!subCol.isGroup) {
             const sub = subCol as ColumnSpec;
             const width = getColWidth(sub);
-            const headerAlign = sub.headerAlign ?? (isVizType(sub.type) ? "center" : sub.align);
+            const headerAlign = sub.headerAlign ?? sub.align;
             if (resolveShowHeader(sub.showHeader, sub.header)) {
               const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
               lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"

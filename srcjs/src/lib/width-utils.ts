@@ -142,9 +142,13 @@ export function calculateColumnAutoWidth(
 
   let maxWidth = 0;
 
-  // Measure header text
+  // Measure header text. Sortable columns render a sort chevron inline next
+  // to the text when the column is actively sorted; reserve that budget up
+  // front so headers don't truncate on the first click.
+  const SORT_GLYPH_BUDGET = 16; // 10px glyph + 4px margin + 2px safety
   if (col.header) {
-    maxWidth = Math.max(maxWidth, measureText(col.header));
+    const headerWidth = measureText(col.header) + (col.sortable ? SORT_GLYPH_BUDGET : 0);
+    maxWidth = Math.max(maxWidth, headerWidth);
   }
 
   // Measure all data cell values

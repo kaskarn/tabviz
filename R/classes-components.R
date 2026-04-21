@@ -187,16 +187,12 @@ web_col <- function(
 # Column helper functions
 # ============================================================================
 
-# Resolve a viz-column header. If the user passed NULL, use the provided
-# fallback (typically the first effect's label or field). Empty string stays
-# empty ("off" when combined with auto show_header). `show_header = FALSE`
-# suppresses even when a label is resolved.
-resolve_viz_header <- function(header, fallback) {
-  if (!is.null(header)) return(as.character(header))
-  if (is.null(fallback) || length(fallback) == 0) return("")
-  fb <- fallback[[1]]
-  if (is.na(fb) || !nzchar(fb)) return("")
-  as.character(fb)
+# Resolve a viz-column header. Viz columns default to headerless; the axis
+# label usually carries the meaning. Pass `header = "..."` to opt in.
+# `fallback` is accepted for call-site readability but is ignored.
+resolve_viz_header <- function(header, fallback = NULL) {
+  if (is.null(header)) return("")
+  as.character(header)
 }
 
 #' Column helper: Text column

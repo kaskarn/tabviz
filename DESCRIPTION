@@ -23,6 +23,7 @@ Collate:
     'classes-theme.R'
     'classes-annotations.R'
     'classes-components.R'
+    'update-check.R'
     'utils-nse.R'
     'utils-serialize.R'
     'modifiers.R'

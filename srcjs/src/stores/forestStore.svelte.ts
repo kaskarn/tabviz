@@ -1531,6 +1531,14 @@ export function createForestStore() {
     spec = { ...spec, theme: newTheme };
   }
 
+  // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
+  // without disturbing any interactive column/row edits. Callers used to go
+  // through setSpec({...spec, theme}) for this, which cleared the edits map.
+  function setThemeObject(theme: WebSpec["theme"]) {
+    if (!spec) return;
+    spec = { ...spec, theme };
+  }
+
   // ============================================================================
   // Zoom & Auto-fit Controls
   // ============================================================================
@@ -2126,6 +2134,7 @@ export function createForestStore() {
     setColumnWidth,
     setPlotWidth,
     setTheme,
+    setThemeObject,
     // Zoom & auto-fit actions
     setZoom,
     resetZoom,

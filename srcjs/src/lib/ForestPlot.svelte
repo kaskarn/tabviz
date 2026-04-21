@@ -1270,7 +1270,7 @@
               data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
-              style:text-align={column.headerAlign ?? (isVizType(column.type) ? "center" : column.align)}
+              style:text-align={column.headerAlign ?? column.align}
               oncontextmenu={(e) => openHeaderContextMenu(column, e)}
             >
               {#if spec?.interaction.enableReorderColumns}
@@ -1303,7 +1303,7 @@
               data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
-              style:text-align={column.headerAlign ?? (isVizType(column.type) ? "center" : column.align)}
+              style:text-align={column.headerAlign ?? column.align}
               oncontextmenu={(e) => openHeaderContextMenu(column, e)}
               onclick={canSort ? (e) => {
                 const target = e.target as HTMLElement;

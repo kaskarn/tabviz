@@ -42,11 +42,13 @@
     if (onThemeChange) {
       onThemeChange(themeName as ThemeName);
     } else {
-      // If using custom themes, apply the theme directly from availableThemes
+      // If using custom themes, apply the theme directly from availableThemes.
+      // setThemeObject swaps only the theme field and preserves interactive
+      // column / row edits; setSpec would wipe them.
       if (availableThemes && themeName in availableThemes) {
         const theme = availableThemes[themeName];
         if (store.spec) {
-          store.setSpec({ ...store.spec, theme });
+          store.setThemeObject(theme);
         }
       } else {
         // Use preset themes

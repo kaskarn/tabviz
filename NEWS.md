@@ -1,5 +1,18 @@
 # tabviz (development version)
 
+## Bug fixes
+
+* **Viz column headers default to off.** `viz_forest()` / `viz_bar()` / `viz_boxplot()` / `viz_violin()` no longer auto-fill a header from the first effect's label when the user passes `header = NULL`. The axis label already carries that meaning; surfacing the effect label as a header doubled up. Opt in with `header = "..."` if you want one.
+* **Header alignment follows body alignment by default.** Right-aligned numeric bodies now get right-aligned headers; centered icon / badge / stars bodies get centered headers — uniformly in the browser and in SVG export. Previously the browser and svg-generator both had a viz-specific "always center" override that contradicted `ColumnHeaders.svelte`, and numeric headers rendered left while their columns were right-aligned. Override per column with `header_align = "..."`.
+* **Exported table height no longer reserves ~76px of unused axis strip** when the table has no viz column at all. Pure tabular exports via `save_plot()` used to truncate by exactly that amount.
+* **Theme change no longer wipes interactive column edits.** Using the theme switcher with a custom `enable_themes = list(...)` list went through `setSpec()`, which cleared user-driven inserts / hides / `updateColumn()` overrides as a side effect. Theme swaps now go through a dedicated `setThemeObject()` store method that only touches `spec.theme`.
+* **Sort chevron is measured into header auto-width.** Sortable columns reserve ~16px for the sort glyph up front, so headers no longer truncate the first time a user clicks to sort.
+
+## Version check
+
+* New once-per-day, fail-silent check: when you call `tabviz()` interactively and a newer minor version exists on CRAN or GitHub, you get a single cli message with the install command. Cached under `tools::R_user_dir("tabviz", "cache")` so the network is hit at most once every 24h.
+* Opt out with `options(tabviz.check_updates = FALSE)` or `Sys.setenv(TABVIZ_NO_UPDATE_CHECK = "1")`. Suppressed automatically in non-interactive sessions, CI, `testthat`, and R CMD check.
+
 ## Pan & zoom on viz columns
 
 * **Mouse wheel, drag, double-click** to inspect any visualization column at arbitrary scale. Wheel zooms in/out around the cursor, click-and-drag pans, double-click resets to the default domain. Applies to `viz_forest`, `viz_bar`, `viz_boxplot`, and `viz_violin`.
