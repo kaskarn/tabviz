@@ -1282,7 +1282,7 @@
             {@const column = cell.col as ColumnSpec}
             {@const vizDefaultWidth = column.type === "forest"
               ? (column.options?.forest?.width ?? layout.forestWidth)
-              : layout.forestWidth}
+              : (typeof column.width === "number" ? column.width : layout.forestWidth)}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <div
               use:forestColumnRef={column.id}
