@@ -40,7 +40,10 @@ web_col(
 
 \item{align}{Text alignment for body cells}
 
-\item{header_align}{Text alignment for header (default: "left")}
+\item{header_align}{Text alignment for the header cell: "left", "center",
+or "right". \code{NULL} (default) falls back to \code{align} — so, for example, a
+numeric column whose body is right-aligned gets a right-aligned header
+automatically. Pass an explicit value to override that fallback.}
 
 \item{show_header}{Whether to show the header cell. \code{NULL} / \code{NA} (default)
 uses the auto rule (shown when \code{header} is non-empty). \code{TRUE} / \code{FALSE}

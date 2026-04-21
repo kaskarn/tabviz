@@ -1,8 +1,13 @@
-# tabviz (development version)
+# tabviz 0.8.0
+
+## Breaking changes
+
+* **Viz columns now show their header by default.** `viz_forest()`, `viz_bar()`, `viz_boxplot()`, and `viz_violin()` all default to `show_header = TRUE` (previously `FALSE`). Each viz helper also takes a new `header_align` argument with a type-appropriate default: `"center"` for `viz_forest`, `viz_boxplot`, and `viz_violin` (symmetric-around-null marks), `"left"` for `viz_bar` (bars grow left-to-right). Pass `show_header = FALSE` to restore the previous axis-only look. Header-text widths are now measured into fixed-width viz columns in both the browser and the SVG export path, so opting in won't silently truncate under themes with larger header fonts.
+* **`web_interaction()` now defaults to full interactivity.** `enable_filters`, `enable_reorder_rows`, `enable_reorder_columns`, and `enable_edit` now default to `TRUE`. This matches `web_interaction_full()`, which remains available as a named helper. Callers that want the previous opt-in behavior should pass the flags explicitly (or use `web_interaction_minimal()` / `web_interaction_publication()`). Theme-based default dispatch via `default_interaction_for_theme()` is unchanged — publication-style themes still get the quiet preset.
 
 ## Bug fixes
 
-* **Viz column headers default to off.** `viz_forest()` / `viz_bar()` / `viz_boxplot()` / `viz_violin()` no longer auto-fill a header from the first effect's label when the user passes `header = NULL`. The axis label already carries that meaning; surfacing the effect label as a header doubled up. Opt in with `header = "..."` if you want one.
+* **Forest markers render correctly when multiple widgets share a page.** Viz column `<clipPath>` IDs were derived from `column.id` alone (e.g. `viz-clip-_forest_hr`), so a gallery page or Quarto report with several forest plots ended up with duplicate IDs. Browsers resolve `url(#…)` to the first match in the document, which meant later widgets got clipped against the first widget's (often smaller) clip rect — typically showing only the top row's marker. Clip IDs are now scoped to a per-widget random suffix.
 * **Header alignment follows body alignment by default.** Right-aligned numeric bodies now get right-aligned headers; centered icon / badge / stars bodies get centered headers — uniformly in the browser and in SVG export. Previously the browser and svg-generator both had a viz-specific "always center" override that contradicted `ColumnHeaders.svelte`, and numeric headers rendered left while their columns were right-aligned. Override per column with `header_align = "..."`.
 * **Exported table height no longer reserves ~76px of unused axis strip** when the table has no viz column at all. Pure tabular exports via `save_plot()` used to truncate by exactly that amount.
 * **Theme change no longer wipes interactive column edits.** Using the theme switcher with a custom `enable_themes = list(...)` list went through `setSpec()`, which cleared user-driven inserts / hides / `updateColumn()` overrides as a side effect. Theme swaps now go through a dedicated `setThemeObject()` store method that only touches `spec.theme`.

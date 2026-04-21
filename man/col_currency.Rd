@@ -30,8 +30,11 @@ col_currency(
 
 \item{position}{Symbol position: "prefix" (default, e.g., "$100") or "suffix" (e.g., "100EUR")}
 
-\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
-\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling
+(\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent}) and
+alignment. Body cells default to \code{align = "right"} (override with
+\code{align = "left"} / \code{"center"}); header alignment follows the body unless
+\code{header_align} is set explicitly.}
 }
 \value{
 A ColumnSpec object

@@ -6,6 +6,8 @@
 \usage{
 viz_forest(
   header = NULL,
+  show_header = TRUE,
+  header_align = "center",
   width = NULL,
   point = NULL,
   lower = NULL,
@@ -24,11 +26,17 @@ viz_forest(
 )
 }
 \arguments{
-\item{header}{Column header. Defaults to \code{NULL}, which resolves at render
-time to the single-effect field's label (or the point-column name). For
-multi-effect forests the fallback is blank — pass an explicit \code{header} if
-you want a label over the plot, or set \code{show_header = FALSE} via \code{...} to
-hide the header entirely.}
+\item{header}{Column header label. Defaults to \code{NULL}, which resolves to
+the single-effect field's label (or the point-column name). Multi-effect
+forests fall back to blank.}
+
+\item{show_header}{Whether to render the header cell above the plot.
+Defaults to \code{TRUE}. Set to \code{FALSE} to hide the header (useful when the
+axis label already carries the meaning).}
+
+\item{header_align}{Header text alignment (\code{"left"}, \code{"center"}, \code{"right"}).
+Defaults to \code{"center"} for forest columns — pair nicely with the axis
+labels centered below the plot region.}
 
 \item{width}{Column width in pixels (NULL for auto-sizing based on available space)}
 

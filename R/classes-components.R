@@ -8,7 +8,8 @@
 #' @param type Column type: "text", "numeric", "interval", "bar", "pvalue", "sparkline", "forest", "custom"
 #' @param width Column width in pixels (NA for auto)
 #' @param align Text alignment for body cells: "left", "center", "right"
-#' @param header_align Text alignment for header: "left" (default), "center", "right"
+#' @param header_align Text alignment for header. `NA` (default) follows
+#'   `align`. Otherwise: "left", "center", or "right".
 #' @param show_header Whether to show the header cell. `NA` (default) follows
 #'   the "auto" rule: shown if `header` is a non-empty string. `TRUE` or `FALSE`
 #'   override.
@@ -88,7 +89,10 @@ ColumnSpec <- new_class(
 #' @param type Column type
 #' @param width Column width in pixels, or "auto" for content-based width
 #' @param align Text alignment for body cells
-#' @param header_align Text alignment for header (default: "left")
+#' @param header_align Text alignment for the header cell: "left", "center",
+#'   or "right". `NULL` (default) falls back to `align` — so, for example, a
+#'   numeric column whose body is right-aligned gets a right-aligned header
+#'   automatically. Pass an explicit value to override that fallback.
 #' @param show_header Whether to show the header cell. `NULL` / `NA` (default)
 #'   uses the auto rule (shown when `header` is non-empty). `TRUE` / `FALSE`
 #'   force the header on or off.
@@ -186,14 +190,6 @@ web_col <- function(
 # ============================================================================
 # Column helper functions
 # ============================================================================
-
-# Resolve a viz-column header. Viz columns default to headerless; the axis
-# label usually carries the meaning. Pass `header = "..."` to opt in.
-# `fallback` is accepted for call-site readability but is ignored.
-resolve_viz_header <- function(header, fallback = NULL) {
-  if (is.null(header)) return("")
-  as.character(header)
-}
 
 #' Column helper: Text column
 #'
@@ -654,8 +650,11 @@ col_events <- function(
 #'   (e.g., `c("yes" = "Y", "no" = "N")` or use actual emoji/unicode)
 #' @param size Icon size: "sm", "base", or "lg" (default "base")
 #' @param color Optional CSS color for the icon (default NULL, uses theme)
-#' @param ... Additional arguments passed to `web_col()`, including cell styling:
-#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
+#' @param ... Additional arguments passed to `web_col()`, including cell styling
+#'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
+#'   alignment. Body cells default to `align = "center"` (override with
+#'   `align = "left"` / `"right"`); header alignment follows the body unless
+#'   `header_align` is set explicitly.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -704,8 +703,11 @@ col_icon <- function(
 #' @param colors Named character vector mapping values to custom hex colors,
 #'   which override variants (e.g., `c("special" = "#ff5500")`)
 #' @param size Badge size: "sm" or "base" (default "base")
-#' @param ... Additional arguments passed to `web_col()`, including cell styling:
-#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
+#' @param ... Additional arguments passed to `web_col()`, including cell styling
+#'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
+#'   alignment. Body cells default to `align = "center"` (override with
+#'   `align = "left"` / `"right"`); header alignment follows the body unless
+#'   `header_align` is set explicitly.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -763,8 +765,11 @@ col_badge <- function(
 #' @param domain Optional numeric length-2 vector `c(min, max)` to remap input
 #'   values from an arbitrary range into `[0, max_stars]`. For example,
 #'   `domain = c(0, 100)` with `max_stars = 5` maps a value of 75 to 3.75 stars.
-#' @param ... Additional arguments passed to `web_col()`, including cell styling:
-#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
+#' @param ... Additional arguments passed to `web_col()`, including cell styling
+#'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
+#'   alignment. Body cells default to `align = "center"` (override with
+#'   `align = "left"` / `"right"`); header alignment follows the body unless
+#'   `header_align` is set explicitly.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -817,8 +822,11 @@ col_stars <- function(
 #' @param max_width Maximum image width (default NULL, uses column width)
 #' @param fallback Fallback text or icon if image fails to load (default "[img]")
 #' @param shape Image shape: "square", "circle", or "rounded" (default "square")
-#' @param ... Additional arguments passed to `web_col()`, including cell styling:
-#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
+#' @param ... Additional arguments passed to `web_col()`, including cell styling
+#'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
+#'   alignment. Body cells default to `align = "center"` (override with
+#'   `align = "left"` / `"right"`); header alignment follows the body unless
+#'   `header_align` is set explicitly.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -912,8 +920,11 @@ col_reference <- function(
 #' @param separator Separator between min and max (default " - ")
 #' @param decimals Number of decimal places (default NULL for auto-detection)
 #' @param show_bar Show visual bar representation (default FALSE)
-#' @param ... Additional arguments passed to `web_col()`, including cell styling:
-#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
+#' @param ... Additional arguments passed to `web_col()`, including cell styling
+#'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
+#'   alignment. Body cells default to `align = "right"` (override with
+#'   `align = "left"` / `"center"`); header alignment follows the body unless
+#'   `header_align` is set explicitly.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -1062,8 +1073,11 @@ col_progress <- function(field, header = NULL, width = NULL,
 #' @param decimals Number of decimal places (default 2)
 #' @param thousands_sep Use thousands separator (default TRUE)
 #' @param position Symbol position: "prefix" (default, e.g., "$100") or "suffix" (e.g., "100EUR")
-#' @param ... Additional arguments passed to `web_col()`, including cell styling:
-#'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
+#' @param ... Additional arguments passed to `web_col()`, including cell styling
+#'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
+#'   alignment. Body cells default to `align = "right"` (override with
+#'   `align = "left"` / `"center"`); header alignment follows the body unless
+#'   `header_align` is set explicitly.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -1137,11 +1151,15 @@ col_date <- function(field, header = NULL, width = NULL,
 #' list is needed. Use either inline column references (point/lower/upper) for
 #' a single effect, or a list of `effect_forest()` objects for multiple effects.
 #'
-#' @param header Column header. Defaults to `NULL`, which resolves at render
-#'   time to the single-effect field's label (or the point-column name). For
-#'   multi-effect forests the fallback is blank — pass an explicit `header` if
-#'   you want a label over the plot, or set `show_header = FALSE` via `...` to
-#'   hide the header entirely.
+#' @param header Column header label. Defaults to `NULL`, which resolves to
+#'   the single-effect field's label (or the point-column name). Multi-effect
+#'   forests fall back to blank.
+#' @param show_header Whether to render the header cell above the plot.
+#'   Defaults to `TRUE`. Set to `FALSE` to hide the header (useful when the
+#'   axis label already carries the meaning).
+#' @param header_align Header text alignment (`"left"`, `"center"`, `"right"`).
+#'   Defaults to `"center"` for forest columns — pair nicely with the axis
+#'   labels centered below the plot region.
 #' @param width Column width in pixels (NULL for auto-sizing based on available space)
 #' @param point Column name for point estimate. Use for single-effect plots.
 #' @param lower Column name for lower bound. Use for single-effect plots.
@@ -1187,6 +1205,8 @@ col_date <- function(field, header = NULL, width = NULL,
 #' )
 viz_forest <- function(
     header = NULL,
+    show_header = TRUE,
+    header_align = "center",
     width = NULL,
     point = NULL,
     lower = NULL,
@@ -1202,6 +1222,8 @@ viz_forest <- function(
     annotations = NULL,
     shared_axis = NULL,
     ...) {
+  checkmate::assert_flag(show_header)
+  checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
 
   scale <- match.arg(scale)
 
@@ -1297,25 +1319,33 @@ viz_forest <- function(
     paste0("_forest_", point)
   }
 
-  # Default header to the effect label / axis label; "auto" show_header rule
-  # suppresses when the resolved header is empty. For multi-effect plots the
-  # first effect's label would misrepresent the column, so fall back to blank
-  # and let the user opt in explicitly.
+  # Default header to the effect label; never the raw point column name,
+  # since "hr" / "or" / "rr" are internal identifiers, not presentable labels.
+  # When no meaningful fallback exists, leave the header empty and force
+  # show_header off so the column doesn't reserve a blank header strip.
   forest_fallback <- if (has_effects) {
     if (length(effects) > 1) {
       ""
     } else {
       lbl <- effects[[1]]@label
-      if (!is.na(lbl) && nzchar(lbl)) lbl else effects[[1]]@point_col
+      if (!is.na(lbl) && nzchar(lbl)) lbl else ""
     }
   } else {
-    point
+    ""
   }
-  resolved_header <- resolve_viz_header(header, forest_fallback)
+  resolved_header <- if (is.null(header)) forest_fallback else as.character(header)
+  # If the fallback produced an empty header (user didn't name the column and
+  # no effect label was available), suppress the header — an empty cell with
+  # show_header = TRUE would just reserve an unused strip above the axis.
+  if (is.null(header) && !nzchar(resolved_header)) {
+    show_header <- FALSE
+  }
 
   web_col(
     synthetic_field,
     header = resolved_header,
+    show_header = show_header,
+    header_align = header_align,
     type = "forest",
     width = width,
     sortable = FALSE,  # Forest columns are not sortable by default
@@ -1414,10 +1444,10 @@ InteractionSpec <- new_class(
     enable_hover = new_property(class_logical, default = TRUE),
     enable_resize = new_property(class_logical, default = TRUE),
     enable_export = new_property(class_logical, default = TRUE),
-    enable_filters = new_property(class_logical, default = FALSE),
-    enable_reorder_rows = new_property(class_logical, default = FALSE),
-    enable_reorder_columns = new_property(class_logical, default = FALSE),
-    enable_edit = new_property(class_logical, default = FALSE),
+    enable_filters = new_property(class_logical, default = TRUE),
+    enable_reorder_rows = new_property(class_logical, default = TRUE),
+    enable_reorder_columns = new_property(class_logical, default = TRUE),
+    enable_edit = new_property(class_logical, default = TRUE),
     show_group_counts = new_property(class_logical, default = FALSE),
     tooltip_fields = new_property(class_any, default = NULL),
     enable_themes = new_property(class_any, default = "default")  # NULL, "default", or list of themes
@@ -1475,10 +1505,10 @@ web_interaction <- function(
     enable_hover = TRUE,
     enable_resize = TRUE,
     enable_export = TRUE,
-    enable_filters = FALSE,
-    enable_reorder_rows = FALSE,
-    enable_reorder_columns = FALSE,
-    enable_edit = FALSE,
+    enable_filters = TRUE,
+    enable_reorder_rows = TRUE,
+    enable_reorder_columns = TRUE,
+    enable_edit = TRUE,
     show_group_counts = FALSE,
     tooltip_fields = NULL,
     enable_themes = "default") {
@@ -1784,9 +1814,13 @@ effect_violin <- function(data, label = NULL, color = NULL, fill_opacity = 0.5) 
 #' Each row displays one or more bars based on data values.
 #'
 #' @param ... One or more `effect_bar()` objects defining the bars to display
-#' @param header Column header. Defaults to `NULL`, which resolves at render
-#'   time to the primary effect's label (or the first effect's field name).
-#'   Pass `""` to suppress, or set `show_header = FALSE` via `...` to hide.
+#' @param header Column header label. Defaults to `NULL`, which resolves to
+#'   the primary effect's label (or the first effect's field name).
+#' @param show_header Whether to render the header cell above the chart.
+#'   Defaults to `TRUE`. Set to `FALSE` to hide the header.
+#' @param header_align Header text alignment (`"left"`, `"center"`, `"right"`).
+#'   Defaults to `"left"` for bar charts — labels read naturally from the left
+#'   edge, matching the direction in which bars grow.
 #' @param width Column width in pixels (default 150)
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
@@ -1812,6 +1846,8 @@ effect_violin <- function(data, label = NULL, color = NULL, fill_opacity = 0.5) 
 viz_bar <- function(
     ...,
     header = NULL,
+    show_header = TRUE,
+    header_align = "left",
     width = 150,
     scale = c("linear", "log"),
     axis_range = NULL,
@@ -1820,6 +1856,8 @@ viz_bar <- function(
     axis_label = "Value",
     show_axis = TRUE) {
 
+  checkmate::assert_flag(show_header)
+  checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
   scale <- match.arg(scale)
   effects <- list(...)
 
@@ -1865,10 +1903,13 @@ viz_bar <- function(
 
   first_label <- effects[[1]]@label
   viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else effects[[1]]@value
+  resolved_header <- if (is.null(header)) viz_fallback else as.character(header)
 
   web_col(
     synthetic_field,
-    header = resolve_viz_header(header, viz_fallback),
+    header = resolved_header,
+    show_header = show_header,
+    header_align = header_align,
     type = "viz_bar",
     width = width,
     sortable = FALSE,
@@ -1882,9 +1923,13 @@ viz_bar <- function(
 #' computed automatically) or pre-computed summary statistics.
 #'
 #' @param ... One or more `effect_boxplot()` objects defining the boxplots
-#' @param header Column header. Defaults to `NULL`, which resolves at render
-#'   time to the primary effect's label (or data field name). Pass `""` or
-#'   set `show_header = FALSE` via `...` to hide.
+#' @param header Column header label. Defaults to `NULL`, which resolves to
+#'   the primary effect's label (or data field name).
+#' @param show_header Whether to render the header cell above the chart.
+#'   Defaults to `TRUE`. Set to `FALSE` to hide the header.
+#' @param header_align Header text alignment (`"left"`, `"center"`, `"right"`).
+#'   Defaults to `"center"` — box plots are symmetric around their median,
+#'   so a centered label reads most naturally above the axis.
 #' @param width Column width in pixels (default 150)
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
@@ -1918,6 +1963,8 @@ viz_bar <- function(
 viz_boxplot <- function(
     ...,
     header = NULL,
+    show_header = TRUE,
+    header_align = "center",
     width = 150,
     scale = c("linear", "log"),
     axis_range = NULL,
@@ -1928,6 +1975,8 @@ viz_boxplot <- function(
     axis_label = "Value",
     show_axis = TRUE) {
 
+  checkmate::assert_flag(show_header)
+  checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
   scale <- match.arg(scale)
   whisker_type <- match.arg(whisker_type)
   effects <- list(...)
@@ -1988,10 +2037,13 @@ viz_boxplot <- function(
 
   first_label <- first_effect@label
   viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else first_field
+  resolved_header <- if (is.null(header)) viz_fallback else as.character(header)
 
   web_col(
     synthetic_field,
-    header = resolve_viz_header(header, viz_fallback),
+    header = resolved_header,
+    show_header = show_header,
+    header_align = header_align,
     type = "viz_boxplot",
     width = width,
     sortable = FALSE,
@@ -2005,9 +2057,13 @@ viz_boxplot <- function(
 #' for each row.
 #'
 #' @param ... One or more `effect_violin()` objects defining the violins
-#' @param header Column header. Defaults to `NULL`, which resolves at render
-#'   time to the primary effect's label (or data field name). Pass `""` or
-#'   set `show_header = FALSE` via `...` to hide.
+#' @param header Column header label. Defaults to `NULL`, which resolves to
+#'   the primary effect's label (or data field name).
+#' @param show_header Whether to render the header cell above the chart.
+#'   Defaults to `TRUE`. Set to `FALSE` to hide the header.
+#' @param header_align Header text alignment (`"left"`, `"center"`, `"right"`).
+#'   Defaults to `"center"` — violins are symmetric around their median,
+#'   so a centered label reads most naturally above the axis.
 #' @param width Column width in pixels (default 150)
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
@@ -2038,6 +2094,8 @@ viz_boxplot <- function(
 viz_violin <- function(
     ...,
     header = NULL,
+    show_header = TRUE,
+    header_align = "center",
     width = 150,
     scale = c("linear", "log"),
     axis_range = NULL,
@@ -2049,6 +2107,8 @@ viz_violin <- function(
     axis_label = "Value",
     show_axis = TRUE) {
 
+  checkmate::assert_flag(show_header)
+  checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
   scale <- match.arg(scale)
   effects <- list(...)
 
@@ -2097,10 +2157,13 @@ viz_violin <- function(
 
   first_label <- effects[[1]]@label
   viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else effects[[1]]@data
+  resolved_header <- if (is.null(header)) viz_fallback else as.character(header)
 
   web_col(
     synthetic_field,
-    header = resolve_viz_header(header, viz_fallback),
+    header = resolved_header,
+    show_header = show_header,
+    header_align = header_align,
     type = "viz_violin",
     width = width,
     sortable = FALSE,

@@ -35,8 +35,11 @@ col_stars(
 values from an arbitrary range into \verb{[0, max_stars]}. For example,
 \code{domain = c(0, 100)} with \code{max_stars = 5} maps a value of 75 to 3.75 stars.}
 
-\item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
-\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
+\item{...}{Additional arguments passed to \code{web_col()}, including cell styling
+(\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent}) and
+alignment. Body cells default to \code{align = "center"} (override with
+\code{align = "left"} / \code{"right"}); header alignment follows the body unless
+\code{header_align} is set explicitly.}
 }
 \value{
 A ColumnSpec object

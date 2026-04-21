@@ -37,7 +37,6 @@ Create a custom interaction specification:
 #| eval: false
 tabviz(data, label = "study",
   interaction = web_interaction(
-    show_filters = FALSE,
     show_legend = TRUE,
     enable_sort = TRUE,
     enable_collapse = TRUE,
@@ -45,6 +44,10 @@ tabviz(data, label = "study",
     enable_hover = TRUE,
     enable_resize = TRUE,
     enable_export = TRUE,
+    enable_filters = TRUE,
+    enable_reorder_rows = TRUE,
+    enable_reorder_columns = TRUE,
+    enable_edit = TRUE,
     tooltip_fields = c("n", "pvalue"),
     enable_themes = "default"
   ),
@@ -52,11 +55,12 @@ tabviz(data, label = "study",
 )
 ```
 
+`web_interaction()` defaults enable the full interactive experience — sort, collapse, hover, resize, export, filters, row/column reorder, and inline editing all on. Pass individual flags to opt out of specific features, or use `web_interaction_minimal()` / `web_interaction_publication()` for quieter presets.
+
 ### Arguments
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
-| `show_filters` | logical | FALSE | Show filter panel |
 | `show_legend` | logical | TRUE | Show legend for multi-effect plots |
 | `enable_sort` | logical | TRUE | Click headers to sort |
 | `enable_collapse` | logical | TRUE | Click group headers to collapse/expand |
@@ -64,6 +68,10 @@ tabviz(data, label = "study",
 | `enable_hover` | logical | TRUE | Highlight rows on hover |
 | `enable_resize` | logical | TRUE | Drag column borders to resize |
 | `enable_export` | logical | TRUE | Show download button on hover |
+| `enable_filters` | logical | TRUE | Per-column filter popovers in headers |
+| `enable_reorder_rows` | logical | TRUE | Drag rows within a group, group-siblings |
+| `enable_reorder_columns` | logical | TRUE | Drag columns within a group, group-siblings |
+| `enable_edit` | logical | TRUE | Double-click cells to edit; popover editor for forest numerics |
 | `tooltip_fields` | character vector | NULL | Column names for hover tooltip |
 | `enable_themes` | string, NULL, or list | "default" | Theme menu control |
 

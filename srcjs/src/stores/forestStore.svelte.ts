@@ -29,6 +29,7 @@ import { computeAxis, type AxisComputation, VIZ_MARGIN } from "$lib/axis-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE, LAYOUT } from "$lib/rendering-constants";
+import { resolveShowHeader } from "$lib/column-compat";
 
 // Svelte 5 runes-based store
 export function createForestStore() {
@@ -802,16 +803,36 @@ export function createForestStore() {
      * Explicit-width columns keep their specified width unless expanded for group headers.
      */
     function measureLeafColumn(col: ColumnSpec) {
-      // Skip columns with explicit numeric width - they use that width directly
-      // (but may be expanded later if a group header needs more space)
-      if (typeof col.width === 'number') return;
+      // Respect manual resizes — skip columns the user has resized themselves.
+      if (userResizedIds.has(col.id)) return;
+
+      // Fixed-width columns keep their pixel width, but when the user has
+      // explicitly shown a header (show_header = TRUE), we still need to
+      // guarantee the header fits — otherwise the label truncates with an
+      // ellipsis (a surprise when you've opted into showing it). Measure
+      // header text and bump the column's width up to fit.
+      if (typeof col.width === 'number') {
+        if (resolveShowHeader(col.showHeader, col.header) && col.header) {
+          ctx!.font = headerFont;
+          // Viz columns pad header text by VIZ_MARGIN per side (plot-header
+          // CSS rule), not the standard cell padding — account for that so
+          // the measured width matches actual render.
+          const isViz = col.type === "forest" || col.type === "viz_bar" ||
+                        col.type === "viz_boxplot" || col.type === "viz_violin";
+          const pad = isViz ? VIZ_MARGIN * 2 : cellPadding;
+          const headerWidth = Math.ceil(
+            ctx!.measureText(col.header).width + pad + TEXT_MEASUREMENT.RENDERING_BUFFER,
+          );
+          if (headerWidth > col.width) {
+            target[col.id] = Math.min(AUTO_WIDTH.MAX, headerWidth);
+          }
+        }
+        return;
+      }
 
       // Only auto-size columns with width="auto", null, or undefined (omitted)
       // Use != null to match both null and undefined (R's NULL may serialize as omitted property)
       if (col.width != null && col.width !== "auto") return;
-
-      // Respect manual resizes — skip columns the user has resized themselves.
-      if (userResizedIds.has(col.id)) return;
 
       let maxWidth = 0;
 

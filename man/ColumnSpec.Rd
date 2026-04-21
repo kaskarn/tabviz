@@ -40,7 +40,8 @@ ColumnSpec(
 
 \item{align}{Text alignment for body cells: "left", "center", "right"}
 
-\item{header_align}{Text alignment for header: "left" (default), "center", "right"}
+\item{header_align}{Text alignment for header. \code{NA} (default) follows
+\code{align}. Otherwise: "left", "center", or "right".}
 
 \item{show_header}{Whether to show the header cell. \code{NA} (default) follows
 the "auto" rule: shown if \code{header} is a non-empty string. \code{TRUE} or \code{FALSE}

@@ -19,25 +19,19 @@
     y1="52" y2="52"
     stroke="#313244" stroke-width="2"/>
 <text class="cell-text" x="22" y="72"
-      font-family="system-ui, -apple-system, sans-serif"
-      font-size="14.7px"
-      font-weight="600"
-      fill="#cdd6f4">Study</text>
-<text class="cell-text" x="122" y="72"
         font-family="system-ui, -apple-system, sans-serif"
         font-size="14.7px"
         font-weight="600"
-        text-anchor="start"
-        fill="#cdd6f4"></text>
+        fill="#cdd6f4">Study</text>
 <text class="cell-text" x="282" y="72"
-        font-family="system-ui, -apple-system, sans-serif"
-        font-size="14.7px"
-        font-weight="600"
-        text-anchor="start"
-        fill="#cdd6f4">HR (95% CI)</text>
+          font-family="system-ui, -apple-system, sans-serif"
+          font-size="14.7px"
+          font-weight="600"
+          text-anchor="start"
+          fill="#cdd6f4">HR (95% CI)</text>
 <line x1="12" x2="488"
-    y1="92" y2="92"
-    stroke="#313244" stroke-width="2"/>
+      y1="92" y2="92"
+      stroke="#313244" stroke-width="2"/>
 <rect x="12" y="118"
               width="476" height="26"
               fill="#232334"/>

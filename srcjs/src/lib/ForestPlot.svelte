@@ -65,6 +65,13 @@
 
   let { store, onThemeChange }: Props = $props();
 
+  // Unique per-widget instance suffix so SVG clipPath IDs don't collide when
+  // multiple tabviz widgets render on the same page (e.g. docs gallery).
+  // Without this, every widget with the same column.id produces the same
+  // `viz-clip-<colId>` and the browser resolves `url(#…)` to the first match
+  // — clipping later widgets' markers against earlier widgets' clip rects.
+  const instanceId = `w${Math.random().toString(36).slice(2, 10)}`;
+
   // Reactive derivations from store
   const spec = $derived(store.spec);
   const visibleRows = $derived(store.visibleRows);
@@ -465,6 +472,14 @@
     return Math.max(1, 1 + getMaxGroupDepth(allColumnDefs));
   });
 
+  // True if any leaf column's header renders, or any column group exists.
+  // When false, the entire header band (and its height contribution) is dropped.
+  const anyHeaderVisible = $derived(
+    hasColumnGroups ||
+    allColumns.some(c => resolveShowHeader(c.showHeader, c.header))
+  );
+  const effectiveHeaderDepth = $derived(anyHeaderVisible ? headerDepth : 0);
+
   // Flatten column structure into render items with position info
   // Each item has: col, gridColumnStart, colspan, rowStart, rowSpan, isForest
   interface HeaderCell {
@@ -802,8 +817,11 @@
     };
   }
 
-  // Use measured header height if available, otherwise fall back to theme value
-  const actualHeaderHeight = $derived(measuredHeaderHeight > 0 ? measuredHeaderHeight : layout.headerHeight);
+  // Use measured header height if available, otherwise fall back to theme value.
+  // When no header is shown at all, the band collapses to 0.
+  const actualHeaderHeight = $derived(
+    !anyHeaderVisible ? 0 : (measuredHeaderHeight > 0 ? measuredHeaderHeight : layout.headerHeight)
+  );
 
   // Compute shared scales for viz columns (so all rows share the same scale)
   const vizColumnScales = $derived.by(() => {
@@ -1099,13 +1117,14 @@
       --wf-line-height: ${theme.typography.lineHeight};
       --wf-header-font-scale: ${theme.typography.headerFontScale ?? 1.05};
       --wf-row-height: ${theme.spacing.rowHeight}px;
-      --wf-header-height: ${theme.spacing.headerHeight}px;
-      --wf-header-row-height: ${theme.spacing.headerHeight / headerDepth}px;
-      --wf-header-depth: ${headerDepth};
+      --wf-header-height: ${anyHeaderVisible ? theme.spacing.headerHeight : 0}px;
+      --wf-header-row-height: ${anyHeaderVisible ? theme.spacing.headerHeight / headerDepth : 0}px;
+      --wf-header-depth: ${effectiveHeaderDepth};
       --wf-padding: ${theme.spacing.padding}px;
       --wf-container-padding: ${theme.spacing.containerPadding}px;
       --wf-cell-padding-x: ${theme.spacing.cellPaddingX}px;
       --wf-cell-padding-y: ${theme.spacing.cellPaddingY}px;
+      --wf-viz-margin: ${VIZ_MARGIN}px;
       --wf-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
       --wf-axis-height: ${layout.axisHeight}px;
       --wf-group-padding: ${theme.spacing.groupPadding ?? 8}px;
@@ -1237,8 +1256,9 @@
 
       <!-- CSS Grid layout: columns in order (leftmost = primary) -->
       <div class="tabviz-main" style:grid-template-columns={gridTemplateColumns}>
-        <!-- Header cells (supports hierarchical column groups) -->
-        <!-- Column headers (groups and leaf columns) -->
+        <!-- Header cells (supports hierarchical column groups).
+             Skipped entirely when no column's header is visible. -->
+        {#if anyHeaderVisible}
         {#each headerCells as cell (cell.col.id)}
           {#if cell.isGroupHeader}
             <!-- Group header -->
@@ -1333,6 +1353,7 @@
             </div>
           {/if}
         {/each}
+        {/if}
 
         <!-- Data rows -->
         {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
@@ -1343,7 +1364,7 @@
           {@const rowClasses = row ? getRowClasses(row.style, i, bandingEnabled) : ""}
           {@const rowStyles = row ? getRowStyles(row.style, rowDepth) : ""}
           {@const isSpacerRow = row?.style?.type === "spacer"}
-          {@const gridRow = headerDepth + 1 + i}
+          {@const gridRow = effectiveHeaderDepth + 1 + i}
           {@const groupBg = isGroupHeader ? getGroupBackground(rowDepth + 1, theme) : undefined}
 
           {@const isDragSource = !!(store.dragState?.active && (
@@ -1449,7 +1470,7 @@
 
         <!-- Axis row: one axis cell per viz column -->
         {#if hasVizColumns}
-          {@const axisRowNum = headerDepth + 1 + displayRows.length}
+          {@const axisRowNum = effectiveHeaderDepth + 1 + displayRows.length}
           {#each allColumns as column, idx (column.id)}
             {#if vizColumnTypes.includes(column.type)}
               <div class="grid-cell axis-cell" style:grid-column={1 + idx} style:grid-row={axisRowNum}></div>
@@ -1470,7 +1491,7 @@
           {@const axisLabel = forestOpts?.axisLabel ?? "Effect"}
           {@const isLog = forestOpts?.scale === "log"}
           {@const colScale = forestColumnScales.get(fc.column.id) ?? xScale}
-          {@const fcClipId = `viz-clip-${fc.column.id}`}
+          {@const fcClipId = `viz-clip-${instanceId}-${fc.column.id}`}
           <svg
             class="plot-overlay"
             width={forestWidth}
@@ -1600,7 +1621,7 @@
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
-          {@const vcClipId = `viz-clip-${vc.column.id}`}
+          {@const vcClipId = `viz-clip-${instanceId}-${vc.column.id}`}
           {@const vcIsLog = vizOpts?.scale === "log"}
           {#if vizOpts}
             <svg
@@ -1671,7 +1692,7 @@
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
-          {@const vcClipId = `viz-clip-${vc.column.id}`}
+          {@const vcClipId = `viz-clip-${instanceId}-${vc.column.id}`}
           {@const vcIsLog = vizOpts?.scale === "log"}
           {#if vizOpts}
             <svg
@@ -1742,7 +1763,7 @@
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
-          {@const vcClipId = `viz-clip-${vc.column.id}`}
+          {@const vcClipId = `viz-clip-${instanceId}-${vc.column.id}`}
           {@const vcIsLog = vizOpts?.scale === "log"}
           {#if vizOpts}
             <svg
@@ -2217,9 +2238,10 @@
     position: relative;
   }
 
-  /* Plot header cell */
+  /* Plot header cell — pad horizontally by VIZ_MARGIN so header text aligns
+     with the plot region's left edge (where the axis begins). */
   .plot-header {
-    padding: 0;
+    padding: 0 var(--wf-viz-margin, 12px);
   }
 
   /* Axis row cells - use full axis height (gap + content) */

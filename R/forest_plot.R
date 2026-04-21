@@ -139,7 +139,8 @@ forest_plot <- function(
       effects = effects,
       scale = scale %||% "linear",
       null_value = null_value,
-      axis_label = axis_label %||% "Effect"
+      axis_label = axis_label %||% "Effect",
+      show_header = FALSE
     )
     user_columns <- c(user_columns, list(forest_col))
   } else if (has_inline) {
@@ -150,7 +151,8 @@ forest_plot <- function(
       upper = upper,
       scale = scale %||% "linear",
       null_value = null_value,
-      axis_label = axis_label %||% "Effect"
+      axis_label = axis_label %||% "Effect",
+      show_header = FALSE
     )
     user_columns <- c(user_columns, list(forest_col))
   }

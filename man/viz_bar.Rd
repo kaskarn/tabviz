@@ -7,6 +7,8 @@
 viz_bar(
   ...,
   header = NULL,
+  show_header = TRUE,
+  header_align = "left",
   width = 150,
   scale = c("linear", "log"),
   axis_range = NULL,
@@ -19,9 +21,15 @@ viz_bar(
 \arguments{
 \item{...}{One or more \code{effect_bar()} objects defining the bars to display}
 
-\item{header}{Column header. Defaults to \code{NULL}, which resolves at render
-time to the primary effect's label (or the first effect's field name).
-Pass \code{""} to suppress, or set \code{show_header = FALSE} via \code{...} to hide.}
+\item{header}{Column header label. Defaults to \code{NULL}, which resolves to
+the primary effect's label (or the first effect's field name).}
+
+\item{show_header}{Whether to render the header cell above the chart.
+Defaults to \code{TRUE}. Set to \code{FALSE} to hide the header.}
+
+\item{header_align}{Header text alignment (\code{"left"}, \code{"center"}, \code{"right"}).
+Defaults to \code{"left"} for bar charts — labels read naturally from the left
+edge, matching the direction in which bars grow.}
 
 \item{width}{Column width in pixels (default 150)}
 

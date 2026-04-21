@@ -543,6 +543,38 @@ col_range(min_field, max_field, header = NULL, width = NULL, separator = " – "
 col_range("age_min", "age_max", header = "Age Range")
 ```
 
+## Alignment
+
+Each column has two alignment slots: `align` controls body cells and `header_align` controls the header cell. Both accept `"left"`, `"center"`, or `"right"`.
+
+Defaults are type-aware, so the typical table looks right without any tuning:
+
+| Helper                                           | Body-cell `align` default |
+|--------------------------------------------------|---------------------------|
+| `col_text`, `col_numeric`, `col_pvalue`, `col_bar`, `col_interval`, `col_sparkline`, `col_percent`, `col_reference`, `col_heatmap`, `col_progress` | `"left"`    |
+| `col_icon`, `col_badge`, `col_stars`, `col_img`  | `"center"`                |
+| `col_range`, `col_currency`                      | `"right"`                 |
+| `viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin` | `"left"`              |
+
+`header_align` defaults to `NULL`, which means "follow the body." So `col_currency("price")` gets a right-aligned header for free, and a viz column with `show_header = TRUE` gets a left-aligned header that lines up with the plot region. Pass `header_align = "..."` explicitly to decouple the header from the body — useful when you want a centered header label over right-aligned numbers, for example.
+
+```{r}
+#| eval: false
+# Explicit body alignment
+col_text("study", align = "center")
+
+# Override the default right-aligned currency header
+col_currency("price", header_align = "center")
+
+# Viz column header on, centered over the plot
+viz_forest(effects = list(effect_primary()),
+           show_header = TRUE, header_align = "center")
+```
+
+Viz-column headers are padded inward by the plot's left/right margin so the label lines up with the axis rather than the column edge.
+
+---
+
 ## Cell-Level Styling
 
 All `col_*()` functions support per-cell styling through these optional parameters:

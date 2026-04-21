@@ -192,8 +192,23 @@ function calculateSvgAutoWidths(
   // PHASE 1: Measure leaf column content
   // ========================================================================
   for (const col of columns) {
-    // Only process columns with width="auto" or null
+    // Fixed-width columns keep their width, but if the header is explicitly
+    // shown and wouldn't fit, grow the column to match (keeps SVG export in
+    // sync with the web view's header-fit measurement).
     if (col.width !== "auto" && col.width !== null && col.width !== undefined) {
+      if (
+        typeof col.width === "number" &&
+        col.header &&
+        resolveShowHeader(col.showHeader, col.header)
+      ) {
+        const pad = isVizType(col.type) ? VIZ_MARGIN * 2 : cellPadding;
+        const headerWidth = Math.ceil(
+          estimateTextWidth(col.header, headerFontSize) + pad + TEXT_MEASUREMENT.RENDERING_BUFFER,
+        );
+        if (headerWidth > col.width) {
+          widths.set(col.id, Math.min(AUTO_WIDTH.MAX, headerWidth));
+        }
+      }
       continue;
     }
 
@@ -482,7 +497,12 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const baseRowHeight = theme.spacing.headerHeight / headerDepth;
   // Always add cell padding (CSS applies padding regardless of header depth)
   const actualRowHeight = baseRowHeight + cellPaddingY * 2;
-  const headerHeight = actualRowHeight * headerDepth;
+  // If no leaf column's header renders AND no column groups exist, the whole
+  // header band collapses — mirrors ForestPlot.svelte's anyHeaderVisible.
+  const allLeafCols = flattenAllColumns(columns);
+  const anyHeaderVisible = hasGroups ||
+    allLeafCols.some(c => resolveShowHeader(c.showHeader, c.header));
+  const headerHeight = anyHeaderVisible ? actualRowHeight * headerDepth : 0;
 
   // Text heights for header/footer
   const hasTitle = !!spec.labels?.title;
@@ -865,13 +885,23 @@ function getTextPosition(
   width: number,
   align: "left" | "center" | "right" | undefined
 ): { textX: number; anchor: string } {
+  return getTextPositionPadded(x, width, align, SPACING.TEXT_PADDING);
+}
+
+/** Same as getTextPosition but with a caller-supplied horizontal padding. */
+function getTextPositionPadded(
+  x: number,
+  width: number,
+  align: "left" | "center" | "right" | undefined,
+  pad: number
+): { textX: number; anchor: string } {
   if (align === "right") {
-    return { textX: x + width - SPACING.TEXT_PADDING, anchor: "end" };
+    return { textX: x + width - pad, anchor: "end" };
   }
   if (align === "center") {
     return { textX: x + width / 2, anchor: "middle" };
   }
-  return { textX: x + SPACING.TEXT_PADDING, anchor: "start" };
+  return { textX: x + pad, anchor: "start" };
 }
 
 /** Escape XML special characters */
@@ -2388,7 +2418,8 @@ function renderUnifiedColumnHeaders(
   labelHeader: string,
   labelWidth: number,
   autoWidths: Map<string, number>,
-  getColWidth: (col: ColumnSpec) => number
+  getColWidth: (col: ColumnSpec) => number,
+  showLabelHeader: boolean = true
 ): string {
   const lines: string[] = [];
   const baseFontSize = parseFontSize(theme.typography.fontSizeBase);
@@ -2411,11 +2442,13 @@ function renderUnifiedColumnHeaders(
     let currentX = x;
 
     // Label column spans both rows
-    lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
-      font-family="${theme.typography.fontFamily}"
-      font-size="${fontSize}px"
-      font-weight="${fontWeight}"
-      fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+    if (showLabelHeader) {
+      lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+        font-family="${theme.typography.fontFamily}"
+        font-size="${fontSize}px"
+        font-weight="${fontWeight}"
+        fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+    }
     currentX += labelWidth;
 
     // Track group borders
@@ -2442,8 +2475,9 @@ function renderUnifiedColumnHeaders(
         const width = getColWidth(col);
         const headerAlign = col.headerAlign ?? col.align;
         if (resolveShowHeader(col.showHeader, col.header)) {
-          const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
-          const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
+          const pad = isVizType(col.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
+          const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
+          const truncatedHeader = truncateText(col.header, width, fontSize, pad);
           lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
             font-family="${theme.typography.fontFamily}"
             font-size="${fontSize}px"
@@ -2472,7 +2506,8 @@ function renderUnifiedColumnHeaders(
             const width = getColWidth(sub);
             const headerAlign = sub.headerAlign ?? sub.align;
             if (resolveShowHeader(sub.showHeader, sub.header)) {
-              const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
+              const pad = isVizType(sub.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
+              const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
               lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
                 font-family="${theme.typography.fontFamily}"
                 font-size="${fontSize}px"
@@ -2491,19 +2526,24 @@ function renderUnifiedColumnHeaders(
     // Single-row header
     let currentX = x;
 
-    lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
-      font-family="${theme.typography.fontFamily}"
-      font-size="${fontSize}px"
-      font-weight="${fontWeight}"
-      fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+    if (showLabelHeader) {
+      lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+        font-family="${theme.typography.fontFamily}"
+        font-size="${fontSize}px"
+        font-weight="${fontWeight}"
+        fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+    }
     currentX += labelWidth;
 
     for (const col of leafColumns) {
       const width = getColWidth(col);
-      const headerAlign = col.headerAlign ?? (isVizType(col.type) ? "center" : col.align);
+      const headerAlign = col.headerAlign ?? col.align;
       if (resolveShowHeader(col.showHeader, col.header)) {
-        const { textX, anchor } = getTextPosition(currentX, width, headerAlign);
-        const truncatedHeader = truncateText(col.header, width, fontSize, SPACING.TEXT_PADDING);
+        // Viz columns pad by VIZ_MARGIN so the header aligns with the plot
+        // region's left/right edges (where the axis begins).
+        const pad = isVizType(col.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
+        const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
+        const truncatedHeader = truncateText(col.header, width, fontSize, pad);
 
         lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
           font-family="${theme.typography.fontFamily}"
@@ -3263,29 +3303,37 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     y1="${layout.mainY}" y2="${layout.mainY}"
     stroke="${theme.colors.border}" stroke-width="2"/>`);
 
-  // Column headers - unified layout
+  // Column headers - unified layout. When no column has a visible header and
+  // no groups exist, layout.headerHeight collapses to 0 — skip the entire
+  // header band (cells + bottom border) to avoid drawing a zero-height strip.
   const headerY = layout.mainY;
-  // Exclude the primary column from columnDefs — it's rendered via labelHeader
-  const headerColumnDefs = primaryColFull
-    ? columns.filter(c => c.isGroup || (c as ColumnSpec).id !== primaryColFull.id)
-    : columns;
-  parts.push(renderUnifiedColumnHeaders(
-    headerColumnDefs,
-    allColumns,
-    padding,
-    headerY,
-    layout.headerHeight,
-    theme,
-    primaryColFull?.header ?? "Study",
-    layout.labelWidth,
-    autoWidths,
-    getColWidth
-  ));
+  if (layout.headerHeight > 0) {
+    // Exclude the primary column from columnDefs — it's rendered via labelHeader
+    const headerColumnDefs = primaryColFull
+      ? columns.filter(c => c.isGroup || (c as ColumnSpec).id !== primaryColFull.id)
+      : columns;
+    const showLabelHeader = primaryColFull
+      ? resolveShowHeader(primaryColFull.showHeader, primaryColFull.header)
+      : true;
+    parts.push(renderUnifiedColumnHeaders(
+      headerColumnDefs,
+      allColumns,
+      padding,
+      headerY,
+      layout.headerHeight,
+      theme,
+      primaryColFull?.header ?? "Study",
+      layout.labelWidth,
+      autoWidths,
+      getColWidth,
+      showLabelHeader
+    ));
 
-  // Header border (2px to match web view)
-  parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
-    y1="${headerY + layout.headerHeight}" y2="${headerY + layout.headerHeight}"
-    stroke="${theme.colors.border}" stroke-width="2"/>`);
+    // Header border (2px to match web view)
+    parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
+      y1="${headerY + layout.headerHeight}" y2="${headerY + layout.headerHeight}"
+      stroke="${theme.colors.border}" stroke-width="2"/>`);
+  }
 
   // Build display rows
   const displayRows = buildDisplayRows(spec);

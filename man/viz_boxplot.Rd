@@ -7,6 +7,8 @@
 viz_boxplot(
   ...,
   header = NULL,
+  show_header = TRUE,
+  header_align = "center",
   width = 150,
   scale = c("linear", "log"),
   axis_range = NULL,
@@ -21,9 +23,15 @@ viz_boxplot(
 \arguments{
 \item{...}{One or more \code{effect_boxplot()} objects defining the boxplots}
 
-\item{header}{Column header. Defaults to \code{NULL}, which resolves at render
-time to the primary effect's label (or data field name). Pass \code{""} or
-set \code{show_header = FALSE} via \code{...} to hide.}
+\item{header}{Column header label. Defaults to \code{NULL}, which resolves to
+the primary effect's label (or data field name).}
+
+\item{show_header}{Whether to render the header cell above the chart.
+Defaults to \code{TRUE}. Set to \code{FALSE} to hide the header.}
+
+\item{header_align}{Header text alignment (\code{"left"}, \code{"center"}, \code{"right"}).
+Defaults to \code{"center"} — box plots are symmetric around their median,
+so a centered label reads most naturally above the axis.}
 
 \item{width}{Column width in pixels (default 150)}
 
