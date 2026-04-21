@@ -1,3 +1,14 @@
+# tabviz (development version)
+
+## Breaking changes
+
+* **All shipped themes now default to full interactivity.** `default_interaction_for_theme()` previously dispatched `jama`, `lancet`, `cochrane`, and `minimal` themes to `web_interaction_publication()` (everything off). It now returns `web_interaction_full()` for every theme, so `tabviz(..., theme = web_theme_jama())` — or switching themes interactively — no longer silently disables sort / resize / edit / reorder. Pass `interaction = web_interaction_publication()` explicitly to restore the print-clean behaviour.
+
+## Bug fixes
+
+* **Viz axis no longer drifts below the last row in SVG/PNG exports.** `save_plot()` placed `viz_bar` / `viz_boxplot` / `viz_violin` axis strips at `plotY + plotHeight`, which included a 1.5×rowHeight phantom overall-summary inflation whenever `spec.data.overall` was truthy. The forest axis used `rowsHeight` directly and was unaffected. Both paths now share the same formula.
+* **Resize handle on non-forest viz columns no longer snaps to the 40px minimum on drag start.** `vizDefaultWidth` fell back to `layout.forestWidth` (0 when no forest column is present), so the first `pointermove` clamped to the minimum. The handle now uses the same width resolution chain as the render path: `columnWidths[id] ?? col.width ?? layout.forestWidth`.
+
 # tabviz 0.8.0
 
 ## Breaking changes

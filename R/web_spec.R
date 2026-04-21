@@ -172,9 +172,8 @@ tabviz <- function(
   # Gated internally on interactive() + opt-outs; safe to call unconditionally.
   check_for_update()
 
-  # Resolve a theme-appropriate interaction default when none was supplied.
-  # Publication themes (jama, lancet, cochrane, minimal) stay read-only;
-  # dashboard-style themes get full interactivity.
+  # All shipped themes default to full interactivity. Pass
+  # `interaction = web_interaction_publication()` for a print-clean widget.
   if (is.null(interaction)) {
     interaction <- default_interaction_for_theme(theme)
   }

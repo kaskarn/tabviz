@@ -7,20 +7,16 @@
 default_interaction_for_theme(theme)
 }
 \arguments{
-\item{theme}{A \code{WebTheme} object.}
+\item{theme}{A \code{WebTheme} object (unused; retained for API stability).}
 }
 \value{
-An \code{InteractionSpec} suitable for the theme.
+An \code{InteractionSpec} with full interactivity.
 }
 \description{
-Dashboard/general-purpose themes (default, modern, dark, presentation,
-nature) get \code{web_interaction_full()} so the widget feels alive out of
-the box. Publication-style themes (jama, lancet, cochrane, minimal)
-get \code{web_interaction_publication()} so the output stays clean for
-print-quality figures.
-}
-\details{
-Users who want a different policy can always pass an explicit
-\code{interaction = web_interaction(...)} argument.
+Every shipped theme — dashboard or publication — defaults to
+\code{web_interaction_full()} so users get a consistent, interactive widget
+out of the box. Users who want the quiet, print-ready preset can pass
+\code{interaction = web_interaction_publication()} (or \code{web_interaction_minimal()})
+explicitly.
 }
 \keyword{internal}
