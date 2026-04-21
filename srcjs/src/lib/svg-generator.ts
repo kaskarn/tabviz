@@ -3562,7 +3562,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
-        parts.push(`<g transform="translate(0, ${plotY + layout.plotHeight})">`);
+        parts.push(`<g transform="translate(0, ${plotY + layout.rowsHeight + layout.axisGap})">`);
         parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
         parts.push("</g>");
       }
@@ -3595,7 +3595,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
-        parts.push(`<g transform="translate(0, ${plotY + layout.plotHeight})">`);
+        parts.push(`<g transform="translate(0, ${plotY + layout.rowsHeight + layout.axisGap})">`);
         parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
         parts.push("</g>");
       }
@@ -3628,7 +3628,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
       // Render axis if showAxis is enabled
       if (opts.showAxis !== false) {
-        parts.push(`<g transform="translate(0, ${plotY + layout.plotHeight})">`);
+        parts.push(`<g transform="translate(0, ${plotY + layout.rowsHeight + layout.axisGap})">`);
         parts.push(renderVizAxis(xScale, layout, theme, opts.axisLabel, vizX, vizWidth, opts.nullValue, opts.scale === "log"));
         parts.push("</g>");
       }

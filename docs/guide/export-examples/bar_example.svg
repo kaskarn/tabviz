@@ -67,7 +67,7 @@
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 </g>
-<g transform="translate(0, 267)">
+<g transform="translate(0, 234)">
 <line x1="131" x2="311"
     y1="0" y2="0" stroke="#d4d4d8" stroke-width="1"/>
 <line x1="143" x2="143" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
