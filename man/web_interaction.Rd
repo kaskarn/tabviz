@@ -22,7 +22,7 @@ web_interaction(
   enable_edit = TRUE,
   show_group_counts = FALSE,
   tooltip_fields = NULL,
-  enable_themes = "default"
+  enable_themes = getOption("tabviz.enable_themes", "default")
 )
 
 web_interaction_minimal()

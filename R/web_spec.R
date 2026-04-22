@@ -177,10 +177,16 @@ tabviz <- function(
   if (is.null(interaction)) {
     interaction <- default_interaction_for_theme(theme)
   }
+  interaction@enable_themes <- finalize_enable_themes(interaction@enable_themes, theme)
 
   # Handle WebSpec input (from fluent API modifiers)
   if (S7_inherits(data, WebSpec)) {
     spec <- data
+    if (!is.null(spec@interaction)) {
+      spec@interaction@enable_themes <- finalize_enable_themes(
+        spec@interaction@enable_themes, spec@theme
+      )
+    }
     # Serialize the spec and create widget directly
     payload <- serialize_spec(spec)
     payload$zoom <- zoom

@@ -255,3 +255,58 @@ test_that("htmlwidget round-trip: add_column returns htmlwidget", {
   updated <- add_column(widget, col_text("lower", "Lo"))
   expect_true(inherits(updated, "htmlwidget"))
 })
+
+test_that("finalize_enable_themes handles NULL, 'default', and empty list", {
+  theme <- web_theme_default()
+  expect_null(tabviz:::finalize_enable_themes(NULL, theme))
+  expect_null(tabviz:::finalize_enable_themes(list(), theme))
+  resolved <- tabviz:::finalize_enable_themes("default", theme)
+  expect_type(resolved, "list")
+  expect_true(length(resolved) >= 1)
+})
+
+test_that("finalize_enable_themes auto-includes the active theme", {
+  active <- web_theme_jama()
+  resolved <- tabviz:::finalize_enable_themes(
+    list(web_theme_default(), web_theme_modern()), active
+  )
+  names_out <- vapply(resolved, function(t) t@name, character(1))
+  expect_true(active@name %in% names_out)
+  # active theme prepended at position 1 when not already present
+  expect_identical(names_out[[1]], active@name)
+})
+
+test_that("finalize_enable_themes does not duplicate when active already present", {
+  active <- web_theme_jama()
+  resolved <- tabviz:::finalize_enable_themes(
+    list(web_theme_default(), web_theme_jama()), active
+  )
+  names_out <- vapply(resolved, function(t) t@name, character(1))
+  expect_equal(sum(names_out == active@name), 1L)
+})
+
+test_that("finalize_enable_themes applies named list overrides to @name", {
+  active <- web_theme_default()
+  resolved <- tabviz:::finalize_enable_themes(
+    list(Classical = web_theme_jama(), Modern = web_theme_modern()),
+    active
+  )
+  names_out <- vapply(resolved, function(t) t@name, character(1))
+  expect_true("Classical" %in% names_out)
+  expect_true("Modern" %in% names_out)
+})
+
+test_that("selectable_themes sets spec interaction and auto-includes active", {
+  spec <- make_spec()
+  spec@theme <- web_theme_jama()
+  updated <- selectable_themes(spec, list(web_theme_default()))
+  names_out <- vapply(updated@interaction@enable_themes,
+                      function(t) t@name, character(1))
+  expect_true(spec@theme@name %in% names_out)
+})
+
+test_that("selectable_themes(NULL) hides the switcher", {
+  spec <- make_spec()
+  updated <- selectable_themes(spec, NULL)
+  expect_null(updated@interaction@enable_themes)
+})

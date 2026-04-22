@@ -56,12 +56,20 @@ header label (e.g. "Main Trials (12)"). Default \code{FALSE}.}
 
 \item{tooltip_fields}{Character vector of column names to show in hover tooltip (NULL = no tooltip)}
 
-\item{enable_themes}{Control theme selection menu:
+\item{enable_themes}{Control the interactive theme-switcher menu. Accepts:
 \itemize{
-\item \code{"default"} (default): Enable theme menu with all \code{package_themes()}
-\item \code{NULL}: Disable theme selection entirely
-\item A list of WebTheme objects: Enable with specified themes only
-}}
+\item \code{"default"}: show all \code{\link[=package_themes]{package_themes()}}.
+\item \code{NULL}: hide the theme switcher entirely.
+\item A list of \code{WebTheme} objects: show exactly those themes. Named list
+entries override each theme's display name
+(e.g. \code{list(Classical = web_theme_jama())}). The spec's active \code{theme}
+is always auto-included so users can revert.
+}
+
+Defaults to \code{getOption("tabviz.enable_themes", "default")}, so a
+session-wide curated list can be set once via
+\code{options(tabviz.enable_themes = list(...))}. See also
+\code{\link[=selectable_themes]{selectable_themes()}} for a fluent modifier.}
 }
 \description{
 InteractionSpec: Interaction settings

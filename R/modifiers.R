@@ -305,6 +305,45 @@ set_theme <- function(x, theme) {
   repack(x, spec)
 }
 
+#' Curate which themes appear in the interactive theme switcher
+#'
+#' Fluent sibling to the `enable_themes` argument of [`web_interaction()`].
+#' Rewrites `spec@interaction@enable_themes` on a WebSpec or htmlwidget so the
+#' switcher menu shows only the requested themes. The spec's active theme is
+#' always included automatically, so the user can always revert.
+#'
+#' @param x A `WebSpec` or htmlwidget created by [`tabviz()`].
+#' @param themes One of:
+#'   - `NULL`: hide the switcher entirely.
+#'   - `"default"`: show all [`package_themes()`].
+#'   - A list of `WebTheme` objects: show exactly those. Named list entries
+#'     override each theme's displayed name
+#'     (e.g. `list(Classical = web_theme_jama(), Modern = web_theme_modern())`).
+#'
+#' @return The modified WebSpec or htmlwidget.
+#'
+#' @examples
+#' \dontrun{
+#' tabviz(data, label = "study") |>
+#'   set_theme("jama") |>
+#'   selectable_themes(list(
+#'     Classical = web_theme_jama(),
+#'     Modern = web_theme_modern()
+#'   ))
+#' }
+#' @export
+selectable_themes <- function(x, themes) {
+  if (inherits(x, "tabviz_proxy")) {
+    cli_abort("{.fn selectable_themes} is not available on a live proxy yet.")
+  }
+  spec <- extract_spec(x)
+  if (is.null(spec@interaction)) {
+    spec@interaction <- web_interaction()
+  }
+  spec@interaction@enable_themes <- finalize_enable_themes(themes, spec@theme)
+  repack(x, spec)
+}
+
 #' Set zoom and container constraints
 #'
 #' Provides a fluent API for controlling zoom level and container size constraints.

@@ -1,5 +1,9 @@
 # tabviz (development version)
 
+## New features
+
+* **Curate the interactive theme switcher with named labels, a session-wide default, and a fluent verb.** `web_interaction(enable_themes = ...)` now accepts named list entries to override each theme's displayed label (e.g. `list(Classical = web_theme_jama(), Modern = web_theme_modern())`), and its default reads from `getOption("tabviz.enable_themes", "default")` so a curated list can be set once per session. The spec's active `theme` is auto-included so users can always revert. New fluent modifier `selectable_themes()` mirrors the argument — chain it after `tabviz()` / `set_theme()` for post-hoc edits.
+
 ## Breaking changes
 
 * **All shipped themes now default to full interactivity.** `default_interaction_for_theme()` previously dispatched `jama`, `lancet`, `cochrane`, and `minimal` themes to `web_interaction_publication()` (everything off). It now returns `web_interaction_full()` for every theme, so `tabviz(..., theme = web_theme_jama())` — or switching themes interactively — no longer silently disables sort / resize / edit / reorder. Pass `interaction = web_interaction_publication()` explicitly to restore the print-clean behaviour.

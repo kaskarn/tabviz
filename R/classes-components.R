@@ -1427,10 +1427,18 @@ col_group <- function(header, ...) {
 #' @param show_group_counts Show the row count in parentheses next to each row-group
 #'   header label (e.g. "Main Trials (12)"). Default `FALSE`.
 #' @param tooltip_fields Character vector of column names to show in hover tooltip (NULL = no tooltip)
-#' @param enable_themes Control theme selection menu:
-#'   - `"default"` (default): Enable theme menu with all `package_themes()`
-#'   - `NULL`: Disable theme selection entirely
-#'   - A list of WebTheme objects: Enable with specified themes only
+#' @param enable_themes Control the interactive theme-switcher menu. Accepts:
+#'   - `"default"`: show all [`package_themes()`].
+#'   - `NULL`: hide the theme switcher entirely.
+#'   - A list of `WebTheme` objects: show exactly those themes. Named list
+#'     entries override each theme's display name
+#'     (e.g. `list(Classical = web_theme_jama())`). The spec's active `theme`
+#'     is always auto-included so users can revert.
+#'
+#'   Defaults to `getOption("tabviz.enable_themes", "default")`, so a
+#'   session-wide curated list can be set once via
+#'   `options(tabviz.enable_themes = list(...))`. See also
+#'   [`selectable_themes()`] for a fluent modifier.
 #'
 #' @export
 InteractionSpec <- new_class(
@@ -1469,6 +1477,30 @@ InteractionSpec <- new_class(
     return("enable_themes must be NULL, 'default', or a list of WebTheme objects")
   }
 )
+
+# Normalize `enable_themes` for the runtime: resolve "default", apply
+# list-name overrides (named entries rewrite @name so the switcher shows
+# that label), and guarantee the active theme is present so the user can
+# always revert. Returns NULL (hide switcher) or a list of WebTheme.
+#' @noRd
+finalize_enable_themes <- function(value, theme) {
+  if (is.null(value)) return(NULL)
+  if (identical(value, "default")) value <- package_themes()
+  if (!is.list(value) || length(value) == 0) return(NULL)
+
+  nms <- names(value)
+  if (!is.null(nms)) {
+    for (i in seq_along(value)) {
+      if (nzchar(nms[[i]])) value[[i]]@name <- nms[[i]]
+    }
+  }
+
+  active <- theme@name
+  if (!any(vapply(value, function(t) identical(t@name, active), logical(1)))) {
+    value <- c(list(theme), value)
+  }
+  value
+}
 
 #' Create interaction specification
 #'
@@ -1511,7 +1543,7 @@ web_interaction <- function(
     enable_edit = TRUE,
     show_group_counts = FALSE,
     tooltip_fields = NULL,
-    enable_themes = "default") {
+    enable_themes = getOption("tabviz.enable_themes", "default")) {
   # Deprecation: show_filters maps to enable_filters if the caller supplied it.
   if (isTRUE(show_filters) && !isTRUE(enable_filters)) {
     enable_filters <- TRUE
