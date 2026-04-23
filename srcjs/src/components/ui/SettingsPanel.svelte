@@ -2,6 +2,8 @@
   import type { ForestStore } from "$stores/forestStore.svelte";
   import BandingControl from "./BandingControl.svelte";
   import ColorsControl from "./ColorsControl.svelte";
+  import TypographyControl from "./TypographyControl.svelte";
+  import SpacingControl from "./SpacingControl.svelte";
   import TabStub from "./TabStub.svelte";
   import ThemeSourceModal from "./ThemeSourceModal.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
@@ -28,16 +30,8 @@
   }[] = [
     { id: "banding", label: "Banding" },
     { id: "colors", label: "Colors" },
-    {
-      id: "typography",
-      label: "Typography",
-      stub: "Font family, sizes, weights, line height, header scale — all the typography knobs from `set_typography()`.",
-    },
-    {
-      id: "spacing",
-      label: "Spacing",
-      stub: "Row height, header height, cell padding, section gaps, container padding — the `set_spacing()` surface.",
-    },
+    { id: "typography", label: "Typography" },
+    { id: "spacing", label: "Spacing" },
     {
       id: "shapes",
       label: "Shapes",
@@ -117,33 +111,57 @@
     aria-label="Display settings"
     tabindex="-1"
   >
-    <header class="panel-header">
-      <h2>Settings</h2>
-      <button
-        type="button"
-        class="close-btn"
-        aria-label="Close settings"
-        onclick={() => store.closeSettings()}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-    </header>
+    <!--
+      Single-line bar: title | global actions | horizontally-scrollable tabs.
+      Replaces the former header + tab-strip + footer three-row chrome to
+      reclaim ~78px of vertical space for the tab body.
+    -->
+    <div class="panel-bar">
+      <span class="bar-title">Settings</span>
 
-    <div class="tab-bar" role="tablist" aria-label="Settings sections">
-      {#each tabs as tab (tab.id)}
+      <div class="bar-actions">
         <button
           type="button"
-          role="tab"
-          id="settings-tab-{tab.id}"
-          aria-controls="settings-panel-{tab.id}"
-          aria-selected={activeTabId === tab.id}
-          class:active={activeTabId === tab.id}
-          onclick={() => (activeTabId = tab.id)}
-        >{tab.label}</button>
-      {/each}
+          class="bar-icon-btn"
+          aria-label="View theme source"
+          title="View theme source"
+          onclick={() => (sourceOpen = true)}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="bar-icon-btn"
+          disabled={!hasEdits}
+          onclick={handleReset}
+          aria-label={hasEdits ? "Reset theme edits" : "No edits to reset"}
+          title={hasEdits ? "Reset theme edits" : "No edits to reset"}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        </button>
+      </div>
+
+      <span class="bar-divider" aria-hidden="true"></span>
+
+      <div class="bar-tabs" role="tablist" aria-label="Settings sections">
+        {#each tabs as tab (tab.id)}
+          <button
+            type="button"
+            role="tab"
+            id="settings-tab-{tab.id}"
+            aria-controls="settings-panel-{tab.id}"
+            aria-selected={activeTabId === tab.id}
+            class:active={activeTabId === tab.id}
+            onclick={() => (activeTabId = tab.id)}
+          >{tab.label}</button>
+        {/each}
+      </div>
     </div>
 
     <div class="panel-body">
@@ -159,6 +177,10 @@
               <BandingControl {store} />
             {:else if tab.id === "colors"}
               <ColorsControl {store} />
+            {:else if tab.id === "typography"}
+              <TypographyControl {store} />
+            {:else if tab.id === "spacing"}
+              <SpacingControl {store} />
             {:else if tab.stub}
               <TabStub title={tab.label} teaser={tab.stub} />
             {/if}
@@ -166,33 +188,6 @@
         {/if}
       {/each}
     </div>
-
-    <footer class="panel-footer">
-      <button
-        type="button"
-        class="ghost-btn"
-        disabled={!hasEdits}
-        onclick={handleReset}
-        title={hasEdits ? "Restore the preset" : "No edits to reset"}
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-          <path d="M3 3v5h5" />
-        </svg>
-        Reset
-      </button>
-      <button
-        type="button"
-        class="primary-btn"
-        onclick={() => (sourceOpen = true)}
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-        </svg>
-        View source
-      </button>
-    </footer>
   </div>
 
   <ThemeSourceModal {store} open={sourceOpen} onclose={() => (sourceOpen = false)} />
@@ -249,30 +244,41 @@
     to   { transform: translateX(0);    opacity: 1; }
   }
 
-  .panel-header {
+  /* ---------------------------------------------------------------------
+     Single-line bar: [Settings] [⎘][↻] | [ tab tab tab … ]
+     --------------------------------------------------------------------- */
+  .panel-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
+    min-height: 40px;
+    padding: 0 10px 0 14px;
     border-bottom: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
+    gap: 8px;
   }
 
-  .panel-header h2 {
-    margin: 0;
-    font-size: 0.9375rem;
+  .bar-title {
+    flex-shrink: 0;
+    font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.01em;
-    color: var(--wf-fg, #1a1a1a);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--wf-secondary, #64748b);
   }
 
-  .close-btn {
+  .bar-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 2px;
+  }
+
+  .bar-icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 26px;
     height: 26px;
     padding: 0;
-    border: 1px solid transparent;
+    border: none;
     border-radius: 6px;
     background: transparent;
     color: var(--wf-secondary, #64748b);
@@ -280,27 +286,41 @@
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
-  .close-btn:hover {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 10%, transparent);
-    color: var(--wf-fg, #1a1a1a);
+  .bar-icon-btn:hover:not(:disabled),
+  .bar-icon-btn:focus-visible {
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 12%, transparent);
+    color: var(--wf-primary, #2563eb);
   }
 
-  .tab-bar {
+  .bar-icon-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .bar-divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: 20px;
+    background: color-mix(in srgb, var(--wf-border, #e2e8f0) 70%, transparent);
+    margin: 0 4px;
+  }
+
+  .bar-tabs {
     display: flex;
+    flex: 1;
     gap: 2px;
-    padding: 0 12px;
-    border-bottom: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
     overflow-x: auto;
     scrollbar-width: none;
+    min-width: 0; /* allow flex shrink so overflow-x engages */
   }
 
-  .tab-bar::-webkit-scrollbar {
+  .bar-tabs::-webkit-scrollbar {
     display: none;
   }
 
-  .tab-bar button {
+  .bar-tabs button {
     position: relative;
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: none;
     background: transparent;
     font-size: 0.8125rem;
@@ -311,11 +331,12 @@
     transition: color 0.15s ease;
   }
 
-  .tab-bar button::after {
+  /* Underline indicator aligned to the panel-bar's bottom border. */
+  .bar-tabs button::after {
     content: "";
     position: absolute;
-    left: 10px;
-    right: 10px;
+    left: 8px;
+    right: 8px;
     bottom: -1px;
     height: 2px;
     background: var(--wf-primary, #2563eb);
@@ -324,15 +345,15 @@
     transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  .tab-bar button.active {
+  .bar-tabs button.active {
     color: var(--wf-primary, #2563eb);
   }
 
-  .tab-bar button.active::after {
+  .bar-tabs button.active::after {
     transform: scaleX(1);
   }
 
-  .tab-bar button:hover:not(.active) {
+  .bar-tabs button:hover:not(.active) {
     color: var(--wf-fg, #1a1a1a);
   }
 
@@ -344,56 +365,5 @@
 
   .tab-panel {
     display: block;
-  }
-
-  .panel-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 10px 14px;
-    border-top: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 3%, transparent);
-  }
-
-  .ghost-btn,
-  .primary-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
-  }
-
-  .ghost-btn {
-    border: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 80%, transparent);
-    background: transparent;
-    color: var(--wf-secondary, #64748b);
-  }
-
-  .ghost-btn:hover:not(:disabled) {
-    color: var(--wf-fg, #1a1a1a);
-    border-color: color-mix(in srgb, var(--wf-primary, #2563eb) 25%, var(--wf-border, #e2e8f0));
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 6%, transparent);
-  }
-
-  .ghost-btn:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-
-  .primary-btn {
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 30%, transparent);
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 10%, var(--wf-bg, #ffffff));
-    color: var(--wf-primary, #2563eb);
-  }
-
-  .primary-btn:hover {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 18%, var(--wf-bg, #ffffff));
-    border-color: color-mix(in srgb, var(--wf-primary, #2563eb) 45%, transparent);
   }
 </style>

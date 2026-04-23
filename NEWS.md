@@ -1,3 +1,19 @@
+# tabviz 0.11.0
+
+## New features
+
+* **Typography tab in the Settings panel.** Four sections — Font family, Sizes (small / base / large), Weights (normal / medium / bold, 100–900 step 100), Metrics (line height, header scale) — with live-updating controls. Writes flow through the same `setThemeField` path as Colors, so the "View source" export picks them up as `set_typography(...)` automatically.
+
+* **Spacing tab in the Settings panel.** Three sections — Rows (row height, header height), Cell padding (horizontal, vertical), Gaps & container (section / axis / column / group / plot / container) — all as `NumberField` sliders with live px readouts. Round-trips as `set_spacing(...)` in the source export.
+
+## UX
+
+* **Settings panel: single-line header bar.** The former three-row chrome (title+close header, tab strip, footer with Reset / View source) has been collapsed into one ~40px row: `SETTINGS | ⎘ ↻ | Banding Colors Typography …`. The global actions (View source, Reset) moved into the bar as icon-only ghost buttons with tooltips; the footer is gone. Saves ~78px of vertical chrome — the tab body now gets roughly 2× the scroll area on a 300px-tall widget. Backdrop click, Escape, and re-clicking the toolbar gear all still dismiss the panel (the explicit close X was redundant and has been removed).
+
+## Internals
+
+* **New `NumberField` / `TextField` field primitives** in `srcjs/src/components/ui/`, mirroring the existing `ColorField` pattern. Used by the new Typography and Spacing tabs and ready for the remaining stubbed tabs (Shapes, Axis, Layout) to reuse in subsequent releases.
+
 # tabviz 0.10.4
 
 ## Bug fixes
