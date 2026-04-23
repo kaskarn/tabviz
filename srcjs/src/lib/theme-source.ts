@@ -24,6 +24,7 @@ const SECTION_TO_R_FN: Record<string, string> = {
   axis: "set_axis",
   layout: "set_layout",
   groupHeaders: "set_group_headers",
+  semantics: "set_semantics",
 };
 
 /** Canonical section order in the emitted chain (stable diffs, readable). */
@@ -35,6 +36,7 @@ const SECTION_ORDER = [
   "axis",
   "layout",
   "groupHeaders",
+  "semantics",
 ];
 
 /** `fontFamily` → `font_family`. */
@@ -84,8 +86,23 @@ export function generateThemeSource(
     const fields = edits[section];
     if (!fields || Object.keys(fields).length === 0) continue;
 
-    const args = Object.entries(fields)
-      .map(([k, v]) => `${camelToSnake(k)} = ${rLiteral(v)}`);
+    // `semantics` is the only section whose field values are themselves
+    // objects (bundle per token). Each token becomes a named `list(...)` arg.
+    const args: string[] =
+      section === "semantics"
+        ? Object.entries(fields)
+            .map(([token, bundle]) => {
+              const tokenArgs = Object.entries((bundle as Record<string, unknown>) ?? {})
+                .filter(([, v]) => v != null)
+                .map(([k, v]) => `${camelToSnake(k)} = ${rLiteral(v)}`);
+              return tokenArgs.length === 0
+                ? null
+                : `${token} = list(${tokenArgs.join(", ")})`;
+            })
+            .filter((s): s is string => s !== null)
+        : Object.entries(fields).map(([k, v]) => `${camelToSnake(k)} = ${rLiteral(v)}`);
+
+    if (args.length === 0) continue;
 
     // Single arg on one line, multiple args across lines for readability.
     if (args.length === 1) {

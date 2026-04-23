@@ -19,6 +19,12 @@
 \item{layout}{LayoutConfig object}
 
 \item{group_headers}{GroupHeaderStyles object for nested row group hierarchy}
+
+\item{semantics}{\link{Semantics} object with per-token visual bundles for
+\code{row_emphasis} / \code{row_muted} / \code{row_accent} rows and their cell-level
+counterparts. Defaults to \code{\link[=default_semantics_for]{default_semantics_for()}} applied to the
+default palette / typography; preset helpers (\verb{web_theme_*()}) pass
+their own palette-derived bundles.}
 }
 \description{
 WebTheme: Complete theme specification

@@ -1746,6 +1746,50 @@ export function createForestStore() {
   }
 
   /**
+   * Apply an edit to one field of one semantic token's bundle
+   * (e.g. `theme.semantics.emphasis.bg`). Separate from `setThemeField`
+   * because semantics is the one theme section whose fields are themselves
+   * objects (per-token bundles), not flat key-value pairs — both the
+   * spec-side mutation and the source-gen tracking need to step one level
+   * deeper.
+   */
+  function setSemanticField(
+    token: "emphasis" | "muted" | "accent",
+    field: string,
+    value: unknown,
+  ) {
+    if (!spec || !spec.theme?.semantics) return;
+
+    // Fully-immutable path update: fresh reference at every level from spec
+    // down through the bundle. Ensures every `$derived` / `@const` reading
+    // through any of those levels invalidates — Svelte 5's fine-grained
+    // reactivity tracks reads at each signal hop, but deep mutation only
+    // invalidates the leaf. ForestPlot.svelte's per-row `@const` reads
+    // `theme` at the top level, so without a fresh `spec.theme` reference
+    // the row renderer wouldn't pick up bundle changes.
+    const prevSemantics = spec.theme.semantics as Record<string, Record<string, unknown>>;
+    const prevBundle = prevSemantics[token] ?? {};
+    spec = {
+      ...spec,
+      theme: {
+        ...spec.theme,
+        semantics: {
+          ...prevSemantics,
+          [token]: { ...prevBundle, [field]: value },
+        },
+      },
+    };
+
+    const nextEdits = { ...themeEdits };
+    const prevSection = (nextEdits.semantics ?? {}) as Record<string, Record<string, unknown>>;
+    nextEdits.semantics = {
+      ...prevSection,
+      [token]: { ...(prevSection[token] ?? {}), [field]: value },
+    };
+    themeEdits = nextEdits;
+  }
+
+  /**
    * Set the table watermark. Empty string clears the watermark (matches the
    * `tabviz(watermark = NULL)` semantic). This is a spec-level field, not a
    * theme edit — it doesn't go through themeEdits and isn't exported by
@@ -2425,6 +2469,7 @@ export function createForestStore() {
     setBandingOverride,
     setBandingStartsWithBand,
     setThemeField,
+    setSemanticField,
     setWatermark,
     resetThemeEdits,
     sortBy,

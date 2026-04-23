@@ -2,7 +2,7 @@
   import { tick } from "svelte";
   import type { ForestStore } from "$stores/forestStore.svelte";
   import type { ThemeName } from "$lib/theme-presets";
-  import type { WebTheme, ColumnSpec, ColumnDef, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle, Annotation } from "$types";
+  import type { WebTheme, ColumnSpec, ColumnDef, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle, Annotation, SemanticBundle } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
   import EffectAxis from "$components/forest/EffectAxis.svelte";
   import SummaryDiamond from "$components/forest/SummaryDiamond.svelte";
@@ -33,6 +33,7 @@
   import ColumnEditorPopover, { type EditorTarget } from "$components/controls/ColumnEditorPopover.svelte";
   import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
   import { getVisualTypeDef, isVizType, resolveShowHeader } from "$lib/column-compat";
+  import { resolveSemanticBundle } from "$lib/semantic-styling";
   import DropIndicator from "$components/controls/DropIndicator.svelte";
   import { hitTestRowGaps } from "$lib/dnd-utils";
   import EditableCell from "$components/controls/EditableCell.svelte";
@@ -1382,10 +1383,20 @@
           {@const rowDepth = displayRow.depth}
           {@const selected = row ? isSelected(row.id) : false}
           {@const rowClasses = row ? getRowClasses(row.style, bandIndexes[i]) : (bandIndexes[i] === 1 ? "row-odd" : "")}
-          {@const rowStyles = row ? getRowStyles(row.style, rowDepth) : ""}
+          {@const semBundle = row && theme ? resolveSemanticBundle(row.style, theme) : null}
+          {@const rowStyles = row ? getRowStyles(row.style, rowDepth, semBundle) : ""}
           {@const isSpacerRow = row?.style?.type === "spacer"}
           {@const gridRow = effectiveHeaderDepth + 1 + i}
           {@const groupBg = isGroupHeader && bandIndexes[i] == null ? getGroupBackground(rowDepth + 1, theme) : undefined}
+          <!--
+            Single effective background precedence: per-row inline bg > group
+            header tint > semantic-bundle bg. Packed into one derived value so
+            the later `style:background-color={effectiveBg}` doesn't clobber
+            `style={rowStyles}` when undefined — Svelte's `style:` directive
+            sets/removes the property independently of the style string, so
+            emitting `undefined` here would wipe any bg set via rowStyles.
+          -->
+          {@const effectiveBg = row?.style?.bg ?? groupBg ?? semBundle?.bg ?? undefined}
 
           {@const isDragSource = !!(store.dragState?.active && (
             (store.dragState.kind === "row" && !isGroupHeader && row && store.dragState.id === row.id) ||
@@ -1415,7 +1426,7 @@
                 data-row-id={row ? row.id : undefined}
                 data-field={row ? column.field : undefined}
                 style:grid-row={gridRow}
-                style:background-color={groupBg}
+                style:background-color={effectiveBg}
                 style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
                 style={rowStyles || undefined}
                 role={isGroupHeader ? "button" : undefined}
@@ -1452,7 +1463,7 @@
                 class:hovered={row && hoveredRowId === row.id}
                 class:spacer-row={isSpacerRow}
                 style:grid-row={gridRow}
-                style:background-color={groupBg}
+                style:background-color={effectiveBg}
                 style={rowStyles || undefined}
                 onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
                 onmouseleave={row ? () => handleRowLeave() : undefined}
@@ -1472,7 +1483,7 @@
                 data-row-id={row ? row.id : undefined}
                 data-field={column.field}
                 style:grid-row={gridRow}
-                style:background-color={groupBg}
+                style:background-color={effectiveBg}
                 style:text-align={column.align}
                 style={rowStyles || undefined}
                 onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
@@ -2040,10 +2051,14 @@
     if (style?.bold) classes.push("row-bold");
     if (style?.italic) classes.push("row-italic");
 
-    // Semantic styling classes
+    // Semantic classes — kept for host-page CSS hooks. The widget's own
+    // styling now reads from per-row CSS custom properties (see
+    // getRowStyles), letting bundles override fg / bg / border / weight /
+    // style in one place instead of three hardcoded rules.
     if (style?.emphasis) classes.push("row-emphasis");
     if (style?.muted) classes.push("row-muted");
     if (style?.accent) classes.push("row-accent");
+    if (style?.emphasis || style?.muted || style?.accent) classes.push("row-has-semantic");
 
     // Banding: the store decides which display rows get banded (respecting
     // styled-row exclusions and the mode/level grammar), so we just paint.
@@ -2052,16 +2067,39 @@
     return classes.join(" ");
   }
 
-  function getRowStyles(style?: RowStyle, depth?: number): string {
+  /**
+   * Build the inline `style=` string for a data row. Bundle is resolved by
+   * the caller (in an `@const` so Svelte tracks the per-field reads on
+   * `theme.semantics.*`); passing it in means this function stays
+   * non-reactive and the template's dependency graph is explicit.
+   */
+  function getRowStyles(
+    style: RowStyle | undefined,
+    depth: number | undefined,
+    bundle: SemanticBundle | null,
+  ): string {
     const styles: string[] = [];
 
     if (style?.color) styles.push(`color: ${style.color}`);
-    if (style?.bg) styles.push(`background-color: ${style.bg}`);
+    // NB: background-color is handled at the call site via `effectiveBg` +
+    // `style:background-color` so per-row bg / group-header tint / semantic
+    // bundle bg all flow through one precedence ladder without fighting the
+    // `style=` attribute. Leaving it here would make the `style:` directive
+    // (with `undefined`) overwrite this value.
     if (style?.indent) styles.push(`--row-indent: ${style.indent}`);
 
     // Apply depth-based indentation if no explicit indent
     if (!style?.indent && depth && depth > 0) {
       styles.push(`--row-indent: ${depth}`);
+    }
+
+    if (bundle) {
+      if (bundle.fg != null)         styles.push(`--wf-semantic-fg: ${bundle.fg}`);
+      if (bundle.fontWeight != null) styles.push(`--wf-semantic-weight: ${bundle.fontWeight}`);
+      if (bundle.fontStyle != null)  styles.push(`--wf-semantic-style: ${bundle.fontStyle}`);
+      // Border paints a bottom rule — emitted as a real CSS property so it
+      // shows up on every cell in the row (no single row-level element).
+      if (bundle.border != null)     styles.push(`border-bottom: 1px solid ${bundle.border}`);
     }
 
     return styles.join("; ");
@@ -2463,18 +2501,20 @@
     font-style: italic;
   }
 
-  /* Semantic styling classes */
-  .row-emphasis {
-    font-weight: var(--wf-font-weight-bold, 600);
-    color: var(--wf-fg, #1a1a1a);
-  }
-
-  .row-muted {
-    color: var(--wf-muted, #94a3b8);
-  }
-
-  .row-accent {
-    color: var(--wf-accent, #8b5cf6);
+  /*
+   * Semantic styling — driven by per-row CSS custom properties set from the
+   * resolved SemanticBundle. Each of the `--wf-semantic-*` vars is either the
+   * bundle's value or empty when the bundle leaves that field `null`, which
+   * makes the `var(name, FALLBACK)` below inherit whatever the row would
+   * have rendered without a semantic flag.
+   *
+   * The three `.row-emphasis` / `.row-muted` / `.row-accent` classes are
+   * kept for host-page CSS hooks but no longer drive styling themselves.
+   */
+  :global(.tabviz-container .data-cell.row-has-semantic) {
+    color: var(--wf-semantic-fg, inherit);
+    font-weight: var(--wf-semantic-weight, inherit);
+    font-style: var(--wf-semantic-style, inherit);
   }
 
   .row-icon {

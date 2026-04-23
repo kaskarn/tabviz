@@ -513,6 +513,31 @@ export interface LayoutConfig {
   banding: BandingSpec;
 }
 
+/**
+ * Visual bundle for one semantic token (emphasis / muted / accent).
+ * Every field is nullable — `null` means "inherit / no override," letting a
+ * bundle opt into just the properties it needs. Populated from R's
+ * `SemanticBundle` S7 class via `serialize_semantic_bundle()`.
+ */
+export interface SemanticBundle {
+  fg: string | null;
+  bg: string | null;
+  border: string | null;
+  markerFill: string | null;
+  fontWeight: number | null;
+  fontStyle: "normal" | "italic" | null;
+}
+
+/**
+ * Per-token bundle map. Keys match the boolean flags on `RowStyle` /
+ * `CellStyle` — `row.style.emphasis === true` ⇒ look up `theme.semantics.emphasis`.
+ */
+export interface Semantics {
+  emphasis: SemanticBundle;
+  muted: SemanticBundle;
+  accent: SemanticBundle;
+}
+
 export interface GroupHeaderStyles {
   level1FontSize: string;
   level1FontWeight: number;
@@ -541,6 +566,7 @@ export interface WebTheme {
   axis: AxisConfig;
   layout: LayoutConfig;
   groupHeaders: GroupHeaderStyles;
+  semantics: Semantics;
 }
 
 // ============================================================================

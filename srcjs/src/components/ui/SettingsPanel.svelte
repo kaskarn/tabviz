@@ -2,6 +2,7 @@
   import type { ForestStore } from "$stores/forestStore.svelte";
   import BasicsControl from "./BasicsControl.svelte";
   import ColorsControl from "./ColorsControl.svelte";
+  import SemanticsControl from "./SemanticsControl.svelte";
   import TypographyControl from "./TypographyControl.svelte";
   import SpacingControl from "./SpacingControl.svelte";
   import ShapesControl from "./ShapesControl.svelte";
@@ -28,6 +29,7 @@
   const tabs: { id: string; label: string }[] = [
     { id: "basics",     label: "Basics" },
     { id: "colors",     label: "Colors" },
+    { id: "semantics",  label: "Semantics" },
     { id: "typography", label: "Typography" },
     { id: "spacing",    label: "Spacing" },
     { id: "shapes",     label: "Shapes" },
@@ -245,6 +247,8 @@
               <BasicsControl {store} />
             {:else if tab.id === "colors"}
               <ColorsControl {store} />
+            {:else if tab.id === "semantics"}
+              <SemanticsControl {store} />
             {:else if tab.id === "typography"}
               <TypographyControl {store} />
             {:else if tab.id === "spacing"}

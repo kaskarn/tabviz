@@ -322,6 +322,125 @@ GroupHeaderStyles <- new_class(
   )
 )
 
+#' SemanticBundle: visual properties for one semantic token
+#'
+#' A bundle describes how rows or cells flagged with a particular semantic
+#' class (`emphasis`, `muted`, `accent`) should render. All fields are
+#' optional — `NA` means "inherit / don't override". This separates the
+#' *intent* of a semantic class ("this row is emphasized") from its *visual
+#' manifestation* (a specific foreground color + bold weight, say).
+#'
+#' @param fg Text / foreground color (hex).
+#' @param bg Row / cell background color (hex).
+#' @param border Border color (hex).
+#' @param marker_fill Override for the forest / bar / boxplot / violin marker
+#'   fill color when this semantic is active. Cascades into
+#'   [resolveMarkerStyle()] as the Layer-3 source; `NA` leaves the marker
+#'   palette untouched.
+#' @param font_weight Numeric CSS weight (100..900).
+#' @param font_style Either `"normal"` or `"italic"`.
+#'
+#' @usage NULL
+#' @export
+SemanticBundle <- new_class(
+  "SemanticBundle",
+  properties = list(
+    fg          = new_property(class_character, default = NA_character_),
+    bg          = new_property(class_character, default = NA_character_),
+    border      = new_property(class_character, default = NA_character_),
+    marker_fill = new_property(class_character, default = NA_character_),
+    font_weight = new_property(class_numeric,   default = NA_real_),
+    font_style  = new_property(class_character, default = NA_character_)
+  ),
+  validator = function(self) {
+    hex_pattern <- "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+    color_props <- c("fg", "bg", "border", "marker_fill")
+    invalid <- character()
+    for (prop in color_props) {
+      value <- S7::prop(self, prop)
+      if (!is.na(value) && !grepl(hex_pattern, value)) {
+        invalid <- c(invalid, paste0(prop, " = '", value, "'"))
+      }
+    }
+    if (length(invalid) > 0) {
+      return(paste("Invalid hex color values in SemanticBundle:",
+                   paste(invalid, collapse = ", ")))
+    }
+    fs <- self@font_style
+    if (!is.na(fs) && !fs %in% c("normal", "italic")) {
+      return(paste0("font_style must be 'normal', 'italic', or NA; got '", fs, "'"))
+    }
+    NULL
+  }
+)
+
+#' Semantics: visual bundles per semantic token
+#'
+#' Each property is a [SemanticBundle] describing how one semantic class
+#' renders. The token names (`emphasis`, `muted`, `accent`) match the boolean
+#' flags on [tabviz()] (`row_emphasis`, `row_muted`, `row_accent`) and on
+#' [web_col()] (`emphasis`, `muted`, `accent` per-cell mappings). Default
+#' bundles for each preset theme are derived from its [ColorPalette] —
+#' see [default_semantics_for()].
+#'
+#' @param emphasis Bundle for emphasized rows / cells.
+#' @param muted Bundle for muted rows / cells.
+#' @param accent Bundle for accent-highlighted rows / cells.
+#'
+#' @usage NULL
+#' @export
+Semantics <- new_class(
+  "Semantics",
+  properties = list(
+    emphasis = new_property(SemanticBundle, default = SemanticBundle()),
+    muted    = new_property(SemanticBundle, default = SemanticBundle()),
+    accent   = new_property(SemanticBundle, default = SemanticBundle())
+  )
+)
+
+#' Apply palette-derived semantic bundles to a theme
+#'
+#' Wraps a freshly-built `WebTheme` so its `@semantics` property tracks its
+#' own palette/typography instead of the default palette's — used by every
+#' `web_theme_*()` preset so a theme's emphasized rows use its own foreground
+#' color rather than the generic default.
+#' @keywords internal
+.with_palette_semantics <- function(t) {
+  t@semantics <- default_semantics_for(t@colors, t@typography)
+  t
+}
+
+#' Build per-token default bundles from a ColorPalette + Typography
+#'
+#' Encodes the historical rendering rules — `emphasis` = foreground + bold,
+#' `muted` = muted color, `accent` = accent color (both for text and marker
+#' fill). Called by every `web_theme_*()` preset helper so bundle defaults
+#' track each theme's palette without per-theme duplication.
+#'
+#' @param colors A [ColorPalette] object.
+#' @param typography A [Typography] object.
+#' @return A [Semantics] object whose bundles mirror the old hardcoded
+#'   rendering semantics against the supplied palette / typography.
+#' @keywords internal
+#' @export
+default_semantics_for <- function(colors, typography) {
+  Semantics(
+    emphasis = SemanticBundle(
+      fg          = colors@foreground,
+      marker_fill = colors@foreground,
+      font_weight = typography@font_weight_bold
+    ),
+    muted = SemanticBundle(
+      fg          = colors@muted,
+      marker_fill = colors@muted
+    ),
+    accent = SemanticBundle(
+      fg          = colors@accent,
+      marker_fill = colors@accent
+    )
+  )
+}
+
 #' WebTheme: Complete theme specification
 #'
 #' @param name Theme name
@@ -332,6 +451,11 @@ GroupHeaderStyles <- new_class(
 #' @param axis AxisConfig object
 #' @param layout LayoutConfig object
 #' @param group_headers GroupHeaderStyles object for nested row group hierarchy
+#' @param semantics [Semantics] object with per-token visual bundles for
+#'   `row_emphasis` / `row_muted` / `row_accent` rows and their cell-level
+#'   counterparts. Defaults to [default_semantics_for()] applied to the
+#'   default palette / typography; preset helpers (`web_theme_*()`) pass
+#'   their own palette-derived bundles.
 #'
 #' @usage NULL
 #' @export
@@ -345,7 +469,11 @@ WebTheme <- new_class(
     shapes = new_property(Shapes, default = Shapes()),
     axis = new_property(AxisConfig, default = AxisConfig()),
     layout = new_property(LayoutConfig, default = LayoutConfig()),
-    group_headers = new_property(GroupHeaderStyles, default = GroupHeaderStyles())
+    group_headers = new_property(GroupHeaderStyles, default = GroupHeaderStyles()),
+    semantics = new_property(
+      Semantics,
+      default = default_semantics_for(ColorPalette(), Typography())
+    )
   )
 )
 
@@ -354,12 +482,12 @@ WebTheme <- new_class(
 #' @return A WebTheme object with default settings
 #' @export
 web_theme_default <- function() {
-  WebTheme(
+  .with_palette_semantics(WebTheme(
     name = "default",
     shapes = Shapes(
       effect_colors = c("#0891b2", "#16a34a", "#f59e0b", "#ef4444", "#8b5cf6")
     )
-  )
+  ))
 }
 
 #' Create a minimal/clean theme
@@ -371,7 +499,7 @@ web_theme_default <- function() {
 #' @return A WebTheme object
 #' @export
 web_theme_minimal <- function() {
-  WebTheme(
+  .with_palette_semantics(WebTheme(
     name = "minimal",
     colors = ColorPalette(
       background = "#ffffff",
@@ -431,7 +559,7 @@ web_theme_minimal <- function() {
       level3_italic = FALSE,
       indent_per_level = 14           # Slightly tighter indent
     )
-  )
+  ))
 }
 
 #' Create a dark theme
@@ -443,7 +571,7 @@ web_theme_minimal <- function() {
 #' @return A WebTheme object with dark mode colors
 #' @export
 web_theme_dark <- function() {
-  WebTheme(
+  .with_palette_semantics(WebTheme(
     name = "dark",
     colors = ColorPalette(
       background = "#1e1e2e",         # Catppuccin base
@@ -503,7 +631,7 @@ web_theme_dark <- function() {
       level3_italic = FALSE,
       indent_per_level = 18           # Generous indent for comfort
     )
-  )
+  ))
 }
 
 #' Create a custom theme
@@ -1131,6 +1259,56 @@ set_layout <- function(
   theme
 }
 
+#' Modify theme semantic bundles
+#'
+#' Pipe-friendly function to customize the visual bundles behind the
+#' `emphasis` / `muted` / `accent` semantic classes. Each argument accepts a
+#' named list with any subset of `fg`, `bg`, `border`, `marker_fill`,
+#' `font_weight`, `font_style` — omitted fields preserve the theme's existing
+#' values for that token (so you can tweak a single field without restating
+#' the rest of the bundle).
+#'
+#' @param theme A [WebTheme] object.
+#' @param emphasis Named list of [SemanticBundle] fields to update on the
+#'   emphasis bundle. Supplying `NULL` leaves the token untouched.
+#' @param muted Same for the muted bundle.
+#' @param accent Same for the accent bundle.
+#'
+#' @return The modified `WebTheme`.
+#' @export
+#' @examples
+#' web_theme_default() |>
+#'   set_semantics(
+#'     emphasis = list(fg = "#000000", bg = "#fefce8", font_weight = 700),
+#'     accent   = list(fg = "#b91c1c", marker_fill = "#dc2626")
+#'   )
+set_semantics <- function(theme, emphasis = NULL, muted = NULL, accent = NULL) {
+  stopifnot(S7_inherits(theme, WebTheme))
+  for (token in c("emphasis", "muted", "accent")) {
+    overrides <- get(token)
+    if (is.null(overrides)) next
+    if (!is.list(overrides)) {
+      cli_abort("{.arg {token}} must be a named list or NULL, got {.cls {class(overrides)[1]}}")
+    }
+    current <- S7::prop(theme@semantics, token)
+    allowed <- c("fg", "bg", "border", "marker_fill", "font_weight", "font_style")
+    unknown <- setdiff(names(overrides), allowed)
+    if (length(unknown) > 0) {
+      cli_abort(c(
+        "Unknown SemanticBundle fields in {.arg {token}}: {.val {unknown}}",
+        "i" = "Valid fields: {.val {allowed}}"
+      ))
+    }
+    for (field in names(overrides)) {
+      value <- overrides[[field]]
+      if (is.null(value)) value <- if (field == "font_weight") NA_real_ else NA_character_
+      S7::prop(current, field) <- value
+    }
+    S7::prop(theme@semantics, token) <- current
+  }
+  theme
+}
+
 #' Modify theme group header styles
 #'
 #' Pipe-friendly function to modify hierarchical styling for nested row groups.
@@ -1221,7 +1399,7 @@ set_group_headers <- function(
 #' @return A WebTheme object
 #' @export
 web_theme_jama <- function() {
-  WebTheme(
+  .with_palette_semantics(WebTheme(
     name = "jama",
     colors = ColorPalette(
       background = "#ffffff",
@@ -1283,7 +1461,7 @@ web_theme_jama <- function() {
       level3_italic = FALSE,
       indent_per_level = 12           # Tight indent for density
     )
-  )
+  ))
 }
 
 #' Lancet-style theme for medical journals
@@ -1294,7 +1472,7 @@ web_theme_jama <- function() {
 #' @return A WebTheme object
 #' @export
 web_theme_lancet <- function() {
-  WebTheme(
+  .with_palette_semantics(WebTheme(
     name = "lancet",
     colors = ColorPalette(
       background = "#fdfcfb",       # Warm off-white
@@ -1356,7 +1534,7 @@ web_theme_lancet <- function() {
       level3_italic = FALSE,
       indent_per_level = 18           # Generous indent
     )
-  )
+  ))
 }
 
 #' Modern theme for reports and dashboards
@@ -1369,7 +1547,7 @@ web_theme_lancet <- function() {
 #' @return A WebTheme object
 #' @export
 web_theme_modern <- function() {
-  WebTheme(
+  .with_palette_semantics(WebTheme(
     name = "modern",
     colors = ColorPalette(
       background = "#fafafa",
@@ -1431,7 +1609,7 @@ web_theme_modern <- function() {
       level3_italic = FALSE,
       indent_per_level = 20           # Generous modern spacing
     )
-  )
+  ))
 }
 
 #' Presentation theme for slides and posters
@@ -1442,7 +1620,7 @@ web_theme_modern <- function() {
 #' @return A WebTheme object
 #' @export
 web_theme_presentation <- function() {
-  WebTheme(
+  .with_palette_semantics(WebTheme(
     name = "presentation",
     colors = ColorPalette(
       background = "#ffffff",
@@ -1504,7 +1682,7 @@ web_theme_presentation <- function() {
       level3_italic = FALSE,
       indent_per_level = 24           # Wide indent for clarity
     )
-  )
+  ))
 }
 
 #' Cochrane systematic review theme
@@ -1516,7 +1694,7 @@ web_theme_presentation <- function() {
 #' @return A WebTheme object
 #' @export
 web_theme_cochrane <- function() {
-  WebTheme(
+  .with_palette_semantics(WebTheme(
     name = "cochrane",
     colors = ColorPalette(
       background = "#ffffff",
@@ -1578,7 +1756,7 @@ web_theme_cochrane <- function() {
       level3_italic = FALSE,
       indent_per_level = 10           # Very tight indent
     )
-  )
+  ))
 }
 
 #' Nature journal theme
@@ -1591,7 +1769,7 @@ web_theme_cochrane <- function() {
 #' @return A WebTheme object
 #' @export
 web_theme_nature <- function() {
-  WebTheme(
+  .with_palette_semantics(WebTheme(
     name = "nature",
     colors = ColorPalette(
       background = "#ffffff",
@@ -1657,7 +1835,7 @@ web_theme_nature <- function() {
       level3_italic = FALSE,
       indent_per_level = 14           # Clean, precise indent
     )
-  )
+  ))
 }
 
 # ============================================================================

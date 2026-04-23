@@ -362,6 +362,34 @@ serialize_banding <- function(x) {
   )
 }
 
+#' Serialize a SemanticBundle to a JSON-ready list
+#'
+#' Converts R's `NA` sentinels into JSON `null` so the frontend's renderer
+#' can treat absence as "inherit / no override." Camel-cases field names to
+#' match the TypeScript `SemanticBundle` interface.
+#' @keywords internal
+serialize_semantic_bundle <- function(b) {
+  na_to_null <- function(v) if (length(v) == 0 || is.na(v)) NULL else v
+  list(
+    fg         = na_to_null(b@fg),
+    bg         = na_to_null(b@bg),
+    border     = na_to_null(b@border),
+    markerFill = na_to_null(b@marker_fill),
+    fontWeight = na_to_null(b@font_weight),
+    fontStyle  = na_to_null(b@font_style)
+  )
+}
+
+#' Serialize a Semantics object into the per-token bundle map
+#' @keywords internal
+serialize_semantics <- function(s) {
+  list(
+    emphasis = serialize_semantic_bundle(s@emphasis),
+    muted    = serialize_semantic_bundle(s@muted),
+    accent   = serialize_semantic_bundle(s@accent)
+  )
+}
+
 #' Serialize WebTheme
 #' @keywords internal
 serialize_theme <- function(theme) {
@@ -460,7 +488,8 @@ serialize_theme <- function(theme) {
       level3Background = theme@group_headers@level3_background,
       level3BorderBottom = theme@group_headers@level3_border_bottom,
       indentPerLevel = theme@group_headers@indent_per_level
-    )
+    ),
+    semantics = serialize_semantics(theme@semantics)
   )
 }
 

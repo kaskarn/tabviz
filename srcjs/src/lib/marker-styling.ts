@@ -16,6 +16,7 @@
  */
 
 import type { WebTheme, RowStyle } from "$types";
+import { resolveSemanticBundle } from "./semantic-styling";
 
 export interface ResolvedMarkerStyle {
   fill: string;
@@ -23,16 +24,23 @@ export interface ResolvedMarkerStyle {
   strokeWidth: number;
 }
 
-/** Map a RowStyle to its semantic color, if any class is set. */
+/**
+ * Pull the marker-fill override for a row's active semantic class, if any.
+ *
+ * Previously reached directly into `theme.colors.{accent|foreground|muted}`
+ * to derive the color — which conflated palette slots with semantic roles,
+ * and ignored the fact that users might want a completely different color
+ * (or none at all) for a semantic class. Now defers to the theme's
+ * `SemanticBundle.markerFill` via the shared resolver, which returns `null`
+ * when the active bundle opts out of the marker cascade.
+ */
 export function semanticColorFor(
   style: RowStyle | null | undefined,
   theme: WebTheme | undefined,
 ): string | null {
-  if (!style) return null;
-  if (style.accent)   return theme?.colors?.accent ?? null;
-  if (style.emphasis) return theme?.colors?.foreground ?? null;
-  if (style.muted)    return theme?.colors?.muted ?? null;
-  return null;
+  if (!theme) return null;
+  const bundle = resolveSemanticBundle(style, theme);
+  return bundle?.markerFill ?? null;
 }
 
 /**

@@ -29,6 +29,7 @@ import { computeArrowDimensions, renderArrowPath } from "./arrow-utils";
 import { isVizType, resolveShowHeader } from "./column-compat";
 import { resolveMarkerStyle } from "./marker-styling";
 import { computeBandIndexes } from "./banding";
+import { resolveSemanticBundle } from "./semantic-styling";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -2661,17 +2662,26 @@ function renderUnifiedTableRow(
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
 
-  // Render label
+  // Render label. Semantic bundles (theme.semantics.{emphasis|muted|accent})
+  // drive fg / font_weight / font_style when the row carries the matching
+  // flag; the bundle's per-field `null` leaves that property at the theme
+  // default, so a partial bundle (e.g. just bg on emphasis) won't clobber
+  // unrelated styling.
   const indent = depth * SPACING.INDENT_PER_LEVEL + (row.style?.indent ?? 0) * SPACING.INDENT_PER_LEVEL;
-  const fontWeight = (row.style?.bold || row.style?.emphasis) ? theme.typography.fontWeightBold : theme.typography.fontWeightNormal;
-  const fontStyle = row.style?.italic ? "italic" : "normal";
-  let textColor = theme.colors.foreground;
+  const semBundle = resolveSemanticBundle(row.style, theme);
+  const fontWeight =
+    semBundle?.fontWeight ??
+    ((row.style?.bold ?? false) ? theme.typography.fontWeightBold : theme.typography.fontWeightNormal);
+  const fontStyle =
+    semBundle?.fontStyle ??
+    (row.style?.italic ? "italic" : "normal");
+  let textColor: string;
   if (row.style?.color) {
     textColor = row.style.color;
-  } else if (row.style?.muted) {
-    textColor = theme.colors.muted;
-  } else if (row.style?.accent) {
-    textColor = theme.colors.accent;
+  } else if (semBundle?.fg) {
+    textColor = semBundle.fg;
+  } else {
+    textColor = theme.colors.foreground;
   }
 
   // Don't truncate labels - they're the primary row identifier and the width
@@ -3454,7 +3464,18 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           fill="${theme.colors.muted}" fill-opacity="0.1"/>`);
         return;
       }
-      // 3. Alternating row banding (only paint the "odd" band — even rows
+      // 3. Semantic bundle background — semantic classes can now request a
+      //    row/cell bg via theme.semantics.<token>.bg. Render BEFORE the
+      //    banding pass so a semantically-backed row reads as distinct from
+      //    its neighbors regardless of odd/even.
+      const semBundle = resolveSemanticBundle(row.style, theme);
+      if (semBundle?.bg) {
+        parts.push(`<rect x="${padding}" y="${y}"
+          width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
+          fill="${semBundle.bg}"/>`);
+        return;
+      }
+      // 4. Alternating row banding (only paint the "odd" band — even rows
       // inherit the container background, matching the web widget).
       if (bandIdx === 1) {
         const bgColor = theme.colors.altBg;

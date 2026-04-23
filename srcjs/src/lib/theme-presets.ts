@@ -1,4 +1,43 @@
-import type { WebTheme } from "$types";
+import type { WebTheme, Semantics, ColorPalette, Typography } from "$types";
+
+/**
+ * Derive default semantic bundles for a given palette + typography. Wires the
+ * three tokens to their historical visual behavior (emphasis = fg + bold,
+ * muted = muted color, accent = accent color for both text and marker cascade)
+ * but now routed through the `Semantics` structure so each preset's bundles
+ * track its own palette instead of a shared default.
+ *
+ * Kept here (not imported from a shared module) so the presets stay a flat,
+ * type-checked static table — no circular imports.
+ */
+function defaultSemanticsFor(colors: ColorPalette, typography: Typography): Semantics {
+  return {
+    emphasis: {
+      fg: colors.foreground,
+      bg: null,
+      border: null,
+      markerFill: colors.foreground,
+      fontWeight: typography.fontWeightBold,
+      fontStyle: null,
+    },
+    muted: {
+      fg: colors.muted,
+      bg: null,
+      border: null,
+      markerFill: colors.muted,
+      fontWeight: null,
+      fontStyle: null,
+    },
+    accent: {
+      fg: colors.accent,
+      bg: null,
+      border: null,
+      markerFill: colors.accent,
+      fontWeight: null,
+      fontStyle: null,
+    },
+  };
+}
 
 // Theme preset names
 export const THEME_NAMES = [
@@ -106,7 +145,15 @@ const DEFAULT_THEME: WebTheme = {
     level3BorderBottom: false,
     indentPerLevel: 16,
   },
+  // Populated below via `defaultSemanticsFor()` so the bundles track each
+  // preset's own palette/typography instead of the default theme's.
+  semantics: {
+    emphasis: { fg: null, bg: null, border: null, markerFill: null, fontWeight: null, fontStyle: null },
+    muted:    { fg: null, bg: null, border: null, markerFill: null, fontWeight: null, fontStyle: null },
+    accent:   { fg: null, bg: null, border: null, markerFill: null, fontWeight: null, fontStyle: null },
+  },
 };
+DEFAULT_THEME.semantics = defaultSemanticsFor(DEFAULT_THEME.colors, DEFAULT_THEME.typography);
 
 // Minimal/Publication theme - academic B&W, serif, sharp corners
 const MINIMAL_THEME: WebTheme = {
@@ -577,6 +624,15 @@ export const THEME_PRESETS: Record<ThemeName, WebTheme> = {
   cochrane: COCHRANE_THEME,
   nature: NATURE_THEME,
 };
+
+// Every preset spreads DEFAULT_THEME and overrides its own palette/typography;
+// that spread carries DEFAULT_THEME's semantics along, which would pin every
+// emphasized row to cyan text regardless of the new palette. Rebuild each
+// preset's semantics from its own palette/typography here so the bundles track
+// the theme's actual colors (JAMA → black emphasis, dark theme → light, …).
+for (const t of Object.values(THEME_PRESETS)) {
+  t.semantics = defaultSemanticsFor(t.colors, t.typography);
+}
 
 // Human-readable theme labels for UI
 export const THEME_LABELS: Record<ThemeName, string> = {

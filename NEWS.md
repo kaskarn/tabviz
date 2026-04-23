@@ -1,3 +1,83 @@
+# tabviz 0.13.0
+
+## Semantic classes become visual bundles
+
+Beta feedback made it clear that the semantic classes (`row_emphasis`,
+`row_muted`, `row_accent` + their cell-level counterparts) were under-powered.
+They only toggled text color and weight; users asked for control over
+backgrounds, borders, and marker fills too, and complained that names like
+"accent" felt conflated with palette slots.
+
+This release splits the two layers: `ColorPalette` stays as *palette inputs*
+(the colors a theme brings to the table), and a new `Semantics` theme object
+attaches each semantic token to a full visual bundle.
+
+## New features
+
+* **`SemanticBundle` S7 class** — per-token bundle with six optional fields:
+  `fg`, `bg`, `border`, `marker_fill`, `font_weight`, `font_style`. `NA` on
+  any field means "inherit / don't override"; a bundle can opt in to just
+  the properties it cares about.
+
+* **`Semantics` S7 class** on every `WebTheme`, exposing bundles for
+  `emphasis`, `muted`, and `accent`. Defaults are derived from each preset's
+  own palette + typography (via the new `default_semantics_for()` helper),
+  so emphasized rows in `web_theme_jama()` now use JAMA's foreground rather
+  than the shared default theme's.
+
+* **`set_semantics()` fluent modifier** — accepts named-list overrides per
+  token, e.g. `set_semantics(emphasis = list(bg = "#fefce8", font_weight = 700))`.
+  Only the fields you mention change; everything else keeps the theme's
+  defaults.
+
+* **Settings panel: new `Semantics` tab** — slotted between *Colors* and
+  *Typography*. Each of the three tokens gets a section with six
+  `OptionalField`-wrapped controls (colors / weight / style). Each field has
+  an "Inherit" checkbox that toggles between the theme default and an
+  explicit value. Edits round-trip through `View source` as
+  `set_semantics(<token> = list(...))`.
+
+## Rendering migration
+
+* **Single source of truth for bundle resolution** — `srcjs/src/lib/semantic-styling.ts`
+  exposes `resolveSemanticBundle()`, consumed by both the live widget and the
+  static SVG exporter. Bundle-based rendering replaces the three hardcoded
+  paths that previously reached into `theme.colors.{accent|foreground|muted}`
+  directly (`ForestPlot.svelte`, `svg-generator.ts`, `marker-styling.ts`).
+
+* **Defaults mirror pre-0.13 rendering** — the initial bundle for each token
+  is derived from the theme's palette in the same way the old hardcoded path
+  did, so widgets that don't touch `set_semantics()` render identically to
+  pre-migration. Visual regression suite confirms no shift in 35 rendered
+  examples.
+
+* **Bundles now drive more than color** — setting `bg` puts a row/cell
+  background behind every semantically-classed row (both in the live widget
+  and in static PNG/SVG export); `border` paints a bottom rule; `marker_fill`
+  cascades into the forest / bar / boxplot / violin marker fills. These were
+  not available before this release.
+
+## Internals
+
+* **`OptionalField.svelte`** — new small wrapper primitive composing an
+  "Inherit" checkbox with any child field, for `null`-aware bundle editing.
+  Ready to be reused by future theme sections with nullable properties.
+
+* **Immutable spec updates for nested edits.** `setSemanticField()` in the
+  store walks a fresh reference at every level from `spec` down to the
+  changed bundle field, so Svelte 5's fine-grained reactivity invalidates
+  every `$derived` that reads through `spec.theme` — avoiding a subtle
+  reactivity bug where deep mutations wouldn't invalidate ancestor-level
+  readers in the `ForestPlot` row loop.
+
+## Breaking changes
+
+Additive only: new `theme@semantics` property, new `set_semantics()` modifier,
+new `theme.semantics` nested object in the serialized payload. No existing
+code paths change behavior; package is experimental and this is the
+foundation for future work around stock-theme tuning and a
+semantic-reference docs page.
+
 # tabviz 0.12.2
 
 ## UX
