@@ -36,7 +36,7 @@ full_monty <- tibble(
 
 # Custom theme
 monty_theme <- web_theme_dark() |>
-  set_colors(primary = "#f59e0b", interval_positive = "#22c55e", interval_negative = "#ef4444") |>
+  set_colors(primary = "#f59e0b", ci_marker_positive = "#22c55e", ci_marker_negative = "#ef4444") |>
   set_spacing(row_height = 38) |>
   set_axis(gridlines = TRUE, gridline_style = "dotted")
 
@@ -48,7 +48,7 @@ tabviz(
     col_n("n"),
     col_bar("weight"),
     col_group("Results",
-      col_interval("HR (95% CI)"),
+      col_interval("primary_hr", "primary_lo", "primary_hi", header = "HR (95% CI)"),
       col_pvalue("pvalue", "P")
     ),
     col_sparkline("trend", "Trend"),
@@ -60,6 +60,7 @@ tabviz(
       ),
       scale = "log", null_value = 1,
       axis_label = "Hazard Ratio",
+      axis_range = c(0.4, 1.2),
       annotations = list(
         refline(0.75, label = "Target", style = "dashed", color = "#a855f7")
       )
@@ -67,7 +68,6 @@ tabviz(
   ),
   row_badge = "badge",
   theme = monty_theme,
-  axis_range = c(0.4, 1.2),
   title = "The Full Monty",
   subtitle = "Nested groups + 3 effects + sparklines + weights + annotations + custom theme",
   caption = "Every major feature combined in one visualization",

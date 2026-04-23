@@ -7,44 +7,60 @@ title: "Annotations"
 library(tabviz)
 ```
 
-Annotation functions for adding visual elements to forest plots.
+Annotations decorate a `viz_forest()` column with reference lines and custom shapes. They are passed via the `annotations = list(...)` argument of `viz_forest()` (and the equivalent shorthand in `forest_plot()`).
 
-## Reference Lines
+---
 
-### refline {#refline}
+## `refline()` {#refline}
 
-Add a vertical reference line at a specific x-axis position. Commonly used to mark the null effect or clinically meaningful thresholds.
-
-```r
-refline(x, label = NULL, style = "dashed", color = NULL,
-               width = 1, opacity = 0.6)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `x` | X-axis position for the line |
-| `label` | Optional text label for the line |
-| `style` | Line style: `"solid"`, `"dashed"`, or `"dotted"` |
-| `color` | Line color (uses theme default if NULL) |
-| `width` | Line width in pixels (default: 1) |
-| `opacity` | Line opacity from 0 to 1 (default: 0.6) |
-
-**Examples**:
+Vertical reference line at a specific x-axis position. Most often used to mark the null effect (`x = 0` linear, `x = 1` log) or a clinically meaningful threshold.
 
 ```r
-# Basic null line
-refline(1)
-
-# Labeled threshold with custom styling
-refline(0.5, label = "Clinically meaningful",
-               style = "solid", width = 2, opacity = 0.8)
+refline(x,
+        label = NULL,
+        style = c("dashed", "solid", "dotted"),
+        color = NULL,
+        width = 1,
+        opacity = 0.6)
 ```
 
-## Custom Annotations
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `x` | `numeric(1)` | required | X-axis position. |
+| `label` | `character(1)` | `NULL` | Text rendered near the line. |
+| `style` | choice | `"dashed"` | `"dashed"`, `"solid"`, or `"dotted"`. |
+| `color` | `character(1)` | `NULL` | CSS color. `NULL` uses the theme default. |
+| `width` | `numeric(1)` | `1` | Line width in px. |
+| `opacity` | `numeric(1)` | `0.6` | 0–1. |
 
-### forest_annotation {#forest_annotation}
+**Returns:** a `ReferenceLine` object.
 
-Add a custom shape annotation to a specific study.
+```{r}
+#| eval: false
+data <- data.frame(
+  study = c("Study A", "Study B", "Study C"),
+  hr    = c(0.72, 0.85, 1.15),
+  lower = c(0.55, 0.70, 0.90),
+  upper = c(0.95, 1.03, 1.45)
+)
+
+tabviz(data, label = "study",
+  columns = list(
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1,
+               annotations = list(
+                 refline(1,    label = "No effect",            style = "solid"),
+                 refline(0.75, label = "Clinically meaningful", style = "dashed")
+               ))
+  )
+)
+```
+
+---
+
+## `forest_annotation()` {#forest_annotation}
+
+Custom shape attached to a specific study row.
 
 ```r
 forest_annotation(
@@ -56,39 +72,23 @@ forest_annotation(
 )
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `study_id` | Study identifier to annotate |
-| `shape` | Shape type: `"circle"`, `"square"`, `"triangle"`, `"star"` |
-| `position` | Position relative to point: `"before"`, `"after"`, `"overlay"` |
-| `color` | Shape color (default: purple) |
-| `size` | Size multiplier (default: 1.0) |
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `study_id` | `character(1)` | required | Identifier of the study to annotate. |
+| `shape` | choice | `"circle"` | One of `"circle"`, `"square"`, `"triangle"`, `"star"`. |
+| `position` | choice | `"after"` | Position relative to the point: `"before"`, `"after"`, or `"overlay"`. |
+| `color` | `character(1)` | `"#8b5cf6"` | CSS color. |
+| `size` | `numeric(1)` | `1.0` | Size multiplier. |
 
-## Examples
+**Returns:** a `CustomAnnotation` object.
 
-### Adding Reference Lines
+:::{.callout-warning}
+## Frontend rendering not implemented
 
-```{r}
-#| eval: false
-data <- data.frame(
-  study = c("Study A", "Study B", "Study C"),
-  hr = c(0.72, 0.85, 1.15),
-  lower = c(0.55, 0.70, 0.90),
-  upper = c(0.95, 1.03, 1.45)
-)
+`forest_annotation()` is currently a placeholder — the spec is built but the frontend has no renderer for it yet. Use `refline()` for visual annotations until this lands.
+:::
 
-forest_plot(data,
-  point = "hr", lower = "lower", upper = "upper",
-  label = "study",
-  null_value = 1, scale = "log",
-  annotations = list(
-    refline(1, "No effect", style = "solid"),
-    refline(0.75, "Clinically meaningful", style = "dashed")
-  )
-)
-```
+## Related
 
-## See Also
-
-- [tabviz()](tabviz.qmd) for using annotations
-- [Forest Plots Guide](../guide/visualizations/forest-plots.qmd) for detailed examples
+- [`viz_forest()`](columns.qmd#viz_forest) — the `annotations` argument
+- [`forest_plot()`](forest_plot.qmd) — quick wrapper that forwards an `annotations` list

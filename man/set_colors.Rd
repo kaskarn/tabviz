@@ -15,13 +15,18 @@ set_colors(
   border = NULL,
   row_bg = NULL,
   alt_bg = NULL,
-  interval = NULL,
-  interval_positive = NULL,
-  interval_negative = NULL,
-  interval_neutral = NULL,
-  interval_line = NULL,
+  ci_marker_fill = NULL,
+  ci_marker_positive = NULL,
+  ci_marker_negative = NULL,
+  ci_marker_neutral = NULL,
+  ci_line = NULL,
   summary_fill = NULL,
-  summary_border = NULL
+  summary_border = NULL,
+  interval = lifecycle::deprecated(),
+  interval_positive = lifecycle::deprecated(),
+  interval_negative = lifecycle::deprecated(),
+  interval_neutral = lifecycle::deprecated(),
+  interval_line = lifecycle::deprecated()
 )
 }
 \arguments{
@@ -49,22 +54,32 @@ Cascades to \code{interval} and \code{summary_fill} if not specified.}
 and \code{background} or \code{row_bg} is set, inherits from \code{row_bg} (disabling
 visible banding). Set explicitly to enable striped rows on custom themes.}
 
-\item{interval}{Default marker/interval color (default: "#0891b2"). If not
+\item{ci_marker_fill}{Default CI marker fill color (default: "#0891b2"). If not
 specified and \code{primary} is set, inherits from \code{primary}. Cascades to
 \code{summary_fill} if not specified.}
 
-\item{interval_positive}{Deprecated. Color for favorable effects.}
+\item{ci_marker_positive}{Color for favorable effects.}
 
-\item{interval_negative}{Deprecated. Color for unfavorable effects.}
+\item{ci_marker_negative}{Color for unfavorable effects.}
 
-\item{interval_neutral}{Color for neutral effects (default: "#64748b")}
+\item{ci_marker_neutral}{Color for neutral effects (default: "#64748b")}
 
-\item{interval_line}{Confidence interval line color (default: "#475569")}
+\item{ci_line}{Confidence interval line color (default: "#475569")}
 
 \item{summary_fill}{Summary diamond fill color (default: "#0891b2"). If not
-specified and \code{interval} or \code{primary} is set, inherits from \code{interval}.}
+specified and \code{ci_marker_fill} or \code{primary} is set, inherits from \code{ci_marker_fill}.}
 
 \item{summary_border}{Summary diamond border color (default: "#0e7490")}
+
+\item{interval}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_marker_fill}.}
+
+\item{interval_positive}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_marker_positive}.}
+
+\item{interval_negative}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_marker_negative}.}
+
+\item{interval_neutral}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_marker_neutral}.}
+
+\item{interval_line}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_line}.}
 }
 \value{
 Modified WebTheme object

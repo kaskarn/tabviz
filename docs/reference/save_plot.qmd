@@ -1,5 +1,5 @@
 ---
-title: "save_plot"
+title: "save_plot()"
 ---
 
 ```{r}
@@ -7,132 +7,100 @@ title: "save_plot"
 library(tabviz)
 ```
 
-Export a tabviz widget or split table to static file formats.
+Export a tabviz widget, `WebSpec`, or `SplitForest` to a static SVG, PDF, or PNG.
 
-## Usage
+The pipeline runs entirely in R: the spec is serialized to JSON, the bundled JavaScript SVG generator (`inst/js/svg-generator.js`) is run via `V8`, and PDF/PNG outputs are produced from that SVG via `rsvg`.
+
+---
+
+## `save_plot()` {#save_plot}
 
 ```r
-save_plot(
-  x,
-  file,
-  width = 800,
-  height = NULL,
-  scale = 2
-)
+save_plot(x, file, width = 800, height = NULL, scale = 2, ...)
 ```
 
-## Arguments
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `x` | `WebSpec` / htmlwidget / `SplitForest` | required | The plot to export. `SplitForest` is dispatched to `save_split_table()`. |
+| `file` | `character(1)` | required | Output file path (or directory for `SplitForest`). Extension determines the format: `.svg`, `.pdf`, or `.png`. |
+| `width` | `numeric(1)` | `800` | Plot width in pixels. |
+| `height` | `numeric(1)` | `NULL` (auto) | Plot height in pixels; auto-calculated from content when `NULL`. |
+| `scale` | `numeric(1)` | `2` | Scaling factor for PNG output (2 = retina). |
+| `...` | — | — | Currently unused. |
 
-| Argument | Description |
-|----------|-------------|
-| `x` | A `WebSpec`, `SplitForest`, or htmlwidget from `tabviz()` |
-| `file` | Output file path (or directory for SplitForest). Extension determines format: `.svg`, `.pdf`, or `.png` |
-| `width` | Width in pixels (default: 800) |
-| `height` | Height in pixels (auto-calculated if NULL) |
-| `scale` | Scale factor for PNG resolution (default: 2) |
+**Returns:** the output `file` path, invisibly.
 
-## Details
+### Dependencies
 
-The export process:
+- **SVG**: `V8` (always required for the generator).
+- **PDF / PNG**: also requires the `rsvg` package.
 
-1. Renders the widget to SVG using the internal JavaScript renderer
-2. For SVG output, writes the SVG directly
-3. For PDF output, converts SVG to PDF using Chrome/Chromium
-4. For PNG output, renders SVG to PNG at specified scale
+There is no headless-browser dependency.
 
-### Requirements
+### Resolution guide for PNG
 
-- **SVG**: No external dependencies
-- **PDF/PNG**: Requires Chrome, Chromium, or Google Chrome installed
+| `scale` | Effective DPI | Use case |
+|---|---|---|
+| 1 | ~72 | Quick preview |
+| 2 | ~144 | Standard web / screen (default) |
+| 3 | ~216 | Print quality |
+| 4 | ~288 | High-resolution print |
 
-### Resolution
-
-For PNG exports, the `scale` parameter controls the resolution:
-
-- `scale = 1`: 1x resolution (72 DPI equivalent)
-- `scale = 2`: 2x resolution (144 DPI, good for screens)
-- `scale = 3`: 3x resolution (216 DPI, good for print)
-
-## Examples
-
-### Save as SVG
+### Examples
 
 ```r
 p <- forest_plot(data, point = "hr", lower = "lo", upper = "hi", label = "study")
 
-save_plot(p, "my_plot.svg")
+save_plot(p, "figures/forest.svg")                       # vector
+save_plot(p, "figures/forest.png", width = 1200, scale = 3)
+save_plot(p, "figures/forest.pdf", width = 800)
 ```
-### Save as PNG (high resolution)
+
+---
+
+## `save_split_table()` {#save_split_table}
+
+Export every sub-plot in a `SplitForest` to a directory tree mirroring the split hierarchy.
 
 ```r
-save_plot(p, "my_plot.png", width = 1200, scale = 3)
+save_split_table(x, path,
+                 format = c("svg", "pdf", "png"),
+                 width = 800, height = NULL, scale = 2,
+                 ...)
 ```
 
-### Save as PDF
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `x` | `SplitForest` / htmlwidget | required | A split-forest container or a widget produced with `split_by`. |
+| `path` | `character(1)` | required | Output directory; created if it doesn't exist. |
+| `format` | choice | `"svg"` | `"svg"`, `"pdf"`, or `"png"`. |
+| `width` / `height` / `scale` | — | as in `save_plot()` | Forwarded to `save_plot()` for each sub-plot. |
+| `...` | — | — | Currently unused. |
 
-```r
-save_plot(p, "my_plot.pdf", width = 800)
-```
+**Returns:** a character vector of exported file paths, invisibly.
 
-### Save SplitForest to Directory
+### Output directory structure
 
-When saving a SplitForest, all sub-plots are exported to a directory structure matching the split hierarchy:
-
-```r
-split_result <- data |>
-  web_spec(point = "hr", lower = "lo", upper = "hi") |>
-  split_table(by = c("region", "age_group"))
-
-# Export all plots to a directory
-save_plot(split_result, "output/plots")
-# Creates: output/plots/North/North_Young.svg, etc.
-```
-
-## save_split_table
-
-Export all sub-plots from a SplitForest to a directory structure.
-
-### Usage
-
-```r
-save_split_table(x, path, format = c("svg", "pdf", "png"),
-                  width = 800, height = NULL, scale = 2)
-```
-
-### Arguments
-
-| Argument | Description |
-|----------|-------------|
-| `x` | A `SplitForest` object |
-| `path` | Output directory path |
-| `format` | Output format: `"svg"`, `"pdf"`, or `"png"` |
-| `width` | Width in pixels (default: 800) |
-| `height` | Height in pixels (auto if NULL) |
-| `scale` | Scale factor for PNG (default: 2) |
-
-### Details
-
-Creates a directory structure matching the split hierarchy:
-- Single split: `path/Value.svg`
-- Hierarchical split: `path/Level1/Level1_Level2.svg`
+| Split | Files |
+|---|---|
+| `split_by = "region"` | `path/North.svg`, `path/South.svg`, … |
+| `split_by = c("region", "age")` | `path/North/North_Young.svg`, `path/North/North_Old.svg`, … |
 
 ### Example
 
 ```r
 data |>
-  web_spec(point = "or", lower = "lower", upper = "upper", label = "study") |>
+  tabviz(label = "study",
+         columns = list(viz_forest(point = "or", lower = "lower", upper = "upper"))) |>
   split_table(by = c("sex", "age_group")) |>
   save_split_table("output/plots", format = "svg")
-
-# Creates:
-# output/plots/Male/Male_Young.svg
-# output/plots/Male/Male_Old.svg
-# output/plots/Female/Female_Young.svg
-# output/plots/Female/Female_Old.svg
 ```
 
-## See Also
+`save_plot()` itself accepts a `SplitForest` and dispatches to `save_split_table()` automatically — pass either a directory path or a path with an extension to choose the format.
 
-- [tabviz()](tabviz.qmd) for creating plots
-- [split_table()](split_table.qmd) for creating split forests
-- [Forest Plots Guide](../guide/visualizations/forest-plots.qmd#exporting) for detailed export workflows
+## Related
+
+- [Export overview](export.qmd) — picking a format
+- [`split_table()`](split_table.qmd) — produce the `SplitForest` accepted here
+- [Themes](themes.qmd) — print-oriented presets (`web_theme_jama()`, `web_theme_lancet()`, `web_theme_nature()`)
+- [`web_interaction_publication()`](interaction.qmd#web_interaction_publication) — quiet UI before exporting screenshots

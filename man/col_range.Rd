@@ -5,36 +5,57 @@
 \title{Column helper: Range display}
 \usage{
 col_range(
-  min_field,
-  max_field,
+  low,
+  high,
   header = "Range",
   width = NULL,
   separator = " - ",
   decimals = NULL,
+  digits = NULL,
+  thousands_sep = FALSE,
+  abbreviate = FALSE,
   show_bar = FALSE,
-  ...
+  na_text = NULL,
+  ...,
+  min_field = lifecycle::deprecated(),
+  max_field = lifecycle::deprecated()
 )
 }
 \arguments{
-\item{min_field}{Field name containing minimum values}
+\item{low}{Field name containing the lower bound of each range}
 
-\item{max_field}{Field name containing maximum values}
+\item{high}{Field name containing the upper bound of each range}
 
 \item{header}{Column header (default "Range")}
 
 \item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
-\item{separator}{Separator between min and max (default " - ")}
+\item{separator}{Separator between low and high (default " - ")}
 
-\item{decimals}{Number of decimal places (default NULL for auto-detection)}
+\item{decimals}{Number of decimal places (default NULL for auto-detection).
+Cannot be used with \code{digits}.}
+
+\item{digits}{Number of significant figures. Cannot be used with \code{decimals}.}
+
+\item{thousands_sep}{Thousands separator for the formatted numbers
+(e.g. \code{","} or \code{" "}) or \code{FALSE} to disable. Default \code{FALSE}.}
+
+\item{abbreviate}{Logical. When \code{TRUE}, values >= 1000 are shortened
+(e.g. \code{"1.2K - 3.4M"}). Default \code{FALSE}.}
 
 \item{show_bar}{Show visual bar representation (default FALSE)}
+
+\item{na_text}{Text to display when either bound is NA (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling
 (\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent}) and
 alignment. Body cells default to \code{align = "right"} (override with
 \code{align = "left"} / \code{"center"}); header alignment follows the body unless
 \code{header_align} is set explicitly.}
+
+\item{min_field}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{low}.}
+
+\item{max_field}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{high}.}
 }
 \value{
 A ColumnSpec object
@@ -47,10 +68,16 @@ Display min-max ranges like "18-65" or "2.5 - 10.0".
 col_range("age_min", "age_max", "Age Range")
 
 # Custom separator: "18-65"
-col_range("min", "max", separator = "-")
+col_range("low", "high", separator = "-")
 
 # With decimals: "1.5 - 3.2"
 col_range("ci_lower", "ci_upper", decimals = 1)
+
+# Significant figures: span orders of magnitude
+col_range("low_price", "high_price", digits = 3)
+
+# Abbreviate large values: "1.2K - 3.4M"
+col_range("low_n", "high_n", abbreviate = TRUE)
 
 # With per-cell styling
 col_range("age_min", "age_max", emphasis = "is_key")

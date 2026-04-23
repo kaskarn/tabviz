@@ -57,7 +57,7 @@ test_that("forest_plot accepts columns", {
     lower = "lower",
     upper = "upper",
     label = "study",
-    columns = list(col_n())
+    columns = list(col_n("n"))
   )
 
   expect_s3_class(widget, "htmlwidget")

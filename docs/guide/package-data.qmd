@@ -45,7 +45,7 @@ glp1_trials |>
     columns = list(
       col_text("drug", "Drug"),
       col_n("n"),
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
       viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1, axis_label = "Hazard Ratio")
     ),
@@ -98,7 +98,7 @@ tabviz(
   columns = list(
     col_percent("on_time_pct", "On-Time %"),
     col_sparkline("trend", "12M Trend"),
-    col_interval("Delay (95% CI)", point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper"),
+    col_interval("delay_vs_avg", "delay_lower", "delay_upper", header = "Delay (95% CI)"),
     viz_forest(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper",
                null_value = 0, axis_label = "Delay vs. Average (minutes)")
   ),
@@ -143,7 +143,7 @@ tabviz(
   columns = list(
     col_text("team", "Team", width = 60),
     col_numeric("ppg", "PPG"),
-    col_interval("PER (95% CI)", point = "per", lower = "per_lower", upper = "per_upper"),
+    col_interval("per", "per_lower", "per_upper", header = "PER (95% CI)"),
     viz_forest(point = "per", lower = "per_lower", upper = "per_upper",
                null_value = 15, axis_label = "Player Efficiency Rating")
   ),
@@ -189,7 +189,7 @@ climate_temps |>
     group = "category",
     columns = list(
       col_text("certainty", "Confidence"),
-      col_interval("Anomaly (95% CI)", point = "anomaly", lower = "lower", upper = "upper"),
+      col_interval("anomaly", "lower", "upper", header = "Anomaly (95% CI)"),
       viz_forest(point = "anomaly", lower = "lower", upper = "upper",
                  null_value = 0, axis_label = "Temperature Anomaly (°C)")
     ),
@@ -277,6 +277,7 @@ See help files for full variable descriptions:
 - `?airline_delays`
 - `?nba_efficiency`
 - `?climate_temps`
+- `?effect_sizes`
 
 ---
 

@@ -23,11 +23,11 @@
         font-size="15.75px"
         font-weight="600"
         fill="#18181b">Department</text>
-<text class="cell-text" x="143" y="79"
+<text class="cell-text" x="221" y="79"
           font-family="Inter, system-ui, -apple-system, sans-serif"
           font-size="15.75px"
           font-weight="600"
-          text-anchor="start"
+          text-anchor="middle"
           fill="#18181b">Enrollment</text>
 <text class="cell-text" x="321" y="79"
           font-family="Inter, system-ui, -apple-system, sans-serif"
@@ -46,6 +46,7 @@
               fill="#f5f5f5"/>
 <defs><clipPath id="viz-clip-_viz_bar_enrollment"><rect x="143" y="102" width="156" height="120"/></clipPath></defs>
 <g clip-path="url(#viz-clip-_viz_bar_enrollment)">
+
 <rect
       x="143" y="106.5"
       width="109.2" height="21"

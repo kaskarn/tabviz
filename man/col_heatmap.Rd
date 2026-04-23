@@ -14,6 +14,7 @@ col_heatmap(
   decimals = 2,
   show_value = TRUE,
   scale = c("linear", "log", "sqrt"),
+  na_text = NULL,
   ...
 )
 }
@@ -37,6 +38,8 @@ col_heatmap(
 
 \item{scale}{Scale type: "linear" (default), "log", or "sqrt". Controls how
 values map to palette position.}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

@@ -8,7 +8,7 @@ library(tabviz)
 library(dplyr)
 ```
 
-Demonstrations of specific tabviz features. Each example highlights one feature family.
+Spotlights for individual tabviz features. Each example highlights one feature family — column types, statistical models, distribution viz, theming, conditional styling, hierarchical splits — and combines them in the closing "Full Monty" smoke test.
 
 ## Rich Column Types
 
@@ -92,7 +92,7 @@ tabviz(reg_data,
     viz_forest(point = "estimate", lower = "conf.low", upper = "conf.high",
                scale = "linear", null_value = 0,
                axis_label = "Coefficient (95% CI)"),
-    col_interval("95% CI", point = "estimate", lower = "conf.low", upper = "conf.high"),
+    col_interval("estimate", "conf.low", "conf.high", header = "95% CI"),
     col_pvalue("p.value", "P", stars = TRUE)
   ),
   marker_color = ~ case_when(
@@ -194,7 +194,7 @@ tabviz(regional_data, label = "study",
     viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1),
     col_group("Results",
-      col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
+      col_interval("hr", "lo", "hi", header = "HR (95% CI)")
     )
   ),
   split_by = "region",
@@ -313,9 +313,9 @@ custom_theme <- web_theme_default() |>
     foreground = "#422006",
     primary = "#ca8a04",
     border = "#e5e7eb",
-    interval_positive = "#16a34a",
-    interval_negative = "#dc2626",
-    interval_neutral = "#64748b"
+    ci_marker_positive = "#16a34a",
+    ci_marker_negative = "#dc2626",
+    ci_marker_neutral = "#64748b"
   ) |>
   set_typography(
     font_family = "Georgia, serif",
@@ -354,7 +354,7 @@ tabviz(theme_data,
     viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi"),
+    col_interval("hr", "lo", "hi", header = "HR (95% CI)"),
     col_badge("status", "Result",
       variants = list(
         Significant = "success",
@@ -415,7 +415,7 @@ tabviz(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio (95% CI)"),
-    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     col_pvalue("p_int", "P Interaction")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
@@ -464,7 +464,7 @@ tabviz(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio (95% CI)"),
-    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   theme = web_theme_lancet(),
   title = "Figure 3: Efficacy Outcomes",
@@ -504,7 +504,7 @@ tabviz(
       viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1,
                  axis_label = "Hazard Ratio"),
-      col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     )
   ),
   theme = web_theme_minimal(),
@@ -534,7 +534,7 @@ tabviz(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
-    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   theme = web_theme_modern(),
   title = "Hierarchical Subgroup Analysis",
@@ -582,7 +582,7 @@ full_monty <- tibble(
 
 # Custom theme
 monty_theme <- web_theme_dark() |>
-  set_colors(primary = "#f59e0b", interval_positive = "#22c55e", interval_negative = "#ef4444") |>
+  set_colors(primary = "#f59e0b", ci_marker_positive = "#22c55e", ci_marker_negative = "#ef4444") |>
   set_spacing(row_height = 38) |>
   set_axis(gridlines = TRUE, gridline_style = "dotted")
 
@@ -606,7 +606,7 @@ tabviz(
       )
     ),
     col_group("Results",
-      col_interval(point = "primary_hr", lower = "primary_lo", upper = "primary_hi", header = "HR (95% CI)"),
+      col_interval("primary_hr", "primary_lo", "primary_hi", header = "HR (95% CI)"),
       col_pvalue("pvalue", "P")
     ),
     col_sparkline("trend", "Trend")

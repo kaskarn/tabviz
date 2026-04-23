@@ -599,16 +599,21 @@ web_theme <- function(
 #' @param alt_bg Odd row background color for banding/striping. If not specified
 #'   and `background` or `row_bg` is set, inherits from `row_bg` (disabling
 #'   visible banding). Set explicitly to enable striped rows on custom themes.
-#' @param interval Default marker/interval color (default: "#0891b2"). If not
+#' @param ci_marker_fill Default CI marker fill color (default: "#0891b2"). If not
 #'   specified and `primary` is set, inherits from `primary`. Cascades to
 #'   `summary_fill` if not specified.
-#' @param interval_positive Deprecated. Color for favorable effects.
-#' @param interval_negative Deprecated. Color for unfavorable effects.
-#' @param interval_neutral Color for neutral effects (default: "#64748b")
-#' @param interval_line Confidence interval line color (default: "#475569")
+#' @param ci_marker_positive Color for favorable effects.
+#' @param ci_marker_negative Color for unfavorable effects.
+#' @param ci_marker_neutral Color for neutral effects (default: "#64748b")
+#' @param ci_line Confidence interval line color (default: "#475569")
 #' @param summary_fill Summary diamond fill color (default: "#0891b2"). If not
-#'   specified and `interval` or `primary` is set, inherits from `interval`.
+#'   specified and `ci_marker_fill` or `primary` is set, inherits from `ci_marker_fill`.
 #' @param summary_border Summary diamond border color (default: "#0e7490")
+#' @param interval `r lifecycle::badge("deprecated")` Use `ci_marker_fill`.
+#' @param interval_positive `r lifecycle::badge("deprecated")` Use `ci_marker_positive`.
+#' @param interval_negative `r lifecycle::badge("deprecated")` Use `ci_marker_negative`.
+#' @param interval_neutral `r lifecycle::badge("deprecated")` Use `ci_marker_neutral`.
+#' @param interval_line `r lifecycle::badge("deprecated")` Use `ci_line`.
 #'
 #' @return Modified WebTheme object
 #' @export
@@ -626,15 +631,42 @@ set_colors <- function(
     border = NULL,
     row_bg = NULL,
     alt_bg = NULL,
-    interval = NULL,
-    interval_positive = NULL,
-    interval_negative = NULL,
-    interval_neutral = NULL,
-    interval_line = NULL,
+    ci_marker_fill = NULL,
+    ci_marker_positive = NULL,
+    ci_marker_negative = NULL,
+    ci_marker_neutral = NULL,
+    ci_line = NULL,
     summary_fill = NULL,
-    summary_border = NULL
+    summary_border = NULL,
+    interval = lifecycle::deprecated(),
+    interval_positive = lifecycle::deprecated(),
+    interval_negative = lifecycle::deprecated(),
+    interval_neutral = lifecycle::deprecated(),
+    interval_line = lifecycle::deprecated()
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
+
+  if (lifecycle::is_present(interval)) {
+    lifecycle::deprecate_warn("0.9.0", "set_colors(interval)", "set_colors(ci_marker_fill)")
+    if (is.null(ci_marker_fill)) ci_marker_fill <- interval
+  }
+  if (lifecycle::is_present(interval_positive)) {
+    lifecycle::deprecate_warn("0.9.0", "set_colors(interval_positive)", "set_colors(ci_marker_positive)")
+    if (is.null(ci_marker_positive)) ci_marker_positive <- interval_positive
+  }
+  if (lifecycle::is_present(interval_negative)) {
+    lifecycle::deprecate_warn("0.9.0", "set_colors(interval_negative)", "set_colors(ci_marker_negative)")
+    if (is.null(ci_marker_negative)) ci_marker_negative <- interval_negative
+  }
+  if (lifecycle::is_present(interval_neutral)) {
+    lifecycle::deprecate_warn("0.9.0", "set_colors(interval_neutral)", "set_colors(ci_marker_neutral)")
+    if (is.null(ci_marker_neutral)) ci_marker_neutral <- interval_neutral
+  }
+  if (lifecycle::is_present(interval_line)) {
+    lifecycle::deprecate_warn("0.9.0", "set_colors(interval_line)", "set_colors(ci_line)")
+    if (is.null(ci_line)) ci_line <- interval_line
+  }
+
   current <- theme@colors
 
   if (!is.null(background)) current@background <- background
@@ -663,24 +695,24 @@ set_colors <- function(
 
   # Cascade marker colors:
 
-  # If primary changed but interval not specified, derive interval from primary
-  if (!is.null(primary) && is.null(interval)) {
+  # If primary changed but ci_marker_fill not specified, derive from primary
+  if (!is.null(primary) && is.null(ci_marker_fill)) {
     current@interval <- primary
-  } else if (!is.null(interval)) {
-    current@interval <- interval
+  } else if (!is.null(ci_marker_fill)) {
+    current@interval <- ci_marker_fill
   }
 
-  # If interval changed (explicitly or derived) but summary_fill not specified, derive from interval
-  if ((!is.null(primary) || !is.null(interval)) && is.null(summary_fill)) {
+  # If ci_marker_fill changed (explicitly or derived) but summary_fill not specified, derive from it
+  if ((!is.null(primary) || !is.null(ci_marker_fill)) && is.null(summary_fill)) {
     current@summary_fill <- current@interval
   } else if (!is.null(summary_fill)) {
     current@summary_fill <- summary_fill
   }
 
-  if (!is.null(interval_positive)) current@interval_positive <- interval_positive
-  if (!is.null(interval_negative)) current@interval_negative <- interval_negative
-  if (!is.null(interval_neutral)) current@interval_neutral <- interval_neutral
-  if (!is.null(interval_line)) current@interval_line <- interval_line
+  if (!is.null(ci_marker_positive)) current@interval_positive <- ci_marker_positive
+  if (!is.null(ci_marker_negative)) current@interval_negative <- ci_marker_negative
+  if (!is.null(ci_marker_neutral)) current@interval_neutral <- ci_marker_neutral
+  if (!is.null(ci_line)) current@interval_line <- ci_line
   if (!is.null(summary_border)) current@summary_border <- summary_border
 
   theme@colors <- current

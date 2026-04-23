@@ -8,102 +8,53 @@ library(tabviz)
 library(dplyr)
 ```
 
-tabviz supports embedded visualizations within table columns. This section covers the visualization column types and their common features.
+tabviz embeds visualizations directly inside table columns. Four `viz_*()` column types cover the common patterns; each gets its own focused page.
 
-## Choosing the Right Visualization
+## The Four `viz_*` Columns
 
-| Question | Recommended | Example Use Case |
-|----------|-------------|------------------|
-| Comparing point estimates with uncertainty? | `viz_forest()` | Meta-analysis, treatment effects, regression coefficients |
-| Comparing single values across rows? | `viz_bar()` | Scores, counts, percentages |
-| Showing distribution spread and outliers? | `viz_boxplot()` | Response distributions, measurement variability |
-| Showing full distribution shape? | `viz_violin()` | Survey responses, bimodal data, comparing shapes |
-| Just need a simple inline bar? | `col_bar()` | Weight indicators, progress bars |
-| Showing trends over time? | `col_sparkline()` | Stock prices, metrics over time |
-
-::: {.callout-tip}
-## When to Use What
-
-- **Forest plots** are ideal when you have point estimates with confidence/credible intervals and want to visually compare effect sizes
-- **Bar charts** work best when comparing single numeric values where the magnitude matters
-- **Box plots** summarize distributions when you care about median, spread, and outliers
-- **Violin plots** reveal distribution shapes—use when you suspect bimodality or skewness
-:::
-
----
-
-## Visualization Column Types
-
-### Focal Visualizations (`viz_*`)
-
-These column types display data with their own axes and scales, designed for direct visual comparison across rows:
-
-| Column | Purpose | Guide |
-|--------|---------|-------|
-| `viz_forest()` | Forest plots with confidence intervals | [Forest Plots](forest-plots.qmd) |
-| `viz_bar()` | Horizontal bar charts with shared axis | [Distribution Plots](distribution-plots.qmd) |
-| `viz_boxplot()` | Box-and-whisker plots | [Distribution Plots](distribution-plots.qmd) |
-| `viz_violin()` | Violin/density plots | [Distribution Plots](distribution-plots.qmd) |
-
-### Inline Visualizations (`col_*`)
-
-Compact visualizations that fit within cells without dedicated axes:
-
-| Column | Purpose | Guide |
-|--------|---------|-------|
-| `col_bar()` | Simple inline bars | [Columns](../columns.qmd#visualizations) |
-| `col_sparkline()` | Mini line/area/bar charts | [Columns](../columns.qmd#visualizations) |
+| Column | Use this when… | Guide |
+|---|---|---|
+| `viz_forest()` | You have point estimates with confidence intervals (meta-analyses, treatment effects) | [Forest Plots](forest-plots.qmd) |
+| `viz_bar()` | You're comparing single values across rows (counts, scores, percentages) | [Bar Charts](bar-charts.qmd) |
+| `viz_boxplot()` | You care about median, spread, and outliers across distributions | [Boxplots](boxplots.qmd) |
+| `viz_violin()` | You need to see full distribution shapes (bimodality, skewness) | [Violin Plots](violin-plots.qmd) |
 
 ::: {.callout-note}
-## Naming Convention
-- **`viz_*`** functions create focal visualization columns with their own axes and scales
-- **`col_*`** functions create inline cell content (text, numbers, simple graphics)
+## `viz_*` vs `col_*`
+
+`viz_*()` columns are **focal visualizations** with their own axes and scales — designed for direct visual comparison across rows. The simpler `col_*()` family (`col_bar()`, `col_sparkline()`) is for **inline cell content** that fits in a cell without a dedicated axis.
+
+If you want a quick weight indicator inside a row, reach for `col_bar()`. If you want a true comparable bar chart, reach for `viz_bar()`.
 :::
 
 ## Common Features
 
-All visualization columns share these capabilities:
+All `viz_*()` columns share:
 
-- **Axis configuration** — Range, ticks, gridlines
-- **Interactivity** — Hover, tooltips, zoom
-- **Theming** — Colors adapt to the active theme
-- **Export** — SVG, PNG, PDF output
+- **Axis configuration** — `axis_range`, `axis_ticks`, `axis_gridlines`, `axis_label`
+- **Pan and zoom** — mouse wheel, drag, double-click reset (per column)
+- **Theming** — colors adapt to the active theme; multi-effect series use the theme's `effect_colors` palette
+- **Marker-styling cascade** — row-level `row_accent` / `row_emphasis` / `row_muted` and per-row `marker_color` reach into viz cells. Single-effect viz: fill replacement. Multi-effect viz: outline augment. See [Row Styling → Cascading into viz cells](../row-styling.qmd#cascading-into-viz-cells).
+- **Annotations** — `refline()` for reference lines (and `forest_annotation()` on `viz_forest`). Use `null_value` as a shortcut for a single themed reference line.
+- **Tooltips** — opt in via `web_interaction(tooltip_fields = ...)`
+- **Export** — SVG / PNG / PDF via `save_plot()`
 
 ::: {.callout-tip}
 ## Theme Effect Colors
 
-When you have multiple effects per row (e.g., multiple bar series, boxplot groups, or forest plot effects), colors are assigned from the theme's `effect_colors` palette. Each built-in theme has a curated 5-color palette designed to work well together.
-
-You can customize with `set_effect_colors()`:
+When you have multiple effects per row (multiple bar series, boxplot groups, or forest effects), colors come from the theme's `effect_colors` palette. Override with `set_effect_colors()`:
 
 ```r
 web_theme_default() |>
   set_effect_colors(c("#2563eb", "#dc2626", "#16a34a"))
 ```
 
-Individual effects can still override theme colors via their `color` parameter.
+Individual effects can still override the theme via their own `color` parameter.
 :::
 
----
+## Tooltips
 
-## Interactivity
-
-::: {.callout-note}
-## Interactive by Default
-
-All tabviz widgets include these interactions out of the box:
-
-- **Hover highlighting** on rows
-- **Click to select** rows
-- **Column sorting** via header clicks
-- **Column resizing** via drag
-- **Group collapsing** via chevron clicks
-- **Download button** on hover (top-right)
-:::
-
-### Hover Tooltips
-
-Tooltips are **opt-in**. Specify fields to show when hovering over markers:
+Tooltips are opt-in. Specify the column names you want to surface on marker hover:
 
 ```{r}
 data(glp1_trials)
@@ -121,109 +72,28 @@ glp1_trials |>
   )
 ```
 
-### Interaction Controls
-
-```r
-web_interaction(
-
-  tooltip_fields = NULL,    # Column names for tooltip
-  enable_sort = TRUE,       # Click headers to sort
-  enable_collapse = TRUE,   # Click group headers to collapse
-  enable_select = TRUE,     # Click rows to select
-  enable_hover = TRUE,      # Highlight on hover
-  enable_resize = TRUE,     # Drag column borders
-  enable_export = TRUE,     # Download button
-  enable_themes = "default" # Theme selection menu
-)
-```
-
-### Interaction Presets
-
-| Preset | Description |
-|--------|-------------|
-| `web_interaction()` | Full interactivity (default) |
-| `web_interaction_minimal()` | Hover only—no sorting/selection |
-| `web_interaction_publication()` | Fully static (for print) |
-
-```{r}
-#| eval: false
-# Publication-ready static output
-tabviz(data, label = "study",
-  interaction = web_interaction_publication(),
-  columns = list(viz_forest(...))
-)
-```
-
----
-
-## Zoom & Sizing
-
-Control how visualizations fit within their container:
-
-| Argument | Options | Description |
-|----------|---------|-------------|
-| `zoom` | 0.5 to 2.0 | Initial zoom level (default 1.0) |
-| `auto_fit` | TRUE/FALSE | Shrink to fit container if too large (default TRUE) |
-| `max_width` | pixels or NULL | Maximum container width |
-| `max_height` | pixels or NULL | Maximum container height (enables scrolling) |
-
-```{r}
-#| eval: false
-# Constrain to specific dimensions
-tabviz(data, label = "study",
-  max_width = 800,
-  max_height = 400,
-  columns = list(...)
-)
-```
-
----
+See [Interactivity](../interactivity.qmd) for the full set of `web_interaction()` controls.
 
 ## Exporting Visualizations
 
-tabviz supports exporting to SVG, PNG, and PDF.
-
-### Using save_plot()
-
 ```r
-# Create a visualization
 p <- tabviz(data, label = "study", columns = list(
   viz_forest(point = "hr", lower = "lower", upper = "upper",
              scale = "log", null_value = 1)
 ))
 
-# Save as SVG (vector)
-save_plot(p, "figure.svg")
-
-# Save as PNG (raster, high-res)
-save_plot(p, "figure.png", width = 1200, scale = 2)
-
-# Save as PDF
-save_plot(p, "figure.pdf", width = 800)
+save_plot(p, "figure.svg")                           # vector, no deps
+save_plot(p, "figure.png", width = 1200, scale = 2)  # raster, needs rsvg
+save_plot(p, "figure.pdf", width = 800)              # vector, needs rsvg
 ```
 
-### Output Formats
-
-| Format | Extension | Use Case | Dependencies |
-|--------|-----------|----------|--------------|
-| SVG | `.svg` | Vector graphics, web, editing | None |
-| PNG | `.png` | Documents, slides | `rsvg` package |
-| PDF | `.pdf` | Print, publications | `rsvg` package |
-
-### Browser Export
-
-Interactive plots include a download button (visible on hover in top-right):
-
-1. Hover over plot to reveal button
-2. Click to open format menu
-3. Choose SVG or PNG
-
----
+See [Export](../export.qmd) for details.
 
 ## See Also
 
 - [Forest Plots](forest-plots.qmd) — Confidence intervals with `viz_forest()`
-- [Distribution Plots](distribution-plots.qmd) — Bars, boxplots, and violins with `viz_bar()`, `viz_boxplot()`, `viz_violin()`
-- [Columns](../columns.qmd) — All column types including `col_bar()` and `col_sparkline()`
-- [Export](../export.qmd) — Advanced export options
-- [Shiny Integration](../shiny.qmd) — Interactive applications
+- [Bar Charts](bar-charts.qmd) — Magnitude comparisons with `viz_bar()`
+- [Boxplots](boxplots.qmd) — Distribution summaries with `viz_boxplot()`
+- [Violin Plots](violin-plots.qmd) — Full distributions with `viz_violin()`
+- [Distribution Plots](distribution-plots.qmd) — Choosing among bar / box / violin
+- [Columns](../columns.qmd) — Inline columns including `col_bar()` and `col_sparkline()`

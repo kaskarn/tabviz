@@ -8,27 +8,28 @@ library(tabviz)
 library(dplyr)
 ```
 
-tabviz widgets are interactive by default. This chapter covers the built-in interaction features and how to customize them.
+Every tabviz widget is fully interactive by default. This page is the authoritative reference for `web_interaction()` — the spec object that toggles which UI chrome appears and which user capabilities are enabled.
 
 ## Default Interactions
 
 Every tabviz widget includes these interactions out of the box:
 
 | Interaction | Action |
-|------------|--------|
+|---|---|
 | **Sort** | Click column headers to sort |
 | **Select** | Click rows to select/deselect |
 | **Hover** | Hover to highlight rows |
 | **Collapse** | Click group headers to collapse/expand |
 | **Resize** | Drag column borders to resize |
+| **Filter** | Per-column filter popovers in headers |
+| **Reorder** | Drag rows or columns to reorder |
+| **Edit** | Double-click cells to edit |
 | **Export** | Download menu in header (hover to reveal) |
-| **Zoom** | Zoom controls in header |
-| **Theme** | Theme switcher in header |
+| **Themes** | Theme switcher in header |
 
 ```{r}
 data(glp1_trials)
 
-# Default: all interactions enabled
 glp1_trials |>
   filter(row_type == "data", group == "Main Trials") |>
   head(5) |>
@@ -38,19 +39,44 @@ glp1_trials |>
       col_text("drug", "Drug"),
       viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1, width = 160),
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
     theme = web_theme_jama(),
     footnote = "Try: click headers to sort, hover over rows, drag column borders"
   )
 ```
 
+## The `show_*` vs `enable_*` Rule
+
+`web_interaction()` uses two prefixes deliberately:
+
+- **`show_*`** controls **static UI visibility** — whether a piece of chrome appears at all (`show_legend`, `show_group_counts`). Nothing the user does at runtime brings it back.
+- **`enable_*`** controls **user capabilities** — whether a behavior is available (`enable_sort`, `enable_filters`, `enable_edit`, …). The associated UI is rendered when the capability is on, hidden when off.
+
+When in doubt: render-or-not is `show_`; can-the-user-do-it is `enable_`.
+
+## `web_interaction()` Arguments
+
+| Argument | Default | Purpose |
+|---|---|---|
+| `show_legend` | `TRUE` | Show legend for multi-effect plots |
+| `show_group_counts` | `FALSE` | Show `(n)` after each row-group label |
+| `tooltip_fields` | `NULL` | Character vector of column names to show in marker hover tooltip |
+| `enable_sort` | `TRUE` | Click headers to sort |
+| `enable_collapse` | `TRUE` | Click group headers to collapse/expand |
+| `enable_select` | `TRUE` | Click rows to select |
+| `enable_hover` | `TRUE` | Highlight rows on hover |
+| `enable_resize` | `TRUE` | Drag column borders to resize |
+| `enable_export` | `TRUE` | Show download button in header |
+| `enable_filters` | `TRUE` | Per-column filter popovers in column headers |
+| `enable_reorder_rows` | `TRUE` | Drag to reorder rows (within a group) |
+| `enable_reorder_columns` | `TRUE` | Drag to reorder columns (within a column group) |
+| `enable_edit` | `TRUE` | Double-click inline editing for text/numeric/label cells |
+| `enable_themes` | `"default"` | Theme menu: `"default"`, `NULL`, or list of `WebTheme` |
+
 ## Customizing Interactions
 
-Use `web_interaction()` to control which interactions are enabled:
-
 ```{r}
-# Disable sorting and selection
 glp1_trials |>
   filter(row_type == "data") |>
   head(4) |>
@@ -69,20 +95,6 @@ glp1_trials |>
   )
 ```
 
-### Available Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `enable_sort` | TRUE | Click headers to sort |
-| `enable_select` | TRUE | Click rows to select |
-| `enable_hover` | TRUE | Highlight rows on hover |
-| `enable_collapse` | TRUE | Collapse/expand groups |
-| `enable_resize` | TRUE | Drag to resize columns |
-| `enable_export` | TRUE | Show download button |
-| `show_legend` | TRUE | Show legend for multi-effect plots |
-| `show_filters` | FALSE | Show filter panel |
-| `enable_themes` | "default" | Theme menu control |
-
 ## Hover Tooltips
 
 Add tooltips that appear when hovering over forest plot markers:
@@ -96,7 +108,7 @@ glp1_trials |>
     columns = list(
       viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1, width = 180),
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
     interaction = web_interaction(
       tooltip_fields = c("drug", "n", "events", "pvalue")
@@ -110,11 +122,16 @@ Tooltips show the values from the specified columns for each row.
 
 ## Presets
 
-tabviz includes preset configurations for common use cases:
+tabviz ships three preset configurations.
+
+| Preset | Description |
+|---|---|
+| `web_interaction()` | Full interactivity (the default) |
+| `web_interaction_minimal()` | Hover only — no sorting, selection, resize, export, filtering, reorder, edit |
+| `web_interaction_publication()` | Fully static — every interaction off, no legend |
+| `web_interaction_full()` | Explicit "everything on" — same as `web_interaction()` defaults |
 
 ### Minimal Interaction
-
-Use `web_interaction_minimal()` for viewing-only mode with just hover highlighting:
 
 ```{r}
 glp1_trials |>
@@ -132,11 +149,9 @@ glp1_trials |>
   )
 ```
 
-This disables sorting, selection, resize, and export—only hover highlighting remains.
-
 ### Publication Mode
 
-Use `web_interaction_publication()` for completely static output:
+`web_interaction_publication()` removes all interactivity — suitable for print, static documents, or screenshots.
 
 ```{r}
 #| eval: false
@@ -146,25 +161,22 @@ tabviz(data, label = "study",
 )
 ```
 
-This removes all interactivity, creating a static visualization suitable for:
-
-- Print publications
-- Static documents
-- Screenshots
-
 ## Theme Menu
 
-Control the theme switcher in the header:
+The `enable_themes` argument controls the theme switcher. Three values are accepted:
+
+| Value | Effect |
+|---|---|
+| `"default"` | Show all themes returned by `package_themes()` |
+| `NULL` | Hide the theme menu entirely |
+| `list(...)` | Show only the listed `WebTheme` objects (named entries override displayed names) |
 
 ```{r}
 #| eval: false
-# Default: show all package themes
-tabviz(data, interaction = web_interaction(enable_themes = "default"), ...)
-
-# Hide theme menu
+# Hide the theme menu
 tabviz(data, interaction = web_interaction(enable_themes = NULL), ...)
 
-# Show specific themes only
+# Curate a specific shortlist
 tabviz(data, interaction = web_interaction(
   enable_themes = list(
     web_theme_jama(),
@@ -174,9 +186,39 @@ tabviz(data, interaction = web_interaction(
 ), ...)
 ```
 
+`selectable_themes()` is a fluent sibling that does the same thing post-construction:
+
+```{r}
+#| eval: false
+tabviz(data, label = "study") |>
+  set_theme("jama") |>
+  selectable_themes(list(
+    Classical = web_theme_jama(),
+    Modern    = web_theme_modern()
+  ))
+```
+
+The active theme is always auto-included in the menu so the user can revert.
+
+## Pan & Zoom on Visualization Columns
+
+Every viz column (`viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`) supports direct-manipulation pan and zoom on its x-axis:
+
+| Gesture | Action |
+|---|---|
+| **Mouse wheel** over the viz area | Zoom in/out, anchored on the cursor |
+| **Click and drag** | Pan the axis |
+| **Double-click** | Reset to the default domain |
+
+State is per column — two forest columns side-by-side can be inspected independently. It is session-only (refreshing the page resets everything); there is no R-side argument to persist a zoom level.
+
+Exports are WYSIWYG: zooming or panning in the browser changes what `save_plot()` writes to SVG/PNG and what the in-widget download button produces. Confidence intervals that fall outside the zoomed window are rendered with boundary arrows; marks on bar/boxplot/violin columns are clipped to the visible region.
+
+On log-scale forests (`viz_forest(scale = "log")`), gestures that would push the lower bound to zero or below are ignored.
+
 ## Row Selection
 
-Selected rows are tracked internally and can be styled differently. Selection state persists during sorting and filtering.
+Selected rows are tracked internally and persist during sorting and filtering.
 
 ```{r}
 sample_data <- data.frame(
@@ -194,40 +236,6 @@ tabviz(sample_data, label = "item",
   footnote = "Click rows to select (indicated by left border)"
 )
 ```
-
-## Sorting
-
-Click any column header to sort. Click again to reverse sort order.
-
-- Text columns: alphabetical
-- Numeric columns: numeric order
-- Forest columns: sort by point estimate
-
-Sorting preserves group structure—rows within each group are sorted while maintaining group order.
-
-## Zoom and Scale
-
-The zoom control in the header adjusts the display scale:
-
-- Use for fitting large tables in limited space
-- Zoom level persists during interaction
-- Export captures the current zoom level
-
-## Pan & Zoom on Visualization Columns
-
-Every viz column (`viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`) supports direct-manipulation pan and zoom on its x-axis:
-
-| Gesture | Action |
-|---------|--------|
-| **Mouse wheel** over the viz area | Zoom in/out, anchored on the cursor |
-| **Click and drag** | Pan the axis |
-| **Double-click** | Reset to the default domain |
-
-State is per column — two forest columns side-by-side can be inspected independently. It is session-only (refreshing the page resets everything); there is no R-side argument to persist a zoom level.
-
-Exports are WYSIWYG: zooming or panning in the browser changes what `save_plot()` writes to SVG/PNG and what the in-widget download button produces. Confidence intervals that fall outside the zoomed window are rendered with boundary arrows; marks on bar/boxplot/violin columns are clipped to the visible region.
-
-On log-scale forests (`viz_forest(scale = "log")`), gestures that would push the lower bound to zero or below are ignored.
 
 ## See Also
 

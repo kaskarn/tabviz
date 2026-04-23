@@ -5,9 +5,10 @@
   interface Props {
     value: number | undefined | null;
     options?: ProgressColumnOptions;
+    naText?: string;
   }
 
-  let { value, options }: Props = $props();
+  let { value, options, naText }: Props = $props();
 
   const maxValue = $derived(options?.maxValue ?? 100);
   const showLabel = $derived(options?.showLabel ?? true);
@@ -40,6 +41,8 @@
       <span class="progress-label">{formattedLabel}</span>
     {/if}
   </div>
+{:else if naText}
+  <span class="progress-na">{naText}</span>
 {/if}
 
 <style>

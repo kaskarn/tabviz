@@ -38,7 +38,7 @@ forest_plot(
   columns = list(
     col_text("n_total", "N (Tx/Ctrl)"),
     col_text("events", "Events"),
-    col_interval("HR (95% CI)")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   theme = web_theme_lancet(),
   scale = "log",

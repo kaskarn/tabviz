@@ -7,36 +7,9 @@ title: "tabviz()"
 library(tabviz)
 ```
 
-## Overview
+`tabviz()` is the main entry point for building interactive table visualizations. It returns an htmlwidget that renders in R Markdown, Quarto, Shiny, or the RStudio Viewer. Use `tabviz()` whenever you want full control over which columns appear (text, numeric, badges, forest plots, sparklines, etc.). For a quick forest-only plot driven by `point` / `lower` / `upper` arguments, see [`forest_plot()`](forest_plot.qmd).
 
-`tabviz()` is the main entry point for creating interactive tables with embedded visualizations. It returns an htmlwidget directly, making it the recommended function for building any table-based display.
-
-```{r}
-#| eval: false
-tabviz(data,
-  label = "study",
-  columns = list(
-    col_text("category"),
-    col_numeric("value", decimals = 1),
-    viz_forest(point = "hr", lower = "lo", upper = "hi", scale = "log"),
-    col_sparkline("trend")
-  ),
-  theme = web_theme_jama()
-)
-```
-
-::: {.callout-tip}
-## When to Use Which Function
-
-| Function | Use Case |
-|----------|----------|
-| `tabviz()` | **Most cases** - Full control over columns, any table type |
-| `forest_plot()` | Quick forest plots when you just need point/lower/upper |
-:::
-
----
-
-## Syntax
+## Signature
 
 ```r
 tabviz(
@@ -45,262 +18,207 @@ tabviz(
   label_header = "Study",
   group = NULL,
   columns = NULL,
-  title = NULL,
-  subtitle = NULL,
-  caption = NULL,
-  footnote = NULL,
-  # Row styling
-  row_bold = NULL,
-  row_italic = NULL,
-  row_color = NULL,
-  row_bg = NULL,
-  row_badge = NULL,
-  row_icon = NULL,
-  row_indent = NULL,
-  row_type = NULL,
-  row_emphasis = NULL,
-  row_muted = NULL,
-  row_accent = NULL,
-  # Marker styling
-  marker_color = NULL,
-  marker_shape = NULL,
-  marker_opacity = NULL,
-  marker_size = NULL,
-  # Display options
-  weight = NULL,
+  extra_columns = NULL,
+  available_exclude = NULL,
+  title = NULL, subtitle = NULL, caption = NULL, footnote = NULL,
+  # Row styling (column name or formula)
+  row_bold = NULL, row_italic = NULL,
+  row_color = NULL, row_bg = NULL,
+  row_badge = NULL, row_icon = NULL,
+  row_indent = NULL, row_type = NULL,
+  row_emphasis = NULL, row_muted = NULL, row_accent = NULL,
+  # Marker styling (column name or formula)
+  marker_color = NULL, marker_shape = NULL,
+  marker_opacity = NULL, marker_size = NULL,
+  # Theme & interaction
   theme = web_theme_default(),
-  interaction = web_interaction(),
-  # Rendering options
-  axis_range = NULL,
-  axis_ticks = NULL,
-  axis_gridlines = NULL,
+  interaction = NULL,
   plot_position = NULL,
   row_height = NULL,
-  zoom = 1.0,
-  auto_fit = TRUE,
-  max_width = NULL,
-  max_height = NULL,
-  show_zoom_controls = TRUE,
-  width = NULL,
-  height = NULL,
-  elementId = NULL
+  width = NULL, height = NULL, elementId = NULL,
+  # Splitting
+  split_by = NULL, shared_axis = FALSE,
+  .spec_only = FALSE
 )
 ```
-
----
 
 ## Arguments
 
-### Data Arguments
-
-| Argument | Type | Description |
-|----------|------|-------------|
-| `data` | data.frame | A data.frame, data.table, or tibble |
-| `label` | string | Column name for row labels (optional) |
-| `label_header` | string | Header text for the label column (default: `"Study"`) |
-| `group` | string/vector/list | Grouping specification (see [Grouping](#grouping)) |
-| `columns` | list | List of column specifications using `col_*()` functions |
-
-### Display Arguments
-
-| Argument | Type | Description |
-|----------|------|-------------|
-| `title` | string | Plot title |
-| `subtitle` | string | Plot subtitle |
-| `caption` | string | Plot caption |
-| `footnote` | string | Plot footnote |
-
-### Row Styling Arguments
-
-All accept **column names (strings)** or **formula expressions** (`~ ...`):
-
-| Argument | Value Type | Description |
-|----------|------------|-------------|
-| `row_type` | string | Row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
-| `row_bold` | logical | `TRUE`/`FALSE` for bold text |
-| `row_italic` | logical | `TRUE`/`FALSE` for italic text |
-| `row_color` | string | CSS color strings (e.g., `"#1a365d"`) |
-| `row_bg` | string | Background color strings |
-| `row_badge` | string | Badge text to display |
-| `row_icon` | string | Emoji or unicode icons |
-| `row_indent` | integer | Indentation levels (0, 1, 2, ...) |
-| `row_emphasis` | logical | Bold + primary color |
-| `row_muted` | logical | Lighter, reduced prominence |
-| `row_accent` | logical | Theme accent color |
-
-**Example with formulas:**
-
-```{r}
-#| eval: false
-tabviz(data,
-  label = "study",
-  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi")),
-  row_bold = ~ pval < 0.05,
-  row_color = ~ ifelse(upper < 1, "#16a34a", "#64748b")
-)
-```
-
-### Marker Styling Arguments
-
-All accept **column names (strings)** or **formula expressions** (`~ ...`):
-
-| Argument | Value Type | Description |
-|----------|------------|-------------|
-| `marker_color` | string | CSS color for marker fill |
-| `marker_shape` | string | `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
-| `marker_opacity` | numeric | Opacity (0 to 1) |
-| `marker_size` | numeric | Size multiplier (1 = default) |
-
-### Rendering Arguments
+### Data
 
 | Argument | Type | Default | Description |
-|----------|------|---------|-------------|
-| `axis_range` | numeric(2) | `NULL` | Fixed axis range `c(min, max)` |
-| `axis_ticks` | numeric | `NULL` | Custom tick positions |
-| `axis_gridlines` | logical | `NULL` | Show axis gridlines |
-| `plot_position` | string | `NULL` | Forest column position: `"left"`, `"right"`, `"center"` |
-| `row_height` | integer | `NULL` | Row height in pixels |
-| `zoom` | numeric | `1.0` | Zoom level (0.5 to 2.0) |
-| `auto_fit` | logical | `TRUE` | Auto-fit widget to content |
-| `max_width` | integer | `NULL` | Maximum width in pixels |
-| `max_height` | integer | `NULL` | Maximum height in pixels |
-| `show_zoom_controls` | logical | `TRUE` | Show zoom controls |
-| `width` | string | `NULL` | Widget width (CSS units) |
-| `height` | string | `NULL` | Widget height (CSS units) |
-| `elementId` | string | `NULL` | HTML element ID |
+|---|---|---|---|
+| `data` | `data.frame` | required | A data.frame, data.table, or tibble. |
+| `label` | `character(1)` | `NULL` | Column name for row labels. When `NULL`, row numbers are used. |
+| `label_header` | `character(1)` | `"Study"` | Header text for the label column. The literal default `"Study"` is auto-prettified from the `label` field name when applicable. |
+| `group` | `character` / `list` | `NULL` | Grouping spec. A single column name (flat), a vector (hierarchical), or a list of `web_group()` objects. See [Grouping](#grouping). |
+| `columns` | `list` | `NULL` | List of column specs from `col_*()` / `viz_*()` helpers. |
+| `extra_columns` | `list` | `NULL` | Pre-configured columns hidden by default but available in the interactive column picker. |
+| `available_exclude` | `character` | `NULL` | Data columns to omit from the column picker (e.g. internal/sensitive fields). |
 
-### Theme & Interaction
+### Titles
 
 | Argument | Type | Default | Description |
-|----------|------|---------|-------------|
-| `theme` | WebTheme | `web_theme_default()` | Theme object |
-| `interaction` | list | `web_interaction()` | Interaction settings |
+|---|---|---|---|
+| `title` | `character(1)` | `NULL` | Main title (above the plot). |
+| `subtitle` | `character(1)` | `NULL` | Subtitle (below title). |
+| `caption` | `character(1)` | `NULL` | Caption (below plot). |
+| `footnote` | `character(1)` | `NULL` | Footnote (below caption, italicized). |
 
----
+### Row styling
+
+All row-styling arguments accept either a **column name (string)** that holds the per-row value, or a **formula** evaluated against `data` (e.g. `~ pvalue < 0.05`).
+
+| Argument | Value type | Default | Description |
+|---|---|---|---|
+| `row_bold` | logical | `NULL` | Bold whole row. |
+| `row_italic` | logical | `NULL` | Italicize row. |
+| `row_color` | CSS color | `NULL` | Row text color. |
+| `row_bg` | CSS color | `NULL` | Row background color. |
+| `row_badge` | character | `NULL` | Badge text on the label cell. |
+| `row_icon` | emoji/unicode | `NULL` | Icon on the label cell. |
+| `row_indent` | numeric | `NULL` | Indentation level. |
+| `row_type` | character | `NULL` | One of `"data"`, `"header"`, `"summary"`, `"spacer"`. |
+| `row_emphasis` | logical | `NULL` | Bold + foreground color. |
+| `row_muted` | logical | `NULL` | Muted (lighter, reduced prominence). |
+| `row_accent` | logical | `NULL` | Theme accent color. |
+
+### Marker styling
+
+Same column-name-or-formula pattern as row styling:
+
+| Argument | Value type | Default | Description |
+|---|---|---|---|
+| `marker_color` | CSS color | `NULL` | Marker fill color. |
+| `marker_shape` | character | `NULL` | One of `"square"`, `"circle"`, `"diamond"`, `"triangle"`. |
+| `marker_opacity` | numeric `[0,1]` | `NULL` | Marker opacity. |
+| `marker_size` | numeric | `NULL` | Driver for marker size — pass raw weights (e.g. study weights 0–100). The renderer normalizes via `0.5 + sqrt(w/100) * 1.5`. |
+
+### Theme, interaction, layout
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `theme` | `WebTheme` | `web_theme_default()` | Theme object (use a `web_theme_*()` builder). |
+| `interaction` | `InteractionSpec` | `NULL` | Use `web_interaction()`. When `NULL`, `default_interaction_for_theme(theme)` is used (full interactivity). |
+| `plot_position` | `character(1)` | `NULL` | `"left"` or `"right"`. |
+| `row_height` | `numeric(1)` | `NULL` | Row height in pixels. |
+| `width` | character/numeric | `NULL` | Widget width (auto). |
+| `height` | character/numeric | `NULL` | Widget height (auto). |
+| `elementId` | `character(1)` | `NULL` | HTML element id. |
+
+### Splitting
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `split_by` | `character` | `NULL` | Column name(s) to split into one plot per unique value/combination, returning a `SplitForest` widget. |
+| `shared_axis` | `logical(1)` | `FALSE` | When `split_by` is set, share an axis range across all sub-plots. |
+
+### Other
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `.spec_only` | `logical(1)` | `FALSE` | When `TRUE`, returns the `WebSpec` object instead of an htmlwidget — useful for programmatic manipulation before rendering. |
+
+## Deprecated arguments
+
+:::{.callout-important}
+## Removed from the `tabviz()` surface in 0.9.0
+
+The arguments below are still accepted for one cycle but emit `lifecycle::deprecate_warn()`. They have moved to dedicated, more discoverable homes.
+:::
+
+| Old argument | Replacement |
+|---|---|
+| `tabviz(axis_range = ...)` | Pass `axis_range` to `viz_forest()` on the forest column. |
+| `tabviz(axis_ticks = ...)` | Pass `axis_ticks` to `viz_forest()` on the forest column. |
+| `tabviz(axis_gridlines = ...)` | Pass `axis_gridlines` to `viz_forest()` on the forest column. |
+| `tabviz(zoom = ...)` | Pipe to [`set_zoom(zoom = ...)`](styling.qmd#set_zoom). |
+| `tabviz(auto_fit = ...)` | Pipe to `set_zoom(auto_fit = ...)`. |
+| `tabviz(max_width = ...)` | Pipe to `set_zoom(max_width = ...)`. |
+| `tabviz(max_height = ...)` | Pipe to `set_zoom(max_height = ...)`. |
+| `tabviz(show_zoom_controls = ...)` | Pipe to `set_zoom(show_controls = ...)`. |
+| `tabviz(weight = ...)` | Use `marker_size = ...`. |
+
+## Return value
+
+An htmlwidget. When `.spec_only = TRUE`, returns a `WebSpec` instead. When `split_by` is set, returns a split-table widget backed by a `SplitForest`.
 
 ## Grouping {#grouping}
 
-The `group` argument supports three modes:
+Three modes of `group`:
 
-### Single column grouping
-
-Flat grouping by one column:
-
-```{r}
-#| eval: false
+```r
+# Flat grouping
 tabviz(data, group = "category", ...)
-```
 
-### Hierarchical grouping
-
-Nested grouping (region > country):
-
-```{r}
-#| eval: false
+# Hierarchical grouping
 tabviz(data, group = c("region", "country"), ...)
-```
 
-### Explicit groups
-
-Full control with `web_group()`:
-
-```{r}
-#| eval: false
+# Explicit group definitions
 tabviz(data,
   group = list(
     web_group("cardio", label = "Cardiovascular"),
-    web_group("renal", label = "Renal Outcomes", collapsed = TRUE)
+    web_group("renal",  label = "Renal Outcomes", collapsed = TRUE)
   ),
-  ...
-)
+  ...)
 ```
-
----
 
 ## Examples
 
-### Basic Table
-
 ```{r}
-meta_data <- data.frame(
+meta <- data.frame(
   study = c("Smith 2020", "Jones 2021", "Lee 2022"),
-  category = c("Drug A", "Drug A", "Drug B"),
-  hr = c(0.72, 0.85, 0.91),
-  lower = c(0.55, 0.70, 0.75),
-  upper = c(0.95, 1.03, 1.10),
-  n = c(245, 180, 320)
+  drug  = c("A", "A", "B"),
+  hr    = c(0.72, 0.85, 0.91),
+  lo    = c(0.55, 0.70, 0.75),
+  hi    = c(0.95, 1.03, 1.10),
+  n     = c(245, 180, 320)
 )
 
-tabviz(meta_data,
+# Minimal: forest column + a couple of data columns
+tabviz(meta,
   label = "study",
   columns = list(
-    col_text("category", "Drug"),
+    col_text("drug", "Drug"),
     col_n("n"),
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1,
-               axis_label = "Hazard Ratio"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1, axis_label = "Hazard Ratio"),
+    col_interval("hr", "lo", "hi", header = "HR (95% CI)")
   )
 )
 ```
 
-### With Row Styling
-
 ```{r}
-styled_data <- data.frame(
-  label = c("Primary Endpoint", "  CV Death", "  MI", "Summary"),
-  hr = c(NA, 0.82, 0.79, 0.78),
-  lower = c(NA, 0.72, 0.68, 0.65),
-  upper = c(NA, 0.94, 0.92, 0.93),
-  rtype = c("header", "data", "data", "summary"),
-  rbold = c(TRUE, FALSE, FALSE, TRUE)
-)
-
-tabviz(styled_data,
-  label = "label",
+# Row styling: bold significant rows, color the favourable ones green
+tabviz(meta,
+  label = "study",
   columns = list(
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1)
   ),
-  row_type = "rtype",
-  row_bold = "rbold"
+  row_bold  = ~ hi < 1,
+  row_color = ~ ifelse(hi < 1, "#16a34a", "#64748b")
 )
 ```
-
-### Dashboard Table (No Forest)
 
 ```{r}
 #| eval: false
-tabviz(sales_data,
-  label = "product",
-  columns = list(
-    col_text("category"),
-    col_numeric("revenue", format = "currency"),
-    col_percent("growth"),
-    col_sparkline("trend"),
-    col_bar("market_share")
-  ),
-  theme = web_theme_modern()
-)
+# Spec-only: build, mutate fluently, then render
+tabviz(meta,
+  label = "study",
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi")),
+  .spec_only = TRUE
+) |>
+  set_theme("jama") |>
+  set_marker_style(color = "drug") |>
+  forest_plot()
 ```
 
----
+## Related
 
-## Return Value
-
-Returns an **htmlwidget** object that:
-
-- Renders in RStudio Viewer, R Markdown, Quarto, and Shiny
-- Can be saved with `save_plot()` to SVG, PNG, or PDF
-- Can be piped to `set_*()` functions for additional styling
-
----
-
-## See Also
-
-- [tabviz()](tabviz.qmd) - Convenience wrapper for forest plots
-- [Columns](columns.qmd) - All `col_*()` column types
-- [Styling Functions](styling.qmd) - `set_row_style()`, `set_marker_style()`, etc.
-- [Themes](themes.qmd) - Theme presets and customization
-- [Export](export.qmd) - Saving to files
+- [`forest_plot()`](forest_plot.qmd) — convenience wrapper around `tabviz()` + `viz_forest()`
+- [Columns](columns.qmd) — every `col_*()` and `viz_*()` helper
+- [Styling modifiers](styling.qmd) — `set_row_style()`, `set_marker_style()`, `set_zoom()`
+- [Themes](themes.qmd) — `web_theme_*()` builders and `set_*()` modifiers
+- [Interaction](interaction.qmd) — `web_interaction()`
+- [Export](export.qmd) — `save_plot()` for SVG / PNG / PDF

@@ -9,7 +9,7 @@ viz_violin(
   header = NULL,
   show_header = TRUE,
   header_align = "center",
-  width = 150,
+  width = NULL,
   scale = c("linear", "log"),
   axis_range = NULL,
   axis_ticks = NULL,
@@ -18,11 +18,15 @@ viz_violin(
   show_median = TRUE,
   show_quartiles = FALSE,
   axis_label = "Value",
-  show_axis = TRUE
+  show_axis = TRUE,
+  null_value = NULL,
+  annotations = NULL
 )
 }
 \arguments{
-\item{...}{One or more \code{effect_violin()} objects defining the violins}
+\item{...}{One or more \code{effect_violin()} objects defining the violins.
+Additional \code{web_col()} styling arguments may follow as named arguments —
+see "Passthrough arguments" below.}
 
 \item{header}{Column header label. Defaults to \code{NULL}, which resolves to
 the primary effect's label (or data field name).}
@@ -34,7 +38,7 @@ Defaults to \code{TRUE}. Set to \code{FALSE} to hide the header.}
 Defaults to \code{"center"} — violins are symmetric around their median,
 so a centered label reads most naturally above the axis.}
 
-\item{width}{Column width in pixels (default 150)}
+\item{width}{Column width in pixels (default \code{NULL} = auto)}
 
 \item{scale}{Scale type: "linear" (default) or "log"}
 
@@ -55,6 +59,14 @@ ticks are computed automatically.}
 \item{axis_label}{Label for the x-axis (default "Value")}
 
 \item{show_axis}{Show the x-axis (default TRUE)}
+
+\item{null_value}{Optional numeric reference value. When non-NULL, a dashed
+reference line is drawn at this x position. Implemented as a synthetic
+\code{\link[=refline]{refline()}} prepended to \code{annotations}.}
+
+\item{annotations}{Optional list of annotation objects (currently
+\code{\link[=refline]{refline()}} is supported on violin columns; \code{\link[=forest_annotation]{forest_annotation()}} is
+forest-specific and ignored here).}
 }
 \value{
 A ColumnSpec object with type = "viz_violin"
@@ -63,6 +75,23 @@ A ColumnSpec object with type = "viz_violin"
 Renders violin plots (kernel density estimation). Requires raw array data
 for each row.
 }
+\section{Passthrough arguments}{
+Named styling arguments passed via \code{...} (after the \code{effect_violin()} items)
+are forwarded to \code{\link[=web_col]{web_col()}}: \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{badge},
+\code{icon}, \code{emphasis}, \code{muted}, \code{accent}. Cell-level args ignored by viz
+columns: \code{na_text}, \code{tooltip}, \code{formatter} (see \code{\link[=viz_bar]{viz_bar()}} for details).
+}
+
+\section{Forest-only features (not available here)}{
+These exist on \code{\link[=viz_forest]{viz_forest()}} only:
+\itemize{
+\item \code{shared_axis} (split-table axis sharing)
+\item per-row \code{marker_shape} and \code{marker_size} (forest marker glyph only)
+}
+
+Sorting is forced off (\code{sortable = FALSE}).
+}
+
 \examples{
 # Single violin per row
 viz_violin(effect_violin(data = "values"))

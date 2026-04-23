@@ -8,11 +8,11 @@ library(tabviz)
 library(dplyr)
 ```
 
-Meta-analyses, forest plots, and clinical trial visualizations.
+Publication-style meta-analyses and trial figures. Each example pairs a `viz_forest()` column with a textual `col_interval()` summary, then swaps the theme to match a target journal.
 
 ## JAMA-Style Forest Plot
 
-Classic medical journal style with clean typography:
+Classic medical-journal style with clean typography:
 
 ```{r}
 data(glp1_trials)
@@ -28,7 +28,7 @@ tabviz(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio (95% CI)"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     col_pvalue("pvalue", "P")
   ),
   row_type = "row_type",
@@ -78,7 +78,7 @@ tabviz(subgroup_data,
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   row_type = "rtype",
   row_bold = "rbold",
@@ -120,13 +120,13 @@ tabviz(dose_response, label = "endpoint",
       axis_label = "Hazard Ratio"
     ),
     col_group("Low Dose",
-      col_interval("HR (95% CI)", point = "low_hr", lower = "low_lo", upper = "low_hi")
+      col_interval("low_hr", "low_lo", "low_hi", header = "HR (95% CI)")
     ),
     col_group("Standard",
-      col_interval("HR (95% CI)", point = "mid_hr", lower = "mid_lo", upper = "mid_hi")
+      col_interval("mid_hr", "mid_lo", "mid_hi", header = "HR (95% CI)")
     ),
     col_group("High Dose",
-      col_interval("HR (95% CI)", point = "high_hr", lower = "high_lo", upper = "high_hi")
+      col_interval("high_hr", "high_lo", "high_hi", header = "HR (95% CI)")
     )
   ),
   theme = web_theme_cochrane(),
@@ -170,7 +170,7 @@ tabviz(annotated_data,
                  refline(1, label = "No effect", style = "solid"),
                  refline(0.85, label = "Pooled estimate", style = "dashed", color = "#2563eb")
                )),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     col_pvalue("pvalue", "P", stars = TRUE)
   ),
   marker_color = "sig_color",
@@ -226,7 +226,7 @@ tabviz(large_meta,
                  refline(1, label = "No effect", style = "solid"),
                  refline(0.83, label = "Pooled", style = "dashed", color = "#2563eb")
                )),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     col_pvalue("pvalue", "P", stars = TRUE)
   ),
   marker_color = ~ case_when(
@@ -276,7 +276,7 @@ tabviz(
   group = c("region", "country"),  # Hierarchical: region > country
   columns = list(
     col_n("n"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),

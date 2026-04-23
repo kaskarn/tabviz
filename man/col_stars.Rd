@@ -12,8 +12,12 @@ col_stars(
   color = "#f59e0b",
   empty_color = "#d1d5db",
   half_stars = FALSE,
-  domain = NULL,
-  ...
+  min_value = NULL,
+  max_value = NULL,
+  size = c("base", "sm", "lg"),
+  na_text = NULL,
+  ...,
+  domain = lifecycle::deprecated()
 )
 }
 \arguments{
@@ -31,15 +35,24 @@ col_stars(
 
 \item{half_stars}{Allow half-star increments (default FALSE)}
 
-\item{domain}{Optional numeric length-2 vector \code{c(min, max)} to remap input
-values from an arbitrary range into \verb{[0, max_stars]}. For example,
-\code{domain = c(0, 100)} with \code{max_stars = 5} maps a value of 75 to 3.75 stars.}
+\item{min_value, max_value}{Numeric scalars defining the input range to remap
+into \verb{[0, max_stars]}. For example, \verb{min_value = 0, max_value = 100} with
+\code{max_stars = 5} maps a value of 75 to 3.75 stars. Pass both or neither;
+default \code{NULL} assumes the input is already in \verb{[0, max_stars]}.}
+
+\item{size}{Star size: \code{"sm"}, \code{"base"} (default), or \code{"lg"}. Matches the
+\code{size} argument on \code{col_icon()} and \code{col_badge()}.}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling
 (\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent}) and
 alignment. Body cells default to \code{align = "center"} (override with
 \code{align = "left"} / \code{"right"}); header alignment follows the body unless
 \code{header_align} is set explicitly.}
+
+\item{domain}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use
+\code{min_value} / \code{max_value} instead.}
 }
 \value{
 A ColumnSpec object
@@ -56,6 +69,9 @@ col_stars("quality", color = "#ef4444", empty_color = "#fee2e2")
 
 # Half-star increments
 col_stars("score", half_stars = TRUE)
+
+# Remap an arbitrary input range to stars
+col_stars("score_0_100", min_value = 0, max_value = 100)
 
 # With per-cell styling
 col_stars("rating", emphasis = "is_featured")

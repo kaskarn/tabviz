@@ -2,6 +2,7 @@
   import type { Row, WebTheme, VizViolinColumnOptions, VizViolinEffect, KDEResult } from "$types";
   import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
   import { computeKDE, computeQuartiles, normalizeKDE } from "$lib/viz-utils";
+  import { resolveMarkerStyle } from "$lib/marker-styling";
 
   interface Props {
     row: Row;
@@ -99,12 +100,20 @@
     theme?.shapes?.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"]
   );
 
-  function getEffectColor(effect: VizViolinEffect, idx: number): string {
-    return effect.color ?? defaultColors[idx % defaultColors.length];
+  // Per-row overrides (from tabviz(marker_color = "col") / marker_opacity)
+  const rowColorOverride = $derived(row.markerStyle?.color ?? null);
+  const rowOpacityOverride = $derived(row.markerStyle?.opacity ?? null);
+  const numEffects = $derived(options.effects.length);
+
+  // Resolve full marker style (fill + optional outline) via the cascade.
+  function getMarkerStyle(effect: VizViolinEffect, idx: number) {
+    const base = effect.color ?? defaultColors[idx % defaultColors.length];
+    return resolveMarkerStyle(base, rowColorOverride, row.style, numEffects, theme);
   }
 
   function getEffectOpacity(effect: VizViolinEffect): number {
-    return effect.fillOpacity ?? 0.5;
+    const base = effect.opacity ?? effect.fillOpacity ?? 0.5;
+    return rowOpacityOverride !== null ? rowOpacityOverride : base;
   }
 
   // Generate violin path for an effect
@@ -144,18 +153,20 @@
       {#if kde && kde.x.length >= 2}
         {@const violinCenterY = yPosition - violinConfig.totalHeight / 2 +
           violinConfig.violinHeight / 2 + idx * (violinConfig.violinHeight + violinConfig.gap)}
-        {@const color = getEffectColor(effect, idx)}
+        {@const ms = getMarkerStyle(effect, idx)}
         {@const opacity = getEffectOpacity(effect)}
         {@const path = generateViolinPath(kde, violinCenterY, violinConfig.maxWidth)}
-        {@const lineColor = theme?.colors.foreground ?? "#1a1a1a"}
+        {@const defaultLineColor = theme?.colors.foreground ?? "#1a1a1a"}
+        {@const lineColor = ms.stroke ?? defaultLineColor}
+        {@const violinStrokeW = ms.stroke ? ms.strokeWidth : 0.5}
 
         <!-- Violin shape -->
         <path
           d={path}
-          fill={color}
+          fill={ms.fill}
           fill-opacity={opacity}
           stroke={lineColor}
-          stroke-width="0.5"
+          stroke-width={violinStrokeW}
           class="violin-path"
         />
 

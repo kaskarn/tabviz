@@ -44,7 +44,7 @@ forest_plot(
   columns = list(
     col_numeric("n_itt", "N (ITT)"),
     col_numeric("n_pp", "N (PP)"),
-    col_interval("ITT OR")
+    col_interval("itt_or", "itt_lower", "itt_upper", header = "ITT OR")
   ),
   # Define multiple effects to display stacked on same axis
   effects = list(

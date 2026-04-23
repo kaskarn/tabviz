@@ -195,15 +195,30 @@ export function formatInterval(
   upper?: number,
   options?: ColumnOptions
 ): string {
-  if (point === undefined || point === null || Number.isNaN(point)) return "";
+  if (point === undefined || point === null || Number.isNaN(point)) {
+    return options?.naText ?? "";
+  }
 
-  const decimals = options?.interval?.decimals ?? 2;
-  const sep = options?.interval?.sep ?? " ";
-  const impreciseThreshold = options?.interval?.impreciseThreshold;
+  const i = options?.interval;
+  const sep = i?.separator ?? i?.sep ?? " ";
+  const impreciseThreshold = i?.impreciseThreshold;
+
+  // Synthesize numeric ColumnOptions so we can route every value through
+  // formatNumber and get digits / abbreviate / thousandsSep support for free.
+  const numOpts: ColumnOptions = {
+    numeric: {
+      decimals: i?.decimals,
+      digits: i?.digits,
+      thousandsSep: i?.thousandsSep,
+      abbreviate: i?.abbreviate,
+    },
+  };
+
+  const fmt = (v: number) => formatNumber(v, numOpts);
 
   if (lower === undefined || lower === null || upper === undefined || upper === null ||
       Number.isNaN(lower) || Number.isNaN(upper)) {
-    return point.toFixed(decimals);
+    return fmt(point);
   }
 
   // Check for imprecise estimate (CI ratio exceeds threshold)
@@ -211,7 +226,7 @@ export function formatInterval(
     return "—";
   }
 
-  return `${point.toFixed(decimals)}${sep}(${lower.toFixed(decimals)}, ${upper.toFixed(decimals)})`;
+  return `${fmt(point)}${sep}(${fmt(lower)}, ${fmt(upper)})`;
 }
 
 /** Format p-value for display with Unicode superscript notation */

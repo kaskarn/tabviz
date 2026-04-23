@@ -30,7 +30,7 @@
   class:cell-accent={isAccent}
   style:color={textColor}
   style:background-color={bgColor}
-  title={title ?? String(value ?? "")}
+  title={cellStyle?.tooltip ?? title ?? String(value ?? "")}
 >
   {#if hasIcon}<span class="cell-icon">{cellStyle?.icon}</span>{/if}
   <span class="cell-value">{value ?? ""}</span>

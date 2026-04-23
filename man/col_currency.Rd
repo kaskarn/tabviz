@@ -10,8 +10,11 @@ col_currency(
   width = NULL,
   symbol = "$",
   decimals = 2,
-  thousands_sep = TRUE,
+  digits = NULL,
+  thousands_sep = ",",
+  abbreviate = FALSE,
   position = c("prefix", "suffix"),
+  na_text = NULL,
   ...
 )
 }
@@ -24,11 +27,20 @@ col_currency(
 
 \item{symbol}{Currency symbol (default "$")}
 
-\item{decimals}{Number of decimal places (default 2)}
+\item{decimals}{Number of decimal places (default 2). Cannot be used with \code{digits}.}
 
-\item{thousands_sep}{Use thousands separator (default TRUE)}
+\item{digits}{Number of significant figures. Cannot be used with \code{decimals}.}
+
+\item{thousands_sep}{Thousands separator. Either a string (e.g. \code{","},
+\code{" "}, \code{"."}) or \code{FALSE} to disable. Default \code{","}. The legacy \code{TRUE}
+value is still accepted and treated as \code{","}.}
+
+\item{abbreviate}{Logical. When TRUE, values >= 1000 are shortened with at
+most 1 decimal place (e.g., "$1.2M", "$5.3K"). Default FALSE.}
 
 \item{position}{Symbol position: "prefix" (default, e.g., "$100") or "suffix" (e.g., "100EUR")}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling
 (\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent}) and
@@ -46,6 +58,12 @@ around \code{col_numeric()} that adds prefix/suffix formatting.
 \examples{
 # Default USD
 col_currency("price")
+
+# European thousands separator (period)
+col_currency("amount", symbol = "€", thousands_sep = ".", position = "suffix")
+
+# Abbreviate large amounts: 1,234,567 -> "$1.2M"
+col_currency("revenue", abbreviate = TRUE)
 
 # Euro suffix
 col_currency("amount", symbol = "\u20ac", position = "suffix")

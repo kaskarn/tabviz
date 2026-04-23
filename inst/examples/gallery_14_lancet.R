@@ -32,7 +32,7 @@ forest_plot(
   label = "outcome",
   columns = list(
     col_text("events", "Events (Tx/Ctrl)"),
-    col_interval("HR (95% CI)")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   theme = web_theme_lancet(),

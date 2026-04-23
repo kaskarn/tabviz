@@ -7,15 +7,14 @@ title: "Shiny Integration"
 library(tabviz)
 ```
 
-tabviz works seamlessly with Shiny through the htmlwidgets framework. This
-guide covers basic integration, reactive patterns, and the proxy API for
-updating a running plot in place.
+tabviz works seamlessly with Shiny through the htmlwidgets framework. This page covers basic integration, the proxy API for live updates, and split-table outputs.
 
-## Basic Usage
+## Output and Render
 
-### Output and render
-
-Use `tabvizOutput()` in the UI and `renderTabviz()` in the server:
+| UI                       | Server                  | Used for                                       |
+|--------------------------|-------------------------|------------------------------------------------|
+| `tabvizOutput()`         | `renderTabviz()`        | A single tabviz widget                         |
+| `splitTabvizOutput()`    | `renderSplitTabviz()`   | A `SplitForest` (tabviz + sidebar of subgroups)|
 
 ```r
 library(shiny)
@@ -43,19 +42,16 @@ shinyApp(ui, server)
 
 ### Sizing
 
-`tabvizOutput()` accepts standard CSS sizing:
+Both output functions accept standard CSS sizing:
 
-| Argument | Default   | Examples |
-|----------|-----------|----------|
-| `width`  | `"100%"`  | `"800px"`, `"50vw"` |
-| `height` | `"400px"` | `"600px"`, `"80vh"` |
+| Argument | Default | Examples |
+|---|---|---|
+| `width` | `"100%"` | `"800px"`, `"50vw"` |
+| `height` | `"400px"` (`"600px"` for split) | `"600px"`, `"80vh"` |
 
 ## Reactive Data Patterns
 
-### Basic reactive data
-
-Connect the plot to reactive data sources — the widget re-renders whenever
-the reactive changes:
+Connect the plot to reactive sources — the widget re-renders whenever the reactive changes:
 
 ```r
 server <- function(input, output, session) {
@@ -76,10 +72,7 @@ server <- function(input, output, session) {
 }
 ```
 
-### Debouncing rapid updates
-
-For inputs that change frequently (sliders), debounce to avoid excessive
-re-renders:
+For inputs that change frequently (sliders), debounce to avoid excessive re-renders:
 
 ```r
 filter_value <- reactive(input$min_n) |>
@@ -88,55 +81,39 @@ filter_value <- reactive(input$min_n) |>
 
 ## The Proxy API
 
-Proxy functions update the plot **without full re-render**, keeping scroll
-position, selection state, and layout stable.
+Proxy functions update the plot **without a full re-render** — scroll position, selection state, and layout stay stable.
 
-### Creating a proxy
+| Function | Purpose |
+|---|---|
+| `tabviz_proxy(id)` | Reference a `tabvizOutput` for live updates |
+| `split_tabviz_proxy(id)` | Reference a `splitTabvizOutput` for live updates |
+| `split_tabviz_select(proxy, key)` | Switch a split table to a specific subgroup |
 
-Create a proxy inside a reactive context:
+::: {.callout-important}
+## Always create proxies inside reactive contexts
 
-```r
-observeEvent(input$some_button, {
-  proxy <- tabviz_proxy("plot")
-  sort_rows(proxy, "hr", "desc")
-})
-```
+Never create a proxy at the top level of your app. Both `tabviz_proxy()` and `split_tabviz_proxy()` require an active Shiny reactive domain.
+:::
 
-Or create it once at the top of `server` and reuse — both patterns work
-because `tabviz_proxy()` is cheap and stateless.
+### Fluent verbs dispatch on proxies
 
-**Important:** never create a proxy at the top level of your app — only
-inside `server`.
-
-### Unified verbs
-
-The same verbs work on `WebSpec`, `htmlwidget`, and `tabviz_proxy` inputs.
-On a static spec they mutate and return the same shape; on a proxy they
-send a custom message to the browser. See [Fluent API](fluent-api.qmd) for
-the full list.
+Every fluent modifier — every `set_*`, `add_*`, `remove_*`, `sort_*`, `filter_*`, plus `set_cell()` and `clear_edits()` — dispatches on `tabviz_proxy` and sends a custom message to the running widget instead of mutating a static spec. The same call site works on a `WebSpec`, an htmlwidget, and a proxy:
 
 | Category | Verbs |
-|----------|-------|
-| Columns  | `add_column()`, `remove_column()`, `move_column()`, `resize_column()`, `update_column()` |
-| Rows     | `sort_rows()`, `filter_rows()`, `clear_filters()`, `select_rows()`, `move_row()` |
-| Data     | `update_data()` (proxy requires a `WebSpec`) |
-| Groups   | `toggle_group()` |
-| Cells    | `set_cell()`, `set_row_label()`, `clear_edits()` (proxy-only) |
-| Global   | `set_theme()`, `set_zoom()` |
+|---|---|
+| Columns | `add_column()`, `remove_column()`, `move_column()`, `resize_column()`, `update_column()` |
+| Rows | `sort_rows()`, `filter_rows()`, `clear_filters()`, `select_rows()`, `move_row()` |
+| Data | `update_data()` (proxy requires a fresh `WebSpec`) |
+| Groups | `toggle_group()` |
+| Cells | `set_cell()`, `set_row_label()`, `clear_edits()` (proxy-only) |
+| Global | `set_theme()`, `set_zoom()` |
 
-### Sorting
+### Sorting and filtering
 
 ```r
 observeEvent(input$sort_asc,  sort_rows(tabviz_proxy("plot"), "hr", "asc"))
 observeEvent(input$sort_desc, sort_rows(tabviz_proxy("plot"), "hr", "desc"))
-observeEvent(input$sort_none, sort_rows(tabviz_proxy("plot"), "hr", "none"))
-```
 
-### Filtering
-
-Filter operators: `"eq"`, `"neq"`, `"gt"`, `"lt"`, `"contains"`.
-
-```r
 observeEvent(input$filter_n, {
   filter_rows(tabviz_proxy("plot"), "n", "gt", input$min_sample_size)
 })
@@ -146,10 +123,11 @@ observeEvent(input$clear_filters, {
 })
 ```
 
+Filter operators: `"eq"`, `"neq"`, `"gt"`, `"lt"`, `"contains"`.
+
 ### Replacing the dataset
 
-`update_data()` on a proxy takes a `WebSpec`, not a raw data frame.
-Build one with `tabviz(..., .spec_only = TRUE)`:
+`update_data()` on a proxy takes a `WebSpec`, not a raw data frame. Build one with `tabviz(..., .spec_only = TRUE)`:
 
 ```r
 observeEvent(input$switch_dataset, {
@@ -166,18 +144,6 @@ observeEvent(input$switch_dataset, {
 })
 ```
 
-### Toggling groups
-
-```r
-observeEvent(input$collapse_north, {
-  toggle_group(tabviz_proxy("plot"), "North America", collapsed = TRUE)
-})
-
-observeEvent(input$toggle_group, {
-  toggle_group(tabviz_proxy("plot"), input$group_id)  # flip current state
-})
-```
-
 ### Chaining
 
 Every proxy verb returns the proxy invisibly, so calls chain:
@@ -189,6 +155,35 @@ observeEvent(input$reset_view, {
     sort_rows("study", "none") |>
     toggle_group("all", collapsed = FALSE)
 })
+```
+
+## Split Tables in Shiny
+
+Use `splitTabvizOutput()` / `renderSplitTabviz()` for a `SplitForest`. Programmatically focus a subgroup with `split_tabviz_select()`:
+
+```r
+ui <- fluidPage(
+  selectInput("region", "Region",
+    choices = c("North America", "Europe", "Asia Pacific")),
+  splitTabvizOutput("split_plot", height = "700px")
+)
+
+server <- function(input, output, session) {
+  output$split_plot <- renderSplitTabviz({
+    tabviz(trial_data,
+      label = "study",
+      columns = list(
+        viz_forest(point = "hr", lower = "lower", upper = "upper",
+                   scale = "log", null_value = 1)
+      )
+    ) |>
+      split_table(by = "region")
+  })
+
+  observeEvent(input$region, {
+    split_tabviz_select(split_tabviz_proxy("split_plot"), input$region)
+  })
+}
 ```
 
 ## Complete Example App
@@ -249,10 +244,8 @@ server <- function(input, output, session) {
     )
   })
 
-  proxy <- tabviz_proxy("plot")
-
   observe({
-    set_theme(proxy, switch(input$theme,
+    set_theme(tabviz_proxy("plot"), switch(input$theme,
       "jama" = "jama", "lancet" = "lancet", "default"))
   })
 
@@ -260,15 +253,16 @@ server <- function(input, output, session) {
   observeEvent(input$sort_hr, {
     new_dir <- switch(sort_state(), "none" = "asc", "asc" = "desc", "desc" = "none")
     sort_state(new_dir)
-    sort_rows(proxy, "hr", new_dir)
+    sort_rows(tabviz_proxy("plot"), "hr", new_dir)
   })
 
   observeEvent(input$reset, {
     updateSelectInput(session, "drug_class", selected = "All")
     updateSliderInput(session, "min_n", value = 0)
     sort_state("none")
-    clear_filters(proxy)
-    sort_rows(proxy, "hr", "none")
+    tabviz_proxy("plot") |>
+      clear_filters() |>
+      sort_rows("hr", "none")
   })
 }
 
@@ -277,8 +271,8 @@ shinyApp(ui, server)
 
 ## Proxy vs Re-render
 
-| Use Case | Approach | Reason |
-|----------|----------|--------|
+| Use case | Approach | Reason |
+|---|---|---|
 | Sort / filter existing rows | **Proxy** | Smooth, no flicker |
 | Change theme / zoom | **Proxy** | `set_theme()` / `set_zoom()` route through the store |
 | Add, remove, resize columns | **Proxy** | Column verbs are wired through the store |
@@ -288,12 +282,7 @@ shinyApp(ui, server)
 ## Best Practices
 
 1. Create proxies inside reactive contexts, not at app top level.
-2. Debounce slider-driven inputs (`shiny::debounce()`).
-3. Prefer proxy verbs for interactive updates; they preserve scroll and selection.
+2. Debounce slider-driven inputs with `shiny::debounce()`.
+3. Prefer proxy verbs for interactive updates — they preserve scroll and selection.
 4. Reach for full re-render only when the column structure or data schema changes.
-5. Chain proxy calls for atomic UI updates:
-   ```r
-   tabviz_proxy("plot") |>
-     clear_filters() |>
-     sort_rows("hr", "asc")
-   ```
+5. Chain proxy calls for atomic UI updates.

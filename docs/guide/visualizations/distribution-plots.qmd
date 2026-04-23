@@ -8,17 +8,15 @@ library(tabviz)
 library(dplyr)
 ```
 
-Distribution plots display statistical summaries and distributions inline within table rows. tabviz provides three visualization types for different data patterns.
+A side-by-side guide to the three distribution-oriented `viz_*()` columns: `viz_bar()`, `viz_boxplot()`, and `viz_violin()`. Use this page to pick the right column for your data; follow the per-type pages for the full surface area.
 
 ## Choosing the Right Visualization
 
-| Visualization | Best For | Data Requirements |
-|--------------|----------|-------------------|
+| Visualization | Use when… | Data shape |
+|---|---|---|
 | [`viz_bar()`](bar-charts.qmd) | Comparing single values across rows | One numeric value per row |
-| [`viz_boxplot()`](boxplots.qmd) | Showing spread and outliers | Array of values OR pre-computed summary stats |
-| [`viz_violin()`](violin-plots.qmd) | Showing distribution shape | Array of values per row |
-
----
+| [`viz_boxplot()`](boxplots.qmd) | You need median, quartiles, outliers | Array per row **or** pre-computed quartile stats |
+| [`viz_violin()`](violin-plots.qmd) | Distribution shape matters (bimodal, skewed) | Array per row |
 
 ## Quick Examples
 
@@ -49,7 +47,8 @@ box_data <- data.frame(
 
 tabviz(box_data, label = "group",
   columns = list(
-    viz_boxplot(effect_boxplot(data = "values", color = "#8b5cf6"), header = "Distribution")
+    viz_boxplot(effect_boxplot(data = "values", color = "#8b5cf6"),
+                header = "Distribution")
   )
 )
 ```
@@ -65,16 +64,15 @@ violin_data <- data.frame(
 
 tabviz(violin_data, label = "group",
   columns = list(
-    viz_violin(effect_violin(data = "scores", color = "#f59e0b"), header = "Scores", show_median = TRUE)
+    viz_violin(effect_violin(data = "scores", color = "#f59e0b"),
+               header = "Scores", show_median = TRUE)
   )
 )
 ```
 
----
-
 ## Combining Visualizations
 
-Mix different viz columns for comprehensive data displays:
+Mix viz columns for multi-faceted dashboards:
 
 ```{r}
 set.seed(321)
@@ -115,20 +113,19 @@ tabviz(combined_data, label = "site",
 )
 ```
 
----
-
 ## Common Options
 
-All `viz_*` functions share these options:
+All `viz_*()` columns share these arguments. See the per-type pages for the full set.
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `header` | Column header text | `NULL` |
-| `width` | Column width in pixels | `150` |
-| `scale` | `"linear"` or `"log"` | `"linear"` |
-| `domain` | Fixed axis range `c(min, max)` | Auto |
-
----
+| Option | Default | Purpose |
+|---|---|---|
+| `header` | `NULL` | Column header text |
+| `width` | `150` | Column width in pixels |
+| `scale` | `"linear"` | `"linear"` or `"log"` |
+| `axis_range` | auto | Fixed axis range `c(min, max)` |
+| `axis_ticks` | auto | Custom tick positions |
+| `axis_gridlines` | `FALSE` | Show vertical gridlines |
+| `axis_label` | `"Value"` | Label text below the axis |
 
 ## See Also
 

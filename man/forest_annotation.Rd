@@ -13,19 +13,30 @@ forest_annotation(
 )
 }
 \arguments{
-\item{study_id}{Study to annotate}
+\item{study_id}{The label value identifying which row to annotate}
 
-\item{shape}{Shape type}
+\item{shape}{Glyph shape: "circle", "square", "triangle", or "star"}
 
-\item{position}{Position}
+\item{position}{Placement relative to the row's marker: "overlay"
+(centered on the marker), "before" (to the left), or "after" (to the right)}
 
-\item{color}{Color}
+\item{color}{CSS color for the glyph (default \code{"#8b5cf6"})}
 
-\item{size}{Size multiplier}
+\item{size}{Size multiplier; \code{1.0} is the default}
 }
 \value{
 A CustomAnnotation object
 }
 \description{
-Create a custom annotation
+Draws a per-row glyph (circle, square, triangle, or star) next to or on top
+of a matching row's forest marker. Pass a list of \code{forest_annotation()} to
+\code{\link[=viz_forest]{viz_forest()}}'s \code{annotations} argument alongside any \code{\link[=refline]{refline()}} calls.
+}
+\details{
+Matching: the \code{study_id} is compared against each row's label (the primary
+column value) and against its internal row id — the first match wins. Pass
+the value you used in your data's label column.
+
+Non-forest viz columns (\code{\link[=viz_bar]{viz_bar()}}, \code{\link[=viz_boxplot]{viz_boxplot()}}, \code{\link[=viz_violin]{viz_violin()}}) do
+not render \code{forest_annotation()} objects — they only honor \code{\link[=refline]{refline()}}.
 }

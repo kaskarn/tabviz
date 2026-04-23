@@ -9,14 +9,12 @@ library(tabviz)
 library(dplyr)
 ```
 
-## Overview
+**tabviz** turns a data frame into a publication-quality, fully interactive htmlwidget — sortable, filterable, draggable, editable — with SVG / PNG / PDF export that captures exactly what you see on screen.
 
-**tabviz** is an R htmlwidgets package for building interactive tables with embedded visualizations. It turns a data frame into a publication-quality, fully interactive widget — sortable, filterable, draggable, and editable — with SVG/PNG export that captures exactly what you see on screen.
+## Hero example
 
 ```{r}
 #| echo: false
-# Full-interactivity hero: drag rows within groups, drag columns within groups,
-# click headers to sort, click the funnel to filter, double-click cells to edit.
 data(glp1_trials)
 
 tabviz(
@@ -41,7 +39,7 @@ tabviz(
       )
     ),
     col_group("Results",
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
       col_pvalue("pvalue", "P", stars = TRUE)
     )
   ),
@@ -53,21 +51,41 @@ tabviz(
 )
 ```
 
-::: {.callout-tip}
+:::{.callout-tip}
 ## Try the interactivity
-- **Sort** — click any column header (chevron appears)
-- **Filter** — click the funnel icon in a header and pick a text / numeric / categorical filter
-- **Reorder rows** — hover a row, grab the drag handle, drop inside the same group
-- **Reorder columns** — hover a column header, grab its handle; columns stay within their group ("Study Info" / "Results")
-- **Edit values** — double-click a text, numeric, percent, p-value, date, or interval cell to edit inline; double-click a column-group header to rename the span
-- **Export** — the download button's SVG & PNG capture exactly your current view
+- **Sort** — click any column header.
+- **Filter** — click the funnel icon and pick a text / numeric / categorical filter.
+- **Reorder rows** — hover a row, grab the drag handle, drop within the same group.
+- **Reorder columns** — drag column headers; columns stay within their column group.
+- **Edit values** — double-click a cell (or a column-group header) to edit inline.
+- **Export** — the download button writes SVG / PNG matching your current view exactly.
+:::
+
+## Selling points
+
+::: {.grid}
+::: {.g-col-6}
+**Declarative columns.** The `columns = list(...)` API mirrors what you see — column types, groups, and visualizations compose with no hidden state.
+:::
+
+::: {.g-col-6}
+**WYSIWYG export.** The same SVG engine drives both the browser and headless export, so PDFs match the screen pixel-for-pixel after sort / filter / edit.
+:::
+
+::: {.g-col-6}
+**Built for science.** Forest plots, multi-arm effects, p-values, intervals, and journal themes (JAMA, Lancet, Nature, Cochrane) are first-class.
+:::
+
+::: {.g-col-6}
+**Fully interactive.** Sorting, filtering, drag-to-reorder, inline editing, and Shiny proxy updates ship in the box.
+:::
 :::
 
 ## Build any table in a few lines
 
-Use `tabviz()` with explicit column definitions — the declarative API mirrors the output:
-
 ```r
+library(tabviz)
+
 tabviz(data,
   label = "study",
   columns = list(
@@ -78,7 +96,7 @@ tabviz(data,
     viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1),
     col_group("Results",
-      col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi"),
+      col_interval("hr", "lo", "hi", header = "HR (95% CI)"),
       col_pvalue("pvalue", "P")
     )
   ),
@@ -88,8 +106,6 @@ tabviz(data,
 
 ## Feature highlights
 
-A few of tabviz's strengths, each in a compact example:
-
 ### Row groups + column groups together
 
 ```{r}
@@ -98,7 +114,7 @@ data(effect_sizes)
 
 tabviz(effect_sizes,
   label = "study",
-  group = "treatment",       # collapsible row groups (Drug A, Drug B, ...)
+  group = "treatment",
   columns = list(
     col_group("Trial",
       col_text("region", "Region"),
@@ -109,7 +125,7 @@ tabviz(effect_sizes,
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
     col_group("Effect",
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
       col_badge("direction", "Direction",
         variants = list(
           `Favors Treatment` = "success",
@@ -120,7 +136,7 @@ tabviz(effect_sizes,
   ),
   interaction = web_interaction_full(),
   theme = web_theme_default(),
-  title = "Row Groups × Column Groups",
+  title = "Row Groups x Column Groups",
   subtitle = "Click a group header to collapse; drag within any group to reorder"
 )
 ```
@@ -190,48 +206,6 @@ tabviz(april, label = "carrier",
 )
 ```
 
-## Features
-
-::: {.grid}
-::: {.g-col-6}
-**Visualization**
-
-- 9 preset themes (JAMA, Lancet, Nature, Cochrane, …)
-- 20+ column types — forest plots, bars, p-values, sparklines, heatmaps, progress bars, currency, dates, badges, icons, stars
-- Hierarchical row groups and column groups with collapsible sections
-- Multiple effects per row for dose-response and multi-arm designs
-:::
-
-::: {.g-col-6}
-**Interactivity**
-
-- Sort columns by header click (grouped tables preserve group structure)
-- Per-column filter popovers (text / numeric range / categorical)
-- Drag-and-drop reordering of rows, row groups, columns, and column groups
-- Double-click any editable cell (text, numeric, percent, p-value, date, interval) for inline edit; double-click a column-group header to rename it
-- Hover tooltips with custom content
-:::
-:::
-
-::: {.grid}
-::: {.g-col-6}
-**Export**
-
-- SVG, PNG, PDF output at publication quality
-- **WYSIWYG**: exports capture your current sort / filter / reorder / edits
-- Same layout engine drives both browser view and headless export
-:::
-
-::: {.g-col-6}
-**Developer Experience**
-
-- Fluent API with R pipes
-- Declarative column system
-- Type-safe styling via NSE column mapping (`row_bold = ~ pvalue < 0.05`)
-- Shiny integration with proxy methods for reactive updates
-:::
-:::
-
 ## Installation
 
 ```r
@@ -239,45 +213,12 @@ tabviz(april, label = "carrier",
 pak::pak("kaskarn/tabviz")
 ```
 
-## Quick Example
+## Where to go next
 
-```r
-library(tabviz)
-
-tabviz(data,
-  label = "study",
-  columns = list(
-    col_text("category"),
-    viz_forest(point = "estimate", lower = "ci_lower", upper = "ci_upper",
-               scale = "log", null_value = 1),
-    col_interval("Est (95% CI)", point = "estimate",
-                 lower = "ci_lower", upper = "ci_upper"),
-    col_numeric("n")
-  ),
-  interaction = web_interaction_full()
-)
-```
-
-## Guide
-
-Learn how to use tabviz:
-
-| Chapter | Description |
-|---------|-------------|
-| [Quick Start](guide/quick-start.qmd) | Installation and basic usage |
-| [Columns](guide/columns.qmd) | Column types, usage, and column groups |
-| [Row Styling](guide/row-styling.qmd) | Headers, summaries, indentation, and badges |
-| [Cell Styling](guide/cell-styling.qmd) | Per-cell conditional formatting |
-| [Row Groups](guide/row-groups.qmd) | Collapsible sections from column values |
-| [Forest Plots](guide/visualizations/forest-plots.qmd) | Adding forest columns with viz_forest() |
-| [Split Plots](guide/split-plots.qmd) | Sidebar navigation for subgroups |
-| [Themes](guide/themes.qmd) | Preset themes and customization |
-| [Shiny Integration](guide/shiny.qmd) | Reactive tables |
-| [Export](guide/export.qmd) | SVG, PNG, PDF output |
-
-## More Resources
-
-- [Concepts](concepts/index.qmd) — architecture and mental models
-- [Cheatsheet](cheatsheet.qmd) — quick reference
-- [Gallery](gallery/index.qmd) — examples by domain, including a dedicated interactivity tour
-- [Reference](reference/index.qmd) — API documentation
+| Resource | Use it for |
+|---|---|
+| [Quick Start](guide/quick-start.qmd) | First table in under a minute |
+| [Guide](guide/index.qmd) | Concepts and workflows, in reading order |
+| [Gallery](gallery/index.qmd) | Examples by domain, including an interactivity tour |
+| [Cheatsheet](cheatsheet.qmd) | One-page lookup card |
+| [Reference](reference/index.qmd) | Full API documentation |

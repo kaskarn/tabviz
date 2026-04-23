@@ -5,6 +5,7 @@
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { getEffectValue } from "$lib/scale-utils";
   import { getEffectYOffset } from "$lib/rendering-constants";
+  import { resolveMarkerStyle } from "$lib/marker-styling";
 
   interface Props {
     row: Row;
@@ -154,10 +155,22 @@
     return basePointSize;
   }
 
-  // Get style (color, shape, opacity) for an effect
-  // Priority: row.markerStyle (primary only) > effect spec > theme default
+  // Get style (fill, stroke, shape, opacity) for an effect.
+  //
+  // Color cascade (4-layer, see `$lib/marker-styling`):
+  //   Layer 4: row.markerStyle.color (per-row literal — applies to ALL effects)
+  //   Layer 3: row.style.{accent,emphasis,muted} → theme color
+  //              single-effect: replaces fill
+  //              multi-effect:  preserves per-effect fill, adds outline
+  //   Layer 2: effect.color (per-effect literal)
+  //   Layer 1: theme.shapes.effectColors[idx] cycle (palette default)
+  //
+  // Shape and opacity remain primary-effect-only (row.markerStyle drives the
+  // main marker; secondary effects use their own effect-spec values).
   function getEffectStyle(effect: typeof effectsToRender[0], idx: number): {
-    color: string;
+    fill: string;
+    stroke: string | null;
+    strokeWidth: number;
     shape: MarkerShape;
     opacity: number;
   } {
@@ -169,28 +182,26 @@
     const themeMarkerShapes = theme?.shapes.markerShapes;
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
-    // Color priority:
-    // 1. Primary effect: row.markerStyle.color (if set)
-    // 2. effect.color (if set)
-    // 3. theme.shapes.effectColors[idx] (if defined)
-    // 4. theme.colors.interval (fallback)
-    let color: string;
-    if (isPrimary && markerStyle?.color) {
-      color = markerStyle.color;
-    } else if (effect.color) {
-      color = effect.color;
+    // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color
+    let baseColor: string;
+    if (effect.color) {
+      baseColor = effect.color;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
-      // Cycle through effect colors if more effects than colors defined
-      color = themeEffectColors[idx % themeEffectColors.length];
+      baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {
-      color = theme?.colors.interval ?? theme?.colors.primary ?? "#2563eb";
+      baseColor = theme?.colors.interval ?? theme?.colors.primary ?? "#2563eb";
     }
 
-    // Shape priority:
-    // 1. Primary effect: row.markerStyle.shape (if set)
-    // 2. effect.shape (if set)
-    // 3. theme.shapes.markerShapes[idx] (if defined)
-    // 4. Default shapes: square, circle, diamond, triangle (cycling)
+    // Apply Layers 3+4 via the shared cascade resolver
+    const ms = resolveMarkerStyle(
+      baseColor,
+      markerStyle?.color ?? null,
+      row.style,
+      effectsToRender.length,
+      theme,
+    );
+
+    // Shape priority (primary-effect-only for marker_shape override):
     let shape: MarkerShape;
     if (isPrimary && markerStyle?.shape) {
       shape = markerStyle.shape;
@@ -202,7 +213,7 @@
       shape = defaultShapes[idx % defaultShapes.length];
     }
 
-    // Opacity priority: same pattern
+    // Opacity priority (primary-effect-only for marker_opacity override):
     let opacity: number;
     if (isPrimary && markerStyle?.opacity != null) {
       opacity = markerStyle.opacity;
@@ -212,7 +223,7 @@
       opacity = 1;
     }
 
-    return { color, shape, opacity };
+    return { fill: ms.fill, stroke: ms.stroke, strokeWidth: ms.strokeWidth, shape, opacity };
   }
 </script>
 
@@ -252,7 +263,7 @@
           ].join(' ')}
           <polygon
             points={summaryDiamondPoints}
-            fill={style.color}
+            fill={style.fill}
             fill-opacity={style.opacity}
             stroke={theme?.colors.summaryBorder ?? "#1d4ed8"}
             stroke-width="1"
@@ -317,8 +328,10 @@
               cx={clampedCx}
               cy={effectY}
               r={pointSize}
-              fill={style.color}
+              fill={style.fill}
               fill-opacity={style.opacity}
+              stroke={style.stroke}
+              stroke-width={style.strokeWidth}
               class="point-estimate"
             />
           {:else if style.shape === "diamond"}
@@ -330,8 +343,10 @@
             ].join(' ')}
             <polygon
               points={diamondPts}
-              fill={style.color}
+              fill={style.fill}
               fill-opacity={style.opacity}
+              stroke={style.stroke}
+              stroke-width={style.strokeWidth}
               class="point-estimate"
             />
           {:else if style.shape === "triangle"}
@@ -342,8 +357,10 @@
             ].join(' ')}
             <polygon
               points={trianglePts}
-              fill={style.color}
+              fill={style.fill}
               fill-opacity={style.opacity}
+              stroke={style.stroke}
+              stroke-width={style.strokeWidth}
               class="point-estimate"
             />
           {:else}
@@ -353,8 +370,10 @@
               y={effectY - pointSize}
               width={pointSize * 2}
               height={pointSize * 2}
-              fill={style.color}
+              fill={style.fill}
               fill-opacity={style.opacity}
+              stroke={style.stroke}
+              stroke-width={style.strokeWidth}
               class="point-estimate"
             />
           {/if}

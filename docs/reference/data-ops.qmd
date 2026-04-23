@@ -349,36 +349,9 @@ clear_edits(x)
 
 ---
 
-## Global Controls
+## Global controls
 
-### set_theme() {#set_theme}
-
-Swap the theme. Accepts a name (`"jama"`, `"lancet"`, etc.) or a `WebTheme` object. On a proxy this sends a `setTheme` message so the running widget re-skins without a full re-render. See the [styling reference](styling.qmd#set_theme) for parameters and examples.
-
-### set_zoom() {#set_zoom}
-
-Adjust zoom and container size constraints on a rendered widget.
-
-```r
-set_zoom(x, zoom = 1.0, auto_fit = TRUE,
-         max_width = NULL, max_height = NULL,
-         show_controls = TRUE)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `x` | An htmlwidget or `tabviz_proxy` |
-| `zoom` | Zoom level (0.5 to 2.0) |
-| `auto_fit` | `TRUE` shrinks content to fit container; never enlarges |
-| `max_width`, `max_height` | Maximum container dimensions in pixels |
-| `show_controls` | Show zoom controls on hover |
-
-Works on rendered htmlwidgets and proxies only — not on bare `WebSpec` objects (zoom is a presentation concern, not a data concern).
-
-```{r}
-#| eval: false
-tabviz(data, ...) |> set_zoom(zoom = 0.8, max_width = 1000)
-```
+`set_theme()` and `set_zoom()` are documented in the [styling reference](styling.qmd#set_theme) — they are global presentation modifiers rather than data verbs, but they accept the same input shapes (spec / widget / proxy where applicable).
 
 ---
 
@@ -405,7 +378,7 @@ tabviz(data, ...) |> set_zoom(zoom = 0.8, max_width = 1000)
 | `move_row()` | Reposition a row |
 | `update_data()` | Replace the data frame |
 
-### Groups, cells, global
+### Groups & cells
 
 | Function | Purpose |
 |----------|---------|
@@ -413,8 +386,6 @@ tabviz(data, ...) |> set_zoom(zoom = 0.8, max_width = 1000)
 | `set_cell()` | Overwrite a cell (proxy) |
 | `set_row_label()` | Rename a row (proxy) |
 | `clear_edits()` | Discard in-widget edits (proxy) |
-| `set_theme()` | Apply a theme |
-| `set_zoom()` | Zoom/container constraints |
 
 ## See Also
 

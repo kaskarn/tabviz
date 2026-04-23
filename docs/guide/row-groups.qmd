@@ -7,7 +7,15 @@ title: "Row Groups"
 library(tabviz)
 ```
 
-Organize your forest plot into collapsible sections using the `group` parameter. This is ideal for meta-analyses with natural categories like study design, region, or subpopulation.
+Organize your forest plot into collapsible sections using the `group` parameter. Ideal for meta-analyses with natural categories like study design, region, or subpopulation.
+
+## What you can pass to `group`
+
+| Form | Effect |
+|------|--------|
+| `group = "region"` | Single flat grouping — one collapsible header per unique value |
+| `group = c("region", "country")` | Hierarchical nesting — outer level collapses inner levels |
+| `group = list(web_group("North", collapsed = FALSE), web_group("South", collapsed = TRUE))` | Explicit definitions; lets you set initial collapse state and custom labels |
 
 ## Basic Grouping
 

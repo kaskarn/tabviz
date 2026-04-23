@@ -11,6 +11,7 @@ col_icon(
   mapping = NULL,
   size = c("base", "sm", "lg"),
   color = NULL,
+  na_text = NULL,
   ...
 )
 }
@@ -27,6 +28,8 @@ col_icon(
 \item{size}{Icon size: "sm", "base", or "lg" (default "base")}
 
 \item{color}{Optional CSS color for the icon (default NULL, uses theme)}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling
 (\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent}) and

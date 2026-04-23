@@ -31,7 +31,7 @@ forest_plot(
   label = "label",
   columns = list(
     col_numeric("events", "Events"),
-    col_interval("HR (95% CI)")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   row_color = "rcolor", row_badge = "rbadge",

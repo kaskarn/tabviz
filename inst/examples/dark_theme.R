@@ -40,7 +40,7 @@ forest_plot(
     col_numeric("n", "N"),
     col_numeric("median_fu", "Follow-up (mo)"),
     col_text("quality", "Quality"),
-    col_interval("HR (95% CI)"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     col_pvalue("pvalue", "P")
   ),
   row_bold = "row_bold",

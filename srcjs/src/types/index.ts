@@ -41,6 +41,8 @@ export interface CellStyle {
   emphasis?: boolean;  // Bold + foreground color
   muted?: boolean;     // Muted color
   accent?: boolean;    // Accent color
+  // Per-cell hover tooltip text (overrides the default value-as-title)
+  tooltip?: string | null;
 }
 
 // Maps style properties to column names containing values
@@ -131,7 +133,11 @@ export interface NumericColumnOptions {
 
 export interface IntervalColumnOptions {
   decimals?: number;  // Decimal places for point/CI (default: 2)
-  sep?: string;       // Separator between point and CI (default: " ")
+  digits?: number;    // Significant figures. Cannot use with decimals.
+  thousandsSep?: string | false;  // Thousands separator (default: false)
+  abbreviate?: boolean;            // Shorten large numbers (default: false)
+  separator?: string; // Separator between point and CI (default: " ")
+  sep?: string;       // @deprecated Use `separator`
   point?: string;     // Override field for point estimate
   lower?: string;     // Override field for lower bound
   upper?: string;     // Override field for upper bound
@@ -196,6 +202,7 @@ export interface StarsColumnOptions {
   emptyColor?: string;  // Empty star color
   halfStars?: boolean;
   domain?: [number, number] | null;  // Remap raw values from [lo, hi] → [0, maxStars]
+  size?: "sm" | "base" | "lg";       // Star glyph size
 }
 
 export interface ImgColumnOptions {
@@ -216,6 +223,9 @@ export interface RangeColumnOptions {
   maxField: string;
   separator?: string;
   decimals?: number | null;  // null for auto
+  digits?: number;            // Significant figures
+  thousandsSep?: string | false;
+  abbreviate?: boolean;
   showBar?: boolean;
 }
 
@@ -263,6 +273,7 @@ export interface VizBarEffect {
 export interface VizBarColumnOptions extends VizColumnOptionsBase {
   type: "bar";
   effects: VizBarEffect[];
+  annotations?: Annotation[] | null;
   barWidth?: number;          // Width of each bar in pixels
   barGap?: number;            // Gap between grouped bars
   orientation?: "horizontal" | "vertical";
@@ -279,13 +290,15 @@ export interface VizBoxplotEffect {
   outliers?: string | null;   // Column name for outlier array
   label?: string | null;      // Legend label
   color?: string | null;      // Box fill color
-  fillOpacity?: number | null;// Box fill opacity (0-1)
+  opacity?: number | null;    // Box fill opacity (0-1)
+  fillOpacity?: number | null;// @deprecated Use `opacity`. Kept for one release for backward compat.
 }
 
 /** Options for viz_boxplot column */
 export interface VizBoxplotColumnOptions extends VizColumnOptionsBase {
   type: "boxplot";
   effects: VizBoxplotEffect[];
+  annotations?: Annotation[] | null;
   showOutliers?: boolean;
   whiskerType?: "iqr" | "minmax";  // IQR-based (1.5×IQR) or min/max whiskers
   boxWidth?: number;          // Width of the box in pixels
@@ -296,13 +309,15 @@ export interface VizViolinEffect {
   data: string;               // Column name for array data (required)
   label?: string | null;      // Legend label
   color?: string | null;      // Fill color
-  fillOpacity?: number | null;// Fill opacity (0-1)
+  opacity?: number | null;    // Fill opacity (0-1)
+  fillOpacity?: number | null;// @deprecated Use `opacity`. Kept for one release for backward compat.
 }
 
 /** Options for viz_violin column */
 export interface VizViolinColumnOptions extends VizColumnOptionsBase {
   type: "violin";
   effects: VizViolinEffect[];
+  annotations?: Annotation[] | null;
   bandwidth?: number | null;  // KDE bandwidth (null = Silverman's rule)
   showMedian?: boolean;       // Show median line
   showQuartiles?: boolean;    // Show Q1/Q3 lines

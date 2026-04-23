@@ -4,15 +4,20 @@
   interface Props {
     value: number | undefined | null;
     options?: StarsColumnOptions;
+    naText?: string;
   }
 
-  let { value, options }: Props = $props();
+  let { value, options, naText }: Props = $props();
 
   const maxStars = $derived(Math.max(1, Math.min(20, options?.maxStars ?? 5)));
   const filledColor = $derived(options?.color ?? "#f59e0b");
   const emptyColor = $derived(options?.emptyColor ?? "#d1d5db");
   const halfStars = $derived(options?.halfStars ?? false);
   const domain = $derived(options?.domain ?? null);
+  const size = $derived(options?.size ?? "base");
+  const sizeClass = $derived(
+    size === "sm" ? "stars-sm" : size === "lg" ? "stars-lg" : "stars-base"
+  );
 
   // Unicode characters for stars
   const FILLED_STAR = "★";
@@ -46,7 +51,7 @@
 </script>
 
 {#if value !== undefined && value !== null}
-  <span class="cell-stars" title="{value} / {maxStars}">
+  <span class="cell-stars {sizeClass}" title="{value} / {maxStars}">
     {#each starDisplay as star, i (i)}
       <span
         class="star"
@@ -58,6 +63,8 @@
       </span>
     {/each}
   </span>
+{:else if naText}
+  <span class="stars-na">{naText}</span>
 {/if}
 
 <style>
@@ -66,7 +73,16 @@
     align-items: center;
     gap: 1px;
     line-height: 1;
+  }
+
+  .stars-sm {
+    font-size: 0.75em;
+  }
+  .stars-base {
     font-size: 0.9em;
+  }
+  .stars-lg {
+    font-size: 1.1em;
   }
 
   .star {

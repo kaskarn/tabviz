@@ -16,7 +16,7 @@ default_axis <- effect_sizes |>
     label = "study",
     columns = list(
       col_numeric("n", header = "N"),
-      col_interval("HR (95% CI)")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
     scale = "log", null_value = 1,
     axis_label = "Hazard Ratio (log scale)",
@@ -32,7 +32,7 @@ narrow_range <- effect_sizes |>
   forest_plot(
     point = "hr", lower = "lower", upper = "upper",
     label = "study",
-    columns = list(col_interval("HR (95% CI)")),
+    columns = list(col_interval("hr", "lower", "upper", header = "HR (95% CI)")),
     scale = "log", null_value = 1,
     axis_range = c(0.5, 1.5),
     axis_ticks = c(0.5, 0.75, 1, 1.25, 1.5),
@@ -49,7 +49,7 @@ with_gridlines <- effect_sizes |>
     label = "study",
     columns = list(
       col_text("outcome", header = "Outcome"),
-      col_interval("HR (95% CI)")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
     scale = "log", null_value = 1,
     axis_ticks = c(0.1, 0.25, 0.5, 1, 2, 4),
@@ -67,7 +67,7 @@ aggressive_clip <- effect_sizes |>
   forest_plot(
     point = "hr", lower = "lower", upper = "upper",
     label = "study",
-    columns = list(col_interval("HR (95% CI)")),
+    columns = list(col_interval("hr", "lower", "upper", header = "HR (95% CI)")),
     scale = "log", null_value = 1,
     theme = web_theme_modern() |>
       set_axis(ci_clip_factor = 1.0),  # More aggressive clipping

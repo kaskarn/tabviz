@@ -35,22 +35,22 @@ tabviz(
   weight = NULL,
   theme = web_theme_default(),
   interaction = NULL,
-  axis_range = NULL,
-  axis_ticks = NULL,
-  axis_gridlines = NULL,
   plot_position = NULL,
   row_height = NULL,
-  zoom = 1,
-  auto_fit = TRUE,
-  max_width = NULL,
-  max_height = NULL,
-  show_zoom_controls = TRUE,
   width = NULL,
   height = NULL,
   elementId = NULL,
   split_by = NULL,
   shared_axis = FALSE,
-  .spec_only = FALSE
+  .spec_only = FALSE,
+  axis_range = lifecycle::deprecated(),
+  axis_ticks = lifecycle::deprecated(),
+  axis_gridlines = lifecycle::deprecated(),
+  zoom = lifecycle::deprecated(),
+  auto_fit = lifecycle::deprecated(),
+  max_width = lifecycle::deprecated(),
+  max_height = lifecycle::deprecated(),
+  show_zoom_controls = lifecycle::deprecated()
 )
 
 web_spec(..., .spec_only = TRUE)
@@ -129,25 +129,9 @@ pre-normalized multiplier.}
 
 \item{interaction}{Interaction settings (use \code{web_interaction()})}
 
-\item{axis_range}{Numeric vector c(min, max) to override axis range}
-
-\item{axis_ticks}{Numeric vector of explicit tick positions}
-
-\item{axis_gridlines}{Logical to show/hide gridlines}
-
 \item{plot_position}{"left" or "right" to set forest plot position}
 
 \item{row_height}{Numeric row height in pixels}
-
-\item{zoom}{Initial zoom level (0.5 to 2.0, default 1.0)}
-
-\item{auto_fit}{When TRUE (default), shrink content to fit container if too large}
-
-\item{max_width}{Maximum container width in pixels (NULL for none)}
-
-\item{max_height}{Maximum container height in pixels (NULL for none)}
-
-\item{show_zoom_controls}{Show zoom controls on hover (default TRUE)}
 
 \item{width}{Widget width (default NULL for auto)}
 
@@ -163,6 +147,30 @@ across all split plots. Default is \code{FALSE}.}
 
 \item{.spec_only}{If TRUE, return the WebSpec object instead of rendering.
 Useful for programmatic manipulation before rendering.}
+
+\item{axis_range}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Pass \code{axis_range}
+to \code{viz_forest()} on the forest column instead.}
+
+\item{axis_ticks}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Pass \code{axis_ticks}
+to \code{viz_forest()} on the forest column instead.}
+
+\item{axis_gridlines}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Pass
+\code{axis_gridlines} to \code{viz_forest()} on the forest column instead.}
+
+\item{zoom}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Pipe to
+\code{set_zoom(zoom = ...)} after constructing the widget.}
+
+\item{auto_fit}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Pipe to
+\code{set_zoom(auto_fit = ...)} after constructing the widget.}
+
+\item{max_width}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Pipe to
+\code{set_zoom(max_width = ...)} after constructing the widget.}
+
+\item{max_height}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Pipe to
+\code{set_zoom(max_height = ...)} after constructing the widget.}
+
+\item{show_zoom_controls}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Pipe to
+\code{set_zoom(show_controls = ...)} after constructing the widget.}
 
 \item{...}{Arguments passed to \code{tabviz()}}
 }

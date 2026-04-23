@@ -160,6 +160,59 @@ tabviz(data,
 
 These adapt automatically to any theme, so you don't need to update color values when switching from `web_theme_jama()` to `web_theme_lancet()`.
 
+### Cascading into viz cells
+
+`row_accent`, `row_emphasis`, and `row_muted` aren't just text styling — they also reach into any `viz_forest`, `viz_bar`, `viz_boxplot`, or `viz_violin` column on the same row. The intent ("this row is special") is declared once and styles both the row text and its visualization.
+
+The behavior depends on whether the viz column has one effect or several:
+
+| Viz column | Behavior when row is accented/emphasized/muted |
+|---|---|
+| **Single-effect** (`viz_forest(point=..., lower=..., upper=...)`, `viz_bar(effect_bar(...))`, etc.) | The marker / bar / box / violin **fill** is replaced with the theme's accent / foreground / muted color. |
+| **Multi-effect** (`viz_forest(effects = list(...))`, `viz_bar(effect_bar(a), effect_bar(b))`, etc.) | The per-effect color is **preserved** (so users don't lose their visual encoding). An **outline** in the theme color is added around each glyph in the row. |
+
+Single-effect example — a forest where rows are colored by significance:
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  row_accent   = ~ pval < 0.01,         # accent fill on strong results
+  row_emphasis = ~ pval >= 0.01 & pval < 0.05,
+  row_muted    = ~ status == "exploratory",
+  columns = list(
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1)
+  )
+)
+```
+
+Multi-effect example — same `row_accent` keeps the per-effect colors but adds an outline:
+
+```{r}
+#| eval: false
+tabviz(data,
+  label = "study",
+  row_accent = "is_key",
+  columns = list(
+    viz_forest(effects = list(
+      effect_forest("itt_hr", "itt_lo", "itt_hi", color = "#2563eb"),
+      effect_forest("pp_hr",  "pp_lo",  "pp_hi",  color = "#16a34a"),
+      effect_forest("saf_hr", "saf_lo", "saf_hi", color = "#f59e0b")
+    ), scale = "log", null_value = 1)
+  )
+)
+```
+
+The same cascade works on `viz_bar`, `viz_boxplot`, and `viz_violin`. See the [styling cascade reference](../concepts/styling-cascade.qmd) for the full 4-layer precedence model and `gallery_17`–`gallery_21` for rendered examples covering each viz type.
+
+:::{.callout-tip}
+## When to use `marker_color` vs semantic classes
+
+- **Semantic classes (`row_accent`, `row_emphasis`, `row_muted`)** — for "this row is special" intent. Themable: changing the theme automatically restyles markers. Reach for these first.
+- **`marker_color = "col" \| ~ formula`** — for exact-color control (categorical palettes, colorblind-safe encodings, brand colors). Wins over the semantic cascade. Returns `NA` to fall through to the semantic layer.
+:::
+
 ---
 
 ## Expression-Based Styling
@@ -310,7 +363,7 @@ tabviz(meta_analysis,
   label = "label",
   columns = list(
     col_numeric("n", "N"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                null_value = 1, scale = "log", axis_label = "Hazard Ratio (95% CI)")
   ),

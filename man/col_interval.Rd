@@ -11,32 +11,49 @@ col_interval(
   header = "95\% CI",
   width = NULL,
   decimals = 2,
-  sep = " ",
+  digits = NULL,
+  thousands_sep = FALSE,
+  abbreviate = FALSE,
+  separator = " ",
   imprecise_threshold = NULL,
-  ...
+  na_text = NULL,
+  ...,
+  sep = lifecycle::deprecated()
 )
 }
 \arguments{
-\item{point}{Field name for the point estimate column (NULL to auto-detect from forest)}
+\item{point}{Field name for the point estimate column (required)}
 
-\item{lower}{Field name for the lower bound column (NULL to auto-detect from forest)}
+\item{lower}{Field name for the lower bound column (required)}
 
-\item{upper}{Field name for the upper bound column (NULL to auto-detect from forest)}
+\item{upper}{Field name for the upper bound column (required)}
 
 \item{header}{Column header (default "95\% CI")}
 
 \item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
-\item{decimals}{Number of decimal places (default 2)}
+\item{decimals}{Number of decimal places (default 2). Cannot be used with \code{digits}.}
 
-\item{sep}{Separator between point and CI (default " ")}
+\item{digits}{Number of significant figures. Cannot be used with \code{decimals}.}
+
+\item{thousands_sep}{Thousands separator for the formatted numbers
+(e.g. \code{","} or \code{" "}) or \code{FALSE} to disable. Default \code{FALSE}.}
+
+\item{abbreviate}{Logical. When \code{TRUE}, values >= 1000 are shortened
+(e.g. \code{"1.2K"}, \code{"3.4M"}). Default \code{FALSE}.}
+
+\item{separator}{Separator between point and CI (default " ")}
 
 \item{imprecise_threshold}{When upper/lower ratio exceeds this threshold,
 the interval is considered imprecise and displayed as "--" instead.
 Default is NULL (no threshold).}
 
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
+
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
+
+\item{sep}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{separator} instead.}
 }
 \value{
 A ColumnSpec object
@@ -54,10 +71,10 @@ col_interval("hr", "lower", "upper")
 col_interval("hr", "lower", "upper", "HR (95\% CI)")
 
 # Custom decimals and separator
-col_interval("hr", "lower", "upper", "HR (95\% CI)", decimals = 3, sep = ", ")
+col_interval("hr", "lower", "upper", "HR (95\% CI)", decimals = 3, separator = ", ")
 
-# Just customize header (auto-detect columns from forest plot)
-col_interval(header = "95\% CI")
+# Significant figures across orders of magnitude
+col_interval("rr", "rr_lo", "rr_hi", digits = 3)
 
 # Hide imprecise estimates (CI ratio > 10)
 col_interval("hr", "lower", "upper", imprecise_threshold = 10)

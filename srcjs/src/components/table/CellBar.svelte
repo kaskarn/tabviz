@@ -6,9 +6,10 @@
     value: number | undefined | null;
     maxValue?: number;
     options?: BarColumnOptions;
+    naText?: string;
   }
 
-  let { value, maxValue = 100, options }: Props = $props();
+  let { value, maxValue = 100, options, naText }: Props = $props();
 
   const effectiveMax = $derived(options?.maxValue ?? maxValue);
   const showLabel = $derived(options?.showLabel ?? true);
@@ -40,6 +41,8 @@
       <span class="bar-label">{formattedValue()}</span>
     {/if}
   </div>
+{:else if naText}
+  <span class="bar-na">{naText}</span>
 {/if}
 
 <style>

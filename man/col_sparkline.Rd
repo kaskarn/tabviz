@@ -5,12 +5,13 @@
 \title{Column helper: Sparkline chart}
 \usage{
 col_sparkline(
-  field = "trend",
+  field,
   header = "Trend",
   width = NULL,
   type = c("line", "bar", "area"),
   height = 20,
   color = NULL,
+  na_text = NULL,
   ...
 )
 }
@@ -26,6 +27,8 @@ col_sparkline(
 \item{height}{Chart height in pixels (default 20)}
 
 \item{color}{Chart color (NULL = theme primary color)}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

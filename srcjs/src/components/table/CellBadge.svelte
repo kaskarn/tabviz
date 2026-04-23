@@ -4,16 +4,18 @@
   interface Props {
     value: unknown;
     options?: BadgeColumnOptions;
+    naText?: string;
   }
 
-  let { value, options }: Props = $props();
+  let { value, options, naText }: Props = $props();
 
   const variants = $derived(options?.variants ?? {});
   const colors = $derived(options?.colors ?? {});
   const size = $derived(options?.size ?? "base");
 
+  const isNa = $derived(value === undefined || value === null);
   const displayValue = $derived.by(() => {
-    if (value === undefined || value === null) return "";
+    if (isNa) return naText ?? "";
     return String(value);
   });
 
@@ -52,7 +54,11 @@
   const sizeClass = $derived(size === "sm" ? "badge-sm" : "badge-base");
 </script>
 
-{#if displayValue}
+{#if isNa}
+  {#if displayValue}
+    <span class="cell-badge-na">{displayValue}</span>
+  {/if}
+{:else if displayValue}
   <span
     class="cell-badge {sizeClass}"
     style:background-color="color-mix(in srgb, {badgeColor} 15%, var(--wf-bg, #fff))"

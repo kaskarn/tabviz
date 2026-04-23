@@ -36,3 +36,10 @@ An EffectSpec object
 Defines a single effect (point + interval) for multi-effect forest plots.
 Used with \code{viz_forest()} to display multiple effects per row.
 }
+\details{
+Marker styling args follow the canonical order
+\verb{(color, shape, opacity)}. Marker \code{size} is intentionally absent: in
+multi-effect plots, size is driven row-wise by the \code{marker_size} arg of
+\code{set_marker_style()} (or the legacy \code{marker_size} arg on \code{tabviz()}),
+applied uniformly to every effect on a row so weights remain comparable.
+}

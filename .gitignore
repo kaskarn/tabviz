@@ -32,6 +32,7 @@ docs/_site/
 docs/_freeze/
 docs/tests/
 .quarto/
+**/*_cache/
 cran-comments.md
 
 # Test artifacts

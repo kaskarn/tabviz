@@ -2,9 +2,9 @@
 title: "Cheatsheet"
 ---
 
-Quick reference for tabviz functions and arguments.
+A one-page lookup card for tabviz. Pair this with the [Reference](reference/index.qmd) for full argument lists.
 
-## Visual Layout
+## Visual layout
 
 ```
 +---------------------------------------------------------------------------+
@@ -27,122 +27,120 @@ Quick reference for tabviz functions and arguments.
 +---------------------------------------------------------------------------+
 ```
 
----
+## `tabviz()` core arguments
 
-## Core Functions
-
-### `tabviz()` - Main Entry Point
-
-```r
-tabviz(
-  data,                 # data.frame
-  label = "study",      # column with row labels
-  group = "category",   # column(s) for grouping
-  columns = list(       # col_*() specifications
-    col_text("category"),
-    viz_forest(point = "hr", lower = "lo", upper = "hi"),
-    col_numeric("n")
-  ),
-  theme = web_theme_jama()
-)
-```
-
-### `tabviz()` with `viz_forest()` - Forest Plot
+| Argument | Default | Purpose |
+|---|---|---|
+| `data` | required | Source data frame |
+| `label` | `NULL` | Column with row labels |
+| `group` | `NULL` | Column(s) for collapsible row groups |
+| `columns` | required | List of `col_*()` / `viz_*()` specs |
+| `theme` | `web_theme_default()` | Visual theme |
+| `interaction` | `web_interaction()` | Interactivity preset |
+| `title`, `subtitle`, `caption`, `footnote` | `NULL` | Header / footer text |
+| `marker_size` | `NULL` | Constant or column for marker scaling (e.g. `"weight"`) |
 
 ```r
 tabviz(
-  data,                 # data.frame
-  label = "study",      # column with row labels
-  group = "category",   # column(s) for grouping
+  data,
+  label = "study",
+  group = "category",
   columns = list(
-    viz_forest(
-      point = "hr",     # column with point estimates
-      lower = "lower",  # column with lower CI
-      upper = "upper",  # column with upper CI
-      scale = "log",    # "log" or "linear"
-      null_value = 1,   # reference line value
-      axis_label = "HR" # x-axis label
-    ),
-    ...                 # additional col_*() specifications
+    col_text("category"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1),
+    col_interval("hr", "lo", "hi", header = "HR (95% CI)"),
+    col_pvalue("pvalue", "P")
   ),
   theme = web_theme_jama()
 )
 ```
 
----
+## Visualization columns (`viz_*`)
 
-## Visualization Columns (`viz_*`)
-
-Focal visualizations with their own axes and scales:
+Focal visualizations with their own axes and scales.
 
 | Function | Purpose | Example |
-|----------|---------|---------|
+|---|---|---|
 | `viz_forest()` | Forest plots with CI | `viz_forest(point = "hr", lower = "lo", upper = "hi", scale = "log")` |
 | `viz_bar()` | Bar charts with axis | `viz_bar(effect_bar("value"))` |
 | `viz_boxplot()` | Box-and-whisker plots | `viz_boxplot(effect_boxplot(data = "values"))` |
-| `viz_violin()` | Violin/density plots | `viz_violin(effect_violin(data = "values"))` |
+| `viz_violin()` | Violin / density plots | `viz_violin(effect_violin(data = "scores"))` |
 
----
+Forest-axis arguments live **inside** `viz_forest()`:
 
-## Data Columns (`col_*`)
+| Argument | Default | Purpose |
+|---|---|---|
+| `point`, `lower`, `upper` | required | Estimate and CI columns |
+| `scale` | `"linear"` | `"log"` or `"linear"` |
+| `null_value` | `0` | Reference line value |
+| `axis_label` | `NULL` | x-axis title |
+| `axis_range` | data range | Two-element numeric |
+| `axis_ticks` | auto | Numeric vector of tick positions |
+| `axis_gridlines` | `FALSE` | Draw vertical gridlines |
+| `annotations` | `NULL` | List of `refline()` / etc. |
+
+## Data columns (`col_*`)
 
 | Function | Purpose | Example |
-|----------|---------|---------|
+|---|---|---|
 | `col_text()` | Text values | `col_text("category")` |
 | `col_numeric()` | Formatted numbers | `col_numeric("n", decimals = 0)` |
-| `col_interval()` | Point (CI) format | `col_interval(point = "hr", lower = "lo", upper = "hi")` |
+| `col_interval()` | Point (CI) format | `col_interval("hr", "lo", "hi", header = "HR (95% CI)")` |
 | `col_n()` | Sample sizes | `col_n("n", abbreviate = TRUE)` |
 | `col_percent()` | Percentages | `col_percent("rate")` |
-| `col_events()` | Events/N format | `col_events("events", "n")` |
-| `col_pvalue()` | P-values with stars | `col_pvalue("pval", stars = TRUE)` |
+| `col_events()` | Events / N format | `col_events("events", "n")` |
+| `col_pvalue()` | P-values with stars | `col_pvalue("pvalue", stars = TRUE)` |
 | `col_bar()` | Inline horizontal bars | `col_bar("weight")` |
 | `col_sparkline()` | Mini charts | `col_sparkline("trend")` |
 | `col_badge()` | Colored badges | `col_badge("status")` |
-| `col_icon()` | Icons/emoji | `col_icon("flag")` |
+| `col_icon()` | Icons / emoji | `col_icon("flag")` |
 | `col_stars()` | Star ratings | `col_stars("quality")` |
 | `col_img()` | Inline images | `col_img("logo_url")` |
-| `col_reference()` | Truncated links | `col_reference("doi")` |
+| `col_reference()` | Truncated links | `col_reference("doi", show_icon = TRUE)` |
 | `col_range()` | Min-max ranges | `col_range("min", "max")` |
-| `col_group()` | Group columns | `col_group("Results", col_interval(...), col_pvalue("p"))` |
+| `col_group()` | Wrap columns under one header | `col_group("Results", col_interval(...), col_pvalue("pvalue"))` |
 
----
+:::{.callout-important}
+## Always pass an explicit `field` to `col_*`
+Each `col_*()` takes its source column as the first argument
+(`col_n("n")`, `col_pvalue("pvalue")`, `col_interval("hr", "lo", "hi")`).
+The old auto-detect of CI columns from a sibling `viz_forest()` is being phased out.
+:::
 
-## Row Styling Arguments
+## Row styling arguments
 
 | Argument | Values | Effect |
-|----------|--------|--------|
+|---|---|---|
 | `row_type` | `"data"`, `"header"`, `"summary"`, `"spacer"` | Row behavior |
-| `row_bold` | `TRUE`/`FALSE` | Bold text |
-| `row_italic` | `TRUE`/`FALSE` | Italic text |
+| `row_bold` | `TRUE` / `FALSE` | Bold text |
+| `row_italic` | `TRUE` / `FALSE` | Italic text |
 | `row_color` | CSS color | Text color |
 | `row_bg` | CSS color | Background color |
-| `row_indent` | `0`, `1`, `2`... | Indentation level |
+| `row_indent` | `0`, `1`, `2`, ... | Indentation level |
 | `row_badge` | Text | Badge label |
-| `row_emphasis` | `TRUE`/`FALSE` | Bold + primary color |
-| `row_muted` | `TRUE`/`FALSE` | Lighter color |
-| `row_accent` | `TRUE`/`FALSE` | Accent color |
+| `row_emphasis` | `TRUE` / `FALSE` | Bold + primary color |
+| `row_muted` | `TRUE` / `FALSE` | Lighter color |
+| `row_accent` | `TRUE` / `FALSE` | Accent color |
 
-All accept column names or formula expressions: `row_bold = ~ pval < 0.05`
+All accept column names or formula expressions: `row_bold = ~ pvalue < 0.05`.
 
----
-
-## Marker Styling Arguments
+## Marker styling arguments
 
 | Argument | Values | Effect |
-|----------|--------|--------|
+|---|---|---|
 | `marker_color` | CSS color | Fill color |
 | `marker_shape` | `"square"`, `"circle"`, `"diamond"`, `"triangle"` | Shape |
 | `marker_opacity` | `0` to `1` | Transparency |
-| `marker_size` | Multiplier | Size (1 = default) |
+| `marker_size` | Multiplier or column | Size (1 = default; pass a column name to scale by data, e.g. `marker_size = "n"`) |
 
-All accept column names or formula expressions: `marker_color = ~ ifelse(sig, "green", "gray")`
+All accept column names or formula expressions:
+`marker_color = ~ ifelse(sig, "green", "gray")`.
 
----
-
-## Built-in Themes
+## Built-in themes
 
 | Theme | Style |
-|-------|-------|
+|---|---|
 | `web_theme_default()` | Clean, modern default |
 | `web_theme_jama()` | JAMA publication style |
 | `web_theme_lancet()` | Lancet publication style |
@@ -153,53 +151,64 @@ All accept column names or formula expressions: `marker_color = ~ ifelse(sig, "g
 | `web_theme_dark()` | Dark mode |
 | `web_theme_minimal()` | Maximum density |
 
----
-
-## Theme Modifier Functions
+## Theme modifiers (fluent)
 
 ```r
-tabviz(..., theme = web_theme_default() |>
-  set_colors(primary = "#2563eb", ...) |>
-  set_typography(font_family = "Georgia", font_size_base = "0.9rem") |>
-  set_spacing(row_height = 28, header_height = 32) |>
-  set_shapes(point_size = 6, line_width = 1.5) |>
-  set_axis(gridlines = TRUE, gridline_style = "dashed")
+tabviz(...,
+  theme = web_theme_default() |>
+    set_colors(
+      primary = "#2563eb",
+      ci_marker_fill = "#1e40af",
+      ci_marker_positive = "#16a34a",
+      ci_marker_negative = "#dc2626",
+      ci_marker_neutral = "#94a3b8",
+      ci_line = "#475569"
+    ) |>
+    set_typography(font_family = "Georgia", font_size_base = "0.9rem") |>
+    set_spacing(row_height = 28, header_height = 32) |>
+    set_shapes(point_size = 6, line_width = 1.5) |>
+    set_axis(gridlines = TRUE, gridline_style = "dashed")
 )
 ```
 
----
-
-## Fluent API (Pipe-Based)
+## Fluent post-build modifiers
 
 ```r
 tabviz(data, label = "study", columns = list(viz_forest(...))) |>
-  set_row_style(bold = ~ pval < 0.05, emphasis = "is_primary") |>
+  set_row_style(bold = ~ pvalue < 0.05, emphasis = "is_primary") |>
   set_marker_style(color = ~ ifelse(upper < 1, "#16a34a", "#94a3b8")) |>
   set_column_style("hr", bold = ~ .x < 1, color = ~ ifelse(.x < 1, "green", "red")) |>
-  set_theme("jama")
+  set_theme("jama") |>
+  set_zoom(zoom = 1, auto_fit = TRUE, max_width = 1200, show_controls = TRUE)
 ```
 
----
+| Modifier | Purpose |
+|---|---|
+| `set_row_style()` | Row-level bold / color / emphasis |
+| `set_marker_style()` | Forest marker color / shape / size |
+| `set_column_style()` | Per-cell formatting on a single column |
+| `set_theme()` | Swap the active theme |
+| `set_zoom()` | Zoom controls and auto-fit (replaces old `tabviz()` zoom args) |
 
-## Formula Expressions (NSE)
+## Formula expressions (NSE)
 
-**Row/Marker styling** - reference any column:
+**Row / marker styling** — reference any column:
+
 ```r
-row_bold = ~ pval < 0.05
-marker_color = ~ case_when(
-  upper < 1 ~ "#16a34a",  # Significant benefit
-  lower > 1 ~ "#dc2626",  # Significant harm
-  TRUE ~ "#64748b"        # Not significant
+row_bold = ~ pvalue < 0.05
+marker_color = ~ dplyr::case_when(
+  upper < 1 ~ "#16a34a",
+  lower > 1 ~ "#dc2626",
+  TRUE      ~ "#64748b"
 )
 ```
 
-**Cell styling** - use `.x` for the column's own values:
+**Cell styling** — use `.x` for the column's own value:
+
 ```r
-col_pvalue("pval", bold = ~ .x < 0.05)
+col_pvalue("pvalue", bold = ~ .x < 0.05)
 col_numeric("hr", color = ~ ifelse(.x < 1, "green", "red"))
 ```
-
----
 
 ## Interactivity
 
@@ -207,32 +216,37 @@ col_numeric("hr", color = ~ ifelse(.x < 1, "green", "red"))
 # Tooltips on hover
 interaction = web_interaction(tooltip_fields = c("n", "events", "pvalue"))
 
-# Read-only (no sorting/selection)
+# Read-only (no sorting / selection)
 interaction = web_interaction_minimal()
 
 # Fully static (for print)
 interaction = web_interaction_publication()
+
+# Granular toggles
+interaction = web_interaction(
+  enable_sort = TRUE,
+  enable_filters = TRUE,
+  enable_reorder_rows = TRUE,
+  enable_reorder_columns = TRUE,
+  enable_edit = TRUE
+)
 ```
 
----
-
-## Multiple Effects (Forest)
+## Multiple effects (forest)
 
 ```r
 tabviz(data, label = "study", columns = list(
   viz_forest(
     effects = list(
       effect_forest("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
-      effect_forest("pp_hr", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
+      effect_forest("pp_hr",  "pp_lo",  "pp_hi",  label = "Per-Protocol", color = "#16a34a")
     ),
     scale = "log", null_value = 1
   )
 ))
 ```
 
----
-
-## Distribution Visualizations
+## Distribution visualizations
 
 ```r
 # Bar chart
@@ -249,7 +263,8 @@ viz_boxplot(
 
 # Boxplot from pre-computed stats
 viz_boxplot(
-  effect_boxplot(min = "min", q1 = "q1", median = "median", q3 = "q3", max = "max")
+  effect_boxplot(min = "min", q1 = "q1", median = "median",
+                 q3 = "q3", max = "max")
 )
 
 # Violin plot
@@ -259,8 +274,6 @@ viz_violin(
 )
 ```
 
----
-
 ## Annotations
 
 ```r
@@ -269,50 +282,56 @@ annotations = list(
 )
 ```
 
----
-
-## Split Plots
+## Split plots
 
 ```r
 # Single variable split
-tabviz(data, label = "study", columns = list(viz_forest(...)), split_by = "region")
+tabviz(data, label = "study",
+       columns = list(viz_forest(...)),
+       split_by = "region")
 
-# Hierarchical split
-tabviz(data, label = "study", columns = list(viz_forest(...)), split_by = c("region", "country"), shared_axis = TRUE)
+# Hierarchical split with shared axis
+tabviz(data, label = "study",
+       columns = list(viz_forest(...)),
+       split_by = c("region", "country"),
+       shared_axis = TRUE)
 ```
-
----
 
 ## Exporting
 
 ```r
-# Save to file
 p <- tabviz(data, ...)
-save_plot(p, "plot.svg")               # Vector
-save_plot(p, "plot.png", scale = 2)    # Raster (2x resolution)
-save_plot(p, "plot.pdf")               # Print
+save_plot(p, "plot.svg")              # Vector
+save_plot(p, "plot.png", scale = 2)   # Raster (2x resolution)
+save_plot(p, "plot.pdf")              # Print
 ```
 
----
-
-## Quick Patterns
+## Quick patterns
 
 ```r
 # Log scale for ratios
-viz_forest(point = "hr", lower = "lo", upper = "hi", scale = "log", null_value = 1)
+viz_forest(point = "hr", lower = "lo", upper = "hi",
+           scale = "log", null_value = 1)
 
 # Linear scale for differences
-viz_forest(point = "md", lower = "lo", upper = "hi", scale = "linear", null_value = 0)
+viz_forest(point = "md", lower = "lo", upper = "hi",
+           scale = "linear", null_value = 0)
 
-# Significant results bold
-row_bold = ~ pval < 0.05
+# Significant rows in bold
+row_bold = ~ pvalue < 0.05
 
-# Color by direction
+# Color markers by direction
 marker_color = ~ ifelse(upper < 1, "#16a34a", "#94a3b8")
+
+# Scale marker size by sample size
+tabviz(data, ..., marker_size = "n")
 
 # Column groups
 col_group("Treatment", col_n("n_tx"), col_events("ev_tx", "n_tx"))
 
 # Hierarchical grouping
 group = c("region", "country")
+
+# Interval column (always explicit)
+col_interval("hr", "lo", "hi", header = "HR (95% CI)", separator = " ")
 ```

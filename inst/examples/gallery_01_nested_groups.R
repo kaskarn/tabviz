@@ -33,7 +33,7 @@ forest_plot(
   group = c("region", "country"),  # Hierarchical: region > country
   columns = list(
     col_n("n"),
-    col_interval("HR (95% CI)")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   theme = web_theme_modern(),
   scale = "log", null_value = 1,

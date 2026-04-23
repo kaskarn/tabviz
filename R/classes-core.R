@@ -84,6 +84,12 @@ EffectSpec <- new_class(
 #' Defines a single effect (point + interval) for multi-effect forest plots.
 #' Used with `viz_forest()` to display multiple effects per row.
 #'
+#' Marker styling args follow the canonical order
+#' `(color, shape, opacity)`. Marker `size` is intentionally absent: in
+#' multi-effect plots, size is driven row-wise by the `marker_size` arg of
+#' `set_marker_style()` (or the legacy `marker_size` arg on `tabviz()`),
+#' applied uniformly to every effect on a row so weights remain comparable.
+#'
 #' @param point Column name for point estimates
 #' @param lower Column name for lower bounds
 #' @param upper Column name for upper bounds

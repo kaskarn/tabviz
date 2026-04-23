@@ -34,7 +34,7 @@ forest_plot(
   label = "term",
   group = "Species",
   columns = list(
-    col_interval("95% CI"),
+    col_interval("estimate", "conf.low", "conf.high", header = "95% CI"),
     col_pvalue("pvalue", "P-value")
   ),
   theme = web_theme_modern(),

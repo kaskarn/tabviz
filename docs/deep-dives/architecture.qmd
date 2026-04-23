@@ -3,6 +3,13 @@ title: "S7 Architecture"
 description: "Internal class system design using R's S7 object-oriented framework"
 ---
 
+```{r}
+#| include: false
+library(tabviz)
+```
+
+A tour of the internal S7 class graph behind every `tabviz()` call. Read this if you want to extend the package, write a custom modifier, or follow the JSON that ends up on the JavaScript side.
+
 ## Overview
 
 tabviz uses [S7](https://rconsortium.github.io/S7/), R's modern object-oriented system, for its internal data structures. S7 provides:
@@ -164,7 +171,8 @@ WebSpec <- new_class("WebSpec", properties = list(
   # Column mappings (optional)
   label_col = new_property(class_character, default = NA_character_),
   group_col = new_property(class_character, default = NA_character_),
-  weight_col = new_property(class_character, default = NA_character_),
+  marker_size_col = new_property(class_character, default = NA_character_),
+  weight_col = new_property(class_character, default = NA_character_),  # deprecated alias
 
   # Column specifications
   columns = new_property(class_list, default = list()),

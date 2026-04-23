@@ -107,14 +107,25 @@ CustomAnnotation <- new_class(
   }
 )
 
-# TODO: Frontend rendering not implemented. Annotation type defined but not rendered.
 #' Create a custom annotation
 #'
-#' @param study_id Study to annotate
-#' @param shape Shape type
-#' @param position Position
-#' @param color Color
-#' @param size Size multiplier
+#' Draws a per-row glyph (circle, square, triangle, or star) next to or on top
+#' of a matching row's forest marker. Pass a list of `forest_annotation()` to
+#' [viz_forest()]'s `annotations` argument alongside any [refline()] calls.
+#'
+#' Matching: the `study_id` is compared against each row's label (the primary
+#' column value) and against its internal row id — the first match wins. Pass
+#' the value you used in your data's label column.
+#'
+#' Non-forest viz columns ([viz_bar()], [viz_boxplot()], [viz_violin()]) do
+#' not render `forest_annotation()` objects — they only honor [refline()].
+#'
+#' @param study_id The label value identifying which row to annotate
+#' @param shape Glyph shape: "circle", "square", "triangle", or "star"
+#' @param position Placement relative to the row's marker: "overlay"
+#'   (centered on the marker), "before" (to the left), or "after" (to the right)
+#' @param color CSS color for the glyph (default `"#8b5cf6"`)
+#' @param size Size multiplier; `1.0` is the default
 #'
 #' @return A CustomAnnotation object
 #' @export

@@ -24,7 +24,9 @@ ColumnSpec(
   style_icon = NULL,
   style_emphasis = NULL,
   style_muted = NULL,
-  style_accent = NULL
+  style_accent = NULL,
+  style_tooltip = NULL,
+  formatter = NULL
 )
 }
 \arguments{

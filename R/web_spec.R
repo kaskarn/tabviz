@@ -56,16 +56,24 @@
 #' @param weight Deprecated: use marker_size instead
 #' @param theme Theme object (use `web_theme_*()` functions)
 #' @param interaction Interaction settings (use `web_interaction()`)
-#' @param axis_range Numeric vector c(min, max) to override axis range
-#' @param axis_ticks Numeric vector of explicit tick positions
-#' @param axis_gridlines Logical to show/hide gridlines
 #' @param plot_position "left" or "right" to set forest plot position
 #' @param row_height Numeric row height in pixels
-#' @param zoom Initial zoom level (0.5 to 2.0, default 1.0)
-#' @param auto_fit When TRUE (default), shrink content to fit container if too large
-#' @param max_width Maximum container width in pixels (NULL for none)
-#' @param max_height Maximum container height in pixels (NULL for none)
-#' @param show_zoom_controls Show zoom controls on hover (default TRUE)
+#' @param axis_range `r lifecycle::badge("deprecated")` Pass `axis_range`
+#'   to `viz_forest()` on the forest column instead.
+#' @param axis_ticks `r lifecycle::badge("deprecated")` Pass `axis_ticks`
+#'   to `viz_forest()` on the forest column instead.
+#' @param axis_gridlines `r lifecycle::badge("deprecated")` Pass
+#'   `axis_gridlines` to `viz_forest()` on the forest column instead.
+#' @param zoom `r lifecycle::badge("deprecated")` Pipe to
+#'   `set_zoom(zoom = ...)` after constructing the widget.
+#' @param auto_fit `r lifecycle::badge("deprecated")` Pipe to
+#'   `set_zoom(auto_fit = ...)` after constructing the widget.
+#' @param max_width `r lifecycle::badge("deprecated")` Pipe to
+#'   `set_zoom(max_width = ...)` after constructing the widget.
+#' @param max_height `r lifecycle::badge("deprecated")` Pipe to
+#'   `set_zoom(max_height = ...)` after constructing the widget.
+#' @param show_zoom_controls `r lifecycle::badge("deprecated")` Pipe to
+#'   `set_zoom(show_controls = ...)` after constructing the widget.
 #' @param width Widget width (default NULL for auto)
 #' @param height Widget height (default NULL for auto)
 #' @param elementId HTML element ID (optional)
@@ -151,26 +159,55 @@ tabviz <- function(
     weight = NULL,
     theme = web_theme_default(),
     interaction = NULL,
-    # Rendering options
-    axis_range = NULL,
-    axis_ticks = NULL,
-    axis_gridlines = NULL,
     plot_position = NULL,
     row_height = NULL,
-    zoom = 1.0,
-    auto_fit = TRUE,
-    max_width = NULL,
-    max_height = NULL,
-    show_zoom_controls = TRUE,
     width = NULL,
     height = NULL,
     elementId = NULL,
     split_by = NULL,
     shared_axis = FALSE,
-    .spec_only = FALSE) {
+    .spec_only = FALSE,
+    # Deprecated: pass to viz_forest() on the forest column.
+    axis_range = lifecycle::deprecated(),
+    axis_ticks = lifecycle::deprecated(),
+    axis_gridlines = lifecycle::deprecated(),
+    # Deprecated: pipe through set_zoom() after constructing the widget.
+    zoom = lifecycle::deprecated(),
+    auto_fit = lifecycle::deprecated(),
+    max_width = lifecycle::deprecated(),
+    max_height = lifecycle::deprecated(),
+    show_zoom_controls = lifecycle::deprecated()) {
   # Lazy, once-per-day, fail-silent nudge when a newer minor version exists.
   # Gated internally on interactive() + opt-outs; safe to call unconditionally.
   check_for_update()
+
+  # Resolve deprecated axis_* args (was applied as a theme override at render time)
+  if (lifecycle::is_present(axis_range)) {
+    lifecycle::deprecate_warn("0.9.0", "tabviz(axis_range)", "viz_forest(axis_range)")
+  } else axis_range <- NULL
+  if (lifecycle::is_present(axis_ticks)) {
+    lifecycle::deprecate_warn("0.9.0", "tabviz(axis_ticks)", "viz_forest(axis_ticks)")
+  } else axis_ticks <- NULL
+  if (lifecycle::is_present(axis_gridlines)) {
+    lifecycle::deprecate_warn("0.9.0", "tabviz(axis_gridlines)", "viz_forest(axis_gridlines)")
+  } else axis_gridlines <- NULL
+
+  # Resolve deprecated zoom_* args (now lives on set_zoom() modifier)
+  if (lifecycle::is_present(zoom)) {
+    lifecycle::deprecate_warn("0.9.0", "tabviz(zoom)", "set_zoom(zoom)")
+  } else zoom <- 1.0
+  if (lifecycle::is_present(auto_fit)) {
+    lifecycle::deprecate_warn("0.9.0", "tabviz(auto_fit)", "set_zoom(auto_fit)")
+  } else auto_fit <- TRUE
+  if (lifecycle::is_present(max_width)) {
+    lifecycle::deprecate_warn("0.9.0", "tabviz(max_width)", "set_zoom(max_width)")
+  } else max_width <- NULL
+  if (lifecycle::is_present(max_height)) {
+    lifecycle::deprecate_warn("0.9.0", "tabviz(max_height)", "set_zoom(max_height)")
+  } else max_height <- NULL
+  if (lifecycle::is_present(show_zoom_controls)) {
+    lifecycle::deprecate_warn("0.9.0", "tabviz(show_zoom_controls)", "set_zoom(show_controls)")
+  } else show_zoom_controls <- TRUE
 
   # All shipped themes default to full interactivity. Pass
   # `interaction = web_interaction_publication()` for a print-clean widget.

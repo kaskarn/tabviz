@@ -7,9 +7,10 @@
     options?: HeatmapColumnOptions;
     minValue?: number | null;
     maxValue?: number | null;
+    naText?: string;
   }
 
-  let { value, options, minValue, maxValue }: Props = $props();
+  let { value, options, minValue, maxValue, naText }: Props = $props();
 
   const palette = $derived(options?.palette ?? ["#f7fbff", "#08306b"]);
   const decimals = $derived(options?.decimals ?? 2);
@@ -69,18 +70,22 @@
     return luminance > 0.5 ? "#1a1a1a" : "#ffffff";
   });
 
+  const isNa = $derived(value === undefined || value === null || Number.isNaN(value as number));
+
   const formattedValue = $derived.by(() => {
-    if (value === undefined || value === null || Number.isNaN(value)) return "";
-    return value.toFixed(decimals);
+    if (isNa) return naText ?? "";
+    return (value as number).toFixed(decimals);
   });
 </script>
 
 <div
   class="cell-heatmap"
-  style:background-color={bgColor}
-  style:color={textColor}
+  style:background-color={isNa ? "transparent" : bgColor}
+  style:color={isNa ? "inherit" : textColor}
 >
-  {#if showValue && formattedValue}
+  {#if isNa}
+    {formattedValue}
+  {:else if showValue && formattedValue}
     {formattedValue}
   {/if}
 </div>

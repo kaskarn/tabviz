@@ -4,13 +4,19 @@
   interface Props {
     value: string | undefined | null;
     options?: ImgColumnOptions;
+    naText?: string;
   }
 
-  let { value, options }: Props = $props();
+  let { value, options, naText }: Props = $props();
 
   const imgHeight = $derived(options?.height);
   const maxWidth = $derived(options?.maxWidth);
-  const fallback = $derived(options?.fallback ?? "\u{1F4F7}");
+  // `fallback` is the field-level default for missing/broken images. When the
+  // author hasn't set one but did supply `naText`, prefer naText so the column-
+  // wide NA setting wins; otherwise keep the historical camera-emoji default.
+  const fallback = $derived(
+    options?.fallback ?? (naText !== undefined ? naText : "\u{1F4F7}")
+  );
   const shape = $derived(options?.shape ?? "square");
 
   let hasError = $state(false);

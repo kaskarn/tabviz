@@ -36,7 +36,7 @@ forest_plot(
     col_numeric("expense", "Expense %"),
     col_sparkline("monthly_returns", "12M Returns"),
     col_sparkline("flow_trend", "6M Flows"),
-    col_interval("1Y Return % (95% CI)")
+    col_interval("return_1y", "lower", "upper", header = "1Y Return % (95% CI)")
   ),
   theme = web_theme_modern(),
   null_value = 0,

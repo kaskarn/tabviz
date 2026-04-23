@@ -109,20 +109,25 @@ tabviz(pval_demo,
 )
 ```
 
-### The `.x` Pronoun
+### The `.x` pronoun
 
-When using formulas in `col_*()` functions:
+The pronoun rule depends on where you write the formula:
 
-- **`.x`** refers to the current column's values
-- You can also reference other columns by name
+| Where | What `.x` means | Bare names available? |
+|-------|-----------------|------------------------|
+| Row level (`tabviz(row_bold = ~ ...)`) | Not used — write bare column names | Yes, e.g. `~ pval < 0.05` |
+| Cell level (`col_*(bold = ~ ...)`) | The current column's values | Yes — bare names also resolve |
 
 ```{r}
 #| eval: false
-# .x is the column's own values
+# Cell level: .x is this column's values
 col_pvalue("pval", bold = ~ .x < 0.05)
 
-# You can also reference other columns
+# Cell level: you can also reference other columns by bare name
 col_numeric("hr", color = ~ ifelse(pval < 0.05, "green", "gray"))
+
+# Row level: always use bare column names
+tabviz(data, ..., row_bold = ~ pval < 0.05)
 ```
 
 ### When to Use Formulas vs Columns
@@ -196,8 +201,7 @@ styled <- data.frame(
 tabviz(styled,
   label = "study",
   columns = list(
-    col_interval(point = "hr", lower = "lower", upper = "upper",
-                 color = "effect_color"),
+    col_interval("hr", "lower", "upper", color = "effect_color"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
@@ -263,8 +267,7 @@ tabviz(outcomes,
   columns = list(
     col_text("icon", " ", width = 30),
     col_numeric("hr", "HR", color = "text_color"),
-    col_interval(point = "hr", lower = "lower", upper = "upper",
-                 color = "text_color"),
+    col_interval("hr", "lower", "upper", color = "text_color"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
@@ -296,7 +299,7 @@ tabviz(combined,
   row_type = "rtype", row_bold = "rbold", row_color = "rcolor", row_badge = "rbadge",
   columns = list(
     col_numeric("hr", "HR", color = "hr_color"),
-    col_interval(point = "hr", lower = "lower", upper = "upper"),
+    col_interval("hr", "lower", "upper"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   )
@@ -314,7 +317,7 @@ tabviz(data,
   label = "study",
   columns = list(
     col_numeric("hr", "HR"),
-    col_interval(point = "hr", lower = "lower", upper = "upper"),
+    col_interval("hr", "lower", "upper"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
   ),
@@ -368,8 +371,7 @@ tabviz(styled_results,
   columns = list(
     col_text("drug_class", "Class", color = "class_color"),
     col_numeric("hr", "HR", bold = "is_sig", color = "effect_color"),
-    col_interval(point = "hr", lower = "lower", upper = "upper",
-                 color = "effect_color"),
+    col_interval("hr", "lower", "upper", color = "effect_color"),
     col_pvalue("pval", badge = "sig_stars"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)

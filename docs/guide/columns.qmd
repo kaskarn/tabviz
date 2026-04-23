@@ -8,346 +8,244 @@ library(tabviz)
 library(dplyr)
 ```
 
-Columns display data alongside the forest plot. Each column type has specialized formatting for different kinds of data.
+Columns are the unit of display in tabviz. You compose a table by passing a list of column specifications to `tabviz(columns = ...)`. Each column helper (`col_*()`, `viz_*()`) picks a display type and exposes formatting knobs; the underlying `web_col()` constructor is there if you need something unusual.
 
-## Choosing Column Types
+## Universal arguments
 
-Not sure which column type to use? This guide helps you choose.
+Every `col_*()` helper accepts the same arguments for layout and styling. These behave identically regardless of column type.
 
-### For Numeric Values
+| Argument | Default | Purpose |
+|---|---|---|
+| *Primary data* (see per-helper table) | required | Which column(s) in `data` provide values |
+| `header` | `NULL` (auto) | Column header text; defaults to the field name or a type-specific default |
+| `width` | `NULL` (auto) | Column width in pixels |
+| `align` | `"left"` (numeric types default to `"right"`) | Body cell alignment: `"left"`, `"center"`, `"right"` |
+| `header_align` | follows `align` | Header alignment; override to decouple |
+| `show_header` | auto | `TRUE`/`FALSE` to force; `NULL` shows when `header` is non-empty |
+| `wrap` | `FALSE` | Wrap long text instead of truncating with ellipsis |
+| `sortable` | `TRUE` | Allow sort on header click |
+| `na_text` | `NULL` | Text to display for NA/missing values (default is blank) |
+| `tooltip` | `NULL` | Column whose values become per-cell hover text |
+| `formatter` | `NULL` | R function `function(x) ...` applied to values; output rendered as text. See [Custom formatters](#custom-formatters) below. |
+| `bold`, `italic`, `color`, `bg`, `badge`, `icon`, `emphasis`, `muted`, `accent` | `NULL` | Per-cell styling driven by another column — see [Cell Styling](cell-styling.qmd) |
 
-| Data Type | Recommended Column | Why |
-|-----------|-------------------|-----|
-| General number | `col_numeric()` | Flexible formatting with decimals/digits |
-| Sample size | `col_n()` | Handles abbreviation (e.g., "1.2K") |
-| Percentage | `col_percent()` | Auto-formats with % symbol |
-| P-value | `col_pvalue()` | Scientific notation, star indicators |
-| Count ratio | `col_events()` | Shows "45/120 (37.5%)" format |
-
-### For Effect Estimates
-
-| Data Type | Recommended Column | Why |
-|-----------|-------------------|-----|
-| Point estimate + CI text | `col_interval()` | Clean "0.85 (0.70, 1.03)" format |
-| Visual comparison | `viz_forest()` | Shows intervals graphically with shared axis |
-| **Publication tables** | **Both** | Use together for visual + numeric precision |
-
-### For Distributions
-
-| Question | Recommended | Notes |
-|----------|-------------|-------|
-| Compare single values across rows? | `viz_bar()` | Best for direct magnitude comparison |
-| Show spread and outliers? | `viz_boxplot()` | Shows quartiles, median, outliers |
-| Show full distribution shape? | `viz_violin()` | Reveals bimodal/skewed distributions |
-| Just need a simple inline bar? | `col_bar()` | No axis, fits in cell |
-| Show trends over time? | `col_sparkline()` | Compact line/area/bar charts |
-
-### For Status/Categories
-
-| Data Type | Recommended Column | Why |
-|-----------|-------------------|-----|
-| Status labels | `col_badge()` | Colored chips (success/warning/error) |
-| Quality scores | `col_stars()` | Visual star rating |
-| Single indicators | `col_icon()` | Emoji or symbol mapping |
-| Min-max ranges | `col_range()` | Shows "55 – 80" format |
-
-::: {.callout-tip}
-## When in Doubt
-Start with `col_text()` for any data, then upgrade to a specialized type when formatting becomes important.
+:::{.callout-tip}
+## Everything routes through `web_col()`
+The `col_*()` helpers are thin, opinionated wrappers over [`web_col()`](../reference/columns.html#web_col). When a helper doesn't cover your case (custom type, non-standard option), call `web_col()` directly.
 :::
 
----
+## Catalog at a glance
 
-## Column Gallery
+| Helper | Use for | Type-specific arguments |
+|---|---|---|
+| `col_text(field)` | Plain text, categoricals | `max_chars` |
+| `col_label(field)` | Row-identifier column | `max_chars` |
+| `col_numeric(field)` | General numbers | `decimals`, `digits`, `thousands_sep`, `abbreviate` |
+| `col_n(field)` | Sample sizes | `decimals`, `digits`, `thousands_sep`, `abbreviate` |
+| `col_percent(field)` | Proportions / percentages | `decimals`, `digits`, `multiply`, `symbol` |
+| `col_currency(field)` | Money | `symbol`, `position`, `decimals`, `digits`, `thousands_sep`, `abbreviate` |
+| `col_pvalue(field)` | P-values | `stars`, `thresholds`, `format`, `digits`, `exp_threshold`, `abbrev_threshold` |
+| `col_interval(point, lower, upper)` | Point estimate + CI | `decimals`, `separator`, `imprecise_threshold` |
+| `col_events(events, n)` | Events / N ratio | `separator`, `show_pct`, `thousands_sep`, `abbreviate` |
+| `col_range(low, high)` | Low – High range | `separator`, `decimals`, `show_bar` |
+| `col_date(field)` | Dates | `format` |
+| `col_bar(field)` | Inline magnitude bar (no axis) | `max_value`, `show_label`, `color`, `scale` |
+| `col_sparkline(field)` | Trend charts | `type`, `height`, `color` |
+| `col_heatmap(field)` | Color-scale values | `palette`, `min_value`, `max_value`, `decimals`, `show_value`, `scale` |
+| `col_progress(field)` | Percentage progress bar | `min_value`, `max_value`, `show_label`, `height`, `color` |
+| `col_icon(field)` | Icons / emoji | `mapping`, `size`, `color` |
+| `col_badge(field)` | Status chips | `variants`, `colors`, `size` |
+| `col_stars(field)` | Rating (1–N stars) | `max_stars`, `color`, `empty_color`, `half_stars`, `min_value`, `max_value`, `size` |
+| `col_img(field)` | Inline images | `height`, `max_width`, `fallback`, `shape` |
+| `col_reference(field)` | Truncated text + optional link | `href_field`, `max_chars`, `show_icon` |
+| `col_group(header, ...)` | Group child columns under one header | — |
 
-Here's every column type in action:
-```{r}
-#| fig-height: 5
-# Create demo data showcasing all column types
-gallery_data <- data.frame(
-  study = c("EMPA-REG 2015", "CANVAS 2017", "DECLARE 2019", "CREDENCE 2019"),
-  drug = c("Empagliflozin", "Canagliflozin", "Dapagliflozin", "Canagliflozin"),
-  hr = c(0.86, 0.86, 0.93, 0.70),
-  lower = c(0.74, 0.75, 0.84, 0.59),
-  upper = c(0.99, 0.97, 1.03, 0.82),
-  n = c(7020, 10142, 17160, 4401),
-  events = c(490, 585, 882, 245),
-  pvalue = c(0.04, 0.02, 0.17, 0.001),
-  on_time_pct = c(0.89, 0.85, 0.92, 0.88),
-  weight = c(20, 29, 36, 15),
-  quality = c(5, 4, 5, 4),
-  status = c("Published", "Published", "Published", "Published"),
-  age_min = c(55, 50, 40, 45),
-  age_max = c(80, 75, 85, 78),
-  trend = I(list(c(1,2,1.5,3,2.5), c(2,1,2,1.5,2), c(1,1.5,2,2.5,3), c(3,2,2.5,1.5,1)))
-)
+For the four axis-backed visualization columns (`viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`), see [Visualizations](visualizations/index.qmd).
 
-tabviz(gallery_data,
-  label = "study",
-  columns = list(
-    col_text("drug", "Drug"),
-    col_n("n", "N"),
-    col_events("events", "n", "Events"),
-    col_percent("on_time_pct", "Rate"),
-    col_bar("weight", "Weight", width = 70),
-    col_sparkline("trend", "Trend", width = 60),
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1, width = 140),
-    col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)"),
-    col_pvalue("pvalue", "P", stars = TRUE),
-    col_stars("quality", "Quality"),
-    col_badge("status", "Status")
-  ),
-  theme = web_theme_modern(),
-  title = "Column Types Gallery"
-)
-```
+## Composing columns
 
-## Quick Reference
-
-| Column | Purpose | Example |
-|--------|---------|---------|
-| `col_text()` | Any text | Study names, categories |
-| `col_numeric()` | Formatted numbers | Means, counts |
-| `col_n()` | Sample sizes | `1234` or `1.2K` |
-| `col_percent()` | Percentages | `85.2%` |
-| `col_interval()` | Point (CI) | `0.85 (0.70, 1.03)` |
-| `col_pvalue()` | P-values | `0.042` or `**` |
-| `col_events()` | Events/N | `45/120 (37.5%)` |
-| `col_range()` | Min–Max | `55 – 80` |
-| `col_bar()` | Horizontal bar | Visual weight |
-| `col_sparkline()` | Mini chart | Trends |
-| `viz_forest()` | Forest plot | Effect estimates |
-| `col_badge()` | Status badge | Labels |
-| `col_icon()` | Icons/emoji | Status |
-| `col_stars()` | Star rating | Quality |
-| `col_img()` | Images | Logos |
-| `col_reference()` | Links | DOIs |
-| `col_group()` | Group header | Organize columns |
-
-***
-
-## Text & Numbers
-
-Basic columns for displaying text and numeric data.
+A `tabviz()` call takes a list of column specs in display order. The special `label` argument produces an implicit leftmost identifier column; you can also declare it explicitly with `col_label()` if you want finer control.
 
 ```{r}
 data(glp1_trials)
 
-glp1_trials |>
+meta <- glp1_trials |>
   filter(row_type == "data", group == "Main Trials") |>
-  head(4) |>
-  tabviz(
-    label = "study",
-    columns = list(
-      col_text("drug", "Drug"),
-      col_numeric("hr", "HR", decimals = 2),
-      col_n("n", "N"),
-      col_n("n", "N (abbrev)", abbreviate = TRUE),
-      col_percent("pvalue", "As %", multiply = FALSE)
-    )
+  head(4)
+
+tabviz(meta,
+  label = "study",
+  columns = list(
+    col_text("drug", "Drug"),
+    col_n("n"),
+    col_events("events", "n"),
+    col_pvalue("pvalue", "P")
   )
+)
 ```
 
-### Formatting Options
+## Headers and widths
 
-See all formatting options side-by-side:
+Headers default to the field name if omitted; pass a second positional argument (or named `header`) to override, and an empty string or `show_header = FALSE` to hide.
+
+Widths are auto-sized by default. Pass a pixel value to fix a column.
+
+```{r}
+#| eval: false
+col_text("drug")                          # header: "drug", auto width
+col_text("drug", "Drug")                  # header: "Drug"
+col_text("drug", header = "", width = 80) # no header, 80px wide
+col_text("drug", show_header = FALSE)     # header cell hidden
+```
+
+## Alignment
+
+`col_*` helpers that render numeric content right-align by default (`col_numeric`, `col_n`, `col_percent`, `col_currency`, `col_pvalue`, `col_range`). Everything else left-aligns. Override with `align`; header alignment follows the body unless you set `header_align` explicitly.
+
+```{r}
+#| eval: false
+col_numeric("value", align = "left")                      # force body left
+col_numeric("value", header_align = "center")             # center header only
+```
+
+## Numeric formatting
+
+The numeric formatting vocabulary is shared across `col_numeric`, `col_n`, `col_percent`, `col_currency`, `col_pvalue`, `col_heatmap`, `col_events`, and `col_interval`. Use whichever helper fits your data — you get the same formatting primitives.
+
+| Argument | Meaning |
+|---|---|
+| `decimals` | Fixed number of decimal places. Mutually exclusive with `digits`. |
+| `digits` | Significant figures. Mutually exclusive with `decimals`. |
+| `thousands_sep` | Separator string (`","`, `" "`, `"."`, …) or `FALSE` to disable |
+| `abbreviate` | `TRUE` to shorten large numbers: `1,234 → "1.2K"`, `2.5e6 → "2.5M"` |
 
 ```{r}
 options_data <- data.frame(
-  item = c("Small study", "Medium study", "Large study"),
-  n = c(125, 4520, 1250000),
-  rate = c(0.156, 0.892, 0.034),
+  item  = c("Small", "Medium", "Large"),
+  n     = c(125, 4520, 1250000),
+  rate  = c(0.156, 0.892, 0.034),
   value = c(1.234, 12.34, 123.4)
 )
 
-tabviz(options_data,
-  label = "item",
+tabviz(options_data, label = "item",
   columns = list(
-    col_n("n", "N"),
-    col_n("n", "N (abbrev)", abbreviate = TRUE),
-    col_numeric("value", "decimals=2", decimals = 2),
-    col_numeric("value", "digits=3", digits = 3),
-    col_percent("rate", "Percent")
+    col_n("n",                              "Count"),
+    col_n("n",        abbreviate = TRUE,    "Abbreviated"),
+    col_numeric("value", decimals = 2,      "2 decimals"),
+    col_numeric("value", digits   = 3,      "3 sig figs"),
+    col_percent("rate",                     "Percent")
   )
 )
 ```
 
-***
-## Effect Estimates
+:::{.callout-note}
+## Decimals vs. digits
+`decimals = 2` always prints 2 places (`0.10`, `3.14`, `125.00`). `digits = 3` prints 3 meaningful figures (`0.156`, `3.14`, `125`). Use `digits` when values span orders of magnitude.
+:::
 
-Columns for displaying statistical results.
+## Handling missing data
+
+Set `na_text` on any column to replace `NA` cells with custom text.
+
+```{r}
+#| eval: false
+col_numeric("response", na_text = "—")
+col_pvalue("pvalue", na_text = "n/a")
+col_events("events", "n", na_text = "—")
+```
+
+The default is a blank cell.
+
+## Per-cell tooltips
+
+Pass `tooltip = "<col>"` to any column helper to drive the cell's hover-text from another column in the data. This overrides the default behavior of using the cell's own value as the tooltip.
+
+```{r}
+#| eval: false
+tabviz(data, label = "study",
+  columns = list(
+    col_text("status", tooltip = "status_explanation"),  # custom hover text
+    col_n("n", tooltip = "n_source")                      # e.g. "Per-protocol N"
+  )
+)
+```
+
+`tooltip` accepts a column name; the value at that cell becomes the rendered `title` attribute.
+
+## Custom formatters
+
+When the built-in formatting vocabulary doesn't fit (`decimals`/`digits`/`abbreviate`/`thousands_sep`), pass a `formatter` function. The function is applied to the column's values at render time and the output is treated as text — the column is rendered verbatim.
+
+```{r}
+#| eval: false
+data <- data.frame(
+  study = c("A", "B", "C"),
+  estimate = c(1.234, 0.85, 2.4),
+  se       = c(0.12, 0.08, 0.31)
+)
+
+tabviz(data, label = "study",
+  columns = list(
+    web_col("estimate",
+      formatter = function(x) sprintf("%.2f ± %.2f", x, data$se))
+  )
+)
+```
+
+The formatter receives the raw column vector; return a character vector of the same length. Use this for unit suffixes, conditional formatting, or composite values that don't fit any single `col_*()` helper.
+
+:::{.callout-note}
+## When to reach for `formatter`
+For routine formatting (decimals, sig figs, percentages, currencies, abbreviations), prefer the built-in arguments — they're discoverable, declarative, and fast. Reach for `formatter` only when the desired output can't be expressed via the built-in vocabulary.
+:::
+
+## Cell-level styling
+
+All the cell-styling arguments (`bold`, `italic`, `color`, `bg`, `badge`, `icon`, `emphasis`, `muted`, `accent`) accept either a column name or a formula. See [Cell Styling](cell-styling.qmd) for the full formula-pronoun rules and recipes.
 
 ```{r}
 glp1_trials |>
   filter(row_type == "data", group == "Main Trials") |>
   head(4) |>
+  mutate(
+    is_sig   = upper < 1,
+    hr_color = ifelse(upper < 1, "#166534", "#64748b")
+  ) |>
   tabviz(
     label = "study",
     columns = list(
-      viz_forest(point = "hr", lower = "lower", upper = "upper",
-                 scale = "log", null_value = 1, width = 180),
-      col_interval(point = "hr", lower = "lower", upper = "upper",
-                   header = "HR (95% CI)"),
-      col_pvalue("pvalue", "P-value"),
-      col_pvalue("pvalue", "P*", stars = TRUE)
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)",
+                   bold = "is_sig", color = "hr_color"),
+      col_pvalue("pvalue", "P", bold = "is_sig")
     )
   )
 ```
 
-### Formatting Options
+## Column groups
 
-Compare interval and p-value formatting:
-
-```{r}
-pval_data <- data.frame(
-  result = c("Significant", "Marginal", "Not significant", "Highly significant"),
-  hr = c(0.72, 0.89, 1.05, 0.45),
-  lower = c(0.58, 0.78, 0.85, 0.32),
-  upper = c(0.89, 1.02, 1.30, 0.63),
-  pval = c(0.003, 0.08, 0.45, 0.00001)
-)
-
-tabviz(pval_data,
-  label = "result",
-  columns = list(
-    col_interval(point = "hr", lower = "lower", upper = "upper",
-                 header = "Default", decimals = 2),
-    col_interval(point = "hr", lower = "lower", upper = "upper",
-                 header = "1 decimal", decimals = 1),
-    col_pvalue("pval", "P"),
-    col_pvalue("pval", "P*", stars = TRUE)
-  )
-)
-```
-
-***
-
-## Clinical Data
-
-Specialized columns for clinical trial data.
+`col_group(header, ...)` wraps a set of columns under a shared header row — useful for multiple outcomes, time points, or analyses.
 
 ```{r}
-clinical_data <- data.frame(
-  study = c("SUSTAIN-6", "PIONEER 6", "LEADER", "REWIND"),
-  events = c(108, 137, 608, 594),
-  n = c(3297, 3183, 9340, 9901),
-  age_min = c(55, 50, 40, 45),
-  age_max = c(80, 75, 85, 78)
+outcomes <- data.frame(
+  study          = c("PARADIGM-HF", "DAPA-HF", "EMPEROR-Reduced"),
+  primary_hr     = c(0.80, 0.74, 0.75),
+  primary_lower  = c(0.73, 0.65, 0.65),
+  primary_upper  = c(0.87, 0.85, 0.86),
+  primary_p      = c(0.001, 0.001, 0.001),
+  secondary_hr   = c(0.84, 0.70, 0.69),
+  secondary_p    = c(0.01, 0.001, 0.001)
 )
 
-tabviz(clinical_data,
-  label = "study",
+tabviz(outcomes, label = "study",
   columns = list(
-    col_events("events", "n", "Events/N"),
-    col_events("events", "n", "With %", show_pct = TRUE),
-    col_range(min_field = "age_min", max_field = "age_max", header = "Age Range")
-  )
-)
-```
-
-
-***
-
-## Visualizations
-
-Columns that display data graphically.
-
-```{r}
-# Create visualization demo data
-viz_data <- data.frame(
-  carrier = c("Delta", "United", "American", "Southwest"),
-  on_time = c(0.84, 0.78, 0.76, 0.82),
-  weight = c(35, 28, 25, 32)
-)
-# Add sparkline data as list column
-viz_data$trend <- list(
-  c(82, 85, 81, 88, 84, 86, 83, 87, 85, 89, 84, 86),
-  c(75, 78, 74, 80, 77, 79, 76, 81, 78, 82, 77, 80),
-  c(73, 76, 72, 79, 75, 77, 74, 80, 76, 78, 75, 77),
-  c(80, 83, 79, 85, 81, 84, 80, 86, 82, 85, 81, 84)
-)
-
-tabviz(viz_data,
-  label = "carrier",
-  columns = list(
-    col_bar("on_time", "On-Time", width = 100),
-    col_bar("weight", "Weight", width = 80),
-    col_sparkline("trend", "Line", width = 80),
-    col_sparkline("trend", "Area", type = "area", width = 80),
-    col_sparkline("trend", "Bars", type = "bar", width = 80)
-  ),
-  theme = web_theme_modern()
-)
-```
-
-**Note:** Sparklines require list-columns with numeric vectors. Create with `mutate(trend = list(c(1,2,3)))`.
-
-***
-
-## Status Indicators
-
-Columns for showing status, quality, or categories.
-
-```{r}
-status_data <- data.frame(
-  study = c("Trial A", "Trial B", "Trial C", "Trial D"),
-  hr = c(0.72, 0.85, 0.91, 0.68),
-  lower = c(0.55, 0.70, 0.75, 0.52),
-  upper = c(0.95, 1.03, 1.10, 0.89),
-  quality = c(5, 3, 4, 5),
-  status = c("Published", "Preprint", "Published", "Retracted"),
-  direction = c("Benefit", "Neutral", "Neutral", "Benefit")
-)
-
-tabviz(status_data,
-  label = "study",
-  columns = list(
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1),
-    col_stars("quality", "Quality"),
-    col_badge("status", "Status",
-      variants = list(
-        Published = "success",
-        Preprint = "warning",
-        Retracted = "error"
-      )),
-    col_icon("direction", "Effect",
-      mapping = list(Benefit = "OK", Neutral = "-", Harm = "X"))
-  )
-)
-```
-
-Badge variants: `"success"` (green), `"warning"` (yellow), `"error"` (red), `"info"` (blue), `"muted"` (gray).
-
-***
-
-## Column Groups
-
-Group related columns under a shared header:
-
-```{r}
-outcomes_data <- data.frame(
-  study = c("PARADIGM-HF", "DAPA-HF", "EMPEROR-Reduced"),
-  primary_hr = c(0.80, 0.74, 0.75),
-  primary_lower = c(0.73, 0.65, 0.65),
-  primary_upper = c(0.87, 0.85, 0.86),
-  primary_p = c(0.001, 0.001, 0.001),
-  secondary_hr = c(0.84, 0.70, 0.69),
-  secondary_p = c(0.01, 0.001, 0.001)
-)
-
-tabviz(outcomes_data,
-  label = "study",
-  columns = list(
-    viz_forest(point = "primary_hr", lower = "primary_lower", upper = "primary_upper",
-               null_value = 1, scale = "log"),
-    col_group("Primary Endpoint",
-      col_interval(point = "primary_hr", lower = "primary_lower", upper = "primary_upper",
+    viz_forest(point = "primary_hr", lower = "primary_lower",
+               upper = "primary_upper", null_value = 1, scale = "log"),
+    col_group("Primary",
+      col_interval("primary_hr", "primary_lower", "primary_upper",
                    header = "HR (95% CI)"),
       col_pvalue("primary_p", "P")
     ),
-    col_group("Secondary Endpoint",
+    col_group("Secondary",
       col_numeric("secondary_hr", "HR", decimals = 2),
       col_pvalue("secondary_p", "P")
     )
@@ -356,60 +254,308 @@ tabviz(outcomes_data,
 )
 ```
 
-Use column groups for:
-- Multiple outcomes (primary, secondary)
-- Multiple time points (30-day, 1-year)
-- Multiple analyses (ITT, per-protocol)
+## Visualization columns
 
-***
+Four `viz_*()` columns render axis-backed plots inline: `viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`. They share axis-control arguments (`axis_range`, `axis_ticks`, `axis_gridlines`, `axis_label`, `scale`) and are documented separately:
 
-## Column Width & Styling
+- [Forest plots](visualizations/forest-plots.qmd) — point + CI with annotations
+- [Bar charts](visualizations/bar-charts.qmd) — horizontal bars with an axis
+- [Boxplots](visualizations/boxplots.qmd) — quartiles, median, outliers
+- [Violin plots](visualizations/violin-plots.qmd) — kernel-density distributions
 
-### Width Control
+Unlike `col_bar`, the viz columns share a consistent axis across rows.
 
-```r
-col_numeric("n", "N", width = 60)       # Fixed width
-col_text("notes", "Notes", width = 200) # Wide column
-col_interval(...)                        # Auto-width (default)
-```
+All four viz columns honor the [marker-styling cascade](../concepts/styling-cascade.qmd#the-viz-cell-color-cascade): row semantic classes (`row_accent`/`row_emphasis`/`row_muted`) and per-row `marker_color` from `tabviz()` reach into the viz cell automatically. Single-effect viz columns get a fill replacement; multi-effect columns get an outline that preserves per-effect color identity. See [Row Styling → Cascading into viz cells](row-styling.qmd#cascading-into-viz-cells) for the full picture.
 
-### Per-Cell Styling
+---
 
-Every column accepts styling parameters:
+## Per-helper detail
+
+### Text and identifiers
+
+#### `col_text()` and `col_label()`
+
+Plain text with optional truncation. `col_label()` is the convenience helper for the row-identifier column; it also prettifies the field name into a Title Case header by default.
 
 ```{r}
-glp1_trials |>
-  filter(row_type == "data", group == "Main Trials") |>
-  head(4) |>
-  mutate(
-    is_sig = upper < 1,
-    hr_color = ifelse(upper < 1, "#166534", "#64748b")
-  ) |>
-  tabviz(
-    label = "study",
-    columns = list(
-      col_interval(point = "hr", lower = "lower", upper = "upper",
-                   header = "HR (95% CI)", bold = "is_sig", color = "hr_color"),
-      col_pvalue("pvalue", "P", bold = "is_sig")
-    )
-  )
+#| eval: false
+col_text("drug")
+col_text("notes", "Notes", max_chars = 50)      # truncate with ellipsis
+col_text("description", wrap = TRUE, width = 220)   # wrap instead
+
+col_label("study_id")                           # header auto: "Study Id"
+col_label("study_id", header = "Study")          # explicit header
 ```
 
-Available style parameters:
+### Numbers
 
-| Parameter | Type | Effect |
-|-----------|------|--------|
-| `bold` | logical column | Bold when TRUE |
-| `italic` | logical column | Italic when TRUE |
-| `color` | color column | Text color |
-| `bg` | color column | Background color |
+#### `col_numeric()`
 
-See [Cell Styling](cell-styling.qmd) for more conditional formatting patterns.
+General-purpose numeric column with `decimals` / `digits` / `thousands_sep` / `abbreviate`.
 
-***
+```{r}
+#| eval: false
+col_numeric("estimate")                          # 2 decimals
+col_numeric("count", decimals = 0,
+            thousands_sep = ",")                 # "12,345"
+col_numeric("value", digits = 3)                 # 3 sig figs
+col_numeric("population", abbreviate = TRUE)     # "1.2M"
+```
 
-## See Also
+#### `col_n()`
 
-- [Package Data](package-data.qmd) — Built-in datasets for examples
-- [Forest Plots](visualizations/forest-plots.qmd) — Detailed `viz_forest()` options
-- [Cell Styling](cell-styling.qmd) — Conditional formatting
+Convenience wrapper for integer counts: defaults to `decimals = 0`, `thousands_sep = ","`, header `"N"`.
+
+```{r}
+#| eval: false
+col_n("n")
+col_n("enrolled", header = "Enrolled", abbreviate = TRUE)
+```
+
+#### `col_percent()`
+
+Formats proportions or percentages.
+
+| Arg | Default | Effect |
+|---|---|---|
+| `multiply` | `TRUE` | `TRUE` when input is `[0, 1]` (multiply by 100); set `FALSE` if your data is already on the 0–100 scale |
+| `symbol` | `TRUE` | Append `%` to the formatted number |
+
+```{r}
+#| eval: false
+col_percent("rate")                           # 0.05 → "5.0%"
+col_percent("accuracy", multiply = FALSE)     # data is already 0–100
+col_percent("share", symbol = FALSE)          # drop the "%"
+```
+
+#### `col_currency()`
+
+Money with currency symbol prefix/suffix.
+
+| Arg | Default | Effect |
+|---|---|---|
+| `symbol` | `"$"` | Currency glyph (e.g. `"€"`, `"¥"`, `"R$"`) |
+| `position` | `"prefix"` | `"suffix"` for post-fixed currencies |
+| `thousands_sep` | `","` | String or `FALSE`; European users often pass `"."` |
+| `abbreviate` | `FALSE` | `TRUE` for `"$1.2M"`-style short form |
+
+```{r}
+#| eval: false
+col_currency("price")
+col_currency("amount", symbol = "€", thousands_sep = ".", position = "suffix")
+col_currency("revenue", abbreviate = TRUE)    # "$1.2M"
+```
+
+#### `col_pvalue()`
+
+P-values with smart formatting and optional significance stars.
+
+| Arg | Default | Effect |
+|---|---|---|
+| `stars` | `FALSE` | Append `*`/`**`/`***` based on `thresholds` |
+| `thresholds` | `c(0.05, 0.01, 0.001)` | Star cutoffs |
+| `format` | `"auto"` | `"auto"` / `"scientific"` / `"decimal"` |
+| `digits` | `2` | Significant figures |
+| `exp_threshold` | `0.001` | Below this, switch to scientific notation |
+| `abbrev_threshold` | `NULL` | Below this, render as e.g. `"<0.0001"` |
+
+```{r}
+#| eval: false
+col_pvalue("pval")
+col_pvalue("pval", stars = TRUE)
+col_pvalue("pval", abbrev_threshold = 0.0001)
+```
+
+### Paired values
+
+#### `col_interval()`
+
+Renders a point estimate with its confidence interval: `0.85 (0.70, 1.03)`.
+
+| Arg | Default | Effect |
+|---|---|---|
+| `point`, `lower`, `upper` | required | Field names |
+| `decimals` | `2` | Decimal places |
+| `separator` | `" "` | Separator between point and CI block |
+| `imprecise_threshold` | `NULL` | If `upper/lower > threshold`, render `"—"` instead |
+
+```{r}
+#| eval: false
+col_interval("hr", "lower", "upper", header = "HR (95% CI)")
+col_interval("or", "or_lo", "or_hi", decimals = 3, separator = ", ")
+col_interval("hr", "lower", "upper", imprecise_threshold = 10)
+```
+
+#### `col_events()`
+
+Events / N ratio, optionally with percentage.
+
+```{r}
+#| eval: false
+col_events("events", "n")                           # "45/120"
+col_events("events", "n", show_pct = TRUE)          # "45/120 (37.5%)"
+col_events("events", "n", separator = " of ",
+           abbreviate = TRUE)                       # "1.1K of 12K"
+```
+
+#### `col_range()`
+
+Low – high range, optionally with an inline bar.
+
+```{r}
+#| eval: false
+col_range("age_min", "age_max", "Age")
+col_range("ci_lower", "ci_upper", decimals = 1)
+col_range("low_price", "high_price", show_bar = TRUE)
+```
+
+### Dates
+
+#### `col_date()`
+
+Dates formatted with `strftime`-style tokens. R-side formatting, so the browser sees pre-formatted strings.
+
+```{r}
+#| eval: false
+col_date("enrollment_date", format = "%Y-%m-%d")
+col_date("published",       format = "%b %Y")          # "Jan 2024"
+col_date("visit",           format = "%A, %d %B %Y")    # full
+```
+
+### Inline visuals
+
+#### `col_bar()`
+
+Small horizontal bar inside the cell — use for visual weight without a shared axis. For axis-backed bars across rows, reach for [`viz_bar()`](visualizations/bar-charts.qmd).
+
+```{r}
+#| eval: false
+col_bar("weight")
+col_bar("score", max_value = 100, color = "#2563eb")
+col_bar("value", scale = "log")
+```
+
+#### `col_sparkline()`
+
+Mini line/area/bar chart per row. Requires a list-column of numeric vectors.
+
+```{r}
+#| eval: false
+col_sparkline("trend")                          # default: line
+col_sparkline("trend", type = "area")
+col_sparkline("trend", type = "bar", height = 30, color = "#16a34a")
+```
+
+:::{.callout-note}
+## Preparing sparkline data
+Create a list-column with `mutate(trend = list(c(1, 2, 3)))` or `tibble(trend = I(list(...)))`. Vectors do not need to be the same length across rows.
+:::
+
+#### `col_heatmap()`
+
+Color-scale cell background with optional numeric overlay.
+
+```{r}
+#| eval: false
+col_heatmap("score")                                   # default palette
+col_heatmap("score", palette = c("#fef3c7", "#92400e"),
+            min_value = 0, max_value = 100)
+col_heatmap("magnitude", scale = "log", show_value = FALSE)
+```
+
+#### `col_progress()`
+
+Horizontal progress bar with numeric label.
+
+```{r}
+#| eval: false
+col_progress("completion", max_value = 100)
+col_progress("share", max_value = 1, show_label = FALSE)
+col_progress("fill", color = "#8b5cf6", height = 6)
+```
+
+### Status and categories
+
+#### `col_badge()`
+
+Colored chips keyed to row values.
+
+| Arg | Effect |
+|---|---|
+| `variants` | Named list mapping values → semantic color (`"success"`, `"warning"`, `"error"`, `"info"`, `"muted"`) |
+| `colors` | Named list mapping values → literal CSS colors (overrides variants) |
+| `size` | `"base"` or `"sm"` |
+
+```{r}
+#| eval: false
+col_badge("status")                              # plain chips
+col_badge("status", variants = list(
+  Published = "success", Preprint = "warning", Retracted = "error"
+))
+col_badge("priority", colors = list(
+  high = "#dc2626", medium = "#f59e0b", low = "#22c55e"
+))
+```
+
+#### `col_icon()`
+
+Icons, emoji, or unicode glyphs.
+
+```{r}
+#| eval: false
+col_icon("status_icon")                          # emoji already in data
+col_icon("result", mapping = list(
+  pass = "✔", fail = "✖", pending = "…"
+))
+col_icon("flag", size = "lg", color = "#16a34a")
+```
+
+#### `col_stars()`
+
+Visual rating (filled/empty stars).
+
+```{r}
+#| eval: false
+col_stars("quality")                              # 1–5 default
+col_stars("quality", max_stars = 10, half_stars = TRUE)
+col_stars("score_0_100", min_value = 0, max_value = 100)   # remap to star count
+col_stars("rating", size = "lg")                            # larger glyphs
+```
+
+### Media and links
+
+#### `col_img()`
+
+Inline image cells. Images come from URL/path in the data column.
+
+```{r}
+#| eval: false
+col_img("logo_url")
+col_img("avatar", shape = "circle", width = 40)
+col_img("thumbnail", fallback = "No image")
+```
+
+#### `col_reference()`
+
+Truncated text (e.g. citation) with optional clickable link and external-link icon.
+
+```{r}
+#| eval: false
+col_reference("citation")
+col_reference("title", href_field = "doi_url",
+              max_chars = 40)
+col_reference("source", href_field = "url", show_icon = FALSE)
+```
+
+### Grouping
+
+#### `col_group()`
+
+Wraps child columns under a shared header row. See [Composing columns](#column-groups) above.
+
+## See also
+
+- [Cell Styling](cell-styling.qmd) — conditional formatting, formula pronouns
+- [Row Styling](row-styling.qmd) — row-level bold/italic/color/bg/badge/icon
+- [Visualizations](visualizations/index.qmd) — `viz_*()` axis-backed columns
+- [`web_col()` reference](../reference/columns.html#web_col) — the low-level constructor

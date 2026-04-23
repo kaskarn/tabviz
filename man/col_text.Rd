@@ -4,7 +4,14 @@
 \alias{col_text}
 \title{Column helper: Text column}
 \usage{
-col_text(field, header = NULL, width = NULL, max_chars = NULL, ...)
+col_text(
+  field,
+  header = NULL,
+  width = NULL,
+  max_chars = NULL,
+  na_text = NULL,
+  ...
+)
 }
 \arguments{
 \item{field}{Field name}
@@ -15,6 +22,8 @@ col_text(field, header = NULL, width = NULL, max_chars = NULL, ...)
 
 \item{max_chars}{Maximum characters to show before truncating with trailing
 ellipsis. NULL (default) = no truncation.}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

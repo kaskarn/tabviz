@@ -1,81 +1,31 @@
 ---
-title: "Styling Functions"
+title: "Styling modifiers"
 ---
 
 ```{r}
 #| include: false
 library(tabviz)
-library(dplyr)
 ```
 
-The styling functions provide a fluent, pipe-friendly interface for customizing forest plot appearance. These functions work on both `WebSpec` objects and rendered htmlwidgets, allowing you to style plots at any point in your workflow.
+Fluent verbs that mutate a `WebSpec`, htmlwidget, or live Shiny `tabviz_proxy` to add row, column, marker, theme, and zoom styling. Every modifier returns the same kind of object it received, so they compose cleanly with `|>`.
 
-## The Two Styling Approaches
+For *theme*-level modifiers (palettes, typography, axis, layout) see [Themes](themes.qmd).
 
-tabviz offers two equivalent ways to style your plots. Both produce identical results—choose the approach that fits your workflow:
+:::{.callout-tip}
+## Constructor arguments vs fluent API
 
-### Direct Arguments in tabviz()
-
-When you know all styling upfront, pass it directly to the constructor:
-
-```{r}
-#| eval: false
-tabviz(data, label = "study",
-  columns = list(
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1)
-  ),
-  row_bold = "is_summary",
-  row_type = "rtype",
-  marker_color = "effect_color",
-  marker_shape = "shape_col"
-)
-```
-
-This approach is concise and keeps all configuration in one place.
-
-### Fluent API with set_*() Functions
-
-When styling depends on computation, when you're creating multiple variants, or when you want more explicit control, use the fluent API:
-
-```{r}
-#| eval: false
-tabviz(data, label = "study",
-  columns = list(
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1)
-  )
-) |>
-  set_row_style(bold = "is_summary", type = "rtype") |>
-  set_marker_style(color = "effect_color", shape = "shape_col")
-```
-
-The fluent approach shines when you need to:
-
-- Apply conditional styling based on computed columns
-- Create multiple plot variants from the same base
-- Build reusable styling pipelines
-- Separate data specification from visual presentation
-
-::: {.callout-note}
-## Immutability Guarantee
-
-Every `set_*()` function returns a **new** modified object, leaving the original unchanged. This makes it safe to create multiple variants from the same base without side effects.
+Most modifiers have an equivalent argument on `tabviz()` (e.g. `set_row_style(bold = ...)` ↔ `tabviz(row_bold = ...)`). Use the constructor argument when the value is known up front; reach for the fluent verb when styling depends on later computation, when you're producing variants, or when you want to layer styling on top of an existing widget.
 :::
 
 ---
 
-## Row Styling
+## `set_row_style()` {#set_row_style}
 
-### set_row_style() {#set_row_style}
-
-Applies visual styling to entire rows based on column values. This is your primary tool for creating visual hierarchy in forest plots—distinguishing headers from data rows, highlighting summaries, and showing nested structure through indentation.
+Apply row-level styling driven by columns in the data.
 
 ```r
 set_row_style(
   x,
-  type = NULL,
-
   bold = NULL,
   italic = NULL,
   color = NULL,
@@ -83,559 +33,200 @@ set_row_style(
   badge = NULL,
   icon = NULL,
   indent = NULL,
+  type = NULL,
+  weight = NULL,
   emphasis = NULL,
   muted = NULL,
   accent = NULL
 )
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `x` | A tabviz widget, `WebSpec`, or data frame |
-| `type` | Column name containing row type: `"header"`, `"data"`, `"summary"`, `"spacer"` |
-| `bold` | Column name containing `TRUE`/`FALSE` for bold text |
-| `italic` | Column name containing `TRUE`/`FALSE` for italic text |
-| `color` | Column name containing CSS color strings (e.g., `"#1a365d"`) |
-| `bg` | Column name containing background color strings |
-| `badge` | Column name containing badge text to display |
-| `icon` | Column name containing emoji or unicode icons |
-| `indent` | Column name containing indentation levels (0, 1, 2, ...) |
-| `emphasis` | Column name for emphasis styling (bold + theme primary color) |
-| `muted` | Column name for muted styling (lighter, reduced prominence) |
-| `accent` | Column name for accent styling (theme accent color) |
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `x` | `WebSpec` / htmlwidget | required | Spec or widget. |
+| `bold` | column name | `NULL` | Logical column for bold rows. |
+| `italic` | column name | `NULL` | Logical column for italic rows. |
+| `color` | column name | `NULL` | CSS color column for row text. |
+| `bg` | column name | `NULL` | CSS color column for row background. |
+| `badge` | column name | `NULL` | Text column rendered as a badge on the label cell. |
+| `icon` | column name | `NULL` | Emoji/unicode column rendered on the label cell. |
+| `indent` | column name | `NULL` | Numeric column for label indentation. |
+| `type` | column name | `NULL` | One of `"data"`, `"header"`, `"summary"`, `"spacer"`. |
+| `weight` | column name | `NULL` | Numeric column driving marker size. Same shape as `marker_size`. |
+| `emphasis` | column name | `NULL` | Logical column → bold + foreground color. |
+| `muted` | column name | `NULL` | Logical column → muted styling. |
+| `accent` | column name | `NULL` | Logical column → accent color. |
 
-**Returns**: Modified widget or WebSpec (same type as input)
-
-#### Row Types
-
-The `type` parameter controls fundamental row behavior:
-
-| Type | Behavior |
-|------|----------|
-| `"data"` | Standard data row with interval marker |
-| `"header"` | Section header, no interval displayed |
-| `"summary"` | Summary row with diamond marker (for pooled estimates) |
-| `"spacer"` | Empty row for visual separation |
-
-::: {.callout-important}
-## NA Values for Non-Data Rows
-
-Rows with `type = "header"` or `"spacer"` should have `NA` for `point`, `lower`, and `upper`. The plot displays them as label-only rows without interval markers.
-:::
-
-#### Semantic Styling Shortcuts
-
-The `emphasis`, `muted`, and `accent` parameters provide theme-aware styling that adapts automatically when you change themes:
+**Returns:** modified input (`WebSpec` or htmlwidget).
 
 ```{r}
-#| eval: false
-data |>
-  mutate(
-    is_key = pval < 0.001,
-    is_secondary = !is_primary_endpoint
-  ) |>
-  forest_plot(point = "hr", lower = "lower", upper = "upper", label = "study") |>
-  set_row_style(emphasis = "is_key", muted = "is_secondary")
-```
-
-#### Complete Example
-
-```{r}
-styled_data <- data.frame(
-  label = c("Primary Endpoint", "  CV Death", "  MI", "  Stroke",
-            "Secondary Endpoints", "  HF Hospitalization", "Summary"),
-  hr = c(NA, 0.82, 0.79, 0.88, NA, 0.73, 0.80),
-  lower = c(NA, 0.72, 0.68, 0.74, NA, 0.61, 0.72),
-  upper = c(NA, 0.94, 0.92, 1.05, NA, 0.87, 0.89),
-  rtype = c("header", "data", "data", "data", "header", "data", "summary"),
-  rbold = c(TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE),
-  rindent = c(0, 1, 1, 1, 0, 1, 0)
+styled <- data.frame(
+  label = c("Primary Endpoint", "  CV Death", "  MI", "Summary"),
+  hr = c(NA, 0.82, 0.79, 0.78),
+  lo = c(NA, 0.72, 0.68, 0.65),
+  hi = c(NA, 0.94, 0.92, 0.93),
+  rtype = c("header", "data", "data", "summary"),
+  rbold = c(TRUE, FALSE, FALSE, TRUE)
 )
 
-forest_plot(styled_data,
-  point = "hr", lower = "lower", upper = "upper", label = "label",
-  scale = "log", null_value = 1
+tabviz(styled, label = "label",
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
+                            scale = "log", null_value = 1))
 ) |>
-  set_row_style(type = "rtype", bold = "rbold", indent = "rindent")
+  set_row_style(type = "rtype", bold = "rbold")
 ```
 
 ---
 
-## Marker Styling
+## `set_column_style()` {#set_column_style}
 
-### set_marker_style() {#set_marker_style}
-
-Controls the appearance of interval markers (the points and lines that represent effect estimates and confidence intervals). Use this to encode additional dimensions of your data through color, shape, opacity, or size.
-
-```r
-set_marker_style(
-  x,
-  color = NULL,
-  shape = NULL,
-  opacity = NULL,
-  size = NULL
-)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `x` | A tabviz widget, `WebSpec`, or data frame |
-| `color` | Column name containing CSS color strings for marker fill |
-| `shape` | Column name containing shape values: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
-| `opacity` | Column name containing opacity values from 0 (transparent) to 1 (opaque) |
-| `size` | Column name containing size multipliers (1 = default size, 2 = double, 0.5 = half) |
-
-**Returns**: Modified widget or WebSpec (same type as input)
-
-#### Shape Reference
-
-| Shape | Best For |
-|-------|----------|
-| `"square"` | Default, works for most data |
-| `"circle"` | Distinguishing study designs or subgroups |
-| `"diamond"` | Summary estimates, pooled results |
-| `"triangle"` | Directional indicators, special categories |
-
-#### Encoding Effect Direction with Color
-
-A common pattern is using color to indicate whether results favor treatment or control:
-
-```{r}
-direction_data <- data.frame(
-  study = c("Trial A", "Trial B", "Trial C", "Trial D"),
-  hr = c(0.72, 0.95, 0.68, 1.15),
-  lower = c(0.55, 0.78, 0.52, 0.90),
-  upper = c(0.94, 1.15, 0.89, 1.47)
-) |>
-  mutate(
-    marker_color = case_when(
-      upper < 1 ~ "#16a34a",  # Green: significant benefit
-      lower > 1 ~ "#dc2626",  # Red: significant harm
-      TRUE ~ "#64748b"        # Gray: not significant
-    )
-  )
-
-forest_plot(direction_data,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  scale = "log", null_value = 1
-) |>
-  set_marker_style(color = "marker_color")
-```
-
-#### Encoding Study Quality with Shape and Opacity
-
-```{r}
-#| eval: false
-quality_data <- data |>
-  mutate(
-    marker_shape = ifelse(design == "RCT", "circle", "square"),
-    marker_opacity = case_when(
-      quality == "high" ~ 1.0,
-      quality == "medium" ~ 0.7,
-      quality == "low" ~ 0.4
-    )
-  )
-
-forest_plot(quality_data, ...) |>
-  set_marker_style(shape = "marker_shape", opacity = "marker_opacity")
-```
-
----
-
-## Column Styling
-
-### set_column_style() {#set_column_style}
-
-Applies per-cell styling to a specific column. While `set_row_style()` affects entire rows uniformly, `set_column_style()` lets you highlight individual cells based on their values.
+Per-cell styling targeting a single column.
 
 ```r
 set_column_style(
-  x,
-  column,
-  bold = NULL,
-  italic = NULL,
-  color = NULL,
-  bg = NULL,
-  badge = NULL,
-  icon = NULL
+  x, column,
+  bold = NULL, italic = NULL,
+  color = NULL, bg = NULL,
+  badge = NULL, icon = NULL
 )
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `x` | A `WebSpec` object (not applicable to rendered widgets) |
-| `column` | Field name of the column to style |
-| `bold` | Column name for bold text (`TRUE`/`FALSE`) |
-| `italic` | Column name for italic text (`TRUE`/`FALSE`) |
-| `color` | Column name for text color (CSS color string) |
-| `bg` | Column name for background color |
-| `badge` | Column name for badge text overlay |
-| `icon` | Column name for icon (emoji/unicode) |
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `x` | `WebSpec` / htmlwidget | required | |
+| `column` | `character(1)` | required | Field name of the target column. |
+| `bold` / `italic` | column name | `NULL` | Logical-column driver. |
+| `color` / `bg` | column name | `NULL` | CSS color column. |
+| `badge` / `icon` | column name | `NULL` | Per-cell badge / icon. |
 
-**Returns**: Modified WebSpec
+When both row and column styles target the same cell, the column style wins.
 
-::: {.callout-warning}
-## WebSpec Only
-
-`set_column_style()` only works on `WebSpec` objects, not on rendered widgets. Apply column styling before calling `forest_plot()`.
-:::
-
-#### Styling Priority
-
-When both row and column styles target the same cell:
-
-1. **Column styles take precedence** for that specific cell
-2. **Row styles apply** to cells without column-specific overrides
-
-This lets you set row-wide defaults while adding column-specific highlights.
-
-#### Highlighting Significant P-values
-
-```{r}
-#| eval: false
-data <- data |>
-  mutate(
-    pval_bold = pval < 0.05,
-    pval_color = ifelse(pval < 0.05, "#16a34a", "#64748b")
-  )
-
-web_spec(data,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
+```r
+tabviz(data, label = "study",
   columns = list(col_pvalue("pval"))
 ) |>
-  set_column_style("pval", bold = "pval_bold", color = "pval_color") |>
-  forest_plot()
+  set_column_style("pval", bold = "is_sig", color = "sig_color")
 ```
 
 ---
 
-## Theme Application
+## `set_marker_style()` {#set_marker_style}
 
-### set_theme() {#set_theme}
+Style the primary effect's interval markers.
 
-Applies a complete theme to change the visual appearance of your plot. Accepts either a theme name string or a `WebTheme` object.
+```r
+set_marker_style(x,
+                 color = NULL, shape = NULL,
+                 opacity = NULL, size = NULL)
+```
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `color` | column name | `NULL` | CSS color column for marker fill. |
+| `shape` | column name | `NULL` | Column of `"square"` / `"circle"` / `"diamond"` / `"triangle"`. |
+| `opacity` | column name | `NULL` | Numeric column 0–1. |
+| `size` | column name | `NULL` | Numeric weight-like column (e.g. study weights 0–100). The renderer normalizes via `0.5 + sqrt(w/100) * 1.5`. Pass raw weights, not a pre-normalized multiplier. |
+
+For multi-effect plots, additional effects use the per-effect color/shape/opacity from `effect_forest()`.
+
+---
+
+## `set_zoom()` {#set_zoom}
+
+Zoom level and container constraints. Works on htmlwidgets and live `tabviz_proxy` objects (it is **not** a `WebSpec` modifier — apply it after rendering).
+
+```r
+set_zoom(x,
+         zoom = 1.0,
+         auto_fit = TRUE,
+         max_width = NULL,
+         max_height = NULL,
+         show_controls = TRUE)
+```
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `x` | htmlwidget / `tabviz_proxy` | required | |
+| `zoom` | `numeric(1)` | `1.0` | 0.5–2.0. |
+| `auto_fit` | `logical(1)` | `TRUE` | Shrink content to fit container if too large; never enlarges. |
+| `max_width` | `numeric(1)` | `NULL` | Max container width in px (≥ 100). |
+| `max_height` | `numeric(1)` | `NULL` | Max container height in px (≥ 100). |
+| `show_controls` | `logical(1)` | `TRUE` | Show zoom controls on hover. |
+
+:::{.callout-important}
+## Replaces `tabviz()` zoom arguments
+
+`tabviz(zoom = ...)`, `tabviz(auto_fit = ...)`, `tabviz(max_width = ...)`, `tabviz(max_height = ...)`, and `tabviz(show_zoom_controls = ...)` were deprecated in 0.9.0. Pipe to `set_zoom()` after constructing the widget instead.
+:::
+
+```r
+tabviz(data, label = "study", columns = list(viz_forest("hr", "lo", "hi"))) |>
+  set_zoom(zoom = 0.8, max_width = 900)
+```
+
+---
+
+## `set_theme()` {#set_theme}
+
+Swap the active theme on a `WebSpec`, htmlwidget, or `tabviz_proxy`. On a proxy, sends a message so the widget swaps themes without a full re-render.
 
 ```r
 set_theme(x, theme)
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `x` | A tabviz widget or `WebSpec` |
-| `theme` | Theme name (`"default"`, `"jama"`, `"lancet"`, etc.) or `WebTheme` object |
+| Argument | Type | Description |
+|---|---|---|
+| `x` | `WebSpec` / htmlwidget / `tabviz_proxy` | |
+| `theme` | character or `WebTheme` | Either a built-in name or a `web_theme_*()` object. |
 
-**Available theme names**: `"default"`, `"minimal"`, `"dark"`, `"jama"`, `"lancet"`, `"modern"`, `"presentation"`, `"cochrane"`, `"nature"`
+**Built-in names:** `"default"`, `"minimal"`, `"dark"`, `"jama"`, `"lancet"`, `"modern"`, `"presentation"`, `"cochrane"`, `"nature"`.
 
-```{r}
-#| eval: false
-# Apply by name
-tabviz(data, ...) |> set_theme("jama")
-
-# Apply theme object
-tabviz(data, ...) |> set_theme(web_theme_lancet())
-
-# Apply customized theme
-custom <- web_theme_minimal() |>
-  set_colors(primary = "#1a365d") |>
-  set_spacing(row_height = 24)
-
-tabviz(data, ...) |> set_theme(custom)
+```r
+tabviz(data, label = "study",
+       columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi"))) |>
+  set_theme("jama")
 ```
 
 ---
 
-## Theme Modifiers
+## `selectable_themes()` {#selectable_themes}
 
-Theme modifiers edit a `WebTheme` object in place of swapping themes wholesale. They take a `WebTheme`, return a modified `WebTheme`, and compose with `|>`. Every argument is optional — unset fields keep their current value.
+Curate which themes appear in the in-widget theme switcher. This is the fluent sibling of the `enable_themes` argument of [`web_interaction()`](interaction.qmd).
 
-All modifiers follow the same pattern:
-
-```{r}
-#| eval: false
-web_theme_default() |>
-  set_colors(primary = "#1a365d") |>
-  set_typography(font_family = "Georgia, serif") |>
-  set_spacing(row_height = 28) |>
-  set_axis(gridlines = TRUE)
+```r
+selectable_themes(x, themes)
 ```
 
-### set_colors() {#set_colors}
+| Argument | Type | Description |
+|---|---|---|
+| `x` | `WebSpec` or htmlwidget | Live proxy not supported. |
+| `themes` | `NULL` / `"default"` / list of `WebTheme` | `NULL` hides the switcher; `"default"` shows all `package_themes()`; a list shows exactly those (named entries override displayed names). The active theme is always auto-included so the user can revert. |
 
-Change the theme color palette.
-
-| Argument | Description |
-|----------|-------------|
-| `background` | Page/container background color |
-| `foreground` | Default text color |
-| `primary`, `secondary`, `accent`, `muted` | Semantic palette entries used by row styling and markers |
-| `border` | Row and container border color |
-| `row_bg`, `alt_bg` | Base row background and zebra-stripe alternate |
-| `interval` | Default interval-line and marker color |
-| `interval_positive`, `interval_negative`, `interval_neutral` | Direction-aware interval colors |
-| `interval_line` | Override for the horizontal CI line |
-| `summary_fill`, `summary_border` | Colors for diamond summary markers |
-
-```{r}
-#| eval: false
-web_theme_default() |>
-  set_colors(
-    primary = "#0b3d91",
-    interval_positive = "#16a34a",
-    interval_negative = "#dc2626"
-  )
-```
-
-### set_typography() {#set_typography}
-
-Font family, sizes, weights.
-
-| Argument | Description |
-|----------|-------------|
-| `font_family` | CSS font stack (e.g., `"Georgia, 'Times New Roman', serif"`) |
-| `font_size_sm`, `font_size_base`, `font_size_lg` | Small / base / large font sizes (numeric, px) |
-| `font_weight_normal`, `font_weight_medium`, `font_weight_bold` | Weight values (100–900) |
-| `line_height` | Base line-height multiplier |
-| `header_font_scale` | Header font size relative to base (e.g., 1.1) |
-
-```{r}
-#| eval: false
-web_theme_jama() |>
-  set_typography(font_family = "Helvetica, Arial, sans-serif",
-                 font_size_base = 13)
-```
-
-### set_spacing() {#set_spacing}
-
-Cell and row spacing.
-
-| Argument | Description |
-|----------|-------------|
-| `row_height` | Data-row height (px) |
-| `header_height` | Header-row height (px) |
-| `section_gap` | Gap between top-level groups (px) |
-| `padding` | Legacy combined padding |
-| `container_padding` | Outer container padding (px) |
-| `axis_gap` | Gap between table and plot axis (px) |
-| `group_padding` | Extra padding inside collapsible groups |
-| `cell_padding_x`, `cell_padding_y` | Horizontal/vertical cell padding (px) |
-| `column_gap` | Gap between columns (px) |
-
-```{r}
-#| eval: false
-web_theme_minimal() |>
-  set_spacing(row_height = 22, cell_padding_x = 8, column_gap = 12)
-```
-
-### set_shapes() {#set_shapes}
-
-Marker geometry and default multi-effect palettes.
-
-| Argument | Description |
-|----------|-------------|
-| `point_size` | Default marker size (px) |
-| `summary_height` | Summary diamond height (px) |
-| `line_width` | CI line stroke width (px) |
-| `border_radius` | Row/marker rounding (px) |
-| `effect_colors` | Character vector — colors for successive effects in multi-effect plots |
-| `marker_shapes` | Character vector — one of `"square"`, `"circle"`, `"diamond"`, `"triangle"` per effect |
-
-```{r}
-#| eval: false
-web_theme_default() |>
-  set_shapes(
-    point_size = 10,
-    effect_colors = c("#0b3d91", "#dc2626", "#16a34a"),
-    marker_shapes = c("square", "circle", "diamond")
-  )
-```
-
-### set_axis() {#set_axis}
-
-Axis range, ticks, gridlines, and CI clipping behavior.
-
-| Argument | Description |
-|----------|-------------|
-| `range_min`, `range_max` | Axis endpoints. `NA` = auto from data |
-| `tick_count` | Target number of ticks (auto-computed positions) |
-| `tick_values` | Explicit tick positions (numeric vector) — overrides `tick_count` |
-| `gridlines` | Show vertical gridlines (default `FALSE`) |
-| `gridline_style` | `"solid"`, `"dashed"`, or `"dotted"` |
-| `ci_clip_factor` | Clip CIs extending beyond this multiple of the estimate range. `Inf` disables clipping |
-| `include_null` | Always include null value in axis range |
-| `symmetric` | Force symmetric range around `null_value` |
-| `null_tick` | Always draw a tick at the null value |
-| `marker_margin` | Extra horizontal margin around markers (px) |
-
-```{r}
-#| eval: false
-web_theme_default() |>
-  set_axis(
-    tick_values = c(0.5, 0.75, 1.0, 1.5, 2.0),
-    gridlines = TRUE,
-    gridline_style = "dotted"
-  )
-```
-
-### set_layout() {#set_layout}
-
-Table/plot geometry.
-
-| Argument | Description |
-|----------|-------------|
-| `plot_position` | `"left"` or `"right"` — where the forest column sits relative to the table |
-| `table_width`, `plot_width` | Pixel widths or CSS units for table / plot halves |
-| `cell_padding_x`, `cell_padding_y` | (Deprecated — forwards to `set_spacing()`) |
-| `row_border` | Row border width (px) |
-| `row_border_style` | `"solid"`, `"dashed"`, `"dotted"`, `"none"` |
-| `container_border` | Outer container border width |
-| `container_border_radius` | Outer container corner radius |
-| `banding` | Zebra-stripe rows (`TRUE`/`FALSE`) |
-
-```{r}
-#| eval: false
-web_theme_default() |>
-  set_layout(plot_position = "right", banding = TRUE, row_border_style = "dotted")
-```
-
-### set_group_headers() {#set_group_headers}
-
-Per-level styling of nested group headers (level 1 = outermost).
-
-| Argument | Description |
-|----------|-------------|
-| `levelN_font_size` | Font size for group level N (N = 1, 2, 3) |
-| `levelN_font_weight` | Weight for group level N |
-| `levelN_italic` | Italicize group level N |
-| `levelN_background` | Background color for group level N |
-| `levelN_border_bottom` | Bottom border spec for group level N |
-| `indent_per_level` | Pixel indent applied per nesting level |
-
-```{r}
-#| eval: false
-web_theme_default() |>
-  set_group_headers(
-    level1_font_weight = 700,
-    level1_background = "#f1f5f9",
-    level2_italic = TRUE,
-    indent_per_level = 12
-  )
-```
-
-### set_effect_colors() {#set_effect_colors}
-
-Shorthand for `set_shapes(effect_colors = ...)` — palette for multi-effect plots.
-
-```{r}
-#| eval: false
-web_theme_default() |>
-  set_effect_colors(c("#0b3d91", "#dc2626", "#16a34a"))
-```
-
-### set_marker_shapes() {#set_marker_shapes}
-
-Shorthand for `set_shapes(marker_shapes = ...)` — shape sequence for multi-effect plots.
-
-```{r}
-#| eval: false
-web_theme_default() |>
-  set_marker_shapes(c("square", "circle", "diamond"))
+```r
+tabviz(data, label = "study") |>
+  set_theme("jama") |>
+  selectable_themes(list(
+    Classical = web_theme_jama(),
+    Modern    = web_theme_modern()
+  ))
 ```
 
 ---
 
-## Building Styling Pipelines
+## Quick reference
 
-### Creating Variants
+| Modifier | Operates on | Purpose |
+|---|---|---|
+| `set_row_style()` | `WebSpec`, htmlwidget | Row-level styling and row types. |
+| `set_column_style()` | `WebSpec`, htmlwidget | Per-cell styling for a single column. |
+| `set_marker_style()` | `WebSpec`, htmlwidget | Marker color / shape / opacity / size driver. |
+| `set_zoom()` | htmlwidget, `tabviz_proxy` | Zoom and container size constraints. |
+| `set_theme()` | `WebSpec`, htmlwidget, `tabviz_proxy` | Swap the active theme. |
+| `selectable_themes()` | `WebSpec`, htmlwidget | Curate the in-widget theme switcher. |
 
-A powerful pattern is creating multiple plot versions from a common base:
+## Related
 
-```{r}
-#| eval: false
-# Prepare data with styling columns
-styled <- data |>
-  mutate(
-    sig_color = ifelse(pval < 0.05, "#16a34a", "#64748b"),
-    design_shape = ifelse(is_rct, "circle", "square"),
-    is_sig = pval < 0.05
-  )
-
-# Base plot
-base <- forest_plot(styled,
-  point = "hr", lower = "lower", upper = "upper", label = "study",
-  scale = "log", null_value = 1
-)
-
-# Variant 1: Color by significance
-plot_sig <- base |>
-  set_marker_style(color = "sig_color") |>
-  set_row_style(bold = "is_sig")
-
-# Variant 2: Shape by design
-plot_design <- base |>
-  set_marker_style(shape = "design_shape")
-
-# Variant 3: Different theme
-plot_lancet <- base |>
-  set_theme("lancet")
-```
-
-### Reusable Styling Functions
-
-Create functions that encapsulate your organization's styling standards:
-
-```{r}
-#| eval: false
-# Define standard styling pipeline
-apply_clinical_style <- function(plot) {
-  plot |>
-    set_marker_style(color = "direction_color") |>
-    set_row_style(bold = "is_significant", type = "row_type") |>
-    set_theme("jama")
-}
-
-# Apply consistently across analyses
-forest_plot(trial_a, ...) |> apply_clinical_style()
-forest_plot(trial_b, ...) |> apply_clinical_style()
-forest_plot(pooled, ...) |> apply_clinical_style()
-```
-
----
-
-## Quick Reference
-
-| Function | Works On | Purpose |
-|----------|----------|---------|
-| `set_row_style()` | Widget, WebSpec | Row-level text styling, types, indentation |
-| `set_marker_style()` | Widget, WebSpec | Interval marker color, shape, opacity, size |
-| `set_column_style()` | WebSpec only | Per-cell styling for specific columns |
-| `set_theme()` | Widget, WebSpec, proxy | Apply complete theme |
-| `set_colors()` | WebTheme | Theme color palette |
-| `set_typography()` | WebTheme | Fonts and text sizing |
-| `set_spacing()` | WebTheme | Row height, cell padding, column gaps |
-| `set_shapes()` | WebTheme | Marker geometry, multi-effect palette |
-| `set_axis()` | WebTheme | Ticks, gridlines, range, CI clipping |
-| `set_layout()` | WebTheme | Plot position, borders, banding |
-| `set_group_headers()` | WebTheme | Nested group header styling |
-| `set_effect_colors()` | WebTheme | Multi-effect color sequence |
-| `set_marker_shapes()` | WebTheme | Multi-effect shape sequence |
-
-### Equivalent tabviz() Arguments
-
-Every styling function has equivalent direct arguments in `forest_plot()`:
-
-| set_*() Parameter | tabviz() Argument |
-|-------------------|------------------------|
-| `set_row_style(bold = "col")` | `row_bold = "col"` |
-| `set_row_style(type = "col")` | `row_type = "col"` |
-| `set_row_style(indent = "col")` | `row_indent = "col"` |
-| `set_marker_style(color = "col")` | `marker_color = "col"` |
-| `set_marker_style(shape = "col")` | `marker_shape = "col"` |
-| `set_marker_style(size = "col")` | `marker_size = "col"` |
-
-## See Also
-
-- [tabviz()](tabviz.qmd) for core plot creation
-- [Themes](themes.qmd) for theme customization
-- [Data Operations](data-ops.qmd) for column/row/data manipulation verbs
-- [Row styling binding rules](../guide/row-styling.qmd#binding-rules) — how `badge` and `icon` anchor to the first column
-- [Customizing Plots Guide](../guide/fluent-api.qmd) for workflow patterns
+- [Themes](themes.qmd) — `set_colors()`, `set_typography()`, `set_axis()`, etc. for the theme builder
+- [Data ops](data-ops.qmd) — `add_column()`, `sort_rows()`, `filter_rows()`, …
+- [Interaction](interaction.qmd) — `web_interaction()` and the `show_*` / `enable_*` rule
+- [`tabviz()`](tabviz.qmd) — equivalent constructor arguments

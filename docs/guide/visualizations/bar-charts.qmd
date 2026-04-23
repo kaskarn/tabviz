@@ -8,7 +8,13 @@ library(tabviz)
 library(dplyr)
 ```
 
-Horizontal bar charts for comparing magnitude across rows. Bars share a common axis for direct visual comparison.
+`viz_bar()` creates horizontal bar charts for comparing magnitude across rows. Bars share a common axis so the eye can compare values directly.
+
+::: {.callout-note}
+## `viz_bar()` vs `col_bar()`
+
+`viz_bar()` is a **focal column** with its own axis — designed for cross-row comparisons. If you only need a simple inline weight indicator inside a cell (no axis, no scale), reach for [`col_bar()`](../columns.qmd#visualizations) instead.
+:::
 
 ## Basic Usage
 
@@ -34,11 +40,9 @@ tabviz(bar_data, label = "metric",
 )
 ```
 
----
-
 ## Multiple Effects
 
-Compare multiple values per row with grouped bars:
+Wrap several `effect_bar()` items to compare values per row with grouped bars:
 
 ```{r}
 comparison_data <- data.frame(
@@ -62,34 +66,31 @@ tabviz(comparison_data, label = "region",
 )
 ```
 
----
+## `viz_bar()` Arguments
 
-## viz_bar() Arguments
+| Argument | Default | Purpose |
+|---|---|---|
+| `header` | `NULL` | Column header text |
+| `width` | `150` | Column width in pixels |
+| `scale` | `"linear"` | `"linear"` or `"log"` |
+| `axis_range` | auto | Fixed axis range `c(min, max)` |
+| `axis_ticks` | auto | Custom tick positions |
+| `axis_gridlines` | `FALSE` | Show vertical gridlines |
+| `axis_label` | `"Value"` | Label text below the axis |
+| `show_axis` | `TRUE` | Show the axis |
 
-| Argument | Description | Default |
-|----------|-------------|---------|
-| `header` | Column header text | `NULL` |
-| `width` | Column width in pixels | `150` |
-| `scale` | `"linear"` or `"log"` | `"linear"` |
-| `axis_range` | Fixed axis range `c(min, max)` | Auto |
-| `axis_ticks` | Custom tick positions | Auto |
-| `axis_gridlines` | Show vertical gridlines | `FALSE` |
-| `axis_label` | Label text below axis | `"Value"` |
-| `show_axis` | Show the axis | `TRUE` |
+## `effect_bar()` Arguments
 
-## effect_bar() Arguments
-
-| Argument | Description |
-|----------|-------------|
+| Argument | Purpose |
+|---|---|
 | `value` | Column name containing the bar value |
-| `label` | Display label (for legend with multiple effects) |
+| `label` | Display label (used in legends with multiple effects) |
 | `color` | Bar fill color |
-| `opacity` | Bar opacity (0-1, default: 0.85) |
-
----
+| `opacity` | Bar opacity 0–1 (default `0.85`) |
 
 ## See Also
 
-- [Visualizations Overview](index.qmd) — Interactivity, tooltips, export
+- [Visualizations Overview](index.qmd) — Tooltips, export, common features
 - [Boxplots](boxplots.qmd) — Distribution summaries with `viz_boxplot()`
 - [Violin Plots](violin-plots.qmd) — Full distributions with `viz_violin()`
+- [Columns: `col_bar()`](../columns.qmd#visualizations) — Inline weight bars without an axis

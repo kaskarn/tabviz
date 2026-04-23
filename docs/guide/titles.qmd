@@ -28,7 +28,7 @@ glp1_trials |>
       col_text("drug", "Drug"),
       viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1),
-      col_interval(point = "hr", lower = "lower", upper = "upper", header = "HR (95% CI)")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     )
   )
 ```

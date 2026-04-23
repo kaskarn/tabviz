@@ -11,6 +11,7 @@ col_badge(
   variants = NULL,
   colors = NULL,
   size = c("base", "sm"),
+  na_text = NULL,
   ...
 )
 }
@@ -29,6 +30,8 @@ col_badge(
 which override variants (e.g., \code{c("special" = "#ff5500")})}
 
 \item{size}{Badge size: "sm" or "base" (default "base")}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling
 (\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent}) and

@@ -4,7 +4,13 @@
 \alias{effect_violin}
 \title{Create a violin effect specification}
 \usage{
-effect_violin(data, label = NULL, color = NULL, fill_opacity = 0.5)
+effect_violin(
+  data,
+  label = NULL,
+  color = NULL,
+  opacity = 0.5,
+  fill_opacity = lifecycle::deprecated()
+)
 }
 \arguments{
 \item{data}{Column name containing array data (required)}
@@ -13,7 +19,10 @@ effect_violin(data, label = NULL, color = NULL, fill_opacity = 0.5)
 
 \item{color}{Fill color for the violin (optional)}
 
-\item{fill_opacity}{Fill opacity from 0 to 1 (default 0.5)}
+\item{opacity}{Fill opacity from 0 to 1 (default 0.5). Matches the
+\code{opacity} argument on \code{effect_forest()} / \code{effect_bar()}.}
+
+\item{fill_opacity}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{opacity}.}
 }
 \value{
 A VizViolinEffect object

@@ -7,9 +7,11 @@ title: "split_table()"
 library(tabviz)
 ```
 
-Create a collection of separate forest plots split by categorical variable values, with interactive sidebar navigation.
+`split_table()` slices a spec or widget into a `SplitForest` — one sub-plot per unique value (or combination of values) of the splitting column(s). The resulting object renders with sidebar navigation in the browser, can be exported one file per sub-plot via `save_split_table()`, and supports a shared-axis option for cross-subgroup comparison.
 
-## Usage
+The same effect is available inline on `tabviz()` and `forest_plot()` via the `split_by` / `shared_axis` arguments — `split_table()` is the explicit constructor used when you want a `SplitForest` object to inspect, modify, or hand to `save_split_table()`.
+
+## Signature
 
 ```r
 split_table(x, by, shared_axis = FALSE, ...)
@@ -17,50 +19,45 @@ split_table(x, by, shared_axis = FALSE, ...)
 
 ## Arguments
 
-| Argument | Description |
-|----------|-------------|
-| `x` | A `WebSpec` object or data frame |
-| `by` | Column name(s) for splitting. Single string or character vector for hierarchical splits |
-| `shared_axis` | If `TRUE`, use the same axis range across all plots (default: `FALSE`) |
-| `...` | Additional arguments passed to `web_spec()` if `x` is a data frame |
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `x` | `WebSpec` / htmlwidget / `data.frame` | required | Source. A data frame is fed through `web_spec()` first. |
+| `by` | `character` | required | Column name(s) to split on. A single string creates one plot per unique value; a vector creates a hierarchical navigation tree (outermost first). |
+| `shared_axis` | `logical(1)` | `FALSE` | When `TRUE`, all sub-plots use the same x-axis range so subgroup effects can be compared at a glance. |
+| `...` | — | — | Forwarded to `web_spec()` when `x` is a data frame. |
 
-## Value
-A `SplitForest` object containing multiple `WebSpec` objects, one per unique combination of split values.
+## Return value
 
-## Details
+A `SplitForest` containing one `WebSpec` per split combination, the navigation tree, the split variables, and (when `shared_axis = TRUE`) the shared axis range.
 
-### Single Variable Split
+## `tabviz()` / `forest_plot()` shortcut
+
+Both top-level entry points accept `split_by` and `shared_axis` directly. They build a `WebSpec` first, call `split_table()` internally, then render the result.
+
 ```r
-split_table(spec, by = "region")
-```
-Creates one plot per unique value in the `region` column.
+# Equivalent
+tabviz(data, label = "study",
+       columns = list(viz_forest("or", "lo", "hi")),
+       split_by = "region", shared_axis = TRUE)
 
-### Hierarchical Split
-```r
-split_table(spec, by = c("sex", "age_group"))
+tabviz(data, label = "study",
+       columns = list(viz_forest("or", "lo", "hi")),
+       .spec_only = TRUE) |>
+  split_table(by = "region", shared_axis = TRUE) |>
+  forest_plot()
 ```
-Creates plots for each combination (e.g., Male/Young, Male/Old, Female/Young, Female/Old) with nested navigation.
-
-### Shared Axis
-```r
-split_table(spec, by = "region", shared_axis = TRUE
-)
-```
-Forces all sub-plots to use the same axis range, enabling visual comparison across subgroups.
 
 ## Examples
 
-### Basic Split
 ```{r}
 set.seed(42)
 data <- data.frame(
-  study = paste0("Study ", 1:30),
+  study  = paste0("Study ", 1:30),
   region = sample(c("Americas", "Europe", "Asia"), 30, replace = TRUE),
-  or = exp(rnorm(30, log(0.8), 0.3)),
-  lower = NA, upper = NA
+  or     = exp(rnorm(30, log(0.8), 0.3))
 )
 data$lower <- data$or * exp(-1.96 * 0.25)
-data$upper <- data$or * exp(1.96 * 0.25)
+data$upper <- data$or * exp( 1.96 * 0.25)
 
 forest_plot(data,
   point = "or", lower = "lower", upper = "upper",
@@ -71,26 +68,31 @@ forest_plot(data,
 )
 ```
 
-### Hierarchical Split
-
-Use a vector of column names for nested navigation:
-
-```r
+```{r}
+#| eval: false
+# Hierarchical split with nested sidebar
 forest_plot(data,
   point = "or", lower = "lower", upper = "upper",
   label = "study",
-  split_by = c("sex", "age_group"),  # Creates nested tree navigation
+  split_by = c("sex", "age_group"),
   scale = "log", null_value = 1
 )
 ```
 
-## Related Functions
+```{r}
+#| eval: false
+# Build the SplitForest explicitly to export
+sf <- tabviz(data, label = "study",
+             columns = list(viz_forest("or", "lower", "upper")),
+             .spec_only = TRUE) |>
+  split_table(by = c("sex", "age_group"), shared_axis = TRUE)
 
-- `forest_plot()` - Render a forest plot (accepts `split_by` parameter)
-- `save_split_table()` - Export all sub-plots to a directory
-- `web_spec()` - Create a plot specification
+sf                              # printed summary of the SplitForest
+save_split_table(sf, "out/")    # one file per sub-plot
+```
 
-## See Also
+## Related
 
-- [Split Plots Guide](../guide/split-plots.qmd) for detailed usage
-- [Feature Showcases](../gallery/showcases.qmd) for visual examples
+- [`tabviz()`](tabviz.qmd) and [`forest_plot()`](forest_plot.qmd) — both accept `split_by` directly
+- [`save_split_table()`](save_plot.qmd#save_split_table) — export every sub-plot to a directory tree
+- [Shiny bindings](shiny.qmd) — `splitTabvizOutput()`, `renderSplitTabviz()`, `split_tabviz_proxy()`

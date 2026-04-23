@@ -30,7 +30,7 @@ forest_plot(
   columns = list(
     col_numeric("n", "N"),
     col_numeric("events", "Events"),
-    col_interval("OR (95% CI)"),
+    col_interval("or", "lower", "upper", header = "OR (95% CI)"),
     col_pvalue("pvalue", "P")
   ),
   theme = web_theme_presentation(),

@@ -37,7 +37,7 @@ forest_plot(
   columns = list(
     col_n("n"),
     col_sparkline("trend", "HR Trend"),
-    col_interval("ITT HR (95% CI)")
+    col_interval("itt_hr", "itt_lo", "itt_hi", header = "ITT HR (95% CI)")
   ),
   effects = list(
     effect_forest("itt_hr", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),

@@ -6,9 +6,10 @@
     value: number | undefined | null;
     options?: PvalueColumnOptions;
     cellStyle?: CellStyle;
+    naText?: string;
   }
 
-  let { value, options, cellStyle }: Props = $props();
+  let { value, options, cellStyle, naText }: Props = $props();
 
   // Cell styling from NSE/formulas
   const isBold = $derived(cellStyle?.bold ?? false);
@@ -36,7 +37,7 @@
   });
 
   const formattedValue = $derived.by(() => {
-    if (value === undefined || value === null) return "";
+    if (value === undefined || value === null) return naText ?? "";
 
     // Abbreviation threshold: show "<threshold" notation if enabled and value is below
     if (abbrevThreshold !== null && value < abbrevThreshold) {

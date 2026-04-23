@@ -8,6 +8,8 @@ library(tabviz)
 library(dplyr)
 ```
 
+Build your first interactive forest plot in about 30 lines, then layer in styling, themes, and conditional formatting.
+
 ## Installation
 
 ```r
@@ -16,26 +18,20 @@ install.packages("pak")
 pak::pak("kaskarn/tabviz")
 ```
 
-::: {.callout-note}
-## Key Concepts
+:::{.callout-note}
+## Key concepts
 
-Before diving in, here are the core concepts:
-
-- **Label column**: The row identifier (study name, category, item name, etc.)
-- **Column types**: `col_*()` for data columns, `viz_*()` for visualizations
-- **Row types**: `"data"` (normal row), `"header"` (section header), `"summary"` (totals/pooled), `"spacer"` (empty row)
-- **Column mapping**: Pass column names as strings—values are computed per-row
+- **Label column**: the row identifier (study name, category, item).
+- **Column types**: `col_*()` for data columns, `viz_*()` for visualizations.
+- **Row types**: `"data"`, `"header"`, `"summary"`, `"spacer"`.
+- **Column mapping**: pass column names as strings; values are computed per row.
 :::
 
-## Your First Table
-
-Create an interactive table with `tabviz()`:
+## Your first table
 
 ```{r}
-# Use the built-in glp1_trials dataset
 data(glp1_trials)
 
-# Filter to main trial results
 meta_data <- glp1_trials |>
   filter(row_type == "data", group == "Main Trials") |>
   head(5)
@@ -47,32 +43,26 @@ tabviz(meta_data,
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio (95% CI)"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   )
 )
 ```
 
-::: {.callout-tip}
-## Built-in Datasets
-This example uses `glp1_trials`, one of five datasets included in the package. See [Package Data](package-data.qmd) for all available datasets.
+:::{.callout-tip}
+## Built-in datasets
+This example uses `glp1_trials`, one of five datasets shipped with the package. See [Package Data](package-data.qmd) for all available datasets.
 :::
 
----
-
-## Understanding the Code
-
-### The Core Pattern
+## The core pattern
 
 ```r
 tabviz(data,
-  label = "label_column",    # Row labels
-  columns = list(...)        # What columns to show
+  label = "label_column",    # row labels
+  columns = list(...)        # what columns to show
 )
 ```
 
-### Column Types
-
-Each `col_*()` function defines a column:
+Each `col_*()` function defines a column. The most common helpers:
 
 | Function | Purpose | Example |
 |----------|---------|---------|
@@ -80,17 +70,14 @@ Each `col_*()` function defines a column:
 | `col_numeric()` | Numbers | `col_numeric("value", decimals = 1)` |
 | `col_n()` | Sample sizes | `col_n("n")` |
 | `viz_forest()` | Forest plot | `viz_forest(point = "hr", lower = "lo", upper = "hi")` |
-| `col_interval()` | CI display | `col_interval("HR", point = "hr", lower = "lo", upper = "hi")` |
+| `col_interval()` | Point (CI) | `col_interval("hr", "lo", "hi", header = "HR")` |
 | `col_pvalue()` | P-values | `col_pvalue("pval")` |
 
 See [Columns](columns.qmd) for all 16+ column types.
 
----
-
-## Adding More Columns
+## Adding more columns
 
 ```{r}
-# Add drug name and events columns
 tabviz(meta_data,
   label = "study",
   columns = list(
@@ -99,14 +86,12 @@ tabviz(meta_data,
     col_numeric("events", header = "Events"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   )
 )
 ```
 
----
-
-## Applying Themes
+## Applying themes
 
 tabviz includes 9 publication-ready themes:
 
@@ -133,15 +118,11 @@ tabviz(meta_data[1:3, ],
 )
 ```
 
-**Available themes**: `web_theme_default()`, `web_theme_jama()`, `web_theme_lancet()`, `web_theme_nature()`, `web_theme_cochrane()`, `web_theme_modern()`, `web_theme_presentation()`, `web_theme_dark()`, `web_theme_minimal()`
+**Available themes**: `web_theme_default()`, `web_theme_jama()`, `web_theme_lancet()`, `web_theme_nature()`, `web_theme_cochrane()`, `web_theme_modern()`, `web_theme_presentation()`, `web_theme_dark()`, `web_theme_minimal()`. See [Themes](themes.qmd).
 
-See [Themes](themes.qmd) for customization options.
+## Row styling
 
----
-
-## Row Styling
-
-Create visual hierarchy with row types and styling:
+Build visual hierarchy with row types and styling:
 
 ```{r}
 styled_data <- data.frame(
@@ -158,15 +139,15 @@ tabviz(styled_data,
   columns = list(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   row_type = "rtype",
   row_bold = "rbold"
 )
 ```
 
-::: {.callout-note}
-## Row Types
+:::{.callout-note}
+## Row types
 
 | Type | Behavior |
 |------|----------|
@@ -178,9 +159,7 @@ tabviz(styled_data,
 Header and spacer rows should have `NA` for point, lower, and upper.
 :::
 
----
-
-## Conditional Styling
+## Conditional styling
 
 Style rows based on data values using formula expressions:
 
@@ -190,10 +169,10 @@ tabviz(meta_data,
   columns = list(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  row_bold = ~ upper < 1,  # Bold if significant
-  marker_color = ~ ifelse(upper < 1, "#16a34a", "#64748b")  # Green if significant
+  row_bold = ~ upper < 1,
+  marker_color = ~ ifelse(upper < 1, "#16a34a", "#64748b")
 )
 ```
 
@@ -203,9 +182,9 @@ Or use pre-computed columns:
 direction_data <- meta_data |>
   mutate(
     marker_color = case_when(
-      upper < 1 ~ "#16a34a",  # Green: significant benefit
-      lower > 1 ~ "#dc2626",  # Red: significant harm
-      TRUE ~ "#64748b"        # Gray: not significant
+      upper < 1 ~ "#16a34a",
+      lower > 1 ~ "#dc2626",
+      TRUE ~ "#64748b"
     )
   )
 
@@ -219,11 +198,9 @@ tabviz(direction_data,
 )
 ```
 
----
+## Next steps
 
-## Next Steps
-
-| Topic | What You'll Learn |
+| Topic | What you'll learn |
 |-------|-------------------|
 | [Columns](columns.qmd) | All 16+ column types |
 | [Row Styling](row-styling.qmd) | Headers, summaries, indentation, badges |

@@ -87,10 +87,198 @@ test_that("effect_boxplot creates VizBoxplotEffect", {
 })
 
 test_that("effect_violin creates VizViolinEffect", {
-  e <- effect_violin(data = "values", label = "Test", fill_opacity = 0.3)
+  e <- effect_violin(data = "values", label = "Test", opacity = 0.3)
   expect_true(inherits(e, "tabviz::VizViolinEffect"))
   expect_equal(e@data, "values")
-  expect_equal(e@fill_opacity, 0.3)
+  expect_equal(e@opacity, 0.3)
+})
+
+test_that("effect_violin(fill_opacity=) is deprecated and forwards to opacity", {
+  expect_warning(
+    e <- effect_violin(data = "values", fill_opacity = 0.4),
+    "deprecated"
+  )
+  expect_equal(e@opacity, 0.4)
+})
+
+test_that("effect_boxplot(fill_opacity=) is deprecated and forwards to opacity", {
+  expect_warning(
+    e <- effect_boxplot(data = "values", fill_opacity = 0.6),
+    "deprecated"
+  )
+  expect_equal(e@opacity, 0.6)
+})
+
+test_that("viz_violin / viz_boxplot effects serialize as `opacity` in JSON", {
+  e_v <- effect_violin(data = "v", opacity = 0.4)
+  e_b <- effect_boxplot(data = "b", opacity = 0.6)
+  data <- data.frame(label = "x", v = I(list(1:5)), b = I(list(1:5)))
+  spec <- web_spec(data = data, label = "label",
+                   columns = list(viz_violin(e_v), viz_boxplot(e_b)))
+  payload <- tabviz:::serialize_spec(spec)
+  vio_eff <- payload$columns[[2]]$options$vizViolin$effects[[1]]
+  box_eff <- payload$columns[[3]]$options$vizBoxplot$effects[[1]]
+  expect_equal(vio_eff$opacity, 0.4)
+  expect_equal(box_eff$opacity, 0.6)
+  expect_null(vio_eff$fillOpacity)
+  expect_null(box_eff$fillOpacity)
+})
+
+test_that("viz_bar / viz_boxplot / viz_violin accept annotations and serialize them", {
+  data <- data.frame(label = c("a","b"), x = c(10, 20), y = I(list(1:5, 1:5)))
+  spec <- web_spec(
+    data = data, label = "label",
+    columns = list(
+      viz_bar(effect_bar("x"), annotations = list(refline(15, label = "mid"))),
+      viz_boxplot(effect_boxplot(data = "y"), annotations = list(refline(3))),
+      viz_violin(effect_violin(data = "y"), annotations = list(refline(3)))
+    )
+  )
+  payload <- tabviz:::serialize_spec(spec)
+  bar_anns <- payload$columns[[2]]$options$vizBar$annotations
+  box_anns <- payload$columns[[3]]$options$vizBoxplot$annotations
+  vio_anns <- payload$columns[[4]]$options$vizViolin$annotations
+  expect_length(bar_anns, 1)
+  expect_equal(bar_anns[[1]]$type, "reference_line")
+  expect_equal(bar_anns[[1]]$x, 15)
+  expect_equal(bar_anns[[1]]$label, "mid")
+  expect_equal(box_anns[[1]]$x, 3)
+  expect_equal(vio_anns[[1]]$x, 3)
+})
+
+test_that("viz_bar(null_value=) prepends a synthetic refline to annotations", {
+  data <- data.frame(label = c("a","b"), x = c(10, 20))
+  spec <- web_spec(
+    data = data, label = "label",
+    columns = list(viz_bar(effect_bar("x"), null_value = 0))
+  )
+  payload <- tabviz:::serialize_spec(spec)
+  anns <- payload$columns[[2]]$options$vizBar$annotations
+  expect_length(anns, 1)
+  expect_equal(anns[[1]]$type, "reference_line")
+  expect_equal(anns[[1]]$x, 0)
+  expect_equal(anns[[1]]$style, "dashed")
+})
+
+test_that("null_value + annotations stack: null refline first, then user annotations", {
+  data <- data.frame(label = c("a","b"), x = c(10, 20))
+  spec <- web_spec(
+    data = data, label = "label",
+    columns = list(viz_bar(effect_bar("x"), null_value = 0,
+                           annotations = list(refline(25, label = "target"))))
+  )
+  payload <- tabviz:::serialize_spec(spec)
+  anns <- payload$columns[[2]]$options$vizBar$annotations
+  expect_length(anns, 2)
+  expect_equal(anns[[1]]$x, 0)        # synthetic null line first
+  expect_equal(anns[[2]]$x, 25)       # user refline second
+  expect_equal(anns[[2]]$label, "target")
+})
+
+test_that("viz_*() rejects non-annotation objects in annotations list", {
+  data <- data.frame(label = "a", x = 1)
+  expect_error(
+    viz_bar(effect_bar("x"), annotations = list("not an annotation")),
+    "annotation"
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Marker styling cascade: row semantic class reaches viz cells
+# ---------------------------------------------------------------------------
+
+test_that("row_accent/emphasis/muted formula resolves to per-row style booleans", {
+  data <- data.frame(
+    label = letters[1:4],
+    pval  = c(0.001, 0.04, 0.2, 0.5),
+    hr    = c(0.5, 0.7, 1.0, 1.2),
+    lo    = c(0.4, 0.5, 0.8, 1.0),
+    hi    = c(0.6, 0.9, 1.3, 1.5)
+  )
+  spec <- web_spec(
+    data = data, label = "label",
+    row_accent = ~ pval < 0.05,
+    columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi"))
+  )
+  p <- tabviz:::serialize_spec(spec)
+
+  # Rows 1 and 2 have pval < 0.05 → style.accent should be TRUE
+  expect_true(isTRUE(p$data$rows[[1]]$style$accent))
+  expect_true(isTRUE(p$data$rows[[2]]$style$accent))
+  # Rows 3 and 4 do not → accent should be absent or FALSE
+  expect_true(is.null(p$data$rows[[3]]$style$accent) ||
+              isFALSE(p$data$rows[[3]]$style$accent))
+  expect_true(is.null(p$data$rows[[4]]$style$accent) ||
+              isFALSE(p$data$rows[[4]]$style$accent))
+})
+
+test_that("marker_color formula with NA passes through (Layer 4 fall-through)", {
+  data <- data.frame(
+    label = letters[1:3],
+    pval  = c(0.002, 0.04, 0.5),
+    hr    = c(0.5, 0.7, 1.0),
+    lo    = c(0.4, 0.5, 0.8),
+    hi    = c(0.6, 0.9, 1.3)
+  )
+  spec <- web_spec(
+    data = data, label = "label",
+    marker_color = ~ ifelse(pval < 0.005, "darkred", NA),
+    columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi"))
+  )
+  p <- tabviz:::serialize_spec(spec)
+
+  # Row 1 (pval=0.002 < 0.005) → markerStyle.color = "darkred"
+  expect_equal(p$data$rows[[1]]$markerStyle$color, "darkred")
+  # Rows 2, 3 → NA from formula → markerStyle.color absent (fall-through)
+  expect_null(p$data$rows[[2]]$markerStyle$color)
+  expect_null(p$data$rows[[3]]$markerStyle$color)
+})
+
+test_that("row_accent and marker_color formulas coexist in spec (layered)", {
+  data <- data.frame(
+    label = letters[1:3],
+    pval  = c(0.002, 0.04, 0.5),
+    hr    = c(0.5, 0.7, 1.0),
+    lo    = c(0.4, 0.5, 0.8),
+    hi    = c(0.6, 0.9, 1.3)
+  )
+  spec <- web_spec(
+    data = data, label = "label",
+    row_accent   = ~ pval < 0.05,
+    marker_color = ~ ifelse(pval < 0.005, "darkred", NA),
+    columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi"))
+  )
+  p <- tabviz:::serialize_spec(spec)
+
+  # Row 1: both style.accent=TRUE AND markerStyle.color="darkred" (L4 wins at render)
+  expect_true(isTRUE(p$data$rows[[1]]$style$accent))
+  expect_equal(p$data$rows[[1]]$markerStyle$color, "darkred")
+  # Row 2: accent=TRUE only (L4 is NA, passes through to L3)
+  expect_true(isTRUE(p$data$rows[[2]]$style$accent))
+  expect_null(p$data$rows[[2]]$markerStyle$color)
+  # Row 3: neither set
+  expect_true(is.null(p$data$rows[[3]]$style$accent) ||
+              isFALSE(p$data$rows[[3]]$style$accent))
+  expect_null(p$data$rows[[3]]$markerStyle$color)
+})
+
+test_that("semantic cascade works on non-forest viz columns too", {
+  data <- data.frame(
+    label = letters[1:3],
+    pval  = c(0.002, 0.04, 0.5),
+    val   = c(10, 20, 30)
+  )
+  spec <- web_spec(
+    data = data, label = "label",
+    row_muted = ~ pval > 0.2,
+    columns = list(viz_bar(effect_bar("val")))
+  )
+  p <- tabviz:::serialize_spec(spec)
+  # Row 3 (pval=0.5 > 0.2) → style.muted TRUE; the JS side uses this to
+  # replace fill (single-effect bar) with theme.colors.muted.
+  expect_true(isTRUE(p$data$rows[[3]]$style$muted))
+  expect_true(is.null(p$data$rows[[1]]$style$muted) ||
+              isFALSE(p$data$rows[[1]]$style$muted))
 })
 
 test_that("viz columns integrate with web_spec", {

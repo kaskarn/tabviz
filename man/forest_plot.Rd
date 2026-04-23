@@ -16,6 +16,9 @@ forest_plot(
   scale = NULL,
   null_value = NULL,
   axis_label = NULL,
+  axis_range = NULL,
+  axis_ticks = NULL,
+  axis_gridlines = NULL,
   theme = NULL,
   ...,
   split_by = NULL,
@@ -52,6 +55,15 @@ These are added alongside the auto-generated forest column.}
 \item{null_value}{Reference value for null effect. Default: 0 for linear, 1 for log}
 
 \item{axis_label}{Label for the graphical axis}
+
+\item{axis_range}{Numeric vector \code{c(min, max)} to override the axis range
+on the auto-built forest column.}
+
+\item{axis_ticks}{Numeric vector of explicit tick positions for the
+auto-built forest column.}
+
+\item{axis_gridlines}{Logical to show/hide gridlines on the auto-built
+forest column.}
 
 \item{theme}{Theme object (use \verb{web_theme_*()} functions)}
 

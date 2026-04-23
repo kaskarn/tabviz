@@ -21,11 +21,13 @@ import type {
   BoxplotStats,
   KDEResult,
   AxisConfig,
+  Annotation,
 } from "$types";
 import { niceDomain, DOMAIN_PADDING, getEffectValue, normalizeValue } from "./scale-utils";
 import { computeAxis, generateTicks, VIZ_MARGIN, type AxisComputation } from "./axis-utils";
 import { computeArrowDimensions, renderArrowPath } from "./arrow-utils";
 import { isVizType, resolveShowHeader } from "./column-compat";
+import { resolveMarkerStyle } from "./marker-styling";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -1533,21 +1535,24 @@ function renderInterval(
     const themeMarkerShapes = theme.shapes.markerShapes;
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
-    // Color priority:
-    // 1. Primary effect: row.markerStyle.color (if set)
-    // 2. effect.color (if set)
-    // 3. theme.shapes.effectColors[idx] (if defined)
-    // 4. theme.colors.interval (fallback)
-    let color: string;
-    if (isPrimary && markerStyle?.color) {
-      color = markerStyle.color;
-    } else if (effect.color) {
-      color = effect.color;
+    // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color
+    let baseColor: string;
+    if (effect.color) {
+      baseColor = effect.color;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
-      color = themeEffectColors[idx % themeEffectColors.length];
+      baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {
-      color = theme.colors.interval ?? theme.colors.primary ?? "#2563eb";
+      baseColor = theme.colors.interval ?? theme.colors.primary ?? "#2563eb";
     }
+
+    // Apply Layers 3+4 via the shared cascade resolver
+    const ms = resolveMarkerStyle(
+      baseColor,
+      markerStyle?.color ?? null,
+      row.style,
+      validEffects.length,
+      theme,
+    );
 
     // Shape priority:
     // 1. Primary effect: row.markerStyle.shape (if set)
@@ -1575,17 +1580,18 @@ function renderInterval(
       opacity = 1;
     }
 
-    return { color, shape, opacity };
+    return { fill: ms.fill, stroke: ms.stroke, strokeWidth: ms.strokeWidth, shape, opacity };
   }
 
   // Helper to render marker shape
-  function renderMarker(cx: number, effectY: number, size: number, style: { color: string; shape: MarkerShape; opacity: number }): string {
-    const { color, shape, opacity } = style;
+  function renderMarker(cx: number, effectY: number, size: number, style: { fill: string; stroke: string | null; strokeWidth: number; shape: MarkerShape; opacity: number }): string {
+    const { fill, stroke, strokeWidth, shape, opacity } = style;
     const opacityAttr = opacity < 1 ? ` fill-opacity="${opacity}"` : "";
+    const strokeAttr = stroke ? ` stroke="${stroke}" stroke-width="${strokeWidth}"` : "";
 
     switch (shape) {
       case "circle":
-        return `<circle cx="${cx}" cy="${effectY}" r="${size}" fill="${color}"${opacityAttr}/>`;
+        return `<circle cx="${cx}" cy="${effectY}" r="${size}" fill="${fill}"${opacityAttr}${strokeAttr}/>`;
       case "diamond": {
         const pts = [
           `${cx},${effectY - size}`,
@@ -1593,7 +1599,7 @@ function renderInterval(
           `${cx},${effectY + size}`,
           `${cx - size},${effectY}`
         ].join(' ');
-        return `<polygon points="${pts}" fill="${color}"${opacityAttr}/>`;
+        return `<polygon points="${pts}" fill="${fill}"${opacityAttr}${strokeAttr}/>`;
       }
       case "triangle": {
         const pts = [
@@ -1601,10 +1607,10 @@ function renderInterval(
           `${cx + size},${effectY + size}`,
           `${cx - size},${effectY + size}`
         ].join(' ');
-        return `<polygon points="${pts}" fill="${color}"${opacityAttr}/>`;
+        return `<polygon points="${pts}" fill="${fill}"${opacityAttr}${strokeAttr}/>`;
       }
       default: // square
-        return `<rect x="${cx - size}" y="${effectY - size}" width="${size * 2}" height="${size * 2}" fill="${color}"${opacityAttr}/>`;
+        return `<rect x="${cx - size}" y="${effectY - size}" width="${size * 2}" height="${size * 2}" fill="${fill}"${opacityAttr}${strokeAttr}/>`;
     }
   }
 
@@ -1634,7 +1640,7 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"
-            fill="${style.color}"${opacityAttr} stroke="${theme.colors.summaryBorder}" stroke-width="1"/>
+            fill="${style.fill}"${opacityAttr} stroke="${theme.colors.summaryBorder}" stroke-width="1"/>
         </g>`);
     } else {
       // Regular row: CI line with whiskers and marker
@@ -1756,6 +1762,36 @@ function renderDiamond(
 // ============================================================================
 
 /**
+ * Render reference-line annotations for a viz column.
+ * Mirrors the inline rendering in ForestPlot.svelte for non-forest viz overlays.
+ * `forest_annotation()` (CustomAnnotation) is forest-specific and skipped here.
+ */
+function renderVizAnnotations(
+  annotations: Annotation[] | null | undefined,
+  xScale: Scale,
+  vizX: number,
+  plotY: number,
+  rowsHeight: number,
+): string {
+  if (!annotations || annotations.length === 0) return "";
+  const parts: string[] = [];
+  for (const ann of annotations) {
+    if (ann.type !== "reference_line") continue;
+    const x = vizX + xScale(ann.x);
+    const stroke = ann.color ?? "#94a3b8";
+    const strokeWidth = ann.width ?? 1;
+    const opacity = ann.opacity ?? 0.6;
+    const dash = ann.style === "dashed" ? "4,4" : ann.style === "dotted" ? "2,2" : "";
+    parts.push(
+      `<line x1="${x}" x2="${x}" y1="${plotY}" y2="${plotY + rowsHeight}" ` +
+      `stroke="${stroke}" stroke-width="${strokeWidth}" stroke-opacity="${opacity}" ` +
+      `stroke-dasharray="${dash}"/>`
+    );
+  }
+  return parts.join("");
+}
+
+/**
  * Render a viz_bar column cell for a single row.
  * Matches VizBar.svelte rendering.
  */
@@ -1797,13 +1833,17 @@ function renderVizBar(
     const barY = yCenter - totalBarHeight / 2 + idx * (barHeight + barGap);
     const barXStart = vizX + xScale(Math.min(0, value));
     const barW = Math.abs(xScale(value) - xScale(0));
-    const color = effect.color ?? defaultColors[idx % defaultColors.length];
-    const opacity = effect.opacity ?? 0.85;
+    // Marker styling cascade: per-row literal > row semantic class > per-effect literal > palette
+    const baseColor = effect.color ?? defaultColors[idx % defaultColors.length];
+    const ms = resolveMarkerStyle(baseColor, row.markerStyle?.color ?? null, row.style, numEffects, theme);
+    const rowOpacity = row.markerStyle?.opacity ?? null;
+    const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? 0.85);
+    const strokeAttr = ms.stroke ? ` stroke="${ms.stroke}" stroke-width="${ms.strokeWidth}"` : "";
 
     parts.push(`<rect
       x="${barXStart}" y="${barY}"
       width="${Math.max(1, barW)}" height="${barHeight}"
-      fill="${color}" fill-opacity="${opacity}" rx="2"
+      fill="${ms.fill}" fill-opacity="${opacity}"${strokeAttr} rx="2"
       class="viz-bar-segment"/>`);
   });
 
@@ -1885,45 +1925,50 @@ function renderVizBoxplot(
 
     const boxY = yCenter - totalHeight / 2 + idx * (boxHeight + boxGap);
     const boxCenterY = boxY + boxHeight / 2;
-    const color = effect.color ?? defaultColors[idx % defaultColors.length];
-    const opacity = effect.fillOpacity ?? 0.7;
+    // Marker styling cascade
+    const baseColor = effect.color ?? defaultColors[idx % defaultColors.length];
+    const ms = resolveMarkerStyle(baseColor, row.markerStyle?.color ?? null, row.style, numEffects, theme);
+    const rowOpacity = row.markerStyle?.opacity ?? null;
+    const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? 0.7);
+    const strokeColor = ms.stroke ?? lineColor;
+    const strokeWidth = ms.stroke ? ms.strokeWidth : 1;
 
     // Whisker lines
     // Left whisker
     parts.push(`<line
       x1="${vizX + xScale(stats.min)}" x2="${vizX + xScale(stats.q1)}"
       y1="${boxCenterY}" y2="${boxCenterY}"
-      stroke="${lineColor}" stroke-width="1"/>`);
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
     // Left whisker cap
     parts.push(`<line
       x1="${vizX + xScale(stats.min)}" x2="${vizX + xScale(stats.min)}"
       y1="${boxCenterY - boxHeight / 4}" y2="${boxCenterY + boxHeight / 4}"
-      stroke="${lineColor}" stroke-width="1"/>`);
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
 
     // Right whisker
     parts.push(`<line
       x1="${vizX + xScale(stats.q3)}" x2="${vizX + xScale(stats.max)}"
       y1="${boxCenterY}" y2="${boxCenterY}"
-      stroke="${lineColor}" stroke-width="1"/>`);
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
     // Right whisker cap
     parts.push(`<line
       x1="${vizX + xScale(stats.max)}" x2="${vizX + xScale(stats.max)}"
       y1="${boxCenterY - boxHeight / 4}" y2="${boxCenterY + boxHeight / 4}"
-      stroke="${lineColor}" stroke-width="1"/>`);
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
 
     // Box (Q1 to Q3)
     const boxW = Math.max(2, xScale(stats.q3) - xScale(stats.q1));
     parts.push(`<rect
       x="${vizX + xScale(stats.q1)}" y="${boxY}"
       width="${boxW}" height="${boxHeight}"
-      fill="${color}" fill-opacity="${opacity}"
-      stroke="${lineColor}" stroke-width="1"/>`);
+      fill="${ms.fill}" fill-opacity="${opacity}"
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
 
     // Median line
     parts.push(`<line
       x1="${vizX + xScale(stats.median)}" x2="${vizX + xScale(stats.median)}"
       y1="${boxY}" y2="${boxY + boxHeight}"
-      stroke="${lineColor}" stroke-width="2"/>`);
+      stroke="${strokeColor}" stroke-width="${Math.max(2, strokeWidth)}"/>`);
 
     // Outliers
     if (options.showOutliers !== false && stats.outliers.length > 0) {
@@ -1931,7 +1976,7 @@ function renderVizBoxplot(
         parts.push(`<circle
           cx="${vizX + xScale(outlier)}" cy="${boxCenterY}"
           r="2.5"
-          fill="none" stroke="${color}" stroke-width="1.5"/>`);
+          fill="none" stroke="${ms.fill}" stroke-width="1.5"/>`);
       }
     }
   });
@@ -2006,8 +2051,13 @@ function renderVizViolin(
     if (!kde || kde.x.length < 2) return;
 
     const violinCenterY = yCenter - totalHeight / 2 + violinHeight / 2 + idx * (violinHeight + violinGap);
-    const color = effect.color ?? defaultColors[idx % defaultColors.length];
-    const opacity = effect.fillOpacity ?? 0.5;
+    // Marker styling cascade
+    const baseColor = effect.color ?? defaultColors[idx % defaultColors.length];
+    const ms = resolveMarkerStyle(baseColor, row.markerStyle?.color ?? null, row.style, numEffects, theme);
+    const rowOpacity = row.markerStyle?.opacity ?? null;
+    const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? 0.5);
+    const violinStroke = ms.stroke ?? lineColor;
+    const violinStrokeW = ms.stroke ? ms.strokeWidth : 0.5;
 
     // Generate violin path
     const normalized = normalizeKDE(kde, maxWidth);
@@ -2030,8 +2080,8 @@ function renderVizViolin(
 
     parts.push(`<path
       d="${pathPoints.join(" ")}"
-      fill="${color}" fill-opacity="${opacity}"
-      stroke="${lineColor}" stroke-width="0.5"/>`);
+      fill="${ms.fill}" fill-opacity="${opacity}"
+      stroke="${violinStroke}" stroke-width="${violinStrokeW}"/>`);
 
     // Median line
     if (options.showMedian !== false && quartiles) {
@@ -3468,6 +3518,45 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       }
     }
 
+    // Custom annotations (forest_annotation()): per-row glyphs
+    const customAnns = annotations.filter(
+      (a): a is Extract<Annotation, { type: "custom" }> => a.type === "custom"
+    );
+    if (customAnns.length > 0) {
+      const pointCol = forestOpts?.point ?? forestOpts?.effects?.[0]?.pointCol ?? null;
+      if (pointCol) {
+        for (const ann of customAnns) {
+          displayRows.forEach((displayRow, i) => {
+            if (displayRow.type !== "data") return;
+            const r = displayRow.row;
+            if (!(r.label === ann.rowId || r.id === ann.rowId)) return;
+            const ptVal = r.metadata[pointCol];
+            if (typeof ptVal !== "number" || Number.isNaN(ptVal)) return;
+            const annY = plotY + rowPositions[i] + rowHeights[i] / 2;
+            const markerX = forestX + xScale(ptVal);
+            const offset = ann.position === "before" ? -14 : ann.position === "after" ? 14 : 0;
+            const aX = markerX + offset;
+            const sz = 5 * (ann.size ?? 1);
+            if (ann.shape === "circle") {
+              parts.push(`<circle cx="${aX}" cy="${annY}" r="${sz}" fill="${ann.color}" stroke="white" stroke-width="0.5"/>`);
+            } else if (ann.shape === "square") {
+              parts.push(`<rect x="${aX - sz}" y="${annY - sz}" width="${2*sz}" height="${2*sz}" fill="${ann.color}" stroke="white" stroke-width="0.5"/>`);
+            } else if (ann.shape === "triangle") {
+              parts.push(`<polygon points="${aX},${annY - sz} ${aX - sz},${annY + sz} ${aX + sz},${annY + sz}" fill="${ann.color}" stroke="white" stroke-width="0.5"/>`);
+            } else if (ann.shape === "star") {
+              const pts: string[] = [];
+              for (let k = 0; k < 10; k++) {
+                const rr = k % 2 === 0 ? sz * 1.2 : sz * 0.5;
+                const a = Math.PI / 2 + k * Math.PI / 5;
+                pts.push(`${aX + rr * Math.cos(a)},${annY - rr * Math.sin(a)}`);
+              }
+              parts.push(`<polygon points="${pts.join(" ")}" fill="${ann.color}" stroke="white" stroke-width="0.5"/>`);
+            }
+          });
+        }
+      }
+    }
+
     // Row intervals
     displayRows.forEach((displayRow, i) => {
       if (displayRow.type === "data") {
@@ -3541,6 +3630,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       const xScale = computeVizBarScale(allDataRows, opts, vizWidth, override);
 
       parts.push(`<g clip-path="url(#${clipId})">`);
+      // Reference-line annotations (drawn behind bars)
+      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight));
       // Render bars for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -3574,6 +3665,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       const xScale = computeVizBoxplotScale(allDataRows, opts, vizWidth, override);
 
       parts.push(`<g clip-path="url(#${clipId})">`);
+      // Reference-line annotations (drawn behind boxes)
+      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight));
       // Render boxplots for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -3607,6 +3700,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       const xScale = computeVizViolinScale(allDataRows, opts, vizWidth, override);
 
       parts.push(`<g clip-path="url(#${clipId})">`);
+      // Reference-line annotations (drawn behind violins)
+      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight));
       // Render violins for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {

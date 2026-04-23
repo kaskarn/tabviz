@@ -14,13 +14,19 @@ zoom, and cell edits. Every verb returns the modified object and dispatches
 on input type, so the same call works on a static `WebSpec`, a rendered
 htmlwidget, or a live Shiny proxy.
 
-## The Two Styling Approaches
+## Two ways to style
 
-When styling is simple and known upfront, you can pass everything directly
-to `tabviz()`:
+Styling can live on the `tabviz()` call or come from fluent modifiers chained after it. Both are fully supported and produce identical output. Pick based on intent:
+
+| Use top-level args (`tabviz(...)`) | Use fluent modifiers (`|> set_*()`) |
+|------------------------------------|-------------------------------------|
+| One-shot construction | Post-hoc updates to an existing plot |
+| Everything known upfront | Building variants from a single base |
+| Concise static plots | Live updates inside a Shiny `tabviz_proxy()` |
 
 ```{r}
 #| eval: false
+# Top-level: everything in one call
 tabviz(data, label = "study",
   columns = list(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
@@ -31,13 +37,8 @@ tabviz(data, label = "study",
   marker_color = "effect_color",
   theme = web_theme_jama()
 )
-```
 
-When styling depends on computation, or you're composing multiple variants,
-use the fluent API instead:
-
-```{r}
-#| eval: false
+# Fluent: same result, modifier-driven
 tabviz(data, label = "study",
   columns = list(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
@@ -49,19 +50,7 @@ tabviz(data, label = "study",
   set_theme("jama")
 ```
 
-Both produce identical output.
-
-::: {.callout-note}
-## When to use which
-
-| Use constructor args when | Use fluent verbs when |
-|---------------------------|-----------------------|
-| Everything is known upfront | Styling depends on computation |
-| Simple, static plots | Building multiple variants from one base |
-| You prefer fewer lines | Conditional logic drives styling |
-|  | You want reusable styling pipelines |
-|  | You're updating a running Shiny widget |
-:::
+For Shiny proxies the choice is made for you — incremental updates **must** go through fluent verbs.
 
 ## Static vs Proxy Dispatch
 
@@ -413,7 +402,7 @@ plot |> toggle_group("Europe",        collapsed = FALSE)
 plot |> set_zoom(zoom = 0.8)
 plot |> set_zoom(zoom = 1.0, auto_fit = TRUE)
 plot |> set_zoom(max_width = 900, max_height = 600)
-plot |> set_zoom(show_zoom_controls = FALSE)
+plot |> set_zoom(show_controls = FALSE)
 ```
 
 Any subset of arguments may be passed; unchanged knobs are left alone.

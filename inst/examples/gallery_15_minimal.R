@@ -18,12 +18,12 @@ forest_plot(
   minimal_data,
   point = "hr", lower = "lower", upper = "upper",
   label = "trial",
-  weight = "weight",  # Scale marker sizes by study weight
+  marker_size = "weight",  # Scale marker sizes by study weight
   columns = list(
     col_numeric("n", "N"),
     col_numeric("events", "Events"),
     col_bar("weight"),
-    col_interval("HR (95% CI)")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   theme = web_theme_minimal(),
   scale = "log", null_value = 1,

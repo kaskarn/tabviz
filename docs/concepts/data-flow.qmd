@@ -7,7 +7,7 @@ title: "Data Flow"
 library(tabviz)
 ```
 
-Understanding how data flows through tabviz helps you structure your data correctly and debug issues.
+Trace one row of a `data.frame` from R into the rendered Svelte widget. This page explains how column specs resolve, when formula expressions evaluate, and how the result becomes JSON for the frontend.
 
 ## The Pipeline
 
@@ -225,7 +225,8 @@ styled_data <- meta_data |>
 
 tabviz(styled_data,
   label = "study",
-  columns = list(viz_forest(point = "hr", lower = "lower", upper = "upper")),
+  columns = list(viz_forest(point = "hr", lower = "lower", upper = "upper",
+                            scale = "log", null_value = 1)),
   row_bold = "is_significant",
   marker_color = "direction_color"
 )
@@ -238,7 +239,8 @@ Equivalent approach without pre-computing:
 ```{r}
 tabviz(meta_data,
   label = "study",
-  columns = list(viz_forest(point = "hr", lower = "lower", upper = "upper")),
+  columns = list(viz_forest(point = "hr", lower = "lower", upper = "upper",
+                            scale = "log", null_value = 1)),
   row_bold = ~ upper < 1,
   marker_color = ~ case_when(
     upper < 1 ~ "#16a34a",

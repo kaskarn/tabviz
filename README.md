@@ -59,16 +59,15 @@ tabviz(
       )
     ),
     col_group("Results",
-      col_events("events", "n", "Events"),           # "42/156" format
-      col_interval("HR (95% CI)"),                   # "0.82 (0.72, 0.94)"
-      col_pvalue("pvalue", "P")                      # smart formatting
+      col_events("events", "n"),                                          # "42/156" format
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)"),       # "0.82 (0.72, 0.94)"
+      col_pvalue("pvalue", "P")                                           # smart formatting
     )
   ),
   row_type = "row_type", row_bold = "row_bold",      # row styling from data
   theme = web_theme_nature(),                        # publication theme
   title = "GLP-1 Agonist Cardiovascular Outcomes",
-  subtitle = "Major adverse cardiovascular events (MACE)",
-  width_mode = "fill"
+  subtitle = "Major adverse cardiovascular events (MACE)"
 )
 ```
 

@@ -70,17 +70,25 @@ test_that("web_interaction creates default InteractionSpec", {
 
 test_that("web_interaction accepts custom params", {
   inter <- web_interaction(
-    show_filters = TRUE,
+    enable_filters = TRUE,
     show_legend = FALSE,
     enable_sort = FALSE,
     enable_export = FALSE,
     tooltip_fields = c("study", "n")
   )
-  expect_true(inter@show_filters)
+  expect_true(inter@enable_filters)
   expect_false(inter@show_legend)
   expect_false(inter@enable_sort)
   expect_false(inter@enable_export)
   expect_equal(inter@tooltip_fields, c("study", "n"))
+})
+
+test_that("web_interaction(show_filters=) is deprecated and forwards to enable_filters", {
+  expect_warning(
+    inter <- web_interaction(show_filters = TRUE, enable_filters = FALSE),
+    "deprecated"
+  )
+  expect_true(inter@enable_filters)
 })
 
 test_that("web_interaction_minimal returns minimal interaction", {

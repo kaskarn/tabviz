@@ -7,15 +7,14 @@ title: "Export"
 library(tabviz)
 library(dplyr)
 
-# Create output directory for examples
 if (!dir.exists("export-examples")) dir.create("export-examples")
 ```
 
-Export your tabviz widgets to static files for publications, presentations, and sharing.
+Export tabviz widgets to static files for publications, presentations, and sharing. SVG is built in via the V8 engine; PNG and PDF go through the optional `rsvg` package.
 
 ## Quick Example
 
-Let's create a forest plot and export it to SVG.
+Build a forest plot, then write it to SVG:
 
 ```{r}
 data(glp1_trials)
@@ -29,37 +28,44 @@ p <- glp1_trials |>
       col_text("drug", "Drug"),
       viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1, width = 180),
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
     theme = web_theme_jama(),
     title = "GLP-1 Agonist Cardiovascular Outcomes"
   )
 
-p
-```
-
-Now export to SVG:
-
-```{r}
 save_plot(p, "export-examples/forest_example.svg", width = 700)
 ```
 
-Here's the exported SVG:
-
 ![Exported SVG](export-examples/forest_example.svg){width=700}
+
+## `save_plot()` Arguments
+
+| Argument | Default | Purpose |
+|---|---|---|
+| `x` | required | A `WebSpec`, htmlwidget, or `SplitForest` |
+| `file` | required | Output path; format inferred from extension (`.svg`, `.png`, `.pdf`) |
+| `width` | `800` | Output width in pixels |
+| `height` | `NULL` | Output height (auto-derived from content if `NULL`) |
+| `scale` | `2` | Pixel-density multiplier for raster output |
 
 ## Format Comparison
 
-- **SVG**: Vector format, infinite scalability, best for journals and editing
-- **PNG**: Raster format, good for presentations (use `scale = 2` or higher)
-- **PDF**: Vector format, best for print publications
+| Format | Use case | Dependency |
+|---|---|---|
+| **SVG** | Vector format, infinite scalability, journals, editing | None (built in) |
+| **PNG** | Raster format, presentations, screenshots | `rsvg` package |
+| **PDF** | Vector format, print publications | `rsvg` package |
+
+::: {.callout-note}
+## PNG and PDF require `rsvg`
+
+`save_plot()` writes SVG using V8 alone. PNG and PDF formats convert that SVG via `rsvg::rsvg_png()` / `rsvg::rsvg_pdf()`. Install with `install.packages("rsvg")`.
+:::
 
 ## SVG Export
 
-SVG is the recommended format for most uses. No external dependencies required.
-
 ```{r}
-# Bar chart example
 bar_data <- data.frame(
   department = c("Cardiology", "Oncology", "Neurology", "Pediatrics"),
   enrollment = c(245, 312, 189, 156)
@@ -82,7 +88,7 @@ save_plot(p_bar, "export-examples/bar_example.svg", width = 500)
 
 ## Themed Exports
 
-### JAMA Theme
+The active theme is preserved on export.
 
 ```{r}
 p_jama <- glp1_trials |>
@@ -93,7 +99,7 @@ p_jama <- glp1_trials |>
     columns = list(
       viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1, width = 160),
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
     theme = web_theme_jama(),
     title = "Figure 1. Primary Endpoint"
@@ -104,8 +110,6 @@ save_plot(p_jama, "export-examples/jama_theme.svg", width = 500)
 
 ![JAMA Theme](export-examples/jama_theme.svg){width=500}
 
-### Dark Theme
-
 ```{r}
 p_dark <- glp1_trials |>
   filter(row_type == "data", group == "Main Trials") |>
@@ -115,7 +119,7 @@ p_dark <- glp1_trials |>
     columns = list(
       viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1, width = 160),
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
     theme = web_theme_dark(),
     title = "Dark Theme Export"
@@ -128,8 +132,6 @@ save_plot(p_dark, "export-examples/dark_theme.svg", width = 500)
 
 ## PNG and PDF Export
 
-PNG and PDF require Chrome/Chromium installed on your system.
-
 ```r
 # PNG at 2x resolution
 save_plot(p, "figure.png", width = 800, scale = 2)
@@ -138,16 +140,42 @@ save_plot(p, "figure.png", width = 800, scale = 2)
 save_plot(p, "figure.pdf", width = 800)
 ```
 
-### Resolution Guide
+### Resolution Guide for PNG
 
-For PNG exports, use `scale` parameter:
+| `scale` | Effective DPI | Use case |
+|---|---|---|
+| `1` | 72 DPI | Quick preview |
+| `2` | 144 DPI | Web / screen |
+| `3` | 216 DPI | Presentations |
+| `4` | 288 DPI | High-res print |
 
-- `scale = 1`: 72 DPI (quick preview)
-- `scale = 2`: 144 DPI (web/screen)
-- `scale = 3`: 216 DPI (presentations)
-- `scale = 4`: 288 DPI (high-res print)
+## Exporting Split Tables
+
+Pass a `SplitForest` (the output of `split_table()`) to `save_split_table()` to write one file per subgroup. The directory structure mirrors the split hierarchy.
+
+```r
+split_p <- tabviz(data,
+  label = "study",
+  columns = list(
+    viz_forest(point = "or", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  )
+) |>
+  split_table(by = c("sex", "age_group"))
+
+save_split_table(split_p, "output/plots", format = "svg")
+# Writes: output/plots/Male/Male_Young.svg, output/plots/Female/Female_Old.svg, ...
+```
+
+`save_split_table()` accepts the same `width`, `height`, `scale` arguments as `save_plot()`. `format` is one of `"svg"`, `"pdf"`, `"png"`.
+
+::: {.callout-tip}
+## `save_plot()` accepts `SplitForest` too
+
+If you call `save_plot(split_p, "output/plots")` it dispatches to `save_split_table()` automatically. Pass a path with an extension to control the format.
+:::
 
 ## See Also
 
-- [Themes](themes.qmd) - Style for publication
-- [Reference: save_plot()](../reference/export.qmd) - Complete API
+- [Themes](themes.qmd) — Style for publication
+- [Reference: `save_plot()`](../reference/export.qmd) — Full API

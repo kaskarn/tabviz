@@ -52,7 +52,13 @@ ColumnSpec <- new_class(
     # Semantic styling (same as row-level)
     style_emphasis = new_property(class_any, default = NULL),
     style_muted = new_property(class_any, default = NULL),
-    style_accent = new_property(class_any, default = NULL)
+    style_accent = new_property(class_any, default = NULL),
+    # Per-cell tooltip (column name whose values are the hover title)
+    style_tooltip = new_property(class_any, default = NULL),
+    # Optional R-side formatter function applied at serialize time.
+    # When set, the column's data values are replaced by the function's output
+    # and the serialized column type is forced to "text".
+    formatter = new_property(class_any, default = NULL)
   ),
   validator = function(self) {
     valid_types <- c("text", "numeric", "interval", "bar", "pvalue", "sparkline",
@@ -110,6 +116,13 @@ ColumnSpec <- new_class(
 #' @param emphasis Column name containing logical values for emphasis styling (bold + foreground)
 #' @param muted Column name containing logical values for muted styling
 #' @param accent Column name containing logical values for accent styling
+#' @param tooltip Column name whose values become the per-cell hover tooltip.
+#'   `NULL` (default) falls back to the cell's displayed value.
+#' @param formatter Optional R function `function(x) ...` applied to the
+#'   column's values before serialization. When set, the output is serialized
+#'   as text and the frontend renders it verbatim — bypasses any built-in
+#'   numeric/interval/… formatter. `NULL` (default) uses the type's built-in
+#'   formatting.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -136,7 +149,9 @@ web_col <- function(
     icon = NULL,
     emphasis = NULL,
     muted = NULL,
-    accent = NULL) {
+    accent = NULL,
+    tooltip = NULL,
+    formatter = NULL) {
   type <- match.arg(type)
 
   # Default header to field name
@@ -161,6 +176,14 @@ web_col <- function(
     options$naText <- na_text
   }
 
+  # When a custom formatter is set, the column renders pre-formatted text
+  if (!is.null(formatter)) {
+    if (!is.function(formatter)) {
+      cli_abort("{.arg formatter} must be a function, not {.cls {class(formatter)}}.")
+    }
+    type <- "text"
+  }
+
   ColumnSpec(
     id = field,
     header = header,
@@ -173,6 +196,7 @@ web_col <- function(
     wrap = wrap,
     sortable = sortable,
     options = options,
+    formatter = formatter,
     # Style properties: can be column name (character) or formula (~)
     # Resolved in web_spec() when data is available
     style_bold = bold,
@@ -183,7 +207,8 @@ web_col <- function(
     style_icon = icon,
     style_emphasis = emphasis,
     style_muted = muted,
-    style_accent = accent
+    style_accent = accent,
+    style_tooltip = tooltip
   )
 }
 
@@ -198,15 +223,18 @@ web_col <- function(
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param max_chars Maximum characters to show before truncating with trailing
 #'   ellipsis. NULL (default) = no truncation.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
-col_text <- function(field, header = NULL, width = NULL, max_chars = NULL, ...) {
+col_text <- function(field, header = NULL, width = NULL, max_chars = NULL,
+                     na_text = NULL, ...) {
   checkmate::assert_integerish(max_chars, lower = 1, len = 1, null.ok = TRUE)
   opts <- if (is.null(max_chars)) list() else list(text = list(maxChars = max_chars))
-  web_col(field, header, type = "text", width = width, options = opts, ...)
+  web_col(field, header, type = "text", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Row-identifier (label) column
@@ -221,11 +249,13 @@ col_text <- function(field, header = NULL, width = NULL, max_chars = NULL, ...) 
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param max_chars Maximum characters to show before truncating with trailing
 #'   ellipsis. NULL (default) = no truncation.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to [web_col()]
 #'
 #' @return A ColumnSpec object
 #' @export
-col_label <- function(field, header = NULL, width = NULL, max_chars = NULL, ...) {
+col_label <- function(field, header = NULL, width = NULL, max_chars = NULL,
+                      na_text = NULL, ...) {
   checkmate::assert_integerish(max_chars, lower = 1, len = 1, null.ok = TRUE)
   if (is.null(header)) {
     header <- gsub("_", " ", field)
@@ -233,7 +263,8 @@ col_label <- function(field, header = NULL, width = NULL, max_chars = NULL, ...)
     header <- tools::toTitleCase(header)
   }
   opts <- if (is.null(max_chars)) list() else list(text = list(maxChars = max_chars))
-  web_col(field, header, type = "text", width = width, options = opts, ...)
+  web_col(field, header, type = "text", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Numeric column
@@ -248,6 +279,7 @@ col_label <- function(field, header = NULL, width = NULL, max_chars = NULL, ...)
 #' @param abbreviate Logical. When TRUE, values >= 1000 are shortened with at most
 #'   1 decimal place (e.g., 1100 -> "1.1K", 2500000 -> "2.5M", 11111111 -> "11.1M").
 #'   Values >= 1 trillion will cause an error. Default FALSE.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -270,7 +302,7 @@ col_label <- function(field, header = NULL, width = NULL, max_chars = NULL, ...)
 #' col_numeric("population", abbreviate = TRUE)
 col_numeric <- function(field, header = NULL, width = NULL, decimals = 2,
                         digits = NULL, thousands_sep = FALSE, abbreviate = FALSE,
-                        ...) {
+                        na_text = NULL, ...) {
   # Validate mutual exclusivity of decimals and digits
   if (!is.null(digits) && decimals != 2) {
     cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
@@ -284,14 +316,15 @@ col_numeric <- function(field, header = NULL, width = NULL, decimals = 2,
       abbreviate = abbreviate
     )
   )
-  web_col(field, header, type = "numeric", width = width, options = opts, ...)
+  web_col(field, header, type = "numeric", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Sample size / count
 #'
 #' Display integer counts with thousands separator for readability.
 #'
-#' @param field Field name (default "n")
+#' @param field Field name (required)
 #' @param header Column header (default "N")
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param decimals Number of decimal places (default 0 for integers). Cannot be used with `digits`.
@@ -299,6 +332,7 @@ col_numeric <- function(field, header = NULL, width = NULL, decimals = 2,
 #' @param thousands_sep Thousands separator (default "," for integer columns)
 #' @param abbreviate Logical. When TRUE, values >= 1000 are shortened with at most
 #'   1 decimal place (e.g., 1100 -> "1.1K", 12345 -> "12.3K"). Default FALSE.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -313,8 +347,17 @@ col_numeric <- function(field, header = NULL, width = NULL, decimals = 2,
 #'
 #' # Abbreviate large sample sizes: 12,345 -> "12.3K"
 #' col_n("n", abbreviate = TRUE)
-col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
-                  digits = NULL, thousands_sep = ",", abbreviate = FALSE, ...) {
+col_n <- function(field, header = "N", width = NULL, decimals = 0,
+                  digits = NULL, thousands_sep = ",", abbreviate = FALSE,
+                  na_text = NULL, ...) {
+  if (missing(field)) {
+    lifecycle::deprecate_warn(
+      "0.9.0",
+      I("Calling col_n() without `field`"),
+      details = "Pass the column name explicitly, e.g. col_n(\"n\"). The implicit default will be removed."
+    )
+    field <- "n"
+  }
   # Validate mutual exclusivity of decimals and digits
   if (!is.null(digits) && decimals != 0) {
     cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
@@ -328,7 +371,8 @@ col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
       abbreviate = abbreviate
     )
   )
-  web_col(field, header, type = "numeric", width = width, options = opts, ...)
+  web_col(field, header, type = "numeric", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Interval display (e.g., "1.2 (0.9, 1.5)")
@@ -337,16 +381,23 @@ col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
 #' The `point`, `lower`, and `upper` arguments specify which data columns
 #' contain the values to display.
 #'
-#' @param point Field name for the point estimate column (NULL to auto-detect from forest)
-#' @param lower Field name for the lower bound column (NULL to auto-detect from forest)
-#' @param upper Field name for the upper bound column (NULL to auto-detect from forest)
+#' @param point Field name for the point estimate column (required)
+#' @param lower Field name for the lower bound column (required)
+#' @param upper Field name for the upper bound column (required)
 #' @param header Column header (default "95% CI")
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
-#' @param decimals Number of decimal places (default 2)
-#' @param sep Separator between point and CI (default " ")
+#' @param decimals Number of decimal places (default 2). Cannot be used with `digits`.
+#' @param digits Number of significant figures. Cannot be used with `decimals`.
+#' @param thousands_sep Thousands separator for the formatted numbers
+#'   (e.g. `","` or `" "`) or `FALSE` to disable. Default `FALSE`.
+#' @param abbreviate Logical. When `TRUE`, values >= 1000 are shortened
+#'   (e.g. `"1.2K"`, `"3.4M"`). Default `FALSE`.
+#' @param separator Separator between point and CI (default " ")
 #' @param imprecise_threshold When upper/lower ratio exceeds this threshold,
 #'   the interval is considered imprecise and displayed as "--" instead.
 #'   Default is NULL (no threshold).
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
+#' @param sep `r lifecycle::badge("deprecated")` Use `separator` instead.
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -360,20 +411,38 @@ col_n <- function(field = "n", header = "N", width = NULL, decimals = 0,
 #' col_interval("hr", "lower", "upper", "HR (95% CI)")
 #'
 #' # Custom decimals and separator
-#' col_interval("hr", "lower", "upper", "HR (95% CI)", decimals = 3, sep = ", ")
+#' col_interval("hr", "lower", "upper", "HR (95% CI)", decimals = 3, separator = ", ")
 #'
-#' # Just customize header (auto-detect columns from forest plot)
-#' col_interval(header = "95% CI")
+#' # Significant figures across orders of magnitude
+#' col_interval("rr", "rr_lo", "rr_hi", digits = 3)
 #'
 #' # Hide imprecise estimates (CI ratio > 10)
 #' col_interval("hr", "lower", "upper", imprecise_threshold = 10)
 col_interval <- function(point = NULL, lower = NULL, upper = NULL,
-                         header = "95% CI", width = NULL, decimals = 2, sep = " ",
-                         imprecise_threshold = NULL, ...) {
+                         header = "95% CI", width = NULL, decimals = 2,
+                         digits = NULL, thousands_sep = FALSE,
+                         abbreviate = FALSE,
+                         separator = " ", imprecise_threshold = NULL,
+                         na_text = NULL,
+                         ..., sep = lifecycle::deprecated()) {
+  if (lifecycle::is_present(sep)) {
+    lifecycle::deprecate_warn("0.9.0", "col_interval(sep)", "col_interval(separator)")
+    separator <- sep
+  }
+  if (is.null(point) || is.null(lower) || is.null(upper)) {
+    lifecycle::deprecate_warn(
+      "0.9.0",
+      I("Calling col_interval() without `point`/`lower`/`upper`"),
+      details = "Pass the column names explicitly, e.g. col_interval(\"hr\", \"lower\", \"upper\"). The implicit auto-detect from a sibling viz_forest() column will be removed."
+    )
+  }
   opts <- list(
     interval = list(
-      decimals = decimals,
-      sep = sep,
+      decimals = if (is.null(digits)) decimals else NULL,
+      digits = digits,
+      thousandsSep = thousands_sep,
+      abbreviate = abbreviate,
+      separator = separator,
       point = point,
       lower = lower,
       upper = upper,
@@ -387,7 +456,8 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
   } else {
     synthetic_field <- "_interval"
   }
-  web_col(synthetic_field, header, type = "interval", width = width, options = opts, ...)
+  web_col(synthetic_field, header, type = "interval", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: P-value
@@ -406,6 +476,7 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
 #' @param exp_threshold Values below this use exponential notation (default 0.001)
 #' @param abbrev_threshold Values below this display as "<threshold" (default NULL = off).
 #'   For example, `abbrev_threshold = 0.0001` displays values below 0.0001 as "<0.0001".
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -428,7 +499,7 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
 #' # Abbreviate very small values
 #' col_pvalue("pval", abbrev_threshold = 0.0001)
 col_pvalue <- function(
-    field = "pvalue",
+    field,
     header = "P-value",
     width = NULL,
     stars = FALSE,
@@ -437,7 +508,16 @@ col_pvalue <- function(
     digits = 2,
     exp_threshold = 0.001,
     abbrev_threshold = NULL,
+    na_text = NULL,
     ...) {
+  if (missing(field)) {
+    lifecycle::deprecate_warn(
+      "0.9.0",
+      I("Calling col_pvalue() without `field`"),
+      details = "Pass the column name explicitly, e.g. col_pvalue(\"pvalue\"). The implicit default will be removed."
+    )
+    field <- "pvalue"
+  }
   format <- match.arg(format)
   opts <- list(
     pvalue = list(
@@ -449,12 +529,13 @@ col_pvalue <- function(
       abbrevThreshold = abbrev_threshold
     )
   )
-  web_col(field, header, type = "pvalue", width = width, options = opts, ...)
+  web_col(field, header, type = "pvalue", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Bar/weight column
 #'
-#' @param field Field name (default "weight")
+#' @param field Field name (required)
 #' @param header Column header. Defaults to `NULL`, which resolves to the
 #'   field's label (or field name) at render time. Pass `""` or set
 #'   `show_header = FALSE` via `...` to hide the header.
@@ -464,20 +545,30 @@ col_pvalue <- function(
 #' @param color Bar fill color (NULL = theme primary color)
 #' @param scale Scale type: "linear" (default), "log", or "sqrt". Controls how
 #'   values map to bar length.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
 col_bar <- function(
-    field = "weight",
+    field,
     header = NULL,
     width = NULL,
     max_value = NULL,
     show_label = TRUE,
     color = NULL,
     scale = c("linear", "log", "sqrt"),
+    na_text = NULL,
     ...) {
+  if (missing(field)) {
+    lifecycle::deprecate_warn(
+      "0.9.0",
+      I("Calling col_bar() without `field`"),
+      details = "Pass the column name explicitly, e.g. col_bar(\"weight\"). The implicit default will be removed."
+    )
+    field <- "weight"
+  }
   scale <- match.arg(scale)
   opts <- list(
     bar = list(
@@ -487,7 +578,8 @@ col_bar <- function(
       scale = scale
     )
   )
-  web_col(field, header, type = "bar", width = width, options = opts, ...)
+  web_col(field, header, type = "bar", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Sparkline chart
@@ -498,19 +590,29 @@ col_bar <- function(
 #' @param type Chart type: "line", "bar", or "area"
 #' @param height Chart height in pixels (default 20)
 #' @param color Chart color (NULL = theme primary color)
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
 #' @return A ColumnSpec object
 #' @export
 col_sparkline <- function(
-    field = "trend",
+    field,
     header = "Trend",
     width = NULL,
     type = c("line", "bar", "area"),
     height = 20,
     color = NULL,
+    na_text = NULL,
     ...) {
+  if (missing(field)) {
+    lifecycle::deprecate_warn(
+      "0.9.0",
+      I("Calling col_sparkline() without `field`"),
+      details = "Pass the column name explicitly, e.g. col_sparkline(\"trend\"). The implicit default will be removed."
+    )
+    field <- "trend"
+  }
   type <- match.arg(type)
   opts <- list(
     sparkline = list(
@@ -519,7 +621,8 @@ col_sparkline <- function(
       color = color
     )
   )
-  web_col(field, header, type = "sparkline", width = width, options = opts, ...)
+  web_col(field, header, type = "sparkline", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Percentage column
@@ -536,6 +639,7 @@ col_sparkline <- function(
 #' @param multiply Whether to multiply by 100 (default TRUE, expects proportions 0-1).
 #'   Set to FALSE if data is already on 0-100 scale.
 #' @param symbol Show % symbol (default TRUE)
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -561,6 +665,7 @@ col_percent <- function(
     digits = NULL,
     multiply = TRUE,
     symbol = TRUE,
+    na_text = NULL,
     ...) {
   # Validate mutual exclusivity of decimals and digits
   if (!is.null(digits) && decimals != 1) {
@@ -575,7 +680,8 @@ col_percent <- function(
       symbol = symbol
     )
   )
-  web_col(field, header, type = "numeric", width = width, options = opts, ...)
+  web_col(field, header, type = "numeric", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Events column
@@ -583,8 +689,8 @@ col_percent <- function(
 #' Display event counts in "events/n" format for clinical trial data.
 #' Large numbers are formatted with thousands separators for readability.
 #'
-#' @param events_field Field name containing number of events
-#' @param n_field Field name containing total sample size
+#' @param events Field name containing the event count
+#' @param n Field name containing the total sample size
 #' @param header Column header (default "Events")
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param separator Separator between events and n (default "/")
@@ -592,8 +698,11 @@ col_percent <- function(
 #' @param thousands_sep Thousands separator (default ",")
 #' @param abbreviate Logical. When TRUE, values >= 1000 are shortened with at most
 #'   1 decimal place (e.g., "1.1K/12K" instead of "1,100/12,000"). Default FALSE.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
+#' @param events_field `r lifecycle::badge("deprecated")` Use `events`.
+#' @param n_field `r lifecycle::badge("deprecated")` Use `n`.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -610,27 +719,39 @@ col_percent <- function(
 #' # Abbreviate large numbers: "1.1K/12K"
 #' col_events("events", "n", abbreviate = TRUE)
 col_events <- function(
-    events_field,
-    n_field,
+    events,
+    n,
     header = "Events",
     width = NULL,
     separator = "/",
     show_pct = FALSE,
     thousands_sep = ",",
     abbreviate = FALSE,
-    ...) {
+    na_text = NULL,
+    ...,
+    events_field = lifecycle::deprecated(),
+    n_field = lifecycle::deprecated()) {
+  if (lifecycle::is_present(events_field)) {
+    lifecycle::deprecate_warn("0.9.0", "col_events(events_field)", "col_events(events)")
+    if (missing(events)) events <- events_field
+  }
+  if (lifecycle::is_present(n_field)) {
+    lifecycle::deprecate_warn("0.9.0", "col_events(n_field)", "col_events(n)")
+    if (missing(n)) n <- n_field
+  }
   opts <- list(
     events = list(
-      eventsField = events_field,
-      nField = n_field,
+      eventsField = events,
+      nField = n,
       separator = separator,
       showPct = show_pct,
       thousandsSep = thousands_sep,
       abbreviate = abbreviate
     )
   )
+  if (!is.null(na_text)) opts$naText <- na_text
   # Use a synthetic field that signals this is an events column
-  synthetic_field <- paste0("_events_", events_field, "_", n_field)
+  synthetic_field <- paste0("_events_", events, "_", n)
   web_col(synthetic_field, header, type = "custom", width = width, options = opts, ...)
 }
 
@@ -650,6 +771,7 @@ col_events <- function(
 #'   (e.g., `c("yes" = "Y", "no" = "N")` or use actual emoji/unicode)
 #' @param size Icon size: "sm", "base", or "lg" (default "base")
 #' @param color Optional CSS color for the icon (default NULL, uses theme)
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling
 #'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
 #'   alignment. Body cells default to `align = "center"` (override with
@@ -677,6 +799,7 @@ col_icon <- function(
     mapping = NULL,
     size = c("base", "sm", "lg"),
     color = NULL,
+    na_text = NULL,
     ...) {
   size <- match.arg(size)
   opts <- list(
@@ -687,7 +810,7 @@ col_icon <- function(
     )
   )
   web_col(field, header, type = "icon", width = width, align = "center",
-          options = opts, ...)
+          options = opts, na_text = na_text, ...)
 }
 
 #' Column helper: Status badges
@@ -703,6 +826,7 @@ col_icon <- function(
 #' @param colors Named character vector mapping values to custom hex colors,
 #'   which override variants (e.g., `c("special" = "#ff5500")`)
 #' @param size Badge size: "sm" or "base" (default "base")
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling
 #'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
 #'   alignment. Body cells default to `align = "center"` (override with
@@ -738,6 +862,7 @@ col_badge <- function(
     variants = NULL,
     colors = NULL,
     size = c("base", "sm"),
+    na_text = NULL,
     ...) {
   size <- match.arg(size)
   opts <- list(
@@ -748,7 +873,7 @@ col_badge <- function(
     )
   )
   web_col(field, header, type = "badge", width = width, align = "center",
-          options = opts, ...)
+          options = opts, na_text = na_text, ...)
 }
 
 #' Column helper: Star rating
@@ -762,14 +887,20 @@ col_badge <- function(
 #' @param color CSS color for filled stars (default "#f59e0b", amber)
 #' @param empty_color CSS color for empty stars (default "#d1d5db", gray)
 #' @param half_stars Allow half-star increments (default FALSE)
-#' @param domain Optional numeric length-2 vector `c(min, max)` to remap input
-#'   values from an arbitrary range into `[0, max_stars]`. For example,
-#'   `domain = c(0, 100)` with `max_stars = 5` maps a value of 75 to 3.75 stars.
+#' @param min_value,max_value Numeric scalars defining the input range to remap
+#'   into `[0, max_stars]`. For example, `min_value = 0, max_value = 100` with
+#'   `max_stars = 5` maps a value of 75 to 3.75 stars. Pass both or neither;
+#'   default `NULL` assumes the input is already in `[0, max_stars]`.
+#' @param size Star size: `"sm"`, `"base"` (default), or `"lg"`. Matches the
+#'   `size` argument on `col_icon()` and `col_badge()`.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling
 #'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
 #'   alignment. Body cells default to `align = "center"` (override with
 #'   `align = "left"` / `"right"`); header alignment follows the body unless
 #'   `header_align` is set explicitly.
+#' @param domain `r lifecycle::badge("deprecated")` Use
+#'   `min_value` / `max_value` instead.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -783,6 +914,9 @@ col_badge <- function(
 #' # Half-star increments
 #' col_stars("score", half_stars = TRUE)
 #'
+#' # Remap an arbitrary input range to stars
+#' col_stars("score_0_100", min_value = 0, max_value = 100)
+#'
 #' # With per-cell styling
 #' col_stars("rating", emphasis = "is_featured")
 col_stars <- function(
@@ -793,22 +927,47 @@ col_stars <- function(
     color = "#f59e0b",
     empty_color = "#d1d5db",
     half_stars = FALSE,
-    domain = NULL,
-    ...) {
+    min_value = NULL,
+    max_value = NULL,
+    size = c("base", "sm", "lg"),
+    na_text = NULL,
+    ...,
+    domain = lifecycle::deprecated()) {
+  size <- match.arg(size)
   checkmate::assert_integerish(max_stars, lower = 1, upper = 20, len = 1)
-  checkmate::assert_numeric(domain, len = 2, any.missing = FALSE,
-                            sorted = TRUE, null.ok = TRUE)
+  if (lifecycle::is_present(domain)) {
+    lifecycle::deprecate_warn(
+      "0.9.0",
+      "col_stars(domain)",
+      details = "Use `min_value` and `max_value` instead."
+    )
+    if (is.null(min_value) && is.null(max_value)) {
+      checkmate::assert_numeric(domain, len = 2, any.missing = FALSE,
+                                sorted = TRUE)
+      min_value <- domain[1]
+      max_value <- domain[2]
+    }
+  }
+  if (xor(is.null(min_value), is.null(max_value))) {
+    cli_abort("Pass both {.arg min_value} and {.arg max_value}, or neither.")
+  }
+  if (!is.null(min_value)) {
+    checkmate::assert_number(min_value)
+    checkmate::assert_number(max_value, lower = min_value)
+  }
+  domain_vec <- if (is.null(min_value)) NULL else c(min_value, max_value)
   opts <- list(
     stars = list(
       maxStars = max_stars,
       color = color,
       emptyColor = empty_color,
       halfStars = half_stars,
-      domain = domain
+      domain = domain_vec,
+      size = size
     )
   )
   web_col(field, header, type = "stars", width = width, align = "center",
-          options = opts, ...)
+          options = opts, na_text = na_text, ...)
 }
 
 #' Column helper: Image display
@@ -822,6 +981,7 @@ col_stars <- function(
 #' @param max_width Maximum image width (default NULL, uses column width)
 #' @param fallback Fallback text or icon if image fails to load (default "[img]")
 #' @param shape Image shape: "square", "circle", or "rounded" (default "square")
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling
 #'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
 #'   alignment. Body cells default to `align = "center"` (override with
@@ -850,6 +1010,7 @@ col_img <- function(
     max_width = NULL,
     fallback = "[img]",
     shape = c("square", "circle", "rounded"),
+    na_text = NULL,
     ...) {
   shape <- match.arg(shape)
   opts <- list(
@@ -861,7 +1022,7 @@ col_img <- function(
     )
   )
   web_col(field, header, type = "img", width = width, align = "center",
-          options = opts, ...)
+          options = opts, na_text = na_text, ...)
 }
 
 #' Column helper: Reference/citation display
@@ -873,7 +1034,10 @@ col_img <- function(
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param href_field Optional field name containing URLs for linking
 #' @param max_chars Maximum characters to display before truncating (default 30)
-#' @param icon Show external link icon when href_field is provided (default TRUE)
+#' @param show_icon Show external link icon when `href_field` is provided
+#'   (default TRUE)
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
+#' @param icon `r lifecycle::badge("deprecated")` Use `show_icon` instead.
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -887,7 +1051,7 @@ col_img <- function(
 #' col_reference("title", href_field = "doi_url", max_chars = 40)
 #'
 #' # Without link icon
-#' col_reference("source", href_field = "url", icon = FALSE)
+#' col_reference("source", href_field = "url", show_icon = FALSE)
 #'
 #' # With per-cell styling
 #' col_reference("citation", emphasis = "is_key")
@@ -897,34 +1061,50 @@ col_reference <- function(
     width = NULL,
     href_field = NULL,
     max_chars = 30,
-    icon = TRUE,
-    ...) {
+    show_icon = TRUE,
+    na_text = NULL,
+    ...,
+    icon = lifecycle::deprecated()) {
+  if (lifecycle::is_present(icon)) {
+    lifecycle::deprecate_warn("0.9.0", "col_reference(icon)", "col_reference(show_icon)")
+    show_icon <- icon
+  }
   opts <- list(
     reference = list(
       hrefField = href_field,
       maxChars = max_chars,
-      showIcon = icon
+      showIcon = show_icon
     )
   )
-  web_col(field, header, type = "reference", width = width, options = opts, ...)
+  web_col(field, header, type = "reference", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Range display
 #'
 #' Display min-max ranges like "18-65" or "2.5 - 10.0".
 #'
-#' @param min_field Field name containing minimum values
-#' @param max_field Field name containing maximum values
+#' @param low Field name containing the lower bound of each range
+#' @param high Field name containing the upper bound of each range
 #' @param header Column header (default "Range")
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
-#' @param separator Separator between min and max (default " - ")
-#' @param decimals Number of decimal places (default NULL for auto-detection)
+#' @param separator Separator between low and high (default " - ")
+#' @param decimals Number of decimal places (default NULL for auto-detection).
+#'   Cannot be used with `digits`.
+#' @param digits Number of significant figures. Cannot be used with `decimals`.
+#' @param thousands_sep Thousands separator for the formatted numbers
+#'   (e.g. `","` or `" "`) or `FALSE` to disable. Default `FALSE`.
+#' @param abbreviate Logical. When `TRUE`, values >= 1000 are shortened
+#'   (e.g. `"1.2K - 3.4M"`). Default `FALSE`.
 #' @param show_bar Show visual bar representation (default FALSE)
+#' @param na_text Text to display when either bound is NA (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling
 #'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
 #'   alignment. Body cells default to `align = "right"` (override with
 #'   `align = "left"` / `"center"`); header alignment follows the body unless
 #'   `header_align` is set explicitly.
+#' @param min_field `r lifecycle::badge("deprecated")` Use `low`.
+#' @param max_field `r lifecycle::badge("deprecated")` Use `high`.
 #'
 #' @return A ColumnSpec object
 #' @export
@@ -933,33 +1113,57 @@ col_reference <- function(
 #' col_range("age_min", "age_max", "Age Range")
 #'
 #' # Custom separator: "18-65"
-#' col_range("min", "max", separator = "-")
+#' col_range("low", "high", separator = "-")
 #'
 #' # With decimals: "1.5 - 3.2"
 #' col_range("ci_lower", "ci_upper", decimals = 1)
 #'
+#' # Significant figures: span orders of magnitude
+#' col_range("low_price", "high_price", digits = 3)
+#'
+#' # Abbreviate large values: "1.2K - 3.4M"
+#' col_range("low_n", "high_n", abbreviate = TRUE)
+#'
 #' # With per-cell styling
 #' col_range("age_min", "age_max", emphasis = "is_key")
 col_range <- function(
-    min_field,
-    max_field,
+    low,
+    high,
     header = "Range",
     width = NULL,
     separator = " - ",
     decimals = NULL,
+    digits = NULL,
+    thousands_sep = FALSE,
+    abbreviate = FALSE,
     show_bar = FALSE,
-    ...) {
+    na_text = NULL,
+    ...,
+    min_field = lifecycle::deprecated(),
+    max_field = lifecycle::deprecated()) {
+  if (lifecycle::is_present(min_field)) {
+    lifecycle::deprecate_warn("0.9.0", "col_range(min_field)", "col_range(low)")
+    if (missing(low)) low <- min_field
+  }
+  if (lifecycle::is_present(max_field)) {
+    lifecycle::deprecate_warn("0.9.0", "col_range(max_field)", "col_range(high)")
+    if (missing(high)) high <- max_field
+  }
   opts <- list(
     range = list(
-      minField = min_field,
-      maxField = max_field,
+      minField = low,
+      maxField = high,
       separator = separator,
-      decimals = decimals,
+      decimals = if (is.null(digits)) decimals else NULL,
+      digits = digits,
+      thousandsSep = thousands_sep,
+      abbreviate = abbreviate,
       showBar = show_bar
     )
   )
+  if (!is.null(na_text)) opts$naText <- na_text
   # Use a synthetic field that signals this is a range column
-  synthetic_field <- paste0("_range_", min_field, "_", max_field)
+  synthetic_field <- paste0("_range_", low, "_", high)
   web_col(synthetic_field, header, type = "range", width = width,
           align = "right", options = opts, ...)
 }
@@ -984,6 +1188,7 @@ col_range <- function(
 #' @param show_value Show the numeric value over the color (default TRUE)
 #' @param scale Scale type: "linear" (default), "log", or "sqrt". Controls how
 #'   values map to palette position.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -1005,7 +1210,8 @@ col_heatmap <- function(field, header = NULL, width = NULL,
                         palette = c("#f7fbff", "#08306b"),
                         min_value = NULL, max_value = NULL,
                         decimals = 2, show_value = TRUE,
-                        scale = c("linear", "log", "sqrt"), ...) {
+                        scale = c("linear", "log", "sqrt"),
+                        na_text = NULL, ...) {
   scale <- match.arg(scale)
   checkmate::assert_character(palette, min.len = 2)
   checkmate::assert_number(min_value, null.ok = TRUE)
@@ -1017,7 +1223,8 @@ col_heatmap <- function(field, header = NULL, width = NULL,
                    maxValue = max_value, decimals = decimals,
                    showValue = show_value, scale = scale)
   )
-  web_col(field, header, type = "heatmap", width = width, options = opts, ...)
+  web_col(field, header, type = "heatmap", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Progress bar
@@ -1032,6 +1239,7 @@ col_heatmap <- function(field, header = NULL, width = NULL,
 #' @param show_label Show percentage label (default TRUE)
 #' @param scale Scale type: "linear" (default), "log", or "sqrt". Controls how
 #'   values map to bar fill.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -1049,7 +1257,8 @@ col_heatmap <- function(field, header = NULL, width = NULL,
 col_progress <- function(field, header = NULL, width = NULL,
                          max_value = 100, color = NULL,
                          show_label = TRUE,
-                         scale = c("linear", "log", "sqrt"), ...) {
+                         scale = c("linear", "log", "sqrt"),
+                         na_text = NULL, ...) {
   scale <- match.arg(scale)
   checkmate::assert_number(max_value, lower = 0)
   checkmate::assert_string(color, null.ok = TRUE)
@@ -1058,7 +1267,8 @@ col_progress <- function(field, header = NULL, width = NULL,
     progress = list(maxValue = max_value, color = color,
                     showLabel = show_label, scale = scale)
   )
-  web_col(field, header, type = "progress", width = width, options = opts, ...)
+  web_col(field, header, type = "progress", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 #' Column helper: Currency formatting
@@ -1070,9 +1280,15 @@ col_progress <- function(field, header = NULL, width = NULL,
 #' @param header Column header (default NULL, uses field name)
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param symbol Currency symbol (default "$")
-#' @param decimals Number of decimal places (default 2)
-#' @param thousands_sep Use thousands separator (default TRUE)
+#' @param decimals Number of decimal places (default 2). Cannot be used with `digits`.
+#' @param digits Number of significant figures. Cannot be used with `decimals`.
+#' @param thousands_sep Thousands separator. Either a string (e.g. `","`,
+#'   `" "`, `"."`) or `FALSE` to disable. Default `","`. The legacy `TRUE`
+#'   value is still accepted and treated as `","`.
+#' @param abbreviate Logical. When TRUE, values >= 1000 are shortened with at
+#'   most 1 decimal place (e.g., "$1.2M", "$5.3K"). Default FALSE.
 #' @param position Symbol position: "prefix" (default, e.g., "$100") or "suffix" (e.g., "100EUR")
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling
 #'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and
 #'   alignment. Body cells default to `align = "right"` (override with
@@ -1085,24 +1301,43 @@ col_progress <- function(field, header = NULL, width = NULL,
 #' # Default USD
 #' col_currency("price")
 #'
+#' # European thousands separator (period)
+#' col_currency("amount", symbol = "€", thousands_sep = ".", position = "suffix")
+#'
+#' # Abbreviate large amounts: 1,234,567 -> "$1.2M"
+#' col_currency("revenue", abbreviate = TRUE)
+#'
 #' # Euro suffix
 #' col_currency("amount", symbol = "\u20ac", position = "suffix")
 #'
 #' # No thousands separator
 #' col_currency("cost", thousands_sep = FALSE)
 col_currency <- function(field, header = NULL, width = NULL,
-                         symbol = "$", decimals = 2, thousands_sep = TRUE,
-                         position = c("prefix", "suffix"), ...) {
+                         symbol = "$", decimals = 2, digits = NULL,
+                         thousands_sep = ",", abbreviate = FALSE,
+                         position = c("prefix", "suffix"),
+                         na_text = NULL, ...) {
   position <- match.arg(position)
   checkmate::assert_string(symbol)
   checkmate::assert_number(decimals, lower = 0, upper = 10)
-  checkmate::assert_flag(thousands_sep)
+  if (!is.null(digits)) {
+    checkmate::assert_number(digits, lower = 1, upper = 22)
+  }
+  if (isTRUE(thousands_sep)) {
+    thousands_sep <- ","
+  } else if (!isFALSE(thousands_sep)) {
+    checkmate::assert_string(thousands_sep)
+  }
+  checkmate::assert_flag(abbreviate)
   opts <- list(
-    numeric = list(decimals = decimals,
-                   thousandsSep = if (thousands_sep) "," else FALSE,
+    numeric = list(decimals = if (is.null(digits)) decimals else NULL,
+                   digits = digits,
+                   thousandsSep = thousands_sep,
+                   abbreviate = abbreviate,
                    prefix = if (position == "prefix") symbol else NULL,
                    suffix = if (position == "suffix") symbol else NULL)
   )
+  if (!is.null(na_text)) opts$naText <- na_text
   web_col(field, header, type = "numeric", width = width, align = "right",
           options = opts, ...)
 }
@@ -1116,6 +1351,7 @@ col_currency <- function(field, header = NULL, width = NULL,
 #' @param header Column header (default NULL, uses field name)
 #' @param width Column width in pixels (NULL for auto-sizing based on content)
 #' @param format Date format string (default "%Y-%m-%d"). See [strftime()] for codes.
+#' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
 #'   `bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent` (column names)
 #'
@@ -1131,10 +1367,11 @@ col_currency <- function(field, header = NULL, width = NULL,
 #' # Abbreviated month
 #' col_date("enrollment_date", format = "%b %d, %Y")
 col_date <- function(field, header = NULL, width = NULL,
-                     format = "%Y-%m-%d", ...) {
+                     format = "%Y-%m-%d", na_text = NULL, ...) {
   checkmate::assert_string(format)
   opts <- list(date = list(format = format))
-  web_col(field, header, type = "text", width = width, options = opts, ...)
+  web_col(field, header, type = "text", width = width, options = opts,
+          na_text = na_text, ...)
 }
 
 # ============================================================================
@@ -1504,7 +1741,19 @@ finalize_enable_themes <- function(value, theme) {
 
 #' Create interaction specification
 #'
-#' @param show_filters (Deprecated) Alias for `enable_filters`.
+#' Two prefixes appear in this spec by design:
+#' - **`show_*`** controls whether a piece of UI chrome is rendered at all
+#'   (e.g. `show_legend`, `show_group_counts`). Toggles visibility of static
+#'   elements; nothing the user does at runtime brings them back.
+#' - **`enable_*`** controls whether a user *capability* is available
+#'   (sorting, filtering, resizing, editing, reordering, exporting, the theme
+#'   menu). The associated UI is rendered when the capability is on, hidden
+#'   when off.
+#'
+#' Use this distinction when adding new arguments: render-or-not is `show_`,
+#' can-the-user-do-it is `enable_`.
+#'
+#' @param show_filters `r lifecycle::badge("deprecated")` Use `enable_filters` instead.
 #' @param show_legend Show legend
 #' @param enable_sort Enable column sorting
 #' @param enable_collapse Enable group collapsing
@@ -1529,7 +1778,6 @@ finalize_enable_themes <- function(value, theme) {
 #' @return An InteractionSpec object
 #' @export
 web_interaction <- function(
-    show_filters = FALSE,
     show_legend = TRUE,
     enable_sort = TRUE,
     enable_collapse = TRUE,
@@ -1543,10 +1791,13 @@ web_interaction <- function(
     enable_edit = TRUE,
     show_group_counts = FALSE,
     tooltip_fields = NULL,
-    enable_themes = getOption("tabviz.enable_themes", "default")) {
-  # Deprecation: show_filters maps to enable_filters if the caller supplied it.
-  if (isTRUE(show_filters) && !isTRUE(enable_filters)) {
-    enable_filters <- TRUE
+    enable_themes = getOption("tabviz.enable_themes", "default"),
+    show_filters = lifecycle::deprecated()) {
+  if (lifecycle::is_present(show_filters)) {
+    lifecycle::deprecate_warn("0.9.0", "web_interaction(show_filters)", "web_interaction(enable_filters)")
+    if (isTRUE(show_filters)) enable_filters <- TRUE
+  } else {
+    show_filters <- FALSE
   }
   InteractionSpec(
     show_filters = show_filters,
@@ -1571,7 +1822,6 @@ web_interaction <- function(
 #' @export
 web_interaction_minimal <- function() {
   web_interaction(
-    show_filters = FALSE,
     show_legend = TRUE,
     enable_sort = FALSE,
     enable_collapse = FALSE,
@@ -1590,7 +1840,6 @@ web_interaction_minimal <- function() {
 #' @export
 web_interaction_publication <- function() {
   web_interaction(
-    show_filters = FALSE,
     show_legend = FALSE,
     enable_sort = FALSE,
     enable_collapse = FALSE,
@@ -1626,7 +1875,6 @@ default_interaction_for_theme <- function(theme) {
 web_interaction_full <- function() {
   # All interactivity on — drag rows/columns, sort, filter, edit cells, WYSIWYG export.
   web_interaction(
-    show_filters = FALSE,
     show_legend = TRUE,
     enable_sort = TRUE,
     enable_collapse = TRUE,
@@ -1705,7 +1953,7 @@ effect_bar <- function(value, label = NULL, color = NULL, opacity = NULL) {
 #' @param outliers Column name for outlier array (optional)
 #' @param label Display label for this effect
 #' @param color Fill color for the box
-#' @param fill_opacity Fill opacity (0-1)
+#' @param opacity Fill opacity (0-1)
 #'
 #' @export
 VizBoxplotEffect <- new_class(
@@ -1720,7 +1968,7 @@ VizBoxplotEffect <- new_class(
     outliers = new_property(class_character, default = NA_character_),
     label = new_property(class_character, default = NA_character_),
     color = new_property(class_character, default = NA_character_),
-    fill_opacity = new_property(class_numeric, default = 0.7)
+    opacity = new_property(class_numeric, default = 0.7)
   ),
   validator = function(self) {
     # Must have either data OR all five summary stats
@@ -1732,8 +1980,8 @@ VizBoxplotEffect <- new_class(
       return("Must provide either 'data' column or all five summary stats (min, q1, median, q3, max)")
     }
 
-    if (self@fill_opacity < 0 || self@fill_opacity > 1) {
-      return("fill_opacity must be between 0 and 1")
+    if (self@opacity < 0 || self@opacity > 1) {
+      return("opacity must be between 0 and 1")
     }
     NULL
   }
@@ -1754,7 +2002,9 @@ VizBoxplotEffect <- new_class(
 #' @param outliers Column name for outlier array (optional)
 #' @param label Display label (optional)
 #' @param color Fill color for the box (optional)
-#' @param fill_opacity Fill opacity from 0 to 1 (default 0.7)
+#' @param opacity Fill opacity from 0 to 1 (default 0.7). Matches the
+#'   `opacity` argument on `effect_forest()` / `effect_bar()`.
+#' @param fill_opacity `r lifecycle::badge("deprecated")` Use `opacity`.
 #'
 #' @return A VizBoxplotEffect object
 #' @export
@@ -1764,7 +2014,14 @@ effect_boxplot <- function(
     outliers = NULL,
     label = NULL,
     color = NULL,
-    fill_opacity = 0.7) {
+    opacity = 0.7,
+    fill_opacity = lifecycle::deprecated()) {
+  if (lifecycle::is_present(fill_opacity)) {
+    lifecycle::deprecate_warn(
+      "0.9.0", "effect_boxplot(fill_opacity)", "effect_boxplot(opacity)"
+    )
+    opacity <- fill_opacity
+  }
   VizBoxplotEffect(
     data = data %||% NA_character_,
     min = min %||% NA_character_,
@@ -1775,7 +2032,7 @@ effect_boxplot <- function(
     outliers = outliers %||% NA_character_,
     label = label %||% NA_character_,
     color = color %||% NA_character_,
-    fill_opacity = fill_opacity
+    opacity = opacity
   )
 }
 
@@ -1784,7 +2041,7 @@ effect_boxplot <- function(
 #' @param data Column name containing array data (required)
 #' @param label Display label for this effect
 #' @param color Fill color for the violin
-#' @param fill_opacity Fill opacity (0-1)
+#' @param opacity Fill opacity (0-1)
 #'
 #' @export
 VizViolinEffect <- new_class(
@@ -1793,11 +2050,11 @@ VizViolinEffect <- new_class(
     data = class_character,
     label = new_property(class_character, default = NA_character_),
     color = new_property(class_character, default = NA_character_),
-    fill_opacity = new_property(class_numeric, default = 0.5)
+    opacity = new_property(class_numeric, default = 0.5)
   ),
   validator = function(self) {
-    if (self@fill_opacity < 0 || self@fill_opacity > 1) {
-      return("fill_opacity must be between 0 and 1")
+    if (self@opacity < 0 || self@opacity > 1) {
+      return("opacity must be between 0 and 1")
     }
     NULL
   }
@@ -1811,16 +2068,25 @@ VizViolinEffect <- new_class(
 #' @param data Column name containing array data (required)
 #' @param label Display label (optional)
 #' @param color Fill color for the violin (optional)
-#' @param fill_opacity Fill opacity from 0 to 1 (default 0.5)
+#' @param opacity Fill opacity from 0 to 1 (default 0.5). Matches the
+#'   `opacity` argument on `effect_forest()` / `effect_bar()`.
+#' @param fill_opacity `r lifecycle::badge("deprecated")` Use `opacity`.
 #'
 #' @return A VizViolinEffect object
 #' @export
-effect_violin <- function(data, label = NULL, color = NULL, fill_opacity = 0.5) {
+effect_violin <- function(data, label = NULL, color = NULL, opacity = 0.5,
+                          fill_opacity = lifecycle::deprecated()) {
+  if (lifecycle::is_present(fill_opacity)) {
+    lifecycle::deprecate_warn(
+      "0.9.0", "effect_violin(fill_opacity)", "effect_violin(opacity)"
+    )
+    opacity <- fill_opacity
+  }
   VizViolinEffect(
     data = data,
     label = label %||% NA_character_,
     color = color %||% NA_character_,
-    fill_opacity = fill_opacity
+    opacity = opacity
   )
 }
 
@@ -1828,20 +2094,72 @@ effect_violin <- function(data, label = NULL, color = NULL, fill_opacity = 0.5) 
 # Viz Column Helper Functions
 # ============================================================================
 
+#' Validate and serialize annotations for viz_* columns
+#'
+#' Common helper used by `viz_bar()`, `viz_boxplot()`, `viz_violin()` (and
+#' could replace `viz_forest()`'s inline logic). Handles three things:
+#' 1. Validates that `annotations` is a list of `ReferenceLine` /
+#'    `CustomAnnotation` objects.
+#' 2. If `null_value` is non-NULL, prepends a synthetic `refline(null_value)`
+#'    to the annotations list (theme-default style).
+#' 3. Serializes via `serialize_annotation()`.
+#'
+#' Returns NULL if there are no annotations to ship (so JSON omits the field).
+#'
+#' @keywords internal
+prepare_viz_annotations <- function(annotations, null_value = NULL) {
+  if (!is.null(null_value)) {
+    checkmate::assert_number(null_value, finite = TRUE)
+  }
+  if (is.null(annotations)) annotations <- list()
+  if (!is.list(annotations)) {
+    cli_abort("{.arg annotations} must be a list of annotation objects (e.g. {.fn refline}).")
+  }
+
+  # Validate types
+  for (i in seq_along(annotations)) {
+    a <- annotations[[i]]
+    if (!(S7_inherits(a, ReferenceLine) || S7_inherits(a, CustomAnnotation))) {
+      cli_abort(c(
+        "All elements of {.arg annotations} must be {.fn refline} or {.fn forest_annotation} objects.",
+        "i" = "Element {i} is {.cls {class(a)[[1]]}}"
+      ))
+    }
+  }
+
+  # null_value: prepend a synthetic refline using theme-default style.
+  # We pass NA color so the renderer falls back to its theme default.
+  if (!is.null(null_value)) {
+    null_refline <- ReferenceLine(
+      x = null_value,
+      label = NA_character_,
+      style = "dashed",
+      color = NA_character_,
+      width = 1,
+      opacity = 0.6
+    )
+    annotations <- c(list(null_refline), annotations)
+  }
+
+  if (length(annotations) == 0) return(NULL)
+  lapply(annotations, serialize_annotation)
+}
+
 #' Visualization column: Bar chart
 #'
 #' Renders horizontal bar charts with support for multiple effects (grouped bars).
 #' Each row displays one or more bars based on data values.
 #'
-#' @param ... One or more `effect_bar()` objects defining the bars to display
+#' @param ... One or more `effect_bar()` objects defining the bars to display.
+#'   Additional `web_col()` styling arguments may follow as named arguments —
+#'   see "Passthrough arguments" below.
 #' @param header Column header label. Defaults to `NULL`, which resolves to
 #'   the primary effect's label (or the first effect's field name).
 #' @param show_header Whether to render the header cell above the chart.
 #'   Defaults to `TRUE`. Set to `FALSE` to hide the header.
 #' @param header_align Header text alignment (`"left"`, `"center"`, `"right"`).
-#'   Defaults to `"left"` for bar charts — labels read naturally from the left
-#'   edge, matching the direction in which bars grow.
-#' @param width Column width in pixels (default 150)
+#'   Defaults to `"center"` to match the other `viz_*()` columns.
+#' @param width Column width in pixels (default `NULL` = auto)
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
 #'   If NULL (default), range is computed automatically from data.
@@ -1850,6 +2168,30 @@ effect_violin <- function(data, label = NULL, color = NULL, fill_opacity = 0.5) 
 #' @param axis_gridlines Show gridlines at tick positions (default FALSE)
 #' @param axis_label Label for the x-axis (default "Value")
 #' @param show_axis Show the x-axis (default TRUE)
+#' @param null_value Optional numeric reference value. When non-NULL, a dashed
+#'   reference line is drawn at this x position — useful for marking a baseline,
+#'   target, or threshold. Implemented as a synthetic [refline()] prepended to
+#'   `annotations`.
+#' @param annotations Optional list of annotation objects (currently
+#'   [refline()] is supported on bar columns; [forest_annotation()] is
+#'   forest-specific and ignored here).
+#'
+#' @details
+#' # Passthrough arguments
+#' Named styling arguments passed via `...` (after the `effect_bar()` items)
+#' are forwarded to [web_col()]: `bold`, `italic`, `color`, `bg`, `badge`,
+#' `icon`, `emphasis`, `muted`, `accent`. Cell-level args ignored by viz
+#' columns: `na_text` (rows with no valid data are silently skipped, not
+#' filled with text), `tooltip` (no per-cell tooltip yet), `formatter`
+#' (would conflict with graphical rendering).
+#'
+#' # Forest-only features (not available here)
+#' These exist on [viz_forest()] only:
+#' - `shared_axis` (split-table axis sharing)
+#' - per-row `marker_shape` and `marker_size` (forest marker glyph only)
+#'
+#' Sorting is forced off (`sortable = FALSE`) for all viz columns —
+#' sort-by-graphic has no defined order.
 #'
 #' @return A ColumnSpec object with type = "viz_bar"
 #' @export
@@ -1867,19 +2209,27 @@ viz_bar <- function(
     ...,
     header = NULL,
     show_header = TRUE,
-    header_align = "left",
-    width = 150,
+    header_align = "center",
+    width = NULL,
     scale = c("linear", "log"),
     axis_range = NULL,
     axis_ticks = NULL,
     axis_gridlines = FALSE,
     axis_label = "Value",
-    show_axis = TRUE) {
+    show_axis = TRUE,
+    null_value = NULL,
+    annotations = NULL) {
 
   checkmate::assert_flag(show_header)
   checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
   scale <- match.arg(scale)
-  effects <- list(...)
+
+  # Separate positional effect_bar() items from named styling args forwarded via `...`
+  all_args <- list(...)
+  arg_names <- names(all_args) %||% rep("", length(all_args))
+  is_named <- nzchar(arg_names)
+  effects <- all_args[!is_named]
+  passthrough <- all_args[is_named]
 
   # Validate effects
   if (length(effects) == 0) {
@@ -1889,7 +2239,7 @@ viz_bar <- function(
   for (i in seq_along(effects)) {
     if (!S7_inherits(effects[[i]], VizBarEffect)) {
       cli_abort(c(
-        "All arguments to viz_bar must be {.fn effect_bar} objects",
+        "All positional arguments to viz_bar must be {.fn effect_bar} objects",
         "i" = "Argument {i} is not a VizBarEffect"
       ))
     }
@@ -1905,6 +2255,8 @@ viz_bar <- function(
     )
   })
 
+  serialized_annotations <- prepare_viz_annotations(annotations, null_value)
+
   opts <- list(
     vizBar = list(
       type = "bar",
@@ -1914,7 +2266,8 @@ viz_bar <- function(
       axisTicks = axis_ticks,
       axisGridlines = axis_gridlines,
       axisLabel = axis_label,
-      showAxis = show_axis
+      showAxis = show_axis,
+      annotations = serialized_annotations
     )
   )
 
@@ -1925,16 +2278,19 @@ viz_bar <- function(
   viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else effects[[1]]@value
   resolved_header <- if (is.null(header)) viz_fallback else as.character(header)
 
-  web_col(
-    synthetic_field,
-    header = resolved_header,
-    show_header = show_header,
-    header_align = header_align,
-    type = "viz_bar",
-    width = width,
-    sortable = FALSE,
-    options = opts
-  )
+  do.call(web_col, c(
+    list(
+      synthetic_field,
+      header = resolved_header,
+      show_header = show_header,
+      header_align = header_align,
+      type = "viz_bar",
+      width = width,
+      sortable = FALSE,
+      options = opts
+    ),
+    passthrough
+  ))
 }
 
 #' Visualization column: Box plot
@@ -1942,7 +2298,9 @@ viz_bar <- function(
 #' Renders box-and-whisker plots. Supports either raw array data (quartiles
 #' computed automatically) or pre-computed summary statistics.
 #'
-#' @param ... One or more `effect_boxplot()` objects defining the boxplots
+#' @param ... One or more `effect_boxplot()` objects defining the boxplots.
+#'   Additional `web_col()` styling arguments may follow as named arguments —
+#'   see "Passthrough arguments" below.
 #' @param header Column header label. Defaults to `NULL`, which resolves to
 #'   the primary effect's label (or data field name).
 #' @param show_header Whether to render the header cell above the chart.
@@ -1950,7 +2308,7 @@ viz_bar <- function(
 #' @param header_align Header text alignment (`"left"`, `"center"`, `"right"`).
 #'   Defaults to `"center"` — box plots are symmetric around their median,
 #'   so a centered label reads most naturally above the axis.
-#' @param width Column width in pixels (default 150)
+#' @param width Column width in pixels (default `NULL` = auto)
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
 #'   If NULL (default), range is computed automatically from data.
@@ -1961,6 +2319,26 @@ viz_bar <- function(
 #' @param whisker_type Whisker calculation: "iqr" (1.5*IQR, default) or "minmax"
 #' @param axis_label Label for the x-axis (default "Value")
 #' @param show_axis Show the x-axis (default TRUE)
+#' @param null_value Optional numeric reference value. When non-NULL, a dashed
+#'   reference line is drawn at this x position. Implemented as a synthetic
+#'   [refline()] prepended to `annotations`.
+#' @param annotations Optional list of annotation objects (currently
+#'   [refline()] is supported on boxplot columns; [forest_annotation()] is
+#'   forest-specific and ignored here).
+#'
+#' @details
+#' # Passthrough arguments
+#' Named styling arguments passed via `...` (after the `effect_boxplot()` items)
+#' are forwarded to [web_col()]: `bold`, `italic`, `color`, `bg`, `badge`,
+#' `icon`, `emphasis`, `muted`, `accent`. Cell-level args ignored by viz
+#' columns: `na_text`, `tooltip`, `formatter` (see [viz_bar()] for details).
+#'
+#' # Forest-only features (not available here)
+#' These exist on [viz_forest()] only:
+#' - `shared_axis` (split-table axis sharing)
+#' - per-row `marker_shape` and `marker_size` (forest marker glyph only)
+#'
+#' Sorting is forced off (`sortable = FALSE`).
 #'
 #' @return A ColumnSpec object with type = "viz_boxplot"
 #' @export
@@ -1985,7 +2363,7 @@ viz_boxplot <- function(
     header = NULL,
     show_header = TRUE,
     header_align = "center",
-    width = 150,
+    width = NULL,
     scale = c("linear", "log"),
     axis_range = NULL,
     axis_ticks = NULL,
@@ -1993,13 +2371,21 @@ viz_boxplot <- function(
     show_outliers = TRUE,
     whisker_type = c("iqr", "minmax"),
     axis_label = "Value",
-    show_axis = TRUE) {
+    show_axis = TRUE,
+    null_value = NULL,
+    annotations = NULL) {
 
   checkmate::assert_flag(show_header)
   checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
   scale <- match.arg(scale)
   whisker_type <- match.arg(whisker_type)
-  effects <- list(...)
+
+  # Separate positional effect_boxplot() items from named styling args via `...`
+  all_args <- list(...)
+  arg_names <- names(all_args) %||% rep("", length(all_args))
+  is_named <- nzchar(arg_names)
+  effects <- all_args[!is_named]
+  passthrough <- all_args[is_named]
 
   # Validate effects
   if (length(effects) == 0) {
@@ -2009,7 +2395,7 @@ viz_boxplot <- function(
   for (i in seq_along(effects)) {
     if (!S7_inherits(effects[[i]], VizBoxplotEffect)) {
       cli_abort(c(
-        "All arguments to viz_boxplot must be {.fn effect_boxplot} objects",
+        "All positional arguments to viz_boxplot must be {.fn effect_boxplot} objects",
         "i" = "Argument {i} is not a VizBoxplotEffect"
       ))
     }
@@ -2027,9 +2413,11 @@ viz_boxplot <- function(
       outliers = if (is.na(e@outliers)) NULL else e@outliers,
       label = if (is.na(e@label)) NULL else e@label,
       color = if (is.na(e@color)) NULL else e@color,
-      fillOpacity = e@fill_opacity
+      opacity = e@opacity
     )
   })
+
+  serialized_annotations <- prepare_viz_annotations(annotations, null_value)
 
   opts <- list(
     vizBoxplot = list(
@@ -2042,7 +2430,8 @@ viz_boxplot <- function(
       showOutliers = show_outliers,
       whiskerType = whisker_type,
       axisLabel = axis_label,
-      showAxis = show_axis
+      showAxis = show_axis,
+      annotations = serialized_annotations
     )
   )
 
@@ -2059,16 +2448,19 @@ viz_boxplot <- function(
   viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else first_field
   resolved_header <- if (is.null(header)) viz_fallback else as.character(header)
 
-  web_col(
-    synthetic_field,
-    header = resolved_header,
-    show_header = show_header,
-    header_align = header_align,
-    type = "viz_boxplot",
-    width = width,
-    sortable = FALSE,
-    options = opts
-  )
+  do.call(web_col, c(
+    list(
+      synthetic_field,
+      header = resolved_header,
+      show_header = show_header,
+      header_align = header_align,
+      type = "viz_boxplot",
+      width = width,
+      sortable = FALSE,
+      options = opts
+    ),
+    passthrough
+  ))
 }
 
 #' Visualization column: Violin plot
@@ -2076,7 +2468,9 @@ viz_boxplot <- function(
 #' Renders violin plots (kernel density estimation). Requires raw array data
 #' for each row.
 #'
-#' @param ... One or more `effect_violin()` objects defining the violins
+#' @param ... One or more `effect_violin()` objects defining the violins.
+#'   Additional `web_col()` styling arguments may follow as named arguments —
+#'   see "Passthrough arguments" below.
 #' @param header Column header label. Defaults to `NULL`, which resolves to
 #'   the primary effect's label (or data field name).
 #' @param show_header Whether to render the header cell above the chart.
@@ -2084,7 +2478,7 @@ viz_boxplot <- function(
 #' @param header_align Header text alignment (`"left"`, `"center"`, `"right"`).
 #'   Defaults to `"center"` — violins are symmetric around their median,
 #'   so a centered label reads most naturally above the axis.
-#' @param width Column width in pixels (default 150)
+#' @param width Column width in pixels (default `NULL` = auto)
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param axis_range Numeric vector of length 2 specifying axis range c(min, max).
 #'   If NULL (default), range is computed automatically from data.
@@ -2096,6 +2490,26 @@ viz_boxplot <- function(
 #' @param show_quartiles Show Q1/Q3 indicator lines (default FALSE)
 #' @param axis_label Label for the x-axis (default "Value")
 #' @param show_axis Show the x-axis (default TRUE)
+#' @param null_value Optional numeric reference value. When non-NULL, a dashed
+#'   reference line is drawn at this x position. Implemented as a synthetic
+#'   [refline()] prepended to `annotations`.
+#' @param annotations Optional list of annotation objects (currently
+#'   [refline()] is supported on violin columns; [forest_annotation()] is
+#'   forest-specific and ignored here).
+#'
+#' @details
+#' # Passthrough arguments
+#' Named styling arguments passed via `...` (after the `effect_violin()` items)
+#' are forwarded to [web_col()]: `bold`, `italic`, `color`, `bg`, `badge`,
+#' `icon`, `emphasis`, `muted`, `accent`. Cell-level args ignored by viz
+#' columns: `na_text`, `tooltip`, `formatter` (see [viz_bar()] for details).
+#'
+#' # Forest-only features (not available here)
+#' These exist on [viz_forest()] only:
+#' - `shared_axis` (split-table axis sharing)
+#' - per-row `marker_shape` and `marker_size` (forest marker glyph only)
+#'
+#' Sorting is forced off (`sortable = FALSE`).
 #'
 #' @return A ColumnSpec object with type = "viz_violin"
 #' @export
@@ -2116,7 +2530,7 @@ viz_violin <- function(
     header = NULL,
     show_header = TRUE,
     header_align = "center",
-    width = 150,
+    width = NULL,
     scale = c("linear", "log"),
     axis_range = NULL,
     axis_ticks = NULL,
@@ -2125,12 +2539,20 @@ viz_violin <- function(
     show_median = TRUE,
     show_quartiles = FALSE,
     axis_label = "Value",
-    show_axis = TRUE) {
+    show_axis = TRUE,
+    null_value = NULL,
+    annotations = NULL) {
 
   checkmate::assert_flag(show_header)
   checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
   scale <- match.arg(scale)
-  effects <- list(...)
+
+  # Separate positional effect_violin() items from named styling args via `...`
+  all_args <- list(...)
+  arg_names <- names(all_args) %||% rep("", length(all_args))
+  is_named <- nzchar(arg_names)
+  effects <- all_args[!is_named]
+  passthrough <- all_args[is_named]
 
   # Validate effects
   if (length(effects) == 0) {
@@ -2140,7 +2562,7 @@ viz_violin <- function(
   for (i in seq_along(effects)) {
     if (!S7_inherits(effects[[i]], VizViolinEffect)) {
       cli_abort(c(
-        "All arguments to viz_violin must be {.fn effect_violin} objects",
+        "All positional arguments to viz_violin must be {.fn effect_violin} objects",
         "i" = "Argument {i} is not a VizViolinEffect"
       ))
     }
@@ -2152,9 +2574,11 @@ viz_violin <- function(
       data = e@data,
       label = if (is.na(e@label)) NULL else e@label,
       color = if (is.na(e@color)) NULL else e@color,
-      fillOpacity = e@fill_opacity
+      opacity = e@opacity
     )
   })
+
+  serialized_annotations <- prepare_viz_annotations(annotations, null_value)
 
   opts <- list(
     vizViolin = list(
@@ -2168,7 +2592,8 @@ viz_violin <- function(
       showMedian = show_median,
       showQuartiles = show_quartiles,
       axisLabel = axis_label,
-      showAxis = show_axis
+      showAxis = show_axis,
+      annotations = serialized_annotations
     )
   )
 
@@ -2179,14 +2604,17 @@ viz_violin <- function(
   viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else effects[[1]]@data
   resolved_header <- if (is.null(header)) viz_fallback else as.character(header)
 
-  web_col(
-    synthetic_field,
-    header = resolved_header,
-    show_header = show_header,
-    header_align = header_align,
-    type = "viz_violin",
-    width = width,
-    sortable = FALSE,
-    options = opts
-  )
+  do.call(web_col, c(
+    list(
+      synthetic_field,
+      header = resolved_header,
+      show_header = show_header,
+      header_align = header_align,
+      type = "viz_violin",
+      width = width,
+      sortable = FALSE,
+      options = opts
+    ),
+    passthrough
+  ))
 }

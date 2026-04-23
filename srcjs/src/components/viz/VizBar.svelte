@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Row, WebTheme, VizBarColumnOptions, VizBarEffect } from "$types";
   import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
+  import { resolveMarkerStyle } from "$lib/marker-styling";
 
   interface Props {
     row: Row;
@@ -73,14 +74,21 @@
     theme?.shapes?.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"]
   );
 
-  // Get color for an effect
-  function getEffectColor(effect: VizBarEffect, idx: number): string {
-    return effect.color ?? defaultColors[idx % defaultColors.length];
+  // Per-row overrides (from tabviz(marker_color = "col") / marker_opacity)
+  const rowColorOverride = $derived(row.markerStyle?.color ?? null);
+  const rowOpacityOverride = $derived(row.markerStyle?.opacity ?? null);
+  const numEffects = $derived(options.effects.length);
+
+  // Resolve full marker style (fill + optional outline) via the cascade.
+  function getMarkerStyle(effect: VizBarEffect, idx: number) {
+    const base = effect.color ?? defaultColors[idx % defaultColors.length];
+    return resolveMarkerStyle(base, rowColorOverride, row.style, numEffects, theme);
   }
 
-  // Get opacity for an effect
+  // Opacity is orthogonal to color cascade
   function getEffectOpacity(effect: VizBarEffect): number {
-    return effect.opacity ?? 0.85;
+    const base = effect.opacity ?? 0.85;
+    return rowOpacityOverride !== null ? rowOpacityOverride : base;
   }
 
   // Check if we have valid data
@@ -101,7 +109,7 @@
         {@const barY = yPosition - barConfig.totalHeight / 2 + idx * (barConfig.barHeight + barConfig.barGap)}
         {@const barX = xScale(Math.min(0, value))}
         {@const barWidth = Math.abs(xScale(value) - xScale(0))}
-        {@const color = getEffectColor(effect, idx)}
+        {@const ms = getMarkerStyle(effect, idx)}
         {@const opacity = getEffectOpacity(effect)}
 
         <rect
@@ -109,8 +117,10 @@
           y={barY}
           width={Math.max(1, barWidth)}
           height={barConfig.barHeight}
-          fill={color}
+          fill={ms.fill}
           fill-opacity={opacity}
+          stroke={ms.stroke}
+          stroke-width={ms.strokeWidth}
           rx="2"
           class="bar-segment"
         />

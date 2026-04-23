@@ -12,6 +12,7 @@ col_img(
   max_width = NULL,
   fallback = "[img]",
   shape = c("square", "circle", "rounded"),
+  na_text = NULL,
   ...
 )
 }
@@ -29,6 +30,8 @@ col_img(
 \item{fallback}{Fallback text or icon if image fails to load (default "\link[htmltools:builder]{htmltools::img}")}
 
 \item{shape}{Image shape: "square", "circle", or "rounded" (default "square")}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling
 (\code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent}) and

@@ -40,7 +40,7 @@ forest_plot(
   columns = list(
     col_numeric("n_int", "Intervention (n)"),
     col_numeric("n_ctrl", "Control (n)"),
-    col_interval("RR (95% CI)"),
+    col_interval("rr", "lower", "upper", header = "RR (95% CI)"),
     col_pvalue("p_int", "P Value")
   ),
   row_type = "row_type",

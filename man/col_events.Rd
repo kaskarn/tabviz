@@ -5,21 +5,24 @@
 \title{Column helper: Events column}
 \usage{
 col_events(
-  events_field,
-  n_field,
+  events,
+  n,
   header = "Events",
   width = NULL,
   separator = "/",
   show_pct = FALSE,
   thousands_sep = ",",
   abbreviate = FALSE,
-  ...
+  na_text = NULL,
+  ...,
+  events_field = lifecycle::deprecated(),
+  n_field = lifecycle::deprecated()
 )
 }
 \arguments{
-\item{events_field}{Field name containing number of events}
+\item{events}{Field name containing the event count}
 
-\item{n_field}{Field name containing total sample size}
+\item{n}{Field name containing the total sample size}
 
 \item{header}{Column header (default "Events")}
 
@@ -34,8 +37,14 @@ col_events(
 \item{abbreviate}{Logical. When TRUE, values >= 1000 are shortened with at most
 1 decimal place (e.g., "1.1K/12K" instead of "1,100/12,000"). Default FALSE.}
 
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
+
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
+
+\item{events_field}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{events}.}
+
+\item{n_field}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{n}.}
 }
 \value{
 A ColumnSpec object

@@ -63,7 +63,7 @@ forest_plot(
   label = "study",
   columns = list(
     col_numeric("n", "N"),
-    col_interval("HR (95% CI)")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   # Row styling: reference columns by name
   row_type = "row_type",

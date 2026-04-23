@@ -5,9 +5,10 @@
     value: string | undefined | null;
     metadata: Record<string, unknown>;
     options?: ReferenceColumnOptions;
+    naText?: string;
   }
 
-  let { value, metadata, options }: Props = $props();
+  let { value, metadata, options, naText }: Props = $props();
 
   const maxChars = $derived(options?.maxChars ?? 30);
   const showIcon = $derived(options?.showIcon ?? true);
@@ -52,6 +53,8 @@
       {displayValue}
     </span>
   {/if}
+{:else if naText}
+  <span class="cell-reference">{naText}</span>
 {/if}
 
 <style>

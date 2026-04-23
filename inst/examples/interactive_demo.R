@@ -65,7 +65,7 @@ forest_plot(
     col_numeric("year", "Year"),
     col_numeric("n", "N"),
     col_numeric("events", "Events"),
-    col_interval("HR (95% CI)"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     col_bar("n", "Sample Size")
   ),
   theme = web_theme_modern(),

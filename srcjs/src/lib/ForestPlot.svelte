@@ -1179,49 +1179,58 @@
             value={metadata[column.field] as number}
             maxValue={getMaxValueForColumn(visibleRows, column)}
             options={column.options?.bar}
+            naText={column.options?.naText}
           />
         {:else if column.type === "pvalue"}
           <CellPvalue
             value={metadata[column.field] as number}
             options={column.options?.pvalue}
+            naText={column.options?.naText}
             {cellStyle}
           />
         {:else if column.type === "sparkline"}
           <CellSparkline
             data={metadata[column.field] as number[]}
             options={column.options?.sparkline}
+            naText={column.options?.naText}
           />
         {:else if column.type === "icon"}
           <CellIcon
             value={metadata[column.field]}
             options={column.options?.icon}
+            naText={column.options?.naText}
           />
         {:else if column.type === "badge"}
           <CellBadge
             value={metadata[column.field]}
             options={column.options?.badge}
+            naText={column.options?.naText}
           />
         {:else if column.type === "stars"}
           <CellStars
             value={metadata[column.field] as number}
             options={column.options?.stars}
+            naText={column.options?.naText}
           />
         {:else if column.type === "img"}
           <CellImg
             value={metadata[column.field] as string}
             options={column.options?.img}
+            naText={column.options?.naText}
           />
         {:else if column.type === "reference"}
           <CellReference
             value={metadata[column.field] as string}
             metadata={metadata}
             options={column.options?.reference}
+            naText={column.options?.naText}
           />
         {:else if column.type === "range"}
           <CellRange
             value={metadata[column.field]}
             metadata={metadata}
             options={column.options?.range}
+            naText={column.options?.naText}
           />
         {:else if column.type === "heatmap"}
           <CellHeatmap
@@ -1229,11 +1238,13 @@
             options={column.options?.heatmap}
             minValue={getMinValueForColumn(visibleRows, column)}
             maxValue={getMaxValueForColumn(visibleRows, column)}
+            naText={column.options?.naText}
           />
         {:else if column.type === "progress"}
           <CellProgress
             value={metadata[column.field] as number}
             options={column.options?.progress}
+            naText={column.options?.naText}
           />
         {:else if column.type === "numeric"}
           <CellContent value={formatNumber(metadata[column.field] as number, column.options)} {cellStyle} />
@@ -1559,6 +1570,35 @@
               {/each}
             {/if}
 
+            <!-- Custom annotations: per-row glyphs (forest_annotation()) -->
+            {#if forestOpts?.annotations && forestOpts.annotations.length > 0}
+              {@const customAnns = forestOpts.annotations.filter(a => a.type === "custom") as Array<Extract<Annotation, {type: "custom"}>>}
+              {@const pointCol = forestOpts.point ?? forestOpts.effects?.[0]?.pointCol ?? null}
+              {#each customAnns as customAnn (customAnn.id)}
+                {#each displayRows as displayRow, ri (getDisplayRowKey(displayRow, ri))}
+                  {#if displayRow.type === "data" && pointCol && (displayRow.row.label === customAnn.rowId || displayRow.row.id === customAnn.rowId)}
+                    {@const ptVal = displayRow.row.metadata[pointCol]}
+                    {#if typeof ptVal === "number" && !Number.isNaN(ptVal)}
+                      {@const annRowY = (rowLayout.positions[ri] ?? ri * layout.rowHeight) + (rowLayout.heights[ri] ?? layout.rowHeight) / 2}
+                      {@const markerX = colScale(ptVal)}
+                      {@const offset = customAnn.position === "before" ? -14 : customAnn.position === "after" ? 14 : 0}
+                      {@const annX = markerX + offset}
+                      {@const sz = 5 * (customAnn.size ?? 1)}
+                      {#if customAnn.shape === "circle"}
+                        <circle cx={annX} cy={annRowY} r={sz} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                      {:else if customAnn.shape === "square"}
+                        <rect x={annX - sz} y={annRowY - sz} width={2*sz} height={2*sz} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                      {:else if customAnn.shape === "triangle"}
+                        <polygon points={`${annX},${annRowY - sz} ${annX - sz},${annRowY + sz} ${annX + sz},${annRowY + sz}`} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                      {:else if customAnn.shape === "star"}
+                        <polygon points={(() => { const pts=[]; for(let k=0;k<10;k++){const r=k%2===0?sz*1.2:sz*0.5; const a=Math.PI/2 + k*Math.PI/5; pts.push(`${annX + r*Math.cos(a)},${annRowY - r*Math.sin(a)}`);} return pts.join(" "); })()} fill={customAnn.color} stroke="white" stroke-width="0.5" />
+                      {/if}
+                    {/if}
+                  {/if}
+                {/each}
+              {/each}
+            {/if}
+
             <!-- Row intervals (markers) -->
             {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
               {#if displayRow.type === "data"}
@@ -1647,6 +1687,24 @@
                 </clipPath>
               </defs>
               <g clip-path="url(#{vcClipId})">
+              <!-- Reference-line annotations (drawn behind bars) -->
+              {#if sharedScale}
+                {@const vcAnnotations = vizOpts.annotations ?? []}
+                {#each vcAnnotations as annotation (annotation.id)}
+                  {#if annotation.type === "reference_line"}
+                    <line
+                      x1={sharedScale(annotation.x)}
+                      x2={sharedScale(annotation.x)}
+                      y1={0}
+                      y2={rowsAreaHeight}
+                      stroke={annotation.color ?? "var(--wf-muted)"}
+                      stroke-width={annotation.width ?? 1}
+                      stroke-opacity={annotation.opacity ?? 0.6}
+                      stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
+                    />
+                  {/if}
+                {/each}
+              {/if}
               <!-- Bar charts for each row -->
               {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
                 {#if displayRow.type === "data"}
@@ -1718,6 +1776,24 @@
                 </clipPath>
               </defs>
               <g clip-path="url(#{vcClipId})">
+              <!-- Reference-line annotations (drawn behind boxes) -->
+              {#if sharedScale}
+                {@const vcAnnotations = vizOpts.annotations ?? []}
+                {#each vcAnnotations as annotation (annotation.id)}
+                  {#if annotation.type === "reference_line"}
+                    <line
+                      x1={sharedScale(annotation.x)}
+                      x2={sharedScale(annotation.x)}
+                      y1={0}
+                      y2={rowsAreaHeight}
+                      stroke={annotation.color ?? "var(--wf-muted)"}
+                      stroke-width={annotation.width ?? 1}
+                      stroke-opacity={annotation.opacity ?? 0.6}
+                      stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
+                    />
+                  {/if}
+                {/each}
+              {/if}
               <!-- Boxplots for each row -->
               {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
                 {#if displayRow.type === "data"}
@@ -1789,6 +1865,24 @@
                 </clipPath>
               </defs>
               <g clip-path="url(#{vcClipId})">
+              <!-- Reference-line annotations (drawn behind violins) -->
+              {#if sharedScale}
+                {@const vcAnnotations = vizOpts.annotations ?? []}
+                {#each vcAnnotations as annotation (annotation.id)}
+                  {#if annotation.type === "reference_line"}
+                    <line
+                      x1={sharedScale(annotation.x)}
+                      x2={sharedScale(annotation.x)}
+                      y1={0}
+                      y2={rowsAreaHeight}
+                      stroke={annotation.color ?? "var(--wf-muted)"}
+                      stroke-width={annotation.width ?? 1}
+                      stroke-opacity={annotation.opacity ?? 0.6}
+                      stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
+                    />
+                  {/if}
+                {/each}
+              {/if}
               <!-- Violins for each row -->
               {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
                 {#if displayRow.type === "data"}

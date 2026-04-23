@@ -2,188 +2,179 @@
 title: "Function Reference"
 ---
 
-Complete reference for all tabviz functions, organized by category.
+Complete reference for the tabviz public API. Functions are grouped by purpose; each name links to its detail page.
 
-## Core Functions
+## Entry points
 
 | Function | Description |
-|----------|-------------|
-| [`tabviz()`](tabviz.qmd) | **Main entry point** — Create interactive tables with any columns |
-| [`forest_plot()`](forest_plot.qmd) | Convenience wrapper for quick forest plots |
-| [`save_plot()`](export.qmd) | Export to SVG, PNG, or PDF |
+|---|---|
+| [`tabviz()`](tabviz.qmd) | **Main entry point** — interactive table with any mix of columns. |
+| [`forest_plot()`](forest_plot.qmd) | Convenience wrapper that auto-builds a forest column from `point` / `lower` / `upper` (or `effects`). |
+| [`web_spec()`](tabviz.qmd) | Alias of `tabviz(..., .spec_only = TRUE)` — return a `WebSpec` instead of a widget. |
+| [`split_table()`](split_table.qmd) | Build a `SplitForest` from a spec / widget / data frame. |
 
 ```r
-# Create a table with a forest plot column
+# Build a table with a forest plot column
 tabviz(data, label = "study", columns = list(
   viz_forest(point = "hr", lower = "lo", upper = "hi"),
   col_numeric("hr", "HR"),
   col_pvalue("pval")
 ))
 
-# Quick forest plot (auto-creates viz_forest column)
+# Quick forest plot
 forest_plot(data, point = "hr", lower = "lo", upper = "hi", label = "study")
 ```
 
-## Column Types
-
-### Basic Columns
+## Data columns
 
 | Function | Description |
-|----------|-------------|
-| [`col_text()`](columns.qmd#col_text) | Text column |
-| [`col_numeric()`](columns.qmd#col_numeric) | Numeric column with formatting |
-| [`col_n()`](columns.qmd#col_n) | Sample size column |
-| [`col_percent()`](columns.qmd#col_percent) | Percentage column |
-| [`col_interval()`](columns.qmd#col_interval) | Confidence interval display |
-| [`col_events()`](columns.qmd#col_events) | Events/N format |
-| [`col_pvalue()`](columns.qmd#col_pvalue) | P-value with formatting |
+|---|---|
+| [`col_text()`](columns.qmd#col_text), [`col_label()`](columns.qmd#col_label) | Text / row-identifier columns |
+| [`col_numeric()`](columns.qmd#col_numeric) | Numeric with formatting and abbreviation |
+| [`col_n()`](columns.qmd#col_n) | Sample-size column (default thousands separator) |
+| [`col_percent()`](columns.qmd#col_percent) | Percentage from proportion or 0–100 value |
+| [`col_currency()`](columns.qmd#col_currency) | Numeric with currency symbol |
+| [`col_pvalue()`](columns.qmd#col_pvalue) | P-value with smart formatting & stars |
+| [`col_interval()`](columns.qmd#col_interval) | "1.20 (0.90, 1.50)" interval text |
+| [`col_events()`](columns.qmd#col_events) | "events/n" clinical format |
+| [`col_range()`](columns.qmd#col_range) | "min–max" range |
+| [`col_date()`](columns.qmd#col_date) | Date with `strftime()` formatting |
+| [`col_reference()`](columns.qmd#col_reference) | Truncated text + optional link |
+| [`col_heatmap()`](columns.qmd#col_heatmap) | Numeric with interpolated background color |
+| [`col_progress()`](columns.qmd#col_progress) | Inline progress bar |
 
-### Visualization Columns
-
-| Function | Description |
-|----------|-------------|
-| [`viz_forest()`](columns.qmd#viz_forest) | **Forest plot column** with intervals |
-| [`viz_bar()`](columns.qmd#viz_bar) | Horizontal bar chart with axis |
-| [`viz_boxplot()`](columns.qmd#viz_boxplot) | Box-and-whisker plots |
-| [`viz_violin()`](columns.qmd#viz_violin) | Violin/density plots |
-| [`col_bar()`](columns.qmd#col_bar) | Simple inline bar |
-| [`col_sparkline()`](columns.qmd#col_sparkline) | Inline sparkline |
-| [`col_badge()`](columns.qmd#col_badge) | Colored status badges |
-| [`col_stars()`](columns.qmd#col_stars) | Star ratings |
-| [`col_icon()`](columns.qmd#col_icon) | Icon/emoji column |
-| [`col_img()`](columns.qmd#col_img) | Inline images |
-| [`col_reference()`](columns.qmd#col_reference) | Truncated references with links |
-| [`col_range()`](columns.qmd#col_range) | Min-max range display |
-
-### Effect Specifications
+## Inline visual columns
 
 | Function | Description |
-|----------|-------------|
-| [`effect_forest()`](columns.qmd#viz_forest) | Define effect for multi-effect forest plots |
-| [`effect_bar()`](columns.qmd#viz_bar) | Define bar in `viz_bar()` |
-| [`effect_boxplot()`](columns.qmd#viz_boxplot) | Define boxplot in `viz_boxplot()` |
-| [`effect_violin()`](columns.qmd#viz_violin) | Define violin in `viz_violin()` |
+|---|---|
+| [`col_bar()`](columns.qmd#col_bar) | Per-row bar (no shared axis) |
+| [`col_sparkline()`](columns.qmd#col_sparkline) | Inline sparkline (line / bar / area) |
+| [`col_icon()`](columns.qmd#col_icon) | Icon / emoji per row |
+| [`col_badge()`](columns.qmd#col_badge) | Colored status badge |
+| [`col_stars()`](columns.qmd#col_stars) | Star rating |
+| [`col_img()`](columns.qmd#col_img) | Inline image |
 
-### Column Groups
+## Per-row visualization columns
 
-| Function | Description |
-|----------|-------------|
-| [`col_group()`](columns.qmd#col_group) | Group columns under header |
-
-## Styling Functions
-
-Apply styling using the fluent API with pipes:
+These render a small chart per row with a shared x-axis.
 
 | Function | Description |
-|----------|-------------|
-| [`set_row_style()`](styling.qmd#set_row_style) | Row-level styling (bold, italic, color, type, indent) |
-| [`set_marker_style()`](styling.qmd#set_marker_style) | Style interval markers (color, shape, opacity, size) |
-| [`set_column_style()`](styling.qmd#set_column_style) | Per-cell styling for specific columns |
+|---|---|
+| [`viz_forest()`](columns.qmd#viz_forest) | Forest plot column (point + CI) |
+| [`viz_bar()`](columns.qmd#viz_bar) | Horizontal bar chart |
+| [`viz_boxplot()`](columns.qmd#viz_boxplot) | Box-and-whisker |
+| [`viz_violin()`](columns.qmd#viz_violin) | Violin / KDE |
+
+### Effect helpers
+
+| Function | Description |
+|---|---|
+| [`effect_forest()`](columns.qmd#effect_forest) | Define an effect for `viz_forest(effects = ...)` |
+| [`effect_bar()`](columns.qmd) | Define a bar in `viz_bar(...)` |
+| [`effect_boxplot()`](columns.qmd) | Define a boxplot in `viz_boxplot(...)` |
+| [`effect_violin()`](columns.qmd) | Define a violin in `viz_violin(...)` |
+
+### Column construction
+
+| Function | Description |
+|---|---|
+| [`col_group()`](columns.qmd#col_group) | Group columns under a shared header |
+| [`web_col()`](columns.qmd#web_col) | Low-level constructor every `col_*()` delegates to |
+| [`web_group()`](tabviz.qmd#grouping) | Define a row group explicitly |
+
+## Styling modifiers
+
+Fluent verbs that mutate a `WebSpec`, htmlwidget, or `tabviz_proxy`. See [Styling](styling.qmd).
+
+| Function | Description |
+|---|---|
+| [`set_row_style()`](styling.qmd#set_row_style) | Row-level styling (bold / color / type / indent / …) |
+| [`set_column_style()`](styling.qmd#set_column_style) | Per-cell styling for one column |
+| [`set_marker_style()`](styling.qmd#set_marker_style) | Marker color / shape / opacity / size |
+| [`set_zoom()`](styling.qmd#set_zoom) | Zoom and container constraints |
 | [`set_theme()`](styling.qmd#set_theme) | Apply a theme by name or object |
-
-## Data Operations
-
-Add, remove, reorder, filter, sort, and edit table contents. See [Data Operations](data-ops.qmd) for the full reference.
-
-| Function | Purpose |
-|----------|---------|
-| [`add_column()`](data-ops.qmd#add_column) / [`remove_column()`](data-ops.qmd#remove_column) | Insert or remove columns |
-| [`move_column()`](data-ops.qmd#move_column) / [`resize_column()`](data-ops.qmd#resize_column) | Reposition and resize |
-| [`update_column()`](data-ops.qmd#update_column) | Edit column properties |
-| [`sort_rows()`](data-ops.qmd#sort_rows) / [`filter_rows()`](data-ops.qmd#filter_rows) | Order and filter rows |
-| [`select_rows()`](data-ops.qmd#select_rows) / [`move_row()`](data-ops.qmd#move_row) | Runtime row controls |
-| [`update_data()`](data-ops.qmd#update_data) | Replace the data frame |
-| [`toggle_group()`](data-ops.qmd#toggle_group) | Collapse/expand groups |
-| [`set_cell()`](data-ops.qmd#set_cell) / [`set_row_label()`](data-ops.qmd#set_row_label) / [`clear_edits()`](data-ops.qmd#clear_edits) | In-widget cell edits (proxy only) |
-| [`set_zoom()`](data-ops.qmd#set_zoom) | Zoom & container constraints |
-
-::: {.callout-note}
-## Constructor Arguments vs Fluent API
-
-Every styling function has equivalent direct arguments in `tabviz()`:
-
-```r
-# These produce identical results:
-tabviz(data, ..., row_bold = "is_summary", marker_color = "dir_color")
-
-tabviz(data, ...) |>
-  set_row_style(bold = "is_summary") |>
-  set_marker_style(color = "dir_color")
-```
-
-Use direct arguments when configuration is known upfront. Use the fluent API when styling depends on computation.
-:::
+| [`selectable_themes()`](styling.qmd#selectable_themes) | Curate the in-widget theme switcher |
 
 ## Themes
 
-### Preset Themes
+### Preset themes
 
 | Function | Description |
-|----------|-------------|
-| [`web_theme_default()`](themes.qmd#web_theme_default) | Clean, modern default theme |
-| [`web_theme_jama()`](themes.qmd#web_theme_jama) | JAMA journal style |
-| [`web_theme_lancet()`](themes.qmd#web_theme_lancet) | Lancet journal style |
-| [`web_theme_nature()`](themes.qmd#web_theme_nature) | Nature journal style |
-| [`web_theme_cochrane()`](themes.qmd#web_theme_cochrane) | Cochrane Collaboration style |
-| [`web_theme_modern()`](themes.qmd#web_theme_modern) | Contemporary UI |
-| [`web_theme_presentation()`](themes.qmd#web_theme_presentation) | Large fonts for slides |
+|---|---|
+| [`web_theme_default()`](themes.qmd#web_theme_default) | Clean modern default |
+| [`web_theme_minimal()`](themes.qmd#web_theme_minimal) | Academic black & white |
 | [`web_theme_dark()`](themes.qmd#web_theme_dark) | Dark mode |
-| [`web_theme_minimal()`](themes.qmd#web_theme_minimal) | Minimal B&W |
+| [`web_theme_jama()`](themes.qmd#web_theme_jama) | JAMA journals |
+| [`web_theme_lancet()`](themes.qmd#web_theme_lancet) | Lancet journals |
+| [`web_theme_modern()`](themes.qmd#web_theme_modern) | Reports / dashboards |
+| [`web_theme_presentation()`](themes.qmd#web_theme_presentation) | Slides / posters |
+| [`web_theme_cochrane()`](themes.qmd#web_theme_cochrane) | Cochrane reviews |
+| [`web_theme_nature()`](themes.qmd#web_theme_nature) | Nature journals |
+| [`web_theme()`](themes.qmd#web_theme) | Generic constructor |
+| [`package_themes()`](themes.qmd#package_themes) | Named list of every shipped theme |
 
-### Theme Modifiers
+### Theme modifiers
 
 | Function | Description |
-|----------|-------------|
-| [`set_colors()`](themes.qmd#set_colors) | Customize colors |
-| [`set_typography()`](themes.qmd#set_typography) | Customize fonts |
-| [`set_spacing()`](themes.qmd#set_spacing) | Customize spacing |
-| [`set_shapes()`](themes.qmd#set_shapes) | Customize shapes |
-| [`set_axis()`](themes.qmd#set_axis) | Customize axis |
-| [`set_layout()`](themes.qmd#set_layout) | Customize layout |
-| [`set_group_headers()`](themes.qmd#set_group_headers) | Customize group header hierarchy |
+|---|---|
+| [`set_colors()`](themes.qmd#set_colors) | Palette (uses `ci_marker_*` / `ci_line`) |
+| [`set_typography()`](themes.qmd#set_typography) | Fonts |
+| [`set_spacing()`](themes.qmd#set_spacing) | Row height / padding / gaps |
+| [`set_shapes()`](themes.qmd#set_shapes) | Marker geometry & multi-effect palette |
+| [`set_axis()`](themes.qmd#set_axis) | Range / ticks / gridlines / clipping |
+| [`set_layout()`](themes.qmd#set_layout) | Plot position, banding, container border |
+| [`set_group_headers()`](themes.qmd#set_group_headers) | Per-level nested header styling |
+| [`set_effect_colors()`](themes.qmd#set_effect_colors) | Shorthand for `set_shapes(effect_colors=)` |
+| [`set_marker_shapes()`](themes.qmd#set_marker_shapes) | Shorthand for `set_shapes(marker_shapes=)` |
 
 ## Annotations
 
 | Function | Description |
-|----------|-------------|
-| [`refline()`](annotations.qmd#refline) | Add reference line |
-| [`forest_annotation()`](annotations.qmd#forest_annotation) | Custom annotation |
+|---|---|
+| [`refline()`](annotations.qmd#refline) | Vertical reference line |
+| [`forest_annotation()`](annotations.qmd#forest_annotation) | Custom shape per study (frontend WIP) |
 
-## Interaction Settings
+## Data operations
 
-| Function | Description |
-|----------|-------------|
-| [`web_interaction()`](interaction.qmd#web_interaction) | Full control over interaction settings |
-| [`web_interaction_minimal()`](interaction.qmd#web_interaction_minimal) | Hover only preset |
-| [`web_interaction_publication()`](interaction.qmd#web_interaction_publication) | Static/print preset |
+Same dispatch on `WebSpec` / htmlwidget / `tabviz_proxy` — see [Data operations](data-ops.qmd).
 
-## Shiny Integration
+| Function | Purpose |
+|---|---|
+| [`add_column()`](data-ops.qmd#add_column), [`remove_column()`](data-ops.qmd#remove_column) | Insert / remove columns |
+| [`move_column()`](data-ops.qmd#move_column), [`resize_column()`](data-ops.qmd#resize_column) | Reposition / resize |
+| [`update_column()`](data-ops.qmd#update_column) | Edit column properties |
+| [`sort_rows()`](data-ops.qmd#sort_rows), [`filter_rows()`](data-ops.qmd#filter_rows), [`clear_filters()`](data-ops.qmd#clear_filters) | Order / filter rows |
+| [`select_rows()`](data-ops.qmd#select_rows), [`move_row()`](data-ops.qmd#move_row) | Runtime row controls |
+| [`update_data()`](data-ops.qmd#update_data) | Replace the data frame |
+| [`toggle_group()`](data-ops.qmd#toggle_group) | Collapse / expand groups |
+| [`set_cell()`](data-ops.qmd#set_cell), [`set_row_label()`](data-ops.qmd#set_row_label), [`clear_edits()`](data-ops.qmd#clear_edits) | Proxy-only cell edits |
 
-### Standard Tables
-
-| Function | Description |
-|----------|-------------|
-| [`tabvizOutput()`](shiny.qmd#tabvizOutput) | Shiny UI output |
-| [`renderTabviz()`](shiny.qmd#renderTabviz) | Shiny server render |
-| [`tabviz_proxy()`](shiny.qmd#tabviz_proxy) | Create update proxy |
-| [`update_data()`](data-ops.qmd#update_data) | Update table data (proxy or static) |
-| [`sort_rows()`](data-ops.qmd#sort_rows) | Sort by column |
-| [`filter_rows()`](data-ops.qmd#filter_rows) | Filter rows |
-| [`clear_filters()`](data-ops.qmd#clear_filters) | Clear filters |
-| [`toggle_group()`](data-ops.qmd#toggle_group) | Toggle group collapse |
-
-### Split Tables
+## Interaction
 
 | Function | Description |
-|----------|-------------|
-| [`splitTabvizOutput()`](shiny.qmd#splitTabvizOutput) | Shiny UI output for split view |
-| [`renderSplitTabviz()`](shiny.qmd#renderSplitTabviz) | Shiny server render for split view |
-| [`split_tabviz_proxy()`](shiny.qmd#split_tabviz_proxy) | Create split view proxy |
-| [`split_tabviz_select()`](shiny.qmd#split_tabviz_select) | Select sub-table programmatically |
+|---|---|
+| [`web_interaction()`](interaction.qmd#web_interaction) | Build an `InteractionSpec` |
+| [`web_interaction_full()`](interaction.qmd#web_interaction_full) | All capabilities on (default) |
+| [`web_interaction_minimal()`](interaction.qmd#web_interaction_minimal) | Hover only |
+| [`web_interaction_publication()`](interaction.qmd#web_interaction_publication) | Static / print preset |
+| [`default_interaction_for_theme()`](interaction.qmd#default_interaction_for_theme) | Returns `web_interaction_full()` |
 
-## Advanced
+## Shiny
 
 | Function | Description |
-|----------|-------------|
-| [`split_table()`](tabviz.qmd#split_table) | Split data into multiple sub-tables |
-| [`web_group()`](tabviz.qmd#grouping) | Define row group explicitly |
+|---|---|
+| [`tabvizOutput()`](shiny.qmd#tabvizOutput) / [`renderTabviz()`](shiny.qmd#renderTabviz) | Standard output / render bindings |
+| [`tabviz_proxy()`](shiny.qmd#tabviz_proxy) | Proxy for live updates |
+| [`splitTabvizOutput()`](shiny.qmd#splitTabvizOutput) / [`renderSplitTabviz()`](shiny.qmd#renderSplitTabviz) | Split-table bindings |
+| [`split_tabviz_proxy()`](shiny.qmd#split_tabviz_proxy) / [`split_tabviz_select()`](shiny.qmd#split_tabviz_select) | Split-table proxy |
+
+## Export
+
+| Function | Description |
+|---|---|
+| [`save_plot()`](save_plot.qmd#save_plot) | Export a widget / spec to SVG, PDF, or PNG |
+| [`save_split_table()`](save_plot.qmd#save_split_table) | Export every sub-plot of a `SplitForest` |
+
+## Troubleshooting
+
+[Troubleshooting guide](troubleshooting.qmd) — common errors and the recent (0.9.0) renames.

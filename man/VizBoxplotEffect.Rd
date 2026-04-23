@@ -14,7 +14,7 @@ VizBoxplotEffect(
   outliers = NA_character_,
   label = NA_character_,
   color = NA_character_,
-  fill_opacity = 0.7
+  opacity = 0.7
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ VizBoxplotEffect(
 
 \item{color}{Fill color for the box}
 
-\item{fill_opacity}{Fill opacity (0-1)}
+\item{opacity}{Fill opacity (0-1)}
 }
 \description{
 Supports two modes:

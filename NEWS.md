@@ -1,8 +1,22 @@
-# tabviz (development version)
+# tabviz 0.9.0
 
 ## New features
 
+* **Row semantic classes (`row_accent` / `row_emphasis` / `row_muted`) now cascade into viz cells.** Previously, declaring a row "special" via these classes only restyled the row's text — the forest marker, bar, box, or violin in that row kept its default per-effect color until you also wired in a literal `marker_color`. The classes now reach into all four viz column types automatically, with a single vs multi-effect rule:
+  - **Single-effect viz** (one effect per column): the row's marker / bar / box / violin **fill** is replaced with the theme's accent / foreground / muted color.
+  - **Multi-effect viz** (≥2 effects per column): per-effect color is **preserved** (so visual encoding survives), and an **outline** in the theme color is added around each glyph in that row.
+  
+  The four-layer precedence stack for marker color is now: `marker_color` (per-row literal, NA passes through) → row semantic class → per-effect literal → theme palette. Formulas are supported at every layer (e.g. `row_accent = ~ pval < 0.05`, `marker_color = ~ ifelse(pval < 0.001, "darkred", NA)`). See `gallery_17`–`gallery_21` for rendered examples covering forest, bar, boxplot, violin, and the precedence/NA-passthrough behavior.
+
+* **`viz_bar()`, `viz_boxplot()`, and `viz_violin()` now support `annotations` and `null_value`.** Pass `annotations = list(refline(x, ...))` to draw vertical reference lines on any viz column (matching `viz_forest()`). `null_value = <number>` is a convenience shorthand that prepends a dashed reference line at that x — useful for marking a baseline (`null_value = 0` on a bar chart), a target threshold, or a clinical cutoff on box / violin plots. `forest_annotation()` (per-row glyphs) remains forest-specific.
+* **`forest_annotation()` is now fully rendered.** Graduated from experimental in 0.9.0 — the per-row glyph annotation (circle / square / triangle / star, positioned `before` / `after` / `overlay` of the marker) renders in both the htmlwidget and the SVG/PNG export. Pass alongside `refline()` in `viz_forest(annotations = list(...))`. See the new `gallery_07_annotations.R` example for both annotation types together.
+* **Per-row marker styling now applies to non-forest viz columns.** `tabviz(marker_color = "color_col")` and `marker_opacity = "opacity_col"` now drive `viz_bar`, `viz_boxplot`, and `viz_violin` cell colors as well as forest markers — useful for coloring bars by significance, distributions by group, etc. When set, the row-level value overrides any per-effect color/opacity for all glyphs in that row. `marker_shape` and `marker_size` remain forest-specific (the forest marker is the only shape-and-size-variant glyph).
 * **Curate the interactive theme switcher with named labels, a session-wide default, and a fluent verb.** `web_interaction(enable_themes = ...)` now accepts named list entries to override each theme's displayed label (e.g. `list(Classical = web_theme_jama(), Modern = web_theme_modern())`), and its default reads from `getOption("tabviz.enable_themes", "default")` so a curated list can be set once per session. The spec's active `theme` is auto-included so users can always revert. New fluent modifier `selectable_themes()` mirrors the argument — chain it after `tabviz()` / `set_theme()` for post-hoc edits.
+
+## API changes
+
+* **`effect_boxplot()` and `effect_violin()` use `opacity` everywhere.** The user-facing argument was renamed from `fill_opacity` → `opacity` in 0.9.0 to match `effect_forest()` / `effect_bar()`. This release completes the migration: the underlying S7 slot is now `@opacity` (was `@fill_opacity`) and the JSON wire format writes `opacity` (was `fillOpacity`). The deprecated `fill_opacity` argument still works with a warning. JS readers fall back to the old `fillOpacity` JSON key for one release for compatibility with cached snapshots.
+* **`viz_*()` documentation updated.** `@param ...` blocks now explain that named styling args (`bold`, `italic`, `color`, `bg`, etc.) flow through to `web_col()` alongside the positional `effect_*()` items. `na_text`, `tooltip`, and `formatter` are documented as no-ops on viz columns. `sortable = FALSE` is now noted explicitly. The stale `viz_bar(header_align = "left")` claim in the docstring (the actual default is `"center"`) is corrected.
 
 ## Breaking changes
 

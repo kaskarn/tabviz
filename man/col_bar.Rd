@@ -5,18 +5,19 @@
 \title{Column helper: Bar/weight column}
 \usage{
 col_bar(
-  field = "weight",
+  field,
   header = NULL,
   width = NULL,
   max_value = NULL,
   show_label = TRUE,
   color = NULL,
   scale = c("linear", "log", "sqrt"),
+  na_text = NULL,
   ...
 )
 }
 \arguments{
-\item{field}{Field name (default "weight")}
+\item{field}{Field name (required)}
 
 \item{header}{Column header. Defaults to \code{NULL}, which resolves to the
 field's label (or field name) at render time. Pass \code{""} or set
@@ -32,6 +33,8 @@ field's label (or field name) at render time. Pass \code{""} or set
 
 \item{scale}{Scale type: "linear" (default), "log", or "sqrt". Controls how
 values map to bar length.}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

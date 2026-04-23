@@ -1,240 +1,192 @@
 ---
-title: "Interaction Settings"
+title: "Interaction"
 ---
 
 ```{r}
 #| include: false
 library(tabviz)
-library(dplyr)
 ```
 
-Control interactive behavior of tabviz widgets using `web_interaction()` and preset functions.
+`web_interaction()` builds an `InteractionSpec` controlling what users can do with a tabviz widget — sorting, filtering, reordering, editing, exporting, theme switching. Three presets cover common cases (`_full`, `_minimal`, `_publication`).
 
-## Overview
+:::{.callout-tip}
+## Naming convention: `show_*` vs `enable_*`
 
-All tabviz widgets are interactive by default. Use interaction settings to:
+- **`show_*`** controls whether a piece of static UI chrome is rendered at all (e.g. `show_legend`, `show_group_counts`). Toggling it on/off doesn't expose a runtime control to bring it back.
+- **`enable_*`** controls whether a user *capability* is on (sorting, filtering, resizing, editing, reordering, exporting, the theme menu). The associated UI is rendered when the capability is on, hidden when off.
 
-- Enable/disable specific interactions
-- Configure hover tooltips
-- Control theme selection menu
-- Create static publication-ready output
-
-## Quick Reference
-
-| Function | Use Case |
-|----------|----------|
-| `web_interaction()` | Full control over all settings |
-| `web_interaction_minimal()` | Hover only, no sorting/selection |
-| `web_interaction_publication()` | Fully static for print |
+When adding new arguments, follow the same rule: render-or-not is `show_`, can-the-user-do-it is `enable_`.
+:::
 
 ---
 
-## web_interaction()
+## `web_interaction()` {#web_interaction}
 
-Create a custom interaction specification:
-
-```{r}
-#| eval: false
-tabviz(data, label = "study",
-  interaction = web_interaction(
-    show_legend = TRUE,
-    enable_sort = TRUE,
-    enable_collapse = TRUE,
-    enable_select = TRUE,
-    enable_hover = TRUE,
-    enable_resize = TRUE,
-    enable_export = TRUE,
-    enable_filters = TRUE,
-    enable_reorder_rows = TRUE,
-    enable_reorder_columns = TRUE,
-    enable_edit = TRUE,
-    tooltip_fields = c("n", "pvalue"),
-    enable_themes = "default"
-  ),
-  columns = list(...)
+```r
+web_interaction(
+  show_legend = TRUE,
+  enable_sort = TRUE,
+  enable_collapse = TRUE,
+  enable_select = TRUE,
+  enable_hover = TRUE,
+  enable_resize = TRUE,
+  enable_export = TRUE,
+  enable_filters = TRUE,
+  enable_reorder_rows = TRUE,
+  enable_reorder_columns = TRUE,
+  enable_edit = TRUE,
+  show_group_counts = FALSE,
+  tooltip_fields = NULL,
+  enable_themes = getOption("tabviz.enable_themes", "default")
 )
 ```
 
-`web_interaction()` defaults enable the full interactive experience — sort, collapse, hover, resize, export, filters, row/column reorder, and inline editing all on. Pass individual flags to opt out of specific features, or use `web_interaction_minimal()` / `web_interaction_publication()` for quieter presets.
-
-### Arguments
-
 | Argument | Type | Default | Description |
-|----------|------|---------|-------------|
-| `show_legend` | logical | TRUE | Show legend for multi-effect plots |
-| `enable_sort` | logical | TRUE | Click headers to sort |
-| `enable_collapse` | logical | TRUE | Click group headers to collapse/expand |
-| `enable_select` | logical | TRUE | Click rows to select |
-| `enable_hover` | logical | TRUE | Highlight rows on hover |
-| `enable_resize` | logical | TRUE | Drag column borders to resize |
-| `enable_export` | logical | TRUE | Show download button on hover |
-| `enable_filters` | logical | TRUE | Per-column filter popovers in headers |
-| `enable_reorder_rows` | logical | TRUE | Drag rows within a group, group-siblings |
-| `enable_reorder_columns` | logical | TRUE | Drag columns within a group, group-siblings |
-| `enable_edit` | logical | TRUE | Double-click cells to edit; popover editor for forest numerics |
-| `tooltip_fields` | character vector | NULL | Column names for hover tooltip |
-| `enable_themes` | string, NULL, or list | "default" | Theme menu control |
+|---|---|---|---|
+| `show_legend` | `logical(1)` | `TRUE` | Render the legend (multi-effect plots). |
+| `enable_sort` | `logical(1)` | `TRUE` | Click headers to sort. |
+| `enable_collapse` | `logical(1)` | `TRUE` | Click row-group headers to collapse / expand. |
+| `enable_select` | `logical(1)` | `TRUE` | Click rows to select. |
+| `enable_hover` | `logical(1)` | `TRUE` | Highlight rows on hover. |
+| `enable_resize` | `logical(1)` | `TRUE` | Drag column borders to resize. |
+| `enable_export` | `logical(1)` | `TRUE` | Show download / export button on hover. |
+| `enable_filters` | `logical(1)` | `TRUE` | Per-column filter popovers in headers. |
+| `enable_reorder_rows` | `logical(1)` | `TRUE` | Drag rows within a group, and row-groups among siblings. |
+| `enable_reorder_columns` | `logical(1)` | `TRUE` | Drag columns within a group, and column-groups among top-level siblings. |
+| `enable_edit` | `logical(1)` | `TRUE` | Double-click cells to edit; popover editor for forest-cell numerics. |
+| `show_group_counts` | `logical(1)` | `FALSE` | Append `(n)` after each row-group label. |
+| `tooltip_fields` | `character` | `NULL` | Column names shown in the hover tooltip. `NULL` disables tooltips. |
+| `enable_themes` | `"default"` / `NULL` / `list` of `WebTheme` | `getOption("tabviz.enable_themes", "default")` | Curate the theme switcher (see below). |
 
-### Theme Menu Control
+**Returns:** an `InteractionSpec`.
 
-The `enable_themes` argument accepts three types of values:
+:::{.callout-important}
+## `show_filters` was renamed in 0.9.0
+
+The argument is now `enable_filters` — the column-filter UI is a user *capability*, not a static visibility toggle. The old `show_filters` is still accepted for one cycle and emits `lifecycle::deprecate_warn()`.
+:::
+
+### `enable_themes`
+
+Curates the in-widget theme switcher.
+
+| Value | Effect |
+|---|---|
+| `"default"` | Show every theme returned by `package_themes()`. |
+| `NULL` | Hide the switcher entirely. |
+| `list(WebTheme, ...)` | Show exactly those themes. **Named** entries override the displayed name (e.g. `list(Classical = web_theme_jama())`). The spec's active theme is auto-included so users can always revert. |
 
 ```r
-# Default: Show menu with all package themes
-web_interaction(enable_themes = "default")
-
-# Disable: Hide theme menu entirely
-web_interaction(enable_themes = NULL)
-
-# Custom: Show menu with specific themes only
+# Two-theme curated menu, custom display names
 web_interaction(enable_themes = list(
-  web_theme_jama(),
-  web_theme_nature(),
-  web_theme_modern()
+  Classical = web_theme_jama(),
+  Modern    = web_theme_modern()
 ))
+```
+
+The fluent equivalent on a built spec is [`selectable_themes()`](styling.qmd#selectable_themes).
+
+---
+
+## `web_interaction_full()` {#web_interaction_full}
+
+All capabilities on. This is what `default_interaction_for_theme()` returns, and what `tabviz()` falls back to when `interaction = NULL`.
+
+```r
+web_interaction_full()
 ```
 
 ---
 
-## web_interaction_minimal()
+## `web_interaction_minimal()` {#web_interaction_minimal}
 
-Preset for viewing with minimal interaction—hover highlighting only:
+Read-only with hover highlighting only.
+
+```r
+web_interaction_minimal()
+# Equivalent to web_interaction() with every enable_* set to FALSE
+# except enable_hover = TRUE; show_legend kept TRUE.
+```
+
+---
+
+## `web_interaction_publication()` {#web_interaction_publication}
+
+Print-clean: nothing is interactive, no legend chrome.
+
+```r
+web_interaction_publication()
+# Every show_* and enable_* set to FALSE.
+```
+
+Use when:
+
+- Exporting screenshots for print publications.
+- Embedding in static documents where any UI noise is unwelcome.
+
+---
+
+## `default_interaction_for_theme()` {#default_interaction_for_theme}
+
+```r
+default_interaction_for_theme(theme)
+```
+
+Returns `web_interaction_full()` regardless of theme — every shipped theme defaults to full interactivity. The function is exported for use in custom widget builders. Pass `interaction = web_interaction_publication()` (or `_minimal()`) explicitly for a quieter widget.
+
+---
+
+## Examples
 
 ```{r}
 data(glp1_trials)
 
+# Hover-only preset
 glp1_trials |>
-  filter(row_type == "data") |>
+  dplyr::filter(row_type == "data") |>
   head(4) |>
   tabviz(label = "study",
     interaction = web_interaction_minimal(),
     columns = list(
       viz_forest(point = "hr", lower = "lower", upper = "upper",
                  scale = "log", null_value = 1)
-    )
-  )
+    ))
 ```
-
-Equivalent to:
-
-```r
-web_interaction(
-  enable_sort = FALSE,
-  enable_collapse = FALSE,
-  enable_select = FALSE,
-  enable_hover = TRUE,
-  enable_resize = FALSE,
-  enable_export = FALSE
-)
-```
-
----
-
-## web_interaction_publication()
-
-Preset for static, publication-ready output:
 
 ```{r}
-#| eval: false
-tabviz(data, label = "study",
-  interaction = web_interaction_publication(),
-  columns = list(
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1)
-  )
-)
+# Hover tooltips with selected fields
+glp1_trials |>
+  dplyr::filter(row_type == "data") |>
+  head(4) |>
+  tabviz(label = "study",
+    interaction = web_interaction(tooltip_fields = c("drug", "n", "events", "pvalue")),
+    footnote = "Hover over markers to see details",
+    columns = list(
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1),
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
+    ))
 ```
-
-Equivalent to:
 
 ```r
-web_interaction(
-  show_legend = FALSE,
-  enable_sort = FALSE,
-  enable_collapse = FALSE,
-  enable_select = FALSE,
-  enable_hover = FALSE,
-  enable_resize = FALSE,
-  enable_export = FALSE
-)
-```
-
-Use this when:
-
-- Exporting for print publications
-- Embedding in static documents
-- Screenshots for presentations
-
----
-
-## Hover Tooltips
-
-Add custom tooltips that appear when hovering over markers:
-
-```{r}
-data(glp1_trials)
-
-tooltip_demo <- glp1_trials |>
-  filter(row_type == "data") |>
-  head(4)
-
-tabviz(tooltip_demo, label = "study",
-  interaction = web_interaction(
-    tooltip_fields = c("drug", "n", "events", "pvalue")
-  ),
-  footnote = "Hover over markers to see details",
-  columns = list(
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
-  )
-)
-```
-
-::: {.callout-note}
-Tooltips are opt-in. Without `tooltip_fields`, no tooltip appears on hover.
-:::
-
----
-
-## Examples
-
-### Disable Sorting Only
-
-```r
+# Disable just one capability
 tabviz(data, label = "study",
   interaction = web_interaction(enable_sort = FALSE),
-  columns = list(...)
-)
-```
+  columns = list(...))
 
-### Disable Export Button
-
-```r
+# Curated theme menu via the constructor
 tabviz(data, label = "study",
-  interaction = web_interaction(enable_export = FALSE),
-  columns = list(...)
-)
-```
-
-### Custom Theme Menu
-
-```r
-tabviz(data, label = "study",
-  interaction = web_interaction(
-    enable_themes = list(
-      web_theme_jama(),
-      web_theme_lancet()
-    )
-  ),
-  columns = list(...)
-)
+  interaction = web_interaction(enable_themes = list(
+    web_theme_jama(), web_theme_lancet()
+  )),
+  columns = list(...))
 ```
 
 ---
 
-## See Also
+## Related
 
-- [Visualizations Overview](../guide/visualizations/index.qmd#interactivity) — Interactivity guide
-- [Export](export.qmd) — Exporting to SVG/PNG/PDF
-- [`tabviz()`](tabviz.qmd) — Main entry point
+- [`selectable_themes()`](styling.qmd#selectable_themes) — fluent equivalent for the `enable_themes` argument
+- [`set_theme()`](styling.qmd#set_theme) — change the active theme
+- [Themes](themes.qmd) — `package_themes()` and the `web_theme_*()` builders
+- [`tabviz()`](tabviz.qmd) — the `interaction` argument

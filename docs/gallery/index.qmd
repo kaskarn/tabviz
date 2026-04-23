@@ -8,7 +8,7 @@ library(tabviz)
 library(dplyr)
 ```
 
-Explore example visualizations organized by use case. Each example below is a live widget — sort columns, click filter funnels, drag rows or columns where enabled, double-click to edit.
+A tour of `tabviz()` in action. Every figure on the sub-pages is a live widget rendered from the same data-frame-plus-columns API — sort columns, click filter funnels, drag rows or columns where enabled, double-click to edit. Pick the gallery that matches the kind of visualization you have in mind.
 
 ## By Category
 
@@ -16,44 +16,25 @@ Explore example visualizations organized by use case. Each example below is a li
 ::: {.g-col-6 .g-col-md-3}
 ### [Interactivity](interactive.qmd)
 
-Sort, filter, drag-and-drop, and double-click editing — with WYSIWYG export.
-
-- Full-interactivity tour
-- Filter + sort dashboard
-- In-place forest cell editing
+Best for: showing off live behavior. Sort, filter, drag-and-drop, double-click editing, theme switcher, all with WYSIWYG SVG/PNG export.
 :::
 
 ::: {.g-col-6 .g-col-md-3}
 ### [Clinical Examples](clinical.qmd)
 
-Meta-analyses, forest plots, and clinical trial visualizations.
-
-- JAMA-style forest plots
-- Subgroup analyses
-- Multi-arm dose-response
-- Nested hierarchical groups
+Best for: meta-analyses and trial reports. JAMA / Lancet-style forest plots, subgroup analyses, multi-arm dose-response, nested hierarchical groups.
 :::
 
 ::: {.g-col-6 .g-col-md-3}
 ### [Dashboard Examples](dashboards.qmd)
 
-Business dashboards, KPIs, and data tables.
-
-- Product metrics
-- A/B test analysis
-- Executive summaries and org charts
-- Sports and climate analytics
+Best for: information-dense tables. Product KPIs, A/B tests, executive summaries, org charts, sports and climate analytics — heatmaps, sparklines, badges, progress bars.
 :::
 
 ::: {.g-col-6 .g-col-md-3}
 ### [Feature Showcases](showcases.qmd)
 
-Demonstrations of specific tabviz features.
-
-- Rich column types
-- Publication templates (JAMA / Lancet / minimal)
-- Hierarchical split navigation
-- The full-monty comprehensive showcase
+Best for: feature spotlights. The complete column-type catalog, publication templates, theme variants, conditional styling, and the full-monty smoke-test example.
 :::
 :::
 
@@ -79,7 +60,7 @@ tabviz(effect_sizes,
                scale = "log", null_value = 1,
                axis_label = "Hazard Ratio"),
     col_group("Efficacy",
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
       col_badge("direction", "Direction",
         variants = list(
           `Favors Treatment` = "success",

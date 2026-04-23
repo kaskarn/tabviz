@@ -35,7 +35,7 @@ forest_plot(
   label = "study",
   columns = list(
     col_n("n"),
-    col_interval("Primary OR")
+    col_interval("itt_or", "itt_lo", "itt_hi", header = "Primary OR")
   ),
   effects = list(
     effect_forest("itt_or", "itt_lo", "itt_hi", label = "ITT (Primary)", color = "#2563eb"),

@@ -3,6 +3,8 @@ title: "S7 Class Architecture"
 description: "Internal class system design using R's S7 object-oriented framework"
 ---
 
+A reference catalog of every S7 class in tabviz, with the slot names you'll actually see if you peek inside a `WebSpec`. Read this when you need to extend the package, debug serialization, or understand why a particular argument resolves the way it does.
+
 ## Overview
 
 tabviz uses [S7](https://rconsortium.github.io/S7/), R's modern object-oriented system, for its internal data structures. S7 provides:
@@ -65,6 +67,24 @@ tabviz uses [S7](https://rconsortium.github.io/S7/), R's modern object-oriented 
 | `Shapes` | Point size, line width, border radius |
 | `AxisConfig` | Axis range, ticks, gridlines |
 | `LayoutConfig` | Plot position, cell padding, borders |
+| `GroupHeaderStyles` | Per-level row-group header styling |
+
+:::{.callout-important}
+## `ColorPalette` slot names vs `set_colors()` arguments
+The S7 slots on `ColorPalette` are still named:
+
+- `interval` — default CI marker fill
+- `interval_positive`, `interval_negative`, `interval_neutral` — direction-coded marker fills
+- `interval_line` — CI line color
+
+These slot names are unchanged. The user-facing arguments to `set_colors()` are the renamed forms:
+
+- `ci_marker_fill` (writes to slot `interval`)
+- `ci_marker_positive` / `ci_marker_negative` / `ci_marker_neutral`
+- `ci_line` (writes to slot `interval_line`)
+
+The old `interval*` argument names on `set_colors()` still work but emit a deprecation warning. If you read or write the slots directly via `theme@colors@interval_positive`, use the slot names. If you call `set_colors()`, use the `ci_marker_*` / `ci_line` argument names.
+:::
 
 ### Component Classes (`R/classes-components.R`)
 
@@ -196,30 +216,16 @@ label = if (is.na(spec@label_col)) NULL else spec@label_col
 
 ### 5. Validators for Business Logic
 
-S7 validators enforce invariants that can't be expressed through types alone:
+S7 validators enforce invariants that can't be expressed through types alone. The real `WebSpec` validator just checks optional-column references resolve; stronger checks (log-scale positivity, lower <= upper) are done upstream in `tabviz()` and in `viz_forest()` / `ColumnSpec` construction where the column-to-data binding is known.
 
 ```r
 WebSpec <- new_class("WebSpec",
   properties = list(...),
   validator = function(self) {
-    # Required columns must exist
     cols <- names(self@data)
-    if (!self@point_col %in% cols) {
-      return(paste0("Column '", self@point_col, "' not found in data"))
+    if (!is.na(self@group_col) && !self@group_col %in% cols) {
+      return(paste0("Column '", self@group_col, "' not found in data"))
     }
-
-    # Interval constraints
-    if (any(self@data[[self@lower_col]] > self@data[[self@upper_col]], na.rm = TRUE)) {
-      return("lower values must be <= upper values")
-    }
-
-    # Log scale requires positive values
-    if (self@scale == "log") {
-      if (any(self@data[[self@point_col]] <= 0, na.rm = TRUE)) {
-        return("All values must be positive for log scale")
-      }
-    }
-
     NULL  # Return NULL if valid
   }
 )
@@ -236,23 +242,32 @@ WebSpec <- new_class("WebSpec", properties = list(
   # Source data
   data = class_data.frame,
 
-  # Column mappings (required)
-  point_col = class_character,    # "hr", "effect", etc.
-  lower_col = class_character,    # "lo", "ci_low", etc.
-  upper_col = class_character,    # "hi", "ci_high", etc.
-
-  # Column mappings (optional)
-  label_col = new_property(class_character, default = NA_character_),
+  # Group column mappings
   group_col = new_property(class_character, default = NA_character_),
-  weight_col = new_property(class_character, default = NA_character_),
+  group_cols = new_property(class_character, default = character(0)),
 
-  # Scale configuration
-  scale = new_property(class_character, default = "linear"),  # or "log"
-  null_value = new_property(class_numeric, default = 0),      # 0 for linear, 1 for log
-  axis_label = new_property(class_character, default = "Estimate"),
+  # Column specifications (a list of ColumnSpec / ColumnGroup; viz_forest()
+  # owns its own point/lower/upper/scale/null_value)
+  columns = new_property(class_list, default = list()),
+  extra_columns = new_property(class_list, default = list()),
+  available_exclude = new_property(class_character, default = character(0)),
+
+  # Marker styling column mappings
+  marker_color_col = new_property(class_character, default = NA_character_),
+  marker_shape_col = new_property(class_character, default = NA_character_),
+  marker_opacity_col = new_property(class_character, default = NA_character_),
+  marker_size_col = new_property(class_character, default = NA_character_),
+  weight_col = new_property(class_character, default = NA_character_),  # deprecated alias
+
+  # Configuration
+  theme = new_property(class_any, default = NULL),
+  interaction = new_property(class_any, default = NULL),
+  labels = new_property(class_any, default = NULL),
   ...
 ))
 ```
+
+The forest column's `point` / `lower` / `upper` / `scale` / `null_value` are properties of the `viz_forest()` `ColumnSpec`, not of `WebSpec`. The same is true for `viz_bar()`, `viz_boxplot()`, `viz_violin()` — each carries its own data references inside `ColumnSpec@options`.
 
 ### Row Styling Column Mappings
 
@@ -271,15 +286,19 @@ row_badge_col = new_property(class_character, default = NA_character_)
 row_icon_col = new_property(class_character, default = NA_character_)
 row_indent_col = new_property(class_character, default = NA_character_)
 row_type_col = new_property(class_character, default = NA_character_)
-weight_col = new_property(class_character, default = NA_character_)
+marker_size_col = new_property(class_character, default = NA_character_)
 ```
 
-Usage in `web_spec()`:
+Usage in `tabviz()`:
 ```r
-web_spec(data, point = "hr", lower = "lo", upper = "hi",
-         row_bold = "is_summary",    # Column name, not values
-         row_badge = "significance", # Column name
-         weight = "study_weight")    # Column name
+tabviz(data,
+  label = "study",
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
+                            scale = "log", null_value = 1)),
+  row_bold = "is_summary",        # Column name, not values
+  row_badge = "significance",     # Column name
+  marker_size = "study_weight"    # Column name (formerly `weight`)
+)
 ```
 
 This pattern:
@@ -361,7 +380,7 @@ ColumnGroup <- new_class("ColumnGroup", properties = list(
 Usage:
 ```r
 col_group("Results",
-  col_interval("OR (95% CI)", point = "or", lower = "lo", upper = "hi"),
+  col_interval("or", "lo", "hi", header = "OR (95% CI)"),
   col_pvalue("pvalue", "P")
 )
 ```
@@ -474,18 +493,15 @@ S7 methods are registered for generic functions:
 method(print, WebSpec) <- function(x, ...) {
   cli_inform(c(
     "A {.cls WebSpec} with {nrow(x@data)} row{?s}",
-    "*" = "Point: {.field {x@point_col}}",
-    "*" = "Interval: {.field {x@lower_col}} to {.field {x@upper_col}}",
-    "*" = "Scale: {.val {x@scale}} (null = {x@null_value})",
     "*" = "Columns: {length(x@columns)}",
     "*" = "Groups: {length(x@groups)}"
   ))
   invisible(x)
 }
 
-# Plot method (renders as tabviz with forest column)
+# Plot method (renders as widget via forest_plot)
 method(plot, WebSpec) <- function(x, ...) {
-  tabviz(x@data, columns = list(viz_forest(point = x@point_col, lower = x@lower_col, upper = x@upper_col)), ...)
+  forest_plot(x, ...)
 }
 
 # as.data.frame method

@@ -8,41 +8,32 @@ library(tabviz)
 library(dplyr)
 ```
 
-Box plots summarize distributions showing median, quartiles, and outliers. They work with either raw array data or pre-computed summary statistics.
+`viz_boxplot()` summarizes distributions with median, quartiles, and outliers. It accepts either raw arrays of values or pre-computed summary statistics.
 
 ::: {.callout-tip}
 ## When to Use Boxplots
-Best for comparing distribution summaries across groups when you care about:
 
-- Median and spread
-- Quartile ranges
-- Outliers
-
-Use **violin plots** instead if you need to see full distribution shapes (bimodality, skewness).
+Best for comparing distribution summaries when you care about median, spread, quartile ranges, and outliers. If you need to see distribution **shape** (bimodality, skewness), use [violin plots](violin-plots.qmd) instead.
 :::
 
 ::: {.callout-important}
-## Data Format for Array Columns
-Array columns require the `I()` wrapper to preserve list structure:
+## Array Columns Need `I()`
+
+When passing a list-of-vectors as a column, wrap it with `I()` so `data.frame()` preserves the list structure:
 
 ```r
-# Create a data frame with array column
 data <- data.frame(
   group = c("A", "B", "C"),
-  values = I(list(
-    c(1, 2, 3, 4, 5),
-    c(2, 4, 6, 8, 10),
-    c(3, 5, 7, 9, 11)
-  ))
+  values = I(list(c(1, 2, 3), c(2, 4, 6), c(3, 5, 7)))
 )
 ```
 
 Without `I()`, R will try to unlist the vectors and fail.
 :::
 
-## From Array Data
+## Mode 1 — From Array Data
 
-When your data contains arrays of values per row, boxplot stats are computed automatically:
+When each row contains an array of values, boxplot statistics are computed automatically:
 
 ```{r}
 set.seed(42)
@@ -71,11 +62,9 @@ tabviz(boxplot_data, label = "treatment",
 )
 ```
 
----
+## Mode 2 — From Pre-computed Statistics
 
-## From Pre-computed Statistics
-
-If you already have quartile statistics computed, map them directly:
+If you already have quartile statistics, map them directly:
 
 ```{r}
 summary_data <- data.frame(
@@ -103,11 +92,9 @@ tabviz(summary_data, label = "study",
 )
 ```
 
----
-
 ## Multiple Effects
 
-Compare distributions across conditions:
+Compare distributions across conditions with multiple `effect_boxplot()` items:
 
 ```{r}
 set.seed(123)
@@ -135,38 +122,34 @@ tabviz(multi_box_data, label = "timepoint",
 )
 ```
 
----
+## `viz_boxplot()` Arguments
 
-## viz_boxplot() Arguments
+| Argument | Default | Purpose |
+|---|---|---|
+| `header` | `NULL` | Column header text |
+| `width` | `150` | Column width in pixels |
+| `scale` | `"linear"` | `"linear"` or `"log"` |
+| `axis_range` | auto | Fixed axis range `c(min, max)` |
+| `axis_ticks` | auto | Custom tick positions |
+| `axis_gridlines` | `FALSE` | Show vertical gridlines |
+| `show_outliers` | `TRUE` | Display outlier points |
+| `whisker_type` | `"iqr"` | `"iqr"` (1.5×IQR) or `"minmax"` |
+| `axis_label` | `"Value"` | Label text below the axis |
+| `show_axis` | `TRUE` | Show the axis |
 
-| Argument | Description | Default |
-|----------|-------------|---------|
-| `header` | Column header text | `NULL` |
-| `width` | Column width in pixels | `150` |
-| `scale` | `"linear"` or `"log"` | `"linear"` |
-| `axis_range` | Fixed axis range `c(min, max)` | Auto |
-| `axis_ticks` | Custom tick positions | Auto |
-| `axis_gridlines` | Show vertical gridlines | `FALSE` |
-| `show_outliers` | Display outlier points | `TRUE` |
-| `whisker_type` | `"iqr"` (1.5×IQR) or `"minmax"` | `"iqr"` |
-| `axis_label` | Label text below axis | `"Value"` |
-| `show_axis` | Show the axis | `TRUE` |
+## `effect_boxplot()` Arguments
 
-## effect_boxplot() Arguments
-
-| Argument | Description |
-|----------|-------------|
+| Argument | Purpose |
+|---|---|
 | `data` | Column containing array of values (mode 1) |
 | `min`, `q1`, `median`, `q3`, `max` | Column names for pre-computed stats (mode 2) |
 | `outliers` | Column containing outlier values (optional, mode 2) |
 | `label` | Display label for legend |
 | `color` | Box fill color |
-| `fill_opacity` | Box fill opacity (default: 0.7) |
-
----
+| `opacity` | Box fill opacity (default `0.7`). Was `fill_opacity` before 0.9.0. |
 
 ## See Also
 
-- [Visualizations Overview](index.qmd) — Interactivity, tooltips, export
+- [Visualizations Overview](index.qmd) — Tooltips, export, common features
 - [Bar Charts](bar-charts.qmd) — Single values with `viz_bar()`
 - [Violin Plots](violin-plots.qmd) — Full distributions with `viz_violin()`

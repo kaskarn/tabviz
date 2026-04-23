@@ -3,6 +3,8 @@ title: "Export System Architecture"
 description: "How tabviz generates static images from both R and the browser"
 ---
 
+A single TypeScript SVG generator drives every static export, whether triggered from R via `save_plot()` or from the in-browser download button. This page explains why and how that pipeline works, what the V8 bundle does, and where to extend it.
+
 ## Overview
 
 tabviz uses a **unified rendering architecture** for static image export. The same JavaScript SVG generator powers both:

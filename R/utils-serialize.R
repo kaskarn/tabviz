@@ -104,6 +104,33 @@ serialize_data <- function(spec, include_forest = TRUE) {
     }
   }
 
+  # Apply custom formatters: columns with a `formatter` function have their
+  # values replaced with the function's output (as character vector). The
+  # serialized column type is forced to "text" in web_col(), so the frontend
+  # renders the formatted string verbatim.
+  apply_formatter <- function(col) {
+    if (!S7_inherits(col, ColumnSpec)) return(invisible())
+    fn <- col@formatter
+    if (is.null(fn)) return(invisible())
+    field <- col@field
+    if (!(field %in% names(df))) return(invisible())
+    out <- fn(df[[field]])
+    if (length(out) != nrow(df)) {
+      cli_abort(c(
+        "{.arg formatter} for column {.val {field}} returned {length(out)} value(s); expected {nrow(df)}.",
+        "i" = "A formatter must return one element per data row."
+      ))
+    }
+    df[[field]] <<- as.character(out)
+  }
+  for (col in spec@columns) {
+    if (S7_inherits(col, ColumnGroup)) {
+      for (child in col@columns) apply_formatter(child)
+    } else {
+      apply_formatter(col)
+    }
+  }
+
   # Resolve the "label" field from the first ColumnSpec in columns (the
   # row-identifier column). The frontend still uses `row.label` for tooltips
   # and accessibility text, so we compute it from whichever column is leftmost.
@@ -679,6 +706,10 @@ build_cell_styles <- function(row, columns) {
 
     val <- get_val(col@style_accent, "logical")
     if (!is.null(val)) cs$accent <- val
+
+    # Per-cell tooltip text
+    val <- get_val(col@style_tooltip, "character")
+    if (!is.null(val)) cs$tooltip <- val
 
     if (length(cs) > 0) {
       cell_styles[[field]] <- cs

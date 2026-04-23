@@ -8,18 +8,22 @@ viz_bar(
   ...,
   header = NULL,
   show_header = TRUE,
-  header_align = "left",
-  width = 150,
+  header_align = "center",
+  width = NULL,
   scale = c("linear", "log"),
   axis_range = NULL,
   axis_ticks = NULL,
   axis_gridlines = FALSE,
   axis_label = "Value",
-  show_axis = TRUE
+  show_axis = TRUE,
+  null_value = NULL,
+  annotations = NULL
 )
 }
 \arguments{
-\item{...}{One or more \code{effect_bar()} objects defining the bars to display}
+\item{...}{One or more \code{effect_bar()} objects defining the bars to display.
+Additional \code{web_col()} styling arguments may follow as named arguments —
+see "Passthrough arguments" below.}
 
 \item{header}{Column header label. Defaults to \code{NULL}, which resolves to
 the primary effect's label (or the first effect's field name).}
@@ -28,10 +32,9 @@ the primary effect's label (or the first effect's field name).}
 Defaults to \code{TRUE}. Set to \code{FALSE} to hide the header.}
 
 \item{header_align}{Header text alignment (\code{"left"}, \code{"center"}, \code{"right"}).
-Defaults to \code{"left"} for bar charts — labels read naturally from the left
-edge, matching the direction in which bars grow.}
+Defaults to \code{"center"} to match the other \verb{viz_*()} columns.}
 
-\item{width}{Column width in pixels (default 150)}
+\item{width}{Column width in pixels (default \code{NULL} = auto)}
 
 \item{scale}{Scale type: "linear" (default) or "log"}
 
@@ -46,6 +49,15 @@ ticks are computed automatically.}
 \item{axis_label}{Label for the x-axis (default "Value")}
 
 \item{show_axis}{Show the x-axis (default TRUE)}
+
+\item{null_value}{Optional numeric reference value. When non-NULL, a dashed
+reference line is drawn at this x position — useful for marking a baseline,
+target, or threshold. Implemented as a synthetic \code{\link[=refline]{refline()}} prepended to
+\code{annotations}.}
+
+\item{annotations}{Optional list of annotation objects (currently
+\code{\link[=refline]{refline()}} is supported on bar columns; \code{\link[=forest_annotation]{forest_annotation()}} is
+forest-specific and ignored here).}
 }
 \value{
 A ColumnSpec object with type = "viz_bar"
@@ -54,6 +66,26 @@ A ColumnSpec object with type = "viz_bar"
 Renders horizontal bar charts with support for multiple effects (grouped bars).
 Each row displays one or more bars based on data values.
 }
+\section{Passthrough arguments}{
+Named styling arguments passed via \code{...} (after the \code{effect_bar()} items)
+are forwarded to \code{\link[=web_col]{web_col()}}: \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{badge},
+\code{icon}, \code{emphasis}, \code{muted}, \code{accent}. Cell-level args ignored by viz
+columns: \code{na_text} (rows with no valid data are silently skipped, not
+filled with text), \code{tooltip} (no per-cell tooltip yet), \code{formatter}
+(would conflict with graphical rendering).
+}
+
+\section{Forest-only features (not available here)}{
+These exist on \code{\link[=viz_forest]{viz_forest()}} only:
+\itemize{
+\item \code{shared_axis} (split-table axis sharing)
+\item per-row \code{marker_shape} and \code{marker_size} (forest marker glyph only)
+}
+
+Sorting is forced off (\code{sortable = FALSE}) for all viz columns —
+sort-by-graphic has no defined order.
+}
+
 \examples{
 # Single bar per row
 viz_bar(effect_bar("value"))

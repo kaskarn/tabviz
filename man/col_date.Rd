@@ -4,7 +4,14 @@
 \alias{col_date}
 \title{Column helper: Date formatting}
 \usage{
-col_date(field, header = NULL, width = NULL, format = "\%Y-\%m-\%d", ...)
+col_date(
+  field,
+  header = NULL,
+  width = NULL,
+  format = "\%Y-\%m-\%d",
+  na_text = NULL,
+  ...
+)
 }
 \arguments{
 \item{field}{Field name containing Date or POSIXct values}
@@ -14,6 +21,8 @@ col_date(field, header = NULL, width = NULL, format = "\%Y-\%m-\%d", ...)
 \item{width}{Column width in pixels (NULL for auto-sizing based on content)}
 
 \item{format}{Date format string (default "\%Y-\%m-\%d"). See \code{\link[=strftime]{strftime()}} for codes.}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

@@ -6,9 +6,10 @@
   interface Props {
     data: number[] | undefined | null;
     options?: SparklineColumnOptions;
+    naText?: string;
   }
 
-  let { data, options }: Props = $props();
+  let { data, options, naText }: Props = $props();
 
   const chartType = $derived(options?.type ?? "line");
   const chartHeight = $derived(options?.height ?? 20);
@@ -63,10 +64,17 @@
   });
 
   const barWidth = $derived(points.length > 0 ? (chartWidth - 8) / points.length - 1 : 0);
+
+  // Render naText as plain text when there's no data to chart.
+  const isEmpty = $derived(points.length === 0);
 </script>
 
-<svg class="cell-sparkline" width={chartWidth} height={chartHeight} viewBox="0 0 {chartWidth} {chartHeight}">
-  {#if points.length > 0}
+{#if isEmpty}
+  {#if naText}
+    <span class="sparkline-na">{naText}</span>
+  {/if}
+{:else}
+  <svg class="cell-sparkline" width={chartWidth} height={chartHeight} viewBox="0 0 {chartWidth} {chartHeight}">
     {#if chartType === "bar"}
       {#each points as [x, y], i (i)}
         <rect
@@ -89,19 +97,8 @@
         <circle cx={lastPoint[0]} cy={lastPoint[1]} r="2" fill={chartColor} />
       {/if}
     {/if}
-  {:else}
-    <text
-      x={chartWidth / 2}
-      y={chartHeight / 2}
-      text-anchor="middle"
-      dominant-baseline="middle"
-      fill="var(--wf-muted, #94a3b8)"
-      font-size="8"
-    >
-      --
-    </text>
-  {/if}
-</svg>
+  </svg>
+{/if}
 
 <style>
   .cell-sparkline {

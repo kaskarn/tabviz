@@ -9,28 +9,27 @@ library(dplyr)
 library(tidyr)
 ```
 
-Forest plots display point estimates with confidence intervals—the standard visualization for meta-analyses and clinical trial results.
+Forest plots display point estimates with confidence intervals — the standard visualization for meta-analyses and clinical trial results. Build them with the `viz_forest()` column inside `tabviz()`, or use the `forest_plot()` shortcut for quick one-liners.
 
 ::: {.callout-tip}
-## Two Ways to Add Forest Columns
+## Two Ways to Add a Forest Column
 
-**With `tabviz()` + `viz_forest()`** (recommended for control):
 ```r
+# tabviz() + viz_forest() (full control)
 tabviz(data, label = "study", columns = list(
-  viz_forest(point = "hr", lower = "lo", upper = "hi", scale = "log", null_value = 1)
+  viz_forest(point = "hr", lower = "lo", upper = "hi",
+             scale = "log", null_value = 1)
 ))
-```
 
-**With `forest_plot()`** (quick shortcut):
-```r
-forest_plot(data, point = "hr", lower = "lo", upper = "hi", label = "study",
-            scale = "log", null_value = 1)
+# forest_plot() (quick shortcut)
+forest_plot(data, point = "hr", lower = "lo", upper = "hi",
+            label = "study", scale = "log", null_value = 1)
 ```
 :::
 
 ## Data Mapping
 
-tabviz uses a **column-mapping pattern**: specify which columns contain your data, not the values themselves.
+`viz_forest()` uses a column-mapping pattern: name the columns that hold your data, not the values themselves.
 
 ```{r}
 data(effect_sizes)
@@ -46,18 +45,18 @@ effect_sizes |>
 ### Required Mappings
 
 | Argument | What it is | Example |
-|----------|------------|---------|
-| `point` | Point estimate | Hazard ratio, odds ratio, mean difference |
-| `lower` | Lower CI bound | 95% CI lower |
-| `upper` | Upper CI bound | 95% CI upper |
+|---|---|---|
+| `point` | Point estimate column | Hazard ratio, odds ratio, mean difference |
+| `lower` | Lower CI bound column | 95% CI lower |
+| `upper` | Upper CI bound column | 95% CI upper |
 
-### Handling Missing Values (NA)
+### Handling Missing Values
 
-tabviz uses `NA` values strategically for structured layouts:
+tabviz uses `NA` strategically for structured layouts:
 
 - **Header rows**: `row_type = "header"` with `NA` for effect estimates
 - **Spacer rows**: `row_type = "spacer"` for visual separation
-- **Missing estimates**: Data rows where effect couldn't be calculated
+- **Missing estimates**: data rows where the effect couldn't be calculated
 
 ```{r}
 data(glp1_trials)
@@ -73,13 +72,29 @@ glp1_trials |>
   )
 ```
 
----
+## `viz_forest()` Arguments
+
+| Argument | Default | Purpose |
+|---|---|---|
+| `point` / `lower` / `upper` | required (single-effect mode) | Column names for the point estimate and CI bounds |
+| `effects` | `NULL` | List of `effect_forest()` items for multi-effect mode |
+| `header` | `NULL` | Column header text |
+| `width` | auto | Column width in pixels |
+| `scale` | `"linear"` | `"linear"` or `"log"` |
+| `null_value` | `NULL` | Position of the dashed reference line (e.g. `1` for ratios, `0` for differences) |
+| `axis_range` | auto | `c(min, max)` overriding the auto-calculated range |
+| `axis_ticks` | auto | Custom tick positions |
+| `axis_gridlines` | `FALSE` | Show vertical gridlines at tick positions |
+| `axis_label` | `NULL` | X-axis label |
+| `annotations` | `NULL` | List of `refline()` / `forest_annotation()` items |
+| `shared_axis` | `FALSE` | Share axis range with sibling forest columns |
+| `show_axis` | `TRUE` | Show the axis |
 
 ## Scale and Null Value
 
 ### Log Scale
 
-Use for **ratios** (odds ratio, hazard ratio, risk ratio) where effects are multiplicative:
+Use for **ratios** (hazard ratio, odds ratio, risk ratio) — effects are multiplicative around `null_value = 1`:
 
 ```{r}
 effect_sizes |>
@@ -87,19 +102,20 @@ effect_sizes |>
   head(4) |>
   tabviz(label = "study", columns = list(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1, axis_label = "Hazard Ratio (95% CI)")
+               scale = "log", null_value = 1,
+               axis_label = "Hazard Ratio (95% CI)")
   ))
 ```
 
 ::: {.callout-warning}
 ## Log Scale Requires Positive Values
 
-All values in `point`, `lower`, and `upper` must be **positive**. Zero or negative values will cause errors.
+All values in `point`, `lower`, and `upper` must be **positive**. Zero or negative values will error.
 :::
 
 ### Linear Scale
 
-Use for **differences** (mean difference, risk difference, SMD) where effects are additive:
+Use for **differences** (mean difference, risk difference, SMD) — effects are additive around `null_value = 0`:
 
 ```{r}
 diff_data <- data.frame(
@@ -111,15 +127,14 @@ diff_data <- data.frame(
 
 tabviz(diff_data, label = "comparison", columns = list(
   viz_forest(point = "mean_diff", lower = "lower", upper = "upper",
-             scale = "linear", null_value = 0, axis_label = "Mean Difference (95% CI)")
+             scale = "linear", null_value = 0,
+             axis_label = "Mean Difference (95% CI)")
 ))
 ```
 
----
-
 ## Multiple Effects
 
-Display multiple effect estimates per row—useful for comparing analyses or outcomes.
+Display multiple effect estimates per row using `effects = list(effect_forest(...), ...)`. Useful for comparing analyses or sensitivity scenarios:
 
 ```{r}
 multi_data <- data.frame(
@@ -136,21 +151,22 @@ multi_data <- data.frame(
 tabviz(multi_data, label = "study", title = "Sensitivity Analysis Comparison",
   columns = list(
     col_n("n"),
-    col_interval(point = "itt_or", lower = "itt_lo", upper = "itt_hi", header = "Primary OR"),
+    col_interval("itt_or", "itt_lo", "itt_hi", header = "Primary OR"),
     viz_forest(
       scale = "log", null_value = 1,
       effects = list(
         effect_forest("itt_or", "itt_lo", "itt_hi", label = "ITT", color = "#2563eb"),
         effect_forest("pp_or", "pp_lo", "pp_hi", label = "Per-Protocol", color = "#16a34a")
-      ))
+      )
+    )
   )
 )
 ```
 
-### effect_forest() Arguments
+### `effect_forest()` Arguments
 
-| Argument | Description |
-|----------|-------------|
+| Argument | Purpose |
+|---|---|
 | `point` | Column name for point estimates |
 | `lower` | Column name for lower bounds |
 | `upper` | Column name for upper bounds |
@@ -160,7 +176,7 @@ tabviz(multi_data, label = "study", title = "Sensitivity Analysis Comparison",
 
 ### Side-by-Side Forest Columns
 
-When comparing entirely different outcomes or analyses, multiple `viz_forest()` columns can be more effective:
+When comparing entirely different outcomes, separate `viz_forest()` columns are often clearer than overlaid effects:
 
 ```{r}
 comparison_data <- data.frame(
@@ -185,26 +201,19 @@ tabviz(comparison_data, label = "study",
 ```
 
 ::: {.callout-tip}
-## When to Use Side-by-Side vs Multi-Effect
+## Side-by-Side vs Multi-Effect
 
-**Use side-by-side `viz_forest()` columns when:**
-
-- Comparing different outcomes (primary vs secondary endpoint)
-- Showing different populations (ITT vs as-treated)
-- Outcomes have different clinical meaning
-
-**Use multi-effect overlays (`effect_forest()`) when:**
-
-- Comparing the same outcome across different analyses
-- Sensitivity analyses (e.g., with/without imputation)
-- Effects should be directly visually compared on the same scale
+- **Side-by-side `viz_forest()` columns** — comparing different outcomes or populations on potentially different scales.
+- **Multi-effect overlays via `effect_forest()`** — comparing the same outcome across analyses (sensitivity, ITT vs PP) on a single shared scale.
 :::
 
----
+### `shared_axis`
+
+Set `shared_axis = TRUE` on multiple `viz_forest()` columns to lock them to a common axis range so the eye can compare across columns directly.
 
 ## Marker Customization
 
-Customize marker appearance based on data values using formula expressions:
+Customize marker appearance based on data values using formula expressions on `tabviz()`:
 
 ```{r}
 effect_sizes |>
@@ -222,20 +231,18 @@ effect_sizes |>
   )
 ```
 
-### Marker Arguments
+| Argument | Type | Effect |
+|---|---|---|
+| `marker_color` | string / formula | CSS color for marker fill |
+| `marker_shape` | string / formula | `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
+| `marker_opacity` | numeric / formula | Transparency (0–1) |
+| `marker_size` | numeric / formula / `"col"` | Size multiplier (1 = default), or column name for proportional sizing |
 
-| Argument | Value Type | Effect |
-|----------|------------|--------|
-| `marker_color` | string | CSS color for marker fill |
-| `marker_shape` | string | Shape: `"square"`, `"circle"`, `"diamond"`, `"triangle"` |
-| `marker_opacity` | numeric | Transparency (0–1) |
-| `marker_size` | numeric | Size multiplier (1 = default) |
-
-All marker arguments accept either a column name or a formula expression (`~ ...`).
-
----
+All marker arguments accept either a column name or a formula expression (`~ ...`). Pass `marker_size = "col_name"` to scale markers by a column (e.g. study weight in a meta-analysis).
 
 ## Axis Control
+
+Axis arguments live on `viz_forest()` itself — they're per-column.
 
 ```{r}
 #| include: false
@@ -246,8 +253,6 @@ axis_demo <- effect_sizes |>
 
 ### Axis Range
 
-Override the auto-calculated range:
-
 ```{r}
 tabviz(axis_demo, label = "study", columns = list(
   viz_forest(point = "hr", lower = "lower", upper = "upper",
@@ -257,19 +262,16 @@ tabviz(axis_demo, label = "study", columns = list(
 
 ### Custom Tick Values
 
-Specify exact tick positions:
-
 ```{r}
 tabviz(axis_demo, label = "study", columns = list(
   viz_forest(point = "hr", lower = "lower", upper = "upper",
              scale = "log", null_value = 1,
-             axis_range = c(0.3, 2.0), axis_ticks = c(0.5, 0.7, 1.0, 1.5, 2.0))
+             axis_range = c(0.3, 2.0),
+             axis_ticks = c(0.5, 0.7, 1.0, 1.5, 2.0))
 ))
 ```
 
 ### Gridlines
-
-Add vertical gridlines at tick positions:
 
 ```{r}
 tabviz(axis_demo, label = "study", columns = list(
@@ -278,20 +280,9 @@ tabviz(axis_demo, label = "study", columns = list(
 ))
 ```
 
-### Axis Summary
+## Reference Lines and Annotations
 
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `axis_range` | Min/max axis values | `c(0.3, 2.0)` |
-| `axis_ticks` | Custom tick positions | `c(0.5, 1, 2)` |
-| `axis_gridlines` | Show vertical gridlines | `TRUE` |
-| `axis_label` | X-axis label | `"Odds Ratio"` |
-
----
-
-## Reference Lines
-
-The `null_value` parameter draws a dashed vertical reference line. Add custom reference lines with `refline()`:
+`null_value` draws a single dashed reference line. For more, pass `annotations = list(...)` of `refline()` / `forest_annotation()` items.
 
 ```{r}
 tabviz(axis_demo, label = "study", title = "With Custom Reference Line",
@@ -304,8 +295,6 @@ tabviz(axis_demo, label = "study", title = "With Custom Reference Line",
   )
 )
 ```
-
-### Multiple Reference Lines
 
 ```{r}
 tabviz(axis_demo, label = "study", title = "Clinical Thresholds",
@@ -320,62 +309,27 @@ tabviz(axis_demo, label = "study", title = "Clinical Thresholds",
 )
 ```
 
-### refline() Arguments
+### `refline()` Arguments
 
-| Argument | Description |
-|----------|-------------|
+| Argument | Purpose |
+|---|---|
 | `value` | X-axis position |
 | `label` | Optional label text |
 | `style` | `"solid"`, `"dashed"`, `"dotted"` |
 | `color` | Line color |
-| `width` | Line width (default: 1.5) |
-| `opacity` | Line opacity 0-1 (default: 0.6) |
+| `width` | Line width (default `1.5`) |
+| `opacity` | Line opacity 0–1 (default `0.6`) |
 
----
-
-## Data Validation
-
-Before plotting, validate your data:
-
-```{r}
-validate_forest_data <- function(data, point, lower, upper, scale = "linear") {
-  p <- data[[point]]
-  l <- data[[lower]]
-  u <- data[[upper]]
-  valid <- !is.na(p)
-
-  issues <- character()
-
-  if (scale == "log" && any(p[valid] <= 0 | l[valid] <= 0 | u[valid] <= 0)) {
-    issues <- c(issues, "Log scale requires all positive values")
-  }
-
-  if (any(l[valid] > p[valid] | p[valid] > u[valid])) {
-    issues <- c(issues, "CI bounds should satisfy: lower <= point <= upper")
-  }
-
-  if (length(issues) == 0) {
-    message("Data looks valid!")
-  } else {
-    warning(paste(issues, collapse = "\n"))
-  }
-}
-```
-
----
+`forest_annotation()` adds richer annotations (regions, text callouts) — see the reference for the full surface.
 
 ## Working with Meta-Analysis Results
-
-### From metafor
 
 ```{r}
 #| eval: false
 library(metafor)
 
-# Run meta-analysis
 res <- rma(yi = log_or, sei = se, data = studies, method = "REML")
 
-# Convert to tabviz format
 forest_data <- studies |>
   mutate(
     or = exp(log_or),
@@ -393,7 +347,8 @@ forest_data <- studies |>
     )
   )
 
-tabviz(forest_data, label = "study", row_type = "row_type", row_bold = "row_bold",
+tabviz(forest_data,
+  label = "study", row_type = "row_type", row_bold = "row_bold",
   columns = list(
     viz_forest(point = "or", lower = "lower", upper = "upper",
                scale = "log", null_value = 1)
@@ -401,11 +356,9 @@ tabviz(forest_data, label = "study", row_type = "row_type", row_bold = "row_bold
 )
 ```
 
----
-
 ## See Also
 
-- [Visualizations Overview](index.qmd) — Interactivity, tooltips, export
+- [Visualizations Overview](index.qmd) — Tooltips, export, common features
 - [Titles & Labels](../titles.qmd) — Adding context to your plots
 - [Row Styling](../row-styling.qmd) — Headers, summaries, indentation
 - [Themes](../themes.qmd) — Visual styling

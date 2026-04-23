@@ -8,7 +8,6 @@
 \title{Create interaction specification}
 \usage{
 web_interaction(
-  show_filters = FALSE,
   show_legend = TRUE,
   enable_sort = TRUE,
   enable_collapse = TRUE,
@@ -22,7 +21,8 @@ web_interaction(
   enable_edit = TRUE,
   show_group_counts = FALSE,
   tooltip_fields = NULL,
-  enable_themes = getOption("tabviz.enable_themes", "default")
+  enable_themes = getOption("tabviz.enable_themes", "default"),
+  show_filters = lifecycle::deprecated()
 )
 
 web_interaction_minimal()
@@ -32,8 +32,6 @@ web_interaction_publication()
 web_interaction_full()
 }
 \arguments{
-\item{show_filters}{(Deprecated) Alias for \code{enable_filters}.}
-
 \item{show_legend}{Show legend}
 
 \item{enable_sort}{Enable column sorting}
@@ -69,10 +67,25 @@ plus a popover editor for forest-cell numerics.}
 \item \code{NULL}: Disable theme selection entirely (hide menu icon)
 \item A list of WebTheme objects: Enable theme menu with only the specified themes
 }}
+
+\item{show_filters}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{enable_filters} instead.}
 }
 \value{
 An InteractionSpec object
 }
 \description{
-Create interaction specification
+Two prefixes appear in this spec by design:
+\itemize{
+\item \strong{\verb{show_*}} controls whether a piece of UI chrome is rendered at all
+(e.g. \code{show_legend}, \code{show_group_counts}). Toggles visibility of static
+elements; nothing the user does at runtime brings them back.
+\item \strong{\verb{enable_*}} controls whether a user \emph{capability} is available
+(sorting, filtering, resizing, editing, reordering, exporting, the theme
+menu). The associated UI is rendered when the capability is on, hidden
+when off.
+}
+}
+\details{
+Use this distinction when adding new arguments: render-or-not is \code{show_},
+can-the-user-do-it is \code{enable_}.
 }

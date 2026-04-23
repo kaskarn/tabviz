@@ -14,11 +14,12 @@ This guide covers common issues and their solutions when using tabviz.
 
 When something isn't working, check:
 
-1. **Column names** - Are they spelled correctly and exist in the data?
-2. **Data types** - Are numeric columns actually numeric?
-3. **NAs** - Are there unexpected missing values?
-4. **Scale** - Using `scale = "log"` with non-positive values?
-5. **Dependencies** - Is V8 installed for exports?
+1. **Column names** — Are they spelled correctly and exist in the data?
+2. **Data types** — Are numeric columns actually numeric?
+3. **NAs** — Are there unexpected missing values?
+4. **Scale** — Using `scale = "log"` with non-positive values?
+5. **Dependencies** — Is `V8` installed (always required) and `rsvg` (for PNG/PDF)?
+6. **Deprecated arguments** — Did 0.9.0 rename what you're passing? See [Recent renames](#recent-renames).
 
 ## Data Issues
 
@@ -189,6 +190,25 @@ forest_plot(your_data, ...,
 )
 ```
 
+:::{.callout-note}
+## On `tabviz()` (vs `forest_plot()`)
+
+`tabviz()` no longer takes `axis_range`, `axis_ticks`, `axis_gridlines` (deprecated in 0.9.0). Pass them to `viz_forest()` on the forest column instead:
+
+```r
+tabviz(data, label = "study",
+  columns = list(
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1,
+               axis_range = c(0.5, 2.0),
+               axis_ticks = c(0.5, 0.7, 1, 1.5, 2))
+  )
+)
+```
+
+`forest_plot()` keeps these as native top-level arguments and forwards them to the auto-built forest column.
+:::
+
 ## Export Failures
 
 ### V8 Not Installed
@@ -295,6 +315,10 @@ forest_plot(your_data, ...,
 
 # For Shiny, use CSS units
 tabvizOutput("plot", width = "100%", height = "600px")
+
+# Constrain max size via set_zoom() (replaces deprecated tabviz(max_width=)/(max_height=))
+tabviz(your_data, ...) |>
+  set_zoom(max_width = 1000, auto_fit = TRUE)
 ```
 
 ### Shiny: Proxy Not Working
@@ -361,11 +385,11 @@ web_theme_default() |>
 
 ## Debug Patterns
 
-### Inspecting WebSpec
+### Inspecting a WebSpec
 
 ```{r}
-# Create spec without rendering (table-only spec)
-spec <- web_spec(
+# Build a spec without rendering (use .spec_only = TRUE on tabviz())
+spec <- tabviz(
   data.frame(
     study = c("A", "B"),
     hr = c(0.8, 1.2),
@@ -375,13 +399,14 @@ spec <- web_spec(
   columns = list(
     col_numeric("hr", "HR"),
     col_n("n")
-  )
+  ),
+  .spec_only = TRUE
 )
 
 # Print summary
 print(spec)
 
-# Access components
+# Access components (S7 — use @)
 spec@data
 spec@columns
 spec@theme@name
@@ -431,6 +456,23 @@ forest_plot(test_data,
 # Include session info
 sessionInfo()
 ```
+
+## Recent renames {#recent-renames}
+
+The 0.9.0 release renamed several arguments. The old names still work for one cycle and emit `lifecycle::deprecate_warn()` — but if you're hitting a "no such argument" error, check this table:
+
+| Old | New | Where |
+|---|---|---|
+| `col_interval(..., sep = " ")` | `separator = " "` | `col_interval()` |
+| `col_reference(..., icon = TRUE)` | `show_icon = TRUE` | `col_reference()` |
+| `col_n()`, `col_bar()`, `col_pvalue()`, `col_sparkline()` with no `field` | Pass `field` explicitly | `col_*()` |
+| `set_colors(interval=, interval_positive=, interval_negative=, interval_neutral=, interval_line=)` | `ci_marker_fill=, ci_marker_positive=, ci_marker_negative=, ci_marker_neutral=, ci_line=` | `set_colors()` |
+| `web_interaction(show_filters = ...)` | `enable_filters = ...` | `web_interaction()` |
+| `tabviz(axis_range=, axis_ticks=, axis_gridlines=)` | Pass to `viz_forest()` on the forest column | `tabviz()` |
+| `tabviz(zoom=, auto_fit=, max_width=, max_height=, show_zoom_controls=)` | Pipe to `set_zoom()` after constructing the widget | `tabviz()` |
+| `tabviz(weight = "col")` | `marker_size = "col"` | `tabviz()` |
+
+`forest_plot()` still accepts `axis_range`, `axis_ticks`, and `axis_gridlines` natively — those were only deprecated on `tabviz()`.
 
 ## Getting Help
 

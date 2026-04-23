@@ -46,7 +46,7 @@ forest_plot(
     # Group: Primary Endpoint
     col_group(
       "Primary Endpoint",
-      col_interval("HR (95% CI)"),
+      col_interval("primary_hr", "primary_lower", "primary_upper", header = "HR (95% CI)"),
       col_pvalue("primary_p", "P")
     ),
     # Group: Components (nested columns)

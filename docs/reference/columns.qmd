@@ -7,680 +7,645 @@ title: "Columns"
 library(tabviz)
 ```
 
-Column functions for defining table columns in tabviz.
+Reference for every column-defining helper: data columns (`col_*()`), per-row visualization columns (`viz_*()`), the low-level `web_col()` constructor, column groups, and the per-effect helpers used by multi-effect viz columns.
 
-## Basic Columns
+:::{.callout-important}
+## `field` is now a required argument
 
-### col_text {#col_text}
+`col_n()`, `col_bar()`, `col_pvalue()`, and `col_sparkline()` previously had implicit defaults for `field` (`"n"`, `"weight"`, `"pvalue"`, `"trend"`). Those defaults are soft-deprecated since 0.9.0 — pass the column name explicitly. Other `col_*()` helpers have always required `field`.
+:::
 
-Text column for displaying character data.
+All `col_*()` helpers also accept the cell-styling arguments documented in [Cell-level styling](#cell-level-styling) below: `bold`, `italic`, `color`, `bg`, `badge`, `icon`, `emphasis`, `muted`, `accent`, plus `align`, `header_align`, `wrap`, `sortable`, `na_text`, `tooltip`, and `formatter`.
+
+::: {.callout-note}
+## `tooltip` and `formatter` (added in 0.9.0)
+
+- `tooltip = "<col>"` — column whose values are the per-cell hover text
+- `formatter = function(x) ...` — escape hatch for custom value rendering. The function receives the raw column vector and must return a character vector of the same length; the output is rendered as text. Use this when the built-in numeric/interval/percent formatting can't express the desired output.
+:::
+
+---
+
+## Basic data columns
+
+### `col_text()` {#col_text}
+
+Plain text column.
 
 ```r
-col_text(field, header = NULL, width = NULL)
+col_text(field, header = NULL, width = NULL, max_chars = NULL, ...)
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name in data |
-| `header` | Display header (defaults to field name) |
-| `width` | Column width in pixels |
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `field` | `character(1)` | required | Data column name. |
+| `header` | `character(1)` | `NULL` (uses `field`) | Display header. |
+| `width` | `numeric(1)` | `NULL` (auto) | Column width in pixels. |
+| `max_chars` | `integer(1)` | `NULL` | Truncate with ellipsis past this length. |
+| `...` | — | — | Forwarded to `web_col()` (cell styling, alignment). |
 
-### col_numeric {#col_numeric}
+### `col_label()` {#col_label}
 
-Numeric column with automatic formatting, significant figures support, and large number abbreviation.
+Same as `col_text()` but auto-prettifies the default header (e.g. `"study_id"` → `"Study Id"`). Useful for the leftmost row-identifier column when you want explicit control.
+
+```r
+col_label(field, header = NULL, width = NULL, max_chars = NULL, ...)
+```
+
+### `col_numeric()` {#col_numeric}
+
+Numeric column with formatting, sig-fig support, large-number abbreviation.
 
 ```r
 col_numeric(field, header = NULL, width = NULL,
-            decimals = 2, digits = NULL, abbreviate = FALSE)
+            decimals = 2, digits = NULL,
+            thousands_sep = FALSE, abbreviate = FALSE, ...)
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name in data |
-| `header` | Display header |
-| `width` | Column width in pixels |
-| `decimals` | Fixed decimal places (default: 2) |
-| `digits` | Significant figures (overrides decimals if set) |
-| `abbreviate` | Abbreviate large numbers with K/M/B suffixes |
-
-**Examples**:
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `field` | `character(1)` | required | Data column. |
+| `header` | `character(1)` | `NULL` | Header text. |
+| `width` | `numeric(1)` | `NULL` | Width in px. |
+| `decimals` | `integer(1)` | `2` | Fixed decimal places. Mutually exclusive with `digits`. |
+| `digits` | `integer(1)` | `NULL` | Significant figures. |
+| `thousands_sep` | `character(1)`/`FALSE` | `FALSE` | Pass `","` (or other) to enable. |
+| `abbreviate` | `logical(1)` | `FALSE` | Shorten ≥1000 (e.g. `1100` → `"1.1K"`). |
 
 ```r
-# Fixed 2 decimal places (default)
-col_numeric("value")
-
-# Significant figures instead
-col_numeric("value", digits = 3)
-
-# Abbreviate large numbers: 1,234,567 → "1.2M"
+col_numeric("estimate")
+col_numeric("count", decimals = 0, thousands_sep = ",")
 col_numeric("population", abbreviate = TRUE)
 ```
 
-### col_interval {#col_interval}
+### `col_n()` {#col_n}
 
-Confidence interval display showing point estimate with bounds.
-
-```r
-col_interval(point, lower, upper, header = "95% CI", width = 160,
-             decimals = 2, sep = " ", imprecise_threshold = NULL)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `point` | Field name for point estimate (required) |
-| `lower` | Field name for lower bound (required) |
-| `upper` | Field name for upper bound (required) |
-| `header` | Column header (default: "95% CI") |
-| `width` | Column width in pixels (default: 160) |
-| `decimals` | Decimal places for formatting (default: 2) |
-| `sep` | Separator between point and CI (default: " ") |
-| `imprecise_threshold` | When `upper/lower` ratio exceeds this threshold, display "—" instead |
-
-**Examples**:
+Sample-size / count column. Defaults to integers with `,` thousands separator.
 
 ```r
-# Default formatting
-col_interval(point = "hr", lower = "lower", upper = "upper")
-
-# Custom header and formatting
-col_interval(point = "hr", lower = "lower", upper = "upper",
-             header = "HR (95% CI)", decimals = 1, sep = ", ")
-
-# Show alternative effect from different columns
-col_interval(point = "pp_hr", lower = "pp_lower", upper = "pp_upper",
-             header = "Per-Protocol")
-
-# Hide imprecise estimates where CI ratio > 10
-col_interval(point = "hr", lower = "lower", upper = "upper",
-             imprecise_threshold = 10)
+col_n(field, header = "N", width = NULL,
+      decimals = 0, digits = NULL,
+      thousands_sep = ",", abbreviate = FALSE, ...)
 ```
 
-## Focal Visualization Columns (`viz_*`)
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `field` | `character(1)` | required | Sample-size column. |
+| `header` | `character(1)` | `"N"` | |
+| `decimals` | `integer(1)` | `0` | |
+| `thousands_sep` | character/`FALSE` | `","` | |
+| `abbreviate` | `logical(1)` | `FALSE` | |
 
-Focal visualization columns have their own axes and scales, designed for direct visual comparison across rows.
-
-### viz_forest {#viz_forest}
-
-Forest plot column showing point estimates with confidence intervals.
-
-```r
-viz_forest(
-  point = NULL, lower = NULL, upper = NULL,
-  effects = NULL,
-  header = NULL, width = 200,
-  scale = "linear", null_value = NULL,
-  axis_label = NULL, axis_range = NULL, axis_ticks = NULL, axis_gridlines = FALSE,
-  annotations = NULL
-)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `point` | Column name for point estimates (single effect mode) |
-| `lower` | Column name for lower CI bounds (single effect mode) |
-| `upper` | Column name for upper CI bounds (single effect mode) |
-| `effects` | List of `effect_forest()` objects (multi-effect mode) |
-| `header` | Column header text |
-| `width` | Column width in pixels (default: 200) |
-| `scale` | `"linear"` or `"log"` |
-| `null_value` | Reference line value (typically 0 for linear, 1 for log) |
-| `axis_label` | Label text below the axis |
-| `axis_range` | Fixed range as `c(min, max)` |
-| `axis_ticks` | Custom tick positions |
-| `axis_gridlines` | Show vertical gridlines |
-| `annotations` | List of `refline()` objects |
-
-
-### viz_bar {#viz_bar}
-
-Horizontal bar chart with shared axis for comparing values across rows.
-
-```r
-viz_bar(
-  effects,
-  header = NULL, width = 150,
-  scale = "linear",
-  axis_range = NULL, axis_ticks = NULL, axis_gridlines = FALSE,
-  axis_label = "Value", show_axis = TRUE
-)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `effects` | List of `effect_bar()` objects |
-| `header` | Column header text |
-| `width` | Column width in pixels (default: 150) |
-| `scale` | `"linear"` or `"log"` |
-| `axis_range` | Fixed axis range as `c(min, max)` |
-| `axis_ticks` | Custom tick positions |
-| `axis_gridlines` | Show vertical gridlines (default: FALSE) |
-| `axis_label` | Label text below axis (default: "Value") |
-| `show_axis` | Show the axis (default: TRUE) |
-
-**Effect helper:**
-
-```r
-effect_bar(value, label = NULL, color = NULL, opacity = 0.85)
-```
-
-### viz_boxplot {#viz_boxplot}
-
-Box-and-whisker plot showing median, quartiles, and outliers.
-
-```r
-viz_boxplot(
-  effects,
-  header = NULL, width = 150,
-  scale = "linear",
-  axis_range = NULL, axis_ticks = NULL, axis_gridlines = FALSE,
-  show_outliers = TRUE, whisker_type = "iqr",
-  axis_label = "Value", show_axis = TRUE
-)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `effects` | List of `effect_boxplot()` objects |
-| `header` | Column header text |
-| `width` | Column width in pixels (default: 150) |
-| `scale` | `"linear"` or `"log"` |
-| `axis_range` | Fixed axis range as `c(min, max)` |
-| `axis_ticks` | Custom tick positions |
-| `axis_gridlines` | Show vertical gridlines (default: FALSE) |
-| `show_outliers` | Show outlier points (default: TRUE) |
-| `whisker_type` | `"iqr"` (1.5×IQR) or `"minmax"` (default: "iqr") |
-| `axis_label` | Label text below axis (default: "Value") |
-| `show_axis` | Show the axis (default: TRUE) |
-
-**Effect helper (two modes):**
-
-```r
-# Mode 1: From array data (auto-compute stats)
-effect_boxplot(data = "values_column", label = NULL, color = NULL, fill_opacity = 0.7)
-
-# Mode 2: From pre-computed summary stats
-effect_boxplot(min = "min_col", q1 = "q1_col", median = "med_col",
-                   q3 = "q3_col", max = "max_col", outliers = "outliers_col",
-                   label = NULL, color = NULL, fill_opacity = 0.7)
-```
-
-### viz_violin {#viz_violin}
-
-Violin plot showing distribution shape via kernel density estimation.
-
-```r
-viz_violin(
-  effects,
-  header = NULL, width = 150,
-  scale = "linear",
-  axis_range = NULL, axis_ticks = NULL, axis_gridlines = FALSE,
-  bandwidth = NULL, show_median = TRUE, show_quartiles = FALSE,
-  axis_label = "Value", show_axis = TRUE
-)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `effects` | List of `effect_violin()` objects |
-| `header` | Column header text |
-| `width` | Column width in pixels (default: 150) |
-| `scale` | `"linear"` or `"log"` |
-| `axis_range` | Fixed axis range as `c(min, max)` |
-| `axis_ticks` | Custom tick positions |
-| `axis_gridlines` | Show vertical gridlines (default: FALSE) |
-| `bandwidth` | KDE bandwidth (NULL = auto via Silverman's rule) |
-| `show_median` | Show median line (default: TRUE) |
-| `show_quartiles` | Show Q1/Q3 dashed lines (default: FALSE) |
-| `axis_label` | Label text below axis (default: "Value") |
-| `show_axis` | Show the axis (default: TRUE) |
-
-**Effect helper:**
-
-```r
-effect_violin(data, label = NULL, color = NULL, fill_opacity = 0.5)
-```
-
----
-
-## Inline Visualization Columns
-
-### col_bar {#col_bar}
-
-Simple horizontal bar chart for showing magnitude (inline, no shared axis).
-
-```r
-col_bar(
-  field,
-  header = NULL,
-  width = NULL,
-  max_value = NULL,
-  show_label = TRUE,
-  color = NULL
-)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name containing numeric values |
-| `header` | Column header |
-| `width` | Column width in pixels |
-| `max_value` | Maximum value for scaling (auto if NULL) |
-| `show_label` | Show value label (default: TRUE) |
-| `color` | Bar color |
-
-### col_pvalue {#col_pvalue}
-
-P-value column with optional significance stars and smart formatting. Very small values are displayed using Unicode superscript notation (e.g., 1.2×10⁻⁵) for improved readability.
-
-```r
-col_pvalue(
-  field = "pvalue",
-  header = "P-value",
-  stars = TRUE,
-  thresholds = c(0.05, 0.01, 0.001),
-  format = c("auto", "scientific", "decimal"),
-  digits = 2,
-  exp_threshold = 0.001,
-  abbrev_threshold = NULL,
-  width = 100
-)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name containing p-values |
-| `header` | Column header (default: "P-value") |
-| `stars` | Show significance stars (default: FALSE) |
-| `thresholds` | Numeric vector of 3 significance thresholds (default: `c(0.05, 0.01, 0.001)`) |
-| `format` | Display format: `"auto"`, `"scientific"`, or `"decimal"` |
-| `digits` | Number of significant figures (default: 2) |
-| `exp_threshold` | Values below this use exponential notation (default: 0.001) |
-| `abbrev_threshold` | Values below this display as "<threshold" (e.g., "<0.0001") |
-| `width` | Column width in pixels (default: 100) |
-
-**Formatting behavior**:
-
-- Values ≥ `exp_threshold`: displayed as decimal (e.g., 0.042)
-- Values < `exp_threshold`: displayed with Unicode superscript (e.g., 2.3×10⁻⁴)
-- Values < `abbrev_threshold`: displayed as "<threshold" (e.g., "<0.0001")
-
-**Significance levels** (when `stars = TRUE`):
-
-- `*` p < 0.05
-- `**` p < 0.01
-- `***` p < 0.001
-
-**Examples**:
-
-```r
-# Default: 2 significant figures, exponential below 0.001
-col_pvalue("pval")
-
-# More precision
-col_pvalue("pval", digits = 3)
-
-# Use exponential notation earlier (below 0.01)
-col_pvalue("pval", exp_threshold = 0.01)
-
-# Show very small values as "<0.0001"
-col_pvalue("pval", abbrev_threshold = 0.0001)
-
-# With significance stars
-col_pvalue("pval", stars = TRUE)
-```
-
-### col_sparkline {#col_sparkline}
-
-Inline sparkline chart for trend visualization.
-
-```r
-col_sparkline(field, header = NULL, width = 80, type = "line")
-```
-
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name containing numeric vector |
-| `header` | Column header |
-| `width` | Column width (default: 80) |
-| `type` | `"line"`, `"bar"`, or `"area"` |
-
-**Note**: The field should contain list-columns with numeric vectors.
-
-### col_n {#col_n}
-
-Sample size column with optional abbreviation for large values.
-
-```r
-col_n(field = "n", header = "N", width = NULL,
-      digits = NULL, decimals = 0, abbreviate = FALSE)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name (default: "n") |
-| `header` | Column header (default: "N") |
-| `width` | Column width (NULL = auto) |
-| `digits` | Significant figures (optional, mutually exclusive with decimals) |
-| `decimals` | Fixed decimal places (default: 0) |
-| `abbreviate` | Abbreviate large values with K/M suffixes |
-
-**Examples**:
-
-```r
-# Default display
-col_n("sample_size")
-
-# Abbreviate large sample sizes: 10,500 → "10.5K"
-col_n("sample_size", abbreviate = TRUE)
-```
-
-### col_percent {#col_percent}
-
-Percentage column for displaying proportions.
+### `col_percent()` {#col_percent}
 
 ```r
 col_percent(field, header = NULL, width = NULL,
-            decimals = 1, digits = NULL, multiply = TRUE, symbol = TRUE)
+            decimals = 1, digits = NULL,
+            multiply = TRUE, symbol = TRUE, ...)
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name containing values |
-| `header` | Column header |
-| `width` | Column width (NULL = auto) |
-| `decimals` | Fixed decimal places (default: 1, mutually exclusive with digits) |
-| `digits` | Significant figures (optional) |
-| `multiply` | Multiply by 100 (default: TRUE, expects 0-1 proportions) |
-| `symbol` | Show % symbol (default: TRUE) |
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `field` | `character(1)` | required | Numeric column. |
+| `decimals` | `integer(1)` | `1` | |
+| `multiply` | `logical(1)` | `TRUE` | When `TRUE`, expects 0–1 proportions. Set `FALSE` if data is already 0–100. |
+| `symbol` | `logical(1)` | `TRUE` | Show `%`. |
 
-**Examples**:
+### `col_pvalue()` {#col_pvalue}
 
 ```r
-# Proportion 0-1 → percentage: 0.25 → "25.0%"
-col_percent("rate")
-
-# Already a percentage (0-100): 25 → "25.0%"
-col_percent("pct", multiply = FALSE)
-
-# Significant figures instead of fixed decimals
-col_percent("rate", digits = 2)
+col_pvalue(field,
+           header = "P-value",
+           width = NULL,
+           stars = FALSE,
+           thresholds = c(0.05, 0.01, 0.001),
+           format = c("auto", "scientific", "decimal"),
+           digits = 2,
+           exp_threshold = 0.001,
+           abbrev_threshold = NULL, ...)
 ```
 
-### col_events {#col_events}
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `field` | `character(1)` | required | P-value column. |
+| `stars` | `logical(1)` | `FALSE` | Append `*` / `**` / `***`. |
+| `thresholds` | `numeric(3)` | `c(0.05, 0.01, 0.001)` | Star thresholds. |
+| `format` | choice | `"auto"` | `"auto"`, `"scientific"`, or `"decimal"`. |
+| `digits` | `integer(1)` | `2` | Significant figures. |
+| `exp_threshold` | `numeric(1)` | `0.001` | Below this, use exponential. |
+| `abbrev_threshold` | `numeric(1)` | `NULL` | Below this, render `"<x"`. |
 
-Events column showing "events/n" format for clinical data.
+### `col_interval()` {#col_interval}
+
+Formatted interval text (e.g. `"1.20 (0.90, 1.50)"`).
 
 ```r
-col_events(events_field, n_field, header = "Events",
-           width = NULL, separator = "/", show_pct = FALSE,
-           abbreviate = FALSE)
+col_interval(point, lower, upper,
+             header = "95% CI", width = NULL,
+             decimals = 2, digits = NULL,
+             thousands_sep = FALSE, abbreviate = FALSE,
+             separator = " ",
+             imprecise_threshold = NULL,
+             na_text = NULL, ...)
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `events_field` | Column name for event count |
-| `n_field` | Column name for total N |
-| `header` | Column header (default: "Events") |
-| `width` | Column width (NULL = auto) |
-| `separator` | Separator between events and N (default: "/") |
-| `show_pct` | Show percentage after (default: FALSE) |
-| `abbreviate` | Abbreviate large numbers |
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `point` | `character(1)` | required | Point estimate column. |
+| `lower` | `character(1)` | required | Lower bound column. |
+| `upper` | `character(1)` | required | Upper bound column. |
+| `header` | `character(1)` | `"95% CI"` | |
+| `decimals` | `integer(1)` | `2` | Decimal places. Mutually exclusive with `digits`. |
+| `digits` | `integer(1)` | `NULL` | Significant figures. Mutually exclusive with `decimals`. |
+| `thousands_sep` | `character(1)` or `FALSE` | `FALSE` | Thousands separator string or `FALSE`. |
+| `abbreviate` | `logical(1)` | `FALSE` | Shorten large values (`"1.2K"`). |
+| `separator` | `character(1)` | `" "` | Between point and `(lower, upper)`. |
+| `imprecise_threshold` | `numeric(1)` | `NULL` | When `upper / lower` exceeds this, render `"--"`. |
+| `na_text` | `character(1)` | `NULL` | Text for NA point values. |
 
-**Examples**:
+:::{.callout-warning}
+## Updated in 0.9.0
+- `point` / `lower` / `upper` are now required. The implicit fallback that read these from a sibling `viz_forest()` is soft-deprecated and emits `lifecycle::deprecate_warn()`.
+- `digits`, `thousands_sep`, `abbreviate` added to match the rest of the numeric formatting vocabulary.
+- `sep` was renamed to `separator`; the old name still works with a deprecation warning.
+:::
+
+### `col_events()` {#col_events}
 
 ```r
-# Basic: "45/120"
-col_events("events", "n")
-
-# With percentage: "45/120 (37.5%)"
-col_events("events", "n", show_pct = TRUE)
+col_events(events, n,
+           header = "Events", width = NULL,
+           separator = "/", show_pct = FALSE,
+           thousands_sep = ",", abbreviate = FALSE,
+           na_text = NULL, ...)
 ```
 
-### col_icon {#col_icon}
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `events` | `character(1)` | required | Event-count column. |
+| `n` | `character(1)` | required | Total-N column. |
+| `separator` | `character(1)` | `"/"` | |
+| `show_pct` | `logical(1)` | `FALSE` | Append `(xx.x%)`. |
+| `thousands_sep` | `character(1)` or `FALSE` | `","` | Thousands separator. |
+| `abbreviate` | `logical(1)` | `FALSE` | Shorten large values (`"1.1K/12K"`). |
+| `na_text` | `character(1)` | `NULL` | Text for NA values. |
 
-Icon column for displaying emoji or unicode symbols.
+::: {.callout-warning}
+## Renamed in 0.9.0
+The arguments were called `events_field` and `n_field`. Both are still accepted with a deprecation warning; new code should use `events` and `n`.
+:::
+
+### `col_currency()` {#col_currency}
 
 ```r
-col_icon(field, header = NULL, width = NULL, mapping = NULL)
+col_currency(field, header = NULL, width = NULL,
+             symbol = "$", decimals = 2, digits = NULL,
+             thousands_sep = ",", abbreviate = FALSE,
+             position = c("prefix", "suffix"),
+             na_text = NULL, ...)
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name containing values to map |
-| `header` | Column header |
-| `width` | Column width (NULL = auto) |
-| `mapping` | Named list mapping values to icons |
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `symbol` | `character(1)` | `"$"` | Currency glyph. |
+| `decimals` | `numeric(1)` | `2` | Decimal places. Mutually exclusive with `digits`. |
+| `digits` | `numeric(1)` | `NULL` | Significant figures. Mutually exclusive with `decimals`. |
+| `thousands_sep` | `character(1)` or `FALSE` | `","` | Separator string (`","`, `" "`, `"."`, …) or `FALSE`. The legacy `TRUE` value is still accepted. |
+| `abbreviate` | `logical(1)` | `FALSE` | Shorten large values (`"$1.2M"`). |
+| `position` | `"prefix"` or `"suffix"` | `"prefix"` | Symbol placement. |
+| `na_text` | `character(1)` | `NULL` | Text for NA values. |
 
-**Example**:
+::: {.callout-warning}
+## Updated in 0.9.0
+`thousands_sep` was a `TRUE/FALSE` flag; now accepts a string. `digits` and `abbreviate` are new.
+:::
+
+### `col_date()` {#col_date}
+
 ```r
-col_icon("status", mapping = list(
-  "success" = "✓",
-  "failure" = "✗",
-  "pending" = "○"
+col_date(field, header = NULL, width = NULL, format = "%Y-%m-%d", ...)
+```
+
+`format` follows `?strftime`. Defaults: body alignment `"left"`.
+
+### `col_heatmap()` {#col_heatmap}
+
+```r
+col_heatmap(field, header = NULL, width = NULL,
+            palette = c("#f7fbff", "#08306b"),
+            min_value = NULL, max_value = NULL,
+            decimals = 2, show_value = TRUE,
+            scale = c("linear", "log", "sqrt"), ...)
+```
+
+### `col_progress()` {#col_progress}
+
+```r
+col_progress(field, header = NULL, width = NULL,
+             max_value = 100, color = NULL,
+             show_label = TRUE,
+             scale = c("linear", "log", "sqrt"), ...)
+```
+
+### `col_range()` {#col_range}
+
+```r
+col_range(low, high,
+          header = "Range", width = NULL,
+          separator = " - ",
+          decimals = NULL, digits = NULL,
+          thousands_sep = FALSE, abbreviate = FALSE,
+          show_bar = FALSE,
+          na_text = NULL, ...)
+```
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `low` | `character(1)` | required | Field name for the lower bound. |
+| `high` | `character(1)` | required | Field name for the upper bound. |
+| `separator` | `character(1)` | `" - "` | Glue between the two values. |
+| `decimals` | `numeric(1)` | `NULL` (auto) | Decimal places. Mutually exclusive with `digits`. |
+| `digits` | `integer(1)` | `NULL` | Significant figures. Mutually exclusive with `decimals`. |
+| `thousands_sep` | `character(1)` or `FALSE` | `FALSE` | Thousands separator string or `FALSE`. |
+| `abbreviate` | `logical(1)` | `FALSE` | Shorten large values (`"1.2K - 3.4M"`). |
+| `show_bar` | `logical(1)` | `FALSE` | Render a visual bar between low and high. |
+| `na_text` | `character(1)` | `NULL` | Text when either bound is NA. |
+
+Body cells default to `align = "right"` (numeric convention).
+
+::: {.callout-warning}
+## Updated in 0.9.0
+- `min_field` and `max_field` are still accepted with a deprecation warning; new code should use `low` and `high`.
+- `digits`, `thousands_sep`, `abbreviate` added to match the rest of the numeric formatting vocabulary.
+:::
+
+### `col_reference()` {#col_reference}
+
+Truncated text with optional outbound link and tooltip.
+
+```r
+col_reference(field, header = "Reference", width = NULL,
+              href_field = NULL, max_chars = 30,
+              show_icon = TRUE, ...)
+```
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `field` | `character(1)` | required | Reference text. |
+| `href_field` | `character(1)` | `NULL` | URL column (optional). |
+| `max_chars` | `integer(1)` | `30` | Truncation length. |
+| `show_icon` | `logical(1)` | `TRUE` | Show external-link icon when `href_field` is set. |
+
+:::{.callout-note}
+## `icon` is deprecated
+Use `show_icon` instead. The old `icon` argument still works for one cycle and emits `lifecycle::deprecate_warn()`.
+:::
+
+---
+
+## Inline visualization columns
+
+### `col_bar()` {#col_bar}
+
+```r
+col_bar(field, header = NULL, width = NULL,
+        max_value = NULL, show_label = TRUE, color = NULL,
+        scale = c("linear", "log", "sqrt"), ...)
+```
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `field` | `character(1)` | required | Bar value column. |
+| `max_value` | `numeric(1)` | `NULL` (auto) | Bar normalization. |
+| `show_label` | `logical(1)` | `TRUE` | |
+| `color` | `character(1)` | `NULL` | CSS color. |
+
+### `col_sparkline()` {#col_sparkline}
+
+```r
+col_sparkline(field, header = "Trend", width = NULL,
+              type = c("line", "bar", "area"),
+              height = 20, color = NULL, ...)
+```
+
+The `field` column should be a list-column of numeric vectors (one vector per row).
+
+### `col_icon()` {#col_icon}
+
+```r
+col_icon(field, header = NULL, width = NULL,
+         mapping = NULL,
+         size = c("base", "sm", "lg"),
+         color = NULL, ...)
+```
+
+`mapping` is a named character vector mapping data values to icons/emoji. Body cells default to `align = "center"`.
+
+### `col_badge()` {#col_badge}
+
+```r
+col_badge(field, header = NULL, width = NULL,
+          variants = NULL, colors = NULL,
+          size = c("base", "sm"), ...)
+```
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `field` | `character(1)` | required | Badge text column. |
+| `variants` | named `character` | `NULL` | Map values to semantic variants: `"default"`, `"success"`, `"warning"`, `"error"`, `"info"`, `"muted"`. |
+| `colors` | named `character` | `NULL` | Map values to custom hex colors (override `variants`). |
+
+```r
+col_badge("status", variants = c(
+  published = "success", draft = "warning", rejected = "error"
 ))
 ```
 
-### col_badge {#col_badge}
-
-Badge column for colored status labels.
+### `col_stars()` {#col_stars}
 
 ```r
-col_badge(field, header = NULL, width = NULL, variant = "default")
+col_stars(field, header = NULL, width = NULL,
+          max_stars = 5, color = "#f59e0b",
+          empty_color = "#d1d5db",
+          half_stars = FALSE, domain = NULL, ...)
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name containing badge text |
-| `header` | Column header |
-| `width` | Column width (NULL = auto) |
-| `variant` | `"default"`, `"success"`, `"warning"`, `"error"`, `"info"`, `"muted"` |
+`domain = c(min, max)` remaps arbitrary input ranges into `[0, max_stars]`.
 
-### col_stars {#col_stars}
-
-Star rating column (1-5 scale).
+### `col_img()` {#col_img}
 
 ```r
-col_stars(field, header = NULL, width = NULL, max_stars = 5, color = NULL)
+col_img(field, header = NULL, width = NULL,
+        height = NULL, max_width = NULL,
+        fallback = "[img]",
+        shape = c("square", "circle", "rounded"), ...)
 ```
-
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name containing numeric rating |
-| `header` | Column header |
-| `width` | Column width (NULL = auto) |
-| `max_stars` | Maximum stars (default: 5) |
-| `color` | Star color |
-
-### col_img {#col_img}
-
-Image column for inline images from URLs.
-
-```r
-col_img(field, header = NULL, width = NULL, shape = "square")
-```
-
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name containing image URLs |
-| `header` | Column header |
-| `width` | Column width (NULL = auto) |
-| `shape` | `"square"`, `"circle"`, or `"rounded"` |
-
-### col_reference {#col_reference}
-
-Reference column for DOIs, citations, or links with truncation.
-
-```r
-col_reference(field, header = NULL, width = NULL, href_field = NULL)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `field` | Column name containing reference text |
-| `header` | Column header |
-| `width` | Column width (NULL = auto) |
-| `href_field` | Column name containing URLs for links |
-
-### col_range {#col_range}
-
-Range column showing min-max values.
-
-```r
-col_range(min_field, max_field, header = NULL, width = NULL, separator = " – ")
-```
-
-| Argument | Description |
-|----------|-------------|
-| `min_field` | Column name for minimum value |
-| `max_field` | Column name for maximum value |
-| `header` | Column header |
-| `width` | Column width (NULL = auto) |
-| `separator` | Separator between values (default: " – ") |
-
-**Example**:
-```r
-# Age range: "18 – 65"
-col_range("age_min", "age_max", header = "Age Range")
-```
-
-## Alignment
-
-Each column has two alignment slots: `align` controls body cells and `header_align` controls the header cell. Both accept `"left"`, `"center"`, or `"right"`.
-
-Defaults are type-aware, so the typical table looks right without any tuning:
-
-| Helper                                           | Body-cell `align` default |
-|--------------------------------------------------|---------------------------|
-| `col_text`, `col_numeric`, `col_pvalue`, `col_bar`, `col_interval`, `col_sparkline`, `col_percent`, `col_reference`, `col_heatmap`, `col_progress` | `"left"`    |
-| `col_icon`, `col_badge`, `col_stars`, `col_img`  | `"center"`                |
-| `col_range`, `col_currency`                      | `"right"`                 |
-| `viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin` | `"left"`              |
-
-`header_align` defaults to `NULL`, which means "follow the body." So `col_currency("price")` gets a right-aligned header for free, and a viz column with `show_header = TRUE` gets a left-aligned header that lines up with the plot region. Pass `header_align = "..."` explicitly to decouple the header from the body — useful when you want a centered header label over right-aligned numbers, for example.
-
-```{r}
-#| eval: false
-# Explicit body alignment
-col_text("study", align = "center")
-
-# Override the default right-aligned currency header
-col_currency("price", header_align = "center")
-
-# Viz column header on, centered over the plot
-viz_forest(effects = list(effect_primary()),
-           show_header = TRUE, header_align = "center")
-```
-
-Viz-column headers are padded inward by the plot's left/right margin so the label lines up with the axis rather than the column edge.
 
 ---
 
-## Cell-Level Styling
+## Per-row visualization columns (`viz_*`)
 
-All `col_*()` functions support per-cell styling through these optional parameters:
+These columns plot one image per row with a shared axis across rows. They define their own effects and are not sortable.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `bold` | Column name or formula | Bold text when TRUE |
-| `italic` | Column name or formula | Italic text when TRUE |
-| `color` | Column name or formula | Text color (CSS color string) |
-| `bg` | Column name or formula | Background color (CSS color string) |
-| `badge` | Column name or formula | Badge label |
-| `icon` | Column name or formula | Emoji/unicode icon |
-| `emphasis` | Column name or formula | Theme-aware emphasis styling |
-| `muted` | Column name or formula | Theme-aware muted styling |
-| `accent` | Column name or formula | Theme-aware accent styling |
+### `viz_forest()` {#viz_forest}
 
-### Formula Expressions with `.x`
+Forest plot column (point + CI). Either pass `point` / `lower` / `upper` for a single effect, or `effects = list(effect_forest(...), ...)` for several effects overlaid in the same column.
 
-Style parameters accept formula expressions that are evaluated per row. Use **`.x`** to reference the column's own values:
-
-```{r}
-#| eval: false
-# Bold p-values below 0.05
-col_pvalue("pval", bold = ~ .x < 0.05)
-
-# Color HR values based on direction
-col_numeric("hr", "HR",
-  color = ~ ifelse(.x < 1, "#16a34a", "#dc2626")
-)
-
-# Complex conditional styling
-col_numeric("change", "% Change",
-  color = ~ case_when(
-    .x < -10 ~ "#16a34a",  # Strong improvement
-    .x > 5 ~ "#dc2626",    # Worsening
-    TRUE ~ "#71717a"       # Neutral
-  )
+```r
+viz_forest(
+  header = NULL,
+  show_header = TRUE,
+  header_align = "center",
+  width = NULL,
+  point = NULL, lower = NULL, upper = NULL,
+  effects = NULL,
+  scale = c("linear", "log"),
+  null_value = NULL,
+  axis_label = "Effect",
+  axis_range = NULL,
+  axis_ticks = NULL,
+  axis_gridlines = FALSE,
+  show_axis = TRUE,
+  annotations = NULL,
+  shared_axis = NULL,
+  ...
 )
 ```
 
-### Referencing Other Columns
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `header` | `character(1)` | `NULL` | Falls back to single-effect label, then blank for multi-effect. |
+| `show_header` | `logical(1)` | `TRUE` | |
+| `header_align` | choice | `"center"` | |
+| `width` | `numeric(1)` | `NULL` (auto) | |
+| `point` / `lower` / `upper` | `character(1)` | `NULL` | Single-effect column refs (mutually exclusive with `effects`). |
+| `effects` | `list` of `effect_forest()` | `NULL` | Multi-effect spec. |
+| `scale` | choice | `"linear"` | `"linear"` or `"log"`. |
+| `null_value` | `numeric(1)` | `0` (linear) / `1` (log) | Reference line. |
+| `axis_label` | `character(1)` | `"Effect"` | |
+| `axis_range` | `numeric(2)` | `NULL` | |
+| `axis_ticks` | `numeric` | `NULL` | |
+| `axis_gridlines` | `logical(1)` | `FALSE` | |
+| `show_axis` | `logical(1)` | `TRUE` | |
+| `annotations` | `list` of `refline()` | `NULL` | |
+| `shared_axis` | `logical(1)` | `NULL` | In split forests, opt this column in/out of the split-level shared axis. |
 
-Formulas can also reference other columns in your data:
+### `effect_forest()` {#effect_forest}
 
-```{r}
-#| eval: false
-# Color HR based on significance
-col_numeric("hr", "HR",
-  color = ~ ifelse(pval < 0.05, "#16a34a", "#71717a")
-)
-
-# Bold based on combined conditions
-col_interval(point = "hr", lower = "lower", upper = "upper",
-  bold = ~ pval < 0.05 & hr < 1
-)
+```r
+effect_forest(point, lower, upper,
+              label = NULL, color = NULL,
+              shape = NULL, opacity = NULL)
 ```
 
-### Column Name vs Formula
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `point` | `character(1)` | required | Point column. |
+| `lower` | `character(1)` | required | Lower bound column. |
+| `upper` | `character(1)` | required | Upper bound column. |
+| `label` | `character(1)` | `point` | Legend label. |
+| `color` | `character(1)` | `NULL` (theme cycle) | |
+| `shape` | choice | `NULL` (theme cycle) | One of `"square"`, `"circle"`, `"diamond"`, `"triangle"`. |
+| `opacity` | `numeric(1)` | `NULL` | 0–1. |
 
-You can use either approach:
+:::{.callout-note}
+## No per-effect `size`
 
-```{r}
-#| eval: false
-# Column name approach (requires pre-computed column)
-data <- data |> mutate(is_sig = pval < 0.05)
-col_pvalue("pval", bold = "is_sig")
+In multi-effect plots, marker size is row-driven (via `set_marker_style(size = ...)` or `marker_size` on `tabviz()`) so weights remain comparable across effects.
+:::
 
-# Formula approach (computed on the fly)
-col_pvalue("pval", bold = ~ .x < 0.05)
+### `viz_bar()` {#viz_bar}
+
+```r
+viz_bar(...,                  # one or more effect_bar() objects
+        header = NULL, show_header = TRUE, header_align = "center",
+        width = NULL,
+        scale = c("linear", "log"),
+        axis_range = NULL, axis_ticks = NULL,
+        axis_gridlines = FALSE,
+        axis_label = "Value", show_axis = TRUE)
 ```
 
-| Approach | Best For |
-|----------|----------|
-| **Formulas** | Simple conditions, self-referential logic |
-| **Column names** | Complex logic, reused across multiple columns |
+#### `effect_bar()`
+
+```r
+effect_bar(value, label = NULL, color = NULL, opacity = NULL)
+```
+
+### `viz_boxplot()` {#viz_boxplot}
+
+```r
+viz_boxplot(...,              # one or more effect_boxplot() objects
+            header = NULL, show_header = TRUE, header_align = "center",
+            width = NULL,
+            scale = c("linear", "log"),
+            axis_range = NULL, axis_ticks = NULL,
+            axis_gridlines = FALSE,
+            show_outliers = TRUE,
+            whisker_type = c("iqr", "minmax"),
+            axis_label = "Value", show_axis = TRUE)
+```
+
+#### `effect_boxplot()`
+
+Two modes — provide either `data` (raw array column) or all five summary stats.
+
+```r
+# From raw array data (auto-compute quartiles)
+effect_boxplot(data,
+               outliers = NULL, label = NULL,
+               color = NULL, opacity = 0.7)
+
+# From pre-computed summary stats
+effect_boxplot(min, q1, median, q3, max,
+               outliers = NULL, label = NULL,
+               color = NULL, opacity = 0.7)
+```
+
+::: {.callout-warning}
+## Renamed in 0.9.0
+`fill_opacity` is now `opacity` (matching `effect_forest()` / `effect_bar()`). The old name still works with a deprecation warning.
+:::
+
+### `viz_violin()` {#viz_violin}
+
+```r
+viz_violin(...,                # one or more effect_violin() objects
+           header = NULL, show_header = TRUE, header_align = "center",
+           width = NULL,
+           scale = c("linear", "log"),
+           axis_range = NULL, axis_ticks = NULL,
+           axis_gridlines = FALSE,
+           bandwidth = NULL,
+           show_median = TRUE, show_quartiles = FALSE,
+           axis_label = "Value", show_axis = TRUE)
+```
+
+#### `effect_violin()`
+
+```r
+effect_violin(data, label = NULL, color = NULL, opacity = 0.5)
+```
+
+::: {.callout-warning}
+## Renamed in 0.9.0
+`fill_opacity` is now `opacity`. The old name still works with a deprecation warning.
+:::
 
 ---
 
-## Column Groups
+## Column groups
 
-### col_group {#col_group}
+### `col_group()` {#col_group}
 
-Group multiple columns under a shared header.
+Wrap several columns under a shared header.
 
 ```r
 col_group(header, ...)
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `header` | Group header text |
-| `...` | Column specifications to group |
+| Argument | Type | Description |
+|---|---|---|
+| `header` | `character(1)` | Group header label. |
+| `...` | `ColumnSpec` | One or more `col_*()` / `viz_*()` columns. |
+
+```r
+col_group("Treatment Effect",
+  col_numeric("hr", "HR"),
+  col_interval("hr", "lower", "upper", header = "95% CI")
+)
+```
+
+---
+
+## Low-level constructor
+
+### `web_col()` {#web_col}
+
+The constructor every `col_*()` helper delegates to. Use this directly only when you need a column type the helpers don't cover.
+
+```r
+web_col(field,
+        header = NULL,
+        type = c("text", "numeric", "interval", "bar", "pvalue",
+                 "sparkline", "icon", "badge", "stars", "img",
+                 "reference", "range", "forest", "heatmap",
+                 "progress", "viz_bar", "viz_boxplot",
+                 "viz_violin", "custom"),
+        width = NULL,
+        align = NULL, header_align = NULL,
+        show_header = NULL,
+        wrap = FALSE, sortable = TRUE,
+        options = list(),
+        na_text = NULL,
+        # Cell styling
+        bold = NULL, italic = NULL,
+        color = NULL, bg = NULL,
+        badge = NULL, icon = NULL,
+        emphasis = NULL, muted = NULL, accent = NULL)
+```
+
+Returns a `ColumnSpec`.
+
+---
+
+## Cell-level styling {#cell-level-styling}
+
+Every `col_*()` helper accepts the same set of cell-styling arguments via `...`. Each takes either a **column name** (resolved at render time) or a **formula** evaluated against the row (use `.x` to refer to the column's own value).
+
+| Argument | Resolved value | Effect |
+|---|---|---|
+| `bold` | logical | Bold text. |
+| `italic` | logical | Italic text. |
+| `color` | CSS color | Text color. |
+| `bg` | CSS color | Cell background. |
+| `badge` | character | Inline badge in the cell. |
+| `icon` | emoji/unicode | Icon next to value. |
+| `emphasis` | logical | Theme-aware emphasis (bold + foreground). |
+| `muted` | logical | Theme-aware muted (lighter). |
+| `accent` | logical | Theme accent color. |
+
+```r
+# Bold significant p-values, color them
+col_pvalue("pval",
+           bold  = ~ .x < 0.05,
+           color = ~ ifelse(.x < 0.05, "#16a34a", "#71717a"))
+
+# Reference another column
+col_numeric("hr", "HR",
+            color = ~ ifelse(pval < 0.05, "#16a34a", "#71717a"))
+```
+
+---
+
+## Alignment
+
+Two slots: `align` for body cells, `header_align` for the header. Defaults are type-aware:
+
+| Helper | Body `align` default |
+|---|---|
+| `col_text`, `col_numeric`, `col_pvalue`, `col_bar`, `col_interval`, `col_sparkline`, `col_percent`, `col_reference`, `col_heatmap`, `col_progress`, `col_date` | `"left"` |
+| `col_icon`, `col_badge`, `col_stars`, `col_img` | `"center"` |
+| `col_range`, `col_currency` | `"right"` |
+| `viz_forest` | header `"center"` |
+| `viz_bar` | header `"left"` |
+| `viz_boxplot`, `viz_violin` | header `"center"` |
+
+`header_align` defaults to "follow the body" — set it explicitly to decouple.
+
+---
 
 ## Examples
 
-### Mixed Column Types
-
 ```{r}
 data <- data.frame(
-  study = c("Trial A", "Trial B", "Trial C"),
-  hr = c(0.72, 0.85, 0.68),
-  lower = c(0.55, 0.70, 0.52),
-  upper = c(0.95, 1.03, 0.89),
-  n = c(245, 180, 320),
+  study  = c("Trial A", "Trial B", "Trial C"),
+  hr     = c(0.72, 0.85, 0.68),
+  lower  = c(0.55, 0.70, 0.52),
+  upper  = c(0.95, 1.03, 0.89),
+  n      = c(245, 180, 320),
   weight = c(35, 28, 37),
-  pval = c(0.018, 0.092, 0.003)
+  pval   = c(0.018, 0.092, 0.003)
 )
 
 tabviz(data,
@@ -690,65 +655,26 @@ tabviz(data,
     col_bar("weight"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
-    col_pvalue("pval")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
+    col_pvalue("pval", stars = TRUE)
   )
 )
 ```
 
-### Column Groups
-
-```{r}
-#| eval: false
+```r
+# Column groups
 columns = list(
   col_n("n"),
   col_group("Treatment Effect",
     col_numeric("hr", "HR"),
-    col_interval("95% CI", point = "hr", lower = "lower", upper = "upper")
+    col_interval("hr", "lower", "upper", header = "95% CI")
   ),
   col_pvalue("pval")
 )
 ```
 
-## Fluent Column Styling
+## Related
 
-### set_column_style {#set_column_style}
-
-Apply per-cell styling to a column after spec creation. See [Customizing Plots](../guide/fluent-api.qmd) guide.
-
-```r
-spec |> set_column_style(column, bold = NULL, italic = NULL, color = NULL, bg = NULL, badge = NULL, icon = NULL)
-```
-
-| Argument | Description |
-|----------|-------------|
-| `column` | Field name of the column to style |
-| `bold` | Column name **or formula** for bold text |
-| `italic` | Column name **or formula** for italic text |
-| `color` | Column name **or formula** for text color |
-| `bg` | Column name **or formula** for background color |
-| `badge` | Column name **or formula** for badge text |
-| `icon` | Column name **or formula** for icon |
-
-**Examples:**
-
-```{r}
-#| eval: false
-# Using formula expressions
-tabviz(data,
-  label = "study",
-  columns = list(col_pvalue("pval"))
-) |>
-  set_column_style("pval",
-    bold = ~ .x < 0.05,
-    color = ~ ifelse(.x < 0.05, "#16a34a", "#71717a")
-  )
-```
-
-## See Also
-
-- [tabviz()](tabviz.qmd) for the main entry point
-- [Columns Guide](../guide/columns.qmd) for detailed examples
-- [Forest Plots Guide](../guide/visualizations/forest-plots.qmd) for `viz_forest()` examples
-- [Distribution Plots Guide](../guide/visualizations/distribution-plots.qmd) for `viz_bar()`, `viz_boxplot()`, `viz_violin()` examples
-- [Customizing Plots](../guide/fluent-api.qmd) for pipe-based styling
+- [`tabviz()`](tabviz.qmd) — passes a `columns` list of these helpers
+- [Styling modifiers](styling.qmd) — `set_column_style()` for after-the-fact per-cell styling
+- [Annotations](annotations.qmd) — `refline()` for `viz_forest(annotations = ...)`

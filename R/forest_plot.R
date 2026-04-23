@@ -24,6 +24,12 @@
 #' @param scale Scale type: "linear" (default) or "log"
 #' @param null_value Reference value for null effect. Default: 0 for linear, 1 for log
 #' @param axis_label Label for the graphical axis
+#' @param axis_range Numeric vector `c(min, max)` to override the axis range
+#'   on the auto-built forest column.
+#' @param axis_ticks Numeric vector of explicit tick positions for the
+#'   auto-built forest column.
+#' @param axis_gridlines Logical to show/hide gridlines on the auto-built
+#'   forest column.
 #' @param theme Theme object (use `web_theme_*()` functions)
 #' @param ... Additional arguments passed to `tabviz()`.
 #'   See `?tabviz` for all available options including row styling, marker styling,
@@ -92,6 +98,9 @@ forest_plot <- function(
     scale = NULL,
     null_value = NULL,
     axis_label = NULL,
+    axis_range = NULL,
+    axis_ticks = NULL,
+    axis_gridlines = NULL,
     theme = NULL,
     ...,
     split_by = NULL,
@@ -133,27 +142,24 @@ forest_plot <- function(
   has_inline <- !is.null(point) && !is.null(lower) && !is.null(upper)
   has_effects <- !is.null(effects) && length(effects) > 0
 
+  forest_axis_args <- list(
+    scale = scale %||% "linear",
+    null_value = null_value,
+    axis_label = axis_label %||% "Effect",
+    axis_range = axis_range,
+    axis_ticks = axis_ticks,
+    axis_gridlines = axis_gridlines %||% FALSE,
+    show_header = FALSE
+  )
+
   if (has_effects) {
-    # Multi-effect mode
-    forest_col <- viz_forest(
-      effects = effects,
-      scale = scale %||% "linear",
-      null_value = null_value,
-      axis_label = axis_label %||% "Effect",
-      show_header = FALSE
-    )
+    forest_col <- do.call(viz_forest, c(list(effects = effects), forest_axis_args))
     user_columns <- c(user_columns, list(forest_col))
   } else if (has_inline) {
-    # Single effect mode
-    forest_col <- viz_forest(
-      point = point,
-      lower = lower,
-      upper = upper,
-      scale = scale %||% "linear",
-      null_value = null_value,
-      axis_label = axis_label %||% "Effect",
-      show_header = FALSE
-    )
+    forest_col <- do.call(viz_forest, c(
+      list(point = point, lower = lower, upper = upper),
+      forest_axis_args
+    ))
     user_columns <- c(user_columns, list(forest_col))
   }
 

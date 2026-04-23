@@ -22,7 +22,8 @@ Bold + green for `p < 0.05`, muted gray otherwise.
 #| eval: false
 tabviz(data,
   label = "study",
-  columns = list(viz_forest("hr", "lower", "upper", null_value = 1, scale = "log")),
+  columns = list(viz_forest(point = "hr", lower = "lower", upper = "upper",
+                            null_value = 1, scale = "log")),
   row_bold  = ~ pval < 0.05,
   row_color = ~ ifelse(pval < 0.05, "#166534", "#64748b")
 )
@@ -43,7 +44,8 @@ data |>
   ) |>
   tabviz(
     label = "study",
-    columns = list(viz_forest("hr", "lower", "upper", null_value = 1, scale = "log")),
+    columns = list(viz_forest(point = "hr", lower = "lower", upper = "upper",
+                            null_value = 1, scale = "log")),
     row_badge = "badge"
   )
 ```
@@ -97,7 +99,7 @@ server <- function(input, output, session) {
 
 ## Format p-values with thresholds
 
-Smart formatting: `<0.001`, scientific notation for very small, decimals otherwise.
+Switch to scientific notation for very small values, abbreviate below a cutoff, append significance stars.
 
 ```{r}
 #| eval: false
@@ -105,9 +107,9 @@ tabviz(data,
   label = "study",
   columns = list(
     col_pvalue("pval", "P",
-               threshold = 0.001,       # shows "<0.001" below this
-               scientific_below = 1e-4, # scientific notation below this
-               show_stars = TRUE)       # optional ★ ★★ ★★★ trailing
+               exp_threshold    = 0.001,   # scientific notation below this
+               abbrev_threshold = 1e-4,    # show "<0.0001" below this
+               stars            = TRUE)    # append * / ** / *** by `thresholds`
   )
 )
 ```
@@ -140,7 +142,8 @@ Hierarchical navigation; every pane uses the same scale.
 #| eval: false
 tabviz(data,
   label = "study",
-  columns = list(viz_forest("hr", "lower", "upper", null_value = 1, scale = "log")),
+  columns = list(viz_forest(point = "hr", lower = "lower", upper = "upper",
+                            null_value = 1, scale = "log")),
   split_by     = c("region", "country"),
   shared_axis  = TRUE
 )
@@ -175,7 +178,7 @@ tabviz(data,
     col_text("drug", "Drug"),
     col_n("n"),
     col_events("events", "n", "Events"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     col_pvalue("pval", "P")
   )
 )
@@ -194,10 +197,10 @@ axis_range <- c(0.4, 2.0)
 tabviz(data,
   label = "study",
   columns = list(
-    viz_forest("hr_primary", "primary_lo", "primary_hi",
+    viz_forest(point = "hr_primary", lower = "primary_lo", upper = "primary_hi",
                header = "Primary outcome",
                axis_range = axis_range, null_value = 1, scale = "log"),
-    viz_forest("hr_secondary", "secondary_lo", "secondary_hi",
+    viz_forest(point = "hr_secondary", lower = "secondary_lo", upper = "secondary_hi",
                header = "Secondary outcome",
                axis_range = axis_range, null_value = 1, scale = "log")
   )
@@ -251,7 +254,6 @@ house_style <- function(x) {
   x |>
     set_marker_style(color = "direction_color") |>
     set_row_style(bold = "is_primary", type = "row_type") |>
-    set_theme("jama") |>
     set_theme(web_theme_jama() |>
                 set_axis(gridlines = TRUE, gridline_style = "dotted"))
 }

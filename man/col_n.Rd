@@ -5,18 +5,19 @@
 \title{Column helper: Sample size / count}
 \usage{
 col_n(
-  field = "n",
+  field,
   header = "N",
   width = NULL,
   decimals = 0,
   digits = NULL,
   thousands_sep = ",",
   abbreviate = FALSE,
+  na_text = NULL,
   ...
 )
 }
 \arguments{
-\item{field}{Field name (default "n")}
+\item{field}{Field name (required)}
 
 \item{header}{Column header (default "N")}
 
@@ -30,6 +31,8 @@ col_n(
 
 \item{abbreviate}{Logical. When TRUE, values >= 1000 are shortened with at most
 1 decimal place (e.g., 1100 -> "1.1K", 12345 -> "12.3K"). Default FALSE.}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

@@ -5,7 +5,7 @@
 \title{Column helper: P-value}
 \usage{
 col_pvalue(
-  field = "pvalue",
+  field,
   header = "P-value",
   width = NULL,
   stars = FALSE,
@@ -14,6 +14,7 @@ col_pvalue(
   digits = 2,
   exp_threshold = 0.001,
   abbrev_threshold = NULL,
+  na_text = NULL,
   ...
 )
 }
@@ -36,6 +37,8 @@ col_pvalue(
 
 \item{abbrev_threshold}{Values below this display as "<threshold" (default NULL = off).
 For example, \code{abbrev_threshold = 0.0001} displays values below 0.0001 as "<0.0001".}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

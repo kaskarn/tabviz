@@ -10,8 +10,10 @@ col_reference(
   width = NULL,
   href_field = NULL,
   max_chars = 30,
-  icon = TRUE,
-  ...
+  show_icon = TRUE,
+  na_text = NULL,
+  ...,
+  icon = lifecycle::deprecated()
 )
 }
 \arguments{
@@ -25,10 +27,15 @@ col_reference(
 
 \item{max_chars}{Maximum characters to display before truncating (default 30)}
 
-\item{icon}{Show external link icon when href_field is provided (default TRUE)}
+\item{show_icon}{Show external link icon when \code{href_field} is provided
+(default TRUE)}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}
+
+\item{icon}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{show_icon} instead.}
 }
 \value{
 A ColumnSpec object
@@ -44,7 +51,7 @@ col_reference("citation")
 col_reference("title", href_field = "doi_url", max_chars = 40)
 
 # Without link icon
-col_reference("source", href_field = "url", icon = FALSE)
+col_reference("source", href_field = "url", show_icon = FALSE)
 
 # With per-cell styling
 col_reference("citation", emphasis = "is_key")

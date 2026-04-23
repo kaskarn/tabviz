@@ -12,6 +12,7 @@ col_percent(
   digits = NULL,
   multiply = TRUE,
   symbol = TRUE,
+  na_text = NULL,
   ...
 )
 }
@@ -31,6 +32,8 @@ Cannot be used with \code{decimals}.}
 Set to FALSE if data is already on 0-100 scale.}
 
 \item{symbol}{Show \% symbol (default TRUE)}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

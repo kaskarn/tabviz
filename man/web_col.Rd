@@ -26,7 +26,9 @@ web_col(
   icon = NULL,
   emphasis = NULL,
   muted = NULL,
-  accent = NULL
+  accent = NULL,
+  tooltip = NULL,
+  formatter = NULL
 )
 }
 \arguments{
@@ -75,6 +77,15 @@ instead of being truncated with ellipsis.}
 \item{muted}{Column name containing logical values for muted styling}
 
 \item{accent}{Column name containing logical values for accent styling}
+
+\item{tooltip}{Column name whose values become the per-cell hover tooltip.
+\code{NULL} (default) falls back to the cell's displayed value.}
+
+\item{formatter}{Optional R function \code{function(x) ...} applied to the
+column's values before serialization. When set, the output is serialized
+as text and the frontend renders it verbatim — bypasses any built-in
+numeric/interval/… formatter. \code{NULL} (default) uses the type's built-in
+formatting.}
 }
 \value{
 A ColumnSpec object

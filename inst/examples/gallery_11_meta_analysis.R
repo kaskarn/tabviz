@@ -29,11 +29,14 @@ tabviz(
   columns = list(
     col_n("n"),
     col_bar("weight"),
-    col_interval("OR (95% CI)"),
+    col_interval("or", "lower", "upper", header = "OR (95% CI)"),
     viz_forest(
       point = "or", lower = "lower", upper = "upper",
       scale = "log", null_value = 1,
       axis_label = "Odds Ratio (95% CI)",
+      axis_range = c(0.4, 1.2),
+      axis_ticks = c(0.5, 0.75, 1.0),
+      axis_gridlines = TRUE,
       annotations = list(
         refline(0.75, label = "Pooled", style = "solid", color = "#2563eb")
       )
@@ -41,9 +44,6 @@ tabviz(
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   theme = web_theme_lancet(),
-  axis_range = c(0.4, 1.2),
-  axis_ticks = c(0.5, 0.75, 1.0),
-  axis_gridlines = TRUE,
   title = "Publication Meta-Analysis",
   subtitle = "Weight column + reference line + custom axis",
   caption = "Pooled estimate shown as reference line; I2 = 32%",

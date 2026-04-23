@@ -12,6 +12,7 @@ col_progress(
   color = NULL,
   show_label = TRUE,
   scale = c("linear", "log", "sqrt"),
+  na_text = NULL,
   ...
 )
 }
@@ -30,6 +31,8 @@ col_progress(
 
 \item{scale}{Scale type: "linear" (default), "log", or "sqrt". Controls how
 values map to bar fill.}
+
+\item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
 \code{bold}, \code{italic}, \code{color}, \code{bg}, \code{emphasis}, \code{muted}, \code{accent} (column names)}

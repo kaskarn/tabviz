@@ -8,14 +8,7 @@ library(tabviz)
 library(dplyr)
 ```
 
-Every widget below is live. Sort, filter, drag, edit — any change flows through to the
-SVG/PNG export at the click of the download button (WYSIWYG).
-
-```{r}
-#| include: false
-# Convenience: a one-liner that enables everything
-full <- web_interaction_full
-```
+Every widget below is live. Sort, filter, drag, edit — any change flows through to the SVG/PNG export at the click of the download button (WYSIWYG).
 
 ## The whole kitchen sink
 
@@ -47,7 +40,7 @@ tabviz(
       )
     ),
     col_group("Results",
-      col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper"),
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
       col_pvalue("pvalue", "P", stars = TRUE)
     )
   ),
@@ -151,7 +144,7 @@ tabviz(trial_data, label = "study",
     viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1,
                axis_label = "HR"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi")
+    col_interval("hr", "lo", "hi", header = "HR (95% CI)")
   ),
   interaction = web_interaction_full(),
   theme = web_theme_cochrane(),
@@ -187,7 +180,7 @@ tabviz(effects, label = "metric",
                scale = "log", null_value = 1,
                axis_range = c(0.4, 1.4),
                axis_label = "Hazard Ratio"),
-    col_interval("HR (95% CI)", point = "hr", lower = "lo", upper = "hi"),
+    col_interval("hr", "lo", "hi", header = "HR (95% CI)"),
     col_pvalue("pvalue", "P", stars = TRUE)
   ),
   interaction = web_interaction_full(),
@@ -239,9 +232,9 @@ server <- function(input, output, session) {
         col_numeric("hr", "HR", decimals = 2),
         col_numeric("n",  "N"),
         viz_forest(point = "hr", lower = "lower", upper = "upper",
-                   header = "HR (95% CI)")
-      ),
-      null_value = 1, scale = "log"
+                   header = "HR (95% CI)",
+                   scale = "log", null_value = 1)
+      )
     )
   })
 

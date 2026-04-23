@@ -2,70 +2,31 @@
 title: "Guide Overview"
 ---
 
-Welcome to the tabviz guide. This section takes you from installation to advanced features in a logical progression.
+This guide takes you from your first table to advanced styling, interactivity, and Shiny integration. Read in order, or jump to a chapter.
 
-## Installation
+## Reading order
 
-```r
-# Install from GitHub using pak
-install.packages("pak")
-pak::pak("kaskarn/tabviz")
-```
+| # | Chapter | What you'll learn |
+|---|---|---|
+| 1 | [Quick Start](quick-start.qmd) | Install tabviz and render your first table |
+| 2 | [Columns](columns.qmd) | The `col_*()` / `viz_*()` system and column groups |
+| 3 | [Row Styling](row-styling.qmd) | Bold, italic, color, indentation, badges |
+| 4 | [Cell Styling](cell-styling.qmd) | Conditional formatting per cell |
+| 5 | [Row Groups](row-groups.qmd) | Collapsible hierarchical sections |
+| 6 | [Forest Plots](visualizations/forest-plots.qmd) | `viz_forest()` and multi-effect rows |
+| 7 | [Themes](themes.qmd) | Preset themes and `set_*()` modifiers |
+| 8 | [Fluent API](fluent-api.qmd) | Pipe-based post-build modifiers |
+| 9 | [Interactivity](interactivity.qmd) | Sort, filter, drag, edit, tooltips |
+| 10 | [Split Plots](split-plots.qmd) | Sidebar navigation for subgroups |
+| 11 | [Shiny Integration](shiny.qmd) | Reactive tables and proxy updates |
+| 12 | [Export](export.qmd) | Save to SVG, PNG, or PDF |
 
-## Learning Path
+## Two entry points
 
-The guide is organized as a linear progression, with each chapter building on the previous:
-
-```{mermaid}
-flowchart LR
-    A["Quick Start"] --> B["Columns"]
-    B --> C["Styling"]
-    C --> D["Groups"]
-    D --> E["Forest Plots"]
-    E --> F["Advanced"]
-
-    style A fill:#4f46e5,color:#fff
-```
-
-### Getting Started
-
-| Chapter | What You'll Learn |
-|---------|-------------------|
-| [Quick Start](quick-start.qmd) | Create your first table in under a minute |
-| [Columns](columns.qmd) | Choose and configure column types |
-
-### Styling
-
-| Chapter | What You'll Learn |
-|---------|-------------------|
-| [Row Styling](row-styling.qmd) | Bold, italic, colors, indentation |
-| [Cell Styling](cell-styling.qmd) | Conditional formatting per-cell |
-| [Row Groups](row-groups.qmd) | Collapsible hierarchical sections |
-
-### Visualizations
-
-| Chapter | What You'll Learn |
-|---------|-------------------|
-| [Forest Plots](visualizations/forest-plots.qmd) | Add interval visualizations with `viz_forest()` |
-| [Split Plots](split-plots.qmd) | Sidebar navigation for subgroups |
-
-### Customization & Output
-
-| Chapter | What You'll Learn |
-|---------|-------------------|
-| [Themes](themes.qmd) | Preset themes and customization |
-| [Shiny Integration](shiny.qmd) | Reactive tables in Shiny apps |
-| [Export](export.qmd) | Save to SVG, PNG, or PDF |
-
-## Two Entry Points
-
-tabviz offers two main functions:
-
-### `tabviz()` - Full Control
-
-Use for any table type with explicit column definitions:
+`tabviz()` is the general-purpose constructor. `forest_plot()` is a thin convenience wrapper for the common case where you only need point + lower + upper.
 
 ```r
+# Full control
 tabviz(data,
   label = "study",
   columns = list(
@@ -75,33 +36,24 @@ tabviz(data,
     col_sparkline("trend")
   )
 )
-```
 
-### `forest_plot()` - Quick Forest Plots
-
-Convenience wrapper when you just need point/lower/upper:
-
-```r
+# Quick forest plot
 forest_plot(data,
-  point = "hr",
-  lower = "lower",
-  upper = "upper",
+  point = "hr", lower = "lower", upper = "upper",
   label = "study",
-  scale = "log",
-  null_value = 1
+  scale = "log", null_value = 1
 )
 ```
 
-## Quick Reference
+:::{.callout-tip}
+## When to reach for `forest_plot()`
+Use `forest_plot()` when the table is "labels + a forest plot + maybe a CI string." The moment you need extra columns, badges, or column groups, switch to `tabviz()`.
+:::
 
-For a condensed overview of all functions and arguments, see the [Cheatsheet](../cheatsheet.qmd).
+## Where else to look
 
-## Concepts
-
-To understand the architecture and design patterns, see [Concepts](../concepts/index.qmd).
-
-## Getting Help
-
-- [Reference](../reference/index.qmd) - Complete API documentation
-- [Gallery](../gallery/index.qmd) - Example visualizations by domain
-- [Troubleshooting](../reference/troubleshooting.qmd) - Common issues and solutions
+- [Cheatsheet](../cheatsheet.qmd) — one-page lookup for functions and arguments.
+- [Concepts](../concepts/index.qmd) — architecture, mental models, and the styling cascade.
+- [Reference](../reference/index.qmd) — full API documentation.
+- [Gallery](../gallery/index.qmd) — runnable examples by domain.
+- [Troubleshooting](../reference/troubleshooting.qmd) — common issues and fixes.

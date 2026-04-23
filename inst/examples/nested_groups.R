@@ -65,7 +65,7 @@ forest_plot(
   group = "country",  # Group by country (will show nested structure)
   columns = list(
     col_numeric("n", "N"),
-    col_interval("OR (95% CI)")
+    col_interval("or", "lower", "upper", header = "OR (95% CI)")
   ),
   theme = web_theme_modern(),
   scale = "log",

@@ -35,7 +35,7 @@ forest_plot(
     col_heatmap("correlation", "Corr (log)", scale = "log",
                 min_value = 0.001, max_value = 1),
     col_stars("score100", "Quality",
-              max_stars = 8, domain = c(0, 100))
+              max_stars = 8, min_value = 0, max_value = 100)
   ),
   scale = "log",
   null_value = 1,

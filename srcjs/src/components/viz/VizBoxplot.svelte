@@ -2,6 +2,7 @@
   import type { Row, WebTheme, VizBoxplotColumnOptions, VizBoxplotEffect, BoxplotStats } from "$types";
   import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
   import { computeBoxplotStats, computeQuartiles, computeOutliers } from "$lib/viz-utils";
+  import { resolveMarkerStyle } from "$lib/marker-styling";
 
   interface Props {
     row: Row;
@@ -122,12 +123,20 @@
     theme?.shapes?.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"]
   );
 
-  function getEffectColor(effect: VizBoxplotEffect, idx: number): string {
-    return effect.color ?? defaultColors[idx % defaultColors.length];
+  // Per-row overrides (from tabviz(marker_color = "col") / marker_opacity)
+  const rowColorOverride = $derived(row.markerStyle?.color ?? null);
+  const rowOpacityOverride = $derived(row.markerStyle?.opacity ?? null);
+  const numEffects = $derived(options.effects.length);
+
+  // Resolve full marker style (fill + optional outline) via the cascade.
+  function getMarkerStyle(effect: VizBoxplotEffect, idx: number) {
+    const base = effect.color ?? defaultColors[idx % defaultColors.length];
+    return resolveMarkerStyle(base, rowColorOverride, row.style, numEffects, theme);
   }
 
   function getEffectOpacity(effect: VizBoxplotEffect): number {
-    return effect.fillOpacity ?? 0.7;
+    const base = effect.opacity ?? effect.fillOpacity ?? 0.7;
+    return rowOpacityOverride !== null ? rowOpacityOverride : base;
   }
 </script>
 
@@ -138,9 +147,12 @@
       {#if stats}
         {@const boxY = yPosition - boxConfig.totalHeight / 2 + idx * (boxConfig.boxHeight + boxConfig.boxGap)}
         {@const boxCenterY = boxY + boxConfig.boxHeight / 2}
-        {@const color = getEffectColor(effect, idx)}
+        {@const ms = getMarkerStyle(effect, idx)}
         {@const opacity = getEffectOpacity(effect)}
-        {@const lineColor = theme?.colors.foreground ?? "#1a1a1a"}
+        {@const defaultLineColor = theme?.colors.foreground ?? "#1a1a1a"}
+        {@const lineColor = ms.stroke ?? defaultLineColor}
+        {@const lineWidth = ms.stroke ? ms.strokeWidth : 1}
+        {@const color = ms.fill}
 
         <!-- Whisker lines (min to Q1, Q3 to max) -->
           <!-- Left whisker -->
@@ -150,7 +162,7 @@
             y1={boxCenterY}
             y2={boxCenterY}
             stroke={lineColor}
-            stroke-width="1"
+            stroke-width={lineWidth}
           />
           <!-- Left whisker cap -->
           <line
@@ -159,7 +171,7 @@
             y1={boxCenterY - boxConfig.boxHeight / 4}
             y2={boxCenterY + boxConfig.boxHeight / 4}
             stroke={lineColor}
-            stroke-width="1"
+            stroke-width={lineWidth}
           />
 
           <!-- Right whisker -->
@@ -169,7 +181,7 @@
             y1={boxCenterY}
             y2={boxCenterY}
             stroke={lineColor}
-            stroke-width="1"
+            stroke-width={lineWidth}
           />
           <!-- Right whisker cap -->
           <line
@@ -178,7 +190,7 @@
             y1={boxCenterY - boxConfig.boxHeight / 4}
             y2={boxCenterY + boxConfig.boxHeight / 4}
             stroke={lineColor}
-            stroke-width="1"
+            stroke-width={lineWidth}
           />
 
         <!-- Box (Q1 to Q3) -->
@@ -190,7 +202,7 @@
           fill={color}
           fill-opacity={opacity}
           stroke={lineColor}
-          stroke-width="1"
+          stroke-width={lineWidth}
           class="box-rect"
         />
 
@@ -201,7 +213,7 @@
           y1={boxY}
           y2={boxY + boxConfig.boxHeight}
           stroke={lineColor}
-          stroke-width="2"
+          stroke-width={Math.max(2, lineWidth)}
         />
 
         <!-- Outliers -->

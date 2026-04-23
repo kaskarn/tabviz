@@ -7,7 +7,7 @@ title: "Styling Cascade"
 library(tabviz)
 ```
 
-tabviz applies styles in layers, from general to specific. Understanding this cascade helps you achieve precise control over your visualization's appearance.
+tabviz applies styles in four layers, from general to specific: theme defaults, then row-level styles, then per-cell styles, then forest-marker styles. Knowing which layer a property lives in tells you exactly where to set it — and which other layers it will override.
 
 ## The Cascade
 
@@ -52,10 +52,20 @@ Theme defaults include:
 ```{r}
 #| eval: false
 web_theme_jama() |>
-  set_colors(primary = "#2563eb") |>
+  set_colors(
+    primary = "#2563eb",
+    ci_marker_positive = "#16a34a",
+    ci_marker_negative = "#dc2626",
+    ci_line = "#475569"
+  ) |>
   set_typography(font_size_base = "0.9rem") |>
   set_spacing(row_height = 28)
 ```
+
+:::{.callout-note}
+## Color argument names
+The user-facing arguments of `set_colors()` are `ci_marker_fill`, `ci_marker_positive`, `ci_marker_negative`, `ci_marker_neutral`, `ci_line`. The corresponding `ColorPalette` S7 slots are still named `interval`, `interval_positive`, `interval_negative`, `interval_neutral`, `interval_line` — only the argument names changed.
+:::
 
 ## Layer 2: Row Styling
 
@@ -183,6 +193,59 @@ Marker styling options:
 | `marker_shape` | Shape (circle, square, diamond, triangle) |
 | `marker_opacity` | Transparency (0-1) |
 | `marker_size` | Size multiplier |
+
+## The viz-cell color cascade
+
+Inside any viz column (`viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`), the fill color of a single glyph is resolved by walking a four-layer precedence stack. **Most specific wins; NA passes through.**
+
+| Layer | Source | Behavior |
+|---|---|---|
+| 4. Per-row literal | `tabviz(marker_color = "col" \| ~ formula)` | Wins when value is non-`NA`. `NA` falls through to Layer 3. |
+| 3. Row semantic class | `row_accent` / `row_emphasis` / `row_muted = "col" \| ~ formula` | **Single-effect viz:** fill replaced with theme color. **Multi-effect viz:** per-effect fill preserved, outline (stroke) added in theme color. `FALSE`/absent falls through to Layer 2. |
+| 2. Per-effect literal | `effect_forest(color = "#hex")` (and `effect_bar`/`effect_boxplot`/`effect_violin`) | Sets fill for that effect on all rows. |
+| 1. Theme palette | `theme.shapes.effect_colors[i]` | Invisible default; effect index cycles. |
+
+Semantic class → theme color mapping:
+
+| Class | Theme color |
+|---|---|
+| `row_accent` | `theme.colors.accent` |
+| `row_emphasis` | `theme.colors.foreground` |
+| `row_muted` | `theme.colors.muted` |
+
+The cascade applies uniformly to all four viz_* columns. The single-effect vs multi-effect distinction is automatic — based on `length(effects)`.
+
+### Why the multi-effect rule?
+
+In a single-effect viz, the marker color isn't carrying any per-effect information, so replacing it with the row's semantic color is unambiguous. In a multi-effect viz, each effect's color carries identity (e.g. blue = ITT, green = Per-Protocol, orange = Safety). Replacing the fill would erase that identity for accented rows. The "outline augment" rule keeps the per-effect color encoding intact while still flagging the row visually.
+
+### Examples
+
+The following examples render the cascade across each viz type:
+
+| Example | Demonstrates |
+|---|---|
+| `gallery_17_cascade_single_forest` | Single-effect forest: row_accent / row_emphasis / row_muted replace marker fill |
+| `gallery_18_cascade_multi_forest`  | Multi-effect forest: row_accent adds outline; per-effect fills preserved |
+| `gallery_19_cascade_bar`           | viz_bar single-effect (fill) vs multi-effect (outline) side-by-side |
+| `gallery_20_cascade_dist`          | viz_boxplot + viz_violin: existing strokes pick up semantic color |
+| `gallery_21_cascade_precedence`    | All four layers + NA passthrough on a single forest |
+
+### NA passthrough
+
+When a Layer-4 formula returns `NA` for a given row, that row "doesn't have an opinion" at Layer 4 and falls through to Layer 3:
+
+```r
+tabviz(data,
+  marker_color = ~ ifelse(pval < 0.001, "darkred",      # very strong → exact color
+                   ifelse(pval < 0.005, "indianred",    # strong       → exact color
+                          NA_character_)),               # otherwise   → fall through
+  row_accent   = ~ pval < 0.05,                          # rest of "significant" rows → accent
+  ...
+)
+```
+
+Rows with `pval < 0.005` get the exact red color (Layer 4 wins). Rows with `0.005 ≤ pval < 0.05` get the theme accent color (Layer 4 returned NA, Layer 3 takes over). Other rows get the palette default.
 
 ## Cascade Examples
 

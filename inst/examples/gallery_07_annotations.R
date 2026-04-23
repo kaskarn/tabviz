@@ -1,5 +1,5 @@
 # Gallery Example 7: Annotations & Reference Lines
-# Custom reference lines with labels at specific values
+# refline() for vertical threshold lines, forest_annotation() for per-row glyphs
 
 library(tabviz)
 library(dplyr)
@@ -17,19 +17,23 @@ tabviz(
   label = "study",
   columns = list(
     col_numeric("dose_mg", "Dose (mg)", width = 100),
-    col_interval("OR (95% CI)"),
+    col_interval("or", "lower", "upper", header = "OR (95% CI)"),
     viz_forest(
       point = "or", lower = "lower", upper = "upper",
       scale = "log", null_value = 1,
       axis_label = "Odds Ratio",
       annotations = list(
+        # Column-level threshold lines
         refline(0.80, label = "Clinically meaningful", style = "dashed", color = "#16a34a"),
-        refline(0.50, label = "Target effect", style = "solid", color = "#dc2626")
+        refline(0.50, label = "Target effect", style = "solid", color = "#dc2626"),
+        # Per-row glyphs on specific studies
+        forest_annotation("HIGH-DOSE", shape = "star", position = "after", color = "#f59e0b"),
+        forest_annotation("COMBO-B",   shape = "star", position = "after", color = "#f59e0b")
       )
     )
   ),
   theme = web_theme_modern(),
   title = "Annotations & Reference Lines",
-  subtitle = "refline() adds labeled vertical lines",
-  caption = "Green dashed = clinically meaningful threshold, Red solid = target"
+  subtitle = "refline() for thresholds; forest_annotation() flags individual rows",
+  caption = "Green dashed = clinically meaningful; red solid = target; stars flag preferred regimens"
 )

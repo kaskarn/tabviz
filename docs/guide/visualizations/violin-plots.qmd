@@ -8,31 +8,26 @@ library(tabviz)
 library(dplyr)
 ```
 
-Violin plots show the full distribution shape using kernel density estimation. They're ideal for revealing multimodal distributions and comparing distribution shapes across groups.
+`viz_violin()` shows the full distribution shape using kernel density estimation. Use it when distribution shape matters — bimodality, skewness, asymmetry — rather than just summary statistics.
 
 ::: {.callout-tip}
 ## When to Use Violin Plots
-Best for visualizing distribution shapes when you need to see:
 
-- Bimodal or multimodal distributions
-- Skewness and asymmetry
-- Detailed distribution comparisons
-
-Use **boxplots** instead if you only need to compare medians, quartiles, and outliers.
+Best for revealing distribution shapes (bimodal, multimodal, skewed). If you only need to compare medians, quartiles, and outliers, use [boxplots](boxplots.qmd).
 :::
 
 ::: {.callout-important}
-## Data Format for Array Columns
-Array columns require the `I()` wrapper to preserve list structure:
+## Array Columns Need `I()`
+
+`viz_violin()` always works from raw arrays of values. Wrap list columns with `I()` so `data.frame()` preserves their structure:
 
 ```r
-# Create a data frame with array column
 data <- data.frame(
   group = c("A", "B", "C"),
   values = I(list(
     rnorm(100, mean = 5, sd = 2),
     rnorm(100, mean = 8, sd = 3),
-    c(rnorm(50, 4, 1), rnorm(50, 10, 1))  # Bimodal
+    c(rnorm(50, 4, 1), rnorm(50, 10, 1))  # bimodal
   ))
 )
 ```
@@ -47,9 +42,9 @@ set.seed(456)
 violin_data <- data.frame(
   group = c("Young Adults", "Middle Age", "Seniors"),
   scores = I(list(
-    c(rnorm(80, 72, 8), rnorm(20, 90, 5)),  # Bimodal
-    rnorm(100, 68, 12),                       # Normal
-    c(rnorm(70, 60, 10), runif(30, 40, 80))  # Skewed
+    c(rnorm(80, 72, 8), rnorm(20, 90, 5)),     # bimodal
+    rnorm(100, 68, 12),                          # normal
+    c(rnorm(70, 60, 10), runif(30, 40, 80))     # skewed
   )),
   n = c(100, 100, 100)
 )
@@ -69,9 +64,9 @@ tabviz(violin_data, label = "group",
 )
 ```
 
----
-
 ## Comparing Distributions
+
+Use multiple `effect_violin()` items to overlay distributions:
 
 ```{r}
 set.seed(789)
@@ -105,37 +100,33 @@ tabviz(compare_violin, label = "condition",
 )
 ```
 
----
+## `viz_violin()` Arguments
 
-## viz_violin() Arguments
+| Argument | Default | Purpose |
+|---|---|---|
+| `header` | `NULL` | Column header text |
+| `width` | `150` | Column width in pixels |
+| `scale` | `"linear"` | `"linear"` or `"log"` |
+| `axis_range` | auto | Fixed axis range `c(min, max)` |
+| `axis_ticks` | auto | Custom tick positions |
+| `axis_gridlines` | `FALSE` | Show vertical gridlines |
+| `bandwidth` | `NULL` | KDE bandwidth (`NULL` uses Silverman's rule of thumb) |
+| `show_median` | `TRUE` | Show the median line |
+| `show_quartiles` | `FALSE` | Show Q1/Q3 dashed lines |
+| `axis_label` | `"Value"` | Label text below the axis |
+| `show_axis` | `TRUE` | Show the axis |
 
-| Argument | Description | Default |
-|----------|-------------|---------|
-| `header` | Column header text | `NULL` |
-| `width` | Column width in pixels | `150` |
-| `scale` | `"linear"` or `"log"` | `"linear"` |
-| `axis_range` | Fixed axis range `c(min, max)` | Auto |
-| `axis_ticks` | Custom tick positions | Auto |
-| `axis_gridlines` | Show vertical gridlines | `FALSE` |
-| `bandwidth` | KDE bandwidth (NULL = auto via Silverman's rule) | `NULL` |
-| `show_median` | Show median line | `TRUE` |
-| `show_quartiles` | Show Q1/Q3 dashed lines | `FALSE` |
-| `axis_label` | Label text below axis | `"Value"` |
-| `show_axis` | Show the axis | `TRUE` |
+## `effect_violin()` Arguments
 
-## effect_violin() Arguments
-
-| Argument | Description |
-|----------|-------------|
+| Argument | Purpose |
+|---|---|
 | `data` | Column containing array of values (required) |
 | `label` | Display label for legend |
 | `color` | Violin fill color |
-| `fill_opacity` | Fill opacity (default: 0.5) |
-
----
+| `opacity` | Fill opacity (default `0.5`). Was `fill_opacity` before 0.9.0. |
 
 ## See Also
 
-- [Visualizations Overview](index.qmd) — Interactivity, tooltips, export
+- [Visualizations Overview](index.qmd) — Tooltips, export, common features
 - [Bar Charts](bar-charts.qmd) — Single values with `viz_bar()`
 - [Boxplots](boxplots.qmd) — Distribution summaries with `viz_boxplot()`

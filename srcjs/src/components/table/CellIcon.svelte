@@ -4,16 +4,17 @@
   interface Props {
     value: unknown;
     options?: IconColumnOptions;
+    naText?: string;
   }
 
-  let { value, options }: Props = $props();
+  let { value, options, naText }: Props = $props();
 
   const mapping = $derived(options?.mapping ?? {});
   const size = $derived(options?.size ?? "base");
   const color = $derived(options?.color);
 
   const displayValue = $derived.by(() => {
-    if (value === undefined || value === null) return "";
+    if (value === undefined || value === null) return naText ?? "";
     const strValue = String(value);
     // If there's a mapping and the value is in it, use the mapped icon
     if (mapping && strValue in mapping) {

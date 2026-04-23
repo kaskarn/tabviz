@@ -33,7 +33,7 @@ forest_plot(
   label = "subgroup",
   columns = list(
     col_numeric("n", "No."),
-    col_interval("HR (95% CI)"),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     col_pvalue("p_int", "P Interaction")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",

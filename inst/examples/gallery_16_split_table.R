@@ -15,7 +15,7 @@ single_split <- effect_sizes |>
     label = "study",
     columns = list(
       col_numeric("n", header = "N"),
-      col_interval("HR (95% CI)")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     ),
     split_by = "region",
     scale = "log", null_value = 1,
@@ -37,7 +37,7 @@ hierarchical_split <- effect_sizes |>
         scale = "log", null_value = 1,
         axis_label = "Hazard Ratio (95% CI)"
       ),
-      col_interval("HR (95% CI)")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     )
   ) |>
   split_table(by = c("outcome", "treatment")) |>
@@ -80,7 +80,7 @@ treatment_split <- effect_sizes |>
         scale = "log", null_value = 1,
         axis_label = "Hazard Ratio (95% CI)"
       ),
-      col_interval("HR (95% CI)")
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     )
   ) |>
   split_table(by = "treatment") |>

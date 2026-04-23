@@ -7,154 +7,124 @@ title: "Styling Overview"
 library(tabviz)
 ```
 
-tabviz provides a layered styling system that lets you control appearance at multiple levels, from broad theme choices down to individual cell formatting.
+tabviz styling is a four-layer cascade — each layer targets a more specific scope and overrides the layer above. This page is the map; follow the links for the details.
 
-## Styling Layers
+## The Cascade
 
-Styling in tabviz operates at four distinct levels, each building on the previous:
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Theme (base colors, fonts, spacing)                │
+│  Theme        — base colors, fonts, spacing         │
 │  ┌───────────────────────────────────────────────┐  │
-│  │  Row Styling (bold, color, background)        │  │
+│  │  Row         — bold, color, background per row │  │
 │  │  ┌─────────────────────────────────────────┐  │  │
-│  │  │  Cell Styling (per-column formatting)   │  │  │
+│  │  │  Cell      — per-column formatting       │  │  │
 │  │  │  ┌───────────────────────────────────┐  │  │  │
-│  │  │  │  Marker Styling (forest markers)  │  │  │  │
+│  │  │  │  Marker  — forest-plot points      │  │  │  │
 │  │  │  └───────────────────────────────────┘  │  │  │
 │  │  └─────────────────────────────────────────┘  │  │
 │  └───────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────┘
 ```
 
-### 1. Theme Level
+| Layer | Where you set it | Use it for |
+|---|---|---|
+| **Theme** | `theme = web_theme_*()` on `tabviz()` | Overall look and feel |
+| **Row** | `row_bold`, `row_color`, `row_bg`, … on `tabviz()` | Whole-row conditional formatting |
+| **Cell** | `bold`, `color`, `bg`, … inside `col_*()` | Per-column overrides |
+| **Marker** | `marker_color`, `marker_shape`, `marker_size`, `marker_opacity` on `tabviz()` | Forest-plot point appearance |
 
-Themes define the foundational look: colors, typography, spacing, and shapes. They affect the entire table.
+More specific layers win: cell beats row, row beats theme, formula expressions beat everything.
+
+## 1. Theme Level
+
+Themes set the foundational palette, typography, spacing, and shapes.
 
 ```{r}
 data(glp1_trials)
 sample_data <- head(glp1_trials[glp1_trials$row_type == "data", ], 4)
 
-# Theme controls overall appearance
 tabviz(sample_data, label = "study",
   columns = list(
     col_text("drug", "Drug"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, width = 160),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  theme = web_theme_jama()  # Publication styling
-)
-```
-
-### 2. Row Level
-
-Row styling applies formatting to entire rows based on data conditions. This is useful for highlighting summary rows, significant results, or groupings.
-
-```{r}
-# Row styling for conditional formatting
-tabviz(sample_data, label = "study",
-  columns = list(
-    col_text("drug", "Drug"),
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1, width = 160),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
-  ),
-  row_bold = ~ upper < 1,  # Bold significant results
   theme = web_theme_jama()
 )
 ```
 
-### 3. Cell Level
+## 2. Row Level
 
-Cell styling targets individual columns, letting you format specific values differently.
+Row styling applies formatting to entire rows based on data conditions.
 
 ```{r}
-# Cell styling for specific columns
+tabviz(sample_data, label = "study",
+  columns = list(
+    col_text("drug", "Drug"),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1, width = 160),
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
+  ),
+  row_bold = ~ upper < 1,
+  theme = web_theme_jama()
+)
+```
+
+## 3. Cell Level
+
+Cell styling targets individual columns. Use `.x` inside formulas to refer to the column's own value.
+
+```{r}
 tabviz(sample_data, label = "study",
   columns = list(
     col_text("drug", "Drug"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, width = 160),
     col_numeric("hr", "HR", decimals = 2,
-                bold = ~ .x < 1,  # Bold HR values < 1
+                bold = ~ .x < 1,
                 color = ~ ifelse(.x < 1, "#16a34a", "#64748b"))
   ),
   theme = web_theme_jama()
 )
 ```
 
-### 4. Marker Level
+## 4. Marker Level
 
-Marker styling controls the appearance of data points in forest plots: color, shape, size, and opacity.
+Marker styling controls forest-plot point appearance: color, shape, size, opacity.
 
 ```{r}
-# Marker styling for forest plot points
 tabviz(sample_data, label = "study",
   columns = list(
     col_text("drug", "Drug"),
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, width = 160),
-    col_interval("HR (95% CI)", point = "hr", lower = "lower", upper = "upper")
+    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  marker_color = ~ ifelse(upper < 1, "#16a34a", "#64748b"),  # Green if significant
+  marker_color = ~ ifelse(upper < 1, "#16a34a", "#64748b"),
   marker_shape = ~ ifelse(upper < 1, "diamond", "square"),
   theme = web_theme_jama()
 )
 ```
 
-## Cascade and Precedence
-
-More specific styling overrides more general styling:
-
-1. **Theme defaults** are the base
-2. **Row styling** overrides theme for affected rows
-3. **Cell styling** overrides row styling for specific cells
-4. **Inline styles** (via formula expressions) override everything
-
-This means you can set a consistent base with themes, then add targeted overrides where needed.
-
 ## Formula Expressions
 
-tabviz uses R formula syntax (`~ expression`) for conditional styling. This is a concise way to apply styling based on data values.
+tabviz uses R's formula syntax (`~ expression`) for conditional styling.
 
-### Row and Marker Formulas
-
-For row-level and marker styling, formulas can reference any column in your data:
-
-```r
-# Reference any column by name
-row_bold = ~ pvalue < 0.05
-marker_color = ~ ifelse(group == "Treatment", "blue", "gray")
-row_bg = ~ case_when(
-  row_type == "summary" ~ "#f0f0f0",
-  significant ~ "#e6ffe6",
-  TRUE ~ "white"
-)
-```
-
-### Cell Formulas
-
-For cell-level styling within column definitions, use `.x` to reference the column's own values:
-
-```r
-# .x refers to the current column's value
-col_numeric("hr", "HR", bold = ~ .x < 1)
-col_pvalue("pvalue", "P", color = ~ ifelse(.x < 0.05, "red", "black"))
-```
-
-## Choosing the Right Level
-
-| Want to style... | Use |
-|-----------------|-----|
-| Overall look and feel | Theme (`theme = web_theme_*()`) |
-| Entire rows conditionally | Row styling (`row_bold`, `row_color`, etc.) |
-| Specific columns | Cell styling (`bold`, `color` in `col_*()`) |
-| Forest plot markers | Marker styling (`marker_color`, `marker_shape`, etc.) |
+- **Row and marker formulas** can reference any column in the data:
+  ```r
+  row_bold = ~ pvalue < 0.05
+  marker_color = ~ ifelse(group == "Treatment", "blue", "gray")
+  ```
+- **Cell formulas** use `.x` for the current column's value:
+  ```r
+  col_numeric("hr", "HR", bold = ~ .x < 1)
+  col_pvalue("pvalue", "P", color = ~ ifelse(.x < 0.05, "red", "black"))
+  ```
 
 ## Next Steps
 
-- [Row Styling](../row-styling.qmd) - Detailed row formatting options
-- [Cell Styling](../cell-styling.qmd) - Column-level formatting
-- [Themes](../themes.qmd) - Built-in themes and customization
-- [Fluent API](../fluent-api.qmd) - Pipe-based styling for complex cases
+- [Row Styling](../row-styling.qmd) — Row-level conditional formatting
+- [Cell Styling](../cell-styling.qmd) — Per-column formatting
+- [Themes](../themes.qmd) — Built-in themes and customization
+- [Fluent API](../fluent-api.qmd) — Pipe-based modifiers for complex cases
