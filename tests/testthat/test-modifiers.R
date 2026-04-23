@@ -40,9 +40,67 @@ test_that("set_axis modifies axis config", {
 
 test_that("set_layout modifies layout config", {
   theme <- web_theme_default()
-  updated <- set_layout(theme, plot_position = "left", banding = FALSE)
+  updated <- set_layout(theme, plot_position = "left", banding = "none")
   expect_equal(updated@layout@plot_position, "left")
-  expect_false(updated@layout@banding)
+  expect_equal(updated@layout@banding, "none")
+})
+
+test_that("set_layout accepts banding grammar", {
+  theme <- web_theme_default()
+  expect_equal(set_layout(theme, banding = "row")@layout@banding, "row")
+  expect_equal(set_layout(theme, banding = "group")@layout@banding, "group")
+  expect_equal(set_layout(theme, banding = "group-2")@layout@banding, "group-2")
+  expect_error(set_layout(theme, banding = "bogus"), "banding")
+  expect_error(set_layout(theme, banding = "group-0"), "banding")
+  expect_error(set_layout(theme, banding = TRUE), "no longer accepts logical")
+})
+
+test_that("parse_banding normalizes banding values", {
+  expect_equal(parse_banding("none"), list(mode = "none", level = NA_integer_))
+  expect_equal(parse_banding("row"), list(mode = "row", level = NA_integer_))
+  expect_equal(parse_banding("group"), list(mode = "group", level = NA_integer_))
+  expect_equal(parse_banding("group-3"), list(mode = "group", level = 3L))
+  expect_error(parse_banding("group-"), "banding")
+  expect_error(parse_banding("rows"), "banding")
+  expect_error(parse_banding(FALSE), "no longer accepts logical")
+})
+
+test_that("serialize_banding emits {mode, level} with NULL level for bare group", {
+  expect_equal(serialize_banding("none"), list(mode = "none", level = NULL))
+  expect_equal(serialize_banding("group"), list(mode = "group", level = NULL))
+  expect_equal(serialize_banding("group-2"), list(mode = "group", level = 2L))
+})
+
+test_that("tabviz(banding=) threads into effective theme", {
+  data <- data.frame(
+    study = c("A", "B", "C"),
+    hr = c(0.8, 1.1, 1.4),
+    lower = c(0.6, 0.9, 1.0),
+    upper = c(1.0, 1.3, 1.8)
+  )
+  spec <- tabviz(
+    data, label = "study",
+    columns = list(col_interval("hr", "lower", "upper")),
+    banding = "row",
+    .spec_only = TRUE
+  )
+  expect_equal(spec@theme@layout@banding, "row")
+
+  # tabviz arg wins over a theme that already sets banding
+  themed <- web_theme_default() |> set_layout(banding = "none")
+  spec2 <- tabviz(
+    data, label = "study",
+    columns = list(col_interval("hr", "lower", "upper")),
+    theme = themed, banding = "group-1",
+    .spec_only = TRUE
+  )
+  expect_equal(spec2@theme@layout@banding, "group-1")
+
+  # Invalid banding surfaces a clear error
+  expect_error(
+    tabviz(data, label = "study", banding = "stripes", .spec_only = TRUE),
+    "banding"
+  )
 })
 
 test_that("set_group_headers modifies group header styling", {

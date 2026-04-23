@@ -350,6 +350,18 @@ serialize_column <- function(col) {
   result
 }
 
+#' Serialize a banding string into the `{mode, level}` shape used by the frontend
+#'
+#' `level` is `NULL` when no explicit depth was requested (bare `"group"`).
+#' @keywords internal
+serialize_banding <- function(x) {
+  parsed <- parse_banding(x)
+  list(
+    mode = parsed$mode,
+    level = if (is.na(parsed$level)) NULL else parsed$level
+  )
+}
+
 #' Serialize WebTheme
 #' @keywords internal
 serialize_theme <- function(theme) {
@@ -429,7 +441,7 @@ serialize_theme <- function(theme) {
       plotWidth = theme@layout@plot_width,
       containerBorder = theme@layout@container_border,
       containerBorderRadius = theme@layout@container_border_radius,
-      banding = theme@layout@banding
+      banding = serialize_banding(theme@layout@banding)
     ),
     groupHeaders = list(
       level1FontSize = theme@group_headers@level1_font_size,

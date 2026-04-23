@@ -24,6 +24,7 @@
   import CellHeatmap from "$components/table/CellHeatmap.svelte";
   import CellProgress from "$components/table/CellProgress.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
+  import SettingsPanel from "$components/ui/SettingsPanel.svelte";
   import SortIndicator from "$components/controls/SortIndicator.svelte";
   import ColumnFilterButton from "$components/controls/ColumnFilterButton.svelte";
   import ColumnFilterPopover from "$components/controls/ColumnFilterPopover.svelte";
@@ -82,7 +83,7 @@
   const axisComputation = $derived(store.axisComputation);
   const clipBounds = $derived(axisComputation.axisLimits);
   const theme = $derived(spec?.theme);
-  const bandingEnabled = $derived(theme?.layout?.banding ?? false);
+  const bandIndexes = $derived(store.bandIndexes);
   // Column system: all columns in order (forest columns are inline)
   const allColumns = $derived(store.allColumns);
   const allColumnDefs = $derived(store.allColumnDefs);
@@ -1162,6 +1163,10 @@
     <!-- Control toolbar (always outside scalable so it doesn't scale with zoom) -->
     <ControlToolbar {store} {enableExport} {enableThemes} {onThemeChange} />
 
+    <!-- Settings panel (slide-in from right; mounted alongside the toolbar so
+         its absolute positioning is contained by the widget root). -->
+    <SettingsPanel {store} />
+
     <!-- Scalable content wrapper (header + main + footer) -->
     <div bind:this={scalableRef} class="tabviz-scalable" style:margin-left="{centeringMargin}px">
       <!-- Plot header (title, subtitle) - only when there's a title/subtitle -->
@@ -1376,11 +1381,11 @@
           {@const row = isGroupHeader ? null : displayRow.row}
           {@const rowDepth = displayRow.depth}
           {@const selected = row ? isSelected(row.id) : false}
-          {@const rowClasses = row ? getRowClasses(row.style, i, bandingEnabled) : ""}
+          {@const rowClasses = row ? getRowClasses(row.style, bandIndexes[i]) : (bandIndexes[i] === 1 ? "row-odd" : "")}
           {@const rowStyles = row ? getRowStyles(row.style, rowDepth) : ""}
           {@const isSpacerRow = row?.style?.type === "spacer"}
           {@const gridRow = effectiveHeaderDepth + 1 + i}
-          {@const groupBg = isGroupHeader ? getGroupBackground(rowDepth + 1, theme) : undefined}
+          {@const groupBg = isGroupHeader && bandIndexes[i] == null ? getGroupBackground(rowDepth + 1, theme) : undefined}
 
           {@const isDragSource = !!(store.dragState?.active && (
             (store.dragState.kind === "row" && !isGroupHeader && row && store.dragState.id === row.id) ||
@@ -2026,13 +2031,9 @@
 
   function getRowClasses(
     style?: RowStyle,
-    idx?: number,
-    banding?: boolean
+    bandIndex?: 0 | 1 | null
   ): string {
     const classes: string[] = [];
-
-    // Styled row types (mutually exclusive with alternating banding)
-    const isStyledRow = style?.type === "header" || style?.type === "summary" || style?.type === "spacer";
 
     if (style?.type === "header") classes.push("row-header");
     if (style?.type === "summary") classes.push("row-summary");
@@ -2044,10 +2045,9 @@
     if (style?.muted) classes.push("row-muted");
     if (style?.accent) classes.push("row-accent");
 
-    // Add alternating banding class (skip for styled rows)
-    if (!isStyledRow && banding && idx !== undefined) {
-      if (idx % 2 === 1) classes.push("row-odd");
-    }
+    // Banding: the store decides which display rows get banded (respecting
+    // styled-row exclusions and the mode/level grammar), so we just paint.
+    if (bandIndex === 1) classes.push("row-odd");
 
     return classes.join(" ");
   }

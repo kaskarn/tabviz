@@ -38,12 +38,15 @@
 <line x1="6" x2="694"
       y1="68" y2="68"
       stroke="#000000" stroke-width="2"/>
-<rect x="6" y="86"
-              width="688" height="18"
-              fill="#f9fafb"/>
-<rect x="6" y="122"
-              width="688" height="18"
-              fill="#f9fafb"/>
+<rect x="6" y="68"
+            width="688" height="18"
+            fill="#f9fafb"/>
+<rect x="6" y="104"
+            width="688" height="18"
+            fill="#f9fafb"/>
+<rect x="6" y="140"
+            width="688" height="18"
+            fill="#f9fafb"/>
 <line x1="348.3742729235796" x2="348.3742729235796" y1="68" y2="158"
     stroke="#555555" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 

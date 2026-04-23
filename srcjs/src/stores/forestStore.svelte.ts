@@ -23,7 +23,13 @@ import type {
   GroupHeaderRow,
   DataRow,
   ZoomState,
+  BandingSpec,
 } from "$types";
+import {
+  computeBandIndexes,
+  maxGroupDepth as computeMaxGroupDepth,
+  parseBandingString,
+} from "$lib/banding";
 import { niceDomain } from "$lib/scale-utils";
 import { computeAxis, type AxisComputation, VIZ_MARGIN } from "$lib/axis-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
@@ -47,6 +53,14 @@ export function createForestStore() {
   let filterConfig = $state<FilterConfig | null>(null);
   let filters = $state<FiltersState>({});
   let hoveredRowId = $state<string | null>(null);
+
+  // Runtime banding override from the settings panel. Null = follow theme.
+  let bandingOverride = $state<BandingSpec | null>(null);
+  // Runtime override for the BABA/ABAB starting phase. Null = use the default
+  // for the current mode (BABA for group, ABAB for row).
+  let bandingStartsWithBandOverride = $state<boolean | null>(null);
+  // Settings panel visibility (gear button + slide-in)
+  let settingsOpen = $state<boolean>(false);
 
   // User-modified view state (session-only; feeds exportSpec for WYSIWYG)
   let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
@@ -524,6 +538,43 @@ export function createForestStore() {
     outputGroup(null);
 
     return result;
+  });
+
+  // Derived: maximum group depth (1-based; 0 when there are no groups).
+  const maxGroupDepth = $derived.by((): number => {
+    return computeMaxGroupDepth(spec?.data.groups);
+  });
+
+  // Derived: the banding spec actually in effect. Runtime override (from the
+  // settings panel) wins over whatever the theme declares. The theme value is
+  // a BandingSpec object (from R serialization); we pass through defensively
+  // if the shape is missing.
+  const effectiveBanding = $derived.by((): BandingSpec => {
+    if (bandingOverride) return bandingOverride;
+    const themeBanding = spec?.theme?.layout?.banding;
+    if (themeBanding && typeof themeBanding === "object" && "mode" in themeBanding) {
+      return themeBanding as BandingSpec;
+    }
+    return { mode: "group", level: null };
+  });
+
+  // Derived: whether the banding pattern starts with a band (BABA) or blank
+  // (ABAB). Defaults: group → BABA, row → ABAB. User can flip via the
+  // settings panel; `bandingStartsWithBandOverride` holds that flip.
+  const bandingStartsWithBand = $derived.by((): boolean => {
+    if (bandingStartsWithBandOverride !== null) return bandingStartsWithBandOverride;
+    return effectiveBanding.mode === "group";
+  });
+
+  // Derived: per-display-row band index (0 | 1 | null). Null = no banding
+  // class on that row. See computeBandIndexes() for semantics.
+  const bandIndexes = $derived.by((): (0 | 1 | null)[] => {
+    return computeBandIndexes(
+      displayRows,
+      effectiveBanding,
+      spec?.data.groups,
+      bandingStartsWithBand,
+    );
   });
 
   // Derived: computed layout
@@ -1069,6 +1120,42 @@ export function createForestStore() {
     }
 
     collapsedGroups = newCollapsed;
+  }
+
+  // Settings panel visibility
+  function openSettings() {
+    settingsOpen = true;
+  }
+  function closeSettings() {
+    settingsOpen = false;
+  }
+  function toggleSettings() {
+    settingsOpen = !settingsOpen;
+  }
+
+  /**
+   * Set the runtime banding override. Accepts either the user-facing string
+   * form ("none" / "row" / "group" / "group-n"), a parsed BandingSpec, or
+   * null to clear the override (falls back to the theme value).
+   */
+  function setBandingOverride(value: string | BandingSpec | null) {
+    if (value == null) {
+      bandingOverride = null;
+      return;
+    }
+    if (typeof value === "string") {
+      bandingOverride = parseBandingString(value);
+      return;
+    }
+    bandingOverride = value;
+  }
+
+  /**
+   * Override the BABA/ABAB starting phase. Pass `null` to revert to the
+   * mode default (BABA for group, ABAB for row).
+   */
+  function setBandingStartsWithBand(value: boolean | null) {
+    bandingStartsWithBandOverride = value;
   }
 
   function sortBy(column: string, direction: "asc" | "desc" | "none") {
@@ -1867,6 +1954,27 @@ export function createForestStore() {
     get displayRows() {
       return displayRows;
     },
+    get bandIndexes() {
+      return bandIndexes;
+    },
+    get effectiveBanding() {
+      return effectiveBanding;
+    },
+    get bandingOverride() {
+      return bandingOverride;
+    },
+    get bandingStartsWithBand() {
+      return bandingStartsWithBand;
+    },
+    get bandingStartsWithBandOverride() {
+      return bandingStartsWithBandOverride;
+    },
+    get maxGroupDepth() {
+      return maxGroupDepth;
+    },
+    get settingsOpen() {
+      return settingsOpen;
+    },
     get tooltipRow() {
       return tooltipRow;
     },
@@ -2107,6 +2215,11 @@ export function createForestStore() {
     selectRow,
     setSelectedRows,
     toggleGroup,
+    openSettings,
+    closeSettings,
+    toggleSettings,
+    setBandingOverride,
+    setBandingStartsWithBand,
     sortBy,
     toggleSort,
     setFilter,

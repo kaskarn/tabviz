@@ -6,6 +6,7 @@
   import DownloadButton from "./DownloadButton.svelte";
   import ResetButton from "./ResetButton.svelte";
   import ZoomControls from "./ZoomControls.svelte";
+  import SettingsButton from "./SettingsButton.svelte";
 
   interface Props {
     store: ForestStore;
@@ -44,27 +45,75 @@
   {#if enableExport}
     <DownloadButton {store} />
   {/if}
+  <SettingsButton {store} />
 </div>
 
 <style>
   .control-toolbar {
     display: flex;
     flex-direction: row;
-    gap: 4px;
+    gap: 2px;
   }
 
-  /* Floating mode - when placed outside header (absolute positioned) */
+  /* Floating mode - when placed outside header (absolute positioned).
+     The toolbar sits in a primary-tinted glass pill that fades in when
+     the user hovers the widget, giving the cluster of icons a cohesive
+     visual weight without distracting from the table itself. */
   :global(.tabviz-container > .control-toolbar) {
     position: absolute;
     top: 8px;
     right: 8px;
     z-index: 100;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    padding: 3px;
+    border-radius: 10px;
+    /* Solid tinted bg + border — NO transform, filter, backdrop-filter, or
+       will-change here. Any of those would make the toolbar a containing
+       block for position:fixed descendants (ThemeSwitcher / ZoomControls /
+       DownloadButton autoposition their popovers with viewport coords) and
+       drag their popovers to the toolbar's local origin, which also gets
+       clipped by the container's overflow:hidden in narrow widgets. */
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 8%, var(--wf-bg, #ffffff));
+    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 18%, transparent);
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--wf-fg, #0f172a) 6%, transparent),
+      0 4px 12px -4px color-mix(in srgb, var(--wf-primary, #2563eb) 18%, transparent);
+    transition: opacity 0.18s ease;
   }
 
-  :global(.tabviz-container:hover > .control-toolbar) {
+  :global(.tabviz-container:hover > .control-toolbar),
+  :global(.tabviz-container:focus-within > .control-toolbar) {
     opacity: 1;
+  }
+
+  /* Keep the toolbar visible whenever a dropdown is open under it — otherwise
+     moving the mouse from the button into the popover can break :hover and
+     fade the toolbar out mid-interaction. */
+  :global(.tabviz-container > .control-toolbar:has(button[aria-expanded="true"])) {
+    opacity: 1;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Unified icon-button styling across the toolbar.                    */
+  /* Individual components ship their own base styles too, but when     */
+  /* they land inside the floating glass pill we override to a          */
+  /* transparent, borderless look — the pill owns the visual frame.     */
+  /* ------------------------------------------------------------------ */
+  :global(.tabviz-container > .control-toolbar button) {
+    border-color: transparent !important;
+    background: transparent !important;
+  }
+
+  :global(.tabviz-container > .control-toolbar button:hover:not(:disabled):not(.active)),
+  :global(.tabviz-container > .control-toolbar button:focus-visible) {
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 12%, transparent) !important;
+    color: var(--wf-primary, #2563eb) !important;
+  }
+
+  :global(.tabviz-container > .control-toolbar button.active),
+  :global(.tabviz-container > .control-toolbar button[aria-expanded="true"]) {
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 85%, transparent) !important;
+    color: var(--wf-bg, #ffffff) !important;
   }
 
   /* ------------------------------------------------------------------ */

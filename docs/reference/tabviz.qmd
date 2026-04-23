@@ -35,6 +35,7 @@ tabviz(
   interaction = NULL,
   plot_position = NULL,
   row_height = NULL,
+  banding = NULL,
   width = NULL, height = NULL, elementId = NULL,
   # Splitting
   split_by = NULL, shared_axis = FALSE,
@@ -102,6 +103,7 @@ Same column-name-or-formula pattern as row styling:
 | `interaction` | `InteractionSpec` | `NULL` | Use `web_interaction()`. When `NULL`, `default_interaction_for_theme(theme)` is used (full interactivity). |
 | `plot_position` | `character(1)` | `NULL` | `"left"` or `"right"`. |
 | `row_height` | `numeric(1)` | `NULL` | Row height in pixels. |
+| `banding` | `character(1)` | `NULL` | Row banding mode: `"none"`, `"row"`, `"group"` (deepest level, default), or `"group-n"` (e.g. `"group-1"` for outermost). Overrides the banding on `theme`. Use the viewer's settings panel (gear icon) to adjust interactively. |
 | `width` | character/numeric | `NULL` | Widget width (auto). |
 | `height` | character/numeric | `NULL` | Widget height (auto). |
 | `elementId` | `character(1)` | `NULL` | HTML element id. |

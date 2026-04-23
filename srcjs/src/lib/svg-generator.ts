@@ -28,6 +28,7 @@ import { computeAxis, generateTicks, VIZ_MARGIN, type AxisComputation } from "./
 import { computeArrowDimensions, renderArrowPath } from "./arrow-utils";
 import { isVizType, resolveShowHeader } from "./column-compat";
 import { resolveMarkerStyle } from "./marker-styling";
+import { computeBandIndexes } from "./banding";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -1227,7 +1228,8 @@ function renderGroupHeader(
   y: number,
   rowHeight: number,
   totalWidth: number,
-  theme: WebTheme
+  theme: WebTheme,
+  renderBackground: boolean = true,
 ): string {
   const lines: string[] = [];
 
@@ -1277,10 +1279,13 @@ function renderGroupHeader(
   const textY = y + rowHeight / 2;
   const indent = depth * (gh?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL);
 
-  // Group header background
-  lines.push(`<rect x="${x}" y="${y}"
-    width="${totalWidth}" height="${rowHeight}"
-    fill="${background}"/>`);
+  // Group header background (skipped when the row is painted by the banding
+  // layer — lets the band color read as continuous with its member rows).
+  if (renderBackground) {
+    lines.push(`<rect x="${x}" y="${y}"
+      width="${totalWidth}" height="${rowHeight}"
+      fill="${background}"/>`);
+  }
 
   // Border bottom if enabled
   if (borderBottom) {
@@ -3416,43 +3421,59 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   const plotY = layout.mainY + layout.headerHeight;
 
+  // Pre-compute per-row band indices honoring the BandingSpec grammar. This
+  // is the single source of truth for banding — the row-background pass
+  // below and the group-header renderer both consult it.
+  const bandIndexes = computeBandIndexes(
+    displayRows,
+    theme.layout.banding,
+    spec.data.groups,
+  );
+
   // Render row backgrounds FIRST - before forest intervals
   // This ensures forest markers aren't covered by background rectangles
   displayRows.forEach((displayRow, i) => {
+    const y = plotY + rowPositions[i];
+    const rowHeight = rowHeights[i];
+    const bandIdx = bandIndexes[i];
+
     if (displayRow.type === "data") {
       const row = displayRow.row;
-      const y = plotY + rowPositions[i];
-      const rowHeight = rowHeights[i];
 
       // 1. Explicit row background (style.bg) - highest priority
       if (row.style?.bg) {
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
           fill="${row.style.bg}"/>`);
+        return;
       }
       // 2. Header-type rows get a subtle muted background
-      // Web: background: color-mix(in srgb, var(--wf-muted) 10%, var(--wf-bg))
-      else if (row.style?.type === "header") {
-        // Approximate color-mix with 10% opacity on muted color
+      if (row.style?.type === "header") {
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
           fill="${theme.colors.muted}" fill-opacity="0.1"/>`);
+        return;
       }
-      // 3. Alternating row banding (if enabled)
-      else if (theme.layout.banding) {
-        // Styled rows (summary, spacer) are excluded from banding
-        const isStyledRow = row.style?.type === "summary" ||
-                           row.style?.type === "spacer";
-
-        if (!isStyledRow) {
-          const isOddRow = i % 2 === 1;
-          const bgColor = isOddRow ? theme.colors.altBg : theme.colors.rowBg;
-          // Only render if color differs from background
-          if (bgColor !== theme.colors.background) {
-            parts.push(`<rect x="${padding}" y="${y}"
-              width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
-              fill="${bgColor}"/>`);
-          }
+      // 3. Alternating row banding (only paint the "odd" band — even rows
+      // inherit the container background, matching the web widget).
+      if (bandIdx === 1) {
+        const bgColor = theme.colors.altBg;
+        if (bgColor !== theme.colors.background) {
+          parts.push(`<rect x="${padding}" y="${y}"
+            width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
+            fill="${bgColor}"/>`);
+        }
+      }
+    } else {
+      // Group header row — paint the band bg when this header is part of a
+      // band. The header's own primary-tint bg is suppressed in the render
+      // step below (via renderBackground=false).
+      if (bandIdx === 1) {
+        const bgColor = theme.colors.altBg;
+        if (bgColor !== theme.colors.background) {
+          parts.push(`<rect x="${padding}" y="${y}"
+            width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
+            fill="${bgColor}"/>`);
         }
       }
     }
@@ -3796,7 +3817,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     if (displayRow.type === "group_header") {
       // Render group header. Pass rowCount=0 when the spec has group counts off,
       // so renderGroupHeader's `if (rowCount > 0)` gate skips the "(n)" text.
+      // When this header is part of a band (bandIndexes[i] != null), skip the
+      // primary-tint bg so the band color reads as continuous with its rows.
       const showCounts = !!spec.interaction?.showGroupCounts;
+      const renderBg = bandIndexes[i] == null;
       parts.push(renderGroupHeader(
         displayRow.label,
         displayRow.depth,
@@ -3805,7 +3829,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         y,
         rowHeight,
         layout.totalWidth - padding * 2,
-        theme
+        theme,
+        renderBg,
       ));
     } else {
       // Render data row

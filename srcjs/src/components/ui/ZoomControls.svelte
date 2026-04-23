@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
   import { autoPosition } from "$lib/dropdown-position";
+  import Portal from "$lib/Portal.svelte";
 
   interface Props {
     store: ForestStore;
@@ -62,12 +63,15 @@
     store.setMaxHeight(value);
   }
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside. The popover is portaled to
+  // document.body by autoPosition, so ".zoom-controls-wrapper" no longer
+  // contains it — we also check the dropdown element itself.
   function handleWindowClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!target.closest(".zoom-controls-wrapper")) {
-      closeDropdown();
+    if (target.closest(".zoom-controls-wrapper") || target.closest(".zoom-dropdown")) {
+      return;
     }
+    closeDropdown();
   }
 </script>
 
@@ -94,8 +98,9 @@
   </button>
 
   {#if dropdownOpen}
-    <div class="zoom-dropdown" use:autoPosition={{ triggerEl }}>
-      <!-- Zoom slider row -->
+    <Portal>
+      <div class="zoom-dropdown" use:autoPosition={{ triggerEl }}>
+        <!-- Zoom slider row -->
       <div class="zoom-row">
         <button
           class="zoom-btn"
@@ -201,20 +206,21 @@
         </label>
       </div>
 
-      <div class="select-row">
-        <label>
-          <span class="select-label">Height</span>
-          <select
-            value={maxHeight === null ? 'null' : maxHeight}
-            onchange={handleMaxHeightChange}
-          >
-            {#each MAX_HEIGHT_OPTIONS as opt}
-              <option value={opt.value === null ? 'null' : opt.value}>{opt.label}</option>
-            {/each}
-          </select>
-        </label>
+        <div class="select-row">
+          <label>
+            <span class="select-label">Height</span>
+            <select
+              value={maxHeight === null ? 'null' : maxHeight}
+              onchange={handleMaxHeightChange}
+            >
+              {#each MAX_HEIGHT_OPTIONS as opt}
+                <option value={opt.value === null ? 'null' : opt.value}>{opt.label}</option>
+              {/each}
+            </select>
+          </label>
+        </div>
       </div>
-    </div>
+    </Portal>
   {/if}
 </div>
 

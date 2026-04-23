@@ -32,12 +32,12 @@
 <line x1="12" x2="488"
       y1="92" y2="92"
       stroke="#313244" stroke-width="2"/>
-<rect x="12" y="118"
-              width="476" height="26"
-              fill="#232334"/>
-<rect x="12" y="170"
-              width="476" height="26"
-              fill="#232334"/>
+<rect x="12" y="92"
+            width="476" height="26"
+            fill="#232334"/>
+<rect x="12" y="144"
+            width="476" height="26"
+            fill="#232334"/>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="92" y2="196"
     stroke="#6c7086" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 

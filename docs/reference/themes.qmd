@@ -311,7 +311,7 @@ set_layout(
 | `plot_width` | `"auto"` | `"auto"` or pixel width. |
 | `container_border` | `FALSE` | Show outer container border. |
 | `container_border_radius` | `8` | Outer corner radius (px). Visible when `container_border = TRUE`. |
-| `banding` | `TRUE` | Zebra rows using `row_bg` / `alt_bg`. |
+| `banding` | `"group"` | Row banding mode: `"none"`, `"row"`, `"group"` (default — alternates at deepest group level; falls back to `"row"` with no groups), or `"group-n"` (e.g. `"group-1"` for outermost). Uses `row_bg` / `alt_bg`. Also available as `tabviz(banding=)` with the same grammar. |
 
 `set_layout()` also accepts `cell_padding_x` / `cell_padding_y` (deprecated — forwards to `set_spacing()`) and the long-removed `row_border` / `row_border_style` (silently ignored with a warning).
 

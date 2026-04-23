@@ -3,6 +3,7 @@
   import type { WebTheme } from "$types";
   import { THEME_NAMES, THEME_LABELS, THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
   import { autoPosition } from "$lib/dropdown-position";
+  import Portal from "$lib/Portal.svelte";
 
   interface Props {
     store: ForestStore;
@@ -58,12 +59,15 @@
     closeDropdown();
   }
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside. The popover is portaled to
+  // document.body, so ".theme-switcher-wrapper" no longer contains it —
+  // we also treat clicks inside the popover itself as "inside".
   function handleWindowClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!target.closest(".theme-switcher-wrapper")) {
-      closeDropdown();
+    if (target.closest(".theme-switcher-wrapper") || target.closest(".theme-dropdown")) {
+      return;
     }
+    closeDropdown();
   }
 </script>
 
@@ -85,24 +89,26 @@
   </button>
 
   {#if dropdownOpen}
-    <div class="theme-dropdown" use:autoPosition={{ triggerEl }}>
-      {#each themeEntries as [themeName, label]}
-        <button
-          class="dropdown-item"
-          class:active={currentTheme === themeName}
-          onclick={() => selectTheme(themeName)}
-        >
-          {#if currentTheme === themeName}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          {:else}
-            <span class="spacer"></span>
-          {/if}
-          <span>{label}</span>
-        </button>
-      {/each}
-    </div>
+    <Portal>
+      <div class="theme-dropdown" use:autoPosition={{ triggerEl }}>
+        {#each themeEntries as [themeName, label]}
+          <button
+            class="dropdown-item"
+            class:active={currentTheme === themeName}
+            onclick={() => selectTheme(themeName)}
+          >
+            {#if currentTheme === themeName}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            {:else}
+              <span class="spacer"></span>
+            {/if}
+            <span>{label}</span>
+          </button>
+        {/each}
+      </div>
+    </Portal>
   {/if}
 </div>
 

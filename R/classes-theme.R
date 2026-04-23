@@ -201,7 +201,10 @@ AxisConfig <- new_class(
 #' @param plot_width Width of plot area: "auto" or numeric pixels (default: "auto")
 #' @param container_border Show border around the plot container (default: FALSE)
 #' @param container_border_radius Corner radius for container in pixels (default: 8)
-#' @param banding Enable alternating row background colors (default: TRUE)
+#' @param banding Row banding mode. One of `"none"`, `"row"`, `"group"` (default),
+#'   or `"group-n"` where `n` is an integer group depth (1 = outermost).
+#'   `"group"` alternates at the deepest group level present and falls back to
+#'   row-level when no groups exist. See [parse_banding()] for details.
 #'
 #' @details
 #' Note: `cell_padding_x` and `cell_padding_y` have been moved to the [Spacing] class.
@@ -219,15 +222,61 @@ LayoutConfig <- new_class(
     plot_width = new_property(class_any, default = "auto"),
     container_border = new_property(class_logical, default = FALSE),
     container_border_radius = new_property(class_numeric, default = 8),
-    banding = new_property(class_logical, default = TRUE)
+    banding = new_property(class_character, default = "group")
   ),
   validator = function(self) {
     if (!self@plot_position %in% c("left", "right")) {
       return("plot_position must be 'left' or 'right'")
     }
+    # Validate banding via parse_banding (returns error string or NULL)
+    err <- tryCatch(
+      {
+        parse_banding(self@banding)
+        NULL
+      },
+      error = function(e) conditionMessage(e)
+    )
+    if (!is.null(err)) return(err)
     NULL
   }
 )
+
+#' Parse a banding value into its normalized shape
+#'
+#' Accepts a single string following the banding grammar and returns a list
+#' `list(mode = <"none"|"row"|"group">, level = <integer or NA_integer_>)`.
+#' `level` is non-NA only for `"group-n"` inputs.
+#'
+#' @param x A single string. One of `"none"`, `"row"`, `"group"`, or
+#'   `"group-n"` where `n` is a positive integer.
+#' @param arg Argument name used in error messages (default `"banding"`).
+#' @return A list with `mode` and `level`.
+#' @keywords internal
+#' @export
+parse_banding <- function(x, arg = "banding") {
+  if (is.logical(x)) {
+    cli::cli_abort(c(
+      "{.arg {arg}} no longer accepts logical values.",
+      "i" = "Use {.val none}, {.val row}, {.val group}, or {.val group-<n>} (e.g. {.val group-2}).",
+      "x" = "Got {.val {x}}."
+    ))
+  }
+  checkmate::assert_string(x, .var.name = arg)
+  if (x %in% c("none", "row", "group")) {
+    return(list(mode = x, level = NA_integer_))
+  }
+  m <- regmatches(x, regexec("^group-(\\d+)$", x))[[1]]
+  if (length(m) == 2L && nzchar(m[2])) {
+    n <- suppressWarnings(as.integer(m[2]))
+    if (!is.na(n) && n >= 1L) {
+      return(list(mode = "group", level = n))
+    }
+  }
+  cli::cli_abort(c(
+    "{.arg {arg}} must be one of {.val none}, {.val row}, {.val group}, or {.val group-<n>} (n >= 1).",
+    "x" = "Got {.val {x}}."
+  ))
+}
 
 #' GroupHeaderStyles: Hierarchical styling for nested row groups
 #'
@@ -1005,8 +1054,10 @@ current <- theme@axis
 #' @param container_border Show border around the entire plot container (default: FALSE)
 #' @param container_border_radius Corner radius for container in pixels (default: 8).
 #'   Only visible when `container_border = TRUE`.
-#' @param banding Enable alternating row background colors (default: TRUE).
-#'   Uses `row_bg` and `alt_bg` from theme colors.
+#' @param banding Row banding mode. One of `"none"`, `"row"`, `"group"` (default),
+#'   or `"group-n"` (e.g. `"group-1"` for outermost-level alternation).
+#'   `"group"` uses the deepest group level when groups exist, otherwise behaves
+#'   like `"row"`. Uses `row_bg` and `alt_bg` from theme colors.
 #'
 #' @return Modified WebTheme object
 #' @export
@@ -1021,7 +1072,11 @@ current <- theme@axis
 #'
 #' # Disable row banding
 #' web_theme_default() |>
-#'   set_layout(banding = FALSE)
+#'   set_layout(banding = "none")
+#'
+#' # Alternate at the outermost group level
+#' web_theme_default() |>
+#'   set_layout(banding = "group-1")
 set_layout <- function(
     theme,
     plot_position = NULL,
@@ -1067,7 +1122,10 @@ set_layout <- function(
 
   if (!is.null(container_border)) current@container_border <- container_border
   if (!is.null(container_border_radius)) current@container_border_radius <- container_border_radius
-  if (!is.null(banding)) current@banding <- banding
+  if (!is.null(banding)) {
+    parse_banding(banding)  # validates, aborts on bad input
+    current@banding <- banding
+  }
 
   theme@layout <- current
   theme

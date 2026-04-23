@@ -38,12 +38,12 @@
 <line x1="14" x2="486"
       y1="102" y2="102"
       stroke="#d4d4d8" stroke-width="2"/>
-<rect x="14" y="132"
-              width="472" height="30"
-              fill="#f5f5f5"/>
-<rect x="14" y="192"
-              width="472" height="30"
-              fill="#f5f5f5"/>
+<rect x="14" y="102"
+            width="472" height="30"
+            fill="#f5f5f5"/>
+<rect x="14" y="162"
+            width="472" height="30"
+            fill="#f5f5f5"/>
 <defs><clipPath id="viz-clip-_viz_bar_enrollment"><rect x="143" y="102" width="156" height="120"/></clipPath></defs>
 <g clip-path="url(#viz-clip-_viz_bar_enrollment)">
 

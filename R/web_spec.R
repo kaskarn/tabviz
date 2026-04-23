@@ -63,6 +63,11 @@
 #' @param interaction Interaction settings (use `web_interaction()`)
 #' @param plot_position "left" or "right" to set forest plot position
 #' @param row_height Numeric row height in pixels
+#' @param banding Row banding mode. One of `"none"`, `"row"`, `"group"` (default),
+#'   or `"group-n"` (e.g. `"group-2"` to alternate at the 2nd group level). When
+#'   `"group"` is used without a level, the deepest group present is used; if
+#'   there are no groups, it falls back to row-level banding. Overrides the
+#'   banding setting on the supplied `theme`.
 #' @param axis_range `r lifecycle::badge("deprecated")` Pass `axis_range`
 #'   to `viz_forest()` on the forest column instead.
 #' @param axis_ticks `r lifecycle::badge("deprecated")` Pass `axis_ticks`
@@ -167,6 +172,7 @@ tabviz <- function(
     interaction = NULL,
     plot_position = NULL,
     row_height = NULL,
+    banding = NULL,
     width = NULL,
     height = NULL,
     elementId = NULL,
@@ -222,9 +228,18 @@ tabviz <- function(
   }
   interaction@enable_themes <- finalize_enable_themes(interaction@enable_themes, theme)
 
+  # Validate banding (if provided) and apply to the active theme. The tabviz()
+  # arg wins over any banding already set on the theme (primary API surface).
+  if (!is.null(banding)) {
+    parse_banding(banding)  # validates
+  }
+
   # Handle WebSpec input (from fluent API modifiers)
   if (S7_inherits(data, WebSpec)) {
     spec <- data
+    if (!is.null(banding)) {
+      spec@theme@layout@banding <- banding
+    }
     if (!is.null(spec@interaction)) {
       spec@interaction@enable_themes <- finalize_enable_themes(
         spec@interaction@enable_themes, spec@theme
@@ -263,6 +278,11 @@ tabviz <- function(
 
   # Convert data to data.frame
   data <- as.data.frame(data)
+
+  # Apply tabviz(banding=) override to the theme, if provided
+  if (!is.null(banding)) {
+    theme@layout@banding <- banding
+  }
 
   # Resolve column names - strings only (no NSE magic)
   check_column <- function(col, arg_name, data) {

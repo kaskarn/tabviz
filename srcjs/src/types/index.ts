@@ -491,13 +491,26 @@ export interface AxisConfig {
   markerMargin: boolean;              // Add half-marker-width at edges (default: true)
 }
 
+export type BandingMode = "none" | "row" | "group";
+
+/**
+ * Normalized banding value as serialized from R. `level` is an explicit 1-based
+ * group depth when the user passed `"group-n"`, or `null` for bare `"group"`
+ * (which means "deepest available at render time"). `"none"` and `"row"`
+ * always have `level: null`.
+ */
+export interface BandingSpec {
+  mode: BandingMode;
+  level: number | null;
+}
+
 export interface LayoutConfig {
   plotPosition: "left" | "right";
   tableWidth: number | "auto";
   plotWidth: number | "auto";
   containerBorder: boolean;
   containerBorderRadius: number;
-  banding: boolean;  // Alternating row backgrounds (default: true)
+  banding: BandingSpec;
 }
 
 export interface GroupHeaderStyles {

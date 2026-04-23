@@ -333,7 +333,7 @@ custom_theme <- web_theme_default() |>
     border_radius = 6
   ) |>
   set_layout(
-    banding = TRUE,
+    banding = "row",
     container_border_radius = 8
   )
 
