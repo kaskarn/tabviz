@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
-  import BandingControl from "./BandingControl.svelte";
+  import BasicsControl from "./BasicsControl.svelte";
   import ColorsControl from "./ColorsControl.svelte";
   import TypographyControl from "./TypographyControl.svelte";
   import SpacingControl from "./SpacingControl.svelte";
@@ -26,7 +26,7 @@
    * axis → layout) so the panel reads like the package's mental model.
    */
   const tabs: { id: string; label: string }[] = [
-    { id: "banding",    label: "Banding" },
+    { id: "basics",     label: "Basics" },
     { id: "colors",     label: "Colors" },
     { id: "typography", label: "Typography" },
     { id: "spacing",    label: "Spacing" },
@@ -34,13 +34,39 @@
     { id: "axis",       label: "Axis" },
     { id: "layout",     label: "Layout" },
   ];
-  let activeTabId = $state<string>("banding");
+  let activeTabId = $state<string>("basics");
 
   let panelRef = $state<HTMLElement | null>(null);
   let lastFocused: Element | null = null;
 
   let sourceOpen = $state(false);
   let resetConfirmOpen = $state(false);
+
+  // Bottom-fade scroll hint: fades in when the body is scrollable AND the
+  // user hasn't scrolled to the bottom. Beta feedback — some users did not
+  // realize the panel was scrollable. The fade is a subtle white-to-transparent
+  // gradient overlay anchored to the bottom of the body.
+  let bodyEl = $state<HTMLElement | null>(null);
+  let showBottomFade = $state(false);
+
+  function updateScrollHint() {
+    if (!bodyEl) {
+      showBottomFade = false;
+      return;
+    }
+    const { scrollHeight, clientHeight, scrollTop } = bodyEl;
+    const overflowing = scrollHeight > clientHeight + 1;
+    const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+    showBottomFade = overflowing && !atBottom;
+  }
+
+  // Recompute when the panel opens or the active tab changes (new content may
+  // be taller/shorter than the previous tab's).
+  $effect(() => {
+    void activeTabId; // track
+    void open;        // track
+    queueMicrotask(updateScrollHint);
+  });
 
   $effect(() => {
     if (open) {
@@ -148,10 +174,33 @@
           >{tab.label}</button>
         {/each}
       </div>
+
+      <!--
+        Explicit close button. Keeping it visible even though backdrop /
+        Esc / re-clicking the toolbar gear all dismiss the panel —
+        users reported the other dismissal paths were not discoverable.
+      -->
+      <button
+        type="button"
+        class="bar-icon-btn"
+        aria-label="Close settings"
+        title="Close"
+        onclick={() => store.closeSettings()}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
     </div>
 
-    <div class="panel-body">
-      {#each tabs as tab (tab.id)}
+    <div class="panel-body-wrap">
+      <div
+        class="panel-body"
+        bind:this={bodyEl}
+        onscroll={updateScrollHint}
+      >
+        {#each tabs as tab (tab.id)}
         {#if activeTabId === tab.id}
           <div
             class="tab-panel"
@@ -159,8 +208,8 @@
             id="settings-panel-{tab.id}"
             aria-labelledby="settings-tab-{tab.id}"
           >
-            {#if tab.id === "banding"}
-              <BandingControl {store} />
+            {#if tab.id === "basics"}
+              <BasicsControl {store} />
             {:else if tab.id === "colors"}
               <ColorsControl {store} />
             {:else if tab.id === "typography"}
@@ -176,7 +225,9 @@
             {/if}
           </div>
         {/if}
-      {/each}
+        {/each}
+      </div>
+      <div class="scroll-fade" class:visible={showBottomFade} aria-hidden="true"></div>
     </div>
   </div>
 
@@ -347,10 +398,44 @@
     color: var(--wf-fg, #1a1a1a);
   }
 
-  .panel-body {
+  /**
+   * Wrap the scrollable body in a positioned container so the bottom-fade
+   * scroll hint can overlay without affecting scroll metrics.
+   */
+  .panel-body-wrap {
+    position: relative;
     flex: 1;
+    min-height: 0;
+  }
+
+  .panel-body {
+    height: 100%;
     padding: 4px 16px 16px;
     overflow-y: auto;
+  }
+
+  /*
+   * Bottom fade: appears only when there's content below the fold. Uses the
+   * panel's theme-aware background so it blends regardless of palette.
+   */
+  .scroll-fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 40px;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--wf-bg, #ffffff) 0%, transparent),
+      var(--wf-bg, #ffffff)
+    );
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .scroll-fade.visible {
+    opacity: 1;
   }
 
   .tab-panel {

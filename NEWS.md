@@ -1,3 +1,19 @@
+# tabviz 0.12.1
+
+## UX
+
+* **Settings panel: "Banding" tab renamed to "Basics", now covers banding + watermark.** The first tab was named after a single control; grouping table-wide display concerns under a broader "Basics" heading leaves room for future additions (row numbering, empty-state text, …) in the same tab.
+
+* **Watermark is editable from the Basics tab.** Text field at the top of the tab body. Empty value clears the watermark (matches `tabviz(watermark = NULL)`). Reset restores whatever the R caller originally supplied (empty or the original `watermark = "DRAFT"` string) — not just emptied unconditionally.
+
+* **Explicit close (×) button back in the bar.** Beta feedback: users didn't discover that backdrop click / Escape / re-clicking the toolbar gear all dismissed the panel. An icon-only close button now sits at the far right of the bar alongside View source / Reset. All four dismissal paths remain functional.
+
+* **Scroll hint fade.** Beta feedback: users didn't realize the panel body was scrollable when content overflowed. The body now renders a subtle theme-aware gradient at the bottom edge that appears only when there's more content below the fold, and fades out when the user reaches the bottom.
+
+## Bug fixes
+
+* **Panel Reset now correctly restores R-side theme customizations.** The Settings panel's Reset button called `resetThemeEdits()`, which was still snapping the theme back to `THEME_PRESETS[baseThemeName]` — the raw preset — silently dropping any customization baked into the spec via `web_theme_modern() |> set_spacing(...)`. Fixed to use the `initialTheme` snapshot introduced in v0.10.4 for `resetState()`, so both reset paths are now equally faithful.
+
 # tabviz 0.12.0
 
 ## New features

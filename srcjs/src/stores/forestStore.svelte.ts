@@ -83,6 +83,11 @@ export function createForestStore() {
   // clone so in-panel edits mutating `spec.theme` don't leak in here.
   let initialTheme = $state<WebSpec["theme"] | null>(null);
 
+  // Snapshot of the incoming spec's watermark so reset can restore what the
+  // caller originally supplied (possibly empty / undefined). Undefined means
+  // "no spec has been set yet"; an empty string is a legitimate value.
+  let initialWatermark = $state<string | undefined>(undefined);
+
   // User-modified view state (session-only; feeds exportSpec for WYSIWYG)
   let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
@@ -776,6 +781,9 @@ export function createForestStore() {
     // Snapshot the post-coercion theme as the reset target. See cloneTheme()
     // for why this is a JSON round-trip rather than structuredClone.
     initialTheme = cloneTheme(spec.theme);
+    // Snapshot the incoming watermark (may be undefined / empty) so reset
+    // restores whatever the R caller passed in, not a hardcoded default.
+    initialWatermark = spec.watermark ?? "";
 
     // Measure auto-width columns
     measureAutoColumns();
@@ -1737,12 +1745,33 @@ export function createForestStore() {
     themeEdits = nextEdits;
   }
 
-  /** Wipe all in-panel edits and restore the clean preset. */
+  /**
+   * Set the table watermark. Empty string clears the watermark (matches the
+   * `tabviz(watermark = NULL)` semantic). This is a spec-level field, not a
+   * theme edit — it doesn't go through themeEdits and isn't exported by
+   * View source today.
+   */
+  function setWatermark(value: string) {
+    if (!spec) return;
+    spec = { ...spec, watermark: value };
+  }
+
+  /**
+   * Wipe all in-panel edits and restore the clean theme + watermark. Uses
+   * `initialTheme` (the snapshot of what the R caller supplied) rather than
+   * `THEME_PRESETS[baseThemeName]` — the latter would silently drop any
+   * pre-customization the caller baked into the theme via
+   * `web_theme_*() |> set_spacing(...)`. Also called from the Settings
+   * panel's Reset button, which is why this path needs to be as faithful
+   * as the full resetState().
+   */
   function resetThemeEdits() {
     if (!spec) return;
-    const preset = THEME_PRESETS[baseThemeName as ThemeName];
-    if (preset) {
-      spec = { ...spec, theme: structuredClone(preset) };
+    if (initialTheme) {
+      spec = { ...spec, theme: cloneTheme(initialTheme) };
+    }
+    if (initialWatermark !== undefined) {
+      spec = { ...spec, watermark: initialWatermark };
     }
     themeEdits = {};
   }
@@ -1931,6 +1960,10 @@ export function createForestStore() {
     // vertical spacing. The snapshot preserves the caller-supplied shape.
     if (spec && initialTheme) {
       spec = { ...spec, theme: cloneTheme(initialTheme) };
+    }
+    // ── Restore the initial watermark ────────────────────────────────────
+    if (spec && initialWatermark !== undefined) {
+      spec = { ...spec, watermark: initialWatermark };
     }
 
     // ── Re-measure auto-width columns ─────────────────────────────────────
@@ -2137,6 +2170,12 @@ export function createForestStore() {
     get hasThemeEdits() {
       for (const key of Object.keys(themeEdits)) {
         if (Object.keys(themeEdits[key] ?? {}).length > 0) return true;
+      }
+      // Watermark is a spec-level field (not a theme edit), but from the
+      // user's POV it lives alongside banding in the Basics tab — so the
+      // Reset button should notice changes to it and become active.
+      if (initialWatermark !== undefined && (spec?.watermark ?? "") !== initialWatermark) {
+        return true;
       }
       return false;
     },
@@ -2386,6 +2425,7 @@ export function createForestStore() {
     setBandingOverride,
     setBandingStartsWithBand,
     setThemeField,
+    setWatermark,
     resetThemeEdits,
     sortBy,
     toggleSort,
