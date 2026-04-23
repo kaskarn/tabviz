@@ -64,7 +64,7 @@
 
   <SettingsSection
     title="Rows"
-    description="Banding colors — see the Groupings tab for banding mode and level."
+    description="Banding colors — see the Banding tab for mode and level."
   >
     {#each rowFields as f (f.key)}
       <ColorField

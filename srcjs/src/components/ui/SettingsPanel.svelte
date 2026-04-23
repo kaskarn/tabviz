@@ -18,7 +18,7 @@
   /**
    * Tab registry. Each entry lists the id, user-facing label, and (for stubs)
    * a short teaser of what's coming. Keep the order mirroring the R theme
-   * object structure (groupings → colors → typography → spacing → shapes →
+   * object structure (banding → colors → typography → spacing → shapes →
    * axis → layout) so the panel reads like the package's mental model.
    */
   const tabs: {
@@ -26,7 +26,7 @@
     label: string;
     stub?: string;
   }[] = [
-    { id: "groupings", label: "Groupings" },
+    { id: "banding", label: "Banding" },
     { id: "colors", label: "Colors" },
     {
       id: "typography",
@@ -51,10 +51,10 @@
     {
       id: "layout",
       label: "Layout",
-      stub: "Plot position, table/plot widths, container border — the `set_layout()` surface (banding lives in Groupings).",
+      stub: "Plot position, table/plot widths, container border — the `set_layout()` surface (banding has its own tab).",
     },
   ];
-  let activeTabId = $state<string>("groupings");
+  let activeTabId = $state<string>("banding");
 
   let panelRef = $state<HTMLElement | null>(null);
   let lastFocused: Element | null = null;
@@ -155,7 +155,7 @@
             id="settings-panel-{tab.id}"
             aria-labelledby="settings-tab-{tab.id}"
           >
-            {#if tab.id === "groupings"}
+            {#if tab.id === "banding"}
               <BandingControl {store} />
             {:else if tab.id === "colors"}
               <ColorsControl {store} />

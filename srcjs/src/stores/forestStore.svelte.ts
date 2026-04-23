@@ -740,6 +740,30 @@ export function createForestStore() {
     // panel's "View source" feature emits `web_theme_<baseThemeName>() |> ...`.
     baseThemeName = newSpec.theme?.name ?? "default";
     themeEdits = {};
+
+    // Coerce banding default to "row" when the data has no groups. The R
+    // default is "group" (deepest-level alternation), but on group-less data
+    // "group" silently falls back to row-level inside computeBandIndexes —
+    // which left the settings panel showing "Group" as the active mode while
+    // the actual rendering was row-level. Make the coercion explicit at init
+    // so UI and rendering agree. Immutable update so we don't mutate the
+    // caller's incoming spec object.
+    if (spec.data.groups.length === 0) {
+      const b = spec.theme?.layout?.banding;
+      if (b && typeof b === "object" && b.mode === "group") {
+        spec = {
+          ...spec,
+          theme: {
+            ...spec.theme,
+            layout: {
+              ...spec.theme.layout,
+              banding: { mode: "row", level: null },
+            },
+          },
+        };
+      }
+    }
+
     // Measure auto-width columns
     measureAutoColumns();
   }
@@ -1812,12 +1836,43 @@ export function createForestStore() {
     }
   }
 
-  // Reset all user-modified state to defaults
+  /**
+   * Reset all user-modified runtime state to the widget's initial defaults.
+   *
+   * Contract: after this runs, the widget should look and export IDENTICALLY
+   * to a fresh mount on the same spec — no layout shift, no stale widths.
+   *
+   * Policy:
+   *   - RESETS all user-runtime state: selection, collapse, sort/filter, row
+   *     and column reorder, cell edits, inserted/hidden/overridden columns,
+   *     column widths, zoom/sizing, axis zooms, theme edits, banding overrides,
+   *     and transient UI overlays (drag/edit/filter popovers).
+   *   - RESTORES spec.theme to the current preset (drops any in-panel edits).
+   *   - RE-MEASURES auto-width columns. Crucial: clearing columnWidths alone
+   *     makes the renderer fall through to DEFAULT_COLUMN_WIDTH (100), which
+   *     subtly changes the layout vs. the fresh-mount state and contaminates
+   *     SVG export (getExportDimensions reads columnWidths too).
+   *   - KEEPS spec data, showZoomControls (a user preference), container
+   *     dimensions (from ResizeObserver), and the settings panel's open
+   *     state (reset may fire from inside the panel).
+   */
   function resetState() {
+    // ── User selection / collapse / sort / filter ────────────────────────
     selectedRowIds = new Set();
     collapsedGroups = new Set();
     sortConfig = null;
     filterConfig = null;
+    filters = {};
+
+    // ── Row & column reorder / inserts / hides / cell edits ──────────────
+    rowOrderOverrides = { byGroup: {}, groupOrderByParent: {} };
+    columnOrderOverrides = { topLevel: null, byGroup: {} };
+    userInsertedColumns = [];
+    hiddenColumnIds = new Set();
+    columnSpecOverrides = {};
+    cellEdits = { cells: {}, groups: {} };
+
+    // ── Widths / zoom / sizing ───────────────────────────────────────────
     columnWidths = {};
     userResizedIds = new Set();
     plotWidthOverride = null;
@@ -1825,15 +1880,37 @@ export function createForestStore() {
     autoFit = true;
     maxWidth = null;
     maxHeight = null;
+    axisZooms = {};
+
+    // ── Theme customizations (in-panel edits / banding overrides) ────────
+    themeEdits = {};
+    bandingOverride = null;
+    bandingStartsWithBandOverride = null;
+
+    // ── Transient UI overlays ────────────────────────────────────────────
     hoveredRowId = null;
     tooltipRowId = null;
     tooltipPosition = null;
-    userInsertedColumns = [];
-    hiddenColumnIds = new Set();
-    columnSpecOverrides = {};
-    axisZooms = {};
-    // Note: spec theme is not reset here - use setSpec to fully reset
-    // Note: showZoomControls is not reset - it's a UI preference
+    dragState = null;
+    editingTarget = null;
+    filterPopoverTarget = null;
+
+    // ── Restore theme from preset ────────────────────────────────────────
+    // If the user had in-panel theme edits, spec.theme now holds a mutated
+    // clone of the preset; replace it with a fresh clone so measurements
+    // below use the clean typography / spacing.
+    if (spec) {
+      const preset = THEME_PRESETS[baseThemeName as ThemeName];
+      if (preset) {
+        spec = { ...spec, theme: structuredClone(preset) };
+      }
+    }
+
+    // ── Re-measure auto-width columns ─────────────────────────────────────
+    // Without this, columnWidths stays empty and the renderer falls through
+    // to DEFAULT_COLUMN_WIDTH, producing the "subtle layout shift" + SVG
+    // export artifacts.
+    measureAutoColumns();
   }
 
   // Derived: tooltip row. Merges cell edits so the tooltip reflects the

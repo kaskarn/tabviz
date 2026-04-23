@@ -1,3 +1,19 @@
+# tabviz 0.10.3
+
+## Bug fixes
+
+* **Reset button no longer shifts the layout.** `resetState()` cleared `columnWidths` without re-running `measureAutoColumns()`, so the renderer fell through to `DEFAULT_COLUMN_WIDTH = 100` for every auto-sized column — producing a subtle layout shift on-screen *and* contaminating `save_plot()` / SVG exports (which read `columnWidths` via `getExportDimensions()`). Reset now re-measures and restores the theme from the active preset, so the widget post-reset looks and exports identically to a fresh mount.
+
+* **Reset is now comprehensive.** The previous implementation forgot to clear multi-column `filters`, row/column reorder overrides, cell edits, and all the 0.10 additions (theme edits, banding override, banding-phase override). Reset is now documented with an explicit policy and covers every piece of user-modified runtime state.
+
+* **Banding defaults to `"row"` on group-less data.** The R default is `"group"`, which silently fell back to row-level inside `computeBandIndexes()` when no groups existed — but left the settings panel showing "Group" as the active mode, confusing users. A coercion at spec init now makes the stored value match what's actually rendered.
+
+* **ConfirmDialog hardened against double-fires.** The dialog now tracks a `resolving` flag that's reset on open, preventing a double-click or Enter-while-clicking from firing the confirm action twice.
+
+## UX
+
+* **Settings panel: "Groupings" → "Banding".** The tab only controls banding (mode, level, phase); the new name is more accurate and will coexist cleanly with a future dedicated "Rows" or "Groups" tab covering group-header styles and collapse defaults.
+
 # tabviz 0.10.2
 
 ## Documentation

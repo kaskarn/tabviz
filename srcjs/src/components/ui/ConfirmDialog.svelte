@@ -60,14 +60,37 @@
     }
   });
 
+  /**
+   * Guard against firing the action twice (double-click, Enter-while-clicking).
+   * Once the user picks a choice, the dialog is considered "resolving" until
+   * the parent flips `open` back to false. Any further clicks are ignored.
+   */
+  let resolving = $state(false);
+  $effect(() => {
+    // Reset the guard whenever the dialog is re-opened.
+    if (open) resolving = false;
+  });
+
+  function handleConfirm() {
+    if (resolving) return;
+    resolving = true;
+    onconfirm();
+  }
+
+  function handleCancel() {
+    if (resolving) return;
+    resolving = true;
+    oncancel();
+  }
+
   function handleKeydown(e: KeyboardEvent) {
     if (!open) return;
     if (e.key === "Escape") {
       e.stopPropagation();
-      oncancel();
+      handleCancel();
     } else if (e.key === "Enter") {
       e.stopPropagation();
-      onconfirm();
+      handleConfirm();
     }
   }
 </script>
@@ -82,14 +105,14 @@
         class="modal-backdrop"
         aria-label="Cancel"
         tabindex="-1"
-        onclick={oncancel}
+        onclick={handleCancel}
       ></button>
 
       <div class="modal-card">
         <h3>{title}</h3>
         <p class="message">{message}</p>
         <div class="actions">
-          <button type="button" class="cancel-btn" onclick={oncancel}>
+          <button type="button" class="cancel-btn" onclick={handleCancel}>
             {cancelLabel}
           </button>
           <button
@@ -97,7 +120,7 @@
             class="confirm-btn"
             class:danger={variant === "danger"}
             bind:this={confirmRef}
-            onclick={onconfirm}
+            onclick={handleConfirm}
           >
             {confirmLabel}
           </button>
