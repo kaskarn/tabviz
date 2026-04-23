@@ -4,6 +4,7 @@
   import { THEME_NAMES, THEME_LABELS, THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
+  import ConfirmDialog from "./ConfirmDialog.svelte";
 
   interface Props {
     store: ForestStore;
@@ -39,37 +40,53 @@
     dropdownOpen = false;
   }
 
-  function selectTheme(themeName: string) {
-    // The preset swap will reset the in-panel edit map (see setTheme /
-    // setThemeObject in the store). If the user has pending customizations,
-    // give them a chance to bail out instead of silently losing work.
-    if (store.hasThemeEdits) {
-      const confirmed = window.confirm(
-        "Switching presets will reset your in-panel theme edits. Continue?"
-      );
-      if (!confirmed) {
-        closeDropdown();
-        return;
-      }
-    }
+  /**
+   * Pending theme name when the user has triggered a swap but we're waiting
+   * on confirmation because there are in-panel edits. Cleared on confirm
+   * or cancel. `null` means no pending swap.
+   */
+  let pendingTheme = $state<string | null>(null);
 
+  function applyTheme(themeName: string) {
     if (onThemeChange) {
       onThemeChange(themeName as ThemeName);
-    } else {
-      // If using custom themes, apply the theme directly from availableThemes.
-      // setThemeObject swaps only the theme field and preserves interactive
-      // column / row edits; setSpec would wipe them.
-      if (availableThemes && themeName in availableThemes) {
-        const theme = availableThemes[themeName];
-        if (store.spec) {
-          store.setThemeObject(theme);
-        }
-      } else {
-        // Use preset themes
-        store.setTheme(themeName as ThemeName);
+    } else if (availableThemes && themeName in availableThemes) {
+      // Custom-theme path: apply the supplied WebTheme directly, preserving
+      // interactive column/row edits that setSpec would wipe.
+      const theme = availableThemes[themeName];
+      if (store.spec) {
+        store.setThemeObject(theme);
       }
+    } else {
+      // Default path: swap to a named preset.
+      store.setTheme(themeName as ThemeName);
     }
+  }
+
+  function selectTheme(themeName: string) {
+    // If there are in-panel theme edits, defer the swap and surface the
+    // in-widget confirm dialog. Using window.confirm() here is not viable:
+    // htmlwidget host environments (RStudio viewer, sandboxed iframes) often
+    // auto-dismiss native dialogs, which would silently block every theme
+    // swap while we waited on user input that never arrived.
+    if (store.hasThemeEdits) {
+      pendingTheme = themeName;
+      closeDropdown();
+      return;
+    }
+    applyTheme(themeName);
     closeDropdown();
+  }
+
+  function confirmPendingSwap() {
+    if (pendingTheme !== null) {
+      applyTheme(pendingTheme);
+      pendingTheme = null;
+    }
+  }
+
+  function cancelPendingSwap() {
+    pendingTheme = null;
   }
 
   // Close dropdown when clicking outside. The popover is portaled to
@@ -124,6 +141,16 @@
     </Portal>
   {/if}
 </div>
+
+<ConfirmDialog
+  open={pendingTheme !== null}
+  title="Discard theme edits?"
+  message="Switching presets will reset your in-panel theme edits. Continue?"
+  confirmLabel="Switch theme"
+  cancelLabel="Keep editing"
+  onconfirm={confirmPendingSwap}
+  oncancel={cancelPendingSwap}
+/>
 
 <style>
   .theme-switcher-wrapper {

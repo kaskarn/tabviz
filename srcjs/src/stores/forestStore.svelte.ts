@@ -1653,8 +1653,10 @@ export function createForestStore() {
     const newTheme = THEME_PRESETS[themeName];
     if (!spec || !newTheme) return;
     // Deep-clone so subsequent in-panel edits don't mutate the shared preset
-    // object (THEME_PRESETS is a module-level singleton).
-    spec = { ...spec, theme: structuredClone(newTheme) };
+    // object. JSON round-trip is fine here — themes are JSON-safe and this
+    // avoids a subtle Svelte-5 reactivity issue where structuredClone'd
+    // objects weren't triggering spec.theme reads in all deriveds downstream.
+    spec = { ...spec, theme: JSON.parse(JSON.stringify(newTheme)) };
     baseThemeName = themeName;
     themeEdits = {};
   }
@@ -1664,7 +1666,7 @@ export function createForestStore() {
   // through setSpec({...spec, theme}) for this, which cleared the edits map.
   function setThemeObject(theme: WebSpec["theme"]) {
     if (!spec) return;
-    spec = { ...spec, theme: structuredClone(theme) };
+    spec = { ...spec, theme: JSON.parse(JSON.stringify(theme)) };
     baseThemeName = theme?.name ?? "default";
     themeEdits = {};
   }

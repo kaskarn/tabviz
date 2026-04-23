@@ -1,3 +1,9 @@
+# tabviz 0.10.1
+
+## Bug fixes
+
+* **Theme switcher now works in htmlwidget host environments.** `0.10.0` added a "Discard theme edits?" confirmation that used `window.confirm()` — but the RStudio viewer and some sandboxed Quarto / Shiny contexts auto-dismiss native browser dialogs, which silently aborted every theme swap (the dialog was never shown to the user; `window.confirm` just returned `false`, taking the "user canceled" branch). Replaced with an in-widget `<ConfirmDialog>` rendered via the `<Portal>` primitive, so confirmation works identically across all host environments. Same treatment for the Settings panel's **Reset** button.
+
 # tabviz 0.10.0
 
 ## New features

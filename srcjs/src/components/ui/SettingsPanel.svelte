@@ -4,6 +4,7 @@
   import ColorsControl from "./ColorsControl.svelte";
   import TabStub from "./TabStub.svelte";
   import ThemeSourceModal from "./ThemeSourceModal.svelte";
+  import ConfirmDialog from "./ConfirmDialog.svelte";
 
   interface Props {
     store: ForestStore;
@@ -59,6 +60,7 @@
   let lastFocused: Element | null = null;
 
   let sourceOpen = $state(false);
+  let resetConfirmOpen = $state(false);
 
   $effect(() => {
     if (open) {
@@ -83,13 +85,16 @@
 
   function handleReset() {
     if (!hasEdits) return;
-    if (window.confirm("Reset all theme edits and restore the preset?")) {
-      store.resetThemeEdits();
-      // Banding overrides live outside of themeEdits but feel like "edits" to
-      // the user; reset them too so the button means "start fresh".
-      store.setBandingOverride(null);
-      store.setBandingStartsWithBand(null);
-    }
+    resetConfirmOpen = true;
+  }
+
+  function confirmReset() {
+    store.resetThemeEdits();
+    // Banding overrides live outside of themeEdits but feel like "edits" to
+    // the user; reset them too so the button means "start fresh".
+    store.setBandingOverride(null);
+    store.setBandingStartsWithBand(null);
+    resetConfirmOpen = false;
   }
 </script>
 
@@ -191,6 +196,17 @@
   </div>
 
   <ThemeSourceModal {store} open={sourceOpen} onclose={() => (sourceOpen = false)} />
+
+  <ConfirmDialog
+    open={resetConfirmOpen}
+    title="Reset all edits?"
+    message="This will discard every in-panel theme edit (colors, banding, phase, …) and restore the preset."
+    confirmLabel="Reset"
+    cancelLabel="Keep edits"
+    variant="danger"
+    onconfirm={confirmReset}
+    oncancel={() => (resetConfirmOpen = false)}
+  />
 {/if}
 
 <style>
