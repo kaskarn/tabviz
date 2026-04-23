@@ -44,7 +44,7 @@
 
   // Bottom-fade scroll hint: fades in when the body is scrollable AND the
   // user hasn't scrolled to the bottom. Beta feedback — some users did not
-  // realize the panel was scrollable. The fade is a subtle white-to-transparent
+  // realize the panel was scrollable. The fade is a subtle bg-to-transparent
   // gradient overlay anchored to the bottom of the body.
   let bodyEl = $state<HTMLElement | null>(null);
   let showBottomFade = $state(false);
@@ -60,12 +60,35 @@
     showBottomFade = overflowing && !atBottom;
   }
 
-  // Recompute when the panel opens or the active tab changes (new content may
-  // be taller/shorter than the previous tab's).
+  // Same pattern for the horizontal tab strip. Beta users reported not
+  // realizing they could scroll to reach off-screen tabs — with the
+  // scrollbar hidden (by design, for a clean bar), there was no cue that
+  // more tabs existed. Fades bookend the strip only on the sides with
+  // hidden content.
+  let tabsEl = $state<HTMLElement | null>(null);
+  let showTabsLeftFade = $state(false);
+  let showTabsRightFade = $state(false);
+
+  function updateTabsHint() {
+    if (!tabsEl) {
+      showTabsLeftFade = false;
+      showTabsRightFade = false;
+      return;
+    }
+    const { scrollWidth, clientWidth, scrollLeft } = tabsEl;
+    const overflowing = scrollWidth > clientWidth + 1;
+    showTabsLeftFade = overflowing && scrollLeft > 0;
+    showTabsRightFade = overflowing && scrollLeft + clientWidth < scrollWidth - 1;
+  }
+
+  // Recompute both hints when the panel opens or the active tab changes.
   $effect(() => {
     void activeTabId; // track
     void open;        // track
-    queueMicrotask(updateScrollHint);
+    queueMicrotask(() => {
+      updateScrollHint();
+      updateTabsHint();
+    });
   });
 
   $effect(() => {
@@ -161,18 +184,28 @@
 
       <span class="bar-divider" aria-hidden="true"></span>
 
-      <div class="bar-tabs" role="tablist" aria-label="Settings sections">
-        {#each tabs as tab (tab.id)}
-          <button
-            type="button"
-            role="tab"
-            id="settings-tab-{tab.id}"
-            aria-controls="settings-panel-{tab.id}"
-            aria-selected={activeTabId === tab.id}
-            class:active={activeTabId === tab.id}
-            onclick={() => (activeTabId = tab.id)}
-          >{tab.label}</button>
-        {/each}
+      <div class="bar-tabs-wrap">
+        <div
+          class="bar-tabs"
+          role="tablist"
+          aria-label="Settings sections"
+          bind:this={tabsEl}
+          onscroll={updateTabsHint}
+        >
+          {#each tabs as tab (tab.id)}
+            <button
+              type="button"
+              role="tab"
+              id="settings-tab-{tab.id}"
+              aria-controls="settings-panel-{tab.id}"
+              aria-selected={activeTabId === tab.id}
+              class:active={activeTabId === tab.id}
+              onclick={() => (activeTabId = tab.id)}
+            >{tab.label}</button>
+          {/each}
+        </div>
+        <div class="bar-tabs-fade left"  class:visible={showTabsLeftFade}  aria-hidden="true"></div>
+        <div class="bar-tabs-fade right" class:visible={showTabsRightFade} aria-hidden="true"></div>
       </div>
 
       <!--
@@ -346,17 +379,65 @@
     margin: 0 4px;
   }
 
+  /**
+   * Tabs live inside a positioned wrapper so left/right fade indicators
+   * can float over the scrollable strip without disturbing scroll metrics.
+   */
+  .bar-tabs-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+  }
+
   .bar-tabs {
     display: flex;
-    flex: 1;
     gap: 2px;
     overflow-x: auto;
     scrollbar-width: none;
-    min-width: 0; /* allow flex shrink so overflow-x engages */
+    min-width: 0;
+    flex: 1;
   }
 
   .bar-tabs::-webkit-scrollbar {
     display: none;
+  }
+
+  /*
+   * Horizontal scroll hints. Users with many tabs reported not realizing
+   * the strip scrolls — the fade on each edge gives a visible cue that
+   * content extends past the viewport in that direction.
+   */
+  .bar-tabs-fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 28px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .bar-tabs-fade.left {
+    left: 0;
+    background: linear-gradient(
+      to right,
+      var(--wf-bg, #ffffff),
+      color-mix(in srgb, var(--wf-bg, #ffffff) 0%, transparent)
+    );
+  }
+
+  .bar-tabs-fade.right {
+    right: 0;
+    background: linear-gradient(
+      to left,
+      var(--wf-bg, #ffffff),
+      color-mix(in srgb, var(--wf-bg, #ffffff) 0%, transparent)
+    );
+  }
+
+  .bar-tabs-fade.visible {
+    opacity: 1;
   }
 
   .bar-tabs button {

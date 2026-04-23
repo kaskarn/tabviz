@@ -1,3 +1,9 @@
+# tabviz 0.12.2
+
+## UX
+
+* **Horizontal scroll hint on the Settings tab bar.** v0.12.1's scroll hint fixed vertical-body discoverability; beta feedback was actually about the *tab strip* scrolling horizontally when all seven tab labels don't fit. The bar now renders subtle left / right fades that appear only on the sides with hidden tabs — mirroring the body's bottom-fade pattern. Hides when scrolled all the way to that end.
+
 # tabviz 0.12.1
 
 ## UX
