@@ -358,6 +358,7 @@ tabviz(forest_data,
 
 ## See Also
 
+- [Visualization Styling](styling.qmd) — How `row_accent` / `marker_color` cascade into marker colors
 - [Visualizations Overview](index.qmd) — Tooltips, export, common features
 - [Titles & Labels](../titles.qmd) — Adding context to your plots
 - [Row Styling](../row-styling.qmd) — Headers, summaries, indentation

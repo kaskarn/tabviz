@@ -90,6 +90,7 @@ tabviz(comparison_data, label = "region",
 
 ## See Also
 
+- [Visualization Styling](styling.qmd) — How `row_accent` / `marker_color` cascade into bar fills
 - [Visualizations Overview](index.qmd) — Tooltips, export, common features
 - [Boxplots](boxplots.qmd) — Distribution summaries with `viz_boxplot()`
 - [Violin Plots](violin-plots.qmd) — Full distributions with `viz_violin()`

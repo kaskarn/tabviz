@@ -194,6 +194,23 @@ function calculateSvgAutoWidths(
   // PHASE 1: Measure leaf column content
   // ========================================================================
   for (const col of columns) {
+    // Viz columns (forest, viz_bar, viz_boxplot, viz_violin) with width="auto"
+    // are intentionally omitted here so the downstream renderer falls through
+    // to `layout.forestWidth` (the expand-to-fill value). A natural-min
+    // autoWidth would cap the plot to ~200px even when the caller asked for a
+    // 1600px canvas, producing a narrow plot with empty space to the right.
+    // User-resized widths still arrive via `options.columnWidths` (see
+    // computeLayout).
+    if (
+      (col.type === "forest" ||
+        col.type === "viz_bar" ||
+        col.type === "viz_boxplot" ||
+        col.type === "viz_violin") &&
+      (col.width === "auto" || col.width == null)
+    ) {
+      continue;
+    }
+
     // Fixed-width columns keep their width, but if the header is explicitly
     // shown and wouldn't fit, grow the column to match (keeps SVG export in
     // sync with the web view's header-fit measurement).
@@ -593,8 +610,13 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
 
   // Forest width calculation - "tables first" approach
   const baseWidth = options.width ?? LAYOUT.DEFAULT_WIDTH;
-  // Check for forest columns
-  const hasForestColumns = allColumns.some(c => c.type === "forest");
+  // Check for any flex-viz column (forest or viz_*) that consumes
+  // `layout.forestWidth` as its expand-to-fill width when width="auto".
+  const hasForestColumns = allColumns.some(
+    c => c.type === "forest" ||
+         ((c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin") &&
+          (c.width === "auto" || c.width == null)),
+  );
   const includeForest = hasForestColumns;
 
   // Total table width includes legacy positioned columns AND unified non-forest columns
@@ -625,6 +647,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
       typeof options.forestWidth !== "number" && typeof spec.layout.plotWidth !== "number") {
     forestWidth = totalWidth - totalTableWidth - padding * 2;
   }
+
 
   // Total height: include full axis area only when a column actually renders
   // an x-axis strip (forest or any viz_* column). Plain tabular tables have

@@ -120,6 +120,8 @@ website:
               href: guide/visualizations/boxplots.qmd
             - text: "Violin Plots"
               href: guide/visualizations/violin-plots.qmd
+            - text: "Styling"
+              href: guide/visualizations/styling.qmd
         - text: "Interactivity"
           href: guide/interactivity.qmd
         - text: "---"

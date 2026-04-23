@@ -34,7 +34,7 @@ All `viz_*()` columns share:
 - **Axis configuration** — `axis_range`, `axis_ticks`, `axis_gridlines`, `axis_label`
 - **Pan and zoom** — mouse wheel, drag, double-click reset (per column)
 - **Theming** — colors adapt to the active theme; multi-effect series use the theme's `effect_colors` palette
-- **Marker-styling cascade** — row-level `row_accent` / `row_emphasis` / `row_muted` and per-row `marker_color` reach into viz cells. Single-effect viz: fill replacement. Multi-effect viz: outline augment. See [Row Styling → Cascading into viz cells](../row-styling.qmd#cascading-into-viz-cells).
+- **Marker-styling cascade** — row-level `row_accent` / `row_emphasis` / `row_muted` and per-row `marker_color` reach into viz cells. Single-effect viz: fill replacement. Multi-effect viz: outline augment. See [Visualization Styling](styling.qmd) for the full 4-layer cascade with rendered examples across viz types.
 - **Annotations** — `refline()` for reference lines (and `forest_annotation()` on `viz_forest`). Use `null_value` as a shortcut for a single themed reference line.
 - **Tooltips** — opt in via `web_interaction(tooltip_fields = ...)`
 - **Export** — SVG / PNG / PDF via `save_plot()`
@@ -95,5 +95,6 @@ See [Export](../export.qmd) for details.
 - [Bar Charts](bar-charts.qmd) — Magnitude comparisons with `viz_bar()`
 - [Boxplots](boxplots.qmd) — Distribution summaries with `viz_boxplot()`
 - [Violin Plots](violin-plots.qmd) — Full distributions with `viz_violin()`
+- [Visualization Styling](styling.qmd) — The 4-layer color cascade across all viz types
 - [Distribution Plots](distribution-plots.qmd) — Choosing among bar / box / violin
 - [Columns](../columns.qmd) — Inline columns including `col_bar()` and `col_sparkline()`

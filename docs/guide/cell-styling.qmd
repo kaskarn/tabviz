@@ -306,28 +306,6 @@ tabviz(combined,
 )
 ```
 
-## Using set_column_style()
-
-For fluent-style workflows, use `set_column_style()` after creating a WebSpec:
-
-```{r}
-#| eval: false
-# Create spec then add styling
-tabviz(data,
-  label = "study",
-  columns = list(
-    col_numeric("hr", "HR"),
-    col_interval("hr", "lower", "upper"),
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1)
-  ),
-  .spec_only = TRUE
-) |>
-  set_column_style("hr", bold = "is_significant", color = "direction_color") |>
-  set_column_style("_interval", badge = "sig_stars") |>
-  tabviz()
-```
-
 ## dplyr Workflow for Style Columns
 
 A typical workflow computes style columns with dplyr before plotting:

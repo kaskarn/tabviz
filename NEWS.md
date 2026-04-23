@@ -1,3 +1,15 @@
+# tabviz 0.9.2
+
+## Bug fixes
+
+* **`save_plot()` viz columns now expand to fill the requested canvas width.** When `viz_forest`, `viz_bar`, `viz_boxplot`, or `viz_violin` was used with `width = "auto"` (the default), `calculateSvgAutoWidths()` was pinning the column to its natural-min width (~200px) even when the caller asked for a 1600px export, leaving empty space on the right. Auto-width viz columns are now skipped during the natural-width pass and fall through to the expand-to-fill `layout.forestWidth` value, matching the web view. The `hasForestColumns` check that gates `forestWidth > 0` was also widened so a canvas with no forest column but a viz_bar / viz_boxplot / viz_violin still gets a non-zero plot area. User-resized widths from the web view (via `options.columnWidths`) and explicit `width = <number>` arguments are unaffected.
+
+## Documentation
+
+* **New guide page: Visualization Styling.** Documents the 4-layer marker color cascade (theme palette -> per-effect literal -> row semantic class -> per-row `marker_color`) with rendered examples across `viz_forest`, `viz_bar`, `viz_boxplot`, and `viz_violin`. Includes the single-effect (fill replacement) vs multi-effect (outline augment) behavior, NA-passthrough on `marker_color` formulas, and a combined-precedence demo showing all layers interacting on one plot. Cross-linked from each viz reference page.
+* **De-emphasize the fluent API in the mainline guide.** The Row Styling, Cell Styling, and Themes pages no longer chain `set_*()` modifiers via the pipe in their primary examples; argument-based `tabviz()` / column-constructor / stepwise `set_*()` forms are used throughout. The fluent API remains fully supported (and is still showcased in `guide/fluent-api.qmd`) — pipe-friendly equivalents are now cross-referenced from a callout on each affected page rather than mixed into the main flow.
+* **Themes guide: rendered swatch table.** The "Built-in Theme Palettes" section previously listed effect colors as inline backtick-formatted hex codes. It now generates an HTML swatch table directly from each theme's actual `shapes@effect_colors` slot — change a theme and the palette display updates automatically.
+
 # tabviz 0.9.1
 
 ## Bug fixes

@@ -380,32 +380,6 @@ tabviz(meta_analysis,
 
 ---
 
-## Fluent API Alternative
-
-You can also apply row styling using `set_row_style()` for pipe-based workflows:
-
-```{r}
-#| eval: false
-tabviz(data,
-  label = "label",
-  columns = list(
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               null_value = 1, scale = "log")
-  )
-) |>
-  set_row_style(
-    type = "rtype",
-    bold = "rbold",
-    indent = "rindent",
-    color = "rcolor",
-    badge = "rbadge"
-  )
-```
-
-This is useful when building styling programmatically or creating multiple variants from a base plot. See [The Fluent API](fluent-api.qmd) for more patterns.
-
----
-
 ## Binding Rules {#binding-rules}
 
 Not every row-level parameter is anchored the same way. Some attach to the *row* (stable under column reordering); others render into a specific *cell* (can re-attach when columns move). Knowing which is which prevents surprises when you use `move_column()`, `add_column(..., after = "__start__")`, or `remove_column()`.
@@ -432,18 +406,18 @@ Badges and icons visually extend the row label — they always need a specific c
 
 ### Stable anchoring
 
-If you need a badge that stays with a specific column regardless of layout, use `set_column_style()` with `badge = "col"` on the target column instead of `set_row_style()`. Column-level badges are bound to their column and unaffected by row-level re-anchoring.
+If you need a badge that stays with a specific column regardless of layout, set `badge = "col"` directly on the target column constructor instead of using `row_badge`. Column-level badges are bound to their column and unaffected by row-level re-anchoring.
 
 ```{r}
 #| eval: false
-# Row-level: anchors to leftmost column (may move)
-tabviz(data, ...) |>
-  set_row_style(badge = "sig")
+# Row-level: anchors to the leftmost visible column (may move)
+tabviz(data, label = "study", row_badge = "sig", columns = list(...))
 
-# Column-level: anchors to "study" column (stable)
-web_spec(data, ...) |>
-  set_column_style("study", badge = "sig") |>
-  tabviz()
+# Column-level: anchors to the "study" column (stable)
+tabviz(data, label = "study", columns = list(
+  col_text("study", badge = "sig"),
+  ...
+))
 ```
 
 ---
@@ -483,5 +457,6 @@ row_bold = ~ pval < 0.05
 ## See Also
 
 - [Row Groups](row-groups.qmd) — Automatic collapsible sections from column values
-- [Styling Functions](../reference/styling.qmd) — Complete `set_row_style()` reference
+- [Visualization Styling](visualizations/styling.qmd) — How `row_accent` / `row_emphasis` / `row_muted` cascade into viz cells
+- [Fluent API](fluent-api.qmd) — Pipe-based equivalents (`set_row_style()`) for programmatic workflows
 - [forest_plot()](../reference/tabviz.qmd) — All arguments

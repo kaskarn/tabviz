@@ -1,0 +1,275 @@
+---
+title: "Visualization Styling"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+set.seed(20250423)
+```
+
+Every `viz_*` column — `viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin` — participates in the same color cascade. Markers, bars, boxes, and violins all resolve their fill (and sometimes their outline) by walking four layers from general to specific. Most of the time you only touch the layer that matches your intent and let the rest stay defaulted.
+
+## The four layers
+
+Each glyph's color is decided by the most-specific layer that has a value:
+
+| Layer | Source | Wins when… |
+|---|---|---|
+| **4. Per-row literal** | `marker_color = "col"` or `~ formula` on `tabviz()` | Value is non-`NA` for that row. |
+| **3. Row semantic class** | `row_accent` / `row_emphasis` / `row_muted` on `tabviz()` | Layer 4 is `NA`. **Single-effect:** replaces fill with theme color. **Multi-effect:** preserves per-effect fill, adds an outline in the theme color. |
+| **2. Per-effect literal** | `effect_*(color = "#hex")` inside `viz_*()` | Layers 3–4 don't apply. Sets the fill for that effect on every row. |
+| **1. Theme palette** | `theme.shapes.effect_colors[i]` | Nothing else is set. Effects cycle through the palette by index. |
+
+Two things to internalize before the examples:
+
+- **`NA` falls through.** A `marker_color = ~ ifelse(pval < 0.001, "darkred", NA)` colors the strict-significant rows red and lets every other row drop to whatever Layer 3 or below would have done.
+- **Single vs. multi-effect matters at Layer 3.** A semantic class on a single-effect viz repaints the glyph; on a multi-effect viz it adds an outline so the per-effect color identity (a key visual encoding) survives.
+
+```{r}
+#| include: false
+# Reusable dataset for every example below. One trial per row, with a few
+# pre-computed columns for the cascade demos.
+trials <- data.frame(
+  study = c("MERIDIAN", "ATLAS-3", "VEGA", "POLARIS-2", "AURORA", "HELIX"),
+  n     = c(420, 1850, 310, 980, 540, 1240),
+  hr    = c(0.55, 0.72, 0.88, 0.81, 1.02, 0.66),
+  lo    = c(0.42, 0.62, 0.71, 0.69, 0.85, 0.55),
+  hi    = c(0.71, 0.84, 1.10, 0.96, 1.23, 0.79),
+  itt_hr = c(0.55, 0.72, 0.88, 0.81, 1.02, 0.66),
+  itt_lo = c(0.42, 0.62, 0.71, 0.69, 0.85, 0.55),
+  itt_hi = c(0.71, 0.84, 1.10, 0.96, 1.23, 0.79),
+  pp_hr  = c(0.61, 0.78, 0.93, 0.85, 0.99, 0.71),
+  pp_lo  = c(0.46, 0.66, 0.74, 0.72, 0.81, 0.59),
+  pp_hi  = c(0.81, 0.92, 1.17, 1.01, 1.21, 0.86),
+  pval   = c(0.0003, 0.001, 0.32, 0.04, 0.83, 0.0001)
+)
+trials$dist <- list(
+  rnorm(80, 0.55, 0.10), rnorm(80, 0.72, 0.12),
+  rnorm(80, 0.88, 0.18), rnorm(80, 0.81, 0.14),
+  rnorm(80, 1.02, 0.20), rnorm(80, 0.66, 0.10)
+)
+```
+
+## Layer 1 — Theme palette
+
+When you don't say anything about color, viz cells pick from the active theme's `effect_colors` palette. Single-effect viz takes the first color; multi-effect viz cycles by effect index.
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    col_n("n"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1, axis_label = "HR (95% CI)")
+  ),
+  title = "Layer 1: theme palette",
+  subtitle = "No color set anywhere — the marker takes the theme's first effect color"
+)
+```
+
+Switching themes restyles automatically:
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    col_n("n"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1)
+  ),
+  theme = web_theme_jama(),
+  title = "Same code, JAMA theme",
+  subtitle = "The marker color tracks the active palette"
+)
+```
+
+## Layer 2 — Per-effect color
+
+Set `color = "#hex"` inside an `effect_*()` to nail down a single series. Useful when the encoding is intrinsic to the metric ("ITT is blue, per-protocol is green") rather than to a row.
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    col_n("n"),
+    viz_forest(effects = list(
+      effect_forest("itt_hr", "itt_lo", "itt_hi",
+                    label = "ITT", color = "#2563eb"),
+      effect_forest("pp_hr",  "pp_lo",  "pp_hi",
+                    label = "Per-protocol", color = "#16a34a")
+    ), scale = "log", null_value = 1, axis_label = "HR")
+  ),
+  title = "Layer 2: per-effect colors",
+  subtitle = "ITT and per-protocol get fixed identities across every row"
+)
+```
+
+The same idea on `viz_bar`:
+
+```{r}
+sales <- data.frame(
+  region = c("North", "South", "East", "West"),
+  q1 = c(245, 189, 312, 98),
+  q2 = c(278, 215, 345, 125),
+  q3 = c(312, 242, 398, 156)
+)
+
+tabviz(sales, label = "region",
+  columns = list(
+    viz_bar(
+      effect_bar("q1", label = "Q1", color = "#3b82f6"),
+      effect_bar("q2", label = "Q2", color = "#22c55e"),
+      effect_bar("q3", label = "Q3", color = "#f59e0b"),
+      header = "Sales ($K)"
+    )
+  ),
+  title = "Per-effect colors on viz_bar",
+  subtitle = "Each quarter holds its identity across regions"
+)
+```
+
+## Layer 3 — Row semantic cascade
+
+`row_accent`, `row_emphasis`, and `row_muted` already style row text (see [Row Styling](../row-styling.qmd)). They also reach into viz cells. The behavior depends on whether the viz column has one effect or several.
+
+### Single-effect: fill replacement
+
+The marker fill is replaced with the theme color. Below, `row_accent` highlights strongly significant trials in the theme's accent color, `row_muted` dims the non-significant ones.
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    col_n("n"),
+    col_pvalue("pval"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1, axis_label = "HR")
+  ),
+  row_accent = ~ pval < 0.01,
+  row_muted  = ~ pval >= 0.10,
+  title = "Layer 3 (single-effect): fill replacement",
+  subtitle = "Accented rows take the accent color; muted rows fade out"
+)
+```
+
+The cascade is themable — the same code under `web_theme_jama()` uses JAMA's accent color instead.
+
+### Multi-effect: outline augment
+
+If the column has more than one effect, replacing the fill would destroy the per-effect color encoding. The cascade preserves the fill and adds an outline in the theme color, so each accented row gets a visible "this row is special" cue without losing its ITT/per-protocol identity.
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    col_n("n"),
+    viz_forest(effects = list(
+      effect_forest("itt_hr", "itt_lo", "itt_hi",
+                    label = "ITT", color = "#2563eb"),
+      effect_forest("pp_hr",  "pp_lo",  "pp_hi",
+                    label = "Per-protocol", color = "#16a34a")
+    ), scale = "log", null_value = 1, axis_label = "HR")
+  ),
+  row_accent = ~ pval < 0.01,
+  title = "Layer 3 (multi-effect): outline augment",
+  subtitle = "Per-effect colors preserved; accented rows get an outline"
+)
+```
+
+## Layer 4 — Per-row literal `marker_color`
+
+For exact control — a categorical palette, a colorblind-safe encoding, or matching a brand color — pass a column or formula to `marker_color`. Returning `NA` falls through to the layers below.
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    col_n("n"),
+    col_pvalue("pval"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1, axis_label = "HR")
+  ),
+  marker_color = ~ ifelse(pval < 0.001, "#b91c1c", NA),
+  title = "Layer 4: per-row literal",
+  subtitle = "p < 0.001 rows go dark red; the rest fall through to the theme"
+)
+```
+
+## Combined precedence
+
+When multiple layers are active, the most-specific one wins per row. Below: the strictest-significance rows are pinned to dark red (Layer 4), the still-significant rows take the theme accent (Layer 3), and the rest fall through to the theme palette (Layer 1).
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    col_n("n"),
+    col_pvalue("pval"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               scale = "log", null_value = 1, axis_label = "HR")
+  ),
+  row_accent   = ~ pval < 0.05,                                    # Layer 3
+  marker_color = ~ ifelse(pval < 0.001, "#b91c1c", NA_character_), # Layer 4
+  title = "All layers together",
+  subtitle = "p < 0.001 → red (L4), 0.001–0.05 → accent (L3), > 0.05 → palette (L1)"
+)
+```
+
+## The cascade is uniform across viz types
+
+Everything above works identically on `viz_bar`, `viz_boxplot`, and `viz_violin`. A single example with a row_accent on each:
+
+### `viz_bar`
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    viz_bar(effect_bar("n"), header = "Enrollment", axis_label = "N enrolled")
+  ),
+  row_accent = ~ n > 1000,
+  title = "row_accent on viz_bar",
+  subtitle = "Bars for large trials take the accent color"
+)
+```
+
+### `viz_violin`
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    col_n("n"),
+    viz_violin(effect_violin(data = "dist"),
+               header = "Effect distribution",
+               axis_label = "Posterior HR",
+               show_quartiles = TRUE)
+  ),
+  row_accent = ~ pval < 0.01,
+  title = "row_accent on viz_violin",
+  subtitle = "Accented rows: the violin fill switches to the accent color"
+)
+```
+
+### `viz_boxplot`
+
+```{r}
+tabviz(trials, label = "study",
+  columns = list(
+    col_n("n"),
+    viz_boxplot(effect_boxplot(data = "dist"),
+                header = "Effect distribution",
+                axis_label = "Posterior HR")
+  ),
+  row_accent = ~ pval < 0.01,
+  title = "row_accent on viz_boxplot",
+  subtitle = "Accented rows: the box fill switches to the accent color"
+)
+```
+
+## When to reach for what
+
+- **Stick with the theme** when the viz is single-purpose and the row's role isn't categorical. The palette already does the right thing.
+- **Use `effect_*(color = ...)`** when the color identifies the *metric* (ITT vs. per-protocol, drug A vs. B). It belongs to the effect, not the row.
+- **Use `row_accent` / `row_emphasis` / `row_muted`** when the color identifies the *row* ("this is the primary outcome", "this is exploratory"). Themable, single-source: the row text and its viz both update.
+- **Use `marker_color` (column or formula)** when you need exact-pixel control — categorical row palettes, brand alignment, colorblind-safe encodings. Use `NA` to fall through to the cascade for rows you don't want to override.
+
+## See also
+
+- [Row Styling](../row-styling.qmd) — Text-side semantic classes that drive the same cascade
+- [Styling Cascade](../../concepts/styling-cascade.qmd) — Higher-level overview of all four cascade layers across the package
+- [Themes](../themes.qmd) — Where `effect_colors`, `accent`, `foreground`, and `muted` live
+- [Forest Plots](forest-plots.qmd), [Bar Charts](bar-charts.qmd), [Boxplots](boxplots.qmd), [Violin Plots](violin-plots.qmd) — Per-viz feature reference

@@ -15,7 +15,7 @@ meta_data <- data.frame(
 )
 ```
 
-Themes control the visual appearance of forest plots—colors, typography, spacing, and shapes. You can use preset themes for common publication styles, or customize every aspect using a fluent pipe-based API.
+Themes control the visual appearance of forest plots—colors, typography, spacing, and shapes. You can use preset themes for common publication styles, or customize every aspect using the `set_*()` family of functions.
 
 ::: {.callout-tip}
 ## Theme Design Philosophy
@@ -176,35 +176,24 @@ forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
 
 ## Customizing Themes
 
-Modify any preset theme using pipe-friendly `set_*()` functions:
+Use the `set_*()` functions to override individual aspects of a preset theme. Each one takes the theme as its first argument and returns a modified copy:
 
 ```{r}
-custom_theme <- web_theme_jama() |>
-  set_colors(primary = "#0066cc", ci_marker_fill = "#0066cc", ci_line = "#0066cc") |>
-  set_spacing(row_height = 24) |>
-  set_axis(gridlines = TRUE, gridline_style = "dotted")
+custom_theme <- web_theme_jama()
+custom_theme <- set_colors(custom_theme,
+  primary = "#0066cc", ci_marker_fill = "#0066cc", ci_line = "#0066cc")
+custom_theme <- set_spacing(custom_theme, row_height = 24)
+custom_theme <- set_axis(custom_theme, gridlines = TRUE, gridline_style = "dotted")
 
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
   label = "study", null_value = 1, scale = "log",
   theme = custom_theme)
 ```
 
-::: {.callout-note}
-## Modifier Pattern
+::: {.callout-tip}
+## Pipe-friendly equivalents
 
-All `set_*()` functions follow the same pattern:
-
-1. Take a theme object as the first argument
-2. Accept named parameters for properties to change
-3. Return a modified theme object
-4. Can be chained with pipes
-
-```r
-web_theme_default() |>
-  set_colors(primary = "red") |>
-  set_spacing(row_height = 32) |>
-  set_axis(gridlines = TRUE)
-```
+The same `set_*()` calls compose naturally with the pipe (`web_theme_jama() |> set_colors(...) |> set_spacing(...)`). See [The Fluent API](fluent-api.qmd) for that style.
 :::
 
 ## Theme Components
@@ -317,9 +306,9 @@ For visualizations with multiple effects per row (forest plots, bar charts, boxp
 ```{r}
 #| eval: false
 # Set custom effect colors and shapes for multi-effect visualizations
-custom_theme <- web_theme_default() |>
-  set_effect_colors(c("#2563eb", "#dc2626", "#16a34a")) |>
-  set_marker_shapes(c("square", "circle", "diamond"))
+custom_theme <- web_theme_default()
+custom_theme <- set_effect_colors(custom_theme, c("#2563eb", "#dc2626", "#16a34a"))
+custom_theme <- set_marker_shapes(custom_theme, c("square", "circle", "diamond"))
 
 forest_plot(data, ..., theme = custom_theme)
 ```
@@ -328,36 +317,54 @@ Effects without explicit `color` in their specification use these theme defaults
 
 #### Built-in Theme Palettes
 
-Each theme includes a curated 5-color `effect_colors` palette:
+Each theme includes a curated 5-color `effect_colors` palette. The swatches below come from each theme's actual `shapes@effect_colors` slot — change a theme and this table re-renders.
+
 ```{r}
 #| echo: false
 #| output: asis
-theme_colors <- data.frame(
-  Theme = c("default", "modern", "jama", "lancet", "nature", "cochrane", "dark", "minimal", "presentation"),
-  Colors = c(
-    "`#0891b2` `#16a34a` `#f59e0b` `#ef4444` `#8b5cf6`",
-    "`#3b82f6` `#22c55e` `#f59e0b` `#ef4444` `#8b5cf6`",
-    "`#1a1a1a` `#4a4a4a` `#7a7a7a` `#9a9a9a` `#bababa`",
-    "`#00468b` `#ed0000` `#42b540` `#0099b4` `#925e9f`",
-    "`#e64b35` `#4dbbd5` `#00a087` `#3c5488` `#f39b7f`",
-    "`#0c4da2` `#dd5129` `#1a8a4f` `#6d4e92` `#e89a47`",
-    "`#89b4fa` `#a6e3a1` `#fab387` `#f38ba8` `#cba6f7`",
-    "`#64748b` `#94a3b8` `#cbd5e1` `#475569` `#334155`",
-    "`#2563eb` `#16a34a` `#ea580c` `#dc2626` `#7c3aed`"
-  ),
-  Style = c(
-    "Balanced, accessible",
-    "Vibrant blue-first",
-    "Grayscale for print",
-    "Journal-inspired reds/blues",
-    "Warm coral palette",
-    "Strong primaries",
-    "Pastel for dark mode",
-    "Subtle slate tones",
-    "High-contrast for slides"
-  )
+themes_to_show <- list(
+  default      = web_theme_default(),
+  modern       = web_theme_modern(),
+  jama         = web_theme_jama(),
+  lancet       = web_theme_lancet(),
+  nature       = web_theme_nature(),
+  cochrane     = web_theme_cochrane(),
+  dark         = web_theme_dark(),
+  minimal      = web_theme_minimal(),
+  presentation = web_theme_presentation()
 )
-knitr::kable(theme_colors, col.names = c("Theme", "Effect Colors", "Style"))
+styles <- c(
+  "Balanced, accessible", "Vibrant blue-first",
+  "Grayscale for print", "Journal-inspired reds/blues",
+  "Warm coral palette", "Strong primaries",
+  "Pastel for dark mode", "Subtle slate tones",
+  "High-contrast for slides"
+)
+
+swatch <- function(hex) {
+  sprintf(
+    "<span style=\"display:inline-block;width:14px;height:14px;background:%s;border:1px solid #ddd;border-radius:2px;vertical-align:middle;margin-right:2px\"></span>",
+    hex
+  )
+}
+
+rows <- vapply(seq_along(themes_to_show), function(i) {
+  th <- themes_to_show[[i]]
+  cols <- th@shapes@effect_colors
+  swatches <- paste0(vapply(cols, swatch, character(1)), collapse = "")
+  hexes <- paste0("<code style=\"font-size:11px\">", cols, "</code>", collapse = " ")
+  sprintf(
+    "<tr><td><code>web_theme_%s()</code></td><td>%s<br><span style=\"font-size:11px\">%s</span></td><td>%s</td></tr>",
+    names(themes_to_show)[i], swatches, hexes, styles[i]
+  )
+}, character(1))
+
+cat(
+  "<table><thead><tr><th>Theme</th><th>Effect Colors</th><th>Style</th></tr></thead><tbody>",
+  paste(rows, collapse = ""),
+  "</tbody></table>",
+  sep = ""
+)
 ```
 
 ### Axis
