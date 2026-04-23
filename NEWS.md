@@ -1,3 +1,17 @@
+# tabviz 0.10.0
+
+## New features
+
+* **Group-aware row banding with a proper grammar.** `tabviz(banding = ...)` and `set_layout(banding = ...)` now accept `"none"`, `"row"`, `"group"` (default), or `"group-n"` (where `n` is a group depth, 1-indexed from the outermost level). `"group"` alternates backgrounds at the deepest group level so each group reads as one continuous band — header and member rows share the same color — rather than striping every other row regardless of group boundaries. Defaults to BABA phase (first group banded) for visual separation from section headers above. When no groups are present, `"group"` falls back to row-level banding. The previous boolean `banding = TRUE/FALSE` is no longer accepted; a clear error points at the new grammar.
+
+* **In-widget Settings panel (gear icon).** A new gear button on the toolbar opens a slide-in panel at ~40% width anchored to the widget's right edge. Tabbed layout (*Groupings*, *Colors*, plus stubs for *Typography* / *Spacing* / *Shapes* / *Axis* / *Layout* in subsequent releases) mirrors the R theme object structure — each tab maps to a `set_*()` modifier. The *Groupings* tab exposes banding mode, group level, and ABAB/BABA phase. The *Colors* tab provides swatch + hex controls for every field on `ColorPalette` (base / rows / intervals / summary). Edits apply live to the widget and can be copied out as an idiomatic R `set_*()` chain via the **View source** button — the natural payoff for iterating to a custom look.
+
+## Internals
+
+* **`<Portal>` primitive** for popovers (theme switcher, zoom panel, download menu, theme-source modal). Renders children into `document.body` so `position: fixed` is immune to ancestor `transform` / `filter` / `backdrop-filter` / `contain` / `will-change` — properties that silently break viewport-relative placement. Sidesteps a class of rendering bugs without requiring the toolbar CSS to stay containing-block-free forever.
+
+* **Unified banding engine.** `computeBandIndexes()` in `$lib/banding.ts` is the single source of truth for which display row gets which band color, and is consumed by both the live Svelte widget and the static `save_plot()` / `render_visual_tests()` SVG export path — no divergence between interactive and exported views.
+
 # tabviz 0.9.3
 
 ## New features

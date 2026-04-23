@@ -62,6 +62,18 @@ export function createForestStore() {
   // Settings panel visibility (gear button + slide-in)
   let settingsOpen = $state<boolean>(false);
 
+  // ── Theme customizations ────────────────────────────────────────────────
+  // In-panel edits to the active theme, tracked per section. The live
+  // spec.theme is mutated in lockstep so the widget re-renders immediately;
+  // this map is the source of truth for "what did the user change" (used by
+  // the "View source" feature to emit an R `set_*()` chain).
+  //
+  // We also track the preset the chain starts from so resets can restore a
+  // clean baseline and the emitted R code knows which `web_theme_*()` to
+  // start with.
+  let themeEdits = $state<Record<string, Record<string, unknown>>>({});
+  let baseThemeName = $state<string>("default");
+
   // User-modified view state (session-only; feeds exportSpec for WYSIWYG)
   let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
@@ -724,6 +736,10 @@ export function createForestStore() {
     );
     // A fresh spec supersedes any prior interactive column edits.
     clearColumnEdits();
+    // Reset theme-edit tracking to the incoming theme's name; the settings
+    // panel's "View source" feature emits `web_theme_<baseThemeName>() |> ...`.
+    baseThemeName = newSpec.theme?.name ?? "default";
+    themeEdits = {};
     // Measure auto-width columns
     measureAutoColumns();
   }
@@ -1636,7 +1652,11 @@ export function createForestStore() {
   function setTheme(themeName: ThemeName) {
     const newTheme = THEME_PRESETS[themeName];
     if (!spec || !newTheme) return;
-    spec = { ...spec, theme: newTheme };
+    // Deep-clone so subsequent in-panel edits don't mutate the shared preset
+    // object (THEME_PRESETS is a module-level singleton).
+    spec = { ...spec, theme: structuredClone(newTheme) };
+    baseThemeName = themeName;
+    themeEdits = {};
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -1644,7 +1664,34 @@ export function createForestStore() {
   // through setSpec({...spec, theme}) for this, which cleared the edits map.
   function setThemeObject(theme: WebSpec["theme"]) {
     if (!spec) return;
-    spec = { ...spec, theme };
+    spec = { ...spec, theme: structuredClone(theme) };
+    baseThemeName = theme?.name ?? "default";
+    themeEdits = {};
+  }
+
+  /** Apply a single in-panel theme edit. Mutates spec.theme so the widget
+   *  re-renders, and records the change so it can be exported as R code. */
+  function setThemeField(section: string, field: string, value: unknown) {
+    if (!spec || !spec.theme) return;
+    const theme = spec.theme as Record<string, unknown>;
+    const current = theme[section];
+    if (!current || typeof current !== "object") return;
+    (current as Record<string, unknown>)[field] = value;
+    // Track for source-gen. Clone the per-section object so Svelte picks up
+    // the reactivity cleanly (runes see the top-level key change).
+    const nextEdits = { ...themeEdits };
+    nextEdits[section] = { ...(nextEdits[section] ?? {}), [field]: value };
+    themeEdits = nextEdits;
+  }
+
+  /** Wipe all in-panel edits and restore the clean preset. */
+  function resetThemeEdits() {
+    if (!spec) return;
+    const preset = THEME_PRESETS[baseThemeName as ThemeName];
+    if (preset) {
+      spec = { ...spec, theme: structuredClone(preset) };
+    }
+    themeEdits = {};
   }
 
   // ============================================================================
@@ -1975,6 +2022,18 @@ export function createForestStore() {
     get settingsOpen() {
       return settingsOpen;
     },
+    get themeEdits() {
+      return themeEdits;
+    },
+    get baseThemeName() {
+      return baseThemeName;
+    },
+    get hasThemeEdits() {
+      for (const key of Object.keys(themeEdits)) {
+        if (Object.keys(themeEdits[key] ?? {}).length > 0) return true;
+      }
+      return false;
+    },
     get tooltipRow() {
       return tooltipRow;
     },
@@ -2220,6 +2279,8 @@ export function createForestStore() {
     toggleSettings,
     setBandingOverride,
     setBandingStartsWithBand,
+    setThemeField,
+    resetThemeEdits,
     sortBy,
     toggleSort,
     setFilter,

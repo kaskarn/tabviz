@@ -40,6 +40,19 @@
   }
 
   function selectTheme(themeName: string) {
+    // The preset swap will reset the in-panel edit map (see setTheme /
+    // setThemeObject in the store). If the user has pending customizations,
+    // give them a chance to bail out instead of silently losing work.
+    if (store.hasThemeEdits) {
+      const confirmed = window.confirm(
+        "Switching presets will reset your in-panel theme edits. Continue?"
+      );
+      if (!confirmed) {
+        closeDropdown();
+        return;
+      }
+    }
+
     if (onThemeChange) {
       onThemeChange(themeName as ThemeName);
     } else {
