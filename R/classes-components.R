@@ -25,6 +25,10 @@
 #' @param style_emphasis Column name containing logical values for per-cell emphasis (bold + foreground)
 #' @param style_muted Column name containing logical values for per-cell muted styling
 #' @param style_accent Column name containing logical values for per-cell accent styling
+#' @param style_tooltip Column name whose values become the per-cell hover tooltip
+#' @param formatter Optional R function applied to the column's values at
+#'   serialize time. When set, the output is rendered as text and overrides
+#'   the type's built-in formatting.
 #'
 #' @export
 ColumnSpec <- new_class(

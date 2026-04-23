@@ -72,6 +72,12 @@ override.}
 \item{style_muted}{Column name containing logical values for per-cell muted styling}
 
 \item{style_accent}{Column name containing logical values for per-cell accent styling}
+
+\item{style_tooltip}{Column name whose values become the per-cell hover tooltip}
+
+\item{formatter}{Optional R function applied to the column's values at
+serialize time. When set, the output is rendered as text and overrides
+the type's built-in formatting.}
 }
 \description{
 ColumnSpec: Specification for a table column
