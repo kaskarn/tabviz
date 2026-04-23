@@ -5,7 +5,7 @@
 
 **Interactive tables with embedded visualizations for R.** Build forest plots, dashboards, and rich data displays with 16+ column types. Built with Svelte 5 and D3.js for speed and flexibility.
 
-[![tabviz example](docs/images/hero-row-readme.png)](https://kaskarn.github.io/tabviz/gallery.html)
+[![tabviz example](docs/images/hero-row-readme.png)](https://kaskarn.github.io/tabviz/gallery/)
 
 *Click image to view interactive gallery*
 
@@ -180,9 +180,9 @@ server <- function(input, output) {
 ## Documentation
 
 - **[Quick Start Guide](https://kaskarn.github.io/tabviz/guide/quick-start.html)** — Get up and running in 5 minutes
-- **[Interactive Gallery](https://kaskarn.github.io/tabviz/gallery.html)** — 20+ examples with code
-- **[Cookbook](https://kaskarn.github.io/tabviz/cookbook.html)** — Common patterns and recipes
-- **[Function Reference](https://kaskarn.github.io/tabviz/reference.html)** — Full API documentation
+- **[Interactive Gallery](https://kaskarn.github.io/tabviz/gallery/)** — 20+ examples with code
+- **[Cookbook](https://kaskarn.github.io/tabviz/guide/recipes.html)** — Common patterns and recipes
+- **[Function Reference](https://kaskarn.github.io/tabviz/reference/)** — Full API documentation
 
 ## License
 

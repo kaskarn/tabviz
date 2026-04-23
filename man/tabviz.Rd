@@ -38,6 +38,7 @@ tabviz(
   interaction = NULL,
   plot_position = NULL,
   row_height = NULL,
+  banding = NULL,
   width = NULL,
   height = NULL,
   elementId = NULL,
@@ -139,6 +140,12 @@ pre-normalized multiplier.}
 \item{plot_position}{"left" or "right" to set forest plot position}
 
 \item{row_height}{Numeric row height in pixels}
+
+\item{banding}{Row banding mode. One of \code{"none"}, \code{"row"}, \code{"group"} (default),
+or \code{"group-n"} (e.g. \code{"group-2"} to alternate at the 2nd group level). When
+\code{"group"} is used without a level, the deepest group present is used; if
+there are no groups, it falls back to row-level banding. Overrides the
+banding setting on the supplied \code{theme}.}
 
 \item{width}{Widget width (default NULL for auto)}
 

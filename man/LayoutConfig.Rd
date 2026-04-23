@@ -10,7 +10,7 @@ LayoutConfig(
   plot_width = "auto",
   container_border = FALSE,
   container_border_radius = 8,
-  banding = TRUE
+  banding = "group"
 )
 }
 \arguments{
@@ -24,7 +24,10 @@ LayoutConfig(
 
 \item{container_border_radius}{Corner radius for container in pixels (default: 8)}
 
-\item{banding}{Enable alternating row background colors (default: TRUE)}
+\item{banding}{Row banding mode. One of \code{"none"}, \code{"row"}, \code{"group"} (default),
+or \code{"group-n"} where \code{n} is an integer group depth (1 = outermost).
+\code{"group"} alternates at the deepest group level present and falls back to
+row-level when no groups exist. See \code{\link[=parse_banding]{parse_banding()}} for details.}
 }
 \description{
 LayoutConfig: Layout and visual configuration

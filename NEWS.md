@@ -1,3 +1,9 @@
+# tabviz 0.10.2
+
+## Documentation
+
+* **README: fix broken doc URLs.** `gallery.html`, `cookbook.html`, and `reference.html` returned 404 on the docs site — updated to the actual paths (`gallery/`, `guide/recipes.html`, `reference/`). Clears the corresponding `R CMD check --as-cran` URL NOTE.
+
 # tabviz 0.10.1
 
 ## Bug fixes

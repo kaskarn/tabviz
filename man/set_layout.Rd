@@ -40,8 +40,10 @@ set_layout(
 \item{container_border_radius}{Corner radius for container in pixels (default: 8).
 Only visible when \code{container_border = TRUE}.}
 
-\item{banding}{Enable alternating row background colors (default: TRUE).
-Uses \code{row_bg} and \code{alt_bg} from theme colors.}
+\item{banding}{Row banding mode. One of \code{"none"}, \code{"row"}, \code{"group"} (default),
+or \code{"group-n"} (e.g. \code{"group-1"} for outermost-level alternation).
+\code{"group"} uses the deepest group level when groups exist, otherwise behaves
+like \code{"row"}. Uses \code{row_bg} and \code{alt_bg} from theme colors.}
 }
 \value{
 Modified WebTheme object
@@ -60,5 +62,9 @@ web_theme_default() |>
 
 # Disable row banding
 web_theme_default() |>
-  set_layout(banding = FALSE)
+  set_layout(banding = "none")
+
+# Alternate at the outermost group level
+web_theme_default() |>
+  set_layout(banding = "group-1")
 }
