@@ -1,3 +1,9 @@
+# tabviz 0.9.3
+
+## New features
+
+* **Optional table watermark via `tabviz(watermark = "...")`.** Pass any string (e.g. `"DRAFT"`, `"CONFIDENTIAL"`, `"PREVIEW"`) to render a subtle watermark behind the table rows. The text is centered on the rows region and rotated to follow that region's diagonal, so the angle adapts to the table's aspect ratio — wide tables get a shallow angle, tall tables a steep one. Theme-aware (uses the foreground color at low opacity); font size auto-fits to span ~70% of the diagonal, clamped to a sensible range. Renders identically in the web view and in `save_plot()` exports. `NULL` (default) draws no watermark.
+
 # tabviz 0.9.2
 
 ## Bug fixes

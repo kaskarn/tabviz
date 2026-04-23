@@ -582,6 +582,7 @@ export interface WebSpec {
   interaction: InteractionSpec;
   layout: LayoutSpec;
   labels?: PlotLabels;
+  watermark?: string;
 }
 
 // ============================================================================

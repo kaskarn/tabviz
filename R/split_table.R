@@ -398,6 +398,7 @@ create_subset_spec <- function(base_spec, subset_data, label) {
     theme = base_spec@theme,
     interaction = base_spec@interaction,
     labels = new_labels,
+    watermark = base_spec@watermark,
     row_bold_col = base_spec@row_bold_col,
     row_italic_col = base_spec@row_italic_col,
     row_color_col = base_spec@row_color_col,

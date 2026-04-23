@@ -209,6 +209,7 @@ WebSpec <- new_class(
     theme = new_property(class_any, default = NULL),  # Set in web_spec()
     interaction = new_property(class_any, default = NULL),  # Set in web_spec()
     labels = new_property(class_any, default = NULL),  # PlotLabels for title/subtitle/etc
+    watermark = new_property(class_character, default = NA_character_),  # Optional centered diagonal watermark text
     # Row-level style column mappings
     row_bold_col = new_property(class_character, default = NA_character_),
     row_italic_col = new_property(class_character, default = NA_character_),

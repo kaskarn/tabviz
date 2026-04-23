@@ -17,6 +17,7 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     theme = serialize_theme(theme),
     interaction = serialize_interaction(spec@interaction),
     labels = serialize_labels(spec@labels),
+    watermark = if (is.na(spec@watermark)) NULL else spec@watermark,
     layout = list(
       plotPosition = theme@layout@plot_position,
       tableWidth = theme@layout@table_width,

@@ -8,6 +8,7 @@
   import SummaryDiamond from "$components/forest/SummaryDiamond.svelte";
   import PlotHeader from "$components/forest/PlotHeader.svelte";
   import PlotFooter from "$components/forest/PlotFooter.svelte";
+  import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
   import Tooltip from "$components/ui/Tooltip.svelte";
   import CellBar from "$components/table/CellBar.svelte";
@@ -1267,6 +1268,9 @@
 
       <!-- CSS Grid layout: columns in order (leftmost = primary) -->
       <div class="tabviz-main" style:grid-template-columns={gridTemplateColumns}>
+        {#if spec?.watermark}
+          <Watermark text={spec.watermark} {theme} />
+        {/if}
         <!-- Header cells (supports hierarchical column groups).
              Skipped entirely when no column's header is visible. -->
         {#if anyHeaderVisible}

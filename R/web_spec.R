@@ -33,6 +33,11 @@
 #' @param subtitle Subtitle (displayed below the title)
 #' @param caption Caption (displayed below the plot)
 #' @param footnote Footnote (displayed below caption, italicized)
+#' @param watermark Optional watermark text (e.g. `"DRAFT"`, `"CONFIDENTIAL"`)
+#'   rendered behind the table rows at low opacity. The text is centered over
+#'   the rows region and rotated to follow that region's diagonal, so the angle
+#'   adapts to the table's aspect ratio. Theme-aware: uses the foreground color.
+#'   `NULL` (default) draws no watermark.
 #' @param row_bold Row-level bold styling. Column name (character) or formula
 #'   (e.g., `~ p_value < 0.05`) evaluating to logical values.
 #' @param row_italic Row-level italic styling. Column name or formula.
@@ -141,6 +146,7 @@ tabviz <- function(
     subtitle = NULL,
     caption = NULL,
     footnote = NULL,
+    watermark = NULL,
     row_bold = NULL,
     row_italic = NULL,
     row_color = NULL,
@@ -494,6 +500,7 @@ tabviz <- function(
     theme = theme,
     interaction = interaction,
     labels = labels,
+    watermark = watermark %||% NA_character_,
     row_bold_col = style_resolved$row_bold,
     row_italic_col = style_resolved$row_italic,
     row_color_col = style_resolved$row_color,

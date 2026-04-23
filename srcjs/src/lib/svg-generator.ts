@@ -3458,6 +3458,36 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     }
   });
 
+  // Optional watermark — drawn after row backgrounds so the band fills cover
+  // the table area first, but before all cell/marker content so it sits behind
+  // the foreground. Centered on the rows region; angle follows the rows-region
+  // diagonal so the text adapts to the table's aspect ratio. Theme-aware.
+  if (spec.watermark) {
+    const wmW = layout.totalWidth - padding * 2;
+    const wmH = layout.plotHeight;
+    if (wmW > 0 && wmH > 0) {
+      const cx = padding + wmW / 2;
+      const cy = plotY + wmH / 2;
+      const angleDeg = Math.atan2(wmH, wmW) * 180 / Math.PI;
+      const diag = Math.sqrt(wmW * wmW + wmH * wmH);
+      // Approx character width factor for a bold sans-serif at fontSize=1.
+      // Scale font so the rendered text spans ~70% of the diagonal, then clamp.
+      const charFactor = 0.55;
+      const targetWidth = diag * 0.7;
+      const rawSize = targetWidth / Math.max(1, spec.watermark.length * charFactor);
+      const fontSize = Math.max(20, Math.min(200, rawSize));
+      parts.push(
+        `<text x="${cx}" y="${cy}" ` +
+        `transform="rotate(${angleDeg.toFixed(2)} ${cx} ${cy})" ` +
+        `text-anchor="middle" dominant-baseline="middle" ` +
+        `font-family="${theme.typography.fontFamily}" ` +
+        `font-size="${fontSize.toFixed(1)}" font-weight="700" ` +
+        `fill="${theme.colors.foreground}" fill-opacity="0.07" ` +
+        `style="pointer-events:none; user-select:none">${escapeXml(spec.watermark)}</text>`
+      );
+    }
+  }
+
   // Render each forest column (may be multiple)
   for (const forestColIdx of forestColumnIndices) {
     const forestCol = allColumns[forestColIdx];

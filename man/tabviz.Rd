@@ -17,6 +17,7 @@ tabviz(
   subtitle = NULL,
   caption = NULL,
   footnote = NULL,
+  watermark = NULL,
   row_bold = NULL,
   row_italic = NULL,
   row_color = NULL,
@@ -87,6 +88,12 @@ column picker (for sensitive or internal-only fields).}
 \item{caption}{Caption (displayed below the plot)}
 
 \item{footnote}{Footnote (displayed below caption, italicized)}
+
+\item{watermark}{Optional watermark text (e.g. \code{"DRAFT"}, \code{"CONFIDENTIAL"})
+rendered behind the table rows at low opacity. The text is centered over
+the rows region and rotated to follow that region's diagonal, so the angle
+adapts to the table's aspect ratio. Theme-aware: uses the foreground color.
+\code{NULL} (default) draws no watermark.}
 
 \item{row_bold}{Row-level bold styling. Column name (character) or formula
 (e.g., \code{~ p_value < 0.05}) evaluating to logical values.}
