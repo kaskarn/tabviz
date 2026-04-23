@@ -4,7 +4,9 @@
   import ColorsControl from "./ColorsControl.svelte";
   import TypographyControl from "./TypographyControl.svelte";
   import SpacingControl from "./SpacingControl.svelte";
-  import TabStub from "./TabStub.svelte";
+  import ShapesControl from "./ShapesControl.svelte";
+  import AxisControl from "./AxisControl.svelte";
+  import LayoutControl from "./LayoutControl.svelte";
   import ThemeSourceModal from "./ThemeSourceModal.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
 
@@ -23,30 +25,14 @@
    * object structure (banding → colors → typography → spacing → shapes →
    * axis → layout) so the panel reads like the package's mental model.
    */
-  const tabs: {
-    id: string;
-    label: string;
-    stub?: string;
-  }[] = [
-    { id: "banding", label: "Banding" },
-    { id: "colors", label: "Colors" },
+  const tabs: { id: string; label: string }[] = [
+    { id: "banding",    label: "Banding" },
+    { id: "colors",     label: "Colors" },
     { id: "typography", label: "Typography" },
-    { id: "spacing", label: "Spacing" },
-    {
-      id: "shapes",
-      label: "Shapes",
-      stub: "Point size, summary diamond, line width, border radius, effect color palette, marker shapes — from `set_shapes()`.",
-    },
-    {
-      id: "axis",
-      label: "Axis",
-      stub: "Range, ticks, gridlines, CI clipping, null-value handling — the `set_axis()` surface.",
-    },
-    {
-      id: "layout",
-      label: "Layout",
-      stub: "Plot position, table/plot widths, container border — the `set_layout()` surface (banding has its own tab).",
-    },
+    { id: "spacing",    label: "Spacing" },
+    { id: "shapes",     label: "Shapes" },
+    { id: "axis",       label: "Axis" },
+    { id: "layout",     label: "Layout" },
   ];
   let activeTabId = $state<string>("banding");
 
@@ -181,8 +167,12 @@
               <TypographyControl {store} />
             {:else if tab.id === "spacing"}
               <SpacingControl {store} />
-            {:else if tab.stub}
-              <TabStub title={tab.label} teaser={tab.stub} />
+            {:else if tab.id === "shapes"}
+              <ShapesControl {store} />
+            {:else if tab.id === "axis"}
+              <AxisControl {store} />
+            {:else if tab.id === "layout"}
+              <LayoutControl {store} />
             {/if}
           </div>
         {/if}

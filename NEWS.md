@@ -1,3 +1,19 @@
+# tabviz 0.12.0
+
+## New features
+
+* **Shapes tab in the Settings panel.** Two sections: *Sizes* (point size, summary diamond height, CI line width, border radius — all `NumberField` sliders) and *Effect palette* (`ColorField` per slot, so users can recolor any palette index in place). Round-trips as `set_shapes(...)` in the "View source" export.
+
+* **Axis tab in the Settings panel.** Four sections: *Range* (rangeMin / rangeMax as optional text fields with `"auto"` placeholder, plus ciClipFactor slider), *Ticks* (tickCount with auto), *Gridlines* (on/off toggle + solid/dashed/dotted segmented picker), *Behavior* (includeNull / nullTick / markerMargin toggles plus a three-state Symmetric segmented: Auto / On / Off). Round-trips as `set_axis(...)`.
+
+* **Layout tab in the Settings panel.** Three sections: *Plot position* (Left / Right segmented), *Dimensions* (table width / plot width as auto-or-px text fields), *Container* (border toggle + border radius slider). Banding stays in its own tab. Round-trips as `set_layout(...)`.
+
+All seven Settings tabs now ship real controls — `Banding`, `Colors`, `Typography`, `Spacing`, `Shapes`, `Axis`, `Layout` — mirroring the R theme surface (`set_colors()`, `set_typography()`, `set_spacing()`, `set_shapes()`, `set_axis()`, `set_layout()`, plus the dedicated banding grammar).
+
+## Internals
+
+* **Two new field primitives.** `BooleanField.svelte` (label + toggle switch, `role="switch"` with the proper `aria-checked`) and `SegmentedField.svelte` (label + N-option radiogroup with TypeScript generics so the value type is preserved end-to-end). Both follow the same 2-column grid layout as the existing `ColorField` / `NumberField` / `TextField` primitives.
+
 # tabviz 0.11.0
 
 ## New features
