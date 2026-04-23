@@ -1,3 +1,11 @@
+# tabviz 0.10.4
+
+## Bug fixes
+
+* **Reset now preserves R-side theme customizations.** `0.10.3`'s reset restored the theme from `THEME_PRESETS[baseThemeName]` — the raw preset — which silently dropped any customization baked into the spec's theme (e.g. `web_theme_modern() |> set_spacing(row_height = 40) |> set_typography(font_size_base = "14pt")`). Post-reset, font sizes and vertical spacing drifted back to the preset's defaults. The store now snapshots the incoming theme at spec / preset / custom-swap time and resets to *that* snapshot, so reset produces a widget that looks byte-for-byte identical to the initial mount.
+
+* **Theme cloning hardened.** All deep clones of theme objects now go through a single `cloneTheme()` helper using JSON round-trip. `structuredClone()` was throwing `DataCloneError` when invoked on Svelte 5 `$state`-wrapped themes — themes are strictly JSON-safe plain data, so the round-trip is lossless and avoids the proxy trap.
+
 # tabviz 0.10.3
 
 ## Bug fixes

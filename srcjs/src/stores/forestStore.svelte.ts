@@ -74,6 +74,15 @@ export function createForestStore() {
   let themeEdits = $state<Record<string, Record<string, unknown>>>({});
   let baseThemeName = $state<string>("default");
 
+  // Snapshot of the theme to restore to on resetState. Updated whenever a
+  // new "clean" theme becomes active (setSpec, setTheme preset swap,
+  // setThemeObject custom theme). This is NOT just `THEME_PRESETS[name]` —
+  // if R supplied a pre-customized theme (`web_theme_modern() |> set_spacing(...)`),
+  // those customizations live in `spec.theme` but not in the raw preset, and
+  // resetting to the raw preset would silently drop them. Stored as a deep
+  // clone so in-panel edits mutating `spec.theme` don't leak in here.
+  let initialTheme = $state<WebSpec["theme"] | null>(null);
+
   // User-modified view state (session-only; feeds exportSpec for WYSIWYG)
   let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
@@ -763,6 +772,10 @@ export function createForestStore() {
         };
       }
     }
+
+    // Snapshot the post-coercion theme as the reset target. See cloneTheme()
+    // for why this is a JSON round-trip rather than structuredClone.
+    initialTheme = cloneTheme(spec.theme);
 
     // Measure auto-width columns
     measureAutoColumns();
@@ -1673,16 +1686,28 @@ export function createForestStore() {
     return axisZooms[columnId]?.domain ?? defaultDomain;
   }
 
+  /**
+   * Deep clone a WebTheme. Uses JSON round-trip (not structuredClone) because
+   * the theme objects we receive here are sometimes Svelte $state proxies,
+   * whose internal slots trip structuredClone's DataCloneError path. Themes
+   * are strictly JSON-safe (strings / numbers / booleans / nested objects /
+   * nulls — no Maps, Sets, Dates, functions), so the round-trip is lossless.
+   */
+  function cloneTheme(t: WebSpec["theme"]): WebSpec["theme"] {
+    return JSON.parse(JSON.stringify(t));
+  }
+
   function setTheme(themeName: ThemeName) {
     const newTheme = THEME_PRESETS[themeName];
     if (!spec || !newTheme) return;
     // Deep-clone so subsequent in-panel edits don't mutate the shared preset
-    // object. JSON round-trip is fine here — themes are JSON-safe and this
-    // avoids a subtle Svelte-5 reactivity issue where structuredClone'd
-    // objects weren't triggering spec.theme reads in all deriveds downstream.
-    spec = { ...spec, theme: JSON.parse(JSON.stringify(newTheme)) };
+    // object (THEME_PRESETS is a module-level singleton).
+    const cleanTheme = cloneTheme(newTheme);
+    spec = { ...spec, theme: cleanTheme };
     baseThemeName = themeName;
     themeEdits = {};
+    // Refresh the reset target — a preset swap supersedes whatever was there.
+    initialTheme = cloneTheme(cleanTheme);
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -1690,9 +1715,11 @@ export function createForestStore() {
   // through setSpec({...spec, theme}) for this, which cleared the edits map.
   function setThemeObject(theme: WebSpec["theme"]) {
     if (!spec) return;
-    spec = { ...spec, theme: JSON.parse(JSON.stringify(theme)) };
+    const cleanTheme = cloneTheme(theme);
+    spec = { ...spec, theme: cleanTheme };
     baseThemeName = theme?.name ?? "default";
     themeEdits = {};
+    initialTheme = cloneTheme(cleanTheme);
   }
 
   /** Apply a single in-panel theme edit. Mutates spec.theme so the widget
@@ -1895,15 +1922,15 @@ export function createForestStore() {
     editingTarget = null;
     filterPopoverTarget = null;
 
-    // ── Restore theme from preset ────────────────────────────────────────
-    // If the user had in-panel theme edits, spec.theme now holds a mutated
-    // clone of the preset; replace it with a fresh clone so measurements
-    // below use the clean typography / spacing.
-    if (spec) {
-      const preset = THEME_PRESETS[baseThemeName as ThemeName];
-      if (preset) {
-        spec = { ...spec, theme: structuredClone(preset) };
-      }
+    // ── Restore theme from the initial snapshot ──────────────────────────
+    // initialTheme is the "clean" theme as of the last spec/preset/custom
+    // swap. This is NOT just THEME_PRESETS[baseThemeName]: if R supplied a
+    // pre-customized theme (`web_theme_modern() |> set_spacing(...)`), that
+    // customization lives on spec.theme but not on the raw preset, so
+    // resetting to the preset would silently drop it and change font size /
+    // vertical spacing. The snapshot preserves the caller-supplied shape.
+    if (spec && initialTheme) {
+      spec = { ...spec, theme: cloneTheme(initialTheme) };
     }
 
     // ── Re-measure auto-width columns ─────────────────────────────────────
