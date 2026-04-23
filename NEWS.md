@@ -1,3 +1,9 @@
+# tabviz 0.9.1
+
+## Bug fixes
+
+* **Document `ColumnSpec` slots `style_tooltip` and `formatter`.** Both slots were added in 0.9.0 but the `@param` entries were missing from the `ColumnSpec` roxygen block, producing an R CMD check WARNING. Doc-only fix; no behavior change.
+
 # tabviz 0.9.0
 
 ## New features
