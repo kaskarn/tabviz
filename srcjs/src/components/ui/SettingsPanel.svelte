@@ -6,10 +6,13 @@
   import TypographyControl from "./TypographyControl.svelte";
   import SpacingControl from "./SpacingControl.svelte";
   import ShapesControl from "./ShapesControl.svelte";
-  import AxisControl from "./AxisControl.svelte";
   import LayoutControl from "./LayoutControl.svelte";
   import GroupHeadersControl from "./GroupHeadersControl.svelte";
   import TabSelect from "./TabSelect.svelte";
+  // Axis settings are per-column now (via the column configure popover on
+  // viz_forest / viz_bar / viz_boxplot / viz_violin). The theme Axis tab
+  // was removed in v0.18 — R's set_axis() still exists for users who want
+  // a cross-cutting default, but the interactive surface is column-scoped.
   import ThemeSourceModal from "./ThemeSourceModal.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
 
@@ -36,7 +39,6 @@
     { id: "rowGroups",    label: "Row groups" },
     { id: "spacing",      label: "Spacing" },
     { id: "shapes",       label: "Viz" },
-    { id: "axis",         label: "Axis" },
     { id: "layout",       label: "Layout" },
   ];
   let activeTabId = $state<string>("basics");
@@ -234,8 +236,6 @@
               <SpacingControl {store} />
             {:else if tab.id === "shapes"}
               <ShapesControl {store} />
-            {:else if tab.id === "axis"}
-              <AxisControl {store} />
             {:else if tab.id === "layout"}
               <LayoutControl {store} />
             {/if}

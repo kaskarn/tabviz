@@ -145,10 +145,17 @@
     e.preventDefault();
     columnEditorTarget = null;
     const def = getVisualTypeDef(column.type);
-    // Only offer "Configure…" when the slot-based editor can round-trip this
-    // type. authorOnly viz types (viz_bar/viz_boxplot/viz_violin) have empty
-    // slot lists and must be configured in R via extra_columns.
-    const canConfigure = !!def && !def.authorOnly && def.slots.length > 0;
+    // Offer "Configure…" when either the slot-based editor can round-trip
+    // this type, OR the column is a viz_* type (bar/boxplot/violin) which
+    // uses the multi-effect editor built into the configure popover
+    // (added in v0.18).
+    const isMultiEffectViz =
+      column.type === "viz_bar" ||
+      column.type === "viz_boxplot" ||
+      column.type === "viz_violin";
+    const canConfigure =
+      isMultiEffectViz ||
+      (!!def && !def.authorOnly && def.slots.length > 0);
     headerContextMenu = {
       columnId: column.id,
       columnHeader: column.header ?? column.field,

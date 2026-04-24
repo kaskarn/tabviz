@@ -1,3 +1,51 @@
+# tabviz 0.18.0
+
+## Multi-effect viz configure + axis cleanup
+
+### viz_bar / viz_boxplot / viz_violin get interactive configure
+
+Previously the three "dynamic-cardinality" viz column types were marked
+`authorOnly` and had no interactive configure UI — users had to drop
+back to R to edit them. The configure popover now includes a full CRUD
+multi-effect editor:
+
+- **Add effect** button inserts a blank row at the end.
+- Each effect row shows its data binding(s), label (optional), color
+  picker + hex input, opacity. Move-up / move-down / remove buttons
+  live in the row header.
+- `viz_boxplot` has a "Data shape" selector at the top: choose between
+  array-column mode (single `data` field per effect) or precomputed
+  stats mode (`min`/`q1`/`median`/`q3`/`max` plus optional
+  `outliers`). The selector remembers your pick across sessions.
+- `viz_violin` requires a single array `data` field per effect.
+- `viz_bar` requires a single `value` field per effect.
+
+The column-header context menu now surfaces "Configure…" for all three
+viz types.
+
+### Compact col_* slot rows
+
+Slot-field selectors (Point / Lower / Upper for col_interval, Value for
+col_bar, etc.) render as inline `Label: [select]` rows instead of
+stacked label + select. Matches the advanced-settings inline idiom.
+Required vs optional status shows as a muted trailing tag instead of a
+parenthetical so the label reads cleanly at a glance.
+
+### Removed: Axis theme tab
+
+The theme-level Axis tab duplicated per-column settings once v0.17
+exposed every axis knob on the viz_forest configure popover. Dropped
+from the settings panel. `set_axis()` in R still exists as a
+cross-cutting default; the interactive surface is now column-scoped.
+
+### Notes
+
+The authorOnly flag on viz_bar / viz_boxplot / viz_violin
+`VisualTypeDef` entries is now honored only by the type picker (users
+can't pick these from "Insert column" → type menu without an
+`extra_columns` bundle from R). Configure on existing viz columns is
+always available.
+
 # tabviz 0.17.0
 
 ## Second beta feedback pass + deferred configure work

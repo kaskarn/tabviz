@@ -82,6 +82,30 @@
   // settings pane.
   let optHeaderAlign = $state<"left" | "center" | "right">("left");
 
+  // ─ Multi-effect viz editor state ──────────────────────────────────────
+  //
+  // viz_bar / viz_boxplot / viz_violin columns render a list of "effects"
+  // (each effect = one bar / box / violin stacked in the cell). The editor
+  // keeps a raw list of effect records and a per-type schema; UI renders
+  // each row dynamically based on the active type.
+  //
+  // Effects are stored as plain records here (stringly-typed field refs)
+  // and converted back into the strongly-typed VizBarEffect /
+  // VizBoxplotEffect / VizViolinEffect on commit.
+  type VizEffectRow = {
+    label?: string;
+    color?: string;
+    opacity?: string; // stringified for the number input; empty = "no override"
+    value?: string; // viz_bar
+    data?: string; // viz_boxplot / viz_violin
+    min?: string; q1?: string; median?: string; q3?: string; max?: string; outliers?: string; // viz_boxplot
+  };
+  let vizEffects = $state<VizEffectRow[]>([]);
+  // viz_boxplot has two data modes: "array" uses a single `data` column;
+  // "stats" uses the five precomputed stats columns. UI exposes a
+  // toggle so users don't have to guess which slots to fill.
+  let vizBoxplotMode = $state<"array" | "stats">("array");
+
   let popoverEl: HTMLDivElement | null = $state(null);
   let resolvedLeft = $state(0);
   let resolvedTop = $state(0);
@@ -107,6 +131,12 @@
       resetOptions();
       // Apply any seed options provided by the type menu (e.g. Integer → decimals=0).
       if (target.seedOptions) hydrateOptionsFromBundle(selectedType, target.seedOptions);
+      // viz_* columns start with a single blank effect row so the user
+      // has something to fill in. Insert a second via the "Add effect"
+      // button.
+      if (selectedType === "viz_bar" || selectedType === "viz_boxplot" || selectedType === "viz_violin") {
+        vizEffects = [newEffect()];
+      }
     }
   });
 
@@ -133,6 +163,70 @@
     optForestAxisRangeMax = "";
     optForestAxisTicks = "";
     optHeaderAlign = "left";
+    vizEffects = [];
+    vizBoxplotMode = "array";
+  }
+
+  /** Seed a new effect with sensible defaults for the active viz type. */
+  function newEffect(): VizEffectRow {
+    return {};
+  }
+
+  /** Hydrate the vizEffects array from an existing ColumnSpec's options. */
+  function hydrateVizEffectsFromExisting(ex: ColumnSpec) {
+    const o = ex.options ?? {};
+    if (ex.type === "viz_bar") {
+      const effs = (o.bar?.effects ?? []) as Array<Record<string, unknown>>;
+      vizEffects = effs.map((e) => ({
+        value: (e.value as string) ?? "",
+        label: (e.label as string) ?? "",
+        color: (e.color as string) ?? "",
+        opacity: e.opacity != null ? String(e.opacity) : "",
+      }));
+    } else if (ex.type === "viz_boxplot") {
+      const effs = (o.boxplot?.effects ?? []) as Array<Record<string, unknown>>;
+      // Detect mode from the first effect — array if `data` is set,
+      // stats if the five stat columns are present.
+      const first = effs[0] ?? {};
+      vizBoxplotMode = first.data ? "array" : "stats";
+      vizEffects = effs.map((e) => ({
+        data: (e.data as string) ?? "",
+        min: (e.min as string) ?? "",
+        q1: (e.q1 as string) ?? "",
+        median: (e.median as string) ?? "",
+        q3: (e.q3 as string) ?? "",
+        max: (e.max as string) ?? "",
+        outliers: (e.outliers as string) ?? "",
+        label: (e.label as string) ?? "",
+        color: (e.color as string) ?? "",
+        opacity: e.opacity != null ? String(e.opacity) : "",
+      }));
+    } else if (ex.type === "viz_violin") {
+      const effs = (o.violin?.effects ?? []) as Array<Record<string, unknown>>;
+      vizEffects = effs.map((e) => ({
+        data: (e.data as string) ?? "",
+        label: (e.label as string) ?? "",
+        color: (e.color as string) ?? "",
+        opacity: e.opacity != null ? String(e.opacity) : "",
+      }));
+    }
+  }
+
+  function addEffect() {
+    vizEffects = [...vizEffects, newEffect()];
+  }
+  function removeEffect(idx: number) {
+    vizEffects = vizEffects.filter((_, i) => i !== idx);
+  }
+  function moveEffect(idx: number, delta: number) {
+    const next = [...vizEffects];
+    const target = idx + delta;
+    if (target < 0 || target >= next.length) return;
+    [next[idx], next[target]] = [next[target], next[idx]];
+    vizEffects = next;
+  }
+  function updateEffect(idx: number, patch: Partial<VizEffectRow>) {
+    vizEffects = vizEffects.map((e, i) => (i === idx ? { ...e, ...patch } : e));
   }
 
   // Pull option defaults out of a partial options bundle into the editor state.
@@ -186,6 +280,9 @@
   function hydrateOptionsFromExisting(ex: ColumnSpec) {
     resetOptions();
     if (ex.options) hydrateOptionsFromBundle(ex.type, ex.options);
+    if (ex.type === "viz_bar" || ex.type === "viz_boxplot" || ex.type === "viz_violin") {
+      hydrateVizEffectsFromExisting(ex);
+    }
   }
 
   // Reconstruct slot→field mapping from an existing ColumnSpec.
@@ -231,9 +328,26 @@
     return out;
   });
 
-  // Every required slot is filled.
+  // Every required slot is filled. For viz_* types (which use the
+  // multi-effect editor, not slots) we require at least one effect with
+  // its minimum data binding(s) filled in.
   const canCommit = $derived.by(() => {
     if (!currentDef) return false;
+    if (selectedType === "viz_bar") {
+      return vizEffects.length > 0 && vizEffects.every((e) => !!e.value);
+    }
+    if (selectedType === "viz_boxplot") {
+      if (vizEffects.length === 0) return false;
+      if (vizBoxplotMode === "array") {
+        return vizEffects.every((e) => !!e.data);
+      }
+      return vizEffects.every(
+        (e) => !!e.min && !!e.q1 && !!e.median && !!e.q3 && !!e.max,
+      );
+    }
+    if (selectedType === "viz_violin") {
+      return vizEffects.length > 0 && vizEffects.every((e) => !!e.data);
+    }
     for (const s of currentDef.slots) {
       if (s.required && !slotValues[s.key]) return false;
     }
@@ -263,7 +377,12 @@
   function buildSpec(): ColumnSpec {
     const def = currentDef!;
     const primary = def.slots[0]?.key;
-    const primaryField = primary ? slotValues[primary] : "";
+    // viz_* columns have empty slot lists (effects live in their own
+    // editor). For those, fall back to the first effect's data field so
+    // the spec gets a non-empty id/field on insert.
+    const isViz = selectedType === "viz_bar" || selectedType === "viz_boxplot" || selectedType === "viz_violin";
+    const vizFirstField = isViz ? (vizEffects[0]?.value ?? vizEffects[0]?.data ?? vizEffects[0]?.median ?? "") : "";
+    const primaryField = primary ? slotValues[primary] : vizFirstField;
     const baseId = target?.mode === "configure" && target.existing ? target.existing.id : primaryField;
     // Header alignment is an explicit control now. Default suggestion on
     // insert: right for numeric/pvalue (numeric readability), center for
@@ -404,6 +523,60 @@
       case "reference":
         if (slotValues.hrefField) options.reference = { hrefField: slotValues.hrefField };
         break;
+      case "viz_bar": {
+        // Strip empty-string fields so the emitted options object is clean.
+        const effects = vizEffects
+          .filter((e) => e.value)
+          .map((e) => {
+            const out: Record<string, unknown> = { value: e.value };
+            if (e.label)  out.label = e.label;
+            if (e.color)  out.color = e.color;
+            if (e.opacity && Number.isFinite(Number(e.opacity))) {
+              out.opacity = Number(e.opacity);
+            }
+            return out;
+          });
+        options.bar = { type: "bar", effects };
+        break;
+      }
+      case "viz_boxplot": {
+        const effects = vizEffects.map((e) => {
+          const out: Record<string, unknown> = {};
+          if (vizBoxplotMode === "array") {
+            if (e.data) out.data = e.data;
+          } else {
+            if (e.min)      out.min = e.min;
+            if (e.q1)       out.q1 = e.q1;
+            if (e.median)   out.median = e.median;
+            if (e.q3)       out.q3 = e.q3;
+            if (e.max)      out.max = e.max;
+            if (e.outliers) out.outliers = e.outliers;
+          }
+          if (e.label) out.label = e.label;
+          if (e.color) out.color = e.color;
+          if (e.opacity && Number.isFinite(Number(e.opacity))) {
+            out.opacity = Number(e.opacity);
+          }
+          return out;
+        });
+        options.boxplot = { type: "boxplot", effects };
+        break;
+      }
+      case "viz_violin": {
+        const effects = vizEffects
+          .filter((e) => e.data)
+          .map((e) => {
+            const out: Record<string, unknown> = { data: e.data };
+            if (e.label) out.label = e.label;
+            if (e.color) out.color = e.color;
+            if (e.opacity && Number.isFinite(Number(e.opacity))) {
+              out.opacity = Number(e.opacity);
+            }
+            return out;
+          });
+        options.violin = { type: "violin", effects };
+        break;
+      }
     }
 
     if (Object.keys(options).length > 0) spec.options = options;
@@ -505,11 +678,17 @@
     <!-- Slot filler + type-specific options -->
     {#if currentDef}
       <div class="editor-body">
+        <!-- Compact slot rows: "Label: [field select]" on one line, same
+             idiom as the advanced-settings fields. Optional flag trails
+             the label in a muted hue so the eye catches required vs. not. -->
         {#each currentDef.slots as slot, i (slot.key)}
           {@const choices = slotChoices[slot.key] ?? []}
-          <label class="editor-field">
-            <span>{slot.label}{slot.required ? "" : " (optional)"}</span>
+          <div class="slot-row">
+            <span class="slot-label">
+              {slot.label}{#if !slot.required}<span class="slot-optional"> optional</span>{/if}
+            </span>
             <select
+              class="slot-select"
               value={slotValues[slot.key] ?? ""}
               onchange={(e) => {
                 const v = (e.currentTarget as HTMLSelectElement).value;
@@ -522,7 +701,7 @@
                 <option value={f.field}>{f.label}</option>
               {/each}
             </select>
-          </label>
+          </div>
         {/each}
 
         <!-- Compact header row: "Header: [ name box ] L | C | R  [✓ show]"
@@ -743,6 +922,172 @@
             <span>Show percentage</span>
           </label>
         {/if}
+
+        <!-- ─ Multi-effect viz editor ─────────────────────────────── -->
+        <!-- viz_bar / viz_boxplot / viz_violin columns carry a list of
+             effects. Each row is one bar / box / violin in the cell.
+             Full CRUD: add, remove, reorder, edit per-effect fields. -->
+        {#if selectedType === "viz_bar" || selectedType === "viz_boxplot" || selectedType === "viz_violin"}
+          {#if selectedType === "viz_boxplot"}
+            <div class="slot-row">
+              <span class="slot-label">Data shape</span>
+              <select
+                class="slot-select"
+                value={vizBoxplotMode}
+                onchange={(e) => (vizBoxplotMode = (e.currentTarget as HTMLSelectElement).value as "array" | "stats")}
+              >
+                <option value="array">Array column (raw values)</option>
+                <option value="stats">Precomputed stats (min/Q1/median/Q3/max)</option>
+              </select>
+            </div>
+          {/if}
+
+          <div class="effects-section">
+            <div class="effects-header">
+              <span class="section-title">Effects ({vizEffects.length})</span>
+              <button type="button" class="add-effect" onclick={addEffect}>+ Add effect</button>
+            </div>
+
+            {#each vizEffects as eff, idx (idx)}
+              <div class="effect-card">
+                <div class="effect-top">
+                  <span class="effect-num">#{idx + 1}</span>
+                  <input
+                    type="text"
+                    class="effect-label"
+                    placeholder="Label (optional)"
+                    value={eff.label ?? ""}
+                    oninput={(e) => updateEffect(idx, { label: (e.currentTarget as HTMLInputElement).value })}
+                  />
+                  <div class="effect-actions">
+                    <button
+                      type="button"
+                      class="effect-move"
+                      disabled={idx === 0}
+                      title="Move up"
+                      aria-label="Move effect up"
+                      onclick={() => moveEffect(idx, -1)}
+                    >▲</button>
+                    <button
+                      type="button"
+                      class="effect-move"
+                      disabled={idx === vizEffects.length - 1}
+                      title="Move down"
+                      aria-label="Move effect down"
+                      onclick={() => moveEffect(idx, 1)}
+                    >▼</button>
+                    <button
+                      type="button"
+                      class="effect-remove"
+                      title="Remove effect"
+                      aria-label="Remove effect"
+                      onclick={() => removeEffect(idx)}
+                    >×</button>
+                  </div>
+                </div>
+
+                <!-- Data slot(s) per viz type -->
+                {#if selectedType === "viz_bar"}
+                  <div class="slot-row">
+                    <span class="slot-label">Value</span>
+                    <select
+                      class="slot-select"
+                      value={eff.value ?? ""}
+                      onchange={(e) => updateEffect(idx, { value: (e.currentTarget as HTMLSelectElement).value })}
+                    >
+                      <option value="" disabled>Select a field…</option>
+                      {#each available as f (f.field)}
+                        <option value={f.field}>{f.label}</option>
+                      {/each}
+                    </select>
+                  </div>
+                {:else if selectedType === "viz_violin"}
+                  <div class="slot-row">
+                    <span class="slot-label">Data</span>
+                    <select
+                      class="slot-select"
+                      value={eff.data ?? ""}
+                      onchange={(e) => updateEffect(idx, { data: (e.currentTarget as HTMLSelectElement).value })}
+                    >
+                      <option value="" disabled>Select an array field…</option>
+                      {#each available as f (f.field)}
+                        <option value={f.field}>{f.label}</option>
+                      {/each}
+                    </select>
+                  </div>
+                {:else if selectedType === "viz_boxplot"}
+                  {#if vizBoxplotMode === "array"}
+                    <div class="slot-row">
+                      <span class="slot-label">Data</span>
+                      <select
+                        class="slot-select"
+                        value={eff.data ?? ""}
+                        onchange={(e) => updateEffect(idx, { data: (e.currentTarget as HTMLSelectElement).value })}
+                      >
+                        <option value="" disabled>Select an array field…</option>
+                        {#each available as f (f.field)}
+                          <option value={f.field}>{f.label}</option>
+                        {/each}
+                      </select>
+                    </div>
+                  {:else}
+                    {#each (["min","q1","median","q3","max","outliers"] as const) as k (k)}
+                      <div class="slot-row">
+                        <span class="slot-label">{k === "outliers" ? "Outliers (optional)" : k.toUpperCase()}</span>
+                        <select
+                          class="slot-select"
+                          value={(eff as Record<string, string | undefined>)[k] ?? ""}
+                          onchange={(e) => updateEffect(idx, { [k]: (e.currentTarget as HTMLSelectElement).value })}
+                        >
+                          <option value="">Select a field…</option>
+                          {#each available as f (f.field)}
+                            <option value={f.field}>{f.label}</option>
+                          {/each}
+                        </select>
+                      </div>
+                    {/each}
+                  {/if}
+                {/if}
+
+                <!-- Visual overrides (color + opacity) common to all viz types -->
+                <div class="effect-visuals">
+                  <label class="effect-color">
+                    <span>Color</span>
+                    <input
+                      type="color"
+                      value={eff.color && /^#[0-9a-f]{6}$/i.test(eff.color) ? eff.color : "#3b82f6"}
+                      oninput={(e) => updateEffect(idx, { color: (e.currentTarget as HTMLInputElement).value })}
+                      aria-label="Effect color"
+                    />
+                    <input
+                      type="text"
+                      class="color-hex"
+                      placeholder="auto"
+                      value={eff.color ?? ""}
+                      oninput={(e) => updateEffect(idx, { color: (e.currentTarget as HTMLInputElement).value })}
+                    />
+                  </label>
+                  <label class="effect-opacity">
+                    <span>Opacity</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      placeholder="auto"
+                      value={eff.opacity ?? ""}
+                      oninput={(e) => updateEffect(idx, { opacity: (e.currentTarget as HTMLInputElement).value })}
+                    />
+                  </label>
+                </div>
+              </div>
+            {/each}
+
+            {#if vizEffects.length === 0}
+              <div class="effects-empty">No effects. Click "+ Add effect" to start.</div>
+            {/if}
+          </div>
+        {/if}
       </div>
     {:else}
       <div class="editor-empty">Pick a column type above to continue.</div>
@@ -760,8 +1105,8 @@
 <style>
   .col-editor-popover {
     position: fixed;
-    width: 320px;
-    max-height: 520px;
+    width: 360px;
+    max-height: 580px;
     padding: 10px;
     background: var(--wf-bg, #ffffff);
     border: 1px solid var(--wf-border, #e2e8f0);
@@ -971,5 +1316,194 @@
   }
   .editor-footer .secondary:hover {
     background: var(--wf-border, #f1f5f9);
+  }
+
+  /* ─ Compact slot rows ──────────────────────────────────────────── */
+  .slot-row {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 1px 0;
+  }
+  .slot-label {
+    font-size: 11px;
+    color: var(--wf-secondary, #64748b);
+    font-weight: 500;
+  }
+  .slot-optional {
+    font-weight: 400;
+    opacity: 0.7;
+    font-size: 10px;
+  }
+  .slot-select {
+    width: 100%;
+    min-width: 0;
+    padding: 3px 6px;
+    border: 1px solid var(--wf-border, #e2e8f0);
+    border-radius: 4px;
+    background: var(--wf-bg, #ffffff);
+    color: var(--wf-fg, #1a1a1a);
+    font-size: 12px;
+    font-family: inherit;
+  }
+
+  /* ─ Multi-effect editor ────────────────────────────────────────── */
+  .effects-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid var(--wf-border, #e2e8f0);
+    padding-top: 8px;
+  }
+  .effects-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .section-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--wf-secondary, #64748b);
+  }
+  .add-effect {
+    padding: 2px 8px;
+    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 20%, var(--wf-border, #e2e8f0));
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 8%, var(--wf-bg, #ffffff));
+    color: var(--wf-primary, #2563eb);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .add-effect:hover {
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 16%, var(--wf-bg, #ffffff));
+  }
+
+  .effect-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 8px;
+    border: 1px solid var(--wf-border, #e2e8f0);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 3%, var(--wf-bg, #ffffff));
+  }
+  .effect-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .effect-num {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--wf-secondary, #64748b);
+    font-variant-numeric: tabular-nums;
+    min-width: 18px;
+  }
+  .effect-label {
+    flex: 1;
+    min-width: 0;
+    padding: 2px 6px;
+    border: 1px solid var(--wf-border, #e2e8f0);
+    border-radius: 4px;
+    background: var(--wf-bg, #ffffff);
+    color: var(--wf-fg, #1a1a1a);
+    font-size: 11px;
+    font-family: inherit;
+  }
+  .effect-actions {
+    display: inline-flex;
+    gap: 2px;
+  }
+  .effect-actions button {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--wf-border, #e2e8f0);
+    border-radius: 3px;
+    background: var(--wf-bg, #ffffff);
+    color: var(--wf-secondary, #64748b);
+    font-size: 10px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .effect-actions button:hover:not(:disabled) {
+    color: var(--wf-primary, #2563eb);
+    border-color: color-mix(in srgb, var(--wf-primary, #2563eb) 40%, var(--wf-border, #e2e8f0));
+  }
+  .effect-actions button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .effect-remove {
+    color: #dc2626 !important;
+    font-size: 14px !important;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .effect-remove:hover:not(:disabled) {
+    background: rgba(220, 38, 38, 0.08) !important;
+    border-color: #dc2626 !important;
+  }
+
+  .effect-visuals {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .effect-color,
+  .effect-opacity {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--wf-secondary, #64748b);
+  }
+  .effect-color input[type="color"] {
+    width: 22px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--wf-border, #e2e8f0);
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--wf-bg, #ffffff);
+  }
+  .color-hex {
+    width: 70px;
+    padding: 2px 4px;
+    border: 1px solid var(--wf-border, #e2e8f0);
+    border-radius: 3px;
+    background: var(--wf-bg, #ffffff);
+    color: var(--wf-fg, #1a1a1a);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10px;
+  }
+  .effect-opacity input[type="number"] {
+    width: 52px;
+    padding: 2px 4px;
+    border: 1px solid var(--wf-border, #e2e8f0);
+    border-radius: 3px;
+    background: var(--wf-bg, #ffffff);
+    color: var(--wf-fg, #1a1a1a);
+    font-size: 10px;
+    font-family: inherit;
+  }
+
+  .effects-empty {
+    padding: 10px;
+    text-align: center;
+    border: 1px dashed var(--wf-border, #e2e8f0);
+    border-radius: 6px;
+    color: var(--wf-secondary, #64748b);
+    font-size: 11px;
+    font-style: italic;
   }
 </style>
