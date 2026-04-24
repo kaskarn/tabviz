@@ -1,3 +1,66 @@
+# tabviz 0.17.0
+
+## Second beta feedback pass + deferred configure work
+
+Follow-up on v0.16's feedback batch. The deferred column configure rework
+landed (partially), plus a half-dozen smaller fixes from fresh feedback.
+
+### Column configure — viz_forest gets full axis settings
+
+`viz_forest` columns in the configure popover now expose every axis-level
+knob: scale, null_value, axis_label, axis_range (min/max), axis_ticks
+(comma-separated list), show_axis, axis_gridlines. Previously only
+`scale` was editable interactively; users had to drop to R for the rest.
+
+The Header row was compacted into a single inline strip:
+`Header: [ input ] L | C | R  [✓ show]` — header text, alignment
+segmented-control, and show-header checkbox all on one line.
+
+viz_bar / viz_boxplot / viz_violin configure still routes through R
+(their multi-effect surface doesn't fit the slot-based popover); that's
+deferred further.
+
+### Reverted — in-widget Add-label ghost affordances
+
+Reserving empty header/footer slots for the v0.15 "Add title…" /
+"Add subtitle…" / "Add caption…" / "Add footnote…" ghosts broke
+intentional spacing between the table and whichever labels WERE set.
+Reverted: PlotHeader and PlotFooter render only when a label is
+present. Existing labels keep double-click editing; labels are added
+via the Basics settings tab (where the four text fields already live).
+
+### Fixed
+
+- **Header background dark-mode bleed-through.** `ColorPalette@header_bg`
+  defaulted to `"#ffffff"` in R, so every preset — including dark
+  variants — serialized a white column-header bg over its dark row bg.
+  Changed default to `NA_character_`; the serializer resolves `NA`
+  to `row_bg` at emit time, giving every preset a palette-appropriate
+  header band.
+- **Row-group padding was horizontal.** v0.16 applied
+  `spacing.row_group_padding` as horizontal padding, but user intent was
+  *vertical* separation above each group header — breathing room
+  between the previous rows and the next group label. Now applied as
+  `padding-top` that stacks with `cell_padding_y`, and skipped for the
+  first row so a group header directly below the column-header row
+  doesn't get extra top gap.
+- **plot_padding + container_padding compounded.** Two padding knobs
+  with overlapping scope produced double gutters in the interactive
+  widget. Kept `container_padding` as the single outer-gutter control
+  for the live widget; `plot_padding` stays SVG-export-only (its
+  historical role). UI hint updated in the Spacing tab.
+- **Auto-column widths stale after theme/spacing changes.** Switching
+  preset or editing typography / spacing / shapes in the panel left
+  columns sized from the initial-mount measurement. `setTheme`,
+  `setThemeObject`, and `setThemeField` (when editing a
+  width-affecting section) now invalidate cached widths and re-run
+  `measureAutoColumns()`.
+- **Row-group background vs banding overlap.** When banding paints a
+  level's row bg (group-mode or explicit `group-N`), that level's
+  Background control in the Row groups tab is now disabled with a
+  "Set by banding — change in Basics" chip, so users don't chase
+  ghost edits.
+
 # tabviz 0.16.0
 
 ## Beta feedback pass

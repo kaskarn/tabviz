@@ -65,6 +65,22 @@
   let optMaxStars = $state<string>("");
   let optDomainMin = $state<string>("");
   let optDomainMax = $state<string>("");
+  // Forest column per-column options (beyond scale). These live on the
+  // ColumnSpec.options.forest slot and override theme.axis equivalents
+  // for that specific column — a per-column forest plot's axis config
+  // is inherently column-specific.
+  let optForestNullValue = $state<string>("");
+  let optForestAxisLabel = $state<string>("");
+  let optForestShowAxis = $state<boolean>(true);
+  let optForestAxisGridlines = $state<boolean>(false);
+  let optForestAxisRangeMin = $state<string>("");
+  let optForestAxisRangeMax = $state<string>("");
+  let optForestAxisTicks = $state<string>(""); // comma-separated
+  // Header alignment (per-column) — an inline control alongside the
+  // header text input so "Header: [ box ] lft|ctr|rgt  [✓show]" fits
+  // on a single row and matches the layout idiom from the advanced
+  // settings pane.
+  let optHeaderAlign = $state<"left" | "center" | "right">("left");
 
   let popoverEl: HTMLDivElement | null = $state(null);
   let resolvedLeft = $state(0);
@@ -79,6 +95,7 @@
       selectedType = ex.type;
       headerText = ex.header ?? "";
       showHeader = resolveShowHeader(ex.showHeader, ex.header);
+      optHeaderAlign = (ex.align as "left" | "center" | "right") ?? "left";
       slotValues = slotsFromExistingSpec(ex);
       hydrateOptionsFromExisting(ex);
     } else {
@@ -108,6 +125,14 @@
     optMaxStars = "";
     optDomainMin = "";
     optDomainMax = "";
+    optForestNullValue = "";
+    optForestAxisLabel = "";
+    optForestShowAxis = true;
+    optForestAxisGridlines = false;
+    optForestAxisRangeMin = "";
+    optForestAxisRangeMax = "";
+    optForestAxisTicks = "";
+    optHeaderAlign = "left";
   }
 
   // Pull option defaults out of a partial options bundle into the editor state.
@@ -139,7 +164,20 @@
         optDomainMax = String(o.stars.domain[1]);
       }
     }
-    if (type === "forest" && o.forest?.scale) optScale = o.forest.scale;
+    if (type === "forest") {
+      if (o.forest?.scale) optScale = o.forest.scale;
+      if (o.forest?.nullValue != null) optForestNullValue = String(o.forest.nullValue);
+      if (o.forest?.axisLabel != null) optForestAxisLabel = o.forest.axisLabel;
+      if (o.forest?.showAxis != null) optForestShowAxis = !!o.forest.showAxis;
+      if (o.forest?.axisGridlines != null) optForestAxisGridlines = !!o.forest.axisGridlines;
+      if (Array.isArray(o.forest?.axisRange) && o.forest.axisRange.length === 2) {
+        optForestAxisRangeMin = String(o.forest.axisRange[0]);
+        optForestAxisRangeMax = String(o.forest.axisRange[1]);
+      }
+      if (Array.isArray(o.forest?.axisTicks)) {
+        optForestAxisTicks = o.forest.axisTicks.join(", ");
+      }
+    }
     if (type === "interval" && o.interval?.decimals != null) optDecimals = String(o.interval.decimals);
     if (type === "sparkline" && o.sparkline?.type) optSparklineType = o.sparkline.type;
     if (type === "custom" && o.events?.showPct != null) optShowPct = !!o.events.showPct;
@@ -227,7 +265,20 @@
     const primary = def.slots[0]?.key;
     const primaryField = primary ? slotValues[primary] : "";
     const baseId = target?.mode === "configure" && target.existing ? target.existing.id : primaryField;
-    const align = selectedType === "numeric" || selectedType === "pvalue" ? "right" : "left";
+    // Header alignment is an explicit control now. Default suggestion on
+    // insert: right for numeric/pvalue (numeric readability), center for
+    // forest/bar-like viz columns, left otherwise. Users override via the
+    // Header row's alignment segmented.
+    const inferredAlign =
+      selectedType === "numeric" || selectedType === "pvalue" ? "right" :
+      selectedType === "forest" || selectedType === "bar" || selectedType === "viz_bar" ||
+      selectedType === "viz_boxplot" || selectedType === "viz_violin" || selectedType === "sparkline"
+        ? "center"
+        : "left";
+    const align =
+      target?.mode === "configure"
+        ? optHeaderAlign
+        : inferredAlign;
 
     const spec: ColumnSpec = {
       id: baseId,
@@ -301,17 +352,34 @@
       case "sparkline":
         options.sparkline = { type: optSparklineType };
         break;
-      case "forest":
-        options.forest = {
+      case "forest": {
+        const forest: NonNullable<NonNullable<ColumnSpec["options"]>["forest"]> = {
           point: slotValues.point,
           lower: slotValues.lower,
           upper: slotValues.upper,
           scale: optScale,
-          nullValue: optScale === "log" ? 1 : 0,
-          axisLabel: "",
-          showAxis: true,
+          nullValue: optForestNullValue !== ""
+            ? Number(optForestNullValue)
+            : (optScale === "log" ? 1 : 0),
+          axisLabel: optForestAxisLabel,
+          showAxis: optForestShowAxis,
         };
+        if (optForestAxisGridlines) forest.axisGridlines = true;
+        const rMin = optForestAxisRangeMin !== "" ? Number(optForestAxisRangeMin) : null;
+        const rMax = optForestAxisRangeMax !== "" ? Number(optForestAxisRangeMax) : null;
+        if (rMin != null && rMax != null && Number.isFinite(rMin) && Number.isFinite(rMax)) {
+          forest.axisRange = [rMin, rMax];
+        }
+        if (optForestAxisTicks.trim() !== "") {
+          const ticks = optForestAxisTicks
+            .split(/[,\s]+/)
+            .map((s) => Number(s))
+            .filter((n) => Number.isFinite(n));
+          if (ticks.length > 0) forest.axisTicks = ticks;
+        }
+        options.forest = forest;
         break;
+      }
       case "interval":
         options.interval = {
           point: slotValues.point,
@@ -457,20 +525,54 @@
           </label>
         {/each}
 
-        <label class="editor-field">
-          <span>Header</span>
+        <!-- Compact header row: "Header: [ name box ] L | C | R  [✓ show]"
+             puts the four related controls on one line so the popover is
+             denser. Mirrors the advanced-settings inline-row idiom. -->
+        <div class="header-row">
+          <span class="editor-label">Header</span>
           <input
             type="text"
+            class="header-input"
             bind:value={headerText}
             placeholder={slotValues[currentDef.slots[0]?.key] ?? "Column header"}
             disabled={!showHeader}
           />
-        </label>
-
-        <label class="editor-check">
-          <input type="checkbox" bind:checked={showHeader} />
-          <span>Show header</span>
-        </label>
+          <div class="align-seg" role="radiogroup" aria-label="Header alignment">
+            {#each (["left", "center", "right"] as const) as a (a)}
+              <button
+                type="button"
+                class:selected={optHeaderAlign === a}
+                onclick={() => (optHeaderAlign = a)}
+                title={`Align ${a}`}
+                aria-label={`Align ${a}`}
+              >
+                {#if a === "left"}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="12" x2="15" y2="12" />
+                    <line x1="3" y1="18" x2="18" y2="18" />
+                  </svg>
+                {:else if a === "center"}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="6" y1="12" x2="18" y2="12" />
+                    <line x1="4" y1="18" x2="20" y2="18" />
+                  </svg>
+                {:else}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="9" y1="12" x2="21" y2="12" />
+                    <line x1="6" y1="18" x2="21" y2="18" />
+                  </svg>
+                {/if}
+              </button>
+            {/each}
+          </div>
+          <label class="show-check" title="Show column header">
+            <input type="checkbox" bind:checked={showHeader} />
+            <span>show</span>
+          </label>
+        </div>
 
         <!-- Type-specific options -->
         {#if selectedType === "numeric" || selectedType === "heatmap" || selectedType === "interval"}
@@ -568,13 +670,60 @@
         {/if}
 
         {#if selectedType === "forest"}
+          <div class="editor-row">
+            <label class="editor-field">
+              <span>Scale</span>
+              <select bind:value={optScale}>
+                <option value="linear">Linear</option>
+                <option value="log">Log</option>
+              </select>
+            </label>
+            <label class="editor-field">
+              <span>Null value</span>
+              <input
+                type="number"
+                step="any"
+                bind:value={optForestNullValue}
+                placeholder={optScale === "log" ? "1" : "0"}
+              />
+            </label>
+          </div>
           <label class="editor-field">
-            <span>Scale</span>
-            <select bind:value={optScale}>
-              <option value="linear">Linear</option>
-              <option value="log">Log</option>
-            </select>
+            <span>Axis label</span>
+            <input
+              type="text"
+              bind:value={optForestAxisLabel}
+              placeholder="Effect"
+            />
           </label>
+          <div class="editor-row">
+            <label class="editor-field">
+              <span>Axis min</span>
+              <input type="number" step="any" bind:value={optForestAxisRangeMin} placeholder="auto" />
+            </label>
+            <label class="editor-field">
+              <span>Axis max</span>
+              <input type="number" step="any" bind:value={optForestAxisRangeMax} placeholder="auto" />
+            </label>
+          </div>
+          <label class="editor-field">
+            <span>Axis ticks</span>
+            <input
+              type="text"
+              bind:value={optForestAxisTicks}
+              placeholder="auto, or e.g. 0.5, 1, 2"
+            />
+          </label>
+          <div class="check-row">
+            <label class="editor-check">
+              <input type="checkbox" bind:checked={optForestShowAxis} />
+              <span>Show axis</span>
+            </label>
+            <label class="editor-check">
+              <input type="checkbox" bind:checked={optForestAxisGridlines} />
+              <span>Gridlines</span>
+            </label>
+          </div>
         {/if}
 
         {#if selectedType === "sparkline"}
@@ -678,6 +827,71 @@
   .editor-row .editor-field {
     flex: 1;
     min-width: 0;
+  }
+  .check-row {
+    display: flex;
+    gap: 14px;
+  }
+
+  /* Compact single-line "Header: [input] L|C|R [✓show]" row. */
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+  }
+  .editor-label {
+    font-size: 11px;
+    color: var(--wf-secondary, #64748b);
+    font-weight: 500;
+  }
+  .header-input {
+    flex: 1;
+    min-width: 0;
+    padding: 3px 6px;
+    border: 1px solid var(--wf-border, #e2e8f0);
+    border-radius: 4px;
+    background: var(--wf-bg, #ffffff);
+    color: var(--wf-fg, #1a1a1a);
+    font-size: 12px;
+  }
+  .header-input:disabled {
+    opacity: 0.45;
+  }
+  .align-seg {
+    display: inline-flex;
+    border: 1px solid var(--wf-border, #e2e8f0);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .align-seg button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--wf-secondary, #64748b);
+    cursor: pointer;
+  }
+  .align-seg button + button {
+    border-left: 1px solid var(--wf-border, #e2e8f0);
+  }
+  .align-seg button.selected {
+    background: color-mix(in srgb, var(--wf-primary, #3b82f6) 18%, var(--wf-bg, #ffffff));
+    color: var(--wf-primary, #3b82f6);
+  }
+  .show-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 10.5px;
+    color: var(--wf-secondary, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    cursor: pointer;
   }
   .editor-body {
     display: flex;

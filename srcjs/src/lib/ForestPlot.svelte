@@ -102,11 +102,12 @@
   const labelCaption = $derived(store.getPlotLabel("caption"));
   const labelFootnote = $derived(store.getPlotLabel("footnote"));
 
-  // Whether the header area should render — always true when the user can
-  // edit (so the "Add title…" affordance has somewhere to live), otherwise
-  // only when a real label exists (preserves pre-edit visual behavior).
+  // Header/footer render only when a real label is present. Reserving an
+  // empty header slot for an "Add title…" affordance broke intentional
+  // spacing between the table and whichever labels WERE set (e.g. title
+  // present, subtitle absent). Labels are added via Basics settings tab.
   const labelsEditable = $derived(!!spec?.interaction?.enableEdit);
-  const hasPlotHeader = $derived(!!labelTitle || !!labelSubtitle || labelsEditable);
+  const hasPlotHeader = $derived(!!labelTitle || !!labelSubtitle);
 
   // Check if we have column groups (need two-row header)
   const hasColumnGroups = $derived(
@@ -1489,7 +1490,8 @@
                 data-field={row ? column.field : undefined}
                 style:grid-row={gridRow}
                 style:background-color={effectiveBg}
-                style:padding-left={isGroupHeader ? `${rowDepth * 12 + (theme?.spacing?.rowGroupPadding ?? 0)}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
+                style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
+                style:padding-top={isGroupHeader && i > 0 ? `calc(var(--wf-cell-padding-y, 4px) + ${theme?.spacing?.rowGroupPadding ?? 0}px)` : undefined}
                 style={rowStyles || undefined}
                 role={isGroupHeader ? "button" : undefined}
                 tabindex={isGroupHeader ? 0 : undefined}
@@ -2342,11 +2344,13 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    /* Inner plot-padding — matches the SVG-export gutter controlled by
-       theme.spacing.padding so interactive and static renderings line up.
-       (theme.spacing.containerPadding is handled separately on .tabviz-
-       container and wraps the whole widget.) */
-    padding: var(--wf-padding, 12px);
+    /* No inner padding here by design. theme.spacing.containerPadding
+       already wraps the whole widget on .tabviz-container (the outer
+       padding knob). An additional interactive gutter from theme.spacing
+       .padding would compound with containerPadding and give the user two
+       sliders that produce overlapping effects. spacing.padding remains
+       an SVG-export-only knob; the interactive widget uses
+       containerPadding as its single outer-gutter control. */
     min-height: 0;
   }
 

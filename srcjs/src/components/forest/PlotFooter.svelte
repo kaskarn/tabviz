@@ -16,7 +16,11 @@
 
   let { caption, footnote, enableEdit = false, onedit }: Props = $props();
 
-  const show = $derived(!!caption || !!footnote || enableEdit);
+  // Render only when a label is present. An always-reserved footer slot
+  // would introduce spacing the author didn't ask for (see PlotHeader
+  // for the matching rationale). Labels are added via the Basics settings
+  // tab; this component keeps dblclick-to-edit on labels that are set.
+  const show = $derived(!!caption || !!footnote);
 
   function handle(field: "caption" | "footnote", e: MouseEvent) {
     if (!enableEdit || !onedit) return;
@@ -48,18 +52,6 @@
         role={enableEdit ? "button" : undefined}
         title={enableEdit ? "Double-click to edit caption" : undefined}
       >{caption}</p>
-    {:else if enableEdit}
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
-      <p
-        class="plot-caption add-label"
-        onclick={(e) => handle("caption", e)}
-        onkeydown={(e) => handleKey("caption", e)}
-        tabindex="0"
-        role="button"
-        title="Click to add a caption"
-      >Add caption…</p>
     {/if}
     {#if footnote}
       <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -74,18 +66,6 @@
         role={enableEdit ? "button" : undefined}
         title={enableEdit ? "Double-click to edit footnote" : undefined}
       >{footnote}</p>
-    {:else if enableEdit}
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
-      <p
-        class="plot-footnote add-label"
-        onclick={(e) => handle("footnote", e)}
-        onkeydown={(e) => handleKey("footnote", e)}
-        tabindex="0"
-        role="button"
-        title="Click to add a footnote"
-      >Add footnote…</p>
     {/if}
   </div>
 {/if}
@@ -119,24 +99,5 @@
 
   .editable {
     cursor: text;
-  }
-
-  .add-label {
-    cursor: text;
-    opacity: 0;
-    font-style: italic;
-    transition: opacity 0.18s ease;
-  }
-
-  .plot-footer:hover .add-label,
-  .plot-footer:focus-within .add-label,
-  .add-label:focus-visible {
-    opacity: 0.55;
-    outline: none;
-  }
-
-  .add-label:hover,
-  .add-label:focus-visible {
-    opacity: 0.85 !important;
   }
 </style>

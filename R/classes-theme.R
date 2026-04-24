@@ -18,10 +18,11 @@ ColorPalette <- new_class(
     # Row banding colors
     row_bg = new_property(class_character, default = "#ffffff"),      # Even row background
     alt_bg = new_property(class_character, default = "#f8fafc"),      # Odd row background (stripe)
-    # Column-header row background. Cascades from `row_bg` when unset via
-    # `set_colors()`, so existing themes render identically; themes that
-    # want a distinct header band can set this directly.
-    header_bg = new_property(class_character, default = "#ffffff"),
+    # Column-header row background. Default `NA` means "inherit from row_bg"
+    # — the serializer resolves the fallback before emitting, so every
+    # preset (including dark variants) gets the right column-header bg
+    # without having to stamp header_bg on each ColorPalette() call.
+    header_bg = new_property(class_character, default = NA_character_),
     # Interval visualization colors
     interval = new_property(class_character, default = "#0891b2"),  # Default marker color
     interval_line = new_property(class_character, default = "#475569"),
@@ -39,6 +40,8 @@ ColorPalette <- new_class(
     invalid <- character()
     for (prop in color_props) {
       value <- S7::prop(self, prop)
+      # NA is valid for `header_bg` (means "inherit from row_bg"); other
+      # palette slots require hex.
       if (!is.na(value) && !grepl(hex_pattern, value)) {
         invalid <- c(invalid, paste0(prop, " = '", value, "'"))
       }

@@ -1878,6 +1878,10 @@ export function createForestStore() {
     themeEdits = {};
     // Refresh the reset target — a preset swap supersedes whatever was there.
     initialTheme = cloneTheme(cleanTheme);
+    // Fonts / sizes / padding likely differ from the previous theme, so
+    // every auto-width measurement is stale. Invalidate and re-run.
+    columnWidths = {};
+    measureAutoColumns();
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -1890,7 +1894,14 @@ export function createForestStore() {
     baseThemeName = theme?.name ?? "default";
     themeEdits = {};
     initialTheme = cloneTheme(cleanTheme);
+    columnWidths = {};
+    measureAutoColumns();
   }
+
+  /** Sections whose edits change text metrics or cell geometry; changing any
+   *  field in these invalidates cached auto-widths. Banding/colors/axis are
+   *  paint-only and don't affect widths, so they stay out of this list. */
+  const WIDTH_AFFECTING_SECTIONS = new Set(["typography", "spacing", "shapes"]);
 
   /** Apply a single in-panel theme edit. Mutates spec.theme so the widget
    *  re-renders, and records the change so it can be exported as R code. */
@@ -1905,6 +1916,14 @@ export function createForestStore() {
     const nextEdits = { ...themeEdits };
     nextEdits[section] = { ...(nextEdits[section] ?? {}), [field]: value };
     themeEdits = nextEdits;
+    // If the edited section changes text metrics, invalidate widths and
+    // re-measure — otherwise the "Plot padding" slider, font-size bumps,
+    // marker-size tweaks etc. leave columns at their originally-measured
+    // widths and the layout looks unbalanced.
+    if (WIDTH_AFFECTING_SECTIONS.has(section)) {
+      columnWidths = {};
+      measureAutoColumns();
+    }
   }
 
   /**

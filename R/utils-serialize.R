@@ -407,7 +407,10 @@ serialize_theme <- function(theme) {
       border = theme@colors@border,
       rowBg = theme@colors@row_bg,
       altBg = theme@colors@alt_bg,
-      headerBg = theme@colors@header_bg,
+      # NA header_bg means "inherit from row_bg" — resolve at serialize
+      # time so presets that don't set header_bg explicitly still get a
+      # palette-appropriate column-header band in every theme.
+      headerBg = if (is.na(theme@colors@header_bg)) theme@colors@row_bg else theme@colors@header_bg,
       interval = theme@colors@interval,
       intervalLine = theme@colors@interval_line,
       summaryFill = theme@colors@summary_fill,

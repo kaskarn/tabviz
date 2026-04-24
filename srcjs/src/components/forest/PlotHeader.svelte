@@ -28,10 +28,12 @@
     controls,
   }: Props = $props();
 
-  // Render the area whenever we have a real label OR we're in edit mode and
-  // need to show Add-label affordances. This avoids a fully-empty header
-  // row on non-editable widgets (back-compat with the old behavior).
-  const show = $derived(!!title || !!subtitle || enableEdit);
+  // Render the area only when a real label is present. An always-reserved
+  // header slot (to host Add-label affordances) breaks intentional spacing
+  // between the table and whichever labels ARE set — e.g. when a widget has
+  // a title but no subtitle, an empty subtitle slot introduces a gap the
+  // author didn't ask for. Users add labels via the Basics settings tab.
+  const show = $derived(!!title || !!subtitle);
 
   function handle(field: "title" | "subtitle", e: MouseEvent) {
     if (!enableEdit || !onedit) return;
@@ -64,18 +66,6 @@
           role={enableEdit ? "button" : undefined}
           title={enableEdit ? "Double-click to edit title" : undefined}
         >{title}</h2>
-      {:else if enableEdit}
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-        <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
-        <h2
-          class="plot-title add-label"
-          onclick={(e) => handle("title", e)}
-          onkeydown={(e) => handleKey("title", e)}
-          tabindex="0"
-          role="button"
-          title="Click to add a title"
-        >Add title…</h2>
       {/if}
       {#if subtitle}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -90,18 +80,6 @@
           role={enableEdit ? "button" : undefined}
           title={enableEdit ? "Double-click to edit subtitle" : undefined}
         >{subtitle}</p>
-      {:else if enableEdit}
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-        <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
-        <p
-          class="plot-subtitle add-label"
-          onclick={(e) => handle("subtitle", e)}
-          onkeydown={(e) => handleKey("subtitle", e)}
-          tabindex="0"
-          role="button"
-          title="Click to add a subtitle"
-        >Add subtitle…</p>
       {/if}
     </div>
     {#if controls}
@@ -168,30 +146,5 @@
      cursor changes so authors can spot where edits land without visual noise. */
   .editable {
     cursor: text;
-  }
-
-  /* "Add title…" / "Add subtitle…" placeholder slots — only rendered when
-     enableEdit is on AND the matching label is absent. Hidden by default
-     so the widget reads as "finished" until the user moves the mouse over
-     the header area (or tabs into the slot). Feedback: the always-visible
-     35%-opacity ghosts were distracting in published widgets. */
-  .add-label {
-    cursor: text;
-    opacity: 0;
-    font-style: italic;
-    font-weight: var(--wf-font-weight-normal, 400);
-    transition: opacity 0.18s ease;
-  }
-
-  .header-area:hover .add-label,
-  .header-area:focus-within .add-label,
-  .add-label:focus-visible {
-    opacity: 0.55;
-    outline: none;
-  }
-
-  .add-label:hover,
-  .add-label:focus-visible {
-    opacity: 0.85 !important;
   }
 </style>
