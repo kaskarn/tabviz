@@ -100,6 +100,34 @@ ColumnSpec <- new_class(
   }
 )
 
+#' Internal: compute the default id for a column given its type and field.
+#'
+#' Rule: `<type>_<field>`. Two columns with different types on the same
+#' field get different default ids ("numeric_n" vs "bar_n") — no dedup
+#' needed. Two columns with the same (type, field) pair produce the same
+#' default and the dedup/error path handles the collision.
+#'
+#' Special cases:
+#'  - Synthetic fields produced by viz helpers (`"_forest_<point>"`) are
+#'    stripped of the `_<type>_` prefix so the id doesn't double-prefix
+#'    (`viz_forest(point="hr")` → id `"forest_hr"`, not
+#'    `"forest__forest_hr"`).
+#'  - Empty / NA / zero-length fields fall back to just the type name
+#'    (`viz_forest(effects=list(...))` with no single point field → id
+#'    `"forest"`; a second one triggers the collision path).
+#' @noRd
+default_column_id <- function(type, field) {
+  if (is.null(field) || length(field) == 0 || is.na(field) || !nzchar(field)) {
+    return(type)
+  }
+  # Strip `_<type>_` prefix from synthetic viz fields.
+  synthetic_prefix <- paste0("_", type, "_")
+  if (startsWith(field, synthetic_prefix)) {
+    field <- substr(field, nchar(synthetic_prefix) + 1L, nchar(field))
+  }
+  paste0(type, "_", field)
+}
+
 #' Internal: is this id reserved for frontend sentinels?
 #'
 #' The frontend's store reserves a small set of literal strings as scope /
@@ -122,6 +150,11 @@ is_reserved_id <- function(id) {
 #' @param field Data field name to display
 #' @param header Display header (defaults to field name)
 #' @param type Column type
+#' @param id Optional unique id for the column. Defaults to
+#'   `<type>_<field>` (e.g. `"numeric_n"`) so two columns of different
+#'   types on the same field never collide. Pass an explicit id to
+#'   disambiguate same-type columns on the same field, or to give a
+#'   column a stable human-readable id for use in modifier calls.
 #' @param width Column width in pixels, or "auto" for content-based width
 #' @param align Text alignment for body cells
 #' @param header_align Text alignment for the header cell: "left", "center",
@@ -162,6 +195,7 @@ web_col <- function(
              "icon", "badge", "stars", "img", "reference", "range", "forest",
              "heatmap", "progress",
              "viz_bar", "viz_boxplot", "viz_violin", "custom"),
+    id = NULL,
     width = NULL,
     align = NULL,
     header_align = NULL,
@@ -213,8 +247,20 @@ web_col <- function(
     type <- "text"
   }
 
+  # Resolve the column id. Explicit `id = ...` from the caller wins. If
+  # absent, default to `<type>_<field>` so columns of different types on the
+  # same field ("numeric_n" vs "bar_n") don't collide by default. Synthetic
+  # fields (viz_forest uses "_forest_<point>") are stripped so the id
+  # doesn't double-prefix.
+  resolved_id <- if (!is.null(id)) {
+    checkmate::assert_string(id)
+    id
+  } else {
+    default_column_id(type, field)
+  }
+
   ColumnSpec(
-    id = field,
+    id = resolved_id,
     header = header,
     field = field,
     type = type,

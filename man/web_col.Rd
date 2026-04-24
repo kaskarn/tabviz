@@ -10,6 +10,7 @@ web_col(
   type = c("text", "numeric", "interval", "bar", "pvalue", "sparkline", "icon", "badge",
     "stars", "img", "reference", "range", "forest", "heatmap", "progress", "viz_bar",
     "viz_boxplot", "viz_violin", "custom"),
+  id = NULL,
   width = NULL,
   align = NULL,
   header_align = NULL,
@@ -37,6 +38,12 @@ web_col(
 \item{header}{Display header (defaults to field name)}
 
 \item{type}{Column type}
+
+\item{id}{Optional unique id for the column. Defaults to
+\verb{<type>_<field>} (e.g. \code{"numeric_n"}) so two columns of different
+types on the same field never collide. Pass an explicit id to
+disambiguate same-type columns on the same field, or to give a
+column a stable human-readable id for use in modifier calls.}
 
 \item{width}{Column width in pixels, or "auto" for content-based width}
 

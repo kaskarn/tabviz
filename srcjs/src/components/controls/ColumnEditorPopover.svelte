@@ -389,7 +389,12 @@
     const isViz = selectedType === "viz_bar" || selectedType === "viz_boxplot" || selectedType === "viz_violin";
     const vizFirstField = isViz ? (vizEffects[0]?.value ?? vizEffects[0]?.data ?? vizEffects[0]?.median ?? "") : "";
     const primaryField = primary ? slotValues[primary] : vizFirstField;
-    const baseId = target?.mode === "configure" && target.existing ? target.existing.id : primaryField;
+    // Default id scheme mirrors R's `<type>_<field>` (v0.21+). `mintUniqueColumnId`
+    // will disambiguate with a `_2` suffix if the id is already taken — the
+    // error-on-collision behavior only applies to R-authored specs, not
+    // interactive inserts where the user can't edit R source to fix a clash.
+    const proposedId = primaryField ? `${selectedType}_${primaryField}` : selectedType;
+    const baseId = target?.mode === "configure" && target.existing ? target.existing.id : proposedId;
     // Header alignment is an explicit control now. Default suggestion on
     // insert: right for numeric/pvalue (numeric readability), center for
     // forest/bar-like viz columns, left otherwise. Users override via the
