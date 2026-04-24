@@ -1618,6 +1618,7 @@
                 style:grid-row={gridRow}
                 style:background-color={cellBg ?? effectiveBg}
                 style:text-align={column.align}
+                style:justify-content={column.align === "center" ? "center" : column.align === "right" ? "flex-end" : "flex-start"}
                 style={rowStyles || undefined}
                 onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
                 onmouseleave={row ? () => handleRowLeave() : undefined}

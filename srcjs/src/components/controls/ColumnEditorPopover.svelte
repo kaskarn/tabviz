@@ -134,6 +134,10 @@
       headerText = "";
       showHeader = true;
       resetOptions();
+      // resetOptions no longer touches optAlign/optHeaderAlign; reset
+      // them here on insert so the segmented buttons start clean.
+      optAlign = "left";
+      optHeaderAlign = null;
       // Apply any seed options provided by the type menu (e.g. Integer → decimals=0).
       if (target.seedOptions) hydrateOptionsFromBundle(selectedType, target.seedOptions);
       // viz_* columns start with a single blank effect row so the user
@@ -167,8 +171,13 @@
     optForestAxisRangeMin = "";
     optForestAxisRangeMax = "";
     optForestAxisTicks = "";
-    optAlign = "left";
-    optHeaderAlign = null;
+    // `optAlign` and `optHeaderAlign` are intentionally NOT reset here:
+    // resetOptions() runs inside `hydrateOptionsFromExisting()` (called
+    // AFTER the $effect has initialized them from `ex.align` /
+    // `ex.headerAlign`) and inside the insert branch. Clobbering them
+    // here would overwrite the just-set values and the segmented
+    // buttons would always open on "left" when a user hit Configure —
+    // that's the v0.21.x "alignment menu isn't sticky" bug.
     vizEffects = [];
     vizBoxplotMode = "array";
   }
