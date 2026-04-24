@@ -1388,21 +1388,33 @@
             {@const vizDefaultWidth = column.type === "forest"
               ? (column.options?.forest?.width ?? layout.forestWidth)
               : (typeof column.width === "number" ? column.width : layout.forestWidth)}
+            {@const canSortViz = !!spec?.interaction.enableSort && column.sortable !== false}
+            {@const vizSortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
               use:forestColumnRef={column.id}
               class="grid-cell header-cell plot-header"
+              class:sortable={canSortViz}
               data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
               style:text-align={column.headerAlign ?? column.align}
               oncontextmenu={(e) => openHeaderContextMenu(column, e)}
+              onclick={canSortViz ? (e) => {
+                const target = e.target as HTMLElement;
+                if (target.closest('.resize-handle') || target.closest('.drag-handle')) return;
+                store.toggleSort(column.field);
+              } : undefined}
             >
               {#if spec?.interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column" id={column.id} root={containerRef} />
               {/if}
               {#if resolveShowHeader(column.showHeader, column.header)}
                 <span class="header-text">{column.header}</span>
+              {/if}
+              {#if canSortViz && vizSortDir !== "none"}
+                <SortIndicator direction={vizSortDir} />
               {/if}
               {#if spec?.interaction.enableResize}
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -1415,7 +1427,7 @@
           {:else}
             <!-- Leaf column header -->
             {@const column = cell.col as ColumnSpec}
-            {@const canSort = !!spec?.interaction.enableSort && column.sortable && column.type !== "forest"}
+            {@const canSort = !!spec?.interaction.enableSort && column.sortable}
             {@const sortDir = store.sortConfig?.column === column.field ? store.sortConfig.direction : "none"}
             {@const isPrimaryHeader = column.id === primaryColumnId}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -2574,6 +2586,17 @@
 
   .plot-overlay :global(.interactive) {
     pointer-events: auto;
+  }
+
+  /* Paint mode: let clicks fall through the SVG overlay to the underlying
+     `.plot-cell` div so its onclick fires `handleCellClick` (which in
+     turn routes to `setRowSemantic` / `setCellSemantic`). Without this,
+     the SVG's `pointer-events: auto` captures the click first and the
+     row/cell paint toggle never runs — paint only worked when the user
+     happened to click outside the SVG but inside the cell boundary. */
+  :global(.tabviz-container.paint-active) .plot-overlay,
+  :global(.tabviz-container.paint-active) .plot-overlay :global(*) {
+    pointer-events: none !important;
   }
 
   /* Row hover effect - apply to all cells in a row via CSS sibling selectors */

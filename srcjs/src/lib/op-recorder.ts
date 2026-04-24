@@ -33,7 +33,10 @@ export interface OpRecord {
     | "paint_row"
     | "paint_cell"
     | "set_theme"
-    | "set_shared_column_widths";
+    | "set_shared_column_widths"
+    | "sort_rows"
+    | "filter_rows"
+    | "clear_filters";
   /** Monotonic timestamp (ms since epoch) — purely for debugging + ordering stability. */
   ts: number;
 }
@@ -191,6 +194,37 @@ export const ops = {
   setSharedColumnWidths: (enabled: boolean): OpRecord => ({
     kind: "set_shared_column_widths",
     rCall: rCall("set_shared_column_widths", [enabled ? "TRUE" : "FALSE"]),
+    ts: now(),
+  }),
+
+  /**
+   * Positional arg is the data field (the R verb calls it `by`). We emit
+   * it positionally so the reader can copy-paste directly.
+   */
+  sortRows: (field: string, direction: "asc" | "desc"): OpRecord => ({
+    kind: "sort_rows",
+    rCall: rCall("sort_rows", [rPositional(field), rNamed("direction", direction)]),
+    ts: now(),
+  }),
+
+  /**
+   * Filter a single field by operator + value. Mirrors the R verb's
+   * signature (`filter_rows(x, field, operator, value)`) — operator is
+   * one of `"eq"`, `"neq"`, `"gt"`, `"lt"`, `"contains"`.
+   */
+  setFilter: (field: string, operator: string, value: unknown): OpRecord => ({
+    kind: "filter_rows",
+    rCall: rCall("filter_rows", [
+      rPositional(field),
+      rNamed("operator", operator),
+      rNamed("value", value),
+    ]),
+    ts: now(),
+  }),
+
+  clearFilters: (): OpRecord => ({
+    kind: "clear_filters",
+    rCall: "clear_filters()",
     ts: now(),
   }),
 };

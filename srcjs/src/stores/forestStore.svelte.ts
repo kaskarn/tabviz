@@ -430,17 +430,26 @@ export function createForestStore() {
   }
 
   // Derived: column definitions reflecting user reorder overrides + edits.
-  // Applied recursively: top-level sibling order, then each column-group's child order.
+  //
+  // Flow: apply edits *first* (hide, configure, insert) so the merged list
+  // contains user-inserted columns at their default `afterId` positions,
+  // THEN apply the reorder override on top. This way the override can
+  // rearrange inserted columns just like author-defined ones — the old
+  // "reorder first, then splice inserts" path left inserted columns
+  // pinned to their original anchor because the override knew nothing
+  // about them.
   const effectiveColumnDefs = $derived.by((): ColumnDef[] => {
     if (!spec) return [];
-    const topOrdered = applyColumnOrder(spec.columns, columnOrderOverrides.topLevel);
-    const withEdits = applyColumnEdits(topOrdered, true);
-    return withEdits.map((def) => {
+    const merged = applyColumnEdits(spec.columns, true);
+    const topOrdered = applyColumnOrder(merged, columnOrderOverrides.topLevel);
+    return topOrdered.map((def) => {
       if (def.isGroup) {
-        const childOrder = columnOrderOverrides.byGroup[def.id];
-        const reorderedChildren = applyColumnOrder(def.columns, childOrder);
-        const childrenWithEdits = applyColumnEdits(reorderedChildren, false);
-        return { ...def, columns: childrenWithEdits };
+        const mergedChildren = applyColumnEdits(def.columns, false);
+        const reorderedChildren = applyColumnOrder(
+          mergedChildren,
+          columnOrderOverrides.byGroup[def.id],
+        );
+        return { ...def, columns: reorderedChildren };
       }
       return def;
     });
@@ -1324,21 +1333,34 @@ export function createForestStore() {
 
   function sortBy(column: string, direction: "asc" | "desc" | "none") {
     sortConfig = direction === "none" ? null : { column, direction };
+    if (direction !== "none") {
+      appendOp(ops.sortRows(column, direction));
+    }
   }
 
   // Cycle sort state for a column: none → asc → desc → none
   function toggleSort(column: string) {
     if (!sortConfig || sortConfig.column !== column) {
       sortConfig = { column, direction: "asc" };
+      appendOp(ops.sortRows(column, "asc"));
     } else if (sortConfig.direction === "asc") {
       sortConfig = { column, direction: "desc" };
+      appendOp(ops.sortRows(column, "desc"));
     } else {
       sortConfig = null;
+      // Cycling back to "no sort" is the natural inverse of `sort_rows(...)`.
+      // Emit `clear_filters()`-style reset via a dedicated verb? For now we
+      // omit — the recorder's append-only model already contains the prior
+      // sort, and there's no `sort_rows(..., direction = "none")` form in
+      // the R API yet. Author can clear by re-clicking or by editing.
     }
   }
 
   function setFilter(filter: FilterConfig | null) {
     filterConfig = filter;
+    if (filter) {
+      appendOp(ops.setFilter(filter.field, filter.operator, filter.value));
+    }
   }
 
   // Multi-column filter API (per-header popovers)
@@ -1346,14 +1368,22 @@ export function createForestStore() {
     if (filter === null) {
       const { [field]: _removed, ...rest } = filters;
       filters = rest;
+      // A per-column clear is a no-op when the column wasn't filtered to
+      // begin with; the recorder treats it as "remove this one filter"
+      // which the R side expresses as `filter_rows(col, op = "none", …)`.
+      // For now we record nothing on clear — the "View source" panel
+      // already reflects the absence.
     } else {
       filters = { ...filters, [field]: filter };
+      appendOp(ops.setFilter(field, filter.operator, filter.value));
     }
   }
 
   function clearAllFilters() {
+    const hadFilters = Object.keys(filters).length > 0 || filterConfig !== null;
     filters = {};
     filterConfig = null;
+    if (hadFilters) appendOp(ops.clearFilters());
   }
 
   function getColumnFilter(field: string): ColumnFilter | null {

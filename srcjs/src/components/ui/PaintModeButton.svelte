@@ -118,8 +118,10 @@
         </button>
       {/if}
 
-      <div class="row row-tokens">
-        <span class="row-label">Token</span>
+      <!-- Token row: three chips are self-describing, no "Token" label
+           needed — makes the popover less cluttered. Chips are full-width
+           in the row so tap targets stay generous. -->
+      <div class="row row-tokens" role="radiogroup" aria-label="Paint token">
         <div class="chips">
           {#each tokens as t (t.id)}
             <button
@@ -127,6 +129,8 @@
               class="chip chip-{t.id}"
               class:selected={tool?.token === t.id}
               onclick={() => pickToken(t.id)}
+              role="radio"
+              aria-checked={tool?.token === t.id}
             >{t.label}</button>
           {/each}
         </div>
@@ -253,18 +257,21 @@
     color: var(--wf-secondary, #64748b);
   }
 
-  /* Loud exit — accent color with X icon, top of the popover. Sized to
-     stand out against the quieter chrome below. */
+  /* Loud exit — accent-outlined with X icon, top of the popover. Uses
+     the theme's accent color for BOTH the border and the text, with a
+     subtle accent-tinted bg, so it stays readable across every shipped
+     theme (the old hardcoded `color: #ffffff` vanished against white
+     backgrounds on themes where the accent tint resolved lightly). */
   .exit-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 5px;
     padding: 5px 10px;
-    border: none;
+    border: 1.5px solid var(--wf-accent, #8b5cf6);
     border-radius: 6px;
-    background: var(--wf-accent, #8b5cf6);
-    color: #ffffff;
+    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 12%, transparent);
+    color: var(--wf-accent, #8b5cf6);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.01em;
@@ -273,7 +280,7 @@
   }
 
   .exit-btn:hover {
-    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 88%, #000000);
+    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 22%, transparent);
   }
 
   .exit-btn:active {

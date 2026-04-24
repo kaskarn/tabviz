@@ -150,6 +150,28 @@ describe("ops helpers", () => {
       "set_shared_column_widths(FALSE)",
     );
   });
+
+  test("sortRows", () => {
+    expect(ops.sortRows("hr", "asc").rCall).toBe(
+      'sort_rows("hr", direction = "asc")',
+    );
+    expect(ops.sortRows("hr", "desc").rCall).toBe(
+      'sort_rows("hr", direction = "desc")',
+    );
+  });
+
+  test("setFilter", () => {
+    expect(ops.setFilter("drug", "contains", "metf").rCall).toBe(
+      'filter_rows("drug", operator = "contains", value = "metf")',
+    );
+    expect(ops.setFilter("n", "gt", 100).rCall).toBe(
+      'filter_rows("n", operator = "gt", value = 100)',
+    );
+  });
+
+  test("clearFilters", () => {
+    expect(ops.clearFilters().rCall).toBe("clear_filters()");
+  });
 });
 
 describe("renderColumnBuilder", () => {
