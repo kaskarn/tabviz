@@ -22,8 +22,9 @@
   // mixed by position). Each group is one SettingsSection.
   const baseFields = [
     { key: "background", label: "Background", hint: "Widget background" },
-    { key: "foreground", label: "Foreground", hint: "Base text (headers, UI chrome)" },
+    { key: "foreground", label: "Foreground", hint: "Base text (titles, UI chrome)" },
     { key: "cellForeground", label: "Cell text", hint: "Data cell text (inherits foreground by default)" },
+    { key: "headerForeground", label: "Header text", hint: "Column header text (inherits cell text by default)" },
     { key: "primary", label: "Primary", hint: "Accents, active state" },
     { key: "secondary", label: "Secondary", hint: "Subdued text" },
     { key: "accent", label: "Accent", hint: "Highlights, hover" },

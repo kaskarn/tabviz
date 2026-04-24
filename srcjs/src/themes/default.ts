@@ -12,6 +12,7 @@ export const defaultColors: ColorPalette = {
   altBg: "#f8fafc",
   headerBg: "#ffffff",
   cellForeground: "#1a1a1a",
+  headerForeground: "#1a1a1a",
   interval: "#2563eb",
   intervalLine: "#475569",
   summaryFill: "#2563eb",

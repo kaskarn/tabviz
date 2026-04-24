@@ -418,6 +418,16 @@ serialize_theme <- function(theme) {
       # at-emit pattern as header_bg so presets get the right value for
       # free.
       cellForeground = if (is.na(theme@colors@cell_foreground)) theme@colors@foreground else theme@colors@cell_foreground,
+      # header_foreground cascades: explicit → cell_foreground → foreground.
+      # Resolve eagerly so the frontend doesn't need to know about the
+      # chain.
+      headerForeground = if (!is.na(theme@colors@header_foreground)) {
+        theme@colors@header_foreground
+      } else if (!is.na(theme@colors@cell_foreground)) {
+        theme@colors@cell_foreground
+      } else {
+        theme@colors@foreground
+      },
       interval = theme@colors@interval,
       intervalLine = theme@colors@interval_line,
       summaryFill = theme@colors@summary_fill,

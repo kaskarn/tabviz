@@ -2553,7 +2553,7 @@ function renderUnifiedColumnHeaders(
         font-family="${theme.typography.fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
-        fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+        fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
     }
     currentX += labelWidth;
 
@@ -2574,7 +2574,7 @@ function renderUnifiedColumnHeaders(
           font-size="${fontSize}px"
           font-weight="${boldWeight}"
           text-anchor="middle"
-          fill="${theme.colors.foreground}">${escapeXml(col.header)}</text>`);
+          fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(col.header)}</text>`);
         groupBorders.push({ x1: currentX, x2: currentX + groupWidth });
         currentX += groupWidth;
       } else {
@@ -2589,7 +2589,7 @@ function renderUnifiedColumnHeaders(
             font-size="${fontSize}px"
             font-weight="${fontWeight}"
             text-anchor="${anchor}"
-            fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+            fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
         }
         currentX += width;
       }
@@ -2619,7 +2619,7 @@ function renderUnifiedColumnHeaders(
                 font-size="${fontSize}px"
                 font-weight="${fontWeight}"
                 text-anchor="${anchor}"
-                fill="${theme.colors.foreground}">${escapeXml(sub.header)}</text>`);
+                fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(sub.header)}</text>`);
             }
             currentX += width;
           }
@@ -2637,7 +2637,7 @@ function renderUnifiedColumnHeaders(
         font-family="${theme.typography.fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
-        fill="${theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+        fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
     }
     currentX += labelWidth;
 
@@ -2656,7 +2656,7 @@ function renderUnifiedColumnHeaders(
           font-size="${fontSize}px"
           font-weight="${fontWeight}"
           text-anchor="${anchor}"
-          fill="${theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+          fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
       }
       currentX += width;
     }

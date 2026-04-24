@@ -28,6 +28,12 @@ ColorPalette <- new_class(
     # affecting column headers, titles, or UI chrome (which keep using
     # `foreground`).
     cell_foreground = new_property(class_character, default = NA_character_),
+    # Column-header text color. Default `NA` cascades from `cell_foreground`
+    # (which itself cascades from `foreground`), so existing themes render
+    # identically. Set explicitly to give the header row its own text
+    # color distinct from data cells — symmetric with `header_bg` for
+    # background.
+    header_foreground = new_property(class_character, default = NA_character_),
     # Interval visualization colors
     interval = new_property(class_character, default = "#0891b2"),  # Default marker color
     interval_line = new_property(class_character, default = "#475569"),
@@ -40,14 +46,15 @@ ColorPalette <- new_class(
     hex_pattern <- "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
     color_props <- c("background", "foreground", "primary", "secondary", "accent",
                      "muted", "border", "row_bg", "alt_bg", "header_bg",
-                     "cell_foreground",
+                     "cell_foreground", "header_foreground",
                      "interval", "interval_line",
                      "summary_fill", "summary_border")
     invalid <- character()
     for (prop in color_props) {
       value <- S7::prop(self, prop)
-      # NA is valid for `header_bg` (inherits row_bg) and `cell_foreground`
-      # (inherits foreground); other palette slots require hex.
+      # NA is valid for `header_bg` (inherits row_bg), `cell_foreground`
+      # (inherits foreground), and `header_foreground` (inherits cell
+      # text); other palette slots require hex.
       if (!is.na(value) && !grepl(hex_pattern, value)) {
         invalid <- c(invalid, paste0(prop, " = '", value, "'"))
       }
@@ -787,6 +794,10 @@ web_theme <- function(
 #'   not specified, so existing themes render identically. Set explicitly to
 #'   tint data cell text without affecting column headers, titles, or UI
 #'   chrome.
+#' @param header_foreground Column-header text color. Cascades from
+#'   `cell_foreground` (and ultimately `foreground`) if not specified.
+#'   Set explicitly to give the header row its own text color distinct
+#'   from data cells — symmetric with `header_bg` for background.
 #' @param ci_marker_fill Default CI marker fill color (default: "#0891b2"). If not
 #'   specified and `primary` is set, inherits from `primary`. Cascades to
 #'   `summary_fill` if not specified.
@@ -822,6 +833,7 @@ set_colors <- function(
     alt_bg = NULL,
     header_bg = NULL,
     cell_foreground = NULL,
+    header_foreground = NULL,
     ci_marker_fill = NULL,
     ci_line = NULL,
     summary_fill = NULL,
@@ -909,6 +921,12 @@ set_colors <- function(
   # need to stamp it — foreground already does the right thing.
   if (!is.null(cell_foreground)) {
     current@cell_foreground <- cell_foreground
+  }
+
+  # header_foreground mirrors: stays NA and cascades at serialize time to
+  # cell_foreground (or foreground) unless set explicitly.
+  if (!is.null(header_foreground)) {
+    current@header_foreground <- header_foreground
   }
 
   # Cascade marker colors:

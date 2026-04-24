@@ -433,6 +433,7 @@ export interface ColorPalette {
   altBg: string;      // Odd row background (stripe/banding)
   headerBg: string;   // Column-header row background (cascades from rowBg)
   cellForeground: string;  // Data-cell text color (cascades from foreground)
+  headerForeground: string;  // Column-header text (cascades from cellForeground → foreground)
   interval: string;  // Unified marker color (new default)
   intervalLine: string;
   summaryFill: string;

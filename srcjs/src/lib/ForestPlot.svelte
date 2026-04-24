@@ -1146,6 +1146,7 @@
       --wf-alt-bg: ${theme.colors.altBg};
       --wf-header-bg: ${theme.colors.headerBg ?? theme.colors.rowBg};
       --wf-cell-fg: ${theme.colors.cellForeground ?? theme.colors.foreground};
+      --wf-header-fg: ${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground};
       --wf-interval-line: ${theme.colors.intervalLine};
       --wf-summary-fill: ${theme.colors.summaryFill};
       --wf-summary-border: ${theme.colors.summaryBorder};
@@ -2439,7 +2440,7 @@
     font-size: calc(var(--wf-font-size-base, 0.875rem) * var(--wf-header-font-scale, 1.05));
     border-bottom: var(--wf-header-border-width, 2px) solid var(--wf-border);
     background: var(--wf-header-bg, var(--wf-row-bg, var(--wf-bg)));
-    color: var(--wf-fg);
+    color: var(--wf-header-fg, var(--wf-cell-fg, var(--wf-fg)));
     position: relative;
   }
 

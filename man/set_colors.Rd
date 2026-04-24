@@ -17,6 +17,7 @@ set_colors(
   alt_bg = NULL,
   header_bg = NULL,
   cell_foreground = NULL,
+  header_foreground = NULL,
   ci_marker_fill = NULL,
   ci_line = NULL,
   summary_fill = NULL,
@@ -64,6 +65,11 @@ distinguish the header band from data rows.}
 not specified, so existing themes render identically. Set explicitly to
 tint data cell text without affecting column headers, titles, or UI
 chrome.}
+
+\item{header_foreground}{Column-header text color. Cascades from
+\code{cell_foreground} (and ultimately \code{foreground}) if not specified.
+Set explicitly to give the header row its own text color distinct
+from data cells — symmetric with \code{header_bg} for background.}
 
 \item{ci_marker_fill}{Default CI marker fill color (default: "#0891b2"). If not
 specified and \code{primary} is set, inherits from \code{primary}. Cascades to
