@@ -38,7 +38,6 @@
   const intervalFields = [
     { key: "interval", label: "Interval", hint: "Point marker color" },
     { key: "intervalLine", label: "Interval line", hint: "CI whisker" },
-    { key: "intervalNeutral", label: "Interval neutral", hint: "Non-significant" },
   ];
 
   const summaryFields = [

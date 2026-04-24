@@ -11,9 +11,6 @@ export const defaultColors: ColorPalette = {
   rowBg: "#ffffff",
   altBg: "#f8fafc",
   interval: "#2563eb",
-  intervalPositive: "#16a34a",
-  intervalNegative: "#dc2626",
-  intervalNeutral: "#64748b",
   intervalLine: "#475569",
   summaryFill: "#2563eb",
   summaryBorder: "#1d4ed8",
@@ -34,14 +31,12 @@ export const defaultTypography: Typography = {
 export const defaultSpacing: Spacing = {
   rowHeight: 28,
   headerHeight: 36,
-  sectionGap: 16,
   padding: 12,
   containerPadding: 0,
   cellPaddingX: 8,
   cellPaddingY: 4,
   axisGap: 12,
   groupPadding: 8,
-  columnGap: 8,
 };
 
 export const defaultShapes: Shapes = {
@@ -71,8 +66,6 @@ export const defaultTheme: WebTheme = {
     markerMargin: true,
   },
   layout: {
-    plotPosition: "right",
-    tableWidth: "auto",
     plotWidth: "auto",
     containerBorder: false,
     containerBorderRadius: 4,

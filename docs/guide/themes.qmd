@@ -36,7 +36,7 @@ Each theme is designed with a specific context in mind:
 | Spacing | `set_spacing()` | row_height, header_height, padding, container_padding, cell_padding_x/y |
 | Shapes | `set_shapes()` | point_size, summary_height, line_width, effect_colors, marker_shapes |
 | Axis | `set_axis()` | range_min/max, tick_count, tick_values, gridlines, symmetric |
-| Layout | `set_layout()` | plot_position, row_border, container_border |
+| Layout | `set_layout()` | plot_width, container_border, container_border_radius, banding |
 | Group Headers | `set_group_headers()` | level*_font_size, level*_background, indent_per_level |
 | Effects | `set_effect_colors()`, `set_marker_shapes()` | Multi-effect default colors/shapes |
 
@@ -210,9 +210,6 @@ set_colors(
   muted             = "#94a3b8",   # Muted/disabled text color
   border            = "#e2e8f0",   # Border color for dividers
   ci_marker_fill    = "#2563eb",   # Default CI marker fill
-  ci_marker_positive = NULL,       # Optional override when upper < null
-  ci_marker_negative = NULL,       # Optional override when lower > null
-  ci_marker_neutral  = NULL,       # Optional override when CI crosses null
   ci_line           = "#475569",   # CI whisker line color
   summary_fill      = "#2563eb",   # Summary diamond fill
   summary_border    = "#1d4ed8"    # Summary diamond border
@@ -231,13 +228,12 @@ set_colors(
 | `accent` | `row_accent` text styling; annotation labels |
 | `muted` | Footnotes, captions; `row_muted` text styling |
 | `border` | Row dividers, container borders, table grid lines |
-| `ci_marker_fill` | Default CI marker fill (squares, circles, diamonds) |
-| `ci_marker_positive` / `_negative` / `_neutral` | Direction-aware fill overrides |
+| `ci_marker_fill` | Default CI marker fill (squares, circles, diamonds). Note: `shapes.effect_colors[0]` takes precedence when set — `ci_marker_fill` is the fallback. |
 | `ci_line` | CI whisker lines connecting lower to upper bounds |
-| `summary_fill` | Summary row diamond fill color |
+| `summary_fill` | Summary row diamond fill (rows flagged with `row_type = "summary"`) |
 | `summary_border` | Summary diamond outline/stroke |
 
-**Row styling colors**: use `row_emphasis`, `row_muted`, or `row_accent` to apply these colors to specific rows. See [Row Styling](row-styling.qmd).
+**Row styling colors**: use `row_emphasis`, `row_muted`, or `row_accent` to apply these colors to specific rows. See [Row Styling](row-styling.qmd). Since v0.13, each semantic token is a [`SemanticBundle`](../reference/SemanticBundle.html) — use `set_semantics()` to override fg / bg / border / marker_fill / font_weight / font_style per token.
 :::
 
 :::{.callout-tip}
@@ -245,6 +241,7 @@ set_colors(
 - Set `ci_marker_fill` and `primary` to the same value for a cohesive look.
 - Use a slightly darker `ci_line` than `ci_marker_fill` for subtle depth.
 - For conditional coloring (significant vs not), add a color column to your data and map it with `marker_color` in `viz_forest()`.
+- **Marker fill precedence**: `marker_color` (per-row) ▸ `semantics.<token>.marker_fill` ▸ `effect.color` (per-effect) ▸ `shapes.effect_colors[idx]` ▸ `colors.ci_marker_fill` (aka `interval`) ▸ `colors.primary`.
 :::
 
 ### Typography
@@ -392,11 +389,10 @@ Use `symmetric = TRUE` when comparing benefit vs harm magnitudes. This makes a H
 
 ```r
 set_layout(
-  plot_position = "right",    # "left" or "right"
-  row_border = TRUE,          # Show row borders
-  row_border_style = "solid", # "solid", "dashed", "dotted"
-  container_border = FALSE,   # Show border around container
-  container_border_radius = 8 # Corner radius in pixels
+  plot_width = "auto",        # Pixel width of the forest column, or "auto"
+  container_border = FALSE,   # Show border around the whole widget
+  container_border_radius = 8,# Corner radius in pixels (with border on)
+  banding = "group"           # "none", "row", "group", or "group-N"
 )
 ```
 

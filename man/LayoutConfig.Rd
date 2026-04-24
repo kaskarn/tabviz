@@ -5,8 +5,6 @@
 \title{LayoutConfig: Layout and visual configuration}
 \usage{
 LayoutConfig(
-  plot_position = "right",
-  table_width = "auto",
   plot_width = "auto",
   container_border = FALSE,
   container_border_radius = 8,
@@ -14,10 +12,6 @@ LayoutConfig(
 )
 }
 \arguments{
-\item{plot_position}{Position of forest plot: "left" or "right" (default: "right")}
-
-\item{table_width}{Width of table area: "auto" or numeric pixels (default: "auto")}
-
 \item{plot_width}{Width of plot area: "auto" or numeric pixels (default: "auto")}
 
 \item{container_border}{Show border around the plot container (default: FALSE)}

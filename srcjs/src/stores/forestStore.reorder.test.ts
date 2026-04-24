@@ -9,8 +9,7 @@ function minimalTheme(): WebTheme {
       background: "#fff", foreground: "#000", primary: "#2563eb",
       secondary: "#64748b", accent: "#8b5cf6", muted: "#94a3b8",
       border: "#e2e8f0", rowBg: "#fff", altBg: "#f8fafc",
-      interval: "#2563eb", intervalPositive: "#16a34a",
-      intervalNegative: "#dc2626", intervalNeutral: "#64748b",
+      interval: "#2563eb",
       intervalLine: "#64748b", summaryFill: "#000", summaryBorder: "#000",
     },
     typography: {
@@ -19,9 +18,9 @@ function minimalTheme(): WebTheme {
       fontWeightBold: 600, lineHeight: 1.4, headerFontScale: 1.05,
     },
     spacing: {
-      rowHeight: 28, headerHeight: 36, sectionGap: 12,
+      rowHeight: 28, headerHeight: 36,
       padding: 12, containerPadding: 0, cellPaddingX: 10,
-      cellPaddingY: 4, axisGap: 12, groupPadding: 8, columnGap: 8,
+      cellPaddingY: 4, axisGap: 12, groupPadding: 8,
     },
     shapes: { pointSize: 8, summaryHeight: 10, lineWidth: 1.5, borderRadius: 4 },
     axis: {
@@ -30,7 +29,7 @@ function minimalTheme(): WebTheme {
       includeNull: true, symmetric: null, nullTick: true, markerMargin: true,
     },
     layout: {
-      plotPosition: "right", tableWidth: "auto", plotWidth: "auto",
+      plotWidth: "auto",
       containerBorder: true, containerBorderRadius: 8, banding: true,
     },
     groupHeaders: {
@@ -75,7 +74,7 @@ function buildSpec(): WebSpec {
       enableFilters: false, enableReorderRows: true,
       enableReorderColumns: false, enableEdit: false,
     },
-    layout: { plotPosition: "right", tableWidth: "auto", plotWidth: "auto" },
+    layout: { plotWidth: "auto" },
   };
 }
 

@@ -68,9 +68,6 @@ const DEFAULT_THEME: WebTheme = {
     rowBg: "#ffffff",       // Even row background
     altBg: "#f8fafc",       // Odd row background (slate-50)
     interval: "#0891b2",          // Unified marker color
-    intervalPositive: "#0891b2",  // Match primary (deprecated)
-    intervalNegative: "#dc2626",  // (deprecated)
-    intervalNeutral: "#64748b",
     intervalLine: "#475569",
     summaryFill: "#0891b2",
     summaryBorder: "#0e7490",
@@ -89,14 +86,12 @@ const DEFAULT_THEME: WebTheme = {
   spacing: {
     rowHeight: 28,
     headerHeight: 36,
-    sectionGap: 16,
     padding: 12,
     containerPadding: 0,
     cellPaddingX: 10,
     cellPaddingY: 4,
     axisGap: 12,
     groupPadding: 8,
-    columnGap: 8,
   },
   shapes: {
     pointSize: 6,
@@ -120,8 +115,6 @@ const DEFAULT_THEME: WebTheme = {
     markerMargin: true,             // Add marker padding at edges
   },
   layout: {
-    plotPosition: "right",
-    tableWidth: "auto",
     plotWidth: "auto",
     containerBorder: false,
     containerBorderRadius: 8,
@@ -171,9 +164,6 @@ const MINIMAL_THEME: WebTheme = {
     rowBg: "#ffffff",
     altBg: "#fafafa",            // neutral-50
     interval: "#000000",         // Pure black markers
-    intervalPositive: "#000000",
-    intervalNegative: "#000000",
-    intervalNeutral: "#666666",
     intervalLine: "#000000",
     summaryFill: "#000000",
     summaryBorder: "#000000",
@@ -193,7 +183,6 @@ const MINIMAL_THEME: WebTheme = {
     ...DEFAULT_THEME.spacing,
     rowHeight: 24,
     headerHeight: 30,
-    sectionGap: 12,
     padding: 10,
   },
   shapes: {
@@ -226,9 +215,6 @@ const DARK_THEME: WebTheme = {
     rowBg: "#1e1e2e",              // Same as background
     altBg: "#232334",              // Slightly lighter
     interval: "#89b4fa",           // Catppuccin blue
-    intervalPositive: "#a6e3a1",   // Catppuccin green
-    intervalNegative: "#f38ba8",   // Catppuccin red
-    intervalNeutral: "#6c7086",
     intervalLine: "#9399b2",       // Catppuccin overlay2
     summaryFill: "#89b4fa",
     summaryBorder: "#74c7ec",      // Catppuccin sapphire
@@ -248,7 +234,6 @@ const DARK_THEME: WebTheme = {
     ...DEFAULT_THEME.spacing,
     rowHeight: 30,                 // Slightly taller for comfort
     headerHeight: 38,
-    sectionGap: 18,
     padding: 14,
   },
   shapes: {
@@ -281,9 +266,6 @@ const JAMA_THEME: WebTheme = {
     rowBg: "#ffffff",
     altBg: "#f9fafb",              // gray-50
     interval: "#000000",           // Pure black markers
-    intervalPositive: "#000000",
-    intervalNegative: "#000000",
-    intervalNeutral: "#555555",
     intervalLine: "#000000",
     summaryFill: "#000000",
     summaryBorder: "#000000",
@@ -303,7 +285,6 @@ const JAMA_THEME: WebTheme = {
     ...DEFAULT_THEME.spacing,
     rowHeight: 18,                 // Very compact rows
     headerHeight: 24,
-    sectionGap: 8,
     padding: 6,
     cellPaddingX: 8,               // Tighter cell padding
     cellPaddingY: 2,
@@ -338,9 +319,6 @@ const LANCET_THEME: WebTheme = {
     rowBg: "#fdfcfb",                // Same as background
     altBg: "#f8f7f6",                // Warm slate-50
     interval: "#00407a",
-    intervalPositive: "#00407a",
-    intervalNegative: "#9d2933",     // Deep crimson
-    intervalNeutral: "#3d5a80",
     intervalLine: "#1e3a5f",
     summaryFill: "#00407a",
     summaryBorder: "#002d54",
@@ -360,7 +338,6 @@ const LANCET_THEME: WebTheme = {
     ...DEFAULT_THEME.spacing,
     rowHeight: 26,                   // Slightly taller
     headerHeight: 34,
-    sectionGap: 16,
     padding: 12,
     cellPaddingX: 12,                // More breathing room
     cellPaddingY: 5,
@@ -395,9 +372,6 @@ const MODERN_THEME: WebTheme = {
     rowBg: "#fafafa",                // Same as background
     altBg: "#f4f4f5",                // zinc-100
     interval: "#3b82f6",
-    intervalPositive: "#22c55e",     // Green-500
-    intervalNegative: "#ef4444",     // Red-500
-    intervalNeutral: "#71717a",
     intervalLine: "#27272a",         // Darker for contrast
     summaryFill: "#3b82f6",
     summaryBorder: "#2563eb",        // Blue-600
@@ -417,7 +391,6 @@ const MODERN_THEME: WebTheme = {
     ...DEFAULT_THEME.spacing,
     rowHeight: 36,                   // Taller rows
     headerHeight: 44,
-    sectionGap: 24,
     padding: 16,
     cellPaddingX: 12,
     cellPaddingY: 6,
@@ -452,9 +425,6 @@ const PRESENTATION_THEME: WebTheme = {
     rowBg: "#ffffff",
     altBg: "#f8fafc",                // slate-50
     interval: "#0369a1",
-    intervalPositive: "#047857",     // Emerald-700
-    intervalNegative: "#be123c",     // Rose-700
-    intervalNeutral: "#334155",
     intervalLine: "#0f172a",         // Very dark for visibility
     summaryFill: "#0369a1",
     summaryBorder: "#0c4a6e",        // Darker outline
@@ -474,7 +444,6 @@ const PRESENTATION_THEME: WebTheme = {
     ...DEFAULT_THEME.spacing,
     rowHeight: 44,                   // Extra tall rows
     headerHeight: 52,                // Extra tall headers
-    sectionGap: 28,
     padding: 20,
     cellPaddingX: 14,                // More cell padding
     cellPaddingY: 6,
@@ -509,9 +478,6 @@ const COCHRANE_THEME: WebTheme = {
     rowBg: "#ffffff",
     altBg: "#f5f5f5",                // neutral-100
     interval: "#0099cc",
-    intervalPositive: "#0099cc",
-    intervalNegative: "#cc3333",
-    intervalNeutral: "#555555",
     intervalLine: "#2c2c2c",
     summaryFill: "#0099cc",
     summaryBorder: "#006699",
@@ -531,7 +497,6 @@ const COCHRANE_THEME: WebTheme = {
     ...DEFAULT_THEME.spacing,
     rowHeight: 20,                   // Compact
     headerHeight: 26,
-    sectionGap: 8,
     padding: 6,
     cellPaddingX: 6,
     cellPaddingY: 2,
@@ -566,9 +531,6 @@ const NATURE_THEME: WebTheme = {
     rowBg: "#ffffff",
     altBg: "#fafafa",                // neutral-50
     interval: "#1976d2",
-    intervalPositive: "#1976d2",
-    intervalNegative: "#c62828",
-    intervalNeutral: "#616161",
     intervalLine: "#1a1a1a",
     summaryFill: "#1976d2",
     summaryBorder: "#0d47a1",        // Darker blue border
@@ -588,7 +550,6 @@ const NATURE_THEME: WebTheme = {
     ...DEFAULT_THEME.spacing,
     rowHeight: 24,                   // Slightly more compact
     headerHeight: 32,
-    sectionGap: 12,
     padding: 10,
     cellPaddingX: 10,
     cellPaddingY: 4,

@@ -19,8 +19,6 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     labels = serialize_labels(spec@labels),
     watermark = if (is.na(spec@watermark)) NULL else spec@watermark,
     layout = list(
-      plotPosition = theme@layout@plot_position,
-      tableWidth = theme@layout@table_width,
       plotWidth = theme@layout@plot_width
     )
   )
@@ -410,9 +408,6 @@ serialize_theme <- function(theme) {
       rowBg = theme@colors@row_bg,
       altBg = theme@colors@alt_bg,
       interval = theme@colors@interval,
-      intervalPositive = theme@colors@interval_positive,
-      intervalNegative = theme@colors@interval_negative,
-      intervalNeutral = theme@colors@interval_neutral,
       intervalLine = theme@colors@interval_line,
       summaryFill = theme@colors@summary_fill,
       summaryBorder = theme@colors@summary_border
@@ -431,29 +426,31 @@ serialize_theme <- function(theme) {
     spacing = list(
       rowHeight = theme@spacing@row_height,
       headerHeight = theme@spacing@header_height,
-      sectionGap = theme@spacing@section_gap,
       padding = theme@spacing@padding,
       containerPadding = theme@spacing@container_padding,
       cellPaddingX = theme@spacing@cell_padding_x,
       cellPaddingY = theme@spacing@cell_padding_y,
       axisGap = theme@spacing@axis_gap,
-      groupPadding = theme@spacing@group_padding,
-      columnGap = theme@spacing@column_gap
+      groupPadding = theme@spacing@group_padding
     ),
     shapes = list(
       pointSize = theme@shapes@point_size,
       summaryHeight = theme@shapes@summary_height,
       lineWidth = theme@shapes@line_width,
       borderRadius = theme@shapes@border_radius,
-      effectColors = theme@shapes@effect_colors,
-      markerShapes = theme@shapes@marker_shapes
+      # Wrap vector palettes in I() so a length-1 override (e.g.
+      # `set_effect_colors(..., "#ff00ff")`) still serializes as a JSON
+      # array, not a scalar — otherwise the frontend indexes it as a
+      # string and reads one character per effect.
+      effectColors = if (is.null(theme@shapes@effect_colors)) NULL else I(theme@shapes@effect_colors),
+      markerShapes = if (is.null(theme@shapes@marker_shapes)) NULL else I(theme@shapes@marker_shapes)
     ),
     axis = list(
       # Explicit overrides
       rangeMin = if (is.na(theme@axis@range_min)) NULL else theme@axis@range_min,
       rangeMax = if (is.na(theme@axis@range_max)) NULL else theme@axis@range_max,
       tickCount = if (is.na(theme@axis@tick_count)) NULL else theme@axis@tick_count,
-      tickValues = theme@axis@tick_values,
+      tickValues = if (is.null(theme@axis@tick_values)) NULL else I(theme@axis@tick_values),
       gridlines = theme@axis@gridlines,
       gridlineStyle = theme@axis@gridline_style,
       # Auto-scaling parameters
@@ -464,8 +461,6 @@ serialize_theme <- function(theme) {
       markerMargin = theme@axis@marker_margin
     ),
     layout = list(
-      plotPosition = theme@layout@plot_position,
-      tableWidth = theme@layout@table_width,
       plotWidth = theme@layout@plot_width,
       containerBorder = theme@layout@container_border,
       containerBorderRadius = theme@layout@container_border_radius,

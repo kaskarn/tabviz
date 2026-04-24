@@ -137,7 +137,9 @@ pre-normalized multiplier.}
 
 \item{interaction}{Interaction settings (use \code{web_interaction()})}
 
-\item{plot_position}{"left" or "right" to set forest plot position}
+\item{plot_position}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} No longer has
+rendering effect; column order in \code{columns = list(...)} controls
+placement. Accepted for back-compat; emits a deprecation warning.}
 
 \item{row_height}{Numeric row height in pixels}
 

@@ -31,7 +31,7 @@ render_tabviz_widget(
 
 \item{axis_gridlines}{Logical to show/hide gridlines}
 
-\item{plot_position}{"left" or "right" position}
+\item{plot_position}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} No effect.}
 
 \item{row_height}{Row height in pixels}
 

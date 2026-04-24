@@ -26,9 +26,7 @@
   ];
 
   const gapFields = [
-    { key: "sectionGap",       label: "Section gap",      hint: "Between column-group headers and content",         min: 0, max: 40 },
     { key: "axisGap",          label: "Axis gap",         hint: "Space between rows region and the axis line",      min: 0, max: 40 },
-    { key: "columnGap",        label: "Column gap",       hint: "Space between top-level column groups",            min: 0, max: 40 },
     { key: "groupPadding",     label: "Group padding",    hint: "Extra padding on column group headers",            min: 0, max: 40 },
     { key: "padding",          label: "Plot padding",     hint: "Padding inside the SVG plot region",               min: 0, max: 40 },
     { key: "containerPadding", label: "Container padding",hint: "Outer padding around the whole widget",            min: 0, max: 40 },

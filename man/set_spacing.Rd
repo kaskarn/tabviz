@@ -8,14 +8,12 @@ set_spacing(
   theme,
   row_height = NULL,
   header_height = NULL,
-  section_gap = NULL,
   padding = NULL,
   container_padding = NULL,
   axis_gap = NULL,
   group_padding = NULL,
   cell_padding_x = NULL,
-  cell_padding_y = NULL,
-  column_gap = NULL
+  cell_padding_y = NULL
 )
 }
 \arguments{
@@ -24,8 +22,6 @@ set_spacing(
 \item{row_height}{Height of data rows in pixels (default: 24)}
 
 \item{header_height}{Height of header row in pixels (default: 32)}
-
-\item{section_gap}{Gap between sections in pixels (default: 16)}
 
 \item{padding}{Padding around the forest plot SVG in pixels (default: 12)}
 
@@ -38,8 +34,6 @@ set_spacing(
 \item{cell_padding_x}{Horizontal cell padding in pixels (default: 10)}
 
 \item{cell_padding_y}{Vertical cell padding in pixels (default: 4)}
-
-\item{column_gap}{Gap between grid columns in pixels (default: 8)}
 }
 \value{
 Modified WebTheme object

@@ -757,9 +757,6 @@
     return result;
   });
 
-  // For backwards compatibility, keep forestColumnGridIndices as reference
-  const forestColumnGridIndices = vizColumnGridIndices;
-
   // Refs to measure forest column positions for SVG overlays
   // Maps column id to { element, left }
   let forestColumnRefs = $state<Map<string, HTMLDivElement>>(new Map());
@@ -1100,8 +1097,6 @@
       --wf-row-bg: ${theme.colors.rowBg};
       --wf-alt-bg: ${theme.colors.altBg};
       --wf-interval-line: ${theme.colors.intervalLine};
-      --wf-interval-positive: ${theme.colors.intervalPositive};
-      --wf-interval-negative: ${theme.colors.intervalNegative};
       --wf-summary-fill: ${theme.colors.summaryFill};
       --wf-summary-border: ${theme.colors.summaryBorder};
       --wf-accent: ${theme.colors.accent};
@@ -1131,7 +1126,6 @@
       --wf-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
       --wf-axis-height: ${layout.axisHeight}px;
       --wf-group-padding: ${theme.spacing.groupPadding ?? 8}px;
-      --wf-column-gap: ${theme.spacing.columnGap ?? 8}px;
       --wf-plot-width: ${layout.forestWidth}px;
       --wf-point-size: ${theme.shapes.pointSize}px;
       --wf-line-width: ${theme.shapes.lineWidth}px;
@@ -1282,16 +1276,28 @@
         {#if anyHeaderVisible}
         {#each headerCells as cell (cell.col.id)}
           {#if cell.isGroupHeader}
-            <!-- Group header -->
+            <!-- Group header. dblclick toggles rename when editing is on; no
+                 keyboard parity because the edit path is also exposed via the
+                 right-click context menu on the primary cell. -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
             <div
               class="grid-cell header-cell column-group-header"
               class:editable={spec?.interaction.enableEdit}
+              role={spec?.interaction.enableEdit ? "button" : undefined}
+              tabindex={spec?.interaction.enableEdit ? 0 : undefined}
               data-header-id={cell.col.id}
               style:grid-column="{cell.gridColumnStart} / span {cell.colspan}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
               ondblclick={spec?.interaction.enableEdit
                 ? () => store.startEdit({ rowId: "", field: "", groupId: cell.col.id })
                 : undefined}
+              onkeydown={spec?.interaction.enableEdit ? (e) => {
+                if (e.key === "Enter" || e.key === "F2") {
+                  e.preventDefault();
+                  store.startEdit({ rowId: "", field: "", groupId: cell.col.id });
+                }
+              } : undefined}
             >
               {#if spec?.interaction.enableReorderColumns}
                 <ColumnDragHandle {store} kind="column_group" id={cell.col.id} root={containerRef} />
@@ -1413,6 +1419,7 @@
           {#each allColumns as column (column.id)}
             {@const isPrimary = column.id === primaryColumnId}
             {#if isPrimary}
+              <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
               <div
                 class="grid-cell data-cell primary-cell {rowClasses}"
                 class:group-row={isGroupHeader}
@@ -1455,13 +1462,18 @@
                 {/if}
               </div>
             {:else if vizColumnTypes.includes(column.type)}
-              <!-- Viz cell (empty - SVG overlays this) -->
+              <!-- Viz cell (empty - SVG overlays this). Click/hover are row-
+                   level affordances; the primary-cell owns keyboard selection
+                   for the row, so this cell is presentational. -->
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
+              <!-- svelte-ignore a11y_click_events_have_key_events -->
               <div
                 class="grid-cell data-cell plot-cell {rowClasses}"
                 class:group-row={isGroupHeader}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
                 class:spacer-row={isSpacerRow}
+                role="presentation"
                 style:grid-row={gridRow}
                 style:background-color={effectiveBg}
                 style={rowStyles || undefined}
@@ -1470,8 +1482,14 @@
                 onclick={row ? () => store.selectRow(row.id) : undefined}
               ></div>
             {:else}
-              <!-- Regular column cell -->
+              <!-- Regular column cell. Click/hover are row-level affordances;
+                   the primary-cell owns keyboard selection for the row, so
+                   this cell is presentational. dblclick-to-edit has no
+                   keyboard parity — the edit flow is also exposed via the
+                   context menu on the primary cell. -->
               {@const editableHere = !!(row && spec?.interaction.enableEdit && !isGroupHeader && isEditableColumn(column))}
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
+              <!-- svelte-ignore a11y_click_events_have_key_events -->
               <div
                 class="grid-cell data-cell {rowClasses}"
                 class:group-row={isGroupHeader}
@@ -1480,6 +1498,7 @@
                 class:spacer-row={isSpacerRow}
                 class:wrap-enabled={column.wrap}
                 class:editable={editableHere}
+                role="presentation"
                 data-row-id={row ? row.id : undefined}
                 data-field={column.field}
                 style:grid-row={gridRow}

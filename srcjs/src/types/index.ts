@@ -432,9 +432,6 @@ export interface ColorPalette {
   rowBg: string;      // Even row background
   altBg: string;      // Odd row background (stripe/banding)
   interval: string;  // Unified marker color (new default)
-  intervalPositive: string;  // Deprecated: kept for backwards compat
-  intervalNegative: string;  // Deprecated: kept for backwards compat
-  intervalNeutral: string;
   intervalLine: string;
   summaryFill: string;
   summaryBorder: string;
@@ -455,14 +452,12 @@ export interface Typography {
 export interface Spacing {
   rowHeight: number;
   headerHeight: number;
-  sectionGap: number;
   padding: number;  // Padding around forest plot SVG (default 12px)
   containerPadding: number;  // Left/right padding for outer container (default 0)
   cellPaddingX: number;
   cellPaddingY: number;
   axisGap: number;  // Gap between table and x-axis (default ~12px)
   groupPadding: number;  // Left/right padding for column group headers (default 8px)
-  columnGap: number;  // Gap between grid columns (default 8px)
 }
 
 export interface Shapes {
@@ -505,8 +500,6 @@ export interface BandingSpec {
 }
 
 export interface LayoutConfig {
-  plotPosition: "left" | "right";
-  tableWidth: number | "auto";
   plotWidth: number | "auto";
   containerBorder: boolean;
   containerBorderRadius: number;
@@ -592,8 +585,6 @@ export interface InteractionSpec {
 }
 
 export interface LayoutSpec {
-  plotPosition: "right" | "left";
-  tableWidth: number | "auto";
   plotWidth: number | "auto";
 }
 

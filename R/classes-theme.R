@@ -21,10 +21,6 @@ ColorPalette <- new_class(
     # Interval visualization colors
     interval = new_property(class_character, default = "#0891b2"),  # Default marker color
     interval_line = new_property(class_character, default = "#475569"),
-    # Deprecated: kept for backwards compatibility but unused by default
-    interval_positive = new_property(class_character, default = "#0891b2"),
-    interval_negative = new_property(class_character, default = "#dc2626"),
-    interval_neutral = new_property(class_character, default = "#64748b"),
     # Summary/aggregate colors
     summary_fill = new_property(class_character, default = "#0891b2"),
     summary_border = new_property(class_character, default = "#0e7490")
@@ -34,7 +30,6 @@ ColorPalette <- new_class(
     hex_pattern <- "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
     color_props <- c("background", "foreground", "primary", "secondary", "accent",
                      "muted", "border", "row_bg", "alt_bg", "interval", "interval_line",
-                     "interval_positive", "interval_negative", "interval_neutral",
                      "summary_fill", "summary_border")
     invalid <- character()
     for (prop in color_props) {
@@ -82,14 +77,12 @@ Spacing <- new_class(
   properties = list(
     row_height = new_property(class_numeric, default = 24),
     header_height = new_property(class_numeric, default = 32),
-    section_gap = new_property(class_numeric, default = 16),
     padding = new_property(class_numeric, default = 12),
     container_padding = new_property(class_numeric, default = 0),
     axis_gap = new_property(class_numeric, default = 12),
     group_padding = new_property(class_numeric, default = 8),
     cell_padding_x = new_property(class_numeric, default = 10),
-    cell_padding_y = new_property(class_numeric, default = 4),
-    column_gap = new_property(class_numeric, default = 8)
+    cell_padding_y = new_property(class_numeric, default = 4)
   )
 )
 
@@ -196,8 +189,6 @@ AxisConfig <- new_class(
 
 #' LayoutConfig: Layout and visual configuration
 #'
-#' @param plot_position Position of forest plot: "left" or "right" (default: "right")
-#' @param table_width Width of table area: "auto" or numeric pixels (default: "auto")
 #' @param plot_width Width of plot area: "auto" or numeric pixels (default: "auto")
 #' @param container_border Show border around the plot container (default: FALSE)
 #' @param container_border_radius Corner radius for container in pixels (default: 8)
@@ -217,17 +208,12 @@ AxisConfig <- new_class(
 LayoutConfig <- new_class(
   "LayoutConfig",
   properties = list(
-    plot_position = new_property(class_character, default = "right"),
-    table_width = new_property(class_any, default = "auto"),
     plot_width = new_property(class_any, default = "auto"),
     container_border = new_property(class_logical, default = FALSE),
     container_border_radius = new_property(class_numeric, default = 8),
     banding = new_property(class_character, default = "group")
   ),
   validator = function(self) {
-    if (!self@plot_position %in% c("left", "right")) {
-      return("plot_position must be 'left' or 'right'")
-    }
     # Validate banding via parse_banding (returns error string or NULL)
     err <- tryCatch(
       {
@@ -335,7 +321,7 @@ GroupHeaderStyles <- new_class(
 #' @param border Border color (hex).
 #' @param marker_fill Override for the forest / bar / boxplot / violin marker
 #'   fill color when this semantic is active. Cascades into
-#'   [resolveMarkerStyle()] as the Layer-3 source; `NA` leaves the marker
+#'   the marker-styling cascade as the Layer-3 source; `NA` leaves the marker
 #'   palette untouched.
 #' @param font_weight Numeric CSS weight (100..900).
 #' @param font_style Either `"normal"` or `"italic"`.
@@ -513,9 +499,6 @@ web_theme_minimal <- function() {
       alt_bg = "#fafafa",             # Subtle grey stripe
       interval = "#000000",           # Pure black markers
       interval_line = "#000000",
-      interval_positive = "#000000",
-      interval_negative = "#000000",
-      interval_neutral = "#666666",
       summary_fill = "#000000",
       summary_border = "#000000"
     ),
@@ -532,7 +515,6 @@ web_theme_minimal <- function() {
     spacing = Spacing(
       row_height = 22,
       header_height = 28,
-      section_gap = 12,
       padding = 10
     ),
     shapes = Shapes(
@@ -585,9 +567,6 @@ web_theme_dark <- function() {
       alt_bg = "#232334",             # Slightly lighter stripe
       interval = "#89b4fa",           # Catppuccin blue
       interval_line = "#9399b2",      # Catppuccin overlay2
-      interval_positive = "#a6e3a1",  # Catppuccin green
-      interval_negative = "#f38ba8",  # Catppuccin red
-      interval_neutral = "#6c7086",
       summary_fill = "#89b4fa",
       summary_border = "#74c7ec"      # Catppuccin sapphire
     ),
@@ -604,7 +583,6 @@ web_theme_dark <- function() {
     spacing = Spacing(
       row_height = 26,                # Comfortable for dark mode
       header_height = 32,
-      section_gap = 16,
       padding = 12
     ),
     shapes = Shapes(
@@ -779,18 +757,19 @@ web_theme <- function(
 #' @param ci_marker_fill Default CI marker fill color (default: "#0891b2"). If not
 #'   specified and `primary` is set, inherits from `primary`. Cascades to
 #'   `summary_fill` if not specified.
-#' @param ci_marker_positive Color for favorable effects.
-#' @param ci_marker_negative Color for unfavorable effects.
-#' @param ci_marker_neutral Color for neutral effects (default: "#64748b")
 #' @param ci_line Confidence interval line color (default: "#475569")
 #' @param summary_fill Summary diamond fill color (default: "#0891b2"). If not
 #'   specified and `ci_marker_fill` or `primary` is set, inherits from `ci_marker_fill`.
 #' @param summary_border Summary diamond border color (default: "#0e7490")
 #' @param interval `r lifecycle::badge("deprecated")` Use `ci_marker_fill`.
-#' @param interval_positive `r lifecycle::badge("deprecated")` Use `ci_marker_positive`.
-#' @param interval_negative `r lifecycle::badge("deprecated")` Use `ci_marker_negative`.
-#' @param interval_neutral `r lifecycle::badge("deprecated")` Use `ci_marker_neutral`.
 #' @param interval_line `r lifecycle::badge("deprecated")` Use `ci_line`.
+#' @param ci_marker_positive,ci_marker_negative,ci_marker_neutral
+#'   `r lifecycle::badge("deprecated")` Direction-aware marker fills were never
+#'   consumed by the renderer and were removed in 0.13.0. Use `marker_color`
+#'   in [viz_forest()] to color by direction instead.
+#' @param interval_positive,interval_negative,interval_neutral
+#'   `r lifecycle::badge("deprecated")` Deprecated aliases of the
+#'   `ci_marker_*` arguments. Same no-op behavior.
 #'
 #' @return Modified WebTheme object
 #' @export
@@ -809,17 +788,17 @@ set_colors <- function(
     row_bg = NULL,
     alt_bg = NULL,
     ci_marker_fill = NULL,
-    ci_marker_positive = NULL,
-    ci_marker_negative = NULL,
-    ci_marker_neutral = NULL,
     ci_line = NULL,
     summary_fill = NULL,
     summary_border = NULL,
+    ci_marker_positive = lifecycle::deprecated(),
+    ci_marker_negative = lifecycle::deprecated(),
+    ci_marker_neutral = lifecycle::deprecated(),
     interval = lifecycle::deprecated(),
+    interval_line = lifecycle::deprecated(),
     interval_positive = lifecycle::deprecated(),
     interval_negative = lifecycle::deprecated(),
-    interval_neutral = lifecycle::deprecated(),
-    interval_line = lifecycle::deprecated()
+    interval_neutral = lifecycle::deprecated()
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
 
@@ -827,21 +806,32 @@ set_colors <- function(
     lifecycle::deprecate_warn("0.9.0", "set_colors(interval)", "set_colors(ci_marker_fill)")
     if (is.null(ci_marker_fill)) ci_marker_fill <- interval
   }
-  if (lifecycle::is_present(interval_positive)) {
-    lifecycle::deprecate_warn("0.9.0", "set_colors(interval_positive)", "set_colors(ci_marker_positive)")
-    if (is.null(ci_marker_positive)) ci_marker_positive <- interval_positive
-  }
-  if (lifecycle::is_present(interval_negative)) {
-    lifecycle::deprecate_warn("0.9.0", "set_colors(interval_negative)", "set_colors(ci_marker_negative)")
-    if (is.null(ci_marker_negative)) ci_marker_negative <- interval_negative
-  }
-  if (lifecycle::is_present(interval_neutral)) {
-    lifecycle::deprecate_warn("0.9.0", "set_colors(interval_neutral)", "set_colors(ci_marker_neutral)")
-    if (is.null(ci_marker_neutral)) ci_marker_neutral <- interval_neutral
-  }
   if (lifecycle::is_present(interval_line)) {
     lifecycle::deprecate_warn("0.9.0", "set_colors(interval_line)", "set_colors(ci_line)")
     if (is.null(ci_line)) ci_line <- interval_line
+  }
+
+  # The direction-aware marker slots (positive / negative / neutral) never had a
+  # rendering consumer — they were emitted as CSS vars but never read. Accepted
+  # here as no-ops for back-compat; emit one warning so callers can stop passing
+  # them. `interval_*` names forward to the `ci_marker_*` names for symmetry with
+  # the other deprecations above.
+  direction_args <- list(
+    ci_marker_positive = ci_marker_positive,
+    ci_marker_negative = ci_marker_negative,
+    ci_marker_neutral  = ci_marker_neutral,
+    interval_positive  = interval_positive,
+    interval_negative  = interval_negative,
+    interval_neutral   = interval_neutral
+  )
+  for (nm in names(direction_args)) {
+    if (lifecycle::is_present(direction_args[[nm]])) {
+      lifecycle::deprecate_warn(
+        "0.13.0",
+        sprintf("set_colors(%s)", nm),
+        details = "Direction-aware marker slots were never rendered and have been removed. Use `ci_marker_fill` (or a viz_forest() per-effect color) instead."
+      )
+    }
   }
 
   current <- theme@colors
@@ -886,9 +876,6 @@ set_colors <- function(
     current@summary_fill <- summary_fill
   }
 
-  if (!is.null(ci_marker_positive)) current@interval_positive <- ci_marker_positive
-  if (!is.null(ci_marker_negative)) current@interval_negative <- ci_marker_negative
-  if (!is.null(ci_marker_neutral)) current@interval_neutral <- ci_marker_neutral
   if (!is.null(ci_line)) current@interval_line <- ci_line
   if (!is.null(summary_border)) current@summary_border <- summary_border
 
@@ -952,14 +939,12 @@ set_typography <- function(
 #' @param theme A WebTheme object
 #' @param row_height Height of data rows in pixels (default: 24)
 #' @param header_height Height of header row in pixels (default: 32)
-#' @param section_gap Gap between sections in pixels (default: 16)
 #' @param padding Padding around the forest plot SVG in pixels (default: 12)
 #' @param container_padding Left/right padding for the outer container in pixels (default: 0)
 #' @param axis_gap Gap between table content and x-axis in pixels (default: 12)
 #' @param group_padding Left/right padding for column group headers in pixels (default: 8)
 #' @param cell_padding_x Horizontal cell padding in pixels (default: 10)
 #' @param cell_padding_y Vertical cell padding in pixels (default: 4)
-#' @param column_gap Gap between grid columns in pixels (default: 8)
 #'
 #' @return Modified WebTheme object
 #' @export
@@ -970,28 +955,24 @@ set_spacing <- function(
     theme,
     row_height = NULL,
     header_height = NULL,
-    section_gap = NULL,
     padding = NULL,
     container_padding = NULL,
     axis_gap = NULL,
     group_padding = NULL,
     cell_padding_x = NULL,
-    cell_padding_y = NULL,
-    column_gap = NULL
+    cell_padding_y = NULL
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
   current <- theme@spacing
 
   if (!is.null(row_height)) current@row_height <- row_height
   if (!is.null(header_height)) current@header_height <- header_height
-  if (!is.null(section_gap)) current@section_gap <- section_gap
   if (!is.null(padding)) current@padding <- padding
   if (!is.null(container_padding)) current@container_padding <- container_padding
   if (!is.null(axis_gap)) current@axis_gap <- axis_gap
   if (!is.null(group_padding)) current@group_padding <- group_padding
   if (!is.null(cell_padding_x)) current@cell_padding_x <- cell_padding_x
   if (!is.null(cell_padding_y)) current@cell_padding_y <- cell_padding_y
-  if (!is.null(column_gap)) current@column_gap <- column_gap
 
   theme@spacing <- current
   theme
@@ -1172,8 +1153,6 @@ current <- theme@axis
 #' Pipe-friendly function to modify layout settings.
 #'
 #' @param theme A WebTheme object
-#' @param plot_position Position of forest plot: "left" or "right" (default: "right")
-#' @param table_width Width of table area: "auto" or numeric pixels (default: "auto")
 #' @param plot_width Width of plot area: "auto" or numeric pixels (default: "auto")
 #' @param cell_padding_x Deprecated. Use [set_spacing()] instead.
 #' @param cell_padding_y Deprecated. Use [set_spacing()] instead.
@@ -1190,9 +1169,9 @@ current <- theme@axis
 #' @return Modified WebTheme object
 #' @export
 #' @examples
-#' # Move plot to left side
+#' # Narrow the forest plot column
 #' web_theme_default() |>
-#'   set_layout(plot_position = "left")
+#'   set_layout(plot_width = 320)
 #'
 #' # Add a border around the container
 #' web_theme_default() |>
@@ -1207,8 +1186,6 @@ current <- theme@axis
 #'   set_layout(banding = "group-1")
 set_layout <- function(
     theme,
-    plot_position = NULL,
-    table_width = NULL,
     plot_width = NULL,
     cell_padding_x = NULL,
     cell_padding_y = NULL,
@@ -1221,13 +1198,6 @@ set_layout <- function(
   stopifnot(S7_inherits(theme, WebTheme))
   current <- theme@layout
 
-  if (!is.null(plot_position)) {
-    if (!plot_position %in% c("left", "right")) {
-      cli_abort("plot_position must be 'left' or 'right'")
-    }
-    current@plot_position <- plot_position
-  }
-  if (!is.null(table_width)) current@table_width <- table_width
   if (!is.null(plot_width)) current@plot_width <- plot_width
 
   # Deprecated: forward to spacing
@@ -1413,9 +1383,6 @@ web_theme_jama <- function() {
       alt_bg = "#f9fafb",             # Very subtle grey
       interval = "#000000",           # Pure black markers
       interval_line = "#000000",
-      interval_positive = "#000000",
-      interval_negative = "#000000",
-      interval_neutral = "#555555",
       summary_fill = "#000000",
       summary_border = "#000000"
     ),
@@ -1432,7 +1399,6 @@ web_theme_jama <- function() {
     spacing = Spacing(
       row_height = 18,                # Very compact rows
       header_height = 24,
-      section_gap = 8,
       padding = 6,
       cell_padding_x = 8,             # Tighter cell padding
       cell_padding_y = 2
@@ -1486,9 +1452,6 @@ web_theme_lancet <- function() {
       alt_bg = "#f8f7f5",           # Warm subtle stripe
       interval = "#00407a",
       interval_line = "#1e3a5f",
-      interval_positive = "#00407a",
-      interval_negative = "#9d2933", # Deep crimson
-      interval_neutral = "#3d5a80",
       summary_fill = "#00407a",
       summary_border = "#002d54"
     ),
@@ -1505,7 +1468,6 @@ web_theme_lancet <- function() {
     spacing = Spacing(
       row_height = 24,
       header_height = 30,
-      section_gap = 14,
       padding = 12,
       cell_padding_x = 12,          # More breathing room
       cell_padding_y = 4
@@ -1561,9 +1523,6 @@ web_theme_modern <- function() {
       alt_bg = "#f5f5f5",              # Subtle zinc stripe
       interval = "#3b82f6",
       interval_line = "#27272a",       # Darker for contrast
-      interval_positive = "#22c55e",   # Green-500
-      interval_negative = "#ef4444",   # Red-500
-      interval_neutral = "#71717a",
       summary_fill = "#3b82f6",
       summary_border = "#2563eb"       # Blue-600
     ),
@@ -1580,7 +1539,6 @@ web_theme_modern <- function() {
     spacing = Spacing(
       row_height = 30,                 # Spacious rows
       header_height = 36,
-      section_gap = 20,
       padding = 14,
       cell_padding_x = 12,
       cell_padding_y = 5
@@ -1634,9 +1592,6 @@ web_theme_presentation <- function() {
       alt_bg = "#f8fafc",            # Subtle slate stripe
       interval = "#0369a1",
       interval_line = "#0f172a",     # Very dark for visibility
-      interval_positive = "#047857", # Emerald-700
-      interval_negative = "#be123c", # Rose-700
-      interval_neutral = "#334155",
       summary_fill = "#0369a1",
       summary_border = "#0c4a6e"     # Darker outline
     ),
@@ -1653,7 +1608,6 @@ web_theme_presentation <- function() {
     spacing = Spacing(
       row_height = 36,           # Tall rows for readability
       header_height = 44,
-      section_gap = 24,
       padding = 18,
       cell_padding_x = 14,       # More cell padding
       cell_padding_y = 5
@@ -1708,9 +1662,6 @@ web_theme_cochrane <- function() {
       alt_bg = "#f5f5f5",              # Light grey stripe
       interval = "#0099cc",
       interval_line = "#2c2c2c",
-      interval_positive = "#0099cc",
-      interval_negative = "#cc3333",
-      interval_neutral = "#555555",
       summary_fill = "#0099cc",
       summary_border = "#006699"
     ),
@@ -1727,7 +1678,6 @@ web_theme_cochrane <- function() {
     spacing = Spacing(
       row_height = 20,                 # Compact
       header_height = 26,
-      section_gap = 8,
       padding = 6,
       cell_padding_x = 6,
       cell_padding_y = 2
@@ -1783,9 +1733,6 @@ web_theme_nature <- function() {
       alt_bg = "#fafafa",              # Subtle grey stripe
       interval = "#1976d2",
       interval_line = "#1a1a1a",
-      interval_positive = "#1976d2",
-      interval_negative = "#c62828",
-      interval_neutral = "#616161",
       summary_fill = "#1976d2",
       summary_border = "#0d47a1"       # Darker blue border
     ),
@@ -1802,7 +1749,6 @@ web_theme_nature <- function() {
     spacing = Spacing(
       row_height = 22,                 # Compact
       header_height = 28,
-      section_gap = 12,
       padding = 10,
       cell_padding_x = 10,
       cell_padding_y = 4

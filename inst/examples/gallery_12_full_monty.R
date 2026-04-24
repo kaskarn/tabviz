@@ -36,7 +36,7 @@ full_monty <- tibble(
 
 # Custom theme
 monty_theme <- web_theme_dark() |>
-  set_colors(primary = "#f59e0b", ci_marker_positive = "#22c55e", ci_marker_negative = "#ef4444") |>
+  set_colors(primary = "#f59e0b") |>
   set_spacing(row_height = 38) |>
   set_axis(gridlines = TRUE, gridline_style = "dotted")
 

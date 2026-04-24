@@ -61,7 +61,9 @@
 #' @param weight Deprecated: use marker_size instead
 #' @param theme Theme object (use `web_theme_*()` functions)
 #' @param interaction Interaction settings (use `web_interaction()`)
-#' @param plot_position "left" or "right" to set forest plot position
+#' @param plot_position `r lifecycle::badge("deprecated")` No longer has
+#'   rendering effect; column order in `columns = list(...)` controls
+#'   placement. Accepted for back-compat; emits a deprecation warning.
 #' @param row_height Numeric row height in pixels
 #' @param banding Row banding mode. One of `"none"`, `"row"`, `"group"` (default),
 #'   or `"group-n"` (e.g. `"group-2"` to alternate at the 2nd group level). When
@@ -722,7 +724,7 @@ validate_forest_columns <- function(columns, data) {
 #' @param axis_range Numeric vector c(min, max) to override axis range
 #' @param axis_ticks Numeric vector of explicit tick positions
 #' @param axis_gridlines Logical to show/hide gridlines
-#' @param plot_position "left" or "right" position
+#' @param plot_position `r lifecycle::badge("deprecated")` No effect.
 #' @param row_height Row height in pixels
 #' @param zoom Initial zoom level
 #' @param auto_fit Auto-fit to container
@@ -785,7 +787,11 @@ render_tabviz_widget <- function(
     spec@theme@axis@gridlines <- axis_gridlines
   }
   if (!is.null(plot_position)) {
-    spec@theme@layout@plot_position <- plot_position
+    lifecycle::deprecate_warn(
+      "0.13.0",
+      "render_tabviz_widget(plot_position)",
+      details = "`plot_position` had no rendering effect; column order in `columns = list(...)` controls placement."
+    )
   }
   if (!is.null(row_height)) {
     spec@theme@spacing@row_height <- row_height

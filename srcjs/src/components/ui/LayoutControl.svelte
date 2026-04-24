@@ -4,7 +4,6 @@
   import NumberField from "./NumberField.svelte";
   import TextField from "./TextField.svelte";
   import BooleanField from "./BooleanField.svelte";
-  import SegmentedField from "./SegmentedField.svelte";
 
   interface Props {
     store: ForestStore;
@@ -18,16 +17,11 @@
     store.setThemeField("layout", field, value);
   }
 
-  const positionOptions = [
-    { label: "Left",  value: "left"  as "left" | "right" },
-    { label: "Right", value: "right" as "left" | "right" },
-  ];
-
   /**
-   * tableWidth / plotWidth are `number | "auto"`. The TextField shows "auto"
-   * (or empty) for the string case, otherwise the numeric value. Commit
-   * "auto"/empty as the string "auto"; anything parseable as a number commits
-   * as that number; unparseable input is ignored mid-type.
+   * plotWidth is `number | "auto"`. The TextField shows "auto" (or empty) for
+   * the string case, otherwise the numeric value. Commit "auto"/empty as the
+   * string "auto"; anything parseable as a number commits as that number;
+   * unparseable input is ignored mid-type.
    */
   function displayAuto(v: number | "auto" | undefined): string {
     if (v == null || v === "auto") return "auto";
@@ -47,28 +41,9 @@
 
 {#if layout}
   <SettingsSection
-    title="Plot position"
-    description="Which side of the table the forest plot sits on."
-  >
-    <SegmentedField
-      label="Position"
-      value={layout.plotPosition}
-      options={positionOptions}
-      onchange={(v) => setField("plotPosition", v)}
-    />
-  </SettingsSection>
-
-  <SettingsSection
     title="Dimensions"
-    description="Leave as 'auto' to let the widget size columns from content."
+    description="Leave as 'auto' to let the widget size the forest plot from content."
   >
-    <TextField
-      label="Table width"
-      hint="Pixel width of the table region, or 'auto'"
-      placeholder="auto"
-      value={displayAuto(layout.tableWidth)}
-      onchange={(v) => commitAutoOrNumber("tableWidth", v)}
-    />
     <TextField
       label="Plot width"
       hint="Pixel width of the forest plot region, or 'auto'"

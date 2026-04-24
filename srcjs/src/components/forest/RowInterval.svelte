@@ -182,10 +182,16 @@
     const themeMarkerShapes = theme?.shapes.markerShapes;
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
-    // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color
+    // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color.
+    // Summary rows use `colors.summaryFill` as their base so the diamond honors
+    // its dedicated palette slot; non-summary rows follow the effect-color
+    // cascade. Layers 3+4 (bundle.markerFill / row.markerStyle.color) still
+    // layer on top via resolveMarkerStyle below.
     let baseColor: string;
     if (effect.color) {
       baseColor = effect.color;
+    } else if (isSummaryRow && isPrimary && theme?.colors.summaryFill) {
+      baseColor = theme.colors.summaryFill;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {

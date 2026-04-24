@@ -16,17 +16,17 @@ set_colors(
   row_bg = NULL,
   alt_bg = NULL,
   ci_marker_fill = NULL,
-  ci_marker_positive = NULL,
-  ci_marker_negative = NULL,
-  ci_marker_neutral = NULL,
   ci_line = NULL,
   summary_fill = NULL,
   summary_border = NULL,
+  ci_marker_positive = lifecycle::deprecated(),
+  ci_marker_negative = lifecycle::deprecated(),
+  ci_marker_neutral = lifecycle::deprecated(),
   interval = lifecycle::deprecated(),
+  interval_line = lifecycle::deprecated(),
   interval_positive = lifecycle::deprecated(),
   interval_negative = lifecycle::deprecated(),
-  interval_neutral = lifecycle::deprecated(),
-  interval_line = lifecycle::deprecated()
+  interval_neutral = lifecycle::deprecated()
 )
 }
 \arguments{
@@ -58,12 +58,6 @@ visible banding). Set explicitly to enable striped rows on custom themes.}
 specified and \code{primary} is set, inherits from \code{primary}. Cascades to
 \code{summary_fill} if not specified.}
 
-\item{ci_marker_positive}{Color for favorable effects.}
-
-\item{ci_marker_negative}{Color for unfavorable effects.}
-
-\item{ci_marker_neutral}{Color for neutral effects (default: "#64748b")}
-
 \item{ci_line}{Confidence interval line color (default: "#475569")}
 
 \item{summary_fill}{Summary diamond fill color (default: "#0891b2"). If not
@@ -71,15 +65,16 @@ specified and \code{ci_marker_fill} or \code{primary} is set, inherits from \cod
 
 \item{summary_border}{Summary diamond border color (default: "#0e7490")}
 
+\item{ci_marker_positive, ci_marker_negative, ci_marker_neutral}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Direction-aware marker fills were never
+consumed by the renderer and were removed in 0.13.0. Use \code{marker_color}
+in \code{\link[=viz_forest]{viz_forest()}} to color by direction instead.}
+
 \item{interval}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_marker_fill}.}
 
-\item{interval_positive}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_marker_positive}.}
-
-\item{interval_negative}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_marker_negative}.}
-
-\item{interval_neutral}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_marker_neutral}.}
-
 \item{interval_line}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{ci_line}.}
+
+\item{interval_positive, interval_negative, interval_neutral}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Deprecated aliases of the
+\verb{ci_marker_*} arguments. Same no-op behavior.}
 }
 \value{
 Modified WebTheme object

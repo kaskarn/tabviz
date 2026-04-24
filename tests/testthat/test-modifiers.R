@@ -40,8 +40,8 @@ test_that("set_axis modifies axis config", {
 
 test_that("set_layout modifies layout config", {
   theme <- web_theme_default()
-  updated <- set_layout(theme, plot_position = "left", banding = "none")
-  expect_equal(updated@layout@plot_position, "left")
+  updated <- set_layout(theme, plot_width = 480, banding = "none")
+  expect_equal(updated@layout@plot_width, 480)
   expect_equal(updated@layout@banding, "none")
 })
 

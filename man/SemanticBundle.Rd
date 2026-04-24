@@ -12,7 +12,7 @@
 
 \item{marker_fill}{Override for the forest / bar / boxplot / violin marker
 fill color when this semantic is active. Cascades into
-\code{\link[=resolveMarkerStyle]{resolveMarkerStyle()}} as the Layer-3 source; \code{NA} leaves the marker
+the marker-styling cascade as the Layer-3 source; \code{NA} leaves the marker
 palette untouched.}
 
 \item{font_weight}{Numeric CSS weight (100..900).}

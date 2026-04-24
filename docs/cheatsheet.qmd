@@ -159,9 +159,6 @@ tabviz(...,
     set_colors(
       primary = "#2563eb",
       ci_marker_fill = "#1e40af",
-      ci_marker_positive = "#16a34a",
-      ci_marker_negative = "#dc2626",
-      ci_marker_neutral = "#94a3b8",
       ci_line = "#475569"
     ) |>
     set_typography(font_family = "Georgia", font_size_base = "0.9rem") |>

@@ -6,8 +6,6 @@
 \usage{
 set_layout(
   theme,
-  plot_position = NULL,
-  table_width = NULL,
   plot_width = NULL,
   cell_padding_x = NULL,
   cell_padding_y = NULL,
@@ -20,10 +18,6 @@ set_layout(
 }
 \arguments{
 \item{theme}{A WebTheme object}
-
-\item{plot_position}{Position of forest plot: "left" or "right" (default: "right")}
-
-\item{table_width}{Width of table area: "auto" or numeric pixels (default: "auto")}
 
 \item{plot_width}{Width of plot area: "auto" or numeric pixels (default: "auto")}
 
@@ -52,9 +46,9 @@ Modified WebTheme object
 Pipe-friendly function to modify layout settings.
 }
 \examples{
-# Move plot to left side
+# Narrow the forest plot column
 web_theme_default() |>
-  set_layout(plot_position = "left")
+  set_layout(plot_width = 320)
 
 # Add a border around the container
 web_theme_default() |>

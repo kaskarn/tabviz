@@ -1,3 +1,67 @@
+# tabviz 0.14.0
+
+## Theme audit: bug fixes, dead-field cleanup, accessibility
+
+Systematic walk-through of every theme field flushed out eight real bugs plus
+a handful of fields that had been declared, serialized, and exposed in the UI
+but never consumed by any rendering code. All fixed or removed.
+
+### Bug fixes
+
+- **Semantic bundle in static export.** `svg-generator.ts` now consumes the
+  resolved `SemanticBundle` for cell text fg / font-weight / font-style, so
+  a cell in a `row_emphasis` / `row_muted` / `row_accent` row picks up the
+  bundle's values instead of reaching directly into `theme.colors.{muted,
+  accent}`. The interactive path already did this; static PNG/SVG export
+  was out of sync.
+- **`semantics.<token>.border` in static export.** Was rendered in the live
+  widget but dropped in SVG. Now drawn as a bottom-edge line under the row.
+- **`colors.summary_fill` for per-row summary diamonds.** Rows flagged via
+  `row_type = "summary"` used to render their diamond from the effect-color
+  cascade and silently ignored `colors.summary_fill`. Both paths (interactive
+  and static) now honor it.
+- **`axis.gridlines` / `gridline_style` in the forest axis.** Previously only
+  rendered for viz-column axes (bar / boxplot / violin). The forest plot's own
+  axis now draws gridlines when enabled, with the chosen dash style.
+- **`set_effect_colors(theme, "#ff00ff")`.** Single-element vectors serialized
+  as JSON strings (via `auto_unbox = TRUE`), and the frontend then indexed
+  them one character at a time — producing near-black markers. `effect_colors`
+  and `axis.tick_values` are now wrapped in `I()` to preserve arrays.
+
+### Dead fields removed
+
+These fields had no rendering consumers. They are gone from R classes, JSON
+serialization, TypeScript types, settings-panel UI, and preset definitions:
+
+- `spacing.section_gap`, `spacing.column_gap`
+- `layout.plot_position`, `layout.table_width`
+- `colors.interval_positive` / `interval_negative` / `interval_neutral`
+
+`set_colors()` still accepts `ci_marker_positive` / `ci_marker_negative` /
+`ci_marker_neutral` (plus their `interval_*` aliases) for back-compat but
+emits a `lifecycle::deprecate_warn()` and discards the value. Use
+`marker_color` in [viz_forest()] to color markers by direction, or a per-
+effect literal color on the effect spec.
+
+`tabviz(plot_position = ...)` and `render_tabviz_widget(plot_position = ...)`
+similarly accept the argument for back-compat and warn; placement is
+controlled by the order of `columns = list(...)`.
+
+### Accessibility
+
+Zero Svelte a11y warnings from the build. The multi-cell row layout uses the
+primary cell as the keyboard-interactive surface and marks sibling cells as
+`role="presentation"`; dblclick-to-edit on column-group headers now has
+Enter / F2 keyboard parity.
+
+### Documentation
+
+`docs/reference/themes.qmd` and `docs/guide/themes.qmd` updated to reflect
+the removed fields, document the marker-fill precedence chain, and flag
+scope ambiguities (`group_padding` applies to column groups, not row groups;
+`colors.interval` is a third-tier fallback preempted by
+`shapes.effect_colors[0]`).
+
 # tabviz 0.13.0
 
 ## Semantic classes become visual bundles

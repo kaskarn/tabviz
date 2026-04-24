@@ -13,8 +13,6 @@ terminal_theme <- web_theme_default() |>
     secondary = "#008800",
     muted = "#005500",
     border = "#003300",
-    ci_marker_positive = "#00ff00",
-    ci_marker_negative = "#ff0000",
     ci_line = "#00cc00",
     summary_fill = "#00ff00",
     summary_border = "#00aa00"

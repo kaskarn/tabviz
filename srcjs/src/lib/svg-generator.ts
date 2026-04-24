@@ -495,9 +495,6 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const theme = spec.theme;
   const rowHeight = theme.spacing.rowHeight;
   const padding = theme.spacing.padding;
-  // Note: columnGap is NOT used in the actual layout - columns are placed back-to-back
-  // The CSS variable --wf-column-gap is defined in web view but never applied
-  // So we don't add any column gap to the width calculation
 
   // Ensure columns is an array (guard against R serialization issues)
   const columns = Array.isArray(spec.columns) ? spec.columns : [];
@@ -1564,10 +1561,16 @@ function renderInterval(
     const themeMarkerShapes = theme.shapes.markerShapes;
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
-    // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color
+    // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color.
+    // Summary rows use `colors.summaryFill` as their base so the diamond honors
+    // its dedicated palette slot; non-summary rows follow the effect-color
+    // cascade. Layers 3+4 (bundle.markerFill / row.markerStyle.color) still
+    // layer on top via resolveMarkerStyle below.
     let baseColor: string;
     if (effect.color) {
       baseColor = effect.color;
+    } else if (isSummaryRow && isPrimary) {
+      baseColor = theme.colors.summaryFill;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {
@@ -2451,6 +2454,19 @@ function renderForestAxis(
   lines.push(`<line x1="${forestX}" x2="${forestX + forestWidth}"
     y1="0" y2="0" stroke="${theme.colors.border}" stroke-width="1"/>`);
 
+  // Gridlines (behind ticks) — mirrors EffectAxis.svelte; opt-in via
+  // theme.axis.gridlines, styled per theme.axis.gridlineStyle.
+  if (theme.axis.gridlines && layout.plotHeight > 0) {
+    const style = theme.axis.gridlineStyle ?? "dotted";
+    const dashArray = style === "dashed" ? "4,4" : style === "dotted" ? "2,2" : "none";
+    const dashAttr = dashArray === "none" ? "" : ` stroke-dasharray="${dashArray}"`;
+    for (const tick of ticks) {
+      const x = forestX + xScale(tick);
+      lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${-layout.plotHeight}"
+        stroke="${theme.colors.border}" stroke-width="1"${dashAttr} opacity="0.5"/>`);
+    }
+  }
+
   // Ticks and labels
   for (const tick of ticks) {
     const tickX = xScale(tick);
@@ -2959,36 +2975,37 @@ function renderUnifiedTableRow(
       const cellStyle = row.cellStyles?.[col.field];
       const rowStyle = row.style;
 
-      // Font weight: cell > row > default
+      // Semantic bundle resolved from row/cell flags — single source of truth
+      // for fg / fontWeight / fontStyle when a semantic class applies. Mirrors
+      // the interactive path (ForestPlot.svelte .data-cell.row-has-semantic).
+      const cellSemBundle =
+        resolveSemanticBundle(cellStyle, theme) ??
+        resolveSemanticBundle(rowStyle, theme);
+
+      // Font weight: explicit cell/row bold > bundle > default
       let cellFontWeight = theme.typography.fontWeightNormal;
-      if (cellStyle?.bold || cellStyle?.emphasis) {
+      if (cellStyle?.bold || rowStyle?.bold) {
         cellFontWeight = theme.typography.fontWeightBold;
-      } else if (rowStyle?.bold || rowStyle?.emphasis) {
-        cellFontWeight = theme.typography.fontWeightBold;
+      } else if (cellSemBundle?.fontWeight != null) {
+        cellFontWeight = cellSemBundle.fontWeight;
       }
 
-      // Font style: cell > row > default
+      // Font style: explicit italic > bundle > default
       let cellFontStyle = "normal";
-      if (cellStyle?.italic) {
+      if (cellStyle?.italic || rowStyle?.italic) {
         cellFontStyle = "italic";
-      } else if (rowStyle?.italic) {
-        cellFontStyle = "italic";
+      } else if (cellSemBundle?.fontStyle != null) {
+        cellFontStyle = cellSemBundle.fontStyle;
       }
 
-      // Color: cell > row > default
+      // Color: explicit cell/row color > bundle fg > default
       let cellColor = theme.colors.foreground;
       if (cellStyle?.color) {
         cellColor = cellStyle.color;
-      } else if (cellStyle?.muted) {
-        cellColor = theme.colors.muted;
-      } else if (cellStyle?.accent) {
-        cellColor = theme.colors.accent;
       } else if (rowStyle?.color) {
         cellColor = rowStyle.color;
-      } else if (rowStyle?.muted) {
-        cellColor = theme.colors.muted;
-      } else if (rowStyle?.accent) {
-        cellColor = theme.colors.accent;
+      } else if (cellSemBundle?.fg != null) {
+        cellColor = cellSemBundle.fg;
       }
 
       lines.push(`<text class="cell-text" x="${textX}" y="${textY}"
@@ -3451,39 +3468,43 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       const row = displayRow.row;
 
       // 1. Explicit row background (style.bg) - highest priority
+      // Paint the bg (first winner wins), then fall through so a border
+      // from the semantic bundle can still be drawn afterward.
+      const semBundle = resolveSemanticBundle(row.style, theme);
       if (row.style?.bg) {
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
           fill="${row.style.bg}"/>`);
-        return;
-      }
-      // 2. Header-type rows get a subtle muted background
-      if (row.style?.type === "header") {
+      } else if (row.style?.type === "header") {
+        // Header-type rows get a subtle muted background
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
           fill="${theme.colors.muted}" fill-opacity="0.1"/>`);
-        return;
-      }
-      // 3. Semantic bundle background — semantic classes can now request a
-      //    row/cell bg via theme.semantics.<token>.bg. Render BEFORE the
-      //    banding pass so a semantically-backed row reads as distinct from
-      //    its neighbors regardless of odd/even.
-      const semBundle = resolveSemanticBundle(row.style, theme);
-      if (semBundle?.bg) {
+      } else if (semBundle?.bg) {
+        // Semantic bundle background — semantic classes can request a
+        // row bg via theme.semantics.<token>.bg. Rendered BEFORE the
+        // banding pass so a semantically-backed row reads as distinct from
+        // its neighbors regardless of odd/even.
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
           fill="${semBundle.bg}"/>`);
-        return;
-      }
-      // 4. Alternating row banding (only paint the "odd" band — even rows
-      // inherit the container background, matching the web widget).
-      if (bandIdx === 1) {
+      } else if (bandIdx === 1) {
+        // Alternating row banding (only paint the "odd" band — even rows
+        // inherit the container background, matching the web widget).
         const bgColor = theme.colors.altBg;
         if (bgColor !== theme.colors.background) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
             fill="${bgColor}"/>`);
         }
+      }
+      // Semantic bundle border (drawn as a bottom-edge line). Mirrors the
+      // interactive path (ForestPlot.svelte applies `border-bottom: 1px solid
+      // ${bundle.border}` via CSS var). Drawn after the bg so it sits on top.
+      if (semBundle?.border) {
+        parts.push(`<line x1="${padding}" x2="${padding + layout.totalWidth - padding * 2}"
+          y1="${y + rowHeight}" y2="${y + rowHeight}"
+          stroke="${semBundle.border}" stroke-width="1"/>`);
       }
     } else {
       // Group header row — paint the band bg when this header is part of a
