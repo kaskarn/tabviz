@@ -38,6 +38,29 @@ import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE, LAYOUT } fr
 import { resolveShowHeader } from "$lib/column-compat";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 
+/**
+ * Set of ids the frontend store reserves for its own use — a user column
+ * with any of these would collide with scope-detection and insert-anchor
+ * semantics in surprising ways. Kept in sync with R's `RESERVED_COLUMN_IDS`
+ * (see `R/classes-components.R`). Module-scoped + exported so unit tests
+ * and the `mintUniqueColumnId` method can share the same set.
+ */
+export const RESERVED_COLUMN_IDS = new Set<string>(["__root__", "__start__"]);
+
+/**
+ * Pure helper: given a base id and a set of already-taken ids, return a
+ * unique id by appending `_2`, `_3`, … to the base when needed. Extracted
+ * from `mintUniqueColumnId` so the resolution logic can be unit-tested
+ * without having to stand up a full `$state`-backed store (bun + Svelte 5
+ * runes don't play nicely outside `.svelte` components).
+ */
+export function mintUniqueId(base: string, taken: Set<string>): string {
+  if (!taken.has(base)) return base;
+  let i = 2;
+  while (taken.has(`${base}_${i}`)) i++;
+  return `${base}_${i}`;
+}
+
 // ====================================================================
 // Op recorder contract
 //
@@ -813,6 +836,13 @@ export function createForestStore() {
     );
     // A fresh spec supersedes any prior interactive column edits.
     clearColumnEdits();
+    // Also reset every per-column-id map that would otherwise leak across
+    // specs. `columnWidths` is cleared by `measureAutoColumns` below, but
+    // `axisZooms` and `userResizedIds` had no reset path and could hand a
+    // new spec a zoom / "user-resized" flag from the previous one when an
+    // id happened to match.
+    axisZooms = {};
+    userResizedIds = new Set();
     // Reset the op log too — a new spec is a new "session" as far as
     // recording fluent R calls is concerned.
     opLog = [];
@@ -1556,7 +1586,12 @@ export function createForestStore() {
 
   // Pick an id that isn't already taken anywhere in the effective tree.
   function mintUniqueColumnId(base: string): string {
-    const taken = new Set<string>();
+    // Collect every id currently "in use" — not just the visible spec, but
+    // also hidden columns, configured overrides, and orphan entries still
+    // sitting in the per-id state maps. Without this, hiding a column and
+    // then re-adding one with the same base name would silently overwrite
+    // the hidden column's width / axis zoom / override.
+    const taken = new Set<string>(RESERVED_COLUMN_IDS);
     const walk = (defs: ColumnDef[]) => {
       for (const d of defs) {
         taken.add(d.id);
@@ -1565,11 +1600,13 @@ export function createForestStore() {
     };
     if (spec) walk(spec.columns);
     walk(userInsertedColumns.map((i) => i.def) as ColumnDef[]);
+    for (const id of hiddenColumnIds) taken.add(id);
+    for (const id of Object.keys(columnSpecOverrides)) taken.add(id);
+    for (const id of Object.keys(columnWidths)) taken.add(id);
+    for (const id of Object.keys(axisZooms)) taken.add(id);
+    for (const id of userResizedIds) taken.add(id);
 
-    if (!taken.has(base)) return base;
-    let i = 2;
-    while (taken.has(`${base}_${i}`)) i++;
-    return `${base}_${i}`;
+    return mintUniqueId(base, taken);
   }
 
   // Insert a new column after `afterId`. Pass "__start__" to insert at position 0.

@@ -454,21 +454,6 @@ tabviz <- function(
   )
   columns <- c(list(label_column), columns)
 
-  # Ensure unique column IDs (same field used multiple times gets _2, _3, etc.)
-  seen_ids <- list()
-  columns <- lapply(columns, function(col) {
-    if (S7_inherits(col, ColumnSpec)) {
-      base_id <- col@id
-      if (is.null(seen_ids[[base_id]])) {
-        seen_ids[[base_id]] <<- 1
-      } else {
-        seen_ids[[base_id]] <<- seen_ids[[base_id]] + 1
-        col@id <- paste0(base_id, "_", seen_ids[[base_id]])
-      }
-    }
-    col
-  })
-
   # Process extra_columns (hidden-but-available pre-configured specs)
   if (is.null(extra_columns)) {
     extra_columns <- list()
@@ -483,6 +468,22 @@ tabviz <- function(
       }
     })
   }
+
+  # Ensure unique column IDs across the *entire* tree (top-level columns,
+  # leaves nested inside ColumnGroups, group ids themselves, and the hidden
+  # `extra_columns` slot). Share one id namespace so a group with
+  # `id = "foo"` and a leaf with `id = "foo"` can never collide — the
+  # frontend's `findColumnScope()` and the per-id store maps
+  # (columnWidths, axisZooms, columnOrderOverrides, …) assume every id is
+  # globally unique within a spec.
+  #
+  # Renaming is always "append `_2`, `_3`, …" and emits one warning per
+  # rename so authors notice and can stabilise their code.
+  dedup_result <- deduplicate_column_ids(c(columns, extra_columns))
+  columns       <- dedup_result$columns[seq_along(columns)]
+  extra_columns <- dedup_result$columns[
+    seq(length(columns) + 1L, length.out = length(extra_columns))
+  ]
 
   # Validate available_exclude
   if (is.null(available_exclude)) {
@@ -877,4 +878,78 @@ render_tabviz_widget <- function(
 #' @export
 web_spec <- function(..., .spec_only = TRUE) {
   tabviz(..., .spec_only = .spec_only)
+}
+
+# ============================================================================
+# Column ID hygiene
+# ============================================================================
+
+#' Deduplicate column ids across a (possibly nested) column list
+#'
+#' Walks the full tree (top-level `ColumnSpec` / `ColumnGroup`, leaves
+#' inside groups, and optional `extra_columns` appended to the list).
+#' Ids are tracked in a single namespace — a leaf and a group cannot
+#' share one, because the frontend's `findColumnScope()` and the per-id
+#' store maps (`columnWidths`, `axisZooms`, `columnOrderOverrides`, …)
+#' assume every id is globally unique within a spec.
+#'
+#' Duplicate ids get `_2`, `_3`, … appended; each rename emits one
+#' `cli::cli_warn` so authors can stabilise their code. Returns a list
+#' with the (possibly renamed) columns; the tree shape is preserved so
+#' callers can split back into `columns` / `extra_columns` via indexing.
+#'
+#' @param cols List of `ColumnSpec` and/or `ColumnGroup` objects.
+#' @return `list(columns = <renamed cols>, renames = <named character vector>)`
+#'   where `renames` maps original id → new id (empty when no collisions).
+#' @keywords internal
+#' @noRd
+deduplicate_column_ids <- function(cols) {
+  seen    <- character(0)
+  renames <- character(0)
+
+  uniq_id <- function(base) {
+    if (!(base %in% seen)) return(base)
+    i <- 2L
+    repeat {
+      candidate <- paste0(base, "_", i)
+      if (!(candidate %in% seen)) return(candidate)
+      i <- i + 1L
+    }
+  }
+
+  rename_col <- function(col) {
+    if (S7_inherits(col, ColumnGroup)) {
+      orig <- col@id
+      new_id <- uniq_id(orig)
+      if (!identical(orig, new_id)) {
+        col@id <- new_id
+        renames[[orig]] <<- new_id
+      }
+      seen <<- c(seen, col@id)
+      col@columns <- lapply(col@columns, rename_col)
+      col
+    } else if (S7_inherits(col, ColumnSpec)) {
+      orig <- col@id
+      new_id <- uniq_id(orig)
+      if (!identical(orig, new_id)) {
+        col@id <- new_id
+        renames[[orig]] <<- new_id
+      }
+      seen <<- c(seen, col@id)
+      col
+    } else {
+      col
+    }
+  }
+
+  out <- lapply(cols, rename_col)
+
+  # No warning on rename. The common trigger is a legitimate pattern —
+  # `col_numeric("n") + col_bar("n")` rendering the same field two ways
+  # — so emitting noise would train authors to ignore it. The renamed
+  # ids surface in the "View source" panel and in modifier calls
+  # (`resize_column("n_2", …)`) for anyone who needs to reference them
+  # programmatically. The `renames` map is still returned for callers
+  # that want to introspect.
+  list(columns = out, renames = renames)
 }

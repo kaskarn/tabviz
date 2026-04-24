@@ -88,9 +88,34 @@ ColumnSpec <- new_class(
       return(paste("header_align must be one of:", paste(valid_aligns, collapse = ", ")))
     }
 
+    # Reject ids that look like frontend sentinels (`__root__`, `__start__`,
+    # etc). The store uses those values as scope keys / anchors; a column
+    # id that matches would collide with the internal semantics and break
+    # reorder / insert flows in surprising ways.
+    if (is_reserved_id(self@id)) {
+      return(paste0("id '", self@id, "' is reserved (internal frontend scope marker)"))
+    }
+
     NULL
   }
 )
+
+#' Internal: is this id reserved for frontend sentinels?
+#'
+#' The frontend's store reserves a small set of literal strings as scope /
+#' anchor markers (e.g. `__root__` as the top-level scope key in
+#' `columnOrderOverrides.byGroup`, `__start__` as the insert-at-front
+#' anchor for `insertColumn`). A user column with either id would collide
+#' with the internal semantics. Keep the list explicit rather than
+#' regex-broad — tabviz itself uses `__row_number__` and similar for
+#' internal label columns.
+#' @noRd
+RESERVED_COLUMN_IDS <- c("__root__", "__start__")
+
+is_reserved_id <- function(id) {
+  is.character(id) && length(id) == 1 && !is.na(id) &&
+    id %in% RESERVED_COLUMN_IDS
+}
 
 #' Create a column specification
 #'
@@ -1614,7 +1639,13 @@ ColumnGroup <- new_class(
     id = class_character,
     header = class_character,
     columns = new_property(class_list, default = list())
-  )
+  ),
+  validator = function(self) {
+    if (is_reserved_id(self@id)) {
+      return(paste0("id '", self@id, "' is reserved (internal frontend scope marker)"))
+    }
+    NULL
+  }
 )
 
 #' Create a column group

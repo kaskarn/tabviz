@@ -1,3 +1,66 @@
+# tabviz 0.20.2
+
+## Column ID integrity pass
+
+Fixes a class of brittle collision bugs in the column-id system
+surfaced by a thorough audit. Every per-id state map in the store
+(`columnWidths`, `axisZooms`, `columnOrderOverrides`,
+`columnSpecOverrides`, `hiddenColumnIds`, `userResizedIds`), every
+downstream consumer (SVG exporter, reorder handler, configure
+popover, op recorder), and every emitted fluent-R call assumes ids
+are globally unique within a spec. Until now that only held by
+author discipline.
+
+### R
+
+- **Dedup walks the full column tree.** The previous dedup pass in
+  `R/web_spec.R` only considered top-level columns. It now walks
+  leaves inside `col_group()`s, group ids themselves, and the
+  `extra_columns` slot in one shared id namespace. Collisions are
+  renamed `_2`, `_3`, … (silently — the common trigger is the
+  legitimate `col_numeric("n") + col_bar("n")` pattern).
+- **`ColumnSpec` / `ColumnGroup` validators reject reserved ids.**
+  `"__root__"` and `"__start__"` are frontend-internal scope
+  markers; constructing a column with either now errors with a
+  clear message. Other `__xxx__`-shaped ids (e.g. tabviz's own
+  `__row_number__` label-column field) are not reserved.
+
+### Frontend
+
+- **`mintUniqueColumnId` closes five blind spots.** It previously
+  only consulted `spec.columns` + `userInsertedColumns`. It now
+  also checks `hiddenColumnIds`, `columnSpecOverrides`,
+  `columnWidths`, `axisZooms`, `userResizedIds`, and the reserved
+  sentinels. A user who hides "drug" and then adds a new column
+  no longer risks getting back `"drug"` and silently inheriting
+  the hidden column's width / axis zoom / override state.
+- **`setSpec` resets every per-id state map.** `axisZooms` and
+  `userResizedIds` previously survived spec swaps, so switching
+  between sub-plots in a `SplitForest` could inherit a prior
+  spec's zoom / resize flag when ids coincidentally matched.
+  Joining `columnWidths` and `hiddenColumnIds` in the reset path.
+- **Pure `mintUniqueId(base, taken)` helper exported for
+  testing.** 11 bun tests pin the resolution logic end-to-end.
+
+### Tests
+
+16 new R tests in `tests/testthat/test-ids.R` cover reserved-id
+rejection, top-level dedup, group-nested dedup, repeated group
+headers, cross-namespace `extra_columns` dedup, and stable
+base-id semantics. 11 new bun tests pin the resolution helper.
+
+### Out of scope
+
+- No public `id=` argument on `col_*()` helpers yet — the dedup
+  path makes the common cases work. A user-facing id override is
+  a natural follow-up.
+- No separate namespace for group vs leaf ids. Keeping one
+  namespace plus dedup is the small fix; the prefix-based scheme
+  would ripple through every consumer.
+- Hidden columns still hold their `columnWidths` / `axisZooms`
+  entries (the user might unhide them). Only `setSpec` forces a
+  full reset.
+
 # tabviz 0.20.1
 
 ## Recorder + configure popover polish
