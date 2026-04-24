@@ -626,6 +626,10 @@ export interface WebSpec {
   layout: LayoutSpec;
   labels?: PlotLabels;
   watermark?: string;
+  /** Verbatim deparse of the user's original `tabviz(...)` call, captured
+   *  R-side. Shown as the baseline line in the "View source" panel above
+   *  the recorded fluent operations. Undefined for fluent-api-only specs. */
+  originalCall?: string;
 }
 
 // ============================================================================

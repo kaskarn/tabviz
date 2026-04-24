@@ -907,3 +907,181 @@ clear_edits <- function(x) {
   }
   invoke_proxy_method(x, "clearEdits", list())
 }
+
+# ----------------------------------------------------------------------------
+# Label setters — title / subtitle / caption / footnote
+#
+# Each mutates `spec@labels` for WebSpec/htmlwidget inputs and dispatches
+# `setLabel` on tabviz_proxy inputs. NULL clears the slot.
+# ----------------------------------------------------------------------------
+
+# Internal helper: each public setter delegates here.
+#' @noRd
+set_label_slot <- function(x, slot, text) {
+  if (!is.null(text)) checkmate::assert_string(text)
+
+  transform <- function(spec) {
+    labels <- spec@labels %||% PlotLabels()
+    S7::prop(labels, slot) <- text %||% NA_character_
+    spec@labels <- labels
+    spec
+  }
+
+  apply_spec_or_proxy(
+    x, transform,
+    proxy_method = "setLabel",
+    proxy_args = list(which = slot, text = text %||% NA_character_)
+  )
+}
+
+#' Set the plot title
+#'
+#' @param x A WebSpec, htmlwidget, or tabviz_proxy.
+#' @param text New title text. `NULL` clears the title.
+#' @return The modified input
+#' @export
+#' @examples
+#' web_theme_default() |>
+#'   (\(t) tabviz(
+#'     data.frame(study = letters[1:3], or = 1:3),
+#'     label = "study", theme = t
+#'   ))() |>
+#'   set_title("Updated title")
+set_title <- function(x, text) set_label_slot(x, "title", text)
+
+#' Set the plot subtitle
+#'
+#' @inheritParams set_title
+#' @return The modified input
+#' @export
+set_subtitle <- function(x, text) set_label_slot(x, "subtitle", text)
+
+#' Set the plot caption
+#'
+#' @inheritParams set_title
+#' @return The modified input
+#' @export
+set_caption <- function(x, text) set_label_slot(x, "caption", text)
+
+#' Set the plot footnote
+#'
+#' @inheritParams set_title
+#' @return The modified input
+#' @export
+set_footnote <- function(x, text) set_label_slot(x, "footnote", text)
+
+# ----------------------------------------------------------------------------
+# Watermark
+# ----------------------------------------------------------------------------
+
+#' Set (or clear) the plot watermark
+#'
+#' @param x A WebSpec, htmlwidget, or tabviz_proxy.
+#' @param text Watermark text; `NULL` removes the watermark.
+#' @return The modified input
+#' @export
+set_watermark <- function(x, text) {
+  if (!is.null(text)) checkmate::assert_string(text)
+
+  transform <- function(spec) {
+    spec@watermark <- text %||% NA_character_
+    spec
+  }
+
+  apply_spec_or_proxy(
+    x, transform,
+    proxy_method = "setWatermark",
+    proxy_args = list(text = text %||% NA_character_)
+  )
+}
+
+# ----------------------------------------------------------------------------
+# Paint — semantic row/cell tokens
+#
+# Thin fluent wrappers over the underlying semantic-bundle machinery. Tokens
+# (`"emphasis"`, `"muted"`, `"accent"`) attach a SemanticBundle to the row
+# or cell; `NULL` clears any active token on that target.
+# ----------------------------------------------------------------------------
+
+# Validate token argument: NULL or one of the three semantic names.
+#' @noRd
+check_paint_token <- function(token) {
+  if (is.null(token)) return(invisible())
+  checkmate::assert_choice(token, c("emphasis", "muted", "accent"))
+}
+
+#' Paint a row with a semantic token
+#'
+#' The equivalent of toggling a cell semantic via the in-widget paint tool.
+#' Static-path (WebSpec / htmlwidget) records the decision on a per-row
+#' edit map so `save_plot()` and the "View source" panel pick it up.
+#' Proxy-path dispatches live.
+#'
+#' @param x A WebSpec, htmlwidget, or tabviz_proxy.
+#' @param row_id Row id to paint.
+#' @param token One of `"emphasis"`, `"muted"`, `"accent"`, or `NULL` to clear.
+#' @return The modified input
+#' @export
+paint_row <- function(x, row_id, token) {
+  checkmate::assert_string(row_id)
+  check_paint_token(token)
+
+  # Static-path storage: `spec@label_edits_semantics[[row_id]] <- token`
+  # isn't a thing today — paint in static mode is expressed via
+  # `row_emphasis = <col>` at construction time. For now, the paint
+  # verbs are runtime (proxy) only. A WebSpec/htmlwidget call warns.
+  if (!inherits(x, "tabviz_proxy")) {
+    cli_warn("{.fn paint_row} is a runtime verb; use {.arg row_emphasis} / {.arg row_muted} / {.arg row_accent} on {.fn tabviz} for static specs")
+    return(x)
+  }
+  invoke_proxy_method(x, "setRowSemantic", list(
+    rowId = row_id,
+    token = token %||% NA_character_
+  ))
+}
+
+#' Paint a single cell with a semantic token
+#'
+#' @inheritParams paint_row
+#' @param field Data field name of the cell.
+#' @return The modified input
+#' @export
+paint_cell <- function(x, row_id, field, token) {
+  checkmate::assert_string(row_id)
+  checkmate::assert_string(field)
+  check_paint_token(token)
+
+  if (!inherits(x, "tabviz_proxy")) {
+    cli_warn("{.fn paint_cell} is a runtime verb; ignored for static inputs")
+    return(x)
+  }
+  invoke_proxy_method(x, "setCellSemantic", list(
+    rowId = row_id,
+    field = field,
+    token = token %||% NA_character_
+  ))
+}
+
+# ----------------------------------------------------------------------------
+# SplitForest — toggle shared column widths at construction time
+# ----------------------------------------------------------------------------
+
+#' Toggle shared column widths on a split forest
+#'
+#' Flips the `shared_column_widths` flag on a `SplitForest` and re-stamps
+#' per-column widths accordingly. The live widget also exposes this as an
+#' "Align column widths" checkbox in the split sidebar.
+#'
+#' @param x A `SplitForest` object.
+#' @param enabled `TRUE` to align column widths across sub-plots; `FALSE`
+#'   to restore per-sub-plot auto-widths.
+#' @return The modified SplitForest
+#' @export
+set_shared_column_widths <- function(x, enabled) {
+  checkmate::assert_flag(enabled)
+  if (!S7_inherits(x, SplitForest)) {
+    cli_abort("{.arg x} must be a {.cls SplitForest}; got {.cls {class(x)[1]}}")
+  }
+  x@shared_column_widths <- enabled
+  x
+}

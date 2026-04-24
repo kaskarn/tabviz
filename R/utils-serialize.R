@@ -20,7 +20,8 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     watermark = if (is.na(spec@watermark)) NULL else spec@watermark,
     layout = list(
       plotWidth = theme@layout@plot_width
-    )
+    ),
+    originalCall = if (is.na(spec@original_call)) NULL else spec@original_call
   )
 }
 

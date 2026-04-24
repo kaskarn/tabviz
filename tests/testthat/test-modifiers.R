@@ -368,3 +368,66 @@ test_that("selectable_themes(NULL) hides the switcher", {
   updated <- selectable_themes(spec, NULL)
   expect_null(updated@interaction@enable_themes)
 })
+
+# ----------------------------------------------------------------------------
+# v0.20: label setters + watermark + shared_column_widths
+# ----------------------------------------------------------------------------
+
+test_that("set_title/subtitle/caption/footnote update spec@labels", {
+  spec <- make_spec()
+  spec <- set_title(spec, "T")
+  spec <- set_subtitle(spec, "S")
+  spec <- set_caption(spec, "C")
+  spec <- set_footnote(spec, "F")
+  expect_equal(spec@labels@title, "T")
+  expect_equal(spec@labels@subtitle, "S")
+  expect_equal(spec@labels@caption, "C")
+  expect_equal(spec@labels@footnote, "F")
+})
+
+test_that("set_title(NULL) clears the title", {
+  spec <- make_spec()
+  spec <- set_title(spec, "X")
+  spec <- set_title(spec, NULL)
+  expect_true(is.na(spec@labels@title))
+})
+
+test_that("set_watermark sets and clears", {
+  spec <- make_spec()
+  spec <- set_watermark(spec, "DRAFT")
+  expect_equal(spec@watermark, "DRAFT")
+  spec <- set_watermark(spec, NULL)
+  expect_true(is.na(spec@watermark))
+})
+
+test_that("set_shared_column_widths flips the SplitForest flag", {
+  data <- data.frame(
+    study = c("A", "B", "C", "D"),
+    region = c("N", "N", "S", "S"),
+    or = c(0.8, 1.0, 1.2, 1.1),
+    lower = c(0.5, 0.7, 0.9, 0.8),
+    upper = c(1.1, 1.3, 1.6, 1.4)
+  )
+  sf <- tabviz(
+    data, label = "study",
+    columns = list(viz_forest(point = "or", lower = "lower", upper = "upper")),
+    .spec_only = TRUE
+  ) |>
+    split_table(by = "region")
+  expect_false(sf@shared_column_widths)
+  sf2 <- set_shared_column_widths(sf, TRUE)
+  expect_true(sf2@shared_column_widths)
+  sf3 <- set_shared_column_widths(sf2, FALSE)
+  expect_false(sf3@shared_column_widths)
+})
+
+test_that("tabviz() captures original_call verbatim", {
+  spec <- tabviz(
+    data.frame(study = "A", hr = 1.0),
+    label = "study",
+    columns = list(col_numeric("hr")),
+    .spec_only = TRUE
+  )
+  expect_match(spec@original_call, "^tabviz\\(")
+  expect_match(spec@original_call, "label = \"study\"")
+})

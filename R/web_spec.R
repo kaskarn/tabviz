@@ -196,6 +196,14 @@ tabviz <- function(
     max_width = lifecycle::deprecated(),
     max_height = lifecycle::deprecated(),
     show_zoom_controls = lifecycle::deprecated()) {
+  # Capture the caller's invocation verbatim so the "View source" panel can
+  # show the original `tabviz(...)` line as the baseline above any recorded
+  # fluent operations. We deparse eagerly (not lazily) so that if `data` is
+  # a WebSpec piped in from a modifier, we can preserve the *earlier*
+  # original_call attached to that spec rather than re-capturing this
+  # intermediate call.
+  .tabviz_call <- paste(deparse(match.call(), width.cutoff = 500L), collapse = "\n")
+
   # Lazy, once-per-day, fail-silent nudge when a newer minor version exists.
   # Gated internally on interactive() + opt-outs; safe to call unconditionally.
   check_for_update()
@@ -543,7 +551,8 @@ tabviz <- function(
     marker_shape_col = style_resolved$marker_shape,
     marker_opacity_col = style_resolved$marker_opacity,
     marker_size_col = style_resolved$marker_size,
-    weight_col = style_resolved$weight
+    weight_col = style_resolved$weight,
+    original_call = .tabviz_call
   )
 
   # Return spec only if requested

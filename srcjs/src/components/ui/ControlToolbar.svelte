@@ -8,6 +8,7 @@
   import ZoomControls from "./ZoomControls.svelte";
   import SettingsButton from "./SettingsButton.svelte";
   import PaintModeButton from "./PaintModeButton.svelte";
+  import SourceButton from "./SourceButton.svelte";
 
   interface Props {
     store: ForestStore;
@@ -45,6 +46,7 @@
   {#if enablePaint}
     <PaintModeButton {store} />
   {/if}
+  <SourceButton {store} />
   {#if enableReset}
     <ResetButton {store} />
   {/if}

@@ -305,6 +305,38 @@ When `enable_edit` is on:
 
 Edits merge into `exportSpec.labels`, so `save_plot()` reflects them.
 
+## View Source (v0.20+)
+
+The **`</>` icon** in the widget toolbar opens a three-tab panel
+showing the current widget as fluent R code:
+
+- **Table ops** — your original `tabviz(...)` call (captured as
+  written) plus every interactive structural change you've made
+  (resize / add / remove / move columns, move rows, cell / title /
+  caption / footnote edits, paint stamps, theme switches,
+  watermark, split-forest align-widths toggle).
+- **Theme** — the current theme state as a `web_theme_*()  |>
+  set_*()` chain. Identical to the "View theme source" panel that
+  used to live inside the Settings sidebar.
+- **Combined** — both, stitched together:
+
+```r
+mytheme <- web_theme_default() |>
+  set_colors(primary = "#0891b2")
+
+tbl <- tabviz(dt, label = "study", columns = list(...), theme = mytheme) |>
+  resize_column("drug", 160) |>
+  move_column("drug", to = 2) |>
+  set_title("Updated")
+```
+
+The log is **append-only**: if you resize a column from 120 to
+150 and back, both calls appear in order. No attempt is made to
+dedupe or optimize — the raw sequence is the history.
+
+The corresponding fluent R functions are all exported from the
+package, so the emitted chain pastes into R as-is.
+
 ## See Also
 
 - [Reference: Interaction Settings](../reference/interaction.qmd) — Full API reference

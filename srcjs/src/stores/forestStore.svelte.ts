@@ -36,6 +36,23 @@ import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE, LAYOUT } from "$lib/rendering-constants";
 import { resolveShowHeader } from "$lib/column-compat";
+import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
+
+// ====================================================================
+// Op recorder contract
+//
+// Every mutation below that changes user-visible NON-theme state must
+// push exactly one OpRecord to `opLog` using the helpers in
+// `$lib/op-recorder`. Theme-side edits are rendered separately as a
+// live snapshot via `generateThemeSource()` — do NOT log them here.
+//
+// Backtracking is deliberate: if a user resizes a column to 120 then
+// back to 150, we record both calls in order. The "View source" panel
+// shows the literal history; don't collapse or dedupe.
+//
+// Ephemeral UI state (sort / filter / select / hover / scroll / zoom-
+// pan) is never recorded.
+// ====================================================================
 
 // Svelte 5 runes-based store
 export function createForestStore() {
@@ -92,6 +109,8 @@ export function createForestStore() {
   let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
   let cellEdits = $state<CellEdits>({ cells: {}, groups: {} });
+  // Append-only log of recorded fluent-R operations (see contract above).
+  let opLog = $state<OpRecord[]>([]);
 
   // Plot-level label overrides (title / subtitle / caption / footnote). Keys
   // match EditTarget.labelField. `null` means "cleared to empty" — the export
@@ -794,6 +813,9 @@ export function createForestStore() {
     );
     // A fresh spec supersedes any prior interactive column edits.
     clearColumnEdits();
+    // Reset the op log too — a new spec is a new "session" as far as
+    // recording fluent R calls is concerned.
+    opLog = [];
     // Reset theme-edit tracking to the incoming theme's name; the settings
     // panel's "View source" feature emits `web_theme_<baseThemeName>() |> ...`.
     baseThemeName = newSpec.theme?.name ?? "default";
@@ -1437,6 +1459,8 @@ export function createForestStore() {
         byGroup: { ...columnOrderOverrides.byGroup, [scope]: order },
       };
     }
+    // Record with the 1-based new index (matches R's semantics).
+    opLog = [...opLog, ops.moveColumn(itemId, newIndex + 1)];
   }
 
   // Find the group id of a row-group, given the group id itself.
@@ -1493,6 +1517,7 @@ export function createForestStore() {
       ...rowOrderOverrides,
       byGroup: { ...rowOrderOverrides.byGroup, [scope]: order },
     };
+    opLog = [...opLog, ops.moveRow(rowId, newIndex + 1)];
   }
 
   function moveRowGroupItem(groupId: string, newIndex: number) {
@@ -1551,6 +1576,8 @@ export function createForestStore() {
   function insertColumn(def: ColumnSpec, afterId: string) {
     const id = mintUniqueColumnId(def.id || def.field);
     userInsertedColumns = [...userInsertedColumns, { afterId, def: { ...def, id } }];
+    const after = afterId === "__start__" ? "__start__" : afterId;
+    opLog = [...opLog, ops.addColumn(renderColumnBuilder(def), after)];
   }
 
   // Hide a column (reversible via clearColumnEdits).
@@ -1559,6 +1586,7 @@ export function createForestStore() {
     const next = new Set(hiddenColumnIds);
     next.add(id);
     hiddenColumnIds = next;
+    opLog = [...opLog, ops.removeColumn(id)];
   }
 
   // Replace an existing column's spec. Works for both author-defined and
@@ -1569,9 +1597,16 @@ export function createForestStore() {
       const next = userInsertedColumns.slice();
       next[insertedIdx] = { ...next[insertedIdx], def: { ...newSpec, id } };
       userInsertedColumns = next;
-      return;
+    } else {
+      columnSpecOverrides = { ...columnSpecOverrides, [id]: { ...newSpec, id } };
     }
-    columnSpecOverrides = { ...columnSpecOverrides, [id]: { ...newSpec, id } };
+    // For the log we emit a thin summary: header + type. Full config would
+    // be noisy — users follow up with the configure popover, which emits
+    // targeted set_*() calls as we deepen coverage.
+    const patch: Record<string, unknown> = {};
+    if (newSpec.header !== undefined) patch.header = newSpec.header;
+    if (newSpec.type !== undefined) patch.type = newSpec.type;
+    opLog = [...opLog, ops.updateColumn(id, patch)];
   }
 
   // Drop all user-driven add/hide/configure edits.
@@ -1599,6 +1634,7 @@ export function createForestStore() {
       ...cellEdits,
       cells: { ...cellEdits.cells, [rowId]: { ...current, [field]: value } },
     };
+    opLog = [...opLog, ops.setCell(rowId, field, value)];
   }
 
   function clearCellEdit(rowId: string, field: string) {
@@ -1616,7 +1652,14 @@ export function createForestStore() {
     // means reordering columns doesn't migrate prior label edits.
     const field = allColumns[0]?.field;
     if (!field) return;
-    setCellValue(rowId, field, label);
+    // Inline the cellEdits update so we can emit a `set_row_label()` record
+    // (more semantic than the `set_cell()` that setCellValue would push).
+    const current = cellEdits.cells[rowId] ?? {};
+    cellEdits = {
+      ...cellEdits,
+      cells: { ...cellEdits.cells, [rowId]: { ...current, [field]: label } },
+    };
+    opLog = [...opLog, ops.setRowLabel(rowId, label)];
   }
 
   function setGroupHeader(groupId: string, text: string) {
@@ -1675,6 +1718,7 @@ export function createForestStore() {
   ) {
     const next = value == null || value === "" ? null : value;
     labelEdits = { ...labelEdits, [field]: next };
+    opLog = [...opLog, ops.setLabelSlot(field, next)];
   }
 
   function clearLabelEdit(
@@ -1729,6 +1773,9 @@ export function createForestStore() {
       ? { ...styleEdits.rows, [rowId]: next }
       : (() => { const { [rowId]: _r, ...rest } = styleEdits.rows; return rest; })();
     styleEdits = { ...styleEdits, rows };
+    // Turning a token ON records the paint; turning OFF records clearing
+    // (paint_row(..., NULL)). The fluent R verb mirrors this toggle.
+    opLog = [...opLog, ops.paintRow(rowId, on ? token : null)];
   }
 
   function setCellSemantic(
@@ -1753,6 +1800,7 @@ export function createForestStore() {
       ? { ...styleEdits.cells, [rowId]: nextRowMap }
       : (() => { const { [rowId]: _r, ...rest } = styleEdits.cells; return rest; })();
     styleEdits = { ...styleEdits, cells };
+    opLog = [...opLog, ops.paintCell(rowId, field, on ? token : null)];
   }
 
   /** Resolved row semantic flags (spec baseline + paint overrides). */
@@ -1816,6 +1864,7 @@ export function createForestStore() {
       next.add(columnId);
       userResizedIds = next;
     }
+    opLog = [...opLog, ops.resizeColumn(columnId, w)];
   }
 
   function getColumnWidth(columnId: string): number | undefined {
@@ -1882,6 +1931,7 @@ export function createForestStore() {
     // every auto-width measurement is stale. Invalidate and re-run.
     columnWidths = {};
     measureAutoColumns();
+    opLog = [...opLog, ops.setTheme(themeName)];
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -1979,6 +2029,10 @@ export function createForestStore() {
   function setWatermark(value: string) {
     if (!spec) return;
     spec = { ...spec, watermark: value };
+    // Empty string means "clear" in the R API — emit NULL so the recorded
+    // line reads `set_watermark(NULL)` rather than `set_watermark("")`.
+    const text = value === "" ? null : value;
+    opLog = [...opLog, ops.setWatermark(text)];
   }
 
   /**
@@ -2155,6 +2209,7 @@ export function createForestStore() {
     labelEdits = {};
     styleEdits = { rows: {}, cells: {} };
     paintTool = null;
+    opLog = [];
 
     // ── Widths / zoom / sizing ───────────────────────────────────────────
     columnWidths = {};
@@ -2742,6 +2797,13 @@ export function createForestStore() {
     setScalableNaturalDimensions,
     setContainerElementId,
     resetState,
+    // Op recorder
+    get opLog() { return opLog; },
+    clearOpLog: () => { opLog = []; },
+    // Append a pre-built record (used by the split wrapper to log
+    // SplitForest-level ops like set_shared_column_widths on the active
+    // sub-plot's log; internal mutations above push directly).
+    recordOp: (r: OpRecord) => { opLog = [...opLog, r]; },
   };
 }
 

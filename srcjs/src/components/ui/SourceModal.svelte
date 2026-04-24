@@ -11,14 +11,11 @@
 
   let { store, open, onclose }: Props = $props();
 
-  /**
-   * Merge banding overrides into the edits map for export. `bandingOverride`
-   * is UI state (runtime toggles), but from the user's mental model it *is*
-   * part of their customizations — so we fold it into the `layout` section
-   * of the emitted R chain. The ABAB/BABA phase is deliberately omitted: it
-   * has no R equivalent yet, so we emit a trailing comment note instead.
-   */
-  const source = $derived.by(() => {
+  type Tab = "table" | "theme" | "combined";
+  let activeTab = $state<Tab>("combined");
+
+  // ---- Theme snapshot (re-uses the v0.19 path) -----------------------
+  const themeSource = $derived.by(() => {
     const edits = { ...store.themeEdits };
     const bo = store.bandingOverride;
     if (bo) {
@@ -32,9 +29,7 @@
               : `group-${bo.level}`;
       edits.layout = { ...(edits.layout ?? {}), banding: bandingStr };
     }
-
     const code = generateThemeSource(store.baseThemeName, edits);
-
     const phaseOverride = store.bandingStartsWithBandOverride;
     if (phaseOverride !== null && bo && bo.mode !== "none") {
       const note = phaseOverride
@@ -45,17 +40,81 @@
     return code;
   });
 
+  // ---- Table ops (from the recorded log) -----------------------------
+  //
+  // Baseline: the user's original `tabviz(...)` call if captured.
+  // Fallback: a placeholder `widget` the user fills in themselves.
+  const originalCall = $derived(store.spec?.originalCall);
+  const baselineVar = "tbl";
+
+  /** Extract the fluent-R lines from the recorded log, indented for a pipe. */
+  const tableOpsBody = $derived.by(() => {
+    const log = store.opLog;
+    if (log.length === 0) return "";
+    return log.map((r) => `  ${r.rCall}`).join(" |>\n");
+  });
+
+  const tableSource = $derived.by(() => {
+    const baseline = originalCall
+      ? `${baselineVar} <- ${originalCall}`
+      : `${baselineVar} <- tabviz(...)`;
+    if (!tableOpsBody) {
+      return `# No recorded operations yet.\n${baseline}`;
+    }
+    return `${baseline} |>\n${tableOpsBody}`;
+  });
+
+  // ---- Combined (theme assigned, then table ops applied) -------------
+  //
+  // Format (per user's spec):
+  //   mytheme <- <theme chain>
+  //   tbl <- tabviz(..., theme = mytheme) |> <ops>
+  //
+  // If originalCall already specifies `theme = ...`, replace it with
+  // `theme = mytheme`. Otherwise append `, theme = mytheme` inside the
+  // outermost `tabviz(...)`. The replacement is a regex — we accept the
+  // "mess in, mess out" contract the user stated.
+  function injectTheme(call: string, themeVar: string): string {
+    if (/\btheme\s*=/.test(call)) {
+      return call.replace(/\btheme\s*=\s*[^,)]+/, `theme = ${themeVar}`);
+    }
+    // Insert before the final ')'. Trim trailing whitespace to avoid
+    // `tabviz(x, ) )` shapes.
+    const m = call.match(/\)\s*$/);
+    if (!m) return `${call}  # (could not inject theme)`;
+    const cut = call.lastIndexOf(")");
+    return `${call.slice(0, cut).trimEnd()}, theme = ${themeVar})`;
+  }
+
+  const combinedSource = $derived.by(() => {
+    const themeLine = `mytheme <- ${themeSource}`;
+    const call = originalCall ?? "tabviz(...)";
+    const withTheme = injectTheme(call, "mytheme");
+    const tblLine = tableOpsBody
+      ? `${baselineVar} <- ${withTheme} |>\n${tableOpsBody}`
+      : `${baselineVar} <- ${withTheme}`;
+    return `${themeLine}\n\n${tblLine}`;
+  });
+
+  // ---- Active tab content --------------------------------------------
+  const activeSource = $derived.by(() => {
+    if (activeTab === "table") return tableSource;
+    if (activeTab === "theme") return themeSource;
+    return combinedSource;
+  });
+
+  // ---- Copy to clipboard ---------------------------------------------
   let copied = $state(false);
   let copyTimer: number | undefined;
 
   async function copyToClipboard() {
     try {
-      await navigator.clipboard.writeText(source);
+      await navigator.clipboard.writeText(activeSource);
       copied = true;
       if (copyTimer) window.clearTimeout(copyTimer);
       copyTimer = window.setTimeout(() => (copied = false), 1600);
     } catch (err) {
-      console.error("Failed to copy theme source:", err);
+      console.error("Failed to copy source:", err);
     }
   }
 
@@ -72,7 +131,7 @@
 
 {#if open}
   <Portal>
-    <div class="theme-source-modal" role="dialog" aria-modal="true" aria-label="Theme source">
+    <div class="source-modal" role="dialog" aria-modal="true" aria-label="View source">
       <button
         type="button"
         class="modal-backdrop"
@@ -84,8 +143,8 @@
       <div class="modal-card">
         <header class="card-header">
           <div class="title-block">
-            <h3>Theme source</h3>
-            <p class="sub">Paste this into R to reproduce the current look.</p>
+            <h3>View source</h3>
+            <p class="sub">Paste this into R to reproduce the current widget.</p>
           </div>
           <button type="button" class="close" aria-label="Close" onclick={onclose}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -95,7 +154,40 @@
           </button>
         </header>
 
-        <pre class="code"><code>{source}</code></pre>
+        <div class="tab-bar" role="tablist">
+          <button
+            type="button"
+            class="tab"
+            class:active={activeTab === "table"}
+            role="tab"
+            aria-selected={activeTab === "table"}
+            onclick={() => (activeTab = "table")}
+          >
+            Table ops
+          </button>
+          <button
+            type="button"
+            class="tab"
+            class:active={activeTab === "theme"}
+            role="tab"
+            aria-selected={activeTab === "theme"}
+            onclick={() => (activeTab = "theme")}
+          >
+            Theme
+          </button>
+          <button
+            type="button"
+            class="tab"
+            class:active={activeTab === "combined"}
+            role="tab"
+            aria-selected={activeTab === "combined"}
+            onclick={() => (activeTab = "combined")}
+          >
+            Combined
+          </button>
+        </div>
+
+        <pre class="code"><code>{activeSource}</code></pre>
 
         <footer class="card-footer">
           <button type="button" class="copy-btn" onclick={copyToClipboard}>
@@ -119,7 +211,7 @@
 {/if}
 
 <style>
-  .theme-source-modal {
+  .source-modal {
     position: fixed;
     inset: 0;
     z-index: 10050;
@@ -129,9 +221,6 @@
     padding: 24px;
   }
 
-  /* Explicit z-index + pointer-events so host-page stylesheets can't
-     push the backdrop above the card. See ConfirmDialog for the same
-     pattern and rationale. */
   .modal-backdrop {
     position: absolute;
     inset: 0;
@@ -147,8 +236,8 @@
     position: relative;
     z-index: 2;
     pointer-events: auto;
-    width: min(560px, 100%);
-    max-height: min(80vh, 720px);
+    width: min(640px, 100%);
+    max-height: min(82vh, 760px);
     display: flex;
     flex-direction: column;
     background: var(--wf-bg, #ffffff);
@@ -175,7 +264,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    padding: 16px 18px 10px;
+    padding: 16px 18px 8px;
   }
 
   .title-block h3 {
@@ -211,6 +300,35 @@
     color: var(--wf-fg, #1a1a1a);
   }
 
+  .tab-bar {
+    display: flex;
+    gap: 2px;
+    padding: 0 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
+  }
+
+  .tab {
+    padding: 8px 14px;
+    border: none;
+    background: transparent;
+    color: var(--wf-secondary, #64748b);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .tab:hover {
+    color: var(--wf-fg, #1a1a1a);
+  }
+
+  .tab.active {
+    color: var(--wf-primary, #2563eb);
+    border-bottom-color: var(--wf-primary, #2563eb);
+  }
+
   .code {
     margin: 0;
     padding: 14px 18px;
@@ -222,7 +340,6 @@
     line-height: 1.55;
     color: var(--wf-fg, #1a1a1a);
     background: color-mix(in srgb, var(--wf-primary, #2563eb) 5%, transparent);
-    border-top: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
     border-bottom: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
     white-space: pre;
   }

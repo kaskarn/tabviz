@@ -13,7 +13,6 @@
   // viz_forest / viz_bar / viz_boxplot / viz_violin). The theme Axis tab
   // was removed in v0.18 — R's set_axis() still exists for users who want
   // a cross-cutting default, but the interactive surface is column-scoped.
-  import ThemeSourceModal from "./ThemeSourceModal.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
 
   interface Props {
@@ -46,7 +45,6 @@
   let panelRef = $state<HTMLElement | null>(null);
   let lastFocused: Element | null = null;
 
-  let sourceOpen = $state(false);
   let resetConfirmOpen = $state(false);
 
   // Bottom-fade scroll hint: fades in when the body is scrollable AND the
@@ -90,9 +88,6 @@
   function handleKeydown(e: KeyboardEvent) {
     if (!open) return;
     if (e.key === "Escape") {
-      // Don't close the whole panel if the source modal is the topmost layer —
-      // it has its own Escape handler.
-      if (sourceOpen) return;
       e.stopPropagation();
       store.closeSettings();
     }
@@ -151,18 +146,8 @@
       <span class="bar-title">Settings</span>
 
       <div class="bar-actions">
-        <button
-          type="button"
-          class="bar-icon-btn"
-          aria-label="View theme source"
-          title="View theme source"
-          onclick={() => (sourceOpen = true)}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="16 18 22 12 16 6" />
-            <polyline points="8 6 2 12 8 18" />
-          </svg>
-        </button>
+        <!-- The per-panel "View theme source" icon retired in v0.20; the
+             unified "View source" lives on the main toolbar now. -->
         <button
           type="button"
           class="bar-icon-btn"
@@ -246,8 +231,6 @@
       <div class="scroll-fade" class:visible={showBottomFade} aria-hidden="true"></div>
     </div>
   </div>
-
-  <ThemeSourceModal {store} open={sourceOpen} onclose={() => (sourceOpen = false)} />
 
   <ConfirmDialog
     open={resetConfirmOpen}

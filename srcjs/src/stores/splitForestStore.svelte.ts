@@ -1,6 +1,7 @@
 import type { SplitForestPayload, NavTreeNode, WebSpec } from "$types";
 import { createForestStore, type ForestStore } from "./forestStore.svelte";
 import { type ThemeName } from "$lib/theme-presets";
+import { ops } from "$lib/op-recorder";
 
 // Column types whose width is driven by the visualization itself, not its
 // data text content. We skip these when estimating shared widths — their
@@ -188,11 +189,16 @@ export function createSplitForestStore() {
     }
 
     // Re-apply the active spec so the activeStore picks up new widths and
-    // rerenders. setSpec clears its column-width cache internally.
+    // rerenders. setSpec clears its column-width cache internally (including
+    // its opLog), so push the split-level op record AFTER the reset.
     if (activeKey) {
       const spec = payload.specs[activeKey];
       if (spec) activeStore.setSpec(spec);
     }
+    // Record into the active sub-plot's log so the "View source" panel
+    // surfaces it alongside any other edits. `tbl` in the emitted R code
+    // is a SplitForest when split_by was used, so the call is valid.
+    activeStore.recordOp(ops.setSharedColumnWidths(enabled));
   }
 
   function toggleSharedColumnWidths() {

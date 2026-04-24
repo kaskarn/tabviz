@@ -229,7 +229,12 @@ WebSpec <- new_class(
     marker_opacity_col = new_property(class_character, default = NA_character_),
     marker_size_col = new_property(class_character, default = NA_character_),
     # Deprecated: use marker_size_col instead
-    weight_col = new_property(class_character, default = NA_character_)
+    weight_col = new_property(class_character, default = NA_character_),
+    # Verbatim deparse of the original `tabviz()` / `forest_plot()` call
+    # — surfaces in the "View source" panel as the baseline above the
+    # recorded fluent operations. Captured once at the entry point; not
+    # updated by modifiers. NA when absent (fluent-api-only specs).
+    original_call = new_property(class_character, default = NA_character_)
   ),
   validator = function(self) {
     # Validate optional columns if specified

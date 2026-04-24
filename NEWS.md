@@ -1,3 +1,59 @@
+# tabviz 0.20.0
+
+## Operation recorder + unified "View source"
+
+The in-widget "View source" panel now records non-theme
+operations too — resize, add/remove/reorder columns, row
+reorder, cell / title / subtitle / caption / footnote edits,
+paint stamps, theme switches, watermark changes, and the
+split-forest "align column widths" toggle. Every user action
+is appended to an incremental log as a fluent R call; the
+panel exposes three tabs:
+
+- **Table ops** — the recorded log starting from your original
+  `tabviz(...)` call (captured verbatim as of v0.20).
+- **Theme** — the current theme snapshot, identical to the
+  v0.19 "View theme source" output.
+- **Combined** — `mytheme <- [theme chain]; tbl <- tabviz(...,
+  theme = mytheme) |> [ops chain]`. Paste into R to reproduce
+  the current widget.
+
+Backtracking is deliberate — if you resize a column to 120
+then back to 150, both calls appear in order. No attempt is
+made to dedupe or compute minimal diffs.
+
+### UI changes
+
+- The "View source" icon lives on the main toolbar between the
+  paint button and the reset button (`</>` glyph). The v0.19-era
+  "View theme source" icon inside the Settings panel is retired.
+
+### New fluent API
+
+`R/modifiers.R` gains eight verbs that mirror the new recorder
+records, so emitted code round-trips cleanly:
+
+- `set_title()`, `set_subtitle()`, `set_caption()`, `set_footnote()` —
+  update `spec@labels`; pass `NULL` to clear.
+- `set_watermark()` — set or clear the diagonal watermark.
+- `paint_row()`, `paint_cell()` — runtime verbs for Shiny proxies.
+- `set_shared_column_widths()` — toggle a `SplitForest`'s
+  align-widths flag.
+
+### Internal
+
+- `WebSpec` gains an `original_call` property captured via
+  `match.call()` at the `tabviz()` entry point; serialized as
+  `originalCall` in the widget payload.
+- New `srcjs/src/lib/op-recorder.ts` owns R-literal quoting,
+  call rendering, and per-op record constructors. All op
+  emissions go through it so there's a single grep target
+  when the fluent API evolves.
+- `forestStore` gets an `opLog` state + `recordOp()` setter;
+  `splitForestStore` pipes its split-level ops into the active
+  sub-plot's log.
+- 27 new bun tests pin the rendered R output for every op type.
+
 # tabviz 0.19.0
 
 ## Interactive split widths + text/border controls
