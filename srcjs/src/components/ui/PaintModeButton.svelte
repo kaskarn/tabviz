@@ -96,11 +96,30 @@
     <div
       bind:this={popoverEl}
       class="paint-popover"
+      class:is-active={active}
       role="dialog"
       aria-label="Paint tool"
     >
-      <div class="section">
-        <span class="section-title">Token</span>
+      {#if active}
+        <!-- Loud exit — top of the popover, accent color, X icon. Beta
+             feedback: users struggled to find their way out of paint
+             mode. Make the exit unmistakable even on a first glance. -->
+        <button
+          type="button"
+          class="exit-btn"
+          onclick={() => store.setPaintTool(null)}
+          title="Stop painting (Esc)"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+          Exit paint mode
+        </button>
+      {/if}
+
+      <div class="row row-tokens">
+        <span class="row-label">Token</span>
         <div class="chips">
           {#each tokens as t (t.id)}
             <button
@@ -114,40 +133,37 @@
       </div>
 
       {#if active}
-        <div class="section">
-          <span class="section-title">Scope</span>
-          <div class="segmented">
-            <button
-              type="button"
-              class:selected={tool!.scope === "row"}
-              onclick={() => pickScope("row")}
-            >Row</button>
-            <button
-              type="button"
-              class:selected={tool!.scope === "cell"}
-              onclick={() => pickScope("cell")}
-            >Cell</button>
-          </div>
+        <!-- Scope as a two-state pill switch. Clicking either side selects
+             it; the thumb slides to the active side. Replaces the earlier
+             segmented-buttons UI which felt visually indistinct from the
+             token chips above. -->
+        <div class="row row-scope">
+          <span class="row-label">Scope</span>
+          <button
+            type="button"
+            class="scope-switch"
+            class:on-cell={tool!.scope === "cell"}
+            onclick={() => pickScope(tool!.scope === "row" ? "cell" : "row")}
+            role="switch"
+            aria-checked={tool!.scope === "cell"}
+            aria-label={`Scope: ${tool!.scope}`}
+          >
+            <span class="scope-label" class:active={tool!.scope === "row"}>Row</span>
+            <span class="scope-label" class:active={tool!.scope === "cell"}>Cell</span>
+            <span class="scope-thumb"></span>
+          </button>
         </div>
       {/if}
 
-      <div class="section footer-section">
-        {#if store.hasPaintEdits}
-          <button type="button" class="ghost-btn" onclick={clearAll}>
-            Clear paint
-          </button>
-        {/if}
-        {#if active}
-          <button type="button" class="ghost-btn" onclick={() => store.setPaintTool(null)}>
-            Exit paint mode
-          </button>
-        {/if}
-      </div>
+      {#if store.hasPaintEdits}
+        <button type="button" class="clear-btn" onclick={clearAll}>
+          Clear all paint
+        </button>
+      {/if}
 
       <p class="hint">
         {#if active}
           Click a {tool!.scope} to toggle its {tool!.token} flag.
-          Press Esc to exit.
         {:else}
           Pick a token, then click rows or cells to stamp it on.
         {/if}
@@ -206,31 +222,30 @@
     right: 0;
     z-index: 10002;
     min-width: 200px;
-    padding: 10px;
+    padding: 8px;
     background: var(--wf-bg, #ffffff);
     border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 15%, var(--wf-border, #e2e8f0));
     border-radius: 8px;
     box-shadow: 0 8px 24px -4px color-mix(in srgb, #0f172a 25%, transparent);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
     font-size: 0.75rem;
     color: var(--wf-fg, #1a1a1a);
   }
 
-  .section {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  /* Inline `Token / Scope` rows — label + control on one line, same
+     idiom as the advanced-settings compact fields. Tighter than the
+     previous stacked layout. */
+  .row {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 1px 0;
   }
 
-  .footer-section {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .section-title {
+  .row-label {
     font-size: 0.65rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -238,14 +253,46 @@
     color: var(--wf-secondary, #64748b);
   }
 
+  /* Loud exit — accent color with X icon, top of the popover. Sized to
+     stand out against the quieter chrome below. */
+  .exit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 6px;
+    background: var(--wf-accent, #8b5cf6);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .exit-btn:hover {
+    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 88%, #000000);
+  }
+
+  .exit-btn:active {
+    transform: translateY(1px);
+  }
+
+  .exit-btn:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--wf-accent, #8b5cf6) 40%, transparent);
+    outline-offset: 2px;
+  }
+
   .chips {
     display: flex;
-    gap: 4px;
+    gap: 3px;
     flex-wrap: wrap;
   }
 
   .chip {
-    padding: 3px 8px;
+    padding: 2px 8px;
     border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 15%, var(--wf-border, #e2e8f0));
     border-radius: 999px;
     background: var(--wf-bg, #ffffff);
@@ -260,12 +307,6 @@
     background: color-mix(in srgb, var(--wf-primary, #2563eb) 8%, transparent);
   }
 
-  /*
-   * Selected chip: use the primary color for text + border against a
-   * pale primary tint for the fill. Avoids the white-on-white failure
-   * mode that `color: var(--wf-bg)` had when rendered over a light
-   * bg bleed-through from `color-mix(primary 90%, transparent)`.
-   */
   .chip.selected {
     background: color-mix(in srgb, var(--wf-primary, #2563eb) 18%, var(--wf-bg, #ffffff));
     border-color: var(--wf-primary, #2563eb);
@@ -273,34 +314,66 @@
     font-weight: 600;
   }
 
-  .segmented {
-    display: inline-flex;
+  /* Row/Cell switch — a pill with two labels and a sliding thumb. Users
+     see both options at once; clicking either side flips the thumb to
+     that side. Clearer than the old segmented-buttons that blended in
+     with the token chips above them. */
+  .scope-switch {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0;
+    width: 96px;
+    height: 22px;
     border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 15%, var(--wf-border, #e2e8f0));
-    border-radius: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 6%, transparent);
+    cursor: pointer;
     overflow: hidden;
+    font-family: inherit;
   }
 
-  .segmented button {
-    padding: 3px 10px;
-    border: none;
-    background: transparent;
-    color: var(--wf-fg, #1a1a1a);
+  .scope-thumb {
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: calc(50% - 1px);
+    height: calc(100% - 2px);
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 90%, transparent);
+    border-radius: 999px;
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 0;
+  }
+
+  .scope-switch.on-cell .scope-thumb {
+    transform: translateX(100%);
+  }
+
+  .scope-label {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.7rem;
     font-weight: 500;
-    cursor: pointer;
+    color: var(--wf-secondary, #64748b);
+    transition: color 0.18s ease;
+    user-select: none;
   }
 
-  .segmented button + button {
-    border-left: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 10%, var(--wf-border, #e2e8f0));
-  }
-
-  .segmented button.selected {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 18%, var(--wf-bg, #ffffff));
-    color: var(--wf-primary, #2563eb);
+  .scope-label.active {
+    color: var(--wf-bg, #ffffff);
     font-weight: 600;
   }
 
-  .ghost-btn {
+  .scope-switch:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--wf-primary, #2563eb) 40%, transparent);
+    outline-offset: 2px;
+  }
+
+  .clear-btn {
+    align-self: stretch;
     padding: 3px 8px;
     border: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 80%, transparent);
     border-radius: 6px;
@@ -311,15 +384,15 @@
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
-  .ghost-btn:hover {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 8%, transparent);
+  .clear-btn:hover {
+    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 8%, transparent);
     color: var(--wf-fg, #1a1a1a);
   }
 
   .hint {
-    margin: 0;
-    font-size: 0.65rem;
-    line-height: 1.35;
+    margin: 2px 0 0;
+    font-size: 0.64rem;
+    line-height: 1.3;
     color: var(--wf-secondary, #64748b);
   }
 </style>
