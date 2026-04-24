@@ -1497,7 +1497,7 @@ export function createForestStore() {
       };
     }
     // Record with the 1-based new index (matches R's semantics).
-    opLog = [...opLog, ops.moveColumn(itemId, newIndex + 1)];
+    appendOp(ops.moveColumn(itemId, newIndex + 1));
   }
 
   // Find the group id of a row-group, given the group id itself.
@@ -1554,7 +1554,7 @@ export function createForestStore() {
       ...rowOrderOverrides,
       byGroup: { ...rowOrderOverrides.byGroup, [scope]: order },
     };
-    opLog = [...opLog, ops.moveRow(rowId, newIndex + 1)];
+    appendOp(ops.moveRow(rowId, newIndex + 1));
   }
 
   function moveRowGroupItem(groupId: string, newIndex: number) {
@@ -1621,7 +1621,7 @@ export function createForestStore() {
     const id = mintUniqueColumnId(def.id || def.field);
     userInsertedColumns = [...userInsertedColumns, { afterId, def: { ...def, id } }];
     const after = afterId === "__start__" ? "__start__" : afterId;
-    opLog = [...opLog, ops.addColumn(renderColumnBuilder(def), after)];
+    appendOp(ops.addColumn(renderColumnBuilder(def), after));
   }
 
   // Hide a column (reversible via clearColumnEdits).
@@ -1630,7 +1630,7 @@ export function createForestStore() {
     const next = new Set(hiddenColumnIds);
     next.add(id);
     hiddenColumnIds = next;
-    opLog = [...opLog, ops.removeColumn(id)];
+    appendOp(ops.removeColumn(id));
   }
 
   // Replace an existing column's spec. Works for both author-defined and
@@ -1650,7 +1650,7 @@ export function createForestStore() {
     const patch: Record<string, unknown> = {};
     if (newSpec.header !== undefined) patch.header = newSpec.header;
     if (newSpec.type !== undefined) patch.type = newSpec.type;
-    opLog = [...opLog, ops.updateColumn(id, patch)];
+    appendOp(ops.updateColumn(id, patch));
   }
 
   // Drop all user-driven add/hide/configure edits.
@@ -1678,7 +1678,7 @@ export function createForestStore() {
       ...cellEdits,
       cells: { ...cellEdits.cells, [rowId]: { ...current, [field]: value } },
     };
-    opLog = [...opLog, ops.setCell(rowId, field, value)];
+    appendOp(ops.setCell(rowId, field, value));
   }
 
   function clearCellEdit(rowId: string, field: string) {
@@ -1703,7 +1703,7 @@ export function createForestStore() {
       ...cellEdits,
       cells: { ...cellEdits.cells, [rowId]: { ...current, [field]: label } },
     };
-    opLog = [...opLog, ops.setRowLabel(rowId, label)];
+    appendOp(ops.setRowLabel(rowId, label));
   }
 
   function setGroupHeader(groupId: string, text: string) {
@@ -1762,7 +1762,7 @@ export function createForestStore() {
   ) {
     const next = value == null || value === "" ? null : value;
     labelEdits = { ...labelEdits, [field]: next };
-    opLog = [...opLog, ops.setLabelSlot(field, next)];
+    appendOp(ops.setLabelSlot(field, next));
   }
 
   /**
@@ -1833,7 +1833,7 @@ export function createForestStore() {
     styleEdits = { ...styleEdits, rows };
     // Turning a token ON records the paint; turning OFF records clearing
     // (paint_row(..., NULL)). The fluent R verb mirrors this toggle.
-    opLog = [...opLog, ops.paintRow(rowId, on ? token : null)];
+    appendOp(ops.paintRow(rowId, on ? token : null));
   }
 
   function setCellSemantic(
@@ -1858,7 +1858,7 @@ export function createForestStore() {
       ? { ...styleEdits.cells, [rowId]: nextRowMap }
       : (() => { const { [rowId]: _r, ...rest } = styleEdits.cells; return rest; })();
     styleEdits = { ...styleEdits, cells };
-    opLog = [...opLog, ops.paintCell(rowId, field, on ? token : null)];
+    appendOp(ops.paintCell(rowId, field, on ? token : null));
   }
 
   /** Resolved row semantic flags (spec baseline + paint overrides). */
@@ -1922,7 +1922,7 @@ export function createForestStore() {
       next.add(columnId);
       userResizedIds = next;
     }
-    opLog = [...opLog, ops.resizeColumn(columnId, w)];
+    appendOp(ops.resizeColumn(columnId, w));
   }
 
   /**
@@ -2006,7 +2006,7 @@ export function createForestStore() {
     // every auto-width measurement is stale. Invalidate and re-run.
     columnWidths = {};
     measureAutoColumns();
-    opLog = [...opLog, ops.setTheme(themeName)];
+    appendOp(ops.setTheme(themeName));
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -2107,7 +2107,7 @@ export function createForestStore() {
     // Empty string means "clear" in the R API — emit NULL so the recorded
     // line reads `set_watermark(NULL)` rather than `set_watermark("")`.
     const text = value === "" ? null : value;
-    opLog = [...opLog, ops.setWatermark(text)];
+    appendOp(ops.setWatermark(text));
   }
 
   /**
@@ -2908,9 +2908,24 @@ export function createForestStore() {
     clearOpLog: () => { opLog = []; },
     // Append a pre-built record (used by the split wrapper to log
     // SplitForest-level ops like set_shared_column_widths on the active
-    // sub-plot's log; internal mutations above push directly).
-    recordOp: (r: OpRecord) => { opLog = [...opLog, r]; },
+    // sub-plot's log). Internal store mutations go through the same
+    // `appendOp` helper so consecutive duplicates get dropped in one
+    // place.
+    recordOp: (r: OpRecord) => appendOp(r),
   };
+
+  /**
+   * Append an op to the log unless it's a byte-for-byte duplicate of the
+   * most recent entry. Filters out the common accidental doubles (drag-end
+   * firing twice, double-clicks, value-didn't-actually-change cases) while
+   * still recording every distinct action — genuine backtracking like
+   * resize A → resize B → resize A stays in the log.
+   */
+  function appendOp(record: OpRecord): void {
+    const prev = opLog[opLog.length - 1];
+    if (prev && prev.rCall === record.rCall) return;
+    opLog = [...opLog, record];
+  }
 }
 
 export type ForestStore = ReturnType<typeof createForestStore>;
