@@ -11,6 +11,7 @@ export const defaultColors: ColorPalette = {
   rowBg: "#ffffff",
   altBg: "#f8fafc",
   headerBg: "#ffffff",
+  cellForeground: "#1a1a1a",
   interval: "#2563eb",
   intervalLine: "#475569",
   summaryFill: "#2563eb",
@@ -47,6 +48,9 @@ export const defaultShapes: Shapes = {
   summaryHeight: 10,
   lineWidth: 1.5,
   borderRadius: 4,
+  rowBorderWidth: 1,
+  headerBorderWidth: 2,
+  rowGroupBorderWidth: 1,
 };
 
 export const defaultTheme: WebTheme = {

@@ -46,9 +46,11 @@
 
 <!-- Click handling moved to parent row for full-row interactivity -->
 <!-- Background is applied to the full row by ForestPlot.svelte -->
+<!-- Border is applied at the parent `.grid-cell.group-row-bordered` so it
+     aligns with the row edge rather than floating above the cell's bottom
+     padding (driven by GroupHeaderStyles.levelN_border_bottom in the parent). -->
 <div
   class="group-header"
-  class:has-border={levelStyles.borderBottom}
   class:italic={levelStyles.italic}
   aria-expanded={!group.collapsed}
   style:font-size={levelStyles.fontSize}
@@ -73,10 +75,6 @@
     padding: 4px 0;
     user-select: none;
     color: var(--wf-fg, #1a1a1a);
-  }
-
-  .group-header.has-border {
-    border-bottom: 1px solid var(--wf-border, #e2e8f0);
   }
 
   .group-header.italic {

@@ -2708,7 +2708,7 @@ function renderUnifiedTableRow(
   } else if (semBundle?.fg) {
     textColor = semBundle.fg;
   } else {
-    textColor = theme.colors.foreground;
+    textColor = theme.colors.cellForeground ?? theme.colors.foreground;
   }
 
   // Don't truncate labels - they're the primary row identifier and the width
@@ -3009,8 +3009,8 @@ function renderUnifiedTableRow(
         cellFontStyle = cellSemBundle.fontStyle;
       }
 
-      // Color: explicit cell/row color > bundle fg > default
-      let cellColor = theme.colors.foreground;
+      // Color: explicit cell/row color > bundle fg > cellForeground > foreground
+      let cellColor = theme.colors.cellForeground ?? theme.colors.foreground;
       if (cellStyle?.color) {
         cellColor = cellStyle.color;
       } else if (rowStyle?.color) {
@@ -3415,9 +3415,12 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   parts.push(renderHeader(spec, layout, theme));
 
   // Top table border - frames column headers (symmetric with header bottom border)
-  parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
-    y1="${layout.mainY}" y2="${layout.mainY}"
-    stroke="${theme.colors.border}" stroke-width="2"/>`);
+  const headerBorderW = theme.shapes.headerBorderWidth ?? 2;
+  if (headerBorderW > 0) {
+    parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
+      y1="${layout.mainY}" y2="${layout.mainY}"
+      stroke="${theme.colors.border}" stroke-width="${headerBorderW}"/>`);
+  }
 
   // Column headers - unified layout. When no column has a visible header and
   // no groups exist, layout.headerHeight collapses to 0 — skip the entire
@@ -3454,10 +3457,12 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       showLabelHeader
     ));
 
-    // Header border (2px to match web view)
-    parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
-      y1="${headerY + layout.headerHeight}" y2="${headerY + layout.headerHeight}"
-      stroke="${theme.colors.border}" stroke-width="2"/>`);
+    // Header border — tied to theme.shapes.headerBorderWidth (default 2)
+    if (headerBorderW > 0) {
+      parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
+        y1="${headerY + layout.headerHeight}" y2="${headerY + layout.headerHeight}"
+        stroke="${theme.colors.border}" stroke-width="${headerBorderW}"/>`);
+    }
   }
 
   // Build display rows
@@ -3926,30 +3931,35 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       }
     }
 
-    // Row borders
+    // Row borders — widths come from theme.shapes.{rowBorderWidth,
+    // headerBorderWidth, rowGroupBorderWidth}.
+    const rowBorderW = theme.shapes.rowBorderWidth ?? 1;
+    const headerBorderW = theme.shapes.headerBorderWidth ?? 2;
+    const groupBorderW = theme.shapes.rowGroupBorderWidth ?? 1;
     if (displayRow.type === "data") {
       const row = displayRow.row;
       const isSummaryRow = row.style?.type === "summary";
       const isSpacerRow = row.style?.type === "spacer";
 
-      // Summary rows get a 2px top border
-      if (isSummaryRow) {
+      // Summary rows get a header-weight top border
+      if (isSummaryRow && headerBorderW > 0) {
         parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
           y1="${y}" y2="${y}"
-          stroke="${theme.colors.border}" stroke-width="2"/>`);
+          stroke="${theme.colors.border}" stroke-width="${headerBorderW}"/>`);
       }
 
-      // Bottom border (skip for spacer rows)
-      if (!isSpacerRow) {
+      // Bottom border (skip for spacer rows and zero-width themes)
+      if (!isSpacerRow && rowBorderW > 0) {
         parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
           y1="${y + rowHeight}" y2="${y + rowHeight}"
-          stroke="${theme.colors.border}" stroke-width="1"/>`);
+          stroke="${theme.colors.border}" stroke-width="${rowBorderW}"/>`);
       }
-    } else {
-      // Group headers get a bottom border
+    } else if (groupBorderW > 0) {
+      // Group headers get a bottom border at the group-weight (not row-weight)
+      // so row-group borders can be independently tuned.
       parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
         y1="${y + rowHeight}" y2="${y + rowHeight}"
-        stroke="${theme.colors.border}" stroke-width="1"/>`);
+        stroke="${theme.colors.border}" stroke-width="${groupBorderW}"/>`);
     }
   });
 

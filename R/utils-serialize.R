@@ -411,6 +411,10 @@ serialize_theme <- function(theme) {
       # time so presets that don't set header_bg explicitly still get a
       # palette-appropriate column-header band in every theme.
       headerBg = if (is.na(theme@colors@header_bg)) theme@colors@row_bg else theme@colors@header_bg,
+      # NA cell_foreground means "inherit from foreground". Same resolve-
+      # at-emit pattern as header_bg so presets get the right value for
+      # free.
+      cellForeground = if (is.na(theme@colors@cell_foreground)) theme@colors@foreground else theme@colors@cell_foreground,
       interval = theme@colors@interval,
       intervalLine = theme@colors@interval_line,
       summaryFill = theme@colors@summary_fill,
@@ -448,6 +452,9 @@ serialize_theme <- function(theme) {
       summaryHeight = theme@shapes@summary_height,
       lineWidth = theme@shapes@line_width,
       borderRadius = theme@shapes@border_radius,
+      rowBorderWidth      = theme@shapes@row_border_width,
+      headerBorderWidth   = theme@shapes@header_border_width,
+      rowGroupBorderWidth = theme@shapes@row_group_border_width,
       # Wrap vector palettes in I() so a length-1 override (e.g.
       # `set_effect_colors(..., "#ff00ff")`) still serializes as a JSON
       # array, not a scalar — otherwise the frontend indexes it as a
@@ -833,6 +840,7 @@ serialize_split_table <- function(split_table, include_forest = TRUE) {
     navTree = serialize_nav_tree(split_table@split_tree),
     specs = serialized_specs,
     sharedAxis = split_table@shared_axis,
+    sharedColumnWidths = split_table@shared_column_widths,
     axisRange = if (any(is.na(split_table@axis_range))) {
       NULL
     } else {

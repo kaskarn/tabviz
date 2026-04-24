@@ -432,6 +432,7 @@ export interface ColorPalette {
   rowBg: string;      // Even row background
   altBg: string;      // Odd row background (stripe/banding)
   headerBg: string;   // Column-header row background (cascades from rowBg)
+  cellForeground: string;  // Data-cell text color (cascades from foreground)
   interval: string;  // Unified marker color (new default)
   intervalLine: string;
   summaryFill: string;
@@ -473,6 +474,10 @@ export interface Shapes {
   summaryHeight: number;
   lineWidth: number;
   borderRadius: number;
+  // Border widths (pixels) — added in v0.19
+  rowBorderWidth?: number;        // Data-row separator (default 1)
+  headerBorderWidth?: number;     // Column-header underlines (default 2)
+  rowGroupBorderWidth?: number;   // Row-group header bottom when GroupHeaderStyles level toggle is on (default 1)
   // Multi-effect defaults (colors for forest markers, bars, boxplots, violins)
   effectColors?: string[] | null;  // null = use built-in fallback colors
   markerShapes?: MarkerShape[] | null;  // Shapes for each effect (cycles if more effects than shapes)
@@ -867,6 +872,7 @@ export interface SplitForestPayload {
   navTree: NavTreeNode[];
   specs: Record<string, WebSpec>;
   sharedAxis: boolean;
+  sharedColumnWidths?: boolean;
   axisRange: { min: number; max: number } | null;
 }
 

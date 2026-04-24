@@ -114,6 +114,7 @@ set_colors(
   accent = NULL, muted = NULL,
   border = NULL,
   row_bg = NULL, alt_bg = NULL, header_bg = NULL,
+  cell_foreground = NULL,
   ci_marker_fill = NULL,
   ci_line = NULL,
   summary_fill = NULL,
@@ -133,6 +134,7 @@ set_colors(
 | `row_bg` | inherits `background` | Data-row background (distinct from `background` since v0.16). |
 | `alt_bg` | inherits `row_bg` | Odd-row background (zebra stripes). |
 | `header_bg` | `NA` → inherits `row_bg` | Column-header row background. Added in v0.16. Leave `NA` for "same as data rows"; set explicitly to tint the header band. |
+| `cell_foreground` | `NA` → inherits `foreground` | Data-cell text color. Added in v0.19. Set explicitly to tint data cell text without changing column headers, titles, captions, or UI chrome. |
 | `ci_marker_fill` | `"#0891b2"` | Default CI marker fill. Cascades into `summary_fill`. Preempted by `shapes.effect_colors[0]` when that is set. |
 | `ci_line` | `"#475569"` | Confidence-interval line color. |
 | `summary_fill` | inherits `ci_marker_fill` | Summary diamond fill (per-row `row_type = "summary"` and the legacy `spec.data.overall` path). |
@@ -239,6 +241,9 @@ set_shapes(
   theme,
   point_size = NULL, summary_height = NULL,
   line_width = NULL, border_radius = NULL,
+  row_border_width = NULL,
+  header_border_width = NULL,
+  row_group_border_width = NULL,
   effect_colors = NULL,
   marker_shapes = NULL
 )
@@ -250,6 +255,9 @@ set_shapes(
 | `summary_height` | `10` | Summary diamond height (px). |
 | `line_width` | `1.5` | CI line stroke width (px). |
 | `border_radius` | `2` | Container/row rounding (px). |
+| `row_border_width` | `1` | Data-row separator width (px). `0` hides it. Added in v0.19. |
+| `header_border_width` | `2` | Column-header underline width (px); also covers primary, last-header, and plot-header borders. Added in v0.19. |
+| `row_group_border_width` | `1` | Row-group header bottom-border width (px) when a `GroupHeaderStyles.levelN_border_bottom` toggle is on. Added in v0.19. |
 | `effect_colors` | theme cycle | Colors used by multi-effect viz columns. |
 | `marker_shapes` | `c("square","circle","diamond","triangle")` | Shape sequence for multi-effect forests. |
 

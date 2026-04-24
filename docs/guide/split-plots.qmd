@@ -155,6 +155,10 @@ tabviz(trial_data,
 The default is `FALSE` to preserve the pre-v0.16 behavior where each
 sub-plot sizes its columns to its own content.
 
+Since v0.19 the sidebar also has an **Align column widths** checkbox
+in its footer — users can toggle this behavior at runtime without
+going back to R.
+
 ## Sidebar Features
 
 The sidebar includes:

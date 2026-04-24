@@ -23,6 +23,11 @@ ColorPalette <- new_class(
     # preset (including dark variants) gets the right column-header bg
     # without having to stamp header_bg on each ColorPalette() call.
     header_bg = new_property(class_character, default = NA_character_),
+    # Data-cell text color. Default `NA` means "inherit from foreground" —
+    # resolved by the serializer. Lets users tint cell text without
+    # affecting column headers, titles, or UI chrome (which keep using
+    # `foreground`).
+    cell_foreground = new_property(class_character, default = NA_character_),
     # Interval visualization colors
     interval = new_property(class_character, default = "#0891b2"),  # Default marker color
     interval_line = new_property(class_character, default = "#475569"),
@@ -35,13 +40,14 @@ ColorPalette <- new_class(
     hex_pattern <- "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
     color_props <- c("background", "foreground", "primary", "secondary", "accent",
                      "muted", "border", "row_bg", "alt_bg", "header_bg",
+                     "cell_foreground",
                      "interval", "interval_line",
                      "summary_fill", "summary_border")
     invalid <- character()
     for (prop in color_props) {
       value <- S7::prop(self, prop)
-      # NA is valid for `header_bg` (means "inherit from row_bg"); other
-      # palette slots require hex.
+      # NA is valid for `header_bg` (inherits row_bg) and `cell_foreground`
+      # (inherits foreground); other palette slots require hex.
       if (!is.na(value) && !grepl(hex_pattern, value)) {
         invalid <- c(invalid, paste0(prop, " = '", value, "'"))
       }
@@ -116,6 +122,14 @@ Shapes <- new_class(
     summary_height = new_property(class_numeric, default = 10),
     line_width = new_property(class_numeric, default = 1.5),
     border_radius = new_property(class_numeric, default = 2),
+    # Border widths (pixels). `row_border_width` draws between data rows;
+    # `header_border_width` underlines column-header rows (includes primary,
+    # last, and plot-header rows); `row_group_border_width` is the border
+    # drawn under group-header rows when `GroupHeaderStyles.levelN_border_bottom`
+    # is TRUE.
+    row_border_width       = new_property(class_numeric, default = 1),
+    header_border_width    = new_property(class_numeric, default = 2),
+    row_group_border_width = new_property(class_numeric, default = 1),
     # Multi-effect defaults (colors cycle for bar, boxplot, violin, and forest markers)
     effect_colors = new_property(class_any, default = NULL),  # NULL = use built-in fallback
     marker_shapes = new_property(
@@ -769,6 +783,10 @@ web_theme <- function(
 #' @param header_bg Column-header row background. Cascades from `row_bg` if
 #'   not specified, so existing themes render identically. Set explicitly to
 #'   distinguish the header band from data rows.
+#' @param cell_foreground Data-cell text color. Cascades from `foreground` if
+#'   not specified, so existing themes render identically. Set explicitly to
+#'   tint data cell text without affecting column headers, titles, or UI
+#'   chrome.
 #' @param ci_marker_fill Default CI marker fill color (default: "#0891b2"). If not
 #'   specified and `primary` is set, inherits from `primary`. Cascades to
 #'   `summary_fill` if not specified.
@@ -803,6 +821,7 @@ set_colors <- function(
     row_bg = NULL,
     alt_bg = NULL,
     header_bg = NULL,
+    cell_foreground = NULL,
     ci_marker_fill = NULL,
     ci_line = NULL,
     summary_fill = NULL,
@@ -883,6 +902,13 @@ set_colors <- function(
     current@header_bg <- current@row_bg
   } else if (!is.null(header_bg)) {
     current@header_bg <- header_bg
+  }
+
+  # cell_foreground stays NA (inherits from foreground at serialize time)
+  # unless set explicitly. Keeping NA means dark-mode / custom themes don't
+  # need to stamp it — foreground already does the right thing.
+  if (!is.null(cell_foreground)) {
+    current@cell_foreground <- cell_foreground
   }
 
   # Cascade marker colors:
@@ -1032,6 +1058,15 @@ set_spacing <- function(
 #' @param summary_height Summary diamond height in pixels (default: 10)
 #' @param line_width Confidence interval line width in pixels (default: 1.5)
 #' @param border_radius Border radius for containers in pixels (default: 2)
+#' @param row_border_width Width (px) of the bottom border between data rows
+#'   (default: 1). Set to 0 to remove row separators.
+#' @param header_border_width Width (px) of the bottom border underlining
+#'   column-header rows — includes the primary (leftmost) header, the last
+#'   header row, and plot-header rows (default: 2).
+#' @param row_group_border_width Width (px) of the border drawn under
+#'   row-group header rows when a `GroupHeaderStyles.levelN_border_bottom`
+#'   toggle is on (default: 1). No-op unless the corresponding level toggle
+#'   is enabled.
 #' @param effect_colors Character vector of colors for multi-effect visualizations.
 #'   Used by forest plots, bar charts, boxplots, and violin plots. Effects without
 #'   explicit colors use these in order, cycling if needed.
@@ -1049,16 +1084,26 @@ set_shapes <- function(
     summary_height = NULL,
     line_width = NULL,
     border_radius = NULL,
+    row_border_width = NULL,
+    header_border_width = NULL,
+    row_group_border_width = NULL,
     effect_colors = NULL,
     marker_shapes = NULL
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
   current <- theme@shapes
 
+  checkmate::assert_number(row_border_width, lower = 0, upper = 10, null.ok = TRUE)
+  checkmate::assert_number(header_border_width, lower = 0, upper = 10, null.ok = TRUE)
+  checkmate::assert_number(row_group_border_width, lower = 0, upper = 10, null.ok = TRUE)
+
   if (!is.null(point_size)) current@point_size <- point_size
   if (!is.null(summary_height)) current@summary_height <- summary_height
   if (!is.null(line_width)) current@line_width <- line_width
   if (!is.null(border_radius)) current@border_radius <- border_radius
+  if (!is.null(row_border_width)) current@row_border_width <- row_border_width
+  if (!is.null(header_border_width)) current@header_border_width <- header_border_width
+  if (!is.null(row_group_border_width)) current@row_group_border_width <- row_group_border_width
   if (!is.null(effect_colors)) {
     checkmate::assert_character(effect_colors, min.len = 1)
     current@effect_colors <- effect_colors

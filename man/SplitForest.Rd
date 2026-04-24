@@ -9,6 +9,7 @@ SplitForest(
   split_vars = character(0),
   split_tree = list(),
   shared_axis = FALSE,
+  shared_column_widths = FALSE,
   axis_range = c(NA_real_, NA_real_)
 )
 }
@@ -20,6 +21,10 @@ SplitForest(
 \item{split_tree}{Hierarchical navigation structure for the sidebar}
 
 \item{shared_axis}{Whether to use shared axis range across all plots}
+
+\item{shared_column_widths}{Whether every sub-plot uses identical
+per-column widths (stamped at construction). Added in v0.16; surfaces
+a runtime toggle in the split sidebar as of v0.19.}
 
 \item{axis_range}{Numeric vector of length 2 with shared axis min/max (if shared_axis = TRUE)}
 }

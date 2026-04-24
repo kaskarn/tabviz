@@ -1145,6 +1145,7 @@
       --wf-row-bg: ${theme.colors.rowBg};
       --wf-alt-bg: ${theme.colors.altBg};
       --wf-header-bg: ${theme.colors.headerBg ?? theme.colors.rowBg};
+      --wf-cell-fg: ${theme.colors.cellForeground ?? theme.colors.foreground};
       --wf-interval-line: ${theme.colors.intervalLine};
       --wf-summary-fill: ${theme.colors.summaryFill};
       --wf-summary-border: ${theme.colors.summaryBorder};
@@ -1179,6 +1180,9 @@
       --wf-point-size: ${theme.shapes.pointSize}px;
       --wf-line-width: ${theme.shapes.lineWidth}px;
       --wf-border-radius: ${theme.shapes.borderRadius}px;
+      --wf-row-border-width: ${theme.shapes.rowBorderWidth ?? 1}px;
+      --wf-header-border-width: ${theme.shapes.headerBorderWidth ?? 2}px;
+      --wf-group-border-width: ${theme.shapes.rowGroupBorderWidth ?? 1}px;
       --wf-container-border: ${theme.layout.containerBorder ? `1px solid var(--wf-border)` : 'none'};
       --wf-container-border-radius: ${theme.layout.containerBorderRadius}px;
       --wf-group-header-opacity: ${GROUP_HEADER_OPACITY};
@@ -1457,6 +1461,13 @@
           {@const isSpacerRow = row?.style?.type === "spacer"}
           {@const gridRow = effectiveHeaderDepth + 1 + i}
           {@const groupBg = isGroupHeader && bandIndexes[i] == null ? getGroupBackground(rowDepth + 1, theme) : undefined}
+          {@const groupLevelBorder = isGroupHeader && theme
+            ? (rowDepth + 1 === 1
+                ? theme.groupHeaders.level1BorderBottom
+                : rowDepth + 1 === 2
+                  ? theme.groupHeaders.level2BorderBottom
+                  : theme.groupHeaders.level3BorderBottom)
+            : false}
           <!--
             Single effective background precedence: per-row inline bg > group
             header tint > semantic-bundle bg. Packed into one derived value so
@@ -1486,6 +1497,7 @@
               <div
                 class="grid-cell data-cell primary-cell {rowClasses}"
                 class:group-row={isGroupHeader}
+                class:group-row-bordered={groupLevelBorder}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
                 class:spacer-row={isSpacerRow}
@@ -1534,6 +1546,7 @@
               <div
                 class="grid-cell data-cell plot-cell {rowClasses}"
                 class:group-row={isGroupHeader}
+                class:group-row-bordered={groupLevelBorder}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
                 class:spacer-row={isSpacerRow}
@@ -1558,6 +1571,7 @@
               <div
                 class="grid-cell data-cell {rowClasses}"
                 class:group-row={isGroupHeader}
+                class:group-row-bordered={groupLevelBorder}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
                 class:spacer-row={isSpacerRow}
@@ -2384,7 +2398,8 @@
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid var(--wf-border);
+    border-bottom: var(--wf-row-border-width, 1px) solid var(--wf-border);
+    color: var(--wf-cell-fg, var(--wf-fg));
     /* Row background: `--wf-row-bg` (theme.colors.rowBg) with fallback to
        the container bg. Separate from `--wf-bg` so users can tint rows
        distinct from the outer container without flipping the whole widget. */
@@ -2399,8 +2414,9 @@
     min-height: var(--wf-header-row-height);
     font-weight: var(--wf-font-weight-bold, 600);
     font-size: calc(var(--wf-font-size-base, 0.875rem) * var(--wf-header-font-scale, 1.05));
-    border-bottom: 1px solid var(--wf-border);
+    border-bottom: var(--wf-header-border-width, 2px) solid var(--wf-border);
     background: var(--wf-header-bg, var(--wf-row-bg, var(--wf-bg)));
+    color: var(--wf-fg);
     position: relative;
   }
 
@@ -2412,9 +2428,9 @@
     background: var(--wf-border, #f1f5f9);
   }
 
-  /* Primary (leftmost) column header gets thicker bottom border */
+  /* Primary (leftmost) column header uses the header border width */
   .primary-header {
-    border-bottom: 2px solid var(--wf-border);
+    border-bottom: var(--wf-header-border-width, 2px) solid var(--wf-border);
   }
 
   /* Column group header styling */
@@ -2426,14 +2442,14 @@
     padding-right: var(--wf-group-padding, 8px);
   }
 
-  /* Last row of headers gets thicker border */
+  /* Last row of headers uses the header border width */
   .header-cell:not(.column-group-header):not(.primary-header):not(.plot-header) {
-    border-bottom: 2px solid var(--wf-border);
+    border-bottom: var(--wf-header-border-width, 2px) solid var(--wf-border);
   }
 
-  /* Plot header also gets thicker border */
+  /* Plot header also uses the header border width */
   .plot-header {
-    border-bottom: 2px solid var(--wf-border);
+    border-bottom: var(--wf-header-border-width, 2px) solid var(--wf-border);
   }
 
   .header-text {
@@ -2555,6 +2571,19 @@
   /* Group row styling - background is set inline per level */
   .group-row {
     cursor: pointer;
+  }
+
+  /* Group-header rows: own their bottom border at the cell level so it aligns
+     with the row edge (the inner GroupHeader div would float the border above
+     the padding). Default: no border. Opt in per level via
+     GroupHeaderStyles.levelN_border_bottom — that sets
+     .group-row-bordered, which restores a row-edge border at
+     --wf-group-border-width. */
+  .grid-cell.group-row {
+    border-bottom: 0;
+  }
+  .grid-cell.group-row-bordered {
+    border-bottom: var(--wf-group-border-width, 1px) solid var(--wf-border);
   }
 
   .group-row:hover {

@@ -2,6 +2,32 @@ import type { SplitForestPayload, NavTreeNode, WebSpec } from "$types";
 import { createForestStore, type ForestStore } from "./forestStore.svelte";
 import { type ThemeName } from "$lib/theme-presets";
 
+// Column types whose width is driven by the visualization itself, not its
+// data text content. We skip these when estimating shared widths — their
+// auto-sizing is already driven by the plot, not string length.
+const VIZ_COLUMN_TYPES = new Set([
+  "viz_bar",
+  "viz_boxplot",
+  "viz_violin",
+  "forest",
+  "viz_forest",
+]);
+
+/**
+ * Estimate a px width from a column's header + data content. Mirrors the
+ * R-side heuristic in `R/split_table.R` so the interactive toggle lands on
+ * numbers consistent with what `tabviz(shared_column_widths = TRUE)` produces.
+ * Not meant to be pixel-perfect — tight enough for slide alignment.
+ */
+function estimateColumnWidth(header: string | undefined, values: unknown[]): number {
+  let maxChars = (header ?? "").length;
+  for (const v of values) {
+    const s = v == null ? "" : String(v);
+    if (s.length > maxChars) maxChars = s.length;
+  }
+  return Math.max(40, Math.min(480, maxChars * 8 + 24));
+}
+
 /**
  * Store for managing split forest navigation and display state.
  * Wraps multiple ForestStore instances, one for each split.
@@ -13,6 +39,11 @@ export function createSplitForestStore() {
   let searchQuery = $state("");
   let expandedNodes = $state<Set<string>>(new Set());
   let sidebarCollapsed = $state(false);
+  let sharedColumnWidths = $state(false);
+  // Snapshot of each spec's original per-column widths at payload load time
+  // — lets us restore on toggle-off without re-fetching from the server.
+  // Keyed as specKey → colId → original width (undefined = auto).
+  let originalWidths: Map<string, Map<string, number | "auto" | undefined>> = new Map();
 
   // Theme persistence - stores user-selected theme across navigation
   let userTheme = $state<ThemeName | null>(null);
@@ -67,11 +98,105 @@ export function createSplitForestStore() {
   // Actions
   function setPayload(p: SplitForestPayload) {
     payload = p;
+    // Snapshot original per-spec column widths. When the R arg
+    // `shared_column_widths = TRUE` was passed, the widths stamped by the
+    // server are captured here as the "baseline" — toggling off after
+    // load restores nothing (they were already aligned), but subsequent
+    // toggle-on/off operations from a user-modified state do the right
+    // thing.
+    originalWidths = new Map();
+    for (const [key, spec] of Object.entries(p.specs)) {
+      const colMap = new Map<string, number | "auto" | undefined>();
+      for (const col of spec.columns ?? []) {
+        colMap.set(col.id, col.width ?? undefined);
+      }
+      originalWidths.set(key, colMap);
+    }
+    sharedColumnWidths = p.sharedColumnWidths ?? false;
     // Default to first leaf spec
     const firstLeaf = findFirstLeaf(p.navTree);
     if (firstLeaf) {
       selectSpec(firstLeaf);
     }
+  }
+
+  /**
+   * Compute max shared width per column id across every spec, using the
+   * R-style char heuristic on original (pre-stamp) widths + data content.
+   */
+  function computeSharedWidths(): Map<string, number> {
+    const result = new Map<string, number>();
+    if (!payload) return result;
+
+    const specs = Object.values(payload.specs);
+    if (specs.length === 0) return result;
+
+    // Use the first spec's column list as the canonical order.
+    for (const col of specs[0].columns ?? []) {
+      if (VIZ_COLUMN_TYPES.has(col.type)) continue;
+      // If any spec has an explicit numeric width, respect the max of those.
+      let explicitMax: number | null = null;
+      for (const s of specs) {
+        const match = s.columns?.find(c => c.id === col.id);
+        if (match && typeof match.width === "number") {
+          explicitMax = explicitMax == null ? match.width : Math.max(explicitMax, match.width);
+        }
+      }
+
+      // Content-based estimate: max header / data chars across all specs.
+      let contentMax = 0;
+      const header = col.header ?? undefined;
+      for (const s of specs) {
+        const match = s.columns?.find(c => c.id === col.id);
+        const field = match?.field;
+        const values: unknown[] = [];
+        if (field && Array.isArray(s.data)) {
+          for (const row of s.data) {
+            values.push((row as Record<string, unknown>)[field]);
+          }
+        }
+        contentMax = Math.max(contentMax, estimateColumnWidth(header, values));
+      }
+
+      const width = explicitMax != null ? Math.max(explicitMax, contentMax) : contentMax;
+      result.set(col.id, width);
+    }
+
+    return result;
+  }
+
+  function setSharedColumnWidths(enabled: boolean) {
+    if (!payload) return;
+    sharedColumnWidths = enabled;
+
+    if (enabled) {
+      const widths = computeSharedWidths();
+      for (const spec of Object.values(payload.specs)) {
+        for (const col of spec.columns ?? []) {
+          const w = widths.get(col.id);
+          if (w != null) col.width = w;
+        }
+      }
+    } else {
+      for (const [key, spec] of Object.entries(payload.specs)) {
+        const orig = originalWidths.get(key);
+        if (!orig) continue;
+        for (const col of spec.columns ?? []) {
+          col.width = orig.get(col.id);
+        }
+      }
+    }
+
+    // Re-apply the active spec so the activeStore picks up new widths and
+    // rerenders. setSpec clears its column-width cache internally.
+    if (activeKey) {
+      const spec = payload.specs[activeKey];
+      if (spec) activeStore.setSpec(spec);
+    }
+  }
+
+  function toggleSharedColumnWidths() {
+    setSharedColumnWidths(!sharedColumnWidths);
   }
 
   function selectSpec(key: string) {
@@ -185,6 +310,7 @@ export function createSplitForestStore() {
     get sidebarWidth() { return effectiveSidebarWidth; },
     get sidebarCollapsed() { return sidebarCollapsed; },
     get userTheme() { return userTheme; },
+    get sharedColumnWidths() { return sharedColumnWidths; },
 
     // Actions
     setPayload,
@@ -197,6 +323,8 @@ export function createSplitForestStore() {
     selectPrevious,
     setTheme,
     resetTheme,
+    setSharedColumnWidths,
+    toggleSharedColumnWidths,
   };
 }
 

@@ -10,6 +10,9 @@ set_shapes(
   summary_height = NULL,
   line_width = NULL,
   border_radius = NULL,
+  row_border_width = NULL,
+  header_border_width = NULL,
+  row_group_border_width = NULL,
   effect_colors = NULL,
   marker_shapes = NULL
 )
@@ -24,6 +27,18 @@ set_shapes(
 \item{line_width}{Confidence interval line width in pixels (default: 1.5)}
 
 \item{border_radius}{Border radius for containers in pixels (default: 2)}
+
+\item{row_border_width}{Width (px) of the bottom border between data rows
+(default: 1). Set to 0 to remove row separators.}
+
+\item{header_border_width}{Width (px) of the bottom border underlining
+column-header rows — includes the primary (leftmost) header, the last
+header row, and plot-header rows (default: 2).}
+
+\item{row_group_border_width}{Width (px) of the border drawn under
+row-group header rows when a \code{GroupHeaderStyles.levelN_border_bottom}
+toggle is on (default: 1). No-op unless the corresponding level toggle
+is enabled.}
 
 \item{effect_colors}{Character vector of colors for multi-effect visualizations.
 Used by forest plots, bar charts, boxplots, and violin plots. Effects without

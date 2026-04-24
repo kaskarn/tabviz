@@ -321,6 +321,7 @@ split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE
     split_vars = by,
     split_tree = split_tree,
     shared_axis = shared_axis,
+    shared_column_widths = shared_column_widths,
     axis_range = axis_range
   )
 }

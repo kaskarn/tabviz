@@ -1,3 +1,56 @@
+# tabviz 0.19.0
+
+## Interactive split widths + text/border controls
+
+Four beta-feedback items, one release.
+
+### Interactive `shared_column_widths` toggle
+
+The split-plot sidebar gains an **Align column widths** checkbox in its
+footer. Toggling it recomputes identical per-column widths across every
+sub-plot at runtime — no bounce back to R for a rerender. The R arg
+still sets the initial state (and still stamps widths server-side so
+static SVG exports remain aligned).
+
+### `cell_foreground` palette slot
+
+`set_colors(cell_foreground = …)` lets you tint **data cell text**
+without changing column headers, titles, captions, or UI chrome.
+Cascades from `foreground` by default, so existing themes render
+identically. The Colors tab surfaces a new "Cell text" swatch with a
+short description clarifying what `foreground` covers.
+
+### Row-group border now takes effect
+
+`GroupHeaderStyles.levelN_border_bottom = TRUE` previously appeared to
+do nothing — the default `.grid-cell` bottom border was already drawn
+1px below the group header's inner border, so the two visually
+stacked. Fixed: the row-group border is now drawn at the cell edge
+(class `.group-row-bordered`), aligned with other row separators, and
+its weight is controlled by the new `row_group_border_width` (below).
+
+### Border-weight knobs
+
+`set_shapes()` picks up three new numeric arguments:
+
+- `row_border_width` — the separator between data rows (default 1).
+- `header_border_width` — column header underlines, including primary
+  / last / plot-header rows (default 2).
+- `row_group_border_width` — the border drawn under row-group headers
+  when a level toggle is on (default 1).
+
+All three are also exposed in the Viz tab's new **Borders** section.
+The SVG exporter honors them so screenshots match the live widget.
+
+### Internal
+
+- `ColorPalette` gains `cell_foreground` (NA = inherit `foreground`).
+- `Shapes` gains `row_border_width`, `header_border_width`,
+  `row_group_border_width`.
+- `SplitForest` gains a `shared_column_widths` property.
+- The frontend `SplitForestPayload` gains `sharedColumnWidths` and the
+  `SplitForestStore` gains matching state + toggle actions.
+
 # tabviz 0.18.1
 
 ## Documentation audit

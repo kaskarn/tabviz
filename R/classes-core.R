@@ -283,6 +283,9 @@ method(print, WebSpec) <- function(x, ...) {
 #' @param split_vars Character vector of column names used for splitting
 #' @param split_tree Hierarchical navigation structure for the sidebar
 #' @param shared_axis Whether to use shared axis range across all plots
+#' @param shared_column_widths Whether every sub-plot uses identical
+#'   per-column widths (stamped at construction). Added in v0.16; surfaces
+#'   a runtime toggle in the split sidebar as of v0.19.
 #' @param axis_range Numeric vector of length 2 with shared axis min/max (if shared_axis = TRUE)
 #'
 #' @export
@@ -293,6 +296,7 @@ SplitForest <- new_class(
     split_vars = new_property(class_character, default = character(0)),
     split_tree = new_property(class_list, default = list()),
     shared_axis = new_property(class_logical, default = FALSE),
+    shared_column_widths = new_property(class_logical, default = FALSE),
     axis_range = new_property(class_numeric, default = c(NA_real_, NA_real_))
   ),
   validator = function(self) {

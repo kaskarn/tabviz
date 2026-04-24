@@ -14,6 +14,7 @@
   const searchQuery = $derived(store.searchQuery);
   const splitVars = $derived(store.splitVars);
   const collapsed = $derived(store.sidebarCollapsed);
+  const sharedColumnWidths = $derived(store.sharedColumnWidths);
 
   function handleSearch(event: Event) {
     const target = event.target as HTMLInputElement;
@@ -86,6 +87,20 @@
         {/each}
       </ul>
     </nav>
+
+    <!-- Split-level controls. Currently just the shared-width toggle; this
+         is the place to add any future split-wide knobs (e.g. global axis
+         alignment, export-all). -->
+    <div class="sidebar-footer">
+      <label class="footer-toggle" title="Make every sub-plot use identical per-column widths so columns line up when screenshots are stacked.">
+        <input
+          type="checkbox"
+          checked={sharedColumnWidths}
+          onchange={(e) => store.setSharedColumnWidths((e.target as HTMLInputElement).checked)}
+        />
+        <span>Align column widths</span>
+      </label>
+    </div>
   </aside>
 {/if}
 
@@ -242,6 +257,27 @@
     flex: 1;
     overflow-y: auto;
     padding: 0 6px 8px;
+  }
+
+  .sidebar-footer {
+    border-top: 1px solid var(--wf-border, #e2e8f0);
+    padding: 8px 10px;
+  }
+
+  .footer-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--wf-fg, #334155);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .footer-toggle input[type="checkbox"] {
+    accent-color: var(--wf-primary, #2563eb);
+    cursor: pointer;
+    margin: 0;
   }
 
   .section-header {

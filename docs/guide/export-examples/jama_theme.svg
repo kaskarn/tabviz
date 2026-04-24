@@ -16,8 +16,8 @@
       font-weight="700"
       fill="#000000">Figure 1. Primary Endpoint</text>
 <line x1="6" x2="494"
-    y1="40" y2="40"
-    stroke="#000000" stroke-width="2"/>
+      y1="40" y2="40"
+      stroke="#000000" stroke-width="2"/>
 <text class="cell-text" x="16" y="54"
         font-family="Arial, Helvetica, sans-serif"
         font-size="12.6px"
@@ -30,8 +30,8 @@
           text-anchor="start"
           fill="#000000">HR (95% CI)</text>
 <line x1="6" x2="494"
-      y1="68" y2="68"
-      stroke="#000000" stroke-width="2"/>
+        y1="68" y2="68"
+        stroke="#000000" stroke-width="2"/>
 <rect x="6" y="68"
             width="488" height="18"
             fill="#f9fafb"/>

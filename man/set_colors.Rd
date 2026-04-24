@@ -16,6 +16,7 @@ set_colors(
   row_bg = NULL,
   alt_bg = NULL,
   header_bg = NULL,
+  cell_foreground = NULL,
   ci_marker_fill = NULL,
   ci_line = NULL,
   summary_fill = NULL,
@@ -58,6 +59,11 @@ visible banding). Set explicitly to enable striped rows on custom themes.}
 \item{header_bg}{Column-header row background. Cascades from \code{row_bg} if
 not specified, so existing themes render identically. Set explicitly to
 distinguish the header band from data rows.}
+
+\item{cell_foreground}{Data-cell text color. Cascades from \code{foreground} if
+not specified, so existing themes render identically. Set explicitly to
+tint data cell text without affecting column headers, titles, or UI
+chrome.}
 
 \item{ci_marker_fill}{Default CI marker fill color (default: "#0891b2"). If not
 specified and \code{primary} is set, inherits from \code{primary}. Cascades to
