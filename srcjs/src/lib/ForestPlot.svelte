@@ -1182,6 +1182,7 @@
       --wf-line-height: ${theme.typography.lineHeight};
       --wf-header-font-scale: ${theme.typography.headerFontScale ?? 1.05};
       --wf-row-height: ${theme.spacing.rowHeight + 2 * theme.spacing.cellPaddingY}px;
+      --wf-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
       --wf-header-height: ${anyHeaderVisible ? theme.spacing.headerHeight : 0}px;
       --wf-header-row-height: ${anyHeaderVisible ? theme.spacing.headerHeight / headerDepth : 0}px;
       --wf-header-depth: ${effectiveHeaderDepth};
@@ -1545,7 +1546,6 @@
                 style:grid-row={gridRow}
                 style:background-color={effectiveBg}
                 style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
-                style:padding-top={isGroupHeader && i > 0 ? `calc(var(--wf-cell-padding-y, 4px) + ${theme?.spacing?.rowGroupPadding ?? 0}px)` : undefined}
                 style={rowStyles || undefined}
                 role={isGroupHeader ? "button" : undefined}
                 tabindex={isGroupHeader ? 0 : undefined}
@@ -2625,9 +2625,17 @@
      the padding). Default: no border. Opt in per level via
      GroupHeaderStyles.levelN_border_bottom — that sets
      .group-row-bordered, which restores a row-edge border at
-     --wf-group-border-width. */
+     --wf-group-border-width.
+
+     Row-group-padding is split symmetrically as extra vertical padding on
+     BOTH sides of the cell box so the label stays vertically centered in
+     its row instead of sinking to the bottom. Applied to every cell on
+     the group-header grid row (not just the primary) so all cells share
+     the same row height and the row doesn't look lopsided. */
   .grid-cell.group-row {
     border-bottom: 0;
+    padding-top: calc(var(--wf-cell-padding-y, 4px) + var(--wf-row-group-padding, 0px) / 2);
+    padding-bottom: calc(var(--wf-cell-padding-y, 4px) + var(--wf-row-group-padding, 0px) / 2);
   }
   .grid-cell.group-row-bordered {
     border-bottom: var(--wf-group-border-width, 1px) solid var(--wf-border);

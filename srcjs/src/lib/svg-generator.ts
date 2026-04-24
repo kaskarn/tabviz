@@ -549,14 +549,20 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const displayRows = buildDisplayRows(spec);
   const hasOverall = !!spec.data.overall;
 
-  // Calculate rows height and per-row positions (display rows only, not including overall summary)
-  // This matches web view's rowsAreaHeight which excludes overall
+  // Calculate rows height and per-row positions (display rows only, not including overall summary).
+  // Group-header rows take the themed `rowGroupPadding` (mirrors the
+  // symmetric CSS padding in the live widget) so the forest/axis Y
+  // positions line up with the visible row edges in the export.
+  const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
   let rowsHeight = 0;
   const rowPositions: number[] = [];
   const rowHeights: number[] = [];
   for (const dr of displayRows) {
     const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
-    const h = isSpacerRow ? rowHeight / 2 : rowHeight;
+    let h: number;
+    if (isSpacerRow) h = rowHeight / 2;
+    else if (dr.type === "group_header") h = rowHeight + rowGroupPadding;
+    else h = rowHeight;
     rowPositions.push(rowsHeight);
     rowHeights.push(h);
     rowsHeight += h;

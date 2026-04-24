@@ -749,11 +749,17 @@ export function createForestStore() {
 
     const hasOverall = !!spec.data.overall;
 
-    // Calculate actual heights for each row (spacers are half-height)
+    // Calculate actual heights for each row. Group-header rows pick up the
+    // themed `rowGroupPadding` (symmetric top/bottom via `.grid-cell.group-row`
+    // CSS rule) so the overlay / axis Y positions land on the same row
+    // edges the DOM actually renders. Spacer rows stay half-height.
+    const rowGroupPadding = spec.theme.spacing.rowGroupPadding ?? 0;
     const rowHeights: number[] = [];
     for (const displayRow of displayRows) {
       if (displayRow.type === "data" && displayRow.row.style?.type === "spacer") {
         rowHeights.push(rowHeight / 2);
+      } else if (displayRow.type === "group_header") {
+        rowHeights.push(rowHeight + rowGroupPadding);
       } else {
         rowHeights.push(rowHeight);
       }
@@ -2798,10 +2804,15 @@ export function createForestStore() {
       const rowPositions: number[] = [];
       let totalRowsHeight = 0;
 
+      // Same group-header row-height accounting as `layout`: group-header
+      // rows take the themed rowGroupPadding so this shape-for-export also
+      // reflects the true DOM row heights.
+      const rowGroupPaddingExport = spec?.theme?.spacing?.rowGroupPadding ?? 0;
       for (const displayRow of displayRows) {
-        const h = (displayRow.type === "data" && displayRow.row.style?.type === "spacer")
-          ? layout.rowHeight / 2
-          : layout.rowHeight;
+        let h: number;
+        if (displayRow.type === "data" && displayRow.row.style?.type === "spacer") h = layout.rowHeight / 2;
+        else if (displayRow.type === "group_header") h = layout.rowHeight + rowGroupPaddingExport;
+        else h = layout.rowHeight;
         rowPositions.push(totalRowsHeight);
         rowHeights.push(h);
         totalRowsHeight += h;
