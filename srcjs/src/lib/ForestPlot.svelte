@@ -34,6 +34,12 @@
   import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
   import { getVisualTypeDef, isVizType, resolveShowHeader } from "$lib/column-compat";
   import { resolveSemanticBundle } from "$lib/semantic-styling";
+  import {
+    isLayoutDebugEnabled,
+    isLayoutOverlayEnabled,
+    paintLayoutOverlay,
+    reportLayoutMeasurements,
+  } from "$lib/debug-layout";
   import DropIndicator from "$components/controls/DropIndicator.svelte";
   import { hitTestRowGaps } from "$lib/dnd-utils";
   import EditableCell from "$components/controls/EditableCell.svelte";
@@ -314,6 +320,67 @@
     return () => {
       observer.disconnect();
     };
+  });
+
+  // ─ Layout debug instrumentation (opt-in via URL flag) ─────────────────
+  // Reports DOM-rendered row heights vs layout-engine predictions and
+  // (optionally) overlays guide lines at predicted row tops. No effect
+  // unless `?tabviz-debug-layout=1` is set on the page URL. Re-runs on
+  // every layout / displayRows change so theme tweaks emit fresh
+  // measurements without a reload.
+  $effect(() => {
+    if (!isLayoutDebugEnabled()) return;
+    if (!containerRef || !spec) return;
+    // Touch dependencies so the effect re-fires on relevant changes.
+    void layout.rowHeight;
+    void layout.rowHeights.length;
+    void layout.headerHeight;
+    void displayRows.length;
+    void spec.theme.spacing.rowHeight;
+    void spec.theme.spacing.cellPaddingY;
+    void spec.theme.spacing.rowGroupPadding;
+
+    // Defer to next paint so the DOM has the new sizes.
+    const handle = window.requestAnimationFrame(() => {
+      if (!containerRef) return;
+      reportLayoutMeasurements({
+        containerEl: containerRef,
+        layout,
+        displayRows,
+        themeSpacing: {
+          rowHeight: spec.theme.spacing.rowHeight,
+          cellPaddingY: spec.theme.spacing.cellPaddingY,
+          rowGroupPadding: spec.theme.spacing.rowGroupPadding ?? 0,
+          rowBorderWidth: spec.theme.shapes.rowBorderWidth ?? 1,
+          headerHeight: spec.theme.spacing.headerHeight,
+        },
+      });
+    });
+
+    let cleanupOverlay: (() => void) | null = null;
+    if (isLayoutOverlayEnabled()) {
+      const overlayHandle = window.requestAnimationFrame(() => {
+        if (!containerRef) return;
+        cleanupOverlay = paintLayoutOverlay(
+          containerRef,
+          layout,
+          // Rows region starts after header band and any title block —
+          // approximate via the first primary cell's offset.
+          (() => {
+            const first = containerRef.querySelector<HTMLElement>('[data-display-index="0"]');
+            const r = first?.getBoundingClientRect();
+            const cr = containerRef.getBoundingClientRect();
+            return r && cr ? r.top - cr.top : 0;
+          })(),
+        );
+      });
+      return () => {
+        window.cancelAnimationFrame(handle);
+        window.cancelAnimationFrame(overlayHandle);
+        cleanupOverlay?.();
+      };
+    }
+    return () => window.cancelAnimationFrame(handle);
   });
 
   // Check if export is enabled (default true)
