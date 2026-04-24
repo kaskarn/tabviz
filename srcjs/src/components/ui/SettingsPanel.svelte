@@ -8,6 +8,8 @@
   import ShapesControl from "./ShapesControl.svelte";
   import AxisControl from "./AxisControl.svelte";
   import LayoutControl from "./LayoutControl.svelte";
+  import GroupHeadersControl from "./GroupHeadersControl.svelte";
+  import TabSelect from "./TabSelect.svelte";
   import ThemeSourceModal from "./ThemeSourceModal.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
 
@@ -27,14 +29,15 @@
    * axis → layout) so the panel reads like the package's mental model.
    */
   const tabs: { id: string; label: string }[] = [
-    { id: "basics",     label: "Basics" },
-    { id: "colors",     label: "Colors" },
-    { id: "semantics",  label: "Semantics" },
-    { id: "typography", label: "Typography" },
-    { id: "spacing",    label: "Spacing" },
-    { id: "shapes",     label: "Shapes" },
-    { id: "axis",       label: "Axis" },
-    { id: "layout",     label: "Layout" },
+    { id: "basics",       label: "Basics" },
+    { id: "colors",       label: "Colors" },
+    { id: "semantics",    label: "Semantics" },
+    { id: "typography",   label: "Typography" },
+    { id: "rowGroups",    label: "Row groups" },
+    { id: "spacing",      label: "Spacing" },
+    { id: "shapes",       label: "Viz" },
+    { id: "axis",         label: "Axis" },
+    { id: "layout",       label: "Layout" },
   ];
   let activeTabId = $state<string>("basics");
 
@@ -175,18 +178,14 @@
 
       <span class="bar-divider" aria-hidden="true"></span>
 
-      <label class="tab-select-wrap">
-        <span class="visually-hidden">Settings section</span>
-        <select
-          class="tab-select"
-          aria-label="Settings section"
-          bind:value={activeTabId}
-        >
-          {#each tabs as tab (tab.id)}
-            <option value={tab.id}>{tab.label}</option>
-          {/each}
-        </select>
-      </label>
+      <div class="tab-select-wrap">
+        <TabSelect
+          options={tabs}
+          value={activeTabId}
+          onchange={(id) => (activeTabId = id)}
+          ariaLabel="Settings section"
+        />
+      </div>
 
       <!--
         Explicit close button. Keeping it visible even though backdrop /
@@ -229,6 +228,8 @@
               <SemanticsControl {store} />
             {:else if tab.id === "typography"}
               <TypographyControl {store} />
+            {:else if tab.id === "rowGroups"}
+              <GroupHeadersControl {store} />
             {:else if tab.id === "spacing"}
               <SpacingControl {store} />
             {:else if tab.id === "shapes"}
@@ -362,45 +363,15 @@
   }
 
   /**
-   * Tab selector. Native <select> keeps the tab strip compact and reads
-   * well at every panel width — users previously missed tabs that were
-   * scrolled off-screen behind a fade indicator.
+   * Tab selector. Wraps TabSelect — a small themed dropdown that replaces
+   * the native <select> we used briefly in v0.15 (feedback: looked too
+   * plain against the rest of the widget).
    */
   .tab-select-wrap {
     flex: 1;
     min-width: 0;
     display: flex;
     align-items: center;
-  }
-
-  .tab-select {
-    flex: 1;
-    min-width: 0;
-    padding: 4px 8px;
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 20%, transparent);
-    border-radius: 6px;
-    background: var(--wf-bg, #ffffff);
-    color: var(--wf-fg, #1a1a1a);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    cursor: pointer;
-  }
-
-  .tab-select:focus-visible {
-    outline: 2px solid var(--wf-primary, #2563eb);
-    outline-offset: 1px;
-  }
-
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-    border: 0;
   }
 
   /**

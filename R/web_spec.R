@@ -93,6 +93,10 @@
 #'   Creates a SplitForest with one plot per unique value (or combination of values).
 #' @param shared_axis When `split_by` is used, whether to use the same axis range
 #'   across all split plots. Default is `FALSE`.
+#' @param shared_column_widths When `split_by` is used, whether every sub-plot
+#'   shares identical per-column widths. Default `FALSE`. Set `TRUE` when you
+#'   plan to stack screenshots (slides / PowerPoint) and want columns to line
+#'   up. Widths are computed once from the combined data.
 #' @param .spec_only If TRUE, return the WebSpec object instead of rendering.
 #'   Useful for programmatic manipulation before rendering.
 #'
@@ -180,6 +184,7 @@ tabviz <- function(
     elementId = NULL,
     split_by = NULL,
     shared_axis = FALSE,
+    shared_column_widths = FALSE,
     .spec_only = FALSE,
     # Deprecated: pass to viz_forest() on the forest column.
     axis_range = lifecycle::deprecated(),
@@ -549,7 +554,12 @@ tabviz <- function(
   # Handle split_by: create split forest and render
 
   if (!is.null(split_by)) {
-    split_result <- split_table(spec, by = split_by, shared_axis = shared_axis)
+    split_result <- split_table(
+      spec,
+      by = split_by,
+      shared_axis = shared_axis,
+      shared_column_widths = shared_column_widths
+    )
     return(forest_plot_split(split_result, width = width, height = height, elementId = elementId))
   }
 

@@ -141,9 +141,15 @@
     padding: 24px;
   }
 
+  /* Backdrop + card both get explicit z-index inside the fixed modal
+     container so DOM-order-based paint ordering never loses to a
+     host-page rule that accidentally pushes one above the other.
+     Historically authors reported clicks missing the buttons — likely
+     a host-page stylesheet raising the backdrop's stacking. */
   .modal-backdrop {
     position: absolute;
     inset: 0;
+    z-index: 1;
     border: none;
     padding: 0;
     background: color-mix(in srgb, #0f172a 35%, transparent);
@@ -153,6 +159,8 @@
 
   .modal-card {
     position: relative;
+    z-index: 2;
+    pointer-events: auto;
     width: min(420px, 100%);
     padding: 18px 20px;
     background: var(--wf-bg, #ffffff);

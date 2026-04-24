@@ -407,6 +407,7 @@ serialize_theme <- function(theme) {
       border = theme@colors@border,
       rowBg = theme@colors@row_bg,
       altBg = theme@colors@alt_bg,
+      headerBg = theme@colors@header_bg,
       interval = theme@colors@interval,
       intervalLine = theme@colors@interval_line,
       summaryFill = theme@colors@summary_fill,
@@ -431,7 +432,13 @@ serialize_theme <- function(theme) {
       cellPaddingX = theme@spacing@cell_padding_x,
       cellPaddingY = theme@spacing@cell_padding_y,
       axisGap = theme@spacing@axis_gap,
-      groupPadding = theme@spacing@group_padding
+      columnGroupPadding = theme@spacing@column_group_padding,
+      rowGroupPadding    = theme@spacing@row_group_padding,
+      # Back-compat alias: serialize the new field under the old name too so
+      # any frontend code still reading `groupPadding` keeps working while
+      # downstream consumers migrate. Remove once all call sites use the
+      # disambiguated names.
+      groupPadding = theme@spacing@column_group_padding
     ),
     shapes = list(
       pointSize = theme@shapes@point_size,

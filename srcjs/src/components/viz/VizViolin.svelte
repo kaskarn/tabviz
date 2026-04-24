@@ -158,7 +158,10 @@
         {@const path = generateViolinPath(kde, violinCenterY, violinConfig.maxWidth)}
         {@const defaultLineColor = theme?.colors.foreground ?? "#1a1a1a"}
         {@const lineColor = ms.stroke ?? defaultLineColor}
-        {@const violinStrokeW = ms.stroke ? ms.strokeWidth : 0.5}
+        {@const themeLineWidth = theme?.shapes?.lineWidth ?? 1.5}
+        {@const violinStrokeW = ms.stroke ? ms.strokeWidth : themeLineWidth * 0.33}
+        {@const medianStrokeW = Math.max(1, themeLineWidth * 1.3)}
+        {@const quartileStrokeW = Math.max(0.5, themeLineWidth * 0.67)}
 
         <!-- Violin shape -->
         <path
@@ -179,7 +182,7 @@
             y1={violinCenterY - violinConfig.maxWidth * 0.6}
             y2={violinCenterY + violinConfig.maxWidth * 0.6}
             stroke={lineColor}
-            stroke-width="2"
+            stroke-width={medianStrokeW}
           />
         {/if}
 
@@ -193,7 +196,7 @@
             y1={violinCenterY - violinConfig.maxWidth * 0.4}
             y2={violinCenterY + violinConfig.maxWidth * 0.4}
             stroke={lineColor}
-            stroke-width="1"
+            stroke-width={quartileStrokeW}
             stroke-dasharray="2,2"
           />
           <line
@@ -202,7 +205,7 @@
             y1={violinCenterY - violinConfig.maxWidth * 0.4}
             y2={violinCenterY + violinConfig.maxWidth * 0.4}
             stroke={lineColor}
-            stroke-width="1"
+            stroke-width={quartileStrokeW}
             stroke-dasharray="2,2"
           />
         {/if}

@@ -44,6 +44,7 @@ tabviz(
   elementId = NULL,
   split_by = NULL,
   shared_axis = FALSE,
+  shared_column_widths = FALSE,
   .spec_only = FALSE,
   axis_range = lifecycle::deprecated(),
   axis_ticks = lifecycle::deprecated(),
@@ -160,6 +161,11 @@ Creates a SplitForest with one plot per unique value (or combination of values).
 
 \item{shared_axis}{When \code{split_by} is used, whether to use the same axis range
 across all split plots. Default is \code{FALSE}.}
+
+\item{shared_column_widths}{When \code{split_by} is used, whether every sub-plot
+shares identical per-column widths. Default \code{FALSE}. Set \code{TRUE} when you
+plan to stack screenshots (slides / PowerPoint) and want columns to line
+up. Widths are computed once from the combined data.}
 
 \item{.spec_only}{If TRUE, return the WebSpec object instead of rendering.
 Useful for programmatic manipulation before rendering.}

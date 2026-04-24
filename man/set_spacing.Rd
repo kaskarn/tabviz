@@ -11,9 +11,11 @@ set_spacing(
   padding = NULL,
   container_padding = NULL,
   axis_gap = NULL,
-  group_padding = NULL,
+  column_group_padding = NULL,
+  row_group_padding = NULL,
   cell_padding_x = NULL,
-  cell_padding_y = NULL
+  cell_padding_y = NULL,
+  group_padding = lifecycle::deprecated()
 )
 }
 \arguments{
@@ -29,11 +31,21 @@ set_spacing(
 
 \item{axis_gap}{Gap between table content and x-axis in pixels (default: 12)}
 
-\item{group_padding}{Left/right padding for column group headers in pixels (default: 8)}
+\item{column_group_padding}{Left/right padding for \emph{column-group} header
+spans (multi-column header tiles), in pixels (default: 8). Distinct from
+\code{row_group_padding} which controls row-group header indentation.}
+
+\item{row_group_padding}{Extra horizontal padding applied to row-group
+header rows, in pixels (default: 0). Stacks with the theme's natural
+per-depth indentation.}
 
 \item{cell_padding_x}{Horizontal cell padding in pixels (default: 10)}
 
 \item{cell_padding_y}{Vertical cell padding in pixels (default: 4)}
+
+\item{group_padding}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Renamed to
+\code{column_group_padding} in 0.16.0 to disambiguate from
+\code{row_group_padding}. Still accepted; forwards to \code{column_group_padding}.}
 }
 \value{
 Modified WebTheme object

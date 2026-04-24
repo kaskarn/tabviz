@@ -10,6 +10,7 @@ export const defaultColors: ColorPalette = {
   border: "#e2e8f0",
   rowBg: "#ffffff",
   altBg: "#f8fafc",
+  headerBg: "#ffffff",
   interval: "#2563eb",
   intervalLine: "#475569",
   summaryFill: "#2563eb",
@@ -36,7 +37,9 @@ export const defaultSpacing: Spacing = {
   cellPaddingX: 8,
   cellPaddingY: 4,
   axisGap: 12,
-  groupPadding: 8,
+  columnGroupPadding: 8,
+  rowGroupPadding: 0,
+  groupPadding: 8, // deprecated alias
 };
 
 export const defaultShapes: Shapes = {

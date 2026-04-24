@@ -183,10 +183,21 @@
     outline: none;
   }
 
+  /*
+   * Active paint mode: use the accent palette slot (not primary) at
+   * full saturation with forced-white text and a soft glow. Makes
+   * "tool is on" visually louder than the ambient primary-tinted chrome
+   * so users can spot the exit target without hunting.
+   */
   .paint-btn.active {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 85%, transparent);
-    color: var(--wf-bg, #ffffff);
-    border-color: var(--wf-primary, #2563eb);
+    background: var(--wf-accent, #8b5cf6);
+    color: #ffffff;
+    border-color: var(--wf-accent, #8b5cf6);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wf-accent, #8b5cf6) 30%, transparent);
+  }
+
+  .paint-btn.active:hover {
+    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 88%, #000000);
   }
 
   .paint-popover {
@@ -249,10 +260,17 @@
     background: color-mix(in srgb, var(--wf-primary, #2563eb) 8%, transparent);
   }
 
+  /*
+   * Selected chip: use the primary color for text + border against a
+   * pale primary tint for the fill. Avoids the white-on-white failure
+   * mode that `color: var(--wf-bg)` had when rendered over a light
+   * bg bleed-through from `color-mix(primary 90%, transparent)`.
+   */
   .chip.selected {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 90%, transparent);
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 18%, var(--wf-bg, #ffffff));
     border-color: var(--wf-primary, #2563eb);
-    color: var(--wf-bg, #ffffff);
+    color: var(--wf-primary, #2563eb);
+    font-weight: 600;
   }
 
   .segmented {
@@ -277,8 +295,9 @@
   }
 
   .segmented button.selected {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 90%, transparent);
-    color: var(--wf-bg, #ffffff);
+    background: color-mix(in srgb, var(--wf-primary, #2563eb) 18%, var(--wf-bg, #ffffff));
+    color: var(--wf-primary, #2563eb);
+    font-weight: 600;
   }
 
   .ghost-btn {

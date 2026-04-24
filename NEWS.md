@@ -1,3 +1,78 @@
+# tabviz 0.16.0
+
+## Beta feedback pass
+
+Many users now on beta; feedback arrived in bulk. Covered in this release:
+
+### Fixed
+
+- **Paint chip white-on-white (#3).** The selected token chip in the paint
+  popover used forced-white text on a primary-tinted transparent bg — which
+  bled to near-white against the popover's bg in light themes. Switched to
+  primary-color text on a pale primary tint; the same fix applies to the
+  scope segmented-button.
+- **Reset / Copy-code popups unresponsive (#2).** Added explicit
+  `z-index` + `pointer-events: auto` on the modal card so host-page styles
+  can't push the backdrop above the card.
+- **Plot padding slider did nothing (#6).** The `--wf-padding` CSS var
+  was emitted but no interactive rule consumed it. Applied as inner
+  padding on `.tabviz-scalable`; interactive now matches SVG export.
+- **`colors.row_bg` did nothing, `background` controlled row bg (#15a).**
+  `.grid-cell` was reading `--wf-bg` (container) instead of `--wf-row-bg`.
+  Changed to `var(--wf-row-bg, var(--wf-bg))`.
+- **Boxplot/violin ignored theme shapes (#13).** `viz_boxplot` outline +
+  outlier sizing and `viz_violin` outline/median/quartile strokes now read
+  from `theme.shapes.lineWidth` and `theme.shapes.pointSize`.
+- **Paint select-row collision (#9).** Entering paint mode clears any
+  prior row selection so the selected tint doesn't fight painted bg.
+- **Paint icon harder to spot when on (#10).** Active paint button now
+  uses the accent palette slot at full saturation with a soft glow,
+  distinct from the ambient primary tint used elsewhere on the toolbar.
+- **Semantics tab edits appeared dead (#11).** Edits were correctly
+  writing through; the confusion was that users edited a token with no
+  matching flagged rows. Added a live row-count indicator and "No rows
+  flagged — use the paint tool or row_* in R" hint per section.
+
+### New
+
+- **Row-groups settings tab (#12a).** Per-level (1/2/3) font size, weight,
+  italic, background, border, plus indent_per_level — previously R-only.
+- **`colors.header_bg` palette slot (#15b).** Tint the column-header row
+  distinct from data rows. Cascades from `row_bg` when unset, so existing
+  themes render identically.
+- **`tabviz(split_by = ..., shared_column_widths = TRUE)` (#18).** Every
+  sub-plot renders with the same per-column widths, computed once from
+  the combined data. Default `FALSE`. Makes stacked screenshots
+  (PowerPoint / slides) line up cleanly.
+- **`spacing.column_group_padding` + `spacing.row_group_padding` (#1).**
+  Split from the old `group_padding` (which only ever affected column
+  groups). Old name still accepted with `lifecycle::deprecate_warn` —
+  forwards to `column_group_padding`.
+- **Custom TabSelect component (#4).** Themed trigger + listbox popover
+  replaces the native `<select>` for the settings tab chooser.
+- **"Shapes" → "Viz" tab (#12b).** Tab label only; R `set_shapes()`
+  unchanged.
+
+### UX polish
+
+- **Ghost Add-label affordances on hover only (#8).** The "Add title…" /
+  "Add subtitle…" / "Add caption…" / "Add footnote…" placeholders now
+  fade in on header/footer hover or focus-within and stay invisible
+  otherwise. Beta feedback: the always-visible 35%-opacity ghosts were
+  distracting in published widgets.
+- **R `row_bg = <col|formula>` and per-column `bg = <col>`.** These
+  existed in the API but weren't documented well. Now reliably wired
+  through to both interactive + SVG export paths (row) and CellContent +
+  data-cell backgrounds (cell).
+
+### Deferred to v0.17
+
+- Column configure popover rework (#5, #7, #14, #17): compact layout,
+  full per-type args, configure access for viz columns, axis settings
+  moved into the per-column popover, double-click axis to open
+  configure. Scoped for the next release — too large to land here
+  without rushing.
+
 # tabviz 0.15.0
 
 ## Interactive authoring pass

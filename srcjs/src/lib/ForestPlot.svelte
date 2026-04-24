@@ -1136,6 +1136,7 @@
       --wf-border: ${theme.colors.border};
       --wf-row-bg: ${theme.colors.rowBg};
       --wf-alt-bg: ${theme.colors.altBg};
+      --wf-header-bg: ${theme.colors.headerBg ?? theme.colors.rowBg};
       --wf-interval-line: ${theme.colors.intervalLine};
       --wf-summary-fill: ${theme.colors.summaryFill};
       --wf-summary-border: ${theme.colors.summaryBorder};
@@ -1488,7 +1489,7 @@
                 data-field={row ? column.field : undefined}
                 style:grid-row={gridRow}
                 style:background-color={effectiveBg}
-                style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
+                style:padding-left={isGroupHeader ? `${rowDepth * 12 + (theme?.spacing?.rowGroupPadding ?? 0)}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
                 style={rowStyles || undefined}
                 role={isGroupHeader ? "button" : undefined}
                 tabindex={isGroupHeader ? 0 : undefined}
@@ -1542,6 +1543,7 @@
                    keyboard parity — the edit flow is also exposed via the
                    context menu on the primary cell. -->
               {@const editableHere = !!(row && spec?.interaction.enableEdit && !isGroupHeader && isEditableColumn(column))}
+              {@const cellBg = row ? (getCellStyle(row, column)?.bg ?? null) : null}
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <div
@@ -1556,7 +1558,7 @@
                 data-row-id={row ? row.id : undefined}
                 data-field={column.field}
                 style:grid-row={gridRow}
-                style:background-color={effectiveBg}
+                style:background-color={cellBg ?? effectiveBg}
                 style:text-align={column.align}
                 style={rowStyles || undefined}
                 onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
@@ -2340,7 +2342,11 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    /* Note: padding is on container, not here - avoids double padding */
+    /* Inner plot-padding — matches the SVG-export gutter controlled by
+       theme.spacing.padding so interactive and static renderings line up.
+       (theme.spacing.containerPadding is handled separately on .tabviz-
+       container and wraps the whole widget.) */
+    padding: var(--wf-padding, 12px);
     min-height: 0;
   }
 
@@ -2368,16 +2374,22 @@
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--wf-border);
-    background: var(--wf-bg);
+    /* Row background: `--wf-row-bg` (theme.colors.rowBg) with fallback to
+       the container bg. Separate from `--wf-bg` so users can tint rows
+       distinct from the outer container without flipping the whole widget. */
+    background: var(--wf-row-bg, var(--wf-bg));
   }
 
-  /* Header cells - use row height for multi-row headers */
+  /* Header cells - use row height for multi-row headers. Background is
+     the dedicated `--wf-header-bg` (theme.colors.headerBg) so users can
+     tint the header row distinctly from data rows. Cascades from
+     --wf-row-bg so existing themes render identically. */
   .header-cell {
     min-height: var(--wf-header-row-height);
     font-weight: var(--wf-font-weight-bold, 600);
     font-size: calc(var(--wf-font-size-base, 0.875rem) * var(--wf-header-font-scale, 1.05));
     border-bottom: 1px solid var(--wf-border);
-    background: var(--wf-bg);
+    background: var(--wf-header-bg, var(--wf-row-bg, var(--wf-bg)));
     position: relative;
   }
 

@@ -151,7 +151,10 @@
         {@const opacity = getEffectOpacity(effect)}
         {@const defaultLineColor = theme?.colors.foreground ?? "#1a1a1a"}
         {@const lineColor = ms.stroke ?? defaultLineColor}
-        {@const lineWidth = ms.stroke ? ms.strokeWidth : 1}
+        {@const themeLineWidth = theme?.shapes?.lineWidth ?? 1.5}
+        {@const lineWidth = ms.stroke ? ms.strokeWidth : themeLineWidth}
+        {@const outlierR = (theme?.shapes?.pointSize ?? 6) * 0.4}
+        {@const outlierStroke = themeLineWidth}
         {@const color = ms.fill}
 
         <!-- Whisker lines (min to Q1, Q3 to max) -->
@@ -222,10 +225,10 @@
             <circle
               cx={xScale(outlier)}
               cy={boxCenterY}
-              r="2.5"
+              r={outlierR}
               fill="none"
               stroke={color}
-              stroke-width="1.5"
+              stroke-width={outlierStroke}
               class="outlier"
             />
           {/each}

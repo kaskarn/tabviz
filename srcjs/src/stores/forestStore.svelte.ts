@@ -1707,6 +1707,10 @@ export function createForestStore() {
 
   function setPaintTool(tool: { token: SemanticToken; scope: "row" | "cell" } | null) {
     paintTool = tool;
+    // Entering paint mode clears any row selection so the selected tint
+    // doesn't fight the painted semantic bg. Leaving paint mode doesn't
+    // re-select anything — the user explicitly opts into selection later.
+    if (tool) selectedRowIds = new Set();
   }
 
   /** Toggle or set a semantic flag on a row. Call from the paint pointerdown

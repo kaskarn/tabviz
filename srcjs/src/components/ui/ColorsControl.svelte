@@ -31,8 +31,9 @@
   ];
 
   const rowFields = [
-    { key: "rowBg", label: "Row background", hint: "Even rows / base band" },
-    { key: "altBg", label: "Alternate row", hint: "Odd rows / striped band" },
+    { key: "rowBg",    label: "Row background",    hint: "Even rows / base band" },
+    { key: "altBg",    label: "Alternate row",     hint: "Odd rows / striped band" },
+    { key: "headerBg", label: "Header background", hint: "Column header row (inherits row bg by default)" },
   ];
 
   const intervalFields = [

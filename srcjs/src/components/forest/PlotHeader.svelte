@@ -171,18 +171,27 @@
   }
 
   /* "Add title…" / "Add subtitle…" placeholder slots — only rendered when
-     enableEdit is on AND the matching label is absent. Faded so they read
-     as chrome, not content. */
+     enableEdit is on AND the matching label is absent. Hidden by default
+     so the widget reads as "finished" until the user moves the mouse over
+     the header area (or tabs into the slot). Feedback: the always-visible
+     35%-opacity ghosts were distracting in published widgets. */
   .add-label {
     cursor: text;
-    opacity: 0.35;
+    opacity: 0;
     font-style: italic;
     font-weight: var(--wf-font-weight-normal, 400);
+    transition: opacity 0.18s ease;
+  }
+
+  .header-area:hover .add-label,
+  .header-area:focus-within .add-label,
+  .add-label:focus-visible {
+    opacity: 0.55;
+    outline: none;
   }
 
   .add-label:hover,
   .add-label:focus-visible {
-    opacity: 0.8;
-    outline: none;
+    opacity: 0.85 !important;
   }
 </style>

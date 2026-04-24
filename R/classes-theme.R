@@ -18,6 +18,10 @@ ColorPalette <- new_class(
     # Row banding colors
     row_bg = new_property(class_character, default = "#ffffff"),      # Even row background
     alt_bg = new_property(class_character, default = "#f8fafc"),      # Odd row background (stripe)
+    # Column-header row background. Cascades from `row_bg` when unset via
+    # `set_colors()`, so existing themes render identically; themes that
+    # want a distinct header band can set this directly.
+    header_bg = new_property(class_character, default = "#ffffff"),
     # Interval visualization colors
     interval = new_property(class_character, default = "#0891b2"),  # Default marker color
     interval_line = new_property(class_character, default = "#475569"),
@@ -29,7 +33,8 @@ ColorPalette <- new_class(
     # Regex for valid CSS hex colors: #RGB, #RRGGBB, or #RRGGBBAA
     hex_pattern <- "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
     color_props <- c("background", "foreground", "primary", "secondary", "accent",
-                     "muted", "border", "row_bg", "alt_bg", "interval", "interval_line",
+                     "muted", "border", "row_bg", "alt_bg", "header_bg",
+                     "interval", "interval_line",
                      "summary_fill", "summary_border")
     invalid <- character()
     for (prop in color_props) {
@@ -80,7 +85,11 @@ Spacing <- new_class(
     padding = new_property(class_numeric, default = 12),
     container_padding = new_property(class_numeric, default = 0),
     axis_gap = new_property(class_numeric, default = 12),
-    group_padding = new_property(class_numeric, default = 8),
+    # Left/right padding for COLUMN-group headers (the spanning header above
+    # grouped columns). Distinct from row-group header indentation
+    # (`row_group_padding`) which is per-depth horizontal offset.
+    column_group_padding = new_property(class_numeric, default = 8),
+    row_group_padding    = new_property(class_numeric, default = 0),
     cell_padding_x = new_property(class_numeric, default = 10),
     cell_padding_y = new_property(class_numeric, default = 4)
   )
@@ -754,6 +763,9 @@ web_theme <- function(
 #' @param alt_bg Odd row background color for banding/striping. If not specified
 #'   and `background` or `row_bg` is set, inherits from `row_bg` (disabling
 #'   visible banding). Set explicitly to enable striped rows on custom themes.
+#' @param header_bg Column-header row background. Cascades from `row_bg` if
+#'   not specified, so existing themes render identically. Set explicitly to
+#'   distinguish the header band from data rows.
 #' @param ci_marker_fill Default CI marker fill color (default: "#0891b2"). If not
 #'   specified and `primary` is set, inherits from `primary`. Cascades to
 #'   `summary_fill` if not specified.
@@ -787,6 +799,7 @@ set_colors <- function(
     border = NULL,
     row_bg = NULL,
     alt_bg = NULL,
+    header_bg = NULL,
     ci_marker_fill = NULL,
     ci_line = NULL,
     summary_fill = NULL,
@@ -858,6 +871,15 @@ set_colors <- function(
     current@alt_bg <- current@row_bg
   } else if (!is.null(alt_bg)) {
     current@alt_bg <- alt_bg
+  }
+
+  # header_bg defaults to row_bg (preserves pre-0.16 look where the column-
+  # header row matched the data-row background). Users who want a distinct
+  # header band pass `header_bg` explicitly.
+  if ((!is.null(background) || !is.null(row_bg)) && is.null(header_bg)) {
+    current@header_bg <- current@row_bg
+  } else if (!is.null(header_bg)) {
+    current@header_bg <- header_bg
   }
 
   # Cascade marker colors:
@@ -942,7 +964,15 @@ set_typography <- function(
 #' @param padding Padding around the forest plot SVG in pixels (default: 12)
 #' @param container_padding Left/right padding for the outer container in pixels (default: 0)
 #' @param axis_gap Gap between table content and x-axis in pixels (default: 12)
-#' @param group_padding Left/right padding for column group headers in pixels (default: 8)
+#' @param column_group_padding Left/right padding for *column-group* header
+#'   spans (multi-column header tiles), in pixels (default: 8). Distinct from
+#'   `row_group_padding` which controls row-group header indentation.
+#' @param row_group_padding Extra horizontal padding applied to row-group
+#'   header rows, in pixels (default: 0). Stacks with the theme's natural
+#'   per-depth indentation.
+#' @param group_padding `r lifecycle::badge("deprecated")` Renamed to
+#'   `column_group_padding` in 0.16.0 to disambiguate from
+#'   `row_group_padding`. Still accepted; forwards to `column_group_padding`.
 #' @param cell_padding_x Horizontal cell padding in pixels (default: 10)
 #' @param cell_padding_y Vertical cell padding in pixels (default: 4)
 #'
@@ -958,19 +988,31 @@ set_spacing <- function(
     padding = NULL,
     container_padding = NULL,
     axis_gap = NULL,
-    group_padding = NULL,
+    column_group_padding = NULL,
+    row_group_padding = NULL,
     cell_padding_x = NULL,
-    cell_padding_y = NULL
+    cell_padding_y = NULL,
+    group_padding = lifecycle::deprecated()
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
   current <- theme@spacing
+
+  if (lifecycle::is_present(group_padding)) {
+    lifecycle::deprecate_warn(
+      "0.16.0",
+      "set_spacing(group_padding)",
+      "set_spacing(column_group_padding)"
+    )
+    if (is.null(column_group_padding)) column_group_padding <- group_padding
+  }
 
   if (!is.null(row_height)) current@row_height <- row_height
   if (!is.null(header_height)) current@header_height <- header_height
   if (!is.null(padding)) current@padding <- padding
   if (!is.null(container_padding)) current@container_padding <- container_padding
   if (!is.null(axis_gap)) current@axis_gap <- axis_gap
-  if (!is.null(group_padding)) current@group_padding <- group_padding
+  if (!is.null(column_group_padding)) current@column_group_padding <- column_group_padding
+  if (!is.null(row_group_padding)) current@row_group_padding <- row_group_padding
   if (!is.null(cell_padding_x)) current@cell_padding_x <- cell_padding_x
   if (!is.null(cell_padding_y)) current@cell_padding_y <- cell_padding_y
 

@@ -91,7 +91,9 @@ const DEFAULT_THEME: WebTheme = {
     cellPaddingX: 10,
     cellPaddingY: 4,
     axisGap: 12,
-    groupPadding: 8,
+    columnGroupPadding: 8,
+    rowGroupPadding: 0,
+    groupPadding: 8, // deprecated alias; serializer still emits it
   },
   shapes: {
     pointSize: 6,

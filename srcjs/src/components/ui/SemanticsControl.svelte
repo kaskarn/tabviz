@@ -27,6 +27,25 @@
   };
 
   /**
+   * Count how many rows currently carry each semantic flag (via the R spec
+   * or via in-widget paint). Users repeatedly reported "changing semantic
+   * settings doesn't do anything" when no rows were flagged with the token
+   * they were editing — the bundle edits ARE applying, there's just nothing
+   * on screen to apply them to. Surface this explicitly so the no-op state
+   * reads as "no targets" rather than "control is broken."
+   */
+  const tokenCounts = $derived.by(() => {
+    const out: Record<Token, number> = { accent: 0, emphasis: 0, muted: 0 };
+    const rows = store.spec?.data?.rows ?? [];
+    for (const r of rows) {
+      for (const tok of tokens) {
+        if (store.getRowSemantic(r, tok)) out[tok]++;
+      }
+    }
+    return out;
+  });
+
+  /**
    * Sensible "just turned off inherit" default for each field. When the user
    * unticks Inherit on a previously-null field, we need SOMETHING to commit
    * as the initial explicit value. These defaults lean on the current theme
@@ -73,7 +92,13 @@
 {#if semantics}
   {#each tokens as token (token)}
     {@const bundle = semantics[token]}
-    <SettingsSection title={token[0].toUpperCase() + token.slice(1)} description={tokenDescriptions[token]}>
+    {@const count = tokenCounts[token]}
+    <SettingsSection
+      title={`${token[0].toUpperCase() + token.slice(1)} ${count > 0 ? `(${count})` : ""}`}
+      description={count > 0
+        ? tokenDescriptions[token]
+        : `${tokenDescriptions[token]} No rows currently flagged — use the paint tool or row_${token} in R.`}
+    >
       <!-- FG / BG / BORDER / MARKER FILL ─────────────────────────────── -->
       {#each ([
         ["fg",         "Foreground",   "Text color"],

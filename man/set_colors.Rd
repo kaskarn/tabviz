@@ -15,6 +15,7 @@ set_colors(
   border = NULL,
   row_bg = NULL,
   alt_bg = NULL,
+  header_bg = NULL,
   ci_marker_fill = NULL,
   ci_line = NULL,
   summary_fill = NULL,
@@ -53,6 +54,10 @@ Cascades to \code{interval} and \code{summary_fill} if not specified.}
 \item{alt_bg}{Odd row background color for banding/striping. If not specified
 and \code{background} or \code{row_bg} is set, inherits from \code{row_bg} (disabling
 visible banding). Set explicitly to enable striped rows on custom themes.}
+
+\item{header_bg}{Column-header row background. Cascades from \code{row_bg} if
+not specified, so existing themes render identically. Set explicitly to
+distinguish the header band from data rows.}
 
 \item{ci_marker_fill}{Default CI marker fill color (default: "#0891b2"). If not
 specified and \code{primary} is set, inherits from \code{primary}. Cascades to

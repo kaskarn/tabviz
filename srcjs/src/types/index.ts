@@ -431,6 +431,7 @@ export interface ColorPalette {
   border: string;
   rowBg: string;      // Even row background
   altBg: string;      // Odd row background (stripe/banding)
+  headerBg: string;   // Column-header row background (cascades from rowBg)
   interval: string;  // Unified marker color (new default)
   intervalLine: string;
   summaryFill: string;
@@ -457,7 +458,14 @@ export interface Spacing {
   cellPaddingX: number;
   cellPaddingY: number;
   axisGap: number;  // Gap between table and x-axis (default ~12px)
-  groupPadding: number;  // Left/right padding for column group headers (default 8px)
+  // Column-group headers (multi-column header spans) — left/right padding.
+  columnGroupPadding: number;
+  // Row-group header indentation (applies per nesting depth in addition to
+  // the theme's natural level indentation).
+  rowGroupPadding: number;
+  /** @deprecated Alias for columnGroupPadding. Emitted by the R serializer
+   *  for back-compat; reads here should migrate to columnGroupPadding. */
+  groupPadding: number;
 }
 
 export interface Shapes {

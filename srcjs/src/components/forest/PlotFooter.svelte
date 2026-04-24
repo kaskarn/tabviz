@@ -123,13 +123,20 @@
 
   .add-label {
     cursor: text;
-    opacity: 0.35;
+    opacity: 0;
     font-style: italic;
+    transition: opacity 0.18s ease;
+  }
+
+  .plot-footer:hover .add-label,
+  .plot-footer:focus-within .add-label,
+  .add-label:focus-visible {
+    opacity: 0.55;
+    outline: none;
   }
 
   .add-label:hover,
   .add-label:focus-visible {
-    opacity: 0.8;
-    outline: none;
+    opacity: 0.85 !important;
   }
 </style>

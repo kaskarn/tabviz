@@ -13,6 +13,11 @@
 #'   - `c("region", "age_group")` creates Region > Age Group hierarchy
 #' @param shared_axis Whether to use the same axis range across all plots.
 #'   Default is `FALSE` (each plot auto-scales to its data).
+#' @param shared_column_widths Whether every sub-plot uses identical
+#'   per-column widths. Default `FALSE` (each plot sizes to its own content).
+#'   Set `TRUE` to make stacked screenshots (PowerPoint, slides) line up —
+#'   widths are computed once from the combined data and stamped on every
+#'   sub-plot's columns.
 #' @param ... Additional arguments passed to `web_spec()` if `x` is a data frame.
 #'
 #' @return A SplitForest object containing multiple WebSpec objects
@@ -43,7 +48,7 @@
 #' }
 #'
 #' @export
-split_table <- function(x, by, shared_axis = FALSE, ...) {
+split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE, ...) {
 
   # Handle input type
   if (S7_inherits(x, WebSpec)) {
@@ -271,6 +276,39 @@ split_table <- function(x, by, shared_axis = FALSE, ...) {
       # Also propagate explicit tick values if set
       if (has_explicit_ticks) {
         specs[[key]]@theme@axis@tick_values <- base_axis@tick_values
+      }
+    }
+  }
+
+  # Shared column widths: stamp a fixed width onto every "auto" column so
+  # sub-plots line up when stacked (PowerPoint / slides). We approximate
+  # width server-side from the combined data — frontend auto-measurement
+  # can't see across split boundaries.
+  if (shared_column_widths) {
+    for (col_idx in seq_along(base_spec@columns)) {
+      col <- base_spec@columns[[col_idx]]
+      # Skip columns with explicit width already set.
+      if (is.numeric(col@width) && !is.na(col@width)) next
+      # Content-based columns only; viz columns auto-size from the plot.
+      if (col@type %in% c("viz_bar", "viz_boxplot", "viz_violin", "forest")) next
+      field <- col@field
+      if (is.null(field) || is.na(field) || !(field %in% names(data))) next
+
+      # Max character length in the field, plus header. Multiply by an
+      # ~8px glyph width and add a small cell-padding buffer — a rough
+      # estimate, but enough for visual alignment. Precise pixel values
+      # come from frontend measurement; this just prevents divergence
+      # between sub-plots.
+      vals <- as.character(data[[field]])
+      max_chars <- max(
+        nchar(vals, type = "width"),
+        nchar(col@header %||% "", type = "width"),
+        na.rm = TRUE
+      )
+      est_width <- max(40, min(480, as.integer(max_chars * 8 + 24)))
+
+      for (s_key in names(specs)) {
+        specs[[s_key]]@columns[[col_idx]]@width <- est_width
       }
     }
   }

@@ -129,9 +129,13 @@
     padding: 24px;
   }
 
+  /* Explicit z-index + pointer-events so host-page stylesheets can't
+     push the backdrop above the card. See ConfirmDialog for the same
+     pattern and rationale. */
   .modal-backdrop {
     position: absolute;
     inset: 0;
+    z-index: 1;
     border: none;
     padding: 0;
     background: color-mix(in srgb, #0f172a 35%, transparent);
@@ -141,6 +145,8 @@
 
   .modal-card {
     position: relative;
+    z-index: 2;
+    pointer-events: auto;
     width: min(560px, 100%);
     max-height: min(80vh, 720px);
     display: flex;

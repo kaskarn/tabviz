@@ -4,7 +4,7 @@
 \alias{split_table}
 \title{Split a forest plot by variable values}
 \usage{
-split_table(x, by, shared_axis = FALSE, ...)
+split_table(x, by, shared_axis = FALSE, shared_column_widths = FALSE, ...)
 }
 \arguments{
 \item{x}{A WebSpec object or data frame. If a data frame, additional arguments
@@ -20,6 +20,12 @@ navigation, e.
 
 \item{shared_axis}{Whether to use the same axis range across all plots.
 Default is \code{FALSE} (each plot auto-scales to its data).}
+
+\item{shared_column_widths}{Whether every sub-plot uses identical
+per-column widths. Default \code{FALSE} (each plot sizes to its own content).
+Set \code{TRUE} to make stacked screenshots (PowerPoint, slides) line up —
+widths are computed once from the combined data and stamped on every
+sub-plot's columns.}
 
 \item{...}{Additional arguments passed to \code{web_spec()} if \code{x} is a data frame.}
 }

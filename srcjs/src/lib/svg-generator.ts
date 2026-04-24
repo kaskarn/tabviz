@@ -1950,6 +1950,8 @@ function renderVizBoxplot(
   // Default colors
   const defaultColors = theme.shapes.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
   const lineColor = theme.colors.foreground ?? "#1a1a1a";
+  const themeLineWidth = theme.shapes.lineWidth ?? 1.5;
+  const outlierR = (theme.shapes.pointSize ?? 6) * 0.4;
 
   effects.forEach((effect, idx) => {
     const stats = effectStats[idx];
@@ -1963,7 +1965,9 @@ function renderVizBoxplot(
     const rowOpacity = row.markerStyle?.opacity ?? null;
     const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? 0.7);
     const strokeColor = ms.stroke ?? lineColor;
-    const strokeWidth = ms.stroke ? ms.strokeWidth : 1;
+    // Theme's shapes.lineWidth drives the whisker/box outlines by default.
+    // Per-effect stroke overrides via ms.stroke still win, as before.
+    const strokeWidth = ms.stroke ? ms.strokeWidth : themeLineWidth;
 
     // Whisker lines
     // Left whisker
@@ -2002,13 +2006,14 @@ function renderVizBoxplot(
       y1="${boxY}" y2="${boxY + boxHeight}"
       stroke="${strokeColor}" stroke-width="${Math.max(2, strokeWidth)}"/>`);
 
-    // Outliers
+    // Outliers — point size and stroke width scale with the theme's
+    // shapes.pointSize / lineWidth so outliers match forest-plot markers.
     if (options.showOutliers !== false && stats.outliers.length > 0) {
       for (const outlier of stats.outliers) {
         parts.push(`<circle
           cx="${vizX + xScale(outlier)}" cy="${boxCenterY}"
-          r="2.5"
-          fill="none" stroke="${ms.fill}" stroke-width="1.5"/>`);
+          r="${outlierR}"
+          fill="none" stroke="${ms.fill}" stroke-width="${themeLineWidth}"/>`);
       }
     }
   });
@@ -2076,6 +2081,12 @@ function renderVizViolin(
   // Default colors
   const defaultColors = theme.shapes.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
   const lineColor = theme.colors.foreground ?? "#1a1a1a";
+  const themeLineWidth = theme.shapes.lineWidth ?? 1.5;
+  // Violin outline reads thinner than a forest-plot stroke by convention;
+  // scale from theme so bumping shapes.lineWidth still thickens the violin.
+  const violinStrokeDefault = themeLineWidth * 0.33;
+  const medianStrokeW = Math.max(1, themeLineWidth * 1.3);
+  const quartileStrokeW = Math.max(0.5, themeLineWidth * 0.67);
 
   effects.forEach((effect, idx) => {
     const kde = effectKDEs[idx];
@@ -2089,7 +2100,7 @@ function renderVizViolin(
     const rowOpacity = row.markerStyle?.opacity ?? null;
     const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? 0.5);
     const violinStroke = ms.stroke ?? lineColor;
-    const violinStrokeW = ms.stroke ? ms.strokeWidth : 0.5;
+    const violinStrokeW = ms.stroke ? ms.strokeWidth : violinStrokeDefault;
 
     // Generate violin path
     const normalized = normalizeKDE(kde, maxWidth);
@@ -2121,7 +2132,7 @@ function renderVizViolin(
       parts.push(`<line
         x1="${medianX}" x2="${medianX}"
         y1="${violinCenterY - maxWidth * 0.6}" y2="${violinCenterY + maxWidth * 0.6}"
-        stroke="${lineColor}" stroke-width="2"/>`);
+        stroke="${lineColor}" stroke-width="${medianStrokeW}"/>`);
     }
 
     // Quartile lines
@@ -2131,11 +2142,11 @@ function renderVizViolin(
       parts.push(`<line
         x1="${q1X}" x2="${q1X}"
         y1="${violinCenterY - maxWidth * 0.4}" y2="${violinCenterY + maxWidth * 0.4}"
-        stroke="${lineColor}" stroke-width="1" stroke-dasharray="2,2"/>`);
+        stroke="${lineColor}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"/>`);
       parts.push(`<line
         x1="${q3X}" x2="${q3X}"
         y1="${violinCenterY - maxWidth * 0.4}" y2="${violinCenterY + maxWidth * 0.4}"
-        stroke="${lineColor}" stroke-width="1" stroke-dasharray="2,2"/>`);
+        stroke="${lineColor}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"/>`);
     }
   });
 
@@ -3413,6 +3424,15 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // header band (cells + bottom border) to avoid drawing a zero-height strip.
   const headerY = layout.mainY;
   if (layout.headerHeight > 0) {
+    // Paint the header-row background band first so subsequent cells can
+    // draw text on top. Uses colors.headerBg (which cascades from rowBg in
+    // set_colors so existing themes render identically).
+    const headerBg = theme.colors.headerBg ?? theme.colors.rowBg;
+    if (headerBg && headerBg !== theme.colors.background) {
+      parts.push(`<rect x="${padding}" y="${headerY}"
+        width="${layout.totalWidth - padding * 2}" height="${layout.headerHeight}"
+        fill="${headerBg}"/>`);
+    }
     // Exclude the primary column from columnDefs — it's rendered via labelHeader
     const headerColumnDefs = primaryColFull
       ? columns.filter(c => c.isGroup || (c as ColumnSpec).id !== primaryColFull.id)
