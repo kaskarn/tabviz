@@ -14,7 +14,7 @@ The same effect is available inline on `tabviz()` and `forest_plot()` via the `s
 ## Signature
 
 ```r
-split_table(x, by, shared_axis = FALSE, ...)
+split_table(x, by, shared_axis = FALSE, shared_column_widths = FALSE, ...)
 ```
 
 ## Arguments
@@ -24,6 +24,7 @@ split_table(x, by, shared_axis = FALSE, ...)
 | `x` | `WebSpec` / htmlwidget / `data.frame` | required | Source. A data frame is fed through `web_spec()` first. |
 | `by` | `character` | required | Column name(s) to split on. A single string creates one plot per unique value; a vector creates a hierarchical navigation tree (outermost first). |
 | `shared_axis` | `logical(1)` | `FALSE` | When `TRUE`, all sub-plots use the same x-axis range so subgroup effects can be compared at a glance. |
+| `shared_column_widths` | `logical(1)` | `FALSE` | When `TRUE`, stamp identical per-column widths across every sub-plot so columns line up tile-to-tile when screenshots are stacked in slides / PowerPoint. Widths are computed once from the combined data. Added in v0.16. |
 | `...` | — | — | Forwarded to `web_spec()` when `x` is a data frame. |
 
 ## Return value

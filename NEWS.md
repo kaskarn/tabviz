@@ -1,3 +1,28 @@
+# tabviz 0.18.1
+
+## Documentation audit
+
+Full pass over the prose docs to catch up with the features shipped
+in 0.15–0.18:
+
+- **Interactivity guide** gains a "Configure Columns (v0.18+)"
+  section covering the per-column configure popover, the full CRUD
+  viz-effect editor, the Axis sub-section, and the double-click
+  shortcut from the axis into the popover.
+- **Interactivity guide** already covered paint mode and inline
+  title/subtitle/caption/footnote editing (both v0.15+); these
+  sections remain.
+- **`tabviz()` reference** adds the `shared_column_widths` arg.
+- **`split_table()` reference** adds `shared_column_widths` to the
+  signature and args table.
+- **Interaction reference** clarifies `enable_edit` also gates
+  title/subtitle/caption/footnote editing.
+- **Cheatsheet** gets a `shared_column_widths` split-plot example.
+- `quarto render` clean end-to-end; no stale references to the
+  retired Axis theme tab or the old `group_padding` arg.
+
+No code changes — this is a docs-only patch release.
+
 # tabviz 0.18.0
 
 ## Multi-effect viz configure + axis cleanup

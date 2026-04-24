@@ -37,6 +37,7 @@ Both produce a `SplitForest` object.
 | `x` | required | A `WebSpec`, htmlwidget, or data frame |
 | `by` | required | Column name (single string) or character vector for hierarchical splits |
 | `shared_axis` | `FALSE` | Use the same axis range across all subgroups |
+| `shared_column_widths` | `FALSE` | Stamp identical per-column widths across every sub-plot (v0.16+). Useful when stacking screenshots in slides / PowerPoint — sub-plot columns won't shift between tiles. Widths are computed once from the combined data. |
 
 ## Basic Split
 
@@ -127,6 +128,32 @@ tabviz(trial_data,
 ) |>
   split_table(by = "region", shared_axis = TRUE)
 ```
+
+## Shared Column Widths (v0.16+)
+
+When you plan to stack sub-plot screenshots in slides, PowerPoint, or
+side-by-side layouts, set `shared_column_widths = TRUE`. Each sub-plot
+will render with identical per-column widths, computed once from the
+combined data, so the columns line up tile-to-tile:
+
+```{r}
+tabviz(trial_data,
+  label = "study",
+  columns = list(
+    viz_forest(point = "or", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  ),
+  theme = web_theme_modern()
+) |>
+  split_table(
+    by = "region",
+    shared_axis = TRUE,
+    shared_column_widths = TRUE
+  )
+```
+
+The default is `FALSE` to preserve the pre-v0.16 behavior where each
+sub-plot sizes its columns to its own content.
 
 ## Sidebar Features
 

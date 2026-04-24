@@ -113,7 +113,7 @@ set_colors(
   primary = NULL, secondary = NULL,
   accent = NULL, muted = NULL,
   border = NULL,
-  row_bg = NULL, alt_bg = NULL,
+  row_bg = NULL, alt_bg = NULL, header_bg = NULL,
   ci_marker_fill = NULL,
   ci_line = NULL,
   summary_fill = NULL,
@@ -123,15 +123,16 @@ set_colors(
 
 | Argument | Default | Description |
 |---|---|---|
-| `background` | `"#ffffff"` | Plot/container background. |
+| `background` | `"#ffffff"` | Widget container background. |
 | `foreground` | `"#333333"` | Default text color. |
 | `primary` | `"#0891b2"` | Primary accent. Cascades into `ci_marker_fill` and `summary_fill` if those are unset. |
 | `secondary` | `"#64748b"` | Secondary text/UI. |
 | `accent` | `"#8b5cf6"` | Palette slot referenced by the `accent` semantic bundle. |
 | `muted` | `"#94a3b8"` | Palette slot referenced by the `muted` semantic bundle; also used for footnotes / captions. |
 | `border` | `"#e2e8f0"` | Row dividers, container borders. |
-| `row_bg` | inherits `background` | Even-row background. |
+| `row_bg` | inherits `background` | Data-row background (distinct from `background` since v0.16). |
 | `alt_bg` | inherits `row_bg` | Odd-row background (zebra stripes). |
+| `header_bg` | `NA` → inherits `row_bg` | Column-header row background. Added in v0.16. Leave `NA` for "same as data rows"; set explicitly to tint the header band. |
 | `ci_marker_fill` | `"#0891b2"` | Default CI marker fill. Cascades into `summary_fill`. Preempted by `shapes.effect_colors[0]` when that is set. |
 | `ci_line` | `"#475569"` | Confidence-interval line color. |
 | `summary_fill` | inherits `ci_marker_fill` | Summary diamond fill (per-row `row_type = "summary"` and the legacy `spec.data.overall` path). |
@@ -203,7 +204,8 @@ set_spacing(
   row_height = NULL, header_height = NULL,
   padding = NULL,
   container_padding = NULL, axis_gap = NULL,
-  group_padding = NULL,
+  column_group_padding = NULL,
+  row_group_padding = NULL,
   cell_padding_x = NULL, cell_padding_y = NULL
 )
 ```
@@ -212,12 +214,23 @@ set_spacing(
 |---|---|---|
 | `row_height` | `24` | Data row height (px). |
 | `header_height` | `32` | Header row height (px). |
-| `padding` | `12` | Padding around the forest plot SVG (px). |
-| `container_padding` | `0` | Outer container padding (px). |
+| `padding` | `12` | SVG-export gutter around the plot (px). Interactive widget ignores this; use `container_padding` for live rendering. |
+| `container_padding` | `0` | Outer padding around the whole widget (interactive + SVG export). |
 | `axis_gap` | `12` | Gap between table content and axis (px). |
-| `group_padding` | `8` | Column-group header horizontal padding (px). Note: applies to column-group headers, not row-group headers. |
+| `column_group_padding` | `8` | Left/right padding on spanning column-group headers (px). |
+| `row_group_padding` | `0` | Vertical breathing room above row-group header rows (px). Added in v0.16; applied as `padding-top` and skipped for the first row-group header so no gap appears right below the column-header row. |
 | `cell_padding_x` | `10` | Horizontal cell padding (px). |
 | `cell_padding_y` | `4` | Vertical cell padding (px). |
+
+:::{.callout-note}
+## `group_padding` was split in v0.16
+
+The old `group_padding` arg — which only ever affected column-group
+headers — was renamed to `column_group_padding`, and a new
+`row_group_padding` was added for vertical row-group spacing. The old
+name still works via a `lifecycle::deprecate_warn()` that forwards to
+`column_group_padding`.
+:::
 
 ### `set_shapes()` {#set_shapes}
 

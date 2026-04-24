@@ -53,7 +53,7 @@ web_interaction(
 | `enable_filters` | `logical(1)` | `TRUE` | Per-column filter popovers in headers. |
 | `enable_reorder_rows` | `logical(1)` | `TRUE` | Drag rows within a group, and row-groups among siblings. |
 | `enable_reorder_columns` | `logical(1)` | `TRUE` | Drag columns within a group, and column-groups among top-level siblings. |
-| `enable_edit` | `logical(1)` | `TRUE` | Double-click cells to edit; popover editor for forest-cell numerics. |
+| `enable_edit` | `logical(1)` | `TRUE` | Double-click cells to edit; popover editor for forest-cell numerics. Also enables inline editing of title / subtitle / caption / footnote (v0.15+). |
 | `show_group_counts` | `logical(1)` | `FALSE` | Append `(n)` after each row-group label. |
 | `tooltip_fields` | `character` | `NULL` | Column names shown in the hover tooltip. `NULL` disables tooltips. |
 | `enable_themes` | `"default"` / `NULL` / `list` of `WebTheme` | `getOption("tabviz.enable_themes", "default")` | Curate the theme switcher (see below). |

@@ -292,6 +292,12 @@ tabviz(data, label = "study",
        columns = list(viz_forest(...)),
        split_by = c("region", "country"),
        shared_axis = TRUE)
+
+# Identical column widths across sub-plots (v0.16+)
+tabviz(data, label = "study",
+       columns = list(viz_forest(...)),
+       split_by = "region",
+       shared_column_widths = TRUE)
 ```
 
 ## Exporting

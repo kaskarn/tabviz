@@ -38,7 +38,7 @@ tabviz(
   banding = NULL,
   width = NULL, height = NULL, elementId = NULL,
   # Splitting
-  split_by = NULL, shared_axis = FALSE,
+  split_by = NULL, shared_axis = FALSE, shared_column_widths = FALSE,
   .spec_only = FALSE
 )
 ```
@@ -114,6 +114,7 @@ Same column-name-or-formula pattern as row styling:
 |---|---|---|---|
 | `split_by` | `character` | `NULL` | Column name(s) to split into one plot per unique value/combination, returning a `SplitForest` widget. |
 | `shared_axis` | `logical(1)` | `FALSE` | When `split_by` is set, share an axis range across all sub-plots. |
+| `shared_column_widths` | `logical(1)` | `FALSE` | When `split_by` is set, stamp identical per-column widths across every sub-plot so columns line up when screenshots are stacked. Added in v0.16. |
 
 ### Other
 

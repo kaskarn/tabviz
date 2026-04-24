@@ -23,7 +23,8 @@ Every tabviz widget includes these interactions out of the box:
 | **Resize** | Drag column borders to resize |
 | **Filter** | Per-column filter popovers in headers |
 | **Reorder** | Drag rows or columns to reorder |
-| **Edit** | Double-click cells to edit |
+| **Edit** | Double-click cells to edit — also works on existing title / subtitle / caption / footnote |
+| **Paint** | Paint-brush button opens a popover for stamping `emphasis` / `muted` / `accent` onto rows or cells |
 | **Export** | Download menu in header (hover to reveal) |
 | **Themes** | Theme switcher in header |
 
@@ -236,6 +237,73 @@ tabviz(sample_data, label = "item",
   footnote = "Click rows to select (indicated by left border)"
 )
 ```
+
+## Paint Tool (v0.15+)
+
+The paint-brush button on the widget toolbar opens a small popover
+where authors can stamp semantic classes onto rows or cells
+interactively. This is the in-widget equivalent of the R-side
+`row_emphasis = <col>` / `row_muted = <col>` / `row_accent = <col>`
+arguments, but applied by clicking rather than coded up front.
+
+**Flow:**
+
+1. Open the paint popover (brush icon in the top-right toolbar).
+2. Pick a token: **Emphasis**, **Muted**, or **Accent**.
+3. Flip the **Scope** switch between **Row** (whole row) and **Cell**
+   (just one cell).
+4. Click any row or cell to toggle the active flag on/off. The cursor
+   turns into a crosshair while paint is active so you can spot where
+   the next click lands.
+5. Click the prominent **Exit paint mode** button at the top of the
+   popover (or press **Esc**) when done. The brush icon stays lit in
+   the toolbar's accent color as long as paint is armed.
+
+**Persistence:** painted flags merge into `exportSpec`, so
+`save_plot()` picks them up, and the flags round-trip through the
+"View source" button in the settings panel. You can also clear all
+paint with the "Clear all paint" button if you want to start over.
+
+Painted flags coexist with R-side `row_emphasis` / etc. columns: the
+R column sets the baseline, paint overrides per row.
+
+## Configure Columns (v0.18+)
+
+Every `col_*` and `viz_*` column has a **Configure…** entry in its
+header context menu (right-click the column header, or use the
+column-menu chevron). The popover exposes the column's relevant
+authoring arguments so you can tweak them without rebuilding the
+widget in R:
+
+- **`col_numeric`** — decimals, format.
+- **`col_interval`** — decimals, separator, imprecise threshold.
+- **`col_text`** — max chars, wrap.
+- **`viz_forest`** — scale, null value, axis label, and a full
+  **Axis** section (range, tick count/values, gridlines, null tick,
+  marker margin, symmetric).
+- **`viz_bar` / `viz_boxplot` / `viz_violin`** — full CRUD on
+  effects (add / remove / reorder / rename / recolor / opacity /
+  data field), plus the same Axis section. Boxplot can toggle
+  between array-shaped and pre-computed stats data.
+
+Double-clicking a viz column's axis opens the configure popover
+pre-scrolled to the Axis section.
+
+Changes merge into `exportSpec` and round-trip through the "View
+source" button — `save_plot()` picks them up. The interactive Axis
+*theme* tab was retired in v0.18 since axis values are now per-column.
+
+## Title / Subtitle / Caption / Footnote Editing (v0.15+)
+
+When `enable_edit` is on:
+
+- **Double-click** any existing title, subtitle, caption, or footnote
+  to edit it inline (Enter to commit, Esc to cancel).
+- **Add** a missing label via the **Basics** tab in the settings
+  panel — it exposes four text fields (Title / Subtitle / Caption /
+  Footnote). Populating any of them makes the matching slot appear.
+
+Edits merge into `exportSpec.labels`, so `save_plot()` reflects them.
 
 ## See Also
 

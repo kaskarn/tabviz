@@ -31,12 +31,13 @@ Each theme is designed with a specific context in mind:
 
 | Component | Function | Key Properties |
 |-----------|----------|----------------|
-| Colors | `set_colors()` | background, foreground, primary, accent, muted, ci_marker_fill, ci_line, summary_fill |
+| Colors | `set_colors()` | background, foreground, primary, accent, muted, row_bg, alt_bg, header_bg, ci_marker_fill, ci_line, summary_fill |
 | Typography | `set_typography()` | font_family, font_size_*, font_weight_*, header_font_scale |
-| Spacing | `set_spacing()` | row_height, header_height, padding, container_padding, cell_padding_x/y |
+| Spacing | `set_spacing()` | row_height, header_height, padding, container_padding, cell_padding_x/y, column_group_padding, row_group_padding |
 | Shapes | `set_shapes()` | point_size, summary_height, line_width, effect_colors, marker_shapes |
-| Axis | `set_axis()` | range_min/max, tick_count, tick_values, gridlines, symmetric |
+| Axis | `set_axis()` | range_min/max, tick_count, tick_values, gridlines, symmetric. In v0.18 the interactive Axis settings tab was dropped — axis values are now per viz column, editable via the column configure popover. `set_axis()` still works as a cross-cutting default. |
 | Layout | `set_layout()` | plot_width, container_border, container_border_radius, banding |
+| Semantics | `set_semantics()` | Per-token bundle (fg, bg, border, marker_fill, font_weight, font_style) for emphasis / muted / accent |
 | Group Headers | `set_group_headers()` | level*_font_size, level*_background, indent_per_level |
 | Effects | `set_effect_colors()`, `set_marker_shapes()` | Multi-effect default colors/shapes |
 
@@ -202,13 +203,16 @@ The same `set_*()` calls compose naturally with the pipe (`web_theme_jama() |> s
 
 ```r
 set_colors(
-  background        = "#ffffff",   # Background color
+  background        = "#ffffff",   # Widget container background
   foreground        = "#1a1a1a",   # Primary text color
   primary           = "#2563eb",   # Primary accent for highlights
   secondary         = "#64748b",   # Secondary text/UI color
   accent            = "#8b5cf6",   # Accent color for emphasis
   muted             = "#94a3b8",   # Muted/disabled text color
   border            = "#e2e8f0",   # Border color for dividers
+  row_bg            = "#ffffff",   # Data-row background
+  alt_bg            = "#f8fafc",   # Alternating stripe (banding)
+  header_bg         = NA,          # Column-header row bg (NA inherits row_bg)
   ci_marker_fill    = "#2563eb",   # Default CI marker fill
   ci_line           = "#475569",   # CI whisker line color
   summary_fill      = "#2563eb",   # Summary diamond fill
@@ -228,6 +232,9 @@ set_colors(
 | `accent` | `row_accent` text styling; annotation labels |
 | `muted` | Footnotes, captions; `row_muted` text styling |
 | `border` | Row dividers, container borders, table grid lines |
+| `row_bg` | Data-row background. Distinct from `background` (container) since v0.16. |
+| `alt_bg` | Alternating row stripe when banding is on. |
+| `header_bg` | Column-header row background. `NA` (default) inherits from `row_bg`. Set explicitly to tint the header band. |
 | `ci_marker_fill` | Default CI marker fill (squares, circles, diamonds). Note: `shapes.effect_colors[0]` takes precedence when set — `ci_marker_fill` is the fallback. |
 | `ci_line` | CI whisker lines connecting lower to upper bounds |
 | `summary_fill` | Summary row diamond fill (rows flagged with `row_type = "summary"`) |
@@ -263,15 +270,32 @@ set_typography(
 
 ```r
 set_spacing(
-  row_height = 28,          # Data row height in pixels
-  header_height = 36,       # Header row height in pixels
-  padding = 12,             # Padding around forest plot SVG
-  container_padding = 0,    # Left/right padding for outer container
-  cell_padding_x = 10,      # Horizontal cell padding
-  cell_padding_y = 4,       # Vertical cell padding
-  axis_gap = 12             # Gap between table and x-axis
+  row_height = 28,             # Data row height in pixels
+  header_height = 36,          # Header row height in pixels
+  padding = 12,                # Inner plot gutter (SVG export only since v0.17)
+  container_padding = 0,       # Outer padding around the whole widget
+  cell_padding_x = 10,         # Horizontal cell padding
+  cell_padding_y = 4,          # Vertical cell padding
+  axis_gap = 12,               # Gap between table and x-axis
+  column_group_padding = 8,    # Left/right padding on spanning column headers
+  row_group_padding = 0        # Vertical breathing room above row-group labels
 )
 ```
+
+::: {.callout-note}
+## Padding scope changes in v0.16 / v0.17
+
+- `column_group_padding` / `row_group_padding` replaced the single
+  `group_padding` in v0.16. The old name still works but emits a
+  deprecation warn and forwards to `column_group_padding`.
+- `padding` is SVG-export-only in the interactive widget (v0.17 fix): it
+  was compounding with `container_padding`. Use `container_padding` for
+  live rendering; `padding` still wraps the exported SVG gutter for
+  `save_plot()`.
+- `row_group_padding` is applied as vertical `padding-top` on row-group
+  header rows (skipping the first header so it doesn't gap the column
+  header), not horizontal indent.
+:::
 
 ::: {.callout-note}
 ## Row Height Guidelines
