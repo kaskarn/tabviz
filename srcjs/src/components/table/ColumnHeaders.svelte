@@ -134,10 +134,17 @@
   function onResize(e: PointerEvent) {
     if (!resizing || !store) return;
     const delta = e.clientX - startX;
-    store.setColumnWidth(resizing.id, startWidth + delta);
+    // Preview during drag — no op-log emission. Commit on pointerup.
+    store.previewColumnWidth(resizing.id, startWidth + delta);
   }
 
-  function stopResize() {
+  function stopResize(e: PointerEvent) {
+    if (resizing && store) {
+      const delta = e.clientX - startX;
+      // One recorded `resize_column()` per drag gesture — the settled
+      // width on release rather than every intermediate pixel.
+      store.setColumnWidth(resizing.id, startWidth + delta);
+    }
     resizing = null;
     document.removeEventListener("pointermove", onResize);
     document.removeEventListener("pointerup", stopResize);

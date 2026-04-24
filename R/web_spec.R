@@ -34,6 +34,10 @@
 #' @param caption Caption (displayed below the plot)
 #' @param footnote Footnote (displayed below caption, italicized)
 #' @param watermark Optional watermark text (e.g. `"DRAFT"`, `"CONFIDENTIAL"`)
+#' @param watermark_color Optional CSS color for the watermark; inherits
+#'   `theme.colors.foreground` when `NULL`.
+#' @param watermark_opacity Optional `[0, 1]` fill-opacity for the watermark;
+#'   defaults to `0.07`.
 #'   rendered behind the table rows at low opacity. The text is centered over
 #'   the rows region and rotated to follow that region's diagonal, so the angle
 #'   adapts to the table's aspect ratio. Theme-aware: uses the foreground color.
@@ -98,6 +102,10 @@
 #'   plan to stack screenshots (slides / PowerPoint) and want columns to line
 #'   up. Widths are computed once from the combined data.
 #' @param .spec_only If TRUE, return the WebSpec object instead of rendering.
+#' @param .original_call Internal. Overrides the `match.call()` capture used
+#'   by the "View source" panel. Wrapping entry points (e.g. `forest_plot()`)
+#'   pass their own deparsed call so the emitted R chain reflects the user's
+#'   actual top-level call rather than the forwarded `tabviz(...)` shape.
 #'   Useful for programmatic manipulation before rendering.
 #'
 #' @return An htmlwidget object, or a WebSpec object if `.spec_only = TRUE`
@@ -158,6 +166,8 @@ tabviz <- function(
     caption = NULL,
     footnote = NULL,
     watermark = NULL,
+    watermark_color = NULL,
+    watermark_opacity = NULL,
     row_bold = NULL,
     row_italic = NULL,
     row_color = NULL,
@@ -186,6 +196,10 @@ tabviz <- function(
     shared_axis = FALSE,
     shared_column_widths = FALSE,
     .spec_only = FALSE,
+    # Internal: override the match.call() capture. Used by entry points that
+    # wrap tabviz() (e.g. forest_plot()) so their call appears in the
+    # "View source" panel instead of the forwarded `tabviz(...)` shape.
+    .original_call = NULL,
     # Deprecated: pass to viz_forest() on the forest column.
     axis_range = lifecycle::deprecated(),
     axis_ticks = lifecycle::deprecated(),
@@ -202,7 +216,11 @@ tabviz <- function(
   # a WebSpec piped in from a modifier, we can preserve the *earlier*
   # original_call attached to that spec rather than re-capturing this
   # intermediate call.
-  .tabviz_call <- paste(deparse(match.call(), width.cutoff = 500L), collapse = "\n")
+  .tabviz_call <- if (!is.null(.original_call)) {
+    .original_call
+  } else {
+    paste(deparse(match.call(), width.cutoff = 500L), collapse = "\n")
+  }
 
   # Lazy, once-per-day, fail-silent nudge when a newer minor version exists.
   # Gated internally on interactive() + opt-outs; safe to call unconditionally.
@@ -536,6 +554,8 @@ tabviz <- function(
     interaction = interaction,
     labels = labels,
     watermark = watermark %||% NA_character_,
+    watermark_color = watermark_color %||% NA_character_,
+    watermark_opacity = watermark_opacity %||% NA_real_,
     row_bold_col = style_resolved$row_bold,
     row_italic_col = style_resolved$row_italic,
     row_color_col = style_resolved$row_color,

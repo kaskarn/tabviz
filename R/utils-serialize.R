@@ -18,6 +18,8 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     interaction = serialize_interaction(spec@interaction),
     labels = serialize_labels(spec@labels),
     watermark = if (is.na(spec@watermark)) NULL else spec@watermark,
+    watermarkColor = if (is.na(spec@watermark_color)) NULL else spec@watermark_color,
+    watermarkOpacity = if (is.na(spec@watermark_opacity)) NULL else spec@watermark_opacity,
     layout = list(
       plotWidth = theme@layout@plot_width
     ),

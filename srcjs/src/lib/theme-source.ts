@@ -78,7 +78,12 @@ export function generateThemeSource(
   baseThemeName: string,
   edits: ThemeEdits,
 ): string {
-  const lines: string[] = [`web_theme_${baseThemeName}()`];
+  // Tidyverse pipe style: `|>` at end of previous line, next call indented
+  // on the following line. Matches the op-recorder's table-ops emitter so
+  // the Combined tab renders with consistent wrapping.
+
+  // Collect set_* blocks in order, then stitch with " |>\n" separators.
+  const blocks: string[] = [`web_theme_${baseThemeName}()`];
 
   for (const section of SECTION_ORDER) {
     const fn = SECTION_TO_R_FN[section];
@@ -104,18 +109,13 @@ export function generateThemeSource(
 
     if (args.length === 0) continue;
 
-    // Single arg on one line, multiple args across lines for readability.
     if (args.length === 1) {
-      lines.push(`${INDENT}|> ${fn}(${args[0]})`);
+      blocks.push(`${INDENT}${fn}(${args[0]})`);
     } else {
-      lines.push(`${INDENT}|> ${fn}(`);
-      args.forEach((arg, i) => {
-        const sep = i < args.length - 1 ? "," : "";
-        lines.push(`${INDENT}${INDENT}${arg}${sep}`);
-      });
-      lines.push(`${INDENT})`);
+      const inner = args.map((a, i) => `${INDENT}${INDENT}${a}${i < args.length - 1 ? "," : ""}`);
+      blocks.push(`${INDENT}${fn}(\n${inner.join("\n")}\n${INDENT})`);
     }
   }
 
-  return lines.join("\n");
+  return blocks.join(" |>\n");
 }

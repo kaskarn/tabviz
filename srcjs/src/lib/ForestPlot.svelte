@@ -1150,6 +1150,12 @@
       --wf-summary-fill: ${theme.colors.summaryFill};
       --wf-summary-border: ${theme.colors.summaryBorder};
       --wf-accent: ${theme.colors.accent};
+      --wf-semantic-emphasis-fg: ${theme.semantics?.emphasis?.fg ?? theme.colors.foreground};
+      --wf-semantic-muted-fg:    ${theme.semantics?.muted?.fg    ?? theme.colors.muted};
+      --wf-semantic-accent-fg:   ${theme.semantics?.accent?.fg   ?? theme.colors.accent};
+      --wf-semantic-emphasis-bg: ${theme.semantics?.emphasis?.bg ?? "transparent"};
+      --wf-semantic-muted-bg:    ${theme.semantics?.muted?.bg    ?? "transparent"};
+      --wf-semantic-accent-bg:   ${theme.semantics?.accent?.bg   ?? "transparent"};
       --wf-badge-success: ${BADGE_VARIANTS.success};
       --wf-badge-warning: ${BADGE_VARIANTS.warning};
       --wf-badge-error: ${BADGE_VARIANTS.error};
@@ -1336,7 +1342,12 @@
       <!-- CSS Grid layout: columns in order (leftmost = primary) -->
       <div class="tabviz-main" style:grid-template-columns={gridTemplateColumns}>
         {#if spec?.watermark}
-          <Watermark text={spec.watermark} {theme} />
+          <Watermark
+            text={spec.watermark}
+            color={spec.watermarkColor}
+            opacity={spec.watermarkOpacity}
+            {theme}
+          />
         {/if}
         <!-- Header cells (supports hierarchical column groups).
              Skipped entirely when no column's header is visible. -->

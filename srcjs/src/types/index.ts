@@ -626,6 +626,10 @@ export interface WebSpec {
   layout: LayoutSpec;
   labels?: PlotLabels;
   watermark?: string;
+  /** Watermark text color (CSS color). Cascades from `colors.foreground` when undefined. */
+  watermarkColor?: string;
+  /** Watermark fill-opacity, 0–1. Default 0.07 if undefined. */
+  watermarkOpacity?: number;
   /** Verbatim deparse of the user's original `tabviz(...)` call, captured
    *  R-side. Shown as the baseline line in the "View source" panel above
    *  the recorded fluent operations. Undefined for fluent-api-only specs. */

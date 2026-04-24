@@ -23,12 +23,6 @@
     { key: "borderRadius",  label: "Border radius",   hint: "Rounding on bars / boxes",    min: 0,   max: 12, step: 1 },
   ];
 
-  const borderFields = [
-    { key: "rowBorderWidth",      label: "Row border",       hint: "Between data rows (0 to hide)", min: 0, max: 6, step: 1 },
-    { key: "headerBorderWidth",   label: "Header border",    hint: "Under column headers",          min: 0, max: 6, step: 1 },
-    { key: "rowGroupBorderWidth", label: "Group border",     hint: "Under row-group headers (requires a level border toggle on)", min: 0, max: 6, step: 1 },
-  ];
-
   /**
    * Effect colors are an ordered palette (marker / bar / boxplot / violin across
    * series). Editing any slot writes the full array back so downstream derivations
@@ -53,24 +47,6 @@
         label={f.label}
         hint={f.hint}
         value={(shapes as Record<string, number>)[f.key]}
-        min={f.min}
-        max={f.max}
-        step={f.step}
-        unit="px"
-        onchange={(v) => setField(f.key, v)}
-      />
-    {/each}
-  </SettingsSection>
-
-  <SettingsSection
-    title="Borders"
-    description="Border weights (px). Zero hides the border."
-  >
-    {#each borderFields as f (f.key)}
-      <NumberField
-        label={f.label}
-        hint={f.hint}
-        value={(shapes as Record<string, number>)[f.key] ?? 1}
         min={f.min}
         max={f.max}
         step={f.step}

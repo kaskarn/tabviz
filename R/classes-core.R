@@ -210,6 +210,11 @@ WebSpec <- new_class(
     interaction = new_property(class_any, default = NULL),  # Set in web_spec()
     labels = new_property(class_any, default = NULL),  # PlotLabels for title/subtitle/etc
     watermark = new_property(class_character, default = NA_character_),  # Optional centered diagonal watermark text
+    # Watermark styling. NA defers to `theme.colors.foreground` and 0.07
+    # opacity — the v0.20 baseline. Explicit values let users tweak the
+    # glyph color / visibility from `set_watermark()` or the settings panel.
+    watermark_color = new_property(class_character, default = NA_character_),
+    watermark_opacity = new_property(class_numeric, default = NA_real_),
     # Row-level style column mappings
     row_bold_col = new_property(class_character, default = NA_character_),
     row_italic_col = new_property(class_character, default = NA_character_),

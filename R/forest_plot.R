@@ -109,6 +109,11 @@ forest_plot <- function(
     height = NULL,
     elementId = NULL) {
 
+  # Capture our own call so the emitted "View source" chain reflects the
+  # user's `forest_plot(...)` line instead of the internal `tabviz(...)`
+  # forward. Passed through `.original_call` below.
+  .fp_call <- paste(deparse(match.call(), width.cutoff = 500L), collapse = "\n")
+
   # Handle SplitForest objects directly
   if (S7_inherits(x, SplitForest)) {
     return(forest_plot_split(x, width = width, height = height, elementId = elementId))
@@ -173,7 +178,8 @@ forest_plot <- function(
     width = width,
     height = height,
     elementId = elementId,
-    .spec_only = !is.null(split_by)  # Only get spec if we need to split
+    .spec_only = !is.null(split_by),  # Only get spec if we need to split
+    .original_call = .fp_call
   )
 
   # Add extra args from ...

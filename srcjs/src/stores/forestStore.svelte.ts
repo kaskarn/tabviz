@@ -1721,6 +1721,20 @@ export function createForestStore() {
     opLog = [...opLog, ops.setLabelSlot(field, next)];
   }
 
+  /**
+   * Live-preview a title/subtitle/caption/footnote edit without recording.
+   * Callers wired to `<input oninput={...}>` should use this while the user
+   * types, then call `setLabel()` on blur/Enter to commit one op-log entry
+   * per finished edit.
+   */
+  function previewLabel(
+    field: "title" | "subtitle" | "caption" | "footnote",
+    value: string | null,
+  ) {
+    const next = value == null || value === "" ? null : value;
+    labelEdits = { ...labelEdits, [field]: next };
+  }
+
   function clearLabelEdit(
     field: "title" | "subtitle" | "caption" | "footnote",
   ) {
@@ -1865,6 +1879,23 @@ export function createForestStore() {
       userResizedIds = next;
     }
     opLog = [...opLog, ops.resizeColumn(columnId, w)];
+  }
+
+  /**
+   * Live-preview a column width during drag without recording it to the op
+   * log. Callers should still call `setColumnWidth()` on pointerup to commit
+   * the final settled value — that's the one that ends up in the "View source"
+   * history. Added to keep dragging a single resize handle from emitting
+   * dozens of `resize_column()` records per pixel moved.
+   */
+  function previewColumnWidth(columnId: string, width: number) {
+    const w = Math.max(40, width);
+    columnWidths[columnId] = w;
+    if (!userResizedIds.has(columnId)) {
+      const next = new Set(userResizedIds);
+      next.add(columnId);
+      userResizedIds = next;
+    }
   }
 
   function getColumnWidth(columnId: string): number | undefined {
@@ -2033,6 +2064,32 @@ export function createForestStore() {
     // line reads `set_watermark(NULL)` rather than `set_watermark("")`.
     const text = value === "" ? null : value;
     opLog = [...opLog, ops.setWatermark(text)];
+  }
+
+  /**
+   * Live-preview the watermark text while typing; no op-log emission. UI
+   * callers wired to `<input oninput={...}>` use this; `setWatermark` fires
+   * on blur/Enter to emit one record per finished edit.
+   */
+  function previewWatermark(value: string) {
+    if (!spec) return;
+    spec = { ...spec, watermark: value };
+  }
+
+  /** Set or clear the watermark text color. Non-recorded preview: same
+   *  pattern as color-picker on theme fields. */
+  function setWatermarkColor(value: string | null) {
+    if (!spec) return;
+    spec = { ...spec, watermarkColor: value ?? undefined };
+  }
+
+  /** Set the watermark fill opacity (0–1). Non-recorded for now — opacity
+   *  changes fire on each slider tick and recording each would be noisy;
+   *  this mirrors how we handle theme NumberField edits. */
+  function setWatermarkOpacity(value: number) {
+    if (!spec) return;
+    const clamped = Math.max(0, Math.min(1, value));
+    spec = { ...spec, watermarkOpacity: clamped };
   }
 
   /**
@@ -2720,6 +2777,9 @@ export function createForestStore() {
     setThemeField,
     setSemanticField,
     setWatermark,
+    previewWatermark,
+    setWatermarkColor,
+    setWatermarkOpacity,
     resetThemeEdits,
     sortBy,
     toggleSort,
@@ -2761,6 +2821,7 @@ export function createForestStore() {
     getDisplayValue,
     getLabel,
     setLabel,
+    previewLabel,
     clearLabelEdit,
     getPlotLabel,
     // Paint tool
@@ -2780,6 +2841,7 @@ export function createForestStore() {
     setHovered,
     setTooltip,
     setColumnWidth,
+    previewColumnWidth,
     setPlotWidth,
     setTheme,
     setThemeObject,

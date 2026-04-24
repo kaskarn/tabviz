@@ -8,14 +8,34 @@
     value: string;
     /** Placeholder shown when the input is empty. */
     placeholder?: string;
-    /** Fired on every `input` event. */
-    onchange: (value: string) => void;
+    /**
+     * Live preview on each keystroke. Prefer this for visual updates that
+     * shouldn't be recorded in the op-log (e.g., watermark / title edits
+     * while the user is still typing).
+     */
+    oninput?: (value: string) => void;
+    /**
+     * Fires on blur OR Enter — commit the finished edit. This is the one
+     * whose side effects should record an op (so one keypress session
+     * produces one log entry).
+     */
+    onchange?: (value: string) => void;
   }
 
-  let { label, hint, value, placeholder, onchange }: Props = $props();
+  let { label, hint, value, placeholder, oninput, onchange }: Props = $props();
 
   function handleInput(e: Event) {
-    onchange((e.target as HTMLInputElement).value);
+    oninput?.((e.target as HTMLInputElement).value);
+  }
+
+  function handleBlurOrChange(e: Event) {
+    onchange?.((e.target as HTMLInputElement).value);
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === "Enter") {
+      onchange?.((e.target as HTMLInputElement).value);
+    }
   }
 </script>
 
@@ -27,6 +47,9 @@
     {value}
     {placeholder}
     oninput={handleInput}
+    onchange={handleBlurOrChange}
+    onblur={handleBlurOrChange}
+    onkeydown={handleKeydown}
     spellcheck="false"
     aria-label={label}
   />

@@ -34,24 +34,28 @@
     label="Title"
     placeholder="(none)"
     value={title}
+    oninput={(v) => store.previewLabel("title", v)}
     onchange={(v) => store.setLabel("title", v)}
   />
   <TextField
     label="Subtitle"
     placeholder="(none)"
     value={subtitle}
+    oninput={(v) => store.previewLabel("subtitle", v)}
     onchange={(v) => store.setLabel("subtitle", v)}
   />
   <TextField
     label="Caption"
     placeholder="(none)"
     value={caption}
+    oninput={(v) => store.previewLabel("caption", v)}
     onchange={(v) => store.setLabel("caption", v)}
   />
   <TextField
     label="Footnote"
     placeholder="(none)"
     value={footnote}
+    oninput={(v) => store.previewLabel("footnote", v)}
     onchange={(v) => store.setLabel("footnote", v)}
   />
 </SettingsSection>

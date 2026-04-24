@@ -4,12 +4,16 @@
 \alias{set_watermark}
 \title{Set (or clear) the plot watermark}
 \usage{
-set_watermark(x, text)
+set_watermark(x, text, color = NULL, opacity = NULL)
 }
 \arguments{
 \item{x}{A WebSpec, htmlwidget, or tabviz_proxy.}
 
 \item{text}{Watermark text; \code{NULL} removes the watermark.}
+
+\item{color}{Optional CSS color; \code{NULL} inherits \code{theme.colors.foreground}.}
+
+\item{opacity}{Optional \verb{[0, 1]} fill-opacity; \code{NULL} uses the default \code{0.07}.}
 }
 \value{
 The modified input

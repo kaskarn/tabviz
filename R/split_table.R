@@ -449,7 +449,11 @@ create_subset_spec <- function(base_spec, subset_data, label) {
     row_emphasis_col = base_spec@row_emphasis_col,
     row_muted_col = base_spec@row_muted_col,
     row_accent_col = base_spec@row_accent_col,
-    weight_col = base_spec@weight_col
+    weight_col = base_spec@weight_col,
+    # Carry the base spec's captured original call into every sub-spec so the
+    # "View source" panel can show the user's actual `tabviz()` line rather
+    # than the `tabviz(...)` placeholder.
+    original_call = base_spec@original_call
   )
 }
 

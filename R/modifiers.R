@@ -978,20 +978,30 @@ set_footnote <- function(x, text) set_label_slot(x, "footnote", text)
 #'
 #' @param x A WebSpec, htmlwidget, or tabviz_proxy.
 #' @param text Watermark text; `NULL` removes the watermark.
+#' @param color Optional CSS color; `NULL` inherits `theme.colors.foreground`.
+#' @param opacity Optional `[0, 1]` fill-opacity; `NULL` uses the default `0.07`.
 #' @return The modified input
 #' @export
-set_watermark <- function(x, text) {
+set_watermark <- function(x, text, color = NULL, opacity = NULL) {
   if (!is.null(text)) checkmate::assert_string(text)
+  if (!is.null(color)) checkmate::assert_string(color)
+  if (!is.null(opacity)) checkmate::assert_number(opacity, lower = 0, upper = 1)
 
   transform <- function(spec) {
     spec@watermark <- text %||% NA_character_
+    if (!is.null(color))   spec@watermark_color   <- color
+    if (!is.null(opacity)) spec@watermark_opacity <- opacity
     spec
   }
 
   apply_spec_or_proxy(
     x, transform,
     proxy_method = "setWatermark",
-    proxy_args = list(text = text %||% NA_character_)
+    proxy_args = list(
+      text = text %||% NA_character_,
+      color = color %||% NA_character_,
+      opacity = opacity %||% NA_real_
+    )
   )
 }
 

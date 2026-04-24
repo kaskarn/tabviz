@@ -1,3 +1,75 @@
+# tabviz 0.20.1
+
+## Recorder + configure popover polish
+
+Fixes from the first wave of beta feedback on v0.20.0.
+
+### Recorder
+
+- **Resize emits one record per drag.** The column-resize handler
+  previously pushed a `resize_column()` call on every pointer move,
+  producing dozens of records for a single drag. Dragging now uses a
+  non-recorded `previewColumnWidth()` during the move and commits
+  once on `pointerup`.
+- **Text-input edits emit one record per commit.** Watermark, title,
+  subtitle, caption, and footnote inputs now push a fluent record only
+  on blur or Enter — typing `"DRAFT"` used to emit 5 records, it now
+  emits 1. Added `previewWatermark()` and `previewLabel()` store
+  methods and split `<TextField>`'s callbacks into `oninput` (live
+  preview) and `onchange` (commit).
+- **Theme-source pipe style.** The theme-operations emitter now
+  places `|>` at end of previous line (tidyverse style) matching the
+  table-ops output.
+- **`originalCall` propagates through splits + `forest_plot()`.** Split
+  sub-specs inherit the base spec's captured call; `forest_plot()`
+  captures its own `match.call()` and passes it via the new internal
+  `.original_call` arg to `tabviz()`. The "View source" panel no
+  longer falls back to the `tabviz(...)` placeholder in these cases.
+
+### Watermark
+
+- **Color and opacity are now adjustable.** The Watermark settings
+  section gains a color swatch and an opacity slider; the `set_watermark()`
+  modifier accepts `color` and `opacity` args; `tabviz()` accepts
+  `watermark_color` and `watermark_opacity` too. Defaults preserve the
+  pre-0.20.1 visuals (inherit foreground, opacity 0.07).
+
+### Column-configure popover
+
+- **Alignment split into Cell / Header.** The segmented control that
+  previously edited `align` while being labeled "Header alignment" now
+  renders two independent segments: **Cell align** (drives `col@align`)
+  and **Header align** (drives `col@headerAlign`, nullable — the
+  "inherit" button clears the override).
+- **Compact inline rows.** Editor fields switch from stacked
+  label-above-control to a single-line `label | control` grid. Makes
+  the popover noticeably denser without touching the slot rows
+  (already inline).
+
+### Theming
+
+- **Semantic edits now update painted cells.** Editing
+  `theme.semantics.accent.fg` (and muted/emphasis) in the Semantics
+  tab previously had no effect on painted cells — `CellContent` read
+  the palette slot directly. Per-token CSS vars are now emitted from
+  the plot container and consumed by cell-level semantic classes, so
+  painted cells re-render immediately when the bundle changes.
+- **Border controls moved to Spacing.** The border-weight knobs
+  (`row_border_width`, `header_border_width`, `row_group_border_width`)
+  added in v0.19 moved from the Viz tab to the Spacing tab — they're
+  spacing concepts, not viz concepts.
+- **"Plot padding" removed from UI.** The field only affected SVG
+  export, not the interactive widget, so having it in the Spacing
+  tab was confusing. Still configurable via `set_spacing(padding = )`
+  in R for SVG exports.
+
+### Known deferred
+
+- Viz-forest's configure popover still uses its own forest-specific
+  layout rather than the multi-effect CRUD editor used by
+  `viz_bar` / `viz_boxplot` / `viz_violin`. Harmonizing this is
+  tracked for a later release.
+
 # tabviz 0.20.0
 
 ## Operation recorder + unified "View source"

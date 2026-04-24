@@ -8,7 +8,17 @@
   import { onMount } from "svelte";
   import type { WebTheme } from "../../types/index.js";
 
-  let { text, theme }: { text: string; theme: WebTheme } = $props();
+  let {
+    text,
+    theme,
+    color,
+    opacity,
+  }: {
+    text: string;
+    theme: WebTheme;
+    color?: string;
+    opacity?: number;
+  } = $props();
 
   let wrapper: HTMLDivElement | undefined = $state();
   let width = $state(0);
@@ -68,8 +78,8 @@
         font-family={theme.typography.fontFamily}
         font-size={fontSize.toFixed(1)}
         font-weight="700"
-        fill={theme.colors.foreground}
-        fill-opacity="0.07"
+        fill={color ?? theme.colors.foreground}
+        fill-opacity={opacity ?? 0.07}
       >{text}</text>
     </svg>
   {/if}

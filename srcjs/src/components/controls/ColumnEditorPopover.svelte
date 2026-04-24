@@ -76,11 +76,14 @@
   let optForestAxisRangeMin = $state<string>("");
   let optForestAxisRangeMax = $state<string>("");
   let optForestAxisTicks = $state<string>(""); // comma-separated
-  // Header alignment (per-column) — an inline control alongside the
-  // header text input so "Header: [ box ] lft|ctr|rgt  [✓show]" fits
-  // on a single row and matches the layout idiom from the advanced
-  // settings pane.
-  let optHeaderAlign = $state<"left" | "center" | "right">("left");
+  // Content alignment (per-column) — drives the column's `align` property
+  // (cell text alignment). Shown in the header row alongside the header
+  // text input and the "show header" checkbox.
+  let optAlign = $state<"left" | "center" | "right">("left");
+  // Header-specific alignment override. `null` = inherit from `optAlign`.
+  // Surfaces as a secondary segmented button row so users can differ
+  // header text alignment from cell alignment when needed.
+  let optHeaderAlign = $state<"left" | "center" | "right" | null>(null);
 
   // ─ Multi-effect viz editor state ──────────────────────────────────────
   //
@@ -119,7 +122,9 @@
       selectedType = ex.type;
       headerText = ex.header ?? "";
       showHeader = resolveShowHeader(ex.showHeader, ex.header);
-      optHeaderAlign = (ex.align as "left" | "center" | "right") ?? "left";
+      optAlign = (ex.align as "left" | "center" | "right") ?? "left";
+      optHeaderAlign =
+        (ex.headerAlign as "left" | "center" | "right" | null | undefined) ?? null;
       slotValues = slotsFromExistingSpec(ex);
       hydrateOptionsFromExisting(ex);
     } else {
@@ -162,7 +167,8 @@
     optForestAxisRangeMin = "";
     optForestAxisRangeMax = "";
     optForestAxisTicks = "";
-    optHeaderAlign = "left";
+    optAlign = "left";
+    optHeaderAlign = null;
     vizEffects = [];
     vizBoxplotMode = "array";
   }
@@ -396,7 +402,7 @@
         : "left";
     const align =
       target?.mode === "configure"
-        ? optHeaderAlign
+        ? optAlign
         : inferredAlign;
 
     const spec: ColumnSpec = {
@@ -405,6 +411,9 @@
       field: primaryField,
       type: selectedType,
       align,
+      // `headerAlign` stays nullish when the user hasn't diverged from
+      // content alignment; renderers fall back to `align` in that case.
+      headerAlign: optHeaderAlign,
       sortable: true,
       isGroup: false,
       showHeader,
@@ -704,9 +713,9 @@
           </div>
         {/each}
 
-        <!-- Compact header row: "Header: [ name box ] L | C | R  [✓ show]"
-             puts the four related controls on one line so the popover is
-             denser. Mirrors the advanced-settings inline-row idiom. -->
+        <!-- Compact header row: "Header: [ name box ] [✓ show]". The
+             alignment controls moved to a dedicated row below so Cell vs
+             Header align can be distinguished. -->
         <div class="header-row">
           <span class="editor-label">Header</span>
           <input
@@ -716,41 +725,67 @@
             placeholder={slotValues[currentDef.slots[0]?.key] ?? "Column header"}
             disabled={!showHeader}
           />
-          <div class="align-seg" role="radiogroup" aria-label="Header alignment">
+          <label class="show-check" title="Show column header">
+            <input type="checkbox" bind:checked={showHeader} />
+            <span>show</span>
+          </label>
+        </div>
+
+        <!-- Alignment row: two independent segments. Cell = content (data
+             cells), Header = column header (inherits Cell by default).
+             `optHeaderAlign = null` means "inherit" — rendered as the
+             dimmed segment state. -->
+        <div class="align-row">
+          <span class="editor-label">Align</span>
+          <div class="align-seg" role="radiogroup" aria-label="Cell alignment">
+            {#each (["left", "center", "right"] as const) as a (a)}
+              <button
+                type="button"
+                class:selected={optAlign === a}
+                onclick={() => (optAlign = a)}
+                title={`Cell align ${a}`}
+                aria-label={`Cell align ${a}`}
+              >
+                {#if a === "left"}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="15" y2="12" /><line x1="3" y1="18" x2="18" y2="18" /></svg>
+                {:else if a === "center"}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="6" y1="12" x2="18" y2="12" /><line x1="4" y1="18" x2="20" y2="18" /></svg>
+                {:else}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="6" y1="18" x2="21" y2="18" /></svg>
+                {/if}
+              </button>
+            {/each}
+          </div>
+          <span class="editor-label ml">Header</span>
+          <div class="align-seg align-seg-header" role="radiogroup" aria-label="Header alignment">
+            <button
+              type="button"
+              class="inherit-btn"
+              class:selected={optHeaderAlign == null}
+              onclick={() => (optHeaderAlign = null)}
+              title="Inherit from cell alignment"
+              aria-label="Inherit header alignment from cell"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7" /></svg>
+            </button>
             {#each (["left", "center", "right"] as const) as a (a)}
               <button
                 type="button"
                 class:selected={optHeaderAlign === a}
                 onclick={() => (optHeaderAlign = a)}
-                title={`Align ${a}`}
-                aria-label={`Align ${a}`}
+                title={`Header align ${a}`}
+                aria-label={`Header align ${a}`}
               >
                 {#if a === "left"}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <line x1="3" y1="12" x2="15" y2="12" />
-                    <line x1="3" y1="18" x2="18" y2="18" />
-                  </svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="15" y2="12" /><line x1="3" y1="18" x2="18" y2="18" /></svg>
                 {:else if a === "center"}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <line x1="6" y1="12" x2="18" y2="12" />
-                    <line x1="4" y1="18" x2="20" y2="18" />
-                  </svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="6" y1="12" x2="18" y2="12" /><line x1="4" y1="18" x2="20" y2="18" /></svg>
                 {:else}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <line x1="9" y1="12" x2="21" y2="12" />
-                    <line x1="6" y1="18" x2="21" y2="18" />
-                  </svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="6" y1="18" x2="21" y2="18" /></svg>
                 {/if}
               </button>
             {/each}
           </div>
-          <label class="show-check" title="Show column header">
-            <input type="checkbox" bind:checked={showHeader} />
-            <span>show</span>
-          </label>
         </div>
 
         <!-- Type-specific options -->
@@ -1178,12 +1213,30 @@
     gap: 14px;
   }
 
-  /* Compact single-line "Header: [input] L|C|R [✓show]" row. */
+  /* Compact single-line "Header: [input] [✓show]" row. */
   .header-row {
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 2px 0;
+  }
+
+  /* Alignment row: `Align: [seg]  Header: [inherit|seg]`. Lets the user
+     pick cell and header alignment independently. */
+  .align-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+  }
+  .align-row .editor-label.ml {
+    margin-left: 6px;
+  }
+  .align-seg-header .inherit-btn[class] {
+    opacity: 0.6;
+  }
+  .align-seg-header .inherit-btn.selected {
+    opacity: 1;
   }
   .editor-label {
     font-size: 11px;
@@ -1243,15 +1296,28 @@
     flex-direction: column;
     gap: 8px;
   }
+  /* Compact inline layout: `label | control`. Labels sit to the left in a
+     fixed column so consecutive fields line up. Two-up rows nest via
+     `.editor-row` which switches to a flex layout with `gap`. */
   .editor-field {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 1px 0;
   }
   .editor-field > span {
     font-size: 11px;
     color: var(--wf-secondary, #64748b);
     font-weight: 500;
+  }
+  /* When editor-fields are arranged horizontally (e.g. Prefix | Suffix),
+     drop the wide label column — the grid would eat the row width. */
+  .editor-row .editor-field {
+    grid-template-columns: auto 1fr;
+  }
+  .editor-row .editor-field > span {
+    white-space: nowrap;
   }
   .col-editor-popover input[type="text"],
   .col-editor-popover input[type="number"],

@@ -18,6 +18,8 @@ tabviz(
   caption = NULL,
   footnote = NULL,
   watermark = NULL,
+  watermark_color = NULL,
+  watermark_opacity = NULL,
   row_bold = NULL,
   row_italic = NULL,
   row_color = NULL,
@@ -46,6 +48,7 @@ tabviz(
   shared_axis = FALSE,
   shared_column_widths = FALSE,
   .spec_only = FALSE,
+  .original_call = NULL,
   axis_range = lifecycle::deprecated(),
   axis_ticks = lifecycle::deprecated(),
   axis_gridlines = lifecycle::deprecated(),
@@ -91,7 +94,13 @@ column picker (for sensitive or internal-only fields).}
 
 \item{footnote}{Footnote (displayed below caption, italicized)}
 
-\item{watermark}{Optional watermark text (e.g. \code{"DRAFT"}, \code{"CONFIDENTIAL"})
+\item{watermark}{Optional watermark text (e.g. \code{"DRAFT"}, \code{"CONFIDENTIAL"})}
+
+\item{watermark_color}{Optional CSS color for the watermark; inherits
+\code{theme.colors.foreground} when \code{NULL}.}
+
+\item{watermark_opacity}{Optional \verb{[0, 1]} fill-opacity for the watermark;
+defaults to \code{0.07}.
 rendered behind the table rows at low opacity. The text is centered over
 the rows region and rotated to follow that region's diagonal, so the angle
 adapts to the table's aspect ratio. Theme-aware: uses the foreground color.
@@ -167,7 +176,12 @@ shares identical per-column widths. Default \code{FALSE}. Set \code{TRUE} when y
 plan to stack screenshots (slides / PowerPoint) and want columns to line
 up. Widths are computed once from the combined data.}
 
-\item{.spec_only}{If TRUE, return the WebSpec object instead of rendering.
+\item{.spec_only}{If TRUE, return the WebSpec object instead of rendering.}
+
+\item{.original_call}{Internal. Overrides the \code{match.call()} capture used
+by the "View source" panel. Wrapping entry points (e.g. \code{forest_plot()})
+pass their own deparsed call so the emitted R chain reflects the user's
+actual top-level call rather than the forwarded \code{tabviz(...)} shape.
 Useful for programmatic manipulation before rendering.}
 
 \item{axis_range}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Pass \code{axis_range}

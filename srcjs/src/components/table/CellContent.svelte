@@ -52,18 +52,25 @@
     font-style: italic;
   }
 
-  /* Semantic styling - matches row-level classes */
+  /* Semantic styling — reads from per-token bundle vars emitted by
+     ForestPlot.svelte (cssVars), so editing `theme.semantics.*.fg/bg` in the
+     Settings panel immediately updates every painted cell. Each var
+     cascades from the corresponding palette slot when the bundle entry is
+     null, preserving pre-v0.20.1 visuals. */
   .cell-emphasis {
     font-weight: var(--wf-font-weight-bold, 600);
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--wf-semantic-emphasis-fg, var(--wf-fg, #1a1a1a));
+    background-color: var(--wf-semantic-emphasis-bg, transparent);
   }
 
   .cell-muted {
-    color: var(--wf-muted, #94a3b8);
+    color: var(--wf-semantic-muted-fg, var(--wf-muted, #94a3b8));
+    background-color: var(--wf-semantic-muted-bg, transparent);
   }
 
   .cell-accent {
-    color: var(--wf-accent, #8b5cf6);
+    color: var(--wf-semantic-accent-fg, var(--wf-accent, #8b5cf6));
+    background-color: var(--wf-semantic-accent-bg, transparent);
   }
 
   .cell-icon {
