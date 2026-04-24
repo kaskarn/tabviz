@@ -493,13 +493,7 @@ interface InternalLayout extends ComputedLayout {
 
 function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number = 0): InternalLayout {
   const theme = spec.theme;
-  // Effective row height: configured rowHeight + vertical padding on both
-  // sides. Mirrors the live widget, where CSS Grid auto-sizes rows to
-  // `rowHeight + 2 * cellPaddingY` because padding can overflow the
-  // specified height. Without the +2*padding here, the SVG export placed
-  // markers at different Y positions than the visible rows.
-  const rowCellPaddingY = theme.spacing.cellPaddingY ?? 4;
-  const rowHeight = theme.spacing.rowHeight + 2 * rowCellPaddingY;
+  const rowHeight = theme.spacing.rowHeight;
   const padding = theme.spacing.padding;
 
   // Ensure columns is an array (guard against R serialization issues)

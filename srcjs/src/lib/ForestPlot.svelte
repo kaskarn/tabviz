@@ -1181,7 +1181,7 @@
       --wf-font-weight-bold: ${theme.typography.fontWeightBold};
       --wf-line-height: ${theme.typography.lineHeight};
       --wf-header-font-scale: ${theme.typography.headerFontScale ?? 1.05};
-      --wf-row-height: ${theme.spacing.rowHeight + 2 * theme.spacing.cellPaddingY}px;
+      --wf-row-height: ${theme.spacing.rowHeight}px;
       --wf-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
       --wf-header-height: ${anyHeaderVisible ? theme.spacing.headerHeight : 0}px;
       --wf-header-row-height: ${anyHeaderVisible ? theme.spacing.headerHeight / headerDepth : 0}px;
