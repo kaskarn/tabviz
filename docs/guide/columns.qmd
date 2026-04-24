@@ -130,9 +130,9 @@ options_data <- data.frame(
 tabviz(options_data, label = "item",
   columns = list(
     col_n("n",                              "Count"),
-    col_n("n",        abbreviate = TRUE,    "Abbreviated"),
+    col_n("n",        abbreviate = TRUE,    "Abbreviated", id = "n_abbr"),
     col_numeric("value", decimals = 2,      "2 decimals"),
-    col_numeric("value", digits   = 3,      "3 sig figs"),
+    col_numeric("value", digits   = 3,      "3 sig figs",   id = "value_sigfig"),
     col_percent("rate",                     "Percent")
   )
 )
