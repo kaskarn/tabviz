@@ -3564,13 +3564,18 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       const targetWidth = diag * 0.7;
       const rawSize = targetWidth / Math.max(1, spec.watermark.length * charFactor);
       const fontSize = Math.max(20, Math.min(200, rawSize));
+      // Honor spec-level watermarkColor / watermarkOpacity (v0.20.1+); fall
+      // back to foreground @ 0.07 for specs authored before those fields
+      // existed.
+      const wmFill = spec.watermarkColor ?? theme.colors.foreground;
+      const wmOpacity = spec.watermarkOpacity ?? 0.07;
       parts.push(
         `<text x="${cx}" y="${cy}" ` +
         `transform="rotate(${angleDeg.toFixed(2)} ${cx} ${cy})" ` +
         `text-anchor="middle" dominant-baseline="middle" ` +
         `font-family="${theme.typography.fontFamily}" ` +
         `font-size="${fontSize.toFixed(1)}" font-weight="700" ` +
-        `fill="${theme.colors.foreground}" fill-opacity="0.07" ` +
+        `fill="${wmFill}" fill-opacity="${wmOpacity}" ` +
         `style="pointer-events:none; user-select:none">${escapeXml(spec.watermark)}</text>`
       );
     }
