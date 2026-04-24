@@ -107,7 +107,11 @@ Spacing <- new_class(
     column_group_padding = new_property(class_numeric, default = 8),
     row_group_padding    = new_property(class_numeric, default = 0),
     cell_padding_x = new_property(class_numeric, default = 10),
-    cell_padding_y = new_property(class_numeric, default = 4)
+    cell_padding_y = new_property(class_numeric, default = 4),
+    # Vertical gap between the plot/axis region and the footer band (caption
+    # + footnote). Applied as padding-top on `.plot-footer`; SVG export
+    # honors it too.
+    footer_gap = new_property(class_numeric, default = 8)
   )
 )
 
@@ -1022,6 +1026,9 @@ set_typography <- function(
 #'   `row_group_padding`. Still accepted; forwards to `column_group_padding`.
 #' @param cell_padding_x Horizontal cell padding in pixels (default: 10)
 #' @param cell_padding_y Vertical cell padding in pixels (default: 4)
+#' @param footer_gap Vertical gap between the plot region and the footer
+#'   band (caption + footnote), in pixels (default: 8). Applied both on
+#'   the interactive widget and in SVG exports.
 #'
 #' @return Modified WebTheme object
 #' @export
@@ -1039,6 +1046,7 @@ set_spacing <- function(
     row_group_padding = NULL,
     cell_padding_x = NULL,
     cell_padding_y = NULL,
+    footer_gap = NULL,
     group_padding = lifecycle::deprecated()
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
@@ -1062,6 +1070,7 @@ set_spacing <- function(
   if (!is.null(row_group_padding)) current@row_group_padding <- row_group_padding
   if (!is.null(cell_padding_x)) current@cell_padding_x <- cell_padding_x
   if (!is.null(cell_padding_y)) current@cell_padding_y <- cell_padding_y
+  if (!is.null(footer_gap)) current@footer_gap <- footer_gap
 
   theme@spacing <- current
   theme

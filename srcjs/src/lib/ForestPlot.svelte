@@ -1080,10 +1080,20 @@
     if (!resizingColumn) return;
     const delta = e.clientX - columnStartX;
     const newWidth = Math.max(40, columnStartWidth + delta); // Min width 40px
-    store.setColumnWidth(resizingColumn, newWidth);
+    // Live preview during drag — no op-log emission. Commit on pointerup.
+    // Previously every pointermove recorded `resize_column(...)` which
+    // spammed the recorder with dozens of entries for a single drag.
+    store.previewColumnWidth(resizingColumn, newWidth);
   }
 
-  function stopColumnResize() {
+  function stopColumnResize(e: PointerEvent) {
+    if (resizingColumn) {
+      const delta = e.clientX - columnStartX;
+      const newWidth = Math.max(40, columnStartWidth + delta);
+      // One recorded `resize_column()` per drag gesture — the settled
+      // width on release rather than every intermediate pixel.
+      store.setColumnWidth(resizingColumn, newWidth);
+    }
     resizingColumn = null;
     document.removeEventListener("pointermove", onColumnResize);
     document.removeEventListener("pointerup", stopColumnResize);
@@ -1183,6 +1193,7 @@
       --wf-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
       --wf-axis-height: ${layout.axisHeight}px;
       --wf-group-padding: ${theme.spacing.groupPadding ?? 8}px;
+      --wf-footer-gap: ${theme.spacing.footerGap ?? 8}px;
       --wf-plot-width: ${layout.forestWidth}px;
       --wf-point-size: ${theme.shapes.pointSize}px;
       --wf-line-width: ${theme.shapes.lineWidth}px;

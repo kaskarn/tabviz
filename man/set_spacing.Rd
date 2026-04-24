@@ -15,6 +15,7 @@ set_spacing(
   row_group_padding = NULL,
   cell_padding_x = NULL,
   cell_padding_y = NULL,
+  footer_gap = NULL,
   group_padding = lifecycle::deprecated()
 )
 }
@@ -42,6 +43,10 @@ per-depth indentation.}
 \item{cell_padding_x}{Horizontal cell padding in pixels (default: 10)}
 
 \item{cell_padding_y}{Vertical cell padding in pixels (default: 4)}
+
+\item{footer_gap}{Vertical gap between the plot region and the footer
+band (caption + footnote), in pixels (default: 8). Applied both on
+the interactive widget and in SVG exports.}
 
 \item{group_padding}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Renamed to
 \code{column_group_padding} in 0.16.0 to disambiguate from

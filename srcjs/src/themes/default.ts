@@ -41,6 +41,7 @@ export const defaultSpacing: Spacing = {
   axisGap: 12,
   columnGroupPadding: 8,
   rowGroupPadding: 0,
+  footerGap: 8,
   groupPadding: 8, // deprecated alias
 };
 

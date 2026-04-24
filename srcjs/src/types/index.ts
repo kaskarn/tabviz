@@ -465,6 +465,9 @@ export interface Spacing {
   // Row-group header indentation (applies per nesting depth in addition to
   // the theme's natural level indentation).
   rowGroupPadding: number;
+  // Vertical gap between the plot region and the footer band (caption +
+  // footnote). Added in v0.21.x.
+  footerGap?: number;
   /** @deprecated Alias for columnGroupPadding. Emitted by the R serializer
    *  for back-compat; reads here should migrate to columnGroupPadding. */
   groupPadding: number;

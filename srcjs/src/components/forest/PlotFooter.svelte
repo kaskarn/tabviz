@@ -72,7 +72,10 @@
 
 <style>
   .plot-footer {
-    padding: 8px 12px 12px 2px;
+    /* Top padding is themable via `spacing.footer_gap` (R) /
+       `spacing.footerGap` (JS) so authors can tighten or loosen the gap
+       between the plot / axis region and the caption band. */
+    padding: var(--wf-footer-gap, 8px) 12px 12px 2px;
     border-top: 1px solid var(--wf-border, #e2e8f0);
   }
 

@@ -454,6 +454,7 @@ serialize_theme <- function(theme) {
       axisGap = theme@spacing@axis_gap,
       columnGroupPadding = theme@spacing@column_group_padding,
       rowGroupPadding    = theme@spacing@row_group_padding,
+      footerGap          = theme@spacing@footer_gap,
       # Back-compat alias: serialize the new field under the old name too so
       # any frontend code still reading `groupPadding` keeps working while
       # downstream consumers migrate. Remove once all call sites use the

@@ -37,6 +37,7 @@
     { key: "axisGap",             label: "Axis gap",            hint: "Space between rows region and the axis line",       min: 0, max: 40 },
     { key: "columnGroupPadding",  label: "Column group padding",hint: "Left/right padding on spanning column headers",    min: 0, max: 40 },
     { key: "rowGroupPadding",     label: "Row group padding",   hint: "Extra horizontal padding for row-group header rows",min: 0, max: 40 },
+    { key: "footerGap",           label: "Footer gap",          hint: "Vertical space between plot / axis and the caption / footnote band", min: 0, max: 40 },
     { key: "containerPadding",    label: "Container padding",   hint: "Outer padding around the whole widget (interactive + SVG export)", min: 0, max: 40 },
   ];
 

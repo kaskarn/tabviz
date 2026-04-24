@@ -682,7 +682,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     subtitleY: padding + titleHeight + titleSubtitleGap + TYPOGRAPHY.SUBTITLE_HEIGHT - 4,
     mainY: headerTextHeight + padding,
     // Footer Y: Match web view's layout (axisHeight + 8px footer padding-top)
-    footerY: headerTextHeight + padding + headerHeight + plotHeight + webAxisHeight + 8,
+    // Footer Y: axis region + themed footer gap (spacing.footer_gap).
+    footerY: headerTextHeight + padding + headerHeight + plotHeight + webAxisHeight + (theme.spacing.footerGap ?? 8),
     axisGap,
     rowsHeight,
     autoWidths,
@@ -1188,8 +1189,10 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
   // Draw footer border (1px) when caption or footnote exists, matching web view's PlotFooter border-top
   const hasFooter = !!spec.labels?.caption || !!spec.labels?.footnote;
   if (hasFooter) {
-    // Border is 8px above the text (footerY includes the 8px padding gap)
-    const borderY = layout.footerY - 8;
+    // Border sits `footer_gap` above the text baseline — footerY already
+    // includes the themed gap.
+    const gap = theme.spacing.footerGap ?? 8;
+    const borderY = layout.footerY - gap;
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${borderY}" y2="${borderY}"
       stroke="${theme.colors.border}" stroke-width="1"/>`);
