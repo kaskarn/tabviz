@@ -725,7 +725,16 @@ export function createForestStore() {
       };
     }
 
-    const rowHeight = spec.theme.spacing.rowHeight;
+    // Effective row height = configured rowHeight + vertical cell padding on
+    // both sides. The CSS applies padding via `.grid-cell { padding: ... }`
+    // which (despite box-sizing: border-box) can overflow a fixed `height`
+    // when padding exceeds the height, making the rendered row taller than
+    // `spacing.rowHeight` alone. For the forest overlay / SVG export to
+    // stay aligned with the grid, layout computations need to use the
+    // same effective value. Spacer rows are still half-height (no text,
+    // no padding contribution).
+    const cellPaddingY = spec.theme.spacing.cellPaddingY ?? 4;
+    const rowHeight = spec.theme.spacing.rowHeight + 2 * cellPaddingY;
     const headerHeight = spec.theme.spacing.headerHeight;
     const axisGap = spec.theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP; // Gap between table and axis
     // Axis height: gap + axis line/ticks + axis label text

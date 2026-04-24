@@ -493,7 +493,13 @@ interface InternalLayout extends ComputedLayout {
 
 function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number = 0): InternalLayout {
   const theme = spec.theme;
-  const rowHeight = theme.spacing.rowHeight;
+  // Effective row height: configured rowHeight + vertical padding on both
+  // sides. Mirrors the live widget, where CSS Grid auto-sizes rows to
+  // `rowHeight + 2 * cellPaddingY` because padding can overflow the
+  // specified height. Without the +2*padding here, the SVG export placed
+  // markers at different Y positions than the visible rows.
+  const rowCellPaddingY = theme.spacing.cellPaddingY ?? 4;
+  const rowHeight = theme.spacing.rowHeight + 2 * rowCellPaddingY;
   const padding = theme.spacing.padding;
 
   // Ensure columns is an array (guard against R serialization issues)
@@ -658,9 +664,19 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const webAxisHeight = hasAxisColumn
     ? axisGap + LAYOUT.AXIS_HEIGHT + LAYOUT.AXIS_LABEL_HEIGHT
     : 0;
+  // Include the themed footer gap when there's a footer to render — the
+  // gap sits between the plot/axis area and the caption/footnote text. If
+  // we leave it out, totalHeight was smaller than footerY + text, so the
+  // last row (or the footer) got truncated in specs with no viz column
+  // (where `webAxisHeight === 0` meant less buffer space to absorb the
+  // mismatch).
+  const footerGap = (spec.labels?.caption || spec.labels?.footnote)
+    ? (theme.spacing.footerGap ?? 8)
+    : 0;
   const totalHeight = headerTextHeight + padding +
     headerHeight + plotHeight +
     webAxisHeight +
+    footerGap +
     footerTextHeight +
     LAYOUT.BOTTOM_MARGIN;
 
