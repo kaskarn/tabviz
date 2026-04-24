@@ -24,8 +24,8 @@
   .settings-section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 14px 0;
+    gap: 6px;
+    padding: 8px 0;
   }
 
   .settings-section + :global(.settings-section) {
@@ -35,27 +35,28 @@
   .section-header {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
   }
 
   h3 {
     margin: 0;
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.01em;
-    color: var(--wf-fg, #1a1a1a);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: color-mix(in srgb, var(--wf-secondary, #64748b) 85%, var(--wf-fg, #1a1a1a));
   }
 
   .description {
     margin: 0;
-    font-size: 0.75rem;
-    line-height: 1.4;
-    color: color-mix(in srgb, var(--wf-secondary, #64748b) 95%, transparent);
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    color: color-mix(in srgb, var(--wf-secondary, #64748b) 85%, transparent);
   }
 
   .section-body {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
   }
 </style>

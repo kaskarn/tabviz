@@ -94,8 +94,19 @@
   const hasVizColumns = $derived(vizColumns.length > 0);
   const primaryColumnId = $derived(store.primaryColumnId);
 
-  // Check if title/subtitle area is shown (for header area and top table border)
-  const hasPlotHeader = $derived(!!spec?.labels?.title || !!spec?.labels?.subtitle);
+  // Plot-level labels — prefer session edits over the R-supplied values so
+  // dblclick/Add-label flows round-trip through the widget without waiting
+  // for a round-trip back to the store's exportSpec.
+  const labelTitle = $derived(store.getPlotLabel("title"));
+  const labelSubtitle = $derived(store.getPlotLabel("subtitle"));
+  const labelCaption = $derived(store.getPlotLabel("caption"));
+  const labelFootnote = $derived(store.getPlotLabel("footnote"));
+
+  // Whether the header area should render — always true when the user can
+  // edit (so the "Add title…" affordance has somewhere to live), otherwise
+  // only when a real label exists (preserves pre-edit visual behavior).
+  const labelsEditable = $derived(!!spec?.interaction?.enableEdit);
+  const hasPlotHeader = $derived(!!labelTitle || !!labelSubtitle || labelsEditable);
 
   // Check if we have column groups (need two-row header)
   const hasColumnGroups = $derived(
@@ -1082,6 +1093,35 @@
     store.setTooltip(null, null);
   }
 
+  /**
+   * Paint-aware row / cell click handler. When the paint tool is active
+   * with `scope = "row"`, clicking a row toggles the active semantic flag
+   * on it instead of selecting it. Cell-scope paint routes through
+   * `handleCellClick(row, field)` below.
+   *
+   * When no paint tool is active, falls through to the normal row-select
+   * behavior so authoring mode is the opt-in branch.
+   */
+  function handleRowClick(row: { id: string }) {
+    const tool = store.paintTool;
+    if (tool && tool.scope === "row") {
+      const current = store.getRowSemantic(row as unknown as import("$types").Row, tool.token);
+      store.setRowSemantic(row.id, tool.token, !current);
+      return;
+    }
+    store.selectRow(row.id);
+  }
+
+  function handleCellClick(row: { id: string }, field: string) {
+    const tool = store.paintTool;
+    if (tool && tool.scope === "cell") {
+      const current = store.getCellSemantic(row as unknown as import("$types").Row, field, tool.token);
+      store.setCellSemantic(row.id, field, tool.token, !current);
+      return;
+    }
+    store.selectRow(row.id);
+  }
+
   // CSS variable style string (includes shared rendering constants for consistency)
   const cssVars = $derived.by(() => {
     if (!theme) return '';
@@ -1151,6 +1191,9 @@
   class:has-max-width={maxWidth !== null}
   class:has-max-height={maxHeight !== null}
   class:zoomed={zoom !== 1.0}
+  class:paint-active={!!store.paintTool}
+  data-paint-scope={store.paintTool?.scope ?? undefined}
+  data-paint-token={store.paintTool?.token ?? undefined}
   data-zoom="{Math.round(actualScale * 100)}%"
   style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight}px` : ''}"
 >
@@ -1166,7 +1209,18 @@
     <div bind:this={scalableRef} class="tabviz-scalable" style:margin-left="{centeringMargin}px">
       <!-- Plot header (title, subtitle) - only when there's a title/subtitle -->
       {#if hasPlotHeader}
-        <PlotHeader title={spec.labels?.title} subtitle={spec.labels?.subtitle} />
+        <PlotHeader
+          title={labelTitle}
+          subtitle={labelSubtitle}
+          enableEdit={labelsEditable}
+          onedit={(field, anchor) => store.startEdit({
+            rowId: "",
+            field: "",
+            labelField: field,
+            x: anchor.getBoundingClientRect().left,
+            y: anchor.getBoundingClientRect().top,
+          })}
+        />
       {/if}
 
       <!-- Snippet for rendering cell content based on column type -->
@@ -1442,7 +1496,7 @@
                   if (isGroupHeader) startRowPointerDown(e, "row_group", displayRow.group.id, displayRow.group.parentId ?? "__root__");
                   else if (row) startRowPointerDown(e, "row", row.id, row.groupId ?? "__root__");
                 } : undefined}
-                onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => store.selectRow(row.id) : undefined}
+                onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => handleCellClick(row, column.field) : undefined}
                 ondblclick={!isGroupHeader && row && spec?.interaction.enableEdit && isEditableColumn(column) ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
                 onkeydown={isGroupHeader ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id) : undefined}
                 onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
@@ -1479,7 +1533,7 @@
                 style={rowStyles || undefined}
                 onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
                 onmouseleave={row ? () => handleRowLeave() : undefined}
-                onclick={row ? () => store.selectRow(row.id) : undefined}
+                onclick={row ? () => handleCellClick(row, column.field) : undefined}
               ></div>
             {:else}
               <!-- Regular column cell. Click/hover are row-level affordances;
@@ -1507,7 +1561,7 @@
                 style={rowStyles || undefined}
                 onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
                 onmouseleave={row ? () => handleRowLeave() : undefined}
-                onclick={row ? () => store.selectRow(row.id) : undefined}
+                onclick={row ? () => handleCellClick(row, column.field) : undefined}
                 ondblclick={editableHere && row ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
               >
                 {#if row}
@@ -1653,7 +1707,7 @@
                   {isLog}
                   weightCol={spec.data.weightCol}
                   forestColumnOptions={forestOpts}
-                  onRowClick={() => store.selectRow(displayRow.row.id)}
+                  onRowClick={() => handleRowClick(displayRow.row)}
                   onRowHover={(hovered, event) => {
                     store.setHovered(hovered ? displayRow.row.id : null);
                     if (hovered && event) {
@@ -1961,7 +2015,18 @@
       </div>
 
       <!-- Plot footer (caption, footnote) -->
-      <PlotFooter caption={spec.labels?.caption} footnote={spec.labels?.footnote} />
+      <PlotFooter
+        caption={labelCaption}
+        footnote={labelFootnote}
+        enableEdit={labelsEditable}
+        onedit={(field, anchor) => store.startEdit({
+          rowId: "",
+          field: "",
+          labelField: field,
+          x: anchor.getBoundingClientRect().left,
+          y: anchor.getBoundingClientRect().top,
+        })}
+      />
     </div>
 
     <!-- Tooltip (only shown if tooltipFields is specified) -->
@@ -2195,6 +2260,23 @@
     /* Note: overflow is set in auto-fit/non-auto-fit specific rules below */
     display: flex;
     flex-direction: column;
+  }
+
+  /* Paint-tool cursor feedback. When the widget is in paint mode the
+     clickable rows / cells wear a cross-hair so authors can spot where
+     their next click will land. A subtle data-row outline on hover
+     completes the affordance. */
+  :global(.tabviz-container.paint-active) .data-cell,
+  :global(.tabviz-container.paint-active) .row-interval-hit {
+    cursor: crosshair;
+  }
+  :global(.tabviz-container.paint-active[data-paint-scope="row"]) .data-cell:hover {
+    outline: 1px dashed color-mix(in srgb, var(--wf-primary, #2563eb) 60%, transparent);
+    outline-offset: -1px;
+  }
+  :global(.tabviz-container.paint-active[data-paint-scope="cell"]) .data-cell:hover {
+    outline: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 70%, transparent);
+    outline-offset: -1px;
   }
 
   /* ============================================================================

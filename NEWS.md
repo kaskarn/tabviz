@@ -1,3 +1,60 @@
+# tabviz 0.15.0
+
+## Interactive authoring pass
+
+Widget chrome and settings-panel UX got tightened across the board based on
+beta feedback.
+
+### New: edit plot labels in the widget
+
+Title, subtitle, caption, and footnote are now editable in two places:
+
+- **Double-click** any existing label in the widget to rename it (or press
+  Enter / F2 when focused). When `interaction.enableEdit` is on and a label is
+  absent, a faded "Add title…" / "Add subtitle…" / "Add caption…" /
+  "Add footnote…" affordance appears in its slot — clicking it opens the same
+  inline editor.
+- The **Basics** tab in the settings panel gains four text fields (Title,
+  Subtitle, Caption, Footnote) that share the same state.
+
+Session edits round-trip through `exportSpec` so `save_plot()` picks them up.
+
+### New: paint tool for semantic classes
+
+A new **paint-brush** button on the toolbar opens a small popover with three
+token chips — Emphasis / Muted / Accent — and a Row / Cell scope toggle.
+Pick a token, then click rows or cells to stamp the matching semantic flag
+onto them. Clicking the same row/cell again clears the flag. Escape exits
+paint mode; "Clear paint" wipes all session overrides.
+
+Painted state merges into `visibleRows` and `exportSpec`, so the interactive
+widget, `save_plot()`, and (future) view-source all see the same flags.
+Paint coexists with R-supplied `row_emphasis = <col>` etc.: the column sets
+the baseline, paint overrides per row.
+
+### Compact widget chrome
+
+- **Toolbar shrunk** from 32 × 32 buttons with 16 px icons down to 22 × 22
+  with 13 px icons, moved to `top: 2px; right: 4px`. The toolbar now sits at
+  roughly the same height as the title row rather than bleeding into data.
+- **Settings tabs** replaced the horizontal scroll strip with a compact
+  native `<select>`. Removed the fade-indicator plumbing; no more missed
+  tabs at narrow panel widths.
+- **Settings content** tightened: inline label + input rows, hints moved
+  from a second line to `title=""` tooltips, smaller swatches (20 → 18 px),
+  tighter section spacing. Roughly doubles the number of controls visible
+  without scrolling in a 320–440 px panel.
+
+### Fixed: Reset / theme-switch confirm dialogs
+
+Clicking "Yes" on the Reset-all-edits confirm or the theme-switch confirm
+used to occasionally do nothing. The store mutation and the dialog close
+were happening in the same synchronous frame; under Svelte 5's fine-grained
+reactivity that sometimes raced with the portal unmount effect, leaving the
+widget showing the pre-reset state. Both `confirmReset` (SettingsPanel) and
+`confirmPendingSwap` (ThemeSwitcher) now defer the close via
+`queueMicrotask` so the store mutation flushes first.
+
 # tabviz 0.14.0
 
 ## Theme audit: bug fixes, dead-field cleanup, accessibility

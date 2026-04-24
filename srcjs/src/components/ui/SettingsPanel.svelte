@@ -62,34 +62,13 @@
     showBottomFade = overflowing && !atBottom;
   }
 
-  // Same pattern for the horizontal tab strip. Beta users reported not
-  // realizing they could scroll to reach off-screen tabs — with the
-  // scrollbar hidden (by design, for a clean bar), there was no cue that
-  // more tabs existed. Fades bookend the strip only on the sides with
-  // hidden content.
-  let tabsEl = $state<HTMLElement | null>(null);
-  let showTabsLeftFade = $state(false);
-  let showTabsRightFade = $state(false);
-
-  function updateTabsHint() {
-    if (!tabsEl) {
-      showTabsLeftFade = false;
-      showTabsRightFade = false;
-      return;
-    }
-    const { scrollWidth, clientWidth, scrollLeft } = tabsEl;
-    const overflowing = scrollWidth > clientWidth + 1;
-    showTabsLeftFade = overflowing && scrollLeft > 0;
-    showTabsRightFade = overflowing && scrollLeft + clientWidth < scrollWidth - 1;
-  }
-
-  // Recompute both hints when the panel opens or the active tab changes.
+  // Recompute the body scroll hint when the panel opens or the active tab
+  // changes (content length varies across tabs).
   $effect(() => {
     void activeTabId; // track
     void open;        // track
     queueMicrotask(() => {
       updateScrollHint();
-      updateTabsHint();
     });
   });
 
@@ -120,12 +99,22 @@
   }
 
   function confirmReset() {
+    // Run the mutations synchronously so the store state is up-to-date
+    // BEFORE the dialog closes. Then defer the close so Svelte 5 has a
+    // chance to flush the `spec = { ...spec, theme: ... }` signal before
+    // the ConfirmDialog's `{#if open}` unmounts its portal — closing in
+    // the same synchronous frame as the mutation has bitten us before
+    // when the dialog's unmount effect fired ahead of theme-propagating
+    // derived recomputes, leaving stale controls on screen even though
+    // spec.theme had already reverted.
     store.resetThemeEdits();
     // Banding overrides live outside of themeEdits but feel like "edits" to
     // the user; reset them too so the button means "start fresh".
     store.setBandingOverride(null);
     store.setBandingStartsWithBand(null);
-    resetConfirmOpen = false;
+    queueMicrotask(() => {
+      resetConfirmOpen = false;
+    });
   }
 </script>
 
@@ -186,29 +175,18 @@
 
       <span class="bar-divider" aria-hidden="true"></span>
 
-      <div class="bar-tabs-wrap">
-        <div
-          class="bar-tabs"
-          role="tablist"
-          aria-label="Settings sections"
-          bind:this={tabsEl}
-          onscroll={updateTabsHint}
+      <label class="tab-select-wrap">
+        <span class="visually-hidden">Settings section</span>
+        <select
+          class="tab-select"
+          aria-label="Settings section"
+          bind:value={activeTabId}
         >
           {#each tabs as tab (tab.id)}
-            <button
-              type="button"
-              role="tab"
-              id="settings-tab-{tab.id}"
-              aria-controls="settings-panel-{tab.id}"
-              aria-selected={activeTabId === tab.id}
-              class:active={activeTabId === tab.id}
-              onclick={() => (activeTabId = tab.id)}
-            >{tab.label}</button>
+            <option value={tab.id}>{tab.label}</option>
           {/each}
-        </div>
-        <div class="bar-tabs-fade left"  class:visible={showTabsLeftFade}  aria-hidden="true"></div>
-        <div class="bar-tabs-fade right" class:visible={showTabsRightFade} aria-hidden="true"></div>
-      </div>
+        </select>
+      </label>
 
       <!--
         Explicit close button. Keeping it visible even though backdrop /
@@ -328,10 +306,10 @@
   .panel-bar {
     display: flex;
     align-items: center;
-    min-height: 40px;
-    padding: 0 10px 0 14px;
+    min-height: 34px;
+    padding: 0 8px 0 12px;
     border-bottom: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
-    gap: 8px;
+    gap: 6px;
   }
 
   .bar-title {
@@ -384,103 +362,45 @@
   }
 
   /**
-   * Tabs live inside a positioned wrapper so left/right fade indicators
-   * can float over the scrollable strip without disturbing scroll metrics.
+   * Tab selector. Native <select> keeps the tab strip compact and reads
+   * well at every panel width — users previously missed tabs that were
+   * scrolled off-screen behind a fade indicator.
    */
-  .bar-tabs-wrap {
-    position: relative;
+  .tab-select-wrap {
     flex: 1;
     min-width: 0;
     display: flex;
+    align-items: center;
   }
 
-  .bar-tabs {
-    display: flex;
-    gap: 2px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    min-width: 0;
+  .tab-select {
     flex: 1;
-  }
-
-  .bar-tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  /*
-   * Horizontal scroll hints. Users with many tabs reported not realizing
-   * the strip scrolls — the fade on each edge gives a visible cue that
-   * content extends past the viewport in that direction.
-   */
-  .bar-tabs-fade {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 28px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.18s ease;
-  }
-
-  .bar-tabs-fade.left {
-    left: 0;
-    background: linear-gradient(
-      to right,
-      var(--wf-bg, #ffffff),
-      color-mix(in srgb, var(--wf-bg, #ffffff) 0%, transparent)
-    );
-  }
-
-  .bar-tabs-fade.right {
-    right: 0;
-    background: linear-gradient(
-      to left,
-      var(--wf-bg, #ffffff),
-      color-mix(in srgb, var(--wf-bg, #ffffff) 0%, transparent)
-    );
-  }
-
-  .bar-tabs-fade.visible {
-    opacity: 1;
-  }
-
-  .bar-tabs button {
-    position: relative;
-    padding: 8px 10px;
-    border: none;
-    background: transparent;
+    min-width: 0;
+    padding: 4px 8px;
+    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 20%, transparent);
+    border-radius: 6px;
+    background: var(--wf-bg, #ffffff);
+    color: var(--wf-fg, #1a1a1a);
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--wf-secondary, #64748b);
     cursor: pointer;
-    white-space: nowrap;
-    transition: color 0.15s ease;
   }
 
-  /* Underline indicator aligned to the panel-bar's bottom border. */
-  .bar-tabs button::after {
-    content: "";
+  .tab-select:focus-visible {
+    outline: 2px solid var(--wf-primary, #2563eb);
+    outline-offset: 1px;
+  }
+
+  .visually-hidden {
     position: absolute;
-    left: 8px;
-    right: 8px;
-    bottom: -1px;
-    height: 2px;
-    background: var(--wf-primary, #2563eb);
-    transform: scaleX(0);
-    transform-origin: center;
-    transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .bar-tabs button.active {
-    color: var(--wf-primary, #2563eb);
-  }
-
-  .bar-tabs button.active::after {
-    transform: scaleX(1);
-  }
-
-  .bar-tabs button:hover:not(.active) {
-    color: var(--wf-fg, #1a1a1a);
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   /**
@@ -495,7 +415,7 @@
 
   .panel-body {
     height: 100%;
-    padding: 4px 16px 16px;
+    padding: 2px 12px 12px;
     overflow-y: auto;
   }
 

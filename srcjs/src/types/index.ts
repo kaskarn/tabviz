@@ -812,6 +812,9 @@ export interface EditTarget {
   // When set, the editor targets a column group's header text instead of a
   // row cell. `rowId` and `field` are unused (pass empty strings).
   groupId?: string;
+  // When set, the editor targets a plot-level label (title/subtitle/caption/
+  // footnote) instead of a cell or group header. `rowId`/`field` are unused.
+  labelField?: "title" | "subtitle" | "caption" | "footnote";
 }
 
 // ============================================================================

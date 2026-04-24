@@ -19,11 +19,8 @@
   }
 </script>
 
-<div class="text-field">
-  <div class="meta">
-    <span class="label">{label}</span>
-    {#if hint}<span class="hint">{hint}</span>{/if}
-  </div>
+<div class="text-field" title={hint}>
+  <span class="label">{label}</span>
   <input
     class="text"
     type="text"
@@ -40,36 +37,25 @@
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 10px;
-    padding: 4px 0;
-  }
-
-  .meta {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+    gap: 8px;
+    padding: 2px 0;
   }
 
   .label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: var(--wf-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
-  }
-
-  .hint {
-    font-size: 0.7rem;
-    color: var(--wf-secondary, #64748b);
-    line-height: 1.3;
+    min-width: 0;
   }
 
   .text {
-    width: 168px;
-    padding: 4px 8px;
+    width: 140px;
+    padding: 3px 6px;
     border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 12%, var(--wf-border, #e2e8f0));
     border-radius: 4px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     background: var(--wf-bg, #ffffff);
     color: var(--wf-fg, #1a1a1a);
     outline: none;

@@ -29,11 +29,8 @@
   without a separate button/sentinel UX. Checked ⇒ inheriting; the inner
   control is hidden. Unchecked ⇒ inner control is live.
 -->
-<div class="optional-field">
-  <div class="meta">
-    <span class="label">{label}</span>
-    {#if hint}<span class="hint">{hint}</span>{/if}
-  </div>
+<div class="optional-field" title={hint}>
+  <span class="label">{label}</span>
   <div class="right">
     <label class="inherit-toggle" title="Inherit theme default">
       <input
@@ -54,40 +51,29 @@
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 10px;
-    padding: 4px 0;
-  }
-
-  .meta {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+    gap: 8px;
+    padding: 2px 0;
   }
 
   .label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: var(--wf-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
-  }
-
-  .hint {
-    font-size: 0.7rem;
-    color: var(--wf-secondary, #64748b);
-    line-height: 1.3;
+    min-width: 0;
   }
 
   .right {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .inherit-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.7rem;
+    gap: 3px;
+    font-size: 0.65rem;
     color: var(--wf-secondary, #64748b);
     cursor: pointer;
     user-select: none;

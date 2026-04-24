@@ -26,11 +26,8 @@
   }
 </script>
 
-<div class="number-field">
-  <div class="meta">
-    <span class="label">{label}</span>
-    {#if hint}<span class="hint">{hint}</span>{/if}
-  </div>
+<div class="number-field" title={hint}>
+  <span class="label">{label}</span>
   <div class="controls">
     <input
       class="range"
@@ -53,34 +50,23 @@
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 10px;
-    padding: 4px 0;
-  }
-
-  .meta {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+    gap: 8px;
+    padding: 2px 0;
   }
 
   .label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: var(--wf-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
-  }
-
-  .hint {
-    font-size: 0.7rem;
-    color: var(--wf-secondary, #64748b);
-    line-height: 1.3;
+    min-width: 0;
   }
 
   .controls {
     display: grid;
-    grid-template-columns: 120px auto;
+    grid-template-columns: 100px auto;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .range {
@@ -90,10 +76,10 @@
 
   .value-display {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--wf-fg, #1a1a1a);
     font-variant-numeric: tabular-nums;
-    min-width: 3.5em;
+    min-width: 3em;
     text-align: right;
   }
 

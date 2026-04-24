@@ -93,6 +93,33 @@ export function createForestStore() {
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
   let cellEdits = $state<CellEdits>({ cells: {}, groups: {} });
 
+  // Plot-level label overrides (title / subtitle / caption / footnote). Keys
+  // match EditTarget.labelField. `null` means "cleared to empty" — the export
+  // path collapses these to `null` on spec.labels so R code round-trips cleanly.
+  let labelEdits = $state<{
+    title?: string | null;
+    subtitle?: string | null;
+    caption?: string | null;
+    footnote?: string | null;
+  }>({});
+
+  // Semantic-flag overrides, set via the paint tool. Structure mirrors
+  // cellEdits: per-row for row-scoped paint, per-cell for cell-scoped paint.
+  // Each entry only records the token whose value differs from the baseline
+  // spec style — missing tokens mean "inherit the R-supplied value".
+  type SemanticToken = "emphasis" | "muted" | "accent";
+  type SemanticFlags = Partial<Record<SemanticToken, boolean>>;
+  let styleEdits = $state<{
+    rows: Record<string, SemanticFlags>;
+    cells: Record<string, Record<string, SemanticFlags>>;
+  }>({ rows: {}, cells: {} });
+
+  // Transient paint-tool state. When non-null the widget is in "paint mode":
+  // the cursor switches to a brush, row/cell pointerdown toggles the matching
+  // flag. Cleared on Escape, on Clear-paint, or by re-clicking the active
+  // token chip.
+  let paintTool = $state<{ token: SemanticToken; scope: "row" | "cell" } | null>(null);
+
   // User-added columns (runtime insertions via the interactive column editor).
   // `afterId` identifies the sibling column that the new column is inserted after
   // ("__start__" for position 0). Stored separately from spec.columns so
@@ -152,7 +179,24 @@ export function createForestStore() {
   const visibleRows = $derived.by(() => {
     if (!spec) return [];
 
-    let rows = [...spec.data.rows];
+    // Apply any paint-tool overrides to each row BEFORE filter/sort so the
+    // merged style/cellStyles follow the row through the pipeline. Edits are
+    // sparse (only rows the user touched), so non-painted rows pass through
+    // unchanged and avoid the spread cost.
+    let rows: Row[] = spec.data.rows.map((r) => {
+      const rowOv = styleEdits.rows[r.id];
+      const cellOv = styleEdits.cells[r.id];
+      if (!rowOv && !cellOv) return r;
+      const mergedStyle = rowOv ? { ...(r.style ?? {}), ...rowOv } : r.style;
+      let mergedCells = r.cellStyles;
+      if (cellOv) {
+        mergedCells = { ...(r.cellStyles ?? {}) };
+        for (const [field, flags] of Object.entries(cellOv)) {
+          mergedCells[field] = { ...(mergedCells[field] ?? {}), ...flags };
+        }
+      }
+      return { ...r, style: mergedStyle, cellStyles: mergedCells };
+    });
 
     // Legacy single-filter (Shiny proxy backward-compat)
     if (filterConfig) {
@@ -1617,6 +1661,120 @@ export function createForestStore() {
 
   function clearAllEdits() {
     cellEdits = { cells: {}, groups: {} };
+    labelEdits = {};
+    styleEdits = { rows: {}, cells: {} };
+    paintTool = null;
+  }
+
+  // Plot-level labels (title / subtitle / caption / footnote). Live session
+  // state sits in `labelEdits`; the exporter merges into `spec.labels` so
+  // "View source" reproduces the edit.
+  function setLabel(
+    field: "title" | "subtitle" | "caption" | "footnote",
+    value: string | null,
+  ) {
+    const next = value == null || value === "" ? null : value;
+    labelEdits = { ...labelEdits, [field]: next };
+  }
+
+  function clearLabelEdit(
+    field: "title" | "subtitle" | "caption" | "footnote",
+  ) {
+    if (!(field in labelEdits)) return;
+    const { [field]: _omit, ...rest } = labelEdits;
+    labelEdits = rest;
+  }
+
+  function getPlotLabel(
+    field: "title" | "subtitle" | "caption" | "footnote",
+  ): string | null {
+    if (field in labelEdits) {
+      const v = labelEdits[field];
+      return v == null ? null : v;
+    }
+    return spec?.labels?.[field] ?? null;
+  }
+
+  // ── Paint tool ───────────────────────────────────────────────────────
+  //
+  // The paint tool is an authoring mode that lets the user stamp one of the
+  // three semantic flags (emphasis / muted / accent) onto rows or cells
+  // by clicking them. Behavior mirrors a toggle: clicking with `emphasis`
+  // active flips the row's emphasis flag. Painted state is merged into the
+  // display layer and exportSpec so save_plot() and the R session both see
+  // the edits. Re-selecting the active token chip or pressing Escape
+  // exits paint mode.
+
+  function setPaintTool(tool: { token: SemanticToken; scope: "row" | "cell" } | null) {
+    paintTool = tool;
+  }
+
+  /** Toggle or set a semantic flag on a row. Call from the paint pointerdown
+   *  handler on a row element, or programmatically from R-authored flows. */
+  function setRowSemantic(rowId: string, token: SemanticToken, on: boolean) {
+    const current = styleEdits.rows[rowId] ?? {};
+    const next: SemanticFlags = { ...current, [token]: on };
+    // Collapse back to "inherit" when the flag would match the spec default
+    // (keeps exportSpec free of no-op noise).
+    const specRow = spec?.data.rows.find((r) => r.id === rowId);
+    const baseline = !!specRow?.style?.[token];
+    if (on === baseline) {
+      delete next[token];
+    }
+    const rows = Object.keys(next).length
+      ? { ...styleEdits.rows, [rowId]: next }
+      : (() => { const { [rowId]: _r, ...rest } = styleEdits.rows; return rest; })();
+    styleEdits = { ...styleEdits, rows };
+  }
+
+  function setCellSemantic(
+    rowId: string,
+    field: string,
+    token: SemanticToken,
+    on: boolean,
+  ) {
+    const rowMap = styleEdits.cells[rowId] ?? {};
+    const currentCell = rowMap[field] ?? {};
+    const nextCell: SemanticFlags = { ...currentCell, [token]: on };
+    // Collapse identity edits the same way as row-scoped paint.
+    const specCell = spec?.data.rows.find((r) => r.id === rowId)?.cellStyles?.[field];
+    const baseline = !!specCell?.[token];
+    if (on === baseline) {
+      delete nextCell[token];
+    }
+    const nextRowMap = Object.keys(nextCell).length
+      ? { ...rowMap, [field]: nextCell }
+      : (() => { const { [field]: _f, ...rest } = rowMap; return rest; })();
+    const cells = Object.keys(nextRowMap).length
+      ? { ...styleEdits.cells, [rowId]: nextRowMap }
+      : (() => { const { [rowId]: _r, ...rest } = styleEdits.cells; return rest; })();
+    styleEdits = { ...styleEdits, cells };
+  }
+
+  /** Resolved row semantic flags (spec baseline + paint overrides). */
+  function getRowSemantic(row: Row, token: SemanticToken): boolean {
+    const override = styleEdits.rows[row.id]?.[token];
+    if (override !== undefined) return override;
+    return !!row.style?.[token];
+  }
+
+  /** Resolved cell semantic flags (spec baseline + paint overrides). */
+  function getCellSemantic(row: Row, field: string, token: SemanticToken): boolean {
+    const override = styleEdits.cells[row.id]?.[field]?.[token];
+    if (override !== undefined) return override;
+    return !!row.cellStyles?.[field]?.[token];
+  }
+
+  function clearAllPaint() {
+    styleEdits = { rows: {}, cells: {} };
+    paintTool = null;
+  }
+
+  function hasPaintEdits(): boolean {
+    return (
+      Object.keys(styleEdits.rows).length > 0 ||
+      Object.keys(styleEdits.cells).length > 0
+    );
   }
 
   // Filter-popover plumbing (rendered at widget root so it's not clipped or
@@ -1971,6 +2129,9 @@ export function createForestStore() {
     hiddenColumnIds = new Set();
     columnSpecOverrides = {};
     cellEdits = { cells: {}, groups: {} };
+    labelEdits = {};
+    styleEdits = { rows: {}, cells: {} };
+    paintTool = null;
 
     // ── Widths / zoom / sizing ───────────────────────────────────────────
     columnWidths = {};
@@ -2040,6 +2201,9 @@ export function createForestStore() {
     // 1. Flatten displayRows to an ordered Row[]. This already reflects:
     //    filter + sort + collapse-driven omission + (future) row-reorder.
     //    Group headers are skipped — they're reconstructed from `groups` on export.
+    // displayRows already reflects paint-tool overrides (merged in
+    // `visibleRows` upstream), so exportSpec's only job here is to apply
+    // cell-value edits and flatten to an ordered array.
     const orderedRows: Row[] = [];
     const primaryField = allColumns[0]?.field;
     for (const dr of displayRows) {
@@ -2101,6 +2265,12 @@ export function createForestStore() {
     const seen = new Set(groupsOut.map((g) => g.id));
     for (const g of syncedGroups) if (!seen.has(g.id)) groupsOut.push(g);
 
+    // Merge any session-level label edits into spec.labels so "View source"
+    // reproduces interactive title/subtitle/caption/footnote changes.
+    const mergedLabels = Object.keys(labelEdits).length
+      ? { ...(spec.labels ?? {}), ...labelEdits }
+      : spec.labels;
+
     return {
       ...spec,
       columns: effectiveColumnDefs,
@@ -2109,6 +2279,7 @@ export function createForestStore() {
         rows: orderedRows,
         groups: groupsOut,
       },
+      labels: mergedLabels,
     };
   });
 
@@ -2511,6 +2682,19 @@ export function createForestStore() {
     setForestCellValues,
     getDisplayValue,
     getLabel,
+    setLabel,
+    clearLabelEdit,
+    getPlotLabel,
+    // Paint tool
+    setPaintTool,
+    setRowSemantic,
+    setCellSemantic,
+    getRowSemantic,
+    getCellSemantic,
+    clearAllPaint,
+    get paintTool() { return paintTool; },
+    get styleEdits() { return styleEdits; },
+    get hasPaintEdits() { return hasPaintEdits(); },
     clearAllEdits,
     // Filter popover
     openFilterPopover,

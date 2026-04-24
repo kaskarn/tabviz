@@ -88,7 +88,7 @@
     data-tooltip="Zoom & sizing ({displayPercent}%)"
   >
     <!-- Zoom/magnifier icon -->
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="11" cy="11" r="8" />
       <path d="m21 21-4.3-4.3" />
       <path d="M11 8v6" />
@@ -234,7 +234,7 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    height: 32px;
+    height: 22px;
     padding: 0 8px;
     border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 6px;

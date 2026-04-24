@@ -2,19 +2,58 @@
   import type { ForestStore } from "$stores/forestStore.svelte";
   import BandingControl from "./BandingControl.svelte";
   import WatermarkControl from "./WatermarkControl.svelte";
+  import SettingsSection from "./SettingsSection.svelte";
+  import TextField from "./TextField.svelte";
 
   interface Props {
     store: ForestStore;
   }
 
   let { store }: Props = $props();
+
+  // Plot-level labels live on spec.labels; the store merges session edits
+  // so these inputs read the same value the header/footer render, and
+  // writing through setLabel() keeps both places in lock-step.
+  const title    = $derived(store.getPlotLabel("title")    ?? "");
+  const subtitle = $derived(store.getPlotLabel("subtitle") ?? "");
+  const caption  = $derived(store.getPlotLabel("caption")  ?? "");
+  const footnote = $derived(store.getPlotLabel("footnote") ?? "");
 </script>
 
 <!--
   Basics tab: table-wide display controls that don't belong to a narrower
   theming category (colors / typography / spacing / shapes / axis / layout).
-  Currently groups banding and watermark; future additions that fit the
+  Groups labels, banding and watermark; future additions that fit the
   "table display" bucket (row numbering, empty-state text, …) land here.
 -->
+<SettingsSection
+  title="Labels"
+  description="Title, subtitle, caption, and footnote — also editable by double-clicking on the widget."
+>
+  <TextField
+    label="Title"
+    placeholder="(none)"
+    value={title}
+    onchange={(v) => store.setLabel("title", v)}
+  />
+  <TextField
+    label="Subtitle"
+    placeholder="(none)"
+    value={subtitle}
+    onchange={(v) => store.setLabel("subtitle", v)}
+  />
+  <TextField
+    label="Caption"
+    placeholder="(none)"
+    value={caption}
+    onchange={(v) => store.setLabel("caption", v)}
+  />
+  <TextField
+    label="Footnote"
+    placeholder="(none)"
+    value={footnote}
+    onchange={(v) => store.setLabel("footnote", v)}
+  />
+</SettingsSection>
 <BandingControl {store} />
 <WatermarkControl {store} />

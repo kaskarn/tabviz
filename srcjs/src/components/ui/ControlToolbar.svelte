@@ -7,6 +7,7 @@
   import ResetButton from "./ResetButton.svelte";
   import ZoomControls from "./ZoomControls.svelte";
   import SettingsButton from "./SettingsButton.svelte";
+  import PaintModeButton from "./PaintModeButton.svelte";
 
   interface Props {
     store: ForestStore;
@@ -14,6 +15,7 @@
     enableThemes?: Record<string, WebTheme> | null;  // Available themes (null = disabled)
     enableZoomControls?: boolean;
     enableReset?: boolean;
+    enablePaint?: boolean;
     onThemeChange?: (themeName: ThemeName) => void;
   }
 
@@ -23,6 +25,7 @@
     enableThemes = undefined,  // undefined = show all themes (default behavior)
     enableZoomControls = true,
     enableReset = true,
+    enablePaint = true,
     onThemeChange,
   }: Props = $props();
 
@@ -38,6 +41,9 @@
   {/if}
   {#if showThemeSwitcher}
     <ThemeSwitcher {store} availableThemes={enableThemes} {onThemeChange} />
+  {/if}
+  {#if enablePaint}
+    <PaintModeButton {store} />
   {/if}
   {#if enableReset}
     <ResetButton {store} />
@@ -61,12 +67,12 @@
      visual weight without distracting from the table itself. */
   :global(.tabviz-container > .control-toolbar) {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 2px;
+    right: 4px;
     z-index: 100;
     opacity: 0;
-    padding: 3px;
-    border-radius: 10px;
+    padding: 1px 2px;
+    border-radius: 8px;
     /* Solid tinted bg + border — NO transform, filter, backdrop-filter, or
        will-change here. Any of those would make the toolbar a containing
        block for position:fixed descendants (ThemeSwitcher / ZoomControls /
@@ -102,6 +108,13 @@
   :global(.tabviz-container > .control-toolbar button) {
     border-color: transparent !important;
     background: transparent !important;
+  }
+
+  /* Inside the floating pill, buttons are icon-only and sit flush against the
+     pill's inner padding. Text-bearing triggers (zoom "100%") keep their
+     horizontal padding but all others render at their 22px width. */
+  :global(.tabviz-container > .control-toolbar button:not(.zoom-trigger-btn)) {
+    padding: 0 !important;
   }
 
   :global(.tabviz-container > .control-toolbar button:hover:not(:disabled):not(.active)),

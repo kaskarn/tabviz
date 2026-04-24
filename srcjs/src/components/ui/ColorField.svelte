@@ -38,11 +38,8 @@
   }
 </script>
 
-<div class="color-field">
-  <div class="meta">
-    <span class="label">{label}</span>
-    {#if hint}<span class="hint">{hint}</span>{/if}
-  </div>
+<div class="color-field" title={hint}>
+  <span class="label">{label}</span>
   <div class="controls">
     <!-- The swatch IS the color picker — clicking it opens the native
          color dialog. Overlay the current value as a background so it
@@ -72,41 +69,30 @@
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 10px;
-    padding: 4px 0;
-  }
-
-  .meta {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+    gap: 8px;
+    padding: 2px 0;
   }
 
   .label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: var(--wf-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
-  }
-
-  .hint {
-    font-size: 0.7rem;
-    color: var(--wf-secondary, #64748b);
-    line-height: 1.3;
+    min-width: 0;
   }
 
   .controls {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     align-items: center;
   }
 
   .swatch {
     position: relative;
     display: inline-block;
-    width: 22px;
-    height: 22px;
-    border-radius: 5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
     border: 1px solid color-mix(in srgb, var(--wf-fg, #1a1a1a) 15%, transparent);
     /* Checkerboard peeks through when color has transparency. */
     background-image:
@@ -138,12 +124,12 @@
   }
 
   .hex {
-    width: 92px;
-    padding: 4px 6px;
+    width: 78px;
+    padding: 2px 4px;
     border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 12%, var(--wf-border, #e2e8f0));
     border-radius: 4px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-align: center;
     background: var(--wf-bg, #ffffff);
     color: var(--wf-fg, #1a1a1a);

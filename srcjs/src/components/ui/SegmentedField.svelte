@@ -15,11 +15,8 @@
   let { label, hint, value, options, onchange }: Props = $props();
 </script>
 
-<div class="segmented-field">
-  <div class="meta">
-    <span class="label">{label}</span>
-    {#if hint}<span class="hint">{hint}</span>{/if}
-  </div>
+<div class="segmented-field" title={hint}>
+  <span class="label">{label}</span>
   <div class="segmented" role="radiogroup" aria-label={label}>
     {#each options as opt (String(opt.value))}
       <button
@@ -38,27 +35,16 @@
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 10px;
-    padding: 4px 0;
-  }
-
-  .meta {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+    gap: 8px;
+    padding: 2px 0;
   }
 
   .label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: var(--wf-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
-  }
-
-  .hint {
-    font-size: 0.7rem;
-    color: var(--wf-secondary, #64748b);
-    line-height: 1.3;
+    min-width: 0;
   }
 
   .segmented {
@@ -70,8 +56,8 @@
   }
 
   .segmented button {
-    padding: 4px 10px;
-    font-size: 0.75rem;
+    padding: 2px 8px;
+    font-size: 0.7rem;
     font-weight: 500;
     border: none;
     background: transparent;

@@ -12,10 +12,12 @@
 
   let { store, target, root }: Props = $props();
 
-  // Determine mode: group-header edit (groupId set), forest popover
-  // ("__forest__:colId"), or regular cell (field).
-  const isGroup = $derived(!!target.groupId);
-  const isForest = $derived(!isGroup && target.field.startsWith("__forest__:"));
+  // Determine mode: plot-level label (labelField set), group-header edit
+  // (groupId set), forest popover ("__forest__:colId"), or regular cell
+  // (field). Ordering matches the discriminator priority in EditTarget.
+  const isLabel = $derived(!!target.labelField);
+  const isGroup = $derived(!isLabel && !!target.groupId);
+  const isForest = $derived(!isLabel && !isGroup && target.field.startsWith("__forest__:"));
   const forestColId = $derived(isForest ? target.field.slice("__forest__:".length) : "");
 
   const row = $derived.by(() => {
@@ -53,9 +55,18 @@
   });
 
   // Anchor element lookup — cells carry data-row-id + data-field; group
-  // headers carry data-header-id.
+  // headers carry data-header-id; plot labels are found via their class
+  // name inside the widget root (there's only ever one of each).
   const anchorEl = $derived.by(() => {
     if (!root || isForest) return null;
+    if (isLabel && target.labelField) {
+      const cls =
+        target.labelField === "title"    ? ".plot-title"    :
+        target.labelField === "subtitle" ? ".plot-subtitle" :
+        target.labelField === "caption"  ? ".plot-caption"  :
+        /* footnote */                     ".plot-footnote";
+      return root.querySelector<HTMLElement>(cls);
+    }
     if (isGroup && target.groupId) {
       return root.querySelector<HTMLElement>(
         `[data-header-id="${CSS.escape(target.groupId)}"]`,
@@ -87,6 +98,12 @@
   });
 
   $effect(() => {
+    if (isLabel) {
+      if (!target.labelField) return;
+      draft = toStr(store.getPlotLabel(target.labelField));
+      tick().then(() => { inputEl?.focus(); inputEl?.select?.(); });
+      return;
+    }
     if (isGroup) {
       if (!target.groupId) return;
       const current = store.cellEdits.groups[target.groupId] ?? group?.header ?? "";
@@ -133,7 +150,15 @@
     store.endEdit();
   }
 
+  function commitLabel() {
+    if (!target.labelField) return;
+    const trimmed = draft.trim();
+    store.setLabel(target.labelField, trimmed === "" ? null : draft);
+    store.endEdit();
+  }
+
   function commitInline() {
+    if (isLabel) { commitLabel(); return; }
     if (isGroup) { commitGroup(); return; }
     if (!row) return;
     if (isNumericColumn) {

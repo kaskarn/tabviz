@@ -80,8 +80,15 @@
 
   function confirmPendingSwap() {
     if (pendingTheme !== null) {
-      applyTheme(pendingTheme);
-      pendingTheme = null;
+      const target = pendingTheme;
+      applyTheme(target);
+      // Close the dialog on the next microtask so the theme swap has flushed
+      // before the ConfirmDialog's portal unmounts. Closing synchronously in
+      // the same frame as the store mutation used to leave the widget
+      // showing the previous theme until the next unrelated rerender.
+      queueMicrotask(() => {
+        pendingTheme = null;
+      });
     }
   }
 
@@ -112,7 +119,7 @@
     aria-expanded={dropdownOpen}
     data-tooltip="Switch theme"
   >
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="5" />
       <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
     </svg>
@@ -161,8 +168,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 22px;
+    height: 22px;
     padding: 0;
     border: 1px solid var(--wf-border, #e2e8f0);
     border-radius: 6px;
