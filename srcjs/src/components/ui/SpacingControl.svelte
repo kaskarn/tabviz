@@ -29,8 +29,11 @@
   ];
 
   const cellPaddingFields = [
+    // Vertical cell padding deprecated in v0.21.x — single-line text is
+    // flex-centered regardless and grid-template-rows pinned the row
+    // height, so the field could only clip content. Raise `Row height`
+    // for breathing room.
     { key: "cellPaddingX", label: "Horizontal", hint: "Left / right of each cell", min: 0, max: 24 },
-    { key: "cellPaddingY", label: "Vertical",   hint: "Top / bottom of each cell", min: 0, max: 20 },
   ];
 
   const gapFields = [

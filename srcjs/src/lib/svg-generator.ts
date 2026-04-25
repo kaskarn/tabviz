@@ -512,24 +512,17 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const hasGroups = hasColumnGroups(leftColumnDefs) || hasColumnGroups(rightColumnDefs) || hasColumnGroups(columns);
 
   // Header height calculation must match web view behavior:
-  // Web CSS: .header-cell { min-height: var(--wf-header-row-height); padding: var(--wf-cell-padding-y) ... }
-  // CSS always adds padding to header cells, so we must always include it here.
-  // For 2-tier headers (headerDepth=2), each row is: headerHeight/2 (min-height) + cellPaddingY*2
-  // For 1-tier headers (headerDepth=1), each row is: headerHeight (min-height) + cellPaddingY*2
+  // .header-cell uses 0 vertical padding now (cellPaddingY deprecated in
+  // v0.21.x), so the header track height = headerHeight/depth exactly.
+  // Auto-grow when the theme value is smaller than what the current font
+  // (× headerFontScale × line-height) needs — matches forestStore.layout.
   const headerDepth = hasGroups ? 2 : 1;
-  const cellPaddingY = theme.spacing.cellPaddingY ?? 4;
-  // Auto-grow the header band when the configured value is smaller than
-  // what the current font + headerFontScale × line-height needs (matches
-  // forestStore.layout.headerHeight). Several theme presets default to
-  // 24-30 px which clips multi-tier headers; this ensures predictable
-  // breathing room across themes.
   const headerLineHeight = theme.typography.lineHeight ?? 1.5;
   const headerScale = theme.typography.headerFontScale ?? 1.05;
   const headerFontPx = parseFontSize(theme.typography.fontSizeBase) * headerScale;
   const minHeaderRow = Math.ceil(headerFontPx * headerLineHeight) + 6;
   const effectiveHeaderHeight = Math.max(theme.spacing.headerHeight, minHeaderRow * headerDepth);
-  const baseRowHeight = effectiveHeaderHeight / headerDepth;
-  const actualRowHeight = baseRowHeight + cellPaddingY * 2;
+  const actualRowHeight = effectiveHeaderHeight / headerDepth;
   // If no leaf column's header renders AND no column groups exist, the whole
   // header band collapses — mirrors ForestPlot.svelte's anyHeaderVisible.
   const allLeafCols = flattenAllColumns(columns);

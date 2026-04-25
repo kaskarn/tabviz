@@ -14,7 +14,7 @@ set_spacing(
   column_group_padding = NULL,
   row_group_padding = NULL,
   cell_padding_x = NULL,
-  cell_padding_y = NULL,
+  cell_padding_y = lifecycle::deprecated(),
   footer_gap = NULL,
   title_subtitle_gap = NULL,
   bottom_margin = NULL,
@@ -44,7 +44,11 @@ per-depth indentation.}
 
 \item{cell_padding_x}{Horizontal cell padding in pixels (default: 10)}
 
-\item{cell_padding_y}{Vertical cell padding in pixels (default: 4)}
+\item{cell_padding_y}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Vertical cell
+padding had no visual effect on single-line text (text was flex-
+centered regardless) and could only clip content once row tracks
+were pinned in v0.21.x. Setting it now emits a deprecation warning
+and is otherwise ignored. Raise \code{row_height} for breathing room.}
 
 \item{footer_gap}{Vertical gap between the plot region and the footer
 band (caption + footnote), in pixels (default: 8). Applied both on

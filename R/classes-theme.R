@@ -107,7 +107,12 @@ Spacing <- new_class(
     column_group_padding = new_property(class_numeric, default = 8),
     row_group_padding    = new_property(class_numeric, default = 0),
     cell_padding_x = new_property(class_numeric, default = 10),
-    cell_padding_y = new_property(class_numeric, default = 4),
+    # Deprecated in v0.21.x: vertical cell padding had no visual effect on
+    # single-line text (flex `align-items: center` re-centers regardless),
+    # and after row tracks were pinned via grid-template-rows it could
+    # only shrink content area or clip text. Default lowered from 4 to 0;
+    # `set_spacing(cell_padding_y = …)` warns and is otherwise ignored.
+    cell_padding_y = new_property(class_numeric, default = 0),
     # Vertical gap between the plot/axis region and the footer band (caption
     # + footnote). Applied as padding-top on `.plot-footer`; SVG export
     # honors it too.
@@ -1040,7 +1045,11 @@ set_typography <- function(
 #'   `column_group_padding` in 0.16.0 to disambiguate from
 #'   `row_group_padding`. Still accepted; forwards to `column_group_padding`.
 #' @param cell_padding_x Horizontal cell padding in pixels (default: 10)
-#' @param cell_padding_y Vertical cell padding in pixels (default: 4)
+#' @param cell_padding_y `r lifecycle::badge("deprecated")` Vertical cell
+#'   padding had no visual effect on single-line text (text was flex-
+#'   centered regardless) and could only clip content once row tracks
+#'   were pinned in v0.21.x. Setting it now emits a deprecation warning
+#'   and is otherwise ignored. Raise `row_height` for breathing room.
 #' @param footer_gap Vertical gap between the plot region and the footer
 #'   band (caption + footnote), in pixels (default: 8). Applied both on
 #'   the interactive widget and in SVG exports.
@@ -1068,7 +1077,7 @@ set_spacing <- function(
     column_group_padding = NULL,
     row_group_padding = NULL,
     cell_padding_x = NULL,
-    cell_padding_y = NULL,
+    cell_padding_y = lifecycle::deprecated(),
     footer_gap = NULL,
     title_subtitle_gap = NULL,
     bottom_margin = NULL,
@@ -1094,7 +1103,13 @@ set_spacing <- function(
   if (!is.null(column_group_padding)) current@column_group_padding <- column_group_padding
   if (!is.null(row_group_padding)) current@row_group_padding <- row_group_padding
   if (!is.null(cell_padding_x)) current@cell_padding_x <- cell_padding_x
-  if (!is.null(cell_padding_y)) current@cell_padding_y <- cell_padding_y
+  if (lifecycle::is_present(cell_padding_y)) {
+    lifecycle::deprecate_warn(
+      "0.21.0",
+      "set_spacing(cell_padding_y)",
+      details = "Vertical cell padding no longer affects layout — single-line text is flex-centered and row tracks are pinned to spacing.row_height. Raise `row_height` for breathing room."
+    )
+  }
   if (!is.null(footer_gap)) current@footer_gap <- footer_gap
   if (!is.null(title_subtitle_gap)) current@title_subtitle_gap <- title_subtitle_gap
   if (!is.null(bottom_margin)) current@bottom_margin <- bottom_margin

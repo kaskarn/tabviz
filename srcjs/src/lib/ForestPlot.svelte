@@ -1291,7 +1291,12 @@
       --wf-padding: ${theme.spacing.padding}px;
       --wf-container-padding: ${theme.spacing.containerPadding}px;
       --wf-cell-padding-x: ${theme.spacing.cellPaddingX}px;
-      --wf-cell-padding-y: ${theme.spacing.cellPaddingY}px;
+      /* --wf-cell-padding-y deprecated v0.21.x — kept emitting at 0 so
+         any downstream consumer that still references the var doesn't
+         break, but `.grid-cell` no longer applies it (rows are flex-
+         centered + grid-template-rows pinned, so vertical cell padding
+         could only clip content). */
+      --wf-cell-padding-y: 0px;
       --wf-viz-margin: ${VIZ_MARGIN}px;
       --wf-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
       --wf-axis-height: ${layout.axisHeight}px;
@@ -1557,6 +1562,7 @@
               class="grid-cell header-cell"
               class:sortable={canSort}
               class:primary-header={isPrimaryHeader}
+              class:wrap-enabled={column.wrap}
               data-header-id={column.id}
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
@@ -2547,7 +2553,7 @@
 
   /* Base grid cell styles */
   .grid-cell {
-    padding: var(--wf-cell-padding-y) var(--wf-cell-padding-x);
+    padding: 0 var(--wf-cell-padding-x);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     overflow: hidden;
@@ -2759,8 +2765,8 @@
      the same row height and the row doesn't look lopsided. */
   .grid-cell.group-row {
     border-bottom: 0;
-    padding-top: calc(var(--wf-cell-padding-y, 4px) + var(--wf-row-group-padding, 0px) / 2);
-    padding-bottom: calc(var(--wf-cell-padding-y, 4px) + var(--wf-row-group-padding, 0px) / 2);
+    padding-top: calc(var(--wf-row-group-padding, 0px) / 2);
+    padding-bottom: calc(var(--wf-row-group-padding, 0px) / 2);
   }
   .grid-cell.group-row-bordered {
     border-bottom: var(--wf-group-border-width, 1px) solid var(--wf-border);
