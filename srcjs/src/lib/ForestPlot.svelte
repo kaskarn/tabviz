@@ -842,14 +842,25 @@
   // each cell — it eats content area, not row height. Heavy padding
   // therefore clips text rather than silently growing the row.
   const gridTemplateRows = $derived.by(() => {
+    // Use `layout.headerHeight` (auto-grown to fit the font + breathing
+    // when the theme value is too small for multi-tier headers) rather
+    // than the raw `theme.spacing.headerHeight`.
     const headerRowH = anyHeaderVisible
-      ? spec!.theme.spacing.headerHeight / headerDepth
+      ? layout.headerHeight / headerDepth
       : 0;
     const headers = anyHeaderVisible
       ? Array(effectiveHeaderDepth).fill(`${headerRowH}px`)
       : [];
     const rows = layout.rowHeights.map((h) => `${h}px`);
-    return [...headers, ...rows].join(" ");
+    // The viz / forest axis is rendered as an absolutely-positioned SVG
+    // overlay on top of the grid, but the grid's last row reserves the
+    // axis-area space (see `axisRowNum` placeholder cells). Without an
+    // explicit track the row collapses to 0 and the SVG overlay extends
+    // past the container's content height — clipping the axis labels in
+    // embedded views (Quarto, RStudio Viewer, Shiny). The track equals
+    // `layout.axisHeight` (= axisGap + axisRegionHeight, both themable).
+    const axisTrack = layout.axisHeight > 0 ? [`${layout.axisHeight}px`] : [];
+    return [...headers, ...rows, ...axisTrack].join(" ");
   });
 
   // Total column count for grid (positional — leftmost column is the primary)
@@ -1274,8 +1285,8 @@
       --wf-header-font-scale: ${theme.typography.headerFontScale ?? 1.05};
       --wf-row-height: ${theme.spacing.rowHeight}px;
       --wf-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
-      --wf-header-height: ${anyHeaderVisible ? theme.spacing.headerHeight : 0}px;
-      --wf-header-row-height: ${anyHeaderVisible ? theme.spacing.headerHeight / headerDepth : 0}px;
+      --wf-header-height: ${anyHeaderVisible ? layout.headerHeight : 0}px;
+      --wf-header-row-height: ${anyHeaderVisible ? layout.headerHeight / headerDepth : 0}px;
       --wf-header-depth: ${effectiveHeaderDepth};
       --wf-padding: ${theme.spacing.padding}px;
       --wf-container-padding: ${theme.spacing.containerPadding}px;

@@ -35,7 +35,17 @@ import { computeAxis, type AxisComputation, VIZ_MARGIN } from "$lib/axis-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE, LAYOUT } from "$lib/rendering-constants";
-import { computeAxisLayout } from "$lib/typography-layout";
+import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
+
+/**
+ * True if any top-level column in the spec is a ColumnGroup (which would
+ * push the header strip to a 2-row layout). Used by the layout engine
+ * to size the header band based on whether content requires depth=2.
+ */
+function anyForestColumnGroups(columns: ColumnDef[] | undefined): boolean {
+  if (!columns) return false;
+  return columns.some(c => c.isGroup);
+}
 import { resolveShowHeader } from "$lib/column-compat";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 
@@ -727,7 +737,22 @@ export function createForestStore() {
     }
 
     const rowHeight = spec.theme.spacing.rowHeight;
-    const headerHeight = spec.theme.spacing.headerHeight;
+    // Header height auto-grows when the configured value can't fit the
+    // font's text region across the (possibly multi-tier) header. Several
+    // shipped theme presets default to 24-30 px, which leaves zero
+    // breathing room for default 14 px headers — and goes negative when
+    // column groups split the band into two 12-15 px sub-tracks. The min
+    // = (font height + 6 px breathing) × headerDepth ensures multi-tier
+    // headers never visually clip regardless of the theme.
+    const lineHeight = spec.theme.typography.lineHeight ?? 1.5;
+    const headerFontSize = parseFontSize(spec.theme.typography.fontSizeBase);
+    const headerScale = spec.theme.typography.headerFontScale ?? 1.05;
+    const minHeaderRowHeight = Math.ceil(headerFontSize * headerScale * lineHeight) + 6;
+    const headerDepthForLayout = anyForestColumnGroups(spec.columns) ? 2 : 1;
+    const headerHeight = Math.max(
+      spec.theme.spacing.headerHeight,
+      minHeaderRowHeight * headerDepthForLayout,
+    );
     const axisGap = spec.theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP; // Gap between table and axis
     // Axis region size derived from typography. Replaces the old
     // `LAYOUT.AXIS_HEIGHT (32) + LAYOUT.AXIS_LABEL_HEIGHT (32) = 64`

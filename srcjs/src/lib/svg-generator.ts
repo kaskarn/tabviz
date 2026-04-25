@@ -518,8 +518,17 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // For 1-tier headers (headerDepth=1), each row is: headerHeight (min-height) + cellPaddingY*2
   const headerDepth = hasGroups ? 2 : 1;
   const cellPaddingY = theme.spacing.cellPaddingY ?? 4;
-  const baseRowHeight = theme.spacing.headerHeight / headerDepth;
-  // Always add cell padding (CSS applies padding regardless of header depth)
+  // Auto-grow the header band when the configured value is smaller than
+  // what the current font + headerFontScale × line-height needs (matches
+  // forestStore.layout.headerHeight). Several theme presets default to
+  // 24-30 px which clips multi-tier headers; this ensures predictable
+  // breathing room across themes.
+  const headerLineHeight = theme.typography.lineHeight ?? 1.5;
+  const headerScale = theme.typography.headerFontScale ?? 1.05;
+  const headerFontPx = parseFontSize(theme.typography.fontSizeBase) * headerScale;
+  const minHeaderRow = Math.ceil(headerFontPx * headerLineHeight) + 6;
+  const effectiveHeaderHeight = Math.max(theme.spacing.headerHeight, minHeaderRow * headerDepth);
+  const baseRowHeight = effectiveHeaderHeight / headerDepth;
   const actualRowHeight = baseRowHeight + cellPaddingY * 2;
   // If no leaf column's header renders AND no column groups exist, the whole
   // header band collapses — mirrors ForestPlot.svelte's anyHeaderVisible.
@@ -549,7 +558,10 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
 
   const captionHeight = hasCaption ? textRegionHeight(theme.typography.fontSizeSm, lineHeight) : 0;
   const footnoteHeight = hasFootnote ? textRegionHeight(theme.typography.fontSizeSm, lineHeight) : 0;
-  const footerTextHeight = captionHeight + footnoteHeight + (hasCaption || hasFootnote ? padding : 0);
+  // Pre-spacing above the caption is already supplied by `footerGap`;
+  // adding `padding` here too double-counted the air between axis end
+  // and caption text. Remove and let footerGap own that gap exclusively.
+  const footerTextHeight = captionHeight + footnoteHeight;
 
   // Compute display rows (includes group headers)
   const displayRows = buildDisplayRows(spec);
@@ -732,7 +744,16 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     mainY: headerTextHeight + padding,
     // Footer Y: Match web view's layout (axisHeight + 8px footer padding-top)
     // Footer Y: axis region + themed footer gap (spacing.footer_gap).
-    footerY: headerTextHeight + padding + headerHeight + plotHeight + webAxisHeight + (theme.spacing.footerGap ?? 8),
+    // footerY = caption baseline. Live widget renders the caption with
+    // padding-top = footerGap from the axis end (the visible TOP of the
+    // caption text sits at footerGap below the border). To match in SVG
+    // we need the BASELINE = footerGap + captionAscent (drop from text
+    // top to baseline ≈ 0.85 × fontSize). Without the +captionAscent,
+    // SVG and live disagreed by ~10px and the footer text overlapped
+    // the axis region in the export.
+    footerY: headerTextHeight + padding + headerHeight + plotHeight + webAxisHeight
+           + (theme.spacing.footerGap ?? 8)
+           + Math.round(parseFontSize(theme.typography.fontSizeSm) * 0.85),
     axisGap,
     rowsHeight,
     autoWidths,
