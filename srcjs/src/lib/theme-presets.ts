@@ -67,7 +67,6 @@ const DEFAULT_THEME: WebTheme = {
     border: "#e2e8f0",
     rowBg: "#ffffff",       // Even row background
     altBg: "#f8fafc",       // Odd row background (slate-50)
-    interval: "#0891b2",          // Unified marker color
     intervalLine: "#475569",
     summaryFill: "#0891b2",
     summaryBorder: "#0e7490",
@@ -99,7 +98,6 @@ const DEFAULT_THEME: WebTheme = {
     pointSize: 6,
     summaryHeight: 10,
     lineWidth: 1.5,
-    borderRadius: 2,  // Cleaner, more professional
   },
   axis: {
     // Explicit overrides (null = auto)
@@ -165,7 +163,6 @@ const MINIMAL_THEME: WebTheme = {
     border: "#000000",           // Strong black borders
     rowBg: "#ffffff",
     altBg: "#fafafa",            // neutral-50
-    interval: "#000000",         // Pure black markers
     intervalLine: "#000000",
     summaryFill: "#000000",
     summaryBorder: "#000000",
@@ -192,7 +189,6 @@ const MINIMAL_THEME: WebTheme = {
     pointSize: 5,
     summaryHeight: 8,
     lineWidth: 1,
-    borderRadius: 0,             // Sharp corners
   },
   layout: {
     ...DEFAULT_THEME.layout,
@@ -216,7 +212,6 @@ const DARK_THEME: WebTheme = {
     border: "#313244",             // Catppuccin surface0
     rowBg: "#1e1e2e",              // Same as background
     altBg: "#232334",              // Slightly lighter
-    interval: "#89b4fa",           // Catppuccin blue
     intervalLine: "#9399b2",       // Catppuccin overlay2
     summaryFill: "#89b4fa",
     summaryBorder: "#74c7ec",      // Catppuccin sapphire
@@ -243,7 +238,6 @@ const DARK_THEME: WebTheme = {
     pointSize: 6,
     summaryHeight: 10,
     lineWidth: 1.5,
-    borderRadius: 4,               // Soft rounded corners
   },
   layout: {
     ...DEFAULT_THEME.layout,
@@ -267,7 +261,6 @@ const JAMA_THEME: WebTheme = {
     border: "#000000",             // Pure black borders
     rowBg: "#ffffff",
     altBg: "#f9fafb",              // gray-50
-    interval: "#000000",           // Pure black markers
     intervalLine: "#000000",
     summaryFill: "#000000",
     summaryBorder: "#000000",
@@ -296,7 +289,6 @@ const JAMA_THEME: WebTheme = {
     pointSize: 4,                  // Small markers
     summaryHeight: 7,
     lineWidth: 1.25,               // Slightly thicker for visibility
-    borderRadius: 0,
   },
   layout: {
     ...DEFAULT_THEME.layout,
@@ -320,7 +312,6 @@ const LANCET_THEME: WebTheme = {
     border: "#d4dce6",
     rowBg: "#fdfcfb",                // Same as background
     altBg: "#f8f7f6",                // Warm slate-50
-    interval: "#00407a",
     intervalLine: "#1e3a5f",
     summaryFill: "#00407a",
     summaryBorder: "#002d54",
@@ -349,7 +340,6 @@ const LANCET_THEME: WebTheme = {
     pointSize: 5,
     summaryHeight: 9,
     lineWidth: 1.25,
-    borderRadius: 0,                 // Sharp corners for academic feel
   },
   layout: {
     ...DEFAULT_THEME.layout,
@@ -373,7 +363,6 @@ const MODERN_THEME: WebTheme = {
     border: "#d4d4d8",               // Slightly more visible
     rowBg: "#fafafa",                // Same as background
     altBg: "#f4f4f5",                // zinc-100
-    interval: "#3b82f6",
     intervalLine: "#27272a",         // Darker for contrast
     summaryFill: "#3b82f6",
     summaryBorder: "#2563eb",        // Blue-600
@@ -402,7 +391,6 @@ const MODERN_THEME: WebTheme = {
     pointSize: 8,                    // Larger markers
     summaryHeight: 12,
     lineWidth: 1.75,
-    borderRadius: 8,                 // More rounded
   },
   layout: {
     ...DEFAULT_THEME.layout,
@@ -426,7 +414,6 @@ const PRESENTATION_THEME: WebTheme = {
     border: "#94a3b8",               // More visible borders
     rowBg: "#ffffff",
     altBg: "#f8fafc",                // slate-50
-    interval: "#0369a1",
     intervalLine: "#0f172a",         // Very dark for visibility
     summaryFill: "#0369a1",
     summaryBorder: "#0c4a6e",        // Darker outline
@@ -455,7 +442,6 @@ const PRESENTATION_THEME: WebTheme = {
     pointSize: 12,                   // Oversized markers
     summaryHeight: 16,               // Larger diamonds
     lineWidth: 2.5,                  // Thick lines
-    borderRadius: 4,
   },
   layout: {
     ...DEFAULT_THEME.layout,
@@ -479,7 +465,6 @@ const COCHRANE_THEME: WebTheme = {
     border: "#b3b3b3",
     rowBg: "#ffffff",
     altBg: "#f5f5f5",                // neutral-100
-    interval: "#0099cc",
     intervalLine: "#2c2c2c",
     summaryFill: "#0099cc",
     summaryBorder: "#006699",
@@ -508,7 +493,6 @@ const COCHRANE_THEME: WebTheme = {
     pointSize: 4,                    // Small markers
     summaryHeight: 7,
     lineWidth: 1,
-    borderRadius: 0,
   },
   layout: {
     ...DEFAULT_THEME.layout,
@@ -532,7 +516,6 @@ const NATURE_THEME: WebTheme = {
     border: "#bdbdbd",               // Slightly stronger border
     rowBg: "#ffffff",
     altBg: "#fafafa",                // neutral-50
-    interval: "#1976d2",
     intervalLine: "#1a1a1a",
     summaryFill: "#1976d2",
     summaryBorder: "#0d47a1",        // Darker blue border
@@ -561,7 +544,6 @@ const NATURE_THEME: WebTheme = {
     pointSize: 5,
     summaryHeight: 8,
     lineWidth: 1.25,
-    borderRadius: 1,                 // Almost sharp corners
   },
   layout: {
     ...DEFAULT_THEME.layout,

@@ -9,7 +9,7 @@ set_shapes(
   point_size = NULL,
   summary_height = NULL,
   line_width = NULL,
-  border_radius = NULL,
+  border_radius = lifecycle::deprecated(),
   row_border_width = NULL,
   header_border_width = NULL,
   row_group_border_width = NULL,
@@ -27,7 +27,7 @@ set_shapes(
 
 \item{line_width}{Confidence interval line width in pixels (default: 1.5)}
 
-\item{border_radius}{Border radius for containers in pixels (default: 2)}
+\item{border_radius}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Removed in v0.25.0; had no rendering effect.}
 
 \item{row_border_width}{Width (px) of the bottom border between data rows
 (default: 1). Set to 0 to remove row separators.}

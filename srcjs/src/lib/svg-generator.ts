@@ -1750,7 +1750,7 @@ function renderInterval(
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {
-      baseColor = theme.colors.interval ?? theme.colors.primary ?? "#2563eb";
+      baseColor = theme.colors.primary ?? "#2563eb";
     }
 
     // Apply Layers 3+4 via the shared cascade resolver

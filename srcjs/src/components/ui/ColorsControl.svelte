@@ -40,11 +40,6 @@
     { key: "headerBg", label: "Header background", hint: "Column header row (inherits row bg by default)" },
   ];
 
-  const intervalFields = [
-    { key: "interval", label: "Interval", hint: "Point marker color" },
-    { key: "intervalLine", label: "Interval line", hint: "CI whisker" },
-  ];
-
   const summaryFields = [
     { key: "summaryFill", label: "Summary fill", hint: "Diamond fill" },
     { key: "summaryBorder", label: "Summary border", hint: "Diamond outline" },
@@ -82,20 +77,6 @@
     {/each}
   </SettingsSection>
 
-  <SettingsSection
-    title="Intervals"
-    description="Forest plot marker and whisker colors (per-row marker_color overrides still apply)."
-  >
-    {#each intervalFields as f (f.key)}
-      <ColorField
-        label={f.label}
-        hint={f.hint}
-        value={(colors as Record<string, string>)[f.key]}
-        onchange={(v) => set(f.key, v)}
-        {swatches}
-      />
-    {/each}
-  </SettingsSection>
 
   <SettingsSection
     title="Summary"

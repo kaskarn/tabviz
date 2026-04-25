@@ -24,8 +24,8 @@
   const setField = setSpacingField;
 
   const rowFields = [
-    { key: "rowHeight",    label: "Row height",    hint: "Data-row line height", min: 16, max: 60 },
-    { key: "headerHeight", label: "Header height", hint: "Column header row",    min: 20, max: 72 },
+    { key: "rowHeight",    label: "Row height",    hint: "Pixel height of every data row", min: 16, max: 60 },
+    { key: "headerHeight", label: "Header height", hint: "Min pixel height of the column-header band; auto-grows when typography needs more room", min: 20, max: 72 },
   ];
 
   const cellPaddingFields = [
@@ -42,7 +42,7 @@
     { key: "rowGroupPadding",     label: "Row group padding",   hint: "Extra horizontal padding for row-group header rows",min: 0, max: 40 },
     { key: "footerGap",           label: "Footer gap",          hint: "Vertical space between plot / axis and the caption / footnote band", min: 0, max: 40 },
     { key: "titleSubtitleGap",    label: "Title↔subtitle gap",  hint: "Vertical gap between the title and subtitle when both are shown",    min: 0, max: 40 },
-    { key: "bottomMargin",        label: "Bottom margin",       hint: "Trailing space below the last band in SVG exports",                  min: 0, max: 40 },
+    { key: "bottomMargin",        label: "Bottom margin",       hint: "Trailing space below the caption / footnote band (live + SVG)",     min: 0, max: 40 },
     { key: "containerPadding",    label: "Container padding",   hint: "Outer padding around the whole widget (interactive + SVG export)", min: 0, max: 40 },
   ];
 

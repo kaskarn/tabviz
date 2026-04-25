@@ -1,3 +1,55 @@
+# tabviz 0.25.0
+
+## Settings panel cleanup
+
+A pass through the settings panel. Two R properties removed, one
+relocated, four bugs / dead knobs fixed, hints sharpened.
+
+### Removed
+
+- **`shapes.border_radius`** — the CSS variable was emitted but no
+  rule consumed it; bars and badges hardcoded their own corner
+  radius. The settings field, the property, and the deprecated
+  `set_shapes(border_radius = ...)` argument now warn via
+  `lifecycle::deprecate_warn`.
+- **`colors.interval`** — was the 4th tier of the marker-color
+  fallback chain; never reached because every shipped theme defines
+  `shapes.effect_colors`. The cascade collapses: `primary` now
+  routes directly to `summary_fill`. No visual change in any shipped
+  theme.
+
+### Relocated / renamed
+
+- **CI whisker stroke** moved from Colors tab to Shapes tab. Renamed
+  from "Interval line" to "CI whisker" with a clearer hint.
+
+### Fixed
+
+- **Plot width** (Layout tab): the field wrote to
+  `theme.layout.plotWidth` but the live widget read a separate
+  override state, so editing the value did nothing. The forest
+  width derivation now folds in the theme value
+  (`plotWidthOverride ?? theme.layout.plotWidth ?? auto`).
+- **Bottom margin** (Spacing tab): was SVG-export only. Now applied
+  as `padding-bottom` on the live widget container too — visible
+  trailing space below the caption / footnote band.
+- **Container padding centering**: with high `containerPadding`,
+  scaled content sat at the left of the padded box instead of
+  centering. Centering math no longer gates on auto-fit mode; it
+  applies whenever scaled width fits inside the content box.
+- **Color picker default tab**: now always opens on "Custom"
+  regardless of value match. The previous "auto-pick Theme when
+  value matches a swatch" behaviour surprised authors expecting the
+  free-form picker.
+
+### Hint clarifications
+
+- Typography "Line height" → multiplier of font size, affects
+  vertical rhythm of all text.
+- Spacing "Header height" → minimum pixel height of the header band
+  (auto-grows with typography).
+- Spacing "Bottom margin" → live + SVG (no longer "SVG export only").
+
 # tabviz 0.24.1
 
 ## Row-group padding lives on the previous row

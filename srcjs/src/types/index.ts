@@ -441,7 +441,7 @@ export interface ColorPalette {
   headerBg: string;   // Column-header row background (cascades from rowBg)
   cellForeground: string;  // Data-cell text color (cascades from foreground)
   headerForeground: string;  // Column-header text (cascades from cellForeground → foreground)
-  interval: string;  // Unified marker color (new default)
+  /** CI whisker stroke color. Marker fill is driven by `shapes.effectColors`. */
   intervalLine: string;
   summaryFill: string;
   summaryBorder: string;
@@ -498,7 +498,7 @@ export interface Shapes {
   pointSize: number;
   summaryHeight: number;
   lineWidth: number;
-  borderRadius: number;
+  // borderRadius removed in v0.25.0 — was emitted but no consumer
   // Border widths (pixels) — added in v0.19
   rowBorderWidth?: number;        // Data-row separator (default 1)
   headerBorderWidth?: number;     // Column-header underlines (default 2)

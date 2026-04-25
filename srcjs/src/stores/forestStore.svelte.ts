@@ -300,8 +300,14 @@ export function createForestStore() {
     const hasForest = forestColumns.length > 0;
 
     // Use override if set, otherwise calculate default (25% of width, min 200px)
+    // Forest column width precedence (v0.25.0): runtime drag override
+    // > theme.layout.plotWidth (numeric) > auto (25% of width, min 200).
+    // Honouring the theme value lets the Layout settings field actually
+    // drive the live render — historically only SVG export read it.
+    const themePlotWidth = spec.theme.layout?.plotWidth;
     const forestWidth = hasForest
-      ? (plotWidthOverride ?? Math.max(effectiveWidth * 0.25, 200))
+      ? (plotWidthOverride
+        ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
       : 0;
 
     // Get scale and nullValue from first forest column options
@@ -361,8 +367,14 @@ export function createForestStore() {
 
     // Use override if set, otherwise calculate default (25% of width, min 200px)
     const hasForest = forestColumns.length > 0;
+    // Forest column width precedence (v0.25.0): runtime drag override
+    // > theme.layout.plotWidth (numeric) > auto (25% of width, min 200).
+    // Honouring the theme value lets the Layout settings field actually
+    // drive the live render — historically only SVG export read it.
+    const themePlotWidth = spec.theme.layout?.plotWidth;
     const forestWidth = hasForest
-      ? (plotWidthOverride ?? Math.max(effectiveWidth * 0.25, 200))
+      ? (plotWidthOverride
+        ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
       : 0;
 
     // Add padding to range so edge labels don't get clipped
@@ -803,8 +815,14 @@ export function createForestStore() {
     const axisHeight = axisGap + axisGeom.axisRegionHeight;
     const hasForest = forestColumns.length > 0;
     // Use override if set, otherwise calculate default (25% of width, min 200px)
+    // Forest column width precedence (v0.25.0): runtime drag override
+    // > theme.layout.plotWidth (numeric) > auto (25% of width, min 200).
+    // Honouring the theme value lets the Layout settings field actually
+    // drive the live render — historically only SVG export read it.
+    const themePlotWidth = spec.theme.layout?.plotWidth;
     const forestWidth = hasForest
-      ? (plotWidthOverride ?? Math.max(effectiveWidth * 0.25, 200))
+      ? (plotWidthOverride
+        ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
       : 0;
     const tableWidth = effectiveWidth - forestWidth;
 

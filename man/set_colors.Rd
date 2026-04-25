@@ -40,7 +40,7 @@ set_colors(
 \item{foreground}{Primary text color (default: "#333333")}
 
 \item{primary}{Primary accent color for markers and highlights (default: "#0891b2").
-Cascades to \code{interval} and \code{summary_fill} if not specified.}
+Cascades to \code{summary_fill} if not specified.}
 
 \item{secondary}{Secondary text/UI color (default: "#64748b")}
 
@@ -105,11 +105,13 @@ Several colors cascade when not explicitly set, making custom themes easier
 to create:
 \itemize{
 \item \strong{Background colors:} \code{background} -> \code{row_bg} -> \code{alt_bg}
-\item \strong{Marker colors:} \code{primary} -> \code{interval} -> \code{summary_fill}
+\item \strong{Marker colors:} \code{primary} -> \code{summary_fill} (cascaded directly
+in v0.25.0 after the inert \code{interval} slot was removed). Per-effect
+marker fills come from \code{shapes.effect_colors}.
 }
 
-For example, setting \code{primary = "#ff0000"} will automatically use red for
-markers and summary diamonds unless you override \code{interval} or \code{summary_fill}.
+For example, setting \code{primary = "#ff0000"} will use red for the
+summary diamond unless you override \code{summary_fill}.
 Setting \code{background = "#1e1e2e"} for a dark theme will automatically set
 row backgrounds to match.
 }

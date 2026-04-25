@@ -128,7 +128,6 @@ test_that("web_theme_jama creates valid theme", {
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "jama")
   expect_equal(theme@colors@foreground, "#000000")
-  expect_equal(theme@shapes@border_radius, 0)
 })
 
 test_that("web_theme_lancet creates valid theme", {
@@ -182,7 +181,6 @@ test_that("web_theme_cochrane creates valid theme", {
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "cochrane")
   expect_equal(theme@colors@primary, "#0099cc")
-  expect_equal(theme@shapes@border_radius, 0)
   expect_false(theme@layout@container_border)
 })
 
@@ -191,7 +189,6 @@ test_that("web_theme_nature creates valid theme", {
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "nature")
   expect_equal(theme@colors@primary, "#1976d2")
-  expect_equal(theme@shapes@border_radius, 1)
   expect_false(theme@layout@container_border)
 })
 

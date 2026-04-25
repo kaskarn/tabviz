@@ -12,17 +12,21 @@
   let { store }: Props = $props();
 
   const shapes = $derived(store.spec?.theme?.shapes);
+  const colors = $derived(store.spec?.theme?.colors);
   const swatches = $derived(resolveSwatches(store.spec?.theme));
 
   function setField(field: string, value: unknown) {
     store.setThemeField("shapes", field, value);
   }
 
+  function setColor(field: string, value: string) {
+    store.setThemeField("colors", field, value);
+  }
+
   const sizeFields = [
     { key: "pointSize",      label: "Point size",     hint: "Forest plot marker diameter", min: 4,   max: 16, step: 1 },
     { key: "summaryHeight",  label: "Summary height", hint: "Pooled diamond height",       min: 8,   max: 24, step: 1 },
     { key: "lineWidth",      label: "Line width",     hint: "CI whisker stroke",           min: 0.5, max: 4,  step: 0.5 },
-    { key: "borderRadius",   label: "Border radius",  hint: "Rounding on bars / boxes",    min: 0,   max: 12, step: 1 },
     { key: "tickMarkLength", label: "Tick mark",      hint: "Length of tick marks on viz axes", min: 0, max: 12, step: 1 },
   ];
 
@@ -72,6 +76,21 @@
           {swatches}
         />
       {/each}
+    </SettingsSection>
+  {/if}
+
+  {#if colors}
+    <SettingsSection
+      title="Lines"
+      description="Stroke colors for viz line elements."
+    >
+      <ColorField
+        label="CI whisker"
+        hint="Stroke color for confidence-interval whiskers in forest plots"
+        value={colors.intervalLine}
+        onchange={(v) => setColor("intervalLine", v)}
+        {swatches}
+      />
     </SettingsSection>
   {/if}
 {/if}

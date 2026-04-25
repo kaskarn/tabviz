@@ -34,8 +34,11 @@ ColorPalette <- new_class(
     # color distinct from data cells -- symmetric with `header_bg` for
     # background.
     header_foreground = new_property(class_character, default = NA_character_),
-    # Interval visualization colors
-    interval = new_property(class_character, default = "#0891b2"),  # Default marker color
+    # CI whisker stroke color. Marker fill is driven by `shapes.effect_colors`
+    # (per-effect palette) and `summary_fill` (summary diamonds); the legacy
+    # `interval` slot was removed in v0.25.0 because every shipped theme set
+    # `effect_colors`, leaving `interval` as a 4th-tier fallback that was
+    # never reached.
     interval_line = new_property(class_character, default = "#475569"),
     # Summary/aggregate colors
     summary_fill = new_property(class_character, default = "#0891b2"),
@@ -52,7 +55,7 @@ ColorPalette <- new_class(
     color_props <- c("background", "foreground", "primary", "secondary", "accent",
                      "muted", "border", "row_bg", "alt_bg", "header_bg",
                      "cell_foreground", "header_foreground",
-                     "interval", "interval_line",
+                     "interval_line",
                      "summary_fill", "summary_border")
     invalid <- character()
     for (prop in color_props) {
@@ -165,7 +168,9 @@ Shapes <- new_class(
     point_size = new_property(class_numeric, default = 6),
     summary_height = new_property(class_numeric, default = 10),
     line_width = new_property(class_numeric, default = 1.5),
-    border_radius = new_property(class_numeric, default = 2),
+    # `border_radius` was removed in v0.25.0 — the CSS variable was emitted
+    # but no rule consumed it, and bars / badges hardcoded their corner
+    # radius. Container corner radius lives on `LayoutConfig`.
     # Border widths (pixels). `row_border_width` draws between data rows;
     # `header_border_width` underlines column-header rows (includes primary,
     # last, and plot-header rows); `row_group_border_width` is the border
@@ -571,7 +576,6 @@ web_theme_minimal <- function() {
       border = "#000000",             # Strong black borders
       row_bg = "#ffffff",
       alt_bg = "#fafafa",             # Subtle grey stripe
-      interval = "#000000",           # Pure black markers
       interval_line = "#000000",
       summary_fill = "#000000",
       summary_border = "#000000"
@@ -595,7 +599,6 @@ web_theme_minimal <- function() {
       point_size = 5,
       summary_height = 8,
       line_width = 1,
-      border_radius = 0,              # Sharp corners
       effect_colors = c("#64748b", "#94a3b8", "#cbd5e1", "#475569", "#334155")
     ),
     layout = LayoutConfig(
@@ -639,7 +642,6 @@ web_theme_dark <- function() {
       border = "#313244",             # Catppuccin surface0
       row_bg = "#1e1e2e",             # Match background
       alt_bg = "#232334",             # Slightly lighter stripe
-      interval = "#89b4fa",           # Catppuccin blue
       interval_line = "#9399b2",      # Catppuccin overlay2
       summary_fill = "#89b4fa",
       summary_border = "#74c7ec"      # Catppuccin sapphire
@@ -663,7 +665,6 @@ web_theme_dark <- function() {
       point_size = 6,
       summary_height = 10,
       line_width = 1.5,
-      border_radius = 4,              # Soft rounded corners
       effect_colors = c("#89b4fa", "#a6e3a1", "#fab387", "#f38ba8", "#cba6f7")
     ),
     layout = LayoutConfig(
@@ -807,10 +808,12 @@ web_theme <- function(
 #' to create:
 #'
 #' - **Background colors:** `background` -> `row_bg` -> `alt_bg`
-#' - **Marker colors:** `primary` -> `interval` -> `summary_fill`
+#' - **Marker colors:** `primary` -> `summary_fill` (cascaded directly
+#'   in v0.25.0 after the inert `interval` slot was removed). Per-effect
+#'   marker fills come from `shapes.effect_colors`.
 #'
-#' For example, setting `primary = "#ff0000"` will automatically use red for
-#' markers and summary diamonds unless you override `interval` or `summary_fill`.
+#' For example, setting `primary = "#ff0000"` will use red for the
+#' summary diamond unless you override `summary_fill`.
 #' Setting `background = "#1e1e2e"` for a dark theme will automatically set
 #' row backgrounds to match.
 #'
@@ -818,7 +821,7 @@ web_theme <- function(
 #' @param background Background color (default: "#ffffff")
 #' @param foreground Primary text color (default: "#333333")
 #' @param primary Primary accent color for markers and highlights (default: "#0891b2").
-#'   Cascades to `interval` and `summary_fill` if not specified.
+#'   Cascades to `summary_fill` if not specified.
 #' @param secondary Secondary text/UI color (default: "#64748b")
 #' @param accent Accent color for emphasis (default: "#8b5cf6")
 #' @param muted Muted/disabled text color (default: "#94a3b8")
@@ -972,18 +975,21 @@ set_colors <- function(
 
   # Cascade marker colors:
 
-  # If primary changed but ci_marker_fill not specified, derive from primary
-  if (!is.null(primary) && is.null(ci_marker_fill)) {
-    current@interval <- primary
-  } else if (!is.null(ci_marker_fill)) {
-    current@interval <- ci_marker_fill
+  # Cascade marker / summary colors. v0.25.0 collapsed the old
+  # `primary -> interval -> summary_fill` chain since the `interval`
+  # slot was removed; cascade now goes straight to summary_fill.
+  # Per-effect marker colors live on `shapes.effect_colors`, which is
+  # what the renderer actually consumes for non-summary markers.
+  derived_summary <- NULL
+  if (!is.null(ci_marker_fill)) {
+    derived_summary <- ci_marker_fill
+  } else if (!is.null(primary)) {
+    derived_summary <- primary
   }
-
-  # If ci_marker_fill changed (explicitly or derived) but summary_fill not specified, derive from it
-  if ((!is.null(primary) || !is.null(ci_marker_fill)) && is.null(summary_fill)) {
-    current@summary_fill <- current@interval
-  } else if (!is.null(summary_fill)) {
+  if (!is.null(summary_fill)) {
     current@summary_fill <- summary_fill
+  } else if (!is.null(derived_summary)) {
+    current@summary_fill <- derived_summary
   }
 
   if (!is.null(ci_line)) current@interval_line <- ci_line
@@ -1143,7 +1149,7 @@ set_spacing <- function(
 #' @param point_size Marker point radius in pixels (default: 6)
 #' @param summary_height Summary diamond height in pixels (default: 10)
 #' @param line_width Confidence interval line width in pixels (default: 1.5)
-#' @param border_radius Border radius for containers in pixels (default: 2)
+#' @param border_radius `r lifecycle::badge("deprecated")` Removed in v0.25.0; had no rendering effect.
 #' @param row_border_width Width (px) of the bottom border between data rows
 #'   (default: 1). Set to 0 to remove row separators.
 #' @param header_border_width Width (px) of the bottom border underlining
@@ -1172,7 +1178,7 @@ set_shapes <- function(
     point_size = NULL,
     summary_height = NULL,
     line_width = NULL,
-    border_radius = NULL,
+    border_radius = lifecycle::deprecated(),
     row_border_width = NULL,
     header_border_width = NULL,
     row_group_border_width = NULL,
@@ -1188,10 +1194,16 @@ set_shapes <- function(
   checkmate::assert_number(row_group_border_width, lower = 0, upper = 10, null.ok = TRUE)
   checkmate::assert_number(tick_mark_length, lower = 0, upper = 20, null.ok = TRUE)
 
+  if (lifecycle::is_present(border_radius)) {
+    lifecycle::deprecate_warn(
+      "0.25.0", "set_shapes(border_radius)",
+      details = "border_radius had no rendering effect; bars and badges hardcoded their corner radius. Use shapes via CSS or wait for a future per-component radius API."
+    )
+  }
+
   if (!is.null(point_size)) current@point_size <- point_size
   if (!is.null(summary_height)) current@summary_height <- summary_height
   if (!is.null(line_width)) current@line_width <- line_width
-  if (!is.null(border_radius)) current@border_radius <- border_radius
   if (!is.null(row_border_width)) current@row_border_width <- row_border_width
   if (!is.null(header_border_width)) current@header_border_width <- header_border_width
   if (!is.null(row_group_border_width)) current@row_group_border_width <- row_group_border_width
@@ -1563,7 +1575,6 @@ web_theme_jama <- function() {
       border = "#000000",             # Pure black borders
       row_bg = "#ffffff",
       alt_bg = "#f9fafb",             # Very subtle grey
-      interval = "#000000",           # Pure black markers
       interval_line = "#000000",
       summary_fill = "#000000",
       summary_border = "#000000"
@@ -1589,7 +1600,6 @@ web_theme_jama <- function() {
       point_size = 4,                 # Small markers
       summary_height = 7,
       line_width = 1.25,              # Slightly thicker for visibility
-      border_radius = 0,
       effect_colors = c("#1a1a1a", "#4a4a4a", "#7a7a7a", "#9a9a9a", "#bababa")
     ),
     layout = LayoutConfig(
@@ -1632,7 +1642,6 @@ web_theme_lancet <- function() {
       border = "#d4dce6",
       row_bg = "#fdfcfb",           # Match background
       alt_bg = "#f8f7f5",           # Warm subtle stripe
-      interval = "#00407a",
       interval_line = "#1e3a5f",
       summary_fill = "#00407a",
       summary_border = "#002d54"
@@ -1658,7 +1667,6 @@ web_theme_lancet <- function() {
       point_size = 5,
       summary_height = 9,
       line_width = 1.25,
-      border_radius = 0,            # Sharp corners for academic feel
       effect_colors = c("#00468b", "#ed0000", "#42b540", "#0099b4", "#925e9f")
     ),
     layout = LayoutConfig(
@@ -1703,7 +1711,6 @@ web_theme_modern <- function() {
       border = "#d4d4d8",              # Slightly more visible
       row_bg = "#fafafa",              # Match background
       alt_bg = "#f5f5f5",              # Subtle zinc stripe
-      interval = "#3b82f6",
       interval_line = "#27272a",       # Darker for contrast
       summary_fill = "#3b82f6",
       summary_border = "#2563eb"       # Blue-600
@@ -1729,7 +1736,6 @@ web_theme_modern <- function() {
       point_size = 8,                  # Larger markers
       summary_height = 12,
       line_width = 1.75,
-      border_radius = 8,               # More rounded
       effect_colors = c("#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6")
     ),
     layout = LayoutConfig(
@@ -1772,7 +1778,6 @@ web_theme_presentation <- function() {
       border = "#94a3b8",            # More visible borders
       row_bg = "#ffffff",
       alt_bg = "#f8fafc",            # Subtle slate stripe
-      interval = "#0369a1",
       interval_line = "#0f172a",     # Very dark for visibility
       summary_fill = "#0369a1",
       summary_border = "#0c4a6e"     # Darker outline
@@ -1798,7 +1803,6 @@ web_theme_presentation <- function() {
       point_size = 12,           # Oversized markers
       summary_height = 16,       # Larger diamonds
       line_width = 2.5,          # Thick lines
-      border_radius = 4,
       effect_colors = c("#2563eb", "#16a34a", "#ea580c", "#dc2626", "#7c3aed")
     ),
     layout = LayoutConfig(
@@ -1842,7 +1846,6 @@ web_theme_cochrane <- function() {
       border = "#b3b3b3",
       row_bg = "#ffffff",
       alt_bg = "#f5f5f5",              # Light grey stripe
-      interval = "#0099cc",
       interval_line = "#2c2c2c",
       summary_fill = "#0099cc",
       summary_border = "#006699"
@@ -1868,7 +1871,6 @@ web_theme_cochrane <- function() {
       point_size = 4,                  # Small markers
       summary_height = 7,
       line_width = 1,
-      border_radius = 0,
       effect_colors = c("#0c4da2", "#dd5129", "#1a8a4f", "#6d4e92", "#e89a47")
     ),
     layout = LayoutConfig(
@@ -1913,7 +1915,6 @@ web_theme_nature <- function() {
       border = "#bdbdbd",              # Slightly stronger border
       row_bg = "#ffffff",
       alt_bg = "#fafafa",              # Subtle grey stripe
-      interval = "#1976d2",
       interval_line = "#1a1a1a",
       summary_fill = "#1976d2",
       summary_border = "#0d47a1"       # Darker blue border
@@ -1939,7 +1940,6 @@ web_theme_nature <- function() {
       point_size = 5,
       summary_height = 8,
       line_width = 1.25,
-      border_radius = 1,               # Almost sharp corners
       effect_colors = c("#e64b35", "#4dbbd5", "#00a087", "#3c5488", "#f39b7f")
     ),
     layout = LayoutConfig(

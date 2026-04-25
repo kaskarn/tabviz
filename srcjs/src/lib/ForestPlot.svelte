@@ -282,11 +282,16 @@
   const scaledWidth = $derived(scalableNaturalWidth * actualScale);
   const scaledHeight = $derived(scalableNaturalHeight * actualScale);
 
-  // Centering margin: center the scaled content within the container
+  // Centering margin: center the scaled content within the container,
+  // independent of auto-fit (v0.25.0+). Previously gated to auto-fit only,
+  // which left non-auto-fit widgets sitting at the left of the container
+  // even when content was narrower than the available width — visually
+  // surprising under high `containerPadding`. The margin is the offset
+  // INSIDE the padding box, so high padding doesn't shift the math.
   const centeringMargin = $derived.by(() => {
-    if (!autoFit || containerContentWidth <= 0 || scaledWidth <= 0) return 0;
+    if (containerContentWidth <= 0 || scaledWidth <= 0) return 0;
     const margin = (containerContentWidth - scaledWidth) / 2;
-    return Math.max(0, margin); // Don't allow negative margin
+    return Math.max(0, margin);
   });
 
   // ResizeObserver - track container and scalable dimensions, report to store
@@ -1300,11 +1305,11 @@
       --wf-axis-height: ${layout.axisHeight}px;
       --wf-group-padding: ${theme.spacing.groupPadding ?? 8}px;
       --wf-footer-gap: ${theme.spacing.footerGap ?? 8}px;
+      --wf-bottom-margin: ${theme.spacing.bottomMargin ?? 16}px;
       --wf-title-subtitle-gap: ${theme.spacing.titleSubtitleGap ?? 13}px;
       --wf-plot-width: ${layout.forestWidth}px;
       --wf-point-size: ${theme.shapes.pointSize}px;
       --wf-line-width: ${theme.shapes.lineWidth}px;
-      --wf-border-radius: ${theme.shapes.borderRadius}px;
       --wf-row-border-width: ${theme.shapes.rowBorderWidth ?? 1}px;
       --wf-header-border-width: ${theme.shapes.headerBorderWidth ?? 2}px;
       --wf-group-border-width: ${theme.shapes.rowGroupBorderWidth ?? 1}px;
@@ -2531,10 +2536,15 @@
      Auto-fit Scaling
      ============================================================================ */
 
-  /* Auto-fit mode (default): scale down if content exceeds container */
+  /* Auto-fit mode (default): scale down if content exceeds container.
+     Padding split into longhand so `--wf-bottom-margin` (theme spacing)
+     can extend padding-bottom without re-declaring the whole shorthand. */
   :global(.tabviz-container.auto-fit) {
     width: 100%;
-    padding: var(--wf-container-padding, 16px);
+    padding-top: var(--wf-container-padding, 16px);
+    padding-left: var(--wf-container-padding, 16px);
+    padding-right: var(--wf-container-padding, 16px);
+    padding-bottom: calc(var(--wf-container-padding, 16px) + var(--wf-bottom-margin, 0px));
     /* Hide overflow - container is explicitly sized to scaled dimensions */
     overflow: hidden;
   }
@@ -2550,7 +2560,10 @@
   /* No auto-fit: render at zoom level, scrollbars if needed */
   :global(.tabviz-container:not(.auto-fit)) {
     overflow: auto;
-    padding: var(--wf-container-padding, 16px);
+    padding-top: var(--wf-container-padding, 16px);
+    padding-left: var(--wf-container-padding, 16px);
+    padding-right: var(--wf-container-padding, 16px);
+    padding-bottom: calc(var(--wf-container-padding, 16px) + var(--wf-bottom-margin, 0px));
   }
 
   :global(.tabviz-container:not(.auto-fit)) .tabviz-scalable {

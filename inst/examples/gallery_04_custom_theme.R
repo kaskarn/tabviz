@@ -22,7 +22,7 @@ terminal_theme <- web_theme_default() |>
     font_size_base = "0.85rem"
   ) |>
   set_spacing(row_height = 28, header_height = 32) |>
-  set_shapes(point_size = 6, line_width = 1.5, border_radius = 0) |>
+  set_shapes(point_size = 6, line_width = 1.5) |>
   set_axis(gridlines = TRUE, gridline_style = "dotted")
 
 theme_demo_data <- tibble(

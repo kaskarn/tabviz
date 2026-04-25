@@ -457,7 +457,6 @@ serialize_theme <- function(theme) {
       } else {
         theme@colors@foreground
       },
-      interval = theme@colors@interval,
       intervalLine = theme@colors@interval_line,
       summaryFill = theme@colors@summary_fill,
       summaryBorder = theme@colors@summary_border,
@@ -500,7 +499,6 @@ serialize_theme <- function(theme) {
       pointSize = theme@shapes@point_size,
       summaryHeight = theme@shapes@summary_height,
       lineWidth = theme@shapes@line_width,
-      borderRadius = theme@shapes@border_radius,
       rowBorderWidth      = theme@shapes@row_border_width,
       headerBorderWidth   = theme@shapes@header_border_width,
       rowGroupBorderWidth = theme@shapes@row_group_border_width,

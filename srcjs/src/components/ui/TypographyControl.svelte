@@ -80,7 +80,7 @@
   >
     <NumberField
       label="Line height"
-      hint="Multiplier of font size"
+      hint="Multiplier of font size — vertical rhythm for all text (titles, headers, body, footers)"
       value={typography.lineHeight}
       min={1.0}
       max={2.0}

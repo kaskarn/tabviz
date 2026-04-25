@@ -39,21 +39,11 @@
 
   const hasSwatches = $derived(Array.isArray(swatches) && swatches.length > 0);
 
-  /** Default tab: Theme when the current value matches a swatch, else Custom. */
-  const matchesSwatch = $derived(
-    hasSwatches && !!swatches?.some((s) => s.toLowerCase() === value?.toLowerCase()),
-  );
+  // Default tab is always "Custom" (v0.25.0+). Users explicitly opt
+  // into the Theme palette by clicking the tab. Per user feedback the
+  // earlier "auto-pick Theme when value matches a swatch" behaviour
+  // surprised authors who expected the free-form picker on first open.
   let tab = $state<"theme" | "custom">("custom");
-  // Pin tab when swatches first appear / value changes; user clicks
-  // override this until the next swatches/value update.
-  let lastSeed = $state<string | null>(null);
-  $effect(() => {
-    const seed = `${hasSwatches}:${value}`;
-    if (seed !== lastSeed) {
-      tab = matchesSwatch ? "theme" : "custom";
-      lastSeed = seed;
-    }
-  });
 
   function handlePicker(e: Event) {
     onchange((e.target as HTMLInputElement).value);
