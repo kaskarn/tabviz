@@ -1,4 +1,6 @@
 <script lang="ts">
+  import EdgeResize from "$components/ui/EdgeResize.svelte";
+
   interface Props {
     caption?: string | null;
     footnote?: string | null;
@@ -12,9 +14,30 @@
       field: "caption" | "footnote",
       anchor: HTMLElement,
     ) => void;
+    /** Current footer gap in px — drives the drag handle's value. */
+    footerGap?: number;
+    /** Live update during a drag (does not record). */
+    onpreviewfootergap?: (value: number) => void;
+    /** Commit on pointerup (records + re-measures). */
+    oncommitfootergap?: (value: number) => void;
   }
 
-  let { caption, footnote, enableEdit = false, onedit }: Props = $props();
+  let {
+    caption,
+    footnote,
+    enableEdit = false,
+    onedit,
+    footerGap,
+    onpreviewfootergap,
+    oncommitfootergap,
+  }: Props = $props();
+
+  const showHandle = $derived(
+    enableEdit &&
+    typeof footerGap === "number" &&
+    !!onpreviewfootergap &&
+    !!oncommitfootergap,
+  );
 
   // Render only when a label is present. An always-reserved footer slot
   // would introduce spacing the author didn't ask for (see PlotHeader
@@ -39,6 +62,16 @@
 
 {#if show}
   <div class="plot-footer">
+    {#if showHandle}
+      <EdgeResize
+        value={footerGap!}
+        min={0}
+        max={80}
+        onpreview={(v) => onpreviewfootergap!(v)}
+        oncommit={(v) => oncommitfootergap!(v)}
+        label="Footer gap"
+      />
+    {/if}
     {#if caption}
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -77,6 +110,7 @@
        between the plot / axis region and the caption band. */
     padding: var(--wf-footer-gap, 8px) 12px 12px 2px;
     border-top: 1px solid var(--wf-border, #e2e8f0);
+    position: relative;
   }
 
   .plot-caption {

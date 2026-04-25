@@ -7,6 +7,7 @@
   import EffectAxis from "$components/forest/EffectAxis.svelte";
   import SummaryDiamond from "$components/forest/SummaryDiamond.svelte";
   import PlotHeader from "$components/forest/PlotHeader.svelte";
+  import EdgeResize from "$components/ui/EdgeResize.svelte";
   import PlotFooter from "$components/forest/PlotFooter.svelte";
   import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
@@ -86,6 +87,7 @@
   const spec = $derived(store.spec);
   const visibleRows = $derived(store.visibleRows);
   const displayRows = $derived(store.displayRows);
+  const groupRowPadded = $derived(store.groupRowPadded);
   const layout = $derived(store.layout);
   const xScale = $derived(store.xScale);
   const axisComputation = $derived(store.axisComputation);
@@ -1356,6 +1358,9 @@
             x: anchor.getBoundingClientRect().left,
             y: anchor.getBoundingClientRect().top,
           })}
+          titleSubtitleGap={theme?.spacing.titleSubtitleGap ?? 13}
+          onpreviewgap={(v) => store.previewThemeField("spacing", "titleSubtitleGap", v)}
+          oncommitgap={(v) => store.setThemeField("spacing", "titleSubtitleGap", v)}
         />
       {/if}
 
@@ -1642,6 +1647,7 @@
               <div
                 class="grid-cell data-cell primary-cell {rowClasses}"
                 class:group-row={isGroupHeader}
+                class:group-row-padded={isGroupHeader && groupRowPadded[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
@@ -1700,6 +1706,7 @@
               <div
                 class="grid-cell data-cell plot-cell {rowClasses}"
                 class:group-row={isGroupHeader}
+                class:group-row-padded={isGroupHeader && groupRowPadded[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
@@ -1725,6 +1732,7 @@
               <div
                 class="grid-cell data-cell {rowClasses}"
                 class:group-row={isGroupHeader}
+                class:group-row-padded={isGroupHeader && groupRowPadded[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
@@ -2195,6 +2203,55 @@
             </svg>
           {/if}
         {/each}
+
+        <!-- Spacing drag handles. v0.24+: thin strips on key seams that
+             let the user drag to resize themed gaps without opening the
+             settings panel. Cursor turns to ns-resize on hover, a faint
+             primary-color bar fades in. Hot zones are 6 px tall and only
+             render when interaction.enableEdit is on. -->
+        {#if labelsEditable && theme}
+          {@const headerHeightPx = layout.headerHeight}
+          {@const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0}
+          <!-- Header height: bottom edge of the column-header band -->
+          <EdgeResize
+            value={theme.spacing.headerHeight}
+            min={0}
+            max={120}
+            onpreview={(v) => store.previewThemeField("spacing", "headerHeight", v)}
+            oncommit={(v) => store.setThemeField("spacing", "headerHeight", v)}
+            label="Header height"
+            top={`${headerHeightPx}px`}
+          />
+          <!-- Row height: bottom edge of every data row -->
+          {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
+            {#if displayRow.type === "data" && displayRow.row.style?.type !== "spacer"}
+              {@const rowBottom = headerHeightPx + layout.rowPositions[i] + layout.rowHeights[i]}
+              <EdgeResize
+                value={theme.spacing.rowHeight}
+                min={16}
+                max={120}
+                onpreview={(v) => store.previewThemeField("spacing", "rowHeight", v)}
+                oncommit={(v) => store.setThemeField("spacing", "rowHeight", v)}
+                label="Row height"
+                top={`${rowBottom}px`}
+              />
+            {/if}
+            {#if displayRow.type === "group_header" && groupRowPadded[i]}
+              <!-- Top of the visible group-header band (after the empty
+                   padding strip). Drag to grow / shrink rowGroupPadding. -->
+              {@const bandTop = headerHeightPx + layout.rowPositions[i] + rowGroupPadding}
+              <EdgeResize
+                value={rowGroupPadding}
+                min={0}
+                max={60}
+                onpreview={(v) => store.previewThemeField("spacing", "rowGroupPadding", v)}
+                oncommit={(v) => store.setThemeField("spacing", "rowGroupPadding", v)}
+                label="Row group padding"
+                top={`${bandTop}px`}
+              />
+            {/if}
+          {/each}
+        {/if}
       </div>
 
       <!-- Plot footer (caption, footnote) -->
@@ -2209,6 +2266,9 @@
           x: anchor.getBoundingClientRect().left,
           y: anchor.getBoundingClientRect().top,
         })}
+        footerGap={theme?.spacing.footerGap ?? 8}
+        onpreviewfootergap={(v) => store.previewThemeField("spacing", "footerGap", v)}
+        oncommitfootergap={(v) => store.setThemeField("spacing", "footerGap", v)}
       />
     </div>
 
@@ -2763,15 +2823,19 @@
      .group-row-bordered, which restores a row-edge border at
      --wf-group-border-width.
 
-     Row-group-padding is split symmetrically as extra vertical padding on
-     BOTH sides of the cell box so the label stays vertically centered in
-     its row instead of sinking to the bottom. Applied to every cell on
-     the group-header grid row (not just the primary) so all cells share
-     the same row height and the row doesn't look lopsided. */
+     Row-group-padding (v0.24+) pads ABOVE the group header instead of
+     symmetric top+bottom — creates separation between a top-level group
+     heading and the previous group's content. Only applied when the row
+     is a top-level group preceded by data; the store flips
+     `.group-row-padded` on those rows. The cell content sinks to the
+     bottom of the taller track via align-items: flex-end so the label
+     visually hugs the row's data band. */
   .grid-cell.group-row {
     border-bottom: 0;
-    padding-top: calc(var(--wf-row-group-padding, 0px) / 2);
-    padding-bottom: calc(var(--wf-row-group-padding, 0px) / 2);
+  }
+  .grid-cell.group-row-padded {
+    padding-top: var(--wf-row-group-padding, 0px);
+    align-items: flex-end;
   }
   .grid-cell.group-row-bordered {
     border-bottom: var(--wf-group-border-width, 1px) solid var(--wf-border);

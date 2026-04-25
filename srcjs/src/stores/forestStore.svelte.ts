@@ -722,6 +722,26 @@ export function createForestStore() {
     );
   });
 
+  // Derived: per-displayRow flag — true when the row is a top-level
+  // group_header preceded by a data row. Drives the
+  // `.group-row-padded` CSS class (padding goes ABOVE the heading,
+  // before the first sibling row, instead of being split symmetrically
+  // around the title) and the matching SVG render offset. Also gates
+  // the rowGroupPadding drag handle in v0.24+.
+  const groupRowPadded = $derived.by((): boolean[] => {
+    const out: boolean[] = [];
+    let seenData = false;
+    for (const dr of displayRows) {
+      if (dr.type === "group_header") {
+        out.push(dr.depth === 0 && seenData);
+      } else {
+        out.push(false);
+        if (dr.type === "data") seenData = true;
+      }
+    }
+    return out;
+  });
+
   // Derived: computed layout
   const layout = $derived.by((): ComputedLayout => {
     if (!spec) {
@@ -791,11 +811,19 @@ export function createForestStore() {
     const rowGroupPadding = spec.theme.spacing.rowGroupPadding ?? 0;
     const dataLineHeightPx = Math.ceil(parseFontSize(spec.theme.typography.fontSizeBase) * lineHeight);
     const rowHeights: number[] = [];
-    for (const displayRow of displayRows) {
+    // rowGroupPadding now pads ABOVE top-level group headers preceded by
+    // data, creating visual separation between a group heading and the
+    // previous group's content. Sub-group headers (depth > 0) and the
+    // very first row (no prior content) don't get the extra band.
+    let seenData = false;
+    for (let i = 0; i < displayRows.length; i++) {
+      const displayRow = displayRows[i];
       if (displayRow.type === "data" && displayRow.row.style?.type === "spacer") {
         rowHeights.push(rowHeight / 2);
+        seenData = true;
       } else if (displayRow.type === "group_header") {
-        rowHeights.push(rowHeight + rowGroupPadding);
+        const padBefore = displayRow.depth === 0 && seenData;
+        rowHeights.push(padBefore ? rowHeight + rowGroupPadding : rowHeight);
       } else if (displayRow.type === "data") {
         const lines = wrapLineCounts[displayRow.row.id] ?? 1;
         if (lines > 1) {
@@ -803,6 +831,7 @@ export function createForestStore() {
         } else {
           rowHeights.push(rowHeight);
         }
+        seenData = true;
       } else {
         rowHeights.push(rowHeight);
       }
@@ -2186,6 +2215,23 @@ export function createForestStore() {
    *  paint-only and don't affect widths, so they stay out of this list. */
   const WIDTH_AFFECTING_SECTIONS = new Set(["typography", "spacing", "shapes"]);
 
+  /**
+   * Live-preview a single theme field during a drag without recording
+   * the edit or invalidating column widths. Mirrors the
+   * previewColumnWidth / setColumnWidth pattern: the resize handle
+   * pumps `previewThemeField()` per pointermove so the layout reflows
+   * without spamming the op log or remeasuring columns each frame, then
+   * commits once via `setThemeField()` on pointerup. Width-affecting
+   * sections (spacing, typography, shapes) only re-measure on commit.
+   */
+  function previewThemeField(section: string, field: string, value: unknown) {
+    if (!spec || !spec.theme) return;
+    const theme = spec.theme as Record<string, unknown>;
+    const current = theme[section];
+    if (!current || typeof current !== "object") return;
+    (current as Record<string, unknown>)[field] = value;
+  }
+
   /** Apply a single in-panel theme edit. Mutates spec.theme so the widget
    *  re-renders, and records the change so it can be exported as R code. */
   function setThemeField(section: string, field: string, value: unknown) {
@@ -2695,6 +2741,9 @@ export function createForestStore() {
     get bandIndexes() {
       return bandIndexes;
     },
+    get groupRowPadded() {
+      return groupRowPadded;
+    },
     get effectiveBanding() {
       return effectiveBanding;
     },
@@ -2982,6 +3031,7 @@ export function createForestStore() {
     setBandingOverride,
     setBandingStartsWithBand,
     setThemeField,
+    previewThemeField,
     setSemanticField,
     setWatermark,
     previewWatermark,

@@ -193,6 +193,9 @@ export interface PrecomputedLayout {
   rowHeights: number[];
   rowPositions: number[];
   totalRowsHeight: number;
+  /** True at index i when displayRows[i] is a top-level group_header
+   *  preceded by data — drives the rowGroupPadding "above only" render. */
+  groupRowPadded: boolean[];
 
   // Header
   headerHeight: number;
@@ -698,15 +701,29 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   let rowsHeight = 0;
   const rowPositions: number[] = [];
   const rowHeights: number[] = [];
+  // rowGroupPadding now pads ABOVE top-level group headers preceded by
+  // data (mirrors forestStore.layout). The padding lives on the
+  // group-header row's own track but renders as empty space above the
+  // visible band — renderGroupHeader call below offsets y to push the
+  // band to the bottom of the taller track.
+  const groupRowPadded: boolean[] = [];
+  let seenData = false;
   for (const dr of displayRows) {
     const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
     let h: number;
-    if (isSpacerRow) h = rowHeight / 2;
-    else if (dr.type === "group_header") h = rowHeight + rowGroupPadding;
-    else if (dr.type === "data") {
+    let padded = false;
+    if (isSpacerRow) {
+      h = rowHeight / 2;
+      seenData = true;
+    } else if (dr.type === "group_header") {
+      padded = dr.depth === 0 && seenData;
+      h = padded ? rowHeight + rowGroupPadding : rowHeight;
+    } else if (dr.type === "data") {
       const lines = wrapLineCounts[dr.row.id] ?? 1;
       h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
+      seenData = true;
     } else h = rowHeight;
+    groupRowPadded.push(padded);
     rowPositions.push(rowsHeight);
     rowHeights.push(h);
     rowsHeight += h;
@@ -849,6 +866,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     labelWidth,
     rowPositions,
     rowHeights,
+    groupRowPadded,
   };
 }
 
@@ -3721,12 +3739,18 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     } else {
       // Group header row — paint the band bg when this header is part of a
       // band. The header's own primary-tint bg is suppressed in the render
-      // step below (via renderBackground=false).
+      // step below (via renderBackground=false). When a top-level group
+      // header is padded above (v0.24+), exclude the padding strip from
+      // the band so it reads as an empty gap between the previous group
+      // and the heading — matching the live widget's `padding-top` on
+      // `.group-row-padded`.
       if (bandIdx === 1) {
         const bgColor = theme.colors.altBg;
         if (bgColor !== theme.colors.background) {
-          parts.push(`<rect x="${padding}" y="${y}"
-            width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
+          const padded = layout.groupRowPadded[i];
+          const offset = padded ? (theme.spacing.rowGroupPadding ?? 0) : 0;
+          parts.push(`<rect x="${padding}" y="${y + offset}"
+            width="${layout.totalWidth - padding * 2}" height="${rowHeight - offset}"
             fill="${bgColor}"/>`);
         }
       }
@@ -4080,13 +4104,20 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // primary-tint bg so the band color reads as continuous with its rows.
       const showCounts = !!spec.interaction?.showGroupCounts;
       const renderBg = bandIndexes[i] == null;
+      // rowGroupPadding (v0.24+) pads ABOVE top-level group headers
+      // preceded by data — push the visible band to the bottom of the
+      // taller track so the empty strip lives above the heading. The
+      // tall-track height is `rowHeight + rowGroupPadding`; the band
+      // we paint is `rowHeight` starting at `y + rowGroupPadding`.
+      const padded = layout.groupRowPadded[i];
+      const offset = padded ? (theme.spacing.rowGroupPadding ?? 0) : 0;
       parts.push(renderGroupHeader(
         displayRow.label,
         displayRow.depth,
         showCounts ? displayRow.rowCount : 0,
         padding,
-        y,
-        rowHeight,
+        y + offset,
+        rowHeight - offset,
         layout.totalWidth - padding * 2,
         theme,
         renderBg,

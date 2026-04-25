@@ -1,3 +1,35 @@
+# tabviz 0.24.0
+
+## Drag-to-resize spacing handles
+
+When `interaction.enableEdit` is on, thin drag handles appear on key
+spacing seams. Hover shows a `ns-resize` cursor + a faint primary-tint
+bar that fades in. Drag updates the layout live (no re-measurement
+per frame); pointerup commits the value via `set_typography()`-style
+recording so the source view exports the change as
+`set_spacing(...)`. Five knobs covered:
+
+- **Title / subtitle gap** — between title and subtitle in the header
+- **Header height** — bottom edge of the column header band
+- **Row group padding** — top edge of every padded top-level group header
+- **Row height** — bottom edge of every data row
+- **Footer gap** — top of the caption / footnote band
+
+Hot zones are 6 px tall; row-hover and column-resize affordances stay
+out of their way. Authors who never enable editing see no UI chrome.
+
+## Row-group padding semantics
+
+`spacing.row_group_padding` now creates separation **before** a
+top-level group header (above its title), instead of being split
+symmetrically around it. Sub-group headers (depth > 0) and the very
+first group header on the page no longer pick up the extra band — the
+padding is meaningful only as a separator between a heading and the
+*previous* group's content, which is what most authors expect.
+
+For SVG export, the empty padding strip stays unpainted by row banding
+so the gap reads as actual empty space between groups.
+
 # tabviz 0.23.0
 
 ## Curated font picker + theme-aware color picker

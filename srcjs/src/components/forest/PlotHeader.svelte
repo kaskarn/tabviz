@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import EdgeResize from "$components/ui/EdgeResize.svelte";
 
   interface Props {
     title?: string | null;
@@ -18,6 +19,10 @@
       anchor: HTMLElement,
     ) => void;
     controls?: Snippet;
+    /** Current title-subtitle gap in px; powers the drag handle. */
+    titleSubtitleGap?: number;
+    onpreviewgap?: (value: number) => void;
+    oncommitgap?: (value: number) => void;
   }
 
   let {
@@ -26,7 +31,17 @@
     enableEdit = false,
     onedit,
     controls,
+    titleSubtitleGap,
+    onpreviewgap,
+    oncommitgap,
   }: Props = $props();
+
+  const showHandle = $derived(
+    enableEdit &&
+    !!title && !!subtitle &&
+    typeof titleSubtitleGap === "number" &&
+    !!onpreviewgap && !!oncommitgap,
+  );
 
   // Render the area only when a real label is present. An always-reserved
   // header slot (to host Add-label affordances) breaks intentional spacing
@@ -68,18 +83,30 @@
         >{title}</h2>
       {/if}
       {#if subtitle}
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-        <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
-        <p
-          class="plot-subtitle"
-          class:editable={enableEdit}
-          ondblclick={(e) => handle("subtitle", e)}
-          onkeydown={(e) => handleKey("subtitle", e)}
-          tabindex={enableEdit ? 0 : undefined}
-          role={enableEdit ? "button" : undefined}
-          title={enableEdit ? "Double-click to edit subtitle" : undefined}
-        >{subtitle}</p>
+        <div class="subtitle-wrap">
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+          <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
+          <p
+            class="plot-subtitle"
+            class:editable={enableEdit}
+            ondblclick={(e) => handle("subtitle", e)}
+            onkeydown={(e) => handleKey("subtitle", e)}
+            tabindex={enableEdit ? 0 : undefined}
+            role={enableEdit ? "button" : undefined}
+            title={enableEdit ? "Double-click to edit subtitle" : undefined}
+          >{subtitle}</p>
+          {#if showHandle}
+            <EdgeResize
+              value={titleSubtitleGap!}
+              min={0}
+              max={60}
+              onpreview={(v) => onpreviewgap!(v)}
+              oncommit={(v) => oncommitgap!(v)}
+              label="Title-subtitle gap"
+            />
+          {/if}
+        </div>
       {/if}
     </div>
     {#if controls}
@@ -133,6 +160,12 @@
     line-height: 1.4;
     white-space: normal;
     word-wrap: break-word;
+  }
+
+  /* Wrap is position-relative so the EdgeResize handle (when shown) can
+     sit absolutely on the title-subtitle border line. */
+  .subtitle-wrap {
+    position: relative;
   }
 
   /* Subtle separator above subtitle when both title and subtitle exist.
