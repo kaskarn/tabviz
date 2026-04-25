@@ -13,7 +13,12 @@
 #' @param show_header Whether to show the header cell. `NA` (default) follows
 #'   the "auto" rule: shown if `header` is a non-empty string. `TRUE` or `FALSE`
 #'   override.
-#' @param wrap Enable text wrapping (default FALSE). When TRUE, long text wraps instead of being truncated.
+#' @param wrap Multi-line cell text. `FALSE` / `0` (default) renders a
+#'   single line with ellipsis on overflow. `TRUE` / `1` allows up to 2
+#'   lines (1 extra). A non-negative integer `n` allows up to `n + 1`
+#'   lines total. Author-supplied `\n` is honoured first, then long
+#'   segments word-wrap within the column's content width. The row
+#'   track auto-grows to fit.
 #' @param sortable Whether the column is sortable
 #' @param options Named list of type-specific options
 #' @param style_bold Column name containing logical values for per-cell bold styling
@@ -176,8 +181,12 @@ is_reserved_id <- function(id) {
 #' @param show_header Whether to show the header cell. `NULL` / `NA` (default)
 #'   uses the auto rule (shown when `header` is non-empty). `TRUE` / `FALSE`
 #'   force the header on or off.
-#' @param wrap Enable text wrapping (default FALSE). When TRUE, long text wraps
-#'   instead of being truncated with ellipsis.
+#' @param wrap Multi-line cell text. `FALSE` / `0` (default) renders a
+#'   single line with ellipsis on overflow. `TRUE` / `1` allows up to 2
+#'   lines (1 extra). A non-negative integer `n` allows up to `n + 1`
+#'   lines total. Author-supplied `\n` is honoured first, then long
+#'   segments word-wrap within the column's content width. The row
+#'   track auto-grows to fit.
 #' @param sortable Whether sortable
 #' @param options Named list of type-specific options
 #' @param na_text Text to display for NA/missing values (default "" for empty)

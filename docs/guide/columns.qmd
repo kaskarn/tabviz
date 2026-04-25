@@ -22,7 +22,7 @@ Every `col_*()` helper accepts the same arguments for layout and styling. These 
 | `align` | `"left"` (numeric types default to `"right"`) | Body cell alignment: `"left"`, `"center"`, `"right"` |
 | `header_align` | follows `align` | Header alignment; override to decouple |
 | `show_header` | auto | `TRUE`/`FALSE` to force; `NULL` shows when `header` is non-empty |
-| `wrap` | `FALSE` | Wrap long text instead of truncating with ellipsis |
+| `wrap` | `FALSE` | Multi-line cell text. `FALSE`/`0` = single line (ellipsis on overflow). `TRUE`/`1` = up to 2 lines (1 extra). Integer `n` = up to `n + 1` lines. Author `\n` is honoured first, then long segments word-wrap within the column width. |
 | `sortable` | `TRUE` | Allow sort on header click |
 | `na_text` | `NULL` | Text to display for NA/missing values (default is blank) |
 | `tooltip` | `NULL` | Column whose values become per-cell hover text |
@@ -281,7 +281,8 @@ Plain text with optional truncation. `col_label()` is the convenience helper for
 #| eval: false
 col_text("drug")
 col_text("notes", "Notes", max_chars = 50)      # truncate with ellipsis
-col_text("description", wrap = TRUE, width = 220)   # wrap instead
+col_text("description", wrap = TRUE, width = 220)   # wrap (up to 2 lines)
+col_text("notes", wrap = 3, width = 200)            # up to 4 lines
 
 col_label("study_id")                           # header auto: "Study Id"
 col_label("study_id", header = "Study")          # explicit header

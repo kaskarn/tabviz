@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="700" height="277"
-  viewBox="0 0 700 277">
+  width="700" height="229"
+  viewBox="0 0 700 229">
 <style>
   text {
     font-variant-numeric: tabular-nums;
@@ -10,221 +10,221 @@
   .cell-text { dominant-baseline: central; }
 </style>
 <rect width="100%" height="100%" fill="#ffffff"/>
-<text x="6" y="30"
+<text x="6" y="19"
       font-family="Arial, Helvetica, sans-serif"
       font-size="13.33px"
       font-weight="700"
       fill="#000000">GLP-1 Agonist Cardiovascular Outcomes</text>
 <line x1="6" x2="694"
-      y1="40" y2="40"
+      y1="28" y2="28"
       stroke="#000000" stroke-width="2"/>
-<text class="cell-text" x="16" y="54"
+<text class="cell-text" x="16" y="40"
         font-family="Arial, Helvetica, sans-serif"
         font-size="12.6px"
         font-weight="700"
         fill="#000000">Study</text>
-<text class="cell-text" x="101" y="54"
+<text class="cell-text" x="101" y="40"
           font-family="Arial, Helvetica, sans-serif"
           font-size="12.6px"
           font-weight="700"
           text-anchor="start"
           fill="#000000">Drug</text>
-<text class="cell-text" x="404" y="54"
+<text class="cell-text" x="404" y="40"
           font-family="Arial, Helvetica, sans-serif"
           font-size="12.6px"
           font-weight="700"
           text-anchor="start"
           fill="#000000">HR (95% CI)</text>
 <line x1="6" x2="694"
-        y1="68" y2="68"
+        y1="52" y2="52"
         stroke="#000000" stroke-width="2"/>
-<rect x="6" y="68"
+<rect x="6" y="52"
             width="688" height="18"
             fill="#f9fafb"/>
-<rect x="6" y="104"
+<rect x="6" y="88"
             width="688" height="18"
             fill="#f9fafb"/>
-<rect x="6" y="140"
+<rect x="6" y="124"
             width="688" height="18"
             fill="#f9fafb"/>
-<line x1="348.3742729235796" x2="348.3742729235796" y1="68" y2="158"
+<line x1="348.3742729235796" x2="348.3742729235796" y1="52" y2="142"
     stroke="#555555" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
-          <line x1="253.73582399951965" x2="339.46280670729067" y1="77" y2="77"
+          <line x1="253.73582399951965" x2="339.46280670729067" y1="61" y2="61"
             stroke="#000000" stroke-width="1.25"/>
-          <line x1="253.73582399951965" x2="253.73582399951965" y1="74" y2="80" stroke="#000000" stroke-width="1.25"/>
-          <line x1="339.46280670729067" x2="339.46280670729067" y1="74" y2="80" stroke="#000000" stroke-width="1.25"/>
-          <rect x="292.06162866987506" y="73" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="253.73582399951965" x2="253.73582399951965" y1="58" y2="64" stroke="#000000" stroke-width="1.25"/>
+          <line x1="339.46280670729067" x2="339.46280670729067" y1="58" y2="64" stroke="#000000" stroke-width="1.25"/>
+          <rect x="292.06162866987506" y="57" width="8" height="8" fill="#1a1a1a"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="250.7142608601314" x2="366.5053125067792" y1="95" y2="95"
+          <line x1="250.7142608601314" x2="366.5053125067792" y1="79" y2="79"
             stroke="#000000" stroke-width="1.25"/>
-          <line x1="250.7142608601314" x2="250.7142608601314" y1="92" y2="98" stroke="#000000" stroke-width="1.25"/>
-          <line x1="366.5053125067792" x2="366.5053125067792" y1="92" y2="98" stroke="#000000" stroke-width="1.25"/>
-          <rect x="303.4209351300208" y="91" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="250.7142608601314" x2="250.7142608601314" y1="76" y2="82" stroke="#000000" stroke-width="1.25"/>
+          <line x1="366.5053125067792" x2="366.5053125067792" y1="76" y2="82" stroke="#000000" stroke-width="1.25"/>
+          <rect x="303.4209351300208" y="75" width="8" height="8" fill="#1a1a1a"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="305.2077140998747" x2="343.0824272405151" y1="113" y2="113"
+          <line x1="305.2077140998747" x2="343.0824272405151" y1="97" y2="97"
             stroke="#000000" stroke-width="1.25"/>
-          <line x1="305.2077140998747" x2="305.2077140998747" y1="110" y2="116" stroke="#000000" stroke-width="1.25"/>
-          <line x1="343.0824272405151" x2="343.0824272405151" y1="110" y2="116" stroke="#000000" stroke-width="1.25"/>
-          <rect x="320.1795078364238" y="109" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="305.2077140998747" x2="305.2077140998747" y1="94" y2="100" stroke="#000000" stroke-width="1.25"/>
+          <line x1="343.0824272405151" x2="343.0824272405151" y1="94" y2="100" stroke="#000000" stroke-width="1.25"/>
+          <rect x="320.1795078364238" y="93" width="8" height="8" fill="#1a1a1a"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="307.4209351300208" x2="346.6281727853406" y1="131" y2="131"
+          <line x1="307.4209351300208" x2="346.6281727853406" y1="115" y2="115"
             stroke="#000000" stroke-width="1.25"/>
-          <line x1="307.4209351300208" x2="307.4209351300208" y1="128" y2="134" stroke="#000000" stroke-width="1.25"/>
-          <line x1="346.6281727853406" x2="346.6281727853406" y1="128" y2="134" stroke="#000000" stroke-width="1.25"/>
-          <rect x="322.16507803511195" y="127" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="307.4209351300208" x2="307.4209351300208" y1="112" y2="118" stroke="#000000" stroke-width="1.25"/>
+          <line x1="346.6281727853406" x2="346.6281727853406" y1="112" y2="118" stroke="#000000" stroke-width="1.25"/>
+          <rect x="322.16507803511195" y="111" width="8" height="8" fill="#1a1a1a"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="316.00221024023824" x2="348.3742729235796" y1="149" y2="149"
+          <line x1="316.00221024023824" x2="348.3742729235796" y1="133" y2="133"
             stroke="#000000" stroke-width="1.25"/>
-          <line x1="316.00221024023824" x2="316.00221024023824" y1="146" y2="152" stroke="#000000" stroke-width="1.25"/>
-          <line x1="348.3742729235796" x2="348.3742729235796" y1="146" y2="152" stroke="#000000" stroke-width="1.25"/>
-          <rect x="327.98915974303077" y="145" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="316.00221024023824" x2="316.00221024023824" y1="130" y2="136" stroke="#000000" stroke-width="1.25"/>
+          <line x1="348.3742729235796" x2="348.3742729235796" y1="130" y2="136" stroke="#000000" stroke-width="1.25"/>
+          <rect x="327.98915974303077" y="129" width="8" height="8" fill="#1a1a1a"/>
         </g>
-<g transform="translate(0, 170)"><line x1="214" x2="394"
+<g transform="translate(0, 154)"><line x1="214" x2="394"
     y1="0" y2="0" stroke="#000000" stroke-width="1"/>
 <line x1="259.6257270764204" x2="259.6257270764204" y1="0" y2="4"
       stroke="#000000" stroke-width="1"/>
-<text x="259.6257270764204" y="16" text-anchor="middle"
+<text x="259.6257270764204" y="15" text-anchor="middle"
       font-family="Arial, Helvetica, sans-serif"
       font-size="10.67px"
       font-weight="400"
       fill="#333333">0.60</text>
 <line x1="348.3742729235796" x2="348.3742729235796" y1="0" y2="4"
       stroke="#000000" stroke-width="1"/>
-<text x="348.3742729235796" y="16" text-anchor="middle"
+<text x="348.3742729235796" y="15" text-anchor="middle"
       font-family="Arial, Helvetica, sans-serif"
       font-size="10.67px"
       font-weight="400"
       fill="#333333">1.00</text>
-<text x="304" y="28"
+<text x="304" y="26"
       text-anchor="middle"
       font-family="Arial, Helvetica, sans-serif"
       font-size="10.67px"
       font-weight="500"
       fill="#333333">Effect</text></g>
-<text class="cell-text" x="16" y="77"
+<text class="cell-text" x="16" y="61"
     font-family="Arial, Helvetica, sans-serif"
     font-size="12px"
     font-weight="400"
     font-style="normal"
     fill="#000000">SUSTAIN-6</text>
-<text class="cell-text" x="101" y="77"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">Semaglutide 1mg</text>
-<text class="cell-text" x="404" y="77"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">0.74 (0.58, 0.95)</text>
+<text class="cell-text" x="101" y="61"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">Semaglutide 1mg</text>
+<text class="cell-text" x="404" y="61"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">0.74 (0.58, 0.95)</text>
 <line x1="6" x2="694"
-          y1="86" y2="86"
+          y1="70" y2="70"
           stroke="#000000" stroke-width="1"/>
-<text class="cell-text" x="16" y="95"
+<text class="cell-text" x="16" y="79"
     font-family="Arial, Helvetica, sans-serif"
     font-size="12px"
     font-weight="400"
     font-style="normal"
     fill="#000000">PIONEER 6</text>
-<text class="cell-text" x="101" y="95"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">Oral Semaglutide</text>
-<text class="cell-text" x="404" y="95"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">0.79 (0.57, 1.11)</text>
+<text class="cell-text" x="101" y="79"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">Oral Semaglutide</text>
+<text class="cell-text" x="404" y="79"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">0.79 (0.57, 1.11)</text>
 <line x1="6" x2="694"
-          y1="104" y2="104"
+          y1="88" y2="88"
           stroke="#000000" stroke-width="1"/>
-<text class="cell-text" x="16" y="113"
+<text class="cell-text" x="16" y="97"
     font-family="Arial, Helvetica, sans-serif"
     font-size="12px"
     font-weight="400"
     font-style="normal"
     fill="#000000">LEADER</text>
-<text class="cell-text" x="101" y="113"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">Liraglutide</text>
-<text class="cell-text" x="404" y="113"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">0.87 (0.78, 0.97)</text>
+<text class="cell-text" x="101" y="97"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">Liraglutide</text>
+<text class="cell-text" x="404" y="97"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">0.87 (0.78, 0.97)</text>
 <line x1="6" x2="694"
-          y1="122" y2="122"
+          y1="106" y2="106"
           stroke="#000000" stroke-width="1"/>
-<text class="cell-text" x="16" y="131"
+<text class="cell-text" x="16" y="115"
     font-family="Arial, Helvetica, sans-serif"
     font-size="12px"
     font-weight="400"
     font-style="normal"
     fill="#000000">REWIND</text>
-<text class="cell-text" x="101" y="131"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">Dulaglutide</text>
-<text class="cell-text" x="404" y="131"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">0.88 (0.79, 0.99)</text>
+<text class="cell-text" x="101" y="115"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">Dulaglutide</text>
+<text class="cell-text" x="404" y="115"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">0.88 (0.79, 0.99)</text>
 <line x1="6" x2="694"
-          y1="140" y2="140"
+          y1="124" y2="124"
           stroke="#000000" stroke-width="1"/>
-<text class="cell-text" x="16" y="149"
+<text class="cell-text" x="16" y="133"
     font-family="Arial, Helvetica, sans-serif"
     font-size="12px"
     font-weight="400"
     font-style="normal"
     fill="#000000">EXSCEL</text>
-<text class="cell-text" x="101" y="149"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">Exenatide QW</text>
-<text class="cell-text" x="404" y="149"
-        font-family="Arial, Helvetica, sans-serif"
-        font-size="12px"
-        font-weight="400"
-        font-style="normal"
-        text-anchor="start"
-        fill="#000000">0.91 (0.83, 1.00)</text>
+<text class="cell-text" x="101" y="133"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">Exenatide QW</text>
+<text class="cell-text" x="404" y="133"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="12px"
+          font-weight="400"
+          font-style="normal"
+          text-anchor="start"
+          fill="#000000">0.91 (0.83, 1.00)</text>
 <line x1="6" x2="694"
-          y1="158" y2="158"
+          y1="142" y2="142"
           stroke="#000000" stroke-width="1"/>
 
 </svg>

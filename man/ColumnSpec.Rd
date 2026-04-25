@@ -49,7 +49,12 @@ ColumnSpec(
 the "auto" rule: shown if \code{header} is a non-empty string. \code{TRUE} or \code{FALSE}
 override.}
 
-\item{wrap}{Enable text wrapping (default FALSE). When TRUE, long text wraps instead of being truncated.}
+\item{wrap}{Multi-line cell text. \code{FALSE} / \code{0} (default) renders a
+single line with ellipsis on overflow. \code{TRUE} / \code{1} allows up to 2
+lines (1 extra). A non-negative integer \code{n} allows up to \code{n + 1}
+lines total. Author-supplied \verb{\\n} is honoured first, then long
+segments word-wrap within the column's content width. The row
+track auto-grows to fit.}
 
 \item{sortable}{Whether the column is sortable}
 
