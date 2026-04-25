@@ -39,7 +39,12 @@ ColorPalette <- new_class(
     interval_line = new_property(class_character, default = "#475569"),
     # Summary/aggregate colors
     summary_fill = new_property(class_character, default = "#0891b2"),
-    summary_border = new_property(class_character, default = "#0e7490")
+    summary_border = new_property(class_character, default = "#0e7490"),
+    # Author-curated 8-color palette surfaced in the settings panel's
+    # "Theme" tab on every color picker. NA = derive from existing
+    # named colors at serialize time so every theme works on day one.
+    # When set, must be a length-8 character vector of valid hex.
+    swatches = new_property(class_any, default = NA)
   ),
   validator = function(self) {
     # Regex for valid CSS hex colors: #RGB, #RRGGBB, or #RRGGBBAA
@@ -62,6 +67,18 @@ ColorPalette <- new_class(
     if (length(invalid) > 0) {
       return(paste("Invalid hex color values:", paste(invalid, collapse = ", "),
                    "- colors must be hex format like #RGB, #RRGGBB, or #RRGGBBAA"))
+    }
+    sw <- self@swatches
+    if (length(sw) == 1 && is.na(sw)) {
+      # NA sentinel: serializer derives a default palette.
+    } else if (!is.character(sw) || length(sw) != 8) {
+      return("swatches must be NA or a character vector of length 8")
+    } else {
+      bad <- sw[!grepl(hex_pattern, sw)]
+      if (length(bad) > 0) {
+        return(paste0("swatches contains invalid hex value(s): ",
+                      paste(bad, collapse = ", ")))
+      }
     }
     NULL
   }

@@ -8,9 +8,17 @@
     value: string;
     /** Fired whenever the value changes — either swatch picker or hex input. */
     onchange: (value: string) => void;
+    /**
+     * Optional 8-color theme palette. When provided, renders a small
+     * "Theme / Custom" tab control above the input row. Click a theme
+     * swatch to apply that color; switch to Custom for the free-form
+     * hex picker. When absent (the historical behaviour), the picker
+     * stays purely free-form — no tabs.
+     */
+    swatches?: string[];
   }
 
-  let { label, hint, value, onchange }: Props = $props();
+  let { label, hint, value, onchange, swatches }: Props = $props();
 
   /**
    * The native `<input type="color">` only accepts 6-digit hex. The theme
@@ -29,6 +37,24 @@
 
   const pickerValue = $derived(normalizeForPicker(value));
 
+  const hasSwatches = $derived(Array.isArray(swatches) && swatches.length > 0);
+
+  /** Default tab: Theme when the current value matches a swatch, else Custom. */
+  const matchesSwatch = $derived(
+    hasSwatches && !!swatches?.some((s) => s.toLowerCase() === value?.toLowerCase()),
+  );
+  let tab = $state<"theme" | "custom">("custom");
+  // Pin tab when swatches first appear / value changes; user clicks
+  // override this until the next swatches/value update.
+  let lastSeed = $state<string | null>(null);
+  $effect(() => {
+    const seed = `${hasSwatches}:${value}`;
+    if (seed !== lastSeed) {
+      tab = matchesSwatch ? "theme" : "custom";
+      lastSeed = seed;
+    }
+  });
+
   function handlePicker(e: Event) {
     onchange((e.target as HTMLInputElement).value);
   }
@@ -36,31 +62,74 @@
   function handleText(e: Event) {
     onchange((e.target as HTMLInputElement).value);
   }
+
+  function pickSwatch(c: string) {
+    onchange(c);
+  }
 </script>
 
 <div class="color-field" title={hint}>
   <span class="label">{label}</span>
   <div class="controls">
-    <!-- The swatch IS the color picker — clicking it opens the native
-         color dialog. Overlay the current value as a background so it
-         always reads as "a swatch" even before the user interacts. -->
-    <label class="swatch" style:background={value}>
-      <input
-        class="picker"
-        type="color"
-        value={pickerValue}
-        oninput={handlePicker}
-        aria-label="{label} color picker"
-      />
-    </label>
-    <input
-      class="hex"
-      type="text"
-      {value}
-      oninput={handleText}
-      spellcheck="false"
-      aria-label="{label} color value"
-    />
+    {#if hasSwatches}
+      <div class="tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          class="tab"
+          class:active={tab === "theme"}
+          aria-selected={tab === "theme"}
+          onclick={() => (tab = "theme")}
+        >Theme</button>
+        <button
+          type="button"
+          role="tab"
+          class="tab"
+          class:active={tab === "custom"}
+          aria-selected={tab === "custom"}
+          onclick={() => (tab = "custom")}
+        >Custom</button>
+      </div>
+    {/if}
+
+    {#if hasSwatches && tab === "theme"}
+      <div class="swatches" role="group" aria-label="{label} theme swatches">
+        {#each swatches ?? [] as c, i (i)}
+          <button
+            type="button"
+            class="theme-swatch"
+            class:selected={c.toLowerCase() === value?.toLowerCase()}
+            style:background={c}
+            title={c}
+            aria-label="Apply {c}"
+            onclick={() => pickSwatch(c)}
+          ></button>
+        {/each}
+      </div>
+    {:else}
+      <div class="custom-row">
+        <!-- The swatch IS the color picker — clicking it opens the native
+             color dialog. Overlay the current value as a background so it
+             always reads as "a swatch" even before the user interacts. -->
+        <label class="swatch" style:background={value}>
+          <input
+            class="picker"
+            type="color"
+            value={pickerValue}
+            oninput={handlePicker}
+            aria-label="{label} color picker"
+          />
+        </label>
+        <input
+          class="hex"
+          type="text"
+          {value}
+          oninput={handleText}
+          spellcheck="false"
+          aria-label="{label} color value"
+        />
+      </div>
+    {/if}
   </div>
 </div>
 
@@ -83,8 +152,70 @@
 
   .controls {
     display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .custom-row {
+    display: flex;
     gap: 4px;
     align-items: center;
+  }
+
+  .tabs {
+    display: inline-flex;
+    border: 1px solid color-mix(in srgb, var(--wf-fg, #1a1a1a) 12%, transparent);
+    border-radius: 4px;
+    overflow: hidden;
+    height: 18px;
+  }
+
+  .tab {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--wf-fg, #1a1a1a);
+    font-size: 0.65rem;
+    font-weight: 500;
+    padding: 0 8px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .tab.active {
+    background: var(--wf-primary, #2563eb);
+    color: var(--wf-bg, #ffffff);
+  }
+
+  .tab + .tab {
+    border-left: 1px solid color-mix(in srgb, var(--wf-fg, #1a1a1a) 12%, transparent);
+  }
+
+  .swatches {
+    display: inline-grid;
+    grid-template-columns: repeat(8, 16px);
+    gap: 4px;
+  }
+
+  .theme-swatch {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--wf-fg, #1a1a1a) 25%, transparent);
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .theme-swatch:hover {
+    transform: scale(1.15);
+  }
+
+  .theme-swatch.selected {
+    box-shadow: 0 0 0 2px var(--wf-bg, #ffffff),
+                0 0 0 3px var(--wf-primary, #2563eb);
   }
 
   .swatch {

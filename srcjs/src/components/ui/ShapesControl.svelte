@@ -3,6 +3,7 @@
   import SettingsSection from "./SettingsSection.svelte";
   import NumberField from "./NumberField.svelte";
   import ColorField from "./ColorField.svelte";
+  import { resolveSwatches } from "$lib/swatches";
 
   interface Props {
     store: ForestStore;
@@ -11,6 +12,7 @@
   let { store }: Props = $props();
 
   const shapes = $derived(store.spec?.theme?.shapes);
+  const swatches = $derived(resolveSwatches(store.spec?.theme));
 
   function setField(field: string, value: unknown) {
     store.setThemeField("shapes", field, value);
@@ -67,6 +69,7 @@
           label={`Effect ${i + 1}`}
           value={c}
           onchange={(v) => setEffectColor(i, v)}
+          {swatches}
         />
       {/each}
     </SettingsSection>

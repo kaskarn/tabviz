@@ -3,6 +3,7 @@
   import SettingsSection from "./SettingsSection.svelte";
   import TextField from "./TextField.svelte";
   import NumberField from "./NumberField.svelte";
+  import FontFamilyPicker from "./FontFamilyPicker.svelte";
 
   interface Props {
     store: ForestStore;
@@ -32,11 +33,11 @@
 {#if typography}
   <SettingsSection
     title="Font family"
-    description="Any CSS font-family stack. Values propagate to both the HTML widget and SVG exports."
+    description="Pick a curated stack or supply your own via Custom. Applies to both the HTML widget and SVG exports."
   >
-    <TextField
+    <FontFamilyPicker
       label="Family"
-      hint="e.g. Georgia, serif"
+      hint="Curated tabular fonts; pick Custom for any CSS stack"
       value={typography.fontFamily}
       onchange={(v) => setField("fontFamily", v)}
     />

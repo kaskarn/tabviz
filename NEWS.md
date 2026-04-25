@@ -1,3 +1,51 @@
+# tabviz 0.23.0
+
+## Curated font picker + theme-aware color picker
+
+Two settings-panel pickers get a major UX upgrade. Serialization,
+the recorder, and the SVG export are unchanged — same `set_colors()`
+/ `set_typography(font_family = ...)` output as before.
+
+### Font family
+
+Settings → Typography → Font family is now a curated dropdown of
+10 well-suited tabular stacks (System UI, Inter, Source Sans Pro,
+Helvetica Neue, Arial, Georgia, Charter, IBM Plex Sans, Atkinson
+Hyperlegible, JetBrains Mono) plus a "Custom..." option that
+reveals the prior free-text field. Each option previews itself in
+its own font. No web fonts are loaded — stacks fall back gracefully
+across macOS / Windows / Linux.
+
+### Color picker tabs
+
+Every color knob in the settings panel (Colors, Shapes effect
+palette, Group headers backgrounds, Watermark color) now offers
+two tabs:
+
+- **Theme**: 8 swatches drawn from the active theme — click one
+  to apply.
+- **Custom**: the existing free-form swatch + hex input.
+
+Default tab follows the current value: lands on Theme when the
+value matches a swatch, Custom otherwise.
+
+### New theme property
+
+`ColorPalette` gains an optional `swatches` slot — a length-8
+character vector of hex colors:
+
+```r
+web_theme_default() |>
+  set_colors(swatches = c("#0f172a", "#1e293b", "#334155",
+                          "#475569", "#64748b", "#94a3b8",
+                          "#cbd5e1", "#f1f5f9"))
+```
+
+When unset (the default), the serializer derives a sensible
+8-slot palette from existing named colors (primary, accent,
+secondary, muted, foreground, border, background, row_bg) so every
+shipped theme has a usable Theme tab without opting in.
+
 # tabviz 0.22.0
 
 ## Multi-line wrap for text columns

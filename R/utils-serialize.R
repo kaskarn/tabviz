@@ -394,6 +394,32 @@ serialize_semantics <- function(s) {
   )
 }
 
+#' Resolve the 8-color theme palette used by the settings panel's
+#' "Theme" tab. Returns the author-curated `swatches` when set,
+#' otherwise derives a sensible default from existing named colors.
+#' Mix accents (primary, accent, secondary, muted) with
+#' surface/structure colors (foreground, border, background, row_bg)
+#' so the palette doubles as a quick reference for the active theme.
+#' @keywords internal
+default_swatches <- function(palette) {
+  c(
+    palette@primary,
+    palette@accent,
+    palette@secondary,
+    palette@muted,
+    palette@foreground,
+    palette@border,
+    palette@background,
+    palette@row_bg
+  )
+}
+
+#' @keywords internal
+resolve_swatches <- function(palette) {
+  sw <- palette@swatches
+  if (length(sw) == 8 && is.character(sw)) sw else default_swatches(palette)
+}
+
 #' Serialize WebTheme
 #' @keywords internal
 serialize_theme <- function(theme) {
@@ -434,7 +460,11 @@ serialize_theme <- function(theme) {
       interval = theme@colors@interval,
       intervalLine = theme@colors@interval_line,
       summaryFill = theme@colors@summary_fill,
-      summaryBorder = theme@colors@summary_border
+      summaryBorder = theme@colors@summary_border,
+      # Author-curated 8-color palette surfaced in the settings panel.
+      # NA = derive a sensible default from the theme's named colors so
+      # every preset gets a usable Theme tab without having to opt in.
+      swatches = resolve_swatches(theme@colors)
     ),
     typography = list(
       fontFamily = theme@typography@font_family,

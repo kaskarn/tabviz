@@ -2,6 +2,7 @@
   import type { ForestStore } from "$stores/forestStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
+  import { resolveSwatches } from "$lib/swatches";
 
   interface Props {
     store: ForestStore;
@@ -12,6 +13,7 @@
   // Live color palette — reactive to spec.theme mutations the store performs
   // on our behalf when setThemeField() runs.
   const colors = $derived(store.spec?.theme?.colors);
+  const swatches = $derived(resolveSwatches(store.spec?.theme));
 
   function set(field: string, value: string) {
     store.setThemeField("colors", field, value);
@@ -60,6 +62,7 @@
         hint={f.hint}
         value={(colors as Record<string, string>)[f.key]}
         onchange={(v) => set(f.key, v)}
+        {swatches}
       />
     {/each}
   </SettingsSection>
@@ -74,6 +77,7 @@
         hint={f.hint}
         value={(colors as Record<string, string>)[f.key]}
         onchange={(v) => set(f.key, v)}
+        {swatches}
       />
     {/each}
   </SettingsSection>
@@ -88,6 +92,7 @@
         hint={f.hint}
         value={(colors as Record<string, string>)[f.key]}
         onchange={(v) => set(f.key, v)}
+        {swatches}
       />
     {/each}
   </SettingsSection>
@@ -102,6 +107,7 @@
         hint={f.hint}
         value={(colors as Record<string, string>)[f.key]}
         onchange={(v) => set(f.key, v)}
+        {swatches}
       />
     {/each}
   </SettingsSection>

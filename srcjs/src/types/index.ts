@@ -445,6 +445,13 @@ export interface ColorPalette {
   intervalLine: string;
   summaryFill: string;
   summaryBorder: string;
+  /**
+   * Author-curated 8-color palette surfaced in the settings panel's
+   * "Theme" tab on every color picker. Always serialized (the R side
+   * derives a sensible default when not set), so length is 8 in
+   * practice; typed as `string[]` for forward-compat.
+   */
+  swatches: string[];
 }
 
 export interface Typography {

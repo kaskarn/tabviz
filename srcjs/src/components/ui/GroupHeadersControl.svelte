@@ -6,6 +6,7 @@
   import BooleanField from "./BooleanField.svelte";
   import OptionalField from "./OptionalField.svelte";
   import ColorField from "./ColorField.svelte";
+  import { resolveSwatches } from "$lib/swatches";
 
   interface Props {
     store: ForestStore;
@@ -14,6 +15,7 @@
   let { store }: Props = $props();
 
   const gh = $derived(store.spec?.theme?.groupHeaders);
+  const swatches = $derived(resolveSwatches(store.spec?.theme));
 
   function setField(field: string, value: unknown) {
     store.setThemeField("groupHeaders", field, value);
@@ -109,6 +111,7 @@
               label=""
               value={(gh[bgKey] as string) ?? "#eef2ff"}
               onchange={(v) => setField(bgKey as string, v)}
+              {swatches}
             />
           {/snippet}
         </OptionalField>

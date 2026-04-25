@@ -4,6 +4,7 @@
   import TextField from "./TextField.svelte";
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
+  import { resolveSwatches } from "$lib/swatches";
 
   interface Props {
     store: ForestStore;
@@ -15,6 +16,7 @@
   const fallbackColor = $derived(store.spec?.theme?.colors?.foreground ?? "#1a1a1a");
   const color    = $derived(store.spec?.watermarkColor   ?? fallbackColor);
   const opacity  = $derived(store.spec?.watermarkOpacity ?? 0.07);
+  const swatches = $derived(resolveSwatches(store.spec?.theme));
 </script>
 
 <SettingsSection
@@ -34,6 +36,7 @@
     hint="Inherits foreground by default"
     value={color}
     onchange={(v) => store.setWatermarkColor(v)}
+    {swatches}
   />
   <NumberField
     label="Opacity"
