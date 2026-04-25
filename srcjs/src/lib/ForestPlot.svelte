@@ -34,6 +34,7 @@
   import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
   import { getVisualTypeDef, isVizType, resolveShowHeader } from "$lib/column-compat";
   import { resolveSemanticBundle } from "$lib/semantic-styling";
+  import { computeAxisLayout, textRegionHeight } from "$lib/typography-layout";
   import {
     isLayoutDebugEnabled,
     isLayoutOverlayEnabled,
@@ -1639,7 +1640,17 @@
                 data-field={row ? column.field : undefined}
                 style:grid-row={gridRow}
                 style:background-color={effectiveBg}
-                style:padding-left={isGroupHeader ? `${rowDepth * 12}px` : (row?.style?.indent ?? rowDepth) ? `${(row?.style?.indent ?? rowDepth) * 12}px` : undefined}
+                style:padding-left={(() => {
+                  // Indent per nesting level — sourced from
+                  // `theme.groupHeaders.indentPerLevel` (default 16) so the
+                  // live widget matches the SVG exporter's depth indent.
+                  // Was hardcoded `* 12` here, which silently disagreed with
+                  // the export when authors raised the theme value.
+                  const indentPx = theme?.groupHeaders?.indentPerLevel ?? 16;
+                  if (isGroupHeader) return `${rowDepth * indentPx}px`;
+                  const lvl = row?.style?.indent ?? rowDepth;
+                  return lvl ? `${lvl * indentPx}px` : undefined;
+                })()}
                 style={rowStyles || undefined}
                 role={isGroupHeader ? "button" : undefined}
                 tabindex={isGroupHeader ? 0 : undefined}
@@ -1803,9 +1814,12 @@
                 />
                 {#if annotation.label}
                   {@const yOffset = annotationLabelOffsets[annotation.id] ?? 0}
+                  {@const annoTypo = { fontSizeSm: theme!.typography.fontSizeSm, lineHeight: theme!.typography.lineHeight ?? 1.5 }}
+                  {@const annoAxisGeom = computeAxisLayout(annoTypo, !!forestOpts?.axisLabel)}
+                  {@const annoLabelBaseline = annoAxisGeom.axisRegionHeight + textRegionHeight(theme!.typography.fontSizeSm, theme!.typography.lineHeight ?? 1.5) - 4}
                   <text
                     x={colScale(annotation.x)}
-                    y={rowsAreaHeight + axisGap + 56 + yOffset}
+                    y={rowsAreaHeight + axisGap + annoLabelBaseline + yOffset}
                     text-anchor="middle"
                     fill={annotation.color ?? "var(--wf-secondary)"}
                     font-size="var(--wf-font-size-sm)"
