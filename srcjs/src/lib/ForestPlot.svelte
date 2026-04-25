@@ -828,6 +828,29 @@
     return parts.join(" ");
   });
 
+  // CSS Grid template rows: pin every row track to the height the layout
+  // engine declared. This makes the DOM the FOLLOWER and the layout engine
+  // the SOURCE OF TRUTH — instead of the previous "grid-auto-rows: auto"
+  // which let the browser size rows by content + padding (so layout
+  // predictions and DOM rendering disagreed under heavy padding,
+  // mismatched line-heights, etc).
+  //
+  // Track order: [headerRowHeight × effectiveHeaderDepth, ...rowHeights]
+  // where rowHeights already accounts for spacers (1/2) and group-header
+  // padding (rowGroupPadding) per displayRow. Padding still goes inside
+  // each cell — it eats content area, not row height. Heavy padding
+  // therefore clips text rather than silently growing the row.
+  const gridTemplateRows = $derived.by(() => {
+    const headerRowH = anyHeaderVisible
+      ? spec!.theme.spacing.headerHeight / headerDepth
+      : 0;
+    const headers = anyHeaderVisible
+      ? Array(effectiveHeaderDepth).fill(`${headerRowH}px`)
+      : [];
+    const rows = layout.rowHeights.map((h) => `${h}px`);
+    return [...headers, ...rows].join(" ");
+  });
+
   // Total column count for grid (positional — leftmost column is the primary)
   const totalColumns = $derived(allColumns.length);
 
@@ -1420,7 +1443,11 @@
       {/snippet}
 
       <!-- CSS Grid layout: columns in order (leftmost = primary) -->
-      <div class="tabviz-main" style:grid-template-columns={gridTemplateColumns}>
+      <div
+        class="tabviz-main"
+        style:grid-template-columns={gridTemplateColumns}
+        style:grid-template-rows={gridTemplateRows}
+      >
         {#if spec?.watermark}
           <Watermark
             text={spec.watermark}
@@ -2579,8 +2606,13 @@
   }
 
   /* Data cells */
+  /* Row height is declared on the grid container via `grid-template-rows`
+     (see `gridTemplateRows` derived). Cells stretch to the row track via
+     the grid's default `align-self: stretch`. Setting `height` here would
+     fight the track height and reintroduce the layout-engine vs DOM
+     disagreement that pre-v0.21.x intermittent misalignments came from. */
   .data-cell {
-    height: var(--wf-row-height);
+    /* (intentionally empty — kept as a hook for v0.22+ semantic styling) */
   }
 
   /* Primary (leftmost) column cell — row identifier, drag surface */
