@@ -35,6 +35,7 @@ import { computeAxis, type AxisComputation, VIZ_MARGIN } from "$lib/axis-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE, LAYOUT } from "$lib/rendering-constants";
+import { computeAxisLayout } from "$lib/typography-layout";
 import { resolveShowHeader } from "$lib/column-compat";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 
@@ -728,9 +729,20 @@ export function createForestStore() {
     const rowHeight = spec.theme.spacing.rowHeight;
     const headerHeight = spec.theme.spacing.headerHeight;
     const axisGap = spec.theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP; // Gap between table and axis
-    // Axis height: gap + axis line/ticks + axis label text
-    // This ensures the axis label is not truncated at the bottom
-    const axisHeight = axisGap + LAYOUT.AXIS_HEIGHT + LAYOUT.AXIS_LABEL_HEIGHT; // ~76px total
+    // Axis region size derived from typography. Replaces the old
+    // `LAYOUT.AXIS_HEIGHT (32) + LAYOUT.AXIS_LABEL_HEIGHT (32) = 64`
+    // hardcoded total — that was conservative for the default font and
+    // over-reserved for everyone else. `someColumnHasAxisLabel` mirrors
+    // svg-generator's same check so both paths agree on whether the
+    // axis-label band is present.
+    const someColumnHasAxisLabel = forestColumns.some(
+      fc => !!fc.column.options?.forest?.axisLabel,
+    );
+    const axisGeom = computeAxisLayout(
+      { fontSizeSm: spec.theme.typography.fontSizeSm, lineHeight: spec.theme.typography.lineHeight ?? 1.5 },
+      someColumnHasAxisLabel,
+    );
+    const axisHeight = axisGap + axisGeom.axisRegionHeight;
     const hasForest = forestColumns.length > 0;
     // Use override if set, otherwise calculate default (25% of width, min 200px)
     const forestWidth = hasForest

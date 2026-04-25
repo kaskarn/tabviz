@@ -84,6 +84,12 @@ import {
   kdeToViolinPath,
 } from "./viz-utils";
 
+import {
+  parseFontSize,
+  textRegionHeight,
+  computeAxisLayout,
+} from "./typography-layout";
+
 // ============================================================================
 // Export Options
 // ============================================================================
@@ -666,9 +672,23 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const hasAxisColumn = allColumns.some(
     c => c.type === "forest" || c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin",
   );
-  const webAxisHeight = hasAxisColumn
-    ? axisGap + LAYOUT.AXIS_HEIGHT + LAYOUT.AXIS_LABEL_HEIGHT
-    : 0;
+  // Axis layout is now derived from typography (was hardcoded 32 + 32 = 64
+  // px regardless of font profile). Detect whether an axis label is set
+  // on at least one of the present axis-bearing columns — used both to
+  // pick the right region height here and to position the axis label
+  // text in renderForestAxis.
+  const someColumnHasAxisLabel = allColumns.some(c => {
+    if (c.type === "forest") return !!c.options?.forest?.axisLabel;
+    if (c.type === "viz_bar") return !!c.options?.vizBar?.axisLabel;
+    if (c.type === "viz_boxplot") return !!c.options?.vizBoxplot?.axisLabel;
+    if (c.type === "viz_violin") return !!c.options?.vizViolin?.axisLabel;
+    return false;
+  });
+  const axisLayout = computeAxisLayout(
+    { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
+    someColumnHasAxisLabel,
+  );
+  const webAxisHeight = hasAxisColumn ? axisGap + axisLayout.axisRegionHeight : 0;
   // Include the themed footer gap when there's a footer to render — the
   // gap sits between the plot/axis area and the caption/footnote text. If
   // we leave it out, totalHeight was smaller than footerY + text, so the
@@ -912,34 +932,9 @@ function hasColumnGroups(columnDefs: ColumnDef[]): boolean {
 }
 
 /** Parse font size from CSS string (e.g., "0.875rem" -> 14, "9pt" -> 12) */
-function parseFontSize(size: string): number {
-  let value: number;
-  if (size.endsWith("rem")) {
-    value = parseFloat(size) * TYPOGRAPHY.REM_BASE;
-  } else if (size.endsWith("px")) {
-    value = parseFloat(size);
-  } else if (size.endsWith("pt")) {
-    // 1pt = 1/72 inch, at 96dpi that's 96/72 = 1.333 px
-    value = parseFloat(size) * TYPOGRAPHY.PT_TO_PX;
-  } else {
-    value = TYPOGRAPHY.DEFAULT_FONT_SIZE;
-  }
-  // Round to 2 decimal places to avoid floating point precision issues
-  return Math.round(value * 100) / 100;
-}
-
-/**
- * Derive a text region's height from the theme's font size + line-height.
- *
- * Replaces the v0.20.x hardcoded constants (TITLE_HEIGHT=28, SUBTITLE_HEIGHT=20,
- * CAPTION_HEIGHT=16, FOOTNOTE_HEIGHT=14) which assumed a single typography
- * profile and silently truncated when authors raised font sizes. The result
- * is `ceil(fontSize * lineHeight)` — what the browser actually reserves
- * for one line of text in that style.
- */
-function textRegionHeight(fontSizeStr: string, lineHeight: number): number {
-  return Math.ceil(parseFontSize(fontSizeStr) * lineHeight);
-}
+// parseFontSize, textRegionHeight, computeAxisLayout were extracted to
+// `$lib/typography-layout.ts` so the live widget's layout engine and
+// the SVG exporter share the same derivations from theme typography.
 
 /** Calculate text X position and anchor based on alignment */
 function getTextPosition(
@@ -2372,6 +2367,10 @@ function renderVizAxis(
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.typography.fontSizeSm);
+  const axisGeom = computeAxisLayout(
+    { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
+    !!axisLabel,
+  );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
 
@@ -2445,8 +2444,8 @@ function renderVizAxis(
     const xOffset = getTextXOffset(tickX);
     const label = formatNumber(tick);
 
-    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="4" stroke="${theme.colors.border}" stroke-width="1"/>`);
-    lines.push(`<text x="${x + xOffset}" y="14"
+    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${theme.colors.border}" stroke-width="1"/>`);
+    lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY}"
       text-anchor="${textAnchor}"
       font-family="${theme.typography.fontFamily}"
       font-size="${fontSize}px"
@@ -2456,7 +2455,7 @@ function renderVizAxis(
 
   // Axis label
   if (axisLabel) {
-    lines.push(`<text x="${vizX + vizWidth / 2}" y="28"
+    lines.push(`<text x="${vizX + vizWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
       font-family="${theme.typography.fontFamily}"
       font-size="${fontSize}px"
@@ -2488,6 +2487,10 @@ function renderForestAxis(
 
   const ticks = filterAxisTicks(xScale, tickCount, theme, nullValue, forestWidth, baseTicks);
   const fontSize = parseFontSize(theme.typography.fontSizeSm);
+  const axisGeom = computeAxisLayout(
+    { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
+    !!axisLabel,
+  );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
 
@@ -2527,9 +2530,9 @@ function renderForestAxis(
     const textAnchor = getTextAnchor(tickX);
     const xOffset = getTextXOffset(tickX);
 
-    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="4"
+    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}"
       stroke="${theme.colors.border}" stroke-width="1"/>`);
-    lines.push(`<text x="${x + xOffset}" y="16" text-anchor="${textAnchor}"
+    lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY + 2}" text-anchor="${textAnchor}"
       font-family="${theme.typography.fontFamily}"
       font-size="${fontSize}px"
       font-weight="${theme.typography.fontWeightNormal}"
@@ -2538,7 +2541,7 @@ function renderForestAxis(
 
   // Axis label
   if (axisLabel) {
-    lines.push(`<text x="${forestX + forestWidth / 2}" y="28"
+    lines.push(`<text x="${forestX + forestWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
       font-family="${theme.typography.fontFamily}"
       font-size="${fontSize}px"
