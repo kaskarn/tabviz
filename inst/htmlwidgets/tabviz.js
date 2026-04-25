@@ -346,9 +346,9 @@ ${A}`}),"combinedSource"),h=g(m(()=>f(e(r),"table")?e(c):f(e(r),"theme")?e(o):e(
       --wf-padding: ${e(s).spacing.padding}px;
       --wf-container-padding: ${e(s).spacing.containerPadding}px;
       --wf-cell-padding-x: ${e(s).spacing.cellPaddingX}px;
-      /* --wf-cell-padding-y deprecated v0.21.x — kept emitting at 0 so
+      /* --wf-cell-padding-y deprecated v0.21.x -- kept emitting at 0 so
          any downstream consumer that still references the var doesn't
-         break, but `.grid-cell` no longer applies it (rows are flex-
+         break, but .grid-cell no longer applies it (rows are flex-
          centered + grid-template-rows pinned, so vertical cell padding
          could only clip content). */
       --wf-cell-padding-y: 0px;
