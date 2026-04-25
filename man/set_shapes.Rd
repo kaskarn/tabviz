@@ -13,6 +13,7 @@ set_shapes(
   row_border_width = NULL,
   header_border_width = NULL,
   row_group_border_width = NULL,
+  tick_mark_length = NULL,
   effect_colors = NULL,
   marker_shapes = NULL
 )
@@ -39,6 +40,10 @@ header row, and plot-header rows (default: 2).}
 row-group header rows when a \code{GroupHeaderStyles.levelN_border_bottom}
 toggle is on (default: 1). No-op unless the corresponding level toggle
 is enabled.}
+
+\item{tick_mark_length}{Length (px) of the tick marks on viz-column
+axes (default: 4). Tighter values produce a denser axis chrome;
+larger values give the axis a more emphasized grid look.}
 
 \item{effect_colors}{Character vector of colors for multi-effect visualizations.
 Used by forest plots, bar charts, boxplots, and violin plots. Effects without

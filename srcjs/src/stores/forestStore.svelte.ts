@@ -741,6 +741,7 @@ export function createForestStore() {
     const axisGeom = computeAxisLayout(
       { fontSizeSm: spec.theme.typography.fontSizeSm, lineHeight: spec.theme.typography.lineHeight ?? 1.5 },
       someColumnHasAxisLabel,
+      spec.theme.shapes.tickMarkLength,
     );
     const axisHeight = axisGap + axisGeom.axisRegionHeight;
     const hasForest = forestColumns.length > 0;

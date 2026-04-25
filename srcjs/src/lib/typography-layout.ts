@@ -60,6 +60,7 @@ export function textRegionHeight(fontSizeStr: string, lineHeight: number): numbe
 export function computeAxisLayout(
   typography: { fontSizeSm: string; lineHeight: number },
   hasAxisLabel: boolean,
+  tickMarkLengthOverride?: number,
 ): {
   tickMarkLength: number;
   tickLabelY: number;
@@ -68,7 +69,8 @@ export function computeAxisLayout(
 } {
   const tickFontSize = parseFontSize(typography.fontSizeSm);
   const axisLabelFontSize = parseFontSize(typography.fontSizeSm);
-  const tickMarkLength = 4;
+  // tickMarkLength is themable via shapes.tick_mark_length; default 4.
+  const tickMarkLength = tickMarkLengthOverride ?? 4;
   const tickLabelY = tickMarkLength + Math.round(tickFontSize * 0.85);
   const axisLabelY = hasAxisLabel
     ? tickLabelY + Math.round(axisLabelFontSize * 1.2)

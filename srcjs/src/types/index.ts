@@ -468,6 +468,13 @@ export interface Spacing {
   // Vertical gap between the plot region and the footer band (caption +
   // footnote). Added in v0.21.x.
   footerGap?: number;
+  // Gap between title and subtitle bands when both are present. Mirrors
+  // the live widget's PlotHeader CSS (margin+border+padding). Added in
+  // v0.21.x.
+  titleSubtitleGap?: number;
+  // Trailing buffer below the last visible band in SVG export. Added in
+  // v0.21.x.
+  bottomMargin?: number;
   /** @deprecated Alias for columnGroupPadding. Emitted by the R serializer
    *  for back-compat; reads here should migrate to columnGroupPadding. */
   groupPadding: number;
@@ -482,6 +489,7 @@ export interface Shapes {
   rowBorderWidth?: number;        // Data-row separator (default 1)
   headerBorderWidth?: number;     // Column-header underlines (default 2)
   rowGroupBorderWidth?: number;   // Row-group header bottom when GroupHeaderStyles level toggle is on (default 1)
+  tickMarkLength?: number;        // Length of tick marks on viz axes (default 4)
   // Multi-effect defaults (colors for forest markers, bars, boxplots, violins)
   effectColors?: string[] | null;  // null = use built-in fallback colors
   markerShapes?: MarkerShape[] | null;  // Shapes for each effect (cycles if more effects than shapes)

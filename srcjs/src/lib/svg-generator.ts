@@ -541,9 +541,10 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const lineHeight = theme.typography.lineHeight ?? 1.5;
   const titleHeight = hasTitle ? textRegionHeight(theme.typography.fontSizeLg, lineHeight) : 0;
   const subtitleHeight = hasSubtitle ? textRegionHeight(theme.typography.fontSizeBase, lineHeight) : 0;
-  // When both title and subtitle exist, web CSS adds extra spacing via .has-both:
-  // margin-top: 6px + border-top: 1px + padding-top: 6px = 13px
-  const titleSubtitleGap = (hasTitle && hasSubtitle) ? 13 : 0;
+  // Title↔subtitle gap is themable via spacing.title_subtitle_gap (default
+  // 13 to mirror the live widget's PlotHeader CSS chain margin+border+
+  // padding = 6+1+6).
+  const titleSubtitleGap = (hasTitle && hasSubtitle) ? (theme.spacing.titleSubtitleGap ?? 13) : 0;
   const headerTextHeight = titleHeight + titleSubtitleGap + subtitleHeight + (hasTitle || hasSubtitle ? padding : 0);
 
   const captionHeight = hasCaption ? textRegionHeight(theme.typography.fontSizeSm, lineHeight) : 0;
@@ -687,6 +688,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const axisLayout = computeAxisLayout(
     { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
     someColumnHasAxisLabel,
+    theme.shapes.tickMarkLength,
   );
   const webAxisHeight = hasAxisColumn ? axisGap + axisLayout.axisRegionHeight : 0;
   // Include the themed footer gap when there's a footer to render — the
@@ -698,12 +700,15 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const footerGap = (spec.labels?.caption || spec.labels?.footnote)
     ? (theme.spacing.footerGap ?? 8)
     : 0;
+  // Bottom margin: themable via spacing.bottom_margin (default 16 to
+  // mirror the prior LAYOUT.BOTTOM_MARGIN constant).
+  const bottomMargin = theme.spacing.bottomMargin ?? LAYOUT.BOTTOM_MARGIN;
   const totalHeight = headerTextHeight + padding +
     headerHeight + plotHeight +
     webAxisHeight +
     footerGap +
     footerTextHeight +
-    LAYOUT.BOTTOM_MARGIN;
+    bottomMargin;
 
   return {
     totalWidth,
@@ -2370,6 +2375,7 @@ function renderVizAxis(
   const axisGeom = computeAxisLayout(
     { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
     !!axisLabel,
+    theme.shapes.tickMarkLength,
   );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
@@ -2490,6 +2496,7 @@ function renderForestAxis(
   const axisGeom = computeAxisLayout(
     { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
     !!axisLabel,
+    theme.shapes.tickMarkLength,
   );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;

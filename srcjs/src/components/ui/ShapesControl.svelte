@@ -17,10 +17,11 @@
   }
 
   const sizeFields = [
-    { key: "pointSize",     label: "Point size",      hint: "Forest plot marker diameter", min: 4,   max: 16, step: 1 },
-    { key: "summaryHeight", label: "Summary height",  hint: "Pooled diamond height",       min: 8,   max: 24, step: 1 },
-    { key: "lineWidth",     label: "Line width",      hint: "CI whisker stroke",           min: 0.5, max: 4,  step: 0.5 },
-    { key: "borderRadius",  label: "Border radius",   hint: "Rounding on bars / boxes",    min: 0,   max: 12, step: 1 },
+    { key: "pointSize",      label: "Point size",     hint: "Forest plot marker diameter", min: 4,   max: 16, step: 1 },
+    { key: "summaryHeight",  label: "Summary height", hint: "Pooled diamond height",       min: 8,   max: 24, step: 1 },
+    { key: "lineWidth",      label: "Line width",     hint: "CI whisker stroke",           min: 0.5, max: 4,  step: 0.5 },
+    { key: "borderRadius",   label: "Border radius",  hint: "Rounding on bars / boxes",    min: 0,   max: 12, step: 1 },
+    { key: "tickMarkLength", label: "Tick mark",      hint: "Length of tick marks on viz axes", min: 0, max: 12, step: 1 },
   ];
 
   /**

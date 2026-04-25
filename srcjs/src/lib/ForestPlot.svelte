@@ -1286,6 +1286,7 @@
       --wf-axis-height: ${layout.axisHeight}px;
       --wf-group-padding: ${theme.spacing.groupPadding ?? 8}px;
       --wf-footer-gap: ${theme.spacing.footerGap ?? 8}px;
+      --wf-title-subtitle-gap: ${theme.spacing.titleSubtitleGap ?? 13}px;
       --wf-plot-width: ${layout.forestWidth}px;
       --wf-point-size: ${theme.shapes.pointSize}px;
       --wf-line-width: ${theme.shapes.lineWidth}px;
@@ -1815,7 +1816,7 @@
                 {#if annotation.label}
                   {@const yOffset = annotationLabelOffsets[annotation.id] ?? 0}
                   {@const annoTypo = { fontSizeSm: theme!.typography.fontSizeSm, lineHeight: theme!.typography.lineHeight ?? 1.5 }}
-                  {@const annoAxisGeom = computeAxisLayout(annoTypo, !!forestOpts?.axisLabel)}
+                  {@const annoAxisGeom = computeAxisLayout(annoTypo, !!forestOpts?.axisLabel, theme!.shapes.tickMarkLength)}
                   {@const annoLabelBaseline = annoAxisGeom.axisRegionHeight + textRegionHeight(theme!.typography.fontSizeSm, theme!.typography.lineHeight ?? 1.5) - 4}
                   <text
                     x={colScale(annotation.x)}

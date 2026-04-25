@@ -135,11 +135,17 @@
     word-wrap: break-word;
   }
 
-  /* Subtle separator above subtitle when both title and subtitle exist */
+  /* Subtle separator above subtitle when both title and subtitle exist.
+     Total gap (border + padding) is themable via
+     `--wf-title-subtitle-gap` so the SVG export and live widget agree
+     on the same number; the CSS subtracts the border's 1px from the
+     padding so the visible gap matches the theme value. Defaults to
+     13 (1 border + 12 padding) which matches the prior hardcoded
+     6+1+6 chain. */
   .has-both .plot-subtitle {
     border-top: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 30%, transparent);
-    padding-top: 6px;
-    margin-top: 6px;
+    padding-top: calc(var(--wf-title-subtitle-gap, 13px) - 1px);
+    margin-top: 0;
   }
 
   /* Editable hover feedback. The label itself keeps its font/color; only the

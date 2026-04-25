@@ -455,6 +455,8 @@ serialize_theme <- function(theme) {
       columnGroupPadding = theme@spacing@column_group_padding,
       rowGroupPadding    = theme@spacing@row_group_padding,
       footerGap          = theme@spacing@footer_gap,
+      titleSubtitleGap   = theme@spacing@title_subtitle_gap,
+      bottomMargin       = theme@spacing@bottom_margin,
       # Back-compat alias: serialize the new field under the old name too so
       # any frontend code still reading `groupPadding` keeps working while
       # downstream consumers migrate. Remove once all call sites use the
@@ -469,6 +471,7 @@ serialize_theme <- function(theme) {
       rowBorderWidth      = theme@shapes@row_border_width,
       headerBorderWidth   = theme@shapes@header_border_width,
       rowGroupBorderWidth = theme@shapes@row_group_border_width,
+      tickMarkLength      = theme@shapes@tick_mark_length,
       # Wrap vector palettes in I() so a length-1 override (e.g.
       # `set_effect_colors(..., "#ff00ff")`) still serializes as a JSON
       # array, not a scalar — otherwise the frontend indexes it as a

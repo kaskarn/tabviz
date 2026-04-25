@@ -42,6 +42,8 @@ export const defaultSpacing: Spacing = {
   columnGroupPadding: 8,
   rowGroupPadding: 0,
   footerGap: 8,
+  titleSubtitleGap: 13,
+  bottomMargin: 16,
   groupPadding: 8, // deprecated alias
 };
 
@@ -53,6 +55,7 @@ export const defaultShapes: Shapes = {
   rowBorderWidth: 1,
   headerBorderWidth: 2,
   rowGroupBorderWidth: 1,
+  tickMarkLength: 4,
 };
 
 export const defaultTheme: WebTheme = {

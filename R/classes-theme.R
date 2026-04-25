@@ -111,7 +111,18 @@ Spacing <- new_class(
     # Vertical gap between the plot/axis region and the footer band (caption
     # + footnote). Applied as padding-top on `.plot-footer`; SVG export
     # honors it too.
-    footer_gap = new_property(class_numeric, default = 8)
+    footer_gap = new_property(class_numeric, default = 8),
+    # Vertical gap between the title and subtitle bands when both are shown.
+    # Mirrors the live widget's PlotHeader CSS rule
+    # (`margin-top: 6 + border-top: 1 + padding-top: 6 = 13`); changing
+    # this updates both the CSS-driven live render and the SVG export so
+    # they stay aligned.
+    title_subtitle_gap = new_property(class_numeric, default = 13),
+    # Trailing buffer below the last visible band (footer or axis or rows
+    # if neither is set). The previous hardcoded 16 px from
+    # LAYOUT.BOTTOM_MARGIN; here as a themable so authors can tighten or
+    # loosen the bottom margin without touching the renderer.
+    bottom_margin = new_property(class_numeric, default = 16)
   )
 )
 
@@ -141,6 +152,10 @@ Shapes <- new_class(
     row_border_width       = new_property(class_numeric, default = 1),
     header_border_width    = new_property(class_numeric, default = 2),
     row_group_border_width = new_property(class_numeric, default = 1),
+    # Length (px) of the tick marks on viz-column axes. Default 4 matches
+    # the v0.20 hardcoded value. Themable so authors building dense /
+    # sparse axes can tune the axis chrome directly.
+    tick_mark_length       = new_property(class_numeric, default = 4),
     # Multi-effect defaults (colors cycle for bar, boxplot, violin, and forest markers)
     effect_colors = new_property(class_any, default = NULL),  # NULL = use built-in fallback
     marker_shapes = new_property(
@@ -1029,6 +1044,14 @@ set_typography <- function(
 #' @param footer_gap Vertical gap between the plot region and the footer
 #'   band (caption + footnote), in pixels (default: 8). Applied both on
 #'   the interactive widget and in SVG exports.
+#' @param title_subtitle_gap Vertical gap (px) between the title and
+#'   subtitle bands when both are present (default: 13). Mirrors the
+#'   live widget's `margin + border + padding` CSS chain so the
+#'   interactive render and SVG export stay aligned.
+#' @param bottom_margin Trailing buffer (px) below the last visible band
+#'   (footer / axis / rows) in SVG exports (default: 16). Changing
+#'   tightens or loosens the bottom of the exported plot without
+#'   affecting the live widget's container padding.
 #'
 #' @return Modified WebTheme object
 #' @export
@@ -1047,6 +1070,8 @@ set_spacing <- function(
     cell_padding_x = NULL,
     cell_padding_y = NULL,
     footer_gap = NULL,
+    title_subtitle_gap = NULL,
+    bottom_margin = NULL,
     group_padding = lifecycle::deprecated()
 ) {
   stopifnot(S7_inherits(theme, WebTheme))
@@ -1071,6 +1096,8 @@ set_spacing <- function(
   if (!is.null(cell_padding_x)) current@cell_padding_x <- cell_padding_x
   if (!is.null(cell_padding_y)) current@cell_padding_y <- cell_padding_y
   if (!is.null(footer_gap)) current@footer_gap <- footer_gap
+  if (!is.null(title_subtitle_gap)) current@title_subtitle_gap <- title_subtitle_gap
+  if (!is.null(bottom_margin)) current@bottom_margin <- bottom_margin
 
   theme@spacing <- current
   theme
@@ -1094,6 +1121,9 @@ set_spacing <- function(
 #'   row-group header rows when a `GroupHeaderStyles.levelN_border_bottom`
 #'   toggle is on (default: 1). No-op unless the corresponding level toggle
 #'   is enabled.
+#' @param tick_mark_length Length (px) of the tick marks on viz-column
+#'   axes (default: 4). Tighter values produce a denser axis chrome;
+#'   larger values give the axis a more emphasized grid look.
 #' @param effect_colors Character vector of colors for multi-effect visualizations.
 #'   Used by forest plots, bar charts, boxplots, and violin plots. Effects without
 #'   explicit colors use these in order, cycling if needed.
@@ -1114,6 +1144,7 @@ set_shapes <- function(
     row_border_width = NULL,
     header_border_width = NULL,
     row_group_border_width = NULL,
+    tick_mark_length = NULL,
     effect_colors = NULL,
     marker_shapes = NULL
 ) {
@@ -1123,6 +1154,7 @@ set_shapes <- function(
   checkmate::assert_number(row_border_width, lower = 0, upper = 10, null.ok = TRUE)
   checkmate::assert_number(header_border_width, lower = 0, upper = 10, null.ok = TRUE)
   checkmate::assert_number(row_group_border_width, lower = 0, upper = 10, null.ok = TRUE)
+  checkmate::assert_number(tick_mark_length, lower = 0, upper = 20, null.ok = TRUE)
 
   if (!is.null(point_size)) current@point_size <- point_size
   if (!is.null(summary_height)) current@summary_height <- summary_height
@@ -1131,6 +1163,7 @@ set_shapes <- function(
   if (!is.null(row_border_width)) current@row_border_width <- row_border_width
   if (!is.null(header_border_width)) current@header_border_width <- header_border_width
   if (!is.null(row_group_border_width)) current@row_group_border_width <- row_group_border_width
+  if (!is.null(tick_mark_length)) current@tick_mark_length <- tick_mark_length
   if (!is.null(effect_colors)) {
     checkmate::assert_character(effect_colors, min.len = 1)
     current@effect_colors <- effect_colors

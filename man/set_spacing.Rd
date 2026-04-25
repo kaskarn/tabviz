@@ -16,6 +16,8 @@ set_spacing(
   cell_padding_x = NULL,
   cell_padding_y = NULL,
   footer_gap = NULL,
+  title_subtitle_gap = NULL,
+  bottom_margin = NULL,
   group_padding = lifecycle::deprecated()
 )
 }
@@ -47,6 +49,16 @@ per-depth indentation.}
 \item{footer_gap}{Vertical gap between the plot region and the footer
 band (caption + footnote), in pixels (default: 8). Applied both on
 the interactive widget and in SVG exports.}
+
+\item{title_subtitle_gap}{Vertical gap (px) between the title and
+subtitle bands when both are present (default: 13). Mirrors the
+live widget's \code{margin + border + padding} CSS chain so the
+interactive render and SVG export stay aligned.}
+
+\item{bottom_margin}{Trailing buffer (px) below the last visible band
+(footer / axis / rows) in SVG exports (default: 16). Changing
+tightens or loosens the bottom of the exported plot without
+affecting the live widget's container padding.}
 
 \item{group_padding}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Renamed to
 \code{column_group_padding} in 0.16.0 to disambiguate from
