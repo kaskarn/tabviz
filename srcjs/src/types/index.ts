@@ -400,7 +400,14 @@ export interface ColumnSpec {
   align: "left" | "center" | "right";
   headerAlign?: "left" | "center" | "right" | null;  // Header alignment (defaults to align if not specified)
   showHeader?: boolean;  // undefined = auto (show iff header is non-empty)
-  wrap?: boolean;  // Enable text wrapping (default false)
+  /**
+   * Multi-line wrap for cell + header text. Encodes the *number of extra
+   * lines* allowed beyond the first (so total lines ≤ wrap + 1).
+   * - `false` / `0`: no wrap, single line, ellipsis on overflow (default).
+   * - `true` / `1`: up to 2 lines.
+   * - `n`: up to `n + 1` lines, content beyond is clipped.
+   */
+  wrap?: boolean | number;
   sortable: boolean;
   options?: ColumnOptions;
   isGroup: false;

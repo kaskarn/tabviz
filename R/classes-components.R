@@ -42,7 +42,11 @@ ColumnSpec <- new_class(
     align = new_property(class_character, default = "left"),
     header_align = new_property(class_character, default = NA_character_),
     show_header = new_property(class_logical, default = NA),  # NA = auto (show iff header non-empty)
-    wrap = new_property(class_logical, default = FALSE),  # Enable text wrapping
+    # Multi-line wrap. Encodes *extra lines beyond the first*: FALSE/0 = no
+    # wrap (single line + ellipsis); TRUE/1 = up to 2 lines; n = up to
+    # n+1 lines, then clip. class_any so logical and integer both fit;
+    # validator below normalises and rejects malformed values.
+    wrap = new_property(class_any, default = FALSE),
     sortable = new_property(class_logical, default = TRUE),
     options = new_property(class_list, default = list()),
     # Per-cell style mappings: column names (character) or formulas (~)
@@ -86,6 +90,14 @@ ColumnSpec <- new_class(
     # Validate header_align if provided (not NA)
     if (!is.na(self@header_align) && !self@header_align %in% valid_aligns) {
       return(paste("header_align must be one of:", paste(valid_aligns, collapse = ", ")))
+    }
+
+    # Validate `wrap`: logical(1) OR a non-negative integer-ish scalar.
+    # Encodes extra lines beyond the first.
+    w <- self@wrap
+    if (!(is.logical(w) && length(w) == 1L && !is.na(w)) &&
+        !(is.numeric(w) && length(w) == 1L && !is.na(w) && w >= 0 && w == as.integer(w))) {
+      return("wrap must be TRUE/FALSE or a non-negative integer (extra lines beyond the first).")
     }
 
     # Reject ids that look like frontend sentinels (`__root__`, `__start__`,

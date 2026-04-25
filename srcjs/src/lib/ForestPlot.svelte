@@ -2702,16 +2702,25 @@
     padding: 0;
   }
 
-  /* Text wrapping mode - allows long text to wrap and respects \n newlines */
+  /* Text wrapping mode — pre-line preserves \n and lets long text wrap.
+     Grid-template-rows owns the row height (forestStore measures wrapped
+     line counts and grows the track), so we just opt out of nowrap /
+     ellipsis here. align-items: center keeps text vertically centered
+     within the grown track. */
   .wrap-enabled {
     white-space: pre-line;
-    word-wrap: break-word;
+    overflow-wrap: anywhere;
     text-overflow: clip;
-    min-height: var(--wf-row-height);
-    height: auto;
-    align-items: flex-start;
-    padding-top: 6px;
-    padding-bottom: 6px;
+  }
+  .wrap-enabled :global(.cell-content) {
+    white-space: inherit;
+    overflow-wrap: inherit;
+    min-width: 0;
+  }
+  .wrap-enabled :global(.cell-value) {
+    white-space: inherit;
+    overflow-wrap: inherit;
+    min-width: 0;
   }
 
   /* SVG overlay positioned absolutely over plot column */

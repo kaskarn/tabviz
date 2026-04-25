@@ -143,6 +143,12 @@ export function createForestStore() {
   let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
   let cellEdits = $state<CellEdits>({ cells: {}, groups: {} });
+  // Per-row max wrapped line count across all wrap-enabled cells. Computed
+  // by `measureAutoColumns()` using canvas text measurement against the
+  // FINAL column widths. Zero/missing entries fall back to single-line
+  // (rowHeights[i] = spacing.rowHeight). Layout derives rowHeights[i] for
+  // wrapped rows from this map.
+  let wrapLineCounts = $state<Record<string, number>>({});
   // Append-only log of recorded fluent-R operations (see contract above).
   let opLog = $state<OpRecord[]>([]);
 
@@ -783,12 +789,20 @@ export function createForestStore() {
     // CSS rule) so the overlay / axis Y positions land on the same row
     // edges the DOM actually renders. Spacer rows stay half-height.
     const rowGroupPadding = spec.theme.spacing.rowGroupPadding ?? 0;
+    const dataLineHeightPx = Math.ceil(parseFontSize(spec.theme.typography.fontSizeBase) * lineHeight);
     const rowHeights: number[] = [];
     for (const displayRow of displayRows) {
       if (displayRow.type === "data" && displayRow.row.style?.type === "spacer") {
         rowHeights.push(rowHeight / 2);
       } else if (displayRow.type === "group_header") {
         rowHeights.push(rowHeight + rowGroupPadding);
+      } else if (displayRow.type === "data") {
+        const lines = wrapLineCounts[displayRow.row.id] ?? 1;
+        if (lines > 1) {
+          rowHeights.push(Math.max(rowHeight, dataLineHeightPx * lines + 6));
+        } else {
+          rowHeights.push(rowHeight);
+        }
       } else {
         rowHeights.push(rowHeight);
       }
@@ -1302,6 +1316,75 @@ export function createForestStore() {
         Math.max(AUTO_WIDTH.MIN, Math.ceil(maxLabelWidth + cellPadding + TEXT_MEASUREMENT.RENDERING_BUFFER)),
       );
       target[primaryCol.id] = Math.max(target[primaryCol.id] ?? 0, computedLabelWidth);
+    }
+
+    // ========================================================================
+    // WRAP LINE COUNT MEASUREMENT (v0.22)
+    // ========================================================================
+    //
+    // Once column widths are finalized, count how many lines each
+    // wrap-enabled cell will render at — both author-supplied `\n`
+    // breaks AND canvas-measured wrap of long strings within the cell's
+    // content area. Per-row max contributes to the layout's
+    // rowHeights[i] so grid-template-rows reserves the right space.
+    //
+    // Schema:
+    //   col.wrap = false / 0 → cap at 1 line  (no wrap, ellipsis)
+    //   col.wrap = true / 1  → cap at 2 lines (1 extra)
+    //   col.wrap = n         → cap at n+1 lines
+    {
+      const wrapEnabledCols = allColumns.filter(c => {
+        const w = c.wrap;
+        return typeof w === "number" ? w > 0 : !!w;
+      });
+      const lineCaps = new Map<string, number>();
+      for (const c of wrapEnabledCols) {
+        const w = c.wrap as boolean | number;
+        const cap = typeof w === "number" ? w + 1 : (w ? 2 : 1);
+        lineCaps.set(c.id, cap);
+      }
+
+      const counts: Record<string, number> = {};
+      if (wrapEnabledCols.length > 0) {
+        ctx.font = dataFont;
+        for (const row of spec.data.rows) {
+          let maxLines = 1;
+          for (const col of wrapEnabledCols) {
+            const colWidth = target[col.id] ?? AUTO_WIDTH.MIN;
+            const contentWidth = Math.max(1, colWidth - cellPadding);
+            const raw = (row.metadata as Record<string, unknown>)[col.field];
+            const text = raw == null ? "" : String(raw);
+            if (text === "") continue;
+            // Split on author-supplied \n first; each segment may wrap.
+            const segments = text.split(/\r?\n/);
+            let cellLines = 0;
+            for (const seg of segments) {
+              if (seg.length === 0) {
+                cellLines += 1;
+                continue;
+              }
+              const w = ctx.measureText(seg).width;
+              cellLines += Math.max(1, Math.ceil(w / contentWidth));
+            }
+            const cap = lineCaps.get(col.id) ?? 1;
+            const capped = Math.min(cellLines, cap);
+            if (capped > maxLines) maxLines = capped;
+          }
+          if (maxLines > 1) counts[row.id] = maxLines;
+        }
+      }
+      // Only mutate state when the measurement actually changed — Svelte
+      // 5 runes assign-equal still triggers downstream $derived; cheap to
+      // skip a no-op write.
+      const prev = wrapLineCounts;
+      let changed = false;
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(counts);
+      if (prevKeys.length !== nextKeys.length) changed = true;
+      else {
+        for (const k of nextKeys) if (prev[k] !== counts[k]) { changed = true; break; }
+      }
+      if (changed) wrapLineCounts = counts;
     }
   }
 

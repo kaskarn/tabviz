@@ -90,6 +90,60 @@ import {
   computeAxisLayout,
 } from "./typography-layout";
 
+/**
+ * Word-wrap text into lines that fit within `contentWidth`. Honours
+ * author-supplied `\n` first, then breaks long segments greedily on word
+ * boundaries (falls back to char-by-char only when a single word
+ * overflows). Caps at `maxLines` — extra content beyond the cap is
+ * dropped (live widget shows clipped overflow at the row edge).
+ */
+function wrapTextIntoLines(
+  text: string,
+  contentWidth: number,
+  fontSize: number,
+  maxLines: number,
+): string[] {
+  if (!text || maxLines <= 0) return [];
+  const out: string[] = [];
+  const segments = text.split(/\r?\n/);
+  for (const seg of segments) {
+    if (out.length >= maxLines) break;
+    if (seg.length === 0) { out.push(""); continue; }
+    if (estimateTextWidth(seg, fontSize) <= contentWidth) {
+      out.push(seg);
+      continue;
+    }
+    const words = seg.split(/\s+/);
+    let line = "";
+    for (const word of words) {
+      if (out.length >= maxLines) break;
+      const trial = line ? `${line} ${word}` : word;
+      if (estimateTextWidth(trial, fontSize) <= contentWidth) {
+        line = trial;
+      } else if (line) {
+        out.push(line);
+        line = word;
+      } else {
+        // Single word longer than contentWidth — break at chars.
+        let chunk = "";
+        for (const ch of word) {
+          if (out.length >= maxLines) break;
+          const next = chunk + ch;
+          if (estimateTextWidth(next, fontSize) <= contentWidth) {
+            chunk = next;
+          } else {
+            if (chunk) out.push(chunk);
+            chunk = ch;
+          }
+        }
+        line = chunk;
+      }
+    }
+    if (line && out.length < maxLines) out.push(line);
+  }
+  return out.slice(0, maxLines);
+}
+
 // ============================================================================
 // Export Options
 // ============================================================================
@@ -560,27 +614,6 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const displayRows = buildDisplayRows(spec);
   const hasOverall = !!spec.data.overall;
 
-  // Calculate rows height and per-row positions (display rows only, not including overall summary).
-  // Group-header rows take the themed `rowGroupPadding` (mirrors the
-  // symmetric CSS padding in the live widget) so the forest/axis Y
-  // positions line up with the visible row edges in the export.
-  const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
-  let rowsHeight = 0;
-  const rowPositions: number[] = [];
-  const rowHeights: number[] = [];
-  for (const dr of displayRows) {
-    const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
-    let h: number;
-    if (isSpacerRow) h = rowHeight / 2;
-    else if (dr.type === "group_header") h = rowHeight + rowGroupPadding;
-    else h = rowHeight;
-    rowPositions.push(rowsHeight);
-    rowHeights.push(h);
-    rowsHeight += h;
-  }
-  // plotHeight includes overall summary area (for total height calculations)
-  const plotHeight = rowsHeight + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
-
   // Calculate auto-widths for columns
   // Support both legacy (left/right position) and new unified (no position) column models
   const leftColumns = flattenColumns(columns, "left");
@@ -617,6 +650,69 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     autoWidths = calculateSvgAutoWidths(spec, allColumns);
     labelWidth = calculateSvgLabelWidth(spec, primaryHeader);
   }
+
+  // Wrap line counts: per-row max number of lines across wrap-enabled
+  // columns. Mirrors forestStore's measurement so SVG export grows the
+  // same row tracks the live widget grows. Uses estimateTextWidth (the
+  // same heuristic auto-width uses) so widths are self-consistent here.
+  const wrapEnabledCols = allColumns.filter(c => {
+    const w = (c as { wrap?: boolean | number }).wrap;
+    return typeof w === "number" ? w > 0 : !!w;
+  });
+  const wrapLineCounts: Record<string, number> = {};
+  if (wrapEnabledCols.length > 0) {
+    const dataFontSize = parseFontSize(theme.typography.fontSizeBase);
+    const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
+    for (const row of spec.data.rows) {
+      let maxLines = 1;
+      for (const col of wrapEnabledCols) {
+        const colWidth = (col.id === primaryCol?.id)
+          ? labelWidth
+          : (autoWidths.get(col.id) ?? getEffectiveWidth(col, autoWidths));
+        const contentWidth = Math.max(1, colWidth - cellPadding);
+        const raw = (row.metadata as Record<string, unknown>)[col.field];
+        const text = raw == null ? "" : String(raw);
+        if (text === "") continue;
+        const segments = text.split(/\r?\n/);
+        let cellLines = 0;
+        for (const seg of segments) {
+          if (seg.length === 0) { cellLines += 1; continue; }
+          const w = estimateTextWidth(seg, dataFontSize);
+          cellLines += Math.max(1, Math.ceil(w / contentWidth));
+        }
+        const wrapVal = (col as { wrap?: boolean | number }).wrap as boolean | number;
+        const cap = typeof wrapVal === "number" ? wrapVal + 1 : (wrapVal ? 2 : 1);
+        const capped = Math.min(cellLines, cap);
+        if (capped > maxLines) maxLines = capped;
+      }
+      if (maxLines > 1) wrapLineCounts[row.id] = maxLines;
+    }
+  }
+
+  // Calculate rows height and per-row positions (display rows only, not including overall summary).
+  // Group-header rows take the themed `rowGroupPadding` (mirrors the
+  // symmetric CSS padding in the live widget) so the forest/axis Y
+  // positions line up with the visible row edges in the export.
+  const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
+  const dataLineHeightPx = Math.ceil(parseFontSize(theme.typography.fontSizeBase) * (theme.typography.lineHeight ?? 1.5));
+  let rowsHeight = 0;
+  const rowPositions: number[] = [];
+  const rowHeights: number[] = [];
+  for (const dr of displayRows) {
+    const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
+    let h: number;
+    if (isSpacerRow) h = rowHeight / 2;
+    else if (dr.type === "group_header") h = rowHeight + rowGroupPadding;
+    else if (dr.type === "data") {
+      const lines = wrapLineCounts[dr.row.id] ?? 1;
+      h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
+    } else h = rowHeight;
+    rowPositions.push(rowsHeight);
+    rowHeights.push(h);
+    rowsHeight += h;
+  }
+  // plotHeight includes overall summary area (for total height calculations)
+  const plotHeight = rowsHeight + (hasOverall ? rowHeight * RENDERING.OVERALL_ROW_HEIGHT_MULTIPLIER : 0);
 
   // Calculate table widths using effective widths
   // For legacy model: left and right tables around forest
@@ -3085,13 +3181,38 @@ function renderUnifiedTableRow(
         cellColor = cellSemBundle.fg;
       }
 
-      lines.push(`<text class="cell-text" x="${textX}" y="${textY}"
-        font-family="${theme.typography.fontFamily}"
-        font-size="${fontSize}px"
-        font-weight="${cellFontWeight}"
-        font-style="${cellFontStyle}"
-        text-anchor="${anchor}"
-        fill="${cellColor}">${escapeXml(value)}</text>`);
+      const wrapVal = (col as { wrap?: boolean | number }).wrap;
+      const wrapEnabled = typeof wrapVal === "number" ? wrapVal > 0 : !!wrapVal;
+      if (wrapEnabled) {
+        const cap = typeof wrapVal === "number" ? (wrapVal as number) + 1 : 2;
+        const cellPadding = SPACING.TEXT_PADDING * 2;
+        const contentWidth = Math.max(1, width - cellPadding);
+        const wrappedLines = wrapTextIntoLines(value, contentWidth, fontSize, cap);
+        const lineHeight = theme.typography.lineHeight ?? 1.5;
+        const lineHeightPx = Math.ceil(fontSize * lineHeight);
+        const blockHeight = lineHeightPx * wrappedLines.length;
+        // Center the multi-line block within the row, then position each
+        // line at its baseline (~ 0.8 of fontSize down from line top).
+        const blockTop = y + (rowHeight - blockHeight) / 2;
+        for (let li = 0; li < wrappedLines.length; li++) {
+          const lineY = blockTop + li * lineHeightPx + Math.round(fontSize * 0.8);
+          lines.push(`<text class="cell-text" x="${textX}" y="${lineY}"
+            font-family="${theme.typography.fontFamily}"
+            font-size="${fontSize}px"
+            font-weight="${cellFontWeight}"
+            font-style="${cellFontStyle}"
+            text-anchor="${anchor}"
+            fill="${cellColor}">${escapeXml(wrappedLines[li])}</text>`);
+        }
+      } else {
+        lines.push(`<text class="cell-text" x="${textX}" y="${textY}"
+          font-family="${theme.typography.fontFamily}"
+          font-size="${fontSize}px"
+          font-weight="${cellFontWeight}"
+          font-style="${cellFontStyle}"
+          text-anchor="${anchor}"
+          fill="${cellColor}">${escapeXml(value)}</text>`);
+      }
     }
   }
 

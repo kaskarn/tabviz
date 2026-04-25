@@ -306,7 +306,10 @@ serialize_column <- function(col) {
     type = col@type,
     width = width_val,
     align = col@align,
-    wrap = col@wrap,
+    # Normalise wrap to a numeric on the wire so the frontend doesn't
+    # need to handle TRUE/FALSE/integer separately. FALSE -> 0,
+    # TRUE -> 1, integer passes through. Frontend reads max-extra-lines.
+    wrap = if (is.logical(col@wrap)) as.integer(col@wrap) else as.integer(col@wrap),
     sortable = col@sortable,
     isGroup = FALSE
   )

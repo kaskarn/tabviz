@@ -1,3 +1,30 @@
+# tabviz 0.22.0
+
+## Multi-line wrap for text columns
+
+Text columns can now display wrapped, multi-line content. The row track
+auto-grows to fit the wrapped lines, and the SVG export mirrors the
+live widget exactly.
+
+### Schema
+
+`col_text(field, wrap = ...)` accepts:
+
+- `FALSE` / `0` (default) — single line, ellipsis on overflow.
+- `TRUE` / `1` — up to 2 lines (1 extra line beyond the first).
+- `n` (non-negative integer) — up to `n + 1` lines total.
+
+Author-supplied `\n` is honoured first; long segments then word-wrap
+greedily within the cell's content width.
+
+### Layout
+
+`forestStore.layout.rowHeights[i]` reads a per-row max line count
+(measured against the resolved column width via canvas `measureText`)
+and grows the grid track to `ceil(fontSize × lineHeight) × lines + 6`.
+SVG export mirrors the same arithmetic with `estimateTextWidth`, so
+exports and live render at identical row heights.
+
 # tabviz 0.21.1
 
 ## Layout precision pass
