@@ -917,6 +917,7 @@ export function createForestStore() {
     // id happened to match.
     axisZooms = {};
     userResizedIds = new Set();
+    wrapLineCounts = {};
     // Reset the op log too — a new spec is a new "session" as far as
     // recording fluent R calls is concerned.
     opLog = [];

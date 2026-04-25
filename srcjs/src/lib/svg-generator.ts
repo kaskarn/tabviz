@@ -2959,8 +2959,8 @@ function renderUnifiedTableRow(
       const badgeValue = row.metadata[col.field];
       if (badgeValue !== undefined && badgeValue !== null) {
         const badgeText = String(badgeValue);
-        const badgeFontSize = fontSize * 0.85;
-        const badgeHeight = badgeFontSize + 8;
+        const badgeFontSize = fontSize * BADGE.FONT_SCALE;
+        const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
 
         const variants = col.options?.badge?.variants;
         const customColors = col.options?.badge?.colors;
@@ -2982,7 +2982,7 @@ function renderUnifiedTableRow(
         }
 
         const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.typography.fontFamily, theme.typography.fontWeightBold);
-        const badgeWidth = badgeTextWidth + 12;
+        const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
         const badgeX = col.align === "right"
           ? currentX + width - SPACING.TEXT_PADDING - badgeWidth
           : col.align === "center"
@@ -3185,7 +3185,7 @@ function renderUnifiedTableRow(
       const wrapEnabled = typeof wrapVal === "number" ? wrapVal > 0 : !!wrapVal;
       if (wrapEnabled) {
         const cap = typeof wrapVal === "number" ? (wrapVal as number) + 1 : 2;
-        const cellPadding = SPACING.TEXT_PADDING * 2;
+        const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
         const contentWidth = Math.max(1, width - cellPadding);
         const wrappedLines = wrapTextIntoLines(value, contentWidth, fontSize, cap);
         const lineHeight = theme.typography.lineHeight ?? 1.5;

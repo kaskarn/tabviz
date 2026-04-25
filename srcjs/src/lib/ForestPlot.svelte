@@ -420,21 +420,17 @@
 
   // Check if the data has any groups
 
-  // Compute row Y positions and heights for SVG overlay (must match CSS grid)
-  // Returns arrays indexed by displayRow index
+  // Row Y positions and heights for SVG overlay (annotations / row
+  // intervals). Reads the same `layout.rowHeights` / `rowPositions` the
+  // CSS grid uses, so wrap-grown rows and group-header padding stay in
+  // lockstep with the visible row edges.
   const rowLayout = $derived.by(() => {
-    const positions: number[] = [];
-    const heights: number[] = [];
-    let y = 0;
-    for (const dr of displayRows) {
-      const h = (dr.type === "data" && dr.row.style?.type === "spacer")
-        ? layout.rowHeight / 2
-        : layout.rowHeight;
-      positions.push(y);
-      heights.push(h);
-      y += h;
-    }
-    return { positions, heights, totalHeight: y };
+    const heights = layout.rowHeights;
+    const positions = layout.rowPositions;
+    const totalHeight = positions.length > 0
+      ? positions[positions.length - 1] + heights[heights.length - 1]
+      : 0;
+    return { positions, heights, totalHeight };
   });
 
   // Total height of rows area for SVG sizing
