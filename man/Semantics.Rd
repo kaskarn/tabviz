@@ -15,6 +15,6 @@ Each property is a \link{SemanticBundle} describing how one semantic class
 renders. The token names (\code{emphasis}, \code{muted}, \code{accent}) match the boolean
 flags on \code{\link[=tabviz]{tabviz()}} (\code{row_emphasis}, \code{row_muted}, \code{row_accent}) and on
 \code{\link[=web_col]{web_col()}} (\code{emphasis}, \code{muted}, \code{accent} per-cell mappings). Default
-bundles for each preset theme are derived from its \link{ColorPalette} —
+bundles for each preset theme are derived from its \link{ColorPalette} --
 see \code{\link[=default_semantics_for]{default_semantics_for()}}.
 }

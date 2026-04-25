@@ -22,7 +22,7 @@ palette untouched.}
 \description{
 A bundle describes how rows or cells flagged with a particular semantic
 class (\code{emphasis}, \code{muted}, \code{accent}) should render. All fields are
-optional — \code{NA} means "inherit / don't override". This separates the
+optional -- \code{NA} means "inherit / don't override". This separates the
 \emph{intent} of a semantic class ("this row is emphasized") from its \emph{visual
 manifestation} (a specific foreground color + bold weight, say).
 }

@@ -19,11 +19,11 @@ ColorPalette <- new_class(
     row_bg = new_property(class_character, default = "#ffffff"),      # Even row background
     alt_bg = new_property(class_character, default = "#f8fafc"),      # Odd row background (stripe)
     # Column-header row background. Default `NA` means "inherit from row_bg"
-    # — the serializer resolves the fallback before emitting, so every
+    # -- the serializer resolves the fallback before emitting, so every
     # preset (including dark variants) gets the right column-header bg
     # without having to stamp header_bg on each ColorPalette() call.
     header_bg = new_property(class_character, default = NA_character_),
-    # Data-cell text color. Default `NA` means "inherit from foreground" —
+    # Data-cell text color. Default `NA` means "inherit from foreground" --
     # resolved by the serializer. Lets users tint cell text without
     # affecting column headers, titles, or UI chrome (which keep using
     # `foreground`).
@@ -31,7 +31,7 @@ ColorPalette <- new_class(
     # Column-header text color. Default `NA` cascades from `cell_foreground`
     # (which itself cascades from `foreground`), so existing themes render
     # identically. Set explicitly to give the header row its own text
-    # color distinct from data cells — symmetric with `header_bg` for
+    # color distinct from data cells -- symmetric with `header_bg` for
     # background.
     header_foreground = new_property(class_character, default = NA_character_),
     # Interval visualization colors
@@ -111,7 +111,7 @@ Spacing <- new_class(
     # single-line text (flex `align-items: center` re-centers regardless),
     # and after row tracks were pinned via grid-template-rows it could
     # only shrink content area or clip text. Default lowered from 4 to 0;
-    # `set_spacing(cell_padding_y = …)` warns and is otherwise ignored.
+    # `set_spacing(cell_padding_y = ...)` warns and is otherwise ignored.
     cell_padding_y = new_property(class_numeric, default = 0),
     # Vertical gap between the plot/axis region and the footer band (caption
     # + footnote). Applied as padding-top on `.plot-footer`; SVG export
@@ -369,7 +369,7 @@ GroupHeaderStyles <- new_class(
 #'
 #' A bundle describes how rows or cells flagged with a particular semantic
 #' class (`emphasis`, `muted`, `accent`) should render. All fields are
-#' optional — `NA` means "inherit / don't override". This separates the
+#' optional -- `NA` means "inherit / don't override". This separates the
 #' *intent* of a semantic class ("this row is emphasized") from its *visual
 #' manifestation* (a specific foreground color + bold weight, say).
 #'
@@ -423,7 +423,7 @@ SemanticBundle <- new_class(
 #' renders. The token names (`emphasis`, `muted`, `accent`) match the boolean
 #' flags on [tabviz()] (`row_emphasis`, `row_muted`, `row_accent`) and on
 #' [web_col()] (`emphasis`, `muted`, `accent` per-cell mappings). Default
-#' bundles for each preset theme are derived from its [ColorPalette] —
+#' bundles for each preset theme are derived from its [ColorPalette] --
 #' see [default_semantics_for()].
 #'
 #' @param emphasis Bundle for emphasized rows / cells.
@@ -444,7 +444,7 @@ Semantics <- new_class(
 #' Apply palette-derived semantic bundles to a theme
 #'
 #' Wraps a freshly-built `WebTheme` so its `@semantics` property tracks its
-#' own palette/typography instead of the default palette's — used by every
+#' own palette/typography instead of the default palette's -- used by every
 #' `web_theme_*()` preset so a theme's emphasized rows use its own foreground
 #' color rather than the generic default.
 #' @keywords internal
@@ -455,7 +455,7 @@ Semantics <- new_class(
 
 #' Build per-token default bundles from a ColorPalette + Typography
 #'
-#' Encodes the historical rendering rules — `emphasis` = foreground + bold,
+#' Encodes the historical rendering rules -- `emphasis` = foreground + bold,
 #' `muted` = muted color, `accent` = accent color (both for text and marker
 #' fill). Called by every `web_theme_*()` preset helper so bundle defaults
 #' track each theme's palette without per-theme duplication.
@@ -821,7 +821,7 @@ web_theme <- function(
 #' @param header_foreground Column-header text color. Cascades from
 #'   `cell_foreground` (and ultimately `foreground`) if not specified.
 #'   Set explicitly to give the header row its own text color distinct
-#'   from data cells — symmetric with `header_bg` for background.
+#'   from data cells -- symmetric with `header_bg` for background.
 #' @param ci_marker_fill Default CI marker fill color (default: "#0891b2"). If not
 #'   specified and `primary` is set, inherits from `primary`. Cascades to
 #'   `summary_fill` if not specified.
@@ -883,7 +883,7 @@ set_colors <- function(
   }
 
   # The direction-aware marker slots (positive / negative / neutral) never had a
-  # rendering consumer — they were emitted as CSS vars but never read. Accepted
+  # rendering consumer -- they were emitted as CSS vars but never read. Accepted
   # here as no-ops for back-compat; emit one warning so callers can stop passing
   # them. `interval_*` names forward to the `ci_marker_*` names for symmetry with
   # the other deprecations above.
@@ -942,7 +942,7 @@ set_colors <- function(
 
   # cell_foreground stays NA (inherits from foreground at serialize time)
   # unless set explicitly. Keeping NA means dark-mode / custom themes don't
-  # need to stamp it — foreground already does the right thing.
+  # need to stamp it -- foreground already does the right thing.
   if (!is.null(cell_foreground)) {
     current@cell_foreground <- cell_foreground
   }
@@ -1107,7 +1107,7 @@ set_spacing <- function(
     lifecycle::deprecate_warn(
       "0.21.0",
       "set_spacing(cell_padding_y)",
-      details = "Vertical cell padding no longer affects layout — single-line text is flex-centered and row tracks are pinned to spacing.row_height. Raise `row_height` for breathing room."
+      details = "Vertical cell padding no longer affects layout -- single-line text is flex-centered and row tracks are pinned to spacing.row_height. Raise `row_height` for breathing room."
     )
   }
   if (!is.null(footer_gap)) current@footer_gap <- footer_gap
@@ -1130,7 +1130,7 @@ set_spacing <- function(
 #' @param row_border_width Width (px) of the bottom border between data rows
 #'   (default: 1). Set to 0 to remove row separators.
 #' @param header_border_width Width (px) of the bottom border underlining
-#'   column-header rows — includes the primary (leftmost) header, the last
+#'   column-header rows -- includes the primary (leftmost) header, the last
 #'   header row, and plot-header rows (default: 2).
 #' @param row_group_border_width Width (px) of the border drawn under
 #'   row-group header rows when a `GroupHeaderStyles.levelN_border_bottom`
@@ -1399,7 +1399,7 @@ set_layout <- function(
 #' Pipe-friendly function to customize the visual bundles behind the
 #' `emphasis` / `muted` / `accent` semantic classes. Each argument accepts a
 #' named list with any subset of `fg`, `bg`, `border`, `marker_fill`,
-#' `font_weight`, `font_style` — omitted fields preserve the theme's existing
+#' `font_weight`, `font_style` -- omitted fields preserve the theme's existing
 #' values for that token (so you can tweak a single field without restating
 #' the rest of the bundle).
 #'

@@ -16,7 +16,7 @@ A \link{Semantics} object whose bundles mirror the old hardcoded
 rendering semantics against the supplied palette / typography.
 }
 \description{
-Encodes the historical rendering rules — \code{emphasis} = foreground + bold,
+Encodes the historical rendering rules -- \code{emphasis} = foreground + bold,
 \code{muted} = muted color, \code{accent} = accent color (both for text and marker
 fill). Called by every \verb{web_theme_*()} preset helper so bundle defaults
 track each theme's palette without per-theme duplication.

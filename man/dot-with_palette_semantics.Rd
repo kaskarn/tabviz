@@ -8,7 +8,7 @@
 }
 \description{
 Wraps a freshly-built \code{WebTheme} so its \verb{@semantics} property tracks its
-own palette/typography instead of the default palette's — used by every
+own palette/typography instead of the default palette's -- used by every
 \verb{web_theme_*()} preset so a theme's emphasized rows use its own foreground
 color rather than the generic default.
 }

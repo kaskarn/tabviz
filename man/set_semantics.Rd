@@ -23,7 +23,7 @@ The modified \code{WebTheme}.
 Pipe-friendly function to customize the visual bundles behind the
 \code{emphasis} / \code{muted} / \code{accent} semantic classes. Each argument accepts a
 named list with any subset of \code{fg}, \code{bg}, \code{border}, \code{marker_fill},
-\code{font_weight}, \code{font_style} — omitted fields preserve the theme's existing
+\code{font_weight}, \code{font_style} -- omitted fields preserve the theme's existing
 values for that token (so you can tweak a single field without restating
 the rest of the bundle).
 }

@@ -33,7 +33,7 @@ set_shapes(
 (default: 1). Set to 0 to remove row separators.}
 
 \item{header_border_width}{Width (px) of the bottom border underlining
-column-header rows — includes the primary (leftmost) header, the last
+column-header rows -- includes the primary (leftmost) header, the last
 header row, and plot-header rows (default: 2).}
 
 \item{row_group_border_width}{Width (px) of the border drawn under

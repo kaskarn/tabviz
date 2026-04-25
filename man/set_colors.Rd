@@ -69,7 +69,7 @@ chrome.}
 \item{header_foreground}{Column-header text color. Cascades from
 \code{cell_foreground} (and ultimately \code{foreground}) if not specified.
 Set explicitly to give the header row its own text color distinct
-from data cells — symmetric with \code{header_bg} for background.}
+from data cells -- symmetric with \code{header_bg} for background.}
 
 \item{ci_marker_fill}{Default CI marker fill color (default: "#0891b2"). If not
 specified and \code{primary} is set, inherits from \code{primary}. Cascades to

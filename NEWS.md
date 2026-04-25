@@ -1,3 +1,82 @@
+# tabviz 0.21.1
+
+## Layout precision pass
+
+Reworks the row-and-axis layout pipeline so DOM rendering and the
+SVG export both follow a single source of truth. Replaces the
+"hardcode-enough-wiggle-room" pattern with theme-driven derivations.
+
+### Architecture
+
+- `forestStore.layout.rowHeights[i]` is now the *only* truth for
+  row i's height. The DOM follows via
+  `style:grid-template-rows={rowHeights.join(" ")}` on
+  `.tabviz-main`. SVG export reads the same array.
+- New shared module `$lib/typography-layout.ts` (`parseFontSize`,
+  `textRegionHeight`, `computeAxisLayout`) used by both the live
+  widget and the SVG generator. One math, two consumers.
+- New debug instrumentation: `?tabviz-debug-layout=1` reports
+  predicted vs actual row heights / Y positions per row;
+  `?tabviz-debug-layout-overlay=1` paints red guide lines on
+  predicted row tops. No-op without the flag.
+
+### New themable knobs
+
+- `spacing.title_subtitle_gap` (default 13) — gap between title
+  and subtitle bands. Mirrors live widget CSS.
+- `spacing.bottom_margin` (default 16) — trailing buffer below the
+  last band in SVG export.
+- `spacing.footer_gap` (default 8, added in 0.20.1) — vertical
+  gap between plot region and caption / footnote band. Wired
+  end-to-end now.
+- `shapes.tick_mark_length` (default 4) — length of axis tick
+  marks. Themable visual chrome.
+
+### Auto-derivations
+
+- Title / subtitle / caption / footnote heights derive from
+  `ceil(fontSize × lineHeight)` instead of hardcoded
+  TYPOGRAPHY.\*_HEIGHT constants.
+- Axis tick mark / tick label Y / axis label Y / total axis
+  region height derive from typography via
+  `computeAxisLayout()`. Replaces hardcoded `LAYOUT.AXIS_HEIGHT
+  (32)` + `LAYOUT.AXIS_LABEL_HEIGHT (32)` constants that
+  silently truncated under non-default fonts.
+- Header height auto-grows to fit `font × headerFontScale ×
+  lineHeight × headerDepth + breathing` when the configured
+  value is too small. Several theme presets defaulted to 24-30
+  px; multi-tier headers with column groups previously clipped.
+- Group-header indent in the live widget now reads
+  `theme.groupHeaders.indentPerLevel` (was hardcoded 12 px;
+  silently disagreed with SVG export's 16 px default).
+
+### Deprecation
+
+- `spacing.cell_padding_y` is now a no-op. It had no visual
+  effect on single-line text (text was flex-centered regardless
+  of padding) and could only clip content once row tracks were
+  pinned. `set_spacing(cell_padding_y = …)` emits a deprecation
+  warning. Default lowered 4 → 0. Authors who wanted vertical
+  breathing room should raise `spacing.row_height` instead.
+
+### Multi-line text (partial)
+
+- `column.wrap = TRUE` now also applies to the column's header
+  cell, not just data cells. Long headers and authored `\\n`
+  characters wrap correctly. Row tracks stay pinned; authors
+  raise `row_height` to fit multi-line content. Auto-grow per-
+  row tracks ships in 0.22.
+
+### Bug fixes
+
+- Embedded views (Quarto, RStudio Viewer) clipped axis labels
+  at the bottom of viz columns. The grid-template-rows
+  derivation now reserves a track for the axis area.
+- SVG export had extra space between axis and caption AND was
+  prone to clipping the footer. Fixed by removing the duplicate
+  padding from `footerTextHeight` and aligning `footerY` to the
+  caption ascender so SVG matches the live widget's gap.
+
 # tabviz 0.21.0
 
 ## Column ids: type-aware defaults + explicit `id=` (breaking)
