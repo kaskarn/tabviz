@@ -528,15 +528,20 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const hasCaption = !!spec.labels?.caption;
   const hasFootnote = !!spec.labels?.footnote;
 
-  const titleHeight = hasTitle ? TYPOGRAPHY.TITLE_HEIGHT : 0;
-  const subtitleHeight = hasSubtitle ? TYPOGRAPHY.SUBTITLE_HEIGHT : 0;
+  // Text region heights derived from the theme's typography (font size +
+  // line height). Pre-v0.21.x these used hardcoded TYPOGRAPHY.*_HEIGHT
+  // constants tuned for the default font profile, which truncated the
+  // title (or padded too much) when users picked larger / smaller fonts.
+  const lineHeight = theme.typography.lineHeight ?? 1.5;
+  const titleHeight = hasTitle ? textRegionHeight(theme.typography.fontSizeLg, lineHeight) : 0;
+  const subtitleHeight = hasSubtitle ? textRegionHeight(theme.typography.fontSizeBase, lineHeight) : 0;
   // When both title and subtitle exist, web CSS adds extra spacing via .has-both:
   // margin-top: 6px + border-top: 1px + padding-top: 6px = 13px
   const titleSubtitleGap = (hasTitle && hasSubtitle) ? 13 : 0;
   const headerTextHeight = titleHeight + titleSubtitleGap + subtitleHeight + (hasTitle || hasSubtitle ? padding : 0);
 
-  const captionHeight = hasCaption ? TYPOGRAPHY.CAPTION_HEIGHT : 0;
-  const footnoteHeight = hasFootnote ? TYPOGRAPHY.FOOTNOTE_HEIGHT : 0;
+  const captionHeight = hasCaption ? textRegionHeight(theme.typography.fontSizeSm, lineHeight) : 0;
+  const footnoteHeight = hasFootnote ? textRegionHeight(theme.typography.fontSizeSm, lineHeight) : 0;
   const footerTextHeight = captionHeight + footnoteHeight + (hasCaption || hasFootnote ? padding : 0);
 
   // Compute display rows (includes group headers)
@@ -694,8 +699,11 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     showOverallSummary: hasOverall,
     headerTextHeight,
     footerTextHeight,
-    titleY: padding + TYPOGRAPHY.TITLE_HEIGHT - 4, // Baseline adjustment (matches web 12px top padding)
-    subtitleY: padding + titleHeight + titleSubtitleGap + TYPOGRAPHY.SUBTITLE_HEIGHT - 4,
+    // Title baseline = top of region + (titleHeight × 0.8) to drop under the
+    // ascender. Replaces the old `+ TITLE_HEIGHT - 4` magic that assumed
+    // the constant 28px region.
+    titleY: padding + Math.round(titleHeight * 0.8),
+    subtitleY: padding + titleHeight + titleSubtitleGap + Math.round(subtitleHeight * 0.8),
     mainY: headerTextHeight + padding,
     // Footer Y: Match web view's layout (axisHeight + 8px footer padding-top)
     // Footer Y: axis region + themed footer gap (spacing.footer_gap).
@@ -918,6 +926,19 @@ function parseFontSize(size: string): number {
   }
   // Round to 2 decimal places to avoid floating point precision issues
   return Math.round(value * 100) / 100;
+}
+
+/**
+ * Derive a text region's height from the theme's font size + line-height.
+ *
+ * Replaces the v0.20.x hardcoded constants (TITLE_HEIGHT=28, SUBTITLE_HEIGHT=20,
+ * CAPTION_HEIGHT=16, FOOTNOTE_HEIGHT=14) which assumed a single typography
+ * profile and silently truncated when authors raised font sizes. The result
+ * is `ceil(fontSize * lineHeight)` — what the browser actually reserves
+ * for one line of text in that style.
+ */
+function textRegionHeight(fontSizeStr: string, lineHeight: number): number {
+  return Math.ceil(parseFontSize(fontSizeStr) * lineHeight);
 }
 
 /** Calculate text X position and anchor based on alignment */
@@ -1221,7 +1242,9 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
       font-size="${fontSize}px"
       font-weight="${theme.typography.fontWeightNormal}"
       fill="${theme.colors.secondary}">${escapeXml(spec.labels.caption)}</text>`);
-    y += TYPOGRAPHY.CAPTION_HEIGHT;
+    // Advance Y by the caption's actual line height — derived from
+    // typography rather than the hardcoded 16px constant.
+    y += textRegionHeight(theme.typography.fontSizeSm, theme.typography.lineHeight ?? 1.5);
   }
 
   if (spec.labels?.footnote) {
