@@ -722,21 +722,27 @@ export function createForestStore() {
     );
   });
 
-  // Derived: per-displayRow flag — true when the row is a top-level
-  // group_header preceded by a data row. Drives the
-  // `.group-row-padded` CSS class (padding goes ABOVE the heading,
-  // before the first sibling row, instead of being split symmetrically
-  // around the title) and the matching SVG render offset. Also gates
-  // the rowGroupPadding drag handle in v0.24+.
-  const groupRowPadded = $derived.by((): boolean[] => {
-    const out: boolean[] = [];
-    let seenData = false;
-    for (const dr of displayRows) {
-      if (dr.type === "group_header") {
-        out.push(dr.depth === 0 && seenData);
-      } else {
-        out.push(false);
-        if (dr.type === "data") seenData = true;
+  // Derived: per-displayRow flag — true when the row is a non-spacer
+  // data row that immediately precedes a top-level group_header.
+  // Drives the `.row-padded-after` CSS class (the rowGroupPadding
+  // separator lives as bottom padding on the previous row, not as
+  // empty space inside the group_header track — keeps group_header
+  // styling consistent and avoids the heading's bg tint bleeding into
+  // the separator strip). Also drives the SVG track inflation and
+  // anchors the rowGroupPadding drag handle.
+  const rowPaddedAfter = $derived.by((): boolean[] => {
+    const out: boolean[] = new Array(displayRows.length).fill(false);
+    for (let i = 0; i < displayRows.length; i++) {
+      const dr = displayRows[i];
+      if (dr.type !== "group_header" || dr.depth !== 0) continue;
+      // Walk back to the nearest non-spacer data row; that's the row
+      // whose bottom owns the separator strip.
+      for (let j = i - 1; j >= 0; j--) {
+        const prev = displayRows[j];
+        if (prev.type === "data" && prev.row.style?.type !== "spacer") {
+          out[j] = true;
+          break;
+        }
       }
     }
     return out;
@@ -811,30 +817,28 @@ export function createForestStore() {
     const rowGroupPadding = spec.theme.spacing.rowGroupPadding ?? 0;
     const dataLineHeightPx = Math.ceil(parseFontSize(spec.theme.typography.fontSizeBase) * lineHeight);
     const rowHeights: number[] = [];
-    // rowGroupPadding now pads ABOVE top-level group headers preceded by
-    // data, creating visual separation between a group heading and the
-    // previous group's content. Sub-group headers (depth > 0) and the
-    // very first row (no prior content) don't get the extra band.
-    let seenData = false;
+    // rowGroupPadding (v0.24.1+) lives as bottom margin on the LAST
+    // data row of the previous top-level group, not as a top strip
+    // inside the new group_header. Cleaner styling: group_header tracks
+    // stay at rowHeight, and the heading's themed bg / borders don't
+    // bleed into the separator. The data row's track inflates; the cell
+    // uses padding-bottom to anchor content at the original visible
+    // band (rowGroupPadding of empty space sits below it).
     for (let i = 0; i < displayRows.length; i++) {
       const displayRow = displayRows[i];
+      let h: number;
       if (displayRow.type === "data" && displayRow.row.style?.type === "spacer") {
-        rowHeights.push(rowHeight / 2);
-        seenData = true;
+        h = rowHeight / 2;
       } else if (displayRow.type === "group_header") {
-        const padBefore = displayRow.depth === 0 && seenData;
-        rowHeights.push(padBefore ? rowHeight + rowGroupPadding : rowHeight);
+        h = rowHeight;
       } else if (displayRow.type === "data") {
         const lines = wrapLineCounts[displayRow.row.id] ?? 1;
-        if (lines > 1) {
-          rowHeights.push(Math.max(rowHeight, dataLineHeightPx * lines + 6));
-        } else {
-          rowHeights.push(rowHeight);
-        }
-        seenData = true;
+        h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
       } else {
-        rowHeights.push(rowHeight);
+        h = rowHeight;
       }
+      if (rowPaddedAfter[i]) h += rowGroupPadding;
+      rowHeights.push(h);
     }
 
     // Calculate cumulative Y positions for each row
@@ -2741,8 +2745,8 @@ export function createForestStore() {
     get bandIndexes() {
       return bandIndexes;
     },
-    get groupRowPadded() {
-      return groupRowPadded;
+    get rowPaddedAfter() {
+      return rowPaddedAfter;
     },
     get effectiveBanding() {
       return effectiveBanding;

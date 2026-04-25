@@ -1,3 +1,28 @@
+# tabviz 0.24.1
+
+## Row-group padding lives on the previous row
+
+Refines v0.24.0's "padding before" semantics: the rowGroupPadding
+separator strip now lives as bottom margin on the LAST data row of
+the previous top-level group, instead of as an empty top strip
+inside the new group_header's track.
+
+The visual outcome is the same — empty space between groups — but
+the styling is cleaner:
+
+- Group_header tracks stay at `rowHeight`, so any themed group
+  background, border, or weight stays tight to the heading content
+  instead of bleeding into the separator.
+- Adding more rowGroupPadding doesn't grow the heading's tinted
+  band; only the previous row's trailing empty space.
+- Row banding extends naturally through the separator (it belongs
+  to the previous group's content), so banded layouts read as
+  continuous bands ending in the gap.
+
+The rowGroupPadding drag handle moves with the seam — it now sits at
+the top of the next group_header (= bottom of the empty separator),
+distinct from the row-height handle on the visible row bottom.
+
 # tabviz 0.24.0
 
 ## Drag-to-resize spacing handles

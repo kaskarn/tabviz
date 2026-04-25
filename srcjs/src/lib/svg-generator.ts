@@ -193,9 +193,11 @@ export interface PrecomputedLayout {
   rowHeights: number[];
   rowPositions: number[];
   totalRowsHeight: number;
-  /** True at index i when displayRows[i] is a top-level group_header
-   *  preceded by data — drives the rowGroupPadding "above only" render. */
-  groupRowPadded: boolean[];
+  /** True at index i when displayRows[i] is the LAST data row of a
+   *  top-level group followed immediately by another top-level
+   *  group_header — drives the rowGroupPadding "after only" render
+   *  (track inflated, content rendered at original visible band). */
+  rowPaddedAfter: boolean[];
 
   // Header
   headerHeight: number;
@@ -698,32 +700,36 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // positions line up with the visible row edges in the export.
   const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
   const dataLineHeightPx = Math.ceil(parseFontSize(theme.typography.fontSizeBase) * (theme.typography.lineHeight ?? 1.5));
+  // rowPaddedAfter[i]: data row i directly precedes a top-level
+  // group_header. Walk forward once to mark each affected data row;
+  // its track will be inflated by rowGroupPadding (cell content stays
+  // anchored at the original visible-band Y). Mirrors forestStore.
+  const rowPaddedAfter: boolean[] = new Array(displayRows.length).fill(false);
+  for (let i = 0; i < displayRows.length; i++) {
+    const dr = displayRows[i];
+    if (dr.type !== "group_header" || dr.depth !== 0) continue;
+    for (let j = i - 1; j >= 0; j--) {
+      const prev = displayRows[j];
+      if (prev.type === "data" && prev.row.style?.type !== "spacer") {
+        rowPaddedAfter[j] = true;
+        break;
+      }
+    }
+  }
   let rowsHeight = 0;
   const rowPositions: number[] = [];
   const rowHeights: number[] = [];
-  // rowGroupPadding now pads ABOVE top-level group headers preceded by
-  // data (mirrors forestStore.layout). The padding lives on the
-  // group-header row's own track but renders as empty space above the
-  // visible band — renderGroupHeader call below offsets y to push the
-  // band to the bottom of the taller track.
-  const groupRowPadded: boolean[] = [];
-  let seenData = false;
-  for (const dr of displayRows) {
+  for (let i = 0; i < displayRows.length; i++) {
+    const dr = displayRows[i];
     const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
     let h: number;
-    let padded = false;
-    if (isSpacerRow) {
-      h = rowHeight / 2;
-      seenData = true;
-    } else if (dr.type === "group_header") {
-      padded = dr.depth === 0 && seenData;
-      h = padded ? rowHeight + rowGroupPadding : rowHeight;
-    } else if (dr.type === "data") {
+    if (isSpacerRow) h = rowHeight / 2;
+    else if (dr.type === "group_header") h = rowHeight;
+    else if (dr.type === "data") {
       const lines = wrapLineCounts[dr.row.id] ?? 1;
       h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
-      seenData = true;
     } else h = rowHeight;
-    groupRowPadded.push(padded);
+    if (rowPaddedAfter[i]) h += rowGroupPadding;
     rowPositions.push(rowsHeight);
     rowHeights.push(h);
     rowsHeight += h;
@@ -866,7 +872,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     labelWidth,
     rowPositions,
     rowHeights,
-    groupRowPadded,
+    rowPaddedAfter,
   };
 }
 
@@ -3739,18 +3745,15 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     } else {
       // Group header row — paint the band bg when this header is part of a
       // band. The header's own primary-tint bg is suppressed in the render
-      // step below (via renderBackground=false). When a top-level group
-      // header is padded above (v0.24+), exclude the padding strip from
-      // the band so it reads as an empty gap between the previous group
-      // and the heading — matching the live widget's `padding-top` on
-      // `.group-row-padded`.
+      // step below (via renderBackground=false). v0.24.1+: the
+      // rowGroupPadding strip lives on the PREVIOUS data row's track now,
+      // so the group_header row is just rowHeight tall and paints
+      // edge-to-edge here.
       if (bandIdx === 1) {
         const bgColor = theme.colors.altBg;
         if (bgColor !== theme.colors.background) {
-          const padded = layout.groupRowPadded[i];
-          const offset = padded ? (theme.spacing.rowGroupPadding ?? 0) : 0;
-          parts.push(`<rect x="${padding}" y="${y + offset}"
-            width="${layout.totalWidth - padding * 2}" height="${rowHeight - offset}"
+          parts.push(`<rect x="${padding}" y="${y}"
+            width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
             fill="${bgColor}"/>`);
         }
       }
@@ -4104,20 +4107,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // primary-tint bg so the band color reads as continuous with its rows.
       const showCounts = !!spec.interaction?.showGroupCounts;
       const renderBg = bandIndexes[i] == null;
-      // rowGroupPadding (v0.24+) pads ABOVE top-level group headers
-      // preceded by data — push the visible band to the bottom of the
-      // taller track so the empty strip lives above the heading. The
-      // tall-track height is `rowHeight + rowGroupPadding`; the band
-      // we paint is `rowHeight` starting at `y + rowGroupPadding`.
-      const padded = layout.groupRowPadded[i];
-      const offset = padded ? (theme.spacing.rowGroupPadding ?? 0) : 0;
       parts.push(renderGroupHeader(
         displayRow.label,
         displayRow.depth,
         showCounts ? displayRow.rowCount : 0,
         padding,
-        y + offset,
-        rowHeight - offset,
+        y,
+        rowHeight,
         layout.totalWidth - padding * 2,
         theme,
         renderBg,
@@ -4135,13 +4131,23 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         // Spacer rows don't render content - just occupy space
         // The row height is already half-height from earlier calculation
       } else {
+        // v0.24.1+: when this row is padded-after (last data row of a
+        // top-level group), the track is rowHeight + rowGroupPadding
+        // tall but content stays anchored at the original visible band
+        // (mirrors `align-items: center; padding-bottom` in the live
+        // CSS). Pass the visible-band height so text Y-centerline
+        // doesn't drift into the empty separator strip.
+        const trailingPad = layout.rowPaddedAfter[i]
+          ? (theme.spacing.rowGroupPadding ?? 0)
+          : 0;
+        const contentHeight = rowHeight - trailingPad;
         // Render unified row (label + all columns in order)
         parts.push(renderUnifiedTableRow(
           row,
           allColumns,
           padding,
           y,
-          rowHeight,
+          contentHeight,
           theme,
           layout.labelWidth,
           depth,

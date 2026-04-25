@@ -87,7 +87,7 @@
   const spec = $derived(store.spec);
   const visibleRows = $derived(store.visibleRows);
   const displayRows = $derived(store.displayRows);
-  const groupRowPadded = $derived(store.groupRowPadded);
+  const rowPaddedAfter = $derived(store.rowPaddedAfter);
   const layout = $derived(store.layout);
   const xScale = $derived(store.xScale);
   const axisComputation = $derived(store.axisComputation);
@@ -1647,7 +1647,7 @@
               <div
                 class="grid-cell data-cell primary-cell {rowClasses}"
                 class:group-row={isGroupHeader}
-                class:group-row-padded={isGroupHeader && groupRowPadded[i]}
+                class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
@@ -1706,7 +1706,7 @@
               <div
                 class="grid-cell data-cell plot-cell {rowClasses}"
                 class:group-row={isGroupHeader}
-                class:group-row-padded={isGroupHeader && groupRowPadded[i]}
+                class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
@@ -1732,7 +1732,7 @@
               <div
                 class="grid-cell data-cell {rowClasses}"
                 class:group-row={isGroupHeader}
-                class:group-row-padded={isGroupHeader && groupRowPadded[i]}
+                class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
                 class:hovered={row && hoveredRowId === row.id}
@@ -2222,10 +2222,14 @@
             label="Header height"
             top={`${headerHeightPx}px`}
           />
-          <!-- Row height: bottom edge of every data row -->
+          <!-- Row height: bottom edge of the *visible* data band (excludes
+               the trailing rowGroupPadding when the row is padded-after,
+               so the rowHeight handle and rowGroupPadding handle land on
+               distinct seams). -->
           {#each displayRows as displayRow, i (getDisplayRowKey(displayRow, i))}
             {#if displayRow.type === "data" && displayRow.row.style?.type !== "spacer"}
-              {@const rowBottom = headerHeightPx + layout.rowPositions[i] + layout.rowHeights[i]}
+              {@const trailingPad = rowPaddedAfter[i] ? rowGroupPadding : 0}
+              {@const rowVisibleBottom = headerHeightPx + layout.rowPositions[i] + layout.rowHeights[i] - trailingPad}
               <EdgeResize
                 value={theme.spacing.rowHeight}
                 min={16}
@@ -2233,22 +2237,23 @@
                 onpreview={(v) => store.previewThemeField("spacing", "rowHeight", v)}
                 oncommit={(v) => store.setThemeField("spacing", "rowHeight", v)}
                 label="Row height"
-                top={`${rowBottom}px`}
+                top={`${rowVisibleBottom}px`}
               />
-            {/if}
-            {#if displayRow.type === "group_header" && groupRowPadded[i]}
-              <!-- Top of the visible group-header band (after the empty
-                   padding strip). Drag to grow / shrink rowGroupPadding. -->
-              {@const bandTop = headerHeightPx + layout.rowPositions[i] + rowGroupPadding}
-              <EdgeResize
-                value={rowGroupPadding}
-                min={0}
-                max={60}
-                onpreview={(v) => store.previewThemeField("spacing", "rowGroupPadding", v)}
-                oncommit={(v) => store.setThemeField("spacing", "rowGroupPadding", v)}
-                label="Row group padding"
-                top={`${bandTop}px`}
-              />
+              {#if rowPaddedAfter[i]}
+                <!-- Row group padding handle: top edge of the following
+                     group_header (= bottom of the empty separator strip).
+                     Drag to grow / shrink the gap. -->
+                {@const groupTop = headerHeightPx + layout.rowPositions[i] + layout.rowHeights[i]}
+                <EdgeResize
+                  value={rowGroupPadding}
+                  min={0}
+                  max={60}
+                  onpreview={(v) => store.previewThemeField("spacing", "rowGroupPadding", v)}
+                  oncommit={(v) => store.setThemeField("spacing", "rowGroupPadding", v)}
+                  label="Row group padding"
+                  top={`${groupTop}px`}
+                />
+              {/if}
             {/if}
           {/each}
         {/if}
@@ -2823,19 +2828,18 @@
      .group-row-bordered, which restores a row-edge border at
      --wf-group-border-width.
 
-     Row-group-padding (v0.24+) pads ABOVE the group header instead of
-     symmetric top+bottom — creates separation between a top-level group
-     heading and the previous group's content. Only applied when the row
-     is a top-level group preceded by data; the store flips
-     `.group-row-padded` on those rows. The cell content sinks to the
-     bottom of the taller track via align-items: flex-end so the label
-     visually hugs the row's data band. */
+     Row-group-padding (v0.24.1+) is bottom margin on the LAST data row
+     of the previous top-level group via `.row-padded-after` (set by
+     the store). Cleaner than putting the padding on the group_header
+     itself — the heading's themed bg / borders no longer bleed into
+     the separator strip. align-items stays at center; padding-bottom
+     subtracts from the available area so content remains anchored at
+     the original visible band, with the empty separator below. */
   .grid-cell.group-row {
     border-bottom: 0;
   }
-  .grid-cell.group-row-padded {
-    padding-top: var(--wf-row-group-padding, 0px);
-    align-items: flex-end;
+  .grid-cell.row-padded-after {
+    padding-bottom: var(--wf-row-group-padding, 0px);
   }
   .grid-cell.group-row-bordered {
     border-bottom: var(--wf-group-border-width, 1px) solid var(--wf-border);
