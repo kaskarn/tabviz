@@ -25,6 +25,7 @@ Collate:
     'classes-components.R'
     'update-check.R'
     'utils-nse.R'
+    'utils-oklch.R'
     'utils-serialize.R'
     'modifiers.R'
     'web_spec.R'
@@ -45,6 +46,7 @@ Imports:
     S7 (>= 0.2.0),
     cli (>= 3.6.0),
     checkmate (>= 2.0.0),
+    farver (>= 2.1.0),
     tools
 Suggests:
     shiny (>= 1.8.0),
