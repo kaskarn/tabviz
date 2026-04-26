@@ -23,6 +23,34 @@
     store.setThemeField(path, value);
   }
 
+  // Surface "Background" should refresh both surface.base and the row
+  // base bg (which is what the renderer actually paints). Same for muted
+  // (alt-row) and divider (cell border).
+  function setBackground(hex: string) {
+    setPath(["surface", "base"], hex);
+    setPath(["row", "base", "bg"], hex);
+  }
+  function setBandingPartner(hex: string) {
+    setPath(["surface", "muted"], hex);
+    setPath(["row", "alt", "bg"], hex);
+  }
+  function setForeground(hex: string) {
+    setPath(["content", "primary"], hex);
+    setPath(["cell", "fg"], hex);
+    setPath(["row", "base", "fg"], hex);
+    setPath(["row", "alt",  "fg"], hex);
+  }
+  function setBorder(hex: string) {
+    setPath(["divider", "subtle"], hex);
+    setPath(["cell", "border"], hex);
+  }
+  function setHeaderBg(hex: string) {
+    setPath(["header", "light", "bg"], hex);
+  }
+  function setHeaderFg(hex: string) {
+    setPath(["header", "light", "fg"], hex);
+  }
+
   // Series anchor list — drives marker fills via `theme.series[i].fill`.
   function setSeriesFill(idx: number, hex: string) {
     setPath(["series", idx, "fill"], hex);
@@ -59,30 +87,49 @@
 </script>
 
 {#if theme}
-  <SettingsSection title="Surfaces" description="Base, banding partner, and raised tones for the table chrome.">
-    <ColorField label="Background"  value={theme.surface?.base   ?? "#ffffff"} onchange={(v) => setPath(["surface","base"],   v)} />
-    <ColorField label="Banding partner" hint="Used by alt-row banding and subtler regions"
-                value={theme.surface?.muted  ?? "#f8fafc"} onchange={(v) => setPath(["surface","muted"],  v)} />
-    <ColorField label="Raised"      value={theme.surface?.raised ?? "#ffffff"} onchange={(v) => setPath(["surface","raised"], v)} />
+  <SettingsSection title="Surfaces" description="Row backgrounds and the banding partner. Without a JS resolver, the panel writes both the surface role and the row binding so the change is visible immediately.">
+    <ColorField label="Background"  value={theme.row?.base?.bg ?? theme.surface?.base ?? "#ffffff"} onchange={setBackground} />
+    <ColorField label="Banding partner" hint="Alt-row background"
+                value={theme.row?.alt?.bg ?? theme.surface?.muted ?? "#f8fafc"} onchange={setBandingPartner} />
   </SettingsSection>
 
   <SettingsSection title="Content" description="Text tones. Primary is body; secondary is subtitles/captions; muted is axis labels and footnotes.">
-    <ColorField label="Primary"   value={theme.content?.primary   ?? "#000000"} onchange={(v) => setPath(["content","primary"],   v)} />
-    <ColorField label="Secondary" value={theme.content?.secondary ?? "#444444"} onchange={(v) => setPath(["content","secondary"], v)} />
-    <ColorField label="Muted"     value={theme.content?.muted     ?? "#888888"} onchange={(v) => setPath(["content","muted"],     v)} />
-    <ColorField label="Inverse"   hint="Text on dark fills (bold-mode header)"
+    <ColorField label="Foreground" hint="Body and cell text" value={theme.cell?.fg ?? theme.content?.primary ?? "#000000"} onchange={setForeground} />
+    <ColorField label="Secondary"  value={theme.content?.secondary ?? "#444444"} onchange={(v) => setPath(["content","secondary"], v)} />
+    <ColorField label="Muted"      hint="Axis labels, footnotes" value={theme.content?.muted     ?? "#888888"} onchange={(v) => setPath(["content","muted"],     v)} />
+    <ColorField label="Inverse"    hint="Text on dark fills (bold-mode header)"
                 value={theme.content?.inverse ?? "#ffffff"} onchange={(v) => setPath(["content","inverse"], v)} />
   </SettingsSection>
 
-  <SettingsSection title="Dividers" description="Cell hairlines and stronger rules under header / group rows.">
-    <ColorField label="Subtle" value={theme.divider?.subtle ?? "#e2e8f0"} onchange={(v) => setPath(["divider","subtle"], v)} />
-    <ColorField label="Strong" value={theme.divider?.strong ?? "#94a3b8"} onchange={(v) => setPath(["divider","strong"], v)} />
+  <SettingsSection title="Header" description="Column-header band. Variant chosen on the Layout tab; this edits the active variant's color set.">
+    <ColorField label="Header background" value={theme.header?.light?.bg ?? "#f8fafc"} onchange={setHeaderBg} />
+    <ColorField label="Header text"       value={theme.header?.light?.fg ?? "#000000"} onchange={setHeaderFg} />
   </SettingsSection>
 
-  <SettingsSection title="Accent" description="Selection, hover, and other interaction tones.">
-    <ColorField label="Accent"          value={theme.accent?.default     ?? "#8b5cf6"} onchange={(v) => setPath(["accent","default"],     v)} />
-    <ColorField label="Accent (muted)"  hint="Hover / selected row fill" value={theme.accent?.muted ?? "#dde1e7"} onchange={(v) => setPath(["accent","muted"], v)} />
-    <ColorField label="Accent tint"     hint="L1 group bar background"  value={theme.accent?.tintSubtle ?? "#e1e5ea"} onchange={(v) => setPath(["accent","tintSubtle"], v)} />
+  <SettingsSection title="Dividers" description="Cell hairlines and stronger rules under header / group rows.">
+    <ColorField label="Subtle" hint="Cell borders" value={theme.cell?.border ?? theme.divider?.subtle ?? "#e2e8f0"} onchange={setBorder} />
+    <ColorField label="Strong" hint="Header rule, group rules" value={theme.divider?.strong ?? "#94a3b8"} onchange={(v) => setPath(["divider","strong"], v)} />
+  </SettingsSection>
+
+  <SettingsSection title="Accent" description="Drives the row-accent semantic, hover/selected fills, and L1 group bar.">
+    <ColorField label="Accent"
+                value={theme.accent?.default ?? "#8b5cf6"}
+                onchange={(v) => {
+                  setPath(["accent", "default"], v);
+                  setPath(["row", "accent", "fg"], v);
+                  setPath(["row", "accent", "markerFill"], v);
+                }} />
+    <ColorField label="Hover / selected fill" value={theme.accent?.muted ?? "#dde1e7"}
+                onchange={(v) => {
+                  setPath(["accent", "muted"], v);
+                  setPath(["row", "hover", "bg"], v);
+                  setPath(["row", "selected", "bg"], v);
+                }} />
+    <ColorField label="L1 group bar"     value={theme.accent?.tintSubtle ?? theme.row_group?.L1?.bg ?? "#e1e5ea"}
+                onchange={(v) => {
+                  setPath(["accent", "tintSubtle"], v);
+                  setPath(["rowGroup", "L1", "bg"], v);
+                }} />
   </SettingsSection>
 
   <SettingsSection title="Status" description="Semantic indicator colors.">
@@ -113,10 +160,31 @@
     <button class="series-add" onclick={addSeries}>+ Add series</button>
   </SettingsSection>
 
-  <SettingsSection title="Fonts" description="Body is the primary face; display is for titles; mono is optional.">
-    <FontFamilyPicker label="Body"    value={inputs?.fontBody    ?? "system-ui"} onchange={(v) => setPath(["inputs","fontBody"],    v)} />
-    <FontFamilyPicker label="Display" value={inputs?.fontDisplay ?? inputs?.fontBody ?? "system-ui"} onchange={(v) => setPath(["inputs","fontDisplay"], v)} />
-    <FontFamilyPicker label="Mono"    value={inputs?.fontMono    ?? ""} onchange={(v) => setPath(["inputs","fontMono"], v)} />
+  <SettingsSection title="Fonts" description="Body is the primary face for cells, headers, labels; display is for titles.">
+    <FontFamilyPicker
+      label="Body"
+      value={theme.text?.body?.family ?? inputs?.fontBody ?? "system-ui"}
+      onchange={(v) => {
+        // Write to every text role's family AND mirror onto inputs for source export.
+        setPath(["inputs", "fontBody"], v);
+        for (const role of ["body", "cell", "label", "tick", "footnote", "caption", "subtitle"]) {
+          setPath(["text", role, "family"], v);
+        }
+      }}
+    />
+    <FontFamilyPicker
+      label="Display"
+      value={theme.text?.title?.family ?? inputs?.fontDisplay ?? inputs?.fontBody ?? "system-ui"}
+      onchange={(v) => {
+        setPath(["inputs", "fontDisplay"], v);
+        setPath(["text", "title", "family"], v);
+      }}
+    />
+    <FontFamilyPicker
+      label="Mono"
+      value={inputs?.fontMono ?? ""}
+      onchange={(v) => setPath(["inputs", "fontMono"], v)}
+    />
   </SettingsSection>
 {/if}
 

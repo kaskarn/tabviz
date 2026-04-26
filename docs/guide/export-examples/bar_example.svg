@@ -17,7 +17,7 @@
       fill="#18181B">Trial Enrollment by Department</text>
 <line x1="16" x2="484"
       y1="56" y2="56"
-      stroke="#F5F5F5" stroke-width="2"/>
+      stroke="#C0C1C4" stroke-width="2"/>
 <rect x="16" y="56"
         width="468" height="40"
         fill="#F5F5F5"/>
@@ -40,7 +40,7 @@
           fill="#18181B">N</text>
 <line x1="16" x2="484"
         y1="96" y2="96"
-        stroke="#F5F5F5" stroke-width="2"/>
+        stroke="#C0C1C4" stroke-width="2"/>
 <rect x="16" y="96"
             width="468" height="30"
             fill="#F5F5F5"/>
@@ -73,15 +73,15 @@
 </g>
 <g transform="translate(0, 232)">
 <line x1="132" x2="312"
-    y1="0" y2="0" stroke="#F5F5F5" stroke-width="1"/>
-<line x1="144" x2="144" y1="0" y2="4" stroke="#F5F5F5" stroke-width="1"/>
+    y1="0" y2="0" stroke="#C0C1C4" stroke-width="1"/>
+<line x1="144" x2="144" y1="0" y2="4" stroke="#C0C1C4" stroke-width="1"/>
 <text x="146" y="14"
       text-anchor="start"
       font-family="Inter, system-ui, -apple-system, sans-serif"
       font-size="12px"
       font-weight="400"
       fill="#18181B">0</text>
-<line x1="233.14285714285714" x2="233.14285714285714" y1="0" y2="4" stroke="#F5F5F5" stroke-width="1"/>
+<line x1="233.14285714285714" x2="233.14285714285714" y1="0" y2="4" stroke="#C0C1C4" stroke-width="1"/>
 <text x="233.14285714285714" y="14"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
@@ -110,7 +110,7 @@
           fill="#18181B">245.00</text>
 <line x1="16" x2="484"
           y1="126" y2="126"
-          stroke="#F5F5F5" stroke-width="1"/>
+          stroke="#C0C1C4" stroke-width="1"/>
 <text class="cell-text" x="26" y="141"
     font-family="Inter, system-ui, -apple-system, sans-serif"
     font-size="14px"
@@ -126,7 +126,7 @@
           fill="#18181B">312.00</text>
 <line x1="16" x2="484"
           y1="156" y2="156"
-          stroke="#F5F5F5" stroke-width="1"/>
+          stroke="#C0C1C4" stroke-width="1"/>
 <text class="cell-text" x="26" y="171"
     font-family="Inter, system-ui, -apple-system, sans-serif"
     font-size="14px"
@@ -142,7 +142,7 @@
           fill="#18181B">189.00</text>
 <line x1="16" x2="484"
           y1="186" y2="186"
-          stroke="#F5F5F5" stroke-width="1"/>
+          stroke="#C0C1C4" stroke-width="1"/>
 <text class="cell-text" x="26" y="201"
     font-family="Inter, system-ui, -apple-system, sans-serif"
     font-size="14px"
@@ -158,6 +158,6 @@
           fill="#18181B">156.00</text>
 <line x1="16" x2="484"
           y1="216" y2="216"
-          stroke="#F5F5F5" stroke-width="1"/>
+          stroke="#C0C1C4" stroke-width="1"/>
 
 </svg>
