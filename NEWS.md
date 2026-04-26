@@ -1,32 +1,101 @@
 # tabviz 0.26.0.9000
 
-## Theming v2 — staged migration toward 1.0
+## Theming v2: 3-tier system
 
-Pre-release work on the 3-tier theming system that lands at v1.0. v0.25.x
-themes still work; v2 is being built alongside and gets switched on by
-PR 6/8 of the migration. Custom user-built themes will need to migrate
-when v1 launches.
+v2 replaces the v1 flat-property-bag with a 3-tier cascade
+(inputs -> semantic roles -> component bindings) and a hard
+chrome/data wall. **Breaking change**: all v1 theme classes and
+modifiers are deleted. Update any custom theme code to the new API.
 
-- **PR 1** — `farver` added as Imports; new internal `R/utils-oklch.R`
-  providing OKLCH-space color helpers (`oklch_lighten`, `oklch_darken`,
-  `oklch_mix`, `oklch_chroma`, `ensure_contrast`).
-- **PR 2** — new S7 class hierarchy in `R/classes-theme-v2.R` defining
-  `ThemeInputs` (T1), `ThemeVariants`, `Surfaces` / `Content` / `Dividers` /
-  `AccentRoles` / `StatusColors` / `SlotBundle` / `TextRole` / `TextRoles` /
-  `SpacingTokens` (T2), and `AnnotationCluster` / `HeaderCluster` /
-  `ColumnGroupCluster` / `RowGroupCluster` / `RowCluster` / `CellCluster` /
-  `FirstColumnCluster` / `PlotScaffold` / `MarksRecipes` (T3). Rolls up
-  into `WebTheme2`. Variable-length series via `list<SlotBundle>`.
-- **PR 3** — `resolve_theme()` pipeline. Idempotent, OKLCH-derived,
-  enforces a hard chrome/data wall (`resolve_chrome` and `resolve_data`
-  share only Tier 1). Density preset (compact / comfortable / spacious)
-  drives spacing; per-token overrides win.
-- **PR 4** — 9 v2 preset constructors (`web_theme_default_v2()`,
-  `web_theme_minimal_v2()`, `web_theme_dark_v2()`, `web_theme_jama_v2()`,
-  `web_theme_lancet_v2()`, `web_theme_modern_v2()`,
-  `web_theme_presentation_v2()`, `web_theme_cochrane_v2()`,
-  `web_theme_nature_v2()`) plus `package_themes_v2()`. Each returns a
-  fully resolved `WebTheme2`.
+### Architecture
+
+* **Tier 1 inputs** (`ThemeInputs`): the only tier customers normally
+  edit. `neutral` (5-step ramp), `brand` + `brand_deep`, `accent` +
+  `accent_deep`, status colors, `series_anchors` (variable length),
+  `summary_anchor`, `font_body` / `font_display` / `font_mono`.
+* **Tier 1 variants** (`ThemeVariants`): per-table toggles.
+  `density` ∈ {compact, comfortable, spacious},
+  `header_style` ∈ {light, bold},
+  `first_column_style` ∈ {default, bold}.
+* **Tier 2 semantic roles** (derived): `Surfaces`, `Content`,
+  `Dividers`, `AccentRoles` (default + muted + tints),
+  `StatusColors`, per-anchor `SlotBundle` (7 fields each),
+  `TextRoles` (8 named role bundles), `SpacingTokens`.
+* **Tier 3 component bindings**: `AnnotationCluster`, `HeaderCluster`
+  (light/bold variants), `ColumnGroupCluster`, `RowGroupCluster`
+  (L1/L2/L3 + indent), `RowCluster` (states + emphasis/muted/accent
+  semantic bundles + banding), `CellCluster`, `FirstColumnCluster`
+  (plain/bold variants), `PlotScaffold`, `MarksRecipes`.
+* `AxisConfig` and `Layout` remain as plain config carriers on the
+  theme.
+
+### Resolution
+
+`resolve_theme()` runs at construction and after every modifier.
+Idempotent; only writes into NA-valued fields, so explicit user
+overrides survive re-resolution. All blends happen in OKLCH
+(perceptually uniform) via `farver`, with sRGB gamut clipping.
+Hard rule: `resolve_chrome` reads only chrome inputs;
+`resolve_data` reads only data inputs (+ `surface.base` for muted
+blends). The two cascades meet only at theme reassembly.
+
+### Public API
+
+* `web_theme(name, inputs, variants, base_theme)` — custom theme
+  constructor.
+* `web_theme_default()` / `_minimal()` / `_dark()` / `_jama()` /
+  `_lancet()` / `_modern()` / `_presentation()` / `_cochrane()` /
+  `_nature()` — preset constructors. All return resolved `WebTheme`.
+* `set_inputs(theme, ...)` — update Tier 1 inputs (cascade-aware:
+  resetting `brand` re-mirrors `brand_deep` and `summary_anchor`).
+* `set_variants(theme, density, header_style, first_column_style)` —
+  flip per-table toggles. Density change rebuilds spacing.
+* `set_spacing(theme, ...)` — per-token spacing override.
+* `set_theme_field(theme, path, value)` — generic deep setter; path
+  is a character/integer vector walking the theme tree.
+* `set_theme(spec, theme)` — swap to a named preset or `WebTheme`.
+* `selectable_themes(spec, themes)` — curate the in-widget switcher.
+
+### Settings panel — 5 tabs
+
+Replaces the v1 8-tab panel (Colors / Semantics / Typography /
+Row groups / Spacing / Viz / Layout / Basics):
+
+* **Theme**: brand + accent (with deep companions), status colors,
+  series anchor list (add/remove), font pickers.
+* **Layout**: density / header style / first-column style segmented
+  controls, banding mode + level stepper, container border + radius.
+* **Spacing**: collapsible Advanced section with all 12 density-derived
+  tokens as numeric inputs.
+* **Marks**: per-series slot-bundle editor (anchor + expandable
+  7-field bundle), summary slot, plot mark sizes.
+* **Text**: 8 expandable text-role bundles + L1/L2/L3 row-group
+  accordions.
+
+### Removed
+
+`set_colors`, `set_typography`, `set_shapes`, `set_axis`,
+`set_layout`, `set_semantics`, `set_group_headers`,
+`set_effect_colors`, `set_marker_shapes`, `default_semantics_for`,
+`ColorPalette`, `Typography`, `Spacing`, `Shapes`,
+`GroupHeaderStyles`, `LayoutConfig`, `SemanticBundle`, `Semantics`.
+
+### Frontend
+
+* `--wf-*` CSS variables renamed to `--tv-*` (672 occurrences,
+  57 source files).
+* `ForestPlot.svelte` cssVars block reads v2 paths directly.
+* `svg-generator.ts` + render path read v2 paths.
+* `forestStore.setThemeField` accepts a path array
+  `(string | number)[]` for deep edits.
+
+### Follow-ups
+
+The Quarto docs (`docs/guide/themes.qmd`, `docs/cheatsheet.qmd`,
+`docs/concepts/styling-cascade.qmd`, etc.) still reference the v1
+`set_colors()` / `set_typography()` / `set_shapes()` API and need a
+prose rewrite. The R package itself, the gallery examples, and the
+in-widget settings panel are fully migrated.
 
 # tabviz 0.25.1
 

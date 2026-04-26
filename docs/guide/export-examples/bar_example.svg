@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="500" height="321"
-  viewBox="0 0 500 321">
+  width="500" height="334"
+  viewBox="0 0 500 334">
 <style>
   text {
     font-variant-numeric: tabular-nums;
@@ -9,152 +9,155 @@
   /* Use dominant-baseline for cell text to match CSS flex centering */
   .cell-text { dominant-baseline: central; }
 </style>
-<rect width="100%" height="100%" fill="#fafafa"/>
-<text x="14" y="35"
+<rect width="100%" height="100%" fill="#FAFAFA"/>
+<text x="16" y="35"
       font-family="Inter, system-ui, -apple-system, sans-serif"
-      font-size="17px"
+      font-size="16px"
       font-weight="600"
-      fill="#18181b">Trial Enrollment by Department</text>
-<line x1="14" x2="486"
-      y1="54" y2="54"
-      stroke="#d4d4d8" stroke-width="2"/>
-<text class="cell-text" x="24" y="72"
+      fill="#18181B">Trial Enrollment by Department</text>
+<line x1="16" x2="484"
+      y1="56" y2="56"
+      stroke="#F5F5F5" stroke-width="2"/>
+<rect x="16" y="56"
+        width="468" height="40"
+        fill="#F5F5F5"/>
+<text class="cell-text" x="26" y="76"
         font-family="Inter, system-ui, -apple-system, sans-serif"
-        font-size="15.75px"
+        font-size="14.7px"
         font-weight="600"
-        fill="#18181b">Department</text>
-<text class="cell-text" x="221" y="72"
+        fill="#18181B">Department</text>
+<text class="cell-text" x="222" y="76"
           font-family="Inter, system-ui, -apple-system, sans-serif"
-          font-size="15.75px"
+          font-size="14.7px"
           font-weight="600"
           text-anchor="middle"
-          fill="#18181b">Enrollment</text>
-<text class="cell-text" x="321" y="72"
+          fill="#18181B">Enrollment</text>
+<text class="cell-text" x="322" y="76"
           font-family="Inter, system-ui, -apple-system, sans-serif"
-          font-size="15.75px"
+          font-size="14.7px"
           font-weight="600"
           text-anchor="start"
-          fill="#18181b">N</text>
-<line x1="14" x2="486"
-        y1="90" y2="90"
-        stroke="#d4d4d8" stroke-width="2"/>
-<rect x="14" y="90"
-            width="472" height="30"
-            fill="#f5f5f5"/>
-<rect x="14" y="150"
-            width="472" height="30"
-            fill="#f5f5f5"/>
-<defs><clipPath id="viz-clip-viz_bar_enrollment"><rect x="143" y="90" width="156" height="120"/></clipPath></defs>
+          fill="#18181B">N</text>
+<line x1="16" x2="484"
+        y1="96" y2="96"
+        stroke="#F5F5F5" stroke-width="2"/>
+<rect x="16" y="96"
+            width="468" height="30"
+            fill="#F5F5F5"/>
+<rect x="16" y="156"
+            width="468" height="30"
+            fill="#F5F5F5"/>
+<defs><clipPath id="viz-clip-viz_bar_enrollment"><rect x="144" y="96" width="156" height="120"/></clipPath></defs>
 <g clip-path="url(#viz-clip-viz_bar_enrollment)">
 
 <rect
-      x="143" y="94.5"
+      x="144" y="100.5"
       width="109.2" height="21"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="143" y="124.5"
+      x="144" y="130.5"
       width="139.06285714285715" height="21"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="143" y="154.5"
+      x="144" y="160.5"
       width="84.24000000000001" height="21"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="143" y="184.5"
+      x="144" y="190.5"
       width="69.53142857142858" height="21"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 </g>
-<g transform="translate(0, 222)">
-<line x1="131" x2="311"
-    y1="0" y2="0" stroke="#d4d4d8" stroke-width="1"/>
-<line x1="143" x2="143" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
-<text x="145" y="15"
+<g transform="translate(0, 232)">
+<line x1="132" x2="312"
+    y1="0" y2="0" stroke="#F5F5F5" stroke-width="1"/>
+<line x1="144" x2="144" y1="0" y2="4" stroke="#F5F5F5" stroke-width="1"/>
+<text x="146" y="14"
       text-anchor="start"
       font-family="Inter, system-ui, -apple-system, sans-serif"
-      font-size="13px"
+      font-size="12px"
       font-weight="400"
-      fill="#18181b">0</text>
-<line x1="232.14285714285714" x2="232.14285714285714" y1="0" y2="4" stroke="#d4d4d8" stroke-width="1"/>
-<text x="232.14285714285714" y="15"
+      fill="#18181B">0</text>
+<line x1="233.14285714285714" x2="233.14285714285714" y1="0" y2="4" stroke="#F5F5F5" stroke-width="1"/>
+<text x="233.14285714285714" y="14"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
-      font-size="13px"
+      font-size="12px"
       font-weight="400"
-      fill="#18181b">200</text>
-<text x="221" y="31"
+      fill="#18181B">200</text>
+<text x="222" y="28"
       text-anchor="middle"
       font-family="Inter, system-ui, -apple-system, sans-serif"
-      font-size="13px"
+      font-size="12px"
       font-weight="500"
-      fill="#18181b">Value</text>
+      fill="#18181B">Value</text>
 </g>
-<text class="cell-text" x="24" y="105"
+<text class="cell-text" x="26" y="111"
     font-family="Inter, system-ui, -apple-system, sans-serif"
-    font-size="15px"
+    font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#18181b">Cardiology</text>
-<text class="cell-text" x="321" y="105"
+    fill="#18181B">Cardiology</text>
+<text class="cell-text" x="322" y="111"
           font-family="Inter, system-ui, -apple-system, sans-serif"
-          font-size="15px"
+          font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
-          fill="#18181b">245.00</text>
-<line x1="14" x2="486"
-          y1="120" y2="120"
-          stroke="#d4d4d8" stroke-width="1"/>
-<text class="cell-text" x="24" y="135"
+          fill="#18181B">245.00</text>
+<line x1="16" x2="484"
+          y1="126" y2="126"
+          stroke="#F5F5F5" stroke-width="1"/>
+<text class="cell-text" x="26" y="141"
     font-family="Inter, system-ui, -apple-system, sans-serif"
-    font-size="15px"
+    font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#18181b">Oncology</text>
-<text class="cell-text" x="321" y="135"
+    fill="#18181B">Oncology</text>
+<text class="cell-text" x="322" y="141"
           font-family="Inter, system-ui, -apple-system, sans-serif"
-          font-size="15px"
+          font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
-          fill="#18181b">312.00</text>
-<line x1="14" x2="486"
-          y1="150" y2="150"
-          stroke="#d4d4d8" stroke-width="1"/>
-<text class="cell-text" x="24" y="165"
+          fill="#18181B">312.00</text>
+<line x1="16" x2="484"
+          y1="156" y2="156"
+          stroke="#F5F5F5" stroke-width="1"/>
+<text class="cell-text" x="26" y="171"
     font-family="Inter, system-ui, -apple-system, sans-serif"
-    font-size="15px"
+    font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#18181b">Neurology</text>
-<text class="cell-text" x="321" y="165"
+    fill="#18181B">Neurology</text>
+<text class="cell-text" x="322" y="171"
           font-family="Inter, system-ui, -apple-system, sans-serif"
-          font-size="15px"
+          font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
-          fill="#18181b">189.00</text>
-<line x1="14" x2="486"
-          y1="180" y2="180"
-          stroke="#d4d4d8" stroke-width="1"/>
-<text class="cell-text" x="24" y="195"
+          fill="#18181B">189.00</text>
+<line x1="16" x2="484"
+          y1="186" y2="186"
+          stroke="#F5F5F5" stroke-width="1"/>
+<text class="cell-text" x="26" y="201"
     font-family="Inter, system-ui, -apple-system, sans-serif"
-    font-size="15px"
+    font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#18181b">Pediatrics</text>
-<text class="cell-text" x="321" y="195"
+    fill="#18181B">Pediatrics</text>
+<text class="cell-text" x="322" y="201"
           font-family="Inter, system-ui, -apple-system, sans-serif"
-          font-size="15px"
+          font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
-          fill="#18181b">156.00</text>
-<line x1="14" x2="486"
-          y1="210" y2="210"
-          stroke="#d4d4d8" stroke-width="1"/>
+          fill="#18181B">156.00</text>
+<line x1="16" x2="484"
+          y1="216" y2="216"
+          stroke="#F5F5F5" stroke-width="1"/>
 
 </svg>

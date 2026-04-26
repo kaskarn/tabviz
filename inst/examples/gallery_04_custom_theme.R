@@ -43,6 +43,6 @@ forest_plot(
   null_value = 20,
   axis_label = "Response Latency (ms)",
   title = "Custom Theme: Terminal",
-  subtitle = "Built with set_colors(), set_typography(), set_spacing(), set_shapes()",
+  subtitle = "Built with web_theme(inputs=, variants=) + set_spacing()",
   caption = "Monospace font, green-on-black, zero border radius"
 )

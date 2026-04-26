@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="500" height="211"
-  viewBox="0 0 500 211">
+  width="500" height="219"
+  viewBox="0 0 500 219">
 <style>
   text {
     font-variant-numeric: tabular-nums;
@@ -9,154 +9,157 @@
   /* Use dominant-baseline for cell text to match CSS flex centering */
   .cell-text { dominant-baseline: central; }
 </style>
-<rect width="100%" height="100%" fill="#ffffff"/>
-<text x="6" y="19"
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<text x="6" y="25"
       font-family="Arial, Helvetica, sans-serif"
-      font-size="13.33px"
-      font-weight="700"
+      font-size="16px"
+      font-weight="600"
       fill="#000000">Figure 1. Primary Endpoint</text>
 <line x1="6" x2="494"
-      y1="28" y2="28"
+      y1="36" y2="36"
       stroke="#000000" stroke-width="2"/>
-<text class="cell-text" x="16" y="40"
+<rect x="6" y="36"
+        width="488" height="29"
+        fill="#F9FAFB"/>
+<text class="cell-text" x="16" y="50.5"
         font-family="Arial, Helvetica, sans-serif"
-        font-size="12.6px"
-        font-weight="700"
+        font-size="14.7px"
+        font-weight="600"
         fill="#000000">Study</text>
-<text class="cell-text" x="261" y="40"
+<text class="cell-text" x="272" y="50.5"
           font-family="Arial, Helvetica, sans-serif"
-          font-size="12.6px"
-          font-weight="700"
+          font-size="14.7px"
+          font-weight="600"
           text-anchor="start"
           fill="#000000">HR (95% CI)</text>
 <line x1="6" x2="494"
-        y1="52" y2="52"
+        y1="65" y2="65"
         stroke="#000000" stroke-width="2"/>
-<rect x="6" y="52"
+<rect x="6" y="65"
             width="488" height="18"
-            fill="#f9fafb"/>
-<rect x="6" y="88"
+            fill="#F9FAFB"/>
+<rect x="6" y="101"
             width="488" height="18"
-            fill="#f9fafb"/>
-<line x1="209.54355931222545" x2="209.54355931222545" y1="52" y2="124"
-    stroke="#555555" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
+            fill="#F9FAFB"/>
+<line x1="220.0006922796589" x2="220.0006922796589" y1="65" y2="137"
+    stroke="#717171" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
-          <line x1="127.34046213464428" x2="201.80304653226486" y1="61" y2="61"
-            stroke="#000000" stroke-width="1.25"/>
-          <line x1="127.34046213464428" x2="127.34046213464428" y1="58" y2="64" stroke="#000000" stroke-width="1.25"/>
-          <line x1="201.80304653226486" x2="201.80304653226486" y1="58" y2="64" stroke="#000000" stroke-width="1.25"/>
-          <rect x="160.10471888222077" y="57" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="138.95538520317044" x2="212.36920080645828" y1="74" y2="74"
+            stroke="#000000" stroke-width="1.5"/>
+          <line x1="138.95538520317044" x2="138.95538520317044" y1="71" y2="77" stroke="#000000" stroke-width="1.5"/>
+          <line x1="212.36920080645828" x2="212.36920080645828" y1="71" y2="77" stroke="#000000" stroke-width="1.5"/>
+          <rect x="169.20183551768244" y="68" width="12" height="12" fill="#1A1A1A"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="124.71592790781395" x2="225.2922072004033" y1="79" y2="79"
-            stroke="#000000" stroke-width="1.25"/>
-          <line x1="124.71592790781395" x2="124.71592790781395" y1="76" y2="82" stroke="#000000" stroke-width="1.25"/>
-          <line x1="225.2922072004033" x2="225.2922072004033" y1="76" y2="82" stroke="#000000" stroke-width="1.25"/>
-          <rect x="169.9714293305562" y="75" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="136.36781624714052" x2="235.52752822574973" y1="92" y2="92"
+            stroke="#000000" stroke-width="1.5"/>
+          <line x1="136.36781624714052" x2="136.36781624714052" y1="89" y2="95" stroke="#000000" stroke-width="1.5"/>
+          <line x1="235.52752822574973" x2="235.52752822574973" y1="89" y2="95" stroke="#000000" stroke-width="1.5"/>
+          <rect x="178.92957821322443" y="86" width="12" height="12" fill="#1A1A1A"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="172.0490222593821" x2="204.94705429889018" y1="97" y2="97"
-            stroke="#000000" stroke-width="1.25"/>
-          <line x1="172.0490222593821" x2="172.0490222593821" y1="94" y2="100" stroke="#000000" stroke-width="1.25"/>
-          <line x1="204.94705429889018" x2="204.94705429889018" y1="94" y2="100" stroke="#000000" stroke-width="1.25"/>
-          <rect x="184.52795045282684" y="93" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="183.03424729798235" x2="215.46892677355368" y1="110" y2="110"
+            stroke="#000000" stroke-width="1.5"/>
+          <line x1="183.03424729798235" x2="183.03424729798235" y1="107" y2="113" stroke="#000000" stroke-width="1.5"/>
+          <line x1="215.46892677355368" x2="215.46892677355368" y1="107" y2="113" stroke="#000000" stroke-width="1.5"/>
+          <rect x="193.28107791123773" y="104" width="12" height="12" fill="#1A1A1A"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="173.9714293305562" x2="208.02689414096272" y1="115" y2="115"
-            stroke="#000000" stroke-width="1.25"/>
-          <line x1="173.9714293305562" x2="173.9714293305562" y1="112" y2="118" stroke="#000000" stroke-width="1.25"/>
-          <line x1="208.02689414096272" x2="208.02689414096272" y1="112" y2="118" stroke="#000000" stroke-width="1.25"/>
-          <rect x="186.2526196739659" y="111" width="8" height="8" fill="#1a1a1a"/>
+          <line x1="184.92957821322443" x2="218.50538858968153" y1="128" y2="128"
+            stroke="#000000" stroke-width="1.5"/>
+          <line x1="184.92957821322443" x2="184.92957821322443" y1="125" y2="131" stroke="#000000" stroke-width="1.5"/>
+          <line x1="218.50538858968153" x2="218.50538858968153" y1="125" y2="131" stroke="#000000" stroke-width="1.5"/>
+          <rect x="194.9814560165861" y="122" width="12" height="12" fill="#1A1A1A"/>
         </g>
-<g transform="translate(0, 136)"><line x1="91" x2="251"
+<g transform="translate(0, 145)"><line x1="102" x2="262"
     y1="0" y2="0" stroke="#000000" stroke-width="1"/>
-<line x1="132.45644068777455" x2="132.45644068777455" y1="0" y2="4"
+<line x1="143.9993077203411" x2="143.9993077203411" y1="0" y2="4"
       stroke="#000000" stroke-width="1"/>
-<text x="132.45644068777455" y="15" text-anchor="middle"
+<text x="143.9993077203411" y="16" text-anchor="middle"
       font-family="Arial, Helvetica, sans-serif"
-      font-size="10.67px"
+      font-size="12px"
       font-weight="400"
-      fill="#333333">0.60</text>
-<line x1="209.54355931222545" x2="209.54355931222545" y1="0" y2="4"
+      fill="#555555">0.60</text>
+<line x1="220.0006922796589" x2="220.0006922796589" y1="0" y2="4"
       stroke="#000000" stroke-width="1"/>
-<text x="209.54355931222545" y="15" text-anchor="middle"
+<text x="220.0006922796589" y="16" text-anchor="middle"
       font-family="Arial, Helvetica, sans-serif"
-      font-size="10.67px"
+      font-size="12px"
       font-weight="400"
-      fill="#333333">1.00</text>
-<text x="171" y="26"
+      fill="#555555">1.00</text>
+<text x="182" y="28"
       text-anchor="middle"
       font-family="Arial, Helvetica, sans-serif"
-      font-size="10.67px"
+      font-size="12px"
       font-weight="500"
-      fill="#333333">Effect</text></g>
-<text class="cell-text" x="16" y="61"
+      fill="#555555">Effect</text></g>
+<text class="cell-text" x="16" y="74"
     font-family="Arial, Helvetica, sans-serif"
-    font-size="12px"
+    font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#000000">SUSTAIN-6</text>
-<text class="cell-text" x="261" y="61"
+<text class="cell-text" x="272" y="74"
           font-family="Arial, Helvetica, sans-serif"
-          font-size="12px"
+          font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
           fill="#000000">0.74 (0.58, 0.95)</text>
 <line x1="6" x2="494"
-          y1="70" y2="70"
+          y1="83" y2="83"
           stroke="#000000" stroke-width="1"/>
-<text class="cell-text" x="16" y="79"
+<text class="cell-text" x="16" y="92"
     font-family="Arial, Helvetica, sans-serif"
-    font-size="12px"
+    font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#000000">PIONEER 6</text>
-<text class="cell-text" x="261" y="79"
+<text class="cell-text" x="272" y="92"
           font-family="Arial, Helvetica, sans-serif"
-          font-size="12px"
+          font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
           fill="#000000">0.79 (0.57, 1.11)</text>
 <line x1="6" x2="494"
-          y1="88" y2="88"
+          y1="101" y2="101"
           stroke="#000000" stroke-width="1"/>
-<text class="cell-text" x="16" y="97"
+<text class="cell-text" x="16" y="110"
     font-family="Arial, Helvetica, sans-serif"
-    font-size="12px"
+    font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#000000">LEADER</text>
-<text class="cell-text" x="261" y="97"
+<text class="cell-text" x="272" y="110"
           font-family="Arial, Helvetica, sans-serif"
-          font-size="12px"
+          font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
           fill="#000000">0.87 (0.78, 0.97)</text>
 <line x1="6" x2="494"
-          y1="106" y2="106"
+          y1="119" y2="119"
           stroke="#000000" stroke-width="1"/>
-<text class="cell-text" x="16" y="115"
+<text class="cell-text" x="16" y="128"
     font-family="Arial, Helvetica, sans-serif"
-    font-size="12px"
+    font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#000000">REWIND</text>
-<text class="cell-text" x="261" y="115"
+<text class="cell-text" x="272" y="128"
           font-family="Arial, Helvetica, sans-serif"
-          font-size="12px"
+          font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
           fill="#000000">0.88 (0.79, 0.99)</text>
 <line x1="6" x2="494"
-          y1="124" y2="124"
+          y1="137" y2="137"
           stroke="#000000" stroke-width="1"/>
 
 </svg>
