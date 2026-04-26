@@ -14,10 +14,10 @@
       font-family="system-ui, -apple-system, sans-serif"
       font-size="16px"
       font-weight="600"
-      fill="#CDD6F4">Dark Theme Export</text>
+      fill="#74C7EC">Dark Theme Export</text>
 <line x1="12" x2="488"
       y1="48" y2="48"
-      stroke="#313244" stroke-width="2"/>
+      stroke="#45475A" stroke-width="2"/>
 <rect x="12" y="48"
         width="476" height="32"
         fill="#232334"/>
@@ -34,7 +34,7 @@
           fill="#CDD6F4">HR (95% CI)</text>
 <line x1="12" x2="488"
         y1="80" y2="80"
-        stroke="#313244" stroke-width="2"/>
+        stroke="#45475A" stroke-width="2"/>
 <rect x="12" y="80"
             width="476" height="24"
             fill="#232334"/>
@@ -76,27 +76,27 @@
           <rect x="204.9814560165861" y="158" width="12" height="12" fill="#89B4FA"/>
         </g>
 <g transform="translate(0, 188)"><line x1="112" x2="272"
-    y1="0" y2="0" stroke="#313244" stroke-width="1"/>
+    y1="0" y2="0" stroke="#45475A" stroke-width="1"/>
 <line x1="153.9993077203411" x2="153.9993077203411" y1="0" y2="4"
-      stroke="#313244" stroke-width="1"/>
+      stroke="#45475A" stroke-width="1"/>
 <text x="153.9993077203411" y="16" text-anchor="middle"
       font-family="system-ui, -apple-system, sans-serif"
       font-size="12px"
       font-weight="400"
-      fill="#6C7086">0.60</text>
+      fill="#74C7EC">0.60</text>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="0" y2="4"
-      stroke="#313244" stroke-width="1"/>
+      stroke="#45475A" stroke-width="1"/>
 <text x="230.0006922796589" y="16" text-anchor="middle"
       font-family="system-ui, -apple-system, sans-serif"
       font-size="12px"
       font-weight="400"
-      fill="#6C7086">1.00</text>
+      fill="#74C7EC">1.00</text>
 <text x="192" y="28"
       text-anchor="middle"
       font-family="system-ui, -apple-system, sans-serif"
       font-size="12px"
       font-weight="500"
-      fill="#6C7086">Effect</text></g>
+      fill="#74C7EC">Effect</text></g>
 <text class="cell-text" x="22" y="92"
     font-family="system-ui, -apple-system, sans-serif"
     font-size="14px"

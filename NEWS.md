@@ -14,9 +14,35 @@
   feeds `header@bold@rule` and `column_group@bold@rule`. Previously
   these were set to `inputs@brand_deep` — same color as the bg, so the
   rule was invisible.
+* **Strong dividers wired end-to-end.** The R resolver had been computing
+  `divider@strong` for header rules, group rules, axis line, and tick
+  marks since v2 launch — but the frontend only emitted `--tv-border`
+  from `divider@subtle`, so every consumer silently degraded to the
+  subtle tone. The renderer now emits `--tv-divider-strong`,
+  `--tv-header-rule`, `--tv-row-group-rule`, `--tv-axis-line`, and
+  `--tv-axis-tick`, and the affected components read them. SVG export
+  (V8 path) is in lockstep.
+* **L1 group bar de-duplicates against banding.** When `theme@row@banding`
+  cycles at a group's depth, the renderer drops the explicit
+  `row_group.LN@bg` paint on those rows so the banded color reads as
+  continuous. At deeper or shallower group levels, the explicit bar
+  remains. (Trade-off: a panel-edited L1 bar paired with `banding = "group"`
+  no longer shows; switch banding mode to keep both.)
+* **Settings panel:** Theme tab gains an "Identity" section at the top
+  consolidating Brand, Brand-deep, and Accent. New "Plot" section for
+  title and forest-axis text colors. New "Selection & accents" section
+  for hover/selected/L1 bar. Brand multi-write extends to every
+  brand_deep-derived field (title, axis, dividers, L1 bar in bold-mode);
+  Accent multi-write extends to hover, selected, accent.tintSubtle, and
+  L1 bar in light-mode. Accent-deep is no longer surfaced in the panel
+  (no Tier-3 consumer yet — R input remains valid).
 * **Wire shape additions:** `theme.divider.strongOnDark`. The
   `theme.text.title.fg`, `theme.plot.axisLabel.fg`, `theme.plot.tickLabel.fg`
   fields already existed but now default to `inputs.brandDeep`.
+* **Drive-by fix:** `svg-generator.ts` had two leftover `theme.summary.*`
+  reads from the round-1 sunset that the migration missed. They now read
+  `series[0].fill / .stroke` like everything else (this was breaking the
+  JAMA + meta-analysis visual goldens).
 
 ## Breaking changes (post-v2 polish)
 

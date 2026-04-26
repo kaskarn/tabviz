@@ -108,6 +108,40 @@ The deep companions mirror their primaries by default:
 
 The pooled-effect diamond reads from the first series slot bundle (`theme@series[[1]]`). Override `series_anchors[1]` to recolor it; reach into `theme@series[[1]]@stroke` directly for a journal-specific outline.
 
+### What `brand_deep` actually drives
+
+`brand_deep` is the dark identity tone — meant to land on text and rules
+where you want the brand to read as serious, not decorative. The resolver
+threads it into:
+
+* Plot title color (`text@title@fg`)
+* Forest-axis label and tick-label colors (`plot@axis_label@fg`, `plot@tick_label@fg`)
+* Cell-hairline tint — `divider@subtle` is `neutral[3]` mixed with 8% `brand_deep`, so cell borders pick up a faint identity color without muddying out
+* Bold-mode header band (`header@bold@bg`) and column-group bold band
+* Bold-mode header rule (`header@bold@rule`) via the new `divider@strong_on_dark` helper — a 40%-deep / 60%-inverse mix that contrasts against the band instead of disappearing into it
+* L1 group bar — but **only** when the active variant is `header_style = "bold"`. Under light-mode the L1 bar stays on `accent.tint_subtle` (chrome/data wall: brand only "leaks" into chrome when you've chosen brand-forward chrome).
+
+To pin any of these, set the field directly via `set_theme_field()` and
+your value survives re-resolution. The interactive panel surfaces the same
+override semantics as a per-field reset icon.
+
+### L1 group header and banding
+
+When `theme@row@banding` cycles at the L1 level (the default for every
+preset — `banding = "group"` with one nesting level), the banding cycle
+already paints alternating fills across the L1 group rows. The renderer
+detects this and **drops the explicit `theme@row_group@L1@bg` paint**
+on the affected rows so the banded color reads as continuous and the
+group-bar doesn't double-paint on top.
+
+If you want a custom L1 bar paired with a banded background, switch
+banding modes (e.g. `set_theme_field(c("row", "banding"), "row")` or
+`"none"`) so the L1 paint isn't subsumed.
+
+At deeper banding levels (e.g. `banding = "group-2"` with nested groups),
+the L1 bar's explicit fill is preserved unchanged — only the banded
+level loses its explicit fill.
+
 ### Variants — three knobs every table can flip
 
 Variants are per-table choices that don't change the theme's identity. They're orthogonal to inputs and freely composable:
