@@ -268,7 +268,7 @@
     /* Removed padding: 0 4px - was causing width mismatch with data rows */
     background: var(--tv-bg);
     border-bottom: 1px solid var(--tv-border);
-    font-weight: 600;
+    font-weight: var(--tv-text-header-weight, 600);
     font-size: var(--tv-font-size-base);
     color: var(--tv-secondary);
   }
@@ -279,7 +279,7 @@
     /* Removed padding: 0 4px - was causing width mismatch with data rows */
     background: var(--tv-bg);
     border-bottom: 1px solid var(--tv-border);
-    font-weight: 600;
+    font-weight: var(--tv-text-header-weight, 600);
     font-size: var(--tv-font-size-base);
     color: var(--tv-secondary);
   }
@@ -299,7 +299,7 @@
 
   .group-header {
     justify-content: center;
-    font-weight: 700;
+    font-weight: var(--tv-text-column-group-weight, 700);
     padding-left: var(--tv-group-padding, 8px);
     padding-right: var(--tv-group-padding, 8px);
   }

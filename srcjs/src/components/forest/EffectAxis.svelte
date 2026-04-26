@@ -224,7 +224,7 @@
       text-anchor="middle"
       fill="var(--tv-secondary, #64748b)"
       font-size="var(--tv-font-size-sm, 0.75rem)"
-      font-weight="500"
+      font-weight="var(--tv-text-label-weight, 500)"
     >
       {axisLabel}
     </text>

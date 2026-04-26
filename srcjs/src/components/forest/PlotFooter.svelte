@@ -115,8 +115,9 @@
 
   .plot-caption {
     margin: 0;
-    font-size: var(--tv-font-size-sm, 0.75rem);
-    font-weight: var(--tv-font-weight-normal, 400);
+    font-size: var(--tv-text-caption-size, var(--tv-font-size-sm, 0.75rem));
+    font-weight: var(--tv-text-caption-weight, var(--tv-font-weight-normal, 400));
+    font-style: var(--tv-text-caption-italic, normal);
     color: var(--tv-secondary, #64748b);
     line-height: 1.4;
     white-space: normal;
@@ -125,10 +126,10 @@
 
   .plot-footnote {
     margin: 4px 0 0;
-    font-size: var(--tv-font-size-sm, 0.75rem);
-    font-weight: var(--tv-font-weight-normal, 400);
+    font-size: var(--tv-text-footnote-size, var(--tv-font-size-sm, 0.75rem));
+    font-weight: var(--tv-text-footnote-weight, var(--tv-font-weight-normal, 400));
+    font-style: var(--tv-text-footnote-italic, italic);
     color: var(--tv-muted, #94a3b8);
-    font-style: italic;
     line-height: 1.4;
     white-space: normal;
     word-wrap: break-word;

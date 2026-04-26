@@ -1249,6 +1249,12 @@
     if (!theme) return '';
     // Pick the active header / first-column variant per theme.variants.
     const headerVariant = theme.variants?.headerStyle === 'bold' ? theme.header.bold : theme.header.light;
+    const firstColBold = theme.variants?.firstColumnStyle === 'bold';
+    const firstColVariant = firstColBold ? theme.firstColumn?.bold : theme.firstColumn?.plain;
+    const firstColBg     = firstColVariant?.bg     ?? "transparent";
+    const firstColFg     = firstColVariant?.fg     ?? "inherit";
+    const firstColWeight = firstColVariant?.weight ?? "inherit";
+    const firstColRule   = firstColVariant?.rule   ?? "transparent";
     return `
       --tv-max-width: ${maxWidth ? `${maxWidth}px` : 'none'};
       --tv-max-height: ${maxHeight ? `${maxHeight}px` : 'none'};
@@ -1273,11 +1279,13 @@
       --tv-semantic-emphasis-bg: ${theme.row.emphasis?.bg ?? "transparent"};
       --tv-semantic-muted-bg:    ${theme.row.muted?.bg    ?? "transparent"};
       --tv-semantic-accent-bg:   ${theme.row.accent?.bg   ?? "transparent"};
-      --tv-badge-success: ${BADGE_VARIANTS.success};
-      --tv-badge-warning: ${BADGE_VARIANTS.warning};
-      --tv-badge-error: ${BADGE_VARIANTS.error};
-      --tv-badge-info: ${BADGE_VARIANTS.info};
-      --tv-badge-muted: ${theme.content.muted};
+      /* Status colors drive the badge palette when set on the theme;
+         otherwise fall back to the package's BADGE_VARIANTS constants. */
+      --tv-badge-success: ${theme.status?.positive ?? BADGE_VARIANTS.success};
+      --tv-badge-warning: ${theme.status?.warning  ?? BADGE_VARIANTS.warning};
+      --tv-badge-error:   ${theme.status?.negative ?? BADGE_VARIANTS.error};
+      --tv-badge-info:    ${theme.status?.info     ?? BADGE_VARIANTS.info};
+      --tv-badge-muted:   ${theme.content.muted};
       --tv-font-family: ${theme.text.body.family};
       --tv-font-size-sm: ${theme.text.label.size};
       --tv-font-size-base: ${theme.text.body.size};
@@ -1287,6 +1295,33 @@
       --tv-font-weight-bold: 600;
       --tv-line-height: 1.5;
       --tv-header-font-scale: 1.05;
+      /* Per-text-role weight + italic + size, read by PlotHeader / PlotFooter
+         and any cell that wants role-aware typography. Editing any
+         theme.text.{role}.{weight,italic,size} from the panel propagates
+         here and re-renders. */
+      --tv-text-title-weight: ${theme.text.title.weight ?? 600};
+      --tv-text-title-italic: ${theme.text.title.italic ? "italic" : "normal"};
+      --tv-text-title-size: ${theme.text.title.size ?? "1.25rem"};
+      --tv-text-subtitle-weight: ${theme.text.subtitle.weight ?? 400};
+      --tv-text-subtitle-italic: ${theme.text.subtitle.italic ? "italic" : "normal"};
+      --tv-text-subtitle-size: ${theme.text.subtitle.size ?? "1rem"};
+      --tv-text-caption-weight: ${theme.text.caption.weight ?? 400};
+      --tv-text-caption-italic: ${theme.text.caption.italic ? "italic" : "normal"};
+      --tv-text-caption-size: ${theme.text.caption.size ?? "0.75rem"};
+      --tv-text-footnote-weight: ${theme.text.footnote.weight ?? 400};
+      --tv-text-footnote-italic: ${theme.text.footnote.italic ? "italic" : "normal"};
+      --tv-text-footnote-size: ${theme.text.footnote.size ?? "0.75rem"};
+      --tv-text-cell-weight: ${theme.text.cell.weight ?? 400};
+      --tv-text-cell-italic: ${theme.text.cell.italic ? "italic" : "normal"};
+      --tv-text-header-weight: ${theme.header.text.weight ?? 600};
+      --tv-text-column-group-weight: ${theme.column_group?.text?.weight ?? 600};
+      --tv-text-tick-weight: ${theme.text.tick.weight ?? 400};
+      --tv-text-label-weight: ${theme.text.label.weight ?? 400};
+      /* First-column variant — applied to .primary-cell. */
+      --tv-first-col-bg: ${firstColBg};
+      --tv-first-col-fg: ${firstColFg};
+      --tv-first-col-weight: ${firstColWeight};
+      --tv-first-col-rule: ${firstColRule};
       --tv-row-height: ${theme.spacing.rowHeight}px;
       --tv-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
       --tv-header-height: ${anyHeaderVisible ? layout.headerHeight : 0}px;
@@ -1616,7 +1651,20 @@
           {@const rowStyles = row ? getRowStyles(row.style, rowDepth, semBundle) : ""}
           {@const isSpacerRow = row?.style?.type === "spacer"}
           {@const gridRow = effectiveHeaderDepth + 1 + i}
-          {@const groupBg = isGroupHeader && bandIndexes[i] == null ? getGroupBackground(rowDepth + 1, theme) : undefined}
+          {@const groupTier = isGroupHeader && theme
+            ? (rowDepth === 0 ? theme.rowGroup.L1
+               : rowDepth === 1 ? theme.rowGroup.L2
+               : theme.rowGroup.L3)
+            : null}
+          <!--
+            Group header background: explicit theme.rowGroup.LN.bg always
+            wins (panel edits show even with banding active). Otherwise we
+            only paint a derived tint when banding isn't already filling
+            the row, so the band color reads as continuous.
+          -->
+          {@const groupBg = isGroupHeader
+            ? (groupTier?.bg ?? (bandIndexes[i] == null ? getGroupBackground(rowDepth + 1, theme) : undefined))
+            : undefined}
           {@const groupLevelBorder = isGroupHeader && theme
             ? (rowDepth + 1 === 1
                 ? theme.rowGroup.L1.borderBottom
@@ -2722,9 +2770,17 @@
     /* (intentionally empty — kept as a hook for v0.22+ semantic styling) */
   }
 
-  /* Primary (leftmost) column cell — row identifier, drag surface */
+  /* Primary (leftmost) column cell — row identifier, drag surface.
+     The first-column variant (theme.variants.firstColumnStyle = "bold")
+     drives bg, fg, weight, and a right-edge rule via CSS vars emitted
+     in the cssVars block. When the variant is "default", these are
+     transparent / inherit and the cell looks like any other. */
   .primary-cell {
     min-width: 120px;
+    background-color: var(--tv-first-col-bg, transparent);
+    color: var(--tv-first-col-fg, inherit);
+    font-weight: var(--tv-first-col-weight, inherit);
+    border-right: 1px solid var(--tv-first-col-rule, transparent);
   }
   .primary-cell.reorderable {
     cursor: grab;

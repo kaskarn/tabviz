@@ -44,11 +44,18 @@
     setPath(["divider", "subtle"], hex);
     setPath(["cell", "border"], hex);
   }
+  // Write to whichever header variant is currently active so panel edits
+  // reflect immediately. Without this, "Header bg" edits the light slot
+  // even when the user is on the bold variant — the live render keeps
+  // showing the bold variant's untouched bg.
+  function activeHeaderVariant(): "light" | "bold" {
+    return theme?.variants?.headerStyle === "bold" ? "bold" : "light";
+  }
   function setHeaderBg(hex: string) {
-    setPath(["header", "light", "bg"], hex);
+    setPath(["header", activeHeaderVariant(), "bg"], hex);
   }
   function setHeaderFg(hex: string) {
-    setPath(["header", "light", "fg"], hex);
+    setPath(["header", activeHeaderVariant(), "fg"], hex);
   }
 
   // Series anchor list — drives marker fills via `theme.series[i].fill`.
@@ -101,9 +108,13 @@
                 value={theme.content?.inverse ?? "#ffffff"} onchange={(v) => setPath(["content","inverse"], v)} />
   </SettingsSection>
 
-  <SettingsSection title="Header" description="Column-header band. Variant chosen on the Layout tab; this edits the active variant's color set.">
-    <ColorField label="Header background" value={theme.header?.light?.bg ?? "#f8fafc"} onchange={setHeaderBg} />
-    <ColorField label="Header text"       value={theme.header?.light?.fg ?? "#000000"} onchange={setHeaderFg} />
+  <SettingsSection title="Header" description="Column-header band. Variant chosen on the Layout tab; these fields edit the *active* variant's colors so the change is visible immediately.">
+    <ColorField label="Header background"
+                value={(theme.variants?.headerStyle === "bold" ? theme.header?.bold?.bg : theme.header?.light?.bg) ?? "#f8fafc"}
+                onchange={setHeaderBg} />
+    <ColorField label="Header text"
+                value={(theme.variants?.headerStyle === "bold" ? theme.header?.bold?.fg : theme.header?.light?.fg) ?? "#000000"}
+                onchange={setHeaderFg} />
   </SettingsSection>
 
   <SettingsSection title="Dividers" description="Cell hairlines and stronger rules under header / group rows.">
