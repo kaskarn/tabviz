@@ -75,8 +75,11 @@ resolve_chrome <- function(inputs) {
     inverse   = n[1]
   )
 
+  # divider.subtle must read distinctly against BOTH surface.base (n[2])
+  # and surface.muted (n[3]) — using n[3] alone makes borders invisible
+  # on banded rows. Pull it ~30% toward n[4] to get a perceptible line.
   divider <- Dividers(
-    subtle = n[3],
+    subtle = oklch_mix(n[3], n[4], 0.30),
     strong = n[4]
   )
 

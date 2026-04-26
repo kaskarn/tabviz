@@ -138,6 +138,23 @@ serialize_theme <- function(theme) {
       firstColumnStyle = theme@variants@first_column_style
     ),
 
+    inputs = list(
+      neutral        = I(theme@inputs@neutral),
+      brand          = theme@inputs@brand,
+      brandDeep      = na_to_null(theme@inputs@brand_deep),
+      accent         = theme@inputs@accent,
+      accentDeep     = na_to_null(theme@inputs@accent_deep),
+      statusPositive = theme@inputs@status_positive,
+      statusNegative = theme@inputs@status_negative,
+      statusWarning  = theme@inputs@status_warning,
+      statusInfo     = na_to_null(theme@inputs@status_info),
+      seriesAnchors  = I(theme@inputs@series_anchors),
+      summaryAnchor  = na_to_null(theme@inputs@summary_anchor),
+      fontBody       = theme@inputs@font_body,
+      fontDisplay    = na_to_null(theme@inputs@font_display),
+      fontMono       = na_to_null(theme@inputs@font_mono)
+    ),
+
     axis   = axis_block,
     layout = layout_block,
 
