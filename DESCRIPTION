@@ -30,6 +30,7 @@ Collate:
     'utils-theme-resolve.R'
     'themes-v2.R'
     'utils-serialize.R'
+    'utils-serialize-v2.R'
     'modifiers.R'
     'web_spec.R'
     'split_table.R'
