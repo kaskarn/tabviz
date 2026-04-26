@@ -1,17 +1,26 @@
 <script lang="ts">
-  // v2 Theme tab — identity-first restructure (sprint 4 of theming-v2 polish).
+  // v2 Theme tab — round 2 (cascade-completion polish).
   //
-  // Section order: Brand · Fonts · Text colors · Surfaces · Header · Accent
-  //   · Dividers · Series (compact) · Status. The Summary section is gone;
-  //   the pooled-effect diamond reads from series[0] now.
+  // Section order: Identity (Brand + Brand-deep + Accent) · Fonts · Text colors
+  //   · Surfaces · Header · Plot · Selection & accents · Dividers · Series
+  //   · Status.
   //
-  // Brand is a multi-write knob: editing it mirrors to inputs.brandDeep,
-  //   series[0].fill, and header.bold.bg / header.bold.rule, *unless* the
-  //   user has overridden those paths (per-field dot indicator + reset).
+  // Brand and Accent are both multi-write knobs:
+  //   Brand cascades to inputs.brandDeep, series[0].fill, header.bold.bg/.rule,
+  //   text.title.fg, plot.axisLabel.fg / .tickLabel.fg, divider.subtle (8%
+  //   brand-tinted), cell.border, and rowGroup.L1.bg (15% brand-tint when
+  //   header_style=bold; under light it stays on accent.tintSubtle and is
+  //   driven by Accent instead).
+  //   Accent cascades to accent.default/.muted/.tintSubtle, row.accent.*,
+  //   row.hover.bg, row.selected.bg, and rowGroup.L1.bg under light-mode
+  //   header.
+  //   Each downstream path is gated by setThemeFieldDerived (skip-if-pinned).
   //
   // The frontend has no JS resolver, so for resolved leaf paths the panel
-  //   continues to write the rendered slot directly (see surface/header
-  //   multi-writes below) — same pattern as the prior version.
+  //   continues to write the rendered slot directly. Brand-mix expressions
+  //   use CSS `color-mix(in oklch, ...)` which modern browsers resolve at
+  //   render time — matches the R-side OKLCH derivation closely enough that
+  //   a re-resolve isn't needed to feel responsive.
   import type { ForestStore } from "$stores/forestStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
@@ -38,26 +47,75 @@
     store.clearOverride(path);
   }
 
+  // ── Color-mix helpers ────────────────────────────────────────────────
+  // `color-mix(in oklch, ...)` is a CSS expression; modern browsers resolve
+  // it at render time. Matches R-side OKLCH derivation closely enough for
+  // panel responsiveness.
+  function mixOklch(a: string, b: string, aPct: number): string {
+    return `color-mix(in oklch, ${a} ${aPct}%, ${b})`;
+  }
+  function neutralBaseline(): string {
+    const n = inputs?.neutral as string[] | undefined;
+    return n?.[2] ?? "#cbd5e1";
+  }
+  function surfaceBaseline(): string {
+    return theme?.surface?.base ?? "#ffffff";
+  }
+  function contentInverseBaseline(): string {
+    return theme?.content?.inverse ?? "#ffffff";
+  }
+  function brandTintedSubtleDivider(brandHex: string): string {
+    return mixOklch(brandHex, neutralBaseline(), 8);
+  }
+  function brandTintedL1Bg(brandHex: string): string {
+    return mixOklch(brandHex, surfaceBaseline(), 15);
+  }
+  function strongOnDarkRule(brandHex: string): string {
+    return mixOklch(brandHex, contentInverseBaseline(), 40);
+  }
+  function accentTintSubtle(accentHex: string): string {
+    return mixOklch(accentHex, surfaceBaseline(), 10);
+  }
+  function accentMuted(accentHex: string): string {
+    return mixOklch(accentHex, surfaceBaseline(), 12);
+  }
+
   // ── Brand multi-write ────────────────────────────────────────────────
-  // The Brand color is the visible identity knob. Editing it cascades into
-  // brandDeep, series[0].fill, and the bold-mode header band — but only
-  // for paths the user hasn't pinned. setThemeFieldDerived is a no-op
-  // when the path is already overridden, so a user-pinned brandDeep
-  // survives Brand re-edits.
+  // Brand changes cascade everywhere brand_deep lands on the R side: the
+  // header.bold band, the primary-effect mark, title, forest-axis labels,
+  // subtle dividers, and (under bold-mode header) the L1 group bar. Each
+  // downstream path uses setThemeFieldDerived so user-pinned fields are
+  // preserved.
   function applyBrand(hex: string) {
     setPath(["inputs", "brand"], hex);
     setDerived(["inputs", "brandDeep"], hex);
+    // brand_deep mirrors brand by default, but if user pinned it, downstream
+    // paths follow the pinned value, not the new brand.
+    const brandDeep = isOver(["inputs", "brandDeep"])
+      ? ((inputs?.brandDeep as string | undefined) ?? hex)
+      : hex;
+    cascadeBrandDeep(brandDeep);
     setDerived(["series", 0, "fill"], hex);
-    setDerived(["header", "bold", "bg"], hex);
-    setDerived(["header", "bold", "rule"], hex);
   }
   function applyBrandDeep(hex: string) {
     setPath(["inputs", "brandDeep"], hex);
-    // header.bold.bg / .rule cascade off brand_deep on the R side; mirror
-    // here unless the user has pinned them.
-    setDerived(["header", "bold", "bg"], hex);
-    setDerived(["header", "bold", "rule"], hex);
+    cascadeBrandDeep(hex);
   }
+  function cascadeBrandDeep(brandDeep: string) {
+    setDerived(["header", "bold", "bg"], brandDeep);
+    setDerived(["header", "bold", "rule"], strongOnDarkRule(brandDeep));
+    setDerived(["text", "title", "fg"], brandDeep);
+    setDerived(["plot", "axisLabel", "fg"], brandDeep);
+    setDerived(["plot", "tickLabel", "fg"], brandDeep);
+    const tintedSubtle = brandTintedSubtleDivider(brandDeep);
+    setDerived(["divider", "subtle"], tintedSubtle);
+    setDerived(["cell", "border"], tintedSubtle);
+    // L1.bg is variant-aware. Bold header → brand-mix, light header → accent.
+    if (theme?.variants?.headerStyle === "bold") {
+      setDerived(["rowGroup", "L1", "bg"], brandTintedL1Bg(brandDeep));
+    }
+  }
+
   function resetBrandDeep() {
     clearOver(["inputs", "brandDeep"]);
     const brand = (inputs?.brand as string | undefined) ?? "#0891B2";
@@ -68,10 +126,57 @@
     const brand = (inputs?.brand as string | undefined) ?? "#0891B2";
     setDerived(["series", 0, "fill"], brand);
   }
+  function resetTitleFg() {
+    clearOver(["text", "title", "fg"]);
+    const brandDeep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
+    setDerived(["text", "title", "fg"], brandDeep);
+  }
+  function resetAxisLabelFg() {
+    clearOver(["plot", "axisLabel", "fg"]);
+    const brandDeep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
+    setDerived(["plot", "axisLabel", "fg"], brandDeep);
+  }
+  function resetTickLabelFg() {
+    clearOver(["plot", "tickLabel", "fg"]);
+    const brandDeep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
+    setDerived(["plot", "tickLabel", "fg"], brandDeep);
+  }
+  function resetSubtleDivider() {
+    clearOver(["divider", "subtle"]);
+    clearOver(["cell", "border"]);
+    const brandDeep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
+    const tinted = brandTintedSubtleDivider(brandDeep);
+    setDerived(["divider", "subtle"], tinted);
+    setDerived(["cell", "border"], tinted);
+  }
+  function resetL1Bg() {
+    clearOver(["rowGroup", "L1", "bg"]);
+    const value = theme?.variants?.headerStyle === "bold"
+      ? brandTintedL1Bg((inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2")
+      : ((theme?.accent?.tintSubtle as string | undefined) ?? accentTintSubtle((inputs?.accent as string | undefined) ?? "#8B5CF6"));
+    setDerived(["rowGroup", "L1", "bg"], value);
+  }
   function resetHeaderBoldBg() {
     clearOver(["header", "bold", "bg"]);
     const deep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
     setDerived(["header", "bold", "bg"], deep);
+  }
+
+  // ── Accent multi-write ──────────────────────────────────────────────
+  function applyAccent(hex: string) {
+    setPath(["inputs", "accent"], hex);
+    setDerived(["accent", "default"], hex);
+    setDerived(["accent", "muted"], accentMuted(hex));
+    setDerived(["accent", "tintSubtle"], accentTintSubtle(hex));
+    setDerived(["row", "accent", "fg"], hex);
+    setDerived(["row", "accent", "markerFill"], hex);
+    setDerived(["row", "hover", "bg"], accentMuted(hex));
+    setDerived(["row", "selected", "bg"], accentMuted(hex));
+    // Light-mode L1 is accent-derived. Bold-mode L1 follows brand instead
+    // (handled by Brand multi-write).
+    if (theme?.variants?.headerStyle !== "bold") {
+      setDerived(["rowGroup", "L1", "bg"], accentTintSubtle(hex));
+    }
   }
 
   // ── Surface multi-write (resolved leaves) ────────────────────────────
@@ -88,10 +193,6 @@
     setPath(["cell", "fg"], hex);
     setPath(["row", "base", "fg"], hex);
     setPath(["row", "alt",  "fg"], hex);
-  }
-  function setBorder(hex: string) {
-    setPath(["divider", "subtle"], hex);
-    setPath(["cell", "border"], hex);
   }
 
   // ── Header (variant-aware) ───────────────────────────────────────────
@@ -137,8 +238,8 @@
 </script>
 
 {#if theme}
-  <SettingsSection title="Brand" description="The single identity knob. Cascades to the deep companion, the primary-effect mark, and the bold-mode header band — except where you've pinned a downstream value (●).">
-    <div class="brand-row">
+  <SettingsSection title="Identity" description="Brand and Accent are the two-knob identity. Editing either cascades to all the places it lands (header band, series, title, axis labels, hover, group bar, …) — except where you've pinned a downstream value (●).">
+    <div class="identity-row">
       <ColorField
         label="Brand"
         value={(inputs?.brand as string | undefined) ?? theme.accent?.default ?? "#0891B2"}
@@ -146,11 +247,17 @@
       />
       <ColorField
         label="Brand (deep)"
-        hint="Bold-mode header band; rule lines under header"
+        hint="Bold-mode header band; title; axis labels; subtle borders"
         value={(inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#06657E"}
         onchange={applyBrandDeep}
         overridden={isOver(["inputs", "brandDeep"])}
         onreset={resetBrandDeep}
+      />
+      <ColorField
+        label="Accent"
+        hint="Hover, selected, L1 group bar (light-mode header)"
+        value={(inputs?.accent as string | undefined) ?? theme.accent?.default ?? "#8B5CF6"}
+        onchange={applyAccent}
       />
     </div>
   </SettingsSection>
@@ -181,10 +288,10 @@
     />
   </SettingsSection>
 
-  <SettingsSection title="Text colors" description="Primary is body; secondary is subtitles/captions; muted is axis labels and footnotes.">
+  <SettingsSection title="Text colors" description="Primary is body; secondary is subtitles/captions; muted is footnotes.">
     <ColorField label="Foreground" hint="Body and cell text" value={theme.cell?.fg ?? theme.content?.primary ?? "#000000"} onchange={setForeground} />
     <ColorField label="Secondary"  value={theme.content?.secondary ?? "#444444"} onchange={(v) => setPath(["content","secondary"], v)} />
-    <ColorField label="Muted"      hint="Axis labels, footnotes" value={theme.content?.muted ?? "#888888"} onchange={(v) => setPath(["content","muted"], v)} />
+    <ColorField label="Muted"      hint="Footnotes" value={theme.content?.muted ?? "#888888"} onchange={(v) => setPath(["content","muted"], v)} />
     <ColorField label="Inverse"    hint="Text on dark fills (bold-mode header)" value={theme.content?.inverse ?? "#ffffff"} onchange={(v) => setPath(["content","inverse"], v)} />
   </SettingsSection>
 
@@ -193,7 +300,7 @@
     <ColorField label="Banding partner" hint="Alt-row background" value={theme.row?.alt?.bg ?? theme.surface?.muted ?? "#f8fafc"} onchange={setBandingPartner} />
   </SettingsSection>
 
-  <SettingsSection title="Header" description="Column-header band. Variant chosen on the Layout tab; these fields edit the active variant's colors so the change is visible immediately.">
+  <SettingsSection title="Header" description="Column-header band. Variant chosen on the Layout tab; these fields edit the active variant's colors.">
     <ColorField label="Header background"
                 value={(theme.variants?.headerStyle === "bold" ? theme.header?.bold?.bg : theme.header?.light?.bg) ?? "#f8fafc"}
                 onchange={setHeaderBg}
@@ -204,45 +311,51 @@
                 onchange={setHeaderFg} />
   </SettingsSection>
 
-  <SettingsSection title="Accent" description="Independent identity knob — drives the row-accent semantic, hover/selected fills, and the L1 group bar. Brand and Accent are deliberately independent.">
-    <div class="brand-row">
-      <ColorField
-        label="Accent"
-        value={(inputs?.accent as string | undefined) ?? theme.accent?.default ?? "#8B5CF6"}
-        onchange={(v) => {
-          setPath(["inputs", "accent"], v);
-          setPath(["accent", "default"], v);
-          setPath(["row", "accent", "fg"], v);
-          setPath(["row", "accent", "markerFill"], v);
-        }} />
-      <ColorField
-        label="Accent (deep)"
-        hint="Reserved for future deep-accent surfaces"
-        value={(inputs?.accentDeep as string | undefined) ?? (inputs?.accent as string | undefined) ?? "#6D28D9"}
-        onchange={(v) => setPath(["inputs", "accentDeep"], v)}
-        overridden={isOver(["inputs", "accentDeep"])}
-        onreset={() => {
-          clearOver(["inputs", "accentDeep"]);
-          const a = (inputs?.accent as string | undefined) ?? "#8B5CF6";
-          setDerived(["inputs", "accentDeep"], a);
-        }} />
-    </div>
+  <SettingsSection title="Plot" description="Title and forest-axis text colors. Default to Brand-deep; pin per-field to break from the cascade.">
+    <ColorField label="Title color"
+                value={(theme.text?.title?.fg as string | undefined) ?? (inputs?.brandDeep as string | undefined) ?? "#1A1A1A"}
+                onchange={(v) => setPath(["text", "title", "fg"], v)}
+                overridden={isOver(["text", "title", "fg"])}
+                onreset={resetTitleFg} />
+    <ColorField label="Axis label color"
+                value={(theme.plot?.axisLabel?.fg as string | undefined) ?? (inputs?.brandDeep as string | undefined) ?? "#1A1A1A"}
+                onchange={(v) => setPath(["plot", "axisLabel", "fg"], v)}
+                overridden={isOver(["plot", "axisLabel", "fg"])}
+                onreset={resetAxisLabelFg} />
+    <ColorField label="Axis tick color"
+                value={(theme.plot?.tickLabel?.fg as string | undefined) ?? (inputs?.brandDeep as string | undefined) ?? "#1A1A1A"}
+                onchange={(v) => setPath(["plot", "tickLabel", "fg"], v)}
+                overridden={isOver(["plot", "tickLabel", "fg"])}
+                onreset={resetTickLabelFg} />
+  </SettingsSection>
+
+  <SettingsSection title="Selection & accents" description="Per-row interaction tones plus the L1 group-bar fill.">
     <ColorField label="Hover / selected fill" value={theme.accent?.muted ?? "#dde1e7"}
                 onchange={(v) => {
                   setPath(["accent", "muted"], v);
                   setPath(["row", "hover", "bg"], v);
                   setPath(["row", "selected", "bg"], v);
                 }} />
-    <ColorField label="L1 group bar" value={theme.accent?.tintSubtle ?? "#e1e5ea"}
-                onchange={(v) => {
-                  setPath(["accent", "tintSubtle"], v);
-                  setPath(["rowGroup", "L1", "bg"], v);
-                }} />
+    <ColorField label="L1 group bar"
+                hint={theme.variants?.headerStyle === "bold" ? "Brand-deep mix in bold-header mode" : "Accent tint in light-header mode"}
+                value={(theme.rowGroup?.L1?.bg as string | undefined) ?? theme.accent?.tintSubtle ?? "#e1e5ea"}
+                onchange={(v) => setPath(["rowGroup", "L1", "bg"], v)}
+                overridden={isOver(["rowGroup", "L1", "bg"])}
+                onreset={resetL1Bg} />
   </SettingsSection>
 
-  <SettingsSection title="Dividers" description="Cell hairlines and stronger rules under header / group rows.">
-    <ColorField label="Subtle" hint="Cell borders" value={theme.cell?.border ?? theme.divider?.subtle ?? "#e2e8f0"} onchange={setBorder} />
-    <ColorField label="Strong" hint="Header rule, group rules" value={theme.divider?.strong ?? "#94a3b8"} onchange={(v) => setPath(["divider","strong"], v)} />
+  <SettingsSection title="Dividers" description="Cell hairlines and the strong rules under header / group rows.">
+    <ColorField label="Subtle" hint="Cell borders (default: 8% Brand-deep tint)"
+                value={theme.cell?.border ?? theme.divider?.subtle ?? "#e2e8f0"}
+                onchange={(v) => {
+                  setPath(["divider", "subtle"], v);
+                  setPath(["cell", "border"], v);
+                }}
+                overridden={isOver(["divider", "subtle"]) || isOver(["cell", "border"])}
+                onreset={resetSubtleDivider} />
+    <ColorField label="Strong" hint="Header rule, group rules, axis line"
+                value={theme.divider?.strong ?? "#94a3b8"}
+                onchange={(v) => setPath(["divider","strong"], v)} />
   </SettingsSection>
 
   <SettingsSection title="Series" description="Per-effect anchor colors. Series 1 is the primary-effect anchor — it also drives the pooled-effect diamond. Per-series stroke / muted / emphasis bundle on the Marks tab.">
@@ -272,7 +385,7 @@
 {/if}
 
 <style>
-  .brand-row {
+  .identity-row {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
