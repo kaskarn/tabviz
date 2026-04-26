@@ -174,7 +174,7 @@
     x2={xScale.range()[1]}
     y1={axisY}
     y2={axisY}
-    stroke="var(--wf-border, #e2e8f0)"
+    stroke="var(--tv-border, #e2e8f0)"
     stroke-width="1"
   />
 
@@ -186,7 +186,7 @@
         x2={xScale(tick)}
         y1={isBottom ? axisY : axisY}
         y2={isBottom ? -plotHeight : plotHeight}
-        stroke="var(--wf-border, #e2e8f0)"
+        stroke="var(--tv-border, #e2e8f0)"
         stroke-width="1"
         stroke-dasharray={gridlineDashArray}
         opacity="0.5"
@@ -201,15 +201,15 @@
       <line
         y1={isBottom ? axisY : axisY - axisGeom.tickMarkLength}
         y2={isBottom ? axisY + axisGeom.tickMarkLength : axisY}
-        stroke="var(--wf-border, #e2e8f0)"
+        stroke="var(--tv-border, #e2e8f0)"
         stroke-width="1"
       />
       <text
         x={getTextXOffset(tickX)}
         y={isBottom ? axisY + axisGeom.tickLabelY : axisY - axisGeom.tickLabelY + axisGeom.tickMarkLength}
         text-anchor={getTextAnchor(tickX)}
-        fill="var(--wf-secondary, #64748b)"
-        font-size="var(--wf-font-size-sm, 0.75rem)"
+        fill="var(--tv-secondary, #64748b)"
+        font-size="var(--tv-font-size-sm, 0.75rem)"
       >
         {formatTick(tick)}
       </text>
@@ -222,8 +222,8 @@
       x={layout.forestWidth / 2}
       y={isBottom ? axisY + axisGeom.axisLabelY : axisY - axisGeom.axisLabelY}
       text-anchor="middle"
-      fill="var(--wf-secondary, #64748b)"
-      font-size="var(--wf-font-size-sm, 0.75rem)"
+      fill="var(--tv-secondary, #64748b)"
+      font-size="var(--tv-font-size-sm, 0.75rem)"
       font-weight="500"
     >
       {axisLabel}

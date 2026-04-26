@@ -1249,78 +1249,78 @@
   const cssVars = $derived.by(() => {
     if (!theme) return '';
     return `
-      --wf-max-width: ${maxWidth ? `${maxWidth}px` : 'none'};
-      --wf-max-height: ${maxHeight ? `${maxHeight}px` : 'none'};
-      --wf-bg: ${theme.colors.background};
-      --wf-fg: ${theme.colors.foreground};
-      --wf-primary: ${theme.colors.primary};
-      --wf-secondary: ${theme.colors.secondary};
-      --wf-muted: ${theme.colors.muted};
-      --wf-border: ${theme.colors.border};
-      --wf-row-bg: ${theme.colors.rowBg};
-      --wf-alt-bg: ${theme.colors.altBg};
-      --wf-header-bg: ${theme.colors.headerBg ?? theme.colors.rowBg};
-      --wf-cell-fg: ${theme.colors.cellForeground ?? theme.colors.foreground};
-      --wf-header-fg: ${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground};
-      --wf-interval-line: ${theme.colors.intervalLine};
-      --wf-summary-fill: ${theme.colors.summaryFill};
-      --wf-summary-border: ${theme.colors.summaryBorder};
-      --wf-accent: ${theme.colors.accent};
-      --wf-semantic-emphasis-fg: ${theme.semantics?.emphasis?.fg ?? theme.colors.foreground};
-      --wf-semantic-muted-fg:    ${theme.semantics?.muted?.fg    ?? theme.colors.muted};
-      --wf-semantic-accent-fg:   ${theme.semantics?.accent?.fg   ?? theme.colors.accent};
-      --wf-semantic-emphasis-bg: ${theme.semantics?.emphasis?.bg ?? "transparent"};
-      --wf-semantic-muted-bg:    ${theme.semantics?.muted?.bg    ?? "transparent"};
-      --wf-semantic-accent-bg:   ${theme.semantics?.accent?.bg   ?? "transparent"};
-      --wf-badge-success: ${BADGE_VARIANTS.success};
-      --wf-badge-warning: ${BADGE_VARIANTS.warning};
-      --wf-badge-error: ${BADGE_VARIANTS.error};
-      --wf-badge-info: ${BADGE_VARIANTS.info};
-      --wf-badge-muted: ${theme.colors.muted};
-      --wf-font-family: ${theme.typography.fontFamily};
-      --wf-font-size-sm: ${theme.typography.fontSizeSm};
-      --wf-font-size-base: ${theme.typography.fontSizeBase};
-      --wf-font-size-lg: ${theme.typography.fontSizeLg};
-      --wf-font-weight-normal: ${theme.typography.fontWeightNormal};
-      --wf-font-weight-medium: ${theme.typography.fontWeightMedium};
-      --wf-font-weight-bold: ${theme.typography.fontWeightBold};
-      --wf-line-height: ${theme.typography.lineHeight};
-      --wf-header-font-scale: ${theme.typography.headerFontScale ?? 1.05};
-      --wf-row-height: ${theme.spacing.rowHeight}px;
-      --wf-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
-      --wf-header-height: ${anyHeaderVisible ? layout.headerHeight : 0}px;
-      --wf-header-row-height: ${anyHeaderVisible ? layout.headerHeight / headerDepth : 0}px;
-      --wf-header-depth: ${effectiveHeaderDepth};
-      --wf-padding: ${theme.spacing.padding}px;
-      --wf-container-padding: ${theme.spacing.containerPadding}px;
-      --wf-cell-padding-x: ${theme.spacing.cellPaddingX}px;
-      /* --wf-cell-padding-y deprecated v0.21.x -- kept emitting at 0 so
+      --tv-max-width: ${maxWidth ? `${maxWidth}px` : 'none'};
+      --tv-max-height: ${maxHeight ? `${maxHeight}px` : 'none'};
+      --tv-bg: ${theme.colors.background};
+      --tv-fg: ${theme.colors.foreground};
+      --tv-primary: ${theme.colors.primary};
+      --tv-secondary: ${theme.colors.secondary};
+      --tv-muted: ${theme.colors.muted};
+      --tv-border: ${theme.colors.border};
+      --tv-row-bg: ${theme.colors.rowBg};
+      --tv-alt-bg: ${theme.colors.altBg};
+      --tv-header-bg: ${theme.colors.headerBg ?? theme.colors.rowBg};
+      --tv-cell-fg: ${theme.colors.cellForeground ?? theme.colors.foreground};
+      --tv-header-fg: ${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground};
+      --tv-interval-line: ${theme.colors.intervalLine};
+      --tv-summary-fill: ${theme.colors.summaryFill};
+      --tv-summary-border: ${theme.colors.summaryBorder};
+      --tv-accent: ${theme.colors.accent};
+      --tv-semantic-emphasis-fg: ${theme.semantics?.emphasis?.fg ?? theme.colors.foreground};
+      --tv-semantic-muted-fg:    ${theme.semantics?.muted?.fg    ?? theme.colors.muted};
+      --tv-semantic-accent-fg:   ${theme.semantics?.accent?.fg   ?? theme.colors.accent};
+      --tv-semantic-emphasis-bg: ${theme.semantics?.emphasis?.bg ?? "transparent"};
+      --tv-semantic-muted-bg:    ${theme.semantics?.muted?.bg    ?? "transparent"};
+      --tv-semantic-accent-bg:   ${theme.semantics?.accent?.bg   ?? "transparent"};
+      --tv-badge-success: ${BADGE_VARIANTS.success};
+      --tv-badge-warning: ${BADGE_VARIANTS.warning};
+      --tv-badge-error: ${BADGE_VARIANTS.error};
+      --tv-badge-info: ${BADGE_VARIANTS.info};
+      --tv-badge-muted: ${theme.colors.muted};
+      --tv-font-family: ${theme.typography.fontFamily};
+      --tv-font-size-sm: ${theme.typography.fontSizeSm};
+      --tv-font-size-base: ${theme.typography.fontSizeBase};
+      --tv-font-size-lg: ${theme.typography.fontSizeLg};
+      --tv-font-weight-normal: ${theme.typography.fontWeightNormal};
+      --tv-font-weight-medium: ${theme.typography.fontWeightMedium};
+      --tv-font-weight-bold: ${theme.typography.fontWeightBold};
+      --tv-line-height: ${theme.typography.lineHeight};
+      --tv-header-font-scale: ${theme.typography.headerFontScale ?? 1.05};
+      --tv-row-height: ${theme.spacing.rowHeight}px;
+      --tv-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
+      --tv-header-height: ${anyHeaderVisible ? layout.headerHeight : 0}px;
+      --tv-header-row-height: ${anyHeaderVisible ? layout.headerHeight / headerDepth : 0}px;
+      --tv-header-depth: ${effectiveHeaderDepth};
+      --tv-padding: ${theme.spacing.padding}px;
+      --tv-container-padding: ${theme.spacing.containerPadding}px;
+      --tv-cell-padding-x: ${theme.spacing.cellPaddingX}px;
+      /* --tv-cell-padding-y deprecated v0.21.x -- kept emitting at 0 so
          any downstream consumer that still references the var doesn't
          break, but .grid-cell no longer applies it (rows are flex-
          centered + grid-template-rows pinned, so vertical cell padding
          could only clip content). */
-      --wf-cell-padding-y: 0px;
-      --wf-viz-margin: ${VIZ_MARGIN}px;
-      --wf-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
-      --wf-axis-height: ${layout.axisHeight}px;
-      --wf-group-padding: ${theme.spacing.groupPadding ?? 8}px;
-      --wf-footer-gap: ${theme.spacing.footerGap ?? 8}px;
-      --wf-bottom-margin: ${theme.spacing.bottomMargin ?? 16}px;
-      --wf-title-subtitle-gap: ${theme.spacing.titleSubtitleGap ?? 13}px;
-      --wf-plot-width: ${layout.forestWidth}px;
-      --wf-point-size: ${theme.shapes.pointSize}px;
-      --wf-line-width: ${theme.shapes.lineWidth}px;
-      --wf-row-border-width: ${theme.shapes.rowBorderWidth ?? 1}px;
-      --wf-header-border-width: ${theme.shapes.headerBorderWidth ?? 2}px;
-      --wf-group-border-width: ${theme.shapes.rowGroupBorderWidth ?? 1}px;
-      --wf-container-border: ${theme.layout.containerBorder ? `1px solid var(--wf-border)` : 'none'};
-      --wf-container-border-radius: ${theme.layout.containerBorderRadius}px;
-      --wf-group-header-opacity: ${GROUP_HEADER_OPACITY};
-      --wf-row-hover-opacity: ${ROW_HOVER_OPACITY};
-      --wf-row-selected-opacity: ${ROW_SELECTED_OPACITY};
-      --wf-row-selected-hover-opacity: ${ROW_SELECTED_HOVER_OPACITY};
-      --wf-actual-scale: ${actualScale};
-      --wf-zoom: ${zoom};
+      --tv-cell-padding-y: 0px;
+      --tv-viz-margin: ${VIZ_MARGIN}px;
+      --tv-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
+      --tv-axis-height: ${layout.axisHeight}px;
+      --tv-group-padding: ${theme.spacing.groupPadding ?? 8}px;
+      --tv-footer-gap: ${theme.spacing.footerGap ?? 8}px;
+      --tv-bottom-margin: ${theme.spacing.bottomMargin ?? 16}px;
+      --tv-title-subtitle-gap: ${theme.spacing.titleSubtitleGap ?? 13}px;
+      --tv-plot-width: ${layout.forestWidth}px;
+      --tv-point-size: ${theme.shapes.pointSize}px;
+      --tv-line-width: ${theme.shapes.lineWidth}px;
+      --tv-row-border-width: ${theme.shapes.rowBorderWidth ?? 1}px;
+      --tv-header-border-width: ${theme.shapes.headerBorderWidth ?? 2}px;
+      --tv-group-border-width: ${theme.shapes.rowGroupBorderWidth ?? 1}px;
+      --tv-container-border: ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : 'none'};
+      --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
+      --tv-group-header-opacity: ${GROUP_HEADER_OPACITY};
+      --tv-row-hover-opacity: ${ROW_HOVER_OPACITY};
+      --tv-row-selected-opacity: ${ROW_SELECTED_OPACITY};
+      --tv-row-selected-hover-opacity: ${ROW_SELECTED_HOVER_OPACITY};
+      --tv-actual-scale: ${actualScale};
+      --tv-zoom: ${zoom};
     `.trim();
   });
 </script>
@@ -1818,7 +1818,7 @@
               x2={colScale(nullValue)}
               y1={0}
               y2={rowsAreaHeight}
-              stroke="var(--wf-muted)"
+              stroke="var(--tv-muted)"
               stroke-width="1"
               stroke-dasharray="4,4"
             />
@@ -1834,7 +1834,7 @@
                   x2={colScale(annotation.x)}
                   y1={0}
                   y2={rowsAreaHeight}
-                  stroke={annotation.color ?? "var(--wf-accent)"}
+                  stroke={annotation.color ?? "var(--tv-accent)"}
                   stroke-width={annotation.width ?? 1.5}
                   stroke-opacity={annotation.opacity ?? 0.6}
                   stroke-dasharray={annotation.style === "dashed" ? "6,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -1848,8 +1848,8 @@
                     x={colScale(annotation.x)}
                     y={rowsAreaHeight + axisGap + annoLabelBaseline + yOffset}
                     text-anchor="middle"
-                    fill={annotation.color ?? "var(--wf-secondary)"}
-                    font-size="var(--wf-font-size-sm)"
+                    fill={annotation.color ?? "var(--tv-secondary)"}
+                    font-size="var(--tv-font-size-sm)"
                     font-weight="500"
                   >
                     {annotation.label}
@@ -1986,7 +1986,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--wf-muted)"}
+                      stroke={annotation.color ?? "var(--tv-muted)"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2075,7 +2075,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--wf-muted)"}
+                      stroke={annotation.color ?? "var(--tv-muted)"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2164,7 +2164,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--wf-muted)"}
+                      stroke={annotation.color ?? "var(--tv-muted)"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2431,9 +2431,9 @@
     }
 
     if (bundle) {
-      if (bundle.fg != null)         styles.push(`--wf-semantic-fg: ${bundle.fg}`);
-      if (bundle.fontWeight != null) styles.push(`--wf-semantic-weight: ${bundle.fontWeight}`);
-      if (bundle.fontStyle != null)  styles.push(`--wf-semantic-style: ${bundle.fontStyle}`);
+      if (bundle.fg != null)         styles.push(`--tv-semantic-fg: ${bundle.fg}`);
+      if (bundle.fontWeight != null) styles.push(`--tv-semantic-weight: ${bundle.fontWeight}`);
+      if (bundle.fontStyle != null)  styles.push(`--tv-semantic-style: ${bundle.fontStyle}`);
       // Border paints a bottom rule — emitted as a real CSS property so it
       // shows up on every cell in the row (no single row-level element).
       if (bundle.border != null)     styles.push(`border-bottom: 1px solid ${bundle.border}`);
@@ -2504,12 +2504,12 @@
 
   :global(.tabviz-container) {
     position: relative; /* Needed for toolbar positioning */
-    font-family: var(--wf-font-family);
-    font-size: var(--wf-font-size-base);
-    color: var(--wf-fg);
-    background: var(--wf-bg);
-    border: var(--wf-container-border, none);
-    border-radius: var(--wf-container-border-radius, 8px);
+    font-family: var(--tv-font-family);
+    font-size: var(--tv-font-size-base);
+    color: var(--tv-fg);
+    background: var(--tv-bg);
+    border: var(--tv-container-border, none);
+    border-radius: var(--tv-container-border-radius, 8px);
     /* Note: overflow is set in auto-fit/non-auto-fit specific rules below */
     display: flex;
     flex-direction: column;
@@ -2524,11 +2524,11 @@
     cursor: crosshair;
   }
   :global(.tabviz-container.paint-active[data-paint-scope="row"]) .data-cell:hover {
-    outline: 1px dashed color-mix(in srgb, var(--wf-primary, #2563eb) 60%, transparent);
+    outline: 1px dashed color-mix(in srgb, var(--tv-primary, #2563eb) 60%, transparent);
     outline-offset: -1px;
   }
   :global(.tabviz-container.paint-active[data-paint-scope="cell"]) .data-cell:hover {
-    outline: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 70%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 70%, transparent);
     outline-offset: -1px;
   }
 
@@ -2537,20 +2537,20 @@
      ============================================================================ */
 
   /* Auto-fit mode (default): scale down if content exceeds container.
-     Padding split into longhand so `--wf-bottom-margin` (theme spacing)
+     Padding split into longhand so `--tv-bottom-margin` (theme spacing)
      can extend padding-bottom without re-declaring the whole shorthand. */
   :global(.tabviz-container.auto-fit) {
     width: 100%;
-    padding-top: var(--wf-container-padding, 16px);
-    padding-left: var(--wf-container-padding, 16px);
-    padding-right: var(--wf-container-padding, 16px);
-    padding-bottom: calc(var(--wf-container-padding, 16px) + var(--wf-bottom-margin, 0px));
+    padding-top: var(--tv-container-padding, 16px);
+    padding-left: var(--tv-container-padding, 16px);
+    padding-right: var(--tv-container-padding, 16px);
+    padding-bottom: calc(var(--tv-container-padding, 16px) + var(--tv-bottom-margin, 0px));
     /* Hide overflow - container is explicitly sized to scaled dimensions */
     overflow: hidden;
   }
 
   :global(.tabviz-container.auto-fit) .tabviz-scalable {
-    transform: scale(var(--wf-actual-scale, 1));
+    transform: scale(var(--tv-actual-scale, 1));
     transform-origin: top left;
     flex: none;
     width: max-content;
@@ -2560,28 +2560,28 @@
   /* No auto-fit: render at zoom level, scrollbars if needed */
   :global(.tabviz-container:not(.auto-fit)) {
     overflow: auto;
-    padding-top: var(--wf-container-padding, 16px);
-    padding-left: var(--wf-container-padding, 16px);
-    padding-right: var(--wf-container-padding, 16px);
-    padding-bottom: calc(var(--wf-container-padding, 16px) + var(--wf-bottom-margin, 0px));
+    padding-top: var(--tv-container-padding, 16px);
+    padding-left: var(--tv-container-padding, 16px);
+    padding-right: var(--tv-container-padding, 16px);
+    padding-bottom: calc(var(--tv-container-padding, 16px) + var(--tv-bottom-margin, 0px));
   }
 
   :global(.tabviz-container:not(.auto-fit)) .tabviz-scalable {
-    transform: scale(var(--wf-zoom, 1));
+    transform: scale(var(--tv-zoom, 1));
     transform-origin: top left;
     width: max-content;
   }
 
   /* Max-width constraint - centers content */
   :global(.tabviz-container.has-max-width) {
-    max-width: var(--wf-max-width);
+    max-width: var(--tv-max-width);
     margin-left: auto;
     margin-right: auto;
   }
 
   /* Max-height constraint - enables vertical scroll */
   :global(.tabviz-container.has-max-height) {
-    max-height: var(--wf-max-height);
+    max-height: var(--tv-max-height);
     overflow-y: auto !important; /* Override auto-fit's overflow: hidden */
   }
 
@@ -2622,37 +2622,37 @@
 
   /* Top border frames column headers (symmetric with header bottom border) */
   .tabviz-main {
-    border-top: 2px solid var(--wf-border);
+    border-top: 2px solid var(--tv-border);
   }
 
   /* Base grid cell styles */
   .grid-cell {
-    padding: 0 var(--wf-cell-padding-x);
+    padding: 0 var(--tv-cell-padding-x);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
-    border-bottom: var(--wf-row-border-width, 1px) solid var(--wf-border);
-    color: var(--wf-cell-fg, var(--wf-fg));
-    /* Row background: `--wf-row-bg` (theme.colors.rowBg) with fallback to
-       the container bg. Separate from `--wf-bg` so users can tint rows
+    border-bottom: var(--tv-row-border-width, 1px) solid var(--tv-border);
+    color: var(--tv-cell-fg, var(--tv-fg));
+    /* Row background: `--tv-row-bg` (theme.colors.rowBg) with fallback to
+       the container bg. Separate from `--tv-bg` so users can tint rows
        distinct from the outer container without flipping the whole widget. */
-    background: var(--wf-row-bg, var(--wf-bg));
+    background: var(--tv-row-bg, var(--tv-bg));
   }
 
   /* Header cells - use row height for multi-row headers. Background is
-     the dedicated `--wf-header-bg` (theme.colors.headerBg) so users can
+     the dedicated `--tv-header-bg` (theme.colors.headerBg) so users can
      tint the header row distinctly from data rows. Cascades from
-     --wf-row-bg so existing themes render identically. */
+     --tv-row-bg so existing themes render identically. */
   .header-cell {
-    min-height: var(--wf-header-row-height);
-    font-weight: var(--wf-font-weight-bold, 600);
-    font-size: calc(var(--wf-font-size-base, 0.875rem) * var(--wf-header-font-scale, 1.05));
-    border-bottom: var(--wf-header-border-width, 2px) solid var(--wf-border);
-    background: var(--wf-header-bg, var(--wf-row-bg, var(--wf-bg)));
-    color: var(--wf-header-fg, var(--wf-cell-fg, var(--wf-fg)));
+    min-height: var(--tv-header-row-height);
+    font-weight: var(--tv-font-weight-bold, 600);
+    font-size: calc(var(--tv-font-size-base, 0.875rem) * var(--tv-header-font-scale, 1.05));
+    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-border);
+    background: var(--tv-header-bg, var(--tv-row-bg, var(--tv-bg)));
+    color: var(--tv-header-fg, var(--tv-cell-fg, var(--tv-fg)));
     position: relative;
   }
 
@@ -2661,31 +2661,31 @@
     user-select: none;
   }
   .header-cell.sortable:hover {
-    background: var(--wf-border, #f1f5f9);
+    background: var(--tv-border, #f1f5f9);
   }
 
   /* Primary (leftmost) column header uses the header border width */
   .primary-header {
-    border-bottom: var(--wf-header-border-width, 2px) solid var(--wf-border);
+    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-border);
   }
 
   /* Column group header styling */
   .column-group-header {
     justify-content: center;
-    font-weight: var(--wf-font-weight-bold, 600);
+    font-weight: var(--tv-font-weight-bold, 600);
     text-align: center;
-    padding-left: var(--wf-group-padding, 8px);
-    padding-right: var(--wf-group-padding, 8px);
+    padding-left: var(--tv-group-padding, 8px);
+    padding-right: var(--tv-group-padding, 8px);
   }
 
   /* Last row of headers uses the header border width */
   .header-cell:not(.column-group-header):not(.primary-header):not(.plot-header) {
-    border-bottom: var(--wf-header-border-width, 2px) solid var(--wf-border);
+    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-border);
   }
 
   /* Plot header also uses the header border width */
   .plot-header {
-    border-bottom: var(--wf-header-border-width, 2px) solid var(--wf-border);
+    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-border);
   }
 
   .header-text {
@@ -2708,7 +2708,7 @@
 
   .resize-handle:hover,
   .resize-handle:active {
-    background: var(--wf-primary, #2563eb);
+    background: var(--tv-primary, #2563eb);
   }
 
   /* Data cells */
@@ -2738,14 +2738,14 @@
   .primary-cell.drag-source {
     opacity: 0.55;
     transition: opacity 120ms ease-out;
-    box-shadow: inset 3px 0 0 var(--wf-primary, #2563eb);
+    box-shadow: inset 3px 0 0 var(--tv-primary, #2563eb);
   }
 
   .primary-cell.just-dropped {
     animation: tabviz-row-drop-flash 560ms ease-out 1;
   }
   @keyframes tabviz-row-drop-flash {
-    0%   { background-color: color-mix(in srgb, var(--wf-primary, #2563eb) 28%, transparent); }
+    0%   { background-color: color-mix(in srgb, var(--tv-primary, #2563eb) 28%, transparent); }
     100% { background-color: transparent; }
   }
 
@@ -2758,21 +2758,21 @@
   /* Plot header cell — pad horizontally by VIZ_MARGIN so header text aligns
      with the plot region's left edge (where the axis begins). */
   .plot-header {
-    padding: 0 var(--wf-viz-margin, 12px);
+    padding: 0 var(--tv-viz-margin, 12px);
   }
 
   /* Axis row cells - use full axis height (gap + content) */
   .axis-spacer {
-    height: var(--wf-axis-height);
+    height: var(--tv-axis-height);
     border-bottom: none;
-    background: var(--wf-bg);
+    background: var(--tv-bg);
     padding: 0;
   }
 
   .axis-cell {
-    height: var(--wf-axis-height);
+    height: var(--tv-axis-height);
     border-bottom: none;
-    background: var(--wf-bg);
+    background: var(--tv-bg);
     padding: 0;
   }
 
@@ -2839,7 +2839,7 @@
      the padding). Default: no border. Opt in per level via
      GroupHeaderStyles.levelN_border_bottom — that sets
      .group-row-bordered, which restores a row-edge border at
-     --wf-group-border-width.
+     --tv-group-border-width.
 
      Row-group-padding (v0.24.1+) is bottom margin on the LAST data row
      of the previous top-level group via `.row-padded-after` (set by
@@ -2852,47 +2852,47 @@
     border-bottom: 0;
   }
   .grid-cell.row-padded-after {
-    padding-bottom: var(--wf-row-group-padding, 0px);
+    padding-bottom: var(--tv-row-group-padding, 0px);
   }
   .grid-cell.group-row-bordered {
-    border-bottom: var(--wf-group-border-width, 1px) solid var(--wf-border);
+    border-bottom: var(--tv-group-border-width, 1px) solid var(--tv-border);
   }
 
   .group-row:hover {
-    background: color-mix(in srgb, var(--wf-muted) 15%, transparent) !important;
+    background: color-mix(in srgb, var(--tv-muted) 15%, transparent) !important;
   }
 
   /* Hovered row styling - uses accent color for better visibility */
   .data-cell.hovered {
-    background: color-mix(in srgb, var(--wf-accent) 12%, var(--wf-bg));
+    background: color-mix(in srgb, var(--tv-accent) 12%, var(--tv-bg));
     cursor: pointer;
   }
 
   /* Editable cells: cursor + faint tint on hover so users know to double-click */
   .data-cell.editable:hover {
-    background: color-mix(in srgb, var(--wf-primary) 6%, var(--wf-bg));
+    background: color-mix(in srgb, var(--tv-primary) 6%, var(--tv-bg));
     cursor: text;
   }
   .data-cell.editable.hovered:hover {
-    background: color-mix(in srgb, var(--wf-accent) 12%, color-mix(in srgb, var(--wf-primary) 6%, var(--wf-bg)));
+    background: color-mix(in srgb, var(--tv-accent) 12%, color-mix(in srgb, var(--tv-primary) 6%, var(--tv-bg)));
   }
 
   /* Selected row styling */
   .data-cell.selected {
-    background: color-mix(in srgb, var(--wf-accent) 16%, var(--wf-bg));
+    background: color-mix(in srgb, var(--tv-accent) 16%, var(--tv-bg));
   }
 
   .data-cell.selected.hovered {
-    background: color-mix(in srgb, var(--wf-accent) 22%, var(--wf-bg));
+    background: color-mix(in srgb, var(--tv-accent) 22%, var(--tv-bg));
   }
 
   .data-cell.selected:first-child {
-    box-shadow: inset 3px 0 0 var(--wf-accent);
+    box-shadow: inset 3px 0 0 var(--tv-accent);
   }
 
   /* Spacer row styling */
   .spacer-row {
-    height: calc(var(--wf-row-height) / 2);
+    height: calc(var(--tv-row-height) / 2);
     border-bottom: none;
     visibility: hidden;
   }
@@ -2904,22 +2904,22 @@
   .tabviz-empty {
     padding: 24px;
     text-align: center;
-    color: var(--wf-muted);
+    color: var(--tv-muted);
   }
 
   /* Row type styles (applied to data-cell elements) */
   .row-header {
-    font-weight: var(--wf-font-weight-bold, 600);
-    background: color-mix(in srgb, var(--wf-muted) 10%, var(--wf-bg));
+    font-weight: var(--tv-font-weight-bold, 600);
+    background: color-mix(in srgb, var(--tv-muted) 10%, var(--tv-bg));
   }
 
   .row-summary {
-    font-weight: var(--wf-font-weight-bold, 600);
-    border-top: 2px solid var(--wf-border);
+    font-weight: var(--tv-font-weight-bold, 600);
+    border-top: 2px solid var(--tv-border);
   }
 
   .row-bold {
-    font-weight: var(--wf-font-weight-bold, 600);
+    font-weight: var(--tv-font-weight-bold, 600);
   }
 
   .row-italic {
@@ -2928,7 +2928,7 @@
 
   /*
    * Semantic styling — driven by per-row CSS custom properties set from the
-   * resolved SemanticBundle. Each of the `--wf-semantic-*` vars is either the
+   * resolved SemanticBundle. Each of the `--tv-semantic-*` vars is either the
    * bundle's value or empty when the bundle leaves that field `null`, which
    * makes the `var(name, FALLBACK)` below inherit whatever the row would
    * have rendered without a semantic flag.
@@ -2937,9 +2937,9 @@
    * kept for host-page CSS hooks but no longer drive styling themselves.
    */
   :global(.tabviz-container .data-cell.row-has-semantic) {
-    color: var(--wf-semantic-fg, inherit);
-    font-weight: var(--wf-semantic-weight, inherit);
-    font-style: var(--wf-semantic-style, inherit);
+    color: var(--tv-semantic-fg, inherit);
+    font-weight: var(--tv-semantic-weight, inherit);
+    font-style: var(--tv-semantic-style, inherit);
   }
 
   .row-icon {
@@ -2949,15 +2949,15 @@
   .row-badge {
     margin-left: 6px;
     padding: 1px 6px;
-    font-size: var(--wf-font-size-sm, 0.75rem);
-    background: color-mix(in srgb, var(--wf-primary) 15%, var(--wf-bg));
+    font-size: var(--tv-font-size-sm, 0.75rem);
+    background: color-mix(in srgb, var(--tv-primary) 15%, var(--tv-bg));
     border-radius: 4px;
-    color: var(--wf-primary);
+    color: var(--tv-primary);
   }
 
   /* Alternating row banding */
   .row-odd {
-    background: var(--wf-alt-bg);
+    background: var(--tv-alt-bg);
   }
 
 </style>

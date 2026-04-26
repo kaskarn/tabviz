@@ -2781,7 +2781,7 @@ function renderUnifiedColumnHeaders(
       }
     }
 
-    // Draw borders under groups (matches web view: .group-row { border-bottom: 1px solid var(--wf-border) })
+    // Draw borders under groups (matches web view: .group-row { border-bottom: 1px solid var(--tv-border) })
     for (const border of groupBorders) {
       lines.push(`<line x1="${border.x1}" x2="${border.x2}"
         y1="${y + row1Height}" y2="${y + row1Height}"
@@ -3613,7 +3613,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
 
   // Container border (if enabled in theme)
-  // Web CSS: border: var(--wf-container-border, none); border-radius: var(--wf-container-border-radius, 8px);
+  // Web CSS: border: var(--tv-container-border, none); border-radius: var(--tv-container-border-radius, 8px);
   if (theme.layout.containerBorder !== false) {
     const borderRadius = theme.layout.containerBorderRadius ?? 8;
     parts.push(`<rect x="0.5" y="0.5"

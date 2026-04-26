@@ -93,7 +93,7 @@
 
   .pvalue-stars {
     font-size: 0.9em;
-    color: var(--wf-interval-positive, #16a34a);
+    color: var(--tv-interval-positive, #16a34a);
     font-weight: 600;
   }
 
@@ -103,7 +103,7 @@
 
   /* Cell styling from NSE/formulas */
   .cell-bold {
-    font-weight: var(--wf-font-weight-bold, 600);
+    font-weight: var(--tv-font-weight-bold, 600);
   }
 
   .cell-italic {
@@ -111,15 +111,15 @@
   }
 
   .cell-emphasis {
-    font-weight: var(--wf-font-weight-bold, 600);
-    color: var(--wf-fg, #1a1a1a);
+    font-weight: var(--tv-font-weight-bold, 600);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   .cell-muted {
-    color: var(--wf-muted, #94a3b8);
+    color: var(--tv-muted, #94a3b8);
   }
 
   .cell-accent {
-    color: var(--wf-accent, #8b5cf6);
+    color: var(--tv-accent, #8b5cf6);
   }
 </style>

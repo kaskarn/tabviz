@@ -36,7 +36,7 @@
     src={value}
     alt=""
     loading="lazy"
-    style:height={imgHeight ? `${imgHeight}px` : "calc(var(--wf-row-height, 28px) - 4px)"}
+    style:height={imgHeight ? `${imgHeight}px` : "calc(var(--tv-row-height, 28px) - 4px)"}
     style:max-width={maxWidth ? `${maxWidth}px` : "100%"}
     onerror={handleError}
   />
@@ -50,7 +50,7 @@
   .cell-img {
     display: block;
     object-fit: contain;
-    background: var(--wf-border, #e2e8f0);
+    background: var(--tv-border, #e2e8f0);
   }
 
   .shape-circle {
@@ -66,7 +66,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--wf-muted, #94a3b8);
-    font-size: var(--wf-font-size-base, 0.875rem);
+    color: var(--tv-muted, #94a3b8);
+    font-size: var(--tv-font-size-base, 0.875rem);
   }
 </style>

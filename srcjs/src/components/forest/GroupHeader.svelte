@@ -74,7 +74,7 @@
     gap: 6px;
     padding: 4px 0;
     user-select: none;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   .group-header.italic {
@@ -88,7 +88,7 @@
     flex-shrink: 0;
     min-width: 12px;
     transition: transform 0.15s ease;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
   }
 
   .group-chevron.collapsed {
@@ -100,8 +100,8 @@
   }
 
   .group-count {
-    font-weight: var(--wf-font-weight-normal, 400);
-    color: var(--wf-muted, #94a3b8);
-    font-size: var(--wf-font-size-sm, 0.75rem);
+    font-weight: var(--tv-font-weight-normal, 400);
+    color: var(--tv-muted, #94a3b8);
+    font-size: var(--tv-font-size-sm, 0.75rem);
   }
 </style>

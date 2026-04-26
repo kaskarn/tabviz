@@ -48,14 +48,14 @@
   }
 
   .icon-sm {
-    font-size: var(--wf-font-size-sm, 0.75rem);
+    font-size: var(--tv-font-size-sm, 0.75rem);
   }
 
   .icon-base {
-    font-size: var(--wf-font-size-base, 0.875rem);
+    font-size: var(--tv-font-size-base, 0.875rem);
   }
 
   .icon-lg {
-    font-size: var(--wf-font-size-lg, 1rem);
+    font-size: var(--tv-font-size-lg, 1rem);
   }
 </style>

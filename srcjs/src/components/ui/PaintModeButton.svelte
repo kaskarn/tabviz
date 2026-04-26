@@ -189,17 +189,17 @@
     width: 22px;
     height: 22px;
     padding: 0;
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 18%, var(--wf-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-border, #e2e8f0));
     border-radius: 6px;
-    background: var(--wf-bg, #ffffff);
-    color: var(--wf-secondary, #64748b);
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-secondary, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
 
   .paint-btn:hover,
   .paint-btn:focus-visible {
-    color: var(--wf-primary, #2563eb);
+    color: var(--tv-primary, #2563eb);
     outline: none;
   }
 
@@ -210,14 +210,14 @@
    * so users can spot the exit target without hunting.
    */
   .paint-btn.active {
-    background: var(--wf-accent, #8b5cf6);
+    background: var(--tv-accent, #8b5cf6);
     color: #ffffff;
-    border-color: var(--wf-accent, #8b5cf6);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wf-accent, #8b5cf6) 30%, transparent);
+    border-color: var(--tv-accent, #8b5cf6);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tv-accent, #8b5cf6) 30%, transparent);
   }
 
   .paint-btn.active:hover {
-    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 88%, #000000);
+    background: color-mix(in srgb, var(--tv-accent, #8b5cf6) 88%, #000000);
   }
 
   .paint-popover {
@@ -227,15 +227,15 @@
     z-index: 10002;
     min-width: 200px;
     padding: 8px;
-    background: var(--wf-bg, #ffffff);
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 15%, var(--wf-border, #e2e8f0));
+    background: var(--tv-bg, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 8px;
     box-shadow: 0 8px 24px -4px color-mix(in srgb, #0f172a 25%, transparent);
     display: flex;
     flex-direction: column;
     gap: 6px;
     font-size: 0.75rem;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   /* Inline `Token / Scope` rows — label + control on one line, same
@@ -254,7 +254,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
   }
 
   /* Loud exit — accent-outlined with X icon, top of the popover. Uses
@@ -268,10 +268,10 @@
     justify-content: center;
     gap: 5px;
     padding: 5px 10px;
-    border: 1.5px solid var(--wf-accent, #8b5cf6);
+    border: 1.5px solid var(--tv-accent, #8b5cf6);
     border-radius: 6px;
-    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 12%, transparent);
-    color: var(--wf-accent, #8b5cf6);
+    background: color-mix(in srgb, var(--tv-accent, #8b5cf6) 12%, transparent);
+    color: var(--tv-accent, #8b5cf6);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.01em;
@@ -280,7 +280,7 @@
   }
 
   .exit-btn:hover {
-    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 22%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #8b5cf6) 22%, transparent);
   }
 
   .exit-btn:active {
@@ -288,7 +288,7 @@
   }
 
   .exit-btn:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--wf-accent, #8b5cf6) 40%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--tv-accent, #8b5cf6) 40%, transparent);
     outline-offset: 2px;
   }
 
@@ -300,10 +300,10 @@
 
   .chip {
     padding: 2px 8px;
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 15%, var(--wf-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 999px;
-    background: var(--wf-bg, #ffffff);
-    color: var(--wf-fg, #1a1a1a);
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
     font-size: 0.7rem;
     font-weight: 500;
     cursor: pointer;
@@ -311,13 +311,13 @@
   }
 
   .chip:hover:not(.selected) {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 8%, transparent);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
   }
 
   .chip.selected {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 18%, var(--wf-bg, #ffffff));
-    border-color: var(--wf-primary, #2563eb);
-    color: var(--wf-primary, #2563eb);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-bg, #ffffff));
+    border-color: var(--tv-primary, #2563eb);
+    color: var(--tv-primary, #2563eb);
     font-weight: 600;
   }
 
@@ -332,9 +332,9 @@
     padding: 0;
     width: 96px;
     height: 22px;
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 15%, var(--wf-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 999px;
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 6%, transparent);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 6%, transparent);
     cursor: pointer;
     overflow: hidden;
     font-family: inherit;
@@ -346,7 +346,7 @@
     left: 1px;
     width: calc(50% - 1px);
     height: calc(100% - 2px);
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 90%, transparent);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 90%, transparent);
     border-radius: 999px;
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 0;
@@ -364,42 +364,42 @@
     justify-content: center;
     font-size: 0.7rem;
     font-weight: 500;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
     transition: color 0.18s ease;
     user-select: none;
   }
 
   .scope-label.active {
-    color: var(--wf-bg, #ffffff);
+    color: var(--tv-bg, #ffffff);
     font-weight: 600;
   }
 
   .scope-switch:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--wf-primary, #2563eb) 40%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--tv-primary, #2563eb) 40%, transparent);
     outline-offset: 2px;
   }
 
   .clear-btn {
     align-self: stretch;
     padding: 3px 8px;
-    border: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 80%, transparent);
     border-radius: 6px;
     background: transparent;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
     font-size: 0.7rem;
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .clear-btn:hover {
-    background: color-mix(in srgb, var(--wf-accent, #8b5cf6) 8%, transparent);
-    color: var(--wf-fg, #1a1a1a);
+    background: color-mix(in srgb, var(--tv-accent, #8b5cf6) 8%, transparent);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   .hint {
     margin: 2px 0 0;
     font-size: 0.64rem;
     line-height: 1.3;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
   }
 </style>

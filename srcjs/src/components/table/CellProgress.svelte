@@ -12,7 +12,7 @@
 
   const maxValue = $derived(options?.maxValue ?? 100);
   const showLabel = $derived(options?.showLabel ?? true);
-  const barColor = $derived(options?.color ?? "var(--wf-primary, #2563eb)");
+  const barColor = $derived(options?.color ?? "var(--tv-primary, #2563eb)");
   const scale = $derived(options?.scale ?? "linear");
 
   const percentage = $derived.by(() =>
@@ -57,7 +57,7 @@
   .progress-track {
     flex: 1;
     height: 10px;
-    background: color-mix(in srgb, var(--wf-border, #e2e8f0) 50%, transparent);
+    background: color-mix(in srgb, var(--tv-border, #e2e8f0) 50%, transparent);
     border-radius: 5px;
     overflow: hidden;
   }
@@ -69,7 +69,7 @@
   }
 
   .progress-label {
-    font-size: var(--wf-font-size-sm, 0.75rem);
+    font-size: var(--tv-font-size-sm, 0.75rem);
     font-variant-numeric: tabular-nums;
     min-width: 32px;
     text-align: right;

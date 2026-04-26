@@ -1,7 +1,7 @@
 /*
  * tabviz base styles
  *
- * All theme CSS variables (--wf-*) are generated dynamically by the Svelte component
+ * All theme CSS variables (--tv-*) are generated dynamically by the Svelte component
  * based on the selected theme. This file contains only structural resets scoped to
  * the widget container to avoid affecting page-level styles.
  */

@@ -151,7 +151,7 @@
   }
   .banding-label {
     font-size: 0.75rem;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     font-weight: 500;
   }
   .banding-pill {
@@ -159,8 +159,8 @@
     font-weight: 500;
     padding: 2px 8px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 12%, transparent);
-    color: var(--wf-secondary, #64748b);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 12%, transparent);
+    color: var(--tv-secondary, #64748b);
     text-transform: uppercase;
     letter-spacing: 0.03em;
   }

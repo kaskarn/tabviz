@@ -163,12 +163,12 @@
     pointer-events: auto;
     width: min(420px, 100%);
     padding: 18px 20px;
-    background: var(--wf-bg, #ffffff);
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 15%, var(--wf-border, #e2e8f0));
+    background: var(--tv-bg, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 12px;
     box-shadow:
       0 24px 48px -12px color-mix(in srgb, #0f172a 35%, transparent),
-      0 4px 12px -4px color-mix(in srgb, var(--wf-primary, #2563eb) 25%, transparent);
+      0 4px 12px -4px color-mix(in srgb, var(--tv-primary, #2563eb) 25%, transparent);
     animation: card-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
@@ -186,14 +186,14 @@
     margin: 0 0 6px 0;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   .message {
     margin: 0 0 16px 0;
     font-size: 0.8125rem;
     line-height: 1.5;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
   }
 
   .actions {
@@ -213,25 +213,25 @@
   }
 
   .cancel-btn {
-    border: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 80%, transparent);
     background: transparent;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
   }
 
   .cancel-btn:hover {
-    color: var(--wf-fg, #1a1a1a);
-    border-color: color-mix(in srgb, var(--wf-primary, #2563eb) 20%, var(--wf-border, #e2e8f0));
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 6%, transparent);
+    color: var(--tv-fg, #1a1a1a);
+    border-color: color-mix(in srgb, var(--tv-primary, #2563eb) 20%, var(--tv-border, #e2e8f0));
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 6%, transparent);
   }
 
   .confirm-btn {
     border: 1px solid transparent;
-    background: var(--wf-primary, #2563eb);
-    color: var(--wf-bg, #ffffff);
+    background: var(--tv-primary, #2563eb);
+    color: var(--tv-bg, #ffffff);
   }
 
   .confirm-btn:hover {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 90%, #000000);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 90%, #000000);
   }
 
   .confirm-btn.danger {
@@ -244,7 +244,7 @@
   }
 
   .confirm-btn:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--wf-primary, #2563eb) 50%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--tv-primary, #2563eb) 50%, transparent);
     outline-offset: 2px;
   }
 </style>

@@ -34,21 +34,21 @@
       const variant = variants[strValue];
       switch (variant) {
         case "success":
-          return "var(--wf-badge-success, #16a34a)";
+          return "var(--tv-badge-success, #16a34a)";
         case "warning":
-          return "var(--wf-badge-warning, #f59e0b)";
+          return "var(--tv-badge-warning, #f59e0b)";
         case "error":
-          return "var(--wf-badge-error, #dc2626)";
+          return "var(--tv-badge-error, #dc2626)";
         case "info":
-          return "var(--wf-badge-info, #2563eb)";
+          return "var(--tv-badge-info, #2563eb)";
         case "muted":
-          return "var(--wf-badge-muted, var(--wf-muted, #64748b))";
+          return "var(--tv-badge-muted, var(--tv-muted, #64748b))";
         default:
-          return "var(--wf-primary, #2563eb)";
+          return "var(--tv-primary, #2563eb)";
       }
     }
 
-    return "var(--wf-primary, #2563eb)";
+    return "var(--tv-primary, #2563eb)";
   });
 
   const sizeClass = $derived(size === "sm" ? "badge-sm" : "badge-base");
@@ -61,7 +61,7 @@
 {:else if displayValue}
   <span
     class="cell-badge {sizeClass}"
-    style:background-color="color-mix(in srgb, {badgeColor} 15%, var(--wf-bg, #fff))"
+    style:background-color="color-mix(in srgb, {badgeColor} 15%, var(--tv-bg, #fff))"
     style:color={badgeColor}
   >
     {displayValue}

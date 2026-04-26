@@ -39,7 +39,7 @@
 
   .label {
     font-size: 0.75rem;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
     min-width: 0;
@@ -50,16 +50,16 @@
     width: 32px;
     height: 18px;
     padding: 0;
-    border: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 80%, transparent);
     border-radius: 999px;
-    background: color-mix(in srgb, var(--wf-border, #e2e8f0) 40%, transparent);
+    background: color-mix(in srgb, var(--tv-border, #e2e8f0) 40%, transparent);
     cursor: pointer;
     transition: background-color 0.15s ease, border-color 0.15s ease;
   }
 
   .toggle.on {
-    background: var(--wf-primary, #2563eb);
-    border-color: var(--wf-primary, #2563eb);
+    background: var(--tv-primary, #2563eb);
+    border-color: var(--tv-primary, #2563eb);
   }
 
   .thumb {
@@ -69,7 +69,7 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: var(--wf-bg, #ffffff);
+    background: var(--tv-bg, #ffffff);
     box-shadow: 0 1px 2px color-mix(in srgb, #0f172a 15%, transparent);
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -79,7 +79,7 @@
   }
 
   .toggle:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--wf-primary, #2563eb) 40%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--tv-primary, #2563eb) 40%, transparent);
     outline-offset: 2px;
   }
 </style>

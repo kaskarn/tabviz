@@ -32,16 +32,16 @@
     width: 22px;
     height: 22px;
     padding: 0;
-    border: 1px solid var(--wf-border, #e2e8f0);
+    border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
-    background: var(--wf-bg, #ffffff);
-    color: var(--wf-secondary, #64748b);
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-secondary, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .reset-btn:hover {
-    background: var(--wf-border, #e2e8f0);
-    color: var(--wf-fg, #1a1a1a);
+    background: var(--tv-border, #e2e8f0);
+    color: var(--tv-fg, #1a1a1a);
   }
 </style>

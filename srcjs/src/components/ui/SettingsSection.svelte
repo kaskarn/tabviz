@@ -29,7 +29,7 @@
   }
 
   .settings-section + :global(.settings-section) {
-    border-top: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
+    border-top: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 60%, transparent);
   }
 
   .section-header {
@@ -44,14 +44,14 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: color-mix(in srgb, var(--wf-secondary, #64748b) 85%, var(--wf-fg, #1a1a1a));
+    color: color-mix(in srgb, var(--tv-secondary, #64748b) 85%, var(--tv-fg, #1a1a1a));
   }
 
   .description {
     margin: 0;
     font-size: 0.6875rem;
     line-height: 1.3;
-    color: color-mix(in srgb, var(--wf-secondary, #64748b) 85%, transparent);
+    color: color-mix(in srgb, var(--tv-secondary, #64748b) 85%, transparent);
   }
 
   .section-body {

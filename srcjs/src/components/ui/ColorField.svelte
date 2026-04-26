@@ -134,7 +134,7 @@
 
   .label {
     font-size: 0.75rem;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
     min-width: 0;
@@ -155,7 +155,7 @@
 
   .tabs {
     display: inline-flex;
-    border: 1px solid color-mix(in srgb, var(--wf-fg, #1a1a1a) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 12%, transparent);
     border-radius: 4px;
     overflow: hidden;
     height: 18px;
@@ -165,7 +165,7 @@
     appearance: none;
     border: 0;
     background: transparent;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     font-size: 0.65rem;
     font-weight: 500;
     padding: 0 8px;
@@ -174,12 +174,12 @@
   }
 
   .tab.active {
-    background: var(--wf-primary, #2563eb);
-    color: var(--wf-bg, #ffffff);
+    background: var(--tv-primary, #2563eb);
+    color: var(--tv-bg, #ffffff);
   }
 
   .tab + .tab {
-    border-left: 1px solid color-mix(in srgb, var(--wf-fg, #1a1a1a) 12%, transparent);
+    border-left: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 12%, transparent);
   }
 
   .swatches {
@@ -193,7 +193,7 @@
     width: 16px;
     height: 16px;
     border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--wf-fg, #1a1a1a) 25%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 25%, transparent);
     padding: 0;
     cursor: pointer;
     transition: transform 0.1s ease, box-shadow 0.1s ease;
@@ -204,8 +204,8 @@
   }
 
   .theme-swatch.selected {
-    box-shadow: 0 0 0 2px var(--wf-bg, #ffffff),
-                0 0 0 3px var(--wf-primary, #2563eb);
+    box-shadow: 0 0 0 2px var(--tv-bg, #ffffff),
+                0 0 0 3px var(--tv-primary, #2563eb);
   }
 
   .swatch {
@@ -214,7 +214,7 @@
     width: 18px;
     height: 18px;
     border-radius: 4px;
-    border: 1px solid color-mix(in srgb, var(--wf-fg, #1a1a1a) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 15%, transparent);
     /* Checkerboard peeks through when color has transparency. */
     background-image:
       linear-gradient(45deg, #eee 25%, transparent 25%),
@@ -247,19 +247,19 @@
   .hex {
     width: 78px;
     padding: 2px 4px;
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 12%, var(--wf-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 12%, var(--tv-border, #e2e8f0));
     border-radius: 4px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.7rem;
     text-align: center;
-    background: var(--wf-bg, #ffffff);
-    color: var(--wf-fg, #1a1a1a);
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   .hex:focus {
-    border-color: var(--wf-primary, #2563eb);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--wf-primary, #2563eb) 15%, transparent);
+    border-color: var(--tv-primary, #2563eb);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tv-primary, #2563eb) 15%, transparent);
   }
 </style>

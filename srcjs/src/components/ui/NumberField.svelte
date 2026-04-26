@@ -56,7 +56,7 @@
 
   .label {
     font-size: 0.75rem;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
     min-width: 0;
@@ -71,20 +71,20 @@
 
   .range {
     width: 100%;
-    accent-color: var(--wf-primary, #2563eb);
+    accent-color: var(--tv-primary, #2563eb);
   }
 
   .value-display {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.7rem;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     font-variant-numeric: tabular-nums;
     min-width: 3em;
     text-align: right;
   }
 
   .unit {
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
     margin-left: 2px;
   }
 </style>

@@ -276,7 +276,7 @@ export const GROUP_HEADER = {
  * Column group headers span multiple child columns and have their own padding.
  */
 export const COLUMN_GROUP = {
-  /** Horizontal padding for column group header cells (--wf-group-padding default) */
+  /** Horizontal padding for column group header cells (--tv-group-padding default) */
   PADDING: 16, // 8px left + 8px right
 } as const;
 
@@ -312,7 +312,7 @@ export const AXIS = {
 /**
  * Semantic color variants for badge columns.
  * Used in SVG export where CSS variables aren't available.
- * Svelte components use CSS variables (--wf-badge-*) with these as fallbacks.
+ * Svelte components use CSS variables (--tv-badge-*) with these as fallbacks.
  */
 export const BADGE_VARIANTS = {
   success: "#16a34a",
@@ -346,8 +346,8 @@ export function getEffectYOffset(index: number, total: number): number {
  */
 export function generateCSSVariables(): string {
   return `
-    --wf-group-header-opacity: ${GROUP_HEADER_OPACITY};
-    --wf-row-hover-opacity: ${ROW_HOVER_OPACITY};
-    --wf-row-selected-opacity: ${ROW_SELECTED_OPACITY};
+    --tv-group-header-opacity: ${GROUP_HEADER_OPACITY};
+    --tv-row-hover-opacity: ${ROW_HOVER_OPACITY};
+    --tv-row-selected-opacity: ${ROW_SELECTED_OPACITY};
   `.trim();
 }

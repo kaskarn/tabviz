@@ -108,15 +108,15 @@
   .header-ctx-menu {
     position: fixed;
     min-width: 180px;
-    background: var(--wf-bg, #ffffff);
-    border: 1px solid var(--wf-border, #e2e8f0);
+    background: var(--tv-bg, #ffffff);
+    border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
     box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.14);
     z-index: 10003;
     padding: 4px;
     font-family: inherit;
     font-size: 12px;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     display: flex;
     flex-direction: column;
     gap: 1px;
@@ -125,8 +125,8 @@
     padding: 6px 8px 4px;
     font-size: 11px;
     font-weight: 600;
-    color: var(--wf-secondary, #64748b);
-    border-bottom: 1px solid var(--wf-border, #e2e8f0);
+    color: var(--tv-secondary, #64748b);
+    border-bottom: 1px solid var(--tv-border, #e2e8f0);
     margin-bottom: 3px;
     white-space: nowrap;
     overflow: hidden;
@@ -141,16 +141,16 @@
     border-radius: 4px;
     font-family: inherit;
     font-size: 12px;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     cursor: pointer;
   }
   .ctx-item:hover,
   .ctx-item:focus-visible {
-    background: var(--wf-border, #f1f5f9);
+    background: var(--tv-border, #f1f5f9);
     outline: none;
   }
   .ctx-item.destructive {
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
   }
   .ctx-item.destructive:hover {
     background: rgba(220, 38, 38, 0.08);

@@ -144,9 +144,9 @@
     margin: 0;
     padding: 0 0 0.15rem 0;
     border: none;
-    font-size: var(--wf-font-size-lg, 1rem);
-    font-weight: var(--wf-font-weight-bold, 600);
-    color: var(--wf-fg, #1a1a1a);
+    font-size: var(--tv-font-size-lg, 1rem);
+    font-weight: var(--tv-font-weight-bold, 600);
+    color: var(--tv-fg, #1a1a1a);
     line-height: 1.3;
     white-space: normal;
     word-wrap: break-word;
@@ -154,9 +154,9 @@
 
   .plot-subtitle {
     margin: 4px 0 0;
-    font-size: var(--wf-font-size-base, 0.875rem);
-    font-weight: var(--wf-font-weight-normal, 400);
-    color: var(--wf-secondary, #64748b);
+    font-size: var(--tv-font-size-base, 0.875rem);
+    font-weight: var(--tv-font-weight-normal, 400);
+    color: var(--tv-secondary, #64748b);
     line-height: 1.4;
     white-space: normal;
     word-wrap: break-word;
@@ -170,14 +170,14 @@
 
   /* Subtle separator above subtitle when both title and subtitle exist.
      Total gap (border + padding) is themable via
-     `--wf-title-subtitle-gap` so the SVG export and live widget agree
+     `--tv-title-subtitle-gap` so the SVG export and live widget agree
      on the same number; the CSS subtracts the border's 1px from the
      padding so the visible gap matches the theme value. Defaults to
      13 (1 border + 12 padding) which matches the prior hardcoded
      6+1+6 chain. */
   .has-both .plot-subtitle {
-    border-top: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 30%, transparent);
-    padding-top: calc(var(--wf-title-subtitle-gap, 13px) - 1px);
+    border-top: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 30%, transparent);
+    padding-top: calc(var(--tv-title-subtitle-gap, 13px) - 1px);
     margin-top: 0;
   }
 

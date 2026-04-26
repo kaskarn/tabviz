@@ -171,25 +171,25 @@
     width: 22px;
     height: 22px;
     padding: 0;
-    border: 1px solid var(--wf-border, #e2e8f0);
+    border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
-    background: var(--wf-bg, #ffffff);
-    color: var(--wf-secondary, #64748b);
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-secondary, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .theme-btn:hover {
-    background: var(--wf-border, #e2e8f0);
-    color: var(--wf-fg, #1a1a1a);
+    background: var(--tv-border, #e2e8f0);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   .theme-dropdown {
     /* position: fixed set dynamically by autoPosition to escape clipping */
     min-width: 140px;
     padding: 4px;
-    background: var(--wf-bg, #ffffff);
-    border: 1px solid var(--wf-border, #e2e8f0);
+    background: var(--tv-bg, #ffffff);
+    border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     z-index: 10001;  /* High z-index to appear above everything */
@@ -204,7 +204,7 @@
     border: none;
     border-radius: 4px;
     background: transparent;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     font-size: 13px;
     text-align: left;
     cursor: pointer;
@@ -212,17 +212,17 @@
   }
 
   .dropdown-item:hover {
-    background: var(--wf-border, #f1f5f9);
+    background: var(--tv-border, #f1f5f9);
   }
 
   .dropdown-item.active {
-    color: var(--wf-primary, #2563eb);
+    color: var(--tv-primary, #2563eb);
     font-weight: 500;
   }
 
   .dropdown-item svg {
     flex-shrink: 0;
-    color: var(--wf-primary, #2563eb);
+    color: var(--tv-primary, #2563eb);
   }
 
   .spacer {

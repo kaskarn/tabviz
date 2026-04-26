@@ -196,7 +196,7 @@
     width: 22px;
     height: 22px;
     border-radius: 5px;
-    border: 1px solid color-mix(in srgb, var(--wf-fg, #1a1a1a) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 15%, transparent);
     background-image:
       linear-gradient(45deg, #eee 25%, transparent 25%),
       linear-gradient(-45deg, #eee 25%, transparent 25%),
@@ -228,18 +228,18 @@
   .hex {
     width: 86px;
     padding: 3px 6px;
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 12%, var(--wf-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 12%, var(--tv-border, #e2e8f0));
     border-radius: 4px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.75rem;
     text-align: center;
-    background: var(--wf-bg, #ffffff);
-    color: var(--wf-fg, #1a1a1a);
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
     outline: none;
   }
 
   .hex:focus {
-    border-color: var(--wf-primary, #2563eb);
+    border-color: var(--tv-primary, #2563eb);
   }
 
   .weight-input {
@@ -250,7 +250,7 @@
 
   .weight-input input[type="range"] {
     width: 90px;
-    accent-color: var(--wf-primary, #2563eb);
+    accent-color: var(--tv-primary, #2563eb);
   }
 
   .weight-input .value {
@@ -258,12 +258,12 @@
     font-size: 0.75rem;
     min-width: 2.5em;
     text-align: right;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   .segmented {
     display: inline-flex;
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 15%, var(--wf-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 6px;
     overflow: hidden;
   }
@@ -274,16 +274,16 @@
     font-weight: 500;
     border: none;
     background: transparent;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     cursor: pointer;
   }
 
   .segmented button + button {
-    border-left: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 10%, var(--wf-border, #e2e8f0));
+    border-left: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 10%, var(--tv-border, #e2e8f0));
   }
 
   .segmented button.selected {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 92%, transparent);
-    color: var(--wf-bg, #ffffff);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 92%, transparent);
+    color: var(--tv-bg, #ffffff);
   }
 </style>

@@ -72,7 +72,7 @@
 
   .label {
     font-size: 0.75rem;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
     min-width: 0;
@@ -81,18 +81,18 @@
   .select {
     width: 180px;
     padding: 3px 6px;
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 12%, var(--wf-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 12%, var(--tv-border, #e2e8f0));
     border-radius: 4px;
     font-size: 0.75rem;
-    background: var(--wf-bg, #ffffff);
-    color: var(--wf-fg, #1a1a1a);
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
     cursor: pointer;
   }
 
   .select:focus {
-    border-color: var(--wf-primary, #2563eb);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--wf-primary, #2563eb) 15%, transparent);
+    border-color: var(--tv-primary, #2563eb);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tv-primary, #2563eb) 15%, transparent);
   }
 </style>

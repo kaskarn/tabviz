@@ -73,7 +73,7 @@
     width: 100%;
     overflow: hidden;
     background: transparent;
-    font-family: var(--wf-font-family, system-ui, -apple-system, sans-serif);
+    font-family: var(--tv-font-family, system-ui, -apple-system, sans-serif);
   }
 
   .split-forest-main {
@@ -90,7 +90,7 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: var(--wf-muted, #64748b);
+    color: var(--tv-muted, #64748b);
     font-style: italic;
     font-size: 13px;
   }

@@ -13,7 +13,7 @@
 
   const effectiveMax = $derived(options?.maxValue ?? maxValue);
   const showLabel = $derived(options?.showLabel ?? true);
-  const barColor = $derived(options?.color ?? "var(--wf-primary, #2563eb)");
+  const barColor = $derived(options?.color ?? "var(--tv-primary, #2563eb)");
   const scale = $derived(options?.scale ?? "linear");
 
   const percentage = $derived(() =>
@@ -56,7 +56,7 @@
   .bar-track {
     flex: 1;
     height: 8px;
-    background: var(--wf-border, #e2e8f0);
+    background: var(--tv-border, #e2e8f0);
     border-radius: 2px;
     overflow: hidden;
   }
@@ -68,7 +68,7 @@
   }
 
   .bar-label {
-    font-size: var(--wf-font-size-sm, 0.75rem);
+    font-size: var(--tv-font-size-sm, 0.75rem);
     font-variant-numeric: tabular-nums;
     min-width: 32px;
     text-align: right;

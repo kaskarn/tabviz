@@ -240,12 +240,12 @@
     max-height: min(82vh, 760px);
     display: flex;
     flex-direction: column;
-    background: var(--wf-bg, #ffffff);
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 15%, var(--wf-border, #e2e8f0));
+    background: var(--tv-bg, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 12px;
     box-shadow:
       0 24px 48px -12px color-mix(in srgb, #0f172a 35%, transparent),
-      0 4px 12px -4px color-mix(in srgb, var(--wf-primary, #2563eb) 25%, transparent);
+      0 4px 12px -4px color-mix(in srgb, var(--tv-primary, #2563eb) 25%, transparent);
     animation: card-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
@@ -271,13 +271,13 @@
     margin: 0;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   .title-block .sub {
     margin: 2px 0 0 0;
     font-size: 0.75rem;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
   }
 
   .close {
@@ -290,28 +290,28 @@
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .close:hover {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 10%, transparent);
-    color: var(--wf-fg, #1a1a1a);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 10%, transparent);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   .tab-bar {
     display: flex;
     gap: 2px;
     padding: 0 14px;
-    border-bottom: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 60%, transparent);
   }
 
   .tab {
     padding: 8px 14px;
     border: none;
     background: transparent;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
     font-size: 0.8125rem;
     font-weight: 500;
     cursor: pointer;
@@ -321,12 +321,12 @@
   }
 
   .tab:hover {
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
   }
 
   .tab.active {
-    color: var(--wf-primary, #2563eb);
-    border-bottom-color: var(--wf-primary, #2563eb);
+    color: var(--tv-primary, #2563eb);
+    border-bottom-color: var(--tv-primary, #2563eb);
   }
 
   .code {
@@ -338,9 +338,9 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.78rem;
     line-height: 1.55;
-    color: var(--wf-fg, #1a1a1a);
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 5%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--wf-border, #e2e8f0) 60%, transparent);
+    color: var(--tv-fg, #1a1a1a);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 5%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 60%, transparent);
     white-space: pre;
   }
 
@@ -355,18 +355,18 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border: 1px solid color-mix(in srgb, var(--wf-primary, #2563eb) 18%, var(--wf-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-border, #e2e8f0));
     border-radius: 6px;
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--wf-primary, #2563eb);
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 6%, var(--wf-bg, #ffffff));
+    color: var(--tv-primary, #2563eb);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 6%, var(--tv-bg, #ffffff));
     cursor: pointer;
     transition: background-color 0.15s ease, border-color 0.15s ease;
   }
 
   .copy-btn:hover {
-    background: color-mix(in srgb, var(--wf-primary, #2563eb) 14%, var(--wf-bg, #ffffff));
-    border-color: color-mix(in srgb, var(--wf-primary, #2563eb) 35%, transparent);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 14%, var(--tv-bg, #ffffff));
+    border-color: color-mix(in srgb, var(--tv-primary, #2563eb) 35%, transparent);
   }
 </style>

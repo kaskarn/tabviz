@@ -45,7 +45,7 @@
   }
 
   .cell-bold {
-    font-weight: var(--wf-font-weight-bold, 600);
+    font-weight: var(--tv-font-weight-bold, 600);
   }
 
   .cell-italic {
@@ -58,19 +58,19 @@
      cascades from the corresponding palette slot when the bundle entry is
      null, preserving pre-v0.20.1 visuals. */
   .cell-emphasis {
-    font-weight: var(--wf-font-weight-bold, 600);
-    color: var(--wf-semantic-emphasis-fg, var(--wf-fg, #1a1a1a));
-    background-color: var(--wf-semantic-emphasis-bg, transparent);
+    font-weight: var(--tv-font-weight-bold, 600);
+    color: var(--tv-semantic-emphasis-fg, var(--tv-fg, #1a1a1a));
+    background-color: var(--tv-semantic-emphasis-bg, transparent);
   }
 
   .cell-muted {
-    color: var(--wf-semantic-muted-fg, var(--wf-muted, #94a3b8));
-    background-color: var(--wf-semantic-muted-bg, transparent);
+    color: var(--tv-semantic-muted-fg, var(--tv-muted, #94a3b8));
+    background-color: var(--tv-semantic-muted-bg, transparent);
   }
 
   .cell-accent {
-    color: var(--wf-semantic-accent-fg, var(--wf-accent, #8b5cf6));
-    background-color: var(--wf-semantic-accent-bg, transparent);
+    color: var(--tv-semantic-accent-fg, var(--tv-accent, #8b5cf6));
+    background-color: var(--tv-semantic-accent-bg, transparent);
   }
 
   .cell-icon {
@@ -80,9 +80,9 @@
   .cell-badge {
     margin-left: 4px;
     padding: 1px 6px;
-    font-size: var(--wf-font-size-sm, 0.75rem);
-    background: color-mix(in srgb, var(--wf-primary) 15%, var(--wf-bg));
+    font-size: var(--tv-font-size-sm, 0.75rem);
+    background: color-mix(in srgb, var(--tv-primary) 15%, var(--tv-bg));
     border-radius: 4px;
-    color: var(--wf-primary);
+    color: var(--tv-primary);
   }
 </style>

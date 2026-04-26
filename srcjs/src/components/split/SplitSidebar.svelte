@@ -177,13 +177,13 @@
   .split-sidebar {
     width: 200px;
     flex-shrink: 0;
-    background: var(--wf-bg, #fff);
+    background: var(--tv-bg, #fff);
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    font-family: var(--wf-font-family, system-ui, -apple-system, sans-serif);
+    font-family: var(--tv-font-family, system-ui, -apple-system, sans-serif);
     font-size: 13px;
     margin: 0 8px 8px 8px;
     max-height: calc(100% - 8px);
@@ -202,7 +202,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--wf-muted, #64748b);
+    color: var(--tv-muted, #64748b);
   }
 
   .toggle-btn {
@@ -212,8 +212,8 @@
     width: 26px;
     height: 26px;
     border: none;
-    background: var(--wf-bg, #fff);
-    color: var(--wf-muted, #64748b);
+    background: var(--tv-bg, #fff);
+    color: var(--tv-muted, #64748b);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -224,8 +224,8 @@
   }
 
   .toggle-btn:hover {
-    background: var(--wf-hover, #f1f5f9);
-    color: var(--wf-fg, #1e293b);
+    background: var(--tv-hover, #f1f5f9);
+    color: var(--tv-fg, #1e293b);
   }
 
   .sidebar-search {
@@ -235,22 +235,22 @@
   .search-input {
     width: 100%;
     padding: 5px 8px;
-    border: 1px solid var(--wf-border, #e2e8f0);
+    border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 5px;
     font-size: 12px;
-    background: var(--wf-bg, #fff);
-    color: var(--wf-fg, #1e293b);
+    background: var(--tv-bg, #fff);
+    color: var(--tv-fg, #1e293b);
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   .search-input:focus {
-    border-color: var(--wf-primary, #3b82f6);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wf-primary, #3b82f6) 15%, transparent);
+    border-color: var(--tv-primary, #3b82f6);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tv-primary, #3b82f6) 15%, transparent);
   }
 
   .search-input::placeholder {
-    color: var(--wf-muted, #94a3b8);
+    color: var(--tv-muted, #94a3b8);
   }
 
   .sidebar-nav {
@@ -260,7 +260,7 @@
   }
 
   .sidebar-footer {
-    border-top: 1px solid var(--wf-border, #e2e8f0);
+    border-top: 1px solid var(--tv-border, #e2e8f0);
     padding: 8px 10px;
   }
 
@@ -269,13 +269,13 @@
     align-items: center;
     gap: 8px;
     font-size: 12px;
-    color: var(--wf-fg, #334155);
+    color: var(--tv-fg, #334155);
     cursor: pointer;
     user-select: none;
   }
 
   .footer-toggle input[type="checkbox"] {
-    accent-color: var(--wf-primary, #2563eb);
+    accent-color: var(--tv-primary, #2563eb);
     cursor: pointer;
     margin: 0;
   }
@@ -285,7 +285,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--wf-muted, #64748b);
+    color: var(--tv-muted, #64748b);
     padding: 6px 6px 3px;
   }
 
@@ -316,7 +316,7 @@
     top: 0;
     bottom: 12px;
     width: 1px;
-    background: var(--wf-border, #e2e8f0);
+    background: var(--tv-border, #e2e8f0);
   }
 
   .tree-row {
@@ -331,7 +331,7 @@
     left: 11px;
     width: 10px;
     height: 1px;
-    background: var(--wf-border, #e2e8f0);
+    background: var(--tv-border, #e2e8f0);
   }
 
   .node-btn {
@@ -345,18 +345,18 @@
     background: transparent;
     text-align: left;
     cursor: pointer;
-    color: var(--wf-fg, #1e293b);
+    color: var(--tv-fg, #1e293b);
     border-radius: 5px;
     transition: all 0.1s ease;
   }
 
   .node-btn:hover {
-    background: var(--wf-hover, #f1f5f9);
+    background: var(--tv-hover, #f1f5f9);
   }
 
   .node-btn.active {
-    background: color-mix(in srgb, var(--wf-primary, #3b82f6) 12%, var(--wf-bg, #fff));
-    color: var(--wf-primary, #3b82f6);
+    background: color-mix(in srgb, var(--tv-primary, #3b82f6) 12%, var(--tv-bg, #fff));
+    color: var(--tv-primary, #3b82f6);
     font-weight: 600;
   }
 
@@ -367,11 +367,11 @@
     width: 14px;
     height: 14px;
     flex-shrink: 0;
-    color: var(--wf-muted, #94a3b8);
+    color: var(--tv-muted, #94a3b8);
   }
 
   .node-btn:hover .tree-toggle {
-    color: var(--wf-fg, #1e293b);
+    color: var(--tv-fg, #1e293b);
   }
 
   .label {

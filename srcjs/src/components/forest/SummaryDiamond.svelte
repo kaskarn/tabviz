@@ -48,8 +48,8 @@
   <!-- Diamond shape -->
   <polygon
     {points}
-    fill="var(--wf-summary-fill, #2563eb)"
-    stroke="var(--wf-summary-border, #1d4ed8)"
+    fill="var(--tv-summary-fill, #2563eb)"
+    stroke="var(--tv-summary-border, #1d4ed8)"
     stroke-width="1"
   />
 
@@ -57,7 +57,7 @@
   {#if clippedLeft}
     <path
       d="M 4 {yPosition} L 10 {yPosition - 4} L 10 {yPosition + 4} Z"
-      fill="var(--wf-summary-fill, #2563eb)"
+      fill="var(--tv-summary-fill, #2563eb)"
     />
   {/if}
 
@@ -65,7 +65,7 @@
   {#if clippedRight}
     <path
       d="M {layout.forestWidth - 4} {yPosition} L {layout.forestWidth - 10} {yPosition - 4} L {layout.forestWidth - 10} {yPosition + 4} Z"
-      fill="var(--wf-summary-fill, #2563eb)"
+      fill="var(--tv-summary-fill, #2563eb)"
     />
   {/if}
 </g>
@@ -76,6 +76,6 @@
   }
 
   .summary-diamond:hover polygon {
-    fill: var(--wf-summary-border, #1d4ed8);
+    fill: var(--tv-summary-border, #1d4ed8);
   }
 </style>

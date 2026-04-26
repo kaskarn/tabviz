@@ -96,7 +96,7 @@
     justify-content: center;
     width: 14px;
     height: 14px;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
     cursor: grab;
     opacity: 0;
     transition: opacity 0.12s ease;

@@ -13,7 +13,7 @@
 
   const chartType = $derived(options?.type ?? "line");
   const chartHeight = $derived(options?.height ?? 20);
-  const chartColor = $derived(options?.color ?? "var(--wf-primary, #2563eb)");
+  const chartColor = $derived(options?.color ?? "var(--tv-primary, #2563eb)");
   const chartWidth = 60;
 
   // Handle nested arrays from R list columns (data may be [[values]] instead of [values])

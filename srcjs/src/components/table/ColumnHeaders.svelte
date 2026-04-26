@@ -263,25 +263,25 @@
 <style>
   .tabviz-table-header {
     display: flex;
-    height: var(--wf-header-height);
+    height: var(--tv-header-height);
     align-items: center;
     /* Removed padding: 0 4px - was causing width mismatch with data rows */
-    background: var(--wf-bg);
-    border-bottom: 1px solid var(--wf-border);
+    background: var(--tv-bg);
+    border-bottom: 1px solid var(--tv-border);
     font-weight: 600;
-    font-size: var(--wf-font-size-base);
-    color: var(--wf-secondary);
+    font-size: var(--tv-font-size-base);
+    color: var(--tv-secondary);
   }
 
   .tabviz-header-grid {
     display: grid;
-    grid-template-rows: calc(var(--wf-header-height) / 2) calc(var(--wf-header-height) / 2);
+    grid-template-rows: calc(var(--tv-header-height) / 2) calc(var(--tv-header-height) / 2);
     /* Removed padding: 0 4px - was causing width mismatch with data rows */
-    background: var(--wf-bg);
-    border-bottom: 1px solid var(--wf-border);
+    background: var(--tv-bg);
+    border-bottom: 1px solid var(--tv-border);
     font-weight: 600;
-    font-size: var(--wf-font-size-base);
-    color: var(--wf-secondary);
+    font-size: var(--tv-font-size-base);
+    color: var(--tv-secondary);
   }
 
   .header-cell {
@@ -290,7 +290,7 @@
   }
 
   .group-row {
-    border-bottom: 1px solid var(--wf-border);
+    border-bottom: 1px solid var(--tv-border);
   }
 
   .column-row {
@@ -300,8 +300,8 @@
   .group-header {
     justify-content: center;
     font-weight: 700;
-    padding-left: var(--wf-group-padding, 8px);
-    padding-right: var(--wf-group-padding, 8px);
+    padding-left: var(--tv-group-padding, 8px);
+    padding-right: var(--tv-group-padding, 8px);
   }
 
   .tabviz-label-col {
@@ -346,6 +346,6 @@
 
   .resize-handle:hover,
   .resize-handle:active {
-    background: var(--wf-primary, #2563eb);
+    background: var(--tv-primary, #2563eb);
   }
 </style>

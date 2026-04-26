@@ -57,7 +57,7 @@
 
   .label {
     font-size: 0.75rem;
-    color: var(--wf-fg, #1a1a1a);
+    color: var(--tv-fg, #1a1a1a);
     font-weight: 500;
     line-height: 1.2;
     min-width: 0;
@@ -74,13 +74,13 @@
     align-items: center;
     gap: 3px;
     font-size: 0.65rem;
-    color: var(--wf-secondary, #64748b);
+    color: var(--tv-secondary, #64748b);
     cursor: pointer;
     user-select: none;
   }
 
   .inherit-toggle input {
-    accent-color: var(--wf-primary, #2563eb);
+    accent-color: var(--tv-primary, #2563eb);
     cursor: pointer;
   }
 

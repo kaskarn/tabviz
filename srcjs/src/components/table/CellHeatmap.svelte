@@ -100,6 +100,6 @@
     padding: 2px 6px;
     font-variant-numeric: tabular-nums;
     border-radius: 2px;
-    font-size: var(--wf-font-size-sm, 0.75rem);
+    font-size: var(--tv-font-size-sm, 0.75rem);
   }
 </style>
