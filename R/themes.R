@@ -4,16 +4,19 @@
 # customer-facing palette + fonts + density. Tier 3 overrides only where the
 # journal/brand chrome can't be derived from inputs alone.
 #
-# Round-2 polish trimmed the preset roster from nine to four. The remaining
-# four cover the design space we actually care about: a clean general-purpose
-# default (Cochrane), two journal-publication identities (Lancet, JAMA), and
-# a single dark-mode option (Dark). Removed presets had migration paths laid
-# out in NEWS.md.
+# Round-2 polish trimmed the preset roster to four. The remaining four cover
+# the design space we actually care about: a clean general-purpose default
+# (Cochrane), two journal-publication identities (Lancet, JAMA), and a single
+# dark-mode option. The themes are reimagined for the v2 cascade — each
+# explicitly leverages brand_deep, accent independence, density, and the
+# new strong_on_dark / variant-aware bindings.
 
 #' Cochrane theme (v2)
 #'
-#' The package default. Cochrane teal on warm white, Arial, compact density,
-#' tuned for systematic-review tables that need to fit dense data legibly.
+#' The package default. Cochrane heritage teal as brand, warm coral as the
+#' independent accent. Inter sans-serif, comfortable density, clean slate
+#' neutrals. Tuned as a general-purpose theme: dense systematic-review tables
+#' read well, and exploratory tables feel inviting.
 #'
 #' @return A [WebTheme].
 #' @export
@@ -21,24 +24,32 @@ web_theme_cochrane <- function() {
   resolve_theme(WebTheme(
     name = "cochrane",
     inputs = ThemeInputs(
-      neutral = c("#FFFFFF", "#FFFFFF", "#F5F5F5", "#555555", "#2C2C2C"),
-      brand        = "#0099CC",
-      brand_deep   = "#006699",
-      accent       = "#006699",
-      series_anchors = c("#0C4DA2", "#DD5129", "#1A8A4F", "#6D4E92", "#E89A47"),
-      font_body = "Arial, Helvetica, sans-serif"
+      # Slate-cool neutrals; the alt-row partner picks up a faint teal tint
+      # via the new brand-aware surface.muted derivation.
+      neutral = c("#FFFFFF", "#FFFFFF", "#F2F4F7", "#5B6470", "#1F2937"),
+      # Cochrane heritage teal for brand identity. brand_deep auto-derives
+      # to a darker, richer teal (15% OKLCH-darken).
+      brand   = "#0099CC",
+      # Warm coral as the independent accent — a deliberate counterpoint to
+      # the cool brand. Lands on hover/selected, the L1 group bar (under
+      # light-mode header), and chrome tints. Brand and Accent are the two
+      # identity knobs; keeping them visually distinct exercises the
+      # chrome/data wall.
+      accent  = "#C8553D",
+      # Qualitative palette: brand-teal, coral, forest, violet, amber — five
+      # well-spaced hues for multi-effect plots.
+      series_anchors = c("#0099CC", "#C8553D", "#5C8A3F", "#7E5A99", "#D49A3A"),
+      font_body = "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
     ),
-    variants = ThemeVariants(density = "compact"),
-    spacing = SpacingTokens(
-      row_height = 20, header_height = 26, padding = 6, cell_padding_x = 6
-    ),
-    plot = PlotScaffold(point_size = 4, line_width = 1, tick_mark_length = 3)
+    variants = ThemeVariants(density = "comfortable")
   ))
 }
 
 #' Lancet theme (v2)
 #'
-#' Lancet navy primary, gold accent, serif typography on a warm cream surface.
+#' Lancet navy on warm cream, refined old-gold accent, Georgia serif. The
+#' deep-navy companion is explicitly pinned (rather than auto-derived) to
+#' lock the journal identity. Comfortable density for journal-page reading.
 #'
 #' @return A [WebTheme].
 #' @export
@@ -46,10 +57,14 @@ web_theme_lancet <- function() {
   resolve_theme(WebTheme(
     name = "lancet",
     inputs = ThemeInputs(
+      # Warm cream surface tones; n[3] is the alt-row partner / header bg.
       neutral = c("#FDFCFB", "#FDFCFB", "#F8F7F5", "#3D5A80", "#1E3A5F"),
       brand        = "#00407A",
       brand_deep   = "#002D54",
-      accent       = "#B8860B",
+      # Refined old-gold (replaces the slightly muddy "darkgoldenrod"
+      # #B8860B). Lands on hover, selection, L1 group bar.
+      accent       = "#A6792A",
+      # Lancet's canonical multi-effect palette.
       series_anchors = c("#00468B", "#ED0000", "#42B540", "#0099B4", "#925E9F"),
       font_body    = "Georgia, 'Times New Roman', serif",
       font_display = "Georgia, 'Times New Roman', serif"
@@ -60,8 +75,9 @@ web_theme_lancet <- function() {
 
 #' JAMA theme (v2)
 #'
-#' All-black-and-white, ultra-compact density, Arial typography. Print-ready
-#' for medical-journal submissions.
+#' All-black-and-white, ultra-compact density, Arial typography. Strong
+#' black dividers throughout — the visual identity IS the rule structure.
+#' Print-ready for medical-journal submissions.
 #'
 #' @return A [WebTheme].
 #' @export
@@ -69,14 +85,22 @@ web_theme_jama <- function() {
   resolve_theme(WebTheme(
     name = "jama",
     inputs = ThemeInputs(
+      # Pure white canvas; surface.muted picks up barely any brand tint
+      # because brand = black (the 3% mix is invisible).
       neutral = c("#FFFFFF", "#FFFFFF", "#F9FAFB", "#555555", "#000000"),
-      brand   = "#000000",
-      accent  = "#000000",
+      brand      = "#000000",
+      # Explicit: oklch_darken of black is still black, but pinning makes
+      # the "no fade to derivation" intent obvious.
+      brand_deep = "#000000",
+      accent     = "#000000",
+      # Five-step grayscale series — distinctive without color.
       series_anchors = c("#1A1A1A", "#4A4A4A", "#7A7A7A", "#9A9A9A", "#BABABA"),
       font_body = "Arial, Helvetica, sans-serif"
     ),
     variants = ThemeVariants(density = "compact"),
+    # Black dividers, both subtle and strong — JAMA's iconic look.
     divider = Dividers(subtle = "#000000", strong = "#000000"),
+    # JAMA squashes spacing further than the compact preset's defaults.
     spacing = SpacingTokens(
       row_height = 18, header_height = 24, padding = 6, cell_padding_x = 8
     )
@@ -85,7 +109,11 @@ web_theme_jama <- function() {
 
 #' Dark theme (v2)
 #'
-#' Catppuccin Mocha-inspired dark palette with pastel marker colors.
+#' Catppuccin Mocha-inspired dark canvas with a pastel marker palette and
+#' system-font typography. The brand cascade adapts for dark mode: an
+#' explicit `content.inverse` override keeps bold-mode header text light
+#' (otherwise the resolver's default = `n[1]` = the dark canvas, giving
+#' invisible dark-on-dark text).
 #'
 #' @return A [WebTheme].
 #' @export
@@ -94,12 +122,23 @@ web_theme_dark <- function() {
     name = "dark",
     inputs = ThemeInputs(
       neutral = c("#1E1E2E", "#1E1E2E", "#232334", "#6C7086", "#CDD6F4"),
-      brand        = "#89B4FA",
-      brand_deep   = "#74C7EC",
-      accent       = "#F5C2E7",
-      series_anchors = c("#89B4FA", "#A6E3A1", "#FAB387", "#F38BA8", "#CBA6F7")
+      brand   = "#89B4FA",
+      # accent_deep auto-derives via 15% OKLCH-darken; bright pastel pink
+      # darkens to a slightly more saturated version. brand_deep similarly
+      # auto-darkens — the resulting tone reads as "deeper blue" against
+      # the dark canvas.
+      accent  = "#F5C2E7",
+      # Catppuccin-Mocha-inspired qualitative palette: blue / green /
+      # peach / pink / lavender.
+      series_anchors = c("#89B4FA", "#A6E3A1", "#FAB387", "#F38BA8", "#CBA6F7"),
+      font_body = "system-ui, -apple-system, 'Segoe UI', sans-serif"
     ),
     variants = ThemeVariants(density = "comfortable"),
+    # Dark-mode inverse override: bold-mode header text needs to be LIGHT,
+    # not dark. The resolver default (= n[1] = the dark canvas) would give
+    # dark-on-dark text in the bold header band.
+    content = Content(inverse = "#CDD6F4"),
+    # Dim dividers tuned to the Catppuccin surface palette.
     divider = Dividers(subtle = "#313244", strong = "#45475A")
   ))
 }

@@ -77,16 +77,16 @@ test_that("brand_deep can be set explicitly per preset", {
   expect_equal(toupper(l@inputs@brand_deep), "#002D54")
 })
 
-test_that("density flag sets compact / comfortable / spacious correctly", {
+test_that("density flag sets compact / comfortable correctly", {
   expect_equal(web_theme_jama()@variants@density,     "compact")
-  expect_equal(web_theme_cochrane()@variants@density, "compact")
+  expect_equal(web_theme_cochrane()@variants@density, "comfortable")
   expect_equal(web_theme_lancet()@variants@density,   "comfortable")
   expect_equal(web_theme_dark()@variants@density,     "comfortable")
 })
 
 test_that("series anchors match per-preset palette", {
   expect_length(web_theme_cochrane()@inputs@series_anchors, 5)
-  expect_equal(toupper(web_theme_cochrane()@inputs@series_anchors[1]), "#0C4DA2")
+  expect_equal(toupper(web_theme_cochrane()@inputs@series_anchors[1]), "#0099CC")
   expect_equal(toupper(web_theme_lancet()@inputs@series_anchors[1]),   "#00468B")
   expect_equal(toupper(web_theme_jama()@inputs@series_anchors[1]),     "#1A1A1A")
 })
