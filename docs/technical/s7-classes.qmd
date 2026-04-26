@@ -90,9 +90,9 @@ component bindings consumed by the renderer.
 
 **Hard rule**: Tier 2 chrome derivation reads only chrome inputs
 (`neutral`, `brand`, `brand_deep`, `accent`, `accent_deep`). Tier 2 data
-derivation reads only data inputs (`series_anchors`, `summary_anchor`,
-`status_*`) plus `surface.base` for muted blends. The two cascades meet
-only at `WebTheme` reassembly.
+derivation reads only data inputs (`series_anchors`, `status_*`) plus
+`surface.base` for muted blends. The two cascades meet only at
+`WebTheme` reassembly.
 
 ### Component Classes (`R/classes-components.R`)
 

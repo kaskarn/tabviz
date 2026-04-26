@@ -16,9 +16,19 @@
      * stays purely free-form — no tabs.
      */
     swatches?: string[];
+    /**
+     * When true, renders an "overridden" indicator (small dot) plus a
+     * reset button that calls `onreset`. Used by Theme tab fields that
+     * participate in Brand-cascade defaults — the dot signals that the
+     * field has been hand-edited and won't be touched by future Brand
+     * multi-writes; the reset reverts to the brand-derived value.
+     */
+    overridden?: boolean;
+    /** Called when the user clicks the reset icon. */
+    onreset?: () => void;
   }
 
-  let { label, hint, value, onchange, swatches }: Props = $props();
+  let { label, hint, value, onchange, swatches, overridden, onreset }: Props = $props();
 
   /**
    * The native `<input type="color">` only accepts 6-digit hex. The theme
@@ -59,7 +69,21 @@
 </script>
 
 <div class="color-field" title={hint}>
-  <span class="label">{label}</span>
+  <span class="label">
+    {label}
+    {#if overridden}
+      <span class="override-dot" aria-hidden="true" title="Overridden — won't follow Brand">●</span>
+      {#if onreset}
+        <button
+          type="button"
+          class="reset-btn"
+          onclick={onreset}
+          title="Reset to default"
+          aria-label="Reset {label} to default"
+        >⤺</button>
+      {/if}
+    {/if}
+  </span>
   <div class="controls">
     {#if hasSwatches}
       <div class="tabs" role="tablist">
@@ -138,6 +162,31 @@
     font-weight: 500;
     line-height: 1.2;
     min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .override-dot {
+    color: var(--tv-primary, #2563eb);
+    font-size: 0.55rem;
+    line-height: 1;
+  }
+
+  .reset-btn {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--tv-secondary, #64748b);
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0 2px;
+    border-radius: 3px;
+  }
+  .reset-btn:hover {
+    color: var(--tv-primary, #2563eb);
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
   }
 
   .controls {

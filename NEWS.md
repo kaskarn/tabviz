@@ -10,6 +10,24 @@
   `set_theme_field()`. The wire shape no longer carries `theme.summary`
   or `inputs.summaryAnchor`. Affects any caller of `set_inputs(summary_anchor = ...)`.
 
+## Settings panel — Theme tab restructure
+
+* The Theme tab now leads with a **Brand** knob (with a Brand-deep
+  companion) — a single multi-write that cascades to `inputs.brandDeep`,
+  `series[0].fill`, and `header.bold.bg` / `header.bold.rule`. Hand-edit
+  any of those downstream fields and an **override dot** + reset icon
+  appears: future Brand edits skip pinned paths.
+* **Fonts** moved to position 2 on the Theme tab (just under Brand).
+  The Display font picker is now actually wired through to titles
+  (`--tv-text-title-family`).
+* Section order reflects an identity-first read: Brand → Fonts → Text
+  colors → Surfaces → Header → Accent → Dividers → Series → Status. The
+  separate "Summary diamond" section is gone (the pooled diamond reads
+  from Series 1).
+* The settings tab dropdown now visually separates the **advanced**
+  per-token surfaces (Spacing, Marks, Text) from the casual surfaces
+  (Basics, Theme, Layout) with a subtle divider and softened tone.
+
 ## Theming v2: 3-tier system
 
 v2 replaces the v1 flat-property-bag with a 3-tier cascade

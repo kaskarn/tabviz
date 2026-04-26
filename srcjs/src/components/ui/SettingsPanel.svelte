@@ -28,13 +28,13 @@
    * object structure (banding → colors → typography → spacing → shapes →
    * axis → layout) so the panel reads like the package's mental model.
    */
-  const tabs: { id: string; label: string }[] = [
+  const tabs: { id: string; label: string; kind?: "normal" | "advanced" }[] = [
     { id: "basics",   label: "Basics" },
     { id: "theme",    label: "Theme" },
     { id: "layout",   label: "Layout" },
-    { id: "spacing",  label: "Spacing" },
-    { id: "marks",    label: "Marks" },
-    { id: "text",     label: "Text" },
+    { id: "spacing",  label: "Spacing", kind: "advanced" },
+    { id: "marks",    label: "Marks",   kind: "advanced" },
+    { id: "text",     label: "Text",    kind: "advanced" },
   ];
   let activeTabId = $state<string>("basics");
 

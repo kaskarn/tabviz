@@ -10,7 +10,15 @@
   interface TabOption {
     id: string;
     label: string;
+    /**
+     * "advanced" tabs render with a softened color and a thin divider
+     * appears before the first advanced entry — implicit visual hierarchy
+     * for terminal detail surfaces (Spacing / Marks / Text) so they don't
+     * compete with the casual primary tabs (Basics / Theme / Layout).
+     */
+    kind?: "normal" | "advanced";
   }
+  export type { TabOption };
 
   interface Props {
     options: TabOption[];
@@ -27,6 +35,9 @@
   let popoverEl: HTMLDivElement | null = $state(null);
 
   const selected = $derived(options.find((o) => o.id === value) ?? options[0]);
+
+  // Index of the first "advanced" option — drives a single divider above it.
+  const firstAdvancedIdx = $derived(options.findIndex((o) => o.kind === "advanced"));
 
   // Compute popover position from the trigger's bounding rect. Re-run on
   // every open so resize / scroll between opens doesn't leave a stale
@@ -114,13 +125,17 @@
       tabindex="-1"
       style={popoverStyle}
     >
-      {#each options as opt (opt.id)}
+      {#each options as opt, i (opt.id)}
+        {#if firstAdvancedIdx > 0 && i === firstAdvancedIdx}
+          <div class="tab-divider" role="separator" aria-hidden="true"></div>
+        {/if}
         <button
           type="button"
           role="option"
           aria-selected={opt.id === value}
           class="tab-option"
           class:active={opt.id === value}
+          class:advanced={opt.kind === "advanced"}
           onclick={() => pick(opt.id)}
         >{opt.label}</button>
       {/each}
@@ -220,6 +235,17 @@
   .tab-option.active {
     background: color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-bg, #ffffff));
     color: var(--tv-primary, #2563eb);
+  }
+
+  .tab-option.advanced {
+    color: var(--tv-secondary, #64748b);
+    font-weight: 400;
+  }
+
+  .tab-divider {
+    margin: 4px 6px;
+    height: 1px;
+    background: color-mix(in srgb, var(--tv-fg, #1a1a1a) 10%, transparent);
   }
 
   .tab-option:focus-visible {

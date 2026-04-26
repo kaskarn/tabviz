@@ -75,11 +75,10 @@ Every theme — including all nine presets — is determined by **a small set of
 | Group | Input | What it controls |
 |-------|-------|------------------|
 | Chrome | `neutral` | 5-step ramp, lightest → darkest. Drives surfaces, dividers, content |
-|  | `brand` + `brand_deep` | Brand fill (markers, accents) and dark companion (text/strokes) |
+|  | `brand` + `brand_deep` | Brand fill (markers, accents) and dark companion (text/strokes, bold-mode header band) |
 |  | `accent` + `accent_deep` | Chrome accent for hover, selection, links |
 |  | `status_*` | Positive / negative / warning / info |
-| Data | `series_anchors` | Per-effect anchor colors (variable length) |
-|  | `summary_anchor` | Pooled-effect diamond anchor |
+| Data | `series_anchors` | Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond. |
 | Type | `font_body` | Primary face for cells, headers, labels |
 |  | `font_display` | Optional title face (defaults to body) |
 |  | `font_mono` | Optional monospace face (e.g. for IDs) |
@@ -101,12 +100,13 @@ my_theme <- web_theme(
 
 `web_theme()` starts from `web_theme_default()` unless you pass a different `base_theme`. Anything you *don't* set inherits from the base.
 
-The deep companions and the summary anchor mirror their primaries by default:
+The deep companions mirror their primaries by default:
 
-* `brand_deep` defaults to `brand` (override when you want a darker stroke than fill).
+* `brand_deep` defaults to `brand` (override when you want a darker stroke than fill, or a richer bold-mode header band).
 * `accent_deep` defaults to `accent`.
-* `summary_anchor` defaults to `brand` (override when the pooled diamond should read against the same hue but with its own treatment).
 * `font_display` defaults to `font_body`.
+
+The pooled-effect diamond reads from the first series slot bundle (`theme@series[[1]]`). Override `series_anchors[1]` to recolor it; reach into `theme@series[[1]]@stroke` directly for a journal-specific outline.
 
 ### Variants — three knobs every table can flip
 
@@ -149,7 +149,6 @@ flowchart TB
 
     subgraph T2D["Tier 2 — Data roles (derived)"]
       slots[per-series SlotBundle: fill, stroke, fill.muted, ...]
-      summary_b[summary SlotBundle]
     end
 
     subgraph T3["Tier 3 — Component bindings"]
@@ -167,7 +166,7 @@ flowchart TB
     style T3 fill:#f3e8ff
 ```
 
-**Two cascades, sharing only Tier 1.** Chrome derivation reads only chrome inputs (neutrals + accent). Data derivation reads only data inputs (series anchors + summary anchor + status). Series anchors never affect surface tones; brand colors never bleed into row-group divider tints. This isolation makes themes predictable: changing `series_anchors` cannot accidentally shift the column-header background.
+**Two cascades, sharing only Tier 1.** Chrome derivation reads only chrome inputs (neutrals + brand + accent). Data derivation reads only data inputs (series anchors + status). Series anchors never affect surface tones; brand colors never bleed into row-group divider tints. This isolation makes themes predictable: changing `series_anchors` cannot accidentally shift the column-header background.
 
 **OKLCH derivation.** All blends, lightenings, and darkenings happen in OKLCH (perceptually uniform). The result: tints stay readable across the brightness range, and high-chroma brands don't mud out when blended with surfaces.
 

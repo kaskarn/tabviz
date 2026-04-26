@@ -1287,6 +1287,7 @@
       --tv-badge-info:    ${theme.status?.info     ?? BADGE_VARIANTS.info};
       --tv-badge-muted:   ${theme.content.muted};
       --tv-font-family: ${theme.text.body.family};
+      --tv-text-title-family: ${theme.text.title?.family ?? theme.text.body.family};
       --tv-font-size-sm: ${theme.text.label.size};
       --tv-font-size-base: ${theme.text.body.size};
       --tv-font-size-lg: ${theme.text.subtitle.size};

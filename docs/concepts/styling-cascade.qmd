@@ -68,7 +68,7 @@ The cascade splits into two independent vocabularies:
 | Subsystem | Inputs | Tier 2 roles | What they describe |
 |-----------|--------|--------------|--------------------|
 | **Chrome** | `neutral`, `brand`, `brand_deep`, `accent`, `accent_deep` | `surface`, `content`, `divider`, `accent.*`, `status` | The table's scaffolding — the surface a row sits on, the tone of body text, the rule between cells |
-| **Data** | `series_anchors`, `summary_anchor`, `status_*` | per-series `SlotBundle`, `summary` SlotBundle | The data marks — what a forest point looks like, how a row's "muted" state mutes its mark |
+| **Data** | `series_anchors`, `status_*` | per-series `SlotBundle` (the first slot also drives the pooled-effect diamond) | The data marks — what a forest point looks like, how a row's "muted" state mutes its mark |
 
 **They never cross.** Changing `brand` cannot affect a series fill. Changing `series_anchors[3]` cannot affect a row-group divider. The two cascades meet only at theme reassembly. This isolation is what makes themes *predictable*: you can swap a brand color and know the data marks will not silently shift hue, and vice versa.
 
@@ -101,7 +101,8 @@ Data:
 | `series[i].fill_muted` | The same effect on a muted row |
 | `series[i].fill_emphasis` | The same effect on an emphasized row |
 | `series[i].text_fg` | Data labels associated with the slot |
-| `summary.{fill, stroke, ...}` | Pooled-effect diamond |
+
+The pooled-effect diamond reads from `series[1]` (the primary effect's slot bundle) — there is no separate `summary` slot. To customize the diamond fill alone, override `series_anchors[1]`; to give it a journal-specific outline, set `theme@series[[1]]@stroke` directly with `set_theme_field()`.
 
 A `SlotBundle` carries every state for one slot. The renderer always reads the right field for the current row state — you don't author each state by hand.
 

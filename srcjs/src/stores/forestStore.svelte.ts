@@ -125,6 +125,14 @@ export function createForestStore() {
   let themeEdits = $state<Record<string, Record<string, unknown>>>({});
   let baseThemeName = $state<string>("default");
 
+  // Per-path override tracking: which theme paths has the user explicitly
+  // touched? Stored as joined-path strings (e.g. "row.base.bg",
+  // "series.0.fill"). Drives the "overridden" dot + reset icon on the
+  // Theme tab and tells the Brand multi-write which paths to leave alone.
+  // Distinct from `themeEdits` — that one groups by section for source-gen;
+  // this is a flat set used by panel UI logic.
+  let themeOverrides = $state<Set<string>>(new Set());
+
   // Snapshot of the theme to restore to on resetState. Updated whenever a
   // new "clean" theme becomes active (setSpec, setTheme preset swap,
   // setThemeObject custom theme). This is NOT just `THEME_PRESETS[name]` —
@@ -2265,21 +2273,13 @@ export function createForestStore() {
    * Backward-compat: the old (section, field, value) call form works too
    * via overload — internally constructs a 2-step path.
    */
-  function setThemeField(...args: unknown[]) {
-    if (!spec || !spec.theme) return;
-    let path: (string | number)[];
-    let value: unknown;
-    if (args.length === 3 && typeof args[0] === "string" && typeof args[1] === "string") {
-      path = [args[0] as string, args[1] as string];
-      value = args[2];
-    } else if (args.length === 2 && Array.isArray(args[0])) {
-      path = args[0] as (string | number)[];
-      value = args[1];
-    } else {
-      return;
-    }
-    if (path.length === 0) return;
-
+  // Internal: walk the theme tree and replace the leaf at `path` with
+  // `value`. Used by both setThemeField (records as user edit) and
+  // setThemeFieldDerived (does not). Both produce a fresh reference at
+  // every level so Svelte 5 fine-grained reactivity invalidates the
+  // downstream reads.
+  function writeThemePath(path: (string | number)[], value: unknown) {
+    if (!spec || !spec.theme || path.length === 0) return;
     const updateAt = (obj: unknown, p: (string | number)[]): unknown => {
       const key = p[0];
       if (p.length === 1) {
@@ -2298,8 +2298,33 @@ export function createForestStore() {
       const cur = (obj as Record<string, unknown>)?.[key as string];
       return { ...(obj as Record<string, unknown>), [key as string]: updateAt(cur, p.slice(1)) };
     };
-
     spec = { ...spec, theme: updateAt(spec.theme, path) as Spec["theme"] };
+  }
+
+  function pathKey(path: (string | number)[]): string {
+    return path.map(String).join(".");
+  }
+
+  function setThemeField(...args: unknown[]) {
+    if (!spec || !spec.theme) return;
+    let path: (string | number)[];
+    let value: unknown;
+    if (args.length === 3 && typeof args[0] === "string" && typeof args[1] === "string") {
+      path = [args[0] as string, args[1] as string];
+      value = args[2];
+    } else if (args.length === 2 && Array.isArray(args[0])) {
+      path = args[0] as (string | number)[];
+      value = args[1];
+    } else {
+      return;
+    }
+    if (path.length === 0) return;
+
+    writeThemePath(path, value);
+
+    // Mark this path as a user-set override.
+    themeOverrides = new Set(themeOverrides);
+    themeOverrides.add(pathKey(path));
 
     // Track for source-gen. Group by top-level path step.
     const section = String(path[0]);
@@ -2308,8 +2333,8 @@ export function createForestStore() {
       nextEdits[section] = { ...(nextEdits[section] ?? {}), [path[1] as string]: value };
     } else {
       // Deep edit — store under a nested-path key.
-      const pathKey = path.slice(1).map(String).join(".");
-      nextEdits[section] = { ...(nextEdits[section] ?? {}), [pathKey]: value };
+      const subKey = path.slice(1).map(String).join(".");
+      nextEdits[section] = { ...(nextEdits[section] ?? {}), [subKey]: value };
     }
     themeEdits = nextEdits;
 
@@ -2317,6 +2342,31 @@ export function createForestStore() {
       columnWidths = {};
       measureAutoColumns();
     }
+  }
+
+  /**
+   * Write a derived value at `path` without flagging it as a user-set
+   * override. Used by panel multi-write helpers (Brand mirrors to
+   * series[0].fill, brandDeep, header.bold.bg, …) so the downstream
+   * paths stay "auto" and a future Brand re-write can update them again.
+   * If you call this on a path that the user has explicitly set
+   * (isOverridden), it's a no-op — user overrides win.
+   */
+  function setThemeFieldDerived(path: (string | number)[], value: unknown) {
+    if (!spec || !spec.theme || path.length === 0) return;
+    if (themeOverrides.has(pathKey(path))) return;
+    writeThemePath(path, value);
+  }
+
+  function isOverridden(path: (string | number)[]): boolean {
+    return themeOverrides.has(pathKey(path));
+  }
+
+  function clearOverride(path: (string | number)[]) {
+    if (!themeOverrides.has(pathKey(path))) return;
+    const next = new Set(themeOverrides);
+    next.delete(pathKey(path));
+    themeOverrides = next;
   }
 
   /**
@@ -3087,6 +3137,9 @@ export function createForestStore() {
     setBandingOverride,
     setBandingStartsWithBand,
     setThemeField,
+    setThemeFieldDerived,
+    isOverridden,
+    clearOverride,
     previewThemeField,
     setSemanticField,
     setWatermark,

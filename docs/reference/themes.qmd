@@ -85,7 +85,7 @@ web_theme(
 | Argument | Type | Default | Description |
 |---|---|---|---|
 | `name` | string | `"custom"` | Theme name (shown in the in-widget switcher and in source export). |
-| `inputs` | named list | `NULL` | Tier 1 input overrides. Any `ThemeInputs` field is valid: `neutral`, `brand`, `brand_deep`, `accent`, `accent_deep`, `status_*`, `series_anchors`, `summary_anchor`, `font_body`, `font_display`, `font_mono`. Unset fields inherit from `base_theme`. |
+| `inputs` | named list | `NULL` | Tier 1 input overrides. Any `ThemeInputs` field is valid: `neutral`, `brand`, `brand_deep`, `accent`, `accent_deep`, `status_*`, `series_anchors`, `font_body`, `font_display`, `font_mono`. Unset fields inherit from `base_theme`. |
 | `variants` | named list | `NULL` | Per-table variant overrides: `density` (compact / comfortable / spacious), `header_style` (light / bold), `first_column_style` (default / bold). |
 | `base_theme` | `WebTheme` | `web_theme_default()` | Starting point. The `inputs` and `variants` lists are applied on top. |
 
@@ -115,15 +115,16 @@ Chainable via the pipe.
 ### `set_inputs()` {#set_inputs}
 
 Update Tier 1 customer-facing inputs. Cascade-aware: changing `brand` clears
-`brand_deep` and `summary_anchor` so they re-mirror; changing `series_anchors`
-rebuilds the slot bundles.
+`brand_deep` so it re-mirrors; changing `series_anchors` rebuilds the slot
+bundles. The pooled-effect diamond reads from `series[1]`, so anchoring it
+is just a matter of setting the first `series_anchors` entry.
 
 ```r
 set_inputs(
   theme,
   neutral, brand, brand_deep, accent, accent_deep,
   status_positive, status_negative, status_warning, status_info,
-  series_anchors, summary_anchor,
+  series_anchors,
   font_body, font_display, font_mono
 )
 ```
@@ -137,8 +138,7 @@ set_inputs(
 | `accent` | hex | Chrome accent (hover, selection, links) |
 | `accent_deep` | hex | Dark companion; defaults to `accent` |
 | `status_positive`, `status_negative`, `status_warning`, `status_info` | hex | Semantic status colors |
-| `series_anchors` | `chr[]` | Per-effect anchor colors (variable length) |
-| `summary_anchor` | hex | Pooled-effect diamond anchor; defaults to `brand` |
+| `series_anchors` | `chr[]` | Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond. |
 | `font_body` | string | Primary CSS font-family |
 | `font_display` | string | Optional title face; defaults to `font_body` |
 | `font_mono` | string | Optional monospace face |

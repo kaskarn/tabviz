@@ -144,6 +144,7 @@
     margin: 0;
     padding: 0 0 0.15rem 0;
     border: none;
+    font-family: var(--tv-text-title-family, var(--tv-font-family));
     font-size: var(--tv-text-title-size, var(--tv-font-size-lg, 1rem));
     font-weight: var(--tv-text-title-weight, var(--tv-font-weight-bold, 600));
     font-style: var(--tv-text-title-italic, normal);
