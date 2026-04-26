@@ -25,6 +25,7 @@
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
   import FontFamilyPicker from "./FontFamilyPicker.svelte";
+  import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
 
   interface Props {
     store: ForestStore;
@@ -47,13 +48,11 @@
     store.clearOverride(path);
   }
 
-  // ── Color-mix helpers ────────────────────────────────────────────────
-  // `color-mix(in oklch, ...)` is a CSS expression; modern browsers resolve
-  // it at render time. Matches R-side OKLCH derivation closely enough for
-  // panel responsiveness.
-  function mixOklch(a: string, b: string, aPct: number): string {
-    return `color-mix(in oklch, ${a} ${aPct}%, ${b})`;
-  }
+  // ── Cascade helpers ─────────────────────────────────────────────────
+  // Mirrors R-side `oklch_*` recipes from R/utils-theme-resolve.R. The
+  // panel runs these client-side so Brand/Accent edits propagate through
+  // every derived field without a server round-trip — values written to
+  // the wire are concrete hex (picker-compatible), not color-mix() strings.
   function neutralBaseline(): string {
     const n = inputs?.neutral as string[] | undefined;
     return n?.[2] ?? "#cbd5e1";
@@ -64,53 +63,93 @@
   function contentInverseBaseline(): string {
     return theme?.content?.inverse ?? "#ffffff";
   }
-  function brandTintedSubtleDivider(brandHex: string): string {
-    return mixOklch(brandHex, neutralBaseline(), 8);
+  function brandTintedSubtleDivider(brandDeepHex: string): string {
+    // Resolver: oklch_mix(neutral_baseline_30%_to_n4, brand_deep, 0.08).
+    // n4 isn't accessible client-side; nudge from neutral[3] toward brand.
+    return oklchMix(neutralBaseline(), brandDeepHex, 0.08);
   }
-  function brandTintedL1Bg(brandHex: string): string {
-    return mixOklch(brandHex, surfaceBaseline(), 15);
+  function brandTintedL1Bg(brandDeepHex: string): string {
+    // Resolver: oklch_mix(surface.base, brand_deep, 0.15) under bold-mode.
+    return oklchMix(surfaceBaseline(), brandDeepHex, 0.15);
   }
-  function strongOnDarkRule(brandHex: string): string {
-    return mixOklch(brandHex, contentInverseBaseline(), 40);
+  function strongOnDarkRule(brandDeepHex: string): string {
+    // Resolver: divider.strong_on_dark = oklch_mix(content.inverse, brand_deep, 0.40).
+    return oklchMix(contentInverseBaseline(), brandDeepHex, 0.40);
   }
-  function accentTintSubtle(accentHex: string): string {
-    return mixOklch(accentHex, surfaceBaseline(), 10);
+  function accentMutedHex(accentHex: string): string {
+    return oklchMix(accentHex, surfaceBaseline(), 0.88);
   }
-  function accentMuted(accentHex: string): string {
-    return mixOklch(accentHex, surfaceBaseline(), 12);
+  function accentTintSubtleHex(accentHex: string): string {
+    return oklchMix(accentHex, surfaceBaseline(), 0.90);
+  }
+  function accentTintMediumHex(accentHex: string): string {
+    return oklchMix(accentHex, surfaceBaseline(), 0.75);
+  }
+  // Per-anchor 7-field SlotBundle derivation — mirrors R's derive_slot_bundle.
+  function deriveSlotBundle(anchorHex: string) {
+    const surface = surfaceBaseline();
+    const fill = anchorHex;
+    const stroke = oklchDarken(anchorHex, 0.10);
+    const fillMuted = oklchMix(anchorHex, surface, 0.65);
+    const strokeMuted = oklchDarken(fillMuted, 0.10);
+    const fillEmphasis = oklchChroma(oklchDarken(anchorHex, 0.05), 0.04);
+    const strokeEmphasis = oklchDarken(anchorHex, 0.20);
+    return { fill, stroke, fillMuted, strokeMuted, fillEmphasis, strokeEmphasis };
+    // text_fg defaults to content.primary; brand changes don't perturb it.
   }
 
   // ── Brand multi-write ────────────────────────────────────────────────
-  // Brand changes cascade everywhere brand_deep lands on the R side: the
-  // header.bold band, the primary-effect mark, title, forest-axis labels,
-  // subtle dividers, and (under bold-mode header) the L1 group bar. Each
-  // downstream path uses setThemeFieldDerived so user-pinned fields are
-  // preserved.
+  // Brand changes cascade through every R-side derivation that reads
+  // brand or brand_deep. Each downstream path is gated by
+  // setThemeFieldDerived so user-pinned fields are preserved.
   function applyBrand(hex: string) {
     setPath(["inputs", "brand"], hex);
-    setDerived(["inputs", "brandDeep"], hex);
-    // brand_deep mirrors brand by default, but if user pinned it, downstream
-    // paths follow the pinned value, not the new brand.
+    // brand_deep defaults to a 15% OKLCH-darkened brand (matches R-side
+    // resolve_inputs_mirrors). If user pinned brand_deep, downstream paths
+    // follow the pin instead of the freshly-derived dark.
     const brandDeep = isOver(["inputs", "brandDeep"])
-      ? ((inputs?.brandDeep as string | undefined) ?? hex)
-      : hex;
+      ? ((inputs?.brandDeep as string | undefined) ?? oklchDarken(hex, 0.15))
+      : oklchDarken(hex, 0.15);
+    setDerived(["inputs", "brandDeep"], brandDeep);
+    cascadeBrand(hex);
     cascadeBrandDeep(brandDeep);
-    setDerived(["series", 0, "fill"], hex);
   }
   function applyBrandDeep(hex: string) {
     setPath(["inputs", "brandDeep"], hex);
     cascadeBrandDeep(hex);
   }
+  /** Brand drives the primary-effect series anchor (full 7-field bundle). */
+  function cascadeBrand(brand: string) {
+    const bundle = deriveSlotBundle(brand);
+    setDerived(["series", 0, "fill"],            bundle.fill);
+    setDerived(["series", 0, "stroke"],          bundle.stroke);
+    setDerived(["series", 0, "fillMuted"],       bundle.fillMuted);
+    setDerived(["series", 0, "strokeMuted"],     bundle.strokeMuted);
+    setDerived(["series", 0, "fillEmphasis"],    bundle.fillEmphasis);
+    setDerived(["series", 0, "strokeEmphasis"],  bundle.strokeEmphasis);
+    // Mirror onto inputs.seriesAnchors[0] so source-export sees the edit.
+    const anchors = (inputs?.seriesAnchors as string[] | undefined)?.slice() ?? [];
+    if (anchors.length > 0 && anchors[0] !== brand) {
+      anchors[0] = brand;
+      setDerived(["inputs", "seriesAnchors"], anchors);
+    }
+  }
+  /** Brand-deep drives every Tier-3 binding the R resolver reads brand_deep into. */
   function cascadeBrandDeep(brandDeep: string) {
+    const strongRule = strongOnDarkRule(brandDeep);
     setDerived(["header", "bold", "bg"], brandDeep);
-    setDerived(["header", "bold", "rule"], strongOnDarkRule(brandDeep));
+    setDerived(["header", "bold", "rule"], strongRule);
+    setDerived(["columnGroup", "bold", "bg"], brandDeep);
+    setDerived(["columnGroup", "bold", "rule"], strongRule);
+    setDerived(["divider", "strongOnDark"], strongRule);
     setDerived(["text", "title", "fg"], brandDeep);
     setDerived(["plot", "axisLabel", "fg"], brandDeep);
     setDerived(["plot", "tickLabel", "fg"], brandDeep);
     const tintedSubtle = brandTintedSubtleDivider(brandDeep);
     setDerived(["divider", "subtle"], tintedSubtle);
     setDerived(["cell", "border"], tintedSubtle);
-    // L1.bg is variant-aware. Bold header → brand-mix, light header → accent.
+    // L1.bg is variant-aware. Bold header → brand-mix, light header → accent
+    // (the Accent multi-write covers light-mode L1 below).
     if (theme?.variants?.headerStyle === "bold") {
       setDerived(["rowGroup", "L1", "bg"], brandTintedL1Bg(brandDeep));
     }
@@ -119,12 +158,14 @@
   function resetBrandDeep() {
     clearOver(["inputs", "brandDeep"]);
     const brand = (inputs?.brand as string | undefined) ?? "#0891B2";
-    applyBrandDeep(brand);
+    // The default derived value: 15% darker than brand. Re-apply the full
+    // brand_deep cascade so all downstream fields refresh in lockstep.
+    applyBrandDeep(oklchDarken(brand, 0.15));
   }
   function resetSeriesPrimary() {
     clearOver(["series", 0, "fill"]);
     const brand = (inputs?.brand as string | undefined) ?? "#0891B2";
-    setDerived(["series", 0, "fill"], brand);
+    cascadeBrand(brand);
   }
   function resetTitleFg() {
     clearOver(["text", "title", "fg"]);
@@ -152,8 +193,8 @@
   function resetL1Bg() {
     clearOver(["rowGroup", "L1", "bg"]);
     const value = theme?.variants?.headerStyle === "bold"
-      ? brandTintedL1Bg((inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2")
-      : ((theme?.accent?.tintSubtle as string | undefined) ?? accentTintSubtle((inputs?.accent as string | undefined) ?? "#8B5CF6"));
+      ? brandTintedL1Bg((inputs?.brandDeep as string | undefined) ?? oklchDarken((inputs?.brand as string | undefined) ?? "#0891B2", 0.15))
+      : ((theme?.accent?.tintSubtle as string | undefined) ?? accentTintSubtleHex((inputs?.accent as string | undefined) ?? "#8B5CF6"));
     setDerived(["rowGroup", "L1", "bg"], value);
   }
   function resetHeaderBoldBg() {
@@ -163,19 +204,37 @@
   }
 
   // ── Accent multi-write ──────────────────────────────────────────────
+  // Same shape as Brand: cascade through every R-side derivation that
+  // reads accent or accent_deep, gated by setThemeFieldDerived.
   function applyAccent(hex: string) {
     setPath(["inputs", "accent"], hex);
-    setDerived(["accent", "default"], hex);
-    setDerived(["accent", "muted"], accentMuted(hex));
-    setDerived(["accent", "tintSubtle"], accentTintSubtle(hex));
-    setDerived(["row", "accent", "fg"], hex);
-    setDerived(["row", "accent", "markerFill"], hex);
-    setDerived(["row", "hover", "bg"], accentMuted(hex));
-    setDerived(["row", "selected", "bg"], accentMuted(hex));
+    // accent_deep mirrors accent darkened by 15% (matches resolver).
+    const accentDeep = isOver(["inputs", "accentDeep"])
+      ? ((inputs?.accentDeep as string | undefined) ?? oklchDarken(hex, 0.15))
+      : oklchDarken(hex, 0.15);
+    setDerived(["inputs", "accentDeep"], accentDeep);
+    cascadeAccent(hex);
+  }
+  function cascadeAccent(accent: string) {
+    const muted       = accentMutedHex(accent);
+    const tintSubtle  = accentTintSubtleHex(accent);
+    const tintMedium  = accentTintMediumHex(accent);
+    setDerived(["accent", "default"],     accent);
+    setDerived(["accent", "muted"],       muted);
+    setDerived(["accent", "tintSubtle"],  tintSubtle);
+    setDerived(["accent", "tintMedium"],  tintMedium);
+    setDerived(["row", "accent", "fg"],         accent);
+    setDerived(["row", "accent", "markerFill"], accent);
+    setDerived(["row", "hover", "bg"],     muted);
+    setDerived(["row", "selected", "bg"],  muted);
+    // status.info defaults to accent when NA on the R side.
+    if (!inputs?.statusInfo) {
+      setDerived(["status", "info"], accent);
+    }
     // Light-mode L1 is accent-derived. Bold-mode L1 follows brand instead
     // (handled by Brand multi-write).
     if (theme?.variants?.headerStyle !== "bold") {
-      setDerived(["rowGroup", "L1", "bg"], accentTintSubtle(hex));
+      setDerived(["rowGroup", "L1", "bg"], tintSubtle);
     }
   }
 

@@ -92,7 +92,11 @@ test_that("per-token spacing override preserved across density change", {
 test_that("Tier 1 NA mirrors fire", {
   inp <- ThemeInputs(brand = "#123456")
   t <- resolve_theme(WebTheme(inputs = inp))
-  expect_equal(toupper(t@inputs@brand_deep), "#123456")
+  # brand_deep is the OKLCH-darkened brand by default — a literal mirror
+  # would make "deep" a misnomer. Resolved value must be a hex but NOT
+  # equal to brand (it's strictly darker).
+  expect_match(t@inputs@brand_deep, "^#[0-9A-Fa-f]{6}$")
+  expect_false(identical(toupper(t@inputs@brand_deep), "#123456"))
   expect_equal(t@inputs@font_display, t@inputs@font_body)
 })
 

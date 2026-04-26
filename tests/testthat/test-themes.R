@@ -69,9 +69,17 @@ test_that("preset overrides survive resolution", {
   expect_equal(jama@spacing@axis_gap, DENSITY_PRESETS$compact$axis_gap)
 })
 
-test_that("brand_deep mirrors brand by default", {
+test_that("brand_deep defaults to a darker version of brand", {
   d <- web_theme_default()
-  expect_equal(d@inputs@brand_deep, d@inputs@brand)
+  # The default is `oklch_darken(brand, 0.15)` so brand_deep is strictly
+  # darker — not a literal copy of brand. (Authors who want literal
+  # mirroring set brand_deep = brand explicitly.)
+  expect_match(d@inputs@brand_deep, "^#[0-9A-Fa-f]{6}$")
+  expect_false(identical(d@inputs@brand_deep, d@inputs@brand))
+  # Sanity: the OKLCH lightness of brand_deep should be lower than brand.
+  brand_L      <- to_oklch(d@inputs@brand)[1, 1]
+  brand_deep_L <- to_oklch(d@inputs@brand_deep)[1, 1]
+  expect_lt(brand_deep_L, brand_L)
 })
 
 test_that("brand_deep can be set explicitly per preset", {

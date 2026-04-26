@@ -40,8 +40,9 @@ test_that("set_inputs updates Tier 1 fields and re-resolves", {
   t2 <- set_inputs(t, brand = "#FF0000", accent = "#00FF00")
   expect_equal(toupper(t2@inputs@brand), "#FF0000")
   expect_equal(toupper(t2@inputs@accent), "#00FF00")
-  # Brand_deep mirror fires after resolve.
-  expect_equal(toupper(t2@inputs@brand_deep), "#FF0000")
+  # Brand_deep is the darkened-brand mirror (not a literal copy).
+  expect_match(t2@inputs@brand_deep, "^#[0-9A-Fa-f]{6}$")
+  expect_false(identical(toupper(t2@inputs@brand_deep), "#FF0000"))
   # Series rebuilt.
   expect_match(t2@series[[1]]@fill, "^#")
 })

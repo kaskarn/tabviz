@@ -48,9 +48,13 @@ fill_na <- function(obj, defaults) {
 
 
 # Mirror Tier 1 NA fields to their primary inputs.
+# brand_deep and accent_deep default to a 15% OKLCH-darkened version of
+# their primary so the "deep" companion actually reads as deep — not just
+# a name alias for the same color. Authors who want literal mirroring can
+# set brand_deep = brand explicitly.
 resolve_inputs_mirrors <- function(inputs) {
-  if (is.na(inputs@brand_deep))    inputs@brand_deep    <- inputs@brand
-  if (is.na(inputs@accent_deep))   inputs@accent_deep   <- inputs@accent
+  if (is.na(inputs@brand_deep))    inputs@brand_deep    <- oklch_darken(inputs@brand, 0.15)
+  if (is.na(inputs@accent_deep))   inputs@accent_deep   <- oklch_darken(inputs@accent, 0.15)
   if (is.na(inputs@font_display))  inputs@font_display  <- inputs@font_body
   if (is.na(inputs@status_info))   inputs@status_info   <- inputs@accent
   inputs
