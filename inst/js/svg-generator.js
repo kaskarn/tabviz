@@ -21,7 +21,7 @@
       font-weight="400"
       font-style="italic"
       fill="${n.content.muted}">${wt(t.labels.footnote)}</text>`)}return o.join(`
-`)}function Mn(t,e,n,o,s,i,r,c,f=!0){var M,b,N;const h=[],a=e+1,l=a===1?c.rowGroup.L1:a===2?c.rowGroup.L2:c.rowGroup.L3,d=Mt(((M=l.text)==null?void 0:M.size)??c.text.body.size),u=((b=l.text)==null?void 0:b.weight)??(a===1?600:a===2?500:400),g=((N=l.text)==null?void 0:N.italic)??!1;let p=l.bg??null;const A=l.borderBottom??!1;if(!p){const E=c.accent.default,m=a===1?.15:a===2?.1:.06,$=E.replace("#",""),x=parseInt($.substring(0,2),16),y=parseInt($.substring(2,4),16),D=parseInt($.substring(4,6),16);p=`rgba(${x}, ${y}, ${D}, ${m})`}const w=s+i/2,_=e*(c.rowGroup.indentPerLevel??it.INDENT_PER_LEVEL),L=l.bg??null;(f||L)&&h.push(`<rect x="${o}" y="${s}"
+`)}function Mn(t,e,n,o,s,i,r,c,f=!0){var M,b,N;const h=[],a=e+1,l=a===1?c.rowGroup.L1:a===2?c.rowGroup.L2:c.rowGroup.L3,d=Mt(((M=l.text)==null?void 0:M.size)??c.text.body.size),u=((b=l.text)==null?void 0:b.weight)??(a===1?600:a===2?500:400),g=((N=l.text)==null?void 0:N.italic)??!1;let p=l.bg??null;const A=l.borderBottom??!1;if(!p){const E=c.accent.default,m=a===1?.15:a===2?.1:.06,$=E.replace("#",""),x=parseInt($.substring(0,2),16),y=parseInt($.substring(2,4),16),D=parseInt($.substring(4,6),16);p=`rgba(${x}, ${y}, ${D}, ${m})`}const w=s+i/2,_=e*(c.rowGroup.indentPerLevel??it.INDENT_PER_LEVEL),L=l.bg??null;f&&h.push(`<rect x="${o}" y="${s}"
       width="${r}" height="${i}"
       fill="${L??p}"/>`),A&&h.push(`<line x1="${o}" x2="${o+r}" y1="${s+i}" y2="${s+i}"
       stroke="${c.divider.subtle}" stroke-width="1" opacity="0.5"/>`);const T=g?' font-style="italic"':"",G=o+it.TEXT_PADDING+_;if(h.push(`<text class="cell-text" x="${G}" y="${w}"

@@ -1675,13 +1675,20 @@
                : theme.rowGroup.L3)
             : null}
           <!--
-            Group header background: explicit theme.rowGroup.LN.bg always
-            wins (panel edits show even with banding active). Otherwise we
-            only paint a derived tint when banding isn't already filling
-            the row, so the band color reads as continuous.
+            Group header background. When banding is already painting THIS
+            row (bandIndexes[i] !== null — banding cycles at this group's
+            depth), the band owns the bg and we skip the explicit L1.bg
+            paint. Without that guard, every default-themed table double-
+            paints: banding cycle + group_tier.bg stack on the same row,
+            and the L1 bar feels redundant against the banded cycle. When
+            banding isn't covering this row, the explicit groupTier.bg
+            wins (panel edits stay visible), with a derived tint as the
+            final fallback.
           -->
           {@const groupBg = isGroupHeader
-            ? (groupTier?.bg ?? (bandIndexes[i] == null ? getGroupBackground(rowDepth + 1, theme) : undefined))
+            ? (bandIndexes[i] != null
+                ? undefined
+                : (groupTier?.bg ?? getGroupBackground(rowDepth + 1, theme)))
             : undefined}
           {@const groupLevelBorder = isGroupHeader && theme
             ? (rowDepth + 1 === 1

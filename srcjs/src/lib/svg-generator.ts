@@ -1437,13 +1437,14 @@ function renderGroupHeader(
   const textY = y + rowHeight / 2;
   const indent = depth * (theme.rowGroup.indentPerLevel ?? SPACING.INDENT_PER_LEVEL);
 
-  // Group header background. Banding's row-paint pass usually fills the
-  // group header band so we skip the derived tint to keep the band color
-  // continuous with member rows. But an *explicit* theme.rowGroup.LN.bg
-  // override always wins — otherwise panel edits to L1 bg would be silent
-  // when banding is on.
+  // Group header background. When the caller passes renderBackground=false,
+  // banding's row-paint pass is already filling this row at the group's
+  // depth — paint nothing so the band cycle owns the bg (avoids the
+  // double-paint redundancy where L1.bg stacks on top of the banded color).
+  // Users who want a custom L1 bar with banding also active should switch
+  // banding mode (e.g. "row" or "none") so the bar isn't subsumed.
   const explicitTierBg = tier.bg ?? null;
-  if (renderBackground || explicitTierBg) {
+  if (renderBackground) {
     lines.push(`<rect x="${x}" y="${y}"
       width="${totalWidth}" height="${rowHeight}"
       fill="${explicitTierBg ?? background}"/>`);
