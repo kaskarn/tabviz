@@ -1,5 +1,23 @@
 # tabviz 0.26.0.9000
 
+## Cascade completion (post-v2 polish round 2)
+
+* **`brand_deep` reaches further.** Plot title color, forest axis labels
+  + tick labels, and subtle cell borders (8% mix into the neutral
+  divider) now derive from `inputs@brand_deep`. The L1 group bar also
+  picks up a 15% brand_deep tint when the active variant is `header_style
+  = "bold"` (preserves the chrome/data wall — brand only "leaks" into
+  chrome when the user has chosen a brand-forward header style). Override
+  any of these to pin them.
+* **Bold-mode header rule is now visible.** New Tier-2 helper
+  `divider@strong_on_dark` (mix of `content.inverse` and `brand_deep`)
+  feeds `header@bold@rule` and `column_group@bold@rule`. Previously
+  these were set to `inputs@brand_deep` — same color as the bg, so the
+  rule was invisible.
+* **Wire shape additions:** `theme.divider.strongOnDark`. The
+  `theme.text.title.fg`, `theme.plot.axisLabel.fg`, `theme.plot.tickLabel.fg`
+  fields already existed but now default to `inputs.brandDeep`.
+
 ## Breaking changes (post-v2 polish)
 
 * **Summary slot retired.** `theme@summary` and `inputs@summary_anchor`

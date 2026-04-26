@@ -169,8 +169,9 @@ serialize_theme <- function(theme) {
       inverse   = theme@content@inverse
     ),
     divider = list(
-      subtle = theme@divider@subtle,
-      strong = theme@divider@strong
+      subtle       = theme@divider@subtle,
+      strong       = theme@divider@strong,
+      strongOnDark = theme@divider@strong_on_dark
     ),
     accent = list(
       default     = theme@accent@default,

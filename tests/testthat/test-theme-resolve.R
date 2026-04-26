@@ -162,6 +162,36 @@ test_that("plot scaffolding resolves with transparent bg by default", {
   expect_equal(t@plot@reference, t@divider@strong)
 })
 
+test_that("Dividers carries strong_on_dark for bold-mode header rule", {
+  t <- resolved_default()
+  expect_match(t@divider@strong_on_dark, "^#")
+  # Bold-mode header rule reads strong_on_dark, not brand_deep (would be
+  # invisible against the brand_deep header bg).
+  expect_equal(t@header@bold@rule, t@divider@strong_on_dark)
+  expect_false(identical(t@header@bold@rule, t@header@bold@bg))
+  expect_equal(t@column_group@bold@rule, t@divider@strong_on_dark)
+})
+
+test_that("title and forest-axis labels default to brand_deep fg", {
+  t <- resolved_default()
+  expect_equal(t@text@title@fg, t@inputs@brand_deep)
+  expect_equal(t@plot@axis_label@fg, t@inputs@brand_deep)
+  expect_equal(t@plot@tick_label@fg, t@inputs@brand_deep)
+})
+
+test_that("L1 group bg is variant-aware (brand-mix under bold; tint under light)", {
+  light_t <- resolve_theme(WebTheme())
+  bold_t  <- resolve_theme(WebTheme(variants = ThemeVariants(header_style = "bold")))
+  # Under light variant, L1 stays on accent.tint_subtle.
+  expect_equal(light_t@row_group@L1@bg, light_t@accent@tint_subtle)
+  # Under bold variant, L1 picks up a brand_deep tint and is no longer
+  # equal to accent.tint_subtle (preserves the chrome/data wall — brand
+  # only "leaks" into chrome when the user has chosen a brand-forward
+  # header style).
+  expect_match(bold_t@row_group@L1@bg, "^#")
+  expect_false(identical(bold_t@row_group@L1@bg, bold_t@accent@tint_subtle))
+})
+
 test_that("resolve_chrome and resolve_data don't cross subsystems", {
   # Chrome derivation should not look at series_anchors.
   inp1 <- ThemeInputs(series_anchors = c("#FF0000"))

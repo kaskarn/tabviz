@@ -164,16 +164,24 @@ Content <- new_class(
   validator = make_color_validator(c("primary", "secondary", "muted", "inverse"))
 )
 
-#' Dividers (Tier 2): rule and gridline tones (subtle/strong pair).
+#' Dividers (Tier 2): rule and gridline tones.
+#'
+#' `subtle` powers cell hairlines and gridlines. `strong` powers header
+#' rules, group rules, and the forest-plot axis line / tick / reference
+#' lines on light surfaces. `strong_on_dark` is the bold-mode counterpart
+#' (rule on a brand_deep header band) — must contrast against `brand_deep`,
+#' not against the table surface.
+#'
 #' @usage NULL
 #' @export
 Dividers <- new_class(
   "Dividers",
   properties = list(
-    subtle = new_property(class_character, default = NA_character_),
-    strong = new_property(class_character, default = NA_character_)
+    subtle         = new_property(class_character, default = NA_character_),
+    strong         = new_property(class_character, default = NA_character_),
+    strong_on_dark = new_property(class_character, default = NA_character_)
   ),
-  validator = make_color_validator(c("subtle", "strong"))
+  validator = make_color_validator(c("subtle", "strong", "strong_on_dark"))
 )
 
 #' AccentRoles (Tier 2): chrome accent + tint ramp.

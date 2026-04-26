@@ -77,10 +77,21 @@ resolve_chrome <- function(inputs) {
 
   # divider.subtle must read distinctly against BOTH surface.base (n[2])
   # and surface.muted (n[3]) — using n[3] alone makes borders invisible
-  # on banded rows. Pull it ~30% toward n[4] to get a perceptible line.
+  # on banded rows. Pull ~30% toward n[4] for the neutral baseline, then
+  # nudge ~8% toward brand_deep so cell hairlines pick up a faint identity
+  # tint without muddying out on saturated brands.
+  # Tolerate NA brand_deep so callers that bypass resolve_inputs_mirrors
+  # (notably some unit tests) still produce a valid Dividers object.
+  brand_for_tint <- if (is.na(inputs@brand_deep)) inputs@brand else inputs@brand_deep
+  divider_neutral <- oklch_mix(n[3], n[4], 0.30)
   divider <- Dividers(
-    subtle = oklch_mix(n[3], n[4], 0.30),
-    strong = n[4]
+    subtle         = oklch_mix(divider_neutral, brand_for_tint, 0.08),
+    strong         = n[4],
+    # Rule sitting on a brand_deep header band needs to contrast AGAINST
+    # brand_deep, not against the table surface. Mix from content.inverse
+    # (which here = n[1]) toward brand_deep at 0.4 — light enough to read,
+    # tinted enough to feel intentional rather than an overlay.
+    strong_on_dark = oklch_mix(n[1], brand_for_tint, 0.40)
   )
 
   accent <- AccentRoles(
@@ -145,6 +156,8 @@ resolve_data <- function(inputs, surface_base, content_primary, existing_series)
 resolve_text <- function(inputs, content) {
   body <- inputs@font_body
   display <- inputs@font_display
+  # Tolerate NA brand_deep for callers that bypass resolve_inputs_mirrors.
+  brand_deep <- if (is.na(inputs@brand_deep)) inputs@brand else inputs@brand_deep
 
   fill_text <- function(role, defaults) {
     for (p in names(defaults)) {
@@ -157,7 +170,10 @@ resolve_text <- function(inputs, content) {
   }
 
   TextRoles(
-    title    = TextRole(family = display, size = "1.25rem",   weight = 600, figures = "proportional", fg = content@primary,   italic = FALSE),
+    # Title fg defaults to brand_deep — large, prominent text is the
+    # highest-leverage place for the brand-deep identity color to land.
+    # Override theme@text@title@fg for a different tone.
+    title    = TextRole(family = display, size = "1.25rem",   weight = 600, figures = "proportional", fg = brand_deep,        italic = FALSE),
     subtitle = TextRole(family = body,    size = "1rem",      weight = 400, figures = "proportional", fg = content@secondary, italic = FALSE),
     body     = TextRole(family = body,    size = "0.875rem",  weight = 400, figures = "tabular",      fg = content@primary,   italic = FALSE),
     cell     = TextRole(family = body,    size = "0.875rem",  weight = 400, figures = "tabular",      fg = content@primary,   italic = FALSE),
@@ -225,7 +241,9 @@ resolve_components <- function(theme) {
   hdr@bold <- fill_na(hdr@bold, list(
     bg   = inputs@brand_deep,
     fg   = content@inverse,
-    rule = inputs@brand_deep
+    # Rule on a brand_deep header band must contrast AGAINST the band, not
+    # blend into it. divider@strong_on_dark is the inverse-tinted helper.
+    rule = divider@strong_on_dark
   ))
   hdr@text <- compose_text(
     hdr@text,
@@ -243,7 +261,7 @@ resolve_components <- function(theme) {
   cg@bold <- fill_na(cg@bold, list(
     bg   = inputs@brand_deep,
     fg   = content@inverse,
-    rule = inputs@brand_deep
+    rule = divider@strong_on_dark
   ))
   cg@text <- compose_text(
     cg@text,
@@ -252,9 +270,19 @@ resolve_components <- function(theme) {
   theme@column_group <- cg
 
   # -- Row groups: L1 strongest, L3 lightest. --
+  # L1.bg is variant-aware: under bold-mode headers it harmonizes with the
+  # brand_deep header band (15% brand_deep mixed into surface.base); under
+  # light-mode it stays on the chrome-accent tint as before. This keeps the
+  # chrome/data wall intact (brand only "leaks" into chrome when the user
+  # has already chosen a brand-forward header style).
   rg <- theme@row_group
+  l1_default_bg <- if (theme@variants@header_style == "bold") {
+    oklch_mix(surface@base, inputs@brand_deep, 0.15)
+  } else {
+    accent@tint_subtle
+  }
   rg@L1 <- fill_na(rg@L1, list(
-    bg   = accent@tint_subtle,
+    bg   = l1_default_bg,
     fg   = content@primary,
     rule = divider@strong
   ))
@@ -322,6 +350,12 @@ resolve_components <- function(theme) {
     gridline  = divider@subtle,
     reference = divider@strong
   ))
+  # Axis + tick label fg defaults to brand_deep so the forest plot picks up
+  # the same identity tone the title does. Pre-fill BEFORE compose_text so
+  # the brand_deep value blocks the text-role default (content@secondary /
+  # content@muted) but other NA fields still flow through from the role.
+  if (is.na(ps@axis_label@fg)) ps@axis_label@fg <- inputs@brand_deep
+  if (is.na(ps@tick_label@fg)) ps@tick_label@fg <- inputs@brand_deep
   ps@axis_label <- compose_text(ps@axis_label, text@label)
   ps@tick_label <- compose_text(ps@tick_label, text@tick)
   theme@plot <- ps
@@ -365,7 +399,9 @@ resolve_theme <- function(theme) {
     muted = chrome$content@muted, inverse = chrome$content@inverse
   ))
   theme@divider <- fill_na(theme@divider, list(
-    subtle = chrome$divider@subtle, strong = chrome$divider@strong
+    subtle         = chrome$divider@subtle,
+    strong         = chrome$divider@strong,
+    strong_on_dark = chrome$divider@strong_on_dark
   ))
   theme@accent <- fill_na(theme@accent, list(
     default = chrome$accent@default, muted = chrome$accent@muted,
