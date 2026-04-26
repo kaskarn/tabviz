@@ -29,14 +29,14 @@
    * axis → layout) so the panel reads like the package's mental model.
    */
   const tabs: { id: string; label: string; kind?: "normal" | "advanced" }[] = [
-    { id: "basics",   label: "Basics" },
+    { id: "labels",   label: "Labels" },
     { id: "theme",    label: "Theme" },
     { id: "layout",   label: "Layout" },
     { id: "spacing",  label: "Spacing", kind: "advanced" },
-    { id: "marks",    label: "Marks",   kind: "advanced" },
+    { id: "viz",      label: "Viz",     kind: "advanced" },
     { id: "text",     label: "Text",    kind: "advanced" },
   ];
-  let activeTabId = $state<string>("basics");
+  let activeTabId = $state<string>("labels");
 
   let panelRef = $state<HTMLElement | null>(null);
   let lastFocused: Element | null = null;
@@ -203,7 +203,7 @@
             id="settings-panel-{tab.id}"
             aria-labelledby="settings-tab-{tab.id}"
           >
-            {#if tab.id === "basics"}
+            {#if tab.id === "labels"}
               <BasicsControl {store} />
             {:else if tab.id === "theme"}
               <ThemeControl {store} />
@@ -211,7 +211,7 @@
               <V2LayoutControl {store} />
             {:else if tab.id === "spacing"}
               <V2SpacingControl {store} />
-            {:else if tab.id === "marks"}
+            {:else if tab.id === "viz"}
               <V2MarksControl {store} />
             {:else if tab.id === "text"}
               <V2TextControl {store} />

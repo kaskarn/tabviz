@@ -1,15 +1,16 @@
 <script lang="ts">
-  // v2 Layout tab: per-table variants + container border.
-  // Banding lives on the Basics tab (BandingControl) — that's the path the
-  // renderer reads via store.effectiveBanding. We don't duplicate it here.
-  // Density is variant-dispatched in R but the resolved spacing tokens are
-  // what the renderer actually reads, so the density picker writes the full
-  // SpacingTokens preset client-side too.
+  // v2 Layout tab: per-table variants + container border + banding.
+  // Banding moved here from the Labels tab in C2 — it's a structural
+  // choice (alternates rows by group / by index), not an annotation.
+  // Density is variant-dispatched in R but the resolved spacing tokens
+  // are what the renderer actually reads, so the density picker writes
+  // the full SpacingTokens preset client-side too.
   import type { ForestStore } from "$stores/forestStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import BooleanField from "./BooleanField.svelte";
   import NumberField from "./NumberField.svelte";
+  import BandingControl from "./BandingControl.svelte";
 
   interface Props {
     store: ForestStore;
@@ -117,3 +118,5 @@
     />
   </SettingsSection>
 {/if}
+
+<BandingControl {store} />

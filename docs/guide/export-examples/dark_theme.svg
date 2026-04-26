@@ -18,9 +18,6 @@
 <line x1="12" x2="488"
       y1="48" y2="48"
       stroke="#45475A" stroke-width="2"/>
-<rect x="12" y="48"
-        width="476" height="32"
-        fill="#252538"/>
 <text class="cell-text" x="22" y="64"
         font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
         font-size="14.7px"
@@ -37,10 +34,10 @@
         stroke="#45475A" stroke-width="2"/>
 <rect x="12" y="80"
             width="476" height="24"
-            fill="#212133"/>
+            fill="#232436"/>
 <rect x="12" y="128"
             width="476" height="24"
-            fill="#212133"/>
+            fill="#232436"/>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="80" y2="176"
     stroke="#898EA5" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 

@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
-  import BandingControl from "./BandingControl.svelte";
   import WatermarkControl from "./WatermarkControl.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import TextField from "./TextField.svelte";
@@ -21,10 +20,9 @@
 </script>
 
 <!--
-  Basics tab: table-wide display controls that don't belong to a narrower
-  theming category (colors / typography / spacing / shapes / axis / layout).
-  Groups labels, banding and watermark; future additions that fit the
-  "table display" bucket (row numbering, empty-state text, …) land here.
+  Labels tab: plot-level annotation text + watermark.
+  Banding moved to the Layout tab in C2 (banding is a structural choice,
+  not an annotation).
 -->
 <SettingsSection
   title="Labels"
@@ -59,5 +57,4 @@
     onchange={(v) => store.setLabel("footnote", v)}
   />
 </SettingsSection>
-<BandingControl {store} />
 <WatermarkControl {store} />
