@@ -266,6 +266,41 @@ test_that("finalize_enable_themes applies named list overrides to @name", {
   expect_true("Modern" %in% names_out)
 })
 
+test_that("finalize_enable_themes preserves categorized 2-level lists", {
+  active <- web_theme_cochrane()
+  cats <- list(
+    Editorial = list(cochrane = web_theme_cochrane(), lancet = web_theme_lancet()),
+    Other     = list(jama = web_theme_jama(), dark = web_theme_dark())
+  )
+  resolved <- tabviz:::finalize_enable_themes(cats, active)
+  expect_equal(names(resolved), c("Editorial", "Other"))
+  expect_true(all(vapply(resolved, is.list, logical(1))))
+  # Active is in Editorial → no auto-include category prepended.
+  expect_false("Current" %in% names(resolved))
+})
+
+test_that("finalize_enable_themes prepends 'Current' when active not in any category", {
+  active <- web_theme_lancet()
+  cats <- list(
+    Other = list(jama = web_theme_jama(), dark = web_theme_dark())
+  )
+  resolved <- tabviz:::finalize_enable_themes(cats, active)
+  expect_equal(names(resolved), c("Current", "Other"))
+  expect_equal(resolved$Current[[1]]@name, "lancet")
+})
+
+test_that("finalize_enable_themes applies name overrides inside categories", {
+  active <- web_theme_cochrane()
+  cats <- list(
+    Journal = list(JAMA = web_theme_jama(), Lancet = web_theme_lancet())
+  )
+  resolved <- tabviz:::finalize_enable_themes(cats, active)
+  # Within the Journal category, names should reflect the user's keys.
+  inner_names <- vapply(resolved$Journal, function(t) t@name, character(1))
+  expect_true("JAMA"   %in% inner_names)
+  expect_true("Lancet" %in% inner_names)
+})
+
 test_that("selectable_themes sets spec interaction and auto-includes active", {
   spec <- make_spec()
   spec@theme <- web_theme_jama()

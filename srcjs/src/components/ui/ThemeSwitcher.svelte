@@ -1,14 +1,24 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
   import type { WebTheme } from "$types";
-  import { THEME_NAMES, THEME_LABELS, THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
+  import { THEME_NAMES, THEME_LABELS, type ThemeName } from "$lib/theme-presets";
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
   import ConfirmDialog from "./ConfirmDialog.svelte";
 
+  // The wire shape from R supports two forms:
+  // * Flat:        Record<string, WebTheme>
+  // * Categorized: Record<string, Record<string, WebTheme>>
+  // The categorized form makes each top-level key a tab label in the dropdown.
+  // Flat form renders the dropdown without tabs (no visual hierarchy needed
+  // for a small set of themes).
+  type FlatThemes = Record<string, WebTheme>;
+  type CategorizedThemes = Record<string, Record<string, WebTheme>>;
+  type ThemesInput = FlatThemes | CategorizedThemes;
+
   interface Props {
     store: ForestStore;
-    availableThemes?: Record<string, WebTheme> | null;  // Custom themes to show (undefined = all, null = none)
+    availableThemes?: ThemesInput | null;  // undefined = all built-ins, null = hidden
     onThemeChange?: (themeName: ThemeName) => void;
   }
 
@@ -19,56 +29,95 @@
 
   const currentTheme = $derived(store.spec?.theme?.name ?? "default");
 
-  // Determine which themes to show
-  // If availableThemes is undefined, show all preset themes
-  // If availableThemes is an object, show those themes
+  // Detect categorized vs flat. A v2 WebTheme always carries `schemaVersion`
+  // on the wire; a category sub-object never does. (Falls back to a
+  // structural check — has the inner value `surface` / `name` properties? —
+  // for resilience against future wire-shape tweaks.)
+  function isThemeShaped(v: unknown): v is WebTheme {
+    if (!v || typeof v !== "object") return false;
+    const o = v as Record<string, unknown>;
+    return "schemaVersion" in o || "surface" in o || "colors" in o;
+  }
+  const categorized = $derived.by((): boolean => {
+    if (!availableThemes) return false;
+    const first = Object.values(availableThemes)[0];
+    return !!first && typeof first === "object" && !isThemeShaped(first);
+  });
+
+  // Active tab index when categorized. Reset to 0 when the categorization
+  // shape flips (e.g. user swaps spec).
+  let activeCategoryIdx = $state(0);
+  $effect(() => {
+    void availableThemes;
+    activeCategoryIdx = 0;
+  });
+
+  // Tab strip labels (categorized only).
+  const categories = $derived.by((): string[] => {
+    if (!categorized || !availableThemes) return [];
+    return Object.keys(availableThemes);
+  });
+
+  // Theme entries to render below the tab strip — filtered to the active
+  // category when categorized, full list otherwise.
   const themeEntries = $derived.by((): [string, string][] => {
     if (availableThemes === undefined || availableThemes === null) {
-      // Use all preset themes
+      // Use all preset names (built-in fallback).
       return THEME_NAMES.map(name => [name, THEME_LABELS[name]]);
     }
-    // Use provided themes - get name from each theme object or use key
-    return Object.entries(availableThemes).map(([key, theme]) => {
+    if (categorized) {
+      const catName = categories[activeCategoryIdx] ?? categories[0];
+      const themesInCat = (availableThemes as CategorizedThemes)[catName] ?? {};
+      return Object.entries(themesInCat).map(([key, theme]) => {
+        const label = theme.name
+          ? (THEME_LABELS[theme.name as ThemeName] ?? theme.name)
+          : key;
+        return [key, label];
+      });
+    }
+    return Object.entries(availableThemes as FlatThemes).map(([key, theme]) => {
       const label = theme.name
-        ? THEME_LABELS[theme.name as ThemeName] ?? theme.name
+        ? (THEME_LABELS[theme.name as ThemeName] ?? theme.name)
         : key;
       return [key, label];
     });
   });
 
+  // Locate a theme across the wire-shape (handles both flat and categorized).
+  function lookupTheme(name: string): WebTheme | undefined {
+    if (!availableThemes) return undefined;
+    if (categorized) {
+      for (const cat of Object.values(availableThemes as CategorizedThemes)) {
+        if (name in cat) return cat[name];
+      }
+      return undefined;
+    }
+    return (availableThemes as FlatThemes)[name];
+  }
+
   function closeDropdown() {
     dropdownOpen = false;
   }
 
-  /**
-   * Pending theme name when the user has triggered a swap but we're waiting
-   * on confirmation because there are in-panel edits. Cleared on confirm
-   * or cancel. `null` means no pending swap.
-   */
   let pendingTheme = $state<string | null>(null);
 
   function applyTheme(themeName: string) {
     if (onThemeChange) {
       onThemeChange(themeName as ThemeName);
-    } else if (availableThemes && themeName in availableThemes) {
+      return;
+    }
+    const theme = lookupTheme(themeName);
+    if (theme && store.spec) {
       // Custom-theme path: apply the supplied WebTheme directly, preserving
       // interactive column/row edits that setSpec would wipe.
-      const theme = availableThemes[themeName];
-      if (store.spec) {
-        store.setThemeObject(theme);
-      }
-    } else {
-      // Default path: swap to a named preset.
-      store.setTheme(themeName as ThemeName);
+      store.setThemeObject(theme);
+      return;
     }
+    // Default path: swap to a named preset (built-in fallback).
+    store.setTheme(themeName as ThemeName);
   }
 
   function selectTheme(themeName: string) {
-    // If there are in-panel theme edits, defer the swap and surface the
-    // in-widget confirm dialog. Using window.confirm() here is not viable:
-    // htmlwidget host environments (RStudio viewer, sandboxed iframes) often
-    // auto-dismiss native dialogs, which would silently block every theme
-    // swap while we waited on user input that never arrived.
     if (store.hasThemeEdits) {
       pendingTheme = themeName;
       closeDropdown();
@@ -82,10 +131,6 @@
     if (pendingTheme !== null) {
       const target = pendingTheme;
       applyTheme(target);
-      // Close the dialog on the next microtask so the theme swap has flushed
-      // before the ConfirmDialog's portal unmounts. Closing synchronously in
-      // the same frame as the store mutation used to leave the widget
-      // showing the previous theme until the next unrelated rerender.
       queueMicrotask(() => {
         pendingTheme = null;
       });
@@ -96,9 +141,6 @@
     pendingTheme = null;
   }
 
-  // Close dropdown when clicking outside. The popover is portaled to
-  // document.body, so ".theme-switcher-wrapper" no longer contains it —
-  // we also treat clicks inside the popover itself as "inside".
   function handleWindowClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (target.closest(".theme-switcher-wrapper") || target.closest(".theme-dropdown")) {
@@ -128,6 +170,20 @@
   {#if dropdownOpen}
     <Portal>
       <div class="theme-dropdown" use:autoPosition={{ triggerEl }}>
+        {#if categorized && categories.length > 1}
+          <div class="tab-strip" role="tablist" aria-label="Theme categories">
+            {#each categories as cat, i}
+              <button
+                type="button"
+                role="tab"
+                class="tab"
+                class:active={i === activeCategoryIdx}
+                aria-selected={i === activeCategoryIdx}
+                onclick={() => (activeCategoryIdx = i)}
+              >{cat}</button>
+            {/each}
+          </div>
+        {/if}
         {#each themeEntries as [themeName, label]}
           <button
             class="dropdown-item"
@@ -186,13 +242,42 @@
 
   .theme-dropdown {
     /* position: fixed set dynamically by autoPosition to escape clipping */
-    min-width: 140px;
+    min-width: 160px;
     padding: 4px;
     background: var(--tv-bg, #ffffff);
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    z-index: 10001;  /* High z-index to appear above everything */
+    z-index: 10001;
+  }
+
+  .tab-strip {
+    display: flex;
+    gap: 2px;
+    margin: 0 0 4px 0;
+    padding: 0 0 4px 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 8%, transparent);
+  }
+  .tab {
+    appearance: none;
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: var(--tv-secondary, #64748b);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.12s ease, color 0.12s ease;
+  }
+  .tab:hover:not(.active) {
+    background: color-mix(in srgb, var(--tv-fg, #1a1a1a) 6%, transparent);
+    color: var(--tv-fg, #1a1a1a);
+  }
+  .tab.active {
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 12%, transparent);
+    color: var(--tv-primary, #2563eb);
   }
 
   .dropdown-item {

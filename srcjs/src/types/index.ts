@@ -620,7 +620,12 @@ export interface InteractionSpec {
   enableFilters?: boolean;          // Render per-column filter popovers (supersedes showFilters)
   showGroupCounts?: boolean;        // Show "(n)" next to row-group labels (default: false)
   tooltipFields?: string[] | null;  // Column names to show in hover tooltip (opt-in)
-  enableThemes?: Record<string, WebTheme> | null;  // Available themes for switching (null = disable)
+  // Available themes for switching. Two shapes accepted:
+  //   * Flat:        Record<string, WebTheme>
+  //   * Categorized: Record<string, Record<string, WebTheme>>
+  // Categorized form makes each top-level key a tab label in the
+  // in-widget switcher dropdown. null disables the switcher.
+  enableThemes?: Record<string, WebTheme> | Record<string, Record<string, WebTheme>> | null;
 }
 
 export interface LayoutSpec {

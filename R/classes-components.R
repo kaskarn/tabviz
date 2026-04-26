@@ -1769,10 +1769,15 @@ col_group <- function(header, ...) {
 #' @param enable_themes Control the interactive theme-switcher menu. Accepts:
 #'   - `"default"`: show all [`package_themes()`].
 #'   - `NULL`: hide the theme switcher entirely.
-#'   - A list of `WebTheme` objects: show exactly those themes. Named list
-#'     entries override each theme's display name
-#'     (e.g. `list(Classical = web_theme_jama())`). The spec's active `theme`
-#'     is always auto-included so users can revert.
+#'   - A flat list of `WebTheme` objects: show exactly those themes (no tabs).
+#'     Named list entries override each theme's display name
+#'     (e.g. `list(Classical = web_theme_jama())`).
+#'   - A 2-level named list of named lists of `WebTheme`: show those themes
+#'     grouped under category tabs. The keys of the outer list become tab
+#'     labels (e.g. `list(Editorial = list(Cochrane = web_theme_cochrane(),
+#'     Lancet = web_theme_lancet()), Other = list(Dark = web_theme_dark()))`).
+#'   In all list forms the spec's active `theme` is auto-included so users
+#'   can always revert.
 #'
 #'   Defaults to `getOption("tabviz.enable_themes", "default")`, so a
 #'   session-wide curated list can be set once via
@@ -1801,19 +1806,29 @@ InteractionSpec <- new_class(
   ),
   validator = function(self) {
     val <- self@enable_themes
-    # Valid values: NULL, "default", or a list of WebTheme objects
+    # Valid values:
+    # - NULL (hide switcher)
+    # - "default" (use package_themes())
+    # - flat list of WebTheme  → switcher with no tabs
+    # - 2-level named list of named lists of WebTheme → switcher with tabs
     if (is.null(val)) return(NULL)
     if (is.character(val) && length(val) == 1 && val == "default") return(NULL)
     if (is.list(val)) {
-      # Check that all elements are WebTheme objects
+      # Categorized form: each top-level entry is itself a non-empty named
+      # list whose values are all WebTheme objects.
+      categorized <- length(val) > 0L && all(vapply(val, function(category) {
+        is.list(category) && length(category) > 0L &&
+          all(vapply(category, function(t) S7::S7_inherits(t, WebTheme), logical(1)))
+      }, logical(1)))
+      if (categorized) return(NULL)
       invalid_idx <- which(!vapply(val, function(x) S7::S7_inherits(x, WebTheme), logical(1)))
       if (length(invalid_idx) > 0) {
-        return(paste("enable_themes list must contain only WebTheme objects, invalid at indices:",
+        return(paste("enable_themes list must contain WebTheme objects or named lists of WebTheme objects, invalid at indices:",
                      paste(invalid_idx, collapse = ", ")))
       }
       return(NULL)
     }
-    return("enable_themes must be NULL, 'default', or a list of WebTheme objects")
+    return("enable_themes must be NULL, 'default', or a (possibly categorized) list of WebTheme objects")
   }
 )
 
@@ -1827,18 +1842,47 @@ finalize_enable_themes <- function(value, theme) {
   if (identical(value, "default")) value <- package_themes()
   if (!is.list(value) || length(value) == 0) return(NULL)
 
-  nms <- names(value)
-  if (!is.null(nms)) {
-    for (i in seq_along(value)) {
-      if (nzchar(nms[[i]])) value[[i]]@name <- nms[[i]]
+  active <- theme@name
+
+  # Helper: rewrite @name from named-list keys; named entries override the
+  # theme's display name in the switcher (e.g. list(Classical = web_theme_jama())).
+  apply_name_overrides <- function(themes) {
+    nms <- names(themes)
+    if (!is.null(nms)) {
+      for (i in seq_along(themes)) {
+        if (nzchar(nms[[i]])) themes[[i]]@name <- nms[[i]]
+      }
     }
+    themes
   }
 
-  active <- theme@name
+  # Categorized form: 2-level named list of named lists of WebTheme.
+  is_categorized <- length(value) > 0L && all(vapply(value, function(category) {
+    is.list(category) && length(category) > 0L &&
+      all(vapply(category, function(t) S7::S7_inherits(t, WebTheme), logical(1)))
+  }, logical(1)))
+
+  if (is_categorized) {
+    found_active <- FALSE
+    for (i in seq_along(value)) {
+      value[[i]] <- apply_name_overrides(value[[i]])
+      if (any(vapply(value[[i]], function(t) identical(t@name, active), logical(1)))) {
+        found_active <- TRUE
+      }
+    }
+    if (!found_active) {
+      # Prepend a "Current" category so the user can always revert.
+      value <- c(
+        stats::setNames(list(stats::setNames(list(theme), active)), "Current"),
+        value
+      )
+    }
+    return(value)
+  }
+
+  # Flat form (existing behavior).
+  value <- apply_name_overrides(value)
   if (!any(vapply(value, function(t) identical(t@name, active), logical(1)))) {
-    # Prepend with a name when `value` is a named list so we don't end up
-    # with partial names (htmlwidgets::JSEvals walks lists and chokes on
-    # mixed named/unnamed entries).
     if (!is.null(names(value))) {
       value <- c(stats::setNames(list(theme), active), value)
     } else {

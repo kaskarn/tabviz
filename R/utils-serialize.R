@@ -377,25 +377,42 @@ serialize_banding <- function(x) {
 #' @keywords internal
 
 #' Serialize InteractionSpec
+# Detects a 2-level categorized themes list. Returns TRUE if every top-level
+# value is itself a non-empty list whose values are all WebTheme objects.
+is_categorized_themes <- function(x) {
+  if (!is.list(x) || length(x) == 0L) return(FALSE)
+  all(vapply(x, function(category) {
+    is.list(category) && length(category) > 0L &&
+      all(vapply(category, function(t) inherits(t, "tabviz::WebTheme"), logical(1)))
+  }, logical(1)))
+}
+
 #' @keywords internal
 serialize_interaction <- function(interaction) {
   if (is.null(interaction)) {
     interaction <- web_interaction()
   }
 
-  # Handle enable_themes serialization
+  # Handle enable_themes serialization. The shape decides the in-widget
+  # switcher's UI:
+  # * NULL                                  → switcher disabled
+  # * "default"                             → flat list of all package presets
+  # * named list of WebTheme (1-level)      → flat list (no tabs)
+  # * named list of named lists of WebTheme → categorized (tabs)
   enable_themes <- interaction@enable_themes
   if (is.null(enable_themes)) {
-    # NULL means disable theme selection
     themes_config <- NULL
   } else if (identical(enable_themes, "default")) {
-    # "default" means use all package themes
     themes_config <- lapply(package_themes(), function(t) serialize_theme(t))
   } else if (is.list(enable_themes)) {
-    # Custom list of themes
-    themes_config <- lapply(enable_themes, function(t) serialize_theme(t))
+    if (is_categorized_themes(enable_themes)) {
+      themes_config <- lapply(enable_themes, function(cat) {
+        lapply(cat, function(t) serialize_theme(t))
+      })
+    } else {
+      themes_config <- lapply(enable_themes, function(t) serialize_theme(t))
+    }
   } else {
-    # Fallback to package themes
     themes_config <- lapply(package_themes(), function(t) serialize_theme(t))
   }
 
