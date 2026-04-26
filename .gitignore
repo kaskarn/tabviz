@@ -31,6 +31,13 @@ examples_output/
 docs/_site/
 docs/_freeze/
 docs/tests/
+docs/site_libs/
+docs/guide/*.html
+docs/guide/*.rmarkdown
+docs/reference/*.html
+docs/concepts/*.html
+docs/technical/*.html
+docs/index.html
 .quarto/
 **/*_cache/
 cran-comments.md

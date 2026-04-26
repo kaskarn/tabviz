@@ -20,7 +20,7 @@
       stroke="#45475A" stroke-width="2"/>
 <rect x="12" y="48"
         width="476" height="32"
-        fill="#232334"/>
+        fill="#262739"/>
 <text class="cell-text" x="22" y="64"
         font-family="system-ui, -apple-system, sans-serif"
         font-size="14.7px"
@@ -37,10 +37,10 @@
         stroke="#45475A" stroke-width="2"/>
 <rect x="12" y="80"
             width="476" height="24"
-            fill="#232334"/>
+            fill="#262739"/>
 <rect x="12" y="128"
             width="476" height="24"
-            fill="#232334"/>
+            fill="#262739"/>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="80" y2="176"
     stroke="#898EA5" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 

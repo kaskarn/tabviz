@@ -20,7 +20,7 @@
       stroke="#52525B" stroke-width="2"/>
 <rect x="16" y="56"
         width="468" height="40"
-        fill="#F5F5F5"/>
+        fill="#EFF1F5"/>
 <text class="cell-text" x="26" y="76"
         font-family="Inter, system-ui, -apple-system, sans-serif"
         font-size="14.7px"
@@ -43,10 +43,10 @@
         stroke="#52525B" stroke-width="2"/>
 <rect x="16" y="96"
             width="468" height="30"
-            fill="#F5F5F5"/>
+            fill="#EFF1F5"/>
 <rect x="16" y="156"
             width="468" height="30"
-            fill="#F5F5F5"/>
+            fill="#EFF1F5"/>
 <defs><clipPath id="viz-clip-viz_bar_enrollment"><rect x="144" y="96" width="156" height="120"/></clipPath></defs>
 <g clip-path="url(#viz-clip-viz_bar_enrollment)">
 
@@ -110,7 +110,7 @@
           fill="#18181B">245.00</text>
 <line x1="16" x2="484"
           y1="126" y2="126"
-          stroke="#B5BAC9" stroke-width="1"/>
+          stroke="#B0B7CB" stroke-width="1"/>
 <text class="cell-text" x="26" y="141"
     font-family="Inter, system-ui, -apple-system, sans-serif"
     font-size="14px"
@@ -126,7 +126,7 @@
           fill="#18181B">312.00</text>
 <line x1="16" x2="484"
           y1="156" y2="156"
-          stroke="#B5BAC9" stroke-width="1"/>
+          stroke="#B0B7CB" stroke-width="1"/>
 <text class="cell-text" x="26" y="171"
     font-family="Inter, system-ui, -apple-system, sans-serif"
     font-size="14px"
@@ -142,7 +142,7 @@
           fill="#18181B">189.00</text>
 <line x1="16" x2="484"
           y1="186" y2="186"
-          stroke="#B5BAC9" stroke-width="1"/>
+          stroke="#B0B7CB" stroke-width="1"/>
 <text class="cell-text" x="26" y="201"
     font-family="Inter, system-ui, -apple-system, sans-serif"
     font-size="14px"
@@ -158,6 +158,6 @@
           fill="#18181B">156.00</text>
 <line x1="16" x2="484"
           y1="216" y2="216"
-          stroke="#B5BAC9" stroke-width="1"/>
+          stroke="#B0B7CB" stroke-width="1"/>
 
 </svg>

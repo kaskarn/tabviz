@@ -20,7 +20,7 @@
       stroke="#000000" stroke-width="2"/>
 <rect x="6" y="36"
         width="488" height="29"
-        fill="#F9FAFB"/>
+        fill="#EFF0F1"/>
 <text class="cell-text" x="16" y="50.5"
         font-family="Arial, Helvetica, sans-serif"
         font-size="14.7px"
@@ -37,10 +37,10 @@
         stroke="#000000" stroke-width="2"/>
 <rect x="6" y="65"
             width="488" height="18"
-            fill="#F9FAFB"/>
+            fill="#EFF0F1"/>
 <rect x="6" y="101"
             width="488" height="18"
-            fill="#F9FAFB"/>
+            fill="#EFF0F1"/>
 <line x1="220.0006922796589" x2="220.0006922796589" y1="65" y2="137"
     stroke="#717171" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 

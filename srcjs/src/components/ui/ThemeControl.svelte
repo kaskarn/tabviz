@@ -64,9 +64,14 @@
     return theme?.content?.inverse ?? "#ffffff";
   }
   function brandTintedSubtleDivider(brandDeepHex: string): string {
-    // Resolver: oklch_mix(neutral_baseline_30%_to_n4, brand_deep, 0.08).
+    // Resolver: oklch_mix(neutral_baseline_30%_to_n4, brand_deep, 0.12).
     // n4 isn't accessible client-side; nudge from neutral[3] toward brand.
-    return oklchMix(neutralBaseline(), brandDeepHex, 0.08);
+    return oklchMix(neutralBaseline(), brandDeepHex, 0.12);
+  }
+  function brandTintedAltSurface(brandDeepHex: string): string {
+    // Resolver: oklch_mix(n[3], brand_deep, 0.03) — very faint identity
+    // tint on the alt-row banding partner.
+    return oklchMix(neutralBaseline(), brandDeepHex, 0.03);
   }
   function brandTintedL1Bg(brandDeepHex: string): string {
     // Resolver: oklch_mix(surface.base, brand_deep, 0.15) under bold-mode.
@@ -148,6 +153,11 @@
     const tintedSubtle = brandTintedSubtleDivider(brandDeep);
     setDerived(["divider", "subtle"], tintedSubtle);
     setDerived(["cell", "border"], tintedSubtle);
+    // surface.muted picks up a 3% brand_deep tint; mirror onto row.alt.bg
+    // so the live alt-row banding follows.
+    const tintedAlt = brandTintedAltSurface(brandDeep);
+    setDerived(["surface", "muted"], tintedAlt);
+    setDerived(["row", "alt", "bg"], tintedAlt);
     // L1.bg is variant-aware. Bold header → brand-mix, light header → accent
     // (the Accent multi-write covers light-mode L1 below).
     if (theme?.variants?.headerStyle === "bold") {
@@ -238,6 +248,40 @@
     }
   }
 
+  // ── Inverse content cascade ─────────────────────────────────────────
+  // content.inverse lands on bold-mode header text and is the light-tone
+  // input to divider.strong_on_dark. Editing it from the panel must
+  // refresh both the bold header band's fg AND the rule mix that contrasts
+  // against the band — otherwise the inverse field reads as broken.
+  function setInverseContent(hex: string) {
+    setPath(["content", "inverse"], hex);
+    setDerived(["header", "bold", "fg"], hex);
+    setDerived(["columnGroup", "bold", "fg"], hex);
+    // strong_on_dark mixes inverse and brand_deep; recompute and re-feed
+    // header.bold.rule + column_group.bold.rule.
+    const brandDeep = (inputs?.brandDeep as string | undefined)
+      ?? oklchDarken((inputs?.brand as string | undefined) ?? "#0891B2", 0.15);
+    const strongRule = oklchMix(hex, brandDeep, 0.40);
+    setDerived(["divider", "strongOnDark"], strongRule);
+    setDerived(["header", "bold", "rule"], strongRule);
+    setDerived(["columnGroup", "bold", "rule"], strongRule);
+  }
+
+  // ── Strong-divider cascade ──────────────────────────────────────────
+  // R-side: header.light.rule, column_group.light.rule, row_group.L1.rule,
+  // and the entire forest plot scaffold (axis_line, tick_mark, reference)
+  // all default to divider.strong. The panel's Strong field has to mirror
+  // those leaves or the edit silently does nothing.
+  function setStrongDivider(hex: string) {
+    setPath(["divider", "strong"], hex);
+    setDerived(["header", "light", "rule"], hex);
+    setDerived(["columnGroup", "light", "rule"], hex);
+    setDerived(["rowGroup", "L1", "rule"], hex);
+    setDerived(["plot", "axisLine"], hex);
+    setDerived(["plot", "tickMark"], hex);
+    setDerived(["plot", "reference"], hex);
+  }
+
   // ── Surface multi-write (resolved leaves) ────────────────────────────
   function setBackground(hex: string) {
     setPath(["surface", "base"], hex);
@@ -252,6 +296,13 @@
     setPath(["cell", "fg"], hex);
     setPath(["row", "base", "fg"], hex);
     setPath(["row", "alt",  "fg"], hex);
+    // R-side default: header.light.fg, columnGroup.light.fg, firstColumn.bold.fg,
+    // rowGroup.L1.fg all read content.primary. Mirror them via setDerived so a
+    // user pin survives.
+    setDerived(["header", "light", "fg"], hex);
+    setDerived(["columnGroup", "light", "fg"], hex);
+    setDerived(["firstColumn", "bold", "fg"], hex);
+    setDerived(["rowGroup", "L1", "fg"], hex);
   }
 
   // ── Header (variant-aware) ───────────────────────────────────────────
@@ -351,7 +402,7 @@
     <ColorField label="Foreground" hint="Body and cell text" value={theme.cell?.fg ?? theme.content?.primary ?? "#000000"} onchange={setForeground} />
     <ColorField label="Secondary"  value={theme.content?.secondary ?? "#444444"} onchange={(v) => setPath(["content","secondary"], v)} />
     <ColorField label="Muted"      hint="Footnotes" value={theme.content?.muted ?? "#888888"} onchange={(v) => setPath(["content","muted"], v)} />
-    <ColorField label="Inverse"    hint="Text on dark fills (bold-mode header)" value={theme.content?.inverse ?? "#ffffff"} onchange={(v) => setPath(["content","inverse"], v)} />
+    <ColorField label="Inverse"    hint="Text on dark fills (bold-mode header). Cascades to header.bold.fg and the strong_on_dark rule mix." value={theme.content?.inverse ?? "#ffffff"} onchange={setInverseContent} />
   </SettingsSection>
 
   <SettingsSection title="Surfaces" description="Row backgrounds and the banding partner. The panel writes both the surface role and the row binding so the change is visible immediately.">
@@ -412,9 +463,9 @@
                 }}
                 overridden={isOver(["divider", "subtle"]) || isOver(["cell", "border"])}
                 onreset={resetSubtleDivider} />
-    <ColorField label="Strong" hint="Header rule, group rules, axis line"
+    <ColorField label="Strong" hint="Header rule (light variant), group rules, axis line, tick marks"
                 value={theme.divider?.strong ?? "#94a3b8"}
-                onchange={(v) => setPath(["divider","strong"], v)} />
+                onchange={setStrongDivider} />
   </SettingsSection>
 
   <SettingsSection title="Series" description="Per-effect anchor colors. Series 1 is the primary-effect anchor — it also drives the pooled-effect diamond. Per-series stroke / muted / emphasis bundle on the Marks tab.">

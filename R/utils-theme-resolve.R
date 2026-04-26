@@ -66,9 +66,14 @@ resolve_inputs_mirrors <- function(inputs) {
 resolve_chrome <- function(inputs) {
   n <- inputs@neutral
 
+  # surface.muted picks up a very faint brand_deep tint so alternate-row
+  # banding feels coordinated with the brand identity. 3% is at the very
+  # low end — perceptible only against pure neutrals; on saturated brands
+  # the alt-row barely shifts hue.
+  brand_for_tint <- if (is.na(inputs@brand_deep)) inputs@brand else inputs@brand_deep
   surface <- Surfaces(
     base   = n[2],
-    muted  = n[3],
+    muted  = oklch_mix(n[3], brand_for_tint, 0.03),
     raised = n[1]
   )
 
@@ -82,14 +87,12 @@ resolve_chrome <- function(inputs) {
   # divider.subtle must read distinctly against BOTH surface.base (n[2])
   # and surface.muted (n[3]) — using n[3] alone makes borders invisible
   # on banded rows. Pull ~30% toward n[4] for the neutral baseline, then
-  # nudge ~8% toward brand_deep so cell hairlines pick up a faint identity
-  # tint without muddying out on saturated brands.
-  # Tolerate NA brand_deep so callers that bypass resolve_inputs_mirrors
-  # (notably some unit tests) still produce a valid Dividers object.
-  brand_for_tint <- if (is.na(inputs@brand_deep)) inputs@brand else inputs@brand_deep
+  # nudge ~12% toward brand_deep so cell hairlines pick up a faint identity
+  # tint without muddying out on saturated brands. (brand_for_tint is set
+  # earlier for surface.muted; reused here.)
   divider_neutral <- oklch_mix(n[3], n[4], 0.30)
   divider <- Dividers(
-    subtle         = oklch_mix(divider_neutral, brand_for_tint, 0.08),
+    subtle         = oklch_mix(divider_neutral, brand_for_tint, 0.12),
     strong         = n[4],
     # Rule sitting on a brand_deep header band needs to contrast AGAINST
     # brand_deep, not against the table surface. Mix from content.inverse
