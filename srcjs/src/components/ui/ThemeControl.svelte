@@ -64,16 +64,19 @@
     return theme?.content?.inverse ?? "#ffffff";
   }
   function brandTintedSubtleDivider(brandDeepHex: string): string {
-    // Resolver: oklch_mix(neutral_baseline_30%_to_n4, brand_deep, 0.18).
+    // Resolver: oklch_mix(neutral_baseline_30%_to_n4, brand_deep, 0.10).
     // n4 isn't accessible client-side; nudge from neutral[3] toward brand
-    // at 18% — visible hue shift on brand change without dominating.
-    return oklchMix(neutralBaseline(), brandDeepHex, 0.18);
+    // at 10% — recognizable brand tint on cell hairlines without
+    // dominating the layout.
+    return oklchMix(neutralBaseline(), brandDeepHex, 0.10);
   }
   function brandTintedSurfaceMuted(brandDeepHex: string): string {
-    // Resolver: surface.muted = oklch_mix(n[3], brand_deep, 0.08) — the
-    // chrome muted-surface tone. Used for first-column-bold etc.; the
-    // alt-row banding partner derives at half-strength from this.
-    return oklchMix(neutralBaseline(), brandDeepHex, 0.08);
+    // Resolver: surface.muted = oklch_mix(n[3], brand_deep, 0.04). 4%
+    // is "very subtle tint on neutral base" — the achromatic-fix in
+    // oklchMix locks to brand's hue so the result IS hue-tinted (not
+    // just intensity-shifted). Alt-row banding derives at half-strength
+    // from this (~2% effective).
+    return oklchMix(neutralBaseline(), brandDeepHex, 0.04);
   }
   function brandTintedAltSurface(brandDeepHex: string): string {
     // Resolver: row.alt.bg = oklch_mix(surface.base, surface.muted, 0.5) —
@@ -82,8 +85,12 @@
     return oklchMix(surfaceBaseline(), brandTintedSurfaceMuted(brandDeepHex), 0.5);
   }
   function brandTintedL1Bg(brandDeepHex: string): string {
-    // Resolver: oklch_mix(surface.base, brand_deep, 0.15) under bold-mode.
-    return oklchMix(surfaceBaseline(), brandDeepHex, 0.15);
+    // Resolver: row_group.L1.bg = oklch_mix(surface.base, brand_deep, 0.12)
+    // in BOTH variants. Brand-derived (was variant-aware) so the group
+    // bar stays in a different color family from hover/selected (which
+    // use accent.muted) — multiple highlighted rows don't visually merge
+    // with the group bar.
+    return oklchMix(surfaceBaseline(), brandDeepHex, 0.12);
   }
   function strongOnDarkRule(brandDeepHex: string): string {
     // Resolver: divider.strong_on_dark = oklch_mix(content.inverse, brand_deep, 0.40).
@@ -172,15 +179,15 @@
     setDerived(["surface", "muted"], tintedMuted);
     setDerived(["firstColumn", "bold", "bg"], tintedMuted);
     setDerived(["row", "alt", "bg"], tintedAlt);
-    // L1.bg is variant-aware. Bold header → brand-mix, light header → accent
-    // (the Accent multi-write covers light-mode L1 below). L2/L3 default to
-    // the same value as L1 — fewer visual layers for nested groups.
-    if (theme?.variants?.headerStyle === "bold") {
-      const l1Bg = brandTintedL1Bg(brandDeep);
-      setDerived(["rowGroup", "L1", "bg"], l1Bg);
-      setDerived(["rowGroup", "L2", "bg"], l1Bg);
-      setDerived(["rowGroup", "L3", "bg"], l1Bg);
-    }
+    // L1.bg is brand-derived in BOTH variants — single rule, no header-
+    // style guard. Group bars stay in a brand-tinted family, hover /
+    // selected stay in an accent-tinted family, multiple highlighted
+    // rows don't visually merge with the group bar. L2/L3 default to
+    // the same value as L1 (fewer visual layers in nested groups).
+    const l1Bg = brandTintedL1Bg(brandDeep);
+    setDerived(["rowGroup", "L1", "bg"], l1Bg);
+    setDerived(["rowGroup", "L2", "bg"], l1Bg);
+    setDerived(["rowGroup", "L3", "bg"], l1Bg);
   }
 
   function resetBrandDeep() {
@@ -220,10 +227,10 @@
   }
   function resetL1Bg() {
     clearOver(["rowGroup", "L1", "bg"]);
-    const value = theme?.variants?.headerStyle === "bold"
-      ? brandTintedL1Bg((inputs?.brandDeep as string | undefined) ?? oklchDarken((inputs?.brand as string | undefined) ?? "#0891B2", 0.15))
-      : ((theme?.accent?.tintSubtle as string | undefined) ?? accentTintSubtleHex((inputs?.accent as string | undefined) ?? "#8B5CF6"));
-    setDerived(["rowGroup", "L1", "bg"], value);
+    // Brand-derived in both variants (no header-style branch).
+    const brandDeep = (inputs?.brandDeep as string | undefined)
+      ?? oklchDarken((inputs?.brand as string | undefined) ?? "#0891B2", 0.15);
+    setDerived(["rowGroup", "L1", "bg"], brandTintedL1Bg(brandDeep));
   }
   function resetHeaderBoldBg() {
     clearOver(["header", "bold", "bg"]);
@@ -259,13 +266,10 @@
     if (!inputs?.statusInfo) {
       setDerived(["status", "info"], accent);
     }
-    // Light-mode L1 is accent-derived. Bold-mode L1 follows brand instead
-    // (handled by Brand multi-write). L2/L3 default to L1.bg.
-    if (theme?.variants?.headerStyle !== "bold") {
-      setDerived(["rowGroup", "L1", "bg"], tintSubtle);
-      setDerived(["rowGroup", "L2", "bg"], tintSubtle);
-      setDerived(["rowGroup", "L3", "bg"], tintSubtle);
-    }
+    // L1/L2/L3 row-group bg are brand-derived now (handled by the Brand
+    // cascade) — Accent no longer touches rowGroup. Keeps the group-bar
+    // family distinct from hover/selected so multiple highlighted rows
+    // don't merge into the group bar.
   }
 
   // ── Inverse content cascade ─────────────────────────────────────────
@@ -386,7 +390,7 @@
       />
       <ColorField
         label="Accent"
-        hint="Hover, selected, L1 group bar (light-mode header)"
+        hint="Hover and selected fills"
         value={(inputs?.accent as string | undefined) ?? theme.accent?.default ?? "#8B5CF6"}
         onchange={applyAccent}
       />
@@ -468,8 +472,8 @@
                   setPath(["row", "selected", "bg"], v);
                 }} />
     <ColorField label="L1 group bar"
-                hint={theme.variants?.headerStyle === "bold" ? "Brand-deep mix in bold-header mode" : "Accent tint in light-header mode"}
-                value={(theme.rowGroup?.L1?.bg as string | undefined) ?? theme.accent?.tintSubtle ?? "#e1e5ea"}
+                hint="12% Brand-deep tint into surface base — distinct from the accent-tinted hover/selected family"
+                value={(theme.rowGroup?.L1?.bg as string | undefined) ?? "#e1e5ea"}
                 onchange={(v) => setPath(["rowGroup", "L1", "bg"], v)}
                 overridden={isOver(["rowGroup", "L1", "bg"])}
                 onreset={resetL1Bg} />

@@ -55,15 +55,26 @@ oklch_darken <- function(hex, by) {
 # Mix two colors in OKLCH at proportion `t`. t=0 returns `a`, t=1 returns `b`.
 # Hue interpolates along the shortest path around the wheel.
 #
-# Achromatic-endpoint guard: when one endpoint has near-zero chroma
-# (whites, blacks, near-greys) its hue is mathematically defined but
-# practically meaningless — interpolating against a saturated endpoint
-# walks through unintended hues mid-path. Concrete example: cream
-# (#FDFCFB, hue ~50°) mixed with deep navy (#002D54, hue ~260°) at 0.4
-# lands at hue ~135° (green) via shortest-path interpolation, even
-# though the visual expectation is a desaturated mid-blue. Fix: when
-# either endpoint is achromatic, lock to the OTHER endpoint's hue and
-# only interpolate L and C.
+# Achromatic-endpoint guard: when one (or both) endpoints have near-zero
+# chroma their hue is mathematically defined but practically meaningless,
+# and shortest-path interpolation walks through unintended hue regions
+# mid-path. Two failing cases this guard fixes:
+#
+#   (a) cream (#FDFCFB, hue ~50°) mixed with deep navy (#002D54, hue
+#       ~260°) at 0.4 lands at hue ~135° (green) instead of the
+#       expected desaturated mid-blue.
+#   (b) Chained low-chroma mix: surface.base (chroma ~0.005) mixed with
+#       a 4-8% brand-tinted surface.muted (chroma ~0.005-0.010) at 0.5
+#       — both endpoints are below threshold, both have noise hues,
+#       shortest-path interp lands at unrelated hues. Concrete repro:
+#       brand #2f3f93 (indigo, hue ~280°) → red-hued banding (~340°).
+#
+# Rule: when EITHER endpoint is below the chroma threshold, lock the
+# output hue to whichever endpoint carries more chroma. That's the
+# "intent" hue — the direction the cascade is trying to nudge the
+# result toward. Both-low → still pick the larger; the result chroma
+# is also low so the visible hue is faint, but at least it's faint
+# along the right direction rather than wandering randomly.
 CHROMA_ACHROMATIC <- 0.02
 
 oklch_mix <- function(a, b, t) {
@@ -75,13 +86,12 @@ oklch_mix <- function(a, b, t) {
   ca <- la[1, 2]; cb <- lb[1, 2]
   ha <- la[1, 3]; hb <- lb[1, 3]
 
-  if (ca < CHROMA_ACHROMATIC && cb >= CHROMA_ACHROMATIC) {
-    h_out <- hb
-  } else if (cb < CHROMA_ACHROMATIC && ca >= CHROMA_ACHROMATIC) {
-    h_out <- ha
+  if (ca < CHROMA_ACHROMATIC || cb < CHROMA_ACHROMATIC) {
+    # Either (or both) endpoint(s) achromatic. Lock to the endpoint with
+    # the larger chroma — the more "meaningful" hue direction.
+    h_out <- if (cb > ca) hb else ha
   } else {
-    # Both chromatic (or both achromatic — degenerate but harmless): take
-    # the shortest path around the wheel.
+    # Both meaningfully chromatic; shortest-path interp.
     if (abs(hb - ha) > 180) {
       if (hb > ha) ha <- ha + 360 else hb <- hb + 360
     }

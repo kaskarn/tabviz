@@ -120,12 +120,14 @@ export function oklchDarken(hex: string, by: number): string {
  * interpolates along the shortest path around the wheel. Mirrors
  * `oklch_mix` in R.
  *
- * Achromatic-endpoint guard: when one endpoint has near-zero chroma
- * (whites/blacks/near-greys) its hue is mathematically defined but
- * practically meaningless — interpolating against a saturated endpoint
- * walks through unintended hues mid-path (cream→navy 0.4 lands at green
- * via the shortest-path interp). When either endpoint is achromatic,
- * lock to the OTHER endpoint's hue and only interpolate L and C.
+ * Achromatic-endpoint guard. Two failing cases this fixes:
+ *   (a) cream + navy 0.4 landing at hue ~135° (green) via shortest-path.
+ *   (b) Chained low-chroma mix where BOTH endpoints sit below the
+ *       chroma threshold (e.g. surface.base + a faintly-tinted
+ *       surface.muted) and shortest-path picks an unrelated hue.
+ * Rule: when either endpoint is below threshold, lock to the endpoint
+ * with the larger chroma — that's the "intent" hue direction. Both-low
+ * cases still produce a faint result, but along the right direction.
  */
 const CHROMA_ACHROMATIC = 0.02;
 
@@ -135,10 +137,10 @@ export function oklchMix(a: string, b: string, t: number): string {
   let ha = la.H, hb = lb.H;
   let H: number;
 
-  if (la.C < CHROMA_ACHROMATIC && lb.C >= CHROMA_ACHROMATIC) {
-    H = hb;
-  } else if (lb.C < CHROMA_ACHROMATIC && la.C >= CHROMA_ACHROMATIC) {
-    H = ha;
+  if (la.C < CHROMA_ACHROMATIC || lb.C < CHROMA_ACHROMATIC) {
+    // Either (or both) endpoint(s) achromatic. Lock to the endpoint
+    // with larger chroma — the more "meaningful" hue.
+    H = lb.C > la.C ? hb : ha;
   } else {
     if (Math.abs(hb - ha) > 180) {
       if (hb > ha) ha += 360; else hb += 360;

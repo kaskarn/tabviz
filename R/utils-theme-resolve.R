@@ -66,17 +66,16 @@ resolve_inputs_mirrors <- function(inputs) {
 resolve_chrome <- function(inputs) {
   n <- inputs@neutral
 
-  # surface.muted picks up a brand_deep tint so chrome surfaces feel
-  # coordinated with the brand identity. 8% at chrome level — visible as
-  # a hue shift when brand changes (you should be able to squint and see
-  # blue/red/green/etc.) without overwhelming the neutral palette. The
-  # alt-row banding partner derives at half-strength from this (~4%
-  # effective) so banding stays clearly subtler than the chrome it sits
-  # under.
+  # surface.muted picks up a faint brand_deep tint so chrome surfaces feel
+  # coordinated with the brand identity. 4% — very subtle on a neutral
+  # base, but the achromatic-fix in oklch_mix locks to brand's hue so the
+  # result IS hue-tinted (not just intensity-shifted). Alt-row banding
+  # derives at half-strength from this (~2% effective) so banding stays
+  # clearly subtler than the chrome it sits under.
   brand_for_tint <- if (is.na(inputs@brand_deep)) inputs@brand else inputs@brand_deep
   surface <- Surfaces(
     base   = n[2],
-    muted  = oklch_mix(n[3], brand_for_tint, 0.08),
+    muted  = oklch_mix(n[3], brand_for_tint, 0.04),
     raised = n[1]
   )
 
@@ -90,14 +89,12 @@ resolve_chrome <- function(inputs) {
   # divider.subtle must read distinctly against BOTH surface.base (n[2])
   # and surface.muted (n[3]) — using n[3] alone makes borders invisible
   # on banded rows. Pull ~30% toward n[4] for the neutral baseline, then
-  # nudge ~18% toward brand_deep so cell hairlines pick up a clearly-
-  # identifiable brand tint. The mix is the strongest brand-tint in the
-  # neutral chrome — borders are the smallest visual element so they can
-  # carry a stronger color hint without dominating the layout.
-  # (brand_for_tint is set earlier for surface.muted; reused here.)
+  # nudge 10% toward brand_deep so cell hairlines pick up a recognizable
+  # brand tint without dominating. (brand_for_tint is set earlier for
+  # surface.muted; reused here.)
   divider_neutral <- oklch_mix(n[3], n[4], 0.30)
   divider <- Dividers(
-    subtle         = oklch_mix(divider_neutral, brand_for_tint, 0.18),
+    subtle         = oklch_mix(divider_neutral, brand_for_tint, 0.10),
     strong         = n[4],
     # Rule sitting on a brand_deep header band needs to contrast AGAINST
     # brand_deep, not against the table surface. Mix from content.inverse
@@ -288,17 +285,14 @@ resolve_components <- function(theme) {
   theme@column_group <- cg
 
   # -- Row groups: L1 strongest, L3 lightest. --
-  # L1.bg is variant-aware: under bold-mode headers it harmonizes with the
-  # brand_deep header band (15% brand_deep mixed into surface.base); under
-  # light-mode it stays on the chrome-accent tint as before. This keeps the
-  # chrome/data wall intact (brand only "leaks" into chrome when the user
-  # has already chosen a brand-forward header style).
+  # L1.bg is brand-derived in BOTH variants: a 12% mix of brand_deep into
+  # surface.base. Routing through brand (rather than accent.tint_subtle
+  # under light-mode) keeps the group bar in a different color family
+  # from hover/selected fills (which are accent.muted). When several
+  # rows are highlighted, L1 stays clearly distinct instead of merging
+  # into the highlight cluster.
   rg <- theme@row_group
-  l1_default_bg <- if (theme@variants@header_style == "bold") {
-    oklch_mix(surface@base, inputs@brand_deep, 0.15)
-  } else {
-    accent@tint_subtle
-  }
+  l1_default_bg <- oklch_mix(surface@base, inputs@brand_deep, 0.12)
   rg@L1 <- fill_na(rg@L1, list(
     bg   = l1_default_bg,
     fg   = content@primary,

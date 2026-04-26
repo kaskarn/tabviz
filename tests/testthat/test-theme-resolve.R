@@ -194,16 +194,17 @@ test_that("title and forest-axis labels default to brand_deep fg", {
   expect_equal(t@plot@tick_label@fg, t@inputs@brand_deep)
 })
 
-test_that("L1 group bg is variant-aware (brand-mix under bold; tint under light)", {
+test_that("L1 group bg is brand-derived in both variants", {
   light_t <- resolve_theme(WebTheme())
   bold_t  <- resolve_theme(WebTheme(variants = ThemeVariants(header_style = "bold")))
-  # Under light variant, L1 stays on accent.tint_subtle.
-  expect_equal(light_t@row_group@L1@bg, light_t@accent@tint_subtle)
-  # Under bold variant, L1 picks up a brand_deep tint and is no longer
-  # equal to accent.tint_subtle (preserves the chrome/data wall — brand
-  # only "leaks" into chrome when the user has chosen a brand-forward
-  # header style).
-  expect_match(bold_t@row_group@L1@bg, "^#")
+  expected <- oklch_mix(light_t@surface@base, light_t@inputs@brand_deep, 0.12)
+  expect_equal(light_t@row_group@L1@bg, expected)
+  expect_equal(bold_t@row_group@L1@bg, expected)
+  # Distinct from accent.tint_subtle in both variants — the whole point
+  # of routing through brand (rather than accent under light-mode) is to
+  # keep group bars in a different color family from hover/selected
+  # (which use accent.muted).
+  expect_false(identical(light_t@row_group@L1@bg, light_t@accent@tint_subtle))
   expect_false(identical(bold_t@row_group@L1@bg, bold_t@accent@tint_subtle))
 })
 

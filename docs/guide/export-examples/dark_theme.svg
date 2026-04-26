@@ -80,6 +80,7 @@
       font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="400"
+      font-style="normal"
       fill="#5C85C8">0.60</text>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="0" y2="4"
       stroke="#45475A" stroke-width="1"/>
@@ -87,12 +88,14 @@
       font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="400"
+      font-style="normal"
       fill="#5C85C8">1.00</text>
 <text x="192" y="28"
       text-anchor="middle"
       font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
       font-size="12px"
-      font-weight="500"
+      font-weight="400"
+      font-style="normal"
       fill="#5C85C8">Effect</text></g>
 <text class="cell-text" x="22" y="92"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
