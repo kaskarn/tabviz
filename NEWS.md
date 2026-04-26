@@ -1,3 +1,33 @@
+# tabviz 0.26.0.9000
+
+## Theming v2 — staged migration toward 1.0
+
+Pre-release work on the 3-tier theming system that lands at v1.0. v0.25.x
+themes still work; v2 is being built alongside and gets switched on by
+PR 6/8 of the migration. Custom user-built themes will need to migrate
+when v1 launches.
+
+- **PR 1** — `farver` added as Imports; new internal `R/utils-oklch.R`
+  providing OKLCH-space color helpers (`oklch_lighten`, `oklch_darken`,
+  `oklch_mix`, `oklch_chroma`, `ensure_contrast`).
+- **PR 2** — new S7 class hierarchy in `R/classes-theme-v2.R` defining
+  `ThemeInputs` (T1), `ThemeVariants`, `Surfaces` / `Content` / `Dividers` /
+  `AccentRoles` / `StatusColors` / `SlotBundle` / `TextRole` / `TextRoles` /
+  `SpacingTokens` (T2), and `AnnotationCluster` / `HeaderCluster` /
+  `ColumnGroupCluster` / `RowGroupCluster` / `RowCluster` / `CellCluster` /
+  `FirstColumnCluster` / `PlotScaffold` / `MarksRecipes` (T3). Rolls up
+  into `WebTheme2`. Variable-length series via `list<SlotBundle>`.
+- **PR 3** — `resolve_theme()` pipeline. Idempotent, OKLCH-derived,
+  enforces a hard chrome/data wall (`resolve_chrome` and `resolve_data`
+  share only Tier 1). Density preset (compact / comfortable / spacious)
+  drives spacing; per-token overrides win.
+- **PR 4** — 9 v2 preset constructors (`web_theme_default_v2()`,
+  `web_theme_minimal_v2()`, `web_theme_dark_v2()`, `web_theme_jama_v2()`,
+  `web_theme_lancet_v2()`, `web_theme_modern_v2()`,
+  `web_theme_presentation_v2()`, `web_theme_cochrane_v2()`,
+  `web_theme_nature_v2()`) plus `package_themes_v2()`. Each returns a
+  fully resolved `WebTheme2`.
+
 # tabviz 0.25.1
 
 ## Two follow-up fixes from v0.25.0
