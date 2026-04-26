@@ -66,14 +66,17 @@ resolve_inputs_mirrors <- function(inputs) {
 resolve_chrome <- function(inputs) {
   n <- inputs@neutral
 
-  # surface.muted picks up a very faint brand_deep tint so alternate-row
-  # banding feels coordinated with the brand identity. 3% is at the very
-  # low end — perceptible only against pure neutrals; on saturated brands
-  # the alt-row barely shifts hue.
+  # surface.muted picks up a brand_deep tint so chrome surfaces feel
+  # coordinated with the brand identity. 8% at chrome level — visible as
+  # a hue shift when brand changes (you should be able to squint and see
+  # blue/red/green/etc.) without overwhelming the neutral palette. The
+  # alt-row banding partner derives at half-strength from this (~4%
+  # effective) so banding stays clearly subtler than the chrome it sits
+  # under.
   brand_for_tint <- if (is.na(inputs@brand_deep)) inputs@brand else inputs@brand_deep
   surface <- Surfaces(
     base   = n[2],
-    muted  = oklch_mix(n[3], brand_for_tint, 0.03),
+    muted  = oklch_mix(n[3], brand_for_tint, 0.08),
     raised = n[1]
   )
 
@@ -87,12 +90,14 @@ resolve_chrome <- function(inputs) {
   # divider.subtle must read distinctly against BOTH surface.base (n[2])
   # and surface.muted (n[3]) — using n[3] alone makes borders invisible
   # on banded rows. Pull ~30% toward n[4] for the neutral baseline, then
-  # nudge ~12% toward brand_deep so cell hairlines pick up a faint identity
-  # tint without muddying out on saturated brands. (brand_for_tint is set
-  # earlier for surface.muted; reused here.)
+  # nudge ~18% toward brand_deep so cell hairlines pick up a clearly-
+  # identifiable brand tint. The mix is the strongest brand-tint in the
+  # neutral chrome — borders are the smallest visual element so they can
+  # carry a stronger color hint without dominating the layout.
+  # (brand_for_tint is set earlier for surface.muted; reused here.)
   divider_neutral <- oklch_mix(n[3], n[4], 0.30)
   divider <- Dividers(
-    subtle         = oklch_mix(divider_neutral, brand_for_tint, 0.12),
+    subtle         = oklch_mix(divider_neutral, brand_for_tint, 0.18),
     strong         = n[4],
     # Rule sitting on a brand_deep header band needs to contrast AGAINST
     # brand_deep, not against the table surface. Mix from content.inverse
@@ -239,9 +244,15 @@ resolve_components <- function(theme) {
   theme@annotation <- ann
 
   # -- Header: light + bold variants. --
+  # Light-mode header bg matches the row body (surface.base), not
+  # surface.muted: the bold-text + strong rule below already signal "this
+  # is the header band" without a separate bg. Less visual noise; the
+  # banded data rows still read clearly as alternates beneath. Authors
+  # who want a tinted header can flip header_style = "bold" for the
+  # brand_deep band, or pin header.light.bg explicitly.
   hdr <- theme@header
   hdr@light <- fill_na(hdr@light, list(
-    bg   = surface@muted,
+    bg   = surface@base,
     fg   = content@primary,
     rule = divider@strong
   ))
@@ -261,7 +272,7 @@ resolve_components <- function(theme) {
   # Column-group header tracks the same variants as the leaf header.
   cg <- theme@column_group
   cg@light <- fill_na(cg@light, list(
-    bg   = surface@muted,
+    bg   = surface@base,
     fg   = content@primary,
     rule = divider@strong
   ))
@@ -295,13 +306,19 @@ resolve_components <- function(theme) {
   ))
   rg@L1@text <- compose_text(rg@L1@text, override_text(text@body, weight = 600))
 
+  # L2 and L3 default to the same bg as L1: visual demarcation between
+  # nesting levels comes from text weight + indent, not from a separate
+  # tint per level. Reduces noise across deeply nested groups; authors
+  # who want per-level tints override row_group.L2.bg / .L3.bg directly.
   rg@L2 <- fill_na(rg@L2, list(
+    bg   = rg@L1@bg,
     fg   = content@secondary,
     rule = divider@subtle
   ))
   rg@L2@text <- compose_text(rg@L2@text, override_text(text@body, weight = 500))
 
   rg@L3 <- fill_na(rg@L3, list(
+    bg = rg@L1@bg,
     fg = content@secondary
   ))
   rg@L3@text <- compose_text(rg@L3@text, text@body)

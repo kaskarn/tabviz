@@ -64,15 +64,16 @@
     return theme?.content?.inverse ?? "#ffffff";
   }
   function brandTintedSubtleDivider(brandDeepHex: string): string {
-    // Resolver: oklch_mix(neutral_baseline_30%_to_n4, brand_deep, 0.12).
-    // n4 isn't accessible client-side; nudge from neutral[3] toward brand.
-    return oklchMix(neutralBaseline(), brandDeepHex, 0.12);
+    // Resolver: oklch_mix(neutral_baseline_30%_to_n4, brand_deep, 0.18).
+    // n4 isn't accessible client-side; nudge from neutral[3] toward brand
+    // at 18% — visible hue shift on brand change without dominating.
+    return oklchMix(neutralBaseline(), brandDeepHex, 0.18);
   }
   function brandTintedSurfaceMuted(brandDeepHex: string): string {
-    // Resolver: surface.muted = oklch_mix(n[3], brand_deep, 0.03) — the
-    // chrome surface used for the light-mode header band. 3% picks up
-    // the brand identity without overwhelming the chrome neutral.
-    return oklchMix(neutralBaseline(), brandDeepHex, 0.03);
+    // Resolver: surface.muted = oklch_mix(n[3], brand_deep, 0.08) — the
+    // chrome muted-surface tone. Used for first-column-bold etc.; the
+    // alt-row banding partner derives at half-strength from this.
+    return oklchMix(neutralBaseline(), brandDeepHex, 0.08);
   }
   function brandTintedAltSurface(brandDeepHex: string): string {
     // Resolver: row.alt.bg = oklch_mix(surface.base, surface.muted, 0.5) —
@@ -160,22 +161,25 @@
     const tintedSubtle = brandTintedSubtleDivider(brandDeep);
     setDerived(["divider", "subtle"], tintedSubtle);
     setDerived(["cell", "border"], tintedSubtle);
-    // surface.muted is the chrome-surface tone used for the light-mode
-    // header band (and other muted chrome). row.alt.bg is HALF-strength
-    // of that — keeps banding clearly subtler than the header. Mirror
-    // both, plus header.light.bg which would otherwise freeze on its
-    // resolved-at-load value (the frontend has no JS resolver).
+    // surface.muted is the chrome-muted tone (first-column-bold; basis
+    // for the alt-row banding partner). header.light.bg defaults to
+    // surface.base — equal to the row body so it doesn't compete; the
+    // Brand cascade does NOT touch header.light.bg (it doesn't depend
+    // on brand). row.alt.bg is HALF-strength of muted — banding stays
+    // clearly subtler than chrome.
     const tintedMuted = brandTintedSurfaceMuted(brandDeep);
     const tintedAlt   = brandTintedAltSurface(brandDeep);
     setDerived(["surface", "muted"], tintedMuted);
-    setDerived(["header", "light", "bg"], tintedMuted);
-    setDerived(["columnGroup", "light", "bg"], tintedMuted);
     setDerived(["firstColumn", "bold", "bg"], tintedMuted);
     setDerived(["row", "alt", "bg"], tintedAlt);
     // L1.bg is variant-aware. Bold header → brand-mix, light header → accent
-    // (the Accent multi-write covers light-mode L1 below).
+    // (the Accent multi-write covers light-mode L1 below). L2/L3 default to
+    // the same value as L1 — fewer visual layers for nested groups.
     if (theme?.variants?.headerStyle === "bold") {
-      setDerived(["rowGroup", "L1", "bg"], brandTintedL1Bg(brandDeep));
+      const l1Bg = brandTintedL1Bg(brandDeep);
+      setDerived(["rowGroup", "L1", "bg"], l1Bg);
+      setDerived(["rowGroup", "L2", "bg"], l1Bg);
+      setDerived(["rowGroup", "L3", "bg"], l1Bg);
     }
   }
 
@@ -256,9 +260,11 @@
       setDerived(["status", "info"], accent);
     }
     // Light-mode L1 is accent-derived. Bold-mode L1 follows brand instead
-    // (handled by Brand multi-write).
+    // (handled by Brand multi-write). L2/L3 default to L1.bg.
     if (theme?.variants?.headerStyle !== "bold") {
       setDerived(["rowGroup", "L1", "bg"], tintSubtle);
+      setDerived(["rowGroup", "L2", "bg"], tintSubtle);
+      setDerived(["rowGroup", "L3", "bg"], tintSubtle);
     }
   }
 

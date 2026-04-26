@@ -54,21 +54,44 @@ oklch_darken <- function(hex, by) {
 
 # Mix two colors in OKLCH at proportion `t`. t=0 returns `a`, t=1 returns `b`.
 # Hue interpolates along the shortest path around the wheel.
+#
+# Achromatic-endpoint guard: when one endpoint has near-zero chroma
+# (whites, blacks, near-greys) its hue is mathematically defined but
+# practically meaningless — interpolating against a saturated endpoint
+# walks through unintended hues mid-path. Concrete example: cream
+# (#FDFCFB, hue ~50°) mixed with deep navy (#002D54, hue ~260°) at 0.4
+# lands at hue ~135° (green) via shortest-path interpolation, even
+# though the visual expectation is a desaturated mid-blue. Fix: when
+# either endpoint is achromatic, lock to the OTHER endpoint's hue and
+# only interpolate L and C.
+CHROMA_ACHROMATIC <- 0.02
+
 oklch_mix <- function(a, b, t) {
   checkmate::assert_string(a)
   checkmate::assert_string(b)
   checkmate::assert_number(t, lower = 0, upper = 1)
   la <- to_oklch(a)
   lb <- to_oklch(b)
-  ha <- la[1, 3]
-  hb <- lb[1, 3]
-  if (abs(hb - ha) > 180) {
-    if (hb > ha) ha <- ha + 360 else hb <- hb + 360
+  ca <- la[1, 2]; cb <- lb[1, 2]
+  ha <- la[1, 3]; hb <- lb[1, 3]
+
+  if (ca < CHROMA_ACHROMATIC && cb >= CHROMA_ACHROMATIC) {
+    h_out <- hb
+  } else if (cb < CHROMA_ACHROMATIC && ca >= CHROMA_ACHROMATIC) {
+    h_out <- ha
+  } else {
+    # Both chromatic (or both achromatic — degenerate but harmless): take
+    # the shortest path around the wheel.
+    if (abs(hb - ha) > 180) {
+      if (hb > ha) ha <- ha + 360 else hb <- hb + 360
+    }
+    h_out <- (ha + t * (hb - ha)) %% 360
   }
+
   out <- la
   out[1, 1] <- la[1, 1] + t * (lb[1, 1] - la[1, 1])
-  out[1, 2] <- la[1, 2] + t * (lb[1, 2] - la[1, 2])
-  out[1, 3] <- (ha + t * (hb - ha)) %% 360
+  out[1, 2] <- ca + t * (cb - ca)
+  out[1, 3] <- h_out
   from_oklch(out)
 }
 

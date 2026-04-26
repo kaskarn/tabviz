@@ -119,18 +119,37 @@ export function oklchDarken(hex: string, by: number): string {
  * Mix two colors in OKLCH at proportion `t`. t=0 → a; t=1 → b. Hue
  * interpolates along the shortest path around the wheel. Mirrors
  * `oklch_mix` in R.
+ *
+ * Achromatic-endpoint guard: when one endpoint has near-zero chroma
+ * (whites/blacks/near-greys) its hue is mathematically defined but
+ * practically meaningless — interpolating against a saturated endpoint
+ * walks through unintended hues mid-path (cream→navy 0.4 lands at green
+ * via the shortest-path interp). When either endpoint is achromatic,
+ * lock to the OTHER endpoint's hue and only interpolate L and C.
  */
+const CHROMA_ACHROMATIC = 0.02;
+
 export function oklchMix(a: string, b: string, t: number): string {
   const la = hexToOklch(a);
   const lb = hexToOklch(b);
   let ha = la.H, hb = lb.H;
-  if (Math.abs(hb - ha) > 180) {
-    if (hb > ha) ha += 360; else hb += 360;
+  let H: number;
+
+  if (la.C < CHROMA_ACHROMATIC && lb.C >= CHROMA_ACHROMATIC) {
+    H = hb;
+  } else if (lb.C < CHROMA_ACHROMATIC && la.C >= CHROMA_ACHROMATIC) {
+    H = ha;
+  } else {
+    if (Math.abs(hb - ha) > 180) {
+      if (hb > ha) ha += 360; else hb += 360;
+    }
+    H = (ha + t * (hb - ha) + 360) % 360;
   }
+
   return oklchToHex({
     L: la.L + t * (lb.L - la.L),
     C: la.C + t * (lb.C - la.C),
-    H: (ha + t * (hb - ha) + 360) % 360,
+    H,
   });
 }
 
