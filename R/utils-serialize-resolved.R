@@ -149,7 +149,6 @@ serialize_theme <- function(theme) {
       statusWarning  = theme@inputs@status_warning,
       statusInfo     = na_to_null(theme@inputs@status_info),
       seriesAnchors  = I(theme@inputs@series_anchors),
-      summaryAnchor  = na_to_null(theme@inputs@summary_anchor),
       fontBody       = theme@inputs@font_body,
       fontDisplay    = na_to_null(theme@inputs@font_display),
       fontMono       = na_to_null(theme@inputs@font_mono)
@@ -187,7 +186,6 @@ serialize_theme <- function(theme) {
     ),
 
     series  = lapply(theme@series, serialize_slot_bundle),
-    summary = serialize_slot_bundle(theme@summary),
 
     text = list(
       title    = serialize_text_role(theme@text@title),

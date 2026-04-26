@@ -7,8 +7,9 @@
 #
 # Hard rule: chrome derivation reads only chrome inputs (neutrals,
 # brand_deep, accent, accent_deep). Data derivation reads only data inputs
-# (series_anchors, summary_anchor, status_*) plus surface.base for muted
-# blends. The two cascades meet only at WebTheme reassembly.
+# (series_anchors, status_*) plus surface.base for muted blends. The two
+# cascades meet only at WebTheme reassembly. The pooled-effect "summary"
+# mark reads from series[[1]] — there is no separate summary slot.
 
 # Density presets: each entry maps every SpacingTokens field to a numeric.
 DENSITY_PRESETS <- list(
@@ -50,7 +51,6 @@ fill_na <- function(obj, defaults) {
 resolve_inputs_mirrors <- function(inputs) {
   if (is.na(inputs@brand_deep))    inputs@brand_deep    <- inputs@brand
   if (is.na(inputs@accent_deep))   inputs@accent_deep   <- inputs@accent
-  if (is.na(inputs@summary_anchor)) inputs@summary_anchor <- inputs@brand
   if (is.na(inputs@font_display))  inputs@font_display  <- inputs@font_body
   if (is.na(inputs@status_info))   inputs@status_info   <- inputs@accent
   inputs
@@ -95,8 +95,8 @@ resolve_chrome <- function(inputs) {
 
 
 # resolve_data: per-anchor SlotBundle derivation.
-# Reads series_anchors + summary_anchor + status_*. Reads surface_base for
-# muted blends but does not write to any chrome token.
+# Reads series_anchors + status_*. Reads surface_base for muted blends
+# but does not write to any chrome token.
 derive_slot_bundle <- function(anchor, surface_base, content_primary) {
   fill_muted <- oklch_mix(anchor, surface_base, 0.65)
   SlotBundle(
@@ -121,7 +121,7 @@ fill_slot_bundle <- function(existing, derived) {
   existing
 }
 
-resolve_data <- function(inputs, surface_base, content_primary, existing_series, existing_summary) {
+resolve_data <- function(inputs, surface_base, content_primary, existing_series) {
   anchors <- inputs@series_anchors
   series <- vector("list", length(anchors))
   for (i in seq_along(anchors)) {
@@ -130,11 +130,6 @@ resolve_data <- function(inputs, surface_base, content_primary, existing_series,
     series[[i]] <- fill_slot_bundle(existing, derived)
   }
 
-  summary <- fill_slot_bundle(
-    existing_summary,
-    derive_slot_bundle(inputs@summary_anchor, surface_base, content_primary)
-  )
-
   status <- StatusColors(
     positive = inputs@status_positive,
     negative = inputs@status_negative,
@@ -142,7 +137,7 @@ resolve_data <- function(inputs, surface_base, content_primary, existing_series,
     info     = inputs@status_info
   )
 
-  list(series = series, summary = summary, status = status)
+  list(series = series, status = status)
 }
 
 
@@ -382,11 +377,9 @@ resolve_theme <- function(theme) {
     theme@inputs,
     surface_base = theme@surface@base,
     content_primary = theme@content@primary,
-    existing_series = theme@series,
-    existing_summary = theme@summary
+    existing_series = theme@series
   )
   theme@series  <- data$series
-  theme@summary <- data$summary
   theme@status  <- fill_na(theme@status, list(
     positive = data$status@positive, negative = data$status@negative,
     warning  = data$status@warning,  info     = data$status@info

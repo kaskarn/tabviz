@@ -63,8 +63,8 @@ web_theme <- function(
 #' Update Tier 1 inputs on a v2 theme.
 #'
 #' Any input field on [ThemeInputs] can be set: `brand`, `brand_deep`,
-#' `accent`, `accent_deep`, `status_*`, `series_anchors`, `summary_anchor`,
-#' `font_*`, `neutral`. Re-resolves the theme before returning.
+#' `accent`, `accent_deep`, `status_*`, `series_anchors`, `font_*`,
+#' `neutral`. Re-resolves the theme before returning.
 #'
 #' @param theme A [WebTheme].
 #' @param ... Named arguments matching [ThemeInputs] property names.
@@ -76,11 +76,9 @@ set_inputs <- function(theme, ...) {
   }
   args <- list(...)
   # If brand changes and brand_deep wasn't also set explicitly, reset
-  # brand_deep so resolve re-mirrors. Same for accent, summary_anchor,
-  # font_display.
+  # brand_deep so resolve re-mirrors. Same for accent and font_display.
   if ("brand"     %in% names(args) && !"brand_deep"     %in% names(args)) args$brand_deep     <- NA_character_
   if ("accent"    %in% names(args) && !"accent_deep"    %in% names(args)) args$accent_deep    <- NA_character_
-  if ("brand"     %in% names(args) && !"summary_anchor" %in% names(args)) args$summary_anchor <- NA_character_
   if ("font_body" %in% names(args) && !"font_display"   %in% names(args)) args$font_display   <- NA_character_
   theme@inputs <- apply_named_props(theme@inputs, args)
   # Series anchors changed -> rebuild slot bundles so every fill reflects

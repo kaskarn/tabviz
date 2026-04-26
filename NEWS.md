@@ -1,5 +1,15 @@
 # tabviz 0.26.0.9000
 
+## Breaking changes (post-v2 polish)
+
+* **Summary slot retired.** `theme@summary` and `inputs@summary_anchor`
+  are gone. The pooled-effect diamond now reads from
+  `theme@series[[1]]` — the same slot bundle as the primary effect.
+  Custom themes that previously set a distinct summary fill should set
+  `theme@series[[1]]@fill` (or `@stroke` for the outline) directly via
+  `set_theme_field()`. The wire shape no longer carries `theme.summary`
+  or `inputs.summaryAnchor`. Affects any caller of `set_inputs(summary_anchor = ...)`.
+
 ## Theming v2: 3-tier system
 
 v2 replaces the v1 flat-property-bag with a 3-tier cascade
@@ -12,7 +22,7 @@ modifiers are deleted. Update any custom theme code to the new API.
 * **Tier 1 inputs** (`ThemeInputs`): the only tier customers normally
   edit. `neutral` (5-step ramp), `brand` + `brand_deep`, `accent` +
   `accent_deep`, status colors, `series_anchors` (variable length),
-  `summary_anchor`, `font_body` / `font_display` / `font_mono`.
+  `font_body` / `font_display` / `font_mono`.
 * **Tier 1 variants** (`ThemeVariants`): per-table toggles.
   `density` ∈ {compact, comfortable, spacious},
   `header_style` ∈ {light, bold},

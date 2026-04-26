@@ -31,7 +31,7 @@ export interface ArrowConfig {
  */
 export function computeArrowDimensions(theme: WebTheme | null | undefined): ArrowConfig {
   const lineWidth = theme?.plot?.lineWidth ?? 1.5;
-  const color = theme?.summary?.stroke ?? "#475569";
+  const color = theme?.series?.[0]?.stroke ?? "#475569";
 
   return {
     // Arrow width: 3x line width, minimum 4px

@@ -45,10 +45,12 @@ test_that("resolve_theme expands series anchors into slot bundles", {
   expect_match(t@series[[1]]@text_fg, "^#")
 })
 
-test_that("resolve_theme fills summary slot bundle from summary_anchor", {
-  t <- resolve_theme(WebTheme(inputs = ThemeInputs(brand = "#1F3A5F")))
-  expect_match(t@summary@fill, "^#")
-  expect_equal(toupper(t@summary@fill), "#1F3A5F")  # mirrored from brand
+test_that("series[1] carries the brand-derived fill (used as the pooled-effect diamond)", {
+  t <- resolve_theme(WebTheme(inputs = ThemeInputs(
+    brand = "#1F3A5F",
+    series_anchors = c("#1F3A5F", "#888888")
+  )))
+  expect_equal(toupper(t@series[[1]]@fill), "#1F3A5F")
 })
 
 test_that("user-set fields survive resolution (idempotence + override)", {
@@ -91,7 +93,6 @@ test_that("Tier 1 NA mirrors fire", {
   inp <- ThemeInputs(brand = "#123456")
   t <- resolve_theme(WebTheme(inputs = inp))
   expect_equal(toupper(t@inputs@brand_deep), "#123456")
-  expect_equal(toupper(t@inputs@summary_anchor), "#123456")
   expect_equal(t@inputs@font_display, t@inputs@font_body)
 })
 
@@ -178,11 +179,10 @@ test_that("resolve_data is deterministic given the same inputs", {
   inp <- resolve_inputs_mirrors(
     ThemeInputs(series_anchors = c("#1F3A5F"), brand = "#1F3A5F")
   )
-  d1 <- resolve_data(inp, surface_base, content_primary, list(), SlotBundle())
-  d2 <- resolve_data(inp, surface_base, content_primary, list(), SlotBundle())
+  d1 <- resolve_data(inp, surface_base, content_primary, list())
+  d2 <- resolve_data(inp, surface_base, content_primary, list())
   expect_equal(d1$series[[1]]@fill,   d2$series[[1]]@fill)
   expect_equal(d1$series[[1]]@stroke, d2$series[[1]]@stroke)
-  expect_equal(d1$summary@fill,       d2$summary@fill)
 })
 
 test_that("partial slot bundle overrides survive resolution", {

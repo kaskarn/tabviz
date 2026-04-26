@@ -151,8 +151,12 @@
   </SettingsSection>
 
   <SettingsSection title="Summary diamond" description="Pooled-effect mark.">
-    <ColorField label="Fill"   value={theme.summary?.fill   ?? "#0891b2"} onchange={(v) => setPath(["summary","fill"],   v)} />
-    <ColorField label="Stroke" value={theme.summary?.stroke ?? "#0e7490"} onchange={(v) => setPath(["summary","stroke"], v)} />
+    <!-- Summary diamond reads from series[0] now; this section will be
+         removed in the ThemeControl restructure (sprint 4). -->
+    <ColorField label="Fill"   value={theme.series?.[0]?.fill   ?? "#0891b2"}
+                onchange={(v) => setPath(["series", 0, "fill"], v)} />
+    <ColorField label="Stroke" value={theme.series?.[0]?.stroke ?? "#0e7490"}
+                onchange={(v) => setPath(["series", 0, "stroke"], v)} />
   </SettingsSection>
 
   <SettingsSection title="Series" description="Per-effect anchor colors for forest points, bars, and other inline marks.">

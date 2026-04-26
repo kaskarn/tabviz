@@ -1269,9 +1269,9 @@
       --tv-header-bg: ${headerVariant.bg};
       --tv-cell-fg: ${theme.cell.fg ?? theme.content.primary};
       --tv-header-fg: ${headerVariant.fg};
-      --tv-interval-line: ${theme.summary.stroke};
-      --tv-summary-fill: ${theme.summary.fill};
-      --tv-summary-border: ${theme.summary.stroke};
+      --tv-interval-line: ${theme.series?.[0]?.stroke ?? theme.accent.default};
+      --tv-summary-fill: ${theme.series?.[0]?.fill ?? theme.accent.default};
+      --tv-summary-border: ${theme.series?.[0]?.stroke ?? theme.accent.default};
       --tv-accent: ${theme.accent.default};
       --tv-semantic-emphasis-fg: ${theme.row.emphasis?.fg ?? theme.content.primary};
       --tv-semantic-muted-fg:    ${theme.row.muted?.fg    ?? theme.content.muted};

@@ -190,8 +190,8 @@
     let baseColor: string;
     if (effect.color) {
       baseColor = effect.color;
-    } else if (isSummaryRow && isPrimary && theme?.summary?.fill) {
-      baseColor = theme.summary.fill;
+    } else if (isSummaryRow && isPrimary && theme?.series?.[0]?.fill) {
+      baseColor = theme.series[0].fill;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {
@@ -254,7 +254,7 @@
         {@const cx = xScale(effect.point!)}
         {@const style = getEffectStyle(effect, idx)}
         {@const pointSize = getEffectSize(idx === 0)}
-        {@const lineColor = theme?.summary?.stroke ?? "#475569"}
+        {@const lineColor = theme?.series?.[0]?.stroke ?? "#475569"}
 
         {#if isSummaryRow}
           <!-- Summary row: render diamond shape spanning lower to upper.
@@ -271,7 +271,7 @@
             points={summaryDiamondPoints}
             fill={style.fill}
             fill-opacity={style.opacity}
-            stroke={theme?.summary?.stroke ?? "#1d4ed8"}
+            stroke={theme?.series?.[0]?.stroke ?? "#1d4ed8"}
             stroke-width="1"
             class="point-estimate"
           />

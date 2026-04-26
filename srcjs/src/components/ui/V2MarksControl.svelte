@@ -13,7 +13,6 @@
   let { store }: Props = $props();
 
   const series = $derived(store.spec?.theme?.series ?? []);
-  const summary = $derived(store.spec?.theme?.summary);
   const plot = $derived(store.spec?.theme?.plot);
 
   let expanded = $state<Record<number, boolean>>({});
@@ -24,9 +23,6 @@
 
   function setSlot(idx: number, field: string, hex: string) {
     store.setThemeField(["series", idx, field], hex);
-  }
-  function setSummary(field: string, hex: string) {
-    store.setThemeField(["summary", field], hex);
   }
   function setPlot(field: string, value: number) {
     store.setThemeField(["plot", field], value);
@@ -64,13 +60,6 @@
     </div>
   {/each}
 </SettingsSection>
-
-{#if summary}
-  <SettingsSection title="Summary" description="Pooled-effect diamond. Same slot-bundle shape as series.">
-    <ColorField label="Fill"   value={summary.fill}   onchange={(v) => setSummary("fill", v)} />
-    <ColorField label="Stroke" value={summary.stroke} onchange={(v) => setSummary("stroke", v)} />
-  </SettingsSection>
-{/if}
 
 {#if plot}
   <SettingsSection title="Marks" description="Plot mark sizes.">

@@ -35,8 +35,6 @@ for (preset_name in names(preset_constructors)) {
         expect_match(t@series[[i]]@stroke, "^#")
         expect_match(t@series[[i]]@fill_muted, "^#")
       }
-      # Summary resolved.
-      expect_match(t@summary@fill, "^#")
       # Spacing density-driven.
       expect_false(is.na(t@spacing@row_height))
       expect_false(is.na(t@spacing@header_height))

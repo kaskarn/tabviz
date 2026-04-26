@@ -16,6 +16,6 @@ The updated \link{WebTheme} (re-resolved).
 }
 \description{
 Any input field on \link{ThemeInputs} can be set: \code{brand}, \code{brand_deep},
-\code{accent}, \code{accent_deep}, \verb{status_*}, \code{series_anchors}, \code{summary_anchor},
-\verb{font_*}, \code{neutral}. Re-resolves the theme before returning.
+\code{accent}, \code{accent_deep}, \verb{status_*}, \code{series_anchors}, \verb{font_*},
+\code{neutral}. Re-resolves the theme before returning.
 }

@@ -28,11 +28,11 @@ test_that("series serializes as JSON-ready array of slot bundles", {
   }
 })
 
-test_that("summary slot bundle is serialized", {
+test_that("series[1] is the pooled-effect anchor (no separate summary slot)", {
   out <- serialize_theme(WebTheme())
-  expect_named(out$summary, c("fill", "stroke", "fillMuted", "strokeMuted",
-                              "fillEmphasis", "strokeEmphasis", "textFg"))
-  expect_match(out$summary$fill, "^#")
+  expect_gt(length(out$series), 0L)
+  expect_match(out$series[[1]]$fill, "^#")
+  expect_false("summary" %in% names(out))
 })
 
 test_that("text roles all serialize with 6 fields", {

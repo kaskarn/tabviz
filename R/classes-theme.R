@@ -60,12 +60,13 @@ ThemeInputs <- new_class(
     status_warning  = new_property(class_character, default = "#C68A2E"),
     status_info     = new_property(class_character, default = NA_character_),
 
-    # Data series anchors. Variable length; one anchor per slot.
+    # Data series anchors. Variable length; one anchor per slot. The
+    # pooled-effect (summary) diamond reads from `series_anchors[1]` —
+    # there is no separate summary_anchor input. Themes that want a
+    # distinct summary outline override `theme@series[[1]]@stroke`
+    # explicitly.
     series_anchors  = new_property(class_character,
       default = c("#0891b2", "#16a34a", "#f59e0b", "#ef4444", "#8b5cf6")),
-
-    # Summary diamond anchor. NA = mirror brand.
-    summary_anchor = new_property(class_character, default = NA_character_),
 
     # Typography. font_display NA = mirror font_body. font_mono optional.
     font_body    = new_property(class_character,
@@ -77,7 +78,7 @@ ThemeInputs <- new_class(
     invalid <- character()
     color_props <- c("brand", "brand_deep", "accent", "accent_deep",
                      "status_positive", "status_negative", "status_warning",
-                     "status_info", "summary_anchor")
+                     "status_info")
     for (p in color_props) {
       v <- S7::prop(self, p)
       if (!is.na(v) && !grepl(hex_pattern, v)) {
@@ -672,7 +673,6 @@ WebTheme <- new_class(
     accent  = new_property(AccentRoles,   default = AccentRoles()),
     status  = new_property(StatusColors,  default = StatusColors()),
     series  = new_property(class_list,    default = list()),
-    summary = new_property(SlotBundle,    default = SlotBundle()),
     text    = new_property(TextRoles,     default = TextRoles()),
     spacing = new_property(SpacingTokens, default = SpacingTokens()),
 

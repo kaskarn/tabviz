@@ -1684,7 +1684,7 @@ function renderInterval(
 
   const baseSize = theme.plot.pointSize;
   const lineWidth = theme.plot.lineWidth;
-  const defaultLineColor = theme.summary.stroke;
+  const defaultLineColor = theme.series?.[0]?.stroke ?? theme.accent.default;
 
   // Check if this is a summary row (should render diamond)
   const isSummaryRow = row.style?.type === 'summary';
@@ -1732,7 +1732,7 @@ function renderInterval(
     if (effect.color) {
       baseColor = effect.color;
     } else if (isSummaryRow && isPrimary) {
-      baseColor = theme.summary.fill;
+      baseColor = theme.series?.[0]?.fill ?? theme.accent.default;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {

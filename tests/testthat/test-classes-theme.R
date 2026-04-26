@@ -7,7 +7,6 @@ test_that("ThemeInputs constructs with sensible defaults", {
   expect_length(inp@neutral, 5L)
   expect_match(inp@brand, "^#")
   expect_true(is.na(inp@brand_deep))
-  expect_true(is.na(inp@summary_anchor))
   expect_gt(length(inp@series_anchors), 0L)
 })
 
@@ -151,7 +150,6 @@ test_that("WebTheme constructs end-to-end with defaults", {
   expect_s7_class(t@variants, "ThemeVariants")
   expect_s7_class(t@surface, "Surfaces")
   expect_s7_class(t@content, "Content")
-  expect_s7_class(t@summary, "SlotBundle")
   expect_s7_class(t@row, "RowCluster")
   expect_s7_class(t@first_column, "FirstColumnCluster")
   expect_s7_class(t@marks, "MarksRecipes")
