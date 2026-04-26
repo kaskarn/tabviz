@@ -90,6 +90,152 @@ serialize_mark_recipe <- function(r) {
 }
 
 
+#' Map a resolved WebTheme2 onto the v1 wire shape.
+#'
+#' During the v1 -> v2 transition the frontend still consumes v1-shape JSON.
+#' This shim picks the active variant for each variant token and flattens
+#' the v2 nested cascade into the v1 named-list-of-named-lists shape. Lossy
+#' for fields v1 didn't carry (e.g. accent tints, slot bundles beyond
+#' fill/stroke); v1 just doesn't render those, which is fine until PR 9
+#' rewrites the panel + PR 10 deletes v1.
+#'
+#' @keywords internal
+serialize_theme_v2_to_v1 <- function(theme_v2) {
+  theme_v2 <- resolve_theme(theme_v2)
+
+  # Active variant pick.
+  hdr <- if (theme_v2@variants@header_style == "bold") theme_v2@header@bold else theme_v2@header@light
+  cg  <- if (theme_v2@variants@header_style == "bold") theme_v2@column_group@bold else theme_v2@column_group@light
+
+  series_fills <- vapply(theme_v2@series, function(s) s@fill, character(1))
+  text_or <- function(role, prop, fallback) {
+    v <- S7::prop(role, prop)
+    if (length(v) == 1L && !is.na(v)) v else fallback
+  }
+
+  list(
+    name = theme_v2@name,
+    colors = list(
+      background       = theme_v2@surface@base,
+      foreground       = theme_v2@content@primary,
+      primary          = theme_v2@inputs@brand,
+      secondary        = theme_v2@content@secondary,
+      accent           = theme_v2@accent@default,
+      muted            = theme_v2@content@muted,
+      border           = theme_v2@divider@subtle,
+      rowBg            = theme_v2@row@base@bg,
+      altBg            = theme_v2@row@alt@bg,
+      headerBg         = hdr@bg,
+      cellForeground   = na_to_null(theme_v2@cell@fg) %||% theme_v2@content@primary,
+      headerForeground = hdr@fg,
+      intervalLine     = theme_v2@summary@stroke,
+      summaryFill      = theme_v2@summary@fill,
+      summaryBorder    = theme_v2@summary@stroke,
+      swatches         = c(
+        theme_v2@inputs@brand, theme_v2@accent@default,
+        theme_v2@content@secondary, theme_v2@content@muted,
+        theme_v2@content@primary,   theme_v2@divider@subtle,
+        theme_v2@surface@base,      theme_v2@row@base@bg
+      )
+    ),
+    typography = list(
+      fontFamily       = theme_v2@inputs@font_body,
+      fontSizeSm       = text_or(theme_v2@text@label,    "size",  "0.75rem"),
+      fontSizeBase     = text_or(theme_v2@text@cell,     "size",  "0.875rem"),
+      fontSizeLg       = text_or(theme_v2@text@subtitle, "size",  "1rem"),
+      fontWeightNormal = 400,
+      fontWeightMedium = 500,
+      fontWeightBold   = 600,
+      lineHeight       = 1.5,
+      headerFontScale  = 1.05
+    ),
+    spacing = list(
+      rowHeight          = theme_v2@spacing@row_height,
+      headerHeight       = theme_v2@spacing@header_height,
+      padding            = theme_v2@spacing@padding,
+      containerPadding   = theme_v2@spacing@container_padding,
+      cellPaddingX       = theme_v2@spacing@cell_padding_x,
+      cellPaddingY       = 0,
+      axisGap            = theme_v2@spacing@axis_gap,
+      columnGroupPadding = theme_v2@spacing@column_group_padding,
+      rowGroupPadding    = theme_v2@spacing@row_group_padding,
+      footerGap          = theme_v2@spacing@footer_gap,
+      titleSubtitleGap   = theme_v2@spacing@title_subtitle_gap,
+      bottomMargin       = theme_v2@spacing@bottom_margin,
+      groupPadding       = theme_v2@spacing@column_group_padding
+    ),
+    shapes = list(
+      pointSize           = theme_v2@plot@point_size,
+      summaryHeight       = 10,
+      lineWidth           = theme_v2@plot@line_width,
+      rowBorderWidth      = theme_v2@row@border_width,
+      headerBorderWidth   = 2,
+      rowGroupBorderWidth = 1,
+      tickMarkLength      = theme_v2@plot@tick_mark_length,
+      effectColors        = if (length(series_fills) > 0L) I(series_fills) else NULL,
+      markerShapes        = I(c("square", "circle", "diamond", "triangle"))
+    ),
+    axis = list(
+      rangeMin       = NULL, rangeMax = NULL,
+      tickCount      = NULL, tickValues = NULL,
+      gridlines      = FALSE, gridlineStyle = "dotted",
+      ciClipFactor   = 2.0, includeNull = TRUE,
+      symmetric      = NULL, nullTick = TRUE, markerMargin = TRUE
+    ),
+    layout = list(
+      plotWidth             = "auto",
+      containerBorder       = FALSE,
+      containerBorderRadius = 8,
+      banding               = serialize_banding(theme_v2@row@banding)
+    ),
+    groupHeaders = list(
+      level1FontSize     = text_or(theme_v2@row_group@L1@text, "size",   "0.9375rem"),
+      level1FontWeight   = text_or(theme_v2@row_group@L1@text, "weight", 600),
+      level1Italic       = text_or(theme_v2@row_group@L1@text, "italic", FALSE),
+      level1Background   = na_to_null(theme_v2@row_group@L1@bg),
+      level1BorderBottom = theme_v2@row_group@L1@border_bottom,
+      level2FontSize     = text_or(theme_v2@row_group@L2@text, "size",   "0.875rem"),
+      level2FontWeight   = text_or(theme_v2@row_group@L2@text, "weight", 500),
+      level2Italic       = text_or(theme_v2@row_group@L2@text, "italic", FALSE),
+      level2Background   = na_to_null(theme_v2@row_group@L2@bg),
+      level2BorderBottom = theme_v2@row_group@L2@border_bottom,
+      level3FontSize     = text_or(theme_v2@row_group@L3@text, "size",   "0.875rem"),
+      level3FontWeight   = text_or(theme_v2@row_group@L3@text, "weight", 400),
+      level3Italic       = text_or(theme_v2@row_group@L3@text, "italic", FALSE),
+      level3Background   = na_to_null(theme_v2@row_group@L3@bg),
+      level3BorderBottom = theme_v2@row_group@L3@border_bottom,
+      indentPerLevel     = theme_v2@row_group@indent_per_level
+    ),
+    semantics = list(
+      emphasis = list(
+        fg         = na_to_null(theme_v2@row@emphasis@fg),
+        bg         = na_to_null(theme_v2@row@emphasis@bg),
+        border     = na_to_null(theme_v2@row@emphasis@border),
+        markerFill = na_to_null(theme_v2@row@emphasis@marker_fill),
+        fontWeight = na_to_null(theme_v2@row@emphasis@font_weight),
+        fontStyle  = na_to_null(theme_v2@row@emphasis@font_style)
+      ),
+      muted = list(
+        fg         = na_to_null(theme_v2@row@muted@fg),
+        bg         = na_to_null(theme_v2@row@muted@bg),
+        border     = na_to_null(theme_v2@row@muted@border),
+        markerFill = na_to_null(theme_v2@row@muted@marker_fill),
+        fontWeight = na_to_null(theme_v2@row@muted@font_weight),
+        fontStyle  = na_to_null(theme_v2@row@muted@font_style)
+      ),
+      accent = list(
+        fg         = na_to_null(theme_v2@row@accent@fg),
+        bg         = na_to_null(theme_v2@row@accent@bg),
+        border     = na_to_null(theme_v2@row@accent@border),
+        markerFill = na_to_null(theme_v2@row@accent@marker_fill),
+        fontWeight = na_to_null(theme_v2@row@accent@font_weight),
+        fontStyle  = na_to_null(theme_v2@row@accent@font_style)
+      )
+    )
+  )
+}
+
+
 #' Serialize a v2 theme to a JSON-ready list.
 #'
 #' Emits the full tier 2 / tier 3 resolved shape under camelCase field

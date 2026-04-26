@@ -9,19 +9,27 @@
 serialize_spec <- function(spec, include_forest = TRUE) {
   theme <- spec@theme %||% web_theme_default()
 
+  # Dispatch on theme version. v2 themes (WebTheme2) flow through the shim
+  # that maps the resolved tier 2/3 cascade onto the v1 wire shape so the
+  # frontend keeps reading the same fields. Frontend-native v2 wire lands
+  # in PR 9/10.
+  is_v2 <- inherits(theme, "tabviz::WebTheme2")
+  theme_payload <- if (is_v2) serialize_theme_v2_to_v1(theme) else serialize_theme(theme)
+  plot_width <- if (is_v2) "auto" else theme@layout@plot_width
+
   list(
     data = serialize_data(spec, include_forest),
     columns = lapply(spec@columns, serialize_column),
     extraColumns = lapply(spec@extra_columns, serialize_column),
     availableFields = serialize_available_fields(spec),
-    theme = serialize_theme(theme),
+    theme = theme_payload,
     interaction = serialize_interaction(spec@interaction),
     labels = serialize_labels(spec@labels),
     watermark = if (is.na(spec@watermark)) NULL else spec@watermark,
     watermarkColor = if (is.na(spec@watermark_color)) NULL else spec@watermark_color,
     watermarkOpacity = if (is.na(spec@watermark_opacity)) NULL else spec@watermark_opacity,
     layout = list(
-      plotWidth = theme@layout@plot_width
+      plotWidth = plot_width
     ),
     originalCall = if (is.na(spec@original_call)) NULL else spec@original_call
   )
