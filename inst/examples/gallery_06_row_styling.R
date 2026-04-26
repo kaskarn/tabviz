@@ -35,7 +35,7 @@ forest_plot(
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
   row_color = "rcolor", row_badge = "rbadge",
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio",
   title = "Row Styling Features",

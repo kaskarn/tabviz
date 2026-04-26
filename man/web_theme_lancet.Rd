@@ -10,5 +10,5 @@ web_theme_lancet()
 A \link{WebTheme}.
 }
 \description{
-Lancet navy primary, gold accent, serif typography.
+Lancet navy primary, gold accent, serif typography on a warm cream surface.
 }

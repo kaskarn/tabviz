@@ -22,8 +22,7 @@ test_that("each v2 preset renders to PNG via the dispatch path", {
   dir.create(tmpdir)
   on.exit(unlink(tmpdir, recursive = TRUE), add = TRUE)
 
-  presets <- c("default", "minimal", "dark", "jama", "lancet",
-               "modern", "presentation", "cochrane", "nature")
+  presets <- c("cochrane", "lancet", "jama", "dark")
 
   for (preset in presets) {
     ctor <- get(paste0("web_theme_", preset))

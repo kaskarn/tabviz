@@ -39,17 +39,15 @@ function defaultSemanticsFor(colors: ColorPalette, typography: Typography): Sema
   };
 }
 
-// Theme preset names
+// Theme preset names. Round 2 trimmed to four canonical presets:
+// the default (Cochrane), two journal identities (Lancet, JAMA), and
+// a single dark-mode option. The five removed presets have migration
+// paths in NEWS.md.
 export const THEME_NAMES = [
-  "default",
-  "minimal",
-  "dark",
-  "jama",
-  "lancet",
-  "modern",
-  "presentation",
   "cochrane",
-  "nature",
+  "lancet",
+  "jama",
+  "dark",
 ] as const;
 
 export type ThemeName = (typeof THEME_NAMES)[number];
@@ -557,17 +555,17 @@ const NATURE_THEME: WebTheme = {
   },
 };
 
-// Export all theme presets
+// Export all theme presets. Note: this v1-shaped table is now used only
+// by the in-widget theme switcher's name-based fallback. v2 themes flow
+// through the wire shape from R, so the interactive cascade reads from
+// theme.surface.muted etc. — not from this table. Kept here for the
+// fallback path until ThemeSwitcher is rewired to fetch presets from
+// the spec.
 export const THEME_PRESETS: Record<ThemeName, WebTheme> = {
-  default: DEFAULT_THEME,
-  minimal: MINIMAL_THEME,
-  dark: DARK_THEME,
-  jama: JAMA_THEME,
-  lancet: LANCET_THEME,
-  modern: MODERN_THEME,
-  presentation: PRESENTATION_THEME,
   cochrane: COCHRANE_THEME,
-  nature: NATURE_THEME,
+  lancet:   LANCET_THEME,
+  jama:     JAMA_THEME,
+  dark:     DARK_THEME,
 };
 
 // Every preset spreads DEFAULT_THEME and overrides its own palette/typography;
@@ -581,13 +579,8 @@ for (const t of Object.values(THEME_PRESETS)) {
 
 // Human-readable theme labels for UI
 export const THEME_LABELS: Record<ThemeName, string> = {
-  default: "Default",
-  minimal: "Minimal",
-  dark: "Dark",
-  jama: "JAMA",
-  lancet: "Lancet",
-  modern: "Modern",
-  presentation: "Presentation",
   cochrane: "Cochrane",
-  nature: "Nature",
+  lancet:   "Lancet",
+  jama:     "JAMA",
+  dark:     "Dark",
 };

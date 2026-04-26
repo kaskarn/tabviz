@@ -37,7 +37,7 @@ forest_plot(
     col_interval("estimate", "conf.low", "conf.high", header = "95% CI"),
     col_pvalue("pvalue", "P-value")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   null_value = 0,
   axis_label = "Regression Coefficient (95% CI)",
   title = "Predictors of Sepal Length",

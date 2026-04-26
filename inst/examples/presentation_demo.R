@@ -33,7 +33,7 @@ forest_plot(
     col_interval("or", "lower", "upper", header = "OR (95% CI)"),
     col_pvalue("pvalue", "P")
   ),
-  theme = web_theme_presentation(),
+  theme = web_theme_cochrane(),
   scale = "log",
   null_value = 1,
   axis_label = "Odds Ratio (95% CI)",

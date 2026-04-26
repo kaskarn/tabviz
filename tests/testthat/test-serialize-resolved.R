@@ -113,9 +113,7 @@ test_that("NA fields emit as JSON null (omitted from R list)", {
 
 test_that("each preset roundtrips cleanly through serialize_theme", {
   for (preset_fn in list(
-    web_theme_default, web_theme_minimal, web_theme_dark,
-    web_theme_jama, web_theme_lancet, web_theme_modern,
-    web_theme_presentation, web_theme_cochrane, web_theme_nature
+    web_theme_cochrane, web_theme_lancet, web_theme_jama, web_theme_dark
   )) {
     out <- serialize_theme(preset_fn())
     expect_equal(out$schemaVersion, 2L)

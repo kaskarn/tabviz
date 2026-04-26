@@ -137,21 +137,6 @@ test_that("web_theme_lancet creates valid theme", {
   expect_equal(toupper(theme@inputs@brand), "#00407A")
 })
 
-test_that("web_theme_modern creates valid theme", {
-  theme <- web_theme_modern()
-  expect_true(inherits(theme, "tabviz::WebTheme"))
-  expect_equal(theme@name, "modern")
-  expect_equal(theme@spacing@row_height, 30)
-})
-
-test_that("web_theme_presentation creates valid theme", {
-  theme <- web_theme_presentation()
-  expect_true(inherits(theme, "tabviz::WebTheme"))
-  expect_equal(theme@name, "presentation")
-  expect_equal(theme@spacing@row_height, 36)
-  expect_equal(theme@plot@point_size, 12)
-})
-
 # Column helper tests
 test_that("col_bar creates column with options", {
   col <- col_bar("weight", max_value = 100, show_label = FALSE)
@@ -181,14 +166,6 @@ test_that("web_theme_cochrane creates valid theme", {
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "cochrane")
   expect_equal(toupper(theme@inputs@brand), "#0099CC")
-  expect_false(theme@layout@container_border)
-})
-
-test_that("web_theme_nature creates valid theme", {
-  theme <- web_theme_nature()
-  expect_true(inherits(theme, "tabviz::WebTheme"))
-  expect_equal(theme@name, "nature")
-  expect_equal(toupper(theme@inputs@brand), "#1976D2")
   expect_false(theme@layout@container_border)
 })
 

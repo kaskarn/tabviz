@@ -268,15 +268,14 @@ set_marker_style <- function(
 #' @export
 set_theme <- function(x, theme) {
   theme_map <- list(
-    default = web_theme_default,
-    minimal = web_theme_minimal,
-    dark = web_theme_dark,
-    jama = web_theme_jama,
-    lancet = web_theme_lancet,
-    modern = web_theme_modern,
-    presentation = web_theme_presentation,
     cochrane = web_theme_cochrane,
-    nature = web_theme_nature
+    lancet   = web_theme_lancet,
+    jama     = web_theme_jama,
+    dark     = web_theme_dark,
+    # "default" is no longer a constructor; the package default is
+    # Cochrane. Keep "default" routing here as a non-breaking alias for
+    # set_theme("default") call sites in the wild.
+    default  = web_theme_cochrane
   )
 
   resolved <- if (is.character(theme) && length(theme) == 1) {
@@ -941,7 +940,7 @@ set_label_slot <- function(x, slot, text) {
 #' @return The modified input
 #' @export
 #' @examples
-#' web_theme_default() |>
+#' web_theme_cochrane() |>
 #'   (\(t) tabviz(
 #'     data.frame(study = letters[1:3], or = 1:3),
 #'     label = "study", theme = t

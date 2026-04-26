@@ -33,7 +33,7 @@ tabviz(
       axis_label = "Hazard Ratio"
     )
   ),
-  theme    = web_theme_modern(),
+  theme    = web_theme_cochrane(),
   title    = "Semantic cascade on a single-effect forest",
   subtitle = "row_accent / row_emphasis / row_muted replace marker fill with theme colors",
   caption  = "Purple = strong evidence (accent); dark = borderline (emphasis); gray = exploratory (muted)."

@@ -42,7 +42,7 @@ tabviz(
       width = 240
     )
   ),
-  theme    = web_theme_modern(),
+  theme    = web_theme_cochrane(),
   title    = "Semantic cascade on viz_bar",
   subtitle = "Single-effect: fill replacement. Multi-effect: outline augment."
 )

@@ -35,7 +35,7 @@ forest_plot(
     col_n("n"),
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio",
   title = "Nested Hierarchical Groups",

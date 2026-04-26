@@ -68,7 +68,7 @@ forest_plot(
     col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
     col_bar("n", "Sample Size")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   scale = "log",
   null_value = 1,
   axis_label = "Hazard Ratio for MACE (95% CI)",

@@ -43,7 +43,7 @@ web_theme <- function(
     name = "custom",
     inputs = NULL,
     variants = NULL,
-    base_theme = web_theme_default()) {
+    base_theme = web_theme_cochrane()) {
   checkmate::assert_string(name)
   checkmate::assert_list(inputs, names = "named", null.ok = TRUE)
   checkmate::assert_list(variants, names = "named", null.ok = TRUE)

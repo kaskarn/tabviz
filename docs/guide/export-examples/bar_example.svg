@@ -43,10 +43,10 @@
         stroke="#52525B" stroke-width="2"/>
 <rect x="16" y="96"
             width="468" height="30"
-            fill="#EFF1F5"/>
+            fill="#F5F5F8"/>
 <rect x="16" y="156"
             width="468" height="30"
-            fill="#EFF1F5"/>
+            fill="#F5F5F8"/>
 <defs><clipPath id="viz-clip-viz_bar_enrollment"><rect x="144" y="96" width="156" height="120"/></clipPath></defs>
 <g clip-path="url(#viz-clip-viz_bar_enrollment)">
 

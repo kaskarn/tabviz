@@ -30,7 +30,7 @@ tabviz(
     col_bar("yoy_pct", "YoY %"),
     col_sparkline("trend", "6Q Trend")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Table-Only Mode",
   subtitle = "No forest plot - pure data table with bars and sparklines",
   caption = "Tables without visualization columns work seamlessly"

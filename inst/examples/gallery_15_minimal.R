@@ -25,7 +25,7 @@ forest_plot(
     col_bar("weight"),
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  theme = web_theme_minimal(),
+  theme = web_theme_cochrane(),
   scale = "log", null_value = 1,
   axis_label = "Hazard Ratio",
   title = "Forest Plot",

@@ -8,7 +8,7 @@ web_theme(
   name = "custom",
   inputs = NULL,
   variants = NULL,
-  base_theme = web_theme_default()
+  base_theme = web_theme_cochrane()
 )
 }
 \arguments{

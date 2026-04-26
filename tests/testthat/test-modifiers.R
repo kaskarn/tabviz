@@ -34,7 +34,7 @@ test_that("tabviz(banding=) threads into the row cluster", {
   expect_equal(spec@theme@row@banding, "row")
 
   # tabviz arg wins over a theme that already sets banding
-  themed <- web_theme_default()
+  themed <- web_theme_cochrane()
   themed@row@banding <- "none"
   spec2 <- tabviz(
     data, label = "study",
@@ -228,7 +228,7 @@ test_that("htmlwidget round-trip: add_column returns htmlwidget", {
 # ----------------------------------------------------------------------------
 
 test_that("finalize_enable_themes handles NULL, 'default', and empty list", {
-  theme <- web_theme_default()
+  theme <- web_theme_cochrane()
   expect_null(tabviz:::finalize_enable_themes(NULL, theme))
   expect_null(tabviz:::finalize_enable_themes(list(), theme))
   resolved <- tabviz:::finalize_enable_themes("default", theme)
@@ -239,7 +239,7 @@ test_that("finalize_enable_themes handles NULL, 'default', and empty list", {
 test_that("finalize_enable_themes auto-includes the active theme", {
   active <- web_theme_jama()
   resolved <- tabviz:::finalize_enable_themes(
-    list(web_theme_default(), web_theme_modern()), active
+    list(web_theme_cochrane(), web_theme_lancet()), active
   )
   names_out <- vapply(resolved, function(t) t@name, character(1))
   expect_true(active@name %in% names_out)
@@ -249,16 +249,16 @@ test_that("finalize_enable_themes auto-includes the active theme", {
 test_that("finalize_enable_themes does not duplicate when active already present", {
   active <- web_theme_jama()
   resolved <- tabviz:::finalize_enable_themes(
-    list(web_theme_default(), web_theme_jama()), active
+    list(web_theme_cochrane(), web_theme_jama()), active
   )
   names_out <- vapply(resolved, function(t) t@name, character(1))
   expect_equal(sum(names_out == active@name), 1L)
 })
 
 test_that("finalize_enable_themes applies named list overrides to @name", {
-  active <- web_theme_default()
+  active <- web_theme_cochrane()
   resolved <- tabviz:::finalize_enable_themes(
-    list(Classical = web_theme_jama(), Modern = web_theme_modern()),
+    list(Classical = web_theme_jama(), Modern = web_theme_lancet()),
     active
   )
   names_out <- vapply(resolved, function(t) t@name, character(1))
@@ -269,7 +269,7 @@ test_that("finalize_enable_themes applies named list overrides to @name", {
 test_that("selectable_themes sets spec interaction and auto-includes active", {
   spec <- make_spec()
   spec@theme <- web_theme_jama()
-  updated <- selectable_themes(spec, list(web_theme_default()))
+  updated <- selectable_themes(spec, list(web_theme_cochrane()))
   names_out <- vapply(updated@interaction@enable_themes,
                       function(t) t@name, character(1))
   expect_true(spec@theme@name %in% names_out)

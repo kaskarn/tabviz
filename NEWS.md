@@ -1,5 +1,28 @@
 # tabviz 0.26.0.9000
 
+## Theme roster trim (breaking)
+
+The package's preset roster shrinks from nine themes to four. The remaining
+four cover the design space we actually care about: a clean general-purpose
+default (Cochrane), two journal-publication identities (Lancet, JAMA), and
+a single dark-mode option (Dark). The five removed presets are intentionally
+deleted — pre-1.0 is the time to break cleanly. Migration:
+
+| Removed                       | Replacement                             |
+|-------------------------------|-----------------------------------------|
+| `web_theme_default()`         | `web_theme_cochrane()` (the new default) |
+| `web_theme_modern()`          | `web_theme_cochrane()` or `web_theme_lancet()` |
+| `web_theme_nature()`          | `web_theme_cochrane()` or `web_theme_lancet()` |
+| `web_theme_presentation()`    | `set_variants(density = "spacious")` on any kept preset |
+| `web_theme_minimal()`         | `web_theme_jama()`                      |
+
+* `web_theme()`'s `base_theme` argument now defaults to
+  `web_theme_cochrane()`.
+* `set_theme("default")` still works as an alias for `set_theme("cochrane")`
+  so call sites in the wild don't break.
+* Wire-shape consumers (`enable_themes = "default"` from R) now receive
+  the four kept themes only.
+
 ## Cascade completion (post-v2 polish round 2)
 
 * **`brand_deep` reaches further.** Plot title color, forest axis labels

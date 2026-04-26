@@ -71,7 +71,7 @@ forest_plot(
   row_indent = "row_indent",
   row_color = "row_color",
   row_badge = "row_badge",
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   scale = "log",
   null_value = 1,
   axis_label = "Hazard Ratio (95% CI)",

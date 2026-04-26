@@ -41,7 +41,7 @@ tabviz(
       axis_label = "Hazard Ratio"
     )
   ),
-  theme    = web_theme_modern(),
+  theme    = web_theme_cochrane(),
   title    = "Marker cascade — precedence + NA passthrough",
   subtitle = "Layer 4 (literal) overrides Layer 3 (semantic); NA in Layer 4 passes through",
   caption  = paste0(

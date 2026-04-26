@@ -7,7 +7,7 @@
 #' @return A nested list suitable for jsonlite::toJSON
 #' @keywords internal
 serialize_spec <- function(spec, include_forest = TRUE) {
-  theme <- spec@theme %||% web_theme_default()
+  theme <- spec@theme %||% web_theme_cochrane()
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli_abort("{.arg theme} must be a {.cls WebTheme} object.")
   }

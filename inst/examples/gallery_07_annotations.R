@@ -32,7 +32,7 @@ tabviz(
       )
     )
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Annotations & Reference Lines",
   subtitle = "refline() for thresholds; forest_annotation() flags individual rows",
   caption = "Green dashed = clinically meaningful; red solid = target; stars flag preferred regimens"

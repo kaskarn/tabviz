@@ -10,5 +10,6 @@ web_theme_cochrane()
 A \link{WebTheme}.
 }
 \description{
-Cochrane teal, Arial, very compact density for systematic reviews.
+The package default. Cochrane teal on warm white, Arial, compact density,
+tuned for systematic-review tables that need to fit dense data legibly.
 }

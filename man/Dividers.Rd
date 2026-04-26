@@ -2,7 +2,11 @@
 % Please edit documentation in R/classes-theme.R
 \name{Dividers}
 \alias{Dividers}
-\title{Dividers (Tier 2): rule and gridline tones (subtle/strong pair).}
+\title{Dividers (Tier 2): rule and gridline tones.}
 \description{
-Dividers (Tier 2): rule and gridline tones (subtle/strong pair).
+\code{subtle} powers cell hairlines and gridlines. \code{strong} powers header
+rules, group rules, and the forest-plot axis line / tick / reference
+lines on light surfaces. \code{strong_on_dark} is the bold-mode counterpart
+(rule on a brand_deep header band) — must contrast against \code{brand_deep},
+not against the table surface.
 }

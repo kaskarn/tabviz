@@ -67,7 +67,7 @@ forest_plot(
     col_numeric("n", "N"),
     col_interval("or", "lower", "upper", header = "OR (95% CI)")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   scale = "log",
   null_value = 1,
   axis_label = "Odds Ratio (95% CI)",

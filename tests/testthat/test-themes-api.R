@@ -36,7 +36,7 @@ test_that("web_theme rejects unknown property names", {
 })
 
 test_that("set_inputs updates Tier 1 fields and re-resolves", {
-  t <- web_theme_default()
+  t <- web_theme_cochrane()
   t2 <- set_inputs(t, brand = "#FF0000", accent = "#00FF00")
   expect_equal(toupper(t2@inputs@brand), "#FF0000")
   expect_equal(toupper(t2@inputs@accent), "#00FF00")
@@ -48,14 +48,14 @@ test_that("set_inputs updates Tier 1 fields and re-resolves", {
 })
 
 test_that("set_inputs preserves explicit overrides through re-resolution", {
-  t <- web_theme_default()
+  t <- web_theme_cochrane()
   t@row@hover@bg <- "#123456"  # explicit Tier 3 override
   t2 <- set_inputs(t, brand = "#FF0000")
   expect_equal(toupper(t2@row@hover@bg), "#123456")  # survives
 })
 
 test_that("set_variants flips density and header_style", {
-  t <- web_theme_default()
+  t <- web_theme_cochrane()
   t2 <- set_variants(t, density = "spacious", header_style = "bold")
   expect_equal(t2@variants@density, "spacious")
   expect_equal(t2@variants@header_style, "bold")
@@ -63,26 +63,26 @@ test_that("set_variants flips density and header_style", {
 })
 
 test_that("set_variants validates option set", {
-  t <- web_theme_default()
+  t <- web_theme_cochrane()
   expect_error(set_variants(t, density = "ginormous"))
   expect_error(set_variants(t, header_style = "outlined"))
   expect_error(set_variants(t, first_column_style = "italic"))
 })
 
 test_that("set_theme_field walks character paths", {
-  t <- web_theme_default()
+  t <- web_theme_cochrane()
   t2 <- set_theme_field(t, c("row_group", "L1", "bg"), "#EEEEEE")
   expect_equal(toupper(t2@row_group@L1@bg), "#EEEEEE")
 })
 
 test_that("set_theme_field accepts integer index for series list", {
-  t <- web_theme_default()
+  t <- web_theme_cochrane()
   t2 <- set_theme_field(t, list("series", 2L, "fill"), "#FF00FF")
   expect_equal(toupper(t2@series[[2]]@fill), "#FF00FF")
 })
 
 test_that("set_theme_field updates Tier 1 input fields", {
-  t <- web_theme_default()
+  t <- web_theme_cochrane()
   t2 <- set_theme_field(t, c("inputs", "brand"), "#FF0000")
   expect_equal(toupper(t2@inputs@brand), "#FF0000")
   # And the Tier 2/3 cascade rebuilds.
@@ -90,12 +90,12 @@ test_that("set_theme_field updates Tier 1 input fields", {
 })
 
 test_that("set_theme_field rejects empty path", {
-  expect_error(set_theme_field(web_theme_default(), character(), "x"),
+  expect_error(set_theme_field(web_theme_cochrane(), character(), "x"),
                "at least one element")
 })
 
 test_that("set_spacing overrides one token, density preset fills rest", {
-  t <- web_theme_default()
+  t <- web_theme_cochrane()
   t2 <- set_spacing(t, row_height = 99)
   expect_equal(t2@spacing@row_height, 99)
   expect_equal(t2@spacing@header_height, t@spacing@header_height)
@@ -109,7 +109,7 @@ test_that("modifiers reject non-theme inputs", {
 })
 
 test_that("v2 modifiers chain via piping", {
-  t <- web_theme_default() |>
+  t <- web_theme_cochrane() |>
     set_inputs(brand = "#1F3A5F") |>
     set_variants(density = "spacious") |>
     set_spacing(row_height = 28)

@@ -38,7 +38,7 @@ forest_plot(
     col_sparkline("flow_trend", "6M Flows"),
     col_interval("return_1y", "lower", "upper", header = "1Y Return % (95% CI)")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   null_value = 0,
   axis_label = "1-Year Return (%)",
   title = "Sparklines & Bars",

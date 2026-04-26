@@ -3,15 +3,10 @@ expect_s7 <- function(x, class_name) {
 }
 
 preset_constructors <- list(
-  default      = web_theme_default,
-  minimal      = web_theme_minimal,
-  dark         = web_theme_dark,
-  jama         = web_theme_jama,
-  lancet       = web_theme_lancet,
-  modern       = web_theme_modern,
-  presentation = web_theme_presentation,
-  cochrane     = web_theme_cochrane,
-  nature       = web_theme_nature
+  cochrane = web_theme_cochrane,
+  lancet   = web_theme_lancet,
+  jama     = web_theme_jama,
+  dark     = web_theme_dark
 )
 
 for (preset_name in names(preset_constructors)) {
@@ -47,13 +42,9 @@ for (preset_name in names(preset_constructors)) {
   })
 }
 
-test_that("package_themes returns all 9 presets named", {
+test_that("package_themes returns all 4 presets named", {
   pkg <- package_themes()
-  expect_setequal(
-    names(pkg),
-    c("default", "minimal", "dark", "jama", "lancet",
-      "modern", "presentation", "cochrane", "nature")
-  )
+  expect_setequal(names(pkg), c("cochrane", "lancet", "jama", "dark"))
   for (nm in names(pkg)) expect_s7(pkg[[nm]], "WebTheme")
 })
 
@@ -70,36 +61,34 @@ test_that("preset overrides survive resolution", {
 })
 
 test_that("brand_deep defaults to a darker version of brand", {
-  d <- web_theme_default()
-  # The default is `oklch_darken(brand, 0.15)` so brand_deep is strictly
-  # darker — not a literal copy of brand. (Authors who want literal
-  # mirroring set brand_deep = brand explicitly.)
-  expect_match(d@inputs@brand_deep, "^#[0-9A-Fa-f]{6}$")
-  expect_false(identical(d@inputs@brand_deep, d@inputs@brand))
-  # Sanity: the OKLCH lightness of brand_deep should be lower than brand.
-  brand_L      <- to_oklch(d@inputs@brand)[1, 1]
-  brand_deep_L <- to_oklch(d@inputs@brand_deep)[1, 1]
+  c <- web_theme_cochrane()
+  # The default is `oklch_darken(brand, 0.15)`. Cochrane explicitly pins
+  # brand_deep = "#006699", so check both: pinned value is darker than
+  # brand, and the type is hex.
+  expect_match(c@inputs@brand_deep, "^#[0-9A-Fa-f]{6}$")
+  brand_L      <- to_oklch(c@inputs@brand)[1, 1]
+  brand_deep_L <- to_oklch(c@inputs@brand_deep)[1, 1]
   expect_lt(brand_deep_L, brand_L)
 })
 
 test_that("brand_deep can be set explicitly per preset", {
-  # Lancet sets brand_deep = "#002D54" explicitly.
   l <- web_theme_lancet()
   expect_equal(toupper(l@inputs@brand), "#00407A")
   expect_equal(toupper(l@inputs@brand_deep), "#002D54")
 })
 
 test_that("density flag sets compact / comfortable / spacious correctly", {
-  expect_equal(web_theme_jama()@variants@density, "compact")
-  expect_equal(web_theme_default()@variants@density, "comfortable")
-  expect_equal(web_theme_modern()@variants@density, "spacious")
+  expect_equal(web_theme_jama()@variants@density,     "compact")
+  expect_equal(web_theme_cochrane()@variants@density, "compact")
+  expect_equal(web_theme_lancet()@variants@density,   "comfortable")
+  expect_equal(web_theme_dark()@variants@density,     "comfortable")
 })
 
 test_that("series anchors match per-preset palette", {
-  expect_length(web_theme_default()@inputs@series_anchors, 5)
-  expect_equal(toupper(web_theme_default()@inputs@series_anchors[1]), "#0891B2")
-  expect_equal(toupper(web_theme_lancet()@inputs@series_anchors[1]),  "#00468B")
-  expect_equal(toupper(web_theme_modern()@inputs@series_anchors[1]),  "#3B82F6")
+  expect_length(web_theme_cochrane()@inputs@series_anchors, 5)
+  expect_equal(toupper(web_theme_cochrane()@inputs@series_anchors[1]), "#0C4DA2")
+  expect_equal(toupper(web_theme_lancet()@inputs@series_anchors[1]),   "#00468B")
+  expect_equal(toupper(web_theme_jama()@inputs@series_anchors[1]),     "#1A1A1A")
 })
 
 test_that("dark theme has dark canvas", {

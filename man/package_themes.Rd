@@ -10,6 +10,6 @@ package_themes()
 Named list of \link{WebTheme} objects.
 }
 \description{
-Returns a named list of all v2 theme presets. The v2 mirror of
-\code{\link[=package_themes]{package_themes()}}.
+Returns a named list of all v2 theme presets. The default category surface
+for the in-widget switcher when \code{enable_themes = "default"}.
 }

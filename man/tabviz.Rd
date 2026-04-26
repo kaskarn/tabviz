@@ -36,7 +36,7 @@ tabviz(
   marker_opacity = NULL,
   marker_size = NULL,
   weight = NULL,
-  theme = web_theme_default(),
+  theme = web_theme_cochrane(),
   interaction = NULL,
   plot_position = NULL,
   row_height = NULL,

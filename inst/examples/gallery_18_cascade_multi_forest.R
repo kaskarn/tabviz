@@ -43,7 +43,7 @@ tabviz(
       axis_range = c(0.4, 1.3)
     )
   ),
-  theme    = web_theme_modern(),
+  theme    = web_theme_cochrane(),
   title    = "Semantic cascade on a multi-effect forest",
   subtitle = "Accented rows get an outline (fill preserved to keep effect identity)",
   caption  = "Blue = ITT, green = Per-Protocol, orange = Safety. Outlined markers: row is flagged via row_accent."

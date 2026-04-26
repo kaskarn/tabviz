@@ -44,7 +44,7 @@ tabviz(
     col_sparkline("trend", "6M Trend")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent", row_color = "rcolor",
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Executive Dashboard",
   subtitle = "Table-only with hierarchical org structure",
   caption = "Row styling for hierarchical org charts"

@@ -65,7 +65,7 @@ tabviz(
     )
   ),
   row_type = "row_type", row_bold = "row_bold",      # row styling from data
-  theme = web_theme_nature(),                        # publication theme
+  theme = web_theme_lancet(),                        # publication theme
   title = "GLP-1 Agonist Cardiovascular Outcomes",
   subtitle = "Major adverse cardiovascular events (MACE)"
 )
@@ -109,15 +109,10 @@ web_theme_jama() |>
 
 | Theme | Style |
 |-------|-------|
-| `web_theme_default()` | Clean, modern default |
-| `web_theme_jama()` | JAMA (B&W, compact) |
-| `web_theme_lancet()` | Lancet (blue, serif) |
-| `web_theme_cochrane()` | Cochrane (compact, professional) |
-| `web_theme_nature()` | Nature (clean, modern) |
-| `web_theme_modern()` | Contemporary UI |
-| `web_theme_presentation()` | Large fonts for slides |
-| `web_theme_dark()` | Dark mode |
-| `web_theme_minimal()` | Minimal B&W |
+| `web_theme_cochrane()` | The package default. Cochrane teal, Arial, compact density |
+| `web_theme_lancet()` | Lancet navy + warm cream, Georgia serif, comfortable density |
+| `web_theme_jama()` | JAMA all-black-and-white, ultra-compact, Arial |
+| `web_theme_dark()` | Catppuccin-inspired dark canvas, pastel marker palette |
 
 ### Row & Marker Styling
 
