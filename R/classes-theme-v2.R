@@ -256,7 +256,7 @@ TextRole <- new_class(
     weight  = new_property(class_numeric,   default = NA_real_),
     figures = new_property(class_character, default = NA_character_),
     fg      = new_property(class_character, default = NA_character_),
-    italic  = new_property(class_logical,   default = FALSE)
+    italic  = new_property(class_logical,   default = NA)
   ),
   validator = function(self) {
     if (!is.na(self@figures) && !self@figures %in% c("tabular", "proportional")) {

@@ -27,6 +27,7 @@ Collate:
     'update-check.R'
     'utils-nse.R'
     'utils-oklch.R'
+    'utils-theme-resolve.R'
     'utils-serialize.R'
     'modifiers.R'
     'web_spec.R'
