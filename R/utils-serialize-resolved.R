@@ -32,7 +32,8 @@ serialize_slot_bundle <- function(b) {
     strokeMuted    = na_to_null(b@stroke_muted),
     fillEmphasis   = na_to_null(b@fill_emphasis),
     strokeEmphasis = na_to_null(b@stroke_emphasis),
-    textFg         = na_to_null(b@text_fg)
+    textFg         = na_to_null(b@text_fg),
+    shape          = na_to_null(b@shape)
   )
 }
 

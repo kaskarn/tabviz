@@ -1334,7 +1334,11 @@
       --tv-text-header-weight: ${theme.header.text.weight ?? 600};
       --tv-text-column-group-weight: ${theme.column_group?.text?.weight ?? 600};
       --tv-text-tick-weight: ${theme.text.tick.weight ?? 400};
+      --tv-text-tick-italic: ${theme.text.tick.italic ? "italic" : "normal"};
+      --tv-text-tick-family: ${theme.text.tick?.family ?? theme.text.body.family};
       --tv-text-label-weight: ${theme.text.label.weight ?? 400};
+      --tv-text-label-italic: ${theme.text.label.italic ? "italic" : "normal"};
+      --tv-text-label-family: ${theme.text.label?.family ?? theme.text.body.family};
       /* First-column variant — applied to .primary-cell. */
       --tv-first-col-bg: ${firstColBg};
       --tv-first-col-fg: ${firstColFg};

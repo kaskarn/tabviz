@@ -209,7 +209,10 @@
         y={isBottom ? axisY + axisGeom.tickLabelY : axisY - axisGeom.tickLabelY + axisGeom.tickMarkLength}
         text-anchor={getTextAnchor(tickX)}
         fill="var(--tv-axis-tick-fg, var(--tv-secondary, #64748b))"
+        font-family="var(--tv-text-tick-family, var(--tv-font-family))"
         font-size="var(--tv-font-size-sm, 0.75rem)"
+        font-weight="var(--tv-text-tick-weight, 400)"
+        font-style="var(--tv-text-tick-italic, normal)"
       >
         {formatTick(tick)}
       </text>
@@ -223,8 +226,10 @@
       y={isBottom ? axisY + axisGeom.axisLabelY : axisY - axisGeom.axisLabelY}
       text-anchor="middle"
       fill="var(--tv-axis-label-fg, var(--tv-secondary, #64748b))"
+      font-family="var(--tv-text-label-family, var(--tv-font-family))"
       font-size="var(--tv-font-size-sm, 0.75rem)"
       font-weight="var(--tv-text-label-weight, 500)"
+      font-style="var(--tv-text-label-italic, normal)"
     >
       {axisLabel}
     </text>

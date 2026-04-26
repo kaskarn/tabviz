@@ -21,6 +21,16 @@
 
   function setTextRole(role: string, field: string, value: unknown) {
     store.setThemeField(["text", role, field], value);
+    // R-side `compose_text` cascades text.{label,tick} into plot.axisLabel /
+    // plot.tickLabel at resolve time. The frontend has no JS resolver, so
+    // edits to those roles must mirror the cascade explicitly or the
+    // forest-axis labels stay frozen on their resolved-at-load values.
+    // setThemeFieldDerived skips paths the user has explicitly pinned.
+    if (role === "label") {
+      store.setThemeFieldDerived(["plot", "axisLabel", field], value);
+    } else if (role === "tick") {
+      store.setThemeFieldDerived(["plot", "tickLabel", field], value);
+    }
   }
   function setRowGroupTier(level: string, field: string, value: unknown) {
     store.setThemeField(["rowGroup", level, field], value);

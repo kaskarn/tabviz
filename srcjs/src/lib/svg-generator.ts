@@ -1723,7 +1723,8 @@ function renderInterval(
 
     // Theme effect defaults for multi-effect plots
     const themeEffectColors = theme.series.map(s => s.fill);
-    const themeMarkerShapes = (["square","circle","diamond","triangle"]);
+    // Per-series marker shapes ride on the SlotBundle (theme.series[i].shape).
+    // Null/undefined → fall through to the 4-shape rotation.
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
     // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color.
@@ -1754,15 +1755,17 @@ function renderInterval(
     // Shape priority:
     // 1. Primary effect: row.markerStyle.shape (if set)
     // 2. effect.shape (if set)
-    // 3. (["square","circle","diamond","triangle"])[idx] (if defined)
+    // 3. theme.series[idx].shape (if set; per-slot author override)
+    // 4. defaultShapes[idx % 4] (the 4-shape rotation)
     // 4. Default shapes: square, circle, diamond, triangle (cycling)
     let shape: MarkerShape;
+    const themeSlotShape = (theme.series?.[idx] as { shape?: MarkerShape | null } | undefined)?.shape ?? null;
     if (isPrimary && markerStyle?.shape) {
       shape = markerStyle.shape;
     } else if (effect.shape) {
       shape = effect.shape;
-    } else if (themeMarkerShapes && themeMarkerShapes.length > 0) {
-      shape = themeMarkerShapes[idx % themeMarkerShapes.length];
+    } else if (themeSlotShape) {
+      shape = themeSlotShape;
     } else {
       shape = defaultShapes[idx % defaultShapes.length];
     }
@@ -2663,9 +2666,10 @@ function renderForestAxis(
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}"
       stroke="${theme.plot?.tickMark ?? theme.divider.subtle}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY + 2}" text-anchor="${textAnchor}"
-      font-family="${theme.text.body.family}"
+      font-family="${theme.plot?.tickLabel?.family ?? theme.text.tick?.family ?? theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${400}"
+      font-weight="${theme.plot?.tickLabel?.weight ?? theme.text.tick?.weight ?? 400}"
+      font-style="${(theme.plot?.tickLabel?.italic ?? theme.text.tick?.italic) ? "italic" : "normal"}"
       fill="${theme.plot?.tickLabel?.fg ?? theme.content.secondary}">${formatTick(tick)}</text>`);
   }
 
@@ -2673,9 +2677,10 @@ function renderForestAxis(
   if (axisLabel) {
     lines.push(`<text x="${forestX + forestWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
-      font-family="${theme.text.body.family}"
+      font-family="${theme.plot?.axisLabel?.family ?? theme.text.label?.family ?? theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${500}"
+      font-weight="${theme.plot?.axisLabel?.weight ?? theme.text.label?.weight ?? 500}"
+      font-style="${(theme.plot?.axisLabel?.italic ?? theme.text.label?.italic) ? "italic" : "normal"}"
       fill="${theme.plot?.axisLabel?.fg ?? theme.content.secondary}">${escapeXml(axisLabel)}</text>`);
   }
 

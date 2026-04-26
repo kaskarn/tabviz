@@ -1,11 +1,16 @@
 <script lang="ts">
-  // v2 Marks tab. Series + summary slot bundles + plot mark sizes.
-  // Each series row: anchor color + expandable bundle (fill, stroke,
-  // muted, emphasis, text_fg).
+  // v2 Viz tab (renamed from "Marks"). Series slot bundles + plot mark
+  // sizes + per-series marker shape.
+  //
+  // Each series row: anchor color + a SegmentedField shape picker +
+  // expandable color-bundle (fill, stroke, muted, emphasis, text_fg).
+  // Shape rides on the SlotBundle now (theme.series[i].shape) — null
+  // falls through to the renderer's default 4-shape rotation.
   import type { ForestStore } from "$stores/forestStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
+  import SegmentedField from "./SegmentedField.svelte";
 
   interface Props {
     store: ForestStore;
@@ -21,11 +26,30 @@
     expanded = { ...expanded, [idx]: !expanded[idx] };
   }
 
-  function setSlot(idx: number, field: string, hex: string) {
-    store.setThemeField(["series", idx, field], hex);
+  function setSlot(idx: number, field: string, value: unknown) {
+    store.setThemeField(["series", idx, field], value);
   }
   function setPlot(field: string, value: number) {
     store.setThemeField(["plot", field], value);
+  }
+
+  // The renderer's default rotation cycles square / circle / diamond /
+  // triangle in that order. The picker exposes the same four; "auto"
+  // means "let the renderer pick from the rotation" and is encoded as
+  // null on the wire.
+  const SHAPE_OPTIONS = [
+    { value: "auto",     label: "Auto" },
+    { value: "square",   label: "Sq" },
+    { value: "circle",   label: "Ci" },
+    { value: "diamond",  label: "Di" },
+    { value: "triangle", label: "Tr" },
+  ];
+
+  function shapeValue(slot: { shape?: string | null }): string {
+    return slot?.shape ?? "auto";
+  }
+  function setShape(idx: number, value: string) {
+    setSlot(idx, "shape", value === "auto" ? null : value);
   }
 
   const slotFields = [
@@ -39,13 +63,21 @@
   ];
 </script>
 
-<SettingsSection title="Series" description="Per-effect slot bundles. Edit anchor (Fill) for the simple case; expand to override individual derived fields.">
+<SettingsSection title="Series" description="Per-effect slot bundles. Pick a shape and the anchor color (Fill) for the simple case; expand for the full color bundle.">
   {#each series as slot, i (i)}
     <div class="slot">
       <button class="slot-toggle" onclick={() => toggle(i)}>
         <span>{expanded[i] ? "▾" : "▸"} Series {i + 1}</span>
         <span class="anchor-swatch" style:background={slot.fill}></span>
       </button>
+      <div class="slot-shape">
+        <SegmentedField
+          label="Shape"
+          value={shapeValue(slot)}
+          options={SHAPE_OPTIONS}
+          onchange={(v) => setShape(i, v)}
+        />
+      </div>
       {#if expanded[i]}
         <div class="slot-fields">
           {#each slotFields as sf (sf.field)}
@@ -98,6 +130,9 @@
     height: 1.2rem;
     border: 1px solid var(--tv-border);
     border-radius: 3px;
+  }
+  .slot-shape {
+    padding: 0 0.5rem 0.25rem 1rem;
   }
   .slot-fields {
     display: flex;

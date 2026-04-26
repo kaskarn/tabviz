@@ -239,12 +239,27 @@ SlotBundle <- new_class(
     stroke_muted    = new_property(class_character, default = NA_character_),
     fill_emphasis   = new_property(class_character, default = NA_character_),
     stroke_emphasis = new_property(class_character, default = NA_character_),
-    text_fg         = new_property(class_character, default = NA_character_)
+    text_fg         = new_property(class_character, default = NA_character_),
+    # Marker shape for forest points + similar viz marks. NA → renderer
+    # picks a default from a 4-shape rotation (square / circle / diamond
+    # / triangle). Authors who want a fixed shape per slot pin one of
+    # those four values.
+    shape           = new_property(class_character, default = NA_character_)
   ),
-  validator = make_color_validator(
-    c("fill", "stroke", "fill_muted", "stroke_muted",
-      "fill_emphasis", "stroke_emphasis", "text_fg")
-  )
+  validator = function(self) {
+    color_err <- make_color_validator(
+      c("fill", "stroke", "fill_muted", "stroke_muted",
+        "fill_emphasis", "stroke_emphasis", "text_fg")
+    )(self)
+    if (!is.null(color_err)) return(color_err)
+    valid_shapes <- c("square", "circle", "diamond", "triangle")
+    if (!is.na(self@shape) && !self@shape %in% valid_shapes) {
+      return(paste0("shape must be one of: ",
+                    paste(valid_shapes, collapse = ", "),
+                    " (or NA)"))
+    }
+    NULL
+  }
 )
 
 

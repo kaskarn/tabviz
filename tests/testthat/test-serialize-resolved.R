@@ -22,7 +22,7 @@ test_that("series serializes as JSON-ready array of slot bundles", {
   expect_length(out$series, 3L)
   for (sb in out$series) {
     expect_named(sb, c("fill", "stroke", "fillMuted", "strokeMuted",
-                       "fillEmphasis", "strokeEmphasis", "textFg"))
+                       "fillEmphasis", "strokeEmphasis", "textFg", "shape"))
     expect_match(sb$fill,   "^#")
     expect_match(sb$stroke, "^#")
   }

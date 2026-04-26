@@ -179,7 +179,8 @@
 
     // Theme effect defaults for multi-effect plots
     const themeEffectColors = theme?.series?.map(s => s.fill);
-    const themeMarkerShapes = (["square","circle","diamond","triangle"]);
+    // Per-series marker shapes ride on the SlotBundle now: theme.series[i].shape
+    // (NA on the wire = null → fall through to the 4-shape rotation).
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
     // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color.
@@ -208,13 +209,16 @@
     );
 
     // Shape priority (primary-effect-only for marker_shape override):
+    //   row markerStyle.shape > effect.shape > theme.series[idx].shape >
+    //   default 4-shape rotation
     let shape: MarkerShape;
+    const themeSlotShape = theme?.series?.[idx]?.shape as MarkerShape | null | undefined;
     if (isPrimary && markerStyle?.shape) {
       shape = markerStyle.shape;
     } else if (effect.shape) {
       shape = effect.shape;
-    } else if (themeMarkerShapes && themeMarkerShapes.length > 0) {
-      shape = themeMarkerShapes[idx % themeMarkerShapes.length];
+    } else if (themeSlotShape) {
+      shape = themeSlotShape;
     } else {
       shape = defaultShapes[idx % defaultShapes.length];
     }
