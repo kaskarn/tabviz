@@ -139,7 +139,18 @@ test_that("row group L1 has the strongest treatment", {
 test_that("row states resolve from surface and accent", {
   t <- resolved_default()
   expect_equal(t@row@base@bg, t@surface@base)
-  expect_equal(t@row@alt@bg,  t@surface@muted)
+  # row.alt.bg is half-strength of surface.muted from surface.base — keeps
+  # banding clearly subtler than the header band (which uses full muted).
+  # Should be distinct from BOTH base and muted, and OKLCH lightness should
+  # sit between them.
+  expect_match(t@row@alt@bg, "^#[0-9A-Fa-f]{6}$")
+  expect_false(identical(t@row@alt@bg, t@surface@base))
+  expect_false(identical(t@row@alt@bg, t@surface@muted))
+  base_L  <- to_oklch(t@surface@base)[1, 1]
+  alt_L   <- to_oklch(t@row@alt@bg)[1, 1]
+  muted_L <- to_oklch(t@surface@muted)[1, 1]
+  expect_lte(min(base_L, muted_L), alt_L)
+  expect_gte(max(base_L, muted_L), alt_L)
   expect_equal(t@row@hover@bg, t@accent@muted)
   expect_equal(t@row@selected@bg, t@accent@muted)
 })

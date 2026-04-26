@@ -312,9 +312,19 @@ resolve_components <- function(theme) {
   theme@row_group <- rg
 
   # -- Rows: states + semantic bundles. --
+  # row.alt.bg defaults to a HALF-strength mix of surface.muted into
+  # surface.base. surface.muted is reserved for chrome surfaces (header
+  # band, first-column-bold, etc.) where the brand identity should read
+  # clearly. The alt-row banding only needs to demarcate row pairs and
+  # should be the subtler of the two — sharing surface.muted made the
+  # header and banding visually identical, especially on warm-neutral
+  # palettes where the brand tint is barely perceptible.
   rc <- theme@row
-  rc@base     <- fill_na(rc@base,     list(bg = surface@base,  fg = content@primary))
-  rc@alt      <- fill_na(rc@alt,      list(bg = surface@muted, fg = content@primary))
+  rc@base <- fill_na(rc@base, list(bg = surface@base, fg = content@primary))
+  rc@alt  <- fill_na(rc@alt, list(
+    bg = oklch_mix(surface@base, surface@muted, 0.5),
+    fg = content@primary
+  ))
   rc@hover    <- fill_na(rc@hover,    list(bg = accent@muted,  fg = content@primary))
   rc@selected <- fill_na(rc@selected, list(bg = accent@muted,  fg = content@primary))
 
