@@ -13,7 +13,7 @@
   let { store }: Props = $props();
 
   const watermark = $derived(store.spec?.watermark ?? "");
-  const fallbackColor = $derived(store.spec?.theme?.colors?.foreground ?? "#1a1a1a");
+  const fallbackColor = $derived(store.spec?.theme?.content?.primary ?? "#1a1a1a");
   const color    = $derived(store.spec?.watermarkColor   ?? fallbackColor);
   const opacity  = $derived(store.spec?.watermarkOpacity ?? 0.07);
   const swatches = $derived(resolveSwatches(store.spec?.theme));

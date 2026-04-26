@@ -15,13 +15,16 @@ import type { WebTheme } from "$types";
 const FALLBACK_LENGTH = 8;
 
 export function resolveSwatches(theme: WebTheme | null | undefined): string[] {
-  const c = theme?.colors;
-  if (!c) return [];
-  if (Array.isArray(c.swatches) && c.swatches.length === FALLBACK_LENGTH) {
-    return c.swatches;
-  }
+  if (!theme) return [];
+  // 8-color quick palette derived from v2 inputs + chrome roles.
   return [
-    c.primary, c.accent, c.secondary, c.muted,
-    c.foreground, c.border, c.background, c.rowBg,
-  ];
+    theme.inputs?.brand ?? "#000000",
+    theme.accent?.default ?? "#000000",
+    theme.content?.secondary ?? "#000000",
+    theme.content?.muted ?? "#000000",
+    theme.content?.primary ?? "#000000",
+    theme.divider?.subtle ?? "#000000",
+    theme.surface?.base ?? "#ffffff",
+    theme.row?.base?.bg ?? "#ffffff",
+  ].slice(0, FALLBACK_LENGTH);
 }

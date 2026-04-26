@@ -14,31 +14,16 @@
   // Note: Background is NOT applied here - it's handled by ForestPlot.svelte
   // at the row level via getGroupBackground() for proper solid-color rendering
   function getLevelStyles(level: number, theme: WebTheme | undefined) {
-    const gh = theme?.groupHeaders;
-    if (!gh) return { fontSize: undefined, fontWeight: undefined, italic: false, borderBottom: false };
+    const rg = theme?.rowGroup;
+    if (!rg) return { fontSize: undefined, fontWeight: undefined, italic: false, borderBottom: false };
 
-    if (level === 1) {
-      return {
-        fontSize: gh.level1FontSize,
-        fontWeight: gh.level1FontWeight,
-        italic: gh.level1Italic,
-        borderBottom: gh.level1BorderBottom,
-      };
-    } else if (level === 2) {
-      return {
-        fontSize: gh.level2FontSize,
-        fontWeight: gh.level2FontWeight,
-        italic: gh.level2Italic,
-        borderBottom: gh.level2BorderBottom,
-      };
-    } else {
-      return {
-        fontSize: gh.level3FontSize,
-        fontWeight: gh.level3FontWeight,
-        italic: gh.level3Italic,
-        borderBottom: gh.level3BorderBottom,
-      };
-    }
+    const tier = level === 1 ? rg.L1 : level === 2 ? rg.L2 : rg.L3;
+    return {
+      fontSize: tier?.text?.size,
+      fontWeight: tier?.text?.weight,
+      italic: tier?.text?.italic ?? false,
+      borderBottom: tier?.borderBottom ?? false,
+    };
   }
 
   const levelStyles = $derived(getLevelStyles(level, theme));

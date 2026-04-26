@@ -523,14 +523,13 @@
   // Compute group header background color based on nesting level
   // Uses solid colors (pre-blended with background) to avoid transparency artifacts
   function getGroupBackground(level: number, theme: WebTheme | undefined): string {
-    const gh = theme?.groupHeaders;
-    const primary = theme?.colors?.primary ?? "#0891b2";
-    const bg = theme?.colors?.background ?? "#ffffff";
+    const rg = theme?.rowGroup;
+    const primary = theme?.accent?.default ?? "#0891b2";
+    const bg = theme?.surface?.base ?? "#ffffff";
 
     // Get explicit background if set, otherwise compute from primary
-    if (level === 1 && gh?.level1Background) return gh.level1Background;
-    if (level === 2 && gh?.level2Background) return gh.level2Background;
-    if (level >= 3 && gh?.level3Background) return gh.level3Background;
+    const tier = level === 1 ? rg?.L1 : level === 2 ? rg?.L2 : rg?.L3;
+    if (tier?.bg) return tier.bg;
 
     // Blend primary with background at different opacities per level
     // This produces solid colors that look the same as rgba but without transparency artifacts
@@ -1673,7 +1672,7 @@
                   // live widget matches the SVG exporter's depth indent.
                   // Was hardcoded `* 12` here, which silently disagreed with
                   // the export when authors raised the theme value.
-                  const indentPx = theme?.groupHeaders?.indentPerLevel ?? 16;
+                  const indentPx = theme?.rowGroup?.indentPerLevel ?? 16;
                   if (isGroupHeader) return `${rowDepth * indentPx}px`;
                   const lvl = row?.style?.indent ?? rowDepth;
                   return lvl ? `${lvl * indentPx}px` : undefined;
@@ -1843,9 +1842,9 @@
                 />
                 {#if annotation.label}
                   {@const yOffset = annotationLabelOffsets[annotation.id] ?? 0}
-                  {@const annoTypo = { fontSizeSm: theme!.typography.fontSizeSm, lineHeight: theme!.typography.lineHeight ?? 1.5 }}
-                  {@const annoAxisGeom = computeAxisLayout(annoTypo, !!forestOpts?.axisLabel, theme!.shapes.tickMarkLength)}
-                  {@const annoLabelBaseline = annoAxisGeom.axisRegionHeight + textRegionHeight(theme!.typography.fontSizeSm, theme!.typography.lineHeight ?? 1.5) - 4}
+                  {@const annoTypo = { fontSizeSm: theme!.text.label.size, lineHeight: 1.5 }}
+                  {@const annoAxisGeom = computeAxisLayout(annoTypo, !!forestOpts?.axisLabel, theme!.plot.tickMarkLength)}
+                  {@const annoLabelBaseline = annoAxisGeom.axisRegionHeight + textRegionHeight(theme!.text.label.size, 1.5) - 4}
                   <text
                     x={colScale(annotation.x)}
                     y={rowsAreaHeight + axisGap + annoLabelBaseline + yOffset}

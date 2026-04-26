@@ -71,7 +71,7 @@
 
   // Default colors from theme, with fallbacks
   const defaultColors = $derived(
-    theme?.shapes?.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"]
+    theme?.series?.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"]
   );
 
   // Per-row overrides (from tabviz(marker_color = "col") / marker_opacity)

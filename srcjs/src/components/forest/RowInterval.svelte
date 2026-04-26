@@ -129,11 +129,11 @@
   );
 
   // Diamond height for summary rows
-  const diamondHeight = $derived(theme?.shapes.summaryHeight ?? 10);
+  const diamondHeight = $derived(10 ?? 10);
   const halfDiamondHeight = $derived(diamondHeight / 2);
 
   // Base point size from theme
-  const basePointSize = $derived(theme?.shapes.pointSize ?? 6);
+  const basePointSize = $derived(theme?.plot?.pointSize ?? 6);
 
   // Get point size for an effect (scaled by weight or markerStyle.size for primary)
   function getEffectSize(isPrimary: boolean): number {
@@ -178,8 +178,8 @@
     const markerStyle = row.markerStyle;
 
     // Theme effect defaults for multi-effect plots
-    const themeEffectColors = theme?.shapes.effectColors;
-    const themeMarkerShapes = theme?.shapes.markerShapes;
+    const themeEffectColors = theme?.series?.map(s => s.fill);
+    const themeMarkerShapes = (["square","circle","diamond","triangle"]);
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
     // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color.
@@ -190,12 +190,12 @@
     let baseColor: string;
     if (effect.color) {
       baseColor = effect.color;
-    } else if (isSummaryRow && isPrimary && theme?.colors.summaryFill) {
+    } else if (isSummaryRow && isPrimary && theme?.summary?.fill) {
       baseColor = theme.summary.fill;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {
-      baseColor = theme?.colors.primary ?? "#2563eb";
+      baseColor = theme?.accent?.default ?? "#2563eb";
     }
 
     // Apply Layers 3+4 via the shared cascade resolver
@@ -254,7 +254,7 @@
         {@const cx = xScale(effect.point!)}
         {@const style = getEffectStyle(effect, idx)}
         {@const pointSize = getEffectSize(idx === 0)}
-        {@const lineColor = theme?.colors.intervalLine ?? "#475569"}
+        {@const lineColor = theme?.summary?.stroke ?? "#475569"}
 
         {#if isSummaryRow}
           <!-- Summary row: render diamond shape spanning lower to upper.
@@ -271,7 +271,7 @@
             points={summaryDiamondPoints}
             fill={style.fill}
             fill-opacity={style.opacity}
-            stroke={theme?.colors.summaryBorder ?? "#1d4ed8"}
+            stroke={theme?.summary?.stroke ?? "#1d4ed8"}
             stroke-width="1"
             class="point-estimate"
           />
@@ -288,7 +288,7 @@
             y1={effectY}
             y2={effectY}
             stroke={lineColor}
-            stroke-width={theme?.shapes.lineWidth ?? 1.5}
+            stroke-width={theme?.plot?.lineWidth ?? 1.5}
           />
           <!-- Left whisker or arrow if clipped -->
           {#if clippedL}
@@ -304,7 +304,7 @@
               y1={effectY - whiskerHalfHeight}
               y2={effectY + whiskerHalfHeight}
               stroke={lineColor}
-              stroke-width={theme?.shapes.lineWidth ?? 1.5}
+              stroke-width={theme?.plot?.lineWidth ?? 1.5}
             />
           {/if}
           <!-- Right whisker or arrow if clipped -->
@@ -321,7 +321,7 @@
               y1={effectY - whiskerHalfHeight}
               y2={effectY + whiskerHalfHeight}
               stroke={lineColor}
-              stroke-width={theme?.shapes.lineWidth ?? 1.5}
+              stroke-width={theme?.plot?.lineWidth ?? 1.5}
             />
           {/if}
 

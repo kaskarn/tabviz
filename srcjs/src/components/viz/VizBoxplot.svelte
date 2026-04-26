@@ -120,7 +120,7 @@
 
   // Default colors from theme, with fallbacks
   const defaultColors = $derived(
-    theme?.shapes?.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"]
+    theme?.series?.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"]
   );
 
   // Per-row overrides (from tabviz(marker_color = "col") / marker_opacity)
@@ -149,11 +149,11 @@
         {@const boxCenterY = boxY + boxConfig.boxHeight / 2}
         {@const ms = getMarkerStyle(effect, idx)}
         {@const opacity = getEffectOpacity(effect)}
-        {@const defaultLineColor = theme?.colors.foreground ?? "#1a1a1a"}
+        {@const defaultLineColor = theme?.content?.primary ?? "#1a1a1a"}
         {@const lineColor = ms.stroke ?? defaultLineColor}
-        {@const themeLineWidth = theme?.shapes?.lineWidth ?? 1.5}
+        {@const themeLineWidth = theme?.plot?.lineWidth ?? 1.5}
         {@const lineWidth = ms.stroke ? ms.strokeWidth : themeLineWidth}
-        {@const outlierR = (theme?.shapes?.pointSize ?? 6) * 0.4}
+        {@const outlierR = (theme?.plot?.pointSize ?? 6) * 0.4}
         {@const outlierStroke = themeLineWidth}
         {@const color = ms.fill}
 
