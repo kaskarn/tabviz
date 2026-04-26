@@ -1264,6 +1264,23 @@
       --tv-secondary: ${theme.content.secondary};
       --tv-muted: ${theme.content.muted};
       --tv-border: ${theme.divider.subtle};
+      /* Strong rules — header bottom, group row bottom, axis line, tick marks,
+         summary-row top. v2 R resolver computes these but the frontend
+         previously read --tv-border (the subtle one) for everything,
+         silently flattening strong → subtle. */
+      --tv-divider-strong:    ${theme.divider.strong};
+      --tv-divider-strong-on-dark: ${theme.divider.strongOnDark ?? theme.divider.strong};
+      --tv-header-rule:       ${headerVariant.rule ?? theme.divider.strong};
+      --tv-row-group-rule:    ${theme.rowGroup?.L1?.rule ?? theme.divider.strong};
+      --tv-axis-line:         ${theme.plot?.axisLine ?? theme.divider.strong};
+      --tv-axis-tick:         ${theme.plot?.tickMark ?? theme.divider.strong};
+      /* brand_deep-derived identity colors. Title, axis-label, axis-tick fg
+         all default to brand_deep on the R side; the panel can override
+         them on a per-field basis. Fallback chain ends at content tones
+         so v1-style themes (no brand_deep set) still degrade gracefully. */
+      --tv-text-title-fg:     ${theme.text.title?.fg     ?? theme.content.primary};
+      --tv-axis-label-fg:     ${theme.plot?.axisLabel?.fg ?? theme.content.secondary};
+      --tv-axis-tick-fg:      ${theme.plot?.tickLabel?.fg ?? theme.content.secondary};
       --tv-row-bg: ${theme.row.base.bg};
       --tv-alt-bg: ${theme.row.alt.bg};
       --tv-header-bg: ${headerVariant.bg};
@@ -2672,7 +2689,7 @@
 
   /* Top border frames column headers (symmetric with header bottom border) */
   .tabviz-main {
-    border-top: 2px solid var(--tv-border);
+    border-top: 2px solid var(--tv-header-rule, var(--tv-border));
   }
 
   /* Base grid cell styles */
@@ -2700,7 +2717,7 @@
     min-height: var(--tv-header-row-height);
     font-weight: var(--tv-font-weight-bold, 600);
     font-size: calc(var(--tv-font-size-base, 0.875rem) * var(--tv-header-font-scale, 1.05));
-    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-border);
+    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-header-rule, var(--tv-border));
     background: var(--tv-header-bg, var(--tv-row-bg, var(--tv-bg)));
     color: var(--tv-header-fg, var(--tv-cell-fg, var(--tv-fg)));
     position: relative;
@@ -2716,7 +2733,7 @@
 
   /* Primary (leftmost) column header uses the header border width */
   .primary-header {
-    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-border);
+    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-header-rule, var(--tv-border));
   }
 
   /* Column group header styling */
@@ -2730,12 +2747,12 @@
 
   /* Last row of headers uses the header border width */
   .header-cell:not(.column-group-header):not(.primary-header):not(.plot-header) {
-    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-border);
+    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-header-rule, var(--tv-border));
   }
 
   /* Plot header also uses the header border width */
   .plot-header {
-    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-border);
+    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-header-rule, var(--tv-border));
   }
 
   .header-text {
@@ -2913,7 +2930,7 @@
     padding-bottom: var(--tv-row-group-padding, 0px);
   }
   .grid-cell.group-row-bordered {
-    border-bottom: var(--tv-group-border-width, 1px) solid var(--tv-border);
+    border-bottom: var(--tv-group-border-width, 1px) solid var(--tv-row-group-rule, var(--tv-border));
   }
 
   .group-row:hover {
@@ -2973,7 +2990,7 @@
 
   .row-summary {
     font-weight: var(--tv-font-weight-bold, 600);
-    border-top: 2px solid var(--tv-border);
+    border-top: 2px solid var(--tv-divider-strong, var(--tv-border));
   }
 
   .row-bold {

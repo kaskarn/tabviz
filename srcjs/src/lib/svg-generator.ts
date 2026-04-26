@@ -1321,11 +1321,13 @@ function renderHeader(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
 
   if (spec.labels?.title) {
     const fontSize = parseFontSize(theme.text.subtitle.size);
+    const titleFamily = theme.text.title?.family ?? theme.text.body.family;
+    const titleFg = theme.text.title?.fg ?? theme.content.primary;
     lines.push(`<text x="${padding}" y="${layout.titleY}"
-      font-family="${theme.text.body.family}"
+      font-family="${titleFamily}"
       font-size="${fontSize}px"
       font-weight="${600}"
-      fill="${theme.content.primary}">${escapeXml(spec.labels.title)}</text>`);
+      fill="${titleFg}">${escapeXml(spec.labels.title)}</text>`);
   }
 
   if (spec.labels?.subtitle) {
@@ -1834,7 +1836,7 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"
-            fill="${style.fill}"${opacityAttr} stroke="${theme.summary.stroke}" stroke-width="1"/>
+            fill="${style.fill}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? theme.accent.default}" stroke-width="1"/>
         </g>`);
     } else {
       // Regular row: CI line with whiskers and marker
@@ -1946,8 +1948,8 @@ function renderDiamond(
   ].join(" ");
 
   return `<polygon points="${points}"
-    fill="${theme.summary.fill}"
-    stroke="${theme.summary.stroke}"
+    fill="${theme.series?.[0]?.fill ?? theme.accent.default}"
+    stroke="${theme.series?.[0]?.stroke ?? theme.accent.default}"
     stroke-width="1"/>`;
 }
 
@@ -2514,7 +2516,7 @@ function renderVizAxis(
 
   // Axis line
   lines.push(`<line x1="${vizX}" x2="${vizX + vizWidth}"
-    y1="0" y2="0" stroke="${theme.divider.subtle}" stroke-width="1"/>`);
+    y1="0" y2="0" stroke="${theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle}" stroke-width="1"/>`);
 
   // Generate "nice" ticks sized to the column width, then filter to keep
   // label spacing above the minimum pixel threshold.
@@ -2570,13 +2572,13 @@ function renderVizAxis(
     const xOffset = getTextXOffset(tickX);
     const label = formatNumber(tick);
 
-    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${theme.divider.subtle}" stroke-width="1"/>`);
+    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${theme.plot?.tickMark ?? theme.divider.subtle}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY}"
       text-anchor="${textAnchor}"
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${400}"
-      fill="${theme.content.primary}">${label}</text>`);
+      fill="${theme.plot?.tickLabel?.fg ?? theme.content.primary}">${label}</text>`);
   }
 
   // Axis label
@@ -2586,7 +2588,7 @@ function renderVizAxis(
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${500}"
-      fill="${theme.content.primary}">${escapeXml(axisLabel)}</text>`);
+      fill="${theme.plot?.axisLabel?.fg ?? theme.content.primary}">${escapeXml(axisLabel)}</text>`);
   }
 
   return lines.join("\n");
@@ -2635,7 +2637,7 @@ function renderForestAxis(
 
   // Axis line
   lines.push(`<line x1="${forestX}" x2="${forestX + forestWidth}"
-    y1="0" y2="0" stroke="${theme.divider.subtle}" stroke-width="1"/>`);
+    y1="0" y2="0" stroke="${theme.plot?.axisLine ?? theme.divider.strong ?? theme.divider.subtle}" stroke-width="1"/>`);
 
   // Gridlines (behind ticks) — mirrors EffectAxis.svelte; opt-in via
   // theme.axis.gridlines, styled per theme.axis.gridlineStyle.
@@ -2658,12 +2660,12 @@ function renderForestAxis(
     const xOffset = getTextXOffset(tickX);
 
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}"
-      stroke="${theme.divider.subtle}" stroke-width="1"/>`);
+      stroke="${theme.plot?.tickMark ?? theme.divider.subtle}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY + 2}" text-anchor="${textAnchor}"
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${400}"
-      fill="${theme.content.secondary}">${formatTick(tick)}</text>`);
+      fill="${theme.plot?.tickLabel?.fg ?? theme.content.secondary}">${formatTick(tick)}</text>`);
   }
 
   // Axis label
@@ -2673,7 +2675,7 @@ function renderForestAxis(
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${500}"
-      fill="${theme.content.secondary}">${escapeXml(axisLabel)}</text>`);
+      fill="${theme.plot?.axisLabel?.fg ?? theme.content.secondary}">${escapeXml(axisLabel)}</text>`);
   }
 
   // Position axis at: mainY + headerHeight + rowsHeight + axisGap
@@ -3613,10 +3615,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   // Top table border - frames column headers (symmetric with header bottom border)
   const headerBorderW = 2;
+  const headerVariantRule = theme.variants?.headerStyle === "bold"
+    ? (theme.header?.bold?.rule ?? theme.divider.strong ?? theme.divider.subtle)
+    : (theme.header?.light?.rule ?? theme.divider.strong ?? theme.divider.subtle);
   if (headerBorderW > 0) {
     parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${layout.mainY}" y2="${layout.mainY}"
-      stroke="${theme.divider.subtle}" stroke-width="${headerBorderW}"/>`);
+      stroke="${headerVariantRule}" stroke-width="${headerBorderW}"/>`);
   }
 
   // Column headers - unified layout. When no column has a visible header and
@@ -3658,7 +3663,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     if (headerBorderW > 0) {
       parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
         y1="${headerY + layout.headerHeight}" y2="${headerY + layout.headerHeight}"
-        stroke="${theme.divider.subtle}" stroke-width="${headerBorderW}"/>`);
+        stroke="${headerVariantRule}" stroke-width="${headerBorderW}"/>`);
     }
   }
 

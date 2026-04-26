@@ -174,7 +174,7 @@
     x2={xScale.range()[1]}
     y1={axisY}
     y2={axisY}
-    stroke="var(--tv-border, #e2e8f0)"
+    stroke="var(--tv-axis-line, var(--tv-border, #e2e8f0))"
     stroke-width="1"
   />
 
@@ -201,14 +201,14 @@
       <line
         y1={isBottom ? axisY : axisY - axisGeom.tickMarkLength}
         y2={isBottom ? axisY + axisGeom.tickMarkLength : axisY}
-        stroke="var(--tv-border, #e2e8f0)"
+        stroke="var(--tv-axis-tick, var(--tv-border, #e2e8f0))"
         stroke-width="1"
       />
       <text
         x={getTextXOffset(tickX)}
         y={isBottom ? axisY + axisGeom.tickLabelY : axisY - axisGeom.tickLabelY + axisGeom.tickMarkLength}
         text-anchor={getTextAnchor(tickX)}
-        fill="var(--tv-secondary, #64748b)"
+        fill="var(--tv-axis-tick-fg, var(--tv-secondary, #64748b))"
         font-size="var(--tv-font-size-sm, 0.75rem)"
       >
         {formatTick(tick)}
@@ -222,7 +222,7 @@
       x={layout.forestWidth / 2}
       y={isBottom ? axisY + axisGeom.axisLabelY : axisY - axisGeom.axisLabelY}
       text-anchor="middle"
-      fill="var(--tv-secondary, #64748b)"
+      fill="var(--tv-axis-label-fg, var(--tv-secondary, #64748b))"
       font-size="var(--tv-font-size-sm, 0.75rem)"
       font-weight="var(--tv-text-label-weight, 500)"
     >

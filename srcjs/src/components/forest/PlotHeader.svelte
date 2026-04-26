@@ -148,7 +148,7 @@
     font-size: var(--tv-text-title-size, var(--tv-font-size-lg, 1rem));
     font-weight: var(--tv-text-title-weight, var(--tv-font-weight-bold, 600));
     font-style: var(--tv-text-title-italic, normal);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-text-title-fg, var(--tv-fg, #1a1a1a));
     line-height: 1.3;
     white-space: normal;
     word-wrap: break-word;
