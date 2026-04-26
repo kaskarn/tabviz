@@ -34,10 +34,10 @@
         stroke="#000000" stroke-width="2"/>
 <rect x="6" y="65"
             width="488" height="18"
-            fill="#EFEFF0"/>
+            fill="#F5F6F6"/>
 <rect x="6" y="101"
             width="488" height="18"
-            fill="#EFEFF0"/>
+            fill="#F5F6F6"/>
 <line x1="220.0006922796589" x2="220.0006922796589" y1="65" y2="137"
     stroke="#717171" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 

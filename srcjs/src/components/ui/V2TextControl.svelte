@@ -15,11 +15,27 @@
 
   const text = $derived(store.spec?.theme?.text);
   const rg   = $derived(store.spec?.theme?.rowGroup);
+  // theme.header.text is a *separately-composed* TextRole bundle (composed
+  // from text.body with weight = 600 at resolve time) — NOT under
+  // theme.text.* — so reading + writing for the "header" role uses a
+  // distinct path. Same applies to columnGroup down the line if we surface
+  // it; for now only header is exposed.
+  const headerText = $derived(store.spec?.theme?.header?.text);
 
   let expandedText = $state<Record<string, boolean>>({});
   let expandedLevel = $state<Record<string, boolean>>({ L1: true });
 
+  // Reads either theme.text[role] or, for "header", theme.header.text.
+  function readRole(role: string) {
+    if (role === "header") return headerText;
+    return text?.[role];
+  }
+
   function setTextRole(role: string, field: string, value: unknown) {
+    if (role === "header") {
+      store.setThemeField(["header", "text", field], value);
+      return;
+    }
     store.setThemeField(["text", role, field], value);
     // R-side `compose_text` cascades text.{label,tick} into plot.axisLabel /
     // plot.tickLabel at resolve time. The frontend has no JS resolver, so
@@ -41,7 +57,7 @@
 
   const roles = [
     "title", "subtitle", "caption", "footnote",
-    "body", "cell", "label", "tick"
+    "body", "header", "cell", "label", "tick"
   ];
 
   function summary(role: { family: string; size: string; weight: number; italic: boolean | null }) {
@@ -51,41 +67,42 @@
   }
 </script>
 
-<SettingsSection title="Text roles" description="Per-role typography. Title and subtitle use the display family; body / cell / label / tick / footnote use the body family.">
+<SettingsSection title="Text roles" description="Per-role typography. Title and subtitle use the display family; body / header / cell / label / tick / footnote use the body family. Header bundle is the column-header band — composed from body + bold weight by default.">
   {#each roles as role (role)}
-    {#if text?.[role]}
+    {@const roleData = readRole(role)}
+    {#if roleData}
       <div class="role">
         <button class="role-toggle" onclick={() => (expandedText = { ...expandedText, [role]: !expandedText[role] })}>
           <span>{expandedText[role] ? "▾" : "▸"} {role.charAt(0).toUpperCase() + role.slice(1)}</span>
-          <span class="role-summary">{summary(text[role])}</span>
+          <span class="role-summary">{summary(roleData)}</span>
         </button>
         {#if expandedText[role]}
           <div class="role-fields">
             <TextField
               label="Family"
-              value={text[role].family ?? ""}
+              value={roleData.family ?? ""}
               onchange={(v) => setTextRole(role, "family", v)}
             />
             <TextField
               label="Size"
               hint="CSS length, e.g. 0.875rem or 14px"
-              value={text[role].size ?? ""}
+              value={roleData.size ?? ""}
               onchange={(v) => setTextRole(role, "size", v)}
             />
             <NumberField
               label="Weight"
-              value={text[role].weight ?? 400}
+              value={roleData.weight ?? 400}
               min={100} max={900} step={100}
               onchange={(v) => setTextRole(role, "weight", v)}
             />
             <BooleanField
               label="Italic"
-              value={!!text[role].italic}
+              value={!!roleData.italic}
               onchange={(v) => setTextRole(role, "italic", v)}
             />
             <ColorField
               label="Color"
-              value={text[role].fg ?? "#000000"}
+              value={roleData.fg ?? "#000000"}
               onchange={(v) => setTextRole(role, "fg", v)}
             />
           </div>

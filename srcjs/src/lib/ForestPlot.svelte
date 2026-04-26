@@ -1332,6 +1332,22 @@
       --tv-text-cell-weight: ${theme.text.cell.weight ?? 400};
       --tv-text-cell-italic: ${theme.text.cell.italic ? "italic" : "normal"};
       --tv-text-header-weight: ${theme.header.text.weight ?? 600};
+      --tv-text-header-italic: ${theme.header.text.italic ? "italic" : "normal"};
+      --tv-text-header-family: ${theme.header.text?.family ?? theme.text.body.family};
+      /*
+       * Header text size. theme.header.text.size composes from
+       * theme.text.body.size at resolve time, so when nothing has been
+       * pinned the two are equal — fall back to the historical
+       * body.size times the --tv-header-font-scale (1.05) so the
+       * default look (5% bigger than body) is preserved. Once a user
+       * pins a distinct size via the panel or set_theme_field, the
+       * explicit value wins.
+       */
+      --tv-text-header-size: ${
+        theme.header.text?.size && theme.header.text.size !== theme.text.body.size
+          ? theme.header.text.size
+          : `calc(${theme.text.body.size} * 1.05)`
+      };
       --tv-text-column-group-weight: ${theme.column_group?.text?.weight ?? 600};
       --tv-text-tick-weight: ${theme.text.tick.weight ?? 400};
       --tv-text-tick-italic: ${theme.text.tick.italic ? "italic" : "normal"};
@@ -2726,8 +2742,10 @@
      --tv-row-bg so existing themes render identically. */
   .header-cell {
     min-height: var(--tv-header-row-height);
-    font-weight: var(--tv-font-weight-bold, 600);
-    font-size: calc(var(--tv-font-size-base, 0.875rem) * var(--tv-header-font-scale, 1.05));
+    font-family: var(--tv-text-header-family, var(--tv-font-family));
+    font-weight: var(--tv-text-header-weight, var(--tv-font-weight-bold, 600));
+    font-style: var(--tv-text-header-italic, normal);
+    font-size: var(--tv-text-header-size, calc(var(--tv-font-size-base, 0.875rem) * var(--tv-header-font-scale, 1.05)));
     border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-header-rule, var(--tv-border));
     background: var(--tv-header-bg, var(--tv-row-bg, var(--tv-bg)));
     color: var(--tv-header-fg, var(--tv-cell-fg, var(--tv-fg)));

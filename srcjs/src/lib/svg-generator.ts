@@ -247,10 +247,14 @@ function calculateSvgAutoWidths(
 ): Map<string, number> {
   const widths = new Map<string, number>();
   const fontSize = parseFontSize(spec.theme.text.body.size);
-  // Header cells use scaled font size (1.05, default 1.05)
-  const headerFontScale = 1.05;
-  // Round to 2 decimal places to avoid floating point precision issues
-  const headerFontSize = Math.round(fontSize * headerFontScale * 100) / 100;
+  // Header cells: use the explicit theme.header.text.size when it's been
+  // pinned distinct from body.size; otherwise apply the historical 5%
+  // scale-up (matches the .header-cell CSS calc-fallback in ForestPlot).
+  const headerExplicit = spec.theme.header?.text?.size;
+  const bodySizeStr = spec.theme.text.body.size;
+  const headerFontSize = (headerExplicit && headerExplicit !== bodySizeStr)
+    ? Math.round(parseFontSize(headerExplicit) * 100) / 100
+    : Math.round(fontSize * 1.05 * 100) / 100;
   const rows = spec.data.rows;
 
   // Padding values from theme (not hardcoded magic numbers)
@@ -2709,11 +2713,16 @@ function renderUnifiedColumnHeaders(
 ): string {
   const lines: string[] = [];
   const baseFontSize = parseFontSize(theme.text.body.size);
-  const headerFontScale = 1.05;
-  // Round to 2 decimal places to avoid floating point precision issues
-  const fontSize = Math.round(baseFontSize * headerFontScale * 100) / 100;
-  // All header cells use bold weight to match web view CSS (.header-cell { font-weight: bold })
-  const fontWeight = 600;
+  // Header cells: prefer explicit theme.header.text.size when pinned
+  // distinct from body.size, else 5% scale-up (matches .header-cell CSS).
+  const headerExplicit = theme.header?.text?.size;
+  const bodySizeStr = theme.text.body.size;
+  const fontSize = (headerExplicit && headerExplicit !== bodySizeStr)
+    ? Math.round(parseFontSize(headerExplicit) * 100) / 100
+    : Math.round(baseFontSize * 1.05 * 100) / 100;
+  const fontFamily = theme.header?.text?.family ?? theme.text.body.family;
+  // All header cells use bold weight to match web view CSS.
+  const fontWeight = theme.header?.text?.weight ?? 600;
   const boldWeight = 600;
   const hasGroups = hasColumnGroups(columnDefs);
 
@@ -2730,7 +2739,7 @@ function renderUnifiedColumnHeaders(
     // Label column spans both rows
     if (showLabelHeader) {
       lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
-        font-family="${theme.text.body.family}"
+        font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
         fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(labelHeader)}</text>`);
@@ -2750,7 +2759,7 @@ function renderUnifiedColumnHeaders(
         }, 0);
         const textX = currentX + groupWidth / 2;
         lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, row1Height)}"
-          font-family="${theme.text.body.family}"
+          font-family="${fontFamily}"
           font-size="${fontSize}px"
           font-weight="${boldWeight}"
           text-anchor="middle"
@@ -2765,7 +2774,7 @@ function renderUnifiedColumnHeaders(
           const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
           const truncatedHeader = truncateText(col.header, width, fontSize, pad);
           lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
-            font-family="${theme.text.body.family}"
+            font-family="${fontFamily}"
             font-size="${fontSize}px"
             font-weight="${fontWeight}"
             text-anchor="${anchor}"
@@ -2795,7 +2804,7 @@ function renderUnifiedColumnHeaders(
               const pad = isVizType(sub.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
               const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
               lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
-                font-family="${theme.text.body.family}"
+                font-family="${fontFamily}"
                 font-size="${fontSize}px"
                 font-weight="${fontWeight}"
                 text-anchor="${anchor}"
@@ -2814,7 +2823,7 @@ function renderUnifiedColumnHeaders(
 
     if (showLabelHeader) {
       lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
-        font-family="${theme.text.body.family}"
+        font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
         fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(labelHeader)}</text>`);
@@ -2832,7 +2841,7 @@ function renderUnifiedColumnHeaders(
         const truncatedHeader = truncateText(col.header, width, fontSize, pad);
 
         lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
-          font-family="${theme.text.body.family}"
+          font-family="${fontFamily}"
           font-size="${fontSize}px"
           font-weight="${fontWeight}"
           text-anchor="${anchor}"
