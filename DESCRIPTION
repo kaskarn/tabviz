@@ -29,6 +29,7 @@ Collate:
     'utils-oklch.R'
     'utils-theme-resolve.R'
     'themes-v2.R'
+    'themes-v2-api.R'
     'utils-serialize.R'
     'utils-serialize-v2.R'
     'modifiers.R'
