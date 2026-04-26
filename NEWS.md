@@ -1,3 +1,20 @@
+# tabviz 0.25.1
+
+## Two follow-up fixes from v0.25.0
+
+- **Tick mark length**: the `theme.shapes.tickMarkLength` setting
+  resized the axis region (so labels shifted) but the visible tick
+  lines themselves stayed at a hardcoded 4 px in the live widget.
+  `EffectAxis.svelte` now derives both tick line length and label /
+  axis-label baselines from `computeAxisLayout()`, the same shared
+  helper the SVG export already used.
+- **Bottom margin doesn't grow the widget**: in auto-fit mode the
+  container's inline `height` was set to the content height only,
+  which clamped the new `padding-bottom` (containerPadding +
+  bottomMargin) inside the box instead of letting it extend the
+  widget. The inline height now adds `2 × containerPadding +
+  bottomMargin` so the visible widget actually grows with the slider.
+
 # tabviz 0.25.0
 
 ## Settings panel cleanup

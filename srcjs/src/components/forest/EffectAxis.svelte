@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { WebTheme, ComputedLayout } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
+  import { computeAxisLayout } from "$lib/typography-layout";
   
   interface Props {
     xScale: ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
@@ -126,6 +127,18 @@
   const axisY = $derived(position === "bottom" ? 0 : layout.headerHeight - 8);
   const isBottom = $derived(position === "bottom");
 
+  // Axis geometry derived from theme typography + tick mark length so
+  // the visible tick lines and label/axis-label baselines stay in sync
+  // with `theme.shapes.tickMarkLength`. Mirrors the SVG-export math in
+  // `$lib/typography-layout.computeAxisLayout`.
+  const axisGeom = $derived(theme
+    ? computeAxisLayout(
+        { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
+        !!axisLabel,
+        theme.shapes.tickMarkLength,
+      )
+    : { tickMarkLength: 4, tickLabelY: 16, axisLabelY: 28, axisRegionHeight: 32 });
+
   // Gridline dash array based on style
   const gridlineDashArray = $derived(
     gridlineStyle === "dashed" ? "4,4" :
@@ -186,14 +199,14 @@
     {@const tickX = xScale(tick)}
     <g transform="translate({tickX}, 0)">
       <line
-        y1={isBottom ? axisY : axisY - 4}
-        y2={isBottom ? axisY + 4 : axisY}
+        y1={isBottom ? axisY : axisY - axisGeom.tickMarkLength}
+        y2={isBottom ? axisY + axisGeom.tickMarkLength : axisY}
         stroke="var(--wf-border, #e2e8f0)"
         stroke-width="1"
       />
       <text
         x={getTextXOffset(tickX)}
-        y={isBottom ? axisY + 16 : axisY - 8}
+        y={isBottom ? axisY + axisGeom.tickLabelY : axisY - axisGeom.tickLabelY + axisGeom.tickMarkLength}
         text-anchor={getTextAnchor(tickX)}
         fill="var(--wf-secondary, #64748b)"
         font-size="var(--wf-font-size-sm, 0.75rem)"
@@ -207,7 +220,7 @@
   {#if axisLabel}
     <text
       x={layout.forestWidth / 2}
-      y={isBottom ? axisY + 28 : axisY - 24}
+      y={isBottom ? axisY + axisGeom.axisLabelY : axisY - axisGeom.axisLabelY}
       text-anchor="middle"
       fill="var(--wf-secondary, #64748b)"
       font-size="var(--wf-font-size-sm, 0.75rem)"

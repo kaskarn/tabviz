@@ -1338,7 +1338,7 @@
   data-paint-scope={store.paintTool?.scope ?? undefined}
   data-paint-token={store.paintTool?.token ?? undefined}
   data-zoom="{Math.round(actualScale * 100)}%"
-  style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight}px` : ''}"
+  style="{cssVars}; {autoFit && scaledHeight > 0 ? `height: ${scaledHeight + 2 * (theme?.spacing.containerPadding ?? 16) + (theme?.spacing.bottomMargin ?? 0)}px` : ''}"
 >
   {#if spec}
     <!-- Control toolbar (always outside scalable so it doesn't scale with zoom) -->
