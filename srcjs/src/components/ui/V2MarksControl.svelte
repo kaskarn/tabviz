@@ -1,0 +1,119 @@
+<script lang="ts">
+  // v2 Marks tab. Series + summary slot bundles + plot mark sizes.
+  // Each series row: anchor color + expandable bundle (fill, stroke,
+  // muted, emphasis, text_fg).
+  import type { ForestStore } from "$stores/forestStore.svelte";
+  import SettingsSection from "./SettingsSection.svelte";
+  import ColorField from "./ColorField.svelte";
+  import NumberField from "./NumberField.svelte";
+
+  interface Props {
+    store: ForestStore;
+  }
+  let { store }: Props = $props();
+
+  const series = $derived(store.spec?.theme?.series ?? []);
+  const summary = $derived(store.spec?.theme?.summary);
+  const plot = $derived(store.spec?.theme?.plot);
+
+  let expanded = $state<Record<number, boolean>>({});
+
+  function toggle(idx: number) {
+    expanded = { ...expanded, [idx]: !expanded[idx] };
+  }
+
+  function setSlot(idx: number, field: string, hex: string) {
+    store.setThemeField(["series", idx, field], hex);
+  }
+  function setSummary(field: string, hex: string) {
+    store.setThemeField(["summary", field], hex);
+  }
+  function setPlot(field: string, value: number) {
+    store.setThemeField(["plot", field], value);
+  }
+
+  const slotFields = [
+    { field: "fill",            label: "Fill" },
+    { field: "stroke",          label: "Stroke" },
+    { field: "fillMuted",       label: "Fill (muted)" },
+    { field: "strokeMuted",     label: "Stroke (muted)" },
+    { field: "fillEmphasis",    label: "Fill (emphasis)" },
+    { field: "strokeEmphasis",  label: "Stroke (emphasis)" },
+    { field: "textFg",          label: "Text fg" },
+  ];
+</script>
+
+<SettingsSection title="Series" description="Per-effect slot bundles. Edit anchor (Fill) for the simple case; expand to override individual derived fields.">
+  {#each series as slot, i (i)}
+    <div class="slot">
+      <button class="slot-toggle" onclick={() => toggle(i)}>
+        <span>{expanded[i] ? "▾" : "▸"} Series {i + 1}</span>
+        <span class="anchor-swatch" style:background={slot.fill}></span>
+      </button>
+      {#if expanded[i]}
+        <div class="slot-fields">
+          {#each slotFields as sf (sf.field)}
+            <ColorField
+              label={sf.label}
+              value={slot[sf.field] ?? ""}
+              onchange={(v) => setSlot(i, sf.field, v)}
+            />
+          {/each}
+        </div>
+      {/if}
+    </div>
+  {/each}
+</SettingsSection>
+
+{#if summary}
+  <SettingsSection title="Summary" description="Pooled-effect diamond. Same slot-bundle shape as series.">
+    <ColorField label="Fill"   value={summary.fill}   onchange={(v) => setSummary("fill", v)} />
+    <ColorField label="Stroke" value={summary.stroke} onchange={(v) => setSummary("stroke", v)} />
+  </SettingsSection>
+{/if}
+
+{#if plot}
+  <SettingsSection title="Marks" description="Plot mark sizes.">
+    <NumberField label="Point size"      value={plot.pointSize}      min={2}  max={20} step={1}   onchange={(v) => setPlot("pointSize", v)} />
+    <NumberField label="Line width"      value={plot.lineWidth}      min={0.5} max={5} step={0.25} onchange={(v) => setPlot("lineWidth", v)} />
+    <NumberField label="Tick mark length" value={plot.tickMarkLength} min={0}  max={12} step={1}  onchange={(v) => setPlot("tickMarkLength", v)} />
+  </SettingsSection>
+{/if}
+
+<style>
+  .slot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px dashed var(--tv-border);
+  }
+  .slot-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--tv-fg);
+    cursor: pointer;
+    font-size: 0.85rem;
+    width: 100%;
+  }
+  .slot-toggle:hover {
+    background: var(--tv-alt-bg);
+  }
+  .anchor-swatch {
+    display: inline-block;
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 1px solid var(--tv-border);
+    border-radius: 3px;
+  }
+  .slot-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.25rem 0 0.5rem 1rem;
+  }
+</style>

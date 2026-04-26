@@ -7,10 +7,10 @@
 resolve_theme(theme)
 }
 \arguments{
-\item{theme}{A \link{WebTheme2} object.}
+\item{theme}{A \link{WebTheme} object.}
 }
 \value{
-A \link{WebTheme2} object with NA fields populated.
+A \link{WebTheme} object with NA fields populated.
 }
 \description{
 Idempotent and deterministic. Only writes into NA-valued fields, so

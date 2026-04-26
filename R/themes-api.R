@@ -1,12 +1,12 @@
 # User-facing v2 theme API: custom-theme constructor + modifiers.
 #
-# Users typically reach v2 via a preset (web_theme_default_v2() etc.).
-# `web_theme_v2_custom()` is the constructor for hand-rolled themes built
+# Users typically reach v2 via a preset (web_theme_default() etc.).
+# `web_theme()` is the constructor for hand-rolled themes built
 # from Tier 1 inputs. The set_* modifiers update inputs / variants /
 # spacing / arbitrary-path on an existing v2 theme and re-resolve.
 #
 # Naming carries the `_v2` suffix during the transition. PR 10 renames
-# `web_theme_v2_custom` -> `web_theme` and the v1 web_theme() goes away.
+# `web_theme` -> `web_theme` and the v1 web_theme() goes away.
 
 
 # Internal: copy non-NULL named args into a target object's properties.
@@ -37,18 +37,18 @@ apply_named_props <- function(target, args) {
 #'   (`density`, `header_style`, `first_column_style`).
 #' @param base_theme Base theme to start from before applying overrides.
 #'   Defaults to the v2 default preset.
-#' @return A fully resolved [WebTheme2].
+#' @return A fully resolved [WebTheme].
 #' @export
-web_theme_v2_custom <- function(
+web_theme <- function(
     name = "custom",
     inputs = NULL,
     variants = NULL,
-    base_theme = web_theme_default_v2()) {
+    base_theme = web_theme_default()) {
   checkmate::assert_string(name)
   checkmate::assert_list(inputs, names = "named", null.ok = TRUE)
   checkmate::assert_list(variants, names = "named", null.ok = TRUE)
-  if (!inherits(base_theme, "tabviz::WebTheme2")) {
-    cli::cli_abort("{.arg base_theme} must be a {.cls WebTheme2}.")
+  if (!inherits(base_theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg base_theme} must be a {.cls WebTheme}.")
   }
 
   result <- base_theme
@@ -66,13 +66,13 @@ web_theme_v2_custom <- function(
 #' `accent`, `accent_deep`, `status_*`, `series_anchors`, `summary_anchor`,
 #' `font_*`, `neutral`. Re-resolves the theme before returning.
 #'
-#' @param theme A [WebTheme2].
+#' @param theme A [WebTheme].
 #' @param ... Named arguments matching [ThemeInputs] property names.
-#' @return The updated [WebTheme2] (re-resolved).
+#' @return The updated [WebTheme] (re-resolved).
 #' @export
 set_inputs <- function(theme, ...) {
-  if (!inherits(theme, "tabviz::WebTheme2")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme2}.")
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
   args <- list(...)
   # If brand changes and brand_deep wasn't also set explicitly, reset
@@ -98,18 +98,18 @@ set_inputs <- function(theme, ...) {
 
 #' Update per-table variants on a v2 theme.
 #'
-#' @param theme A [WebTheme2].
+#' @param theme A [WebTheme].
 #' @param density One of `"compact"`, `"comfortable"`, `"spacious"`.
 #' @param header_style One of `"light"`, `"bold"`.
 #' @param first_column_style One of `"default"`, `"bold"`.
-#' @return The updated [WebTheme2] (re-resolved).
+#' @return The updated [WebTheme] (re-resolved).
 #' @export
 set_variants <- function(theme,
                          density = NULL,
                          header_style = NULL,
                          first_column_style = NULL) {
-  if (!inherits(theme, "tabviz::WebTheme2")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme2}.")
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
   args <- list(
     density = density,
@@ -119,7 +119,7 @@ set_variants <- function(theme,
   theme@variants <- apply_named_props(theme@variants, args)
   # Density change wipes spacing back to NA so resolve refills from the
   # new preset. Users who want a per-token override across density flips
-  # call set_spacing_v2() afterward.
+  # call set_spacing() afterward.
   if (!is.null(density)) theme@spacing <- SpacingTokens()
   resolve_theme(theme)
 }
@@ -137,16 +137,16 @@ set_variants <- function(theme,
 #'   integer at position 2 indexing into the series list
 #' * `set_theme_field(theme, c("inputs", "brand"), "#1F3A5F")`
 #'
-#' @param theme A [WebTheme2].
+#' @param theme A [WebTheme].
 #' @param path Character (or mixed character/integer) vector of property
 #'   names from the theme root to the leaf. Integer entries index list
 #'   properties (currently only `series`).
 #' @param value New value for the leaf.
-#' @return The updated [WebTheme2] (re-resolved).
+#' @return The updated [WebTheme] (re-resolved).
 #' @export
 set_theme_field <- function(theme, path, value) {
-  if (!inherits(theme, "tabviz::WebTheme2")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme2}.")
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
   if (length(path) == 0L) {
     cli::cli_abort("{.arg path} must have at least one element.")
@@ -193,14 +193,14 @@ set_theme_field <- function(theme, path, value) {
 #' Setting any token leaves the rest at their density-preset values.
 #' Re-resolves the theme before returning.
 #'
-#' @param theme A [WebTheme2].
+#' @param theme A [WebTheme].
 #' @param ... Named numeric arguments matching [SpacingTokens] property
 #'   names (`row_height`, `header_height`, `padding`, etc.).
-#' @return The updated [WebTheme2] (re-resolved).
+#' @return The updated [WebTheme] (re-resolved).
 #' @export
-set_spacing_v2 <- function(theme, ...) {
-  if (!inherits(theme, "tabviz::WebTheme2")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme2}.")
+set_spacing <- function(theme, ...) {
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
   args <- list(...)
   theme@spacing <- apply_named_props(theme@spacing, args)

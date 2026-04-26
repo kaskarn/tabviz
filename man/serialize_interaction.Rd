@@ -2,11 +2,13 @@
 % Please edit documentation in R/utils-serialize.R
 \name{serialize_interaction}
 \alias{serialize_interaction}
-\title{Serialize InteractionSpec}
+\title{Serialize a Semantics object into the per-token bundle map}
 \usage{
 serialize_interaction(interaction)
 }
 \description{
-Serialize InteractionSpec
+Serialize a Semantics object into the per-token bundle map
 }
+\keyword{InteractionSpec}
+\keyword{Serialize}
 \keyword{internal}

@@ -3,15 +3,15 @@ expect_s7 <- function(x, class_name) {
 }
 
 preset_constructors <- list(
-  default      = web_theme_default_v2,
-  minimal      = web_theme_minimal_v2,
-  dark         = web_theme_dark_v2,
-  jama         = web_theme_jama_v2,
-  lancet       = web_theme_lancet_v2,
-  modern       = web_theme_modern_v2,
-  presentation = web_theme_presentation_v2,
-  cochrane     = web_theme_cochrane_v2,
-  nature       = web_theme_nature_v2
+  default      = web_theme_default,
+  minimal      = web_theme_minimal,
+  dark         = web_theme_dark,
+  jama         = web_theme_jama,
+  lancet       = web_theme_lancet,
+  modern       = web_theme_modern,
+  presentation = web_theme_presentation,
+  cochrane     = web_theme_cochrane,
+  nature       = web_theme_nature
 )
 
 for (preset_name in names(preset_constructors)) {
@@ -21,7 +21,7 @@ for (preset_name in names(preset_constructors)) {
 
     test_that(paste0("preset '", pname, "' constructs and resolves"), {
       t <- ctor()
-      expect_s7(t, "WebTheme2")
+      expect_s7(t, "WebTheme")
       expect_equal(t@name, pname)
       # Tier 2 chrome resolved.
       expect_match(t@surface@base, "^#")
@@ -49,19 +49,19 @@ for (preset_name in names(preset_constructors)) {
   })
 }
 
-test_that("package_themes_v2 returns all 9 presets named", {
-  pkg <- package_themes_v2()
+test_that("package_themes returns all 9 presets named", {
+  pkg <- package_themes()
   expect_setequal(
     names(pkg),
     c("default", "minimal", "dark", "jama", "lancet",
       "modern", "presentation", "cochrane", "nature")
   )
-  for (nm in names(pkg)) expect_s7(pkg[[nm]], "WebTheme2")
+  for (nm in names(pkg)) expect_s7(pkg[[nm]], "WebTheme")
 })
 
 test_that("preset overrides survive resolution", {
   # JAMA explicitly sets dividers to black; resolution must not overwrite.
-  jama <- web_theme_jama_v2()
+  jama <- web_theme_jama()
   expect_equal(toupper(jama@divider@subtle), "#000000")
   expect_equal(toupper(jama@divider@strong), "#000000")
   # JAMA overrides spacing tokens (more compact than the preset).
@@ -72,32 +72,32 @@ test_that("preset overrides survive resolution", {
 })
 
 test_that("brand_deep mirrors brand by default", {
-  d <- web_theme_default_v2()
+  d <- web_theme_default()
   expect_equal(d@inputs@brand_deep, d@inputs@brand)
 })
 
 test_that("brand_deep can be set explicitly per preset", {
   # Lancet sets brand_deep = "#002D54" explicitly.
-  l <- web_theme_lancet_v2()
+  l <- web_theme_lancet()
   expect_equal(toupper(l@inputs@brand), "#00407A")
   expect_equal(toupper(l@inputs@brand_deep), "#002D54")
 })
 
 test_that("density flag sets compact / comfortable / spacious correctly", {
-  expect_equal(web_theme_jama_v2()@variants@density, "compact")
-  expect_equal(web_theme_default_v2()@variants@density, "comfortable")
-  expect_equal(web_theme_modern_v2()@variants@density, "spacious")
+  expect_equal(web_theme_jama()@variants@density, "compact")
+  expect_equal(web_theme_default()@variants@density, "comfortable")
+  expect_equal(web_theme_modern()@variants@density, "spacious")
 })
 
 test_that("series anchors match per-preset palette", {
-  expect_length(web_theme_default_v2()@inputs@series_anchors, 5)
-  expect_equal(toupper(web_theme_default_v2()@inputs@series_anchors[1]), "#0891B2")
-  expect_equal(toupper(web_theme_lancet_v2()@inputs@series_anchors[1]),  "#00468B")
-  expect_equal(toupper(web_theme_modern_v2()@inputs@series_anchors[1]),  "#3B82F6")
+  expect_length(web_theme_default()@inputs@series_anchors, 5)
+  expect_equal(toupper(web_theme_default()@inputs@series_anchors[1]), "#0891B2")
+  expect_equal(toupper(web_theme_lancet()@inputs@series_anchors[1]),  "#00468B")
+  expect_equal(toupper(web_theme_modern()@inputs@series_anchors[1]),  "#3B82F6")
 })
 
 test_that("dark theme has dark canvas", {
-  d <- web_theme_dark_v2()
+  d <- web_theme_dark()
   # Surface base should be the dark canvas, not a light tone.
   rgb <- farver::decode_colour(d@surface@base)[1, ]
   expect_lt(mean(rgb), 80)  # average channel under 80/255 -> clearly dark

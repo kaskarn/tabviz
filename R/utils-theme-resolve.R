@@ -1,14 +1,14 @@
 # Theme resolution pipeline.
 #
-# resolve_theme(theme) takes a WebTheme2 with NA-default Tier 2 / Tier 3
-# fields and returns a WebTheme2 with all those fields populated from the
+# resolve_theme(theme) takes a WebTheme with NA-default Tier 2 / Tier 3
+# fields and returns a WebTheme with all those fields populated from the
 # Tier 1 inputs and chosen variants. Only NA fields are written, so
 # user-set overrides survive re-resolution. The function is idempotent.
 #
 # Hard rule: chrome derivation reads only chrome inputs (neutrals,
 # brand_deep, accent, accent_deep). Data derivation reads only data inputs
 # (series_anchors, summary_anchor, status_*) plus surface.base for muted
-# blends. The two cascades meet only at WebTheme2 reassembly.
+# blends. The two cascades meet only at WebTheme reassembly.
 
 # Density presets: each entry maps every SpacingTokens field to a numeric.
 DENSITY_PRESETS <- list(
@@ -343,12 +343,12 @@ resolve_components <- function(theme) {
 #' summary, status), derive text roles, derive spacing from density preset,
 #' fill Tier 3 component clusters from the resolved Tier 2 tokens.
 #'
-#' @param theme A [WebTheme2] object.
-#' @return A [WebTheme2] object with NA fields populated.
+#' @param theme A [WebTheme] object.
+#' @return A [WebTheme] object with NA fields populated.
 #' @export
 resolve_theme <- function(theme) {
-  if (!inherits(theme, "tabviz::WebTheme2")) {
-    cli::cli_abort("{.arg theme} must be a {.cls WebTheme2}.")
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
 
   # Step 1: Tier 1 mirrors.

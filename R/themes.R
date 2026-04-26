@@ -1,6 +1,6 @@
 # 9 preset constructors for the v2 theme system.
 #
-# Each returns a fully resolved WebTheme2. v1 presets in classes-theme.R
+# Each returns a fully resolved WebTheme. v1 presets in classes-theme.R
 # remain in place; PR 6 swaps the un-suffixed names to point at v2 and
 # PR 10 deletes the v1 set.
 #
@@ -15,10 +15,10 @@
 #' Cyan-on-white, comfortable density, system fonts. v2 of the package
 #' default; replaces [web_theme_default] in PR 10.
 #'
-#' @return A [WebTheme2].
+#' @return A [WebTheme].
 #' @export
-web_theme_default_v2 <- function() {
-  resolve_theme(WebTheme2(
+web_theme_default <- function() {
+  resolve_theme(WebTheme(
     name = "default",
     inputs = ThemeInputs(
       neutral = c("#FFFFFF", "#FFFFFF", "#F8FAFC", "#94A3B8", "#333333"),
@@ -36,10 +36,10 @@ web_theme_default_v2 <- function() {
 #' Pure black-and-white, serif typography, compact density, sharp corners.
 #' Targeted at journal submissions.
 #'
-#' @return A [WebTheme2].
+#' @return A [WebTheme].
 #' @export
-web_theme_minimal_v2 <- function() {
-  resolve_theme(WebTheme2(
+web_theme_minimal <- function() {
+  resolve_theme(WebTheme(
     name = "minimal",
     inputs = ThemeInputs(
       neutral = c("#FFFFFF", "#FFFFFF", "#FAFAFA", "#666666", "#000000"),
@@ -59,10 +59,10 @@ web_theme_minimal_v2 <- function() {
 #'
 #' Catppuccin Mocha-inspired dark palette with pastel marker colors.
 #'
-#' @return A [WebTheme2].
+#' @return A [WebTheme].
 #' @export
-web_theme_dark_v2 <- function() {
-  resolve_theme(WebTheme2(
+web_theme_dark <- function() {
+  resolve_theme(WebTheme(
     name = "dark",
     inputs = ThemeInputs(
       neutral = c("#1E1E2E", "#1E1E2E", "#232334", "#6C7086", "#CDD6F4"),
@@ -81,10 +81,10 @@ web_theme_dark_v2 <- function() {
 #'
 #' All-black-and-white, ultra-compact density, Arial typography.
 #'
-#' @return A [WebTheme2].
+#' @return A [WebTheme].
 #' @export
-web_theme_jama_v2 <- function() {
-  resolve_theme(WebTheme2(
+web_theme_jama <- function() {
+  resolve_theme(WebTheme(
     name = "jama",
     inputs = ThemeInputs(
       neutral = c("#FFFFFF", "#FFFFFF", "#F9FAFB", "#555555", "#000000"),
@@ -106,10 +106,10 @@ web_theme_jama_v2 <- function() {
 #'
 #' Lancet navy primary, gold accent, serif typography.
 #'
-#' @return A [WebTheme2].
+#' @return A [WebTheme].
 #' @export
-web_theme_lancet_v2 <- function() {
-  resolve_theme(WebTheme2(
+web_theme_lancet <- function() {
+  resolve_theme(WebTheme(
     name = "lancet",
     inputs = ThemeInputs(
       neutral = c("#FDFCFB", "#FDFCFB", "#F8F7F5", "#3D5A80", "#1E3A5F"),
@@ -128,10 +128,10 @@ web_theme_lancet_v2 <- function() {
 #'
 #' Vibrant blue + violet, larger marker sizes, Inter font.
 #'
-#' @return A [WebTheme2].
+#' @return A [WebTheme].
 #' @export
-web_theme_modern_v2 <- function() {
-  resolve_theme(WebTheme2(
+web_theme_modern <- function() {
+  resolve_theme(WebTheme(
     name = "modern",
     inputs = ThemeInputs(
       neutral = c("#FAFAFA", "#FAFAFA", "#F5F5F5", "#52525B", "#18181B"),
@@ -150,10 +150,10 @@ web_theme_modern_v2 <- function() {
 #'
 #' Oversized markers, thick lines, large typography. For slides/posters.
 #'
-#' @return A [WebTheme2].
+#' @return A [WebTheme].
 #' @export
-web_theme_presentation_v2 <- function() {
-  resolve_theme(WebTheme2(
+web_theme_presentation <- function() {
+  resolve_theme(WebTheme(
     name = "presentation",
     inputs = ThemeInputs(
       neutral = c("#FFFFFF", "#FFFFFF", "#F8FAFC", "#334155", "#0F172A"),
@@ -174,10 +174,10 @@ web_theme_presentation_v2 <- function() {
 #'
 #' Cochrane teal, Arial, very compact density for systematic reviews.
 #'
-#' @return A [WebTheme2].
+#' @return A [WebTheme].
 #' @export
-web_theme_cochrane_v2 <- function() {
-  resolve_theme(WebTheme2(
+web_theme_cochrane <- function() {
+  resolve_theme(WebTheme(
     name = "cochrane",
     inputs = ThemeInputs(
       neutral = c("#FFFFFF", "#FFFFFF", "#F5F5F5", "#555555", "#2C2C2C"),
@@ -200,10 +200,10 @@ web_theme_cochrane_v2 <- function() {
 #'
 #' Nature blue, refined red accent, Helvetica Neue, balanced density.
 #'
-#' @return A [WebTheme2].
+#' @return A [WebTheme].
 #' @export
-web_theme_nature_v2 <- function() {
-  resolve_theme(WebTheme2(
+web_theme_nature <- function() {
+  resolve_theme(WebTheme(
     name = "nature",
     inputs = ThemeInputs(
       neutral = c("#FFFFFF", "#FFFFFF", "#FAFAFA", "#424242", "#1A1A1A"),
@@ -224,18 +224,18 @@ web_theme_nature_v2 <- function() {
 #' Returns a named list of all v2 theme presets. The v2 mirror of
 #' [package_themes()].
 #'
-#' @return Named list of [WebTheme2] objects.
+#' @return Named list of [WebTheme] objects.
 #' @export
-package_themes_v2 <- function() {
+package_themes <- function() {
   list(
-    default      = web_theme_default_v2(),
-    minimal      = web_theme_minimal_v2(),
-    dark         = web_theme_dark_v2(),
-    jama         = web_theme_jama_v2(),
-    lancet       = web_theme_lancet_v2(),
-    modern       = web_theme_modern_v2(),
-    presentation = web_theme_presentation_v2(),
-    cochrane     = web_theme_cochrane_v2(),
-    nature       = web_theme_nature_v2()
+    default      = web_theme_default(),
+    minimal      = web_theme_minimal(),
+    dark         = web_theme_dark(),
+    jama         = web_theme_jama(),
+    lancet       = web_theme_lancet(),
+    modern       = web_theme_modern(),
+    presentation = web_theme_presentation(),
+    cochrane     = web_theme_cochrane(),
+    nature       = web_theme_nature()
   )
 }

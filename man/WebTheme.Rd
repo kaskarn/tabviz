@@ -2,30 +2,12 @@
 % Please edit documentation in R/classes-theme.R
 \name{WebTheme}
 \alias{WebTheme}
-\title{WebTheme: Complete theme specification}
-\arguments{
-\item{name}{Theme name}
-
-\item{colors}{ColorPalette object}
-
-\item{typography}{Typography object}
-
-\item{spacing}{Spacing object}
-
-\item{shapes}{Shapes object}
-
-\item{axis}{AxisConfig object}
-
-\item{layout}{LayoutConfig object}
-
-\item{group_headers}{GroupHeaderStyles object for nested row group hierarchy}
-
-\item{semantics}{\link{Semantics} object with per-token visual bundles for
-\code{row_emphasis} / \code{row_muted} / \code{row_accent} rows and their cell-level
-counterparts. Defaults to \code{\link[=default_semantics_for]{default_semantics_for()}} applied to the
-default palette / typography; preset helpers (\verb{web_theme_*()}) pass
-their own palette-derived bundles.}
-}
+\title{WebTheme: 3-tier theme specification (v2).}
 \description{
-WebTheme: Complete theme specification
+Holds Tier 1 inputs, per-table variants, all derived Tier 2 roles, and
+Tier 3 component bindings. Tier 2/3 fields default to NA-filled empty
+classes; PR 3's \code{resolve_theme()} populates them from inputs.
+}
+\details{
+Renamed to \code{WebTheme} and replaces v1 in PR 10.
 }

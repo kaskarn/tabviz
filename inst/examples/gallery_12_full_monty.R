@@ -36,9 +36,10 @@ full_monty <- tibble(
 
 # Custom theme
 monty_theme <- web_theme_dark() |>
-  set_colors(primary = "#f59e0b") |>
+  set_inputs(brand = "#f59e0b") |>
   set_spacing(row_height = 38) |>
-  set_axis(gridlines = TRUE, gridline_style = "dotted")
+  set_theme_field(c("axis", "gridlines"), TRUE) |>
+  set_theme_field(c("axis", "gridline_style"), "dotted")
 
 tabviz(
   full_monty,

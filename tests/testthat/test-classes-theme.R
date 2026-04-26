@@ -144,8 +144,8 @@ test_that("MarksRecipes defaults forest+summary+bar+box+violin+lollipop", {
   expect_equal(mr@forest@line, "stroke")
 })
 
-test_that("WebTheme2 constructs end-to-end with defaults", {
-  t <- WebTheme2()
+test_that("WebTheme constructs end-to-end with defaults", {
+  t <- WebTheme()
   expect_equal(t@name, "default")
   expect_s7_class(t@inputs, "ThemeInputs")
   expect_s7_class(t@variants, "ThemeVariants")
@@ -159,8 +159,8 @@ test_that("WebTheme2 constructs end-to-end with defaults", {
   expect_length(t@series, 0L)
 })
 
-test_that("WebTheme2 accepts a list of SlotBundle for series", {
-  t <- WebTheme2(series = list(
+test_that("WebTheme accepts a list of SlotBundle for series", {
+  t <- WebTheme(series = list(
     SlotBundle(fill = "#1F3A5F"),
     SlotBundle(fill = "#B08938")
   ))
@@ -168,6 +168,6 @@ test_that("WebTheme2 accepts a list of SlotBundle for series", {
   expect_s7_class(t@series[[1]], "SlotBundle")
 })
 
-test_that("WebTheme2 rejects non-SlotBundle entries in series", {
-  expect_error(WebTheme2(series = list(SlotBundle(), "not a bundle")))
+test_that("WebTheme rejects non-SlotBundle entries in series", {
+  expect_error(WebTheme(series = list(SlotBundle(), "not a bundle")))
 })

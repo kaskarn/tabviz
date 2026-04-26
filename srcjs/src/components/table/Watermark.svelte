@@ -75,10 +75,10 @@
         transform="rotate({angleDeg.toFixed(2)} {cx} {cy})"
         text-anchor="middle"
         dominant-baseline="middle"
-        font-family={theme.typography.fontFamily}
+        font-family={theme.text.body.family}
         font-size={fontSize.toFixed(1)}
         font-weight="700"
-        fill={color ?? theme.colors.foreground}
+        fill={color ?? theme.content.primary}
         fill-opacity={opacity ?? 0.07}
       >{text}</text>
     </svg>

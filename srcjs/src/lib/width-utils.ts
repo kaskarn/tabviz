@@ -291,7 +291,7 @@ export function calculateLabelColumnWidth(
       // Count all descendant rows for the "(N)" suffix, matching display
       const rowCount = countAllDescendantRows(group.id);
       const countText = `(${rowCount})`;
-      const countFontSize = fontSizeNum * 0.75; // matches theme.typography.fontSizeSm
+      const countFontSize = fontSizeNum * 0.75; // matches theme.text.label.size
       const countWidth = estimateTextWidth(countText, countFontSize);
 
       // Total width: all components from GroupHeader.svelte layout

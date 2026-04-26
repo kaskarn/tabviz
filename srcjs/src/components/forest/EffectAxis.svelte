@@ -129,13 +129,13 @@
 
   // Axis geometry derived from theme typography + tick mark length so
   // the visible tick lines and label/axis-label baselines stay in sync
-  // with `theme.shapes.tickMarkLength`. Mirrors the SVG-export math in
+  // with `theme.plot.tickMarkLength`. Mirrors the SVG-export math in
   // `$lib/typography-layout.computeAxisLayout`.
   const axisGeom = $derived(theme
     ? computeAxisLayout(
-        { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
+        { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
         !!axisLabel,
-        theme.shapes.tickMarkLength,
+        theme.plot.tickMarkLength,
       )
     : { tickMarkLength: 4, tickLabelY: 16, axisLabelY: 28, axisRegionHeight: 32 });
 

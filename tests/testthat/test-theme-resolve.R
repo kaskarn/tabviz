@@ -3,12 +3,12 @@ expect_s7 <- function(x, class_name) {
 }
 
 # Convenience: a fresh resolved default theme.
-resolved_default <- function() resolve_theme(WebTheme2())
+resolved_default <- function() resolve_theme(WebTheme())
 
 
-test_that("resolve_theme returns a WebTheme2", {
+test_that("resolve_theme returns a WebTheme", {
   out <- resolved_default()
-  expect_s7(out, "WebTheme2")
+  expect_s7(out, "WebTheme")
 })
 
 test_that("resolve_theme fills Tier 2 chrome from neutrals", {
@@ -36,7 +36,7 @@ test_that("resolve_theme fills accent + tint ramp", {
 
 test_that("resolve_theme expands series anchors into slot bundles", {
   inputs <- ThemeInputs(series_anchors = c("#1F3A5F", "#B08938"))
-  t <- resolve_theme(WebTheme2(inputs = inputs))
+  t <- resolve_theme(WebTheme(inputs = inputs))
   expect_length(t@series, 2L)
   expect_s7(t@series[[1]], "SlotBundle")
   expect_equal(toupper(t@series[[1]]@fill), "#1F3A5F")
@@ -46,13 +46,13 @@ test_that("resolve_theme expands series anchors into slot bundles", {
 })
 
 test_that("resolve_theme fills summary slot bundle from summary_anchor", {
-  t <- resolve_theme(WebTheme2(inputs = ThemeInputs(brand = "#1F3A5F")))
+  t <- resolve_theme(WebTheme(inputs = ThemeInputs(brand = "#1F3A5F")))
   expect_match(t@summary@fill, "^#")
   expect_equal(toupper(t@summary@fill), "#1F3A5F")  # mirrored from brand
 })
 
 test_that("user-set fields survive resolution (idempotence + override)", {
-  t <- WebTheme2()
+  t <- WebTheme()
   t@surface@base <- "#FF00FF"
   t@series <- list(SlotBundle(fill = "#ABCDEF"))
   t@row@hover@bg <- "#123456"
@@ -69,9 +69,9 @@ test_that("user-set fields survive resolution (idempotence + override)", {
 })
 
 test_that("density preset drives spacing", {
-  t_compact <- resolve_theme(WebTheme2(variants = ThemeVariants(density = "compact")))
-  t_comfy   <- resolve_theme(WebTheme2(variants = ThemeVariants(density = "comfortable")))
-  t_spacy   <- resolve_theme(WebTheme2(variants = ThemeVariants(density = "spacious")))
+  t_compact <- resolve_theme(WebTheme(variants = ThemeVariants(density = "compact")))
+  t_comfy   <- resolve_theme(WebTheme(variants = ThemeVariants(density = "comfortable")))
+  t_spacy   <- resolve_theme(WebTheme(variants = ThemeVariants(density = "spacious")))
 
   expect_lt(t_compact@spacing@row_height, t_comfy@spacing@row_height)
   expect_lt(t_comfy@spacing@row_height,   t_spacy@spacing@row_height)
@@ -79,7 +79,7 @@ test_that("density preset drives spacing", {
 })
 
 test_that("per-token spacing override preserved across density change", {
-  t <- WebTheme2(variants = ThemeVariants(density = "spacious"))
+  t <- WebTheme(variants = ThemeVariants(density = "spacious"))
   t@spacing@row_height <- 99
   out <- resolve_theme(t)
   expect_equal(out@spacing@row_height, 99)
@@ -89,7 +89,7 @@ test_that("per-token spacing override preserved across density change", {
 
 test_that("Tier 1 NA mirrors fire", {
   inp <- ThemeInputs(brand = "#123456")
-  t <- resolve_theme(WebTheme2(inputs = inp))
+  t <- resolve_theme(WebTheme(inputs = inp))
   expect_equal(toupper(t@inputs@brand_deep), "#123456")
   expect_equal(toupper(t@inputs@summary_anchor), "#123456")
   expect_equal(t@inputs@font_display, t@inputs@font_body)
@@ -97,7 +97,7 @@ test_that("Tier 1 NA mirrors fire", {
 
 test_that("explicit brand_deep is preserved", {
   inp <- ThemeInputs(brand = "#123456", brand_deep = "#000000")
-  t <- resolve_theme(WebTheme2(inputs = inp))
+  t <- resolve_theme(WebTheme(inputs = inp))
   expect_equal(toupper(t@inputs@brand_deep), "#000000")
 })
 
@@ -187,21 +187,21 @@ test_that("resolve_data is deterministic given the same inputs", {
 
 test_that("partial slot bundle overrides survive resolution", {
   partial <- SlotBundle(fill = "#FF00FF")  # only fill set
-  t <- WebTheme2(series = list(partial))
+  t <- WebTheme(series = list(partial))
   out <- resolve_theme(t)
   expect_equal(toupper(out@series[[1]]@fill), "#FF00FF")  # preserved
   expect_match(out@series[[1]]@stroke, "^#")               # derived
   expect_match(out@series[[1]]@fill_muted, "^#")           # derived
 })
 
-test_that("resolve_theme rejects non-WebTheme2 input", {
-  expect_error(resolve_theme(list()), "WebTheme2")
-  expect_error(resolve_theme("default"), "WebTheme2")
+test_that("resolve_theme rejects non-WebTheme input", {
+  expect_error(resolve_theme(list()), "WebTheme")
+  expect_error(resolve_theme("default"), "WebTheme")
 })
 
 test_that("variants flip header/first-column without mutating Tier 2", {
-  t_light <- resolve_theme(WebTheme2())
-  t_bold  <- resolve_theme(WebTheme2(
+  t_light <- resolve_theme(WebTheme())
+  t_bold  <- resolve_theme(WebTheme(
     variants = ThemeVariants(header_style = "bold", first_column_style = "bold")
   ))
   # Tier 2 chrome unchanged.

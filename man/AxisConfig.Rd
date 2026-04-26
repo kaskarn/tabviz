@@ -2,63 +2,7 @@
 % Please edit documentation in R/classes-theme.R
 \name{AxisConfig}
 \alias{AxisConfig}
-\title{AxisConfig: Axis rendering configuration}
-\usage{
-AxisConfig(
-  range_min = NA_real_,
-  range_max = NA_real_,
-  tick_count = NA_real_,
-  tick_values = NULL,
-  gridlines = FALSE,
-  gridline_style = "dotted",
-  ci_clip_factor = 2,
-  include_null = TRUE,
-  symmetric = NULL,
-  null_tick = TRUE,
-  marker_margin = TRUE
-)
-}
-\arguments{
-\item{range_min}{Minimum value for axis (NA = auto from data)}
-
-\item{range_max}{Maximum value for axis (NA = auto from data)}
-
-\item{tick_count}{Target number of ticks (NA = auto)}
-
-\item{tick_values}{Explicit tick positions (overrides tick_count)}
-
-\item{gridlines}{Show gridlines on the plot}
-
-\item{gridline_style}{Style of gridlines: "solid", "dashed", or "dotted"}
-
-\item{ci_clip_factor}{CIs extending beyond this multiple of the estimate range
-are clipped with arrows (default: 2.0). For example, 2.0 means CIs that extend
-more than 2x the estimate range will be truncated. Use \code{Inf} to never clip.}
-
-\item{include_null}{Always include the null value in the axis range (default: TRUE)}
-
-\item{symmetric}{Make axis symmetric around null value. Must be explicitly set
-to TRUE to enable; default (NULL/FALSE) does not apply symmetry.}
-
-\item{null_tick}{Always show a tick at the null value (default: TRUE)}
-
-\item{marker_margin}{Add half-marker-width padding at edges so markers don't clip (default: TRUE)}
-}
+\title{AxisConfig: forest plot x-axis configuration.}
 \description{
-Controls how the x-axis range and ticks are calculated.
+AxisConfig: forest plot x-axis configuration.
 }
-\section{Auto-Scaling Algorithm}{
-
-When \code{range_min}/\code{range_max} are NA (auto), the axis range is calculated as:
-\enumerate{
-\item Collect all point estimates (not CI bounds)
-\item Extend range to include null value (if \code{include_null = TRUE})
-\item Extend range to include CIs within \code{ci_clip_factor} of the estimate range
-\item Optionally make symmetric around null (if \code{symmetric = TRUE})
-\item Apply nice rounding for clean tick values
-}
-
-CIs extending beyond ci_clip_factor * estimate_range are clipped
-with arrow indicators rather than expanding the axis.
-}
-

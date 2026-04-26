@@ -1,304 +1,490 @@
-# Theme S7 classes for tabviz
-# Generic theming system for web-native visualizations
+# 3-tier theming system for tabviz (v2).
+#
+# Defines the v2 theme classes alongside v1 (R/classes-theme.R). v2 adds a
+# strict 3-tier cascade: ThemeInputs (T1) -> semantic roles (T2) -> component
+# clusters (T3). Chrome and data tokens are parallel hierarchies that share
+# only Tier 1.
+#
+# PR 3 lands resolve_theme() which fills NA-default fields from upstream
+# inputs (OKLCH derivations). PR 4 ports the 9 presets to construct via
+# WebTheme. PR 10 deletes v1 and renames WebTheme -> WebTheme.
 
-#' ColorPalette: Colors for visualizations
-#'
-#' @usage NULL
-#' @export
-ColorPalette <- new_class(
-  "ColorPalette",
-  properties = list(
-    background = new_property(class_character, default = "#ffffff"),
-    foreground = new_property(class_character, default = "#333333"),
-    primary = new_property(class_character, default = "#0891b2"),     # Cyan-600: fresh, professional
-    secondary = new_property(class_character, default = "#64748b"),
-    accent = new_property(class_character, default = "#8b5cf6"),
-    muted = new_property(class_character, default = "#94a3b8"),
-    border = new_property(class_character, default = "#e2e8f0"),
-    # Row banding colors
-    row_bg = new_property(class_character, default = "#ffffff"),      # Even row background
-    alt_bg = new_property(class_character, default = "#f8fafc"),      # Odd row background (stripe)
-    # Column-header row background. Default `NA` means "inherit from row_bg"
-    # -- the serializer resolves the fallback before emitting, so every
-    # preset (including dark variants) gets the right column-header bg
-    # without having to stamp header_bg on each ColorPalette() call.
-    header_bg = new_property(class_character, default = NA_character_),
-    # Data-cell text color. Default `NA` means "inherit from foreground" --
-    # resolved by the serializer. Lets users tint cell text without
-    # affecting column headers, titles, or UI chrome (which keep using
-    # `foreground`).
-    cell_foreground = new_property(class_character, default = NA_character_),
-    # Column-header text color. Default `NA` cascades from `cell_foreground`
-    # (which itself cascades from `foreground`), so existing themes render
-    # identically. Set explicitly to give the header row its own text
-    # color distinct from data cells -- symmetric with `header_bg` for
-    # background.
-    header_foreground = new_property(class_character, default = NA_character_),
-    # CI whisker stroke color. Marker fill is driven by `shapes.effect_colors`
-    # (per-effect palette) and `summary_fill` (summary diamonds); the legacy
-    # `interval` slot was removed in v0.25.0 because every shipped theme set
-    # `effect_colors`, leaving `interval` as a 4th-tier fallback that was
-    # never reached.
-    interval_line = new_property(class_character, default = "#475569"),
-    # Summary/aggregate colors
-    summary_fill = new_property(class_character, default = "#0891b2"),
-    summary_border = new_property(class_character, default = "#0e7490"),
-    # Author-curated 8-color palette surfaced in the settings panel's
-    # "Theme" tab on every color picker. NA = derive from existing
-    # named colors at serialize time so every theme works on day one.
-    # When set, must be a length-8 character vector of valid hex.
-    swatches = new_property(class_any, default = NA)
-  ),
-  validator = function(self) {
-    # Regex for valid CSS hex colors: #RGB, #RRGGBB, or #RRGGBBAA
-    hex_pattern <- "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-    color_props <- c("background", "foreground", "primary", "secondary", "accent",
-                     "muted", "border", "row_bg", "alt_bg", "header_bg",
-                     "cell_foreground", "header_foreground",
-                     "interval_line",
-                     "summary_fill", "summary_border")
+# Hex regex shared across v2 validators. Renamed in PR 10 when v1 retires.
+hex_pattern <- "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+
+# Validator factory: each named slot must be NA-or-hex.
+make_color_validator <- function(slots) {
+  function(self) {
     invalid <- character()
-    for (prop in color_props) {
-      value <- S7::prop(self, prop)
-      # NA is valid for `header_bg` (inherits row_bg), `cell_foreground`
-      # (inherits foreground), and `header_foreground` (inherits cell
-      # text); other palette slots require hex.
-      if (!is.na(value) && !grepl(hex_pattern, value)) {
-        invalid <- c(invalid, paste0(prop, " = '", value, "'"))
+    for (s in slots) {
+      v <- S7::prop(self, s)
+      if (!is.na(v) && !grepl(hex_pattern, v)) {
+        invalid <- c(invalid, paste0(s, " = '", v, "'"))
       }
     }
-    if (length(invalid) > 0) {
-      return(paste("Invalid hex color values:", paste(invalid, collapse = ", "),
-                   "- colors must be hex format like #RGB, #RRGGBB, or #RRGGBBAA"))
+    if (length(invalid) > 0L) {
+      return(paste("Invalid hex:", paste(invalid, collapse = ", ")))
     }
-    sw <- self@swatches
-    if (length(sw) == 1 && is.na(sw)) {
-      # NA sentinel: serializer derives a default palette.
-    } else if (!is.character(sw) || length(sw) != 8) {
-      return("swatches must be NA or a character vector of length 8")
-    } else {
-      bad <- sw[!grepl(hex_pattern, sw)]
-      if (length(bad) > 0) {
-        return(paste0("swatches contains invalid hex value(s): ",
-                      paste(bad, collapse = ", ")))
+    NULL
+  }
+}
+
+
+# -- Tier 1: customer-facing inputs ---------------------------------------
+
+#' ThemeInputs: Tier 1 customer-facing inputs.
+#'
+#' The only tier customers normally edit. Every other token derives from
+#' these via `resolve_theme()` (added in PR 3).
+#'
+#' @usage NULL
+#' @export
+ThemeInputs <- new_class(
+  "ThemeInputs",
+  properties = list(
+    # 5-step neutral ramp, lightest to darkest.
+    neutral = new_property(class_character,
+      default = c("#FFFFFF", "#F7F8FA", "#EDEFF3", "#A8AEB8", "#2A2F38")),
+
+    # Brand fill + dark companion for text/strokes. brand_deep NA = mirror brand.
+    brand      = new_property(class_character, default = "#0891b2"),
+    brand_deep = new_property(class_character, default = NA_character_),
+
+    # Chrome accent + dark companion. accent_deep NA = mirror accent.
+    accent      = new_property(class_character, default = "#0891b2"),
+    accent_deep = new_property(class_character, default = NA_character_),
+
+    # Status semantics. NA = use sensible defaults at resolve time.
+    status_positive = new_property(class_character, default = "#3F7D3F"),
+    status_negative = new_property(class_character, default = "#B33A3A"),
+    status_warning  = new_property(class_character, default = "#C68A2E"),
+    status_info     = new_property(class_character, default = NA_character_),
+
+    # Data series anchors. Variable length; one anchor per slot.
+    series_anchors  = new_property(class_character,
+      default = c("#0891b2", "#16a34a", "#f59e0b", "#ef4444", "#8b5cf6")),
+
+    # Summary diamond anchor. NA = mirror brand.
+    summary_anchor = new_property(class_character, default = NA_character_),
+
+    # Typography. font_display NA = mirror font_body. font_mono optional.
+    font_body    = new_property(class_character,
+      default = "system-ui, -apple-system, sans-serif"),
+    font_display = new_property(class_character, default = NA_character_),
+    font_mono    = new_property(class_character, default = NA_character_)
+  ),
+  validator = function(self) {
+    invalid <- character()
+    color_props <- c("brand", "brand_deep", "accent", "accent_deep",
+                     "status_positive", "status_negative", "status_warning",
+                     "status_info", "summary_anchor")
+    for (p in color_props) {
+      v <- S7::prop(self, p)
+      if (!is.na(v) && !grepl(hex_pattern, v)) {
+        invalid <- c(invalid, paste0(p, " = '", v, "'"))
       }
+    }
+    if (length(self@neutral) != 5L) {
+      return("neutral must be a length-5 character vector of hex colors")
+    }
+    bad <- self@neutral[!grepl(hex_pattern, self@neutral)]
+    if (length(bad) > 0L) {
+      invalid <- c(invalid, paste("neutral has invalid:", paste(bad, collapse = ", ")))
+    }
+    bad <- self@series_anchors[!grepl(hex_pattern, self@series_anchors)]
+    if (length(bad) > 0L) {
+      invalid <- c(invalid,
+                   paste("series_anchors has invalid:", paste(bad, collapse = ", ")))
+    }
+    if (length(invalid) > 0L) {
+      return(paste("Invalid hex color values:", paste(invalid, collapse = ", ")))
     }
     NULL
   }
 )
 
-#' Typography: Font settings
+
+#' ThemeVariants: per-table toggles.
+#'
+#' These compose freely. `density` drives the spacing scale; `header_style`
+#' and `first_column_style` flip the corresponding component clusters between
+#' their light/bold or default/bold variants.
 #'
 #' @usage NULL
 #' @export
-Typography <- new_class(
-  "Typography",
+ThemeVariants <- new_class(
+  "ThemeVariants",
   properties = list(
-    font_family = new_property(
-      class_character,
-      default = "system-ui, -apple-system, sans-serif"
-    ),
-    font_size_sm = new_property(class_character, default = "0.75rem"),
-    font_size_base = new_property(class_character, default = "0.875rem"),
-    font_size_lg = new_property(class_character, default = "1rem"),
-    font_weight_normal = new_property(class_numeric, default = 400),
-    font_weight_medium = new_property(class_numeric, default = 500),
-    font_weight_bold = new_property(class_numeric, default = 600),
-    line_height = new_property(class_numeric, default = 1.5),
-    header_font_scale = new_property(class_numeric, default = 1.05)
+    density            = new_property(class_character, default = "comfortable"),
+    header_style       = new_property(class_character, default = "light"),
+    first_column_style = new_property(class_character, default = "default")
+  ),
+  validator = function(self) {
+    if (!self@density %in% c("compact", "comfortable", "spacious")) {
+      return("density must be one of 'compact', 'comfortable', 'spacious'")
+    }
+    if (!self@header_style %in% c("light", "bold")) {
+      return("header_style must be 'light' or 'bold'")
+    }
+    if (!self@first_column_style %in% c("default", "bold")) {
+      return("first_column_style must be 'default' or 'bold'")
+    }
+    NULL
+  }
+)
+
+
+# -- Tier 2: chrome semantic roles ---------------------------------------
+
+#' Surfaces (Tier 2): table surface tones.
+#' @usage NULL
+#' @export
+Surfaces <- new_class(
+  "Surfaces",
+  properties = list(
+    base   = new_property(class_character, default = NA_character_),
+    muted  = new_property(class_character, default = NA_character_),
+    raised = new_property(class_character, default = NA_character_)
+  ),
+  validator = make_color_validator(c("base", "muted", "raised"))
+)
+
+#' Content (Tier 2): text/foreground role tokens.
+#' @usage NULL
+#' @export
+Content <- new_class(
+  "Content",
+  properties = list(
+    primary   = new_property(class_character, default = NA_character_),
+    secondary = new_property(class_character, default = NA_character_),
+    muted     = new_property(class_character, default = NA_character_),
+    inverse   = new_property(class_character, default = NA_character_)
+  ),
+  validator = make_color_validator(c("primary", "secondary", "muted", "inverse"))
+)
+
+#' Dividers (Tier 2): rule and gridline tones (subtle/strong pair).
+#' @usage NULL
+#' @export
+Dividers <- new_class(
+  "Dividers",
+  properties = list(
+    subtle = new_property(class_character, default = NA_character_),
+    strong = new_property(class_character, default = NA_character_)
+  ),
+  validator = make_color_validator(c("subtle", "strong"))
+)
+
+#' AccentRoles (Tier 2): chrome accent + tint ramp.
+#' @usage NULL
+#' @export
+AccentRoles <- new_class(
+  "AccentRoles",
+  properties = list(
+    default     = new_property(class_character, default = NA_character_),
+    muted       = new_property(class_character, default = NA_character_),
+    tint_subtle = new_property(class_character, default = NA_character_),
+    tint_medium = new_property(class_character, default = NA_character_)
+  ),
+  validator = make_color_validator(
+    c("default", "muted", "tint_subtle", "tint_medium")
   )
 )
 
-#' Spacing: Layout spacing values
+#' StatusColors (Tier 2): semantic status passthrough.
+#' @usage NULL
+#' @export
+StatusColors <- new_class(
+  "StatusColors",
+  properties = list(
+    positive = new_property(class_character, default = NA_character_),
+    negative = new_property(class_character, default = NA_character_),
+    warning  = new_property(class_character, default = NA_character_),
+    info     = new_property(class_character, default = NA_character_)
+  ),
+  validator = make_color_validator(c("positive", "negative", "warning", "info"))
+)
+
+
+# -- Tier 2: data slot bundle --------------------------------------------
+
+#' SlotBundle: 7-field per-slot bundle for series and summary.
+#'
+#' Resolution fills NA fields from the slot's anchor via OKLCH:
+#'   fill            <- anchor
+#'   stroke          <- darken(anchor)
+#'   fill_muted      <- mix(anchor, surface.base)
+#'   stroke_muted    <- darken(fill_muted)
+#'   fill_emphasis   <- darken(anchor) + chroma boost
+#'   stroke_emphasis <- darken(anchor) further
+#'   text_fg         <- contrast-checked against typical row bg
 #'
 #' @usage NULL
 #' @export
-Spacing <- new_class(
-  "Spacing",
+SlotBundle <- new_class(
+  "SlotBundle",
   properties = list(
-    row_height = new_property(class_numeric, default = 24),
-    header_height = new_property(class_numeric, default = 32),
-    padding = new_property(class_numeric, default = 12),
-    container_padding = new_property(class_numeric, default = 0),
-    axis_gap = new_property(class_numeric, default = 12),
-    # Left/right padding for COLUMN-group headers (the spanning header above
-    # grouped columns). Distinct from row-group header indentation
-    # (`row_group_padding`) which is per-depth horizontal offset.
-    column_group_padding = new_property(class_numeric, default = 8),
-    row_group_padding    = new_property(class_numeric, default = 0),
-    cell_padding_x = new_property(class_numeric, default = 10),
-    # Deprecated in v0.21.x: vertical cell padding had no visual effect on
-    # single-line text (flex `align-items: center` re-centers regardless),
-    # and after row tracks were pinned via grid-template-rows it could
-    # only shrink content area or clip text. Default lowered from 4 to 0;
-    # `set_spacing(cell_padding_y = ...)` warns and is otherwise ignored.
-    cell_padding_y = new_property(class_numeric, default = 0),
-    # Vertical gap between the plot/axis region and the footer band (caption
-    # + footnote). Applied as padding-top on `.plot-footer`; SVG export
-    # honors it too.
-    footer_gap = new_property(class_numeric, default = 8),
-    # Vertical gap between the title and subtitle bands when both are shown.
-    # Mirrors the live widget's PlotHeader CSS rule
-    # (`margin-top: 6 + border-top: 1 + padding-top: 6 = 13`); changing
-    # this updates both the CSS-driven live render and the SVG export so
-    # they stay aligned.
-    title_subtitle_gap = new_property(class_numeric, default = 13),
-    # Trailing buffer below the last visible band (footer or axis or rows
-    # if neither is set). The previous hardcoded 16 px from
-    # LAYOUT.BOTTOM_MARGIN; here as a themable so authors can tighten or
-    # loosen the bottom margin without touching the renderer.
-    bottom_margin = new_property(class_numeric, default = 16)
+    fill            = new_property(class_character, default = NA_character_),
+    stroke          = new_property(class_character, default = NA_character_),
+    fill_muted      = new_property(class_character, default = NA_character_),
+    stroke_muted    = new_property(class_character, default = NA_character_),
+    fill_emphasis   = new_property(class_character, default = NA_character_),
+    stroke_emphasis = new_property(class_character, default = NA_character_),
+    text_fg         = new_property(class_character, default = NA_character_)
+  ),
+  validator = make_color_validator(
+    c("fill", "stroke", "fill_muted", "stroke_muted",
+      "fill_emphasis", "stroke_emphasis", "text_fg")
   )
 )
 
-#' Shapes: Shape rendering settings
+
+# -- Tier 2: typography roles --------------------------------------------
+
+#' TextRole: one typographic role bundle.
 #'
-#' @description
-#' Configures marker shapes and sizes for forest plots.
-#'
-#' The `effect_colors` and `marker_shapes` properties define the default
-#' appearance for multi-effect plots. When effects don't specify their own
-#' color or shape, they use these defaults in order (effect 1 uses index 1, etc.).
+#' figures: "tabular" or "proportional" (CSS font-feature-settings 'tnum').
+#' Defaults all-NA so resolution can fill from inputs + content.
 #'
 #' @usage NULL
 #' @export
-Shapes <- new_class(
-  "Shapes",
+TextRole <- new_class(
+  "TextRole",
   properties = list(
-    point_size = new_property(class_numeric, default = 6),
-    summary_height = new_property(class_numeric, default = 10),
-    line_width = new_property(class_numeric, default = 1.5),
-    # `border_radius` was removed in v0.25.0 — the CSS variable was emitted
-    # but no rule consumed it, and bars / badges hardcoded their corner
-    # radius. Container corner radius lives on `LayoutConfig`.
-    # Border widths (pixels). `row_border_width` draws between data rows;
-    # `header_border_width` underlines column-header rows (includes primary,
-    # last, and plot-header rows); `row_group_border_width` is the border
-    # drawn under group-header rows when `GroupHeaderStyles.levelN_border_bottom`
-    # is TRUE.
-    row_border_width       = new_property(class_numeric, default = 1),
-    header_border_width    = new_property(class_numeric, default = 2),
-    row_group_border_width = new_property(class_numeric, default = 1),
-    # Length (px) of the tick marks on viz-column axes. Default 4 matches
-    # the v0.20 hardcoded value. Themable so authors building dense /
-    # sparse axes can tune the axis chrome directly.
-    tick_mark_length       = new_property(class_numeric, default = 4),
-    # Multi-effect defaults (colors cycle for bar, boxplot, violin, and forest markers)
-    effect_colors = new_property(class_any, default = NULL),  # NULL = use built-in fallback
-    marker_shapes = new_property(
-      class_any,
-      default = c("square", "circle", "diamond", "triangle")
-    )
+    family  = new_property(class_character, default = NA_character_),
+    size    = new_property(class_character, default = NA_character_),
+    weight  = new_property(class_numeric,   default = NA_real_),
+    figures = new_property(class_character, default = NA_character_),
+    fg      = new_property(class_character, default = NA_character_),
+    italic  = new_property(class_logical,   default = NA)
   ),
   validator = function(self) {
-    valid_shapes <- c("square", "circle", "diamond", "triangle")
-    if (!is.null(self@marker_shapes)) {
-      invalid <- setdiff(self@marker_shapes, valid_shapes)
-      if (length(invalid) > 0) {
-        return(paste("marker_shapes contains invalid values:", paste(invalid, collapse = ", "),
-                     "- must be one of:", paste(valid_shapes, collapse = ", ")))
+    if (!is.na(self@figures) && !self@figures %in% c("tabular", "proportional")) {
+      return("figures must be 'tabular' or 'proportional'")
+    }
+    if (!is.na(self@fg) && !grepl(hex_pattern, self@fg)) {
+      return(paste("Invalid hex for fg:", self@fg))
+    }
+    NULL
+  }
+)
+
+#' TextRoles: collection of named TextRole bundles.
+#' @usage NULL
+#' @export
+TextRoles <- new_class(
+  "TextRoles",
+  properties = list(
+    title    = new_property(TextRole, default = TextRole()),
+    subtitle = new_property(TextRole, default = TextRole()),
+    body     = new_property(TextRole, default = TextRole()),
+    cell     = new_property(TextRole, default = TextRole()),
+    label    = new_property(TextRole, default = TextRole()),
+    tick     = new_property(TextRole, default = TextRole()),
+    footnote = new_property(TextRole, default = TextRole()),
+    caption  = new_property(TextRole, default = TextRole())
+  )
+)
+
+
+# -- Tier 2: spacing (density-derived numerics) -------------------------
+
+#' SpacingTokens: density-derived numeric layout tokens.
+#'
+#' All NA defaults are filled at resolve time from the active density preset.
+#' Setting any field explicitly overrides the preset for that field only.
+#'
+#' @usage NULL
+#' @export
+SpacingTokens <- new_class(
+  "SpacingTokens",
+  properties = list(
+    row_height           = new_property(class_numeric, default = NA_real_),
+    header_height        = new_property(class_numeric, default = NA_real_),
+    padding              = new_property(class_numeric, default = NA_real_),
+    container_padding    = new_property(class_numeric, default = NA_real_),
+    axis_gap             = new_property(class_numeric, default = NA_real_),
+    column_group_padding = new_property(class_numeric, default = NA_real_),
+    row_group_padding    = new_property(class_numeric, default = NA_real_),
+    cell_padding_x       = new_property(class_numeric, default = NA_real_),
+    footer_gap           = new_property(class_numeric, default = NA_real_),
+    title_subtitle_gap   = new_property(class_numeric, default = NA_real_),
+    bottom_margin        = new_property(class_numeric, default = NA_real_),
+    indent_per_level     = new_property(class_numeric, default = NA_real_)
+  )
+)
+
+
+# -- Tier 3: annotation cluster -----------------------------------------
+
+#' AnnotationCluster: title/subtitle/caption/footnote bindings.
+#'
+#' Each is a TextRole bundle that defaults to mirroring `theme@text@*`.
+#'
+#' @usage NULL
+#' @export
+AnnotationCluster <- new_class(
+  "AnnotationCluster",
+  properties = list(
+    title    = new_property(TextRole, default = TextRole()),
+    subtitle = new_property(TextRole, default = TextRole()),
+    caption  = new_property(TextRole, default = TextRole()),
+    footnote = new_property(TextRole, default = TextRole())
+  )
+)
+
+
+# -- Tier 3: header cluster (variant token) -----------------------------
+
+#' HeaderVariant: one variant of the header cluster (light or bold).
+#' @usage NULL
+#' @export
+HeaderVariant <- new_class(
+  "HeaderVariant",
+  properties = list(
+    bg   = new_property(class_character, default = NA_character_),
+    fg   = new_property(class_character, default = NA_character_),
+    rule = new_property(class_character, default = NA_character_)
+  ),
+  validator = make_color_validator(c("bg", "fg", "rule"))
+)
+
+#' HeaderCluster: column-header bindings with light/bold variants.
+#'
+#' Active variant is selected by `theme@variants@header_style`.
+#'
+#' @usage NULL
+#' @export
+HeaderCluster <- new_class(
+  "HeaderCluster",
+  properties = list(
+    light = new_property(HeaderVariant, default = HeaderVariant()),
+    bold  = new_property(HeaderVariant, default = HeaderVariant()),
+    text  = new_property(TextRole,      default = TextRole())
+  )
+)
+
+#' ColumnGroupCluster: column-group header bindings.
+#'
+#' Tracks the same variant as the leaf header.
+#'
+#' @usage NULL
+#' @export
+ColumnGroupCluster <- new_class(
+  "ColumnGroupCluster",
+  properties = list(
+    light = new_property(HeaderVariant, default = HeaderVariant()),
+    bold  = new_property(HeaderVariant, default = HeaderVariant()),
+    text  = new_property(TextRole,      default = TextRole())
+  )
+)
+
+
+# -- Tier 3: row group cluster -----------------------------------------
+
+#' RowGroupTier: bindings for one row-group nesting level.
+#' @usage NULL
+#' @export
+RowGroupTier <- new_class(
+  "RowGroupTier",
+  properties = list(
+    bg            = new_property(class_character, default = NA_character_),
+    fg            = new_property(class_character, default = NA_character_),
+    rule          = new_property(class_character, default = NA_character_),
+    text          = new_property(TextRole,        default = TextRole()),
+    border_bottom = new_property(class_logical,   default = FALSE)
+  ),
+  validator = make_color_validator(c("bg", "fg", "rule"))
+)
+
+#' RowGroupCluster: nested row-group hierarchy (L1/L2/L3 + indent).
+#' @usage NULL
+#' @export
+RowGroupCluster <- new_class(
+  "RowGroupCluster",
+  properties = list(
+    L1 = new_property(RowGroupTier, default = RowGroupTier()),
+    L2 = new_property(RowGroupTier, default = RowGroupTier()),
+    L3 = new_property(RowGroupTier, default = RowGroupTier()),
+    indent_per_level = new_property(class_numeric, default = NA_real_)
+  )
+)
+
+
+# -- Tier 3: row + cell clusters --------------------------------------
+
+#' RowState: bg + fg pair for a row state (default/alt/hover/selected).
+#' @usage NULL
+#' @export
+RowState <- new_class(
+  "RowState",
+  properties = list(
+    bg = new_property(class_character, default = NA_character_),
+    fg = new_property(class_character, default = NA_character_)
+  ),
+  validator = make_color_validator(c("bg", "fg"))
+)
+
+#' RowSemantic: bg + fg + marker_fill + font for emphasis/muted/accent rows.
+#'
+#' Richer than RowState because semantic rows can override marker fill and
+#' font weight/style on top of bg/fg.
+#'
+#' @usage NULL
+#' @export
+RowSemantic <- new_class(
+  "RowSemantic",
+  properties = list(
+    bg          = new_property(class_character, default = NA_character_),
+    fg          = new_property(class_character, default = NA_character_),
+    border      = new_property(class_character, default = NA_character_),
+    marker_fill = new_property(class_character, default = NA_character_),
+    font_weight = new_property(class_numeric,   default = NA_real_),
+    font_style  = new_property(class_character, default = NA_character_)
+  ),
+  validator = function(self) {
+    invalid <- character()
+    for (p in c("bg", "fg", "border", "marker_fill")) {
+      v <- S7::prop(self, p)
+      if (!is.na(v) && !grepl(hex_pattern, v)) {
+        invalid <- c(invalid, paste0(p, " = '", v, "'"))
       }
     }
-    NULL
-  }
-)
-
-#' AxisConfig: Axis rendering configuration
-#'
-#' Controls how the x-axis range and ticks are calculated.
-#'
-#' @section Auto-Scaling Algorithm:
-#' When `range_min`/`range_max` are NA (auto), the axis range is calculated as:
-#' 1. Collect all point estimates (not CI bounds)
-#' 2. Extend range to include null value (if `include_null = TRUE`)
-#' 3. Extend range to include CIs within `ci_clip_factor` of the estimate range
-#' 4. Optionally make symmetric around null (if `symmetric = TRUE`)
-#' 5. Apply nice rounding for clean tick values
-#'
-#' CIs extending beyond ci_clip_factor * estimate_range are clipped
-#' with arrow indicators rather than expanding the axis.
-#'
-#' @param range_min Minimum value for axis (NA = auto from data)
-#' @param range_max Maximum value for axis (NA = auto from data)
-#' @param tick_count Target number of ticks (NA = auto)
-#' @param tick_values Explicit tick positions (overrides tick_count)
-#' @param gridlines Show gridlines on the plot
-#' @param gridline_style Style of gridlines: "solid", "dashed", or "dotted"
-#' @param ci_clip_factor CIs extending beyond this multiple of the estimate range
-#'   are clipped with arrows (default: 2.0). For example, 2.0 means CIs that extend
-#'   more than 2x the estimate range will be truncated. Use `Inf` to never clip.
-#' @param include_null Always include the null value in the axis range (default: TRUE)
-#' @param symmetric Make axis symmetric around null value. Must be explicitly set
-#'   to TRUE to enable; default (NULL/FALSE) does not apply symmetry.
-#' @param null_tick Always show a tick at the null value (default: TRUE)
-#' @param marker_margin Add half-marker-width padding at edges so markers don't clip (default: TRUE)
-#'
-#' @export
-AxisConfig <- new_class(
-  "AxisConfig",
-  properties = list(
-    # Explicit overrides (when set, bypass auto-calculation)
-    range_min = new_property(class_numeric, default = NA_real_),
-    range_max = new_property(class_numeric, default = NA_real_),
-    tick_count = new_property(class_numeric, default = NA_real_),
-    tick_values = new_property(class_any, default = NULL),
-    gridlines = new_property(class_logical, default = FALSE),
-    gridline_style = new_property(class_character, default = "dotted"),
-    # Auto-scaling parameters
-    ci_clip_factor = new_property(class_numeric, default = 2.0),
-    include_null = new_property(class_logical, default = TRUE),
-    symmetric = new_property(class_any, default = NULL),  # NULL/FALSE = off, TRUE = on
-    null_tick = new_property(class_logical, default = TRUE),
-    marker_margin = new_property(class_logical, default = TRUE)
-  ),
-  validator = function(self) {
-    valid_styles <- c("solid", "dashed", "dotted")
-    if (!self@gridline_style %in% valid_styles) {
-      return(paste("gridline_style must be one of:", paste(valid_styles, collapse = ", ")))
+    if (length(invalid) > 0L) {
+      return(paste("Invalid hex:", paste(invalid, collapse = ", ")))
     }
-    if (!is.na(self@ci_clip_factor) && self@ci_clip_factor < 0) {
-      return("ci_clip_factor must be non-negative")
-    }
-    if (!is.null(self@symmetric) && !is.logical(self@symmetric)) {
-      return("symmetric must be TRUE, FALSE, or NULL")
+    fs <- self@font_style
+    if (!is.na(fs) && !fs %in% c("normal", "italic")) {
+      return("font_style must be 'normal', 'italic', or NA")
     }
     NULL
   }
 )
 
-#' LayoutConfig: Layout and visual configuration
+#' RowCluster: row-level bindings.
 #'
-#' @param plot_width Width of plot area: "auto" or numeric pixels (default: "auto")
-#' @param container_border Show border around the plot container (default: FALSE)
-#' @param container_border_radius Corner radius for container in pixels (default: 8)
-#' @param banding Row banding mode. One of `"none"`, `"row"`, `"group"` (default),
-#'   or `"group-n"` where `n` is an integer group depth (1 = outermost).
-#'   `"group"` alternates at the deepest group level present and falls back to
-#'   row-level when no groups exist. See [parse_banding()] for details.
+#' Banding mode lives here ("none", "row", "group", "group-N"); selected-edge
+#' width controls the accent bar on selected rows.
 #'
-#' @details
-#' Note: `cell_padding_x` and `cell_padding_y` have been moved to the [Spacing] class.
-#' Use [set_spacing()] to modify cell padding.
-#'
-#' Note: Row borders are always rendered as solid 1px lines. The `row_border` and
-#' `row_border_style` properties were removed in v0.4.1 as they were never implemented.
-#'
+#' @usage NULL
 #' @export
-LayoutConfig <- new_class(
-  "LayoutConfig",
+RowCluster <- new_class(
+  "RowCluster",
   properties = list(
-    plot_width = new_property(class_any, default = "auto"),
-    container_border = new_property(class_logical, default = FALSE),
-    container_border_radius = new_property(class_numeric, default = 8),
-    banding = new_property(class_character, default = "group")
+    base     = new_property(RowState,    default = RowState()),
+    alt      = new_property(RowState,    default = RowState()),
+    hover    = new_property(RowState,    default = RowState()),
+    selected = new_property(RowState,    default = RowState()),
+    emphasis = new_property(RowSemantic, default = RowSemantic()),
+    muted    = new_property(RowSemantic, default = RowSemantic()),
+    accent   = new_property(RowSemantic, default = RowSemantic()),
+    banding             = new_property(class_character, default = "group"),
+    selected_edge_width = new_property(class_numeric,   default = 2),
+    border_width        = new_property(class_numeric,   default = 1)
   ),
   validator = function(self) {
-    # Validate banding via parse_banding (returns error string or NULL)
     err <- tryCatch(
-      {
-        parse_banding(self@banding)
-        NULL
-      },
+      { parse_banding(self@banding); NULL },
       error = function(e) conditionMessage(e)
     )
     if (!is.null(err)) return(err)
@@ -306,1720 +492,212 @@ LayoutConfig <- new_class(
   }
 )
 
-#' Parse a banding value into its normalized shape
-#'
-#' Accepts a single string following the banding grammar and returns a list
-#' `list(mode = <"none"|"row"|"group">, level = <integer or NA_integer_>)`.
-#' `level` is non-NA only for `"group-n"` inputs.
-#'
-#' @param x A single string. One of `"none"`, `"row"`, `"group"`, or
-#'   `"group-n"` where `n` is a positive integer.
-#' @param arg Argument name used in error messages (default `"banding"`).
-#' @return A list with `mode` and `level`.
-#' @keywords internal
+#' CellCluster: cell-level bindings.
+#' @usage NULL
 #' @export
-parse_banding <- function(x, arg = "banding") {
-  if (is.logical(x)) {
-    cli::cli_abort(c(
-      "{.arg {arg}} no longer accepts logical values.",
-      "i" = "Use {.val none}, {.val row}, {.val group}, or {.val group-<n>} (e.g. {.val group-2}).",
-      "x" = "Got {.val {x}}."
-    ))
-  }
-  checkmate::assert_string(x, .var.name = arg)
-  if (x %in% c("none", "row", "group")) {
-    return(list(mode = x, level = NA_integer_))
-  }
-  m <- regmatches(x, regexec("^group-(\\d+)$", x))[[1]]
-  if (length(m) == 2L && nzchar(m[2])) {
-    n <- suppressWarnings(as.integer(m[2]))
-    if (!is.na(n) && n >= 1L) {
-      return(list(mode = "group", level = n))
-    }
-  }
-  cli::cli_abort(c(
-    "{.arg {arg}} must be one of {.val none}, {.val row}, {.val group}, or {.val group-<n>} (n >= 1).",
-    "x" = "Got {.val {x}}."
-  ))
-}
+CellCluster <- new_class(
+  "CellCluster",
+  properties = list(
+    bg     = new_property(class_character, default = NA_character_),
+    fg     = new_property(class_character, default = NA_character_),
+    border = new_property(class_character, default = NA_character_),
+    text   = new_property(TextRole,        default = TextRole())
+  ),
+  validator = make_color_validator(c("bg", "fg", "border"))
+)
 
-#' GroupHeaderStyles: Hierarchical styling for nested row groups
+
+# -- Tier 3: first-column cluster (variant token) ---------------------
+
+#' FirstColumnVariant: one variant of the first-column cluster.
+#' @usage NULL
+#' @export
+FirstColumnVariant <- new_class(
+  "FirstColumnVariant",
+  properties = list(
+    bg     = new_property(class_character, default = NA_character_),
+    fg     = new_property(class_character, default = NA_character_),
+    rule   = new_property(class_character, default = NA_character_),
+    weight = new_property(class_numeric,   default = NA_real_)
+  ),
+  validator = make_color_validator(c("bg", "fg", "rule"))
+)
+
+#' FirstColumnCluster: first-column bindings, default/bold variants.
 #'
-#' Configures h1/h2/h3-style visual hierarchy for nested row group headers.
-#' Level 1 is the outermost group (largest, boldest), with progressively
-#' lighter styling for deeper nesting levels.
-#'
-#' @section Computed Colors:
-#' When background colors are NULL (default), they are computed from the theme's
-#' primary color with decreasing opacity:
-#' - Level 1: 15% opacity
-#' - Level 2: 10% opacity
-#' - Level 3+: 6% opacity
+#' Excel-style emphasized first column when first_column_style = "bold".
 #'
 #' @usage NULL
 #' @export
-GroupHeaderStyles <- new_class(
-  "GroupHeaderStyles",
+FirstColumnCluster <- new_class(
+  "FirstColumnCluster",
   properties = list(
-    # Level 1 (top-level groups) - subtle prominence, close to base font
-    level1_font_size = new_property(class_character, default = "0.9375rem"),
-    level1_font_weight = new_property(class_numeric, default = 600),
-    level1_italic = new_property(class_logical, default = FALSE),
-    level1_background = new_property(class_any, default = NULL),  # NULL = computed
-    level1_border_bottom = new_property(class_logical, default = FALSE),
-
-    # Level 2 - same as base font, medium weight
-    level2_font_size = new_property(class_character, default = "0.875rem"),
-    level2_font_weight = new_property(class_numeric, default = 500),
-    level2_italic = new_property(class_logical, default = FALSE),
-    level2_background = new_property(class_any, default = NULL),  # NULL = computed
-    level2_border_bottom = new_property(class_logical, default = FALSE),
-
-    # Level 3+ - same as base font, normal weight
-    level3_font_size = new_property(class_character, default = "0.875rem"),
-    level3_font_weight = new_property(class_numeric, default = 400),
-    level3_italic = new_property(class_logical, default = FALSE),
-    level3_background = new_property(class_any, default = NULL),  # NULL = computed
-    level3_border_bottom = new_property(class_logical, default = FALSE),
-
-    # Indentation per level (px)
-    indent_per_level = new_property(class_numeric, default = 16)
+    plain = new_property(FirstColumnVariant, default = FirstColumnVariant()),
+    bold  = new_property(FirstColumnVariant, default = FirstColumnVariant())
   )
 )
 
-#' SemanticBundle: visual properties for one semantic token
+
+# -- Tier 3: plot scaffolding -----------------------------------------
+
+#' PlotScaffold: plot chrome (axis/tick/gridline/reference) bindings.
 #'
-#' A bundle describes how rows or cells flagged with a particular semantic
-#' class (`emphasis`, `muted`, `accent`) should render. All fields are
-#' optional -- `NA` means "inherit / don't override". This separates the
-#' *intent* of a semantic class ("this row is emphasized") from its *visual
-#' manifestation* (a specific foreground color + bold weight, say).
-#'
-#' @param fg Text / foreground color (hex).
-#' @param bg Row / cell background color (hex).
-#' @param border Border color (hex).
-#' @param marker_fill Override for the forest / bar / boxplot / violin marker
-#'   fill color when this semantic is active. Cascades into
-#'   the marker-styling cascade as the Layer-3 source; `NA` leaves the marker
-#'   palette untouched.
-#' @param font_weight Numeric CSS weight (100..900).
-#' @param font_style Either `"normal"` or `"italic"`.
+#' `bg` NA = transparent (lets the table surface show through).
 #'
 #' @usage NULL
 #' @export
-SemanticBundle <- new_class(
-  "SemanticBundle",
+PlotScaffold <- new_class(
+  "PlotScaffold",
   properties = list(
-    fg          = new_property(class_character, default = NA_character_),
-    bg          = new_property(class_character, default = NA_character_),
-    border      = new_property(class_character, default = NA_character_),
-    marker_fill = new_property(class_character, default = NA_character_),
-    font_weight = new_property(class_numeric,   default = NA_real_),
-    font_style  = new_property(class_character, default = NA_character_)
+    bg               = new_property(class_character, default = NA_character_),
+    axis_line        = new_property(class_character, default = NA_character_),
+    tick_mark        = new_property(class_character, default = NA_character_),
+    gridline         = new_property(class_character, default = NA_character_),
+    reference        = new_property(class_character, default = NA_character_),
+    axis_label       = new_property(TextRole,         default = TextRole()),
+    tick_label       = new_property(TextRole,         default = TextRole()),
+    tick_mark_length = new_property(class_numeric,    default = 4),
+    line_width       = new_property(class_numeric,    default = 1.5),
+    point_size       = new_property(class_numeric,    default = 6)
+  ),
+  validator = make_color_validator(
+    c("bg", "axis_line", "tick_mark", "gridline", "reference")
+  )
+)
+
+
+# -- Tier 3: marks recipes -------------------------------------------
+
+#' MarkRecipe: how one mark type consumes slot-bundle fields.
+#'
+#' Each property names a slot-bundle key ("fill", "stroke", "fill_muted", ...)
+#' so the renderer can look up the actual hex when drawing each visual element.
+#' v1 wires forest + summary; bar/box/violin/lollipop default to passthrough.
+#'
+#' @usage NULL
+#' @export
+MarkRecipe <- new_class(
+  "MarkRecipe",
+  properties = list(
+    body    = new_property(class_character, default = "fill"),
+    outline = new_property(class_character, default = "stroke"),
+    line    = new_property(class_character, default = "stroke")
+  )
+)
+
+#' MarksRecipes: per-mark-type recipes wiring slot bundles to elements.
+#' @usage NULL
+#' @export
+MarksRecipes <- new_class(
+  "MarksRecipes",
+  properties = list(
+    forest   = new_property(MarkRecipe, default = MarkRecipe()),
+    summary  = new_property(MarkRecipe, default = MarkRecipe()),
+    bar      = new_property(MarkRecipe, default = MarkRecipe()),
+    box      = new_property(MarkRecipe, default = MarkRecipe()),
+    violin   = new_property(MarkRecipe, default = MarkRecipe()),
+    lollipop = new_property(MarkRecipe, default = MarkRecipe())
+  )
+)
+
+
+# -- Config classes (axis + layout) --------------------------------
+#
+# Config (not part of the tier cascade) but lives on the theme for
+# convenience. Axis controls the forest plot's x-axis range/ticks/grid;
+# Layout carries plot-width and container-border settings.
+
+#' AxisConfig: forest plot x-axis configuration.
+#' @usage NULL
+#' @export
+AxisConfig <- new_class(
+  "AxisConfig",
+  properties = list(
+    range_min      = new_property(class_numeric, default = NA_real_),
+    range_max      = new_property(class_numeric, default = NA_real_),
+    tick_count     = new_property(class_numeric, default = NA_real_),
+    tick_values    = new_property(class_any,     default = NULL),
+    gridlines      = new_property(class_logical, default = FALSE),
+    gridline_style = new_property(class_character, default = "dotted"),
+    ci_clip_factor = new_property(class_numeric, default = 2.0),
+    include_null   = new_property(class_logical, default = TRUE),
+    symmetric      = new_property(class_any,     default = NULL),
+    null_tick      = new_property(class_logical, default = TRUE),
+    marker_margin  = new_property(class_logical, default = TRUE)
   ),
   validator = function(self) {
-    hex_pattern <- "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
-    color_props <- c("fg", "bg", "border", "marker_fill")
-    invalid <- character()
-    for (prop in color_props) {
-      value <- S7::prop(self, prop)
-      if (!is.na(value) && !grepl(hex_pattern, value)) {
-        invalid <- c(invalid, paste0(prop, " = '", value, "'"))
-      }
-    }
-    if (length(invalid) > 0) {
-      return(paste("Invalid hex color values in SemanticBundle:",
-                   paste(invalid, collapse = ", ")))
-    }
-    fs <- self@font_style
-    if (!is.na(fs) && !fs %in% c("normal", "italic")) {
-      return(paste0("font_style must be 'normal', 'italic', or NA; got '", fs, "'"))
+    if (!self@gridline_style %in% c("solid", "dashed", "dotted")) {
+      return("gridline_style must be 'solid', 'dashed', or 'dotted'")
     }
     NULL
   }
 )
 
-#' Semantics: visual bundles per semantic token
-#'
-#' Each property is a [SemanticBundle] describing how one semantic class
-#' renders. The token names (`emphasis`, `muted`, `accent`) match the boolean
-#' flags on [tabviz()] (`row_emphasis`, `row_muted`, `row_accent`) and on
-#' [web_col()] (`emphasis`, `muted`, `accent` per-cell mappings). Default
-#' bundles for each preset theme are derived from its [ColorPalette] --
-#' see [default_semantics_for()].
-#'
-#' @param emphasis Bundle for emphasized rows / cells.
-#' @param muted Bundle for muted rows / cells.
-#' @param accent Bundle for accent-highlighted rows / cells.
-#'
+#' Layout: plot width + container border config.
 #' @usage NULL
 #' @export
-Semantics <- new_class(
-  "Semantics",
+Layout <- new_class(
+  "Layout",
   properties = list(
-    emphasis = new_property(SemanticBundle, default = SemanticBundle()),
-    muted    = new_property(SemanticBundle, default = SemanticBundle()),
-    accent   = new_property(SemanticBundle, default = SemanticBundle())
+    plot_width              = new_property(class_any,     default = "auto"),
+    container_border        = new_property(class_logical, default = FALSE),
+    container_border_radius = new_property(class_numeric, default = 8)
   )
 )
 
-#' Apply palette-derived semantic bundles to a theme
-#'
-#' Wraps a freshly-built `WebTheme` so its `@semantics` property tracks its
-#' own palette/typography instead of the default palette's -- used by every
-#' `web_theme_*()` preset so a theme's emphasized rows use its own foreground
-#' color rather than the generic default.
-#' @keywords internal
-.with_palette_semantics <- function(t) {
-  t@semantics <- default_semantics_for(t@colors, t@typography)
-  t
-}
 
-#' Build per-token default bundles from a ColorPalette + Typography
-#'
-#' Encodes the historical rendering rules -- `emphasis` = foreground + bold,
-#' `muted` = muted color, `accent` = accent color (both for text and marker
-#' fill). Called by every `web_theme_*()` preset helper so bundle defaults
-#' track each theme's palette without per-theme duplication.
-#'
-#' @param colors A [ColorPalette] object.
-#' @param typography A [Typography] object.
-#' @return A [Semantics] object whose bundles mirror the old hardcoded
-#'   rendering semantics against the supplied palette / typography.
-#' @keywords internal
-#' @export
-default_semantics_for <- function(colors, typography) {
-  Semantics(
-    emphasis = SemanticBundle(
-      fg          = colors@foreground,
-      marker_fill = colors@foreground,
-      font_weight = typography@font_weight_bold
-    ),
-    muted = SemanticBundle(
-      fg          = colors@muted,
-      marker_fill = colors@muted
-    ),
-    accent = SemanticBundle(
-      fg          = colors@accent,
-      marker_fill = colors@accent
-    )
-  )
-}
+# -- Top-level WebTheme --------------------------------------------
 
-#' WebTheme: Complete theme specification
+#' WebTheme: 3-tier theme specification (v2).
 #'
-#' @param name Theme name
-#' @param colors ColorPalette object
-#' @param typography Typography object
-#' @param spacing Spacing object
-#' @param shapes Shapes object
-#' @param axis AxisConfig object
-#' @param layout LayoutConfig object
-#' @param group_headers GroupHeaderStyles object for nested row group hierarchy
-#' @param semantics [Semantics] object with per-token visual bundles for
-#'   `row_emphasis` / `row_muted` / `row_accent` rows and their cell-level
-#'   counterparts. Defaults to [default_semantics_for()] applied to the
-#'   default palette / typography; preset helpers (`web_theme_*()`) pass
-#'   their own palette-derived bundles.
+#' Holds Tier 1 inputs, per-table variants, all derived Tier 2 roles, and
+#' Tier 3 component bindings. Tier 2/3 fields default to NA-filled empty
+#' classes; PR 3's `resolve_theme()` populates them from inputs.
+#'
+#' Renamed to `WebTheme` and replaces v1 in PR 10.
 #'
 #' @usage NULL
 #' @export
 WebTheme <- new_class(
   "WebTheme",
   properties = list(
-    name = new_property(class_character, default = "default"),
-    colors = new_property(ColorPalette, default = ColorPalette()),
-    typography = new_property(Typography, default = Typography()),
-    spacing = new_property(Spacing, default = Spacing()),
-    shapes = new_property(Shapes, default = Shapes()),
-    axis = new_property(AxisConfig, default = AxisConfig()),
-    layout = new_property(LayoutConfig, default = LayoutConfig()),
-    group_headers = new_property(GroupHeaderStyles, default = GroupHeaderStyles()),
-    semantics = new_property(
-      Semantics,
-      default = default_semantics_for(ColorPalette(), Typography())
-    )
-  )
-)
+    name     = new_property(class_character, default = "default"),
+    inputs   = new_property(ThemeInputs,    default = ThemeInputs()),
+    variants = new_property(ThemeVariants,  default = ThemeVariants()),
 
-#' Create a default theme
-#'
-#' @return A WebTheme object with default settings
-#' @export
-web_theme_default <- function() {
-  .with_palette_semantics(WebTheme(
-    name = "default",
-    shapes = Shapes(
-      effect_colors = c("#0891b2", "#16a34a", "#f59e0b", "#ef4444", "#8b5cf6")
-    )
-  ))
-}
+    # Tier 2 (derived; NA until resolve_theme runs)
+    surface = new_property(Surfaces,      default = Surfaces()),
+    content = new_property(Content,       default = Content()),
+    divider = new_property(Dividers,      default = Dividers()),
+    accent  = new_property(AccentRoles,   default = AccentRoles()),
+    status  = new_property(StatusColors,  default = StatusColors()),
+    series  = new_property(class_list,    default = list()),
+    summary = new_property(SlotBundle,    default = SlotBundle()),
+    text    = new_property(TextRoles,     default = TextRoles()),
+    spacing = new_property(SpacingTokens, default = SpacingTokens()),
 
-#' Create a minimal/clean theme
-#'
-#' Academic publication-ready theme with pure black and white styling.
-#' Uses serif typography (Georgia) and sharp corners for a classic,
-#' authoritative look suitable for journal submissions.
-#'
-#' @return A WebTheme object
-#' @export
-web_theme_minimal <- function() {
-  .with_palette_semantics(WebTheme(
-    name = "minimal",
-    colors = ColorPalette(
-      background = "#ffffff",
-      foreground = "#000000",
-      primary = "#000000",
-      secondary = "#333333",
-      accent = "#000000",
-      muted = "#666666",
-      border = "#000000",             # Strong black borders
-      row_bg = "#ffffff",
-      alt_bg = "#fafafa",             # Subtle grey stripe
-      interval_line = "#000000",
-      summary_fill = "#000000",
-      summary_border = "#000000"
-    ),
-    typography = Typography(
-      font_family = "Georgia, 'Times New Roman', serif",
-      font_size_sm = "0.75rem",
-      font_size_base = "0.875rem",
-      font_size_lg = "1rem",
-      font_weight_normal = 400,
-      font_weight_medium = 500,
-      font_weight_bold = 700,
-      line_height = 1.4
-    ),
-    spacing = Spacing(
-      row_height = 22,
-      header_height = 28,
-      padding = 10
-    ),
-    shapes = Shapes(
-      point_size = 5,
-      summary_height = 8,
-      line_width = 1,
-      effect_colors = c("#64748b", "#94a3b8", "#cbd5e1", "#475569", "#334155")
-    ),
-    layout = LayoutConfig(
-      container_border = FALSE,
-      container_border_radius = 0     # No rounded corners
-    ),
-    # Academic, understated hierarchy
-    group_headers = GroupHeaderStyles(
-      level1_font_size = "0.9375rem",
-      level1_font_weight = 700,       # Use theme's bold
-      level1_italic = FALSE,
-      level2_font_size = "0.875rem",
-      level2_font_weight = 500,
-      level2_italic = FALSE,
-      level3_font_size = "0.875rem",
-      level3_font_weight = 400,
-      level3_italic = FALSE,
-      indent_per_level = 14           # Slightly tighter indent
-    )
-  ))
-}
-
-#' Create a dark theme
-#'
-#' Sophisticated dark mode theme inspired by Catppuccin Mocha palette.
-#' Features muted, comfortable colors with reduced contrast for extended
-#' viewing. Blue-tinted accents and soft pastel markers.
-#'
-#' @return A WebTheme object with dark mode colors
-#' @export
-web_theme_dark <- function() {
-  .with_palette_semantics(WebTheme(
-    name = "dark",
-    colors = ColorPalette(
-      background = "#1e1e2e",         # Catppuccin base
-      foreground = "#cdd6f4",         # Catppuccin text
-      primary = "#89b4fa",            # Catppuccin blue
-      secondary = "#a6adc8",          # Catppuccin subtext0
-      accent = "#f5c2e7",             # Catppuccin pink
-      muted = "#6c7086",              # Catppuccin overlay0
-      border = "#313244",             # Catppuccin surface0
-      row_bg = "#1e1e2e",             # Match background
-      alt_bg = "#232334",             # Slightly lighter stripe
-      interval_line = "#9399b2",      # Catppuccin overlay2
-      summary_fill = "#89b4fa",
-      summary_border = "#74c7ec"      # Catppuccin sapphire
-    ),
-    typography = Typography(
-      font_family = "system-ui, -apple-system, sans-serif",
-      font_size_sm = "0.75rem",
-      font_size_base = "0.875rem",
-      font_size_lg = "1rem",
-      font_weight_normal = 400,
-      font_weight_medium = 500,
-      font_weight_bold = 600,
-      line_height = 1.5
-    ),
-    spacing = Spacing(
-      row_height = 26,                # Comfortable for dark mode
-      header_height = 32,
-      padding = 12
-    ),
-    shapes = Shapes(
-      point_size = 6,
-      summary_height = 10,
-      line_width = 1.5,
-      effect_colors = c("#89b4fa", "#a6e3a1", "#fab387", "#f38ba8", "#cba6f7")
-    ),
-    layout = LayoutConfig(
-      container_border = FALSE,
-      container_border_radius = 8
-    ),
-    # Comfortable dark mode hierarchy
-    group_headers = GroupHeaderStyles(
-      level1_font_size = "0.9375rem",
-      level1_font_weight = 600,
-      level1_italic = FALSE,
-      level2_font_size = "0.875rem",
-      level2_font_weight = 500,
-      level2_italic = FALSE,
-      level3_font_size = "0.875rem",
-      level3_font_weight = 400,
-      level3_italic = FALSE,
-      indent_per_level = 18           # Generous indent for comfort
-    )
-  ))
-}
-
-#' Create a custom theme
-#'
-#' @param name Theme name
-#' @param colors Named list of color overrides
-#' @param typography Named list of typography overrides
-#' @param spacing Named list of spacing overrides
-#' @param shapes Named list of shape overrides
-#' @param axis Named list of axis config overrides
-#' @param layout Named list of layout config overrides
-#' @param group_headers Named list of group header style overrides
-#' @param base_theme Base theme to extend (default: web_theme_default())
-#'
-#' @return A WebTheme object
-#' @export
-web_theme <- function(
-    name = "custom",
-    colors = NULL,
-    typography = NULL,
-    spacing = NULL,
-    shapes = NULL,
-    axis = NULL,
-    layout = NULL,
-    group_headers = NULL,
-    base_theme = web_theme_default()) {
-  # Start with base theme
-  result <- base_theme
-  result@name <- name
-
-  # Merge color overrides
-  if (!is.null(colors)) {
-    current <- result@colors
-    for (prop in names(colors)) {
-      if (prop %in% S7::prop_names(current)) {
-        S7::prop(current, prop) <- colors[[prop]]
-      }
-    }
-    result@colors <- current
-  }
-
-  # Merge typography overrides
-  if (!is.null(typography)) {
-    current <- result@typography
-    for (prop in names(typography)) {
-      if (prop %in% S7::prop_names(current)) {
-        S7::prop(current, prop) <- typography[[prop]]
-      }
-    }
-    result@typography <- current
-  }
-
-  # Merge spacing overrides
-  if (!is.null(spacing)) {
-    current <- result@spacing
-    for (prop in names(spacing)) {
-      if (prop %in% S7::prop_names(current)) {
-        S7::prop(current, prop) <- spacing[[prop]]
-      }
-    }
-    result@spacing <- current
-  }
-
-  # Merge shape overrides
-  if (!is.null(shapes)) {
-    current <- result@shapes
-    for (prop in names(shapes)) {
-      if (prop %in% S7::prop_names(current)) {
-        S7::prop(current, prop) <- shapes[[prop]]
-      }
-    }
-    result@shapes <- current
-  }
-
-  # Merge axis overrides
-  if (!is.null(axis)) {
-    current <- result@axis
-    for (prop in names(axis)) {
-      if (prop %in% S7::prop_names(current)) {
-        S7::prop(current, prop) <- axis[[prop]]
-      }
-    }
-    result@axis <- current
-  }
-
-  # Merge layout overrides
-  if (!is.null(layout)) {
-    current <- result@layout
-    for (prop in names(layout)) {
-      if (prop %in% S7::prop_names(current)) {
-        S7::prop(current, prop) <- layout[[prop]]
-      }
-    }
-    result@layout <- current
-  }
-
-  # Merge group header overrides
-  if (!is.null(group_headers)) {
-    current <- result@group_headers
-    for (prop in names(group_headers)) {
-      if (prop %in% S7::prop_names(current)) {
-        S7::prop(current, prop) <- group_headers[[prop]]
-      }
-    }
-    result@group_headers <- current
-  }
-
-  result
-}
-
-# ============================================================================
-# Fluent theme modifier functions
-# ============================================================================
-
-#' Modify theme colors
-#'
-#' Pipe-friendly function to modify specific color properties of a theme.
-#'
-#' @section Cascading Defaults:
-#' Several colors cascade when not explicitly set, making custom themes easier
-#' to create:
-#'
-#' - **Background colors:** `background` -> `row_bg` -> `alt_bg`
-#' - **Marker colors:** `primary` -> `summary_fill` (cascaded directly
-#'   in v0.25.0 after the inert `interval` slot was removed). Per-effect
-#'   marker fills come from `shapes.effect_colors`.
-#'
-#' For example, setting `primary = "#ff0000"` will use red for the
-#' summary diamond unless you override `summary_fill`.
-#' Setting `background = "#1e1e2e"` for a dark theme will automatically set
-#' row backgrounds to match.
-#'
-#' @param theme A WebTheme object
-#' @param background Background color (default: "#ffffff")
-#' @param foreground Primary text color (default: "#333333")
-#' @param primary Primary accent color for markers and highlights (default: "#0891b2").
-#'   Cascades to `summary_fill` if not specified.
-#' @param secondary Secondary text/UI color (default: "#64748b")
-#' @param accent Accent color for emphasis (default: "#8b5cf6")
-#' @param muted Muted/disabled text color (default: "#94a3b8")
-#' @param border Border color for containers and dividers (default: "#e2e8f0")
-#' @param row_bg Even row background color for banding. If not specified and
-#'   `background` is set, inherits from `background`.
-#' @param alt_bg Odd row background color for banding/striping. If not specified
-#'   and `background` or `row_bg` is set, inherits from `row_bg` (disabling
-#'   visible banding). Set explicitly to enable striped rows on custom themes.
-#' @param header_bg Column-header row background. Cascades from `row_bg` if
-#'   not specified, so existing themes render identically. Set explicitly to
-#'   distinguish the header band from data rows.
-#' @param cell_foreground Data-cell text color. Cascades from `foreground` if
-#'   not specified, so existing themes render identically. Set explicitly to
-#'   tint data cell text without affecting column headers, titles, or UI
-#'   chrome.
-#' @param header_foreground Column-header text color. Cascades from
-#'   `cell_foreground` (and ultimately `foreground`) if not specified.
-#'   Set explicitly to give the header row its own text color distinct
-#'   from data cells -- symmetric with `header_bg` for background.
-#' @param ci_marker_fill Default CI marker fill color (default: "#0891b2"). If not
-#'   specified and `primary` is set, inherits from `primary`. Cascades to
-#'   `summary_fill` if not specified.
-#' @param ci_line Confidence interval line color (default: "#475569")
-#' @param summary_fill Summary diamond fill color (default: "#0891b2"). If not
-#'   specified and `ci_marker_fill` or `primary` is set, inherits from `ci_marker_fill`.
-#' @param summary_border Summary diamond border color (default: "#0e7490")
-#' @param interval `r lifecycle::badge("deprecated")` Use `ci_marker_fill`.
-#' @param interval_line `r lifecycle::badge("deprecated")` Use `ci_line`.
-#' @param ci_marker_positive,ci_marker_negative,ci_marker_neutral
-#'   `r lifecycle::badge("deprecated")` Direction-aware marker fills were never
-#'   consumed by the renderer and were removed in 0.13.0. Use `marker_color`
-#'   in [viz_forest()] to color by direction instead.
-#' @param interval_positive,interval_negative,interval_neutral
-#'   `r lifecycle::badge("deprecated")` Deprecated aliases of the
-#'   `ci_marker_*` arguments. Same no-op behavior.
-#'
-#' @return Modified WebTheme object
-#' @export
-#' @examples
-#' web_theme_jama() |>
-#'   set_colors(primary = "#0066cc", border = "#999999")
-set_colors <- function(
-    theme,
-    background = NULL,
-    foreground = NULL,
-    primary = NULL,
-    secondary = NULL,
-    accent = NULL,
-    muted = NULL,
-    border = NULL,
-    row_bg = NULL,
-    alt_bg = NULL,
-    header_bg = NULL,
-    cell_foreground = NULL,
-    header_foreground = NULL,
-    ci_marker_fill = NULL,
-    ci_line = NULL,
-    summary_fill = NULL,
-    summary_border = NULL,
-    ci_marker_positive = lifecycle::deprecated(),
-    ci_marker_negative = lifecycle::deprecated(),
-    ci_marker_neutral = lifecycle::deprecated(),
-    interval = lifecycle::deprecated(),
-    interval_line = lifecycle::deprecated(),
-    interval_positive = lifecycle::deprecated(),
-    interval_negative = lifecycle::deprecated(),
-    interval_neutral = lifecycle::deprecated()
-) {
-  stopifnot(S7_inherits(theme, WebTheme))
-
-  if (lifecycle::is_present(interval)) {
-    lifecycle::deprecate_warn("0.9.0", "set_colors(interval)", "set_colors(ci_marker_fill)")
-    if (is.null(ci_marker_fill)) ci_marker_fill <- interval
-  }
-  if (lifecycle::is_present(interval_line)) {
-    lifecycle::deprecate_warn("0.9.0", "set_colors(interval_line)", "set_colors(ci_line)")
-    if (is.null(ci_line)) ci_line <- interval_line
-  }
-
-  # The direction-aware marker slots (positive / negative / neutral) never had a
-  # rendering consumer -- they were emitted as CSS vars but never read. Accepted
-  # here as no-ops for back-compat; emit one warning so callers can stop passing
-  # them. `interval_*` names forward to the `ci_marker_*` names for symmetry with
-  # the other deprecations above.
-  direction_args <- list(
-    ci_marker_positive = ci_marker_positive,
-    ci_marker_negative = ci_marker_negative,
-    ci_marker_neutral  = ci_marker_neutral,
-    interval_positive  = interval_positive,
-    interval_negative  = interval_negative,
-    interval_neutral   = interval_neutral
-  )
-  for (nm in names(direction_args)) {
-    if (lifecycle::is_present(direction_args[[nm]])) {
-      lifecycle::deprecate_warn(
-        "0.13.0",
-        sprintf("set_colors(%s)", nm),
-        details = "Direction-aware marker slots were never rendered and have been removed. Use `ci_marker_fill` (or a viz_forest() per-effect color) instead."
+    # Tier 3 (component bindings)
+    annotation   = new_property(AnnotationCluster, default = AnnotationCluster()),
+    header       = new_property(HeaderCluster,     default = HeaderCluster()),
+    column_group = new_property(ColumnGroupCluster, default = ColumnGroupCluster()),
+    row_group    = new_property(RowGroupCluster,   default = RowGroupCluster()),
+    row          = new_property(RowCluster,        default = RowCluster()),
+    cell         = new_property(CellCluster,       default = CellCluster()),
+    first_column = new_property(FirstColumnCluster, default = FirstColumnCluster()),
+    plot         = new_property(PlotScaffold,      default = PlotScaffold()),
+    marks        = new_property(MarksRecipes,      default = MarksRecipes()),
+    axis         = new_property(AxisConfig,        default = AxisConfig()),
+    layout       = new_property(Layout,            default = Layout())
+  ),
+  validator = function(self) {
+    if (length(self@series) > 0L) {
+      ok <- vapply(
+        self@series,
+        function(x) inherits(x, "tabviz::SlotBundle") || S7::S7_inherits(x, SlotBundle),
+        logical(1)
       )
+      if (!all(ok)) return("series must be a list of SlotBundle objects")
     }
+    NULL
   }
-
-  current <- theme@colors
-
-  if (!is.null(background)) current@background <- background
-  if (!is.null(foreground)) current@foreground <- foreground
-  if (!is.null(primary)) current@primary <- primary
-  if (!is.null(secondary)) current@secondary <- secondary
-  if (!is.null(accent)) current@accent <- accent
-  if (!is.null(muted)) current@muted <- muted
-  if (!is.null(border)) current@border <- border
-
-  # Cascade row background colors:
-
-  # If background changed but row_bg not specified, derive row_bg from background
-  if (!is.null(background) && is.null(row_bg)) {
-    current@row_bg <- background
-  } else if (!is.null(row_bg)) {
-    current@row_bg <- row_bg
-  }
-
-  # If row_bg changed (explicitly or derived) but alt_bg not specified, derive alt_bg from row_bg
-  if ((!is.null(background) || !is.null(row_bg)) && is.null(alt_bg)) {
-    current@alt_bg <- current@row_bg
-  } else if (!is.null(alt_bg)) {
-    current@alt_bg <- alt_bg
-  }
-
-  # header_bg defaults to row_bg (preserves pre-0.16 look where the column-
-  # header row matched the data-row background). Users who want a distinct
-  # header band pass `header_bg` explicitly.
-  if ((!is.null(background) || !is.null(row_bg)) && is.null(header_bg)) {
-    current@header_bg <- current@row_bg
-  } else if (!is.null(header_bg)) {
-    current@header_bg <- header_bg
-  }
-
-  # cell_foreground stays NA (inherits from foreground at serialize time)
-  # unless set explicitly. Keeping NA means dark-mode / custom themes don't
-  # need to stamp it -- foreground already does the right thing.
-  if (!is.null(cell_foreground)) {
-    current@cell_foreground <- cell_foreground
-  }
-
-  # header_foreground mirrors: stays NA and cascades at serialize time to
-  # cell_foreground (or foreground) unless set explicitly.
-  if (!is.null(header_foreground)) {
-    current@header_foreground <- header_foreground
-  }
-
-  # Cascade marker colors:
-
-  # Cascade marker / summary colors. v0.25.0 collapsed the old
-  # `primary -> interval -> summary_fill` chain since the `interval`
-  # slot was removed; cascade now goes straight to summary_fill.
-  # Per-effect marker colors live on `shapes.effect_colors`, which is
-  # what the renderer actually consumes for non-summary markers.
-  derived_summary <- NULL
-  if (!is.null(ci_marker_fill)) {
-    derived_summary <- ci_marker_fill
-  } else if (!is.null(primary)) {
-    derived_summary <- primary
-  }
-  if (!is.null(summary_fill)) {
-    current@summary_fill <- summary_fill
-  } else if (!is.null(derived_summary)) {
-    current@summary_fill <- derived_summary
-  }
-
-  if (!is.null(ci_line)) current@interval_line <- ci_line
-  if (!is.null(summary_border)) current@summary_border <- summary_border
-
-  theme@colors <- current
-  theme
-}
-
-#' Modify theme typography
-#'
-#' Pipe-friendly function to modify typography settings.
-#'
-#' @param theme A WebTheme object
-#' @param font_family CSS font-family string (default: "system-ui, -apple-system, sans-serif")
-#' @param font_size_sm Small text size, e.g., "0.75rem" or "9pt"
-#' @param font_size_base Base text size (default: "0.875rem")
-#' @param font_size_lg Large text size (default: "1rem")
-#' @param font_weight_normal Normal font weight (default: 400)
-#' @param font_weight_medium Medium font weight (default: 500)
-#' @param font_weight_bold Bold font weight (default: 600)
-#' @param line_height Line height multiplier (default: 1.5)
-#' @param header_font_scale Scale factor for header cell font size relative to base (default: 1.05)
-#'
-#' @return Modified WebTheme object
-#' @export
-#' @examples
-#' web_theme_default() |>
-#'   set_typography(font_family = "Arial", font_size_base = "12pt")
-set_typography <- function(
-    theme,
-    font_family = NULL,
-    font_size_sm = NULL,
-    font_size_base = NULL,
-    font_size_lg = NULL,
-    font_weight_normal = NULL,
-    font_weight_medium = NULL,
-    font_weight_bold = NULL,
-    line_height = NULL,
-    header_font_scale = NULL
-) {
-  stopifnot(S7_inherits(theme, WebTheme))
-  current <- theme@typography
-
-  if (!is.null(font_family)) current@font_family <- font_family
-  if (!is.null(font_size_sm)) current@font_size_sm <- font_size_sm
-  if (!is.null(font_size_base)) current@font_size_base <- font_size_base
-  if (!is.null(font_size_lg)) current@font_size_lg <- font_size_lg
-  if (!is.null(font_weight_normal)) current@font_weight_normal <- font_weight_normal
-  if (!is.null(font_weight_medium)) current@font_weight_medium <- font_weight_medium
-  if (!is.null(font_weight_bold)) current@font_weight_bold <- font_weight_bold
-  if (!is.null(line_height)) current@line_height <- line_height
-  if (!is.null(header_font_scale)) current@header_font_scale <- header_font_scale
-
-  theme@typography <- current
-  theme
-}
-
-#' Modify theme spacing
-#'
-#' Pipe-friendly function to modify spacing values.
-#'
-#' @param theme A WebTheme object
-#' @param row_height Height of data rows in pixels (default: 24)
-#' @param header_height Height of header row in pixels (default: 32)
-#' @param padding Padding around the forest plot SVG in pixels (default: 12)
-#' @param container_padding Left/right padding for the outer container in pixels (default: 0)
-#' @param axis_gap Gap between table content and x-axis in pixels (default: 12)
-#' @param column_group_padding Left/right padding for *column-group* header
-#'   spans (multi-column header tiles), in pixels (default: 8). Distinct from
-#'   `row_group_padding` which controls row-group header indentation.
-#' @param row_group_padding Extra horizontal padding applied to row-group
-#'   header rows, in pixels (default: 0). Stacks with the theme's natural
-#'   per-depth indentation.
-#' @param group_padding `r lifecycle::badge("deprecated")` Renamed to
-#'   `column_group_padding` in 0.16.0 to disambiguate from
-#'   `row_group_padding`. Still accepted; forwards to `column_group_padding`.
-#' @param cell_padding_x Horizontal cell padding in pixels (default: 10)
-#' @param cell_padding_y `r lifecycle::badge("deprecated")` Vertical cell
-#'   padding had no visual effect on single-line text (text was flex-
-#'   centered regardless) and could only clip content once row tracks
-#'   were pinned in v0.21.x. Setting it now emits a deprecation warning
-#'   and is otherwise ignored. Raise `row_height` for breathing room.
-#' @param footer_gap Vertical gap between the plot region and the footer
-#'   band (caption + footnote), in pixels (default: 8). Applied both on
-#'   the interactive widget and in SVG exports.
-#' @param title_subtitle_gap Vertical gap (px) between the title and
-#'   subtitle bands when both are present (default: 13). Mirrors the
-#'   live widget's `margin + border + padding` CSS chain so the
-#'   interactive render and SVG export stay aligned.
-#' @param bottom_margin Trailing buffer (px) below the last visible band
-#'   (footer / axis / rows) in SVG exports (default: 16). Changing
-#'   tightens or loosens the bottom of the exported plot without
-#'   affecting the live widget's container padding.
-#'
-#' @return Modified WebTheme object
-#' @export
-#' @examples
-#' web_theme_default() |>
-#'   set_spacing(row_height = 32, cell_padding_x = 12, cell_padding_y = 6)
-set_spacing <- function(
-    theme,
-    row_height = NULL,
-    header_height = NULL,
-    padding = NULL,
-    container_padding = NULL,
-    axis_gap = NULL,
-    column_group_padding = NULL,
-    row_group_padding = NULL,
-    cell_padding_x = NULL,
-    cell_padding_y = lifecycle::deprecated(),
-    footer_gap = NULL,
-    title_subtitle_gap = NULL,
-    bottom_margin = NULL,
-    group_padding = lifecycle::deprecated()
-) {
-  stopifnot(S7_inherits(theme, WebTheme))
-  current <- theme@spacing
-
-  if (lifecycle::is_present(group_padding)) {
-    lifecycle::deprecate_warn(
-      "0.16.0",
-      "set_spacing(group_padding)",
-      "set_spacing(column_group_padding)"
-    )
-    if (is.null(column_group_padding)) column_group_padding <- group_padding
-  }
-
-  if (!is.null(row_height)) current@row_height <- row_height
-  if (!is.null(header_height)) current@header_height <- header_height
-  if (!is.null(padding)) current@padding <- padding
-  if (!is.null(container_padding)) current@container_padding <- container_padding
-  if (!is.null(axis_gap)) current@axis_gap <- axis_gap
-  if (!is.null(column_group_padding)) current@column_group_padding <- column_group_padding
-  if (!is.null(row_group_padding)) current@row_group_padding <- row_group_padding
-  if (!is.null(cell_padding_x)) current@cell_padding_x <- cell_padding_x
-  if (lifecycle::is_present(cell_padding_y)) {
-    lifecycle::deprecate_warn(
-      "0.21.0",
-      "set_spacing(cell_padding_y)",
-      details = "Vertical cell padding no longer affects layout -- single-line text is flex-centered and row tracks are pinned to spacing.row_height. Raise `row_height` for breathing room."
-    )
-  }
-  if (!is.null(footer_gap)) current@footer_gap <- footer_gap
-  if (!is.null(title_subtitle_gap)) current@title_subtitle_gap <- title_subtitle_gap
-  if (!is.null(bottom_margin)) current@bottom_margin <- bottom_margin
-
-  theme@spacing <- current
-  theme
-}
-
-#' Modify theme shapes
-#'
-#' Pipe-friendly function to modify shape settings.
-#'
-#' @param theme A WebTheme object
-#' @param point_size Marker point radius in pixels (default: 6)
-#' @param summary_height Summary diamond height in pixels (default: 10)
-#' @param line_width Confidence interval line width in pixels (default: 1.5)
-#' @param border_radius `r lifecycle::badge("deprecated")` Removed in v0.25.0; had no rendering effect.
-#' @param row_border_width Width (px) of the bottom border between data rows
-#'   (default: 1). Set to 0 to remove row separators.
-#' @param header_border_width Width (px) of the bottom border underlining
-#'   column-header rows -- includes the primary (leftmost) header, the last
-#'   header row, and plot-header rows (default: 2).
-#' @param row_group_border_width Width (px) of the border drawn under
-#'   row-group header rows when a `GroupHeaderStyles.levelN_border_bottom`
-#'   toggle is on (default: 1). No-op unless the corresponding level toggle
-#'   is enabled.
-#' @param tick_mark_length Length (px) of the tick marks on viz-column
-#'   axes (default: 4). Tighter values produce a denser axis chrome;
-#'   larger values give the axis a more emphasized grid look.
-#' @param effect_colors Character vector of colors for multi-effect visualizations.
-#'   Used by forest plots, bar charts, boxplots, and violin plots. Effects without
-#'   explicit colors use these in order, cycling if needed.
-#' @param marker_shapes Character vector of shapes for multi-effect forest plots:
-#'   "square", "circle", "diamond", "triangle" (default: all four in order)
-#'
-#' @return Modified WebTheme object
-#' @export
-#' @examples
-#' web_theme_default() |>
-#'   set_shapes(point_size = 8, line_width = 2)
-set_shapes <- function(
-    theme,
-    point_size = NULL,
-    summary_height = NULL,
-    line_width = NULL,
-    border_radius = lifecycle::deprecated(),
-    row_border_width = NULL,
-    header_border_width = NULL,
-    row_group_border_width = NULL,
-    tick_mark_length = NULL,
-    effect_colors = NULL,
-    marker_shapes = NULL
-) {
-  stopifnot(S7_inherits(theme, WebTheme))
-  current <- theme@shapes
-
-  checkmate::assert_number(row_border_width, lower = 0, upper = 10, null.ok = TRUE)
-  checkmate::assert_number(header_border_width, lower = 0, upper = 10, null.ok = TRUE)
-  checkmate::assert_number(row_group_border_width, lower = 0, upper = 10, null.ok = TRUE)
-  checkmate::assert_number(tick_mark_length, lower = 0, upper = 20, null.ok = TRUE)
-
-  if (lifecycle::is_present(border_radius)) {
-    lifecycle::deprecate_warn(
-      "0.25.0", "set_shapes(border_radius)",
-      details = "border_radius had no rendering effect; bars and badges hardcoded their corner radius. Use shapes via CSS or wait for a future per-component radius API."
-    )
-  }
-
-  if (!is.null(point_size)) current@point_size <- point_size
-  if (!is.null(summary_height)) current@summary_height <- summary_height
-  if (!is.null(line_width)) current@line_width <- line_width
-  if (!is.null(row_border_width)) current@row_border_width <- row_border_width
-  if (!is.null(header_border_width)) current@header_border_width <- header_border_width
-  if (!is.null(row_group_border_width)) current@row_group_border_width <- row_group_border_width
-  if (!is.null(tick_mark_length)) current@tick_mark_length <- tick_mark_length
-  if (!is.null(effect_colors)) {
-    checkmate::assert_character(effect_colors, min.len = 1)
-    current@effect_colors <- effect_colors
-  }
-  if (!is.null(marker_shapes)) {
-    valid_shapes <- c("square", "circle", "diamond", "triangle")
-    checkmate::assert_subset(marker_shapes, valid_shapes)
-    current@marker_shapes <- marker_shapes
-  }
-
-  theme@shapes <- current
-  theme
-}
-
-#' Set effect colors for multi-effect visualizations
-#'
-#' Convenience function to set theme colors for multi-effect visualizations.
-#' Used by forest plots, bar charts, boxplots, and violin plots. Effects
-#' without an explicit color will use these colors in order, cycling if needed.
-#'
-#' @param theme A WebTheme object
-#' @param colors Character vector of colors for effects (e.g., c("#2563eb", "#dc2626"))
-#'
-#' @return Modified WebTheme object
-#' @export
-#' @examples
-#' web_theme_default() |>
-#'   set_effect_colors(c("#0891b2", "#dc2626", "#16a34a"))
-set_effect_colors <- function(theme, colors) {
-  stopifnot(S7_inherits(theme, WebTheme))
-  checkmate::assert_character(colors, min.len = 1)
-  theme@shapes@effect_colors <- colors
-  theme
-}
-
-#' Set marker shapes for multi-effect plots
-#'
-#' Convenience function to set theme marker shapes for multi-effect forest plots.
-#' Effects without an explicit shape will use these shapes in order.
-#'
-#' @param theme A WebTheme object
-#' @param shapes Character vector of shapes: "square", "circle", "diamond", "triangle"
-#'
-#' @return Modified WebTheme object
-#' @export
-#' @examples
-#' web_theme_default() |>
-#'   set_marker_shapes(c("square", "circle", "diamond"))
-set_marker_shapes <- function(theme, shapes) {
-  stopifnot(S7_inherits(theme, WebTheme))
-  valid_shapes <- c("square", "circle", "diamond", "triangle")
-  checkmate::assert_subset(shapes, valid_shapes)
-  theme@shapes@marker_shapes <- shapes
-  theme
-}
-
-#' Modify theme axis configuration
-#'
-#' Pipe-friendly function to modify axis settings.
-#'
-#' @param theme A WebTheme object
-#' @param range_min Minimum axis value. NA for auto-calculation from data.
-#' @param range_max Maximum axis value. NA for auto-calculation from data.
-#' @param tick_count Target number of axis ticks. NA for auto-calculation.
-#' @param tick_values Explicit tick positions as numeric vector. Overrides tick_count.
-#' @param gridlines Show vertical gridlines on plot (default: FALSE)
-#' @param gridline_style Gridline style: "solid", "dashed", or "dotted" (default: "dotted")
-#' @param ci_clip_factor CIs extending beyond this multiple of the estimate range are
-#'   clipped with arrows (default: 2.0). For example, 2.0 means CIs that extend more
-#'   than 2x the estimate range will be truncated. Use `Inf` to never clip.
-#' @param include_null Always include null value in axis range (default: TRUE)
-#' @param symmetric Make axis symmetric around null value. Set to TRUE to enable;
-#'   default (NULL/FALSE) does not apply symmetry.
-#' @param null_tick Always show a tick at the null value (default: TRUE)
-#' @param marker_margin Add half-marker-width padding at edges to prevent clipping (default: TRUE)
-#'
-#' @return Modified WebTheme object
-#' @export
-#' @examples
-#' web_theme_default() |>
-#'   set_axis(gridlines = TRUE, range_min = 0.5, range_max = 2.0)
-#'
-#' # Allow wider CIs before clipping with arrows
-#' web_theme_default() |>
-#'   set_axis(ci_clip_factor = 3.0)
-#'
-#' # Never clip CIs (expand axis to fit all)
-#' web_theme_default() |>
-#'   set_axis(ci_clip_factor = Inf)
-set_axis <- function(
-    theme,
-    range_min = NULL,
-    range_max = NULL,
-    tick_count = NULL,
-    tick_values = NULL,
-    gridlines = NULL,
-    gridline_style = NULL,
-    ci_clip_factor = NULL,
-    include_null = NULL,
-    symmetric = NULL,
-    null_tick = NULL,
-    marker_margin = NULL
-) {
-  stopifnot(S7_inherits(theme, WebTheme))
-
-current <- theme@axis
-
-  if (!is.null(range_min)) current@range_min <- range_min
-  if (!is.null(range_max)) current@range_max <- range_max
-  if (!is.null(tick_count)) current@tick_count <- tick_count
-  if (!is.null(tick_values)) current@tick_values <- tick_values
-  if (!is.null(gridlines)) current@gridlines <- gridlines
-  if (!is.null(gridline_style)) {
-    valid_styles <- c("solid", "dashed", "dotted")
-    if (!gridline_style %in% valid_styles) {
-      cli_abort("gridline_style must be one of: {.val {valid_styles}}")
-    }
-    current@gridline_style <- gridline_style
-  }
-  if (!is.null(ci_clip_factor)) {
-    if (ci_clip_factor < 0) {
-      cli_abort("ci_clip_factor must be non-negative")
-    }
-    current@ci_clip_factor <- ci_clip_factor
-  }
-  if (!is.null(include_null)) current@include_null <- include_null
-  if (!is.null(symmetric)) current@symmetric <- symmetric
-  if (!is.null(null_tick)) current@null_tick <- null_tick
-  if (!is.null(marker_margin)) current@marker_margin <- marker_margin
-
-  theme@axis <- current
-  theme
-}
-
-#' Modify theme layout configuration
-#'
-#' Pipe-friendly function to modify layout settings.
-#'
-#' @param theme A WebTheme object
-#' @param plot_width Width of plot area: "auto" or numeric pixels (default: "auto")
-#' @param cell_padding_x Deprecated. Use [set_spacing()] instead.
-#' @param cell_padding_y Deprecated. Use [set_spacing()] instead.
-#' @param row_border Deprecated and ignored (removed in v0.4.1). Row borders are always rendered.
-#' @param row_border_style Deprecated and ignored (removed in v0.4.1).
-#' @param container_border Show border around the entire plot container (default: FALSE)
-#' @param container_border_radius Corner radius for container in pixels (default: 8).
-#'   Only visible when `container_border = TRUE`.
-#' @param banding Row banding mode. One of `"none"`, `"row"`, `"group"` (default),
-#'   or `"group-n"` (e.g. `"group-1"` for outermost-level alternation).
-#'   `"group"` uses the deepest group level when groups exist, otherwise behaves
-#'   like `"row"`. Uses `row_bg` and `alt_bg` from theme colors.
-#'
-#' @return Modified WebTheme object
-#' @export
-#' @examples
-#' # Narrow the forest plot column
-#' web_theme_default() |>
-#'   set_layout(plot_width = 320)
-#'
-#' # Add a border around the container
-#' web_theme_default() |>
-#'   set_layout(container_border = TRUE, container_border_radius = 4)
-#'
-#' # Disable row banding
-#' web_theme_default() |>
-#'   set_layout(banding = "none")
-#'
-#' # Alternate at the outermost group level
-#' web_theme_default() |>
-#'   set_layout(banding = "group-1")
-set_layout <- function(
-    theme,
-    plot_width = NULL,
-    cell_padding_x = NULL,
-    cell_padding_y = NULL,
-    row_border = NULL,
-    row_border_style = NULL,
-    container_border = NULL,
-    container_border_radius = NULL,
-    banding = NULL
-) {
-  stopifnot(S7_inherits(theme, WebTheme))
-  current <- theme@layout
-
-  if (!is.null(plot_width)) current@plot_width <- plot_width
-
-  # Deprecated: forward to spacing
-  if (!is.null(cell_padding_x)) {
-    cli_warn("cell_padding_x in set_layout() is deprecated. Use set_spacing(cell_padding_x = ...) instead.")
-    theme@spacing@cell_padding_x <- cell_padding_x
-  }
-  if (!is.null(cell_padding_y)) {
-    cli_warn("cell_padding_y in set_layout() is deprecated. Use set_spacing(cell_padding_y = ...) instead.")
-    theme@spacing@cell_padding_y <- cell_padding_y
-  }
-
-  # Deprecated: row_border and row_border_style were never implemented
-  if (!is.null(row_border)) {
-    cli_warn("row_border in set_layout() is deprecated and ignored. Row borders are always rendered.")
-  }
-  if (!is.null(row_border_style)) {
-    cli_warn("row_border_style in set_layout() is deprecated and ignored.")
-  }
-
-  if (!is.null(container_border)) current@container_border <- container_border
-  if (!is.null(container_border_radius)) current@container_border_radius <- container_border_radius
-  if (!is.null(banding)) {
-    parse_banding(banding)  # validates, aborts on bad input
-    current@banding <- banding
-  }
-
-  theme@layout <- current
-  theme
-}
-
-#' Modify theme semantic bundles
-#'
-#' Pipe-friendly function to customize the visual bundles behind the
-#' `emphasis` / `muted` / `accent` semantic classes. Each argument accepts a
-#' named list with any subset of `fg`, `bg`, `border`, `marker_fill`,
-#' `font_weight`, `font_style` -- omitted fields preserve the theme's existing
-#' values for that token (so you can tweak a single field without restating
-#' the rest of the bundle).
-#'
-#' @param theme A [WebTheme] object.
-#' @param emphasis Named list of [SemanticBundle] fields to update on the
-#'   emphasis bundle. Supplying `NULL` leaves the token untouched.
-#' @param muted Same for the muted bundle.
-#' @param accent Same for the accent bundle.
-#'
-#' @return The modified `WebTheme`.
-#' @export
-#' @examples
-#' web_theme_default() |>
-#'   set_semantics(
-#'     emphasis = list(fg = "#000000", bg = "#fefce8", font_weight = 700),
-#'     accent   = list(fg = "#b91c1c", marker_fill = "#dc2626")
-#'   )
-set_semantics <- function(theme, emphasis = NULL, muted = NULL, accent = NULL) {
-  stopifnot(S7_inherits(theme, WebTheme))
-  for (token in c("emphasis", "muted", "accent")) {
-    overrides <- get(token)
-    if (is.null(overrides)) next
-    if (!is.list(overrides)) {
-      cli_abort("{.arg {token}} must be a named list or NULL, got {.cls {class(overrides)[1]}}")
-    }
-    current <- S7::prop(theme@semantics, token)
-    allowed <- c("fg", "bg", "border", "marker_fill", "font_weight", "font_style")
-    unknown <- setdiff(names(overrides), allowed)
-    if (length(unknown) > 0) {
-      cli_abort(c(
-        "Unknown SemanticBundle fields in {.arg {token}}: {.val {unknown}}",
-        "i" = "Valid fields: {.val {allowed}}"
-      ))
-    }
-    for (field in names(overrides)) {
-      value <- overrides[[field]]
-      if (is.null(value)) value <- if (field == "font_weight") NA_real_ else NA_character_
-      S7::prop(current, field) <- value
-    }
-    S7::prop(theme@semantics, token) <- current
-  }
-  theme
-}
-
-#' Modify theme group header styles
-#'
-#' Pipe-friendly function to modify hierarchical styling for nested row groups.
-#' Nested groups are styled with h1/h2/h3-like visual hierarchy.
-#'
-#' @param theme A WebTheme object
-#' @param level1_font_size Font size for top-level groups (default: "1rem")
-#' @param level1_font_weight Font weight for top-level groups (default: 700)
-#' @param level1_italic Use italic text for level 1 headers (default: FALSE)
-#' @param level1_background Background color for level 1. NULL = computed from primary at 15% opacity.
-#' @param level1_border_bottom Show bottom border on level 1 headers (default: FALSE)
-#' @param level2_font_size Font size for second-level groups (default: "0.9375rem")
-#' @param level2_font_weight Font weight for second-level groups (default: 500)
-#' @param level2_italic Use italic text for level 2 headers (default: TRUE)
-#' @param level2_background Background color for level 2. NULL = computed from primary at 10% opacity.
-#' @param level2_border_bottom Show bottom border on level 2 headers (default: FALSE)
-#' @param level3_font_size Font size for third-level and deeper groups (default: "0.875rem")
-#' @param level3_font_weight Font weight for third-level groups (default: 400)
-#' @param level3_italic Use italic text for level 3+ headers (default: FALSE)
-#' @param level3_background Background color for level 3+. NULL = computed from primary at 6% opacity.
-#' @param level3_border_bottom Show bottom border on level 3+ headers (default: FALSE)
-#' @param indent_per_level Indentation per nesting level in pixels (default: 16)
-#'
-#' @return Modified WebTheme object
-#' @export
-#' @examples
-#' web_theme_default() |>
-#'   set_group_headers(
-#'     level1_font_weight = 800,
-#'     level2_italic = FALSE,
-#'     level1_background = "#f0f9ff",
-#'     indent_per_level = 24
-#'   )
-set_group_headers <- function(
-    theme,
-    level1_font_size = NULL,
-    level1_font_weight = NULL,
-    level1_italic = NULL,
-    level1_background = NULL,
-    level1_border_bottom = NULL,
-    level2_font_size = NULL,
-    level2_font_weight = NULL,
-    level2_italic = NULL,
-    level2_background = NULL,
-    level2_border_bottom = NULL,
-    level3_font_size = NULL,
-    level3_font_weight = NULL,
-    level3_italic = NULL,
-    level3_background = NULL,
-    level3_border_bottom = NULL,
-    indent_per_level = NULL
-) {
-  stopifnot(S7_inherits(theme, WebTheme))
-  current <- theme@group_headers
-
-  if (!is.null(level1_font_size)) current@level1_font_size <- level1_font_size
-  if (!is.null(level1_font_weight)) current@level1_font_weight <- level1_font_weight
-  if (!is.null(level1_italic)) current@level1_italic <- level1_italic
-  if (!is.null(level1_background)) current@level1_background <- level1_background
-  if (!is.null(level1_border_bottom)) current@level1_border_bottom <- level1_border_bottom
-  if (!is.null(level2_font_size)) current@level2_font_size <- level2_font_size
-  if (!is.null(level2_font_weight)) current@level2_font_weight <- level2_font_weight
-  if (!is.null(level2_italic)) current@level2_italic <- level2_italic
-  if (!is.null(level2_background)) current@level2_background <- level2_background
-  if (!is.null(level2_border_bottom)) current@level2_border_bottom <- level2_border_bottom
-  if (!is.null(level3_font_size)) current@level3_font_size <- level3_font_size
-  if (!is.null(level3_font_weight)) current@level3_font_weight <- level3_font_weight
-  if (!is.null(level3_italic)) current@level3_italic <- level3_italic
-  if (!is.null(level3_background)) current@level3_background <- level3_background
-  if (!is.null(level3_border_bottom)) current@level3_border_bottom <- level3_border_bottom
-  if (!is.null(indent_per_level)) current@indent_per_level <- indent_per_level
-
-  theme@group_headers <- current
-  theme
-}
-
-# ============================================================================
-# Publication-quality theme presets
-# ============================================================================
-
-#' JAMA-style theme for medical journal publications
-#'
-#' Dense, black & white layout optimized for print and medical journals.
-#' Follows JAMA (Journal of the American Medical Association) style guidelines
-#' with maximum data density, thick borders, and compact rows. Uses point-based
-#' font sizes for print consistency.
-#'
-#' @return A WebTheme object
-#' @export
-web_theme_jama <- function() {
-  .with_palette_semantics(WebTheme(
-    name = "jama",
-    colors = ColorPalette(
-      background = "#ffffff",
-      foreground = "#000000",
-      primary = "#000000",
-      secondary = "#333333",
-      accent = "#000000",
-      muted = "#555555",
-      border = "#000000",             # Pure black borders
-      row_bg = "#ffffff",
-      alt_bg = "#f9fafb",             # Very subtle grey
-      interval_line = "#000000",
-      summary_fill = "#000000",
-      summary_border = "#000000"
-    ),
-    typography = Typography(
-      font_family = "Arial, Helvetica, sans-serif",
-      font_size_sm = "8pt",           # Smaller for density
-      font_size_base = "9pt",         # Compact base
-      font_size_lg = "10pt",
-      font_weight_normal = 400,
-      font_weight_medium = 500,
-      font_weight_bold = 700,
-      line_height = 1.2               # Tight line height
-    ),
-    spacing = Spacing(
-      row_height = 18,                # Very compact rows
-      header_height = 24,
-      padding = 6,
-      cell_padding_x = 8,             # Tighter cell padding
-      cell_padding_y = 2
-    ),
-    shapes = Shapes(
-      point_size = 4,                 # Small markers
-      summary_height = 7,
-      line_width = 1.25,              # Slightly thicker for visibility
-      effect_colors = c("#1a1a1a", "#4a4a4a", "#7a7a7a", "#9a9a9a", "#bababa")
-    ),
-    layout = LayoutConfig(
-      container_border = FALSE,
-      container_border_radius = 0     # Sharp corners
-    ),
-    # Compact hierarchy matching dense layout
-    group_headers = GroupHeaderStyles(
-      level1_font_size = "9.5pt",      # Slightly larger than 9pt base
-      level1_font_weight = 700,
-      level1_italic = FALSE,
-      level2_font_size = "9pt",        # Match base
-      level2_font_weight = 500,
-      level2_italic = FALSE,
-      level3_font_size = "9pt",
-      level3_font_weight = 400,
-      level3_italic = FALSE,
-      indent_per_level = 12           # Tight indent for density
-    )
-  ))
-}
-
-#' Lancet-style theme for medical journals
-#'
-#' Elegant academic theme with Lancet navy blue and warm gold accents.
-#' Features refined serif typography with generous spacing.
-#'
-#' @return A WebTheme object
-#' @export
-web_theme_lancet <- function() {
-  .with_palette_semantics(WebTheme(
-    name = "lancet",
-    colors = ColorPalette(
-      background = "#fdfcfb",       # Warm off-white
-      foreground = "#1e3a5f",       # Deep navy
-      primary = "#00407a",          # Lancet blue
-      secondary = "#3d5a80",        # Slate blue
-      accent = "#b8860b",           # Dark goldenrod
-      muted = "#6b7c93",
-      border = "#d4dce6",
-      row_bg = "#fdfcfb",           # Match background
-      alt_bg = "#f8f7f5",           # Warm subtle stripe
-      interval_line = "#1e3a5f",
-      summary_fill = "#00407a",
-      summary_border = "#002d54"
-    ),
-    typography = Typography(
-      font_family = "Georgia, 'Times New Roman', serif",
-      font_size_sm = "0.75rem",
-      font_size_base = "0.875rem",
-      font_size_lg = "1rem",
-      font_weight_normal = 400,
-      font_weight_medium = 500,
-      font_weight_bold = 700,
-      line_height = 1.5             # More generous line height
-    ),
-    spacing = Spacing(
-      row_height = 24,
-      header_height = 30,
-      padding = 12,
-      cell_padding_x = 12,          # More breathing room
-      cell_padding_y = 4
-    ),
-    shapes = Shapes(
-      point_size = 5,
-      summary_height = 9,
-      line_width = 1.25,
-      effect_colors = c("#00468b", "#ed0000", "#42b540", "#0099b4", "#925e9f")
-    ),
-    layout = LayoutConfig(
-      container_border = FALSE,
-      container_border_radius = 0   # No rounded corners
-    ),
-    # Refined serif hierarchy with generous spacing
-    group_headers = GroupHeaderStyles(
-      level1_font_size = "0.9375rem",
-      level1_font_weight = 700,
-      level1_italic = FALSE,
-      level2_font_size = "0.875rem",
-      level2_font_weight = 500,
-      level2_italic = TRUE,           # Subtle italic for elegance
-      level3_font_size = "0.875rem",
-      level3_font_weight = 400,
-      level3_italic = FALSE,
-      indent_per_level = 18           # Generous indent
-    )
-  ))
-}
-
-#' Modern theme for reports and dashboards
-#'
-#' Bold, contemporary design with vibrant colors and generous spacing.
-#' Uses Inter font family (system fallback) with zinc color palette.
-#' Features larger elements, prominent rounded corners, and vivid
-#' color contrast suitable for digital reports and dashboards.
-#'
-#' @return A WebTheme object
-#' @export
-web_theme_modern <- function() {
-  .with_palette_semantics(WebTheme(
-    name = "modern",
-    colors = ColorPalette(
-      background = "#fafafa",
-      foreground = "#18181b",
-      primary = "#3b82f6",             # Blue-500 - more vibrant
-      secondary = "#52525b",
-      accent = "#8b5cf6",              # Violet-500
-      muted = "#a1a1aa",
-      border = "#d4d4d8",              # Slightly more visible
-      row_bg = "#fafafa",              # Match background
-      alt_bg = "#f5f5f5",              # Subtle zinc stripe
-      interval_line = "#27272a",       # Darker for contrast
-      summary_fill = "#3b82f6",
-      summary_border = "#2563eb"       # Blue-600
-    ),
-    typography = Typography(
-      font_family = "Inter, system-ui, -apple-system, sans-serif",
-      font_size_sm = "0.8125rem",      # Slightly larger
-      font_size_base = "0.9375rem",    # 15px
-      font_size_lg = "1.0625rem",      # 17px
-      font_weight_normal = 400,
-      font_weight_medium = 500,
-      font_weight_bold = 600,
-      line_height = 1.5
-    ),
-    spacing = Spacing(
-      row_height = 30,                 # Spacious rows
-      header_height = 36,
-      padding = 14,
-      cell_padding_x = 12,
-      cell_padding_y = 5
-    ),
-    shapes = Shapes(
-      point_size = 8,                  # Larger markers
-      summary_height = 12,
-      line_width = 1.75,
-      effect_colors = c("#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6")
-    ),
-    layout = LayoutConfig(
-      container_border = FALSE,
-      container_border_radius = 12     # Prominent rounded corners
-    ),
-    # Bold contemporary hierarchy with larger sizes
-    group_headers = GroupHeaderStyles(
-      level1_font_size = "1rem",        # More pronounced for modern feel
-      level1_font_weight = 600,
-      level1_italic = FALSE,
-      level2_font_size = "0.9375rem",
-      level2_font_weight = 500,
-      level2_italic = FALSE,
-      level3_font_size = "0.9375rem",
-      level3_font_weight = 400,
-      level3_italic = FALSE,
-      indent_per_level = 20           # Generous modern spacing
-    )
-  ))
-}
-
-#' Presentation theme for slides and posters
-#'
-#' Large fonts, bold colors, and high contrast.
-#' Optimized for visibility at distance with thick lines and oversized markers.
-#'
-#' @return A WebTheme object
-#' @export
-web_theme_presentation <- function() {
-  .with_palette_semantics(WebTheme(
-    name = "presentation",
-    colors = ColorPalette(
-      background = "#ffffff",
-      foreground = "#0f172a",
-      primary = "#0369a1",           # Deeper sky blue
-      secondary = "#334155",         # Darker slate
-      accent = "#ea580c",            # Orange-600 for emphasis
-      muted = "#64748b",
-      border = "#94a3b8",            # More visible borders
-      row_bg = "#ffffff",
-      alt_bg = "#f8fafc",            # Subtle slate stripe
-      interval_line = "#0f172a",     # Very dark for visibility
-      summary_fill = "#0369a1",
-      summary_border = "#0c4a6e"     # Darker outline
-    ),
-    typography = Typography(
-      font_family = "'Source Sans Pro', 'Segoe UI', Roboto, sans-serif",
-      font_size_sm = "1rem",         # Larger small text
-      font_size_base = "1.125rem",   # Larger base
-      font_size_lg = "1.25rem",      # Larger headings
-      font_weight_normal = 400,
-      font_weight_medium = 600,
-      font_weight_bold = 700,
-      line_height = 1.4
-    ),
-    spacing = Spacing(
-      row_height = 36,           # Tall rows for readability
-      header_height = 44,
-      padding = 18,
-      cell_padding_x = 14,       # More cell padding
-      cell_padding_y = 5
-    ),
-    shapes = Shapes(
-      point_size = 12,           # Oversized markers
-      summary_height = 16,       # Larger diamonds
-      line_width = 2.5,          # Thick lines
-      effect_colors = c("#2563eb", "#16a34a", "#ea580c", "#dc2626", "#7c3aed")
-    ),
-    layout = LayoutConfig(
-      container_border = FALSE,
-      container_border_radius = 6
-    ),
-    # Large, bold hierarchy for visibility at distance
-    group_headers = GroupHeaderStyles(
-      level1_font_size = "1.1875rem",   # Large for presentations
-      level1_font_weight = 700,
-      level1_italic = FALSE,
-      level2_font_size = "1.125rem",
-      level2_font_weight = 600,
-      level2_italic = FALSE,
-      level3_font_size = "1.125rem",
-      level3_font_weight = 400,
-      level3_italic = FALSE,
-      indent_per_level = 24           # Wide indent for clarity
-    )
-  ))
-}
-
-#' Cochrane systematic review theme
-#'
-#' Theme designed for Cochrane systematic reviews and meta-analyses.
-#' Uses Cochrane teal (#0099CC), Arial font, compact spacing optimized
-#' for data density. Clean, utilitarian design with no decorative elements.
-#'
-#' @return A WebTheme object
-#' @export
-web_theme_cochrane <- function() {
-  .with_palette_semantics(WebTheme(
-    name = "cochrane",
-    colors = ColorPalette(
-      background = "#ffffff",
-      foreground = "#2c2c2c",
-      primary = "#0099cc",             # Cochrane teal
-      secondary = "#555555",
-      accent = "#006699",              # Darker teal for accents
-      muted = "#888888",
-      border = "#b3b3b3",
-      row_bg = "#ffffff",
-      alt_bg = "#f5f5f5",              # Light grey stripe
-      interval_line = "#2c2c2c",
-      summary_fill = "#0099cc",
-      summary_border = "#006699"
-    ),
-    typography = Typography(
-      font_family = "Arial, Helvetica, sans-serif",
-      font_size_sm = "0.6875rem",      # 11px - very compact
-      font_size_base = "0.75rem",      # 12px
-      font_size_lg = "0.8125rem",      # 13px
-      font_weight_normal = 400,
-      font_weight_medium = 500,
-      font_weight_bold = 700,
-      line_height = 1.25
-    ),
-    spacing = Spacing(
-      row_height = 20,                 # Compact
-      header_height = 26,
-      padding = 6,
-      cell_padding_x = 6,
-      cell_padding_y = 2
-    ),
-    shapes = Shapes(
-      point_size = 4,                  # Small markers
-      summary_height = 7,
-      line_width = 1,
-      effect_colors = c("#0c4da2", "#dd5129", "#1a8a4f", "#6d4e92", "#e89a47")
-    ),
-    layout = LayoutConfig(
-      container_border = FALSE,        # No outer border (Cochrane style)
-      container_border_radius = 0
-    ),
-    # Very compact hierarchy matching dense data layout
-    group_headers = GroupHeaderStyles(
-      level1_font_size = "0.8125rem",   # Match font_size_lg (13px)
-      level1_font_weight = 700,
-      level1_italic = FALSE,
-      level2_font_size = "0.75rem",     # Match base (12px)
-      level2_font_weight = 500,
-      level2_italic = FALSE,
-      level3_font_size = "0.75rem",
-      level3_font_weight = 400,
-      level3_italic = FALSE,
-      indent_per_level = 10           # Very tight indent
-    )
-  ))
-}
-
-#' Nature journal theme
-#'
-#' Theme following Nature family journal styling guidelines.
-#' Uses Nature blue (#1976D2), Helvetica Neue font with tight letter-spacing,
-#' and precise, refined aesthetic. Balanced between academic rigor and
-#' modern digital readability.
-#'
-#' @return A WebTheme object
-#' @export
-web_theme_nature <- function() {
-  .with_palette_semantics(WebTheme(
-    name = "nature",
-    colors = ColorPalette(
-      background = "#ffffff",
-      foreground = "#1a1a1a",          # Slightly darker for precision
-      primary = "#1976d2",             # Nature blue
-      secondary = "#424242",
-      accent = "#c62828",              # Refined red
-      muted = "#616161",
-      border = "#bdbdbd",              # Slightly stronger border
-      row_bg = "#ffffff",
-      alt_bg = "#fafafa",              # Subtle grey stripe
-      interval_line = "#1a1a1a",
-      summary_fill = "#1976d2",
-      summary_border = "#0d47a1"       # Darker blue border
-    ),
-    typography = Typography(
-      font_family = "'Helvetica Neue', Helvetica, Arial, sans-serif",
-      font_size_sm = "0.75rem",
-      font_size_base = "0.8125rem",    # Slightly smaller base
-      font_size_lg = "0.9375rem",
-      font_weight_normal = 400,
-      font_weight_medium = 500,
-      font_weight_bold = 700,
-      line_height = 1.35               # Tighter line height
-    ),
-    spacing = Spacing(
-      row_height = 22,                 # Compact
-      header_height = 28,
-      padding = 10,
-      cell_padding_x = 10,
-      cell_padding_y = 4
-    ),
-    shapes = Shapes(
-      point_size = 5,
-      summary_height = 8,
-      line_width = 1.25,
-      effect_colors = c("#e64b35", "#4dbbd5", "#00a087", "#3c5488", "#f39b7f")
-    ),
-    layout = LayoutConfig(
-      container_border = FALSE,
-      container_border_radius = 2      # Minimal rounding
-    ),
-    axis = AxisConfig(
-      gridlines = FALSE,               # Clean axis
-      null_tick = TRUE
-    ),
-    # Refined, precise hierarchy matching Nature's clean aesthetic
-    group_headers = GroupHeaderStyles(
-      level1_font_size = "0.875rem",    # Slightly above base (13px)
-      level1_font_weight = 700,
-      level1_italic = FALSE,
-      level2_font_size = "0.8125rem",   # Match base
-      level2_font_weight = 500,
-      level2_italic = FALSE,
-      level3_font_size = "0.8125rem",
-      level3_font_weight = 400,
-      level3_italic = FALSE,
-      indent_per_level = 14           # Clean, precise indent
-    )
-  ))
-}
-
-# ============================================================================
-# Deprecated aliases for backwards compatibility
-# ============================================================================
-
-#' @rdname web_theme_default
-#' @export
-forest_theme_default <- function() {
-
-  .Deprecated("web_theme_default")
-  web_theme_default()
-}
-
-#' @rdname web_theme_minimal
-#' @export
-forest_theme_publication <- function() {
-  .Deprecated("web_theme_minimal")
-  web_theme_minimal()
-}
-
-#' @rdname web_theme_dark
-#' @export
-forest_theme_dark <- function() {
-  .Deprecated("web_theme_dark")
-  web_theme_dark()
-}
-
-# ============================================================================
-# Theme Collections
-# ============================================================================
-
-#' Get all package themes
-#'
-#' Returns a named list of all themes distributed with the package.
-#' This is the default value for `enable_themes` in `web_interaction()`.
-#'
-#' @return A named list of WebTheme objects
-#' @export
-#' @examples
-#' # Get all available themes
-#' themes <- package_themes()
-#' names(themes)
-#'
-#' # Use specific themes in interaction
-#' web_interaction(enable_themes = package_themes()[c("default", "modern")])
-package_themes <- function() {
-  list(
-    default = web_theme_default(),
-    minimal = web_theme_minimal(),
-    dark = web_theme_dark(),
-    jama = web_theme_jama(),
-    lancet = web_theme_lancet(),
-    modern = web_theme_modern(),
-    presentation = web_theme_presentation(),
-    cochrane = web_theme_cochrane(),
-    nature = web_theme_nature()
-  )
-}
+)

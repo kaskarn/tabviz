@@ -345,7 +345,7 @@ export function createForestStore() {
       scale,
       nullValue,
       forestWidth,
-      pointSize: spec.theme.shapes.pointSize,
+      pointSize: spec.theme.plot.pointSize,
       effects,
       pointCol,
       lowerCol,
@@ -788,9 +788,9 @@ export function createForestStore() {
     // column groups split the band into two 12-15 px sub-tracks. The min
     // = (font height + 6 px breathing) × headerDepth ensures multi-tier
     // headers never visually clip regardless of the theme.
-    const lineHeight = spec.theme.typography.lineHeight ?? 1.5;
-    const headerFontSize = parseFontSize(spec.theme.typography.fontSizeBase);
-    const headerScale = spec.theme.typography.headerFontScale ?? 1.05;
+    const lineHeight = 1.5;
+    const headerFontSize = parseFontSize(spec.theme.text.body.size);
+    const headerScale = 1.05;
     const minHeaderRowHeight = Math.ceil(headerFontSize * headerScale * lineHeight) + 6;
     const headerDepthForLayout = anyForestColumnGroups(spec.columns) ? 2 : 1;
     const headerHeight = Math.max(
@@ -808,9 +808,9 @@ export function createForestStore() {
       fc => !!fc.column.options?.forest?.axisLabel,
     );
     const axisGeom = computeAxisLayout(
-      { fontSizeSm: spec.theme.typography.fontSizeSm, lineHeight: spec.theme.typography.lineHeight ?? 1.5 },
+      { fontSizeSm: spec.theme.text.label.size, lineHeight: 1.5 },
       someColumnHasAxisLabel,
-      spec.theme.shapes.tickMarkLength,
+      spec.theme.plot.tickMarkLength,
     );
     const axisHeight = axisGap + axisGeom.axisRegionHeight;
     const hasForest = forestColumns.length > 0;
@@ -833,7 +833,7 @@ export function createForestStore() {
     // CSS rule) so the overlay / axis Y positions land on the same row
     // edges the DOM actually renders. Spacer rows stay half-height.
     const rowGroupPadding = spec.theme.spacing.rowGroupPadding ?? 0;
-    const dataLineHeightPx = Math.ceil(parseFontSize(spec.theme.typography.fontSizeBase) * lineHeight);
+    const dataLineHeightPx = Math.ceil(parseFontSize(spec.theme.text.body.size) * lineHeight);
     const rowHeights: number[] = [];
     // rowGroupPadding (v0.24.1+) lives as bottom margin on the LAST
     // data row of the previous top-level group, not as a top strip
@@ -1016,8 +1016,8 @@ export function createForestStore() {
     if (!spec || typeof document === 'undefined') return;
 
     // Get font from theme
-    const fontFamily = spec.theme.typography.fontFamily;
-    let fontSize = spec.theme.typography.fontSizeBase;
+    const fontFamily = spec.theme.text.body.family;
+    let fontSize = spec.theme.text.body.size;
 
     // Convert rem/em to px using actual document root font size
     // (don't assume 16px - user may have accessibility settings or custom base)
@@ -1055,9 +1055,9 @@ export function createForestStore() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Header cells use scaled font size (theme.typography.headerFontScale, default 1.05)
+    // Header cells use scaled font size (1.05, default 1.05)
     // Parse the font size and scale it for headers
-    const headerFontScale = spec.theme.typography.headerFontScale ?? 1.05;
+    const headerFontScale = 1.05;
     let headerFontSize = fontSize;
     if (typeof fontSize === 'string') {
       const match = fontSize.match(/^([\d.]+)(px|rem|em)$/);
@@ -1069,7 +1069,7 @@ export function createForestStore() {
 
     // Font strings for headers (bold, scaled size) and data cells (normal)
     // Use actual theme fontWeightBold (varies by theme: 600 or 700)
-    const fontWeightBold = spec.theme.typography.fontWeightBold ?? 600;
+    const fontWeightBold = 600;
     const headerFont = `${fontWeightBold} ${headerFontSize} ${fontFamily}`;
     const dataFont = `${fontSize} ${fontFamily}`;
 
@@ -2256,21 +2256,63 @@ export function createForestStore() {
 
   /** Apply a single in-panel theme edit. Mutates spec.theme so the widget
    *  re-renders, and records the change so it can be exported as R code. */
-  function setThemeField(section: string, field: string, value: unknown) {
+  /**
+   * Set a theme field at a deep path. Path is a list of strings (object
+   * keys) and/or numbers (list indices). Returns nothing; mutates spec
+   * with a fresh `theme` reference at every level so Svelte 5 fine-grained
+   * reactivity invalidates downstream `$derived` / `@const` reads.
+   *
+   * Backward-compat: the old (section, field, value) call form works too
+   * via overload — internally constructs a 2-step path.
+   */
+  function setThemeField(...args: unknown[]) {
     if (!spec || !spec.theme) return;
-    const theme = spec.theme as Record<string, unknown>;
-    const current = theme[section];
-    if (!current || typeof current !== "object") return;
-    (current as Record<string, unknown>)[field] = value;
-    // Track for source-gen. Clone the per-section object so Svelte picks up
-    // the reactivity cleanly (runes see the top-level key change).
+    let path: (string | number)[];
+    let value: unknown;
+    if (args.length === 3 && typeof args[0] === "string" && typeof args[1] === "string") {
+      path = [args[0] as string, args[1] as string];
+      value = args[2];
+    } else if (args.length === 2 && Array.isArray(args[0])) {
+      path = args[0] as (string | number)[];
+      value = args[1];
+    } else {
+      return;
+    }
+    if (path.length === 0) return;
+
+    const updateAt = (obj: unknown, p: (string | number)[]): unknown => {
+      const key = p[0];
+      if (p.length === 1) {
+        if (Array.isArray(obj)) {
+          const next = [...obj];
+          next[key as number] = value;
+          return next;
+        }
+        return { ...(obj as Record<string, unknown>), [key as string]: value };
+      }
+      if (Array.isArray(obj)) {
+        const next = [...obj];
+        next[key as number] = updateAt(obj[key as number], p.slice(1));
+        return next;
+      }
+      const cur = (obj as Record<string, unknown>)?.[key as string];
+      return { ...(obj as Record<string, unknown>), [key as string]: updateAt(cur, p.slice(1)) };
+    };
+
+    spec = { ...spec, theme: updateAt(spec.theme, path) as Spec["theme"] };
+
+    // Track for source-gen. Group by top-level path step.
+    const section = String(path[0]);
     const nextEdits = { ...themeEdits };
-    nextEdits[section] = { ...(nextEdits[section] ?? {}), [field]: value };
+    if (path.length === 2 && typeof path[1] === "string") {
+      nextEdits[section] = { ...(nextEdits[section] ?? {}), [path[1] as string]: value };
+    } else {
+      // Deep edit — store under a nested-path key.
+      const pathKey = path.slice(1).map(String).join(".");
+      nextEdits[section] = { ...(nextEdits[section] ?? {}), [pathKey]: value };
+    }
     themeEdits = nextEdits;
-    // If the edited section changes text metrics, invalidate widths and
-    // re-measure — otherwise the "Plot padding" slider, font-size bumps,
-    // marker-size tweaks etc. leave columns at their originally-measured
-    // widths and the layout looks unbalanced.
+
     if (WIDTH_AFFECTING_SECTIONS.has(section)) {
       columnWidths = {};
       measureAutoColumns();
@@ -2278,43 +2320,35 @@ export function createForestStore() {
   }
 
   /**
-   * Apply an edit to one field of one semantic token's bundle
-   * (e.g. `theme.semantics.emphasis.bg`). Separate from `setThemeField`
-   * because semantics is the one theme section whose fields are themselves
-   * objects (per-token bundles), not flat key-value pairs — both the
-   * spec-side mutation and the source-gen tracking need to step one level
-   * deeper.
+   * Apply an edit to one field of one row-level semantic bundle
+   * (e.g. `theme.row.emphasis.bg`). v2 stores semantics as nested
+   * RowSemantic bundles inside the row cluster.
    */
   function setSemanticField(
     token: "emphasis" | "muted" | "accent",
     field: string,
     value: unknown,
   ) {
-    if (!spec || !spec.theme?.semantics) return;
+    if (!spec || !spec.theme?.row) return;
 
-    // Fully-immutable path update: fresh reference at every level from spec
-    // down through the bundle. Ensures every `$derived` / `@const` reading
-    // through any of those levels invalidates — Svelte 5's fine-grained
-    // reactivity tracks reads at each signal hop, but deep mutation only
-    // invalidates the leaf. ForestPlot.svelte's per-row `@const` reads
-    // `theme` at the top level, so without a fresh `spec.theme` reference
-    // the row renderer wouldn't pick up bundle changes.
-    const prevSemantics = spec.theme.semantics as Record<string, Record<string, unknown>>;
-    const prevBundle = prevSemantics[token] ?? {};
+    const prevRow = spec.theme.row as Record<string, unknown> & {
+      [k in "emphasis" | "muted" | "accent"]: Record<string, unknown>;
+    };
+    const prevBundle = prevRow[token] ?? {};
     spec = {
       ...spec,
       theme: {
         ...spec.theme,
-        semantics: {
-          ...prevSemantics,
+        row: {
+          ...prevRow,
           [token]: { ...prevBundle, [field]: value },
         },
       },
     };
 
     const nextEdits = { ...themeEdits };
-    const prevSection = (nextEdits.semantics ?? {}) as Record<string, Record<string, unknown>>;
-    nextEdits.semantics = {
+    const prevSection = (nextEdits.row ?? {}) as Record<string, Record<string, unknown>>;
+    nextEdits.row = {
       ...prevSection,
       [token]: { ...(prevSection[token] ?? {}), [field]: value },
     };

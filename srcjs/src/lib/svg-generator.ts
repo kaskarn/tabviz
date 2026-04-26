@@ -246,9 +246,9 @@ function calculateSvgAutoWidths(
   columns: ColumnSpec[]
 ): Map<string, number> {
   const widths = new Map<string, number>();
-  const fontSize = parseFontSize(spec.theme.typography.fontSizeBase);
-  // Header cells use scaled font size (theme.typography.headerFontScale, default 1.05)
-  const headerFontScale = spec.theme.typography.headerFontScale ?? 1.05;
+  const fontSize = parseFontSize(spec.theme.text.body.size);
+  // Header cells use scaled font size (1.05, default 1.05)
+  const headerFontScale = 1.05;
   // Round to 2 decimal places to avoid floating point precision issues
   const headerFontSize = Math.round(fontSize * headerFontScale * 100) / 100;
   const rows = spec.data.rows;
@@ -440,7 +440,7 @@ function countGroupDescendantRows(
  * Calculate primary (leftmost) column width based on actual label content.
  */
 function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | undefined): number {
-  const fontSize = parseFontSize(spec.theme.typography.fontSizeBase);
+  const fontSize = parseFontSize(spec.theme.text.body.size);
   // Use theme-based padding (not hardcoded magic numbers)
   const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
   let maxWidth = 0;
@@ -506,7 +506,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
       if (showGroupCounts) {
         const rowCount = countGroupDescendantRows(group.id, groups, spec.data.rows);
         const countText = `(${rowCount})`;
-        const countFontSize = fontSize * 0.75; // matches theme.typography.fontSizeSm
+        const countFontSize = fontSize * 0.75; // matches theme.text.label.size
         countWidth = estimateTextWidth(countText, countFontSize) + GROUP_HEADER.GAP;
       }
 
@@ -576,9 +576,9 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // Auto-grow when the theme value is smaller than what the current font
   // (× headerFontScale × line-height) needs — matches forestStore.layout.
   const headerDepth = hasGroups ? 2 : 1;
-  const headerLineHeight = theme.typography.lineHeight ?? 1.5;
-  const headerScale = theme.typography.headerFontScale ?? 1.05;
-  const headerFontPx = parseFontSize(theme.typography.fontSizeBase) * headerScale;
+  const headerLineHeight = 1.5;
+  const headerScale = 1.05;
+  const headerFontPx = parseFontSize(theme.text.body.size) * headerScale;
   const minHeaderRow = Math.ceil(headerFontPx * headerLineHeight) + 6;
   const effectiveHeaderHeight = Math.max(theme.spacing.headerHeight, minHeaderRow * headerDepth);
   const actualRowHeight = effectiveHeaderHeight / headerDepth;
@@ -599,17 +599,17 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // line height). Pre-v0.21.x these used hardcoded TYPOGRAPHY.*_HEIGHT
   // constants tuned for the default font profile, which truncated the
   // title (or padded too much) when users picked larger / smaller fonts.
-  const lineHeight = theme.typography.lineHeight ?? 1.5;
-  const titleHeight = hasTitle ? textRegionHeight(theme.typography.fontSizeLg, lineHeight) : 0;
-  const subtitleHeight = hasSubtitle ? textRegionHeight(theme.typography.fontSizeBase, lineHeight) : 0;
+  const lineHeight = 1.5;
+  const titleHeight = hasTitle ? textRegionHeight(theme.text.subtitle.size, lineHeight) : 0;
+  const subtitleHeight = hasSubtitle ? textRegionHeight(theme.text.body.size, lineHeight) : 0;
   // Title↔subtitle gap is themable via spacing.title_subtitle_gap (default
   // 13 to mirror the live widget's PlotHeader CSS chain margin+border+
   // padding = 6+1+6).
   const titleSubtitleGap = (hasTitle && hasSubtitle) ? (theme.spacing.titleSubtitleGap ?? 13) : 0;
   const headerTextHeight = titleHeight + titleSubtitleGap + subtitleHeight + (hasTitle || hasSubtitle ? padding : 0);
 
-  const captionHeight = hasCaption ? textRegionHeight(theme.typography.fontSizeSm, lineHeight) : 0;
-  const footnoteHeight = hasFootnote ? textRegionHeight(theme.typography.fontSizeSm, lineHeight) : 0;
+  const captionHeight = hasCaption ? textRegionHeight(theme.text.label.size, lineHeight) : 0;
+  const footnoteHeight = hasFootnote ? textRegionHeight(theme.text.label.size, lineHeight) : 0;
   // Pre-spacing above the caption is already supplied by `footerGap`;
   // adding `padding` here too double-counted the air between axis end
   // and caption text. Remove and let footerGap own that gap exclusively.
@@ -666,7 +666,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   });
   const wrapLineCounts: Record<string, number> = {};
   if (wrapEnabledCols.length > 0) {
-    const dataFontSize = parseFontSize(theme.typography.fontSizeBase);
+    const dataFontSize = parseFontSize(theme.text.body.size);
     const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
     for (const row of spec.data.rows) {
       let maxLines = 1;
@@ -699,7 +699,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // symmetric CSS padding in the live widget) so the forest/axis Y
   // positions line up with the visible row edges in the export.
   const rowGroupPadding = theme.spacing.rowGroupPadding ?? 0;
-  const dataLineHeightPx = Math.ceil(parseFontSize(theme.typography.fontSizeBase) * (theme.typography.lineHeight ?? 1.5));
+  const dataLineHeightPx = Math.ceil(parseFontSize(theme.text.body.size) * (1.5));
   // rowPaddedAfter[i]: data row i directly precedes a top-level
   // group_header. Walk forward once to mark each affected data row;
   // its track will be inflated by rowGroupPadding (cell content stays
@@ -810,9 +810,9 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     return false;
   });
   const axisLayout = computeAxisLayout(
-    { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
+    { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
     someColumnHasAxisLabel,
-    theme.shapes.tickMarkLength,
+    theme.plot.tickMarkLength,
   );
   const webAxisHeight = hasAxisColumn ? axisGap + axisLayout.axisRegionHeight : 0;
   // Include the themed footer gap when there's a footer to render — the
@@ -865,7 +865,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // the axis region in the export.
     footerY: headerTextHeight + padding + headerHeight + plotHeight + webAxisHeight
            + (theme.spacing.footerGap ?? 8)
-           + Math.round(parseFontSize(theme.typography.fontSizeSm) * 0.85),
+           + Math.round(parseFontSize(theme.text.label.size) * 0.85),
     axisGap,
     rowsHeight,
     autoWidths,
@@ -1284,7 +1284,7 @@ function computeXScaleAndClip(spec: WebSpec, forestWidth: number, forestSettings
     scale: forestSettings.scale,
     nullValue: forestSettings.nullValue,
     forestWidth,
-    pointSize: spec.theme.shapes.pointSize,
+    pointSize: spec.theme.plot.pointSize,
     effects: forestSettings.effects,
     pointCol: forestSettings.pointCol,
     lowerCol: forestSettings.lowerCol,
@@ -1320,33 +1320,33 @@ function renderHeader(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
   const padding = theme.spacing.padding;
 
   if (spec.labels?.title) {
-    const fontSize = parseFontSize(theme.typography.fontSizeLg);
+    const fontSize = parseFontSize(theme.text.subtitle.size);
     lines.push(`<text x="${padding}" y="${layout.titleY}"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${theme.typography.fontWeightBold}"
-      fill="${theme.colors.foreground}">${escapeXml(spec.labels.title)}</text>`);
+      font-weight="${600}"
+      fill="${theme.content.primary}">${escapeXml(spec.labels.title)}</text>`);
   }
 
   if (spec.labels?.subtitle) {
-    const fontSize = parseFontSize(theme.typography.fontSizeBase);
+    const fontSize = parseFontSize(theme.text.body.size);
     lines.push(`<text x="${padding}" y="${layout.subtitleY}"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${theme.typography.fontWeightNormal}"
-      fill="${theme.colors.secondary}">${escapeXml(spec.labels.subtitle)}</text>`);
+      font-weight="${400}"
+      fill="${theme.content.secondary}">${escapeXml(spec.labels.subtitle)}</text>`);
   }
 
   // Thin separator line between title and subtitle (only when both exist)
   // Web CSS has 6px padding-top on subtitle after the border, so position separator
   // to leave 6px gap between it and the subtitle text top
   if (spec.labels?.title && spec.labels?.subtitle) {
-    const subtitleFontSize = parseFontSize(theme.typography.fontSizeBase);
+    const subtitleFontSize = parseFontSize(theme.text.body.size);
     const subtitleAscent = subtitleFontSize * 0.75; // Approximate ascent (text top from baseline)
     const separatorY = layout.subtitleY - subtitleAscent - 6; // 6px gap like web CSS padding-top
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${separatorY}" y2="${separatorY}"
-      stroke="${theme.colors.border}" stroke-width="1" opacity="0.3"/>`);
+      stroke="${theme.divider.subtle}" stroke-width="1" opacity="0.3"/>`);
   }
 
   return lines.join("\n");
@@ -1366,29 +1366,29 @@ function renderFooter(spec: WebSpec, layout: InternalLayout, theme: WebTheme): s
     const borderY = layout.footerY - gap;
     lines.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${borderY}" y2="${borderY}"
-      stroke="${theme.colors.border}" stroke-width="1"/>`);
+      stroke="${theme.divider.subtle}" stroke-width="1"/>`);
   }
 
   if (spec.labels?.caption) {
-    const fontSize = parseFontSize(theme.typography.fontSizeSm);
+    const fontSize = parseFontSize(theme.text.label.size);
     lines.push(`<text x="${padding}" y="${y}"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${theme.typography.fontWeightNormal}"
-      fill="${theme.colors.secondary}">${escapeXml(spec.labels.caption)}</text>`);
+      font-weight="${400}"
+      fill="${theme.content.secondary}">${escapeXml(spec.labels.caption)}</text>`);
     // Advance Y by the caption's actual line height — derived from
     // typography rather than the hardcoded 16px constant.
-    y += textRegionHeight(theme.typography.fontSizeSm, theme.typography.lineHeight ?? 1.5);
+    y += textRegionHeight(theme.text.label.size, 1.5);
   }
 
   if (spec.labels?.footnote) {
-    const fontSize = parseFontSize(theme.typography.fontSizeSm);
+    const fontSize = parseFontSize(theme.text.label.size);
     lines.push(`<text x="${padding}" y="${y}"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${theme.typography.fontWeightNormal}"
+      font-weight="${400}"
       font-style="italic"
-      fill="${theme.colors.muted}">${escapeXml(spec.labels.footnote)}</text>`);
+      fill="${theme.content.muted}">${escapeXml(spec.labels.footnote)}</text>`);
   }
 
   return lines.join("\n");
@@ -1409,37 +1409,19 @@ function renderGroupHeader(
 
   // Get level-based styling (depth is 0-indexed, level is 1-indexed)
   const level = depth + 1;
-  const gh = theme.groupHeaders;
+  const tier = level === 1 ? theme.rowGroup.L1
+             : level === 2 ? theme.rowGroup.L2
+             : theme.rowGroup.L3;
 
-  let fontSize: number;
-  let fontWeight: number;
-  let italic: boolean;
-  let background: string | null;
-  let borderBottom: boolean;
-
-  if (level === 1) {
-    fontSize = parseFontSize(gh?.level1FontSize ?? theme.typography.fontSizeBase);
-    fontWeight = gh?.level1FontWeight ?? theme.typography.fontWeightBold;
-    italic = gh?.level1Italic ?? false;
-    background = gh?.level1Background ?? null;
-    borderBottom = gh?.level1BorderBottom ?? false;
-  } else if (level === 2) {
-    fontSize = parseFontSize(gh?.level2FontSize ?? theme.typography.fontSizeBase);
-    fontWeight = gh?.level2FontWeight ?? theme.typography.fontWeightMedium;
-    italic = gh?.level2Italic ?? true;
-    background = gh?.level2Background ?? null;
-    borderBottom = gh?.level2BorderBottom ?? false;
-  } else {
-    fontSize = parseFontSize(gh?.level3FontSize ?? theme.typography.fontSizeBase);
-    fontWeight = gh?.level3FontWeight ?? theme.typography.fontWeightNormal;
-    italic = gh?.level3Italic ?? false;
-    background = gh?.level3Background ?? null;
-    borderBottom = gh?.level3BorderBottom ?? false;
-  }
+  const fontSize = parseFontSize(tier.text?.size ?? theme.text.body.size);
+  const fontWeight = tier.text?.weight ?? (level === 1 ? 600 : level === 2 ? 500 : 400);
+  const italic = tier.text?.italic ?? false;
+  let background: string | null = tier.bg ?? null;
+  const borderBottom = tier.borderBottom ?? false;
 
   // Compute background from primary if not explicitly set
   if (!background) {
-    const primary = theme.colors.primary;
+    const primary = theme.accent.default;
     const opacity = level === 1 ? 0.15 : level === 2 ? 0.10 : 0.06;
     // Parse hex and create rgba
     const hex = primary.replace("#", "");
@@ -1451,7 +1433,7 @@ function renderGroupHeader(
 
   // Use row center - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
-  const indent = depth * (gh?.indentPerLevel ?? SPACING.INDENT_PER_LEVEL);
+  const indent = depth * (theme.rowGroup.indentPerLevel ?? SPACING.INDENT_PER_LEVEL);
 
   // Group header background (skipped when the row is painted by the banding
   // layer — lets the band color read as continuous with its member rows).
@@ -1464,31 +1446,31 @@ function renderGroupHeader(
   // Border bottom if enabled
   if (borderBottom) {
     lines.push(`<line x1="${x}" x2="${x + totalWidth}" y1="${y + rowHeight}" y2="${y + rowHeight}"
-      stroke="${theme.colors.border}" stroke-width="1" opacity="0.5"/>`);
+      stroke="${theme.divider.subtle}" stroke-width="1" opacity="0.5"/>`);
   }
 
   // Group header text (label)
   const fontStyle = italic ? ' font-style="italic"' : '';
   const labelX = x + SPACING.TEXT_PADDING + indent;
   lines.push(`<text class="cell-text" x="${labelX}" y="${textY}"
-    font-family="${theme.typography.fontFamily}"
+    font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"${fontStyle}
-    fill="${theme.colors.foreground}">${escapeXml(label)}</text>`);
+    fill="${theme.content.primary}">${escapeXml(label)}</text>`);
 
   // Row count (e.g., "(15)") - smaller muted text after label
   // Web CSS: font-weight: normal, color: muted, font-size: 0.75rem
   if (rowCount > 0) {
     // Use smart measurement: canvas in browser, estimation in V8/Node
     // measureTextWidth handles font-weight adjustment internally
-    const labelWidth = measureTextWidth(label, fontSize, theme.typography.fontFamily, fontWeight);
+    const labelWidth = measureTextWidth(label, fontSize, theme.text.body.family, fontWeight);
     const countX = labelX + labelWidth + 6; // 6px gap (matches web's flex gap)
-    const countFontSize = parseFontSize(theme.typography.fontSizeSm ?? "0.75rem");
+    const countFontSize = parseFontSize(theme.text.label.size ?? "0.75rem");
     lines.push(`<text class="cell-text" x="${countX}" y="${textY}"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${countFontSize}px"
-      font-weight="${theme.typography.fontWeightNormal}"
-      fill="${theme.colors.muted}">(${rowCount})</text>`);
+      font-weight="${400}"
+      fill="${theme.content.muted}">(${rowCount})</text>`);
   }
 
   return lines.join("\n");
@@ -1696,13 +1678,13 @@ function renderInterval(
     return "";
   }
 
-  const baseSize = theme.shapes.pointSize;
-  const lineWidth = theme.shapes.lineWidth;
-  const defaultLineColor = theme.colors.intervalLine;
+  const baseSize = theme.plot.pointSize;
+  const lineWidth = theme.plot.lineWidth;
+  const defaultLineColor = theme.summary.stroke;
 
   // Check if this is a summary row (should render diamond)
   const isSummaryRow = row.style?.type === 'summary';
-  const diamondHeight = theme.shapes.summaryHeight;
+  const diamondHeight = 10;
   const halfDiamondHeight = diamondHeight / 2;
 
   // Helper to get point size for an effect
@@ -1733,8 +1715,8 @@ function renderInterval(
     const markerStyle = row.markerStyle;
 
     // Theme effect defaults for multi-effect plots
-    const themeEffectColors = theme.shapes.effectColors;
-    const themeMarkerShapes = theme.shapes.markerShapes;
+    const themeEffectColors = theme.series.map(s => s.fill);
+    const themeMarkerShapes = (["square","circle","diamond","triangle"]);
     const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
 
     // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color.
@@ -1746,11 +1728,11 @@ function renderInterval(
     if (effect.color) {
       baseColor = effect.color;
     } else if (isSummaryRow && isPrimary) {
-      baseColor = theme.colors.summaryFill;
+      baseColor = theme.summary.fill;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {
-      baseColor = theme.colors.primary ?? "#2563eb";
+      baseColor = theme.accent.default ?? "#2563eb";
     }
 
     // Apply Layers 3+4 via the shared cascade resolver
@@ -1765,7 +1747,7 @@ function renderInterval(
     // Shape priority:
     // 1. Primary effect: row.markerStyle.shape (if set)
     // 2. effect.shape (if set)
-    // 3. theme.shapes.markerShapes[idx] (if defined)
+    // 3. (["square","circle","diamond","triangle"])[idx] (if defined)
     // 4. Default shapes: square, circle, diamond, triangle (cycling)
     let shape: MarkerShape;
     if (isPrimary && markerStyle?.shape) {
@@ -1848,7 +1830,7 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"
-            fill="${style.fill}"${opacityAttr} stroke="${theme.colors.summaryBorder}" stroke-width="1"/>
+            fill="${style.fill}"${opacityAttr} stroke="${theme.summary.stroke}" stroke-width="1"/>
         </g>`);
     } else {
       // Regular row: CI line with whiskers and marker
@@ -1934,7 +1916,7 @@ function renderDiamond(
   forestWidth: number,
   theme: WebTheme
 ): string {
-  const diamondHeight = theme.shapes.summaryHeight;
+  const diamondHeight = 10;
   const halfHeight = diamondHeight / 2;
 
   // Get scale range bounds for clamping
@@ -1960,8 +1942,8 @@ function renderDiamond(
   ].join(" ");
 
   return `<polygon points="${points}"
-    fill="${theme.colors.summaryFill}"
-    stroke="${theme.colors.summaryBorder}"
+    fill="${theme.summary.fill}"
+    stroke="${theme.summary.stroke}"
     stroke-width="1"/>`;
 }
 
@@ -2032,7 +2014,7 @@ function renderVizBar(
   const barHeight = Math.max(4, adjustedBarHeight);
 
   // Default colors from theme
-  const defaultColors = theme.shapes.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
 
   effects.forEach((effect, idx) => {
     const value = row.metadata[effect.value] as number | undefined;
@@ -2124,10 +2106,10 @@ function renderVizBoxplot(
   const boxHeight = Math.max(8, (totalHeight - (numEffects - 1) * boxGap) / numEffects);
 
   // Default colors
-  const defaultColors = theme.shapes.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
-  const lineColor = theme.colors.foreground ?? "#1a1a1a";
-  const themeLineWidth = theme.shapes.lineWidth ?? 1.5;
-  const outlierR = (theme.shapes.pointSize ?? 6) * 0.4;
+  const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const lineColor = theme.content.primary ?? "#1a1a1a";
+  const themeLineWidth = theme.plot.lineWidth ?? 1.5;
+  const outlierR = (theme.plot.pointSize ?? 6) * 0.4;
 
   effects.forEach((effect, idx) => {
     const stats = effectStats[idx];
@@ -2255,9 +2237,9 @@ function renderVizViolin(
   const maxWidth = violinHeight / 2;
 
   // Default colors
-  const defaultColors = theme.shapes.effectColors ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
-  const lineColor = theme.colors.foreground ?? "#1a1a1a";
-  const themeLineWidth = theme.shapes.lineWidth ?? 1.5;
+  const defaultColors = theme.series.map(s => s.fill) ?? ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
+  const lineColor = theme.content.primary ?? "#1a1a1a";
+  const themeLineWidth = theme.plot.lineWidth ?? 1.5;
   // Violin outline reads thinner than a forest-plot stroke by convention;
   // scale from theme so bumping shapes.lineWidth still thickens the violin.
   const violinStrokeDefault = themeLineWidth * 0.33;
@@ -2505,11 +2487,11 @@ function renderVizAxis(
   isLog: boolean = false
 ): string {
   const lines: string[] = [];
-  const fontSize = parseFontSize(theme.typography.fontSizeSm);
+  const fontSize = parseFontSize(theme.text.label.size);
   const axisGeom = computeAxisLayout(
-    { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
+    { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
     !!axisLabel,
-    theme.shapes.tickMarkLength,
+    theme.plot.tickMarkLength,
   );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
@@ -2528,7 +2510,7 @@ function renderVizAxis(
 
   // Axis line
   lines.push(`<line x1="${vizX}" x2="${vizX + vizWidth}"
-    y1="0" y2="0" stroke="${theme.colors.border}" stroke-width="1"/>`);
+    y1="0" y2="0" stroke="${theme.divider.subtle}" stroke-width="1"/>`);
 
   // Generate "nice" ticks sized to the column width, then filter to keep
   // label spacing above the minimum pixel threshold.
@@ -2584,23 +2566,23 @@ function renderVizAxis(
     const xOffset = getTextXOffset(tickX);
     const label = formatNumber(tick);
 
-    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${theme.colors.border}" stroke-width="1"/>`);
+    lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}" stroke="${theme.divider.subtle}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY}"
       text-anchor="${textAnchor}"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${theme.typography.fontWeightNormal}"
-      fill="${theme.colors.foreground}">${label}</text>`);
+      font-weight="${400}"
+      fill="${theme.content.primary}">${label}</text>`);
   }
 
   // Axis label
   if (axisLabel) {
     lines.push(`<text x="${vizX + vizWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${theme.typography.fontWeightMedium}"
-      fill="${theme.colors.foreground}">${escapeXml(axisLabel)}</text>`);
+      font-weight="${500}"
+      fill="${theme.content.primary}">${escapeXml(axisLabel)}</text>`);
   }
 
   return lines.join("\n");
@@ -2626,11 +2608,11 @@ function renderForestAxis(
     : SPACING.DEFAULT_TICK_COUNT;
 
   const ticks = filterAxisTicks(xScale, tickCount, theme, nullValue, forestWidth, baseTicks);
-  const fontSize = parseFontSize(theme.typography.fontSizeSm);
+  const fontSize = parseFontSize(theme.text.label.size);
   const axisGeom = computeAxisLayout(
-    { fontSizeSm: theme.typography.fontSizeSm, lineHeight: theme.typography.lineHeight ?? 1.5 },
+    { fontSizeSm: theme.text.label.size, lineHeight: 1.5 },
     !!axisLabel,
-    theme.shapes.tickMarkLength,
+    theme.plot.tickMarkLength,
   );
 
   const EDGE_THRESHOLD = AXIS.EDGE_THRESHOLD;
@@ -2649,7 +2631,7 @@ function renderForestAxis(
 
   // Axis line
   lines.push(`<line x1="${forestX}" x2="${forestX + forestWidth}"
-    y1="0" y2="0" stroke="${theme.colors.border}" stroke-width="1"/>`);
+    y1="0" y2="0" stroke="${theme.divider.subtle}" stroke-width="1"/>`);
 
   // Gridlines (behind ticks) — mirrors EffectAxis.svelte; opt-in via
   // theme.axis.gridlines, styled per theme.axis.gridlineStyle.
@@ -2660,7 +2642,7 @@ function renderForestAxis(
     for (const tick of ticks) {
       const x = forestX + xScale(tick);
       lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${-layout.plotHeight}"
-        stroke="${theme.colors.border}" stroke-width="1"${dashAttr} opacity="0.5"/>`);
+        stroke="${theme.divider.subtle}" stroke-width="1"${dashAttr} opacity="0.5"/>`);
     }
   }
 
@@ -2672,22 +2654,22 @@ function renderForestAxis(
     const xOffset = getTextXOffset(tickX);
 
     lines.push(`<line x1="${x}" x2="${x}" y1="0" y2="${axisGeom.tickMarkLength}"
-      stroke="${theme.colors.border}" stroke-width="1"/>`);
+      stroke="${theme.divider.subtle}" stroke-width="1"/>`);
     lines.push(`<text x="${x + xOffset}" y="${axisGeom.tickLabelY + 2}" text-anchor="${textAnchor}"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${theme.typography.fontWeightNormal}"
-      fill="${theme.colors.secondary}">${formatTick(tick)}</text>`);
+      font-weight="${400}"
+      fill="${theme.content.secondary}">${formatTick(tick)}</text>`);
   }
 
   // Axis label
   if (axisLabel) {
     lines.push(`<text x="${forestX + forestWidth / 2}" y="${axisGeom.axisLabelY}"
       text-anchor="middle"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
-      font-weight="${theme.typography.fontWeightMedium}"
-      fill="${theme.colors.secondary}">${escapeXml(axisLabel)}</text>`);
+      font-weight="${500}"
+      fill="${theme.content.secondary}">${escapeXml(axisLabel)}</text>`);
   }
 
   // Position axis at: mainY + headerHeight + rowsHeight + axisGap
@@ -2714,13 +2696,13 @@ function renderUnifiedColumnHeaders(
   showLabelHeader: boolean = true
 ): string {
   const lines: string[] = [];
-  const baseFontSize = parseFontSize(theme.typography.fontSizeBase);
-  const headerFontScale = theme.typography.headerFontScale ?? 1.05;
+  const baseFontSize = parseFontSize(theme.text.body.size);
+  const headerFontScale = 1.05;
   // Round to 2 decimal places to avoid floating point precision issues
   const fontSize = Math.round(baseFontSize * headerFontScale * 100) / 100;
   // All header cells use bold weight to match web view CSS (.header-cell { font-weight: bold })
-  const fontWeight = theme.typography.fontWeightBold;
-  const boldWeight = theme.typography.fontWeightBold;
+  const fontWeight = 600;
+  const boldWeight = 600;
   const hasGroups = hasColumnGroups(columnDefs);
 
   // Use row center - dominant-baseline:central handles vertical alignment
@@ -2736,10 +2718,10 @@ function renderUnifiedColumnHeaders(
     // Label column spans both rows
     if (showLabelHeader) {
       lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
-        font-family="${theme.typography.fontFamily}"
+        font-family="${theme.text.body.family}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
-        fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+        fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(labelHeader)}</text>`);
     }
     currentX += labelWidth;
 
@@ -2756,11 +2738,11 @@ function renderUnifiedColumnHeaders(
         }, 0);
         const textX = currentX + groupWidth / 2;
         lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, row1Height)}"
-          font-family="${theme.typography.fontFamily}"
+          font-family="${theme.text.body.family}"
           font-size="${fontSize}px"
           font-weight="${boldWeight}"
           text-anchor="middle"
-          fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(col.header)}</text>`);
+          fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(col.header)}</text>`);
         groupBorders.push({ x1: currentX, x2: currentX + groupWidth });
         currentX += groupWidth;
       } else {
@@ -2771,11 +2753,11 @@ function renderUnifiedColumnHeaders(
           const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
           const truncatedHeader = truncateText(col.header, width, fontSize, pad);
           lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
-            font-family="${theme.typography.fontFamily}"
+            font-family="${theme.text.body.family}"
             font-size="${fontSize}px"
             font-weight="${fontWeight}"
             text-anchor="${anchor}"
-            fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+            fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(truncatedHeader)}</text>`);
         }
         currentX += width;
       }
@@ -2785,7 +2767,7 @@ function renderUnifiedColumnHeaders(
     for (const border of groupBorders) {
       lines.push(`<line x1="${border.x1}" x2="${border.x2}"
         y1="${y + row1Height}" y2="${y + row1Height}"
-        stroke="${theme.colors.border}" stroke-width="1"/>`);
+        stroke="${theme.divider.subtle}" stroke-width="1"/>`);
     }
 
     // Row 2: Sub-column headers
@@ -2801,11 +2783,11 @@ function renderUnifiedColumnHeaders(
               const pad = isVizType(sub.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
               const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
               lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
-                font-family="${theme.typography.fontFamily}"
+                font-family="${theme.text.body.family}"
                 font-size="${fontSize}px"
                 font-weight="${fontWeight}"
                 text-anchor="${anchor}"
-                fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(sub.header)}</text>`);
+                fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(sub.header)}</text>`);
             }
             currentX += width;
           }
@@ -2820,10 +2802,10 @@ function renderUnifiedColumnHeaders(
 
     if (showLabelHeader) {
       lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
-        font-family="${theme.typography.fontFamily}"
+        font-family="${theme.text.body.family}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
-        fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(labelHeader)}</text>`);
+        fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(labelHeader)}</text>`);
     }
     currentX += labelWidth;
 
@@ -2838,11 +2820,11 @@ function renderUnifiedColumnHeaders(
         const truncatedHeader = truncateText(col.header, width, fontSize, pad);
 
         lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
-          font-family="${theme.typography.fontFamily}"
+          font-family="${theme.text.body.family}"
           font-size="${fontSize}px"
           font-weight="${fontWeight}"
           text-anchor="${anchor}"
-          fill="${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground}">${escapeXml(truncatedHeader)}</text>`);
+          fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(truncatedHeader)}</text>`);
       }
       currentX += width;
     }
@@ -2871,7 +2853,7 @@ function renderUnifiedTableRow(
   allRows: Row[] = []
 ): string {
   const lines: string[] = [];
-  const fontSize = parseFontSize(theme.typography.fontSizeBase);
+  const fontSize = parseFontSize(theme.text.body.size);
   // Use row center for text positioning - dominant-baseline:central handles vertical alignment
   const textY = y + rowHeight / 2;
 
@@ -2884,7 +2866,7 @@ function renderUnifiedTableRow(
   const semBundle = resolveSemanticBundle(row.style, theme);
   const fontWeight =
     semBundle?.fontWeight ??
-    ((row.style?.bold ?? false) ? theme.typography.fontWeightBold : theme.typography.fontWeightNormal);
+    ((row.style?.bold ?? false) ? 600 : 400);
   const fontStyle =
     semBundle?.fontStyle ??
     (row.style?.italic ? "italic" : "normal");
@@ -2894,13 +2876,13 @@ function renderUnifiedTableRow(
   } else if (semBundle?.fg) {
     textColor = semBundle.fg;
   } else {
-    textColor = theme.colors.cellForeground ?? theme.colors.foreground;
+    textColor = (theme.cell.fg ?? theme.content.primary);
   }
 
   // Don't truncate labels - they're the primary row identifier and the width
   // was already computed to fit them (either by browser measurement or SVG estimation)
   lines.push(`<text class="cell-text" x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
-    font-family="${theme.typography.fontFamily}"
+    font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"
     font-style="${fontStyle}"
@@ -2912,20 +2894,20 @@ function renderUnifiedTableRow(
     const badgeFontSize = fontSize * BADGE.FONT_SCALE;
     const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
     // Use smart measurement for accurate label width
-    const labelTextWidth = measureTextWidth(row.label, fontSize, theme.typography.fontFamily, fontWeight);
+    const labelTextWidth = measureTextWidth(row.label, fontSize, theme.text.body.family, fontWeight);
     const badgeX = x + SPACING.TEXT_PADDING + indent + labelTextWidth + BADGE.GAP;
-    const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.typography.fontFamily, theme.typography.fontWeightBold);
+    const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.text.body.family, 600);
     const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
     const badgeY = y + (rowHeight - badgeHeight) / 2;
 
     lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
-      rx="3" fill="${theme.colors.primary}" opacity="0.15"/>`);
+      rx="3" fill="${theme.accent.default}" opacity="0.15"/>`);
     lines.push(`<text class="cell-text" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
       text-anchor="middle"
-      font-family="${theme.typography.fontFamily}"
+      font-family="${theme.text.body.family}"
       font-size="${badgeFontSize}px"
-      font-weight="${theme.typography.fontWeightBold}"
-      fill="${theme.colors.primary}">${escapeXml(badgeText)}</text>`);
+      font-weight="${600}"
+      fill="${theme.accent.default}">${escapeXml(badgeText)}</text>`);
   }
 
   // Render each column at its position
@@ -2948,8 +2930,8 @@ function renderUnifiedTableRow(
       const computedMax = barMaxValues.get(col.field);
       const maxValue = col.options?.bar?.maxValue ?? computedMax ?? 100;
       const barScale = col.options?.bar?.scale ?? "linear";
-      const barColor = col.options?.bar?.color ?? theme.colors.primary;
-      const barHeight = theme.shapes.pointSize * 2;
+      const barColor = col.options?.bar?.color ?? theme.accent.default;
+      const barHeight = theme.plot.pointSize * 2;
       const textWidth = 50;
       const barAreaWidth = width - SPACING.TEXT_PADDING * 2 - textWidth;
       const barWidth = normalizeValue(barValue, 0, maxValue, barScale) * barAreaWidth;
@@ -2957,24 +2939,24 @@ function renderUnifiedTableRow(
       // Respect row styling for bar value text
       const rowStyle = row.style;
       const barFontWeight = (rowStyle?.bold || rowStyle?.emphasis)
-        ? theme.typography.fontWeightBold
-        : theme.typography.fontWeightNormal;
+        ? 600
+        : 400;
 
       lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${y + rowHeight / 2 - barHeight / 2}"
         width="${Math.max(0, barWidth)}" height="${barHeight}"
         fill="${barColor}" opacity="0.7" rx="2"/>`);
       lines.push(`<text class="cell-text" x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
-        font-family="${theme.typography.fontFamily}"
+        font-family="${theme.text.body.family}"
         font-size="${fontSize}px"
         font-weight="${barFontWeight}"
         text-anchor="end"
-        fill="${theme.colors.foreground}">${formatNumber(barValue)}</text>`);
+        fill="${theme.content.primary}">${formatNumber(barValue)}</text>`);
     } else if (col.type === "sparkline" && Array.isArray(row.metadata[col.field])) {
       // Render sparkline
       const raw = row.metadata[col.field] as number[] | number[][];
       const data: number[] = Array.isArray(raw[0]) ? (raw[0] as number[]) : (raw as number[]);
       const sparkHeight = col.options?.sparkline?.height ?? 16;
-      const sparkColor = col.options?.sparkline?.color ?? theme.colors.primary;
+      const sparkColor = col.options?.sparkline?.color ?? theme.accent.default;
       const sparkPadding = SPACING.TEXT_PADDING * 2;
       const path = renderSparklinePath(data, currentX + SPACING.TEXT_PADDING, y + rowHeight / 2 - sparkHeight / 2, width - sparkPadding, sparkHeight);
       lines.push(`<path d="${path}" fill="none" stroke="${sparkColor}" stroke-width="1.5"/>`);
@@ -2988,8 +2970,8 @@ function renderUnifiedTableRow(
 
         const variants = col.options?.badge?.variants;
         const customColors = col.options?.badge?.colors;
-        let badgeColor = theme.colors.primary;
-        let badgeTextColor = theme.colors.primary;
+        let badgeColor = theme.accent.default;
+        let badgeTextColor = theme.accent.default;
 
         if (customColors && badgeText in customColors) {
           badgeColor = customColors[badgeText];
@@ -2997,15 +2979,15 @@ function renderUnifiedTableRow(
         } else if (variants && badgeText in variants) {
           const variant = variants[badgeText] as keyof typeof BADGE_VARIANTS | "default" | "muted";
           const variantColors: Record<string, string> = {
-            default: theme.colors.primary,
+            default: theme.accent.default,
             ...BADGE_VARIANTS,
-            muted: theme.colors.muted,
+            muted: theme.content.muted,
           };
-          badgeColor = variantColors[variant] ?? theme.colors.primary;
+          badgeColor = variantColors[variant] ?? theme.accent.default;
           badgeTextColor = badgeColor;
         }
 
-        const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.typography.fontFamily, theme.typography.fontWeightBold);
+        const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.text.body.family, 600);
         const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
         const badgeX = col.align === "right"
           ? currentX + width - SPACING.TEXT_PADDING - badgeWidth
@@ -3018,9 +3000,9 @@ function renderUnifiedTableRow(
           rx="${badgeHeight / 2}" fill="${badgeColor}" opacity="0.15"/>`);
         lines.push(`<text class="cell-text" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
           text-anchor="middle"
-          font-family="${theme.typography.fontFamily}"
+          font-family="${theme.text.body.family}"
           font-size="${badgeFontSize}px"
-          font-weight="${theme.typography.fontWeightBold}"
+          font-weight="${600}"
           fill="${badgeTextColor}">${escapeXml(badgeText)}</text>`);
       }
     } else if (col.type === "stars") {
@@ -3116,7 +3098,7 @@ function renderUnifiedTableRow(
         const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
         const bgColor = `rgb(${r},${g},${b})`;
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        const textColor = luminance > 0.5 ? theme.colors.foreground : "#ffffff";
+        const textColor = luminance > 0.5 ? theme.content.primary : "#ffffff";
 
         // Background rect
         lines.push(`<rect x="${currentX + 2}" y="${y + 2}" width="${width - 4}" height="${rowHeight - 4}"
@@ -3124,9 +3106,9 @@ function renderUnifiedTableRow(
 
         if (showValue) {
           lines.push(`<text class="cell-text" x="${currentX + width / 2}" y="${textY}"
-            font-family="${theme.typography.fontFamily}"
+            font-family="${theme.text.body.family}"
             font-size="${fontSize * 0.9}px"
-            font-weight="${theme.typography.fontWeightNormal}"
+            font-weight="${400}"
             text-anchor="middle"
             fill="${textColor}">${hmValue.toFixed(hmDecimals)}</text>`);
         }
@@ -3137,7 +3119,7 @@ function renderUnifiedTableRow(
       if (progValue !== undefined && progValue !== null && !Number.isNaN(progValue)) {
         const progOpts = col.options?.progress;
         const progMax = progOpts?.maxValue ?? 100;
-        const progColor = progOpts?.color ?? theme.colors.primary;
+        const progColor = progOpts?.color ?? theme.accent.default;
         const progShowLabel = progOpts?.showLabel ?? true;
         const progScale = progOpts?.scale ?? "linear";
         // Label shows raw percent-of-max (scale-independent), bar width uses the transform
@@ -3152,18 +3134,18 @@ function renderUnifiedTableRow(
 
         // Track
         lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${barY}" width="${barAreaWidth}" height="${barHeight}"
-          fill="${theme.colors.border}" opacity="0.5" rx="5"/>`);
+          fill="${theme.divider.subtle}" opacity="0.5" rx="5"/>`);
         // Fill
         lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${barY}" width="${Math.max(0, barWidth)}" height="${barHeight}"
           fill="${progColor}" rx="5"/>`);
 
         if (progShowLabel) {
           lines.push(`<text class="cell-text" x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
-            font-family="${theme.typography.fontFamily}"
+            font-family="${theme.text.body.family}"
             font-size="${fontSize * 0.9}px"
-            font-weight="${theme.typography.fontWeightNormal}"
+            font-weight="${400}"
             text-anchor="end"
-            fill="${theme.colors.foreground}">${Math.round(pct)}%</text>`);
+            fill="${theme.content.primary}">${Math.round(pct)}%</text>`);
         }
       }
     } else {
@@ -3180,9 +3162,9 @@ function renderUnifiedTableRow(
         resolveSemanticBundle(rowStyle, theme);
 
       // Font weight: explicit cell/row bold > bundle > default
-      let cellFontWeight = theme.typography.fontWeightNormal;
+      let cellFontWeight = 400;
       if (cellStyle?.bold || rowStyle?.bold) {
-        cellFontWeight = theme.typography.fontWeightBold;
+        cellFontWeight = 600;
       } else if (cellSemBundle?.fontWeight != null) {
         cellFontWeight = cellSemBundle.fontWeight;
       }
@@ -3196,7 +3178,7 @@ function renderUnifiedTableRow(
       }
 
       // Color: explicit cell/row color > bundle fg > cellForeground > foreground
-      let cellColor = theme.colors.cellForeground ?? theme.colors.foreground;
+      let cellColor = (theme.cell.fg ?? theme.content.primary);
       if (cellStyle?.color) {
         cellColor = cellStyle.color;
       } else if (rowStyle?.color) {
@@ -3212,7 +3194,7 @@ function renderUnifiedTableRow(
         const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
         const contentWidth = Math.max(1, width - cellPadding);
         const wrappedLines = wrapTextIntoLines(value, contentWidth, fontSize, cap);
-        const lineHeight = theme.typography.lineHeight ?? 1.5;
+        const lineHeight = 1.5;
         const lineHeightPx = Math.ceil(fontSize * lineHeight);
         const blockHeight = lineHeightPx * wrappedLines.length;
         // Center the multi-line block within the row, then position each
@@ -3221,7 +3203,7 @@ function renderUnifiedTableRow(
         for (let li = 0; li < wrappedLines.length; li++) {
           const lineY = blockTop + li * lineHeightPx + Math.round(fontSize * 0.8);
           lines.push(`<text class="cell-text" x="${textX}" y="${lineY}"
-            font-family="${theme.typography.fontFamily}"
+            font-family="${theme.text.body.family}"
             font-size="${fontSize}px"
             font-weight="${cellFontWeight}"
             font-style="${cellFontStyle}"
@@ -3230,7 +3212,7 @@ function renderUnifiedTableRow(
         }
       } else {
         lines.push(`<text class="cell-text" x="${textX}" y="${textY}"
-          font-family="${theme.typography.fontFamily}"
+          font-family="${theme.text.body.family}"
           font-size="${fontSize}px"
           font-weight="${cellFontWeight}"
           font-style="${cellFontStyle}"
@@ -3395,12 +3377,12 @@ function renderReferenceLine(
     stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"${dashAttr}/>`;
 
   if (label) {
-    const labelColor = theme.colors.secondary;
+    const labelColor = theme.content.secondary;
     const ty = labelY ?? y1 - 4;
     svg += `<text x="${x}" y="${ty}" text-anchor="middle"
-      font-family="${theme.typography.fontFamily}"
-      font-size="${theme.typography.fontSizeSm}"
-      font-weight="${theme.typography.fontWeightMedium}"
+      font-family="${theme.text.body.family}"
+      font-size="${theme.text.label.size}"
+      font-weight="${500}"
       fill="${labelColor}">${escapeXml(label)}</text>`;
   }
 
@@ -3440,11 +3422,11 @@ function validateSpec(spec: unknown): asserts spec is WebSpec {
   }
 
   const theme = s.theme as Record<string, unknown>;
-  if (!theme.colors || typeof theme.colors !== "object") {
-    throw new SVGGeneratorError("Invalid spec: missing or invalid 'theme.colors'");
+  if (!theme.surface || typeof theme.surface !== "object") {
+    throw new SVGGeneratorError("Invalid spec: missing or invalid 'theme.surface'");
   }
-  if (!theme.typography || typeof theme.typography !== "object") {
-    throw new SVGGeneratorError("Invalid spec: missing or invalid 'theme.typography'");
+  if (!theme.text || typeof theme.text !== "object") {
+    throw new SVGGeneratorError("Invalid spec: missing or invalid 'theme.text'");
   }
   if (!theme.spacing || typeof theme.spacing !== "object") {
     throw new SVGGeneratorError("Invalid spec: missing or invalid 'theme.spacing'");
@@ -3609,7 +3591,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 </style>`);
 
   // Background
-  const bgColor = options.backgroundColor ?? theme.colors.background;
+  const bgColor = options.backgroundColor ?? theme.surface.base;
   parts.push(`<rect width="100%" height="100%" fill="${bgColor}"/>`);
 
   // Container border (if enabled in theme)
@@ -3618,7 +3600,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     const borderRadius = theme.layout.containerBorderRadius ?? 8;
     parts.push(`<rect x="0.5" y="0.5"
       width="${layout.totalWidth - 1}" height="${layout.totalHeight - 1}"
-      fill="none" stroke="${theme.colors.border}" stroke-width="1"
+      fill="none" stroke="${theme.divider.subtle}" stroke-width="1"
       rx="${borderRadius}" ry="${borderRadius}"/>`);
   }
 
@@ -3626,11 +3608,11 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   parts.push(renderHeader(spec, layout, theme));
 
   // Top table border - frames column headers (symmetric with header bottom border)
-  const headerBorderW = theme.shapes.headerBorderWidth ?? 2;
+  const headerBorderW = 2;
   if (headerBorderW > 0) {
     parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${layout.mainY}" y2="${layout.mainY}"
-      stroke="${theme.colors.border}" stroke-width="${headerBorderW}"/>`);
+      stroke="${theme.divider.subtle}" stroke-width="${headerBorderW}"/>`);
   }
 
   // Column headers - unified layout. When no column has a visible header and
@@ -3641,8 +3623,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     // Paint the header-row background band first so subsequent cells can
     // draw text on top. Uses colors.headerBg (which cascades from rowBg in
     // set_colors so existing themes render identically).
-    const headerBg = theme.colors.headerBg ?? theme.colors.rowBg;
-    if (headerBg && headerBg !== theme.colors.background) {
+    const headerBg = (theme.variants?.headerStyle === "bold" ? theme.header.bold.bg : theme.header.light.bg);
+    if (headerBg && headerBg !== theme.surface.base) {
       parts.push(`<rect x="${padding}" y="${headerY}"
         width="${layout.totalWidth - padding * 2}" height="${layout.headerHeight}"
         fill="${headerBg}"/>`);
@@ -3668,11 +3650,11 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       showLabelHeader
     ));
 
-    // Header border — tied to theme.shapes.headerBorderWidth (default 2)
+    // Header border — tied to 2 (default 2)
     if (headerBorderW > 0) {
       parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
         y1="${headerY + layout.headerHeight}" y2="${headerY + layout.headerHeight}"
-        stroke="${theme.colors.border}" stroke-width="${headerBorderW}"/>`);
+        stroke="${theme.divider.subtle}" stroke-width="${headerBorderW}"/>`);
     }
   }
 
@@ -3715,7 +3697,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         // Header-type rows get a subtle muted background
         parts.push(`<rect x="${padding}" y="${y}"
           width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
-          fill="${theme.colors.muted}" fill-opacity="0.1"/>`);
+          fill="${theme.content.muted}" fill-opacity="0.1"/>`);
       } else if (semBundle?.bg) {
         // Semantic bundle background — semantic classes can request a
         // row bg via theme.semantics.<token>.bg. Rendered BEFORE the
@@ -3727,8 +3709,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       } else if (bandIdx === 1) {
         // Alternating row banding (only paint the "odd" band — even rows
         // inherit the container background, matching the web widget).
-        const bgColor = theme.colors.altBg;
-        if (bgColor !== theme.colors.background) {
+        const bgColor = theme.row.alt.bg;
+        if (bgColor !== theme.surface.base) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
             fill="${bgColor}"/>`);
@@ -3750,8 +3732,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // so the group_header row is just rowHeight tall and paints
       // edge-to-edge here.
       if (bandIdx === 1) {
-        const bgColor = theme.colors.altBg;
-        if (bgColor !== theme.colors.background) {
+        const bgColor = theme.row.alt.bg;
+        if (bgColor !== theme.surface.base) {
           parts.push(`<rect x="${padding}" y="${y}"
             width="${layout.totalWidth - padding * 2}" height="${rowHeight}"
             fill="${bgColor}"/>`);
@@ -3781,13 +3763,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Honor spec-level watermarkColor / watermarkOpacity (v0.20.1+); fall
       // back to foreground @ 0.07 for specs authored before those fields
       // existed.
-      const wmFill = spec.watermarkColor ?? theme.colors.foreground;
+      const wmFill = spec.watermarkColor ?? theme.content.primary;
       const wmOpacity = spec.watermarkOpacity ?? 0.07;
       parts.push(
         `<text x="${cx}" y="${cy}" ` +
         `transform="rotate(${angleDeg.toFixed(2)} ${cx} ${cy})" ` +
         `text-anchor="middle" dominant-baseline="middle" ` +
-        `font-family="${theme.typography.fontFamily}" ` +
+        `font-family="${theme.text.body.family}" ` +
         `font-size="${fontSize.toFixed(1)}" font-weight="700" ` +
         `fill="${wmFill}" fill-opacity="${wmOpacity}" ` +
         `style="pointer-events:none; user-select:none">${escapeXml(spec.watermark)}</text>`
@@ -3845,7 +3827,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       plotY,
       plotY + layout.rowsHeight,
       "dashed",
-      theme.colors.muted,
+      theme.content.muted,
       theme
     ));
 
@@ -3868,7 +3850,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           plotY,
           plotY + layout.rowsHeight,
           ann.style,
-          ann.color ?? theme.colors.accent,
+          ann.color ?? theme.accent.default,
           theme,
           ann.label,
           ann.width ?? 1,
@@ -4162,9 +4144,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
     // Row borders — widths come from theme.shapes.{rowBorderWidth,
     // headerBorderWidth, rowGroupBorderWidth}.
-    const rowBorderW = theme.shapes.rowBorderWidth ?? 1;
-    const headerBorderW = theme.shapes.headerBorderWidth ?? 2;
-    const groupBorderW = theme.shapes.rowGroupBorderWidth ?? 1;
+    const rowBorderW = theme.row.borderWidth ?? 1;
+    const headerBorderW = 2;
+    const groupBorderW = 1;
     if (displayRow.type === "data") {
       const row = displayRow.row;
       const isSummaryRow = row.style?.type === "summary";
@@ -4174,21 +4156,21 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       if (isSummaryRow && headerBorderW > 0) {
         parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
           y1="${y}" y2="${y}"
-          stroke="${theme.colors.border}" stroke-width="${headerBorderW}"/>`);
+          stroke="${theme.divider.subtle}" stroke-width="${headerBorderW}"/>`);
       }
 
       // Bottom border (skip for spacer rows and zero-width themes)
       if (!isSpacerRow && rowBorderW > 0) {
         parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
           y1="${y + rowHeight}" y2="${y + rowHeight}"
-          stroke="${theme.colors.border}" stroke-width="${rowBorderW}"/>`);
+          stroke="${theme.divider.subtle}" stroke-width="${rowBorderW}"/>`);
       }
     } else if (groupBorderW > 0) {
       // Group headers get a bottom border at the group-weight (not row-weight)
       // so row-group borders can be independently tuned.
       parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
         y1="${y + rowHeight}" y2="${y + rowHeight}"
-        stroke="${theme.colors.border}" stroke-width="${groupBorderW}"/>`);
+        stroke="${theme.divider.subtle}" stroke-width="${groupBorderW}"/>`);
     }
   });
 

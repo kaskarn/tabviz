@@ -8,28 +8,23 @@
 #' @keywords internal
 serialize_spec <- function(spec, include_forest = TRUE) {
   theme <- spec@theme %||% web_theme_default()
-
-  # Dispatch on theme version. v2 themes (WebTheme2) flow through the shim
-  # that maps the resolved tier 2/3 cascade onto the v1 wire shape so the
-  # frontend keeps reading the same fields. Frontend-native v2 wire lands
-  # in PR 9/10.
-  is_v2 <- inherits(theme, "tabviz::WebTheme2")
-  theme_payload <- if (is_v2) serialize_theme_v2_to_v1(theme) else serialize_theme(theme)
-  plot_width <- if (is_v2) "auto" else theme@layout@plot_width
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli_abort("{.arg theme} must be a {.cls WebTheme} object.")
+  }
 
   list(
     data = serialize_data(spec, include_forest),
     columns = lapply(spec@columns, serialize_column),
     extraColumns = lapply(spec@extra_columns, serialize_column),
     availableFields = serialize_available_fields(spec),
-    theme = theme_payload,
+    theme = serialize_theme(theme),
     interaction = serialize_interaction(spec@interaction),
     labels = serialize_labels(spec@labels),
     watermark = if (is.na(spec@watermark)) NULL else spec@watermark,
     watermarkColor = if (is.na(spec@watermark_color)) NULL else spec@watermark_color,
     watermarkOpacity = if (is.na(spec@watermark_opacity)) NULL else spec@watermark_opacity,
     layout = list(
-      plotWidth = plot_width
+      plotWidth = "auto"
     ),
     originalCall = if (is.na(spec@original_call)) NULL else spec@original_call
   )
@@ -374,192 +369,12 @@ serialize_banding <- function(x) {
   )
 }
 
-#' Serialize a SemanticBundle to a JSON-ready list
-#'
-#' Converts R's `NA` sentinels into JSON `null` so the frontend's renderer
-#' can treat absence as "inherit / no override." Camel-cases field names to
-#' match the TypeScript `SemanticBundle` interface.
-#' @keywords internal
-serialize_semantic_bundle <- function(b) {
-  na_to_null <- function(v) if (length(v) == 0 || is.na(v)) NULL else v
-  list(
-    fg         = na_to_null(b@fg),
-    bg         = na_to_null(b@bg),
-    border     = na_to_null(b@border),
-    markerFill = na_to_null(b@marker_fill),
-    fontWeight = na_to_null(b@font_weight),
-    fontStyle  = na_to_null(b@font_style)
-  )
-}
+# v1 serialize_theme + its helpers (serialize_semantic_bundle,
+# serialize_semantics, default_swatches, resolve_swatches) deleted in PR 9b.
+# v2 serialize_theme lives in R/utils-serialize-resolved.R.
 
 #' Serialize a Semantics object into the per-token bundle map
 #' @keywords internal
-serialize_semantics <- function(s) {
-  list(
-    emphasis = serialize_semantic_bundle(s@emphasis),
-    muted    = serialize_semantic_bundle(s@muted),
-    accent   = serialize_semantic_bundle(s@accent)
-  )
-}
-
-#' Resolve the 8-color theme palette used by the settings panel's
-#' "Theme" tab. Returns the author-curated `swatches` when set,
-#' otherwise derives a sensible default from existing named colors.
-#' Mix accents (primary, accent, secondary, muted) with
-#' surface/structure colors (foreground, border, background, row_bg)
-#' so the palette doubles as a quick reference for the active theme.
-#' @keywords internal
-default_swatches <- function(palette) {
-  c(
-    palette@primary,
-    palette@accent,
-    palette@secondary,
-    palette@muted,
-    palette@foreground,
-    palette@border,
-    palette@background,
-    palette@row_bg
-  )
-}
-
-#' @keywords internal
-resolve_swatches <- function(palette) {
-  sw <- palette@swatches
-  if (length(sw) == 8 && is.character(sw)) sw else default_swatches(palette)
-}
-
-#' Serialize WebTheme
-#' @keywords internal
-serialize_theme <- function(theme) {
-  if (is.null(theme)) {
-    theme <- web_theme_default()
-  }
-
-  list(
-    name = theme@name,
-    colors = list(
-      background = theme@colors@background,
-      foreground = theme@colors@foreground,
-      primary = theme@colors@primary,
-      secondary = theme@colors@secondary,
-      accent = theme@colors@accent,
-      muted = theme@colors@muted,
-      border = theme@colors@border,
-      rowBg = theme@colors@row_bg,
-      altBg = theme@colors@alt_bg,
-      # NA header_bg means "inherit from row_bg" — resolve at serialize
-      # time so presets that don't set header_bg explicitly still get a
-      # palette-appropriate column-header band in every theme.
-      headerBg = if (is.na(theme@colors@header_bg)) theme@colors@row_bg else theme@colors@header_bg,
-      # NA cell_foreground means "inherit from foreground". Same resolve-
-      # at-emit pattern as header_bg so presets get the right value for
-      # free.
-      cellForeground = if (is.na(theme@colors@cell_foreground)) theme@colors@foreground else theme@colors@cell_foreground,
-      # header_foreground cascades: explicit → cell_foreground → foreground.
-      # Resolve eagerly so the frontend doesn't need to know about the
-      # chain.
-      headerForeground = if (!is.na(theme@colors@header_foreground)) {
-        theme@colors@header_foreground
-      } else if (!is.na(theme@colors@cell_foreground)) {
-        theme@colors@cell_foreground
-      } else {
-        theme@colors@foreground
-      },
-      intervalLine = theme@colors@interval_line,
-      summaryFill = theme@colors@summary_fill,
-      summaryBorder = theme@colors@summary_border,
-      # Author-curated 8-color palette surfaced in the settings panel.
-      # NA = derive a sensible default from the theme's named colors so
-      # every preset gets a usable Theme tab without having to opt in.
-      swatches = resolve_swatches(theme@colors)
-    ),
-    typography = list(
-      fontFamily = theme@typography@font_family,
-      fontSizeSm = theme@typography@font_size_sm,
-      fontSizeBase = theme@typography@font_size_base,
-      fontSizeLg = theme@typography@font_size_lg,
-      fontWeightNormal = theme@typography@font_weight_normal,
-      fontWeightMedium = theme@typography@font_weight_medium,
-      fontWeightBold = theme@typography@font_weight_bold,
-      lineHeight = theme@typography@line_height,
-      headerFontScale = theme@typography@header_font_scale
-    ),
-    spacing = list(
-      rowHeight = theme@spacing@row_height,
-      headerHeight = theme@spacing@header_height,
-      padding = theme@spacing@padding,
-      containerPadding = theme@spacing@container_padding,
-      cellPaddingX = theme@spacing@cell_padding_x,
-      cellPaddingY = theme@spacing@cell_padding_y,
-      axisGap = theme@spacing@axis_gap,
-      columnGroupPadding = theme@spacing@column_group_padding,
-      rowGroupPadding    = theme@spacing@row_group_padding,
-      footerGap          = theme@spacing@footer_gap,
-      titleSubtitleGap   = theme@spacing@title_subtitle_gap,
-      bottomMargin       = theme@spacing@bottom_margin,
-      # Back-compat alias: serialize the new field under the old name too so
-      # any frontend code still reading `groupPadding` keeps working while
-      # downstream consumers migrate. Remove once all call sites use the
-      # disambiguated names.
-      groupPadding = theme@spacing@column_group_padding
-    ),
-    shapes = list(
-      pointSize = theme@shapes@point_size,
-      summaryHeight = theme@shapes@summary_height,
-      lineWidth = theme@shapes@line_width,
-      rowBorderWidth      = theme@shapes@row_border_width,
-      headerBorderWidth   = theme@shapes@header_border_width,
-      rowGroupBorderWidth = theme@shapes@row_group_border_width,
-      tickMarkLength      = theme@shapes@tick_mark_length,
-      # Wrap vector palettes in I() so a length-1 override (e.g.
-      # `set_effect_colors(..., "#ff00ff")`) still serializes as a JSON
-      # array, not a scalar — otherwise the frontend indexes it as a
-      # string and reads one character per effect.
-      effectColors = if (is.null(theme@shapes@effect_colors)) NULL else I(theme@shapes@effect_colors),
-      markerShapes = if (is.null(theme@shapes@marker_shapes)) NULL else I(theme@shapes@marker_shapes)
-    ),
-    axis = list(
-      # Explicit overrides
-      rangeMin = if (is.na(theme@axis@range_min)) NULL else theme@axis@range_min,
-      rangeMax = if (is.na(theme@axis@range_max)) NULL else theme@axis@range_max,
-      tickCount = if (is.na(theme@axis@tick_count)) NULL else theme@axis@tick_count,
-      tickValues = if (is.null(theme@axis@tick_values)) NULL else I(theme@axis@tick_values),
-      gridlines = theme@axis@gridlines,
-      gridlineStyle = theme@axis@gridline_style,
-      # Auto-scaling parameters
-      ciClipFactor = theme@axis@ci_clip_factor,
-      includeNull = theme@axis@include_null,
-      symmetric = theme@axis@symmetric,  # NULL or logical
-      nullTick = theme@axis@null_tick,
-      markerMargin = theme@axis@marker_margin
-    ),
-    layout = list(
-      plotWidth = theme@layout@plot_width,
-      containerBorder = theme@layout@container_border,
-      containerBorderRadius = theme@layout@container_border_radius,
-      banding = serialize_banding(theme@layout@banding)
-    ),
-    groupHeaders = list(
-      level1FontSize = theme@group_headers@level1_font_size,
-      level1FontWeight = theme@group_headers@level1_font_weight,
-      level1Italic = theme@group_headers@level1_italic,
-      level1Background = theme@group_headers@level1_background,
-      level1BorderBottom = theme@group_headers@level1_border_bottom,
-      level2FontSize = theme@group_headers@level2_font_size,
-      level2FontWeight = theme@group_headers@level2_font_weight,
-      level2Italic = theme@group_headers@level2_italic,
-      level2Background = theme@group_headers@level2_background,
-      level2BorderBottom = theme@group_headers@level2_border_bottom,
-      level3FontSize = theme@group_headers@level3_font_size,
-      level3FontWeight = theme@group_headers@level3_font_weight,
-      level3Italic = theme@group_headers@level3_italic,
-      level3Background = theme@group_headers@level3_background,
-      level3BorderBottom = theme@group_headers@level3_border_bottom,
-      indentPerLevel = theme@group_headers@indent_per_level
-    ),
-    semantics = serialize_semantics(theme@semantics)
-  )
-}
 
 #' Serialize InteractionSpec
 #' @keywords internal

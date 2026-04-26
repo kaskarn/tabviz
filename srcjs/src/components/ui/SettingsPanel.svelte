@@ -1,13 +1,11 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
   import BasicsControl from "./BasicsControl.svelte";
-  import ColorsControl from "./ColorsControl.svelte";
-  import SemanticsControl from "./SemanticsControl.svelte";
-  import TypographyControl from "./TypographyControl.svelte";
-  import SpacingControl from "./SpacingControl.svelte";
-  import ShapesControl from "./ShapesControl.svelte";
-  import LayoutControl from "./LayoutControl.svelte";
-  import GroupHeadersControl from "./GroupHeadersControl.svelte";
+  import ThemeControl from "./ThemeControl.svelte";
+  import V2LayoutControl from "./V2LayoutControl.svelte";
+  import V2SpacingControl from "./V2SpacingControl.svelte";
+  import V2MarksControl from "./V2MarksControl.svelte";
+  import V2TextControl from "./V2TextControl.svelte";
   import TabSelect from "./TabSelect.svelte";
   // Axis settings are per-column now (via the column configure popover on
   // viz_forest / viz_bar / viz_boxplot / viz_violin). The theme Axis tab
@@ -31,14 +29,12 @@
    * axis → layout) so the panel reads like the package's mental model.
    */
   const tabs: { id: string; label: string }[] = [
-    { id: "basics",       label: "Basics" },
-    { id: "colors",       label: "Colors" },
-    { id: "semantics",    label: "Semantics" },
-    { id: "typography",   label: "Typography" },
-    { id: "rowGroups",    label: "Row groups" },
-    { id: "spacing",      label: "Spacing" },
-    { id: "shapes",       label: "Viz" },
-    { id: "layout",       label: "Layout" },
+    { id: "basics",   label: "Basics" },
+    { id: "theme",    label: "Theme" },
+    { id: "layout",   label: "Layout" },
+    { id: "spacing",  label: "Spacing" },
+    { id: "marks",    label: "Marks" },
+    { id: "text",     label: "Text" },
   ];
   let activeTabId = $state<string>("basics");
 
@@ -209,20 +205,16 @@
           >
             {#if tab.id === "basics"}
               <BasicsControl {store} />
-            {:else if tab.id === "colors"}
-              <ColorsControl {store} />
-            {:else if tab.id === "semantics"}
-              <SemanticsControl {store} />
-            {:else if tab.id === "typography"}
-              <TypographyControl {store} />
-            {:else if tab.id === "rowGroups"}
-              <GroupHeadersControl {store} />
-            {:else if tab.id === "spacing"}
-              <SpacingControl {store} />
-            {:else if tab.id === "shapes"}
-              <ShapesControl {store} />
+            {:else if tab.id === "theme"}
+              <ThemeControl {store} />
             {:else if tab.id === "layout"}
-              <LayoutControl {store} />
+              <V2LayoutControl {store} />
+            {:else if tab.id === "spacing"}
+              <V2SpacingControl {store} />
+            {:else if tab.id === "marks"}
+              <V2MarksControl {store} />
+            {:else if tab.id === "text"}
+              <V2TextControl {store} />
             {/if}
           </div>
         {/if}

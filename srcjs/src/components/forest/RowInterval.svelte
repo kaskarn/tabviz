@@ -163,7 +163,7 @@
   //              single-effect: replaces fill
   //              multi-effect:  preserves per-effect fill, adds outline
   //   Layer 2: effect.color (per-effect literal)
-  //   Layer 1: theme.shapes.effectColors[idx] cycle (palette default)
+  //   Layer 1: theme.series.map(s => s.fill)[idx] cycle (palette default)
   //
   // Shape and opacity remain primary-effect-only (row.markerStyle drives the
   // main marker; secondary effects use their own effect-spec values).
@@ -191,7 +191,7 @@
     if (effect.color) {
       baseColor = effect.color;
     } else if (isSummaryRow && isPrimary && theme?.colors.summaryFill) {
-      baseColor = theme.colors.summaryFill;
+      baseColor = theme.summary.fill;
     } else if (themeEffectColors && themeEffectColors.length > 0) {
       baseColor = themeEffectColors[idx % themeEffectColors.length];
     } else {

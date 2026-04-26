@@ -13,7 +13,7 @@
 export interface FontPreset {
   /** Display name shown in the dropdown. */
   name: string;
-  /** Full CSS font-family stack written to `theme.typography.fontFamily`. */
+  /** Full CSS font-family stack written to `theme.text.body.family`. */
   stack: string;
   /** Optional short blurb shown next to the name (kept terse). */
   hint?: string;

@@ -26,7 +26,7 @@ test_that("each v2 preset renders to PNG via the dispatch path", {
                "modern", "presentation", "cochrane", "nature")
 
   for (preset in presets) {
-    ctor <- get(paste0("web_theme_", preset, "_v2"))
+    ctor <- get(paste0("web_theme_", preset))
     spec <- tabviz(
       df, label = "Site",
       columns = list(viz_forest(point = "est", lower = "lo", upper = "hi")),
@@ -49,17 +49,18 @@ test_that("v2 dispatch through tabviz preserves variant flag", {
     spec <- tabviz(
       df, label = "Site",
       columns = list(viz_forest(point = "est", lower = "lo", upper = "hi")),
-      theme = WebTheme2(
+      theme = WebTheme(
         inputs = ThemeInputs(brand_deep = "#000080"),
         variants = ThemeVariants(header_style = header_style)
       ),
       .spec_only = TRUE
     )
     out <- serialize_spec(spec)
+    active_hdr <- if (header_style == "bold") out$theme$header$bold else out$theme$header$light
     if (header_style == "bold") {
-      expect_equal(toupper(out$theme$colors$headerBg), "#000080")
+      expect_equal(toupper(active_hdr$bg), "#000080")
     } else {
-      expect_match(out$theme$colors$headerBg, "^#")
+      expect_match(active_hdr$bg, "^#")
     }
   }
 })

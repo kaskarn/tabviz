@@ -359,7 +359,7 @@
           rowHeight: spec.theme.spacing.rowHeight,
           cellPaddingY: spec.theme.spacing.cellPaddingY,
           rowGroupPadding: spec.theme.spacing.rowGroupPadding ?? 0,
-          rowBorderWidth: spec.theme.shapes.rowBorderWidth ?? 1,
+          rowBorderWidth: spec.theme.row.borderWidth ?? 1,
           headerHeight: spec.theme.spacing.headerHeight,
         },
       });
@@ -1248,44 +1248,46 @@
   // CSS variable style string (includes shared rendering constants for consistency)
   const cssVars = $derived.by(() => {
     if (!theme) return '';
+    // Pick the active header / first-column variant per theme.variants.
+    const headerVariant = theme.variants?.headerStyle === 'bold' ? theme.header.bold : theme.header.light;
     return `
       --tv-max-width: ${maxWidth ? `${maxWidth}px` : 'none'};
       --tv-max-height: ${maxHeight ? `${maxHeight}px` : 'none'};
-      --tv-bg: ${theme.colors.background};
-      --tv-fg: ${theme.colors.foreground};
-      --tv-primary: ${theme.colors.primary};
-      --tv-secondary: ${theme.colors.secondary};
-      --tv-muted: ${theme.colors.muted};
-      --tv-border: ${theme.colors.border};
-      --tv-row-bg: ${theme.colors.rowBg};
-      --tv-alt-bg: ${theme.colors.altBg};
-      --tv-header-bg: ${theme.colors.headerBg ?? theme.colors.rowBg};
-      --tv-cell-fg: ${theme.colors.cellForeground ?? theme.colors.foreground};
-      --tv-header-fg: ${theme.colors.headerForeground ?? theme.colors.cellForeground ?? theme.colors.foreground};
-      --tv-interval-line: ${theme.colors.intervalLine};
-      --tv-summary-fill: ${theme.colors.summaryFill};
-      --tv-summary-border: ${theme.colors.summaryBorder};
-      --tv-accent: ${theme.colors.accent};
-      --tv-semantic-emphasis-fg: ${theme.semantics?.emphasis?.fg ?? theme.colors.foreground};
-      --tv-semantic-muted-fg:    ${theme.semantics?.muted?.fg    ?? theme.colors.muted};
-      --tv-semantic-accent-fg:   ${theme.semantics?.accent?.fg   ?? theme.colors.accent};
-      --tv-semantic-emphasis-bg: ${theme.semantics?.emphasis?.bg ?? "transparent"};
-      --tv-semantic-muted-bg:    ${theme.semantics?.muted?.bg    ?? "transparent"};
-      --tv-semantic-accent-bg:   ${theme.semantics?.accent?.bg   ?? "transparent"};
+      --tv-bg: ${theme.surface.base};
+      --tv-fg: ${theme.content.primary};
+      --tv-primary: ${theme.accent.default};
+      --tv-secondary: ${theme.content.secondary};
+      --tv-muted: ${theme.content.muted};
+      --tv-border: ${theme.divider.subtle};
+      --tv-row-bg: ${theme.row.base.bg};
+      --tv-alt-bg: ${theme.row.alt.bg};
+      --tv-header-bg: ${headerVariant.bg};
+      --tv-cell-fg: ${theme.cell.fg ?? theme.content.primary};
+      --tv-header-fg: ${headerVariant.fg};
+      --tv-interval-line: ${theme.summary.stroke};
+      --tv-summary-fill: ${theme.summary.fill};
+      --tv-summary-border: ${theme.summary.stroke};
+      --tv-accent: ${theme.accent.default};
+      --tv-semantic-emphasis-fg: ${theme.row.emphasis?.fg ?? theme.content.primary};
+      --tv-semantic-muted-fg:    ${theme.row.muted?.fg    ?? theme.content.muted};
+      --tv-semantic-accent-fg:   ${theme.row.accent?.fg   ?? theme.accent.default};
+      --tv-semantic-emphasis-bg: ${theme.row.emphasis?.bg ?? "transparent"};
+      --tv-semantic-muted-bg:    ${theme.row.muted?.bg    ?? "transparent"};
+      --tv-semantic-accent-bg:   ${theme.row.accent?.bg   ?? "transparent"};
       --tv-badge-success: ${BADGE_VARIANTS.success};
       --tv-badge-warning: ${BADGE_VARIANTS.warning};
       --tv-badge-error: ${BADGE_VARIANTS.error};
       --tv-badge-info: ${BADGE_VARIANTS.info};
-      --tv-badge-muted: ${theme.colors.muted};
-      --tv-font-family: ${theme.typography.fontFamily};
-      --tv-font-size-sm: ${theme.typography.fontSizeSm};
-      --tv-font-size-base: ${theme.typography.fontSizeBase};
-      --tv-font-size-lg: ${theme.typography.fontSizeLg};
-      --tv-font-weight-normal: ${theme.typography.fontWeightNormal};
-      --tv-font-weight-medium: ${theme.typography.fontWeightMedium};
-      --tv-font-weight-bold: ${theme.typography.fontWeightBold};
-      --tv-line-height: ${theme.typography.lineHeight};
-      --tv-header-font-scale: ${theme.typography.headerFontScale ?? 1.05};
+      --tv-badge-muted: ${theme.content.muted};
+      --tv-font-family: ${theme.text.body.family};
+      --tv-font-size-sm: ${theme.text.label.size};
+      --tv-font-size-base: ${theme.text.body.size};
+      --tv-font-size-lg: ${theme.text.subtitle.size};
+      --tv-font-weight-normal: 400;
+      --tv-font-weight-medium: 500;
+      --tv-font-weight-bold: 600;
+      --tv-line-height: 1.5;
+      --tv-header-font-scale: 1.05;
       --tv-row-height: ${theme.spacing.rowHeight}px;
       --tv-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
       --tv-header-height: ${anyHeaderVisible ? layout.headerHeight : 0}px;
@@ -1303,16 +1305,16 @@
       --tv-viz-margin: ${VIZ_MARGIN}px;
       --tv-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
       --tv-axis-height: ${layout.axisHeight}px;
-      --tv-group-padding: ${theme.spacing.groupPadding ?? 8}px;
+      --tv-group-padding: ${theme.spacing.columnGroupPadding ?? 8}px;
       --tv-footer-gap: ${theme.spacing.footerGap ?? 8}px;
       --tv-bottom-margin: ${theme.spacing.bottomMargin ?? 16}px;
       --tv-title-subtitle-gap: ${theme.spacing.titleSubtitleGap ?? 13}px;
       --tv-plot-width: ${layout.forestWidth}px;
-      --tv-point-size: ${theme.shapes.pointSize}px;
-      --tv-line-width: ${theme.shapes.lineWidth}px;
-      --tv-row-border-width: ${theme.shapes.rowBorderWidth ?? 1}px;
-      --tv-header-border-width: ${theme.shapes.headerBorderWidth ?? 2}px;
-      --tv-group-border-width: ${theme.shapes.rowGroupBorderWidth ?? 1}px;
+      --tv-point-size: ${theme.plot.pointSize}px;
+      --tv-line-width: ${theme.plot.lineWidth}px;
+      --tv-row-border-width: ${theme.row.borderWidth ?? 1}px;
+      --tv-header-border-width: 2px;
+      --tv-group-border-width: 1px;
       --tv-container-border: ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : 'none'};
       --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
       --tv-group-header-opacity: ${GROUP_HEADER_OPACITY};
@@ -1618,10 +1620,10 @@
           {@const groupBg = isGroupHeader && bandIndexes[i] == null ? getGroupBackground(rowDepth + 1, theme) : undefined}
           {@const groupLevelBorder = isGroupHeader && theme
             ? (rowDepth + 1 === 1
-                ? theme.groupHeaders.level1BorderBottom
+                ? theme.rowGroup.L1.borderBottom
                 : rowDepth + 1 === 2
-                  ? theme.groupHeaders.level2BorderBottom
-                  : theme.groupHeaders.level3BorderBottom)
+                  ? theme.rowGroup.L2.borderBottom
+                  : theme.rowGroup.L3.borderBottom)
             : false}
           <!--
             Single effective background precedence: per-row inline bg > group
@@ -1667,7 +1669,7 @@
                 style:background-color={effectiveBg}
                 style:padding-left={(() => {
                   // Indent per nesting level — sourced from
-                  // `theme.groupHeaders.indentPerLevel` (default 16) so the
+                  // `theme.rowGroup.indentPerLevel` (default 16) so the
                   // live widget matches the SVG exporter's depth indent.
                   // Was hardcoded `* 12` here, which silently disagreed with
                   // the export when authors raised the theme value.
@@ -2636,7 +2638,7 @@
     align-items: center;
     border-bottom: var(--tv-row-border-width, 1px) solid var(--tv-border);
     color: var(--tv-cell-fg, var(--tv-fg));
-    /* Row background: `--tv-row-bg` (theme.colors.rowBg) with fallback to
+    /* Row background: `--tv-row-bg` (theme.row.base.bg) with fallback to
        the container bg. Separate from `--tv-bg` so users can tint rows
        distinct from the outer container without flipping the whole widget. */
     background: var(--tv-row-bg, var(--tv-bg));

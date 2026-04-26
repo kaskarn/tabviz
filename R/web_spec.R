@@ -271,7 +271,7 @@ tabviz <- function(
   if (S7_inherits(data, WebSpec)) {
     spec <- data
     if (!is.null(banding)) {
-      spec@theme@layout@banding <- banding
+      spec@theme@row@banding <- banding
     }
     if (!is.null(spec@interaction)) {
       spec@interaction@enable_themes <- finalize_enable_themes(
@@ -314,7 +314,7 @@ tabviz <- function(
 
   # Apply tabviz(banding=) override to the theme, if provided
   if (!is.null(banding)) {
-    theme@layout@banding <- banding
+    theme@row@banding <- banding
   }
 
   # Resolve column names - strings only (no NSE magic)

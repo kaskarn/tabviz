@@ -4,26 +4,22 @@
 library(tabviz)
 library(dplyr)
 
-# Build a "Terminal" theme step by step
-terminal_theme <- web_theme_default() |>
-  set_colors(
-    background = "#0c0c0c",
-    foreground = "#00ff00",
-    primary = "#00ff00",
-    secondary = "#008800",
-    muted = "#005500",
-    border = "#003300",
-    ci_line = "#00cc00",
-    summary_fill = "#00ff00",
-    summary_border = "#00aa00"
-  ) |>
-  set_typography(
-    font_family = "'Courier New', monospace",
-    font_size_base = "0.85rem"
-  ) |>
+# Build a "Terminal" theme via the v2 inputs API.
+terminal_theme <- web_theme(
+  name = "terminal",
+  inputs = list(
+    neutral = c("#0C0C0C", "#0C0C0C", "#1A1A1A", "#005500", "#00FF00"),
+    brand = "#00FF00",
+    accent = "#00FF00",
+    series_anchors = c("#00FF00", "#00CC00", "#008800", "#005500", "#003300"),
+    font_body = "'Courier New', monospace"
+  )
+) |>
   set_spacing(row_height = 28, header_height = 32) |>
-  set_shapes(point_size = 6, line_width = 1.5) |>
-  set_axis(gridlines = TRUE, gridline_style = "dotted")
+  set_theme_field(c("plot", "gridline"), "#003300") |>
+  set_theme_field(c("plot", "point_size"), 6) |>
+  set_theme_field(c("plot", "line_width"), 1.5) |>
+  set_theme_field(c("axis", "gridlines"), TRUE)
 
 theme_demo_data <- tibble(
   process = c("AUTH_SERVICE", "API_GATEWAY", "DB_PRIMARY", "CACHE_LAYER", "MSG_QUEUE"),
