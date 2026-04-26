@@ -80,7 +80,7 @@ Curates the in-widget theme switcher.
 # Two-theme curated menu, custom display names
 web_interaction(enable_themes = list(
   Classical = web_theme_jama(),
-  Modern    = web_theme_modern()
+  Modern    = web_theme_cochrane()
 ))
 ```
 

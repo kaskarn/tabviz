@@ -76,7 +76,7 @@ forest_plot(hierarchical_data,
   label = "study",
   group = c("region", "country"),
   null_value = 1, scale = "log",
-  theme = web_theme_modern()
+  theme = web_theme_cochrane()
 )
 ```
 
@@ -94,7 +94,7 @@ Control the visual styling of group headers at each level using theme modifiers:
 
 ```{r}
 #| eval: false
-custom_theme <- web_theme_default() |>
+custom_theme <- web_theme_cochrane() |>
   set_theme_field(c("row_group", "L1", "bg"),            "#E0F2FE") |>
   set_theme_field(c("row_group", "L1", "text", "size"),  "1.1rem") |>
   set_theme_field(c("row_group", "L1", "text", "weight"), 700) |>

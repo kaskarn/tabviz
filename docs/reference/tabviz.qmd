@@ -31,7 +31,7 @@ tabviz(
   marker_color = NULL, marker_shape = NULL,
   marker_opacity = NULL, marker_size = NULL,
   # Theme & interaction
-  theme = web_theme_default(),
+  theme = web_theme_cochrane(),
   interaction = NULL,
   plot_position = NULL,
   row_height = NULL,
@@ -99,7 +99,7 @@ Same column-name-or-formula pattern as row styling:
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
-| `theme` | `WebTheme` | `web_theme_default()` | Theme object (use a `web_theme_*()` builder). |
+| `theme` | `WebTheme` | `web_theme_cochrane()` | Theme object (use a `web_theme_*()` builder). |
 | `interaction` | `InteractionSpec` | `NULL` | Use `web_interaction()`. When `NULL`, `default_interaction_for_theme(theme)` is used (full interactivity). |
 | `plot_position` | `character(1)` | `NULL` | `r lifecycle::badge("deprecated")` No effect. Column order in `columns = list(...)` controls placement. |
 | `row_height` | `numeric(1)` | `NULL` | Row height in pixels. |

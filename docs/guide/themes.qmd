@@ -30,7 +30,7 @@ flowchart LR
     style C fill:#93c5fd
 ```
 
-* **Step 1** — `theme = web_theme_jama()`. Done. Nine presets cover the common publication and dashboard styles.
+* **Step 1** — `theme = web_theme_lancet()`. Done. Four presets cover the common publication and dashboard surfaces.
 * **Step 2** — Swap a brand color, change density, switch to a serif font. The preset stays the foundation; you nudge a few inputs.
 * **Step 3** — Reach into a specific component (e.g. the L1 row-group bar background) for surgical control. Rare; the preset cascade handles 95% of cases.
 
@@ -45,19 +45,14 @@ forest_plot(
 )
 ```
 
-Nine presets ship in the package:
+Four presets ship in the package — each leans into a clear identity rather than trying to be everything:
 
 | Preset | Style | Designed for |
 |--------|-------|--------------|
-| `web_theme_default()` | Cyan accent on white, system fonts | General purpose |
-| `web_theme_jama()` | Black & white, ultra-compact, Arial 9 pt | JAMA submissions |
-| `web_theme_lancet()` | Lancet navy + warm cream, Georgia serif | Lancet submissions |
-| `web_theme_nature()` | Nature blue, Helvetica Neue, tight typography | Nature family journals |
-| `web_theme_cochrane()` | Cochrane teal, Arial, very compact | Systematic reviews |
-| `web_theme_modern()` | Vibrant blue + violet, Inter, spacious | Web/screen viewing |
-| `web_theme_presentation()` | Oversized markers, thick lines, large type | Slides and posters |
-| `web_theme_dark()` | Catppuccin Mocha-inspired dark canvas | Dark-mode viewing |
-| `web_theme_minimal()` | Pure black & white, Georgia serif | Classic academic look |
+| `web_theme_cochrane()` | The package default. Cochrane teal + warm coral, Inter sans-serif, comfortable density | General purpose, systematic reviews |
+| `web_theme_lancet()`   | Lancet navy + refined old-gold + warm cream, Georgia serif, comfortable | Lancet-style editorial layouts |
+| `web_theme_jama()`     | Pure black-and-white, ultra-compact, strong dividers throughout, Arial | JAMA / print journal submissions |
+| `web_theme_dark()`     | Catppuccin Mocha-inspired dark canvas with pastel marker palette | Dark-mode viewing |
 
 Switch presets at any point with `set_theme()`:
 
@@ -68,9 +63,39 @@ my_table |> set_theme("jama")
 
 The full registry is in `package_themes()`.
 
+### Curating the in-widget switcher
+
+The in-widget settings panel includes a theme dropdown that lets readers
+swap between presets without reloading. By default it shows all four
+package themes; pass `enable_themes = list(...)` to `web_interaction()`
+or `selectable_themes()` to curate the menu:
+
+```{r}
+#| eval: false
+# Flat list — no tabs, just a single column of choices.
+selectable_themes(my_table, list(
+  Cochrane = web_theme_cochrane(),
+  Lancet   = web_theme_lancet()
+))
+
+# 2-level named list — each top-level key becomes a tab in the dropdown.
+selectable_themes(my_table, list(
+  Editorial = list(
+    Cochrane = web_theme_cochrane(),
+    Lancet   = web_theme_lancet(),
+    JAMA     = web_theme_jama()
+  ),
+  Other = list(Dark = web_theme_dark())
+))
+```
+
+The active theme is auto-included so readers can always revert. For
+categorized lists, if the active theme isn't in any user-supplied
+category, a `Current` tab is prepended.
+
 ## Step 2: Tweak inputs
 
-Every theme — including all nine presets — is determined by **a small set of customer-facing inputs**. There are twelve of them:
+Every theme — including all four presets — is determined by **a small set of customer-facing inputs**. There are twelve of them:
 
 | Group | Input | What it controls |
 |-------|-------|------------------|
@@ -98,7 +123,7 @@ my_theme <- web_theme(
 )
 ```
 
-`web_theme()` starts from `web_theme_default()` unless you pass a different `base_theme`. Anything you *don't* set inherits from the base.
+`web_theme()` starts from `web_theme_cochrane()` unless you pass a different `base_theme`. Anything you *don't* set inherits from the base.
 
 The deep companions mirror their primaries by default:
 
@@ -239,7 +264,7 @@ For surgical overrides anywhere in the theme tree, use `set_theme_field()` with 
 
 ```{r}
 #| eval: false
-custom <- web_theme_default() |>
+custom <- web_theme_cochrane() |>
   set_theme_field(c("row_group", "L1", "bg"), "#EEEEEE") |>
   set_theme_field(c("series", 1L, "fill"), "#FF0000") |>
   set_theme_field(c("plot", "gridline"), "#003300") |>
@@ -255,11 +280,11 @@ Because the cascades share only Tier 1, you can override a Tier 2 chrome role wi
 ```{r}
 #| eval: false
 # Pin the surface to a specific cream, regardless of what neutrals say
-web_theme_default() |>
+web_theme_cochrane() |>
   set_theme_field(c("surface", "base"), "#FDFCFB")
 
 # Adjust series 2's stroke without affecting any other slot or chrome
-web_theme_default() |>
+web_theme_cochrane() |>
   set_theme_field(c("series", 2L, "stroke"), "#444444")
 ```
 
@@ -302,7 +327,7 @@ Edit individual fields with `set_theme_field()`:
 
 ```{r}
 #| eval: false
-web_theme_default() |>
+web_theme_cochrane() |>
   set_theme_field(c("text", "title", "weight"), 700) |>
   set_theme_field(c("text", "title", "italic"), TRUE)
 ```
@@ -321,11 +346,11 @@ forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
 
 # Modern dashboard — vibrant, spacious, screen-first
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
-            label = "study", theme = web_theme_modern())
+            label = "study", theme = web_theme_cochrane())
 
 # Slide deck — oversized markers, thick lines, large type
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
-            label = "study", theme = web_theme_presentation())
+            label = "study", theme = web_theme_cochrane() |> set_variants(density = "spacious"))
 
 # Dark mode — Catppuccin-inspired
 forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",

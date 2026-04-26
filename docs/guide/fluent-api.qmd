@@ -176,7 +176,7 @@ forest_plot(styled_data,
   scale = "log", null_value = 1
 ) |>
   set_row_style(type = "rtype", bold = "rbold", indent = "rindent") |>
-  set_theme("modern")
+  set_theme("cochrane")
 ```
 
 ### set_marker_style()
@@ -214,7 +214,7 @@ forest_plot(marker_data,
   scale = "log", null_value = 1
 ) |>
   set_marker_style(color = "marker_color", shape = "marker_shape") |>
-  set_theme("modern")
+  set_theme("cochrane")
 ```
 
 ### set_column_style()
@@ -465,7 +465,7 @@ forest_plot(styled_analysis,
 ) |>
   set_marker_style(color = "sig_color") |>
   set_row_style(bold = "is_sig") |>
-  set_theme("modern")
+  set_theme("cochrane")
 ```
 
 ::: {.callout-tip}

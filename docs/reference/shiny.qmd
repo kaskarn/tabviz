@@ -142,10 +142,10 @@ server <- function(input, output, session) {
 
   output$plot <- renderTabviz({
     theme <- switch(input$theme,
-      "Default" = web_theme_default(),
+      "Default" = web_theme_cochrane(),
       "JAMA"    = web_theme_jama(),
       "Lancet"  = web_theme_lancet(),
-      "Modern"  = web_theme_modern()
+      "Modern"  = web_theme_cochrane()
     )
 
     tabviz(data,

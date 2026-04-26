@@ -250,7 +250,7 @@ tabviz(outcomes, label = "study",
       col_pvalue("secondary_p", "P")
     )
   ),
-  theme = web_theme_modern()
+  theme = web_theme_cochrane()
 )
 ```
 

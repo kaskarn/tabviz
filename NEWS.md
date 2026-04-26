@@ -1,5 +1,44 @@
 # tabviz 0.26.0.9000
 
+## In-widget theme switcher gains category tabs
+
+`enable_themes` (and `selectable_themes()`) now accepts a 2-level named
+list — each top-level key becomes a tab label in the in-widget switcher
+dropdown:
+
+```r
+selectable_themes(my_table, list(
+  Editorial = list(
+    Cochrane = web_theme_cochrane(),
+    Lancet   = web_theme_lancet(),
+    JAMA     = web_theme_jama()
+  ),
+  Other = list(Dark = web_theme_dark())
+))
+```
+
+A flat list (existing behavior) renders the dropdown without tabs. When
+categorized and the active theme isn't in any supplied category, a
+`Current` tab is auto-prepended so the user can always revert.
+
+## Reimagined preset roster
+
+The four kept themes are reimagined for the v2 ontology:
+
+* **Cochrane** (the new package default) leans into Cochrane heritage
+  teal as brand and a warm-coral as the independent accent — Brand and
+  Accent are the two identity knobs, kept visually distinct to
+  exercise the chrome/data wall. Inter sans-serif, comfortable density.
+* **Lancet** refines the accent from the muddy `#B8860B` to a more
+  sophisticated old-gold (`#A6792A`); brand_deep `#002D54` stays
+  explicitly pinned to lock the journal identity through re-resolution.
+* **JAMA** stays all-B&W, ultra-compact, strong-dividers throughout —
+  brand_deep is now explicitly pinned to `#000000` to make the
+  no-cascade intent obvious.
+* **Dark** gains an explicit `content.inverse` override so bold-mode
+  header text reads correctly in dark mode (the resolver default
+  would have given dark-on-dark in the bold band).
+
 ## Theme roster trim (breaking)
 
 The package's preset roster shrinks from nine themes to four. The remaining

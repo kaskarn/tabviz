@@ -102,5 +102,5 @@ data |>
 
 - [Export overview](export.qmd) — picking a format
 - [`split_table()`](split_table.qmd) — produce the `SplitForest` accepted here
-- [Themes](themes.qmd) — print-oriented presets (`web_theme_jama()`, `web_theme_lancet()`, `web_theme_nature()`)
+- [Themes](themes.qmd) — print-oriented presets (`web_theme_jama()`, `web_theme_lancet()`, `web_theme_cochrane()`)
 - [`web_interaction_publication()`](interaction.qmd#web_interaction_publication) — quiet UI before exporting screenshots

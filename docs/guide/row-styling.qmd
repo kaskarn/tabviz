@@ -69,7 +69,7 @@ tabviz(indent_demo,
   ),
   row_indent = "rindent",
   row_bold = "rbold",
-  theme = web_theme_modern()
+  theme = web_theme_cochrane()
 )
 ```
 
@@ -96,7 +96,7 @@ nba_efficiency |>
     ),
     row_badge = "award",
     row_bold = "all_star",
-    theme = web_theme_modern()
+    theme = web_theme_cochrane()
   )
 ```
 
@@ -372,7 +372,7 @@ tabviz(meta_analysis,
   row_indent = "rindent",
   row_color = "rcolor",
   row_badge = "rbadge",
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "SGLT2 Inhibitors Meta-Analysis",
   subtitle = "Cardiovascular and renal outcomes"
 )

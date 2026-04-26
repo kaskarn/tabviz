@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="500" height="334"
-  viewBox="0 0 500 334">
+  width="500" height="275"
+  viewBox="0 0 500 275">
 <style>
   text {
     font-variant-numeric: tabular-nums;
@@ -9,155 +9,155 @@
   /* Use dominant-baseline for cell text to match CSS flex centering */
   .cell-text { dominant-baseline: central; }
 </style>
-<rect width="100%" height="100%" fill="#FAFAFA"/>
-<text x="16" y="35"
-      font-family="Inter, system-ui, -apple-system, sans-serif"
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<text x="12" y="31"
+      font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
       font-size="16px"
       font-weight="600"
-      fill="#2563EB">Trial Enrollment by Department</text>
-<line x1="16" x2="484"
-      y1="56" y2="56"
-      stroke="#52525B" stroke-width="2"/>
-<rect x="16" y="56"
-        width="468" height="40"
-        fill="#EFF1F5"/>
-<text class="cell-text" x="26" y="76"
-        font-family="Inter, system-ui, -apple-system, sans-serif"
+      fill="#006B9C">Trial Enrollment by Department</text>
+<line x1="12" x2="488"
+      y1="48" y2="48"
+      stroke="#5B6470" stroke-width="2"/>
+<rect x="12" y="48"
+        width="476" height="32"
+        fill="#ECF0F5"/>
+<text class="cell-text" x="22" y="64"
+        font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
         font-size="14.7px"
         font-weight="600"
-        fill="#18181B">Department</text>
-<text class="cell-text" x="222" y="76"
-          font-family="Inter, system-ui, -apple-system, sans-serif"
+        fill="#1F2937">Department</text>
+<text class="cell-text" x="210" y="64"
+          font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
           font-size="14.7px"
           font-weight="600"
           text-anchor="middle"
-          fill="#18181B">Enrollment</text>
-<text class="cell-text" x="322" y="76"
-          font-family="Inter, system-ui, -apple-system, sans-serif"
+          fill="#1F2937">Enrollment</text>
+<text class="cell-text" x="310" y="64"
+          font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
           font-size="14.7px"
           font-weight="600"
           text-anchor="start"
-          fill="#18181B">N</text>
-<line x1="16" x2="484"
-        y1="96" y2="96"
-        stroke="#52525B" stroke-width="2"/>
-<rect x="16" y="96"
-            width="468" height="30"
-            fill="#F5F5F8"/>
-<rect x="16" y="156"
-            width="468" height="30"
-            fill="#F5F5F8"/>
-<defs><clipPath id="viz-clip-viz_bar_enrollment"><rect x="144" y="96" width="156" height="120"/></clipPath></defs>
+          fill="#1F2937">N</text>
+<line x1="12" x2="488"
+        y1="80" y2="80"
+        stroke="#5B6470" stroke-width="2"/>
+<rect x="12" y="80"
+            width="476" height="24"
+            fill="#F6F7FA"/>
+<rect x="12" y="128"
+            width="476" height="24"
+            fill="#F6F7FA"/>
+<defs><clipPath id="viz-clip-viz_bar_enrollment"><rect x="132" y="80" width="156" height="96"/></clipPath></defs>
 <g clip-path="url(#viz-clip-viz_bar_enrollment)">
 
 <rect
-      x="144" y="100.5"
-      width="109.2" height="21"
+      x="132" y="83.6"
+      width="109.2" height="16.799999999999997"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="144" y="130.5"
-      width="139.06285714285715" height="21"
+      x="132" y="107.6"
+      width="139.06285714285715" height="16.799999999999997"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="144" y="160.5"
-      width="84.24000000000001" height="21"
+      x="132" y="131.6"
+      width="84.24000000000001" height="16.799999999999997"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 <rect
-      x="144" y="190.5"
-      width="69.53142857142858" height="21"
+      x="132" y="155.6"
+      width="69.53142857142858" height="16.799999999999997"
       fill="#3b82f6" fill-opacity="0.85" rx="2"
       class="viz-bar-segment"/>
 </g>
-<g transform="translate(0, 232)">
-<line x1="132" x2="312"
-    y1="0" y2="0" stroke="#52525B" stroke-width="1"/>
-<line x1="144" x2="144" y1="0" y2="4" stroke="#52525B" stroke-width="1"/>
-<text x="146" y="14"
+<g transform="translate(0, 188)">
+<line x1="120" x2="300"
+    y1="0" y2="0" stroke="#5B6470" stroke-width="1"/>
+<line x1="132" x2="132" y1="0" y2="4" stroke="#5B6470" stroke-width="1"/>
+<text x="134" y="14"
       text-anchor="start"
-      font-family="Inter, system-ui, -apple-system, sans-serif"
+      font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="400"
-      fill="#2563EB">0</text>
-<line x1="233.14285714285714" x2="233.14285714285714" y1="0" y2="4" stroke="#52525B" stroke-width="1"/>
-<text x="233.14285714285714" y="14"
+      fill="#006B9C">0</text>
+<line x1="221.14285714285714" x2="221.14285714285714" y1="0" y2="4" stroke="#5B6470" stroke-width="1"/>
+<text x="221.14285714285714" y="14"
       text-anchor="middle"
-      font-family="Inter, system-ui, -apple-system, sans-serif"
+      font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="400"
-      fill="#2563EB">200</text>
-<text x="222" y="28"
+      fill="#006B9C">200</text>
+<text x="210" y="28"
       text-anchor="middle"
-      font-family="Inter, system-ui, -apple-system, sans-serif"
+      font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="500"
-      fill="#2563EB">Value</text>
+      fill="#006B9C">Value</text>
 </g>
-<text class="cell-text" x="26" y="111"
-    font-family="Inter, system-ui, -apple-system, sans-serif"
+<text class="cell-text" x="22" y="92"
+    font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#18181B">Cardiology</text>
-<text class="cell-text" x="322" y="111"
-          font-family="Inter, system-ui, -apple-system, sans-serif"
+    fill="#1F2937">Cardiology</text>
+<text class="cell-text" x="310" y="92"
+          font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
-          fill="#18181B">245.00</text>
-<line x1="16" x2="484"
-          y1="126" y2="126"
-          stroke="#B0B7CB" stroke-width="1"/>
-<text class="cell-text" x="26" y="141"
-    font-family="Inter, system-ui, -apple-system, sans-serif"
+          fill="#1F2937">245.00</text>
+<line x1="12" x2="488"
+          y1="104" y2="104"
+          stroke="#B1BAC9" stroke-width="1"/>
+<text class="cell-text" x="22" y="116"
+    font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#18181B">Oncology</text>
-<text class="cell-text" x="322" y="141"
-          font-family="Inter, system-ui, -apple-system, sans-serif"
+    fill="#1F2937">Oncology</text>
+<text class="cell-text" x="310" y="116"
+          font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
-          fill="#18181B">312.00</text>
-<line x1="16" x2="484"
-          y1="156" y2="156"
-          stroke="#B0B7CB" stroke-width="1"/>
-<text class="cell-text" x="26" y="171"
-    font-family="Inter, system-ui, -apple-system, sans-serif"
+          fill="#1F2937">312.00</text>
+<line x1="12" x2="488"
+          y1="128" y2="128"
+          stroke="#B1BAC9" stroke-width="1"/>
+<text class="cell-text" x="22" y="140"
+    font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#18181B">Neurology</text>
-<text class="cell-text" x="322" y="171"
-          font-family="Inter, system-ui, -apple-system, sans-serif"
+    fill="#1F2937">Neurology</text>
+<text class="cell-text" x="310" y="140"
+          font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
-          fill="#18181B">189.00</text>
-<line x1="16" x2="484"
-          y1="186" y2="186"
-          stroke="#B0B7CB" stroke-width="1"/>
-<text class="cell-text" x="26" y="201"
-    font-family="Inter, system-ui, -apple-system, sans-serif"
+          fill="#1F2937">189.00</text>
+<line x1="12" x2="488"
+          y1="152" y2="152"
+          stroke="#B1BAC9" stroke-width="1"/>
+<text class="cell-text" x="22" y="164"
+    font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
-    fill="#18181B">Pediatrics</text>
-<text class="cell-text" x="322" y="201"
-          font-family="Inter, system-ui, -apple-system, sans-serif"
+    fill="#1F2937">Pediatrics</text>
+<text class="cell-text" x="310" y="164"
+          font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
           font-style="normal"
           text-anchor="start"
-          fill="#18181B">156.00</text>
-<line x1="16" x2="484"
-          y1="216" y2="216"
-          stroke="#B0B7CB" stroke-width="1"/>
+          fill="#1F2937">156.00</text>
+<line x1="12" x2="488"
+          y1="176" y2="176"
+          stroke="#B1BAC9" stroke-width="1"/>
 
 </svg>

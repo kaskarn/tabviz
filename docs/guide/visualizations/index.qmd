@@ -45,7 +45,7 @@ All `viz_*()` columns share:
 When you have multiple effects per row (multiple bar series, boxplot groups, or forest effects), colors come from the theme's `series_anchors` input. Each anchor expands into a 7-field slot bundle (fill, stroke, fill_muted, etc.) at resolve time:
 
 ```r
-web_theme_default() |>
+web_theme_cochrane() |>
   set_inputs(series_anchors = c("#2563eb", "#dc2626", "#16a34a"))
 ```
 

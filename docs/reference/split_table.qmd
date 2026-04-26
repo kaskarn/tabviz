@@ -65,7 +65,7 @@ forest_plot(data,
   label = "study",
   split_by = "region",
   scale = "log", null_value = 1,
-  theme = web_theme_modern()
+  theme = web_theme_cochrane()
 )
 ```
 

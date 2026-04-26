@@ -45,7 +45,7 @@ tabviz(product_metrics, label = "product",
     col_stars("satisfaction", "Rating", max_stars = 5)
   ),
   row_color = ~ ifelse(growth < 0, "#dc2626", "#64748b"),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Product Performance Dashboard"
 )
 ```
@@ -94,7 +94,7 @@ tabviz(ab_test_results, label = "variant",
   row_bold = "row_bold",
   marker_color = ~ ifelse(is.na(lower), "#64748b",
                           ifelse(lower > 0, "#16a34a", "#64748b")),
-  theme = web_theme_nature(),
+  theme = web_theme_cochrane(),
   title = "Homepage Redesign A/B Test"
 )
 ```
@@ -136,7 +136,7 @@ tabviz(
     on_time_pct < 0.75 ~ "#fee2e2",
     TRUE ~ NA_character_
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Airline Performance Dashboard"
 )
 ```
@@ -181,7 +181,7 @@ tabviz(exec_data,
       min_value = 60, max_value = 100, decimals = 0),
     col_sparkline("trend", "8-Quarter Trend")
   ),
-  theme = web_theme_presentation(),
+  theme = web_theme_cochrane() |> set_variants(density = "spacious"),
   title = "Q4 Executive Summary"
 )
 ```
@@ -281,7 +281,7 @@ tabviz(
     col_sparkline("trend", "6M Trend")
   ),
   row_type = "rtype", row_bold = "rbold", row_indent = "rindent", row_color = "rcolor",
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Executive Dashboard",
   subtitle = "Table-only with hierarchical org structure",
   caption = "Using tabviz() with row styling for org charts"
@@ -324,7 +324,7 @@ tabviz(saas_peers, label = "company",
     quartile == "Q4" ~ "#fef2f2",
     TRUE ~ NA_character_
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "SaaS Peer Benchmark",
   subtitle = "Revenue, growth, margin, and ARR trajectory across 10 companies"
 )
@@ -426,7 +426,7 @@ tabviz(qc_lines, label = "line",
     status == "Warning" ~ "#fffbeb",
     TRUE ~ NA_character_
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Production-Line QC Dashboard",
   subtitle = "Defect rate vs target, capacity utilization, and 24-hour yield trend"
 )
@@ -461,7 +461,7 @@ tabviz(
     col_interval("per", "per_lower", "per_upper", header = "PER (95% CI)")
   ),
   row_badge = "award",
-  theme = web_theme_modern() |>
+  theme = web_theme_cochrane() |>
     set_inputs(brand = "#C9082A"),  # NBA red
   title = "NBA Player Efficiency Ratings",
   subtitle = "Row groups by conference + column groups for Player Info / Stats",
@@ -492,7 +492,7 @@ tabviz(
   ),
   marker_shape = ~ ifelse(certainty == "High", "circle", "square"),
   marker_color = ~ ifelse(anomaly > 1.5, "#dc2626", ifelse(anomaly > 1.0, "#f59e0b", "#3b82f6")),
-  theme = web_theme_modern() |>
+  theme = web_theme_cochrane() |>
     set_theme_field(c("axis", "gridlines"), TRUE),
   title = "Regional Temperature Anomalies",
   subtitle = "Grouped by geographic category, shaped by confidence level",

@@ -45,7 +45,7 @@ tabviz(
   ),
   row_type = "row_type", row_bold = "row_bold",
   interaction = web_interaction_full(),
-  theme = web_theme_nature(),
+  theme = web_theme_cochrane(),
   title = "GLP-1 Agonist Cardiovascular Outcomes",
   subtitle = "Major adverse cardiovascular events (MACE)"
 )
@@ -135,7 +135,7 @@ tabviz(effect_sizes,
     )
   ),
   interaction = web_interaction_full(),
-  theme = web_theme_default(),
+  theme = web_theme_cochrane(),
   title = "Row Groups x Column Groups",
   subtitle = "Click a group header to collapse; drag within any group to reorder"
 )
@@ -201,7 +201,7 @@ tabviz(april, label = "carrier",
     col_sparkline("trend", "12-Month Trend")
   ),
   interaction = web_interaction_full(),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Airline Performance (April)"
 )
 ```

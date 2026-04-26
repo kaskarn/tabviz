@@ -102,7 +102,7 @@ tabviz(
     viz_forest(point = "delay_vs_avg", lower = "delay_lower", upper = "delay_upper",
                null_value = 0, axis_label = "Delay vs. Average (minutes)")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Airline Carrier Performance"
 )
 ```
@@ -148,7 +148,7 @@ tabviz(
                null_value = 15, axis_label = "Player Efficiency Rating")
   ),
   row_badge = "award",
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "NBA Player Efficiency",
   subtitle = "2023-24 Season",
   caption = "PER: 15 = league average"
@@ -193,7 +193,7 @@ climate_temps |>
       viz_forest(point = "anomaly", lower = "lower", upper = "upper",
                  null_value = 0, axis_label = "Temperature Anomaly (°C)")
     ),
-    theme = web_theme_minimal(),
+    theme = web_theme_jama(),
     title = "Regional Temperature Anomalies",
     subtitle = "2023 vs. Pre-Industrial Baseline"
   )
@@ -236,7 +236,7 @@ effect_sizes |>
                  scale = "log", null_value = 1, width = 200)
     ),
     marker_color = ~ ifelse(significant, "#16a34a", "#94a3b8"),
-    theme = web_theme_modern(),
+    theme = web_theme_cochrane(),
     title = "Effect Sizes by Region"
   )
 ```

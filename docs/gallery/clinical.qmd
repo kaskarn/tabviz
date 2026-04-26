@@ -41,7 +41,7 @@ tabviz(
 
 ::: {.callout-tip}
 ## Theme Variations
-The same data structure works with any theme. Try `web_theme_lancet()`, `web_theme_nature()`, or `web_theme_cochrane()` for different journal styles. See [Feature Showcases](showcases.qmd#all-theme-variants) for a visual comparison of all 9 built-in themes.
+The same data structure works with any theme. Try `web_theme_lancet()`, `web_theme_cochrane()`, or `web_theme_cochrane()` for different journal styles. See [Feature Showcases](showcases.qmd#all-theme-variants) for a visual comparison of all 9 built-in themes.
 :::
 
 ---
@@ -176,7 +176,7 @@ tabviz(annotated_data,
   marker_color = "sig_color",
   marker_shape = "sig_shape",
   row_bold = ~ pvalue < 0.05,
-  theme = web_theme_nature(),
+  theme = web_theme_cochrane(),
   title = "Cardiovascular Outcomes with Annotations",
   subtitle = "Direction-coded markers: green = significant benefit, gray = non-significant"
 )
@@ -280,7 +280,7 @@ tabviz(
     viz_forest(point = "hr", lower = "lower", upper = "upper",
                scale = "log", null_value = 1, axis_label = "Hazard Ratio")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Nested Hierarchical Groups",
   subtitle = "Region > Country > Site (3 levels)",
   caption = "Click any group header to collapse that branch and all children"

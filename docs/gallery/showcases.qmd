@@ -57,7 +57,7 @@ tabviz(project_data, label = "task",
     col_icon("flag", "Flag",
       mapping = list(ok = "\u2714", done = "\u2605", blocked = "\u2716", paused = "\u23f8"))
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Rich Column Types Showcase"
 )
 ```
@@ -100,7 +100,7 @@ tabviz(reg_data,
     conf.low > 0 ~ "#16a34a",
     TRUE ~ "#64748b"
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Linear Regression Coefficients",
   subtitle = "lm(mpg ~ cyl + disp + hp + wt + am, data = mtcars)",
   footnote = "Red = negative effect, green = positive effect, gray = not significant at alpha = 0.05."
@@ -159,7 +159,7 @@ tabviz(clinical_dashboard, label = "site",
       show_quartiles = TRUE
     )
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Clinical Site Performance Dashboard"
 )
 ```
@@ -229,15 +229,10 @@ make_plot <- function(theme_fn, name) {
   )
 }
 
-make_plot(web_theme_default, "Default")
-make_plot(web_theme_jama, "JAMA")
-make_plot(web_theme_lancet, "Lancet")
-make_plot(web_theme_nature, "Nature")
 make_plot(web_theme_cochrane, "Cochrane")
-make_plot(web_theme_modern, "Modern")
-make_plot(web_theme_presentation, "Presentation")
-make_plot(web_theme_dark, "Dark")
-make_plot(web_theme_minimal, "Minimal")
+make_plot(web_theme_lancet,   "Lancet")
+make_plot(web_theme_jama,     "JAMA")
+make_plot(web_theme_dark,     "Dark")
 ```
 
 ---
@@ -294,7 +289,7 @@ tabviz(styling_data,
   ),
   marker_opacity = "quality",
   marker_size = ~ ifelse(design == "RCT", 1.2, 1),
-  theme = web_theme_nature(),
+  theme = web_theme_cochrane(),
   title = "Conditional Styling Showcase",
   subtitle = "Row, cell, and marker styling with formulas"
 )
@@ -367,7 +362,7 @@ See [Fluent API](../guide/fluent-api.qmd) and [Themes](../guide/themes.qmd).
 
 ## Publication Templates
 
-Three journal-style treatments of the same underlying forest-plot structure. The only thing that changes is the theme (`web_theme_jama`, `web_theme_lancet`, `web_theme_minimal`) and the row/column grouping — use these as drop-in templates for manuscript figures.
+Two journal-style treatments of the same underlying forest-plot structure. The only thing that changes is the theme (`web_theme_jama`, `web_theme_lancet`) and the row/column grouping — use these as drop-in templates for manuscript figures.
 
 ### JAMA Style
 
@@ -497,7 +492,7 @@ tabviz(
       col_interval("hr", "lower", "upper", header = "HR (95% CI)")
     )
   ),
-  theme = web_theme_minimal(),
+  theme = web_theme_jama(),
   title = "Forest Plot",
   subtitle = "Row groups by phase + column groups for Sample / Results",
   footnote = "Random-effects model. Weights from inverse variance."
@@ -526,7 +521,7 @@ tabviz(
                axis_label = "Hazard Ratio"),
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Hierarchical Subgroup Analysis",
   subtitle = "Outcome > Treatment navigation tree",
   caption = "Expand tree nodes to drill into subgroups"

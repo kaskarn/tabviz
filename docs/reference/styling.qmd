@@ -207,7 +207,7 @@ tabviz(data, label = "study") |>
   set_theme("jama") |>
   selectable_themes(list(
     Classical = web_theme_jama(),
-    Modern    = web_theme_modern()
+    Modern    = web_theme_cochrane()
   ))
 ```
 

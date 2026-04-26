@@ -35,7 +35,7 @@ A one-page lookup card for tabviz. Pair this with the [Reference](reference/inde
 | `label` | `NULL` | Column with row labels |
 | `group` | `NULL` | Column(s) for collapsible row groups |
 | `columns` | required | List of `col_*()` / `viz_*()` specs |
-| `theme` | `web_theme_default()` | Visual theme |
+| `theme` | `web_theme_cochrane()` | Visual theme |
 | `interaction` | `web_interaction()` | Interactivity preset |
 | `title`, `subtitle`, `caption`, `footnote` | `NULL` | Header / footer text |
 | `marker_size` | `NULL` | Constant or column for marker scaling (e.g. `"weight"`) |
@@ -141,21 +141,16 @@ All accept column names or formula expressions:
 
 | Theme | Style |
 |---|---|
-| `web_theme_default()` | Clean, modern default |
-| `web_theme_jama()` | JAMA publication style |
-| `web_theme_lancet()` | Lancet publication style |
-| `web_theme_nature()` | Nature publication style |
-| `web_theme_cochrane()` | Cochrane review style |
-| `web_theme_modern()` | Contemporary with gradients |
-| `web_theme_presentation()` | Large text for slides |
-| `web_theme_dark()` | Dark mode |
-| `web_theme_minimal()` | Maximum density |
+| `web_theme_cochrane()` | The package default. Cochrane teal + coral accent, Inter, comfortable |
+| `web_theme_lancet()`   | Lancet navy + gold, Georgia serif, comfortable |
+| `web_theme_jama()`     | JAMA all-B&W, ultra-compact, Arial |
+| `web_theme_dark()`     | Catppuccin Mocha-inspired dark canvas |
 
 ## Theme modifiers (fluent)
 
 ```r
 tabviz(...,
-  theme = web_theme_default() |>
+  theme = web_theme_cochrane() |>
     set_inputs(
       brand          = "#2563EB",
       accent         = "#1E40AF",

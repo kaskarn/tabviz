@@ -101,17 +101,12 @@ Fluent verbs that mutate a `WebSpec`, htmlwidget, or `tabviz_proxy`. See [Stylin
 
 | Function | Description |
 |---|---|
-| [`web_theme_default()`](themes.qmd#web_theme_default) | Clean modern default |
-| [`web_theme_minimal()`](themes.qmd#web_theme_minimal) | Academic black & white |
-| [`web_theme_dark()`](themes.qmd#web_theme_dark) | Dark mode |
-| [`web_theme_jama()`](themes.qmd#web_theme_jama) | JAMA journals |
-| [`web_theme_lancet()`](themes.qmd#web_theme_lancet) | Lancet journals |
-| [`web_theme_modern()`](themes.qmd#web_theme_modern) | Reports / dashboards |
-| [`web_theme_presentation()`](themes.qmd#web_theme_presentation) | Slides / posters |
-| [`web_theme_cochrane()`](themes.qmd#web_theme_cochrane) | Cochrane reviews |
-| [`web_theme_nature()`](themes.qmd#web_theme_nature) | Nature journals |
-| [`web_theme()`](themes.qmd#web_theme) | Generic constructor |
-| [`package_themes()`](themes.qmd#package_themes) | Named list of every shipped theme |
+| [`web_theme_cochrane()`](themes.qmd#web_theme_cochrane) | The package default — Cochrane teal + warm-coral accent, Inter, comfortable |
+| [`web_theme_lancet()`](themes.qmd#web_theme_lancet)     | Lancet navy + refined gold, Georgia serif, comfortable |
+| [`web_theme_jama()`](themes.qmd#web_theme_jama)         | JAMA all-B&W, ultra-compact, Arial |
+| [`web_theme_dark()`](themes.qmd#web_theme_dark)         | Catppuccin Mocha-inspired dark canvas |
+| [`web_theme()`](themes.qmd#web_theme)                   | Generic custom-theme constructor |
+| [`package_themes()`](themes.qmd#package_themes)         | Named list of every shipped theme (Cochrane / Lancet / JAMA / Dark) |
 
 ### Theme modifiers
 

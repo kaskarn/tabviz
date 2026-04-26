@@ -77,7 +77,7 @@ p_bar <- tabviz(bar_data, label = "department",
             header = "Enrollment", width = 180, axis_range = c(0, 350)),
     col_numeric("enrollment", "N")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   title = "Trial Enrollment by Department"
 )
 

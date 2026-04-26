@@ -185,7 +185,7 @@ forest_plot(your_data, ...,
 
 # Or use theme settings
 forest_plot(your_data, ...,
-  theme = web_theme_default() |>
+  theme = web_theme_cochrane() |>
     set_theme_field(c("axis", "tick_count"), 5) |>
     set_theme_field(c("axis", "gridlines"), TRUE)
 )
@@ -376,7 +376,7 @@ data <- data |>
 ```{r}
 #| eval: false
 # Use web-safe fallback fonts
-web_theme_default() |>
+web_theme_cochrane() |>
   set_inputs(font_body = "Georgia, 'Times New Roman', serif")
 
 # For exports, fonts must be installed on the rendering system

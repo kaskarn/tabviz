@@ -25,31 +25,21 @@ arguments — chain modifiers to customize.
 
 | Theme | Purpose | Notable defaults |
 |---|---|---|
-| [`web_theme_default()`](#web_theme_default) | Clean, modern starting point | Cyan accents, system font, comfortable density |
-| [`web_theme_minimal()`](#web_theme_minimal) | Academic / publication ready | Pure B&W, Georgia serif, compact density |
-| [`web_theme_dark()`](#web_theme_dark) | Dark mode | Catppuccin-Mocha palette |
-| [`web_theme_jama()`](#web_theme_jama) | JAMA journals | Pure B&W, Arial, ultra-compact (row_height = 18) |
-| [`web_theme_lancet()`](#web_theme_lancet) | Lancet journals | Lancet navy + gold, Georgia serif |
-| [`web_theme_modern()`](#web_theme_modern) | Reports & dashboards | Vibrant blue, Inter font, spacious |
-| [`web_theme_presentation()`](#web_theme_presentation) | Slides & posters | Oversized markers, thick lines, spacious |
-| [`web_theme_cochrane()`](#web_theme_cochrane) | Cochrane reviews | Cochrane teal, Arial, compact |
-| [`web_theme_nature()`](#web_theme_nature) | Nature journals | Nature blue, Helvetica Neue, compact |
+| [`web_theme_cochrane()`](#web_theme_cochrane) | The package default | Cochrane teal + warm-coral accent, Inter sans-serif, comfortable density |
+| [`web_theme_lancet()`](#web_theme_lancet)     | Lancet-style editorial | Navy + refined old-gold + warm cream, Georgia serif |
+| [`web_theme_jama()`](#web_theme_jama)         | JAMA / print journals | Pure black-and-white, ultra-compact, strong dividers, Arial |
+| [`web_theme_dark()`](#web_theme_dark)         | Dark-mode viewing | Catppuccin Mocha-inspired canvas, pastel markers |
 
 ```r
 tabviz(data, label = "study",
        columns = list(viz_forest("hr", "lo", "hi")),
-       theme = web_theme_jama())
+       theme = web_theme_lancet())
 ```
 
-### `web_theme_default()` {#web_theme_default}
-### `web_theme_minimal()` {#web_theme_minimal}
-### `web_theme_dark()` {#web_theme_dark}
-### `web_theme_jama()` {#web_theme_jama}
-### `web_theme_lancet()` {#web_theme_lancet}
-### `web_theme_modern()` {#web_theme_modern}
-### `web_theme_presentation()` {#web_theme_presentation}
 ### `web_theme_cochrane()` {#web_theme_cochrane}
-### `web_theme_nature()` {#web_theme_nature}
+### `web_theme_lancet()` {#web_theme_lancet}
+### `web_theme_jama()` {#web_theme_jama}
+### `web_theme_dark()` {#web_theme_dark}
 
 All preset builders take no arguments and return a fully resolved `WebTheme`.
 
@@ -63,7 +53,7 @@ iterating in tests.
 
 ```r
 package_themes()
-# $default, $minimal, $dark, $jama, $lancet, $modern, $presentation, $cochrane, $nature
+# $cochrane, $lancet, $jama, $dark
 ```
 
 ---
@@ -78,7 +68,7 @@ web_theme(
   name = "custom",
   inputs = NULL,        # Named list of ThemeInputs property overrides
   variants = NULL,      # Named list of ThemeVariants property overrides
-  base_theme = web_theme_default()
+  base_theme = web_theme_cochrane()
 )
 ```
 
@@ -87,7 +77,7 @@ web_theme(
 | `name` | string | `"custom"` | Theme name (shown in the in-widget switcher and in source export). |
 | `inputs` | named list | `NULL` | Tier 1 input overrides. Any `ThemeInputs` field is valid: `neutral`, `brand`, `brand_deep`, `accent`, `accent_deep`, `status_*`, `series_anchors`, `font_body`, `font_display`, `font_mono`. Unset fields inherit from `base_theme`. |
 | `variants` | named list | `NULL` | Per-table variant overrides: `density` (compact / comfortable / spacious), `header_style` (light / bold), `first_column_style` (default / bold). |
-| `base_theme` | `WebTheme` | `web_theme_default()` | Starting point. The `inputs` and `variants` lists are applied on top. |
+| `base_theme` | `WebTheme` | `web_theme_cochrane()` | Starting point. The `inputs` and `variants` lists are applied on top. |
 
 Example — Lancet-inspired theme with bold headers:
 
@@ -272,7 +262,7 @@ print_theme <- web_theme(
     font_display   = "'Times New Roman', serif"
   ),
   variants = list(density = "compact"),
-  base_theme = web_theme_minimal()
+  base_theme = web_theme_jama()
 ) |>
   set_theme_field(c("row_group", "L1", "text", "weight"), 700) |>
   set_theme_field(c("row_group", "L1", "border_bottom"), TRUE)

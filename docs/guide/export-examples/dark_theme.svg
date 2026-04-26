@@ -11,23 +11,23 @@
 </style>
 <rect width="100%" height="100%" fill="#1E1E2E"/>
 <text x="12" y="31"
-      font-family="system-ui, -apple-system, sans-serif"
+      font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
       font-size="16px"
       font-weight="600"
-      fill="#74C7EC">Dark Theme Export</text>
+      fill="#5C85C8">Dark Theme Export</text>
 <line x1="12" x2="488"
       y1="48" y2="48"
       stroke="#45475A" stroke-width="2"/>
 <rect x="12" y="48"
         width="476" height="32"
-        fill="#262739"/>
+        fill="#252538"/>
 <text class="cell-text" x="22" y="64"
-        font-family="system-ui, -apple-system, sans-serif"
+        font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
         font-size="14.7px"
         font-weight="600"
         fill="#CDD6F4">Study</text>
 <text class="cell-text" x="282" y="64"
-          font-family="system-ui, -apple-system, sans-serif"
+          font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14.7px"
           font-weight="600"
           text-anchor="start"
@@ -37,10 +37,10 @@
         stroke="#45475A" stroke-width="2"/>
 <rect x="12" y="80"
             width="476" height="24"
-            fill="#222233"/>
+            fill="#212133"/>
 <rect x="12" y="128"
             width="476" height="24"
-            fill="#222233"/>
+            fill="#212133"/>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="80" y2="176"
     stroke="#898EA5" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
@@ -80,31 +80,31 @@
 <line x1="153.9993077203411" x2="153.9993077203411" y1="0" y2="4"
       stroke="#45475A" stroke-width="1"/>
 <text x="153.9993077203411" y="16" text-anchor="middle"
-      font-family="system-ui, -apple-system, sans-serif"
+      font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="400"
-      fill="#74C7EC">0.60</text>
+      fill="#5C85C8">0.60</text>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="0" y2="4"
       stroke="#45475A" stroke-width="1"/>
 <text x="230.0006922796589" y="16" text-anchor="middle"
-      font-family="system-ui, -apple-system, sans-serif"
+      font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="400"
-      fill="#74C7EC">1.00</text>
+      fill="#5C85C8">1.00</text>
 <text x="192" y="28"
       text-anchor="middle"
-      font-family="system-ui, -apple-system, sans-serif"
+      font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="500"
-      fill="#74C7EC">Effect</text></g>
+      fill="#5C85C8">Effect</text></g>
 <text class="cell-text" x="22" y="92"
-    font-family="system-ui, -apple-system, sans-serif"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">SUSTAIN-6</text>
 <text class="cell-text" x="282" y="92"
-          font-family="system-ui, -apple-system, sans-serif"
+          font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
           font-style="normal"
@@ -114,13 +114,13 @@
           y1="104" y2="104"
           stroke="#313244" stroke-width="1"/>
 <text class="cell-text" x="22" y="116"
-    font-family="system-ui, -apple-system, sans-serif"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">PIONEER 6</text>
 <text class="cell-text" x="282" y="116"
-          font-family="system-ui, -apple-system, sans-serif"
+          font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
           font-style="normal"
@@ -130,13 +130,13 @@
           y1="128" y2="128"
           stroke="#313244" stroke-width="1"/>
 <text class="cell-text" x="22" y="140"
-    font-family="system-ui, -apple-system, sans-serif"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">LEADER</text>
 <text class="cell-text" x="282" y="140"
-          font-family="system-ui, -apple-system, sans-serif"
+          font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
           font-style="normal"
@@ -146,13 +146,13 @@
           y1="152" y2="152"
           stroke="#313244" stroke-width="1"/>
 <text class="cell-text" x="22" y="164"
-    font-family="system-ui, -apple-system, sans-serif"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">REWIND</text>
 <text class="cell-text" x="282" y="164"
-          font-family="system-ui, -apple-system, sans-serif"
+          font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
           font-style="normal"

@@ -46,5 +46,5 @@ There is no headless-browser dependency — exports run entirely in R via V8 and
 
 - [`save_plot()`](save_plot.qmd) — the single-plot exporter and `save_split_table()` for split views
 - [`split_table()`](split_table.qmd) — produce the `SplitForest` accepted by `save_split_table()`
-- [Themes](themes.qmd) — theme presets aimed at print (`web_theme_jama()`, `web_theme_lancet()`, `web_theme_nature()`)
+- [Themes](themes.qmd) — theme presets aimed at print (`web_theme_jama()`, `web_theme_lancet()`, `web_theme_cochrane()`)
 - [`web_interaction_publication()`](interaction.qmd#web_interaction_publication) — quiet, print-clean interaction preset

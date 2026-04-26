@@ -118,7 +118,7 @@ tabviz(meta_data[1:3, ],
 )
 ```
 
-**Available themes**: `web_theme_default()`, `web_theme_jama()`, `web_theme_lancet()`, `web_theme_nature()`, `web_theme_cochrane()`, `web_theme_modern()`, `web_theme_presentation()`, `web_theme_dark()`, `web_theme_minimal()`. See [Themes](themes.qmd).
+**Available themes**: `web_theme_cochrane()`, `web_theme_jama()`, `web_theme_lancet()`, `web_theme_cochrane()`, `web_theme_cochrane()`, `web_theme_cochrane()`, `web_theme_cochrane() |> set_variants(density = "spacious")`, `web_theme_dark()`, `web_theme_jama()`. See [Themes](themes.qmd).
 
 ## Row styling
 

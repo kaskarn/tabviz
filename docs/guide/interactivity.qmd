@@ -181,8 +181,8 @@ tabviz(data, interaction = web_interaction(enable_themes = NULL), ...)
 tabviz(data, interaction = web_interaction(
   enable_themes = list(
     web_theme_jama(),
-    web_theme_nature(),
-    web_theme_modern()
+    web_theme_cochrane(),
+    web_theme_cochrane()
   )
 ), ...)
 ```
@@ -195,7 +195,7 @@ tabviz(data, label = "study") |>
   set_theme("jama") |>
   selectable_themes(list(
     Classical = web_theme_jama(),
-    Modern    = web_theme_modern()
+    Modern    = web_theme_cochrane()
   ))
 ```
 
@@ -233,7 +233,7 @@ tabviz(sample_data, label = "item",
     col_numeric("value", "Value"),
     col_percent("change", "Change")
   ),
-  theme = web_theme_modern(),
+  theme = web_theme_cochrane(),
   footnote = "Click rows to select (indicated by left border)"
 )
 ```
@@ -321,7 +321,7 @@ showing the current widget as fluent R code:
 - **Combined** — both, stitched together:
 
 ```r
-mytheme <- web_theme_default() |>
+mytheme <- web_theme_cochrane() |>
   set_inputs(brand = "#0891b2")
 
 tbl <- tabviz(dt, label = "study", columns = list(...), theme = mytheme) |>
