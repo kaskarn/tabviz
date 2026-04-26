@@ -7,25 +7,33 @@ title: "Themes"
 library(tabviz)
 ```
 
-Built-in theme presets, the generic `web_theme()` constructor, fluent `set_*()` modifiers for tweaking a theme, and `package_themes()` for listing every shipped theme. Pass any theme to `tabviz(theme = ...)` or apply it after the fact with [`set_theme()`](styling.qmd#set_theme).
+Built-in theme presets, the `web_theme()` custom-theme constructor, the four core
+modifiers (`set_inputs()`, `set_variants()`, `set_spacing()`, `set_theme_field()`),
+and `package_themes()` for listing every shipped theme. Pass any theme to
+`tabviz(theme = ...)` or apply it after the fact with
+[`set_theme()`](styling.qmd#set_theme).
+
+For the conceptual model see the [Themes guide](../guide/themes.qmd) and the
+[Styling Cascade](../concepts/styling-cascade.qmd) concepts page.
 
 ---
 
 ## Preset themes
 
-`web_theme_*()` builders return a fully configured `WebTheme`. They take no arguments — chain `set_*()` modifiers to customize.
+`web_theme_*()` builders return a fully resolved `WebTheme`. They take no
+arguments — chain modifiers to customize.
 
 | Theme | Purpose | Notable defaults |
 |---|---|---|
-| [`web_theme_default()`](#web_theme_default) | Clean, modern starting point | Cyan accents, system font, rounded corners |
-| [`web_theme_minimal()`](#web_theme_minimal) | Academic / publication ready | Pure B&W, Georgia serif, sharp corners |
-| [`web_theme_dark()`](#web_theme_dark) | Dark mode | Catppuccin-Mocha palette, comfortable contrast |
-| [`web_theme_jama()`](#web_theme_jama) | JAMA journals | Pure B&W, Arial 9pt, 18px rows, dense |
+| [`web_theme_default()`](#web_theme_default) | Clean, modern starting point | Cyan accents, system font, comfortable density |
+| [`web_theme_minimal()`](#web_theme_minimal) | Academic / publication ready | Pure B&W, Georgia serif, compact density |
+| [`web_theme_dark()`](#web_theme_dark) | Dark mode | Catppuccin-Mocha palette |
+| [`web_theme_jama()`](#web_theme_jama) | JAMA journals | Pure B&W, Arial, ultra-compact (row_height = 18) |
 | [`web_theme_lancet()`](#web_theme_lancet) | Lancet journals | Lancet navy + gold, Georgia serif |
-| [`web_theme_modern()`](#web_theme_modern) | Reports & dashboards | Vibrant blue, Inter font, 30px rows, 8px radius |
-| [`web_theme_presentation()`](#web_theme_presentation) | Slides & posters | Oversized fonts, 12px markers, 36px rows |
-| [`web_theme_cochrane()`](#web_theme_cochrane) | Cochrane reviews | Cochrane teal, Arial 12px, 20px rows |
-| [`web_theme_nature()`](#web_theme_nature) | Nature journals | Nature blue, Helvetica Neue, 22px rows |
+| [`web_theme_modern()`](#web_theme_modern) | Reports & dashboards | Vibrant blue, Inter font, spacious |
+| [`web_theme_presentation()`](#web_theme_presentation) | Slides & posters | Oversized markers, thick lines, spacious |
+| [`web_theme_cochrane()`](#web_theme_cochrane) | Cochrane reviews | Cochrane teal, Arial, compact |
+| [`web_theme_nature()`](#web_theme_nature) | Nature journals | Nature blue, Helvetica Neue, compact |
 
 ```r
 tabviz(data, label = "study",
@@ -43,13 +51,15 @@ tabviz(data, label = "study",
 ### `web_theme_cochrane()` {#web_theme_cochrane}
 ### `web_theme_nature()` {#web_theme_nature}
 
-All preset builders take no arguments and return a `WebTheme`.
+All preset builders take no arguments and return a fully resolved `WebTheme`.
 
 ---
 
 ## `package_themes()` {#package_themes}
 
-Returns a named list of every theme distributed with the package — handy for the `enable_themes` argument of [`web_interaction()`](interaction.qmd) or for iterating in tests.
+Returns a named list of every theme distributed with the package — handy for
+the `enable_themes` argument of [`web_interaction()`](interaction.qmd) or for
+iterating in tests.
 
 ```r
 package_themes()
@@ -60,337 +70,260 @@ package_themes()
 
 ## `web_theme()` {#web_theme}
 
-Generic constructor: extend a base theme with a list of overrides per slot. Every override list mirrors the corresponding `set_*()` modifier's arguments.
+Custom-theme constructor. Extends a `base_theme` with named lists of
+Tier 1 inputs and per-table variants. Resolves the theme before returning.
 
 ```r
 web_theme(
   name = "custom",
-  colors = NULL,
-  typography = NULL,
-  spacing = NULL,
-  shapes = NULL,
-  axis = NULL,
-  layout = NULL,
-  group_headers = NULL,
+  inputs = NULL,        # Named list of ThemeInputs property overrides
+  variants = NULL,      # Named list of ThemeVariants property overrides
   base_theme = web_theme_default()
 )
 ```
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
-| `name` | `character(1)` | `"custom"` | Theme display name. |
-| `colors` | named list | `NULL` | Overrides for the `ColorPalette` slot — see [`set_colors()`](#set_colors). |
-| `typography` | named list | `NULL` | Overrides — see [`set_typography()`](#set_typography). |
-| `spacing` | named list | `NULL` | Overrides — see [`set_spacing()`](#set_spacing). |
-| `shapes` | named list | `NULL` | Overrides — see [`set_shapes()`](#set_shapes). |
-| `axis` | named list | `NULL` | Overrides — see [`set_axis()`](#set_axis). |
-| `layout` | named list | `NULL` | Overrides — see [`set_layout()`](#set_layout). |
-| `group_headers` | named list | `NULL` | Overrides — see [`set_group_headers()`](#set_group_headers). |
-| `base_theme` | `WebTheme` | `web_theme_default()` | Theme to inherit from. |
+| `name` | string | `"custom"` | Theme name (shown in the in-widget switcher and in source export). |
+| `inputs` | named list | `NULL` | Tier 1 input overrides. Any `ThemeInputs` field is valid: `neutral`, `brand`, `brand_deep`, `accent`, `accent_deep`, `status_*`, `series_anchors`, `summary_anchor`, `font_body`, `font_display`, `font_mono`. Unset fields inherit from `base_theme`. |
+| `variants` | named list | `NULL` | Per-table variant overrides: `density` (compact / comfortable / spacious), `header_style` (light / bold), `first_column_style` (default / bold). |
+| `base_theme` | `WebTheme` | `web_theme_default()` | Starting point. The `inputs` and `variants` lists are applied on top. |
+
+Example — Lancet-inspired theme with bold headers:
 
 ```r
-my_theme <- web_theme(
-  name = "house_style",
-  colors = list(primary = "#1a365d", ci_marker_fill = "#1a365d"),
-  typography = list(font_family = "Georgia, serif"),
-  spacing = list(row_height = 22),
-  base_theme = web_theme_minimal()
+custom <- web_theme(
+  name = "navy-bold",
+  inputs = list(
+    brand          = "#1F3A5F",
+    brand_deep     = "#0F2138",
+    accent         = "#B08938",
+    series_anchors = c("#1F3A5F", "#B08938", "#6B8E7F"),
+    font_body      = "Charter, Georgia, serif"
+  ),
+  variants = list(density = "comfortable", header_style = "bold")
 )
 ```
 
 ---
 
-## Theme modifiers (`set_*()`)
+## Theme modifiers
 
-Each modifier takes a `WebTheme`, returns a `WebTheme`, and composes with `|>`. Every argument is optional — unset arguments leave the existing value alone.
+All modifiers operate on a `WebTheme` and return a new (re-resolved) `WebTheme`.
+Chainable via the pipe.
 
-### `set_colors()` {#set_colors}
+### `set_inputs()` {#set_inputs}
+
+Update Tier 1 customer-facing inputs. Cascade-aware: changing `brand` clears
+`brand_deep` and `summary_anchor` so they re-mirror; changing `series_anchors`
+rebuilds the slot bundles.
 
 ```r
-set_colors(
+set_inputs(
   theme,
-  background = NULL, foreground = NULL,
-  primary = NULL, secondary = NULL,
-  accent = NULL, muted = NULL,
-  border = NULL,
-  row_bg = NULL, alt_bg = NULL, header_bg = NULL,
-  cell_foreground = NULL,
-  ci_marker_fill = NULL,
-  ci_line = NULL,
-  summary_fill = NULL,
-  summary_border = NULL
+  neutral, brand, brand_deep, accent, accent_deep,
+  status_positive, status_negative, status_warning, status_info,
+  series_anchors, summary_anchor,
+  font_body, font_display, font_mono
 )
 ```
 
-| Argument | Default | Description |
+| Argument | Type | Description |
 |---|---|---|
-| `background` | `"#ffffff"` | Widget container background. |
-| `foreground` | `"#333333"` | Default text color. |
-| `primary` | `"#0891b2"` | Primary accent. Cascades into `ci_marker_fill` and `summary_fill` if those are unset. |
-| `secondary` | `"#64748b"` | Secondary text/UI. |
-| `accent` | `"#8b5cf6"` | Palette slot referenced by the `accent` semantic bundle. |
-| `muted` | `"#94a3b8"` | Palette slot referenced by the `muted` semantic bundle; also used for footnotes / captions. |
-| `border` | `"#e2e8f0"` | Row dividers, container borders. |
-| `row_bg` | inherits `background` | Data-row background (distinct from `background` since v0.16). |
-| `alt_bg` | inherits `row_bg` | Odd-row background (zebra stripes). |
-| `header_bg` | `NA` → inherits `row_bg` | Column-header row background. Added in v0.16. Leave `NA` for "same as data rows"; set explicitly to tint the header band. |
-| `cell_foreground` | `NA` → inherits `foreground` | Data-cell text color. Added in v0.19. Set explicitly to tint data cell text without changing column headers, titles, captions, or UI chrome. |
-| `ci_marker_fill` | `"#0891b2"` | Default CI marker fill. Cascades into `summary_fill`. Preempted by `shapes.effect_colors[0]` when that is set. |
-| `ci_line` | `"#475569"` | Confidence-interval line color. |
-| `summary_fill` | inherits `ci_marker_fill` | Summary diamond fill (per-row `row_type = "summary"` and the legacy `spec.data.overall` path). |
-| `summary_border` | `"#0e7490"` | Summary diamond border. |
+| `theme` | `WebTheme` | Theme to modify |
+| `neutral` | `chr[5]` | 5-step ramp, lightest → darkest |
+| `brand` | hex | Brand fill color (markers, accents) |
+| `brand_deep` | hex | Dark companion for text/strokes; defaults to `brand` |
+| `accent` | hex | Chrome accent (hover, selection, links) |
+| `accent_deep` | hex | Dark companion; defaults to `accent` |
+| `status_positive`, `status_negative`, `status_warning`, `status_info` | hex | Semantic status colors |
+| `series_anchors` | `chr[]` | Per-effect anchor colors (variable length) |
+| `summary_anchor` | hex | Pooled-effect diamond anchor; defaults to `brand` |
+| `font_body` | string | Primary CSS font-family |
+| `font_display` | string | Optional title face; defaults to `font_body` |
+| `font_mono` | string | Optional monospace face |
 
-:::{.callout-important}
-## CI color arguments were renamed in 0.9.0
+### `set_variants()` {#set_variants}
 
-The `interval*` family was renamed to `ci_marker_*` / `ci_line` for clarity.
-
-| Old | New |
-|---|---|
-| `interval` | `ci_marker_fill` |
-| `interval_line` | `ci_line` |
-
-The old names still work for one cycle and emit `lifecycle::deprecate_warn()`.
-:::
-
-:::{.callout-note}
-## Direction-aware markers were removed in 0.13.0
-
-`ci_marker_positive`, `ci_marker_negative`, `ci_marker_neutral` (and the matching `interval_*` names) were never rendered — they were emitted as CSS vars but no code read them. The arguments are still accepted for back-compat and emit a deprecation warning. To color markers by direction, map a color column via `marker_color` in `viz_forest()`, or use per-effect literal colors.
-:::
-
-:::{.callout-tip}
-## Cascading defaults
-Setting `primary` automatically updates `ci_marker_fill` and `summary_fill` unless those are passed explicitly. Setting `background` cascades into `row_bg` and `alt_bg`. Override individually to break the cascade.
-:::
+Flip per-table toggles. Density change resets spacing tokens so the new
+preset's values flow through.
 
 ```r
-web_theme_default() |>
-  set_colors(
-    primary = "#0b3d91",
-    ci_marker_fill = "#0b3d91",
-    summary_fill = "#16a34a"
-  )
+set_variants(theme, density, header_style, first_column_style)
 ```
 
-### `set_typography()` {#set_typography}
-
-```r
-set_typography(
-  theme,
-  font_family = NULL,
-  font_size_sm = NULL, font_size_base = NULL, font_size_lg = NULL,
-  font_weight_normal = NULL, font_weight_medium = NULL, font_weight_bold = NULL,
-  line_height = NULL,
-  header_font_scale = NULL
-)
-```
-
-| Argument | Default | Description |
+| Argument | Values | Description |
 |---|---|---|
-| `font_family` | system stack | CSS font-family string. |
-| `font_size_sm` | `"0.75rem"` | Small text. |
-| `font_size_base` | `"0.875rem"` | Base text. |
-| `font_size_lg` | `"1rem"` | Large text. |
-| `font_weight_normal` | `400` | |
-| `font_weight_medium` | `500` | |
-| `font_weight_bold` | `600` | |
-| `line_height` | `1.5` | Line-height multiplier. |
-| `header_font_scale` | `1.05` | Header size relative to base. |
+| `density` | `"compact"` / `"comfortable"` / `"spacious"` | Drives every spacing token |
+| `header_style` | `"light"` / `"bold"` | Picks between light header on muted surface and bold header on `brand_deep` |
+| `first_column_style` | `"default"` / `"bold"` | Excel-style emphasized first column when `"bold"` |
 
 ### `set_spacing()` {#set_spacing}
+
+Per-token spacing override on top of the active density preset. Set what you
+care about; the rest cascade from density.
 
 ```r
 set_spacing(
   theme,
-  row_height = NULL, header_height = NULL,
-  padding = NULL,
-  container_padding = NULL, axis_gap = NULL,
-  column_group_padding = NULL,
-  row_group_padding = NULL,
-  cell_padding_x = NULL, cell_padding_y = NULL
+  row_height, header_height, padding, container_padding, axis_gap,
+  column_group_padding, row_group_padding, cell_padding_x,
+  footer_gap, title_subtitle_gap, bottom_margin, indent_per_level
 )
 ```
 
-| Argument | Default | Description |
-|---|---|---|
-| `row_height` | `24` | Data row height (px). |
-| `header_height` | `32` | Header row height (px). |
-| `padding` | `12` | SVG-export gutter around the plot (px). Interactive widget ignores this; use `container_padding` for live rendering. |
-| `container_padding` | `0` | Outer padding around the whole widget (interactive + SVG export). |
-| `axis_gap` | `12` | Gap between table content and axis (px). |
-| `column_group_padding` | `8` | Left/right padding on spanning column-group headers (px). |
-| `row_group_padding` | `0` | Vertical breathing room above row-group header rows (px). Added in v0.16; applied as `padding-top` and skipped for the first row-group header so no gap appears right below the column-header row. |
-| `cell_padding_x` | `10` | Horizontal cell padding (px). |
-| `cell_padding_y` | `4` | Vertical cell padding (px). |
+All values are numeric (pixels).
 
-:::{.callout-note}
-## `group_padding` was split in v0.16
+### `set_theme_field()` {#set_theme_field}
 
-The old `group_padding` arg — which only ever affected column-group
-headers — was renamed to `column_group_padding`, and a new
-`row_group_padding` was added for vertical row-group spacing. The old
-name still works via a `lifecycle::deprecate_warn()` that forwards to
-`column_group_padding`.
-:::
-
-### `set_shapes()` {#set_shapes}
+Generic deep setter. Walks the theme tree by `path` and replaces the leaf
+with `value`, then re-resolves. Use this for any field not covered by the
+typed setters above.
 
 ```r
-set_shapes(
-  theme,
-  point_size = NULL, summary_height = NULL,
-  line_width = NULL, border_radius = NULL,
-  row_border_width = NULL,
-  header_border_width = NULL,
-  row_group_border_width = NULL,
-  effect_colors = NULL,
-  marker_shapes = NULL
-)
+set_theme_field(theme, path, value)
 ```
 
-| Argument | Default | Description |
-|---|---|---|
-| `point_size` | `6` | Marker radius (px). |
-| `summary_height` | `10` | Summary diamond height (px). |
-| `line_width` | `1.5` | CI line stroke width (px). |
-| `border_radius` | `2` | Container/row rounding (px). |
-| `row_border_width` | `1` | Data-row separator width (px). `0` hides it. Added in v0.19. |
-| `header_border_width` | `2` | Column-header underline width (px); also covers primary, last-header, and plot-header borders. Added in v0.19. |
-| `row_group_border_width` | `1` | Row-group header bottom-border width (px) when a `GroupHeaderStyles.levelN_border_bottom` toggle is on. Added in v0.19. |
-| `effect_colors` | theme cycle | Colors used by multi-effect viz columns. |
-| `marker_shapes` | `c("square","circle","diamond","triangle")` | Shape sequence for multi-effect forests. |
+| Argument | Description |
+|---|---|
+| `theme` | A `WebTheme` |
+| `path` | Character or mixed character/integer vector. Strings are property names; integers index list-typed properties (currently only `series`). |
+| `value` | New value for the leaf field |
 
-### `set_effect_colors()` {#set_effect_colors}
-
-Shorthand for `set_shapes(effect_colors = ...)`.
+Examples:
 
 ```r
-set_effect_colors(theme, colors)
+# Pin row-group L1 background regardless of theme
+theme |> set_theme_field(c("row_group", "L1", "bg"), "#EEEEEE")
+
+# Override series 2's stroke without touching anything else
+theme |> set_theme_field(c("series", 2L, "stroke"), "#444444")
+
+# Set Tier 1 inputs surgically
+theme |> set_theme_field(c("inputs", "brand"), "#FF0000")
+
+# Tweak axis config
+theme |> set_theme_field(c("axis", "gridlines"), TRUE)
+theme |> set_theme_field(c("axis", "tick_count"), 5)
+
+# Pin layout config
+theme |> set_theme_field(c("layout", "container_border_radius"), 4)
 ```
 
-### `set_marker_shapes()` {#set_marker_shapes}
-
-Shorthand for `set_shapes(marker_shapes = ...)`.
-
-```r
-set_marker_shapes(theme, shapes)
-```
-
-### `set_axis()` {#set_axis}
-
-```r
-set_axis(
-  theme,
-  range_min = NULL, range_max = NULL,
-  tick_count = NULL, tick_values = NULL,
-  gridlines = NULL, gridline_style = NULL,
-  ci_clip_factor = NULL,
-  include_null = NULL, symmetric = NULL,
-  null_tick = NULL,
-  marker_margin = NULL
-)
-```
-
-| Argument | Default | Description |
-|---|---|---|
-| `range_min`, `range_max` | `NA` | Axis endpoints. `NA` = auto-computed. |
-| `tick_count` | `NA` | Target number of ticks. |
-| `tick_values` | `NULL` | Explicit tick positions (overrides `tick_count`). |
-| `gridlines` | `FALSE` | Show vertical gridlines. |
-| `gridline_style` | `"dotted"` | `"solid"`, `"dashed"`, or `"dotted"`. |
-| `ci_clip_factor` | `2.0` | Clip CIs extending beyond this multiple of the estimate range; `Inf` disables clipping. |
-| `include_null` | `TRUE` | Always include null value in axis range. |
-| `symmetric` | `NULL` | Force symmetric range around `null_value`. |
-| `null_tick` | `TRUE` | Always show a tick at the null value. |
-| `marker_margin` | `TRUE` | Add half-marker-width padding at edges. |
-
-### `set_layout()` {#set_layout}
-
-```r
-set_layout(
-  theme,
-  plot_width = NULL,
-  container_border = NULL,
-  container_border_radius = NULL,
-  banding = NULL
-)
-```
-
-| Argument | Default | Description |
-|---|---|---|
-| `plot_width` | `"auto"` | `"auto"` or pixel width for the forest column. |
-| `container_border` | `FALSE` | Show outer container border. |
-| `container_border_radius` | `8` | Outer corner radius (px). Visible when `container_border = TRUE`. |
-| `banding` | `"group"` | Row banding mode: `"none"`, `"row"`, `"group"` (default — alternates at deepest group level; falls back to `"row"` with no groups), or `"group-n"` (e.g. `"group-1"` for outermost). Uses `row_bg` / `alt_bg`. Also available as `tabviz(banding=)` with the same grammar. |
-
-`set_layout()` also accepts `cell_padding_x` / `cell_padding_y` (deprecated — forwards to `set_spacing()`) and the long-removed `row_border` / `row_border_style` (silently ignored with a warning).
-
-:::{.callout-note}
-## `plot_position` / `table_width` / `section_gap` / `column_gap` removed in 0.13.0
-These fields never reached any rendering code — they were declared, serialized, and exposed in the UI, but no frontend consumer read them. They have been dropped from the theme classes. Column order in `columns = list(...)` controls plot placement; let column widths auto-size from content, or use `plot_width` to pin the forest column.
-:::
-
-### `set_group_headers()` {#set_group_headers}
-
-Per-level styling for nested row-group headers (level 1 = outermost).
-
-```r
-set_group_headers(
-  theme,
-  level1_font_size = NULL, level1_font_weight = NULL,
-  level1_italic = NULL, level1_background = NULL, level1_border_bottom = NULL,
-  level2_font_size = NULL, level2_font_weight = NULL,
-  level2_italic = NULL, level2_background = NULL, level2_border_bottom = NULL,
-  level3_font_size = NULL, level3_font_weight = NULL,
-  level3_italic = NULL, level3_background = NULL, level3_border_bottom = NULL,
-  indent_per_level = NULL
-)
-```
-
-| Argument | Default | Description |
-|---|---|---|
-| `levelN_font_size` | level-dependent | Font size for level N (1, 2, 3). |
-| `levelN_font_weight` | 700 / 500 / 400 | |
-| `levelN_italic` | `FALSE` / `TRUE` / `FALSE` | |
-| `levelN_background` | `NULL` (auto from `primary`) | Header background. |
-| `levelN_border_bottom` | `FALSE` | Bottom border. |
-| `indent_per_level` | `16` | Per-level indent (px). |
+Re-resolution preserves explicit overrides on subsequent edits.
+`set_inputs(brand = "...")` after pinning `surface.base` will refresh
+series colors but leave `surface.base` pinned.
 
 ---
 
-## Examples
+## Switching themes on a spec
 
-```{r}
-#| eval: false
-# Chain modifiers
-web_theme_jama() |>
-  set_colors(primary = "#0066cc") |>
-  set_typography(font_family = "Helvetica, Arial, sans-serif",
-                 font_size_base = "10pt") |>
-  set_spacing(row_height = 22) |>
-  set_axis(gridlines = TRUE)
+| Verb | Operates on | Purpose |
+|---|---|---|
+| [`set_theme()`](styling.qmd#set_theme) | `WebSpec`, htmlwidget, proxy | Swap to a preset name or `WebTheme` object |
+| [`selectable_themes()`](styling.qmd) | `WebSpec`, htmlwidget | Curate the in-widget theme switcher |
 
-# Build a custom theme from scratch
-publication_theme <- web_theme_minimal() |>
-  set_colors(foreground = "#1a1a1a", ci_marker_fill = "#333333", ci_line = "#333333") |>
-  set_typography(font_family = "'Times New Roman', serif", font_size_base = "11pt") |>
-  set_spacing(row_height = 24)
+```r
+# Apply by name
+plot |> set_theme("jama")
 
-# Distinct visual hierarchy on nested groups
-web_theme_default() |>
-  set_group_headers(
-    level1_font_weight = 800,
-    level1_background = "#e0f2fe",
-    level2_italic = TRUE,
-    level2_background = "#f0f9ff",
-    indent_per_level = 24
-  )
+# Apply by object
+custom <- web_theme(inputs = list(brand = "#1F3A5F"))
+plot |> set_theme(custom)
 ```
 
-## Related
+---
 
-- [`set_theme()`](styling.qmd#set_theme) — apply a theme to a `WebSpec` / widget / proxy
-- [`selectable_themes()`](styling.qmd#selectable_themes) — curate the in-widget theme switcher
-- [`web_interaction()`](interaction.qmd) — `enable_themes` argument
-- [`tabviz()`](tabviz.qmd) — `theme` constructor argument
+## Worked examples
+
+### Lancet-style with custom Tier 1 input
+
+```r
+my_lancet <- web_theme(
+  name = "my-lancet",
+  inputs = list(
+    brand          = "#0066CC",
+    accent         = "#CC9900",
+    series_anchors = c("#0066CC", "#CC9900", "#669933"),
+    font_body      = "Helvetica, Arial, sans-serif",
+    font_display   = "Helvetica, Arial, sans-serif"
+  ),
+  variants = list(density = "comfortable")
+)
+
+# Swap presets, then tweak
+custom <- web_theme_lancet() |>
+  set_inputs(brand = "#0066CC") |>
+  set_variants(density = "compact") |>
+  set_theme_field(c("axis", "gridlines"), TRUE)
+```
+
+### High-contrast print theme
+
+```r
+print_theme <- web_theme(
+  name = "print",
+  inputs = list(
+    neutral        = c("#FFFFFF", "#FFFFFF", "#FAFAFA", "#666666", "#1A1A1A"),
+    brand          = "#000000",
+    accent         = "#000000",
+    series_anchors = c("#1A1A1A", "#4D4D4D", "#808080", "#B3B3B3"),
+    font_body      = "'Times New Roman', serif",
+    font_display   = "'Times New Roman', serif"
+  ),
+  variants = list(density = "compact"),
+  base_theme = web_theme_minimal()
+) |>
+  set_theme_field(c("row_group", "L1", "text", "weight"), 700) |>
+  set_theme_field(c("row_group", "L1", "border_bottom"), TRUE)
+```
+
+### Dark dashboard theme
+
+```r
+dark_theme <- web_theme(
+  name = "dashboard-dark",
+  base_theme = web_theme_dark(),
+  inputs = list(
+    brand          = "#10B981",
+    accent         = "#10B981",
+    series_anchors = c("#10B981", "#3B82F6", "#F59E0B", "#EF4444")
+  ),
+  variants = list(density = "spacious", header_style = "bold")
+)
+```
+
+---
+
+## Theme structure (S7)
+
+A `WebTheme` is an S7 object with the following top-level properties.
+For the conceptual model and how the cascades compose, see
+[Styling Cascade](../concepts/styling-cascade.qmd) and
+[S7 Architecture](../technical/s7-classes.qmd).
+
+| Property | Type | Tier | Description |
+|---|---|---|---|
+| `name` | string | — | Theme identifier |
+| `inputs` | `ThemeInputs` | 1 | Customer-facing inputs |
+| `variants` | `ThemeVariants` | 1 | Per-table toggles |
+| `surface` | `Surfaces` | 2 | base / muted / raised |
+| `content` | `Content` | 2 | primary / secondary / muted / inverse |
+| `divider` | `Dividers` | 2 | subtle / strong |
+| `accent` | `AccentRoles` | 2 | default / muted / tint_subtle / tint_medium |
+| `status` | `StatusColors` | 2 | positive / negative / warning / info |
+| `series` | `list<SlotBundle>` | 2 | Per-anchor 7-field bundle |
+| `summary` | `SlotBundle` | 2 | Pooled-effect diamond bundle |
+| `text` | `TextRoles` | 2 | 8 named role bundles |
+| `spacing` | `SpacingTokens` | 2 | 12 density-derived numerics |
+| `annotation` | `AnnotationCluster` | 3 | title / subtitle / caption / footnote |
+| `header` | `HeaderCluster` | 3 | light + bold variants |
+| `column_group` | `ColumnGroupCluster` | 3 | Column-group header |
+| `row_group` | `RowGroupCluster` | 3 | L1 / L2 / L3 tiers |
+| `row` | `RowCluster` | 3 | base / alt / hover / selected + emphasis / muted / accent |
+| `cell` | `CellCluster` | 3 | bg / fg / border / text |
+| `first_column` | `FirstColumnCluster` | 3 | plain + bold variants |
+| `plot` | `PlotScaffold` | 3 | axis / tick / gridline / reference + mark sizes |
+| `marks` | `MarksRecipes` | 3 | Per-mark slot-bundle recipes |
+| `axis` | `AxisConfig` | config | Forest x-axis range/ticks/grid |
+| `layout` | `Layout` | config | Plot width, container border |

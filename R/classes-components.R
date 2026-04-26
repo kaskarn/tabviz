@@ -1836,7 +1836,14 @@ finalize_enable_themes <- function(value, theme) {
 
   active <- theme@name
   if (!any(vapply(value, function(t) identical(t@name, active), logical(1)))) {
-    value <- c(list(theme), value)
+    # Prepend with a name when `value` is a named list so we don't end up
+    # with partial names (htmlwidgets::JSEvals walks lists and chokes on
+    # mixed named/unnamed entries).
+    if (!is.null(names(value))) {
+      value <- c(stats::setNames(list(theme), active), value)
+    } else {
+      value <- c(list(theme), value)
+    }
   }
   value
 }

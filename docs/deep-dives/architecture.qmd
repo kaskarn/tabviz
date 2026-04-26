@@ -139,14 +139,26 @@ Benefits:
 
 ### 3. Fluent Modifiers
 
-Theme modification uses pipe-friendly functions that return modified copies:
+Theme modification uses pipe-friendly functions that return modified copies.
+Each modifier re-resolves the theme before returning, so derived fields
+stay consistent with explicit overrides.
 
 ```r
 web_theme_jama() |>
-  set_colors(primary = "#0066cc", border = "#999999") |>
+  set_inputs(brand = "#0066cc") |>
+  set_variants(density = "comfortable") |>
   set_spacing(row_height = 24) |>
-  set_axis(gridlines = TRUE)
+  set_theme_field(c("axis", "gridlines"), TRUE)
 ```
+
+The four core theme modifiers:
+
+| Modifier | Edits |
+|----------|-------|
+| `set_inputs()` | Tier 1 customer inputs (brand, accent, series, fonts, status) |
+| `set_variants()` | Per-table variants (density, header_style, first_column_style) |
+| `set_spacing()` | Per-token spacing override on top of the density preset |
+| `set_theme_field(theme, path, value)` | Generic deep setter; `path` is a character/integer vector walking the theme tree |
 
 ### 4. NA vs NULL Convention
 

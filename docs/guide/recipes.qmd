@@ -255,7 +255,8 @@ house_style <- function(x) {
     set_marker_style(color = "direction_color") |>
     set_row_style(bold = "is_primary", type = "row_type") |>
     set_theme(web_theme_jama() |>
-                set_axis(gridlines = TRUE, gridline_style = "dotted"))
+                set_theme_field(c("axis", "gridlines"), TRUE) |>
+                set_theme_field(c("axis", "gridline_style"), "dotted"))
 }
 
 tabviz(trial_a, ...) |> house_style()

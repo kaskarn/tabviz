@@ -156,15 +156,41 @@ All accept column names or formula expressions:
 ```r
 tabviz(...,
   theme = web_theme_default() |>
-    set_colors(
-      primary = "#2563eb",
-      ci_marker_fill = "#1e40af",
-      ci_line = "#475569"
+    set_inputs(
+      brand          = "#2563EB",
+      accent         = "#1E40AF",
+      series_anchors = c("#2563EB", "#16A34A", "#DC2626"),
+      font_body      = "Georgia, serif"
     ) |>
-    set_typography(font_family = "Georgia", font_size_base = "0.9rem") |>
+    set_variants(density = "comfortable", header_style = "bold") |>
     set_spacing(row_height = 28, header_height = 32) |>
-    set_shapes(point_size = 6, line_width = 1.5) |>
-    set_axis(gridlines = TRUE, gridline_style = "dashed")
+    set_theme_field(c("plot", "point_size"), 6) |>
+    set_theme_field(c("plot", "line_width"), 1.5) |>
+    set_theme_field(c("axis", "gridlines"), TRUE)
+)
+```
+
+| Modifier | What it edits |
+|---|---|
+| `set_inputs()` | Tier 1 inputs (brand, accent, series, fonts, status) |
+| `set_variants()` | Per-table toggles (density, header_style, first_column_style) |
+| `set_spacing()` | Per-token spacing override on top of the density preset |
+| `set_theme_field(theme, path, value)` | Generic deep setter; `path` walks the theme tree |
+| `set_theme()` | Swap to a different preset (or `WebTheme` object) |
+
+### Build a custom theme from scratch
+
+```r
+web_theme(
+  name = "my-brand",
+  inputs = list(
+    neutral        = c("#FFF","#FAFAFA","#EEE","#888","#222"),
+    brand          = "#1F3A5F",
+    accent         = "#B08938",
+    series_anchors = c("#1F3A5F", "#B08938", "#6B8E7F"),
+    font_body      = "Charter, Georgia, serif"
+  ),
+  variants = list(density = "comfortable", header_style = "bold")
 )
 ```
 

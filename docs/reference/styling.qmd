@@ -226,7 +226,7 @@ tabviz(data, label = "study") |>
 
 ## Related
 
-- [Themes](themes.qmd) — `set_colors()`, `set_typography()`, `set_axis()`, etc. for the theme builder
+- [Themes](themes.qmd) — `set_inputs()`, `set_variants()`, `set_spacing()`, `set_theme_field()` for the v2 theme builder
 - [Data ops](data-ops.qmd) — `add_column()`, `sort_rows()`, `filter_rows()`, …
 - [Interaction](interaction.qmd) — `web_interaction()` and the `show_*` / `enable_*` rule
 - [`tabviz()`](tabviz.qmd) — equivalent constructor arguments

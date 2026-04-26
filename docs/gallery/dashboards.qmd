@@ -462,9 +462,7 @@ tabviz(
   ),
   row_badge = "award",
   theme = web_theme_modern() |>
-    set_colors(
-      primary = "#C9082A"  # NBA red
-    ),
+    set_inputs(brand = "#C9082A"),  # NBA red
   title = "NBA Player Efficiency Ratings",
   subtitle = "Row groups by conference + column groups for Player Info / Stats",
   caption = "PER = 15 is league average. Badge shows major awards.",
@@ -495,7 +493,7 @@ tabviz(
   marker_shape = ~ ifelse(certainty == "High", "circle", "square"),
   marker_color = ~ ifelse(anomaly > 1.5, "#dc2626", ifelse(anomaly > 1.0, "#f59e0b", "#3b82f6")),
   theme = web_theme_modern() |>
-    set_axis(gridlines = TRUE),
+    set_theme_field(c("axis", "gridlines"), TRUE),
   title = "Regional Temperature Anomalies",
   subtitle = "Grouped by geographic category, shaped by confidence level",
   caption = "Red = significant warming, Blue = cooling or below baseline"

@@ -304,34 +304,25 @@ tabviz(styling_data,
 
 ## Fluent Theme Customization
 
-Demonstrate `set_*` modifier chaining to build a fully customized theme from a base:
+Build a fully customized theme by chaining v2 modifiers off a base preset:
 
 ```{r}
-custom_theme <- web_theme_default() |>
-  set_colors(
-    background = "#fefce8",
-    foreground = "#422006",
-    primary = "#ca8a04",
-    border = "#e5e7eb"
-  ) |>
-  set_typography(
-    font_family = "Georgia, serif",
-    font_size_base = "0.8125rem",
-    font_weight_bold = 700
-  ) |>
-  set_spacing(
-    row_height = 32,
-    cell_padding_x = 12
-  ) |>
-  set_shapes(
-    point_size = 8,
-    line_width = 2,
-    border_radius = 6
-  ) |>
-  set_layout(
-    banding = "row",
-    container_border_radius = 8
-  )
+custom_theme <- web_theme(
+  name = "warm",
+  inputs = list(
+    neutral        = c("#FEFCE8", "#FEFCE8", "#FAF6D4", "#A0855A", "#422006"),
+    brand          = "#CA8A04",
+    accent         = "#CA8A04",
+    series_anchors = c("#CA8A04", "#16A34A", "#DC2626", "#3B82F6", "#7C3AED"),
+    font_body      = "Georgia, serif"
+  ),
+  variants = list(density = "spacious")
+) |>
+  set_spacing(row_height = 32, cell_padding_x = 12) |>
+  set_theme_field(c("plot", "point_size"), 8) |>
+  set_theme_field(c("plot", "line_width"), 2) |>
+  set_theme_field(c("layout", "container_border_radius"), 8) |>
+  set_theme_field(c("row", "banding"), "row")
 
 theme_data <- data.frame(
   study = c("PIONEER-1", "SUMMIT-2", "HORIZON-3", "ELEVATE-4", "APEX-5"),
@@ -359,14 +350,17 @@ tabviz(theme_data,
   ),
   marker_color = ~ ifelse(hi < 1, "#16a34a", "#64748b"),
   theme = custom_theme,
-  title = "Custom Warm Theme via set_* Chaining",
-  subtitle = "Built from web_theme_default() with piped modifiers"
+  title = "Custom Warm Theme via the v2 Inputs API",
+  subtitle = "web_theme(inputs = ...) + set_spacing() + set_theme_field()"
 )
 ```
 
 ::: {.callout-tip}
-## Available Modifiers
-The full set of `set_*` functions: `set_colors()`, `set_typography()`, `set_spacing()`, `set_shapes()`, `set_layout()`, `set_axis()`, `set_group_headers()`, `set_effect_colors()`, `set_marker_shapes()`. See [Fluent API](../guide/fluent-api.qmd) for full documentation.
+## Theme modifiers (v2)
+Four modifiers cover the surface: `set_inputs()` (Tier 1 inputs),
+`set_variants()` (per-table toggles), `set_spacing()` (per-token spacing),
+and `set_theme_field(theme, path, value)` (generic deep setter).
+See [Fluent API](../guide/fluent-api.qmd) and [Themes](../guide/themes.qmd).
 :::
 
 ---
@@ -578,9 +572,10 @@ full_monty <- tibble(
 
 # Custom theme
 monty_theme <- web_theme_dark() |>
-  set_colors(primary = "#f59e0b") |>
+  set_inputs(brand = "#f59e0b") |>
   set_spacing(row_height = 38) |>
-  set_axis(gridlines = TRUE, gridline_style = "dotted")
+  set_theme_field(c("axis", "gridlines"), TRUE) |>
+  set_theme_field(c("axis", "gridline_style"), "dotted")
 
 tabviz(
   full_monty,

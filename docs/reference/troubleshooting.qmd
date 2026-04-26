@@ -186,7 +186,8 @@ forest_plot(your_data, ...,
 # Or use theme settings
 forest_plot(your_data, ...,
   theme = web_theme_default() |>
-    set_axis(tick_count = 5, gridlines = TRUE)
+    set_theme_field(c("axis", "tick_count"), 5) |>
+    set_theme_field(c("axis", "gridlines"), TRUE)
 )
 ```
 
@@ -376,9 +377,7 @@ data <- data |>
 #| eval: false
 # Use web-safe fallback fonts
 web_theme_default() |>
-  set_typography(
-    font_family = "Georgia, 'Times New Roman', serif"
-  )
+  set_inputs(font_body = "Georgia, 'Times New Roman', serif")
 
 # For exports, fonts must be installed on the rendering system
 ```
@@ -466,7 +465,7 @@ The 0.9.0 release renamed several arguments. The old names still work for one cy
 | `col_interval(..., sep = " ")` | `separator = " "` | `col_interval()` |
 | `col_reference(..., icon = TRUE)` | `show_icon = TRUE` | `col_reference()` |
 | `col_n()`, `col_bar()`, `col_pvalue()`, `col_sparkline()` with no `field` | Pass `field` explicitly | `col_*()` |
-| `set_colors(interval=, interval_positive=, interval_negative=, interval_neutral=, interval_line=)` | `ci_marker_fill=, ci_marker_positive=, ci_marker_negative=, ci_marker_neutral=, ci_line=` | `set_colors()` |
+| `set_colors()`, `set_typography()`, `set_shapes()`, `set_axis()`, `set_layout()`, `set_group_headers()`, `set_effect_colors()`, `set_marker_shapes()` | `set_inputs()`, `set_variants()`, `set_spacing()`, `set_theme_field(theme, path, value)` | v2 modifier surface (theme rewrite) |
 | `web_interaction(show_filters = ...)` | `enable_filters = ...` | `web_interaction()` |
 | `tabviz(axis_range=, axis_ticks=, axis_gridlines=)` | Pass to `viz_forest()` on the forest column | `tabviz()` |
 | `tabviz(zoom=, auto_fit=, max_width=, max_height=, show_zoom_controls=)` | Pipe to `set_zoom()` after constructing the widget | `tabviz()` |

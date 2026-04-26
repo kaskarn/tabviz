@@ -94,24 +94,30 @@ Control the visual styling of group headers at each level using theme modifiers:
 
 ```{r}
 #| eval: false
+custom_theme <- web_theme_default() |>
+  set_theme_field(c("row_group", "L1", "bg"),            "#E0F2FE") |>
+  set_theme_field(c("row_group", "L1", "text", "size"),  "1.1rem") |>
+  set_theme_field(c("row_group", "L1", "text", "weight"), 700) |>
+  set_theme_field(c("row_group", "L2", "bg"),            "#F0F9FF") |>
+  set_theme_field(c("row_group", "L2", "text", "italic"), TRUE) |>
+  set_theme_field(c("row_group", "L2", "text", "size"),  "0.95rem") |>
+  set_spacing(indent_per_level = 20)
+
 forest_plot(hierarchical_data,
   point = "or", lower = "lower", upper = "upper",
   label = "study",
   group = c("region", "country"),
-  null_value = 1, scale = "log"
-) |>
-  set_group_headers(
-    level1_font_size = "1.1rem",
-    level1_font_weight = 700,
-    level1_background = "#e0f2fe",
-    level2_font_size = "0.95rem",
-    level2_italic = TRUE,
-    level2_background = "#f0f9ff",
-    indent_per_level = 20
-  )
+  null_value = 1, scale = "log",
+  theme = custom_theme
+)
 ```
 
-See [Themes Reference](../reference/themes.qmd#set_group_headers) for all available options.
+The `row_group` cluster is one of the v2 theme's Tier 3 component
+clusters. Its three tiers — `L1` (outermost), `L2`, `L3` — each carry
+`bg`, `fg`, `rule`, `text` (a TextRole bundle: family / size / weight /
+italic), and `border_bottom`. See [Themes guide](themes.qmd) for the
+full structure and [Themes Reference](../reference/themes.qmd) for the
+class definitions.
 
 ---
 

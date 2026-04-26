@@ -7,9 +7,142 @@ title: "Styling Cascade"
 library(tabviz)
 ```
 
-tabviz applies styles in four layers, from general to specific: theme defaults, then row-level styles, then per-cell styles, then forest-marker styles. Knowing which layer a property lives in tells you exactly where to set it — and which other layers it will override.
+tabviz has **two cascades, working at different layers**.
 
-## The Cascade
+* The **theme cascade** is internal to a `WebTheme`. It turns a small set of customer-facing inputs into a fully specified visual surface. Runs at theme construction; you don't normally see it.
+* The **runtime cascade** is what happens at render time. The theme provides defaults, then row-level styles override them, then cell-level styles override those, then marker-level styles override those.
+
+Knowing which cascade a property lives in tells you exactly where to set it — and which other layers it will override.
+
+```{mermaid}
+flowchart LR
+    subgraph TC["Theme cascade (build time)"]
+      T1[Inputs] --> T2[Semantic roles] --> T3[Component bindings]
+    end
+
+    subgraph RC["Runtime cascade (render time)"]
+      D[Theme defaults] --> R[Row styling] --> C[Cell styling] --> M[Marker styling]
+    end
+
+    T3 --> D
+
+    style T1 fill:#dbeafe
+    style T2 fill:#bfdbfe
+    style T3 fill:#93c5fd
+    style D fill:#e5e7eb
+    style R fill:#86efac
+    style C fill:#6ee7b7
+    style M fill:#fbbf24
+```
+
+The theme cascade hands a fully resolved visual specification to the runtime cascade. The runtime cascade then specializes per row / cell / marker.
+
+---
+
+## Cascade A — the theme
+
+### What a theme is, ontologically
+
+A theme is **a small set of customer choices** plus the rules for turning those choices into a fully specified visual surface. Think of it as having three concentric rings:
+
+```
+       ┌─ Tier 3: Component bindings (header, row, cell, plot, marks…) ─┐
+       │   ┌─ Tier 2: Semantic roles (surface, content, divider…) ──┐   │
+       │   │   ┌─ Tier 1: Inputs (12 customer choices) ──────────┐  │   │
+       │   │   │   neutral, brand, accent, series, fonts, …      │  │   │
+       │   │   └──────────────────────────────────────────────────┘  │   │
+       │   └─────────────────────────────────────────────────────────┘   │
+       └─────────────────────────────────────────────────────────────────┘
+                                      ↓
+                          resolve_theme(theme)
+                                      ↓
+                       fully populated WebTheme
+```
+
+Only Tier 1 is authored. Tier 2 and Tier 3 are *derived* by `resolve_theme()`. Customers (and presets) can also reach into Tier 2 / Tier 3 to pin individual fields when the derivation isn't quite right; resolution leaves those overrides alone.
+
+### Two ontologies, sharing only Tier 1
+
+The cascade splits into two independent vocabularies:
+
+| Subsystem | Inputs | Tier 2 roles | What they describe |
+|-----------|--------|--------------|--------------------|
+| **Chrome** | `neutral`, `brand`, `brand_deep`, `accent`, `accent_deep` | `surface`, `content`, `divider`, `accent.*`, `status` | The table's scaffolding — the surface a row sits on, the tone of body text, the rule between cells |
+| **Data** | `series_anchors`, `summary_anchor`, `status_*` | per-series `SlotBundle`, `summary` SlotBundle | The data marks — what a forest point looks like, how a row's "muted" state mutes its mark |
+
+**They never cross.** Changing `brand` cannot affect a series fill. Changing `series_anchors[3]` cannot affect a row-group divider. The two cascades meet only at theme reassembly. This isolation is what makes themes *predictable*: you can swap a brand color and know the data marks will not silently shift hue, and vice versa.
+
+### The vocabulary at Tier 2
+
+Tier 2 names matter because they're how Tier 3 (and overrides) refer to the system. Chrome:
+
+| Role | Use |
+|------|-----|
+| `surface.base` | Row background, default canvas |
+| `surface.muted` | Banding partner, sunken regions |
+| `surface.raised` | Cards, popovers |
+| `content.primary` | Body text, cell values |
+| `content.secondary` | Subtitles, captions |
+| `content.muted` | Axis labels, footnotes |
+| `content.inverse` | Text on dark fills (bold-mode header) |
+| `divider.subtle` | Cell hairlines, gridlines |
+| `divider.strong` | Header rule, group L1 underline |
+| `accent.default` | Selection bar, hover focus |
+| `accent.muted` | Hover row fill, selected row fill |
+| `accent.tint.subtle` | L1 group bar (light header) |
+| `accent.tint.medium` | Cascading bold-mode tints |
+
+Data:
+
+| Role | Use |
+|------|-----|
+| `series[i].fill` | Mark body for the i-th effect |
+| `series[i].stroke` | Companion outline / CI line |
+| `series[i].fill_muted` | The same effect on a muted row |
+| `series[i].fill_emphasis` | The same effect on an emphasized row |
+| `series[i].text_fg` | Data labels associated with the slot |
+| `summary.{fill, stroke, ...}` | Pooled-effect diamond |
+
+A `SlotBundle` carries every state for one slot. The renderer always reads the right field for the current row state — you don't author each state by hand.
+
+### Variants pick, they don't synthesize
+
+`header_style ∈ {light, bold}` and `first_column_style ∈ {default, bold}` are per-table toggles. Both variants are *always pre-resolved* on every theme: `theme$header$light` and `theme$header$bold` both carry full bg/fg/rule values. Flipping the variant at render time is a cheap dispatch — `theme$variants$header_style == "bold" ? theme$header$bold : theme$header$light`.
+
+`density ∈ {compact, comfortable, spacious}` is similar but generates a full `SpacingTokens` table at resolve time. Per-token `set_spacing()` overrides land *on top* of the density preset.
+
+### Resolution is a function
+
+`resolve_theme(theme) -> WebTheme` is idempotent and pure. Run it twice, get the same answer. Override any field, re-run resolution, your override survives (resolution only fills NA-valued fields).
+
+This means the cascade is debuggable. Inspect any resolved field to see exactly what it is:
+
+```{r}
+#| eval: false
+t <- web_theme_lancet()
+t@inputs@brand        # "#00407A"        (Tier 1)
+t@accent@tint_subtle  # derived blend     (Tier 2)
+t@row_group@L1@bg     # = accent.tint_subtle (Tier 3)
+t@series[[1]]@fill    # series anchor 1
+t@series[[1]]@stroke  # OKLCH-darkened companion
+```
+
+OKLCH is the underlying color algebra. All blends, lightenings, and darkenings happen in OKLCH (perceptually uniform), with a final clip to sRGB. Quantitative claim: a 12% blend toward `surface.base` looks 12% blended whether the starting hue is navy, gold, or magenta.
+
+### What this is *not*
+
+It's worth saying what the model deliberately does not do:
+
+* **No global "muted" or "primary" color.** v1 had a single `colors$muted` that meant both "subdued text" and "deemphasized data." v2 splits these: `content.muted` for text, `slot.fill_muted` for data marks. They share Tier 1 (the brand/accent inputs) but never share a Tier 2 role.
+* **No mode-pair within one theme.** A theme is single-mode (typically light). Dark themes are paired *presets* (`web_theme_dark()`), not a `theme.dark` slot.
+* **No variant baked into the inputs.** Density, header style, first-column style are orthogonal axes. The same brand can ship as comfortable-light-default OR compact-bold-default OR any other combination.
+* **No customer-tunable tints.** `accent.tint_subtle` is derived; it's not in the input list. If you need a specific tint, override the Tier 2 field directly with `set_theme_field()`. Don't add it as a Tier 1 knob.
+
+---
+
+## Cascade B — runtime style application
+
+The theme provides defaults. The runtime cascade then specializes them per row, cell, and marker.
 
 ```{mermaid}
 flowchart TB
@@ -19,7 +152,7 @@ flowchart TB
     D --> E["Final appearance"]
 
     style A fill:#e5e7eb
-    style B fill:#93c5fd
+    style B fill:#86efac
     style C fill:#6ee7b7
     style D fill:#fbbf24
     style E fill:#4f46e5,color:#fff
@@ -27,47 +160,40 @@ flowchart TB
 
 Later styles override earlier ones. A cell style beats a row style, which beats a theme default.
 
-## Layer 1: Theme Defaults
+### Layer 1: Theme defaults
 
-Themes establish the baseline appearance for all elements:
+The theme establishes the baseline appearance for all elements:
 
 ```{r}
 #| eval: false
-# Theme sets default colors, fonts, spacing
 tabviz(data,
   columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
                            scale = "log", null_value = 1)),
-  theme = web_theme_jama()  # Sets primary color, font, spacing, etc.
+  theme = web_theme_jama()
 )
 ```
 
-Theme defaults include:
-- **Colors**: Primary, accent, text, background
-- **Typography**: Font family, sizes, weights
-- **Spacing**: Row height, padding, margins
-- **Shapes**: Point size, line width
+The theme defaults cover:
 
-### Modifying Theme Defaults
+* **Chrome**: surfaces, content tones, dividers, accent
+* **Data marks**: per-series slot bundles, summary slot
+* **Typography**: 8 named text-role bundles
+* **Spacing**: 12 density-derived tokens
+
+Modify any of them with the v2 modifiers:
 
 ```{r}
 #| eval: false
 web_theme_jama() |>
-  set_colors(
-    primary = "#2563eb",
-    ci_marker_positive = "#16a34a",
-    ci_marker_negative = "#dc2626",
-    ci_line = "#475569"
+  set_inputs(
+    brand          = "#2563EB",
+    series_anchors = c("#2563EB", "#16A34A", "#DC2626")
   ) |>
-  set_typography(font_size_base = "0.9rem") |>
+  set_variants(density = "comfortable") |>
   set_spacing(row_height = 28)
 ```
 
-:::{.callout-note}
-## Color argument names
-The user-facing arguments of `set_colors()` are `ci_marker_fill`, `ci_marker_positive`, `ci_marker_negative`, `ci_marker_neutral`, `ci_line`. The corresponding `ColorPalette` S7 slots are still named `interval`, `interval_positive`, `interval_negative`, `interval_neutral`, `interval_line` — only the argument names changed.
-:::
-
-## Layer 2: Row Styling
+### Layer 2: Row Styling
 
 Row styling applies to entire rows, overriding theme defaults:
 
@@ -90,8 +216,6 @@ tabviz(meta_data,
 )
 ```
 
-Row styling options:
-
 | Argument | Effect |
 |----------|--------|
 | `row_type` | Controls row behavior (header, data, summary, spacer) |
@@ -100,11 +224,13 @@ Row styling options:
 | `row_color` | Text color |
 | `row_bg` | Background color |
 | `row_indent` | Indentation level |
-| `row_emphasis` | Theme-aware emphasis |
-| `row_muted` | Theme-aware de-emphasis |
-| `row_accent` | Theme accent color |
+| `row_emphasis` | Theme-aware emphasis (reads `theme$row$emphasis`) |
+| `row_muted` | Theme-aware de-emphasis (reads `theme$row$muted`) |
+| `row_accent` | Theme-aware accent (reads `theme$row$accent`) |
 
-## Layer 3: Cell Styling
+The three semantic flags (`row_emphasis`, `row_muted`, `row_accent`) reach into the theme's `row.{emphasis,muted,accent}` cluster. That cluster is itself a Tier 3 binding derived from Tier 2 — so these flags pick up theme-appropriate colors automatically, regardless of the active preset.
+
+### Layer 3: Cell Styling
 
 Cell styling targets specific columns, overriding row styles:
 
@@ -114,7 +240,7 @@ tabviz(data,
   label = "study",
   columns = list(
     col_pvalue("pval",
-      bold = ~ .x < 0.05,        # Bold if p < 0.05
+      bold  = ~ .x < 0.05,
       color = ~ ifelse(.x < 0.05, "#16a34a", "#64748b")
     ),
     col_numeric("hr",
@@ -129,14 +255,10 @@ tabviz(data,
 Cell styling uses `.x` to reference the column's own values:
 
 ```r
-# In cell context, .x = the column's value for that row
 col_numeric("hr", color = ~ ifelse(.x < 1, "green", "red"))
-
-# Equivalent to:
-# for each row: if (row$hr < 1) "green" else "red"
 ```
 
-### set_column_style()
+### `set_column_style()`
 
 Apply styling to any column after creation:
 
@@ -148,14 +270,14 @@ tabviz(data, label = "study", columns = list(...)) |>
     color = ~ case_when(
       .x < 0.8 ~ "#16a34a",
       .x < 1.0 ~ "#86efac",
-      TRUE ~ "#64748b"
+      TRUE     ~ "#64748b"
     )
   )
 ```
 
-## Layer 4: Marker Styling
+### Layer 4: Marker Styling
 
-Marker styling controls the forest plot points and lines, overriding all other layers:
+Marker styling controls forest plot points and lines, overriding all other layers:
 
 ```{r}
 library(dplyr)
@@ -171,7 +293,7 @@ marker_data <- data.frame(
     marker_color = case_when(
       hi < 1 ~ "#16a34a",
       lo > 1 ~ "#dc2626",
-      TRUE ~ "#64748b"
+      TRUE   ~ "#64748b"
     ),
     marker_shape = ifelse(design == "RCT", "circle", "square")
   )
@@ -184,8 +306,6 @@ tabviz(marker_data,
   marker_shape = "marker_shape"
 )
 ```
-
-Marker styling options:
 
 | Argument | Effect |
 |----------|--------|
@@ -201,17 +321,17 @@ Inside any viz column (`viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`), th
 | Layer | Source | Behavior |
 |---|---|---|
 | 4. Per-row literal | `tabviz(marker_color = "col" \| ~ formula)` | Wins when value is non-`NA`. `NA` falls through to Layer 3. |
-| 3. Row semantic class | `row_accent` / `row_emphasis` / `row_muted = "col" \| ~ formula` | **Single-effect viz:** fill replaced with theme color. **Multi-effect viz:** per-effect fill preserved, outline (stroke) added in theme color. `FALSE`/absent falls through to Layer 2. |
+| 3. Row semantic class | `row_accent` / `row_emphasis` / `row_muted = "col" \| ~ formula` | **Single-effect viz:** fill replaced with the theme's `row.{accent,emphasis,muted}.marker_fill`. **Multi-effect viz:** per-effect fill preserved, outline (stroke) added in the theme color. `FALSE`/absent falls through to Layer 2. |
 | 2. Per-effect literal | `effect_forest(color = "#hex")` (and `effect_bar`/`effect_boxplot`/`effect_violin`) | Sets fill for that effect on all rows. |
-| 1. Theme palette | `theme.shapes.effect_colors[i]` | Invisible default; effect index cycles. |
+| 1. Theme palette | `theme$series[[i]]@fill` | Invisible default; effect index cycles. |
 
-Semantic class → theme color mapping:
+Semantic class → theme field mapping (v2):
 
-| Class | Theme color |
+| Class | Theme path |
 |---|---|
-| `row_accent` | `theme.colors.accent` |
-| `row_emphasis` | `theme.colors.foreground` |
-| `row_muted` | `theme.colors.muted` |
+| `row_accent` | `theme@row@accent@marker_fill` |
+| `row_emphasis` | `theme@row@emphasis@marker_fill` |
+| `row_muted` | `theme@row@muted@marker_fill` |
 
 The cascade applies uniformly to all four viz_* columns. The single-effect vs multi-effect distinction is automatic — based on `length(effects)`.
 
@@ -227,98 +347,52 @@ The following examples render the cascade across each viz type:
 |---|---|
 | `gallery_17_cascade_single_forest` | Single-effect forest: row_accent / row_emphasis / row_muted replace marker fill |
 | `gallery_18_cascade_multi_forest`  | Multi-effect forest: row_accent adds outline; per-effect fills preserved |
-| `gallery_19_cascade_bar`           | viz_bar single-effect (fill) vs multi-effect (outline) side-by-side |
-| `gallery_20_cascade_dist`          | viz_boxplot + viz_violin: existing strokes pick up semantic color |
-| `gallery_21_cascade_precedence`    | All four layers + NA passthrough on a single forest |
-
-### NA passthrough
-
-When a Layer-4 formula returns `NA` for a given row, that row "doesn't have an opinion" at Layer 4 and falls through to Layer 3:
-
-```r
-tabviz(data,
-  marker_color = ~ ifelse(pval < 0.001, "darkred",      # very strong → exact color
-                   ifelse(pval < 0.005, "indianred",    # strong       → exact color
-                          NA_character_)),               # otherwise   → fall through
-  row_accent   = ~ pval < 0.05,                          # rest of "significant" rows → accent
-  ...
-)
-```
-
-Rows with `pval < 0.005` get the exact red color (Layer 4 wins). Rows with `0.005 ≤ pval < 0.05` get the theme accent color (Layer 4 returned NA, Layer 3 takes over). Other rows get the palette default.
 
 ## Cascade Examples
 
-### Example 1: Theme + Row Override
+These examples show how multiple cascade layers compose:
 
 ```{r}
 #| eval: false
-tabviz(data,
-  label = "study",
-  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi",
-                           scale = "log", null_value = 1)),
-  theme = web_theme_jama(),           # Sets default text color
-  row_color = ~ ifelse(pval < 0.05, "#16a34a", NULL)  # Overrides for significant rows
-)
-```
-
-- Theme sets default text color (black)
-- Row styling overrides to green for significant rows
-- Non-significant rows keep theme default
-
-### Example 2: Row + Cell Override
-
-```{r}
-#| eval: false
-tabviz(data,
+tabviz(meta_data,
   label = "study",
   columns = list(
-    col_numeric("hr", color = ~ ifelse(.x < 1, "green", "red"))  # Cell override
-  ),
-  row_color = "#333333"  # Row default
-)
-```
-
-- Row styling sets all text to dark gray
-- Cell styling overrides HR column to green/red based on value
-- Other columns keep the row style
-
-### Example 3: Full Cascade
-
-```{r}
-#| eval: false
-tabviz(data,
-  label = "study",
-  columns = list(
-    col_pvalue("pval", bold = ~ .x < 0.05),
+    col_pvalue("pval",
+      bold  = ~ .x < 0.05,                          # cell layer
+      color = ~ ifelse(.x < 0.05, "#16a34a", NA)    # cell layer (NA inherits)
+    ),
     viz_forest(point = "hr", lower = "lo", upper = "hi",
                scale = "log", null_value = 1)
   ),
-  theme = web_theme_jama(),                    # Layer 1: Theme
-  row_bold = "is_summary",                     # Layer 2: Row
-  # col_pvalue bold is                         # Layer 3: Cell
-  marker_color = ~ ifelse(sig, "green", "gray") # Layer 4: Marker
-) |>
-  set_colors(primary = "#2563eb")              # Modifies Layer 1
+  row_emphasis = ~ pval < 0.001,    # row layer
+  theme = web_theme_jama()          # theme layer (chrome + data)
+)
 ```
+
+In this example:
+1. `web_theme_jama()` sets all theme defaults (Tier 1 + Tier 2 + Tier 3 internally).
+2. `row_emphasis = ~ pval < 0.001` reads `theme@row@emphasis` for matching rows.
+3. `col_pvalue(..., bold = ~ .x < 0.05)` overrides text weight on specific cells.
+4. `col_pvalue(..., color = ~ ...)` overrides cell color where the formula returns non-NA.
 
 ## Debugging Styles
 
-When styles don't appear as expected:
-
-1. **Check layer order**: Is a later layer overriding?
-2. **Check NA values**: NA styling values fall through to the next layer
-3. **Inspect formula results**: Print `data |> mutate(result = ~ your_formula)` to see evaluated values
-4. **Simplify**: Remove styling layers one at a time to find conflicts
+If something doesn't look right, walk the cascade in reverse:
 
 ```{r}
 #| eval: false
+# Inspect the resolved theme
+t <- web_theme_jama()
+t@row@emphasis@marker_fill   # what semantic emphasis evaluates to
+t@series[[1]]@fill           # default marker fill
+t@cell@fg                    # default cell color
+
 # Debug a formula expression
-library(dplyr)
-data |>
-  mutate(
-    debug_bold = pval < 0.05,  # See what row_bold = ~ pval < 0.05 produces
-    debug_color = ifelse(upper < 1, "green", "gray")
-  ) |>
-  select(study, pval, upper, debug_bold, debug_color)
+debug_color <- function(x) {
+  res <- ifelse(x < 0.05, "#16a34a", "#64748b")
+  cat("Input:", x, "\nOutput:", res, "\n")
+  res
+}
+
+col_numeric("hr", color = ~ debug_color(.x))
 ```

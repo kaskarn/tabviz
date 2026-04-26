@@ -58,33 +58,41 @@ tabviz uses [S7](https://rconsortium.github.io/S7/), R's modern object-oriented 
 
 ### Theme Classes (`R/classes-theme.R`)
 
-| Class | Purpose |
-|-------|---------|
-| `WebTheme` | Complete theme specification (composes all below) |
-| `ColorPalette` | All color definitions (background, foreground, intervals, etc.) |
-| `Typography` | Font family, sizes, weights |
-| `Spacing` | Row height, padding, gaps |
-| `Shapes` | Point size, line width, border radius |
-| `AxisConfig` | Axis range, ticks, gridlines |
-| `LayoutConfig` | Plot position, cell padding, borders |
-| `GroupHeaderStyles` | Per-level row-group header styling |
+The v2 theme is a 3-tier S7 hierarchy. **Tier 1** holds customer-facing
+inputs and per-table variants; **Tier 2** holds derived semantic role
+tokens (chrome and data, parallel hierarchies); **Tier 3** holds
+component bindings consumed by the renderer.
 
-:::{.callout-important}
-## `ColorPalette` slot names vs `set_colors()` arguments
-The S7 slots on `ColorPalette` are still named:
+| Tier | Class | Purpose |
+|------|-------|---------|
+| 1 | `ThemeInputs` | Customer-facing palette + fonts + neutrals |
+| 1 | `ThemeVariants` | Per-table toggles (`density`, `header_style`, `first_column_style`) |
+| 2 chrome | `Surfaces` | `base` / `muted` / `raised` |
+| 2 chrome | `Content` | `primary` / `secondary` / `muted` / `inverse` |
+| 2 chrome | `Dividers` | `subtle` / `strong` |
+| 2 chrome | `AccentRoles` | `default` / `muted` / `tint_subtle` / `tint_medium` |
+| 2 chrome | `StatusColors` | `positive` / `negative` / `warning` / `info` |
+| 2 data | `SlotBundle` | 7-field bundle (used in `series` list and `summary`) |
+| 2 type | `TextRole`, `TextRoles` | Per-role typography bundles (8 named roles) |
+| 2 layout | `SpacingTokens` | 12 density-derived numerics |
+| 3 | `AnnotationCluster` | title / subtitle / caption / footnote |
+| 3 | `HeaderCluster`, `HeaderVariant` | Light + bold variants of the column-header band |
+| 3 | `ColumnGroupCluster` | Column-group header band |
+| 3 | `RowGroupCluster`, `RowGroupTier` | L1 / L2 / L3 nested row-group hierarchy |
+| 3 | `RowCluster`, `RowState`, `RowSemantic` | Row states (default/alt/hover/selected) + semantic bundles (emphasis/muted/accent) + banding |
+| 3 | `CellCluster` | Cell bg / fg / border / text |
+| 3 | `FirstColumnCluster`, `FirstColumnVariant` | Plain + bold variants of the row-label column |
+| 3 | `PlotScaffold` | Axis line / tick / gridline / reference + mark sizes |
+| 3 | `MarksRecipes`, `MarkRecipe` | Per-mark slot-bundle wiring |
+| config | `AxisConfig` | Forest x-axis range / ticks / gridlines |
+| config | `Layout` | Plot width, container border |
+| top | `WebTheme` | Composes all of the above |
 
-- `interval` — default CI marker fill
-- `interval_positive`, `interval_negative`, `interval_neutral` — direction-coded marker fills
-- `interval_line` — CI line color
-
-These slot names are unchanged. The user-facing arguments to `set_colors()` are the renamed forms:
-
-- `ci_marker_fill` (writes to slot `interval`)
-- `ci_marker_positive` / `ci_marker_negative` / `ci_marker_neutral`
-- `ci_line` (writes to slot `interval_line`)
-
-The old `interval*` argument names on `set_colors()` still work but emit a deprecation warning. If you read or write the slots directly via `theme@colors@interval_positive`, use the slot names. If you call `set_colors()`, use the `ci_marker_*` / `ci_line` argument names.
-:::
+**Hard rule**: Tier 2 chrome derivation reads only chrome inputs
+(`neutral`, `brand`, `brand_deep`, `accent`, `accent_deep`). Tier 2 data
+derivation reads only data inputs (`series_anchors`, `summary_anchor`,
+`status_*`) plus `surface.base` for muted blends. The two cascades meet
+only at `WebTheme` reassembly.
 
 ### Component Classes (`R/classes-components.R`)
 
@@ -134,56 +142,75 @@ This pattern provides:
 - **Documentation** — roxygen docs on the helper, not the class
 - **Validation** — Additional business logic before construction
 
-### 2. Composition Over Inheritance
+### 2. Composition over inheritance, with explicit tiers
 
-`WebTheme` composes six sub-classes rather than inheriting or flattening:
+`WebTheme` composes ~20 sub-classes organized into three tiers. Tier 1
+is authored; Tier 2 is derived from Tier 1 by `resolve_theme()`; Tier 3
+is component-binding leaves derived from Tier 2.
 
 ```r
 WebTheme <- new_class("WebTheme", properties = list(
-  name = new_property(class_character, default = "default"),
-  colors = new_property(ColorPalette, default = ColorPalette()),
-  typography = new_property(Typography, default = Typography()),
-  spacing = new_property(Spacing, default = Spacing()),
-  shapes = new_property(Shapes, default = Shapes()),
-  axis = new_property(AxisConfig, default = AxisConfig()),
-  layout = new_property(LayoutConfig, default = LayoutConfig())
+  name     = new_property(class_character, default = "default"),
+  inputs   = new_property(ThemeInputs,    default = ThemeInputs()),
+  variants = new_property(ThemeVariants,  default = ThemeVariants()),
+
+  # Tier 2 (derived; NA-default until resolve_theme runs)
+  surface = new_property(Surfaces,      default = Surfaces()),
+  content = new_property(Content,       default = Content()),
+  divider = new_property(Dividers,      default = Dividers()),
+  accent  = new_property(AccentRoles,   default = AccentRoles()),
+  status  = new_property(StatusColors,  default = StatusColors()),
+  series  = new_property(class_list,    default = list()),
+  summary = new_property(SlotBundle,    default = SlotBundle()),
+  text    = new_property(TextRoles,     default = TextRoles()),
+  spacing = new_property(SpacingTokens, default = SpacingTokens()),
+
+  # Tier 3 (component bindings)
+  annotation   = new_property(AnnotationCluster, ...),
+  header       = new_property(HeaderCluster,     ...),
+  column_group = new_property(ColumnGroupCluster, ...),
+  row_group    = new_property(RowGroupCluster,   ...),
+  row          = new_property(RowCluster,        ...),
+  cell         = new_property(CellCluster,       ...),
+  first_column = new_property(FirstColumnCluster, ...),
+  plot         = new_property(PlotScaffold,      ...),
+  marks        = new_property(MarksRecipes,      ...),
+
+  # Config (not part of the tier cascade)
+  axis   = new_property(AxisConfig, default = AxisConfig()),
+  layout = new_property(Layout,     default = Layout())
 ))
 ```
 
-Benefits:
+### 3. Fluent modifiers
 
-- **Targeted modification** — Change only what you need: `theme@colors@primary`
-- **Reusable components** — `ColorPalette` could be used elsewhere
-- **Cleaner API** — 6 grouped settings vs 30+ flat properties
-
-### 3. Fluent Modifiers
-
-Theme modification uses pipe-friendly functions that return modified copies:
+Theme modification uses pipe-friendly functions that return re-resolved
+copies:
 
 ```r
 web_theme_jama() |>
-  set_colors(primary = "#0066cc", border = "#999999") |>
+  set_inputs(brand = "#0066cc") |>
+  set_variants(density = "comfortable") |>
   set_spacing(row_height = 24) |>
-  set_axis(gridlines = TRUE)
+  set_theme_field(c("axis", "gridlines"), TRUE)
 ```
 
-Implementation pattern:
+Implementation pattern (simplified):
+
 ```r
-set_colors <- function(theme, ...) {
+set_inputs <- function(theme, ...) {
   stopifnot(S7_inherits(theme, WebTheme))
   args <- list(...)
-  current <- theme@colors
   for (prop in names(args)) {
-    if (prop %in% S7::prop_names(current)) {
-      S7::prop(current, prop) <- args[[prop]]
-    } else {
-      cli_warn("Unknown color property: {.field {prop}}")
-    }
+    S7::prop(theme@inputs, prop) <- args[[prop]]
   }
-  theme@colors <- current
-  theme
+  resolve_theme(theme)
 }
 ```
+
+Each modifier re-runs `resolve_theme()` before returning. Resolution is
+idempotent and only fills NA-valued fields, so explicit user overrides
+survive.
 
 ### 4. NA vs NULL Convention
 

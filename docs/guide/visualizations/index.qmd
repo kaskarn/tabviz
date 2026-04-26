@@ -42,11 +42,11 @@ All `viz_*()` columns share:
 ::: {.callout-tip}
 ## Theme Effect Colors
 
-When you have multiple effects per row (multiple bar series, boxplot groups, or forest effects), colors come from the theme's `effect_colors` palette. Override with `set_effect_colors()`:
+When you have multiple effects per row (multiple bar series, boxplot groups, or forest effects), colors come from the theme's `series_anchors` input. Each anchor expands into a 7-field slot bundle (fill, stroke, fill_muted, etc.) at resolve time:
 
 ```r
 web_theme_default() |>
-  set_effect_colors(c("#2563eb", "#dc2626", "#16a34a"))
+  set_inputs(series_anchors = c("#2563eb", "#dc2626", "#16a34a"))
 ```
 
 Individual effects can still override the theme via their own `color` parameter.

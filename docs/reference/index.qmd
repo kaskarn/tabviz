@@ -117,15 +117,10 @@ Fluent verbs that mutate a `WebSpec`, htmlwidget, or `tabviz_proxy`. See [Stylin
 
 | Function | Description |
 |---|---|
-| [`set_colors()`](themes.qmd#set_colors) | Palette (uses `ci_marker_*` / `ci_line`) |
-| [`set_typography()`](themes.qmd#set_typography) | Fonts |
-| [`set_spacing()`](themes.qmd#set_spacing) | Row height / padding / gaps |
-| [`set_shapes()`](themes.qmd#set_shapes) | Marker geometry & multi-effect palette |
-| [`set_axis()`](themes.qmd#set_axis) | Range / ticks / gridlines / clipping |
-| [`set_layout()`](themes.qmd#set_layout) | Plot position, banding, container border |
-| [`set_group_headers()`](themes.qmd#set_group_headers) | Per-level nested header styling |
-| [`set_effect_colors()`](themes.qmd#set_effect_colors) | Shorthand for `set_shapes(effect_colors=)` |
-| [`set_marker_shapes()`](themes.qmd#set_marker_shapes) | Shorthand for `set_shapes(marker_shapes=)` |
+| [`set_inputs()`](themes.qmd#set_inputs) | Tier 1 inputs (brand, accent, series, fonts, status) |
+| [`set_variants()`](themes.qmd#set_variants) | Per-table variants (density, header_style, first_column_style) |
+| [`set_spacing()`](themes.qmd#set_spacing) | Per-token spacing override on top of the density preset |
+| [`set_theme_field()`](themes.qmd#set_theme_field) | Generic deep setter; `path` walks the theme tree |
 
 ## Annotations
 

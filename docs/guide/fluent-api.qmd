@@ -246,16 +246,28 @@ plot |> set_theme("jama")
 # Apply by object
 plot |> set_theme(web_theme_lancet())
 
-# Modify theme properties
-plot |> set_colors(primary = "#1a365d")
-plot |> set_spacing(row_height = 24)
-plot |> set_axis(gridlines = TRUE)
+# Modify a Tier 1 input
+plot |> set_theme(web_theme_lancet() |> set_inputs(brand = "#1a365d"))
+
+# Modify spacing on the active theme (operates on a WebTheme directly)
+custom <- web_theme_lancet() |>
+  set_spacing(row_height = 24) |>
+  set_theme_field(c("axis", "gridlines"), TRUE)
+plot |> set_theme(custom)
 ```
 
-Theme modifiers (`set_colors`, `set_typography`, `set_spacing`, `set_shapes`,
-`set_axis`, `set_layout`, `set_group_headers`, `set_effect_colors`,
-`set_marker_shapes`) work on both plots and standalone `WebTheme` objects.
-See [Styling reference](../reference/styling.qmd) for parameter tables.
+Theme modifiers operate on a `WebTheme` object (not a plot directly).
+Build the theme you want, then attach it via `set_theme()`.
+
+| Modifier | Edits |
+|----------|-------|
+| `set_inputs()` | Tier 1 customer inputs (brand, accent, series, fonts, status) |
+| `set_variants()` | Per-table variants (density, header_style, first_column_style) |
+| `set_spacing()` | Per-token spacing override on top of the density preset |
+| `set_theme_field(theme, path, value)` | Generic deep setter; `path` walks the theme tree |
+
+See [Themes guide](themes.qmd) for the full ontology and
+[Styling reference](../reference/styling.qmd) for parameter tables.
 
 ---
 
@@ -494,7 +506,7 @@ forest_plot(trial_b, ...) |> apply_clinical_style()
 | `set_marker_style()` | Interval marker (color, shape, opacity, size) |
 | `set_column_style()` | Per-cell styling for one column |
 | `set_theme()` | Apply theme by name or object |
-| `set_colors()`, `set_typography()`, `set_spacing()`, `set_shapes()`, `set_axis()`, `set_layout()`, `set_group_headers()`, `set_effect_colors()`, `set_marker_shapes()` | Theme-level modifiers |
+| `set_inputs()`, `set_variants()`, `set_spacing()`, `set_theme_field()` | Theme-level modifiers (operate on a `WebTheme`, then `set_theme()` to attach) |
 
 **Columns**
 
