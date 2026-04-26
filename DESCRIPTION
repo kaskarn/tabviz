@@ -21,6 +21,7 @@ Collate:
     'tabviz-package.R'
     'classes-core.R'
     'classes-theme.R'
+    'classes-theme-v2.R'
     'classes-annotations.R'
     'classes-components.R'
     'update-check.R'
