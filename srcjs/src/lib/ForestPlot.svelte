@@ -1385,12 +1385,19 @@
       --tv-semantic-emphasis-bg: ${theme.row.emphasis?.bg ?? "transparent"};
       --tv-semantic-muted-bg:    ${theme.row.muted?.bg    ?? "transparent"};
       --tv-semantic-accent-bg:   ${theme.row.accent?.bg   ?? "transparent"};
-      /* Status colors drive the badge palette when set on the theme;
-         otherwise fall back to the package's BADGE_VARIANTS constants. */
-      --tv-badge-success: ${theme.status?.positive ?? BADGE_VARIANTS.success};
-      --tv-badge-warning: ${theme.status?.warning  ?? BADGE_VARIANTS.warning};
-      --tv-badge-error:   ${theme.status?.negative ?? BADGE_VARIANTS.error};
-      --tv-badge-info:    ${theme.status?.info     ?? BADGE_VARIANTS.info};
+      /* Status colors. --tv-status-* are the semantic names any column
+         type can reference (col_ring thresholds, col_pictogram fills,
+         col_badge scales). --tv-badge-* are the historical badge-variant
+         names; they alias to --tv-status-* so a single edit on the theme
+         flows through both surfaces. */
+      --tv-status-positive: ${theme.status?.positive ?? BADGE_VARIANTS.success};
+      --tv-status-warning:  ${theme.status?.warning  ?? BADGE_VARIANTS.warning};
+      --tv-status-negative: ${theme.status?.negative ?? BADGE_VARIANTS.error};
+      --tv-status-info:     ${theme.status?.info     ?? BADGE_VARIANTS.info};
+      --tv-badge-success: var(--tv-status-positive);
+      --tv-badge-warning: var(--tv-status-warning);
+      --tv-badge-error:   var(--tv-status-negative);
+      --tv-badge-info:    var(--tv-status-info);
       --tv-badge-muted:   ${theme.content.muted};
       --tv-font-family: ${theme.text.body.family};
       --tv-text-title-family: ${theme.text.title?.family ?? theme.text.body.family};
@@ -3157,17 +3164,14 @@
 
   /* Paint preview — always-on hover affordance in the unified select-as-
      paint model. The renderer mixes the active paint token's bundle into
-     the row/cell style so the would-be visual paints; we add a subtle
-     "unsaved" cue without obscuring the bundle. Earlier this was a flat
-     opacity:0.65 — but that faded accent/bold/emphasis previews into a
-     uniform pale wash that read as "muted" regardless of which token was
-     active (bug: "preview stuck showing muted regardless of selection").
-     A near-1 opacity keeps the bundle's color recognizable; the dashed
-     bottom border marks the row/cell as the click target. */
+     the row/cell style so the would-be visual paints; we dim it a bit so
+     the user sees "this is what you'll get on click" without it feeling
+     already-committed. cursor: pointer signals the row/cell is the click
+     target. */
   .data-cell.paint-preview {
+    opacity: 0.65;
     cursor: pointer;
-    box-shadow: inset 0 -1.5px 0 0 color-mix(in srgb, var(--tv-primary, #2563eb) 60%, transparent);
-    transition: box-shadow 0.08s ease;
+    transition: opacity 0.08s ease;
   }
 
   .row-italic {
