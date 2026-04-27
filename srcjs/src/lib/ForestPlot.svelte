@@ -19,6 +19,7 @@
   import CellIcon from "$components/table/CellIcon.svelte";
   import CellBadge from "$components/table/CellBadge.svelte";
   import CellStars from "$components/table/CellStars.svelte";
+  import CellPictogram from "$components/table/CellPictogram.svelte";
   import CellImg from "$components/table/CellImg.svelte";
   import CellReference from "$components/table/CellReference.svelte";
   import CellRange from "$components/table/CellRange.svelte";
@@ -1584,6 +1585,16 @@
             options={column.options?.stars}
             naText={column.options?.naText}
           />
+        {:else if column.type === "pictogram"}
+          <CellPictogram
+            value={metadata[column.field] as number}
+            options={column.options?.pictogram}
+            naText={column.options?.naText}
+            {cellStyle}
+            glyphSelector={column.options?.pictogram?.glyphField
+              ? metadata[column.options.pictogram.glyphField] as string
+              : null}
+          />
         {:else if column.type === "img"}
           <CellImg
             value={metadata[column.field] as string}
@@ -1789,8 +1800,18 @@
             renderer produces the would-be visual without committing the
             flag. Cell-scope preview is handled separately at cell level
             via getCellStyle().
+
+            INLINED (was paintRowPreviewToken(row) function call): Svelte 5
+            $derived dynamic-tracks reads inside expressions, but function
+            calls into the instance script have a history of opaque deps
+            in this codebase (see feedback_svelte5_closure.md — closure
+            captures don't always rewrite). Inlining the reactive reads
+            ensures the @const re-evaluates whenever store.paintTool or
+            store.hoveredRowId changes — fixes "preview stuck on muted
+            regardless of selected token" where the @const was caching a
+            stale tool.token.
           -->
-          {@const rowPreviewToken = paintRowPreviewToken(row)}
+          {@const rowPreviewToken = (row && store.paintTool.scope === "row" && store.hoveredRowId === row.id) ? store.paintTool.token : null}
           {@const effectiveRowStyle = row?.style && rowPreviewToken
             ? ({ ...row.style, [rowPreviewToken]: true } as typeof row.style)
             : row?.style}
