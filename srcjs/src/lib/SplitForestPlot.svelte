@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { SplitForestStore } from "$stores/splitForestStore.svelte";
   import type { ThemeName } from "$lib/theme-presets";
+  import type { WebTheme } from "$types";
   import ForestPlot from "./ForestPlot.svelte";
   import SplitSidebar from "$components/split/SplitSidebar.svelte";
 
@@ -15,9 +16,18 @@
   const payload = $derived(store.payload);
   const sidebarWidth = $derived(store.sidebarWidth);
 
-  // Theme persistence: when theme changes in any plot, persist it across all splits
-  function handleThemeChange(themeName: ThemeName) {
-    store.setTheme(themeName);
+  // Theme persistence: ThemeSwitcher applies the new theme to the active leaf
+  // directly (via store.setThemeObject) — we just need to remember it on the
+  // splitStore so leaf navigation re-applies it. When the resolved theme
+  // object is available we persist that (v2 wire-shape); otherwise we fall
+  // back to the preset name path which goes through the local THEME_PRESETS
+  // table.
+  function handleThemeChange(themeName: ThemeName, theme?: WebTheme) {
+    if (theme) {
+      store.setThemeObject(theme, themeName);
+    } else {
+      store.setTheme(themeName);
+    }
   }
 
   // Container ref for resize observer

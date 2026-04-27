@@ -1,4 +1,4 @@
-import type { SplitForestPayload, NavTreeNode, WebSpec } from "$types";
+import type { SplitForestPayload, NavTreeNode, WebSpec, WebTheme } from "$types";
 import { createForestStore, type ForestStore } from "./forestStore.svelte";
 import { type ThemeName } from "$lib/theme-presets";
 import { ops } from "$lib/op-recorder";
@@ -46,8 +46,13 @@ export function createSplitForestStore() {
   // Keyed as specKey → colId → original width (undefined = auto).
   let originalWidths: Map<string, Map<string, number | "auto" | undefined>> = new Map();
 
-  // Theme persistence - stores user-selected theme across navigation
+  // Theme persistence — stores the user-selected theme so leaf navigation
+  // can re-apply it. We track BOTH the resolved object (preferred) and the
+  // preset name (fallback). The local THEME_PRESETS table is v1-shaped and
+  // can't be fed to the v2 renderer; we only fall through to it if no v2
+  // theme object was supplied.
   let userTheme = $state<ThemeName | null>(null);
+  let userThemeObject = $state<WebTheme | null>(null);
 
   // Container dimensions
   let containerWidth = $state(800);
@@ -212,8 +217,12 @@ export function createSplitForestStore() {
     const spec = payload.specs[key];
     if (spec) {
       activeStore.setSpec(spec);
-      // Apply stored theme if user has selected one
-      if (userTheme) {
+      // Re-apply the persisted user theme. The v2 object path is preferred
+      // — the preset-name fallback would load from the v1-shaped local
+      // THEME_PRESETS and crash the v2 renderer.
+      if (userThemeObject) {
+        activeStore.setThemeObject(userThemeObject);
+      } else if (userTheme) {
         activeStore.setTheme(userTheme);
       }
       // Update dimensions accounting for sidebar
@@ -288,11 +297,22 @@ export function createSplitForestStore() {
 
   function setTheme(themeName: ThemeName) {
     userTheme = themeName;
+    userThemeObject = null;
     activeStore.setTheme(themeName);
+  }
+
+  // Apply a v2 WebTheme directly. ThemeSwitcher prefers this path whenever
+  // it can resolve the theme key against `availableThemes`, since the local
+  // preset-name fallback is v1-shaped and would crash the renderer.
+  function setThemeObject(theme: WebTheme, themeName?: ThemeName) {
+    userThemeObject = theme;
+    userTheme = themeName ?? null;
+    activeStore.setThemeObject(theme);
   }
 
   function resetTheme() {
     userTheme = null;
+    userThemeObject = null;
     // Re-apply original spec theme
     if (activeKey && payload) {
       const spec = payload.specs[activeKey];
@@ -328,6 +348,7 @@ export function createSplitForestStore() {
     selectNext,
     selectPrevious,
     setTheme,
+    setThemeObject,
     resetTheme,
     setSharedColumnWidths,
     toggleSharedColumnWidths,

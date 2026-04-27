@@ -34,7 +34,7 @@
   import ColumnEditorPopover, { type EditorTarget } from "$components/controls/ColumnEditorPopover.svelte";
   import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
   import { getVisualTypeDef, isVizType, resolveShowHeader } from "$lib/column-compat";
-  import { resolveSemanticBundle } from "$lib/semantic-styling";
+  import { resolveSemanticBundle, activeSemanticToken } from "$lib/semantic-styling";
   import { computeAxisLayout, textRegionHeight } from "$lib/typography-layout";
   import {
     isLayoutDebugEnabled,
@@ -1287,6 +1287,35 @@
     return baseStyle;
   }
 
+  // Cell-level semantic bundle. Resolves the bundle for whichever token
+  // wins precedence on the cell's flags (data + painter + hover preview),
+  // returning null if no token is active on the cell. Emitted onto the
+  // cell via inline CSS vars so cell-scope painting actually renders —
+  // without this the painter writes to styleEdits.cells but nothing
+  // reaches the DOM.
+  function getCellSemBundle(row: Row | null | undefined, column: ColumnSpec): SemanticBundle | null {
+    if (!row || !theme) return null;
+    const cellStyle = getCellStyle(row, column);
+    return resolveSemanticBundle(cellStyle, theme);
+  }
+  function getCellActiveToken(row: Row | null | undefined, column: ColumnSpec): string | null {
+    if (!row) return null;
+    return activeSemanticToken(getCellStyle(row, column));
+  }
+  // Compose the row-level inline `style=` string with cell-level bundle
+  // overrides. Same CSS-var keys as the row-level emit; later writes win,
+  // so cell paint shadows row paint when both are present.
+  function getCellInlineCss(bundle: SemanticBundle | null, baseRowStyles: string): string {
+    if (!bundle) return baseRowStyles;
+    const parts: string[] = [];
+    if (baseRowStyles) parts.push(baseRowStyles);
+    if (bundle.fg != null)         parts.push(`--tv-semantic-fg: ${bundle.fg}`);
+    if (bundle.fontWeight != null) parts.push(`--tv-semantic-weight: ${bundle.fontWeight}`);
+    if (bundle.fontStyle != null)  parts.push(`--tv-semantic-style: ${bundle.fontStyle}`);
+    if (bundle.border != null)     parts.push(`border-bottom: 1px solid ${bundle.border}`);
+    return parts.join("; ");
+  }
+
   // CSS variable style string (includes shared rendering constants for consistency)
   const cssVars = $derived.by(() => {
     if (!theme) return '';
@@ -1793,10 +1822,19 @@
                group-header / icon / badge chrome. -->
           {#each allColumns as column (column.id)}
             {@const isPrimary = column.id === primaryColumnId}
+            <!-- Cell-level semantic bundle. Computed per-cell so cell-scope
+                 painting + per-cell hover preview actually flow into the DOM.
+                 The vars override the row-level CSS vars (later wins under
+                 inline-style merge), so a row-painted+cell-painted combo
+                 shows the cell's token. -->
+            {@const cellSemBundle = row ? getCellSemBundle(row, column) : null}
+            {@const cellActiveTok = row ? getCellActiveToken(row, column) : null}
+            {@const cellSemCss    = getCellInlineCss(cellSemBundle, rowStyles)}
+            {@const cellSemBg     = cellSemBundle?.bg ?? null}
             {#if isPrimary}
               <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
               <div
-                class="grid-cell data-cell primary-cell {rowClasses}"
+                class={`grid-cell data-cell primary-cell ${rowClasses}${cellActiveTok ? ` cell-active-${cellActiveTok}` : ""}`}
                 class:group-row={isGroupHeader}
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
@@ -1809,7 +1847,7 @@
                 data-row-id={row ? row.id : undefined}
                 data-field={row ? column.field : undefined}
                 style:grid-row={gridRow}
-                style:background-color={effectiveBg}
+                style:background-color={cellSemBg ?? effectiveBg}
                 style:padding-left={(() => {
                   // Indent per nesting level — sourced from
                   // `theme.rowGroup.indentPerLevel` (default 16) so the
@@ -1821,7 +1859,7 @@
                   const lvl = row?.style?.indent ?? rowDepth;
                   return lvl ? `${lvl * indentPx}px` : undefined;
                 })()}
-                style={rowStyles || undefined}
+                style={cellSemCss || undefined}
                 role={isGroupHeader ? "button" : undefined}
                 tabindex={isGroupHeader ? 0 : undefined}
                 onpointerdown={spec?.interaction.enableReorderRows ? (e) => {
@@ -1854,7 +1892,7 @@
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <div
-                class="grid-cell data-cell plot-cell {rowClasses}"
+                class={`grid-cell data-cell plot-cell ${rowClasses}${cellActiveTok ? ` cell-active-${cellActiveTok}` : ""}`}
                 class:group-row={isGroupHeader}
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
@@ -1862,8 +1900,8 @@
                 class:paint-preview={!!rowPreviewToken || (!!row && !!paintCellPreviewToken(row, column.field))}
                 role="presentation"
                 style:grid-row={gridRow}
-                style:background-color={effectiveBg}
-                style={rowStyles || undefined}
+                style:background-color={cellSemBg ?? effectiveBg}
+                style={cellSemCss || undefined}
                 onmouseenter={row ? (e) => handleCellEnter(row.id, column.field, e) : undefined}
                 onmouseleave={row ? () => handleCellLeave() : undefined}
                 onclick={row ? () => handleCellClick(row, column.field) : undefined}
@@ -1879,7 +1917,7 @@
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <div
-                class="grid-cell data-cell {rowClasses}"
+                class={`grid-cell data-cell ${rowClasses}${cellActiveTok ? ` cell-active-${cellActiveTok}` : ""}`}
                 class:group-row={isGroupHeader}
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
@@ -1891,10 +1929,10 @@
                 data-row-id={row ? row.id : undefined}
                 data-field={column.field}
                 style:grid-row={gridRow}
-                style:background-color={cellBg ?? effectiveBg}
+                style:background-color={cellBg ?? cellSemBg ?? effectiveBg}
                 style:text-align={column.align}
                 style:justify-content={column.align === "center" ? "center" : column.align === "right" ? "flex-end" : "flex-start"}
-                style={rowStyles || undefined}
+                style={cellSemCss || undefined}
                 onmouseenter={row ? (e) => handleCellEnter(row.id, column.field, e) : undefined}
                 onmouseleave={row ? () => handleCellLeave() : undefined}
                 onclick={row ? () => handleCellClick(row, column.field) : undefined}
@@ -2482,6 +2520,7 @@
 
 <script lang="ts" module>
   import type { RowStyle } from "$types";
+  import { activeSemanticToken as activeSemanticTokenMod } from "$lib/semantic-styling";
 
   // Note: formatNumber, formatEvents, formatInterval, addThousandsSep, abbreviateNumber are imported from $lib/formatters
 
@@ -2544,6 +2583,13 @@
         style?.bold || style?.highlight || style?.fill) {
       classes.push("row-has-semantic");
     }
+    // Active-token class — reflects which token actually wins precedence
+    // (loud→quiet: fill > highlight > accent > emphasis > bold > muted).
+    // Used by styling rules that only apply when a token is THE active one,
+    // so e.g. the muted-opacity overlay doesn't bleed onto rows that also
+    // have a louder token painted (preview merge, multi-flag data columns).
+    const active = activeSemanticTokenMod(style);
+    if (active) classes.push(`row-active-${active}`);
 
     // Banding: the store decides which display rows get banded (respecting
     // styled-row exclusions and the mode/level grammar), so we just paint.
@@ -3094,7 +3140,8 @@
    * The three `.row-emphasis` / `.row-muted` / `.row-accent` classes are
    * kept for host-page CSS hooks but no longer drive styling themselves.
    */
-  :global(.tabviz-container .data-cell.row-has-semantic) {
+  :global(.tabviz-container .data-cell.row-has-semantic),
+  :global(.tabviz-container .data-cell[class*="cell-active-"]) {
     color: var(--tv-semantic-fg, inherit);
     font-weight: var(--tv-semantic-weight, inherit);
     font-style: var(--tv-semantic-style, inherit);
@@ -3102,8 +3149,13 @@
 
   /* Muted token: lighter, reduced prominence. The fg already shifts to
      content.muted via the bundle; the opacity here adds a true "fade
-     into the background" feel that single-color shifts don't provide. */
-  :global(.tabviz-container .data-cell.row-muted) {
+     into the background" feel that single-color shifts don't provide.
+     Gated on `.row-active-muted` / `.cell-active-muted` (each set only
+     when muted is the highest-precedence flag on its scope) so a hover
+     preview of a louder token on a muted-painted target doesn't keep
+     dimming it. */
+  :global(.tabviz-container .data-cell.row-active-muted),
+  :global(.tabviz-container .data-cell.cell-active-muted) {
     opacity: 0.6;
   }
 

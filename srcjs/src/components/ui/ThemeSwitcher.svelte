@@ -19,7 +19,14 @@
   interface Props {
     store: ForestStore;
     availableThemes?: ThemesInput | null;  // undefined = all built-ins, null = hidden
-    onThemeChange?: (themeName: ThemeName) => void;
+    /**
+     * Notification fired when the user picks a theme. Receives the theme key
+     * AND the resolved WebTheme (when available via `availableThemes`). The
+     * resolved object lets parents like the split forest persist the v2 theme
+     * across leaves; the name alone is insufficient since the local
+     * `THEME_PRESETS` fallback is v1-shaped and crashes the v2 renderer.
+     */
+    onThemeChange?: (themeName: ThemeName, theme?: WebTheme) => void;
   }
 
   let { store, availableThemes, onThemeChange }: Props = $props();
@@ -114,18 +121,23 @@
   let pendingTheme = $state<string | null>(null);
 
   function applyTheme(themeName: string) {
+    // Prefer the v2 wire-shape theme from availableThemes when present.
+    // This works in both single and split mode (each store's setThemeObject
+    // accepts a v2 WebTheme). The `onThemeChange` notification still fires
+    // so split-mode parents can persist the choice across leaves.
+    const theme = lookupTheme(themeName);
+    if (theme && store.spec) {
+      store.setThemeObject(theme);
+      onThemeChange?.(themeName as ThemeName, theme);
+      return;
+    }
+    // No matching v2 theme registered. Hand off to the parent (split mode)
+    // or fall back to the local preset path (single mode without
+    // availableThemes — typically dev-only since R always serializes v2).
     if (onThemeChange) {
       onThemeChange(themeName as ThemeName);
       return;
     }
-    const theme = lookupTheme(themeName);
-    if (theme && store.spec) {
-      // Custom-theme path: apply the supplied WebTheme directly, preserving
-      // interactive column/row edits that setSpec would wipe.
-      store.setThemeObject(theme);
-      return;
-    }
-    // Default path: swap to a named preset (built-in fallback).
     store.setTheme(themeName as ThemeName);
   }
 
