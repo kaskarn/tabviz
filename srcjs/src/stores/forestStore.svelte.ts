@@ -2035,6 +2035,20 @@ export function createForestStore() {
     // doesn't fight the painted semantic bg. Leaving paint mode doesn't
     // re-select anything — the user explicitly opts into selection later.
     if (tool) selectedRowIds = new Set();
+    // Clear any stale paint-hover marker so a tool switch doesn't leave
+    // the previous cell highlighted in preview.
+    paintHoverCellField = null;
+  }
+
+  // Paint-mode hover state. Tracks "rowId:field" of the cell under the
+  // cursor while in cell-scope paint mode; null otherwise. Lives on the
+  // store rather than as a ForestPlot-local $state because Svelte 5's
+  // compiler doesn't propagate component-local $state into helper
+  // functions defined in the same script — accessing it via store.* is
+  // guaranteed to read through a working getter.
+  let paintHoverCellField = $state<string | null>(null);
+  function setPaintHoverCellField(value: string | null) {
+    paintHoverCellField = value;
   }
 
   /** Toggle or set a semantic flag on a row. Call from the paint pointerdown
@@ -3197,12 +3211,14 @@ export function createForestStore() {
     getPlotLabel,
     // Paint tool
     setPaintTool,
+    setPaintHoverCellField,
     setRowSemantic,
     setCellSemantic,
     getRowSemantic,
     getCellSemantic,
     clearAllPaint,
     get paintTool() { return paintTool; },
+    get paintHoverCellField() { return paintHoverCellField; },
     get styleEdits() { return styleEdits; },
     get hasPaintEdits() { return hasPaintEdits(); },
     clearAllEdits,

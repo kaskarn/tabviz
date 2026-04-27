@@ -127,12 +127,13 @@
   const selectedRowIds = $derived(store.selectedRowIds);
   const hoveredRowId = $derived(store.hoveredRowId);
 
-  // Paint-mode hover state. Row-scope hover reuses `hoveredRowId`; cell-scope
-  // tracks the specific cell ("rowId:field") under the cursor so the hover
-  // preview lands on one cell instead of the whole row.
-  let paintHoverCellField = $state<string | null>(null);
-  const paintTool = $derived(store.paintTool);
-  const paintActive = $derived(paintTool !== null);
+  // Paint-mode state lives on the store; we read it via store.paintTool /
+  // store.paintHoverCellField everywhere. Local $state / $derived for these
+  // ran into a Svelte 5 compiler issue where helper functions defined in
+  // this script body referenced the bare names instead of the renamed
+  // closure variables, throwing ReferenceError at runtime. Reading from
+  // store.* (a prop) goes through a getter the compiler always preserves.
+  const paintActive = $derived(store.paintTool !== null);
 
   // Zoom & auto-fit state (from store)
   const zoom = $derived(store.zoom);
@@ -1227,13 +1228,13 @@
   // to handleRowHover/handleRowLeave for the row-level hover behavior.
   function handleCellEnter(rowId: string, field: string, event: MouseEvent) {
     handleRowHover(rowId, event);
-    if (paintTool?.scope === "cell") {
-      paintHoverCellField = `${rowId}:${field}`;
+    if (store.paintTool?.scope === "cell") {
+      store.setPaintHoverCellField(`${rowId}:${field}`);
     }
   }
   function handleCellLeave() {
     handleRowLeave();
-    paintHoverCellField = null;
+    store.setPaintHoverCellField(null);
   }
 
   /**
@@ -2581,17 +2582,22 @@
   // this row/cell at click. Returns the active token or null. The renderer
   // merges the token flag into the row/cell style for one resolution pass
   // (no flag commit) so resolveSemanticBundle produces the would-be visual.
+  // All paint state read via `store.*` because Svelte 5's compiler doesn't
+  // rewrite component-local $state references inside helper functions —
+  // bare names hit a ReferenceError. Prop access works.
   function paintRowPreviewToken(row: Row | null): string | null {
-    if (!row || !paintTool) return null;
-    if (paintTool.scope !== "row") return null;
-    if (hoveredRowId !== row.id) return null;
-    return paintTool.token;
+    const tool = store.paintTool;
+    if (!row || !tool) return null;
+    if (tool.scope !== "row") return null;
+    if (store.hoveredRowId !== row.id) return null;
+    return tool.token;
   }
   function paintCellPreviewToken(row: Row | null, field: string): string | null {
-    if (!row || !paintTool) return null;
-    if (paintTool.scope !== "cell") return null;
-    if (paintHoverCellField !== `${row.id}:${field}`) return null;
-    return paintTool.token;
+    const tool = store.paintTool;
+    if (!row || !tool) return null;
+    if (tool.scope !== "cell") return null;
+    if (store.paintHoverCellField !== `${row.id}:${field}`) return null;
+    return tool.token;
   }
 
   // Get cell style for a specific column from row.cellStyles or column.styleMapping.
