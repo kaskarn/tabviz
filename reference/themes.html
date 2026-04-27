@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Themes – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-acf12a64177840b8d86f2d4f01b2e9fb.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-edf0d5c7e188fb8924845e7743387b91.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#preset-themes" id="toc-preset-themes" class="nav-link active" data-scroll-target="#preset-themes">Preset themes</a>
+  <ul class="collapse">
+  <li><a href="#web_theme_cochrane" id="toc-web_theme_cochrane" class="nav-link" data-scroll-target="#web_theme_cochrane"><code>web_theme_cochrane()</code></a></li>
+  <li><a href="#web_theme_lancet" id="toc-web_theme_lancet" class="nav-link" data-scroll-target="#web_theme_lancet"><code>web_theme_lancet()</code></a></li>
+  <li><a href="#web_theme_jama" id="toc-web_theme_jama" class="nav-link" data-scroll-target="#web_theme_jama"><code>web_theme_jama()</code></a></li>
+  <li><a href="#web_theme_dark" id="toc-web_theme_dark" class="nav-link" data-scroll-target="#web_theme_dark"><code>web_theme_dark()</code></a></li>
+  </ul></li>
+  <li><a href="#package_themes" id="toc-package_themes" class="nav-link" data-scroll-target="#package_themes"><code>package_themes()</code></a></li>
+  <li><a href="#web_theme" id="toc-web_theme" class="nav-link" data-scroll-target="#web_theme"><code>web_theme()</code></a></li>
+  <li><a href="#theme-modifiers" id="toc-theme-modifiers" class="nav-link" data-scroll-target="#theme-modifiers">Theme modifiers</a>
+  <ul class="collapse">
+  <li><a href="#set_inputs" id="toc-set_inputs" class="nav-link" data-scroll-target="#set_inputs"><code>set_inputs()</code></a></li>
+  <li><a href="#set_variants" id="toc-set_variants" class="nav-link" data-scroll-target="#set_variants"><code>set_variants()</code></a></li>
+  <li><a href="#set_spacing" id="toc-set_spacing" class="nav-link" data-scroll-target="#set_spacing"><code>set_spacing()</code></a></li>
+  <li><a href="#set_theme_field" id="toc-set_theme_field" class="nav-link" data-scroll-target="#set_theme_field"><code>set_theme_field()</code></a></li>
+  </ul></li>
+  <li><a href="#switching-themes-on-a-spec" id="toc-switching-themes-on-a-spec" class="nav-link" data-scroll-target="#switching-themes-on-a-spec">Switching themes on a spec</a></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">Worked examples</a>
+  <ul class="collapse">
+  <li><a href="#lancet-style-with-custom-tier-1-input" id="toc-lancet-style-with-custom-tier-1-input" class="nav-link" data-scroll-target="#lancet-style-with-custom-tier-1-input">Lancet-style with custom Tier 1 input</a></li>
+  <li><a href="#high-contrast-print-theme" id="toc-high-contrast-print-theme" class="nav-link" data-scroll-target="#high-contrast-print-theme">High-contrast print theme</a></li>
+  <li><a href="#dark-dashboard-theme" id="toc-dark-dashboard-theme" class="nav-link" data-scroll-target="#dark-dashboard-theme">Dark dashboard theme</a></li>
+  </ul></li>
+  <li><a href="#theme-structure-s7" id="toc-theme-structure-s7" class="nav-link" data-scroll-target="#theme-structure-s7">Theme structure (S7)</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Themes</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Built-in theme presets, the <code>web_theme()</code> custom-theme constructor, the four core modifiers (<code>set_inputs()</code>, <code>set_variants()</code>, <code>set_spacing()</code>, <code>set_theme_field()</code>), and <code>package_themes()</code> for listing every shipped theme. Pass any theme to <code>tabviz(theme = ...)</code> or apply it after the fact with <a href="../reference/styling.html#set_theme"><code>set_theme()</code></a>.</p>
+<p>For the conceptual model see the <a href="../guide/themes.html">Themes guide</a> and the <a href="../concepts/styling-cascade.html">Styling Cascade</a> concepts page.</p>
+<hr>
+<section id="preset-themes" class="level2">
+<h2 class="anchored" data-anchor-id="preset-themes">Preset themes</h2>
+<p><code>web_theme_*()</code> builders return a fully resolved <code>WebTheme</code>. They take no arguments — chain modifiers to customize.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Theme</th>
+<th>Purpose</th>
+<th>Notable defaults</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#web_theme_cochrane"><code>web_theme_cochrane()</code></a></td>
+<td>The package default</td>
+<td>Cochrane teal + warm-coral accent, Inter sans-serif, comfortable density</td>
+</tr>
+<tr class="even">
+<td><a href="#web_theme_lancet"><code>web_theme_lancet()</code></a></td>
+<td>Lancet-style editorial</td>
+<td>Navy + refined old-gold + warm cream, Georgia serif</td>
+</tr>
+<tr class="odd">
+<td><a href="#web_theme_jama"><code>web_theme_jama()</code></a></td>
+<td>JAMA / print journals</td>
+<td>Pure black-and-white, ultra-compact, strong dividers, Arial</td>
+</tr>
+<tr class="even">
+<td><a href="#web_theme_dark"><code>web_theme_dark()</code></a></td>
+<td>Dark-mode viewing</td>
+<td>Catppuccin Mocha-inspired canvas, pastel markers</td>
+</tr>
+</tbody>
+</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="st">"hr"</span>, <span class="st">"lo"</span>, <span class="st">"hi"</span>)),</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">theme =</span> <span class="fu">web_theme_lancet</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="web_theme_cochrane" class="level3">
+<h3 class="anchored" data-anchor-id="web_theme_cochrane"><code>web_theme_cochrane()</code></h3>
+</section>
+<section id="web_theme_lancet" class="level3">
+<h3 class="anchored" data-anchor-id="web_theme_lancet"><code>web_theme_lancet()</code></h3>
+</section>
+<section id="web_theme_jama" class="level3">
+<h3 class="anchored" data-anchor-id="web_theme_jama"><code>web_theme_jama()</code></h3>
+</section>
+<section id="web_theme_dark" class="level3">
+<h3 class="anchored" data-anchor-id="web_theme_dark"><code>web_theme_dark()</code></h3>
+<p>All preset builders take no arguments and return a fully resolved <code>WebTheme</code>.</p>
+<hr>
+</section>
+</section>
+<section id="package_themes" class="level2">
+<h2 class="anchored" data-anchor-id="package_themes"><code>package_themes()</code></h2>
+<p>Returns a named list of every theme distributed with the package — handy for the <code>enable_themes</code> argument of <a href="../reference/interaction.html"><code>web_interaction()</code></a> or for iterating in tests.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">package_themes</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># $cochrane, $lancet, $jama, $dark</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="web_theme" class="level2">
+<h2 class="anchored" data-anchor-id="web_theme"><code>web_theme()</code></h2>
+<p>Custom-theme constructor. Extends a <code>base_theme</code> with named lists of Tier 1 inputs and per-table variants. Resolves the theme before returning.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">web_theme</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"custom"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="cn">NULL</span>,        <span class="co"># Named list of ThemeInputs property overrides</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="cn">NULL</span>,      <span class="co"># Named list of ThemeVariants property overrides</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">base_theme =</span> <span class="fu">web_theme_cochrane</span>()</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>name</code></td>
+<td>string</td>
+<td><code>"custom"</code></td>
+<td>Theme name (shown in the in-widget switcher and in source export).</td>
+</tr>
+<tr class="even">
+<td><code>inputs</code></td>
+<td>named list</td>
+<td><code>NULL</code></td>
+<td>Tier 1 input overrides. Any <code>ThemeInputs</code> field is valid: <code>neutral</code>, <code>brand</code>, <code>brand_deep</code>, <code>accent</code>, <code>accent_deep</code>, <code>status_*</code>, <code>series_anchors</code>, <code>font_body</code>, <code>font_display</code>, <code>font_mono</code>. Unset fields inherit from <code>base_theme</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>variants</code></td>
+<td>named list</td>
+<td><code>NULL</code></td>
+<td>Per-table variant overrides: <code>density</code> (compact / comfortable / spacious), <code>header_style</code> (light / bold), <code>first_column_style</code> (default / bold).</td>
+</tr>
+<tr class="even">
+<td><code>base_theme</code></td>
+<td><code>WebTheme</code></td>
+<td><code>web_theme_cochrane()</code></td>
+<td>Starting point. The <code>inputs</code> and <code>variants</code> lists are applied on top.</td>
+</tr>
+</tbody>
+</table>
+<p>Example — Lancet-inspired theme with bold headers:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>custom <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"navy-bold"</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand          =</span> <span class="st">"#1F3A5F"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand_deep     =</span> <span class="st">"#0F2138"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent         =</span> <span class="st">"#B08938"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#1F3A5F"</span>, <span class="st">"#B08938"</span>, <span class="st">"#6B8E7F"</span>),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body      =</span> <span class="st">"Charter, Georgia, serif"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">density =</span> <span class="st">"comfortable"</span>, <span class="at">header_style =</span> <span class="st">"bold"</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="theme-modifiers" class="level2">
+<h2 class="anchored" data-anchor-id="theme-modifiers">Theme modifiers</h2>
+<p>All modifiers operate on a <code>WebTheme</code> and return a new (re-resolved) <code>WebTheme</code>. Chainable via the pipe.</p>
+<section id="set_inputs" class="level3">
+<h3 class="anchored" data-anchor-id="set_inputs"><code>set_inputs()</code></h3>
+<p>Update Tier 1 customer-facing inputs. Cascade-aware: changing <code>brand</code> clears <code>brand_deep</code> so it re-mirrors; changing <code>series_anchors</code> rebuilds the slot bundles. The pooled-effect diamond reads from <code>series[1]</code>, so anchoring it is just a matter of setting the first <code>series_anchors</code> entry.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set_inputs</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  theme,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  neutral, brand, brand_deep, accent, accent_deep,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  status_positive, status_negative, status_warning, status_info,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  series_anchors,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  font_body, font_display, font_mono</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>theme</code></td>
+<td><code>WebTheme</code></td>
+<td>Theme to modify</td>
+</tr>
+<tr class="even">
+<td><code>neutral</code></td>
+<td><code>chr[5]</code></td>
+<td>5-step ramp, lightest → darkest</td>
+</tr>
+<tr class="odd">
+<td><code>brand</code></td>
+<td>hex</td>
+<td>Brand fill color (markers, accents)</td>
+</tr>
+<tr class="even">
+<td><code>brand_deep</code></td>
+<td>hex</td>
+<td>Dark companion for text/strokes; defaults to <code>brand</code></td>
+</tr>
+<tr class="odd">
+<td><code>accent</code></td>
+<td>hex</td>
+<td>Chrome accent (hover, selection, links)</td>
+</tr>
+<tr class="even">
+<td><code>accent_deep</code></td>
+<td>hex</td>
+<td>Dark companion; defaults to <code>accent</code></td>
+</tr>
+<tr class="odd">
+<td><code>status_positive</code>, <code>status_negative</code>, <code>status_warning</code>, <code>status_info</code></td>
+<td>hex</td>
+<td>Semantic status colors</td>
+</tr>
+<tr class="even">
+<td><code>series_anchors</code></td>
+<td><code>chr[]</code></td>
+<td>Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond.</td>
+</tr>
+<tr class="odd">
+<td><code>font_body</code></td>
+<td>string</td>
+<td>Primary CSS font-family</td>
+</tr>
+<tr class="even">
+<td><code>font_display</code></td>
+<td>string</td>
+<td>Optional title face; defaults to <code>font_body</code></td>
+</tr>
+<tr class="odd">
+<td><code>font_mono</code></td>
+<td>string</td>
+<td>Optional monospace face</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="set_variants" class="level3">
+<h3 class="anchored" data-anchor-id="set_variants"><code>set_variants()</code></h3>
+<p>Flip per-table toggles. Density change resets spacing tokens so the new preset’s values flow through.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set_variants</span>(theme, density, header_style, first_column_style)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Values</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>density</code></td>
+<td><code>"compact"</code> / <code>"comfortable"</code> / <code>"spacious"</code></td>
+<td>Drives every spacing token</td>
+</tr>
+<tr class="even">
+<td><code>header_style</code></td>
+<td><code>"light"</code> / <code>"bold"</code></td>
+<td>Picks between light header on muted surface and bold header on <code>brand_deep</code></td>
+</tr>
+<tr class="odd">
+<td><code>first_column_style</code></td>
+<td><code>"default"</code> / <code>"bold"</code></td>
+<td>Excel-style emphasized first column when <code>"bold"</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="set_spacing" class="level3">
+<h3 class="anchored" data-anchor-id="set_spacing"><code>set_spacing()</code></h3>
+<p>Per-token spacing override on top of the active density preset. Set what you care about; the rest cascade from density.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set_spacing</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  theme,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  row_height, header_height, padding, container_padding, axis_gap,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  column_group_padding, row_group_padding, cell_padding_x,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  footer_gap, title_subtitle_gap, bottom_margin, indent_per_level</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>All values are numeric (pixels).</p>
+</section>
+<section id="set_theme_field" class="level3">
+<h3 class="anchored" data-anchor-id="set_theme_field"><code>set_theme_field()</code></h3>
+<p>Generic deep setter. Walks the theme tree by <code>path</code> and replaces the leaf with <code>value</code>, then re-resolves. Use this for any field not covered by the typed setters above.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set_theme_field</span>(theme, path, value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>theme</code></td>
+<td>A <code>WebTheme</code></td>
+</tr>
+<tr class="even">
+<td><code>path</code></td>
+<td>Character or mixed character/integer vector. Strings are property names; integers index list-typed properties (currently only <code>series</code>).</td>
+</tr>
+<tr class="odd">
+<td><code>value</code></td>
+<td>New value for the leaf field</td>
+</tr>
+</tbody>
+</table>
+<p>Examples:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pin row-group L1 background regardless of theme</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"row_group"</span>, <span class="st">"L1"</span>, <span class="st">"bg"</span>), <span class="st">"#EEEEEE"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Override series 2's stroke without touching anything else</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"series"</span>, <span class="dv">2</span>L, <span class="st">"stroke"</span>), <span class="st">"#444444"</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Set Tier 1 inputs surgically</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"inputs"</span>, <span class="st">"brand"</span>), <span class="st">"#FF0000"</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Tweak axis config</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"gridlines"</span>), <span class="cn">TRUE</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"tick_count"</span>), <span class="dv">5</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Pin layout config</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"layout"</span>, <span class="st">"container_border_radius"</span>), <span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Re-resolution preserves explicit overrides on subsequent edits. <code>set_inputs(brand = "...")</code> after pinning <code>surface.base</code> will refresh series colors but leave <code>surface.base</code> pinned.</p>
+<hr>
+</section>
+</section>
+<section id="switching-themes-on-a-spec" class="level2">
+<h2 class="anchored" data-anchor-id="switching-themes-on-a-spec">Switching themes on a spec</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Verb</th>
+<th>Operates on</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/styling.html#set_theme"><code>set_theme()</code></a></td>
+<td><code>WebSpec</code>, htmlwidget, proxy</td>
+<td>Swap to a preset name or <code>WebTheme</code> object</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/styling.html"><code>selectable_themes()</code></a></td>
+<td><code>WebSpec</code>, htmlwidget</td>
+<td>Curate the in-widget theme switcher</td>
+</tr>
+</tbody>
+</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply by name</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_theme</span>(<span class="st">"jama"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply by object</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>custom <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(<span class="at">inputs =</span> <span class="fu">list</span>(<span class="at">brand =</span> <span class="st">"#1F3A5F"</span>))</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_theme</span>(custom)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">Worked examples</h2>
+<section id="lancet-style-with-custom-tier-1-input" class="level3">
+<h3 class="anchored" data-anchor-id="lancet-style-with-custom-tier-1-input">Lancet-style with custom Tier 1 input</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>my_lancet <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"my-lancet"</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand          =</span> <span class="st">"#0066CC"</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent         =</span> <span class="st">"#CC9900"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#0066CC"</span>, <span class="st">"#CC9900"</span>, <span class="st">"#669933"</span>),</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body      =</span> <span class="st">"Helvetica, Arial, sans-serif"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_display   =</span> <span class="st">"Helvetica, Arial, sans-serif"</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">density =</span> <span class="st">"comfortable"</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Swap presets, then tweak</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>custom <span class="ot">&lt;-</span> <span class="fu">web_theme_lancet</span>() <span class="sc">|&gt;</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_inputs</span>(<span class="at">brand =</span> <span class="st">"#0066CC"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_variants</span>(<span class="at">density =</span> <span class="st">"compact"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"gridlines"</span>), <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="high-contrast-print-theme" class="level3">
+<h3 class="anchored" data-anchor-id="high-contrast-print-theme">High-contrast print theme</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>print_theme <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"print"</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">neutral        =</span> <span class="fu">c</span>(<span class="st">"#FFFFFF"</span>, <span class="st">"#FFFFFF"</span>, <span class="st">"#FAFAFA"</span>, <span class="st">"#666666"</span>, <span class="st">"#1A1A1A"</span>),</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand          =</span> <span class="st">"#000000"</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent         =</span> <span class="st">"#000000"</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#1A1A1A"</span>, <span class="st">"#4D4D4D"</span>, <span class="st">"#808080"</span>, <span class="st">"#B3B3B3"</span>),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body      =</span> <span class="st">"'Times New Roman', serif"</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_display   =</span> <span class="st">"'Times New Roman', serif"</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">density =</span> <span class="st">"compact"</span>),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">base_theme =</span> <span class="fu">web_theme_jama</span>()</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"row_group"</span>, <span class="st">"L1"</span>, <span class="st">"text"</span>, <span class="st">"weight"</span>), <span class="dv">700</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"row_group"</span>, <span class="st">"L1"</span>, <span class="st">"border_bottom"</span>), <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="dark-dashboard-theme" class="level3">
+<h3 class="anchored" data-anchor-id="dark-dashboard-theme">Dark dashboard theme</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dark_theme <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"dashboard-dark"</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">base_theme =</span> <span class="fu">web_theme_dark</span>(),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand          =</span> <span class="st">"#10B981"</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent         =</span> <span class="st">"#10B981"</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#10B981"</span>, <span class="st">"#3B82F6"</span>, <span class="st">"#F59E0B"</span>, <span class="st">"#EF4444"</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">density =</span> <span class="st">"spacious"</span>, <span class="at">header_style =</span> <span class="st">"bold"</span>)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="theme-structure-s7" class="level2">
+<h2 class="anchored" data-anchor-id="theme-structure-s7">Theme structure (S7)</h2>
+<p>A <code>WebTheme</code> is an S7 object with the following top-level properties. For the conceptual model and how the cascades compose, see <a href="../concepts/styling-cascade.html">Styling Cascade</a> and <a href="../technical/s7-classes.html">S7 Architecture</a>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Property</th>
+<th>Type</th>
+<th>Tier</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>name</code></td>
+<td>string</td>
+<td>—</td>
+<td>Theme identifier</td>
+</tr>
+<tr class="even">
+<td><code>inputs</code></td>
+<td><code>ThemeInputs</code></td>
+<td>1</td>
+<td>Customer-facing inputs</td>
+</tr>
+<tr class="odd">
+<td><code>variants</code></td>
+<td><code>ThemeVariants</code></td>
+<td>1</td>
+<td>Per-table toggles</td>
+</tr>
+<tr class="even">
+<td><code>surface</code></td>
+<td><code>Surfaces</code></td>
+<td>2</td>
+<td>base / muted / raised</td>
+</tr>
+<tr class="odd">
+<td><code>content</code></td>
+<td><code>Content</code></td>
+<td>2</td>
+<td>primary / secondary / muted / inverse</td>
+</tr>
+<tr class="even">
+<td><code>divider</code></td>
+<td><code>Dividers</code></td>
+<td>2</td>
+<td>subtle / strong</td>
+</tr>
+<tr class="odd">
+<td><code>accent</code></td>
+<td><code>AccentRoles</code></td>
+<td>2</td>
+<td>default / muted / tint_subtle / tint_medium</td>
+</tr>
+<tr class="even">
+<td><code>status</code></td>
+<td><code>StatusColors</code></td>
+<td>2</td>
+<td>positive / negative / warning / info</td>
+</tr>
+<tr class="odd">
+<td><code>series</code></td>
+<td><code>list&lt;SlotBundle&gt;</code></td>
+<td>2</td>
+<td>Per-anchor 7-field bundle</td>
+</tr>
+<tr class="even">
+<td><code>summary</code></td>
+<td><code>SlotBundle</code></td>
+<td>2</td>
+<td>Pooled-effect diamond bundle</td>
+</tr>
+<tr class="odd">
+<td><code>text</code></td>
+<td><code>TextRoles</code></td>
+<td>2</td>
+<td>8 named role bundles</td>
+</tr>
+<tr class="even">
+<td><code>spacing</code></td>
+<td><code>SpacingTokens</code></td>
+<td>2</td>
+<td>12 density-derived numerics</td>
+</tr>
+<tr class="odd">
+<td><code>annotation</code></td>
+<td><code>AnnotationCluster</code></td>
+<td>3</td>
+<td>title / subtitle / caption / footnote</td>
+</tr>
+<tr class="even">
+<td><code>header</code></td>
+<td><code>HeaderCluster</code></td>
+<td>3</td>
+<td>light + bold variants</td>
+</tr>
+<tr class="odd">
+<td><code>column_group</code></td>
+<td><code>ColumnGroupCluster</code></td>
+<td>3</td>
+<td>Column-group header</td>
+</tr>
+<tr class="even">
+<td><code>row_group</code></td>
+<td><code>RowGroupCluster</code></td>
+<td>3</td>
+<td>L1 / L2 / L3 tiers</td>
+</tr>
+<tr class="odd">
+<td><code>row</code></td>
+<td><code>RowCluster</code></td>
+<td>3</td>
+<td>base / alt / hover / selected + emphasis / muted / accent</td>
+</tr>
+<tr class="even">
+<td><code>cell</code></td>
+<td><code>CellCluster</code></td>
+<td>3</td>
+<td>bg / fg / border / text</td>
+</tr>
+<tr class="odd">
+<td><code>first_column</code></td>
+<td><code>FirstColumnCluster</code></td>
+<td>3</td>
+<td>plain + bold variants</td>
+</tr>
+<tr class="even">
+<td><code>plot</code></td>
+<td><code>PlotScaffold</code></td>
+<td>3</td>
+<td>axis / tick / gridline / reference + mark sizes</td>
+</tr>
+<tr class="odd">
+<td><code>marks</code></td>
+<td><code>MarksRecipes</code></td>
+<td>3</td>
+<td>Per-mark slot-bundle recipes</td>
+</tr>
+<tr class="even">
+<td><code>axis</code></td>
+<td><code>AxisConfig</code></td>
+<td>config</td>
+<td>Forest x-axis range/ticks/grid</td>
+</tr>
+<tr class="odd">
+<td><code>layout</code></td>
+<td><code>Layout</code></td>
+<td>config</td>
+<td>Plot width, container border</td>
+</tr>
+</tbody>
+</table>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Themes"</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tabviz)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>Built-in theme presets, the <span class="in">`web_theme()`</span> custom-theme constructor, the four core</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>modifiers (<span class="in">`set_inputs()`</span>, <span class="in">`set_variants()`</span>, <span class="in">`set_spacing()`</span>, <span class="in">`set_theme_field()`</span>),</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>and <span class="in">`package_themes()`</span> for listing every shipped theme. Pass any theme to</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="in">`tabviz(theme = ...)`</span> or apply it after the fact with</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">`set_theme()`</span><span class="co">](styling.qmd#set_theme)</span>.</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>For the conceptual model see the <span class="co">[</span><span class="ot">Themes guide</span><span class="co">](../guide/themes.qmd)</span> and the</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Styling Cascade</span><span class="co">](../concepts/styling-cascade.qmd)</span> concepts page.</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## Preset themes</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a><span class="in">`web_theme_*()`</span> builders return a fully resolved <span class="in">`WebTheme`</span>. They take no</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>arguments — chain modifiers to customize.</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Theme <span class="pp">|</span> Purpose <span class="pp">|</span> Notable defaults <span class="pp">|</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_cochrane()`</span><span class="co">](#web_theme_cochrane)</span> <span class="pp">|</span> The package default <span class="pp">|</span> Cochrane teal + warm-coral accent, Inter sans-serif, comfortable density <span class="pp">|</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_lancet()`</span><span class="co">](#web_theme_lancet)</span>     <span class="pp">|</span> Lancet-style editorial <span class="pp">|</span> Navy + refined old-gold + warm cream, Georgia serif <span class="pp">|</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_jama()`</span><span class="co">](#web_theme_jama)</span>         <span class="pp">|</span> JAMA / print journals <span class="pp">|</span> Pure black-and-white, ultra-compact, strong dividers, Arial <span class="pp">|</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_dark()`</span><span class="co">](#web_theme_dark)</span>         <span class="pp">|</span> Dark-mode viewing <span class="pp">|</span> Catppuccin Mocha-inspired canvas, pastel markers <span class="pp">|</span></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>       <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="st">"hr"</span>, <span class="st">"lo"</span>, <span class="st">"hi"</span>)),</span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>       <span class="at">theme =</span> <span class="fu">web_theme_lancet</span>())</span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a><span class="fu">### `web_theme_cochrane()` {#web_theme_cochrane}</span></span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a><span class="fu">### `web_theme_lancet()` {#web_theme_lancet}</span></span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a><span class="fu">### `web_theme_jama()` {#web_theme_jama}</span></span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a><span class="fu">### `web_theme_dark()` {#web_theme_dark}</span></span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>All preset builders take no arguments and return a fully resolved <span class="in">`WebTheme`</span>.</span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a><span class="fu">## `package_themes()` {#package_themes}</span></span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a>Returns a named list of every theme distributed with the package — handy for</span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a>the <span class="in">`enable_themes`</span> argument of <span class="co">[</span><span class="ot">`web_interaction()`</span><span class="co">](interaction.qmd)</span> or for</span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>iterating in tests.</span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a><span class="fu">package_themes</span>()</span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a><span class="co"># $cochrane, $lancet, $jama, $dark</span></span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a><span class="fu">## `web_theme()` {#web_theme}</span></span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a>Custom-theme constructor. Extends a <span class="in">`base_theme`</span> with named lists of</span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true" tabindex="-1"></a>Tier 1 inputs and per-table variants. Resolves the theme before returning.</span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true" tabindex="-1"></a><span class="fu">web_theme</span>(</span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"custom"</span>,</span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="cn">NULL</span>,        <span class="co"># Named list of ThemeInputs property overrides</span></span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="cn">NULL</span>,      <span class="co"># Named list of ThemeVariants property overrides</span></span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a>  <span class="at">base_theme =</span> <span class="fu">web_theme_cochrane</span>()</span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`name`</span> <span class="pp">|</span> string <span class="pp">|</span> <span class="in">`"custom"`</span> <span class="pp">|</span> Theme name (shown in the in-widget switcher and in source export). <span class="pp">|</span></span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inputs`</span> <span class="pp">|</span> named list <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Tier 1 input overrides. Any <span class="in">`ThemeInputs`</span> field is valid: <span class="in">`neutral`</span>, <span class="in">`brand`</span>, <span class="in">`brand_deep`</span>, <span class="in">`accent`</span>, <span class="in">`accent_deep`</span>, <span class="in">`status_*`</span>, <span class="in">`series_anchors`</span>, <span class="in">`font_body`</span>, <span class="in">`font_display`</span>, <span class="in">`font_mono`</span>. Unset fields inherit from <span class="in">`base_theme`</span>. <span class="pp">|</span></span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`variants`</span> <span class="pp">|</span> named list <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Per-table variant overrides: <span class="in">`density`</span> (compact / comfortable / spacious), <span class="in">`header_style`</span> (light / bold), <span class="in">`first_column_style`</span> (default / bold). <span class="pp">|</span></span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`base_theme`</span> <span class="pp">|</span> <span class="in">`WebTheme`</span> <span class="pp">|</span> <span class="in">`web_theme_cochrane()`</span> <span class="pp">|</span> Starting point. The <span class="in">`inputs`</span> and <span class="in">`variants`</span> lists are applied on top. <span class="pp">|</span></span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-84"><a href="#cb14-84" aria-hidden="true" tabindex="-1"></a>Example — Lancet-inspired theme with bold headers:</span>
+<span id="cb14-85"><a href="#cb14-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-86"><a href="#cb14-86" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-87"><a href="#cb14-87" aria-hidden="true" tabindex="-1"></a>custom <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb14-88"><a href="#cb14-88" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"navy-bold"</span>,</span>
+<span id="cb14-89"><a href="#cb14-89" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb14-90"><a href="#cb14-90" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand          =</span> <span class="st">"#1F3A5F"</span>,</span>
+<span id="cb14-91"><a href="#cb14-91" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand_deep     =</span> <span class="st">"#0F2138"</span>,</span>
+<span id="cb14-92"><a href="#cb14-92" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent         =</span> <span class="st">"#B08938"</span>,</span>
+<span id="cb14-93"><a href="#cb14-93" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#1F3A5F"</span>, <span class="st">"#B08938"</span>, <span class="st">"#6B8E7F"</span>),</span>
+<span id="cb14-94"><a href="#cb14-94" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body      =</span> <span class="st">"Charter, Georgia, serif"</span></span>
+<span id="cb14-95"><a href="#cb14-95" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb14-96"><a href="#cb14-96" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">density =</span> <span class="st">"comfortable"</span>, <span class="at">header_style =</span> <span class="st">"bold"</span>)</span>
+<span id="cb14-97"><a href="#cb14-97" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-98"><a href="#cb14-98" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-99"><a href="#cb14-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-100"><a href="#cb14-100" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-101"><a href="#cb14-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-102"><a href="#cb14-102" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme modifiers</span></span>
+<span id="cb14-103"><a href="#cb14-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-104"><a href="#cb14-104" aria-hidden="true" tabindex="-1"></a>All modifiers operate on a <span class="in">`WebTheme`</span> and return a new (re-resolved) <span class="in">`WebTheme`</span>.</span>
+<span id="cb14-105"><a href="#cb14-105" aria-hidden="true" tabindex="-1"></a>Chainable via the pipe.</span>
+<span id="cb14-106"><a href="#cb14-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-107"><a href="#cb14-107" aria-hidden="true" tabindex="-1"></a><span class="fu">### `set_inputs()` {#set_inputs}</span></span>
+<span id="cb14-108"><a href="#cb14-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-109"><a href="#cb14-109" aria-hidden="true" tabindex="-1"></a>Update Tier 1 customer-facing inputs. Cascade-aware: changing <span class="in">`brand`</span> clears</span>
+<span id="cb14-110"><a href="#cb14-110" aria-hidden="true" tabindex="-1"></a><span class="in">`brand_deep`</span> so it re-mirrors; changing <span class="in">`series_anchors`</span> rebuilds the slot</span>
+<span id="cb14-111"><a href="#cb14-111" aria-hidden="true" tabindex="-1"></a>bundles. The pooled-effect diamond reads from <span class="in">`series[1]`</span>, so anchoring it</span>
+<span id="cb14-112"><a href="#cb14-112" aria-hidden="true" tabindex="-1"></a>is just a matter of setting the first <span class="in">`series_anchors`</span> entry.</span>
+<span id="cb14-113"><a href="#cb14-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-114"><a href="#cb14-114" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-115"><a href="#cb14-115" aria-hidden="true" tabindex="-1"></a><span class="fu">set_inputs</span>(</span>
+<span id="cb14-116"><a href="#cb14-116" aria-hidden="true" tabindex="-1"></a>  theme,</span>
+<span id="cb14-117"><a href="#cb14-117" aria-hidden="true" tabindex="-1"></a>  neutral, brand, brand_deep, accent, accent_deep,</span>
+<span id="cb14-118"><a href="#cb14-118" aria-hidden="true" tabindex="-1"></a>  status_positive, status_negative, status_warning, status_info,</span>
+<span id="cb14-119"><a href="#cb14-119" aria-hidden="true" tabindex="-1"></a>  series_anchors,</span>
+<span id="cb14-120"><a href="#cb14-120" aria-hidden="true" tabindex="-1"></a>  font_body, font_display, font_mono</span>
+<span id="cb14-121"><a href="#cb14-121" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-122"><a href="#cb14-122" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-123"><a href="#cb14-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-124"><a href="#cb14-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb14-125"><a href="#cb14-125" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb14-126"><a href="#cb14-126" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`theme`</span> <span class="pp">|</span> <span class="in">`WebTheme`</span> <span class="pp">|</span> Theme to modify <span class="pp">|</span></span>
+<span id="cb14-127"><a href="#cb14-127" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`neutral`</span> <span class="pp">|</span> <span class="in">`chr[5]`</span> <span class="pp">|</span> 5-step ramp, lightest → darkest <span class="pp">|</span></span>
+<span id="cb14-128"><a href="#cb14-128" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`brand`</span> <span class="pp">|</span> hex <span class="pp">|</span> Brand fill color (markers, accents) <span class="pp">|</span></span>
+<span id="cb14-129"><a href="#cb14-129" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`brand_deep`</span> <span class="pp">|</span> hex <span class="pp">|</span> Dark companion for text/strokes; defaults to <span class="in">`brand`</span> <span class="pp">|</span></span>
+<span id="cb14-130"><a href="#cb14-130" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`accent`</span> <span class="pp">|</span> hex <span class="pp">|</span> Chrome accent (hover, selection, links) <span class="pp">|</span></span>
+<span id="cb14-131"><a href="#cb14-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`accent_deep`</span> <span class="pp">|</span> hex <span class="pp">|</span> Dark companion; defaults to <span class="in">`accent`</span> <span class="pp">|</span></span>
+<span id="cb14-132"><a href="#cb14-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`status_positive`</span>, <span class="in">`status_negative`</span>, <span class="in">`status_warning`</span>, <span class="in">`status_info`</span> <span class="pp">|</span> hex <span class="pp">|</span> Semantic status colors <span class="pp">|</span></span>
+<span id="cb14-133"><a href="#cb14-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`series_anchors`</span> <span class="pp">|</span> <span class="in">`chr[]`</span> <span class="pp">|</span> Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond. <span class="pp">|</span></span>
+<span id="cb14-134"><a href="#cb14-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`font_body`</span> <span class="pp">|</span> string <span class="pp">|</span> Primary CSS font-family <span class="pp">|</span></span>
+<span id="cb14-135"><a href="#cb14-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`font_display`</span> <span class="pp">|</span> string <span class="pp">|</span> Optional title face; defaults to <span class="in">`font_body`</span> <span class="pp">|</span></span>
+<span id="cb14-136"><a href="#cb14-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`font_mono`</span> <span class="pp">|</span> string <span class="pp">|</span> Optional monospace face <span class="pp">|</span></span>
+<span id="cb14-137"><a href="#cb14-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-138"><a href="#cb14-138" aria-hidden="true" tabindex="-1"></a><span class="fu">### `set_variants()` {#set_variants}</span></span>
+<span id="cb14-139"><a href="#cb14-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-140"><a href="#cb14-140" aria-hidden="true" tabindex="-1"></a>Flip per-table toggles. Density change resets spacing tokens so the new</span>
+<span id="cb14-141"><a href="#cb14-141" aria-hidden="true" tabindex="-1"></a>preset's values flow through.</span>
+<span id="cb14-142"><a href="#cb14-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-143"><a href="#cb14-143" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-144"><a href="#cb14-144" aria-hidden="true" tabindex="-1"></a><span class="fu">set_variants</span>(theme, density, header_style, first_column_style)</span>
+<span id="cb14-145"><a href="#cb14-145" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-146"><a href="#cb14-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-147"><a href="#cb14-147" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Values <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb14-148"><a href="#cb14-148" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb14-149"><a href="#cb14-149" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`density`</span> <span class="pp">|</span> <span class="in">`"compact"`</span> / <span class="in">`"comfortable"`</span> / <span class="in">`"spacious"`</span> <span class="pp">|</span> Drives every spacing token <span class="pp">|</span></span>
+<span id="cb14-150"><a href="#cb14-150" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`header_style`</span> <span class="pp">|</span> <span class="in">`"light"`</span> / <span class="in">`"bold"`</span> <span class="pp">|</span> Picks between light header on muted surface and bold header on <span class="in">`brand_deep`</span> <span class="pp">|</span></span>
+<span id="cb14-151"><a href="#cb14-151" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`first_column_style`</span> <span class="pp">|</span> <span class="in">`"default"`</span> / <span class="in">`"bold"`</span> <span class="pp">|</span> Excel-style emphasized first column when <span class="in">`"bold"`</span> <span class="pp">|</span></span>
+<span id="cb14-152"><a href="#cb14-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-153"><a href="#cb14-153" aria-hidden="true" tabindex="-1"></a><span class="fu">### `set_spacing()` {#set_spacing}</span></span>
+<span id="cb14-154"><a href="#cb14-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-155"><a href="#cb14-155" aria-hidden="true" tabindex="-1"></a>Per-token spacing override on top of the active density preset. Set what you</span>
+<span id="cb14-156"><a href="#cb14-156" aria-hidden="true" tabindex="-1"></a>care about; the rest cascade from density.</span>
+<span id="cb14-157"><a href="#cb14-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-158"><a href="#cb14-158" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-159"><a href="#cb14-159" aria-hidden="true" tabindex="-1"></a><span class="fu">set_spacing</span>(</span>
+<span id="cb14-160"><a href="#cb14-160" aria-hidden="true" tabindex="-1"></a>  theme,</span>
+<span id="cb14-161"><a href="#cb14-161" aria-hidden="true" tabindex="-1"></a>  row_height, header_height, padding, container_padding, axis_gap,</span>
+<span id="cb14-162"><a href="#cb14-162" aria-hidden="true" tabindex="-1"></a>  column_group_padding, row_group_padding, cell_padding_x,</span>
+<span id="cb14-163"><a href="#cb14-163" aria-hidden="true" tabindex="-1"></a>  footer_gap, title_subtitle_gap, bottom_margin, indent_per_level</span>
+<span id="cb14-164"><a href="#cb14-164" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-165"><a href="#cb14-165" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-166"><a href="#cb14-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-167"><a href="#cb14-167" aria-hidden="true" tabindex="-1"></a>All values are numeric (pixels).</span>
+<span id="cb14-168"><a href="#cb14-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-169"><a href="#cb14-169" aria-hidden="true" tabindex="-1"></a><span class="fu">### `set_theme_field()` {#set_theme_field}</span></span>
+<span id="cb14-170"><a href="#cb14-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-171"><a href="#cb14-171" aria-hidden="true" tabindex="-1"></a>Generic deep setter. Walks the theme tree by <span class="in">`path`</span> and replaces the leaf</span>
+<span id="cb14-172"><a href="#cb14-172" aria-hidden="true" tabindex="-1"></a>with <span class="in">`value`</span>, then re-resolves. Use this for any field not covered by the</span>
+<span id="cb14-173"><a href="#cb14-173" aria-hidden="true" tabindex="-1"></a>typed setters above.</span>
+<span id="cb14-174"><a href="#cb14-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-175"><a href="#cb14-175" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-176"><a href="#cb14-176" aria-hidden="true" tabindex="-1"></a><span class="fu">set_theme_field</span>(theme, path, value)</span>
+<span id="cb14-177"><a href="#cb14-177" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-178"><a href="#cb14-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-179"><a href="#cb14-179" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb14-180"><a href="#cb14-180" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb14-181"><a href="#cb14-181" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`theme`</span> <span class="pp">|</span> A <span class="in">`WebTheme`</span> <span class="pp">|</span></span>
+<span id="cb14-182"><a href="#cb14-182" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`path`</span> <span class="pp">|</span> Character or mixed character/integer vector. Strings are property names; integers index list-typed properties (currently only <span class="in">`series`</span>). <span class="pp">|</span></span>
+<span id="cb14-183"><a href="#cb14-183" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`value`</span> <span class="pp">|</span> New value for the leaf field <span class="pp">|</span></span>
+<span id="cb14-184"><a href="#cb14-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-185"><a href="#cb14-185" aria-hidden="true" tabindex="-1"></a>Examples:</span>
+<span id="cb14-186"><a href="#cb14-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-187"><a href="#cb14-187" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-188"><a href="#cb14-188" aria-hidden="true" tabindex="-1"></a><span class="co"># Pin row-group L1 background regardless of theme</span></span>
+<span id="cb14-189"><a href="#cb14-189" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"row_group"</span>, <span class="st">"L1"</span>, <span class="st">"bg"</span>), <span class="st">"#EEEEEE"</span>)</span>
+<span id="cb14-190"><a href="#cb14-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-191"><a href="#cb14-191" aria-hidden="true" tabindex="-1"></a><span class="co"># Override series 2's stroke without touching anything else</span></span>
+<span id="cb14-192"><a href="#cb14-192" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"series"</span>, <span class="dv">2</span>L, <span class="st">"stroke"</span>), <span class="st">"#444444"</span>)</span>
+<span id="cb14-193"><a href="#cb14-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-194"><a href="#cb14-194" aria-hidden="true" tabindex="-1"></a><span class="co"># Set Tier 1 inputs surgically</span></span>
+<span id="cb14-195"><a href="#cb14-195" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"inputs"</span>, <span class="st">"brand"</span>), <span class="st">"#FF0000"</span>)</span>
+<span id="cb14-196"><a href="#cb14-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-197"><a href="#cb14-197" aria-hidden="true" tabindex="-1"></a><span class="co"># Tweak axis config</span></span>
+<span id="cb14-198"><a href="#cb14-198" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"gridlines"</span>), <span class="cn">TRUE</span>)</span>
+<span id="cb14-199"><a href="#cb14-199" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"tick_count"</span>), <span class="dv">5</span>)</span>
+<span id="cb14-200"><a href="#cb14-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-201"><a href="#cb14-201" aria-hidden="true" tabindex="-1"></a><span class="co"># Pin layout config</span></span>
+<span id="cb14-202"><a href="#cb14-202" aria-hidden="true" tabindex="-1"></a>theme <span class="sc">|&gt;</span> <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"layout"</span>, <span class="st">"container_border_radius"</span>), <span class="dv">4</span>)</span>
+<span id="cb14-203"><a href="#cb14-203" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-204"><a href="#cb14-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-205"><a href="#cb14-205" aria-hidden="true" tabindex="-1"></a>Re-resolution preserves explicit overrides on subsequent edits.</span>
+<span id="cb14-206"><a href="#cb14-206" aria-hidden="true" tabindex="-1"></a><span class="in">`set_inputs(brand = "...")`</span> after pinning <span class="in">`surface.base`</span> will refresh</span>
+<span id="cb14-207"><a href="#cb14-207" aria-hidden="true" tabindex="-1"></a>series colors but leave <span class="in">`surface.base`</span> pinned.</span>
+<span id="cb14-208"><a href="#cb14-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-209"><a href="#cb14-209" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-210"><a href="#cb14-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-211"><a href="#cb14-211" aria-hidden="true" tabindex="-1"></a><span class="fu">## Switching themes on a spec</span></span>
+<span id="cb14-212"><a href="#cb14-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-213"><a href="#cb14-213" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Verb <span class="pp">|</span> Operates on <span class="pp">|</span> Purpose <span class="pp">|</span></span>
+<span id="cb14-214"><a href="#cb14-214" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb14-215"><a href="#cb14-215" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_theme()`</span><span class="co">](styling.qmd#set_theme)</span> <span class="pp">|</span> <span class="in">`WebSpec`</span>, htmlwidget, proxy <span class="pp">|</span> Swap to a preset name or <span class="in">`WebTheme`</span> object <span class="pp">|</span></span>
+<span id="cb14-216"><a href="#cb14-216" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`selectable_themes()`</span><span class="co">](styling.qmd)</span> <span class="pp">|</span> <span class="in">`WebSpec`</span>, htmlwidget <span class="pp">|</span> Curate the in-widget theme switcher <span class="pp">|</span></span>
+<span id="cb14-217"><a href="#cb14-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-218"><a href="#cb14-218" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-219"><a href="#cb14-219" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply by name</span></span>
+<span id="cb14-220"><a href="#cb14-220" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_theme</span>(<span class="st">"jama"</span>)</span>
+<span id="cb14-221"><a href="#cb14-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-222"><a href="#cb14-222" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply by object</span></span>
+<span id="cb14-223"><a href="#cb14-223" aria-hidden="true" tabindex="-1"></a>custom <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(<span class="at">inputs =</span> <span class="fu">list</span>(<span class="at">brand =</span> <span class="st">"#1F3A5F"</span>))</span>
+<span id="cb14-224"><a href="#cb14-224" aria-hidden="true" tabindex="-1"></a>plot <span class="sc">|&gt;</span> <span class="fu">set_theme</span>(custom)</span>
+<span id="cb14-225"><a href="#cb14-225" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-226"><a href="#cb14-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-227"><a href="#cb14-227" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-228"><a href="#cb14-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-229"><a href="#cb14-229" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked examples</span></span>
+<span id="cb14-230"><a href="#cb14-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-231"><a href="#cb14-231" aria-hidden="true" tabindex="-1"></a><span class="fu">### Lancet-style with custom Tier 1 input</span></span>
+<span id="cb14-232"><a href="#cb14-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-233"><a href="#cb14-233" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-234"><a href="#cb14-234" aria-hidden="true" tabindex="-1"></a>my_lancet <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb14-235"><a href="#cb14-235" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"my-lancet"</span>,</span>
+<span id="cb14-236"><a href="#cb14-236" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb14-237"><a href="#cb14-237" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand          =</span> <span class="st">"#0066CC"</span>,</span>
+<span id="cb14-238"><a href="#cb14-238" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent         =</span> <span class="st">"#CC9900"</span>,</span>
+<span id="cb14-239"><a href="#cb14-239" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#0066CC"</span>, <span class="st">"#CC9900"</span>, <span class="st">"#669933"</span>),</span>
+<span id="cb14-240"><a href="#cb14-240" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body      =</span> <span class="st">"Helvetica, Arial, sans-serif"</span>,</span>
+<span id="cb14-241"><a href="#cb14-241" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_display   =</span> <span class="st">"Helvetica, Arial, sans-serif"</span></span>
+<span id="cb14-242"><a href="#cb14-242" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb14-243"><a href="#cb14-243" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">density =</span> <span class="st">"comfortable"</span>)</span>
+<span id="cb14-244"><a href="#cb14-244" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-245"><a href="#cb14-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-246"><a href="#cb14-246" aria-hidden="true" tabindex="-1"></a><span class="co"># Swap presets, then tweak</span></span>
+<span id="cb14-247"><a href="#cb14-247" aria-hidden="true" tabindex="-1"></a>custom <span class="ot">&lt;-</span> <span class="fu">web_theme_lancet</span>() <span class="sc">|&gt;</span></span>
+<span id="cb14-248"><a href="#cb14-248" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_inputs</span>(<span class="at">brand =</span> <span class="st">"#0066CC"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-249"><a href="#cb14-249" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_variants</span>(<span class="at">density =</span> <span class="st">"compact"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-250"><a href="#cb14-250" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"axis"</span>, <span class="st">"gridlines"</span>), <span class="cn">TRUE</span>)</span>
+<span id="cb14-251"><a href="#cb14-251" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-252"><a href="#cb14-252" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-253"><a href="#cb14-253" aria-hidden="true" tabindex="-1"></a><span class="fu">### High-contrast print theme</span></span>
+<span id="cb14-254"><a href="#cb14-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-255"><a href="#cb14-255" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-256"><a href="#cb14-256" aria-hidden="true" tabindex="-1"></a>print_theme <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb14-257"><a href="#cb14-257" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"print"</span>,</span>
+<span id="cb14-258"><a href="#cb14-258" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb14-259"><a href="#cb14-259" aria-hidden="true" tabindex="-1"></a>    <span class="at">neutral        =</span> <span class="fu">c</span>(<span class="st">"#FFFFFF"</span>, <span class="st">"#FFFFFF"</span>, <span class="st">"#FAFAFA"</span>, <span class="st">"#666666"</span>, <span class="st">"#1A1A1A"</span>),</span>
+<span id="cb14-260"><a href="#cb14-260" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand          =</span> <span class="st">"#000000"</span>,</span>
+<span id="cb14-261"><a href="#cb14-261" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent         =</span> <span class="st">"#000000"</span>,</span>
+<span id="cb14-262"><a href="#cb14-262" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#1A1A1A"</span>, <span class="st">"#4D4D4D"</span>, <span class="st">"#808080"</span>, <span class="st">"#B3B3B3"</span>),</span>
+<span id="cb14-263"><a href="#cb14-263" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body      =</span> <span class="st">"'Times New Roman', serif"</span>,</span>
+<span id="cb14-264"><a href="#cb14-264" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_display   =</span> <span class="st">"'Times New Roman', serif"</span></span>
+<span id="cb14-265"><a href="#cb14-265" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb14-266"><a href="#cb14-266" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">density =</span> <span class="st">"compact"</span>),</span>
+<span id="cb14-267"><a href="#cb14-267" aria-hidden="true" tabindex="-1"></a>  <span class="at">base_theme =</span> <span class="fu">web_theme_jama</span>()</span>
+<span id="cb14-268"><a href="#cb14-268" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb14-269"><a href="#cb14-269" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"row_group"</span>, <span class="st">"L1"</span>, <span class="st">"text"</span>, <span class="st">"weight"</span>), <span class="dv">700</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-270"><a href="#cb14-270" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_theme_field</span>(<span class="fu">c</span>(<span class="st">"row_group"</span>, <span class="st">"L1"</span>, <span class="st">"border_bottom"</span>), <span class="cn">TRUE</span>)</span>
+<span id="cb14-271"><a href="#cb14-271" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-272"><a href="#cb14-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-273"><a href="#cb14-273" aria-hidden="true" tabindex="-1"></a><span class="fu">### Dark dashboard theme</span></span>
+<span id="cb14-274"><a href="#cb14-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-275"><a href="#cb14-275" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb14-276"><a href="#cb14-276" aria-hidden="true" tabindex="-1"></a>dark_theme <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb14-277"><a href="#cb14-277" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"dashboard-dark"</span>,</span>
+<span id="cb14-278"><a href="#cb14-278" aria-hidden="true" tabindex="-1"></a>  <span class="at">base_theme =</span> <span class="fu">web_theme_dark</span>(),</span>
+<span id="cb14-279"><a href="#cb14-279" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb14-280"><a href="#cb14-280" aria-hidden="true" tabindex="-1"></a>    <span class="at">brand          =</span> <span class="st">"#10B981"</span>,</span>
+<span id="cb14-281"><a href="#cb14-281" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent         =</span> <span class="st">"#10B981"</span>,</span>
+<span id="cb14-282"><a href="#cb14-282" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#10B981"</span>, <span class="st">"#3B82F6"</span>, <span class="st">"#F59E0B"</span>, <span class="st">"#EF4444"</span>)</span>
+<span id="cb14-283"><a href="#cb14-283" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb14-284"><a href="#cb14-284" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">density =</span> <span class="st">"spacious"</span>, <span class="at">header_style =</span> <span class="st">"bold"</span>)</span>
+<span id="cb14-285"><a href="#cb14-285" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-286"><a href="#cb14-286" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb14-287"><a href="#cb14-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-288"><a href="#cb14-288" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb14-289"><a href="#cb14-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-290"><a href="#cb14-290" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theme structure (S7)</span></span>
+<span id="cb14-291"><a href="#cb14-291" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-292"><a href="#cb14-292" aria-hidden="true" tabindex="-1"></a>A <span class="in">`WebTheme`</span> is an S7 object with the following top-level properties.</span>
+<span id="cb14-293"><a href="#cb14-293" aria-hidden="true" tabindex="-1"></a>For the conceptual model and how the cascades compose, see</span>
+<span id="cb14-294"><a href="#cb14-294" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Styling Cascade</span><span class="co">](../concepts/styling-cascade.qmd)</span> and</span>
+<span id="cb14-295"><a href="#cb14-295" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">S7 Architecture</span><span class="co">](../technical/s7-classes.qmd)</span>.</span>
+<span id="cb14-296"><a href="#cb14-296" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-297"><a href="#cb14-297" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Property <span class="pp">|</span> Type <span class="pp">|</span> Tier <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb14-298"><a href="#cb14-298" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb14-299"><a href="#cb14-299" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`name`</span> <span class="pp">|</span> string <span class="pp">|</span> — <span class="pp">|</span> Theme identifier <span class="pp">|</span></span>
+<span id="cb14-300"><a href="#cb14-300" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`inputs`</span> <span class="pp">|</span> <span class="in">`ThemeInputs`</span> <span class="pp">|</span> 1 <span class="pp">|</span> Customer-facing inputs <span class="pp">|</span></span>
+<span id="cb14-301"><a href="#cb14-301" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`variants`</span> <span class="pp">|</span> <span class="in">`ThemeVariants`</span> <span class="pp">|</span> 1 <span class="pp">|</span> Per-table toggles <span class="pp">|</span></span>
+<span id="cb14-302"><a href="#cb14-302" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`surface`</span> <span class="pp">|</span> <span class="in">`Surfaces`</span> <span class="pp">|</span> 2 <span class="pp">|</span> base / muted / raised <span class="pp">|</span></span>
+<span id="cb14-303"><a href="#cb14-303" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`content`</span> <span class="pp">|</span> <span class="in">`Content`</span> <span class="pp">|</span> 2 <span class="pp">|</span> primary / secondary / muted / inverse <span class="pp">|</span></span>
+<span id="cb14-304"><a href="#cb14-304" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`divider`</span> <span class="pp">|</span> <span class="in">`Dividers`</span> <span class="pp">|</span> 2 <span class="pp">|</span> subtle / strong <span class="pp">|</span></span>
+<span id="cb14-305"><a href="#cb14-305" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`accent`</span> <span class="pp">|</span> <span class="in">`AccentRoles`</span> <span class="pp">|</span> 2 <span class="pp">|</span> default / muted / tint_subtle / tint_medium <span class="pp">|</span></span>
+<span id="cb14-306"><a href="#cb14-306" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`status`</span> <span class="pp">|</span> <span class="in">`StatusColors`</span> <span class="pp">|</span> 2 <span class="pp">|</span> positive / negative / warning / info <span class="pp">|</span></span>
+<span id="cb14-307"><a href="#cb14-307" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`series`</span> <span class="pp">|</span> <span class="in">`list&lt;SlotBundle&gt;`</span> <span class="pp">|</span> 2 <span class="pp">|</span> Per-anchor 7-field bundle <span class="pp">|</span></span>
+<span id="cb14-308"><a href="#cb14-308" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`summary`</span> <span class="pp">|</span> <span class="in">`SlotBundle`</span> <span class="pp">|</span> 2 <span class="pp">|</span> Pooled-effect diamond bundle <span class="pp">|</span></span>
+<span id="cb14-309"><a href="#cb14-309" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`text`</span> <span class="pp">|</span> <span class="in">`TextRoles`</span> <span class="pp">|</span> 2 <span class="pp">|</span> 8 named role bundles <span class="pp">|</span></span>
+<span id="cb14-310"><a href="#cb14-310" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`spacing`</span> <span class="pp">|</span> <span class="in">`SpacingTokens`</span> <span class="pp">|</span> 2 <span class="pp">|</span> 12 density-derived numerics <span class="pp">|</span></span>
+<span id="cb14-311"><a href="#cb14-311" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`annotation`</span> <span class="pp">|</span> <span class="in">`AnnotationCluster`</span> <span class="pp">|</span> 3 <span class="pp">|</span> title / subtitle / caption / footnote <span class="pp">|</span></span>
+<span id="cb14-312"><a href="#cb14-312" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`header`</span> <span class="pp">|</span> <span class="in">`HeaderCluster`</span> <span class="pp">|</span> 3 <span class="pp">|</span> light + bold variants <span class="pp">|</span></span>
+<span id="cb14-313"><a href="#cb14-313" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`column_group`</span> <span class="pp">|</span> <span class="in">`ColumnGroupCluster`</span> <span class="pp">|</span> 3 <span class="pp">|</span> Column-group header <span class="pp">|</span></span>
+<span id="cb14-314"><a href="#cb14-314" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row_group`</span> <span class="pp">|</span> <span class="in">`RowGroupCluster`</span> <span class="pp">|</span> 3 <span class="pp">|</span> L1 / L2 / L3 tiers <span class="pp">|</span></span>
+<span id="cb14-315"><a href="#cb14-315" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`row`</span> <span class="pp">|</span> <span class="in">`RowCluster`</span> <span class="pp">|</span> 3 <span class="pp">|</span> base / alt / hover / selected + emphasis / muted / accent <span class="pp">|</span></span>
+<span id="cb14-316"><a href="#cb14-316" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`cell`</span> <span class="pp">|</span> <span class="in">`CellCluster`</span> <span class="pp">|</span> 3 <span class="pp">|</span> bg / fg / border / text <span class="pp">|</span></span>
+<span id="cb14-317"><a href="#cb14-317" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`first_column`</span> <span class="pp">|</span> <span class="in">`FirstColumnCluster`</span> <span class="pp">|</span> 3 <span class="pp">|</span> plain + bold variants <span class="pp">|</span></span>
+<span id="cb14-318"><a href="#cb14-318" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`plot`</span> <span class="pp">|</span> <span class="in">`PlotScaffold`</span> <span class="pp">|</span> 3 <span class="pp">|</span> axis / tick / gridline / reference + mark sizes <span class="pp">|</span></span>
+<span id="cb14-319"><a href="#cb14-319" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`marks`</span> <span class="pp">|</span> <span class="in">`MarksRecipes`</span> <span class="pp">|</span> 3 <span class="pp">|</span> Per-mark slot-bundle recipes <span class="pp">|</span></span>
+<span id="cb14-320"><a href="#cb14-320" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`axis`</span> <span class="pp">|</span> <span class="in">`AxisConfig`</span> <span class="pp">|</span> config <span class="pp">|</span> Forest x-axis range/ticks/grid <span class="pp">|</span></span>
+<span id="cb14-321"><a href="#cb14-321" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`layout`</span> <span class="pp">|</span> <span class="in">`Layout`</span> <span class="pp">|</span> config <span class="pp">|</span> Plot width, container border <span class="pp">|</span></span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

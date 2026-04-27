@@ -1,0 +1,8 @@
+# tabviz_split htmlwidgets configuration
+# Split forest widget with sidebar navigation
+# The binding is tabviz_split.js (loaded automatically by htmlwidgets)
+dependencies:
+  - name: tabviz-split-styles
+    version: "0.3.0"
+    src: htmlwidgets
+    stylesheet: tabviz_split.css

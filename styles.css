@@ -1,0 +1,47 @@
+/*
+ * Quarto/Bootstrap compatibility fixes for webforest htmlwidgets
+ *
+ * Problem: webforest uses Tailwind CSS which outputs global utility classes.
+ * Tailwind's `.collapse { visibility: collapse }` conflicts with Bootstrap's
+ * `.collapse` class used for the navbar collapse functionality.
+ *
+ * This stylesheet overrides the conflict specifically for the navbar.
+ */
+
+/* Override Tailwind's .collapse which hides Bootstrap navbar items */
+.navbar .collapse,
+.navbar-collapse {
+  visibility: visible !important;
+  display: flex !important;
+  flex-basis: auto !important;
+}
+
+/* Ensure navbar is always visible and properly layered */
+.navbar {
+  z-index: 1030 !important;
+}
+
+/* Ensure navbar items display correctly */
+.navbar-nav {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.navbar-nav .nav-item {
+  display: block !important;
+}
+
+.navbar-nav .nav-link {
+  display: block !important;
+}
+
+/* Ensure TOC scroll tracking works with webforest widgets */
+#TOC .active {
+  font-weight: 600 !important;
+  color: var(--bs-primary) !important;
+}
+
+#TOC a.nav-link {
+  display: block !important;
+  visibility: visible !important;
+}

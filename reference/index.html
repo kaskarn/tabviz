@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Function Reference – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-acf12a64177840b8d86f2d4f01b2e9fb.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-edf0d5c7e188fb8924845e7743387b91.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#entry-points" id="toc-entry-points" class="nav-link active" data-scroll-target="#entry-points">Entry points</a></li>
+  <li><a href="#data-columns" id="toc-data-columns" class="nav-link" data-scroll-target="#data-columns">Data columns</a></li>
+  <li><a href="#inline-visual-columns" id="toc-inline-visual-columns" class="nav-link" data-scroll-target="#inline-visual-columns">Inline visual columns</a></li>
+  <li><a href="#per-row-visualization-columns" id="toc-per-row-visualization-columns" class="nav-link" data-scroll-target="#per-row-visualization-columns">Per-row visualization columns</a>
+  <ul class="collapse">
+  <li><a href="#effect-helpers" id="toc-effect-helpers" class="nav-link" data-scroll-target="#effect-helpers">Effect helpers</a></li>
+  <li><a href="#column-construction" id="toc-column-construction" class="nav-link" data-scroll-target="#column-construction">Column construction</a></li>
+  </ul></li>
+  <li><a href="#styling-modifiers" id="toc-styling-modifiers" class="nav-link" data-scroll-target="#styling-modifiers">Styling modifiers</a></li>
+  <li><a href="#themes" id="toc-themes" class="nav-link" data-scroll-target="#themes">Themes</a>
+  <ul class="collapse">
+  <li><a href="#preset-themes" id="toc-preset-themes" class="nav-link" data-scroll-target="#preset-themes">Preset themes</a></li>
+  <li><a href="#theme-modifiers" id="toc-theme-modifiers" class="nav-link" data-scroll-target="#theme-modifiers">Theme modifiers</a></li>
+  </ul></li>
+  <li><a href="#annotations" id="toc-annotations" class="nav-link" data-scroll-target="#annotations">Annotations</a></li>
+  <li><a href="#data-operations" id="toc-data-operations" class="nav-link" data-scroll-target="#data-operations">Data operations</a></li>
+  <li><a href="#interaction" id="toc-interaction" class="nav-link" data-scroll-target="#interaction">Interaction</a></li>
+  <li><a href="#shiny" id="toc-shiny" class="nav-link" data-scroll-target="#shiny">Shiny</a></li>
+  <li><a href="#export" id="toc-export" class="nav-link" data-scroll-target="#export">Export</a></li>
+  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting">Troubleshooting</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Function Reference</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Complete reference for the tabviz public API. Functions are grouped by purpose; each name links to its detail page.</p>
+<section id="entry-points" class="level2">
+<h2 class="anchored" data-anchor-id="entry-points">Entry points</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/tabviz.html"><code>tabviz()</code></a></td>
+<td><strong>Main entry point</strong> — interactive table with any mix of columns.</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/forest_plot.html"><code>forest_plot()</code></a></td>
+<td>Convenience wrapper that auto-builds a forest column from <code>point</code> / <code>lower</code> / <code>upper</code> (or <code>effects</code>).</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/tabviz.html"><code>web_spec()</code></a></td>
+<td>Alias of <code>tabviz(..., .spec_only = TRUE)</code> — return a <code>WebSpec</code> instead of a widget.</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/split_table.html"><code>split_table()</code></a></td>
+<td>Build a <code>SplitForest</code> from a spec / widget / data frame.</td>
+</tr>
+</tbody>
+</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build a table with a forest plot column</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="st">"HR"</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_pvalue</span>(<span class="st">"pval"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Quick forest plot</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>, <span class="at">label =</span> <span class="st">"study"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="data-columns" class="level2">
+<h2 class="anchored" data-anchor-id="data-columns">Data columns</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_text"><code>col_text()</code></a>, <a href="../reference/columns.html#col_label"><code>col_label()</code></a></td>
+<td>Text / row-identifier columns</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_numeric"><code>col_numeric()</code></a></td>
+<td>Numeric with formatting and abbreviation</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_n"><code>col_n()</code></a></td>
+<td>Sample-size column (default thousands separator)</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_percent"><code>col_percent()</code></a></td>
+<td>Percentage from proportion or 0–100 value</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_currency"><code>col_currency()</code></a></td>
+<td>Numeric with currency symbol</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_pvalue"><code>col_pvalue()</code></a></td>
+<td>P-value with smart formatting &amp; stars</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_interval"><code>col_interval()</code></a></td>
+<td>“1.20 (0.90, 1.50)” interval text</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_events"><code>col_events()</code></a></td>
+<td>“events/n” clinical format</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_range"><code>col_range()</code></a></td>
+<td>“min–max” range</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_date"><code>col_date()</code></a></td>
+<td>Date with <code>strftime()</code> formatting</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_reference"><code>col_reference()</code></a></td>
+<td>Truncated text + optional link</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_heatmap"><code>col_heatmap()</code></a></td>
+<td>Numeric with interpolated background color</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_progress"><code>col_progress()</code></a></td>
+<td>Inline progress bar</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="inline-visual-columns" class="level2">
+<h2 class="anchored" data-anchor-id="inline-visual-columns">Inline visual columns</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_bar"><code>col_bar()</code></a></td>
+<td>Per-row bar (no shared axis)</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_sparkline"><code>col_sparkline()</code></a></td>
+<td>Inline sparkline (line / bar / area)</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_icon"><code>col_icon()</code></a></td>
+<td>Icon / emoji per row</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_badge"><code>col_badge()</code></a></td>
+<td>Colored status badge</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_stars"><code>col_stars()</code></a></td>
+<td>Star rating</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#col_img"><code>col_img()</code></a></td>
+<td>Inline image</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="per-row-visualization-columns" class="level2">
+<h2 class="anchored" data-anchor-id="per-row-visualization-columns">Per-row visualization columns</h2>
+<p>These render a small chart per row with a shared x-axis.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/columns.html#viz_forest"><code>viz_forest()</code></a></td>
+<td>Forest plot column (point + CI)</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#viz_bar"><code>viz_bar()</code></a></td>
+<td>Horizontal bar chart</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html#viz_boxplot"><code>viz_boxplot()</code></a></td>
+<td>Box-and-whisker</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#viz_violin"><code>viz_violin()</code></a></td>
+<td>Violin / KDE</td>
+</tr>
+</tbody>
+</table>
+<section id="effect-helpers" class="level3">
+<h3 class="anchored" data-anchor-id="effect-helpers">Effect helpers</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/columns.html#effect_forest"><code>effect_forest()</code></a></td>
+<td>Define an effect for <code>viz_forest(effects = ...)</code></td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html"><code>effect_bar()</code></a></td>
+<td>Define a bar in <code>viz_bar(...)</code></td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/columns.html"><code>effect_boxplot()</code></a></td>
+<td>Define a boxplot in <code>viz_boxplot(...)</code></td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html"><code>effect_violin()</code></a></td>
+<td>Define a violin in <code>viz_violin(...)</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="column-construction" class="level3">
+<h3 class="anchored" data-anchor-id="column-construction">Column construction</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/columns.html#col_group"><code>col_group()</code></a></td>
+<td>Group columns under a shared header</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/columns.html#web_col"><code>web_col()</code></a></td>
+<td>Low-level constructor every <code>col_*()</code> delegates to</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/tabviz.html#grouping"><code>web_group()</code></a></td>
+<td>Define a row group explicitly</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="styling-modifiers" class="level2">
+<h2 class="anchored" data-anchor-id="styling-modifiers">Styling modifiers</h2>
+<p>Fluent verbs that mutate a <code>WebSpec</code>, htmlwidget, or <code>tabviz_proxy</code>. See <a href="../reference/styling.html">Styling</a>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/styling.html#set_row_style"><code>set_row_style()</code></a></td>
+<td>Row-level styling (bold / color / type / indent / …)</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/styling.html#set_column_style"><code>set_column_style()</code></a></td>
+<td>Per-cell styling for one column</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/styling.html#set_marker_style"><code>set_marker_style()</code></a></td>
+<td>Marker color / shape / opacity / size</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/styling.html#set_zoom"><code>set_zoom()</code></a></td>
+<td>Zoom and container constraints</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/styling.html#set_theme"><code>set_theme()</code></a></td>
+<td>Apply a theme by name or object</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/styling.html#selectable_themes"><code>selectable_themes()</code></a></td>
+<td>Curate the in-widget theme switcher</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="themes" class="level2">
+<h2 class="anchored" data-anchor-id="themes">Themes</h2>
+<section id="preset-themes" class="level3">
+<h3 class="anchored" data-anchor-id="preset-themes">Preset themes</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/themes.html#web_theme_cochrane"><code>web_theme_cochrane()</code></a></td>
+<td>The package default — Cochrane teal + warm-coral accent, Inter, comfortable</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/themes.html#web_theme_lancet"><code>web_theme_lancet()</code></a></td>
+<td>Lancet navy + refined gold, Georgia serif, comfortable</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/themes.html#web_theme_jama"><code>web_theme_jama()</code></a></td>
+<td>JAMA all-B&amp;W, ultra-compact, Arial</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/themes.html#web_theme_dark"><code>web_theme_dark()</code></a></td>
+<td>Catppuccin Mocha-inspired dark canvas</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/themes.html#web_theme"><code>web_theme()</code></a></td>
+<td>Generic custom-theme constructor</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/themes.html#package_themes"><code>package_themes()</code></a></td>
+<td>Named list of every shipped theme (Cochrane / Lancet / JAMA / Dark)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="theme-modifiers" class="level3">
+<h3 class="anchored" data-anchor-id="theme-modifiers">Theme modifiers</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/themes.html#set_inputs"><code>set_inputs()</code></a></td>
+<td>Tier 1 inputs (brand, accent, series, fonts, status)</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/themes.html#set_variants"><code>set_variants()</code></a></td>
+<td>Per-table variants (density, header_style, first_column_style)</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/themes.html#set_spacing"><code>set_spacing()</code></a></td>
+<td>Per-token spacing override on top of the density preset</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/themes.html#set_theme_field"><code>set_theme_field()</code></a></td>
+<td>Generic deep setter; <code>path</code> walks the theme tree</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="annotations" class="level2">
+<h2 class="anchored" data-anchor-id="annotations">Annotations</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/annotations.html#refline"><code>refline()</code></a></td>
+<td>Vertical reference line</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/annotations.html#forest_annotation"><code>forest_annotation()</code></a></td>
+<td>Custom shape per study (frontend WIP)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="data-operations" class="level2">
+<h2 class="anchored" data-anchor-id="data-operations">Data operations</h2>
+<p>Same dispatch on <code>WebSpec</code> / htmlwidget / <code>tabviz_proxy</code> — see <a href="../reference/data-ops.html">Data operations</a>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/data-ops.html#add_column"><code>add_column()</code></a>, <a href="../reference/data-ops.html#remove_column"><code>remove_column()</code></a></td>
+<td>Insert / remove columns</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/data-ops.html#move_column"><code>move_column()</code></a>, <a href="../reference/data-ops.html#resize_column"><code>resize_column()</code></a></td>
+<td>Reposition / resize</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/data-ops.html#update_column"><code>update_column()</code></a></td>
+<td>Edit column properties</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/data-ops.html#sort_rows"><code>sort_rows()</code></a>, <a href="../reference/data-ops.html#filter_rows"><code>filter_rows()</code></a>, <a href="../reference/data-ops.html#clear_filters"><code>clear_filters()</code></a></td>
+<td>Order / filter rows</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/data-ops.html#select_rows"><code>select_rows()</code></a>, <a href="../reference/data-ops.html#move_row"><code>move_row()</code></a></td>
+<td>Runtime row controls</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/data-ops.html#update_data"><code>update_data()</code></a></td>
+<td>Replace the data frame</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/data-ops.html#toggle_group"><code>toggle_group()</code></a></td>
+<td>Collapse / expand groups</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/data-ops.html#set_cell"><code>set_cell()</code></a>, <a href="../reference/data-ops.html#set_row_label"><code>set_row_label()</code></a>, <a href="../reference/data-ops.html#clear_edits"><code>clear_edits()</code></a></td>
+<td>Proxy-only cell edits</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="interaction" class="level2">
+<h2 class="anchored" data-anchor-id="interaction">Interaction</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/interaction.html#web_interaction"><code>web_interaction()</code></a></td>
+<td>Build an <code>InteractionSpec</code></td>
+</tr>
+<tr class="even">
+<td><a href="../reference/interaction.html#web_interaction_full"><code>web_interaction_full()</code></a></td>
+<td>All capabilities on (default)</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/interaction.html#web_interaction_minimal"><code>web_interaction_minimal()</code></a></td>
+<td>Hover only</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/interaction.html#web_interaction_publication"><code>web_interaction_publication()</code></a></td>
+<td>Static / print preset</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/interaction.html#default_interaction_for_theme"><code>default_interaction_for_theme()</code></a></td>
+<td>Returns <code>web_interaction_full()</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="shiny" class="level2">
+<h2 class="anchored" data-anchor-id="shiny">Shiny</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/shiny.html#tabvizOutput"><code>tabvizOutput()</code></a> / <a href="../reference/shiny.html#renderTabviz"><code>renderTabviz()</code></a></td>
+<td>Standard output / render bindings</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/shiny.html#tabviz_proxy"><code>tabviz_proxy()</code></a></td>
+<td>Proxy for live updates</td>
+</tr>
+<tr class="odd">
+<td><a href="../reference/shiny.html#splitTabvizOutput"><code>splitTabvizOutput()</code></a> / <a href="../reference/shiny.html#renderSplitTabviz"><code>renderSplitTabviz()</code></a></td>
+<td>Split-table bindings</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/shiny.html#split_tabviz_proxy"><code>split_tabviz_proxy()</code></a> / <a href="../reference/shiny.html#split_tabviz_select"><code>split_tabviz_select()</code></a></td>
+<td>Split-table proxy</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="export" class="level2">
+<h2 class="anchored" data-anchor-id="export">Export</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../reference/save_plot.html#save_plot"><code>save_plot()</code></a></td>
+<td>Export a widget / spec to SVG, PDF, or PNG</td>
+</tr>
+<tr class="even">
+<td><a href="../reference/save_plot.html#save_split_table"><code>save_split_table()</code></a></td>
+<td>Export every sub-plot of a <code>SplitForest</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="troubleshooting" class="level2">
+<h2 class="anchored" data-anchor-id="troubleshooting">Troubleshooting</h2>
+<p><a href="../reference/troubleshooting.html">Troubleshooting guide</a> — common errors and the recent (0.9.0) renames.</p>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Function Reference"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>Complete reference for the tabviz public API. Functions are grouped by purpose; each name links to its detail page.</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">## Entry points</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`tabviz()`</span><span class="co">](tabviz.qmd)</span> <span class="pp">|</span> **Main entry point** — interactive table with any mix of columns. <span class="pp">|</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_plot()`</span><span class="co">](forest_plot.qmd)</span> <span class="pp">|</span> Convenience wrapper that auto-builds a forest column from <span class="in">`point`</span> / <span class="in">`lower`</span> / <span class="in">`upper`</span> (or <span class="in">`effects`</span>). <span class="pp">|</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_spec()`</span><span class="co">](tabviz.qmd)</span> <span class="pp">|</span> Alias of <span class="in">`tabviz(..., .spec_only = TRUE)`</span> — return a <span class="in">`WebSpec`</span> instead of a widget. <span class="pp">|</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`split_table()`</span><span class="co">](split_table.qmd)</span> <span class="pp">|</span> Build a <span class="in">`SplitForest`</span> from a spec / widget / data frame. <span class="pp">|</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Build a table with a forest plot column</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>),</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_numeric</span>(<span class="st">"hr"</span>, <span class="st">"HR"</span>),</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">col_pvalue</span>(<span class="st">"pval"</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Quick forest plot</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>, <span class="at">label =</span> <span class="st">"study"</span>)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data columns</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_text()`</span><span class="co">](columns.qmd#col_text)</span>, <span class="co">[</span><span class="ot">`col_label()`</span><span class="co">](columns.qmd#col_label)</span> <span class="pp">|</span> Text / row-identifier columns <span class="pp">|</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_numeric()`</span><span class="co">](columns.qmd#col_numeric)</span> <span class="pp">|</span> Numeric with formatting and abbreviation <span class="pp">|</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_n()`</span><span class="co">](columns.qmd#col_n)</span> <span class="pp">|</span> Sample-size column (default thousands separator) <span class="pp">|</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_percent()`</span><span class="co">](columns.qmd#col_percent)</span> <span class="pp">|</span> Percentage from proportion or 0–100 value <span class="pp">|</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_currency()`</span><span class="co">](columns.qmd#col_currency)</span> <span class="pp">|</span> Numeric with currency symbol <span class="pp">|</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_pvalue()`</span><span class="co">](columns.qmd#col_pvalue)</span> <span class="pp">|</span> P-value with smart formatting &amp; stars <span class="pp">|</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_interval()`</span><span class="co">](columns.qmd#col_interval)</span> <span class="pp">|</span> "1.20 (0.90, 1.50)" interval text <span class="pp">|</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_events()`</span><span class="co">](columns.qmd#col_events)</span> <span class="pp">|</span> "events/n" clinical format <span class="pp">|</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_range()`</span><span class="co">](columns.qmd#col_range)</span> <span class="pp">|</span> "min–max" range <span class="pp">|</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_date()`</span><span class="co">](columns.qmd#col_date)</span> <span class="pp">|</span> Date with <span class="in">`strftime()`</span> formatting <span class="pp">|</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_reference()`</span><span class="co">](columns.qmd#col_reference)</span> <span class="pp">|</span> Truncated text + optional link <span class="pp">|</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_heatmap()`</span><span class="co">](columns.qmd#col_heatmap)</span> <span class="pp">|</span> Numeric with interpolated background color <span class="pp">|</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_progress()`</span><span class="co">](columns.qmd#col_progress)</span> <span class="pp">|</span> Inline progress bar <span class="pp">|</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="fu">## Inline visual columns</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_bar()`</span><span class="co">](columns.qmd#col_bar)</span> <span class="pp">|</span> Per-row bar (no shared axis) <span class="pp">|</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_sparkline()`</span><span class="co">](columns.qmd#col_sparkline)</span> <span class="pp">|</span> Inline sparkline (line / bar / area) <span class="pp">|</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_icon()`</span><span class="co">](columns.qmd#col_icon)</span> <span class="pp">|</span> Icon / emoji per row <span class="pp">|</span></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_badge()`</span><span class="co">](columns.qmd#col_badge)</span> <span class="pp">|</span> Colored status badge <span class="pp">|</span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_stars()`</span><span class="co">](columns.qmd#col_stars)</span> <span class="pp">|</span> Star rating <span class="pp">|</span></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_img()`</span><span class="co">](columns.qmd#col_img)</span> <span class="pp">|</span> Inline image <span class="pp">|</span></span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="fu">## Per-row visualization columns</span></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>These render a small chart per row with a shared x-axis.</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`viz_forest()`</span><span class="co">](columns.qmd#viz_forest)</span> <span class="pp">|</span> Forest plot column (point + CI) <span class="pp">|</span></span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`viz_bar()`</span><span class="co">](columns.qmd#viz_bar)</span> <span class="pp">|</span> Horizontal bar chart <span class="pp">|</span></span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`viz_boxplot()`</span><span class="co">](columns.qmd#viz_boxplot)</span> <span class="pp">|</span> Box-and-whisker <span class="pp">|</span></span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`viz_violin()`</span><span class="co">](columns.qmd#viz_violin)</span> <span class="pp">|</span> Violin / KDE <span class="pp">|</span></span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a><span class="fu">### Effect helpers</span></span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`effect_forest()`</span><span class="co">](columns.qmd#effect_forest)</span> <span class="pp">|</span> Define an effect for <span class="in">`viz_forest(effects = ...)`</span> <span class="pp">|</span></span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`effect_bar()`</span><span class="co">](columns.qmd)</span> <span class="pp">|</span> Define a bar in <span class="in">`viz_bar(...)`</span> <span class="pp">|</span></span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`effect_boxplot()`</span><span class="co">](columns.qmd)</span> <span class="pp">|</span> Define a boxplot in <span class="in">`viz_boxplot(...)`</span> <span class="pp">|</span></span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`effect_violin()`</span><span class="co">](columns.qmd)</span> <span class="pp">|</span> Define a violin in <span class="in">`viz_violin(...)`</span> <span class="pp">|</span></span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><span class="fu">### Column construction</span></span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`col_group()`</span><span class="co">](columns.qmd#col_group)</span> <span class="pp">|</span> Group columns under a shared header <span class="pp">|</span></span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_col()`</span><span class="co">](columns.qmd#web_col)</span> <span class="pp">|</span> Low-level constructor every <span class="in">`col_*()`</span> delegates to <span class="pp">|</span></span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_group()`</span><span class="co">](tabviz.qmd#grouping)</span> <span class="pp">|</span> Define a row group explicitly <span class="pp">|</span></span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a><span class="fu">## Styling modifiers</span></span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a>Fluent verbs that mutate a <span class="in">`WebSpec`</span>, htmlwidget, or <span class="in">`tabviz_proxy`</span>. See <span class="co">[</span><span class="ot">Styling</span><span class="co">](styling.qmd)</span>.</span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_row_style()`</span><span class="co">](styling.qmd#set_row_style)</span> <span class="pp">|</span> Row-level styling (bold / color / type / indent / …) <span class="pp">|</span></span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_column_style()`</span><span class="co">](styling.qmd#set_column_style)</span> <span class="pp">|</span> Per-cell styling for one column <span class="pp">|</span></span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_marker_style()`</span><span class="co">](styling.qmd#set_marker_style)</span> <span class="pp">|</span> Marker color / shape / opacity / size <span class="pp">|</span></span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_zoom()`</span><span class="co">](styling.qmd#set_zoom)</span> <span class="pp">|</span> Zoom and container constraints <span class="pp">|</span></span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_theme()`</span><span class="co">](styling.qmd#set_theme)</span> <span class="pp">|</span> Apply a theme by name or object <span class="pp">|</span></span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`selectable_themes()`</span><span class="co">](styling.qmd#selectable_themes)</span> <span class="pp">|</span> Curate the in-widget theme switcher <span class="pp">|</span></span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a><span class="fu">## Themes</span></span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a><span class="fu">### Preset themes</span></span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_cochrane()`</span><span class="co">](themes.qmd#web_theme_cochrane)</span> <span class="pp">|</span> The package default — Cochrane teal + warm-coral accent, Inter, comfortable <span class="pp">|</span></span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_lancet()`</span><span class="co">](themes.qmd#web_theme_lancet)</span>     <span class="pp">|</span> Lancet navy + refined gold, Georgia serif, comfortable <span class="pp">|</span></span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_jama()`</span><span class="co">](themes.qmd#web_theme_jama)</span>         <span class="pp">|</span> JAMA all-B&amp;W, ultra-compact, Arial <span class="pp">|</span></span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme_dark()`</span><span class="co">](themes.qmd#web_theme_dark)</span>         <span class="pp">|</span> Catppuccin Mocha-inspired dark canvas <span class="pp">|</span></span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_theme()`</span><span class="co">](themes.qmd#web_theme)</span>                   <span class="pp">|</span> Generic custom-theme constructor <span class="pp">|</span></span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`package_themes()`</span><span class="co">](themes.qmd#package_themes)</span>         <span class="pp">|</span> Named list of every shipped theme (Cochrane / Lancet / JAMA / Dark) <span class="pp">|</span></span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a><span class="fu">### Theme modifiers</span></span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_inputs()`</span><span class="co">](themes.qmd#set_inputs)</span> <span class="pp">|</span> Tier 1 inputs (brand, accent, series, fonts, status) <span class="pp">|</span></span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_variants()`</span><span class="co">](themes.qmd#set_variants)</span> <span class="pp">|</span> Per-table variants (density, header_style, first_column_style) <span class="pp">|</span></span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_spacing()`</span><span class="co">](themes.qmd#set_spacing)</span> <span class="pp">|</span> Per-token spacing override on top of the density preset <span class="pp">|</span></span>
+<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_theme_field()`</span><span class="co">](themes.qmd#set_theme_field)</span> <span class="pp">|</span> Generic deep setter; <span class="in">`path`</span> walks the theme tree <span class="pp">|</span></span>
+<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## Annotations</span></span>
+<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`refline()`</span><span class="co">](annotations.qmd#refline)</span> <span class="pp">|</span> Vertical reference line <span class="pp">|</span></span>
+<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`forest_annotation()`</span><span class="co">](annotations.qmd#forest_annotation)</span> <span class="pp">|</span> Custom shape per study (frontend WIP) <span class="pp">|</span></span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data operations</span></span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a>Same dispatch on <span class="in">`WebSpec`</span> / htmlwidget / <span class="in">`tabviz_proxy`</span> — see <span class="co">[</span><span class="ot">Data operations</span><span class="co">](data-ops.qmd)</span>.</span>
+<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Purpose <span class="pp">|</span></span>
+<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`add_column()`</span><span class="co">](data-ops.qmd#add_column)</span>, <span class="co">[</span><span class="ot">`remove_column()`</span><span class="co">](data-ops.qmd#remove_column)</span> <span class="pp">|</span> Insert / remove columns <span class="pp">|</span></span>
+<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`move_column()`</span><span class="co">](data-ops.qmd#move_column)</span>, <span class="co">[</span><span class="ot">`resize_column()`</span><span class="co">](data-ops.qmd#resize_column)</span> <span class="pp">|</span> Reposition / resize <span class="pp">|</span></span>
+<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`update_column()`</span><span class="co">](data-ops.qmd#update_column)</span> <span class="pp">|</span> Edit column properties <span class="pp">|</span></span>
+<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`sort_rows()`</span><span class="co">](data-ops.qmd#sort_rows)</span>, <span class="co">[</span><span class="ot">`filter_rows()`</span><span class="co">](data-ops.qmd#filter_rows)</span>, <span class="co">[</span><span class="ot">`clear_filters()`</span><span class="co">](data-ops.qmd#clear_filters)</span> <span class="pp">|</span> Order / filter rows <span class="pp">|</span></span>
+<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`select_rows()`</span><span class="co">](data-ops.qmd#select_rows)</span>, <span class="co">[</span><span class="ot">`move_row()`</span><span class="co">](data-ops.qmd#move_row)</span> <span class="pp">|</span> Runtime row controls <span class="pp">|</span></span>
+<span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`update_data()`</span><span class="co">](data-ops.qmd#update_data)</span> <span class="pp">|</span> Replace the data frame <span class="pp">|</span></span>
+<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`toggle_group()`</span><span class="co">](data-ops.qmd#toggle_group)</span> <span class="pp">|</span> Collapse / expand groups <span class="pp">|</span></span>
+<span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`set_cell()`</span><span class="co">](data-ops.qmd#set_cell)</span>, <span class="co">[</span><span class="ot">`set_row_label()`</span><span class="co">](data-ops.qmd#set_row_label)</span>, <span class="co">[</span><span class="ot">`clear_edits()`</span><span class="co">](data-ops.qmd#clear_edits)</span> <span class="pp">|</span> Proxy-only cell edits <span class="pp">|</span></span>
+<span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-142"><a href="#cb2-142" aria-hidden="true" tabindex="-1"></a><span class="fu">## Interaction</span></span>
+<span id="cb2-143"><a href="#cb2-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-144"><a href="#cb2-144" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-145"><a href="#cb2-145" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-146"><a href="#cb2-146" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction()`</span><span class="co">](interaction.qmd#web_interaction)</span> <span class="pp">|</span> Build an <span class="in">`InteractionSpec`</span> <span class="pp">|</span></span>
+<span id="cb2-147"><a href="#cb2-147" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction_full()`</span><span class="co">](interaction.qmd#web_interaction_full)</span> <span class="pp">|</span> All capabilities on (default) <span class="pp">|</span></span>
+<span id="cb2-148"><a href="#cb2-148" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction_minimal()`</span><span class="co">](interaction.qmd#web_interaction_minimal)</span> <span class="pp">|</span> Hover only <span class="pp">|</span></span>
+<span id="cb2-149"><a href="#cb2-149" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`web_interaction_publication()`</span><span class="co">](interaction.qmd#web_interaction_publication)</span> <span class="pp">|</span> Static / print preset <span class="pp">|</span></span>
+<span id="cb2-150"><a href="#cb2-150" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`default_interaction_for_theme()`</span><span class="co">](interaction.qmd#default_interaction_for_theme)</span> <span class="pp">|</span> Returns <span class="in">`web_interaction_full()`</span> <span class="pp">|</span></span>
+<span id="cb2-151"><a href="#cb2-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-152"><a href="#cb2-152" aria-hidden="true" tabindex="-1"></a><span class="fu">## Shiny</span></span>
+<span id="cb2-153"><a href="#cb2-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-154"><a href="#cb2-154" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-155"><a href="#cb2-155" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-156"><a href="#cb2-156" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`tabvizOutput()`</span><span class="co">](shiny.qmd#tabvizOutput)</span> / <span class="co">[</span><span class="ot">`renderTabviz()`</span><span class="co">](shiny.qmd#renderTabviz)</span> <span class="pp">|</span> Standard output / render bindings <span class="pp">|</span></span>
+<span id="cb2-157"><a href="#cb2-157" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`tabviz_proxy()`</span><span class="co">](shiny.qmd#tabviz_proxy)</span> <span class="pp">|</span> Proxy for live updates <span class="pp">|</span></span>
+<span id="cb2-158"><a href="#cb2-158" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`splitTabvizOutput()`</span><span class="co">](shiny.qmd#splitTabvizOutput)</span> / <span class="co">[</span><span class="ot">`renderSplitTabviz()`</span><span class="co">](shiny.qmd#renderSplitTabviz)</span> <span class="pp">|</span> Split-table bindings <span class="pp">|</span></span>
+<span id="cb2-159"><a href="#cb2-159" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`split_tabviz_proxy()`</span><span class="co">](shiny.qmd#split_tabviz_proxy)</span> / <span class="co">[</span><span class="ot">`split_tabviz_select()`</span><span class="co">](shiny.qmd#split_tabviz_select)</span> <span class="pp">|</span> Split-table proxy <span class="pp">|</span></span>
+<span id="cb2-160"><a href="#cb2-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-161"><a href="#cb2-161" aria-hidden="true" tabindex="-1"></a><span class="fu">## Export</span></span>
+<span id="cb2-162"><a href="#cb2-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-163"><a href="#cb2-163" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Function <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb2-164"><a href="#cb2-164" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-165"><a href="#cb2-165" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`save_plot()`</span><span class="co">](save_plot.qmd#save_plot)</span> <span class="pp">|</span> Export a widget / spec to SVG, PDF, or PNG <span class="pp">|</span></span>
+<span id="cb2-166"><a href="#cb2-166" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="co">[</span><span class="ot">`save_split_table()`</span><span class="co">](save_plot.qmd#save_split_table)</span> <span class="pp">|</span> Export every sub-plot of a <span class="in">`SplitForest`</span> <span class="pp">|</span></span>
+<span id="cb2-167"><a href="#cb2-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-168"><a href="#cb2-168" aria-hidden="true" tabindex="-1"></a><span class="fu">## Troubleshooting</span></span>
+<span id="cb2-169"><a href="#cb2-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-170"><a href="#cb2-170" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Troubleshooting guide</span><span class="co">](troubleshooting.qmd)</span> — common errors and the recent (0.9.0) renames.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
