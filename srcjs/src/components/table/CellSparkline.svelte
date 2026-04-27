@@ -7,16 +7,22 @@
     data: number[] | undefined | null;
     options?: SparklineColumnOptions;
     naText?: string;
+    /** Per-row/cell color override, computed by ForestPlot from the
+     * active semantic bundle's markerFill. Lets accent / muted / emphasis
+     * paint retint sparklines to match the forest-marker treatment.
+     * `null` falls through to the brand default. */
+    colorOverride?: string | null;
   }
 
-  let { data, options, naText }: Props = $props();
+  let { data, options, naText, colorOverride = null }: Props = $props();
 
   const chartType = $derived(options?.type ?? "line");
   const chartHeight = $derived(options?.height ?? 20);
-  // Default to the theme's brand color rather than accent — sparklines
-  // are chrome that should ride along with the brand identity, not
-  // compete with row-level accent paint.
-  const chartColor = $derived(options?.color ?? "var(--tv-brand, var(--tv-primary, #2563eb))");
+  // Resolution order: per-column user override > per-row/cell semantic
+  // paint > theme brand default.
+  const chartColor = $derived(
+    options?.color ?? colorOverride ?? "var(--tv-brand, var(--tv-primary, #2563eb))"
+  );
   const chartWidth = 60;
 
   // Handle nested arrays from R list columns (data may be [[values]] instead of [values])

@@ -1298,6 +1298,21 @@
     const cellStyle = getCellStyle(row, column);
     return resolveSemanticBundle(cellStyle, theme);
   }
+  // Effective viz color for inline visualizations (bars, sparklines).
+  // Mirrors the marker cascade on the forest plot: cell-paint > row-paint
+  // > component default. Reads `markerFill` off whichever semantic bundle
+  // is active — that field is what the resolver populates with the
+  // accent / muted / emphasis tone for the matching token. Tokens
+  // without a markerFill (bold, fill) return null so the component falls
+  // through to its own brand default.
+  function effectiveVizColor(row: Row | null | undefined, column: ColumnSpec): string | null {
+    if (!row || !theme) return null;
+    const cellBundle = getCellSemBundle(row, column);
+    if (cellBundle?.markerFill) return cellBundle.markerFill;
+    if (!row.style) return null;
+    const rowBundle = resolveSemanticBundle(row.style, theme);
+    return rowBundle?.markerFill ?? null;
+  }
   function getCellActiveToken(row: Row | null | undefined, column: ColumnSpec): string | null {
     if (!row) return null;
     return activeSemanticToken(getCellStyle(row, column));
@@ -1528,6 +1543,7 @@
             maxValue={getMaxValueForColumn(visibleRows, column)}
             options={column.options?.bar}
             naText={column.options?.naText}
+            colorOverride={effectiveVizColor(row, column)}
           />
         {:else if column.type === "pvalue"}
           <CellPvalue
@@ -1541,6 +1557,7 @@
             data={metadata[column.field] as number[]}
             options={column.options?.sparkline}
             naText={column.options?.naText}
+            colorOverride={effectiveVizColor(row, column)}
           />
         {:else if column.type === "icon"}
           <CellIcon
@@ -1594,6 +1611,7 @@
             value={metadata[column.field] as number}
             options={column.options?.progress}
             naText={column.options?.naText}
+            colorOverride={effectiveVizColor(row, column)}
           />
         {:else if column.type === "numeric"}
           <CellContent value={formatNumber(metadata[column.field] as number, column.options)} {cellStyle} />

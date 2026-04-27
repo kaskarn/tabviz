@@ -6,16 +6,22 @@
     value: number | undefined | null;
     options?: ProgressColumnOptions;
     naText?: string;
+    /** Per-row/cell color override, computed by ForestPlot from the
+     * active semantic bundle's markerFill. Lets accent / muted / emphasis
+     * paint retint the progress bar to match the forest-marker treatment.
+     * `null` falls through to the brand default. */
+    colorOverride?: string | null;
   }
 
-  let { value, options, naText }: Props = $props();
+  let { value, options, naText, colorOverride = null }: Props = $props();
 
   const maxValue = $derived(options?.maxValue ?? 100);
   const showLabel = $derived(options?.showLabel ?? true);
-  // Default to the theme's brand color rather than accent — progress bars
-  // are chrome that should ride along with the brand identity, matching
-  // the col_bar / col_sparkline defaults.
-  const barColor = $derived(options?.color ?? "var(--tv-brand, var(--tv-primary, #2563eb))");
+  // Resolution order: per-column user override > per-row/cell semantic
+  // paint > theme brand default.
+  const barColor = $derived(
+    options?.color ?? colorOverride ?? "var(--tv-brand, var(--tv-primary, #2563eb))"
+  );
   const scale = $derived(options?.scale ?? "linear");
 
   const percentage = $derived.by(() =>

@@ -7,17 +7,23 @@
     maxValue?: number;
     options?: BarColumnOptions;
     naText?: string;
+    /** Per-row/cell color override, computed by ForestPlot from the
+     * active semantic bundle's markerFill. Lets accent / muted / emphasis
+     * paint retint inline bars to match the forest-marker treatment.
+     * `null` falls through to the brand default. */
+    colorOverride?: string | null;
   }
 
-  let { value, maxValue = 100, options, naText }: Props = $props();
+  let { value, maxValue = 100, options, naText, colorOverride = null }: Props = $props();
 
   const effectiveMax = $derived(options?.maxValue ?? maxValue);
   const showLabel = $derived(options?.showLabel ?? true);
-  // Default to the theme's brand color rather than accent — bars are
-  // chrome that should ride along with the brand identity, not compete
-  // with row-level accent paint. Falls back to --tv-primary when the
-  // brand var isn't set (e.g. v1 themes).
-  const barColor = $derived(options?.color ?? "var(--tv-brand, var(--tv-primary, #2563eb))");
+  // Resolution order: per-column user override > per-row/cell semantic
+  // paint > theme brand default. Bars are chrome that should ride brand
+  // identity unless explicitly recolored.
+  const barColor = $derived(
+    options?.color ?? colorOverride ?? "var(--tv-brand, var(--tv-primary, #2563eb))"
+  );
   const scale = $derived(options?.scale ?? "linear");
 
   const percentage = $derived(() =>

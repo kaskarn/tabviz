@@ -2951,7 +2951,14 @@ function renderUnifiedTableRow(
       const computedMax = barMaxValues.get(col.field);
       const maxValue = col.options?.bar?.maxValue ?? computedMax ?? 100;
       const barScale = col.options?.bar?.scale ?? "linear";
+      // Per-cell + per-row semantic paint cascade (parity with the live
+      // CellBar component): cell-paint markerFill > row-paint markerFill
+      // > brand. Tokens without markerFill (bold, fill) fall through.
+      const barCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
+      const barRowBundle = resolveSemanticBundle(row.style, theme);
       const barColor = col.options?.bar?.color
+        ?? barCellBundle?.markerFill
+        ?? barRowBundle?.markerFill
         ?? (theme.inputs as { brand?: string } | undefined)?.brand
         ?? theme.accent.default;
       const barHeight = theme.plot.pointSize * 2;
@@ -2979,7 +2986,11 @@ function renderUnifiedTableRow(
       const raw = row.metadata[col.field] as number[] | number[][];
       const data: number[] = Array.isArray(raw[0]) ? (raw[0] as number[]) : (raw as number[]);
       const sparkHeight = col.options?.sparkline?.height ?? 16;
+      const sparkCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
+      const sparkRowBundle = resolveSemanticBundle(row.style, theme);
       const sparkColor = col.options?.sparkline?.color
+        ?? sparkCellBundle?.markerFill
+        ?? sparkRowBundle?.markerFill
         ?? (theme.inputs as { brand?: string } | undefined)?.brand
         ?? theme.accent.default;
       const sparkPadding = SPACING.TEXT_PADDING * 2;
@@ -3163,7 +3174,11 @@ function renderUnifiedTableRow(
       if (progValue !== undefined && progValue !== null && !Number.isNaN(progValue)) {
         const progOpts = col.options?.progress;
         const progMax = progOpts?.maxValue ?? 100;
+        const progCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
+        const progRowBundle = resolveSemanticBundle(row.style, theme);
         const progColor = progOpts?.color
+          ?? progCellBundle?.markerFill
+          ?? progRowBundle?.markerFill
           ?? (theme.inputs as { brand?: string } | undefined)?.brand
           ?? theme.accent.default;
         const progShowLabel = progOpts?.showLabel ?? true;
