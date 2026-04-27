@@ -3157,14 +3157,17 @@
 
   /* Paint preview — always-on hover affordance in the unified select-as-
      paint model. The renderer mixes the active paint token's bundle into
-     the row/cell style so the would-be visual paints; we dim it a bit so
-     the user sees "this is what you'll get on click" without it feeling
-     already-committed. cursor: pointer signals the row/cell is the click
-     target. */
+     the row/cell style so the would-be visual paints; we add a subtle
+     "unsaved" cue without obscuring the bundle. Earlier this was a flat
+     opacity:0.65 — but that faded accent/bold/emphasis previews into a
+     uniform pale wash that read as "muted" regardless of which token was
+     active (bug: "preview stuck showing muted regardless of selection").
+     A near-1 opacity keeps the bundle's color recognizable; the dashed
+     bottom border marks the row/cell as the click target. */
   .data-cell.paint-preview {
-    opacity: 0.65;
     cursor: pointer;
-    transition: opacity 0.08s ease;
+    box-shadow: inset 0 -1.5px 0 0 color-mix(in srgb, var(--tv-primary, #2563eb) 60%, transparent);
+    transition: box-shadow 0.08s ease;
   }
 
   .row-italic {
