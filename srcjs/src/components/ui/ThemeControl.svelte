@@ -99,6 +99,18 @@
   function accentMutedHex(accentHex: string): string {
     return oklchMix(accentHex, surfaceBaseline(), 0.88);
   }
+  // Lightest neutral (n[1] in resolve_chrome) — the anchor for the
+  // semantic.highlight / semantic.fill pastel-tint recipe. On a resolved
+  // wire theme this lives at theme.surface.raised; fall back to white if
+  // a v1 wire shape doesn't carry it.
+  function lightestNeutral(): string {
+    return (theme?.surface as { raised?: string } | undefined)?.raised ?? "#ffffff";
+  }
+  // R-side: oklch_mix(accent, n[1], 0.80). Used for both semantic.highlight
+  // and semantic.fill (E2: both default to the same pastel filled-in tint).
+  function semanticFilledTintHex(accentHex: string): string {
+    return oklchMix(accentHex, lightestNeutral(), 0.80);
+  }
   function accentTintSubtleHex(accentHex: string): string {
     return oklchMix(accentHex, surfaceBaseline(), 0.90);
   }
@@ -254,6 +266,7 @@
     const muted       = accentMutedHex(accent);
     const tintSubtle  = accentTintSubtleHex(accent);
     const tintMedium  = accentTintMediumHex(accent);
+    const filledTint  = semanticFilledTintHex(accent);
     setDerived(["accent", "default"],     accent);
     setDerived(["accent", "muted"],       muted);
     setDerived(["accent", "tintSubtle"],  tintSubtle);
@@ -266,6 +279,14 @@
     if (!inputs?.statusInfo) {
       setDerived(["status", "info"], accent);
     }
+    // Semantic-token tints (theme.semantic.{highlight,fill}) — both
+    // default to the same pastel mix of accent into the lightest neutral.
+    // Mirror onto the bundle bg fields too so the painted row's tint
+    // tracks live as the user drags the accent picker.
+    setDerived(["semantic", "highlight"], filledTint);
+    setDerived(["semantic", "fill"],      filledTint);
+    setDerived(["row", "highlight", "bg"], filledTint);
+    setDerived(["row", "fill", "bg"],      filledTint);
     // L1/L2/L3 row-group bg are brand-derived now (handled by the Brand
     // cascade) — Accent no longer touches rowGroup. Keeps the group-bar
     // family distinct from hover/selected so multiple highlighted rows

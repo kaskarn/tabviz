@@ -1,15 +1,14 @@
 <script lang="ts">
   // Always-visible token + scope picker for the unified painter.
   //
-  // Replaces the toggleable PaintModeButton. The painter is always-on:
-  // every row click applies the active token (via store.paintRowWith
-  // ActiveToken / paintCellWithActiveToken), and every row hover shows
-  // a translucent preview of the would-be commit.
+  // The painter is always-on: every row click applies the active token
+  // (via store.paintRowWithActiveToken / paintCellWithActiveToken), and
+  // every row hover shows a translucent preview of the would-be commit.
   //
-  // UI: a chip showing the active token with a colored swatch, plus a
-  // small Row/Cell pill toggle. Clicking the chip opens a 5-token
-  // dropdown. No "exit paint" affordance — there's nothing to exit;
-  // the picker is the live state.
+  // UI: a single 22px icon button trigger, click opens a popover with
+  // the 4-token grid and Row/Cell scope toggle. Trigger shows a paint
+  // icon overlaid with the active token's swatch so users can read the
+  // current state without expanding.
   import type { ForestStore } from "$stores/forestStore.svelte";
 
   interface Props {
@@ -17,24 +16,19 @@
   }
   let { store }: Props = $props();
 
-  type Token = "muted" | "bold" | "accent" | "highlight" | "fill";
+  type Token = "muted" | "bold" | "accent" | "fill";
   const TOKENS: Array<{ id: Token; label: string; tip: string }> = [
-    { id: "muted",     label: "Mute",      tip: "Lighter, reduced prominence" },
-    { id: "bold",      label: "Bold",      tip: "Just a weight bump — no color change" },
-    { id: "accent",    label: "Accent",    tip: "Bold + accent color (default)" },
-    { id: "highlight", label: "Highlight", tip: "Bold + pale highlighter background" },
-    { id: "fill",      label: "Fill",      tip: "Bold + strong row fill" },
+    { id: "muted",  label: "Mute",   tip: "Reduced prominence (translucent)" },
+    { id: "bold",   label: "Bold",   tip: "Just a weight bump — no color change" },
+    { id: "accent", label: "Accent", tip: "Bold + accent color (default)" },
+    { id: "fill",   label: "Fill",   tip: "Bold + pastel row tint" },
   ];
 
-  // Active tool from store. Always set in the unified-painter model.
   const tool = $derived(store.paintTool);
   const activeToken = $derived(tool.token as Token);
   const activeScope = $derived(tool.scope);
   const activeMeta  = $derived(TOKENS.find((t) => t.id === activeToken) ?? TOKENS[2]);
 
-  // Swatch color per token — small visual cue in the chip + dropdown.
-  // Pulls from the resolved theme's row.{token}.bg or the active accent
-  // when the bundle has no bg (bold has none — falls through to accent).
   const theme = $derived(store.spec?.theme);
   function swatchFor(token: Token): string {
     const bundle = (theme?.row as unknown as Record<string, { bg?: string | null; fg?: string | null; markerFill?: string | null }> | undefined)?.[token];
@@ -42,12 +36,11 @@
   }
 
   let menuOpen = $state(false);
-  let chipEl: HTMLButtonElement | null = $state(null);
+  let triggerEl: HTMLButtonElement | null = $state(null);
   let popoverEl: HTMLDivElement | null = $state(null);
 
   function pickToken(t: Token) {
     store.setPaintTool({ token: t, scope: activeScope });
-    menuOpen = false;
   }
   function pickScope(scope: "row" | "cell") {
     store.setPaintTool({ token: activeToken, scope });
@@ -59,7 +52,7 @@
     if (!menuOpen) return;
     const t = e.target as Node | null;
     if (!t) return;
-    if (chipEl && chipEl.contains(t)) return;
+    if (triggerEl && triggerEl.contains(t)) return;
     if (popoverEl && popoverEl.contains(t)) return;
     menuOpen = false;
   }
@@ -74,59 +67,62 @@
 <svelte:window onpointerdown={onWindowPointerDown} onkeydown={onKeydown} />
 
 <div class="token-picker">
-  <!-- Active-token chip. Click to open the 5-token menu. The colored
-       dot reflects the bundle's bg (or fg/markerFill fallback) so the
-       user gets an at-a-glance preview of what painting will produce. -->
+  <!-- Single icon-button trigger. Paint-brush icon overlaid with the
+       active token's swatch in the lower-right so the user can read the
+       current paint state without opening the popover. -->
   <button
-    bind:this={chipEl}
+    bind:this={triggerEl}
     type="button"
-    class="chip"
+    class="trigger"
     class:open={menuOpen}
     onclick={toggleMenu}
-    aria-haspopup="listbox"
+    aria-haspopup="dialog"
     aria-expanded={menuOpen}
-    title={activeMeta.tip}
+    data-tooltip={`Paint: ${activeMeta.label} (${activeScope})`}
+    aria-label={`Paint tool: ${activeMeta.label}, scope ${activeScope}`}
   >
-    <span class="dot" style:background={swatchFor(activeToken)}></span>
-    <span class="label">{activeMeta.label}</span>
-    <svg class="chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <polyline points="6 9 12 15 18 9" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M19.5 3.5L21 5l-9 9-3-3 9-9z"/>
+      <path d="M9 11l-4 4a3 3 0 0 0 0 4 3 3 0 0 0 4 0l4-4"/>
+      <path d="M3 21l3-1"/>
     </svg>
-  </button>
-
-  <!-- Row/Cell scope pill. Click side to flip. Selected side = thumb. -->
-  <button
-    type="button"
-    class="scope-switch"
-    class:on-cell={activeScope === "cell"}
-    onclick={() => pickScope(activeScope === "row" ? "cell" : "row")}
-    role="switch"
-    aria-checked={activeScope === "cell"}
-    aria-label={`Scope: ${activeScope}`}
-    title={`Click to apply to a whole ${activeScope === "row" ? "cell" : "row"}`}
-  >
-    <span class="scope-label" class:active={activeScope === "row"}>Row</span>
-    <span class="scope-label" class:active={activeScope === "cell"}>Cell</span>
-    <span class="scope-thumb"></span>
+    <span class="active-dot" style:background={swatchFor(activeToken)}></span>
   </button>
 
   {#if menuOpen}
-    <div bind:this={popoverEl} class="menu" role="listbox" aria-label="Paint token">
-      {#each TOKENS as t (t.id)}
-        <button
-          type="button"
-          role="option"
-          aria-selected={activeToken === t.id}
-          class="menu-item"
-          class:selected={activeToken === t.id}
-          onclick={() => pickToken(t.id)}
-          title={t.tip}
-        >
-          <span class="dot" style:background={swatchFor(t.id)}></span>
-          <span class="label">{t.label}</span>
-          <span class="tip">{t.tip}</span>
-        </button>
-      {/each}
+    <div bind:this={popoverEl} class="popover" role="dialog" aria-label="Paint tool">
+      <div class="section-label">Token</div>
+      <div class="token-grid" role="listbox" aria-label="Paint token">
+        {#each TOKENS as t (t.id)}
+          <button
+            type="button"
+            role="option"
+            aria-selected={activeToken === t.id}
+            class="token-cell"
+            class:selected={activeToken === t.id}
+            onclick={() => pickToken(t.id)}
+            title={t.tip}
+          >
+            <span class="dot" style:background={swatchFor(t.id)}></span>
+            <span class="label">{t.label}</span>
+          </button>
+        {/each}
+      </div>
+
+      <div class="section-label scope-label-row">Apply to</div>
+      <button
+        type="button"
+        class="scope-switch"
+        class:on-cell={activeScope === "cell"}
+        onclick={() => pickScope(activeScope === "row" ? "cell" : "row")}
+        role="switch"
+        aria-checked={activeScope === "cell"}
+        aria-label={`Scope: ${activeScope}`}
+      >
+        <span class="scope-text" class:active={activeScope === "row"}>Row</span>
+        <span class="scope-text" class:active={activeScope === "cell"}>Cell</span>
+        <span class="scope-thumb"></span>
+      </button>
     </div>
   {/if}
 </div>
@@ -135,31 +131,101 @@
   .token-picker {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
     position: relative;
   }
 
-  /* Active-token chip */
-  .chip {
+  /* 22px icon-button trigger — matches sibling toolbar buttons. */
+  .trigger {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 0 8px;
+    justify-content: center;
+    width: 22px;
     height: 22px;
+    padding: 0;
     border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-border, #e2e8f0));
-    border-radius: 6px;
+    border-radius: 5px;
     background: var(--tv-bg, #ffffff);
     color: var(--tv-fg, #1a1a1a);
-    font-size: 0.72rem;
-    font-weight: 500;
     cursor: pointer;
     transition: background-color 0.12s ease, border-color 0.12s ease;
   }
-  .chip:hover,
-  .chip:focus-visible,
-  .chip.open {
+  .trigger:hover,
+  .trigger:focus-visible,
+  .trigger.open {
     border-color: var(--tv-primary, #2563eb);
     outline: none;
+  }
+  .trigger svg {
+    flex-shrink: 0;
+  }
+  .active-dot {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    border: 1px solid var(--tv-bg, #ffffff);
+    box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--tv-fg, #1a1a1a) 30%, transparent);
+  }
+
+  /* Popover — drops below the trigger. */
+  .popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 10003;
+    width: 220px;
+    padding: 8px;
+    background: var(--tv-bg, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-border, #e2e8f0));
+    border-radius: 8px;
+    box-shadow: 0 8px 24px -4px color-mix(in srgb, #0f172a 25%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .section-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tv-secondary, #64748b);
+    padding: 0 2px;
+  }
+  .scope-label-row {
+    margin-top: 2px;
+  }
+
+  .token-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .token-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 6px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--tv-fg, #1a1a1a);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.1s ease, border-color 0.1s ease;
+  }
+  .token-cell:hover {
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
+  }
+  .token-cell.selected {
+    background: color-mix(in srgb, var(--tv-primary, #2563eb) 14%, var(--tv-bg, #ffffff));
+    border-color: color-mix(in srgb, var(--tv-primary, #2563eb) 35%, transparent);
+    color: var(--tv-primary, #2563eb);
+    font-weight: 600;
   }
   .dot {
     flex: 0 0 auto;
@@ -168,26 +234,18 @@
     border-radius: 999px;
     border: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 25%, transparent);
   }
-  .chip .label {
+  .label {
     line-height: 1;
   }
-  .chev {
-    color: var(--tv-secondary, #64748b);
-    transition: transform 0.18s ease;
-    flex-shrink: 0;
-  }
-  .chip.open .chev {
-    transform: rotate(180deg);
-  }
 
-  /* Row/Cell scope pill — same shape as the historical paint popover. */
+  /* Row/Cell scope pill */
   .scope-switch {
     position: relative;
     display: inline-grid;
     grid-template-columns: 1fr 1fr;
     padding: 0;
-    width: 78px;
-    height: 22px;
+    width: 100%;
+    height: 24px;
     border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 999px;
     background: color-mix(in srgb, var(--tv-primary, #2563eb) 6%, transparent);
@@ -209,80 +267,24 @@
   .scope-switch.on-cell .scope-thumb {
     transform: translateX(100%);
   }
-  .scope-label {
+  .scope-text {
     position: relative;
     z-index: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 500;
     color: var(--tv-secondary, #64748b);
     transition: color 0.18s ease;
     user-select: none;
   }
-  .scope-label.active {
+  .scope-text.active {
     color: var(--tv-bg, #ffffff);
     font-weight: 600;
   }
   .scope-switch:focus-visible {
     outline: 2px solid color-mix(in srgb, var(--tv-primary, #2563eb) 40%, transparent);
     outline-offset: 2px;
-  }
-
-  /* Token menu (drops below the chip). */
-  .menu {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    z-index: 10003;
-    min-width: 220px;
-    padding: 4px;
-    background: var(--tv-bg, #ffffff);
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-border, #e2e8f0));
-    border-radius: 8px;
-    box-shadow: 0 8px 24px -4px color-mix(in srgb, #0f172a 25%, transparent);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .menu-item {
-    display: grid;
-    grid-template-columns: auto auto 1fr;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    padding: 5px 8px;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--tv-fg, #1a1a1a);
-    font-size: 0.72rem;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.1s ease;
-  }
-  .menu-item:hover {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
-  }
-  .menu-item.selected {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 14%, var(--tv-bg, #ffffff));
-    color: var(--tv-primary, #2563eb);
-    font-weight: 600;
-  }
-  .menu-item .label {
-    font-weight: 500;
-  }
-  .menu-item.selected .label {
-    font-weight: 600;
-  }
-  .menu-item .tip {
-    color: var(--tv-secondary, #64748b);
-    font-weight: 400;
-    font-size: 0.65rem;
-    text-align: right;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 </style>

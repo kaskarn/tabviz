@@ -95,6 +95,18 @@
     return (availableThemes as FlatThemes)[name];
   }
 
+  // Extract a (brand, accent) pair for a theme so the dropdown row can
+  // show a tiny color preview alongside the label. Falls back to muted
+  // neutrals when a theme doesn't carry resolved values (e.g. preset
+  // names supplied without a custom-theme object).
+  function themeColors(name: string): { brand: string; accent: string } {
+    const t = lookupTheme(name);
+    const inputs = (t?.inputs ?? {}) as { brand?: string; accent?: string };
+    const brand  = inputs.brand  ?? (t?.surface as { base?: string } | undefined)?.base  ?? "#cbd5e1";
+    const accent = inputs.accent ?? (t?.accent  as { default?: string } | undefined)?.default ?? "#94a3b8";
+    return { brand, accent };
+  }
+
   function closeDropdown() {
     dropdownOpen = false;
   }
@@ -185,6 +197,7 @@
           </div>
         {/if}
         {#each themeEntries as [themeName, label]}
+          {@const colors = themeColors(themeName)}
           <button
             class="dropdown-item"
             class:active={currentTheme === themeName}
@@ -197,7 +210,11 @@
             {:else}
               <span class="spacer"></span>
             {/if}
-            <span>{label}</span>
+            <span class="swatch-pair" aria-hidden="true">
+              <span class="swatch" style:background={colors.brand}></span>
+              <span class="swatch" style:background={colors.accent}></span>
+            </span>
+            <span class="label">{label}</span>
           </button>
         {/each}
       </div>
@@ -313,5 +330,26 @@
   .spacer {
     width: 14px;
     flex-shrink: 0;
+  }
+
+  /* Brand|Accent preview pair — two side-by-side swatches that flag the
+     theme's character at a glance. Sits between the active-checkmark
+     column and the label. */
+  .swatch-pair {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 18%, transparent);
+  }
+  .swatch {
+    display: block;
+    width: 11px;
+    height: 14px;
+  }
+  .dropdown-item .label {
+    flex: 1;
+    min-width: 0;
   }
 </style>

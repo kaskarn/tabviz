@@ -110,17 +110,16 @@ resolve_chrome <- function(inputs) {
     tint_medium = oklch_mix(inputs@accent, surface@base, 0.75)
   )
 
-  # Semantic-token color slots. The painter UI applies one of six
-  # RowSemantic bundles to a row/cell; two of those bundles
-  # (row.highlight, row.fill) need a color identity that's not captured
-  # by accent / brand / status. Derive defaults from accent here:
-  #   highlight: pull strongly toward the lightest neutral — a pastel
-  #     "marker" tone that lights up text without dominating
-  #   fill: a stronger accent-mix that reads as "this row is filled in"
+  # Semantic-token color slots. The painter UI applies a RowSemantic
+  # bundle to a row/cell; row.highlight and row.fill both need a color
+  # identity that's not captured by accent / brand / status. Both default
+  # to the same pastel "filled-in" tone derived from accent — a soft,
+  # legible row tint that signals "this row matters" without dominating.
   # Users override either via theme@semantic@{highlight,fill}.
+  filled_tint <- oklch_mix(inputs@accent, n[1], 0.80)
   semantic <- Semantics(
-    highlight = oklch_mix(inputs@accent, n[1], 0.80),
-    fill      = oklch_mix(inputs@accent, surface@base, 0.50)
+    highlight = filled_tint,
+    fill      = filled_tint
   )
 
   list(surface = surface, content = content, divider = divider,
@@ -377,14 +376,11 @@ resolve_components <- function(theme) {
     bg = theme@semantic@highlight,
     font_weight = 600
   ))
-  # fill token = bold + a strong row fill derived from accent. The fg is
-  # contrast-checked against the fill bg so text reads regardless of the
-  # accent's lightness (deep-navy fills get light text; pale-yellow fills
-  # get dark text).
-  fill_bg <- theme@semantic@fill
+  # fill token = bold + a pastel filled-in row tint derived from accent.
+  # fg stays at the row's default content color since the bg is pale enough
+  # to remain legible (matches the highlight bundle).
   rc@fill <- fill_na(rc@fill, list(
-    bg = fill_bg,
-    fg = ensure_contrast(content@primary, fill_bg, target = 4.5),
+    bg = theme@semantic@fill,
     font_weight = 600
   ))
   theme@row <- rc

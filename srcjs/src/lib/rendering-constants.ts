@@ -23,12 +23,6 @@ export const GROUP_HEADER_OPACITY = 0.05; // 5%
 /** Opacity for hovered rows */
 export const ROW_HOVER_OPACITY = 0.12; // 12%
 
-/** Opacity for selected rows */
-export const ROW_SELECTED_OPACITY = 0.16; // 16%
-
-/** Opacity for selected + hovered rows */
-export const ROW_SELECTED_HOVER_OPACITY = 0.22; // 22%
-
 /** Opacity for group header hover state */
 export const GROUP_HEADER_HOVER_OPACITY = 0.15; // 15%
 
@@ -348,6 +342,5 @@ export function generateCSSVariables(): string {
   return `
     --tv-group-header-opacity: ${GROUP_HEADER_OPACITY};
     --tv-row-hover-opacity: ${ROW_HOVER_OPACITY};
-    --tv-row-selected-opacity: ${ROW_SELECTED_OPACITY};
   `.trim();
 }

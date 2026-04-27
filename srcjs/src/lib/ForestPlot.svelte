@@ -55,8 +55,6 @@
   import {
     GROUP_HEADER_OPACITY,
     ROW_HOVER_OPACITY,
-    ROW_SELECTED_OPACITY,
-    ROW_SELECTED_HOVER_OPACITY,
     TEXT_MEASUREMENT,
     BADGE_VARIANTS,
   } from "$lib/rendering-constants";
@@ -124,7 +122,6 @@
   );
   const tooltipRow = $derived(store.tooltipRow);
   const tooltipPosition = $derived(store.tooltipPosition);
-  const selectedRowIds = $derived(store.selectedRowIds);
   const hoveredRowId = $derived(store.hoveredRowId);
 
   // The painter is always-on in the unified select-as-paint model. We read
@@ -482,11 +479,6 @@
     }
 
     return offsets;
-  }
-
-  // Helper to check if a row is selected
-  function isSelected(rowId: string): boolean {
-    return selectedRowIds.has(rowId);
   }
 
   // Helper to get unique key for display rows
@@ -1267,6 +1259,34 @@
     }
   }
 
+  // Hover-preview helpers. These read store.paintTool / store.hoveredRowId /
+  // store.paintHoverCellField via prop access (which the Svelte 5 compiler
+  // preserves) so the bundle resolution sees the would-be token without
+  // committing it. Must live in the instance script — module-script helpers
+  // can't access the `store` prop.
+  function paintRowPreviewToken(row: Row | null): string | null {
+    const tool = store.paintTool;
+    if (!row || !tool) return null;
+    if (tool.scope !== "row") return null;
+    if (store.hoveredRowId !== row.id) return null;
+    return tool.token;
+  }
+  function paintCellPreviewToken(row: Row | null, field: string): string | null {
+    const tool = store.paintTool;
+    if (!row || !tool) return null;
+    if (tool.scope !== "cell") return null;
+    if (store.paintHoverCellField !== `${row.id}:${field}`) return null;
+    return tool.token;
+  }
+  function getCellStyle(row: Row, column: ColumnSpec): CellStyle | undefined {
+    const previewToken = paintCellPreviewToken(row, column.field);
+    const baseStyle = getCellStyleBase(row, column);
+    if (previewToken) {
+      return { ...(baseStyle ?? {}), [previewToken]: true } as CellStyle;
+    }
+    return baseStyle;
+  }
+
   // CSS variable style string (includes shared rendering constants for consistency)
   const cssVars = $derived.by(() => {
     if (!theme) return '';
@@ -1414,8 +1434,6 @@
       --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
       --tv-group-header-opacity: ${GROUP_HEADER_OPACITY};
       --tv-row-hover-opacity: ${ROW_HOVER_OPACITY};
-      --tv-row-selected-opacity: ${ROW_SELECTED_OPACITY};
-      --tv-row-selected-hover-opacity: ${ROW_SELECTED_HOVER_OPACITY};
       --tv-actual-scale: ${actualScale};
       --tv-zoom: ${zoom};
     `.trim();
@@ -1706,7 +1724,6 @@
           {@const isGroupHeader = displayRow.type === "group_header"}
           {@const row = isGroupHeader ? null : displayRow.row}
           {@const rowDepth = displayRow.depth}
-          {@const selected = row ? isSelected(row.id) : false}
           <!--
             Paint-mode hover preview. When the paint tool is in row scope
             and this row is hovered, mix the active token into the row's
@@ -1783,7 +1800,6 @@
                 class:group-row={isGroupHeader}
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
-                class:selected
                 class:spacer-row={isSpacerRow}
                 class:reorderable={spec?.interaction.enableReorderRows}
                 class:drag-source={isDragSource}
@@ -1842,7 +1858,6 @@
                 class:group-row={isGroupHeader}
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
-                class:selected
                 class:spacer-row={isSpacerRow}
                 class:paint-preview={!!rowPreviewToken || (!!row && !!paintCellPreviewToken(row, column.field))}
                 role="presentation"
@@ -1868,7 +1883,6 @@
                 class:group-row={isGroupHeader}
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
-                class:selected
                 class:spacer-row={isSpacerRow}
                 class:wrap-enabled={column.wrap}
                 class:editable={editableHere}
@@ -2576,41 +2590,10 @@
     return styles.join("; ");
   }
 
-  // Build a paint-preview style hint when the paint tool would commit on
-  // this row/cell at click. Returns the active token or null. The renderer
-  // merges the token flag into the row/cell style for one resolution pass
-  // (no flag commit) so resolveSemanticBundle produces the would-be visual.
-  // All paint state read via `store.*` because Svelte 5's compiler doesn't
-  // rewrite component-local $state references inside helper functions —
-  // bare names hit a ReferenceError. Prop access works.
-  function paintRowPreviewToken(row: Row | null): string | null {
-    const tool = store.paintTool;
-    if (!row || !tool) return null;
-    if (tool.scope !== "row") return null;
-    if (store.hoveredRowId !== row.id) return null;
-    return tool.token;
-  }
-  function paintCellPreviewToken(row: Row | null, field: string): string | null {
-    const tool = store.paintTool;
-    if (!row || !tool) return null;
-    if (tool.scope !== "cell") return null;
-    if (store.paintHoverCellField !== `${row.id}:${field}`) return null;
-    return tool.token;
-  }
-
   // Get cell style for a specific column from row.cellStyles or column.styleMapping.
-  // When the paint tool is hovering THIS cell in cell scope, mix the
-  // preview token into the returned style so all downstream consumers
-  // (CellContent, CellPvalue, getCellBg, resolveSemanticBundle) see it
-  // and render the would-be visual without a flag commit.
-  function getCellStyle(row: Row, column: ColumnSpec): CellStyle | undefined {
-    const previewToken = paintCellPreviewToken(row, column.field);
-    const baseStyle = getCellStyleBase(row, column);
-    if (previewToken) {
-      return { ...(baseStyle ?? {}), [previewToken]: true } as CellStyle;
-    }
-    return baseStyle;
-  }
+  // Pure module-level helper — no instance / store access. The paint-preview
+  // wrapper that mixes in the active token lives in the instance script
+  // (it needs `store`); this base lookup is the underlying read.
   function getCellStyleBase(row: Row, column: ColumnSpec): CellStyle | undefined {
     // Check for pre-computed cellStyles from R serialization
     if (row.cellStyles?.[column.field]) {
@@ -2655,8 +2638,6 @@
    *
    *   5%  = GROUP_HEADER_OPACITY (0.05)
    *  12%  = ROW_HOVER_OPACITY (0.12)
-   *  16%  = ROW_SELECTED_OPACITY (0.16)
-   *  22%  = ROW_SELECTED_HOVER_OPACITY (0.22)
    *
    * CSS color-mix() doesn't support CSS custom properties for the percentage,
    * so these values are hardcoded but should be kept in sync with the constants.
@@ -3055,19 +3036,6 @@
     background: color-mix(in srgb, var(--tv-accent) 12%, color-mix(in srgb, var(--tv-primary) 6%, var(--tv-bg)));
   }
 
-  /* Selected row styling */
-  .data-cell.selected {
-    background: color-mix(in srgb, var(--tv-accent) 16%, var(--tv-bg));
-  }
-
-  .data-cell.selected.hovered {
-    background: color-mix(in srgb, var(--tv-accent) 22%, var(--tv-bg));
-  }
-
-  .data-cell.selected:first-child {
-    box-shadow: inset 3px 0 0 var(--tv-accent);
-  }
-
   /* Spacer row styling */
   .spacer-row {
     height: calc(var(--tv-row-height) / 2);
@@ -3130,6 +3098,13 @@
     color: var(--tv-semantic-fg, inherit);
     font-weight: var(--tv-semantic-weight, inherit);
     font-style: var(--tv-semantic-style, inherit);
+  }
+
+  /* Muted token: lighter, reduced prominence. The fg already shifts to
+     content.muted via the bundle; the opacity here adds a true "fade
+     into the background" feel that single-color shifts don't provide. */
+  :global(.tabviz-container .data-cell.row-muted) {
+    opacity: 0.6;
   }
 
   .row-icon {

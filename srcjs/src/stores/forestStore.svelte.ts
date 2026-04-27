@@ -2037,7 +2037,7 @@ export function createForestStore() {
     cellEdits = { cells: {}, groups: {} };
     labelEdits = {};
     styleEdits = { rows: {}, cells: {} };
-    paintTool = null;
+    paintTool = { token: "accent", scope: "row" };
   }
 
   // Plot-level labels (title / subtitle / caption / footnote). Live session
@@ -2176,7 +2176,7 @@ export function createForestStore() {
 
   function clearAllPaint() {
     styleEdits = { rows: {}, cells: {} };
-    paintTool = null;
+    paintTool = { token: "accent", scope: "row" };
   }
 
   function hasPaintEdits(): boolean {
@@ -2704,7 +2704,7 @@ export function createForestStore() {
     cellEdits = { cells: {}, groups: {} };
     labelEdits = {};
     styleEdits = { rows: {}, cells: {} };
-    paintTool = null;
+    paintTool = { token: "accent", scope: "row" };
     opLog = [];
 
     // ── Widths / zoom / sizing ───────────────────────────────────────────

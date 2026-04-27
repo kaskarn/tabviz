@@ -9,28 +9,33 @@ configuration surface.
 * **Three new tokens added.** Alongside the existing
   `emphasis` / `muted` / `accent`, `RowCluster` gains:
   - `bold` — pure font-weight bump, no color override
-  - `highlight` — bold + pale "marker" background derived from a new
-    `theme.semantic.highlight` color (default mixes accent toward the
-    lightest neutral)
-  - `fill` — bold + strong row fill derived from
-    `theme.semantic.fill` (default mixes accent into the surface
-    base); fg is contrast-checked against the fill bg so text reads
-    on light or dark fills
+  - `highlight` — bold + pale "marker" background derived from
+    `theme.semantic.highlight` (kept in the schema for `row_highlight`
+    data columns; not surfaced in the painter chip menu)
+  - `fill` — bold + pastel row tint derived from
+    `theme.semantic.fill`. Both `semantic.highlight` and
+    `semantic.fill` default to the same recipe
+    (`oklch_mix(accent, lightest_neutral, 0.80)`) — a soft filled-in
+    look that signals "this row matters" without dominating
   The existing `accent` bundle now also applies `font_weight = 600`
   so accent rows read as a coordinated "bold and colored" treatment
-  (was: colored text only).
+  (was: colored text only). The `muted` bundle now also drops to
+  60% opacity on the row so muted reads as truly receding, not just
+  fg-shifted.
 * **New Tier-2 named inputs** `theme@semantic@highlight` and
   `theme@semantic@fill` — defaults derive from accent at resolve
   time; override via `set_theme_field()` or the Tokens tab in the
   panel.
-* **Painter UI** surfaces five chips (`Mute` / `Bold` / `Accent` /
-  `Highlight` / `Fill`) following the user-facing vocabulary. The
-  legacy `emphasis` bundle stays in the schema for back-compat with
-  `row_emphasis_col` but is no longer surfaced in the painter. First
-  click on the paintbrush enters paint mode with `accent` as the
-  default; subsequent clicks toggle the popover. Hovering a row or
-  cell in paint mode renders the would-be bundle at ~65% opacity —
-  click commits.
+* **Painter UI** is unified with row selection: the painter is
+  always-on, and clicking a row is the same operation as painting it
+  with the active token (replace-if-different / toggle-if-same). The
+  toolbar surfaces a single 22px paint-tool button — click expands a
+  popover with four token chips (`Mute` / `Bold` / `Accent` / `Fill`)
+  and the Row/Cell scope toggle. Active token is shown as a swatch
+  dot on the trigger. Hovering a row or cell renders the would-be
+  bundle at ~65% opacity; click commits. Editing the accent color
+  recomputes the `semantic.{highlight,fill}` tints live (gated by
+  pinning) so painted rows retint as you drag the color picker.
 * **R API** adds `row_highlight` and `row_fill` parameters to
   `tabviz()` / `web_spec()`, parallel to `row_emphasis` / `row_muted` /
   `row_accent`. Each accepts a column name or a formula (logical).
@@ -62,6 +67,10 @@ selectable_themes(my_table, list(
 A flat list (existing behavior) renders the dropdown without tabs. When
 categorized and the active theme isn't in any supplied category, a
 `Current` tab is auto-prepended so the user can always revert.
+
+Each theme entry in the dropdown now shows a side-by-side `brand|accent`
+swatch pair so the visual character of each preset is legible without
+having to apply it.
 
 ## Reimagined preset roster
 
