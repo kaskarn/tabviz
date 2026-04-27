@@ -79,6 +79,7 @@ test_that("row cluster has all states + semantic bundles + banding", {
   out <- serialize_theme(WebTheme())
   expect_named(out$row, c("base", "alt", "hover", "selected",
                           "emphasis", "muted", "accent",
+                          "bold", "highlight", "fill",
                           "banding", "selectedEdgeWidth", "borderWidth"))
   expect_named(out$row$base, c("bg", "fg"))
   expect_named(out$row$emphasis,

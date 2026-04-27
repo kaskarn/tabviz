@@ -51,9 +51,11 @@
 #' @param row_icon Label icons. Column name or formula returning emoji/unicode.
 #' @param row_indent Row indentation. Column name or formula returning numeric values.
 #' @param row_type Row type. Column name or formula returning "data", "header", "summary", "spacer".
-#' @param row_emphasis Emphasis styling (bold + foreground). Column name or formula (logical).
+#' @param row_emphasis Emphasis styling (bold + primary fg + primary marker). Column name or formula (logical).
 #' @param row_muted Muted styling (lighter, reduced prominence). Column name or formula (logical).
-#' @param row_accent Accent styling (theme accent color). Column name or formula (logical).
+#' @param row_accent Accent styling (bold + accent color). Column name or formula (logical).
+#' @param row_highlight Highlight styling (bold + pale "marker" background; defaults to a paler accent tone). Column name or formula (logical).
+#' @param row_fill Fill styling (bold + strong accent-derived row fill). Column name or formula (logical).
 #' @param marker_color Marker fill color. Column name or formula returning CSS color strings.
 #' @param marker_shape Marker shape. Column name or formula returning "square", "circle", "diamond", "triangle".
 #' @param marker_opacity Marker opacity. Column name or formula returning numeric 0-1.
@@ -179,6 +181,8 @@ tabviz <- function(
     row_emphasis = NULL,
     row_muted = NULL,
     row_accent = NULL,
+    row_highlight = NULL,
+    row_fill = NULL,
     marker_color = NULL,
     marker_shape = NULL,
     marker_opacity = NULL,
@@ -528,6 +532,8 @@ tabviz <- function(
     row_emphasis = row_emphasis,
     row_muted = row_muted,
     row_accent = row_accent,
+    row_highlight = row_highlight,
+    row_fill = row_fill,
     marker_color = marker_color,
     marker_shape = marker_shape,
     marker_opacity = marker_opacity,
@@ -567,9 +573,11 @@ tabviz <- function(
     row_icon_col = style_resolved$row_icon,
     row_indent_col = style_resolved$row_indent,
     row_type_col = style_resolved$row_type,
-    row_emphasis_col = style_resolved$row_emphasis,
-    row_muted_col = style_resolved$row_muted,
-    row_accent_col = style_resolved$row_accent,
+    row_emphasis_col  = style_resolved$row_emphasis,
+    row_muted_col     = style_resolved$row_muted,
+    row_accent_col    = style_resolved$row_accent,
+    row_highlight_col = style_resolved$row_highlight,
+    row_fill_col      = style_resolved$row_fill,
     marker_color_col = style_resolved$marker_color,
     marker_shape_col = style_resolved$marker_shape,
     marker_opacity_col = style_resolved$marker_opacity,

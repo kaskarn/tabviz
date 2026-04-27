@@ -2485,11 +2485,16 @@
     // Semantic classes — kept for host-page CSS hooks. The widget's own
     // styling now reads from per-row CSS custom properties (see
     // getRowStyles), letting bundles override fg / bg / border / weight /
-    // style in one place instead of three hardcoded rules.
-    if (style?.emphasis) classes.push("row-emphasis");
-    if (style?.muted) classes.push("row-muted");
-    if (style?.accent) classes.push("row-accent");
-    if (style?.emphasis || style?.muted || style?.accent) classes.push("row-has-semantic");
+    // style in one place instead of N hardcoded rules.
+    if (style?.emphasis)  classes.push("row-emphasis");
+    if (style?.muted)     classes.push("row-muted");
+    if (style?.accent)    classes.push("row-accent");
+    if (style?.highlight) classes.push("row-highlight");
+    if (style?.fill)      classes.push("row-fill");
+    if (style?.emphasis || style?.muted || style?.accent ||
+        style?.bold || style?.highlight || style?.fill) {
+      classes.push("row-has-semantic");
+    }
 
     // Banding: the store decides which display rows get banded (respecting
     // styled-row exclusions and the mode/level grammar), so we just paint.

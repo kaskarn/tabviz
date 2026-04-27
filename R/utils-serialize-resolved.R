@@ -186,6 +186,10 @@ serialize_theme <- function(theme) {
       warning  = theme@status@warning,
       info     = theme@status@info
     ),
+    semantic = list(
+      highlight = theme@semantic@highlight,
+      fill      = theme@semantic@fill
+    ),
 
     series  = lapply(theme@series, serialize_slot_bundle),
 
@@ -242,14 +246,17 @@ serialize_theme <- function(theme) {
     ),
 
     row = list(
-      base     = serialize_row_state(theme@row@base),
-      alt      = serialize_row_state(theme@row@alt),
-      hover    = serialize_row_state(theme@row@hover),
-      selected = serialize_row_state(theme@row@selected),
-      emphasis = serialize_row_semantic(theme@row@emphasis),
-      muted    = serialize_row_semantic(theme@row@muted),
-      accent   = serialize_row_semantic(theme@row@accent),
-      banding  = serialize_banding(theme@row@banding),
+      base      = serialize_row_state(theme@row@base),
+      alt       = serialize_row_state(theme@row@alt),
+      hover     = serialize_row_state(theme@row@hover),
+      selected  = serialize_row_state(theme@row@selected),
+      emphasis  = serialize_row_semantic(theme@row@emphasis),
+      muted     = serialize_row_semantic(theme@row@muted),
+      accent    = serialize_row_semantic(theme@row@accent),
+      bold      = serialize_row_semantic(theme@row@bold),
+      highlight = serialize_row_semantic(theme@row@highlight),
+      fill      = serialize_row_semantic(theme@row@fill),
+      banding   = serialize_banding(theme@row@banding),
       selectedEdgeWidth = theme@row@selected_edge_width,
       borderWidth       = theme@row@border_width
     ),

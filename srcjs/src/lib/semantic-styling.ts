@@ -1,19 +1,28 @@
 /**
  * Semantic-bundle resolution.
  *
- * Every consumer of semantic classes (live widget, static SVG export, marker
- * cascade) routes through this module so there's exactly one place where
- * "which flag is active" turns into "which visual bundle applies." Flags
- * stay as plain booleans on `RowStyle` / `CellStyle`; this is where they
- * get translated into the `SemanticBundle` the renderer actually paints.
+ * Every consumer of semantic classes (live widget, static SVG export,
+ * marker cascade) routes through this module so there's exactly one place
+ * where "which flag is active" turns into "which visual bundle applies."
+ * Flags stay as plain booleans on `RowStyle` / `CellStyle`; this is where
+ * they get translated into the `SemanticBundle` the renderer actually
+ * paints.
  *
- * Precedence when multiple flags are set: `accent > emphasis > muted`.
- * This matches the historical rendering path in `svg-generator.ts` (accent
- * overrode emphasis overrode muted for text color). The three tokens are
- * categories, not severity ratings — the order is conventional, not
- * semantic.
+ * Six tokens are recognized:
+ *   muted, bold, emphasis, accent, highlight, fill
+ * Precedence (loud → quiet) when multiple flags are set:
+ *   fill > highlight > accent > emphasis > bold > muted.
+ * "Loud" means "more visually intense"; this is what we keep when several
+ * data columns flip flags on the same row, since the most-visible
+ * treatment is what the user is asking for.
+ *
+ * Wire shape: bundles live at `theme.row.{token}` (RowCluster on the
+ * v2 R-side). The dedicated `theme.semantics` block was a v1 carry-over
+ * that's no longer emitted; this resolver now reads the v2 path.
  */
-import type { RowStyle, CellStyle, SemanticBundle, Semantics, WebTheme } from "$types";
+import type {
+  RowStyle, CellStyle, SemanticBundle, SemanticToken, WebTheme,
+} from "$types";
 
 /** A plain all-null bundle — handy when code needs a non-null sentinel. */
 export const EMPTY_BUNDLE: SemanticBundle = {
@@ -45,10 +54,13 @@ export function bundleIsActive(b: SemanticBundle | null | undefined): boolean {
  */
 export function activeSemanticToken(
   style: RowStyle | CellStyle | undefined | null,
-): keyof Semantics | null {
+): SemanticToken | null {
   if (!style) return null;
+  if (style.fill) return "fill";
+  if (style.highlight) return "highlight";
   if (style.accent) return "accent";
   if (style.emphasis) return "emphasis";
+  if (style.bold) return "bold";
   if (style.muted) return "muted";
   return null;
 }
@@ -57,13 +69,18 @@ export function activeSemanticToken(
  * Resolve the visual bundle for a row or cell style. Returns `null` when no
  * semantic flag is set (so consumers can short-circuit) — not an empty
  * bundle, to keep "no-op" distinct from "all-inherit."
+ *
+ * Reads `theme.row.{token}` (the v2 path). The historical v1 path read
+ * `theme.semantics[token]` which v2 themes don't emit — that's why the
+ * painter appeared to do nothing visually before this fix.
  */
 export function resolveSemanticBundle(
   style: RowStyle | CellStyle | undefined | null,
   theme: WebTheme | undefined | null,
 ): SemanticBundle | null {
-  if (!theme?.semantics) return null;
+  const row = (theme as unknown as { row?: Record<string, SemanticBundle> } | undefined | null)?.row;
+  if (!row) return null;
   const token = activeSemanticToken(style);
   if (!token) return null;
-  return theme.semantics[token];
+  return row[token] ?? null;
 }

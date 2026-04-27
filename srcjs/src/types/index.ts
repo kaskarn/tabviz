@@ -7,6 +7,9 @@
 
 export interface RowStyle {
   type?: "data" | "header" | "summary" | "spacer";
+  // `bold` doubles as a styling primitive (from row_bold_col) AND as the
+  // "bold" semantic token applied by the painter. Both pathways set the
+  // flag; the renderer applies theme.row.bold when set.
   bold?: boolean;
   italic?: boolean;
   color?: string | null;
@@ -14,10 +17,14 @@ export interface RowStyle {
   indent?: number;
   icon?: string | null;
   badge?: string | null;
-  // Semantic styling classes
-  emphasis?: boolean;  // Bold, darker color
-  muted?: boolean;     // Lighter, reduced prominence
-  accent?: boolean;    // Theme accent color highlight
+  // Semantic styling tokens. Painter applies one at a time; data columns
+  // can flip multiple. Precedence (loud → quiet): fill > highlight >
+  // accent > emphasis > bold > muted.
+  emphasis?: boolean;   // Bold + primary fg + primary marker
+  muted?: boolean;      // Lighter color
+  accent?: boolean;     // Bold + accent color
+  highlight?: boolean;  // Bold + pale highlighter bg (theme.semantic.highlight)
+  fill?: boolean;       // Bold + strong row fill (theme.semantic.fill)
 }
 
 export type MarkerShape = "square" | "circle" | "diamond" | "triangle";
@@ -37,10 +44,13 @@ export interface CellStyle {
   bg?: string | null;
   badge?: string | null;
   icon?: string | null;
-  // Semantic styling (same as row-level)
-  emphasis?: boolean;  // Bold + foreground color
-  muted?: boolean;     // Muted color
-  accent?: boolean;    // Accent color
+  // Semantic styling — same six tokens as RowStyle. Precedence:
+  // fill > highlight > accent > emphasis > bold > muted.
+  emphasis?: boolean;
+  muted?: boolean;
+  accent?: boolean;
+  highlight?: boolean;
+  fill?: boolean;
   // Per-cell hover tooltip text (overrides the default value-as-title)
   tooltip?: string | null;
 }
@@ -562,12 +572,26 @@ export interface SemanticBundle {
 
 /**
  * Per-token bundle map. Keys match the boolean flags on `RowStyle` /
- * `CellStyle` — `row.style.emphasis === true` ⇒ look up `theme.semantics.emphasis`.
+ * `CellStyle` — `row.style.fill === true` ⇒ look up `theme.row.fill`.
+ *
+ * On v2 wire shapes the bundles live at `theme.row.{token}` (see RowCluster
+ * in R/classes-theme.R). The dedicated `theme.semantics` block was a v1
+ * carry-over that's no longer emitted.
  */
-export interface Semantics {
-  emphasis: SemanticBundle;
-  muted: SemanticBundle;
-  accent: SemanticBundle;
+export type SemanticToken =
+  | "emphasis" | "muted" | "accent"
+  | "bold" | "highlight" | "fill";
+
+export type Semantics = Record<SemanticToken, SemanticBundle>;
+
+/**
+ * Tier-2 named token colors. theme.semantic.highlight + .fill drive the
+ * default bg of the highlight + fill RowSemantic bundles; defaults to
+ * accent-derived values at R-side resolve time.
+ */
+export interface SemanticInputs {
+  highlight: string;
+  fill: string;
 }
 
 export interface GroupHeaderStyles {

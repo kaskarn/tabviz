@@ -174,7 +174,12 @@ export function createForestStore() {
   // cellEdits: per-row for row-scoped paint, per-cell for cell-scoped paint.
   // Each entry only records the token whose value differs from the baseline
   // spec style — missing tokens mean "inherit the R-supplied value".
-  type SemanticToken = "emphasis" | "muted" | "accent";
+  // Six semantic tokens recognized: muted, bold, emphasis, accent,
+  // highlight, fill (precedence loud → quiet:
+  // fill > highlight > accent > emphasis > bold > muted).
+  type SemanticToken =
+    | "emphasis" | "muted" | "accent"
+    | "bold" | "highlight" | "fill";
   type SemanticFlags = Partial<Record<SemanticToken, boolean>>;
   let styleEdits = $state<{
     rows: Record<string, SemanticFlags>;

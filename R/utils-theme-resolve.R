@@ -110,7 +110,21 @@ resolve_chrome <- function(inputs) {
     tint_medium = oklch_mix(inputs@accent, surface@base, 0.75)
   )
 
-  list(surface = surface, content = content, divider = divider, accent = accent)
+  # Semantic-token color slots. The painter UI applies one of six
+  # RowSemantic bundles to a row/cell; two of those bundles
+  # (row.highlight, row.fill) need a color identity that's not captured
+  # by accent / brand / status. Derive defaults from accent here:
+  #   highlight: pull strongly toward the lightest neutral — a pastel
+  #     "marker" tone that lights up text without dominating
+  #   fill: a stronger accent-mix that reads as "this row is filled in"
+  # Users override either via theme@semantic@{highlight,fill}.
+  semantic <- Semantics(
+    highlight = oklch_mix(inputs@accent, n[1], 0.80),
+    fill      = oklch_mix(inputs@accent, surface@base, 0.50)
+  )
+
+  list(surface = surface, content = content, divider = divider,
+       accent = accent, semantic = semantic)
 }
 
 
@@ -345,8 +359,33 @@ resolve_components <- function(theme) {
   rc@muted <- fill_na(rc@muted, list(
     fg = content@muted, marker_fill = content@muted
   ))
+  # accent token = bold + accent color. Weight=600 added so accent rows
+  # read as a coordinated "bold + colored" treatment, not just colored
+  # text at the regular weight.
   rc@accent <- fill_na(rc@accent, list(
-    fg = accent@default, marker_fill = accent@default
+    fg = accent@default, marker_fill = accent@default, font_weight = 600
+  ))
+  # bold token = pure weight bump, no color override. Useful when a row
+  # should call attention to itself without recoloring.
+  rc@bold <- fill_na(rc@bold, list(
+    font_weight = 600
+  ))
+  # highlight token = bold + a pale highlighter background derived from
+  # accent (or pinned via theme@semantic@highlight). fg stays at the row's
+  # default content color; a pale highlight bg keeps text legible.
+  rc@highlight <- fill_na(rc@highlight, list(
+    bg = theme@semantic@highlight,
+    font_weight = 600
+  ))
+  # fill token = bold + a strong row fill derived from accent. The fg is
+  # contrast-checked against the fill bg so text reads regardless of the
+  # accent's lightness (deep-navy fills get light text; pale-yellow fills
+  # get dark text).
+  fill_bg <- theme@semantic@fill
+  rc@fill <- fill_na(rc@fill, list(
+    bg = fill_bg,
+    fg = ensure_contrast(content@primary, fill_bg, target = 4.5),
+    font_weight = 600
   ))
   theme@row <- rc
 
@@ -434,6 +473,10 @@ resolve_theme <- function(theme) {
   theme@accent <- fill_na(theme@accent, list(
     default = chrome$accent@default, muted = chrome$accent@muted,
     tint_subtle = chrome$accent@tint_subtle, tint_medium = chrome$accent@tint_medium
+  ))
+  theme@semantic <- fill_na(theme@semantic, list(
+    highlight = chrome$semantic@highlight,
+    fill      = chrome$semantic@fill
   ))
 
   # Step 4: data cascade. Reads surface.base from already-resolved chrome.
