@@ -43,10 +43,12 @@ web_theme <- function(
     name = "custom",
     inputs = NULL,
     variants = NULL,
+    web_fonts = NULL,
     base_theme = web_theme_cochrane()) {
   checkmate::assert_string(name)
   checkmate::assert_list(inputs, names = "named", null.ok = TRUE)
   checkmate::assert_list(variants, names = "named", null.ok = TRUE)
+  checkmate::assert_list(web_fonts, null.ok = TRUE)
   if (!inherits(base_theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg base_theme} must be a {.cls WebTheme}.")
   }
@@ -55,6 +57,7 @@ web_theme <- function(
   result@name <- name
   if (!is.null(inputs))   result@inputs   <- apply_named_props(result@inputs,   inputs)
   if (!is.null(variants)) result@variants <- apply_named_props(result@variants, variants)
+  if (!is.null(web_fonts)) result@web_fonts <- web_fonts
 
   resolve_theme(result)
 }

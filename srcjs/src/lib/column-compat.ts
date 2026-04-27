@@ -102,6 +102,20 @@ export const VISUAL_TYPES: VisualTypeDef[] = [
     slots: [valueSlot(NUMERIC_LIKE)],
   },
   {
+    type: "pictogram",
+    label: "Pictogram",
+    description: "Repeated glyph proportional to a count or rating",
+    category: "icon",
+    slots: [valueSlot(NUMERIC_LIKE)],
+  },
+  {
+    type: "ring",
+    label: "Ring",
+    description: "Donut gauge with centered label and threshold-based color",
+    category: "viz",
+    slots: [valueSlot(NUMERIC_LIKE)],
+  },
+  {
     type: "img",
     label: "Image",
     description: "Inline image from a URL field",
@@ -256,7 +270,7 @@ export function getVisualTypeDef(type: string): VisualTypeDef | undefined {
 // Viz column types: render as inline SVG charts rather than formatted text.
 // Headers above these default to centered alignment.
 const VIZ_TYPES = new Set<string>([
-  "bar", "progress", "sparkline", "heatmap", "stars",
+  "bar", "progress", "sparkline", "heatmap", "stars", "pictogram", "ring",
   "forest", "viz_bar", "viz_boxplot", "viz_violin",
 ]);
 

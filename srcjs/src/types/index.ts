@@ -194,14 +194,19 @@ export interface SparklineColumnOptions {
 
 export interface IconColumnOptions {
   mapping?: Record<string, string>;  // Value-to-icon mapping
-  size?: "sm" | "base" | "lg";
+  size?: "sm" | "base" | "lg" | "xl";
   color?: string;
 }
 
 export interface BadgeColumnOptions {
   variants?: Record<string, "default" | "success" | "warning" | "error" | "info" | "muted">;
-  colors?: Record<string, string>;  // Custom hex colors override variants
+  // colors: Record<value, color> for categorical mapping, OR
+  //         string[] for threshold-bucketed numeric scale (paired with thresholds).
+  colors?: Record<string, string> | string[];
   size?: "sm" | "base";
+  shape?: "pill" | "circle" | "square";
+  outline?: boolean;
+  thresholds?: number[];  // numeric breakpoints; pairs with colors[] above
 }
 
 export interface StarsColumnOptions {
@@ -211,6 +216,49 @@ export interface StarsColumnOptions {
   halfStars?: boolean;
   domain?: [number, number] | null;  // Remap raw values from [lo, hi] → [0, maxStars]
   size?: "sm" | "base" | "lg";       // Star glyph size
+}
+
+/**
+ * Pictogram column: render N copies of a glyph (count or rating) per row.
+ *
+ * Two modes, distinguished by maxGlyphs:
+ *  - count mode  (maxGlyphs == null): render `value` glyphs, all filled.
+ *  - rating mode (maxGlyphs set):     render maxGlyphs glyphs, first
+ *                                     `value` filled, rest in emptyColor.
+ *
+ * `glyph` is either a single string (registry name OR literal unicode) or
+ * a value→glyph map (with `glyphField` naming the row-level selector field).
+ */
+export interface PictogramColumnOptions {
+  glyph: string | Record<string, string>;
+  glyphField?: string | null;
+  maxGlyphs?: number | null;
+  domain?: [number, number] | null;  // Remap raw value → [0, maxGlyphs] (rating mode)
+  halfGlyphs?: boolean;              // Allow 0.5 fills on the boundary glyph
+  color?: string | null;             // Filled color; null → var(--tv-accent)
+  emptyColor?: string | null;        // Ghost color; null → var(--tv-muted)
+  size?: "sm" | "base" | "lg";
+  layout?: "row" | "stack";
+  valueLabel?: false | true | "leading" | "trailing";
+  labelFormat?: "integer" | "decimal" | null;
+  labelDecimals?: number;
+}
+
+/**
+ * Ring (donut) column: render a small circular gauge per row with a
+ * centered numeric label. Color can shift at threshold breakpoints
+ * (e.g. green safe / amber watch / red danger).
+ */
+export interface RingColumnOptions {
+  minValue?: number;             // input range start (default 0)
+  maxValue?: number;             // input range end (default 1)
+  color?: string | string[] | null;  // single color OR vector paired with thresholds
+  thresholds?: number[] | null;  // breakpoints in raw input units
+  trackColor?: string | null;    // unfilled ring color; null → var(--tv-muted)
+  size?: "sm" | "base" | "lg";
+  showLabel?: boolean;
+  labelFormat?: "percent" | "decimal" | "integer";
+  labelDecimals?: number;
 }
 
 export interface ImgColumnOptions {
@@ -379,6 +427,8 @@ export interface ColumnOptions {
   icon?: IconColumnOptions;
   badge?: BadgeColumnOptions;
   stars?: StarsColumnOptions;
+  pictogram?: PictogramColumnOptions;
+  ring?: RingColumnOptions;
   img?: ImgColumnOptions;
   reference?: ReferenceColumnOptions;
   range?: RangeColumnOptions;
@@ -396,7 +446,7 @@ export interface ColumnOptions {
 
 export type ColumnType =
   | "text" | "numeric" | "interval" | "bar" | "pvalue" | "sparkline"
-  | "icon" | "badge" | "stars" | "img" | "reference" | "range" | "forest"
+  | "icon" | "badge" | "stars" | "pictogram" | "ring" | "img" | "reference" | "range" | "forest"
   | "heatmap" | "progress" | "viz_bar" | "viz_boxplot" | "viz_violin" | "custom";
 
 export interface ColumnSpec {

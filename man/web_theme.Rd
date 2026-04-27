@@ -8,6 +8,7 @@ web_theme(
   name = "custom",
   inputs = NULL,
   variants = NULL,
+  web_fonts = NULL,
   base_theme = web_theme_cochrane()
 )
 }

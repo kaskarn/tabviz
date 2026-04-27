@@ -11,6 +11,9 @@ col_badge(
   variants = NULL,
   colors = NULL,
   size = c("base", "sm"),
+  shape = c("pill", "circle", "square"),
+  outline = FALSE,
+  thresholds = NULL,
   na_text = NULL,
   ...
 )

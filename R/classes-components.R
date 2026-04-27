@@ -75,7 +75,8 @@ ColumnSpec <- new_class(
   ),
   validator = function(self) {
     valid_types <- c("text", "numeric", "interval", "bar", "pvalue", "sparkline",
-                     "icon", "badge", "stars", "img", "reference", "range", "forest",
+                     "icon", "badge", "stars", "pictogram", "ring",
+                     "img", "reference", "range", "forest",
                      "heatmap", "progress",
                      "viz_bar", "viz_boxplot", "viz_violin", "custom")
     if (!self@type %in% valid_types) {
@@ -213,7 +214,8 @@ web_col <- function(
     field,
     header = NULL,
     type = c("text", "numeric", "interval", "bar", "pvalue", "sparkline",
-             "icon", "badge", "stars", "img", "reference", "range", "forest",
+             "icon", "badge", "stars", "pictogram", "ring",
+             "img", "reference", "range", "forest",
              "heatmap", "progress",
              "viz_bar", "viz_boxplot", "viz_violin", "custom"),
     id = NULL,
@@ -893,7 +895,7 @@ col_icon <- function(
     header = NULL,
     width = NULL,
     mapping = NULL,
-    size = c("base", "sm", "lg"),
+    size = c("base", "sm", "lg", "xl"),
     color = NULL,
     na_text = NULL,
     ...) {
@@ -958,23 +960,385 @@ col_badge <- function(
     variants = NULL,
     colors = NULL,
     size = c("base", "sm"),
+    shape = c("pill", "circle", "square"),
+    outline = FALSE,
+    thresholds = NULL,
     na_text = NULL,
     ...) {
   size <- match.arg(size)
+  shape <- match.arg(shape)
+  checkmate::assert_flag(outline)
+
+  if (!is.null(thresholds)) {
+    checkmate::assert_numeric(thresholds, any.missing = FALSE,
+                              min.len = 1, sorted = TRUE)
+    if (!is.null(variants)) {
+      cli::cli_abort(
+        c(
+          "{.arg thresholds} and {.arg variants} are mutually exclusive.",
+          i = "{.arg variants} maps categorical values; {.arg thresholds} bins numeric values."
+        )
+      )
+    }
+    if (!is.null(colors)) {
+      checkmate::assert_character(colors, any.missing = FALSE)
+      # When colors is keyed (named), it conflicts with the threshold path.
+      if (!is.null(names(colors))) {
+        cli::cli_abort(
+          c(
+            "Drop the names on {.arg colors} when using {.arg thresholds}.",
+            i = "Threshold mode expects an unnamed vector with length = length(thresholds) + 1."
+          )
+        )
+      }
+      if (length(colors) != length(thresholds) + 1L) {
+        cli::cli_abort(
+          c(
+            "{.arg colors} length must equal {.arg thresholds} length + 1.",
+            i = "Got {length(colors)} color{?s} and {length(thresholds)} threshold{?s}."
+          )
+        )
+      }
+    } else if (length(thresholds) > 2L) {
+      cli::cli_abort(
+        c(
+          "Must pass an explicit {.arg colors} vector when {.arg thresholds} has 3+ breakpoints.",
+          i = "Auto-defaults exist for 1 or 2 thresholds; beyond that, pick colors deliberately."
+        )
+      )
+    }
+  }
+
+  # `colors` can serve two roles:
+  #  - mapping (named): value → color, classic categorical (existing behavior)
+  #  - threshold scale (unnamed): the i-th color is the bin between
+  #    thresholds[i-1] and thresholds[i]. Detect by names.
+  badge_colors <- if (is.null(colors)) {
+    NULL
+  } else if (is.null(names(colors))) {
+    I(colors)  # threshold scale path — keep as ordered vector
+  } else {
+    as.list(colors)  # mapping path — preserved behavior
+  }
+
   opts <- list(
     badge = list(
       variants = as.list(variants),
-      colors = as.list(colors),
-      size = size
+      colors = badge_colors,
+      size = size,
+      shape = shape,
+      outline = outline,
+      thresholds = if (is.null(thresholds)) NULL else I(as.numeric(thresholds))
     )
   )
   web_col(field, header, type = "badge", width = width, align = "center",
           options = opts, na_text = na_text, ...)
 }
 
+#' Column helper: Pictogram
+#'
+#' Repeat a glyph proportional to a numeric value. Two modes are supported:
+#'
+#' - **Count mode** (default; `max_glyphs = NULL`): render `round(value)`
+#'   copies of `glyph`. No empty slots. Suitable for "show 9 stick figures
+#'   for a score of 9" patterns.
+#' - **Rating mode** (`max_glyphs = N`): render `N` glyphs total, with the
+#'   first `value` filled and the remaining shown as empty (ghost) glyphs
+#'   in `empty_color`. Suitable for "3 of 5 skulls" displays.
+#'
+#' Glyphs may be either a registry name (see [glyph_registry_names()]) or
+#' a literal unicode character. A named character vector keyed to a row
+#' field selects the glyph per row (mirroring [col_icon()]'s `mapping`).
+#'
+#' Theme-aware defaults: when `color` / `empty_color` are `NULL`, the
+#' rendered glyphs read from `--tv-accent` and `--tv-muted` so they follow
+#' the active theme.
+#'
+#' @param field Field name containing the numeric value driving the count.
+#' @param header Column header (default NULL, uses field name).
+#' @param width Column width in pixels (NULL for auto-sizing).
+#' @param glyph Either a single string (registry name like `"person"`,
+#'   `"skull"`, etc., or a literal unicode character like `"★"`) OR a
+#'   named character vector mapping row-field values to glyph specs (e.g.
+#'   `c("low" = "leaf", "high" = "flame")`). See [glyph_registry_names()]
+#'   for the bundled set.
+#' @param glyph_field When `glyph` is a named vector, the field whose row
+#'   values index into it. Required for the mapping form.
+#' @param max_glyphs Numeric scalar. `NULL` (default) → count mode (render
+#'   `round(value)` glyphs). Integer → rating mode (render exactly
+#'   `max_glyphs` glyphs, first `value` filled).
+#' @param half_glyphs Allow half-fill on the boundary glyph (default
+#'   `FALSE`).
+#' @param min_value,max_value Numeric scalars defining the input range to
+#'   remap into `[0, max_glyphs]` (rating mode only). For example,
+#'   `min_value = 0, max_value = 100` with `max_glyphs = 5` maps a value
+#'   of 75 to 3.75 glyphs. Pass both or neither.
+#' @param color Filled glyph color. `NULL` (default) → `var(--tv-accent)`
+#'   so the column follows the active theme.
+#' @param empty_color Empty (ghost) glyph color, rating mode only. `NULL`
+#'   (default) → `var(--tv-muted)`.
+#' @param size Glyph size: `"sm"`, `"base"` (default), or `"lg"`. Matches
+#'   the convention used by [col_stars()], [col_icon()], [col_badge()].
+#' @param layout `"row"` (default) or `"stack"` (vertical pile). Stack
+#'   mode renders best in tall rows (e.g. rows containing a `viz_*`
+#'   column); in normal rows it may overflow.
+#' @param value_label `FALSE` (default), `TRUE` (= `"trailing"`),
+#'   `"leading"`, or `"trailing"`. When set, render the numeric value
+#'   alongside the glyphs.
+#' @param label_format `NULL` (default = `"decimal"`), `"integer"`, or
+#'   `"decimal"`. Controls how the value label is formatted.
+#' @param label_decimals Number of decimals when `label_format = "decimal"`
+#'   (default 1).
+#' @param na_text Text to display for NA/missing values (default NULL = blank).
+#' @param ... Additional arguments passed to `web_col()`, including cell
+#'   styling. `style_muted` dims the glyphs (opacity 0.5); `style_color`
+#'   overrides the filled glyph color.
+#'
+#' @return A ColumnSpec object with type = "pictogram".
+#' @export
+#' @examples
+#' # Count mode: stick figures with trailing label
+#' col_pictogram("score", glyph = "person", value_label = TRUE,
+#'               label_format = "decimal", label_decimals = 1)
+#'
+#' # Rating mode: 3 of 5 skulls
+#' col_pictogram("perf", glyph = "skull", max_glyphs = 5,
+#'               color = "#f97316", empty_color = "#3f3f46")
+#'
+#' # Per-row glyph selection
+#' col_pictogram("count", glyph = c("low" = "leaf", "high" = "flame"),
+#'               glyph_field = "category")
+#'
+#' # Vertical stack with numeric label (use in tall rows)
+#' col_pictogram("eaten", glyph = "coin", layout = "stack",
+#'               value_label = "trailing")
+col_pictogram <- function(
+    field,
+    header = NULL,
+    width = NULL,
+    glyph = "person",
+    glyph_field = NULL,
+    max_glyphs = NULL,
+    half_glyphs = FALSE,
+    min_value = NULL,
+    max_value = NULL,
+    color = NULL,
+    empty_color = NULL,
+    size = c("base", "sm", "lg"),
+    layout = c("row", "stack"),
+    value_label = FALSE,
+    label_format = NULL,
+    label_decimals = 1,
+    na_text = NULL,
+    ...) {
+  size <- match.arg(size)
+  layout <- match.arg(layout)
+  checkmate::assert_flag(half_glyphs)
+  checkmate::assert_integerish(max_glyphs, lower = 1, upper = 50, len = 1,
+                               null.ok = TRUE)
+  checkmate::assert_string(glyph_field, null.ok = TRUE)
+  checkmate::assert_string(color, null.ok = TRUE)
+  checkmate::assert_string(empty_color, null.ok = TRUE)
+  checkmate::assert_number(label_decimals, lower = 0, upper = 10)
+  if (!is.null(label_format)) {
+    checkmate::assert_choice(label_format, c("integer", "decimal"))
+  }
+  # value_label: FALSE | TRUE | "leading" | "trailing"
+  if (!(isFALSE(value_label) || isTRUE(value_label) ||
+        identical(value_label, "leading") || identical(value_label, "trailing"))) {
+    cli::cli_abort(
+      "{.arg value_label} must be {.code FALSE}, {.code TRUE}, {.val leading}, or {.val trailing}."
+    )
+  }
+
+  # min/max paired-or-neither (matches col_stars' contract).
+  if (xor(is.null(min_value), is.null(max_value))) {
+    cli::cli_abort("Pass both {.arg min_value} and {.arg max_value}, or neither.")
+  }
+  if (!is.null(min_value)) {
+    checkmate::assert_number(min_value)
+    checkmate::assert_number(max_value, lower = min_value)
+    if (is.null(max_glyphs)) {
+      cli::cli_abort(
+        "{.arg min_value} / {.arg max_value} only apply in rating mode; set {.arg max_glyphs}."
+      )
+    }
+  }
+
+  # Validate glyph: a single string OR a named character vector. If a
+  # vector, glyph_field is required. Registry names get cheap up-front
+  # validation; literal chars are accepted as-is.
+  glyph_payload <- NULL
+  if (is.character(glyph) && length(glyph) == 1L) {
+    glyph_payload <- glyph
+  } else if (is.character(glyph) && length(glyph) > 1L && !is.null(names(glyph))) {
+    if (is.null(glyph_field)) {
+      cli::cli_abort(
+        "When {.arg glyph} is a named vector, {.arg glyph_field} must name the row field that selects a glyph."
+      )
+    }
+    glyph_payload <- as.list(glyph)
+  } else {
+    cli::cli_abort(
+      "{.arg glyph} must be a single string or a named character vector."
+    )
+  }
+
+  domain_vec <- if (is.null(min_value)) NULL else c(min_value, max_value)
+  opts <- list(
+    pictogram = list(
+      glyph = glyph_payload,
+      glyphField = glyph_field,
+      maxGlyphs = max_glyphs,
+      halfGlyphs = half_glyphs,
+      domain = domain_vec,
+      color = color,
+      emptyColor = empty_color,
+      size = size,
+      layout = layout,
+      valueLabel = value_label,
+      labelFormat = label_format,
+      labelDecimals = label_decimals
+    )
+  )
+  web_col(field, header, type = "pictogram", width = width, align = "center",
+          options = opts, na_text = na_text, ...)
+}
+
+#' Column helper: Ring (donut) gauge
+#'
+#' Render a small circular donut per row with a centered numeric label.
+#' Optionally shifts color through threshold breakpoints (e.g. green safe
+#' / amber watch / red danger). Designed for diagnostic dashboards where
+#' "how full" needs to read at a glance.
+#'
+#' Theme-aware defaults: when `color` and `track_color` are `NULL`, the
+#' donut uses the active theme's accent and muted slots. Threshold
+#' defaults follow the package status palette:
+#'
+#' - 1 threshold → `c(accent, status_negative)`
+#' - 2 thresholds → `c(status_positive, status_warning, status_negative)`
+#' - 3+ thresholds → require an explicit `color` vector
+#'
+#' Thresholds are interpreted in the **raw input units** (not normalized),
+#' matching the convention used by [col_pvalue()].
+#'
+#' @param field Field name containing the numeric value to gauge.
+#' @param header Column header (default NULL, uses field name).
+#' @param width Column width in pixels (NULL for auto-sizing).
+#' @param min_value,max_value Numeric scalars defining the input range.
+#'   Defaults: `0` and `1` (a fraction). The donut fills
+#'   `(value - min_value) / (max_value - min_value)` of the full circle.
+#' @param color Filled arc color. `NULL` (default) → theme accent for
+#'   single-color rendering, or the threshold-default palette when
+#'   `thresholds` is set. A character vector pairs with `thresholds`
+#'   (`length(color) == length(thresholds) + 1`).
+#' @param thresholds Numeric vector of breakpoints in raw input units.
+#'   The arc color shifts when the value crosses each breakpoint.
+#' @param track_color Unfilled track color. `NULL` (default) → theme muted.
+#' @param size Ring size: `"sm"` (~18px), `"base"` (~24px, default), or
+#'   `"lg"` (~32px). Larger sizes may exceed normal `rowHeight` — best in
+#'   tall rows that already contain a `viz_*` column.
+#' @param show_label Show the numeric value centered to the right of the
+#'   ring (default `TRUE`).
+#' @param label_format `"percent"` (default), `"decimal"`, or `"integer"`.
+#' @param label_decimals Number of decimal places shown in the label
+#'   (default 0).
+#' @param na_text Text to display for NA/missing values (default NULL = blank).
+#' @param ... Additional arguments passed to `web_col()`. `style_muted`
+#'   dims the entire cell; `style_color` overrides the filled arc color.
+#'
+#' @return A ColumnSpec object with type = "ring".
+#' @export
+#' @examples
+#' # Single-color ring, value as fraction [0, 1]
+#' col_ring("temptation", color = "#d4a955")
+#'
+#' # Two-color threshold (gold below 50%, red above)
+#' col_ring("temptation",
+#'          color = c("#d4a955", "#a855f7"), thresholds = 0.5)
+#'
+#' # Three-color status: positive / warning / negative
+#' col_ring("risk", thresholds = c(0.33, 0.66))
+#'
+#' # Integer score [0, 100]
+#' col_ring("score", min_value = 0, max_value = 100,
+#'          label_format = "integer")
+col_ring <- function(
+    field,
+    header = NULL,
+    width = NULL,
+    min_value = 0,
+    max_value = 1,
+    color = NULL,
+    thresholds = NULL,
+    track_color = NULL,
+    size = c("base", "sm", "lg"),
+    show_label = TRUE,
+    label_format = c("percent", "decimal", "integer"),
+    label_decimals = 0,
+    na_text = NULL,
+    ...) {
+  size <- match.arg(size)
+  label_format <- match.arg(label_format)
+  checkmate::assert_flag(show_label)
+  checkmate::assert_number(min_value)
+  checkmate::assert_number(max_value, lower = min_value)
+  checkmate::assert_number(label_decimals, lower = 0, upper = 10)
+  checkmate::assert_string(track_color, null.ok = TRUE)
+  if (!is.null(thresholds)) {
+    checkmate::assert_numeric(thresholds, any.missing = FALSE,
+                              min.len = 1, sorted = TRUE)
+  }
+  if (!is.null(color)) {
+    checkmate::assert_character(color, any.missing = FALSE, min.len = 1)
+    if (!is.null(thresholds) && length(color) != length(thresholds) + 1L) {
+      cli::cli_abort(
+        c(
+          "{.arg color} length must equal {.arg thresholds} length + 1.",
+          i = "Got {length(color)} color{?s} and {length(thresholds)} threshold{?s}."
+        )
+      )
+    }
+  } else if (!is.null(thresholds) && length(thresholds) > 2L) {
+    cli::cli_abort(
+      c(
+        "Must pass an explicit {.arg color} vector when {.arg thresholds} has 3+ breakpoints.",
+        i = "Auto-defaults exist for 1 or 2 thresholds; beyond that, pick colors deliberately."
+      )
+    )
+  }
+
+  opts <- list(
+    ring = list(
+      minValue = min_value,
+      maxValue = max_value,
+      # I() forces jsonlite to serialize as an array even when length 1.
+      # The TS side always reads `color` as `string | string[]` and
+      # `thresholds` as `number[]`; auto-unboxing would break both.
+      color = if (is.null(color)) NULL else I(color),
+      thresholds = if (is.null(thresholds)) NULL else I(as.numeric(thresholds)),
+      trackColor = track_color,
+      size = size,
+      showLabel = show_label,
+      labelFormat = label_format,
+      labelDecimals = label_decimals
+    )
+  )
+  web_col(field, header, type = "ring", width = width, align = "center",
+          options = opts, na_text = na_text, ...)
+}
+
 #' Column helper: Star rating
 #'
-#' Display star ratings using Unicode stars (filled and empty).
+#' Display star ratings using filled and empty stars. Since v0.X, this is
+#' a thin alias over [col_pictogram()] with `glyph = "star"` and
+#' `max_glyphs = max_stars`. The public arguments below are unchanged.
+#'
+#' Behavior change vs. earlier versions: when `color` and `empty_color`
+#' are left at their defaults, stars now follow the active theme
+#' (`var(--tv-accent)` and `var(--tv-muted)`) instead of hardcoded amber.
+#' Pass explicit hex colors to recover the previous look.
 #'
 #' @param field Field name containing numeric rating (1-5 or custom range)
 #' @param header Column header (default NULL, uses field name)
@@ -1020,8 +1384,8 @@ col_stars <- function(
     header = NULL,
     width = NULL,
     max_stars = 5,
-    color = "#f59e0b",
-    empty_color = "#d1d5db",
+    color = NULL,
+    empty_color = NULL,
     half_stars = FALSE,
     min_value = NULL,
     max_value = NULL,
@@ -1044,26 +1408,21 @@ col_stars <- function(
       max_value <- domain[2]
     }
   }
-  if (xor(is.null(min_value), is.null(max_value))) {
-    cli_abort("Pass both {.arg min_value} and {.arg max_value}, or neither.")
-  }
-  if (!is.null(min_value)) {
-    checkmate::assert_number(min_value)
-    checkmate::assert_number(max_value, lower = min_value)
-  }
-  domain_vec <- if (is.null(min_value)) NULL else c(min_value, max_value)
-  opts <- list(
-    stars = list(
-      maxStars = max_stars,
-      color = color,
-      emptyColor = empty_color,
-      halfStars = half_stars,
-      domain = domain_vec,
-      size = size
-    )
+  col_pictogram(
+    field        = field,
+    header       = header,
+    width        = width,
+    glyph        = "star",
+    max_glyphs   = max_stars,
+    half_glyphs  = half_stars,
+    min_value    = min_value,
+    max_value    = max_value,
+    color        = color,
+    empty_color  = empty_color,
+    size         = size,
+    na_text      = na_text,
+    ...
   )
-  web_col(field, header, type = "stars", width = width, align = "center",
-          options = opts, na_text = na_text, ...)
 }
 
 #' Column helper: Image display

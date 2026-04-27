@@ -91,6 +91,8 @@
             { kind: "leaf", key: "sparkline", label: "Sparkline", type: "sparkline" },
             { kind: "leaf", key: "heatmap", label: "Heatmap", type: "heatmap" },
             { kind: "leaf", key: "stars", label: "Stars", type: "stars" },
+            { kind: "leaf", key: "pictogram", label: "Pictogram", type: "pictogram" },
+            { kind: "leaf", key: "ring", label: "Ring", type: "ring" },
           ],
         },
         {

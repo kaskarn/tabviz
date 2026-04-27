@@ -25,7 +25,10 @@
   });
 
   const sizeClass = $derived(
-    size === "sm" ? "icon-sm" : size === "lg" ? "icon-lg" : "icon-base"
+    size === "sm" ? "icon-sm"
+    : size === "lg" ? "icon-lg"
+    : size === "xl" ? "icon-xl"
+    : "icon-base"
   );
 </script>
 
@@ -57,5 +60,13 @@
 
   .icon-lg {
     font-size: var(--tv-font-size-lg, 1rem);
+  }
+
+  /* xl is intended for editorial / pictographic single-glyph cells
+     (pantry jar, mountain peak, fellbeast triangle). It will exceed
+     normal rowHeight; best in tall rows that already contain a viz_*
+     column, or with row spacing bumped up. */
+  .icon-xl {
+    font-size: 1.6rem;
   }
 </style>

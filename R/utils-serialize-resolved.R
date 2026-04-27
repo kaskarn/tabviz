@@ -129,9 +129,19 @@ serialize_theme <- function(theme) {
     banding               = serialize_banding(theme@row@banding)
   )
 
+  # web_fonts pass-through: each entry already has {family, url} shape
+  # validated by WebTheme; jsonlite serializes the list of lists straight
+  # into a JSON array. Use I() so the empty case still serializes as [].
+  web_fonts_block <- if (length(theme@web_fonts) == 0L) {
+    list()
+  } else {
+    lapply(theme@web_fonts, function(wf) list(family = wf$family, url = wf$url))
+  }
+
   list(
     schemaVersion = 2L,
     name = theme@name,
+    webFonts = web_fonts_block,
 
     variants = list(
       density          = theme@variants@density,

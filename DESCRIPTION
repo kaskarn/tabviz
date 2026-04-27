@@ -23,6 +23,7 @@ Collate:
     'utils-banding.R'
     'classes-theme.R'
     'classes-annotations.R'
+    'glyph-registry.R'
     'classes-components.R'
     'update-check.R'
     'utils-nse.R'

@@ -9,8 +9,8 @@ col_stars(
   header = NULL,
   width = NULL,
   max_stars = 5,
-  color = "#f59e0b",
-  empty_color = "#d1d5db",
+  color = NULL,
+  empty_color = NULL,
   half_stars = FALSE,
   min_value = NULL,
   max_value = NULL,
@@ -58,7 +58,15 @@ alignment. Body cells default to \code{align = "center"} (override with
 A ColumnSpec object
 }
 \description{
-Display star ratings using Unicode stars (filled and empty).
+Display star ratings using filled and empty stars. Since v0.X, this is
+a thin alias over \code{\link[=col_pictogram]{col_pictogram()}} with \code{glyph = "star"} and
+\code{max_glyphs = max_stars}. The public arguments below are unchanged.
+}
+\details{
+Behavior change vs. earlier versions: when \code{color} and \code{empty_color}
+are left at their defaults, stars now follow the active theme
+(\code{var(--tv-accent)} and \code{var(--tv-muted)}) instead of hardcoded amber.
+Pass explicit hex colors to recover the previous look.
 }
 \examples{
 # Default 5-star rating

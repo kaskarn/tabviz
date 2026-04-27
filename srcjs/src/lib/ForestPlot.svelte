@@ -20,6 +20,7 @@
   import CellBadge from "$components/table/CellBadge.svelte";
   import CellStars from "$components/table/CellStars.svelte";
   import CellPictogram from "$components/table/CellPictogram.svelte";
+  import CellRing from "$components/table/CellRing.svelte";
   import CellImg from "$components/table/CellImg.svelte";
   import CellReference from "$components/table/CellReference.svelte";
   import CellRange from "$components/table/CellRange.svelte";
@@ -92,6 +93,29 @@
   const axisComputation = $derived(store.axisComputation);
   const clipBounds = $derived(axisComputation.axisLimits);
   const theme = $derived(spec?.theme);
+
+  // Webfont injection: themes can declare `webFonts: [{family, url}, ...]`
+  // and we append a <link rel=stylesheet> per URL on mount + when the
+  // theme changes. Dedup by href across multiple widgets on the same
+  // page; never remove (a sibling widget may rely on the same font).
+  // SSR safety: guard `document` access.
+  $effect(() => {
+    if (typeof document === "undefined") return;
+    const fonts = (theme as { webFonts?: Array<{ family: string; url: string }> } | undefined)?.webFonts;
+    if (!Array.isArray(fonts) || fonts.length === 0) return;
+    for (const wf of fonts) {
+      if (!wf?.url || typeof wf.url !== "string") continue;
+      const exists = document.querySelector(
+        `link[rel="stylesheet"][href="${wf.url.replace(/"/g, "")}"]`
+      );
+      if (exists) continue;
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = wf.url;
+      link.dataset.tabvizWebfont = wf.family;
+      document.head.appendChild(link);
+    }
+  });
   const bandIndexes = $derived(store.bandIndexes);
   // Column system: all columns in order (forest columns are inline)
   const allColumns = $derived(store.allColumns);
@@ -1578,6 +1602,7 @@
             value={metadata[column.field]}
             options={column.options?.badge}
             naText={column.options?.naText}
+            {cellStyle}
           />
         {:else if column.type === "stars"}
           <CellStars
@@ -1594,6 +1619,13 @@
             glyphSelector={column.options?.pictogram?.glyphField
               ? metadata[column.options.pictogram.glyphField] as string
               : null}
+          />
+        {:else if column.type === "ring"}
+          <CellRing
+            value={metadata[column.field] as number}
+            options={column.options?.ring}
+            naText={column.options?.naText}
+            {cellStyle}
           />
         {:else if column.type === "img"}
           <CellImg

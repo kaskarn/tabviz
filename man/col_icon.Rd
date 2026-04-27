@@ -9,7 +9,7 @@ col_icon(
   header = NULL,
   width = NULL,
   mapping = NULL,
-  size = c("base", "sm", "lg"),
+  size = c("base", "sm", "lg", "xl"),
   color = NULL,
   na_text = NULL,
   ...

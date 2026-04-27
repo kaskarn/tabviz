@@ -46,42 +46,44 @@ test_that("col_heatmap accepts scale", {
   expect_equal(col@options$heatmap$scale, "log")
 })
 
-test_that("col_stars caps max_stars at 20", {
+test_that("col_stars (alias over col_pictogram) caps max_stars at 20", {
   expect_error(col_stars("rating", max_stars = 25), "<=")
   expect_error(col_stars("rating", max_stars = 0), ">=")
   col <- col_stars("rating", max_stars = 20)
-  expect_equal(col@options$stars$maxStars, 20)
+  expect_equal(col@type, "pictogram")
+  expect_equal(col@options$pictogram$maxGlyphs, 20)
+  expect_equal(col@options$pictogram$glyph, "star")
 })
 
 test_that("col_stars accepts min_value/max_value and serializes as numeric vector", {
-  col <- col_stars("score", min_value = 0, max_value = 100)
-  expect_equal(col@options$stars$domain, c(0, 100))
+  col <- col_stars("score", max_stars = 5, min_value = 0, max_value = 100)
+  expect_equal(col@options$pictogram$domain, c(0, 100))
 })
 
 test_that("col_stars(domain=) is deprecated and forwards to min_value/max_value", {
   expect_warning(
-    col <- col_stars("score", domain = c(0, 100)),
+    col <- col_stars("score", max_stars = 5, domain = c(0, 100)),
     "deprecated"
   )
-  expect_equal(col@options$stars$domain, c(0, 100))
+  expect_equal(col@options$pictogram$domain, c(0, 100))
 })
 
 test_that("col_stars rejects malformed min_value/max_value", {
-  expect_error(col_stars("score", min_value = 100, max_value = 0))
+  expect_error(col_stars("score", max_stars = 5, min_value = 100, max_value = 0))
   expect_error(col_stars("score", min_value = 5))         # only one provided
   expect_error(col_stars("score", max_value = 5))         # only one provided
 })
 
 test_that("col_stars without remap has null domain", {
   col <- col_stars("rating")
-  expect_null(col@options$stars$domain)
+  expect_null(col@options$pictogram$domain)
 })
 
 test_that("col_stars `size` defaults to 'base' and serializes", {
   col_b <- col_stars("rating")
-  expect_equal(col_b@options$stars$size, "base")
+  expect_equal(col_b@options$pictogram$size, "base")
   col_lg <- col_stars("rating", size = "lg")
-  expect_equal(col_lg@options$stars$size, "lg")
+  expect_equal(col_lg@options$pictogram$size, "lg")
 })
 
 test_that("new column options round-trip through web_spec", {
@@ -102,7 +104,7 @@ test_that("new column options round-trip through web_spec", {
   )
   # Label column is auto-prepended; user columns follow.
   expect_equal(spec@columns[[2]]@options$text$maxChars, 8)
-  expect_equal(spec@columns[[3]]@options$stars$domain, c(0, 100))
+  expect_equal(spec@columns[[3]]@options$pictogram$domain, c(0, 100))
   expect_equal(spec@columns[[4]]@options$bar$scale, "log")
 })
 

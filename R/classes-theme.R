@@ -716,6 +716,14 @@ WebTheme <- new_class(
   "WebTheme",
   properties = list(
     name     = new_property(class_character, default = "default"),
+    # Optional: webfonts to inject into the host document on widget mount.
+    # Each entry: list(family = "Cinzel", url = "https://fonts.googleapis.com/css2?...").
+    # The frontend appends a <link rel=stylesheet> per URL (deduped across
+    # widgets on the same page). Theme authors are still responsible for
+    # naming the family in `text$body$family` / `text$title$family`.
+    # Note: rsvg/PNG export does not fetch webfonts — the system stack
+    # falls back. For high-fidelity export, install the font locally.
+    web_fonts = new_property(class_list, default = list()),
     inputs   = new_property(ThemeInputs,    default = ThemeInputs()),
     variants = new_property(ThemeVariants,  default = ThemeVariants()),
 
@@ -752,6 +760,53 @@ WebTheme <- new_class(
       )
       if (!all(ok)) return("series must be a list of SlotBundle objects")
     }
+    if (length(self@web_fonts) > 0L) {
+      bad <- which(!vapply(self@web_fonts, function(x) {
+        is.list(x) &&
+          all(c("family", "url") %in% names(x)) &&
+          is.character(x$family) && length(x$family) == 1L && nzchar(x$family) &&
+          is.character(x$url)    && length(x$url)    == 1L && nzchar(x$url) &&
+          startsWith(x$url, "https://")
+      }, logical(1)))
+      if (length(bad) > 0L) {
+        return(paste0(
+          "web_fonts entries must each be a list with `family` (string) and ",
+          "`url` (https:// string). Use web_font() to construct entries. ",
+          "Bad entry index: ", paste(bad, collapse = ", ")
+        ))
+      }
+    }
     NULL
   }
 )
+
+#' Construct a webfont entry for a WebTheme
+#'
+#' Companion helper for the `web_fonts` slot on [web_theme()]. Returns a
+#' list suitable for inclusion in the theme's `web_fonts = list(...)`
+#' argument. The frontend appends one `<link rel="stylesheet">` per
+#' entry to `document.head` on widget mount (deduped by URL across
+#' multiple widgets on a page).
+#'
+#' Theme authors are still responsible for referencing the loaded family
+#' in `font_body` / `font_display` (etc.). `web_font()` only declares the
+#' load — it doesn't change the theme's font stacks.
+#'
+#' Note: PNG/SVG export through `rsvg` does not fetch webfonts. The
+#' system fallback stack will be used. For high-fidelity offline export,
+#' install the font locally on the rendering machine.
+#'
+#' @param family Display family name (e.g. `"Cinzel"`). Used for
+#'   documentation and is the same string that goes into the theme's
+#'   font stack.
+#' @param url The full stylesheet URL to load. Must start with
+#'   `"https://"` (Google Fonts, BunnyFonts, jsDelivr, etc.).
+#' @return A list with two named entries (`family`, `url`).
+#' @export
+#' @examples
+#' web_font("Cinzel", "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap")
+web_font <- function(family, url) {
+  checkmate::assert_string(family, min.chars = 1L)
+  checkmate::assert_string(url, min.chars = 1L, pattern = "^https://")
+  list(family = family, url = url)
+}

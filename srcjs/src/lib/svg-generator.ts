@@ -30,6 +30,7 @@ import { isVizType, resolveShowHeader } from "./column-compat";
 import { resolveMarkerStyle } from "./marker-styling";
 import { computeBandIndexes } from "./banding";
 import { resolveSemanticBundle } from "./semantic-styling";
+import { GLYPH_REGISTRY, resolveGlyph } from "./glyph-registry";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -1559,6 +1560,40 @@ function getCellValue(row: Row, col: ColumnSpec): string {
     const empty = maxStars - filled;
     return "★".repeat(filled) + "☆".repeat(empty);
   }
+  if (col.type === "ring") {
+    // Donut + optional label. Use "MM" as a wide stand-in for the donut
+    // diameter (~24px ≈ 2 chars at body font), plus the label text.
+    const val = row.metadata[col.field];
+    if (typeof val !== "number" || !Number.isFinite(val)) return "";
+    const opts = col.options?.ring;
+    const showLabel = opts?.showLabel ?? true;
+    const labelFormat = opts?.labelFormat ?? "percent";
+    const labelDecimals = opts?.labelDecimals ?? 0;
+    const min = opts?.minValue ?? 0;
+    const max = opts?.maxValue ?? 1;
+    const f = max > min ? (val - min) / (max - min) : 0;
+    const lbl = !showLabel ? "" :
+      labelFormat === "percent" ? (f * 100).toFixed(labelDecimals) + "%" :
+      labelFormat === "integer" ? String(Math.round(val)) :
+      val.toFixed(labelDecimals);
+    return "MM" + (lbl ? " " + lbl : "");
+  }
+  if (col.type === "pictogram") {
+    // Width-estimation placeholder. Rating mode caps at max_glyphs;
+    // count mode uses round(value). The actual draw happens in the
+    // rendering branch below. We use "MM" per glyph (~14-16px wide at
+    // body font-size) to approximate the rendered glyph+gap width since
+    // unicode "●" measures much narrower than a 14px square SVG glyph.
+    const val = row.metadata[col.field];
+    if (typeof val !== "number" || !Number.isFinite(val)) return "";
+    const maxG = col.options?.pictogram?.maxGlyphs ?? null;
+    const layout = col.options?.pictogram?.layout ?? "row";
+    const labelOn = !!col.options?.pictogram?.valueLabel;
+    if (layout === "stack") return labelOn ? "MM " + val.toFixed(0) : "MM";
+    const n = maxG ?? Math.min(Math.max(0, Math.round(val)), 20);
+    const glyphs = "MM".repeat(n);
+    return labelOn ? glyphs + "  " + val.toFixed(1) : glyphs;
+  }
   if (col.type === "img") {
     // Images can't render in SVG text - show fallback
     const fallback = col.options?.img?.fallback ?? "[IMG]";
@@ -2997,21 +3032,41 @@ function renderUnifiedTableRow(
       const path = renderSparklinePath(data, currentX + SPACING.TEXT_PADDING, y + rowHeight / 2 - sparkHeight / 2, width - sparkPadding, sparkHeight);
       lines.push(`<path d="${path}" fill="none" stroke="${sparkColor}" stroke-width="1.5"/>`);
     } else if (col.type === "badge") {
-      // Render badge cell
+      // Render badge cell. Now supports shape (pill/circle/square),
+      // outline mode, and threshold-driven color scale (numeric values).
       const badgeValue = row.metadata[col.field];
       if (badgeValue !== undefined && badgeValue !== null) {
         const badgeText = String(badgeValue);
         const badgeFontSize = fontSize * BADGE.FONT_SCALE;
         const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
 
-        const variants = col.options?.badge?.variants;
-        const customColors = col.options?.badge?.colors;
+        const opts = col.options?.badge;
+        const variants = opts?.variants;
+        const customColors = opts?.colors;
+        const thresholds = opts?.thresholds;
+        const shape = opts?.shape ?? "pill";
+        const outline = opts?.outline ?? false;
         let badgeColor = theme.accent.default;
-        let badgeTextColor = theme.accent.default;
 
-        if (customColors && badgeText in customColors) {
-          badgeColor = customColors[badgeText];
-          badgeTextColor = customColors[badgeText];
+        // Threshold path (numeric value bucketed into colors[]).
+        if (Array.isArray(thresholds) && thresholds.length > 0 && typeof badgeValue === "number") {
+          const stops: string[] = (() => {
+            if (Array.isArray(customColors) && customColors.length === thresholds.length + 1) {
+              return customColors;
+            }
+            if (thresholds.length === 1) return [theme.accent.default, theme.status?.negative ?? theme.accent.default];
+            if (thresholds.length === 2) return [
+              theme.status?.positive ?? theme.accent.default,
+              theme.status?.warning ?? theme.accent.default,
+              theme.status?.negative ?? theme.accent.default,
+            ];
+            return [theme.accent.default];
+          })();
+          let idx = 0;
+          for (const t of thresholds) { if (badgeValue >= t) idx++; else break; }
+          badgeColor = stops[Math.min(idx, stops.length - 1)] ?? theme.accent.default;
+        } else if (customColors && !Array.isArray(customColors) && badgeText in customColors) {
+          badgeColor = (customColors as Record<string, string>)[badgeText];
         } else if (variants && badgeText in variants) {
           const variant = variants[badgeText] as keyof typeof BADGE_VARIANTS | "default" | "muted";
           const variantColors: Record<string, string> = {
@@ -3020,11 +3075,19 @@ function renderUnifiedTableRow(
             muted: theme.content.muted,
           };
           badgeColor = variantColors[variant] ?? theme.accent.default;
-          badgeTextColor = badgeColor;
         }
 
         const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.text.body.family, 600);
-        const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
+        // Circle and square shapes are 1:1 aspect — use badgeHeight as
+        // the controlling dimension so a "1" and a "12" render the same
+        // diameter (matches the editorial-badge mockups).
+        const aspectShape = shape === "circle" || shape === "square";
+        const badgeWidth = aspectShape
+          ? Math.max(badgeHeight, badgeTextWidth + BADGE.PADDING)
+          : badgeTextWidth + BADGE.PADDING * 2;
+        const radius = shape === "square" ? 3
+                     : shape === "circle" ? badgeHeight / 2
+                     : badgeHeight / 2;  // pill
         const badgeX = col.align === "right"
           ? currentX + width - SPACING.TEXT_PADDING - badgeWidth
           : col.align === "center"
@@ -3032,14 +3095,19 @@ function renderUnifiedTableRow(
             : currentX + SPACING.TEXT_PADDING;
         const badgeY = y + (rowHeight - badgeHeight) / 2;
 
-        lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
-          rx="${badgeHeight / 2}" fill="${badgeColor}" opacity="0.15"/>`);
+        if (outline) {
+          lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
+            rx="${radius}" fill="none" stroke="${badgeColor}" stroke-width="1.5"/>`);
+        } else {
+          lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
+            rx="${radius}" fill="${badgeColor}" opacity="0.15"/>`);
+        }
         lines.push(`<text class="cell-text" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
           text-anchor="middle"
           font-family="${theme.text.body.family}"
           font-size="${badgeFontSize}px"
           font-weight="${600}"
-          fill="${badgeTextColor}">${escapeXml(badgeText)}</text>`);
+          fill="${badgeColor}">${escapeXml(badgeText)}</text>`);
       }
     } else if (col.type === "stars") {
       // Render star rating
@@ -3091,6 +3159,249 @@ function renderUnifiedTableRow(
           const color = isFilled ? starColor : emptyColor;
           lines.push(`<path d="${starPath(cx, cy, starSize)}" fill="${color}"/>`);
           starX += starSize + starGap;
+        }
+      }
+    } else if (col.type === "pictogram") {
+      // Render pictogram: registry SVG paths or unicode chars, count or
+      // rating mode (mirrors CellPictogram.svelte).
+      const val = row.metadata[col.field];
+      if (typeof val === "number" && Number.isFinite(val)) {
+        const opts = col.options?.pictogram;
+        if (opts) {
+          const maxGlyphs = opts.maxGlyphs ?? null;
+          const halfGlyphs = opts.halfGlyphs ?? false;
+          const domain = opts.domain ?? null;
+          const layout = opts.layout ?? "row";
+          const size = opts.size ?? "base";
+          // Resolve theme colors to literal values: nested <svg> elements
+          // in rsvg's pipeline don't inherit CSS vars from the outer document,
+          // so var(--tv-accent) renders as transparent. Pull theme literals
+          // when no explicit color is set.
+          const filledColor = opts.color ?? theme.accent.default;
+          const emptyColor = opts.emptyColor ?? theme.content.muted;
+
+          // Resolve glyph: single string or value-keyed map (glyph_field).
+          let glyphSpec: string | null = null;
+          if (typeof opts.glyph === "string") {
+            glyphSpec = opts.glyph;
+          } else if (opts.glyph && typeof opts.glyph === "object" && opts.glyphField) {
+            const sel = row.metadata[opts.glyphField];
+            if (sel != null) {
+              const map = opts.glyph as Record<string, string>;
+              glyphSpec = map[String(sel)] ?? null;
+            }
+          }
+          const resolved = resolveGlyph(glyphSpec);
+          if (!resolved) {
+            // No glyph spec — skip rendering this cell.
+            continue;
+          }
+
+          // Domain remap (rating mode only).
+          let raw = val;
+          if (domain && Number.isFinite(domain[0]) && Number.isFinite(domain[1]) &&
+              domain[1] > domain[0] && maxGlyphs != null) {
+            const clamped = Math.max(domain[0], Math.min(domain[1], raw));
+            raw = ((clamped - domain[0]) / (domain[1] - domain[0])) * maxGlyphs;
+          }
+          const rating = Math.max(0, raw);
+
+          // Build slot list.
+          type Slot = { state: "full" | "half" | "empty" };
+          const slots: Slot[] = [];
+          if (maxGlyphs == null) {
+            const n = Math.min(Math.floor(rating + (halfGlyphs ? 0.5 : 0)), 999);
+            for (let i = 0; i < n; i++) slots.push({ state: "full" });
+          } else {
+            for (let i = 1; i <= maxGlyphs; i++) {
+              if (i <= rating) slots.push({ state: "full" });
+              else if (halfGlyphs && i - 0.5 <= rating) slots.push({ state: "half" });
+              else slots.push({ state: "empty" });
+            }
+          }
+
+          const glyphPx = size === "sm" ? 10 : size === "lg" ? 20 : 14;
+          const gap = 1;
+          const valueLabel = opts.valueLabel ?? false;
+          const labelPos = valueLabel === true ? "trailing"
+            : valueLabel === "leading" ? "leading"
+              : valueLabel === "trailing" ? "trailing"
+                : null;
+          const labelText = labelPos
+            ? (opts.labelFormat === "integer"
+                ? String(Math.round(val))
+                : val.toFixed(opts.labelDecimals ?? 1))
+            : "";
+          const labelFontPx = size === "sm" ? 9 : size === "lg" ? 12 : 11;
+          // Approximate label width for layout calc — not perfect but close
+          // enough for centering at this size.
+          const labelW = labelText ? labelText.length * (labelFontPx * 0.55) + 4 : 0;
+
+          // Layout dimensions.
+          const isStack = layout === "stack";
+          const trackW = isStack ? glyphPx : slots.length * glyphPx + Math.max(0, slots.length - 1) * gap;
+          const trackH = isStack ? slots.length * glyphPx : glyphPx;
+          const totalW = trackW + labelW;
+          const totalH = Math.max(trackH, labelFontPx);
+
+          let originX = col.align === "right"
+            ? currentX + width - SPACING.TEXT_PADDING - totalW
+            : col.align === "center"
+              ? currentX + (width - totalW) / 2
+              : currentX + SPACING.TEXT_PADDING;
+          const originY = y + (rowHeight - totalH) / 2;
+
+          // Leading label.
+          if (labelPos === "leading") {
+            lines.push(
+              `<text x="${originX}" y="${originY + totalH / 2}" ` +
+              `font-size="${labelFontPx}" fill="var(--tv-cell-fg, var(--tv-fg))" ` +
+              `dominant-baseline="middle" text-anchor="start">${labelText}</text>`
+            );
+            originX += labelW;
+          }
+
+          // Glyphs.
+          for (let i = 0; i < slots.length; i++) {
+            const slot = slots[i];
+            const sx = isStack ? originX : originX + i * (glyphPx + gap);
+            const sy = isStack ? originY + (slots.length - 1 - i) * glyphPx : originY;
+            if (resolved.kind === "registry") {
+              const def = resolved.def;
+              if (slot.state === "full") {
+                lines.push(
+                  `<svg x="${sx}" y="${sy}" width="${glyphPx}" height="${glyphPx}" viewBox="${def.viewBox}">` +
+                  `<path d="${def.path}" fill="${filledColor}" stroke="none"/></svg>`
+                );
+              } else if (slot.state === "half") {
+                lines.push(
+                  `<svg x="${sx}" y="${sy}" width="${glyphPx}" height="${glyphPx}" viewBox="${def.viewBox}">` +
+                  `<path d="${def.path}" fill="${filledColor}" stroke="none"/>` +
+                  `<rect x="12" y="0" width="12" height="24" fill="${emptyColor}" opacity="0.7"/></svg>`
+                );
+              } else {
+                lines.push(
+                  `<svg x="${sx}" y="${sy}" width="${glyphPx}" height="${glyphPx}" viewBox="${def.viewBox}">` +
+                  `<path d="${def.path}" fill="none" stroke="${emptyColor}" stroke-width="1.5"/></svg>`
+                );
+              }
+            } else {
+              // Literal char fallback — render as <text>.
+              const color = slot.state === "empty" ? emptyColor : filledColor;
+              lines.push(
+                `<text x="${sx + glyphPx / 2}" y="${sy + glyphPx * 0.85}" ` +
+                `font-size="${glyphPx}" fill="${color}" text-anchor="middle">${resolved.char}</text>`
+              );
+            }
+          }
+
+          // Trailing label.
+          if (labelPos === "trailing") {
+            const lx = isStack ? originX + glyphPx + 4 : originX + trackW + 4;
+            lines.push(
+              `<text x="${lx}" y="${originY + totalH / 2}" ` +
+              `font-size="${labelFontPx}" fill="var(--tv-cell-fg, var(--tv-fg))" ` +
+              `dominant-baseline="middle" text-anchor="start">${labelText}</text>`
+            );
+          }
+
+          // Mark the silenced GLYPH_REGISTRY import as "used" — the inline
+          // path above goes through resolveGlyph which references it.
+          void GLYPH_REGISTRY;
+        }
+      }
+    } else if (col.type === "ring") {
+      // Render donut gauge: track ring + filled arc + centered numeric
+      // label (mirrors CellRing.svelte). Theme colors resolved literally
+      // since nested <svg> elements don't inherit CSS vars in rsvg.
+      const val = row.metadata[col.field];
+      if (typeof val === "number" && Number.isFinite(val)) {
+        const opts = col.options?.ring;
+        if (opts) {
+          const minV = opts.minValue ?? 0;
+          const maxV = opts.maxValue ?? 1;
+          const size = opts.size ?? "base";
+          const showLabel = opts.showLabel ?? true;
+          const labelFormat = opts.labelFormat ?? "percent";
+          const labelDecimals = opts.labelDecimals ?? 0;
+          const trackColor = opts.trackColor ?? theme.content.muted;
+
+          // Pick filled color from threshold scale or single value.
+          let filledColor: string = theme.accent.default;
+          const thresholds = opts.thresholds ?? null;
+          const colorOpt = opts.color ?? null;
+          if (!thresholds || thresholds.length === 0) {
+            if (typeof colorOpt === "string") filledColor = colorOpt;
+            else if (Array.isArray(colorOpt) && colorOpt.length === 1) filledColor = colorOpt[0];
+          } else {
+            const stops = (() => {
+              if (Array.isArray(colorOpt) && colorOpt.length === thresholds.length + 1) return colorOpt;
+              if (thresholds.length === 1) return [theme.accent.default, theme.status?.negative ?? theme.accent.default];
+              if (thresholds.length === 2) return [
+                theme.status?.positive ?? theme.accent.default,
+                theme.status?.warning ?? theme.accent.default,
+                theme.status?.negative ?? theme.accent.default,
+              ];
+              return [theme.accent.default];
+            })();
+            let idx = 0;
+            for (const t of thresholds) { if (val >= t) idx++; else break; }
+            filledColor = stops[Math.min(idx, stops.length - 1)] ?? theme.accent.default;
+          }
+
+          const fraction = maxV > minV
+            ? Math.max(0, Math.min(1, (val - minV) / (maxV - minV)))
+            : 0;
+
+          // Geometry — match CellRing.svelte
+          const diameter = size === "sm" ? 18 : size === "lg" ? 32 : 24;
+          const stroke = Math.max(2, Math.round(diameter * 0.22));
+          const radius = (diameter - stroke) / 2;
+          const cxr = diameter / 2;
+          const cyr = diameter / 2;
+          const circumference = 2 * Math.PI * radius;
+          const dashLen = circumference * fraction;
+          const dashGap = circumference - dashLen;
+
+          // Label text
+          const labelText = labelFormat === "percent"
+            ? (fraction * 100).toFixed(labelDecimals) + "%"
+            : labelFormat === "integer"
+              ? String(Math.round(val))
+              : val.toFixed(labelDecimals);
+          const labelFontPx = size === "sm" ? 9 : size === "lg" ? 12 : 11;
+          const labelW = showLabel ? labelText.length * (labelFontPx * 0.55) + 4 : 0;
+
+          const totalW = diameter + (showLabel ? labelW + 4 : 0);
+          let originX = col.align === "right"
+            ? currentX + width - SPACING.TEXT_PADDING - totalW
+            : col.align === "center"
+              ? currentX + (width - totalW) / 2
+              : currentX + SPACING.TEXT_PADDING;
+          const originY = y + (rowHeight - diameter) / 2;
+
+          // Track ring
+          lines.push(
+            `<circle cx="${originX + cxr}" cy="${originY + cyr}" r="${radius}" ` +
+            `fill="none" stroke="${trackColor}" stroke-width="${stroke}" opacity="0.35"/>`
+          );
+          // Fill arc (rotate -90 for 12 o'clock start)
+          if (dashLen > 0) {
+            lines.push(
+              `<circle cx="${originX + cxr}" cy="${originY + cyr}" r="${radius}" ` +
+              `fill="none" stroke="${filledColor}" stroke-width="${stroke}" ` +
+              `stroke-dasharray="${dashLen} ${dashGap}" stroke-linecap="round" ` +
+              `transform="rotate(-90 ${originX + cxr} ${originY + cyr})"/>`
+            );
+          }
+          // Trailing label
+          if (showLabel) {
+            lines.push(
+              `<text x="${originX + diameter + 4}" y="${originY + diameter / 2}" ` +
+              `font-size="${labelFontPx}" fill="${theme.content.primary}" ` +
+              `dominant-baseline="middle" text-anchor="start">${labelText}</text>`
+            );
+          }
         }
       }
     } else if (col.type === "heatmap") {
