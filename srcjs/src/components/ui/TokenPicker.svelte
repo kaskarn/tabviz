@@ -10,6 +10,8 @@
   // icon overlaid with the active token's swatch so users can read the
   // current state without expanding.
   import type { ForestStore } from "$stores/forestStore.svelte";
+  import { autoPosition } from "$lib/dropdown-position";
+  import Portal from "$lib/Portal.svelte";
 
   interface Props {
     store: ForestStore;
@@ -90,40 +92,42 @@
   </button>
 
   {#if menuOpen}
-    <div bind:this={popoverEl} class="popover" role="dialog" aria-label="Paint tool">
-      <div class="section-label">Token</div>
-      <div class="token-grid" role="listbox" aria-label="Paint token">
-        {#each TOKENS as t (t.id)}
-          <button
-            type="button"
-            role="option"
-            aria-selected={activeToken === t.id}
-            class="token-cell"
-            class:selected={activeToken === t.id}
-            onclick={() => pickToken(t.id)}
-            title={t.tip}
-          >
-            <span class="dot" style:background={swatchFor(t.id)}></span>
-            <span class="label">{t.label}</span>
-          </button>
-        {/each}
-      </div>
+    <Portal>
+      <div bind:this={popoverEl} class="popover" role="dialog" aria-label="Paint tool" use:autoPosition={{ triggerEl: triggerEl as HTMLElement | null }}>
+        <div class="section-label">Token</div>
+        <div class="token-grid" role="listbox" aria-label="Paint token">
+          {#each TOKENS as t (t.id)}
+            <button
+              type="button"
+              role="option"
+              aria-selected={activeToken === t.id}
+              class="token-cell"
+              class:selected={activeToken === t.id}
+              onclick={() => pickToken(t.id)}
+              title={t.tip}
+            >
+              <span class="dot" style:background={swatchFor(t.id)}></span>
+              <span class="label">{t.label}</span>
+            </button>
+          {/each}
+        </div>
 
-      <div class="section-label scope-label-row">Apply to</div>
-      <button
-        type="button"
-        class="scope-switch"
-        class:on-cell={activeScope === "cell"}
-        onclick={() => pickScope(activeScope === "row" ? "cell" : "row")}
-        role="switch"
-        aria-checked={activeScope === "cell"}
-        aria-label={`Scope: ${activeScope}`}
-      >
-        <span class="scope-text" class:active={activeScope === "row"}>Row</span>
-        <span class="scope-text" class:active={activeScope === "cell"}>Cell</span>
-        <span class="scope-thumb"></span>
-      </button>
-    </div>
+        <div class="section-label scope-label-row">Apply to</div>
+        <button
+          type="button"
+          class="scope-switch"
+          class:on-cell={activeScope === "cell"}
+          onclick={() => pickScope(activeScope === "row" ? "cell" : "row")}
+          role="switch"
+          aria-checked={activeScope === "cell"}
+          aria-label={`Scope: ${activeScope}`}
+        >
+          <span class="scope-text" class:active={activeScope === "row"}>Row</span>
+          <span class="scope-text" class:active={activeScope === "cell"}>Cell</span>
+          <span class="scope-thumb"></span>
+        </button>
+      </div>
+    </Portal>
   {/if}
 </div>
 
@@ -134,7 +138,10 @@
     position: relative;
   }
 
-  /* 22px icon-button trigger — matches sibling toolbar buttons. */
+  /* 22px icon-button trigger — matches sibling toolbar buttons. The
+     toolbar's global rule strips border + background so the trigger
+     blends into the floating glass pill; only the muted icon color
+     and active-token swatch dot remain. */
   .trigger {
     position: relative;
     display: inline-flex;
@@ -143,17 +150,18 @@
     width: 22px;
     height: 22px;
     padding: 0;
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-border, #e2e8f0));
-    border-radius: 5px;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 6px;
     background: var(--tv-bg, #ffffff);
-    color: var(--tv-fg, #1a1a1a);
+    color: var(--tv-secondary, #64748b);
     cursor: pointer;
-    transition: background-color 0.12s ease, border-color 0.12s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
-  .trigger:hover,
-  .trigger:focus-visible,
-  .trigger.open {
-    border-color: var(--tv-primary, #2563eb);
+  .trigger:hover {
+    background: var(--tv-border, #e2e8f0);
+    color: var(--tv-fg, #1a1a1a);
+  }
+  .trigger:focus-visible {
     outline: none;
   }
   .trigger svg {
@@ -170,11 +178,11 @@
     box-shadow: 0 0 0 0.5px color-mix(in srgb, var(--tv-fg, #1a1a1a) 30%, transparent);
   }
 
-  /* Popover — drops below the trigger. */
+  /* Popover — Portal-rendered to escape the .tabviz-container's
+     overflow:hidden clip. autoPosition sets position:fixed dynamically
+     using the trigger's viewport rect. */
   .popover {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
+    /* position: fixed set dynamically by autoPosition */
     z-index: 10003;
     width: 220px;
     padding: 8px;
