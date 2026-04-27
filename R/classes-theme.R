@@ -216,23 +216,20 @@ StatusColors <- new_class(
 
 #' Semantics (Tier 2): named token colors for the painter UI.
 #'
-#' The painter applies one of six RowSemantic bundles to a row or cell.
-#' Two of those bundles (`row.highlight`, `row.fill`) need a color whose
-#' identity isn't captured by accent / brand / status. `Semantics` carries
-#' that named pair: `highlight` is a yellow-marker-style text-bg tone,
-#' `fill` is a stronger row-fill tone. Both default to derivations from
-#' `accent` at resolve time; authors override either named slot to pin a
-#' specific token color.
+#' The painter applies one of five RowSemantic bundles to a row or cell.
+#' One of those bundles (`row.fill`) needs a color whose identity isn't
+#' captured by accent / brand / status. `Semantics` carries that named
+#' slot — defaults to a derivation from `accent` at resolve time; authors
+#' override the slot to pin a specific token color.
 #'
 #' @usage NULL
 #' @export
 Semantics <- new_class(
   "Semantics",
   properties = list(
-    highlight = new_property(class_character, default = NA_character_),
     fill      = new_property(class_character, default = NA_character_)
   ),
-  validator = make_color_validator(c("highlight", "fill"))
+  validator = make_color_validator(c("fill"))
 )
 
 
@@ -512,7 +509,7 @@ RowSemantic <- new_class(
 #' Banding mode lives here ("none", "row", "group", "group-N"); selected-edge
 #' width controls the accent bar on selected rows.
 #'
-#' Semantic-token bundles (emphasis/muted/accent/bold/highlight/fill) are
+#' Semantic-token bundles (emphasis/muted/accent/bold/fill) are
 #' RowSemantic visual presets. The painter UI applies one of them to a row
 #' or cell at a time; data columns (`row_emphasis_col`, `row_bold_col`, …)
 #' do the same per-row from the data. Each bundle is a flat list of visual
@@ -528,14 +525,12 @@ RowCluster <- new_class(
     alt       = new_property(RowState,    default = RowState()),
     hover     = new_property(RowState,    default = RowState()),
     selected  = new_property(RowState,    default = RowState()),
-    # Semantic visual presets (RowSemantic bundles). emphasis/muted/accent
-    # are the historical trio; bold/highlight/fill are E1-era additions.
-    # The renderer / painter pick whichever flag is active per row or cell.
+    # Semantic visual presets (RowSemantic bundles). The painter and any
+    # data-column flags pick whichever bundle is active per row or cell.
     emphasis  = new_property(RowSemantic, default = RowSemantic()),
     muted     = new_property(RowSemantic, default = RowSemantic()),
     accent    = new_property(RowSemantic, default = RowSemantic()),
     bold      = new_property(RowSemantic, default = RowSemantic()),
-    highlight = new_property(RowSemantic, default = RowSemantic()),
     fill      = new_property(RowSemantic, default = RowSemantic()),
     banding             = new_property(class_character, default = "group"),
     selected_edge_width = new_property(class_numeric,   default = 2),

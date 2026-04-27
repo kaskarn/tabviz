@@ -2,30 +2,25 @@
 
 ## Painter redesign + semantic-token expansion
 
-The painter now applies one of **six** semantic tokens (was three) to
+The painter now applies one of **five** semantic tokens (was three) to
 rows or cells, with a hover-preview affordance and a power-user
 configuration surface.
 
-* **Three new tokens added.** Alongside the existing
+* **Two new tokens added.** Alongside the existing
   `emphasis` / `muted` / `accent`, `RowCluster` gains:
   - `bold` — pure font-weight bump, no color override
-  - `highlight` — bold + pale "marker" background derived from
-    `theme.semantic.highlight` (kept in the schema for `row_highlight`
-    data columns; not surfaced in the painter chip menu)
   - `fill` — bold + pastel row tint derived from
-    `theme.semantic.fill`. Both `semantic.highlight` and
-    `semantic.fill` default to the same recipe
-    (`oklch_mix(accent, lightest_neutral, 0.80)`) — a soft filled-in
+    `theme.semantic.fill` (default recipe
+    `oklch_mix(accent, lightest_neutral, 0.80)`) — a soft filled-in
     look that signals "this row matters" without dominating
   The existing `accent` bundle now also applies `font_weight = 600`
   so accent rows read as a coordinated "bold and colored" treatment
   (was: colored text only). The `muted` bundle now also drops to
   60% opacity on the row so muted reads as truly receding, not just
   fg-shifted.
-* **New Tier-2 named inputs** `theme@semantic@highlight` and
-  `theme@semantic@fill` — defaults derive from accent at resolve
-  time; override via `set_theme_field()` or the Tokens tab in the
-  panel.
+* **New Tier-2 named input** `theme@semantic@fill` — defaults derive
+  from accent at resolve time; override via `set_theme_field()` or the
+  Tokens tab in the panel.
 * **Painter UI** is unified with row selection: the painter is
   always-on, and clicking a row is the same operation as painting it
   with the active token (replace-if-different / toggle-if-same). The
@@ -34,14 +29,14 @@ configuration surface.
   and the Row/Cell scope toggle. Active token is shown as a swatch
   dot on the trigger. Hovering a row or cell renders the would-be
   bundle at ~65% opacity; click commits. Editing the accent color
-  recomputes the `semantic.{highlight,fill}` tints live (gated by
-  pinning) so painted rows retint as you drag the color picker.
-* **R API** adds `row_highlight` and `row_fill` parameters to
-  `tabviz()` / `web_spec()`, parallel to `row_emphasis` / `row_muted` /
-  `row_accent`. Each accepts a column name or a formula (logical).
+  recomputes the `semantic.fill` tint live (gated by pinning) so
+  painted rows retint as you drag the color picker.
+* **R API** adds `row_fill` parameter to `tabviz()` / `web_spec()`,
+  parallel to `row_emphasis` / `row_muted` / `row_accent`. Accepts a
+  column name or a formula (logical).
 * **Tokens tab** is a new advanced settings panel for editing each
   bundle's `bg / fg / border / markerFill / fontWeight / italic`,
-  plus the two Tier-2 token colors at the top.
+  plus the Tier-2 fill color at the top.
 * **Drive-by fix:** `resolveSemanticBundle()` was reading the v1 path
   `theme.semantics[token]`, which v2 themes don't emit. Result: the
   painter committed the flag but rendered nothing visually since

@@ -54,8 +54,7 @@
 #' @param row_emphasis Emphasis styling (bold + primary fg + primary marker). Column name or formula (logical).
 #' @param row_muted Muted styling (lighter, reduced prominence). Column name or formula (logical).
 #' @param row_accent Accent styling (bold + accent color). Column name or formula (logical).
-#' @param row_highlight Highlight styling (bold + pale "marker" background; defaults to a paler accent tone). Column name or formula (logical).
-#' @param row_fill Fill styling (bold + strong accent-derived row fill). Column name or formula (logical).
+#' @param row_fill Fill styling (bold + pastel accent-derived row tint). Column name or formula (logical).
 #' @param marker_color Marker fill color. Column name or formula returning CSS color strings.
 #' @param marker_shape Marker shape. Column name or formula returning "square", "circle", "diamond", "triangle".
 #' @param marker_opacity Marker opacity. Column name or formula returning numeric 0-1.
@@ -181,7 +180,6 @@ tabviz <- function(
     row_emphasis = NULL,
     row_muted = NULL,
     row_accent = NULL,
-    row_highlight = NULL,
     row_fill = NULL,
     marker_color = NULL,
     marker_shape = NULL,
@@ -532,7 +530,6 @@ tabviz <- function(
     row_emphasis = row_emphasis,
     row_muted = row_muted,
     row_accent = row_accent,
-    row_highlight = row_highlight,
     row_fill = row_fill,
     marker_color = marker_color,
     marker_shape = marker_shape,
@@ -576,7 +573,6 @@ tabviz <- function(
     row_emphasis_col  = style_resolved$row_emphasis,
     row_muted_col     = style_resolved$row_muted,
     row_accent_col    = style_resolved$row_accent,
-    row_highlight_col = style_resolved$row_highlight,
     row_fill_col      = style_resolved$row_fill,
     marker_color_col = style_resolved$marker_color,
     marker_shape_col = style_resolved$marker_shape,

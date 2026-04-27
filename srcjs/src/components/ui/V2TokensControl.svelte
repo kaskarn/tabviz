@@ -1,8 +1,8 @@
 <script lang="ts">
   // Tokens tab — power-user surface for editing the semantic-token bundles
-  // that the painter UI applies. Six tokens map to RowSemantic bundles on
-  // theme.row.{token}; two of them (highlight, fill) read their default bg
-  // from the Tier-2 theme.semantic.{highlight, fill} named colors.
+  // that the painter UI applies. Five tokens map to RowSemantic bundles on
+  // theme.row.{token}; one of them (fill) reads its default bg from the
+  // Tier-2 theme.semantic.fill named color.
   //
   // Layout: top section edits the two named token colors; below, an
   // expandable per-token RowSemantic editor for each of the six bundles.
@@ -36,43 +36,30 @@
     store.clearOverride(path);
   }
 
-  // ── theme.semantic.{highlight,fill} cascade helpers ─────────────────
-  // Editing the Tier-2 named color also updates the matching RowSemantic
-  // bundle's bg by default — unless the user has pinned theme.row.{token}.bg
+  // ── theme.semantic.fill cascade helper ─────────────────────────────
+  // Editing the Tier-2 named color also updates the fill RowSemantic
+  // bundle's bg by default — unless the user has pinned theme.row.fill.bg
   // separately. Mirrors the R-side resolver behavior on the wire.
-  function setSemanticHighlight(hex: string) {
-    setPath(["semantic", "highlight"], hex);
-    setDerived(["row", "highlight", "bg"], hex);
-  }
   function setSemanticFill(hex: string) {
     setPath(["semantic", "fill"], hex);
     setDerived(["row", "fill", "bg"], hex);
   }
-  function resetSemanticHighlight() {
-    clearOver(["semantic", "highlight"]);
-    const accent = theme?.accent?.default ?? "#8B5CF6";
-    const lightest = (theme?.inputs?.neutral as string[] | undefined)?.[0] ?? "#FFFFFF";
-    const value = oklchMix(accent, lightest, 0.80);
-    setDerived(["semantic", "highlight"], value);
-    setDerived(["row", "highlight", "bg"], value);
-  }
   function resetSemanticFill() {
     clearOver(["semantic", "fill"]);
     const accent = theme?.accent?.default ?? "#8B5CF6";
-    const surfaceBase = theme?.surface?.base ?? "#FFFFFF";
-    const value = oklchMix(accent, surfaceBase, 0.50);
+    const lightest = (theme?.inputs?.neutral as string[] | undefined)?.[0] ?? "#FFFFFF";
+    const value = oklchMix(accent, lightest, 0.80);
     setDerived(["semantic", "fill"], value);
     setDerived(["row", "fill", "bg"], value);
   }
 
   // ── Per-token editors ───────────────────────────────────────────────
-  type TokenName = "emphasis" | "muted" | "accent" | "bold" | "highlight" | "fill";
+  type TokenName = "emphasis" | "muted" | "accent" | "bold" | "fill";
   const TOKENS: Array<{ id: TokenName; label: string; description: string }> = [
-    { id: "muted",     label: "Mute",      description: "Lighter, reduced prominence." },
+    { id: "muted",     label: "Mute",      description: "Lighter, reduced prominence (translucent)." },
     { id: "bold",      label: "Bold",      description: "Just a weight bump — no color override." },
     { id: "accent",    label: "Accent",    description: "Bold + accent color (most common)." },
-    { id: "highlight", label: "Highlight", description: "Bold + pale 'marker' background. Bg defaults to theme.semantic.highlight." },
-    { id: "fill",      label: "Fill",      description: "Bold + strong row fill. Bg defaults to theme.semantic.fill, fg auto-contrasted." },
+    { id: "fill",      label: "Fill",      description: "Bold + pastel row tint. Bg defaults to theme.semantic.fill." },
     { id: "emphasis",  label: "Emphasis",  description: "Legacy: bold + primary fg + primary marker. Kept for back-compat with row_emphasis_col." },
   ];
 
@@ -92,19 +79,11 @@
 
 {#if theme}
   <SettingsSection
-    title="Token colors"
-    description="Two named Tier-2 inputs feed the highlight + fill bundle backgrounds. Defaults derive from accent at resolve time; pin a value here to lock it.">
-    <ColorField
-      label="Highlight"
-      hint="Pale 'marker' tone behind text"
-      value={(theme.semantic?.highlight as string | undefined) ?? "#FFE58F"}
-      onchange={setSemanticHighlight}
-      overridden={isOver(["semantic", "highlight"])}
-      onreset={resetSemanticHighlight}
-    />
+    title="Token color"
+    description="The Tier-2 fill input feeds the fill bundle background. Defaults derive from accent at resolve time; pin a value here to lock it.">
     <ColorField
       label="Fill"
-      hint="Stronger row-fill tone"
+      hint="Pastel row-fill tone"
       value={(theme.semantic?.fill as string | undefined) ?? "#C8553D"}
       onchange={setSemanticFill}
       overridden={isOver(["semantic", "fill"])}

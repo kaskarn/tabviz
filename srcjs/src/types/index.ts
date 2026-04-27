@@ -18,13 +18,12 @@ export interface RowStyle {
   icon?: string | null;
   badge?: string | null;
   // Semantic styling tokens. Painter applies one at a time; data columns
-  // can flip multiple. Precedence (loud → quiet): fill > highlight >
-  // accent > emphasis > bold > muted.
+  // can flip multiple. Precedence (loud → quiet):
+  // fill > accent > emphasis > bold > muted.
   emphasis?: boolean;   // Bold + primary fg + primary marker
   muted?: boolean;      // Lighter color
   accent?: boolean;     // Bold + accent color
-  highlight?: boolean;  // Bold + pale highlighter bg (theme.semantic.highlight)
-  fill?: boolean;       // Bold + strong row fill (theme.semantic.fill)
+  fill?: boolean;       // Bold + pastel accent-derived row tint
 }
 
 export type MarkerShape = "square" | "circle" | "diamond" | "triangle";
@@ -44,12 +43,11 @@ export interface CellStyle {
   bg?: string | null;
   badge?: string | null;
   icon?: string | null;
-  // Semantic styling — same six tokens as RowStyle. Precedence:
-  // fill > highlight > accent > emphasis > bold > muted.
+  // Semantic styling — same five tokens as RowStyle. Precedence:
+  // fill > accent > emphasis > bold > muted.
   emphasis?: boolean;
   muted?: boolean;
   accent?: boolean;
-  highlight?: boolean;
   fill?: boolean;
   // Per-cell hover tooltip text (overrides the default value-as-title)
   tooltip?: string | null;
@@ -584,17 +582,16 @@ export interface SemanticBundle {
  */
 export type SemanticToken =
   | "emphasis" | "muted" | "accent"
-  | "bold" | "highlight" | "fill";
+  | "bold" | "fill";
 
 export type Semantics = Record<SemanticToken, SemanticBundle>;
 
 /**
- * Tier-2 named token colors. theme.semantic.highlight + .fill drive the
- * default bg of the highlight + fill RowSemantic bundles; defaults to
- * accent-derived values at R-side resolve time.
+ * Tier-2 named token colors. theme.semantic.fill drives the default bg of
+ * the fill RowSemantic bundle; defaults to an accent-derived pastel tint
+ * at R-side resolve time.
  */
 export interface SemanticInputs {
-  highlight: string;
   fill: string;
 }
 

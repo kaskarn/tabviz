@@ -187,8 +187,7 @@ serialize_theme <- function(theme) {
       info     = theme@status@info
     ),
     semantic = list(
-      highlight = theme@semantic@highlight,
-      fill      = theme@semantic@fill
+      fill = theme@semantic@fill
     ),
 
     series  = lapply(theme@series, serialize_slot_bundle),
@@ -255,7 +254,6 @@ serialize_theme <- function(theme) {
       muted     = serialize_row_semantic(theme@row@muted),
       accent    = serialize_row_semantic(theme@row@accent),
       bold      = serialize_row_semantic(theme@row@bold),
-      highlight = serialize_row_semantic(theme@row@highlight),
       fill      = serialize_row_semantic(theme@row@fill),
       banding   = serialize_banding(theme@row@banding),
       selectedEdgeWidth = theme@row@selected_edge_width,

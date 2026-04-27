@@ -10,5 +10,9 @@ web_theme_dark()
 A \link{WebTheme}.
 }
 \description{
-Catppuccin Mocha-inspired dark palette with pastel marker colors.
+Catppuccin Mocha-inspired dark canvas with a pastel marker palette and
+system-font typography. The brand cascade adapts for dark mode: an
+explicit \code{content.inverse} override keeps bold-mode header text light
+(otherwise the resolver's default = \code{n[1]} = the dark canvas, giving
+invisible dark-on-dark text).
 }

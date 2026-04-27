@@ -8,10 +8,10 @@
  * they get translated into the `SemanticBundle` the renderer actually
  * paints.
  *
- * Six tokens are recognized:
- *   muted, bold, emphasis, accent, highlight, fill
+ * Five tokens are recognized:
+ *   muted, bold, emphasis, accent, fill
  * Precedence (loud → quiet) when multiple flags are set:
- *   fill > highlight > accent > emphasis > bold > muted.
+ *   fill > accent > emphasis > bold > muted.
  * "Loud" means "more visually intense"; this is what we keep when several
  * data columns flip flags on the same row, since the most-visible
  * treatment is what the user is asking for.
@@ -57,7 +57,6 @@ export function activeSemanticToken(
 ): SemanticToken | null {
   if (!style) return null;
   if (style.fill) return "fill";
-  if (style.highlight) return "highlight";
   if (style.accent) return "accent";
   if (style.emphasis) return "emphasis";
   if (style.bold) return "bold";

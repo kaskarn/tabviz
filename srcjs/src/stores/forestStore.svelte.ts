@@ -177,12 +177,11 @@ export function createForestStore() {
   // cellEdits: per-row for row-scoped paint, per-cell for cell-scoped paint.
   // Each entry only records the token whose value differs from the baseline
   // spec style — missing tokens mean "inherit the R-supplied value".
-  // Six semantic tokens recognized: muted, bold, emphasis, accent,
-  // highlight, fill (precedence loud → quiet:
-  // fill > highlight > accent > emphasis > bold > muted).
+  // Five semantic tokens recognized: muted, bold, emphasis, accent, fill
+  // (precedence loud → quiet: fill > accent > emphasis > bold > muted).
   type SemanticToken =
     | "emphasis" | "muted" | "accent"
-    | "bold" | "highlight" | "fill";
+    | "bold" | "fill";
   type SemanticFlags = Partial<Record<SemanticToken, boolean>>;
   let styleEdits = $state<{
     rows: Record<string, SemanticFlags>;
@@ -1518,7 +1517,7 @@ export function createForestStore() {
     }
     // Replace: clear any other token currently set, then apply active.
     const allTokens: SemanticToken[] =
-      ["emphasis", "muted", "accent", "bold", "highlight", "fill"];
+      ["emphasis", "muted", "accent", "bold", "fill"];
     for (const t of allTokens) {
       if (t !== active && flags[t]) setRowSemantic(rowId, t, false);
     }
@@ -1532,7 +1531,7 @@ export function createForestStore() {
       return;
     }
     const allTokens: SemanticToken[] =
-      ["emphasis", "muted", "accent", "bold", "highlight", "fill"];
+      ["emphasis", "muted", "accent", "bold", "fill"];
     for (const t of allTokens) {
       if (t !== active && flags[t]) setCellSemantic(rowId, field, t, false);
     }

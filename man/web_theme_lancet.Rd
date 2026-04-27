@@ -10,5 +10,7 @@ web_theme_lancet()
 A \link{WebTheme}.
 }
 \description{
-Lancet navy primary, gold accent, serif typography on a warm cream surface.
+Lancet navy on warm cream, refined old-gold accent, Georgia serif. The
+deep-navy companion is explicitly pinned (rather than auto-derived) to
+lock the journal identity. Comfortable density for journal-page reading.
 }

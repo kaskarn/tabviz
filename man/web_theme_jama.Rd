@@ -10,6 +10,7 @@ web_theme_jama()
 A \link{WebTheme}.
 }
 \description{
-All-black-and-white, ultra-compact density, Arial typography. Print-ready
-for medical-journal submissions.
+All-black-and-white, ultra-compact density, Arial typography. Strong
+black dividers throughout — the visual identity IS the rule structure.
+Print-ready for medical-journal submissions.
 }

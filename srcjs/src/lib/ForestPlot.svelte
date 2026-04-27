@@ -2581,14 +2581,13 @@
     if (style?.emphasis)  classes.push("row-emphasis");
     if (style?.muted)     classes.push("row-muted");
     if (style?.accent)    classes.push("row-accent");
-    if (style?.highlight) classes.push("row-highlight");
     if (style?.fill)      classes.push("row-fill");
     if (style?.emphasis || style?.muted || style?.accent ||
-        style?.bold || style?.highlight || style?.fill) {
+        style?.bold || style?.fill) {
       classes.push("row-has-semantic");
     }
     // Active-token class — reflects which token actually wins precedence
-    // (loud→quiet: fill > highlight > accent > emphasis > bold > muted).
+    // (loud→quiet: fill > accent > emphasis > bold > muted).
     // Used by styling rules that only apply when a token is THE active one,
     // so e.g. the muted-opacity overlay doesn't bleed onto rows that also
     // have a louder token painted (preview merge, multi-flag data columns).

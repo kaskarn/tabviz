@@ -612,7 +612,6 @@ resolve_row_style_exprs <- function(
     row_emphasis = NULL,
     row_muted = NULL,
     row_accent = NULL,
-    row_highlight = NULL,
     row_fill = NULL,
     marker_color = NULL,
     marker_shape = NULL,
@@ -637,7 +636,6 @@ resolve_row_style_exprs <- function(
       row_emphasis = NA_character_,
       row_muted = NA_character_,
       row_accent = NA_character_,
-      row_highlight = NA_character_,
       row_fill = NA_character_,
       marker_color = NA_character_,
       marker_shape = NA_character_,
@@ -669,7 +667,6 @@ resolve_row_style_exprs <- function(
   result$row_emphasis  <- resolve_one(row_emphasis,  "row_emphasis")
   result$row_muted     <- resolve_one(row_muted,     "row_muted")
   result$row_accent    <- resolve_one(row_accent,    "row_accent")
-  result$row_highlight <- resolve_one(row_highlight, "row_highlight")
   result$row_fill      <- resolve_one(row_fill,      "row_fill")
   result$marker_color  <- resolve_one(marker_color,  "marker_color")
   result$marker_shape <- resolve_one(marker_shape, "marker_shape")

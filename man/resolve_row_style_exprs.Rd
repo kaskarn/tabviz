@@ -17,6 +17,7 @@ resolve_row_style_exprs(
   row_emphasis = NULL,
   row_muted = NULL,
   row_accent = NULL,
+  row_fill = NULL,
   marker_color = NULL,
   marker_shape = NULL,
   marker_opacity = NULL,

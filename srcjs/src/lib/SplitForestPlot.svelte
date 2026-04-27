@@ -16,6 +16,16 @@
   const payload = $derived(store.payload);
   const sidebarWidth = $derived(store.sidebarWidth);
 
+  // Surface the active theme's brand color at the split-container level so
+  // chrome surfaces outside the ForestPlot (sidebar, search, nav nodes)
+  // can tint with brand instead of falling through to bright-blue
+  // hardcoded fallbacks.
+  const brandVar = $derived.by(() => {
+    const inputs = activeStore.spec?.theme?.inputs as { brand?: string } | undefined;
+    const accent = activeStore.spec?.theme?.accent?.default as string | undefined;
+    return inputs?.brand ?? accent ?? "#2563eb";
+  });
+
   // Theme persistence: ThemeSwitcher applies the new theme to the active leaf
   // directly (via store.setThemeObject) — we just need to remember it on the
   // splitStore so leaf navigation re-applies it. When the resolved theme
@@ -52,7 +62,7 @@
   });
 </script>
 
-<div class="split-forest-container" bind:this={containerRef} style:--sidebar-width="{sidebarWidth}px">
+<div class="split-forest-container" bind:this={containerRef} style:--sidebar-width="{sidebarWidth}px" style:--tv-brand={brandVar}>
   {#if payload}
     <!-- Sidebar with navigation tree -->
     <SplitSidebar {store} />

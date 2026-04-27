@@ -10,6 +10,8 @@ web_theme_cochrane()
 A \link{WebTheme}.
 }
 \description{
-The package default. Cochrane teal on warm white, Arial, compact density,
-tuned for systematic-review tables that need to fit dense data legibly.
+The package default. Cochrane heritage teal as brand, warm coral as the
+independent accent. Inter sans-serif, comfortable density, clean slate
+neutrals. Tuned as a general-purpose theme: dense systematic-review tables
+read well, and exploratory tables feel inviting.
 }

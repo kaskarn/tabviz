@@ -110,16 +110,13 @@ resolve_chrome <- function(inputs) {
     tint_medium = oklch_mix(inputs@accent, surface@base, 0.75)
   )
 
-  # Semantic-token color slots. The painter UI applies a RowSemantic
-  # bundle to a row/cell; row.highlight and row.fill both need a color
-  # identity that's not captured by accent / brand / status. Both default
-  # to the same pastel "filled-in" tone derived from accent — a soft,
-  # legible row tint that signals "this row matters" without dominating.
-  # Users override either via theme@semantic@{highlight,fill}.
-  filled_tint <- oklch_mix(inputs@accent, n[1], 0.80)
+  # Semantic-token color slot. The painter applies a RowSemantic bundle
+  # to a row/cell; row.fill needs a color identity that's not captured by
+  # accent / brand / status. Defaults to a pastel "filled-in" tone
+  # derived from accent — a soft, legible row tint that signals "this
+  # row matters" without dominating. Users override via theme@semantic@fill.
   semantic <- Semantics(
-    highlight = filled_tint,
-    fill      = filled_tint
+    fill = oklch_mix(inputs@accent, n[1], 0.80)
   )
 
   list(surface = surface, content = content, divider = divider,
@@ -369,16 +366,9 @@ resolve_components <- function(theme) {
   rc@bold <- fill_na(rc@bold, list(
     font_weight = 600
   ))
-  # highlight token = bold + a pale highlighter background derived from
-  # accent (or pinned via theme@semantic@highlight). fg stays at the row's
-  # default content color; a pale highlight bg keeps text legible.
-  rc@highlight <- fill_na(rc@highlight, list(
-    bg = theme@semantic@highlight,
-    font_weight = 600
-  ))
   # fill token = bold + a pastel filled-in row tint derived from accent.
-  # fg stays at the row's default content color since the bg is pale enough
-  # to remain legible (matches the highlight bundle).
+  # fg stays at the row's default content color since the bg is pale
+  # enough to remain legible.
   rc@fill <- fill_na(rc@fill, list(
     bg = theme@semantic@fill,
     font_weight = 600
@@ -472,8 +462,7 @@ resolve_theme <- function(theme) {
     tint_subtle = chrome$accent@tint_subtle, tint_medium = chrome$accent@tint_medium
   ))
   theme@semantic <- fill_na(theme@semantic, list(
-    highlight = chrome$semantic@highlight,
-    fill      = chrome$semantic@fill
+    fill = chrome$semantic@fill
   ))
 
   # Step 4: data cascade. Reads surface.base from already-resolved chrome.

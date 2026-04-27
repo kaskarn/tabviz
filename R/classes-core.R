@@ -228,9 +228,8 @@ WebSpec <- new_class(
     row_emphasis_col  = new_property(class_character, default = NA_character_),
     row_muted_col     = new_property(class_character, default = NA_character_),
     row_accent_col    = new_property(class_character, default = NA_character_),
-    # E1: three new semantic-token data-column slots. See R/classes-theme.R
-    # for the corresponding RowSemantic bundles on RowCluster.
-    row_highlight_col = new_property(class_character, default = NA_character_),
+    # Semantic-token data-column slots. See R/classes-theme.R for the
+    # corresponding RowSemantic bundles on RowCluster.
     row_fill_col      = new_property(class_character, default = NA_character_),
     # Marker style column mappings
     marker_color_col = new_property(class_character, default = NA_character_),

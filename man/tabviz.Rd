@@ -31,6 +31,7 @@ tabviz(
   row_emphasis = NULL,
   row_muted = NULL,
   row_accent = NULL,
+  row_fill = NULL,
   marker_color = NULL,
   marker_shape = NULL,
   marker_opacity = NULL,
@@ -123,11 +124,13 @@ adapts to the table's aspect ratio. Theme-aware: uses the foreground color.
 
 \item{row_type}{Row type. Column name or formula returning "data", "header", "summary", "spacer".}
 
-\item{row_emphasis}{Emphasis styling (bold + foreground). Column name or formula (logical).}
+\item{row_emphasis}{Emphasis styling (bold + primary fg + primary marker). Column name or formula (logical).}
 
 \item{row_muted}{Muted styling (lighter, reduced prominence). Column name or formula (logical).}
 
-\item{row_accent}{Accent styling (theme accent color). Column name or formula (logical).}
+\item{row_accent}{Accent styling (bold + accent color). Column name or formula (logical).}
+
+\item{row_fill}{Fill styling (bold + pastel accent-derived row tint). Column name or formula (logical).}
 
 \item{marker_color}{Marker fill color. Column name or formula returning CSS color strings.}
 

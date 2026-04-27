@@ -60,10 +60,14 @@ header label (e.g. "Main Trials (12)"). Default \code{FALSE}.}
 \itemize{
 \item \code{"default"}: show all \code{\link[=package_themes]{package_themes()}}.
 \item \code{NULL}: hide the theme switcher entirely.
-\item A list of \code{WebTheme} objects: show exactly those themes. Named list
-entries override each theme's display name
-(e.g. \code{list(Classical = web_theme_jama())}). The spec's active \code{theme}
-is always auto-included so users can revert.
+\item A flat list of \code{WebTheme} objects: show exactly those themes (no tabs).
+Named list entries override each theme's display name
+(e.g. \code{list(Classical = web_theme_jama())}).
+\item A 2-level named list of named lists of \code{WebTheme}: show those themes
+grouped under category tabs. The keys of the outer list become tab
+labels (e.g. \code{list(Editorial = list(Cochrane = web_theme_cochrane(), Lancet = web_theme_lancet()), Other = list(Dark = web_theme_dark()))}).
+In all list forms the spec's active \code{theme} is auto-included so users
+can always revert.
 }
 
 Defaults to \code{getOption("tabviz.enable_themes", "default")}, so a

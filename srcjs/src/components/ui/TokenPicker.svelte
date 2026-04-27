@@ -187,7 +187,7 @@
     width: 220px;
     padding: 8px;
     background: var(--tv-bg, #ffffff);
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-brand, var(--tv-primary, #2563eb)) 18%, var(--tv-border, #e2e8f0));
     border-radius: 8px;
     box-shadow: 0 8px 24px -4px color-mix(in srgb, #0f172a 25%, transparent);
     display: flex;
@@ -227,12 +227,12 @@
     transition: background-color 0.1s ease, border-color 0.1s ease;
   }
   .token-cell:hover {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
+    background: color-mix(in srgb, var(--tv-brand, var(--tv-primary, #2563eb)) 8%, transparent);
   }
   .token-cell.selected {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 14%, var(--tv-bg, #ffffff));
-    border-color: color-mix(in srgb, var(--tv-primary, #2563eb) 35%, transparent);
-    color: var(--tv-primary, #2563eb);
+    background: color-mix(in srgb, var(--tv-brand, var(--tv-primary, #2563eb)) 14%, var(--tv-bg, #ffffff));
+    border-color: color-mix(in srgb, var(--tv-brand, var(--tv-primary, #2563eb)) 35%, transparent);
+    color: var(--tv-brand, var(--tv-primary, #2563eb));
     font-weight: 600;
   }
   .dot {
@@ -254,9 +254,9 @@
     padding: 0;
     width: 100%;
     height: 24px;
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-brand, var(--tv-primary, #2563eb)) 15%, var(--tv-border, #e2e8f0));
     border-radius: 999px;
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 6%, transparent);
+    background: color-mix(in srgb, var(--tv-brand, var(--tv-primary, #2563eb)) 6%, transparent);
     cursor: pointer;
     overflow: hidden;
     font-family: inherit;
@@ -267,7 +267,7 @@
     left: 1px;
     width: calc(50% - 1px);
     height: calc(100% - 2px);
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 90%, transparent);
+    background: color-mix(in srgb, var(--tv-brand, var(--tv-primary, #2563eb)) 90%, transparent);
     border-radius: 999px;
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 0;
@@ -292,7 +292,7 @@
     font-weight: 600;
   }
   .scope-switch:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--tv-primary, #2563eb) 40%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--tv-brand, var(--tv-primary, #2563eb)) 40%, transparent);
     outline-offset: 2px;
   }
 </style>

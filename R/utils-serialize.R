@@ -537,9 +537,6 @@ extract_row_style <- function(row, spec) {
   val <- get_style_val(spec@row_accent_col, "logical")
   if (!is.null(val)) style$accent <- val
 
-  val <- get_style_val(spec@row_highlight_col, "logical")
-  if (!is.null(val)) style$highlight <- val
-
   val <- get_style_val(spec@row_fill_col, "logical")
   if (!is.null(val)) style$fill <- val
 
