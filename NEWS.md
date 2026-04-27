@@ -1,5 +1,47 @@
 # tabviz 0.26.0.9000
 
+## Painter redesign + semantic-token expansion
+
+The painter now applies one of **six** semantic tokens (was three) to
+rows or cells, with a hover-preview affordance and a power-user
+configuration surface.
+
+* **Three new tokens added.** Alongside the existing
+  `emphasis` / `muted` / `accent`, `RowCluster` gains:
+  - `bold` — pure font-weight bump, no color override
+  - `highlight` — bold + pale "marker" background derived from a new
+    `theme.semantic.highlight` color (default mixes accent toward the
+    lightest neutral)
+  - `fill` — bold + strong row fill derived from
+    `theme.semantic.fill` (default mixes accent into the surface
+    base); fg is contrast-checked against the fill bg so text reads
+    on light or dark fills
+  The existing `accent` bundle now also applies `font_weight = 600`
+  so accent rows read as a coordinated "bold and colored" treatment
+  (was: colored text only).
+* **New Tier-2 named inputs** `theme@semantic@highlight` and
+  `theme@semantic@fill` — defaults derive from accent at resolve
+  time; override via `set_theme_field()` or the Tokens tab in the
+  panel.
+* **Painter UI** surfaces five chips (`Mute` / `Bold` / `Accent` /
+  `Highlight` / `Fill`) following the user-facing vocabulary. The
+  legacy `emphasis` bundle stays in the schema for back-compat with
+  `row_emphasis_col` but is no longer surfaced in the painter. First
+  click on the paintbrush enters paint mode with `accent` as the
+  default; subsequent clicks toggle the popover. Hovering a row or
+  cell in paint mode renders the would-be bundle at ~65% opacity —
+  click commits.
+* **R API** adds `row_highlight` and `row_fill` parameters to
+  `tabviz()` / `web_spec()`, parallel to `row_emphasis` / `row_muted` /
+  `row_accent`. Each accepts a column name or a formula (logical).
+* **Tokens tab** is a new advanced settings panel for editing each
+  bundle's `bg / fg / border / markerFill / fontWeight / italic`,
+  plus the two Tier-2 token colors at the top.
+* **Drive-by fix:** `resolveSemanticBundle()` was reading the v1 path
+  `theme.semantics[token]`, which v2 themes don't emit. Result: the
+  painter committed the flag but rendered nothing visually since
+  v2 launched. Fixed to read `theme.row[token]` (the v2 path).
+
 ## In-widget theme switcher gains category tabs
 
 `enable_themes` (and `selectable_themes()`) now accepts a 2-level named

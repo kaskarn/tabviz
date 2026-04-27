@@ -167,6 +167,69 @@ At deeper banding levels (e.g. `banding = "group-2"` with nested groups),
 the L1 bar's explicit fill is preserved unchanged — only the banded
 level loses its explicit fill.
 
+### Semantic tokens — naming visual treatments
+
+Tabviz ships with six **semantic tokens** that name visual treatments
+you can apply to a row or cell. Each token is a `RowSemantic` bundle on
+`theme.row`: `bg`, `fg`, `border`, `marker_fill`, `font_weight`,
+`font_style`. The renderer picks one token per row/cell and paints its
+bundle.
+
+| Token       | Default treatment                                                    |
+|-------------|----------------------------------------------------------------------|
+| `mute`      | Lighter color, reduced prominence                                    |
+| `bold`      | Just a weight bump — no color change                                 |
+| `accent`    | Bold + accent-color text and marker (most common)                    |
+| `highlight` | Bold + a pale "marker" background (defaults to a derived `theme.semantic.highlight`) |
+| `fill`      | Bold + a strong row fill (defaults to a derived `theme.semantic.fill`); fg auto-contrasts |
+| `emphasis`  | Legacy: bold + primary text and marker (kept for back-compat)        |
+
+Two paths to apply a token to a row:
+
+1. **Data column** — pass a logical column to `tabviz()`:
+
+   ```{r}
+   #| eval: false
+   tabviz(data, label = "study",
+     columns = list(viz_forest("hr", "lo", "hi")),
+     row_accent = "is_primary",      # rows where is_primary == TRUE → accent token
+     row_fill   = "is_overall"       # rows where is_overall == TRUE → fill token
+   )
+   ```
+
+2. **Painter (interactive)** — click the paintbrush icon, pick a chip
+   (`mute` / `bold` / `accent` / `highlight` / `fill`), then click rows
+   or cells to stamp the token on. Hover before clicking shows a
+   semi-transparent preview of the would-be visual. The painter
+   defaults to `accent` + row-scope on first open. Toggle Row/Cell
+   scope from the popover.
+
+#### Customizing token visuals
+
+Two ways to override:
+
+* **Tier-2 named colors** for the highlight + fill backgrounds:
+
+  ```{r}
+  #| eval: false
+  set_theme_field(t, c("semantic", "highlight"), "#FFE58F")  # custom marker yellow
+  set_theme_field(t, c("semantic", "fill"),      "#1F3A5F")  # custom fill navy
+  ```
+
+  Or interactively: Settings panel → **Tokens** tab → Token colors.
+
+* **Per-bundle override** for any field on any token:
+
+  ```{r}
+  #| eval: false
+  set_theme_field(t, c("row", "fill", "fg"),          "#FFFFFF")  # force white text on fill rows
+  set_theme_field(t, c("row", "highlight", "border"), "#C8553D")  # red border on highlight rows
+  ```
+
+  Or interactively: Settings panel → **Tokens** tab → expand a token →
+  edit any field. All bundle fields are override-aware (reset reverts
+  to the resolved default).
+
 ### Variants — three knobs every table can flip
 
 Variants are per-table choices that don't change the theme's identity. They're orthogonal to inputs and freely composable:
