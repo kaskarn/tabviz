@@ -127,6 +127,13 @@
   const selectedRowIds = $derived(store.selectedRowIds);
   const hoveredRowId = $derived(store.hoveredRowId);
 
+  // Paint-mode hover state. Row-scope hover reuses `hoveredRowId`; cell-scope
+  // tracks the specific cell ("rowId:field") under the cursor so the hover
+  // preview lands on one cell instead of the whole row.
+  let paintHoverCellField = $state<string | null>(null);
+  const paintTool = $derived(store.paintTool);
+  const paintActive = $derived(paintTool !== null);
+
   // Zoom & auto-fit state (from store)
   const zoom = $derived(store.zoom);
   const autoFit = $derived(store.autoFit);
@@ -1215,6 +1222,20 @@
     store.setTooltip(null, null);
   }
 
+  // Cell-aware hover wrapper. Used by every cell mouseenter/leave handler so
+  // paint-mode cell-scope preview can target a specific cell. Falls through
+  // to handleRowHover/handleRowLeave for the row-level hover behavior.
+  function handleCellEnter(rowId: string, field: string, event: MouseEvent) {
+    handleRowHover(rowId, event);
+    if (paintTool?.scope === "cell") {
+      paintHoverCellField = `${rowId}:${field}`;
+    }
+  }
+  function handleCellLeave() {
+    handleRowLeave();
+    paintHoverCellField = null;
+  }
+
   /**
    * Paint-aware row / cell click handler. When the paint tool is active
    * with `scope = "row"`, clicking a row toggles the active semantic flag
@@ -1684,9 +1705,21 @@
           {@const row = isGroupHeader ? null : displayRow.row}
           {@const rowDepth = displayRow.depth}
           {@const selected = row ? isSelected(row.id) : false}
-          {@const rowClasses = row ? getRowClasses(row.style, bandIndexes[i]) : (bandIndexes[i] === 1 ? "row-odd" : "")}
-          {@const semBundle = row && theme ? resolveSemanticBundle(row.style, theme) : null}
-          {@const rowStyles = row ? getRowStyles(row.style, rowDepth, semBundle) : ""}
+          <!--
+            Paint-mode hover preview. When the paint tool is in row scope
+            and this row is hovered, mix the active token into the row's
+            style for the bundle / class / styles derivations below — the
+            renderer produces the would-be visual without committing the
+            flag. Cell-scope preview is handled separately at cell level
+            via getCellStyle().
+          -->
+          {@const rowPreviewToken = paintRowPreviewToken(row)}
+          {@const effectiveRowStyle = row?.style && rowPreviewToken
+            ? ({ ...row.style, [rowPreviewToken]: true } as typeof row.style)
+            : row?.style}
+          {@const rowClasses = row ? getRowClasses(effectiveRowStyle, bandIndexes[i]) : (bandIndexes[i] === 1 ? "row-odd" : "")}
+          {@const semBundle = row && theme ? resolveSemanticBundle(effectiveRowStyle, theme) : null}
+          {@const rowStyles = row ? getRowStyles(effectiveRowStyle, rowDepth, semBundle) : ""}
           {@const isSpacerRow = row?.style?.type === "spacer"}
           {@const gridRow = effectiveHeaderDepth + 1 + i}
           {@const groupTier = isGroupHeader && theme
@@ -1749,11 +1782,12 @@
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
-                class:hovered={row && hoveredRowId === row.id}
+                class:hovered={row && hoveredRowId === row.id && !paintActive}
                 class:spacer-row={isSpacerRow}
                 class:reorderable={spec?.interaction.enableReorderRows}
                 class:drag-source={isDragSource}
                 class:just-dropped={justDropped}
+                class:paint-preview={!!rowPreviewToken || (!!row && !!paintCellPreviewToken(row, column.field))}
                 data-display-index={i}
                 data-row-id={row ? row.id : undefined}
                 data-field={row ? column.field : undefined}
@@ -1780,8 +1814,8 @@
                 onclick={isGroupHeader ? () => store.toggleGroup(displayRow.group.id) : row ? () => handleCellClick(row, column.field) : undefined}
                 ondblclick={!isGroupHeader && row && spec?.interaction.enableEdit && isEditableColumn(column) ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
                 onkeydown={isGroupHeader ? (e) => (e.key === "Enter" || e.key === " ") && store.toggleGroup(displayRow.group.id) : undefined}
-                onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
-                onmouseleave={row ? () => handleRowLeave() : undefined}
+                onmouseenter={row ? (e) => handleCellEnter(row.id, column.field, e) : undefined}
+                onmouseleave={row ? () => handleCellLeave() : undefined}
               >
                 {#if isGroupHeader}
                   <GroupHeader
@@ -1808,14 +1842,15 @@
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
-                class:hovered={row && hoveredRowId === row.id}
+                class:hovered={row && hoveredRowId === row.id && !paintActive}
                 class:spacer-row={isSpacerRow}
+                class:paint-preview={!!rowPreviewToken || (!!row && !!paintCellPreviewToken(row, column.field))}
                 role="presentation"
                 style:grid-row={gridRow}
                 style:background-color={effectiveBg}
                 style={rowStyles || undefined}
-                onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
-                onmouseleave={row ? () => handleRowLeave() : undefined}
+                onmouseenter={row ? (e) => handleCellEnter(row.id, column.field, e) : undefined}
+                onmouseleave={row ? () => handleCellLeave() : undefined}
                 onclick={row ? () => handleCellClick(row, column.field) : undefined}
               ></div>
             {:else}
@@ -1834,10 +1869,11 @@
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
-                class:hovered={row && hoveredRowId === row.id}
+                class:hovered={row && hoveredRowId === row.id && !paintActive}
                 class:spacer-row={isSpacerRow}
                 class:wrap-enabled={column.wrap}
                 class:editable={editableHere}
+                class:paint-preview={!!rowPreviewToken || (!!row && !!paintCellPreviewToken(row, column.field))}
                 role="presentation"
                 data-row-id={row ? row.id : undefined}
                 data-field={column.field}
@@ -1846,8 +1882,8 @@
                 style:text-align={column.align}
                 style:justify-content={column.align === "center" ? "center" : column.align === "right" ? "flex-end" : "flex-start"}
                 style={rowStyles || undefined}
-                onmouseenter={row ? (e) => handleRowHover(row.id, e) : undefined}
-                onmouseleave={row ? () => handleRowLeave() : undefined}
+                onmouseenter={row ? (e) => handleCellEnter(row.id, column.field, e) : undefined}
+                onmouseleave={row ? () => handleCellLeave() : undefined}
                 onclick={row ? () => handleCellClick(row, column.field) : undefined}
                 ondblclick={editableHere && row ? () => store.startEdit({ rowId: row.id, field: column.field }) : undefined}
               >
@@ -2541,8 +2577,37 @@
     return styles.join("; ");
   }
 
-  // Get cell style for a specific column from row.cellStyles or column.styleMapping
+  // Build a paint-preview style hint when the paint tool would commit on
+  // this row/cell at click. Returns the active token or null. The renderer
+  // merges the token flag into the row/cell style for one resolution pass
+  // (no flag commit) so resolveSemanticBundle produces the would-be visual.
+  function paintRowPreviewToken(row: Row | null): string | null {
+    if (!row || !paintTool) return null;
+    if (paintTool.scope !== "row") return null;
+    if (hoveredRowId !== row.id) return null;
+    return paintTool.token;
+  }
+  function paintCellPreviewToken(row: Row | null, field: string): string | null {
+    if (!row || !paintTool) return null;
+    if (paintTool.scope !== "cell") return null;
+    if (paintHoverCellField !== `${row.id}:${field}`) return null;
+    return paintTool.token;
+  }
+
+  // Get cell style for a specific column from row.cellStyles or column.styleMapping.
+  // When the paint tool is hovering THIS cell in cell scope, mix the
+  // preview token into the returned style so all downstream consumers
+  // (CellContent, CellPvalue, getCellBg, resolveSemanticBundle) see it
+  // and render the would-be visual without a flag commit.
   function getCellStyle(row: Row, column: ColumnSpec): CellStyle | undefined {
+    const previewToken = paintCellPreviewToken(row, column.field);
+    const baseStyle = getCellStyleBase(row, column);
+    if (previewToken) {
+      return { ...(baseStyle ?? {}), [previewToken]: true } as CellStyle;
+    }
+    return baseStyle;
+  }
+  function getCellStyleBase(row: Row, column: ColumnSpec): CellStyle | undefined {
     // Check for pre-computed cellStyles from R serialization
     if (row.cellStyles?.[column.field]) {
       return row.cellStyles[column.field];
@@ -3029,6 +3094,15 @@
 
   .row-bold {
     font-weight: var(--tv-font-weight-bold, 600);
+  }
+
+  /* Paint-mode hover preview. The renderer mixes the active paint token's
+     bundle into the row/cell style so the would-be visual paints. We
+     dim it a bit so the user sees "this is what you'll get on click"
+     without it feeling already-committed. */
+  .data-cell.paint-preview {
+    opacity: 0.65;
+    transition: opacity 0.08s ease;
   }
 
   .row-italic {

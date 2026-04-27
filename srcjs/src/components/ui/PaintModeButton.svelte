@@ -17,13 +17,22 @@
   const tool = $derived(store.paintTool);
   const active = $derived(tool !== null);
 
-  const tokens: Array<{ id: "emphasis" | "muted" | "accent"; label: string }> = [
-    { id: "emphasis", label: "Emphasis" },
-    { id: "muted",    label: "Muted"    },
-    { id: "accent",   label: "Accent"   },
+  type Token = "muted" | "bold" | "accent" | "highlight" | "fill";
+
+  // The painter surfaces five tokens following the user-facing vocabulary
+  // (mute / bold / accent / highlight / fill). The legacy `emphasis` bundle
+  // (bold + primary fg) stays in the R schema for back-compat with
+  // `row_emphasis_col` data sources but isn't shown here — its semantic
+  // overlaps with bold + accent and would confuse the chip set.
+  const tokens: Array<{ id: Token; label: string; tip: string }> = [
+    { id: "muted",     label: "Mute",      tip: "Lighter, reduced prominence" },
+    { id: "bold",      label: "Bold",      tip: "Just a weight bump — no color change" },
+    { id: "accent",    label: "Accent",    tip: "Bold + accent color" },
+    { id: "highlight", label: "Highlight", tip: "Bold + pale highlighter background" },
+    { id: "fill",      label: "Fill",      tip: "Bold + strong row fill" },
   ];
 
-  function pickToken(token: "emphasis" | "muted" | "accent") {
+  function pickToken(token: Token) {
     const scope = tool?.scope ?? "row";
     // Re-clicking the active chip exits paint mode — matches dblclick-to-
     // toggle conventions elsewhere and gives Escape a visible counterpart.
@@ -45,6 +54,15 @@
   }
 
   function toggle() {
+    // First click enters paint mode with the default (accent + row scope) AND
+    // opens the popover. Subsequent clicks just toggle the popover; the active
+    // tool stays unchanged. Esc / re-clicking the active chip / Exit-button
+    // are the explicit "leave paint mode" affordances.
+    if (!tool) {
+      store.setPaintTool({ token: "accent", scope: "row" });
+      open = true;
+      return;
+    }
     open = !open;
   }
 
@@ -67,7 +85,7 @@
   const tooltip = $derived(
     active
       ? `Painting ${tool!.scope}s as ${tool!.token}`
-      : "Paint rows/cells as emphasis / muted / accent",
+      : "Paint rows/cells with a semantic token (mute / bold / accent / highlight / fill)",
   );
 </script>
 
@@ -131,6 +149,7 @@
               onclick={() => pickToken(t.id)}
               role="radio"
               aria-checked={tool?.token === t.id}
+              title={t.tip}
             >{t.label}</button>
           {/each}
         </div>
