@@ -12,7 +12,10 @@
 
   const maxValue = $derived(options?.maxValue ?? 100);
   const showLabel = $derived(options?.showLabel ?? true);
-  const barColor = $derived(options?.color ?? "var(--tv-primary, #2563eb)");
+  // Default to the theme's brand color rather than accent — progress bars
+  // are chrome that should ride along with the brand identity, matching
+  // the col_bar / col_sparkline defaults.
+  const barColor = $derived(options?.color ?? "var(--tv-brand, var(--tv-primary, #2563eb))");
   const scale = $derived(options?.scale ?? "linear");
 
   const percentage = $derived.by(() =>

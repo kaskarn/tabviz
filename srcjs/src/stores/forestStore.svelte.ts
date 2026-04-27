@@ -2301,8 +2301,9 @@ export function createForestStore() {
     // Refresh the reset target — a preset swap supersedes whatever was there.
     initialTheme = cloneTheme(cleanTheme);
     // Fonts / sizes / padding likely differ from the previous theme, so
-    // every auto-width measurement is stale. Invalidate and re-run.
-    columnWidths = {};
+    // every auto-width measurement is stale. Invalidate and re-run, but
+    // preserve user-resized entries (measureAutoColumns skips those).
+    clearAutoWidthsKeepingUserResizes();
     measureAutoColumns();
     appendOp(ops.setTheme(themeName));
   }
@@ -2317,7 +2318,7 @@ export function createForestStore() {
     baseThemeName = theme?.name ?? "default";
     themeEdits = {};
     initialTheme = cloneTheme(cleanTheme);
-    columnWidths = {};
+    clearAutoWidthsKeepingUserResizes();
     measureAutoColumns();
   }
 
@@ -2325,6 +2326,46 @@ export function createForestStore() {
    *  field in these invalidates cached auto-widths. Banding/colors/axis are
    *  paint-only and don't affect widths, so they stay out of this list. */
   const WIDTH_AFFECTING_SECTIONS = new Set(["typography", "spacing", "shapes"]);
+
+  /** Within `spacing`, only x-axis padding fields actually change column
+   *  widths. rowHeight / headerHeight / footerGap / titleSubtitleGap /
+   *  headerGap / bottomMargin / axisGap / indentPerLevel are vertical or
+   *  geometry-only — remeasuring on those fires off needless work mid-
+   *  drag and was the source of the "row-resize transiently collapses
+   *  columns" symptom. */
+  const SPACING_WIDTH_FIELDS = new Set([
+    "cellPaddingX",
+    "padding",
+    "containerPadding",
+    "columnGroupPadding",
+    "groupPadding",
+    "rowGroupPadding",
+  ]);
+  function spacingFieldAffectsWidth(field: string | undefined): boolean {
+    return field == null ? true : SPACING_WIDTH_FIELDS.has(field);
+  }
+
+  /**
+   * Drop cached auto-widths so measureAutoColumns can recompute them, but
+   * keep user-resized entries intact. Without this, density/theme/font
+   * edits would clear `columnWidths` for user-resized columns too — and
+   * since measureAutoColumns explicitly skips those (`userResizedIds`
+   * gate), the column ends up with no recorded width and collapses.
+   * Hit by bugs (1) + (4): "manually-resized viz column collapses on
+   * density change."
+   */
+  function clearAutoWidthsKeepingUserResizes() {
+    if (userResizedIds.size === 0) {
+      columnWidths = {};
+      return;
+    }
+    const next: Record<string, number> = {};
+    for (const id of userResizedIds) {
+      const w = columnWidths[id];
+      if (typeof w === "number") next[id] = w;
+    }
+    columnWidths = next;
+  }
 
   /**
    * Live-preview a single theme field during a drag without recording
@@ -2420,8 +2461,19 @@ export function createForestStore() {
     themeEdits = nextEdits;
 
     if (WIDTH_AFFECTING_SECTIONS.has(section)) {
-      columnWidths = {};
-      measureAutoColumns();
+      // Within `spacing`, narrow the gate to only x-axis padding fields.
+      // rowHeight / headerHeight / titleSubtitleGap / headerGap /
+      // bottomMargin / axisGap / indentPerLevel are vertical-only and
+      // don't change column widths; remeasuring on those during a drag
+      // commit was the source of the "row-resize transiently collapses
+      // a column" artifact.
+      const field = path.length >= 2 && typeof path[1] === "string"
+        ? (path[1] as string)
+        : undefined;
+      if (section !== "spacing" || spacingFieldAffectsWidth(field)) {
+        clearAutoWidthsKeepingUserResizes();
+        measureAutoColumns();
+      }
     }
   }
 

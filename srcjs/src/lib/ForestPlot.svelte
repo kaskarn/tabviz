@@ -2078,6 +2078,7 @@
               {#if displayRow.type === "data"}
                 {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
                 {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+                {@const vizCellStyle = getCellStyle(displayRow.row, fc.column)}
                 <RowInterval
                   row={displayRow.row}
                   yPosition={rowY + rowH / 2}
@@ -2088,13 +2089,32 @@
                   {isLog}
                   weightCol={spec.data.weightCol}
                   forestColumnOptions={forestOpts}
-                  onRowClick={() => handleRowClick(displayRow.row)}
+                  cellStyle={vizCellStyle ?? null}
+                  onRowClick={() => {
+                    // Marker click in cell scope paints the viz cell so
+                    // clicking the diamond and clicking the cell behave
+                    // consistently. Row scope keeps the existing
+                    // row-paint behavior.
+                    if (store.paintTool.scope === "cell") {
+                      handleCellClick(displayRow.row, fc.column.field);
+                    } else {
+                      handleRowClick(displayRow.row);
+                    }
+                  }}
                   onRowHover={(hovered, event) => {
                     store.setHovered(hovered ? displayRow.row.id : null);
                     if (hovered && event) {
                       store.setTooltip(displayRow.row.id, { x: event.clientX, y: event.clientY });
                     } else {
                       store.setTooltip(null, null);
+                    }
+                    // Cell-scope paint preview: hovering the marker should
+                    // show the would-be cell paint on the marker (parity
+                    // with hovering the cell DOM elsewhere in the row).
+                    if (store.paintTool.scope === "cell") {
+                      store.setPaintHoverCellField(
+                        hovered ? `${displayRow.row.id}:${fc.column.field}` : null
+                      );
                     }
                   }}
                 />

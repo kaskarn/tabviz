@@ -3163,7 +3163,9 @@ function renderUnifiedTableRow(
       if (progValue !== undefined && progValue !== null && !Number.isNaN(progValue)) {
         const progOpts = col.options?.progress;
         const progMax = progOpts?.maxValue ?? 100;
-        const progColor = progOpts?.color ?? theme.accent.default;
+        const progColor = progOpts?.color
+          ?? (theme.inputs as { brand?: string } | undefined)?.brand
+          ?? theme.accent.default;
         const progShowLabel = progOpts?.showLabel ?? true;
         const progScale = progOpts?.scale ?? "linear";
         // Label shows raw percent-of-max (scale-independent), bar width uses the transform

@@ -227,6 +227,7 @@ export const AUTO_WIDTH = {
   VISUAL_MIN: {
     sparkline: 92, // 60px SVG + 32px padding
     bar: 100, // ~60px track + ~32px label + padding
+    progress: 100, // ~60px track + ~32px label + 6px gap + padding (matches CellProgress CSS)
     stars: 84, // 5 stars at ~12px each + 32px padding
     range: 84, // visual element + 32px padding
     badge: 74, // minimum for short badges + pill padding

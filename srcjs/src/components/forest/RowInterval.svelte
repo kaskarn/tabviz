@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Row, WebTheme, ComputedLayout, EffectSpec, MarkerShape, ForestColumnOptions } from "$types";
+  import type { Row, RowStyle, CellStyle, WebTheme, ComputedLayout, EffectSpec, MarkerShape, ForestColumnOptions } from "$types";
   import type { ScaleLinear, ScaleLogarithmic } from "d3-scale";
   import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
@@ -20,6 +20,11 @@
     isLog?: boolean;
     /** Forest column options (for explicit col_forest columns) */
     forestColumnOptions?: ForestColumnOptions | null;
+    /** Cell-level style overrides for the forest column. When the user
+     * paints a viz cell, the painter writes flags into the cell's
+     * CellStyle; the marker cascade should reflect those for cell-scope
+     * paint (otherwise painting a viz cell does nothing visually). */
+    cellStyle?: CellStyle | null;
     onRowClick?: () => void;
     onRowHover?: (hovered: boolean, event?: MouseEvent) => void;
   }
@@ -34,9 +39,18 @@
     clipBounds,
     isLog = false,
     forestColumnOptions = null,
+    cellStyle = null,
     onRowClick,
     onRowHover,
   }: Props = $props();
+
+  // Effective row-style for the marker cascade: merge cell-level flags
+  // over the row-level ones. activeSemanticToken on the result picks
+  // whichever token is most specific (cell wins over row when both set).
+  const effectiveStyleForMarker = $derived.by((): RowStyle | null => {
+    if (!cellStyle) return row.style ?? null;
+    return { ...(row.style ?? {}), ...(cellStyle as Partial<RowStyle>) } as RowStyle;
+  });
 
   // Arrow configuration (scales with theme line width)
   const arrowConfig = $derived(computeArrowDimensions(theme));
@@ -199,11 +213,14 @@
       baseColor = theme?.accent?.default ?? "#2563eb";
     }
 
-    // Apply Layers 3+4 via the shared cascade resolver
+    // Apply Layers 3+4 via the shared cascade resolver. Pass the cell-
+    // level merged style so cell-scope painting on a viz column reaches
+    // the marker (otherwise painting a viz cell would not surface
+    // visually since the viz cell DOM is just a backdrop for the SVG).
     const ms = resolveMarkerStyle(
       baseColor,
       markerStyle?.color ?? null,
-      row.style,
+      effectiveStyleForMarker,
       effectsToRender.length,
       theme,
     );
