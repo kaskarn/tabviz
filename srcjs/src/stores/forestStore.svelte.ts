@@ -98,7 +98,10 @@ export function createForestStore() {
   let initialHeight = $state(400);
 
   // Interaction state
-  let selectedRowIds = $state<Set<string>>(new Set());
+  // Selection state. With the unified paint-as-selection model, the
+  // "selected" rows ARE the rows currently painted with the active token.
+  // We compute the live set from styleEdits + paintTool via the
+  // selectedRowIds getter below; no separate state to keep in sync.
   let collapsedGroups = $state<Set<string>>(new Set());
   let sortConfig = $state<SortConfig | null>(null);
   let filterConfig = $state<FilterConfig | null>(null);
@@ -190,7 +193,16 @@ export function createForestStore() {
   // the cursor switches to a brush, row/cell pointerdown toggles the matching
   // flag. Cleared on Escape, on Clear-paint, or by re-clicking the active
   // token chip.
-  let paintTool = $state<{ token: SemanticToken; scope: "row" | "cell" } | null>(null);
+  // Paint tool — ALWAYS set. Click-to-select unified with click-to-paint:
+  // every click on a paintable row/cell applies the active token. Default
+  // is `accent + row` so a fresh widget behaves visually like the
+  // historical click-to-select (selected-row tint = accent.muted), now
+  // implemented as token application instead of a separate selection
+  // concept. enableSelect=FALSE on the spec hides the toolbar picker and
+  // disables the click-to-paint path; the painter is otherwise always-on.
+  let paintTool = $state<{ token: SemanticToken; scope: "row" | "cell" }>(
+    { token: "accent", scope: "row" },
+  );
 
   // User-added columns (runtime insertions via the interactive column editor).
   // `afterId` identifies the sibling column that the new column is inserted after
@@ -1459,19 +1471,72 @@ export function createForestStore() {
     initialHeight = h;
   }
 
+  // selectRow / setSelectedRows are now thin wrappers over the painter:
+  // "selecting" a row IS painting it with the currently-active token.
+  // The visible "selected" set is whatever rows have the active token
+  // painted on them (see selectedRowIds getter below). Keeping these
+  // function names so R-side proxies (e.g. setSelectedRows from the
+  // shiny proxy) still work without renaming.
   function selectRow(id: string) {
-    const newSelection = new Set(selectedRowIds);
-    if (newSelection.has(id)) {
-      newSelection.delete(id);
-    } else {
-      newSelection.add(id);
-    }
-    selectedRowIds = newSelection;
+    paintRowWithActiveToken(id);
   }
 
-  // Replace the current selection with the given row ids (used by the proxy).
   function setSelectedRows(ids: string[]) {
-    selectedRowIds = new Set(ids);
+    // Replace = clear all rows currently painted with the active token,
+    // then paint the given list. Mirrors the historical
+    // setSelectedRows(['a','b','c']) semantics: those rows become "the
+    // selection." Other tokens on those rows are preserved.
+    const active = paintTool.token;
+    const target = new Set(ids);
+    // Clear active token from rows not in `ids`
+    for (const rowId of Object.keys(styleEdits.rows)) {
+      const flags = styleEdits.rows[rowId];
+      if (flags?.[active] && !target.has(rowId)) {
+        setRowSemantic(rowId, active, false);
+      }
+    }
+    // Paint active token onto rows in `ids` that aren't yet painted.
+    for (const rowId of ids) {
+      if (!styleEdits.rows[rowId]?.[active]) {
+        setRowSemantic(rowId, active, true);
+      }
+    }
+  }
+
+  // Click handler core: paint with replace-if-different / toggle-if-same.
+  // - Row already has the active token → unpaint (toggle off).
+  // - Row has a different token → clear the other, set the active.
+  // - Row has nothing → set the active.
+  // Cell scope routed through the same logic via paintCellWithActiveToken.
+  function paintRowWithActiveToken(rowId: string) {
+    const active = paintTool.token;
+    const flags = styleEdits.rows[rowId] ?? {};
+    if (flags[active]) {
+      // Toggle off
+      setRowSemantic(rowId, active, false);
+      return;
+    }
+    // Replace: clear any other token currently set, then apply active.
+    const allTokens: SemanticToken[] =
+      ["emphasis", "muted", "accent", "bold", "highlight", "fill"];
+    for (const t of allTokens) {
+      if (t !== active && flags[t]) setRowSemantic(rowId, t, false);
+    }
+    setRowSemantic(rowId, active, true);
+  }
+  function paintCellWithActiveToken(rowId: string, field: string) {
+    const active = paintTool.token;
+    const flags = styleEdits.cells[rowId]?.[field] ?? {};
+    if (flags[active]) {
+      setCellSemantic(rowId, field, active, false);
+      return;
+    }
+    const allTokens: SemanticToken[] =
+      ["emphasis", "muted", "accent", "bold", "highlight", "fill"];
+    for (const t of allTokens) {
+      if (t !== active && flags[t]) setCellSemantic(rowId, field, t, false);
+    }
+    setCellSemantic(rowId, field, active, true);
   }
 
   function toggleGroup(id: string, collapsed?: boolean) {
@@ -2029,14 +2094,12 @@ export function createForestStore() {
   // the edits. Re-selecting the active token chip or pressing Escape
   // exits paint mode.
 
-  function setPaintTool(tool: { token: SemanticToken; scope: "row" | "cell" } | null) {
+  // The painter is always-on. setPaintTool just changes which token / scope
+  // future clicks will apply. Paint commits accumulate in styleEdits.
+  function setPaintTool(tool: { token: SemanticToken; scope: "row" | "cell" }) {
     paintTool = tool;
-    // Entering paint mode clears any row selection so the selected tint
-    // doesn't fight the painted semantic bg. Leaving paint mode doesn't
-    // re-select anything — the user explicitly opts into selection later.
-    if (tool) selectedRowIds = new Set();
-    // Clear any stale paint-hover marker so a tool switch doesn't leave
-    // the previous cell highlighted in preview.
+    // Clear any stale paint-hover marker so a token/scope switch doesn't
+    // leave the previous cell highlighted in preview.
     paintHoverCellField = null;
   }
 
@@ -2623,7 +2686,10 @@ export function createForestStore() {
    */
   function resetState() {
     // ── User selection / collapse / sort / filter ────────────────────────
-    selectedRowIds = new Set();
+    // Selection IS painted-row state — clearing it means clearing all
+    // paint applied via the active token (and any other tokens in
+    // styleEdits). clearAllPaint() handles that.
+    clearAllPaint();
     collapsedGroups = new Set();
     sortConfig = null;
     filterConfig = null;
@@ -2815,7 +2881,13 @@ export function createForestStore() {
       return layout;
     },
     get selectedRowIds() {
-      return selectedRowIds;
+      // Derived: rows currently painted with the active token.
+      const active = paintTool.token;
+      const ids = new Set<string>();
+      for (const rowId of Object.keys(styleEdits.rows)) {
+        if (styleEdits.rows[rowId]?.[active]) ids.add(rowId);
+      }
+      return ids;
     },
     get collapsedGroups() {
       return collapsedGroups;
@@ -3212,6 +3284,8 @@ export function createForestStore() {
     // Paint tool
     setPaintTool,
     setPaintHoverCellField,
+    paintRowWithActiveToken,
+    paintCellWithActiveToken,
     setRowSemantic,
     setCellSemantic,
     getRowSemantic,

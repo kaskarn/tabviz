@@ -127,13 +127,12 @@
   const selectedRowIds = $derived(store.selectedRowIds);
   const hoveredRowId = $derived(store.hoveredRowId);
 
-  // Paint-mode state lives on the store; we read it via store.paintTool /
-  // store.paintHoverCellField everywhere. Local $state / $derived for these
-  // ran into a Svelte 5 compiler issue where helper functions defined in
-  // this script body referenced the bare names instead of the renamed
-  // closure variables, throwing ReferenceError at runtime. Reading from
-  // store.* (a prop) goes through a getter the compiler always preserves.
-  const paintActive = $derived(store.paintTool !== null);
+  // The painter is always-on in the unified select-as-paint model. We read
+  // paint state via `store.paintTool` and `store.paintHoverCellField`
+  // everywhere — Svelte 5's compiler doesn't rewrite component-local
+  // $state references inside helper functions defined in the same script
+  // (they end up as bare ReferenceError lookups), but prop access via
+  // store.* goes through a getter the compiler always preserves.
 
   // Zoom & auto-fit state (from store)
   const zoom = $derived(store.zoom);
@@ -1246,24 +1245,26 @@
    * When no paint tool is active, falls through to the normal row-select
    * behavior so authoring mode is the opt-in branch.
    */
+  // Click handler: always paint with the active token (row/cell scope).
+  // Selection is unified with paint — clicking a row IS painting it with
+  // whichever token is active in the toolbar TokenPicker.
+  // Replace-if-different / toggle-if-same semantics live on the store
+  // (paintRowWithActiveToken / paintCellWithActiveToken).
   function handleRowClick(row: { id: string }) {
-    const tool = store.paintTool;
-    if (tool && tool.scope === "row") {
-      const current = store.getRowSemantic(row as unknown as import("$types").Row, tool.token);
-      store.setRowSemantic(row.id, tool.token, !current);
+    if (store.paintTool.scope !== "row") {
+      // Painter is currently in cell scope; row clicks fall through to
+      // cell-scope click via the cell handler. Don't do anything here.
       return;
     }
-    store.selectRow(row.id);
+    store.paintRowWithActiveToken(row.id);
   }
-
   function handleCellClick(row: { id: string }, field: string) {
-    const tool = store.paintTool;
-    if (tool && tool.scope === "cell") {
-      const current = store.getCellSemantic(row as unknown as import("$types").Row, field, tool.token);
-      store.setCellSemantic(row.id, field, tool.token, !current);
-      return;
+    if (store.paintTool.scope === "cell") {
+      store.paintCellWithActiveToken(row.id, field);
+    } else {
+      // In row scope, a click on any cell paints the row.
+      store.paintRowWithActiveToken(row.id);
     }
-    store.selectRow(row.id);
   }
 
   // CSS variable style string (includes shared rendering constants for consistency)
@@ -1783,7 +1784,6 @@
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
-                class:hovered={row && hoveredRowId === row.id && !paintActive}
                 class:spacer-row={isSpacerRow}
                 class:reorderable={spec?.interaction.enableReorderRows}
                 class:drag-source={isDragSource}
@@ -1843,7 +1843,6 @@
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
-                class:hovered={row && hoveredRowId === row.id && !paintActive}
                 class:spacer-row={isSpacerRow}
                 class:paint-preview={!!rowPreviewToken || (!!row && !!paintCellPreviewToken(row, column.field))}
                 role="presentation"
@@ -1870,7 +1869,6 @@
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
                 class:selected
-                class:hovered={row && hoveredRowId === row.id && !paintActive}
                 class:spacer-row={isSpacerRow}
                 class:wrap-enabled={column.wrap}
                 class:editable={editableHere}
@@ -3102,12 +3100,15 @@
     font-weight: var(--tv-font-weight-bold, 600);
   }
 
-  /* Paint-mode hover preview. The renderer mixes the active paint token's
-     bundle into the row/cell style so the would-be visual paints. We
-     dim it a bit so the user sees "this is what you'll get on click"
-     without it feeling already-committed. */
+  /* Paint preview — always-on hover affordance in the unified select-as-
+     paint model. The renderer mixes the active paint token's bundle into
+     the row/cell style so the would-be visual paints; we dim it a bit so
+     the user sees "this is what you'll get on click" without it feeling
+     already-committed. cursor: pointer signals the row/cell is the click
+     target. */
   .data-cell.paint-preview {
     opacity: 0.65;
+    cursor: pointer;
     transition: opacity 0.08s ease;
   }
 

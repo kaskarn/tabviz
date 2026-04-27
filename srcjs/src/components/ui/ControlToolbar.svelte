@@ -7,7 +7,7 @@
   import ResetButton from "./ResetButton.svelte";
   import ZoomControls from "./ZoomControls.svelte";
   import SettingsButton from "./SettingsButton.svelte";
-  import PaintModeButton from "./PaintModeButton.svelte";
+  import TokenPicker from "./TokenPicker.svelte";
   import SourceButton from "./SourceButton.svelte";
 
   interface Props {
@@ -44,7 +44,7 @@
     <ThemeSwitcher {store} availableThemes={enableThemes} {onThemeChange} />
   {/if}
   {#if enablePaint}
-    <PaintModeButton {store} />
+    <TokenPicker {store} />
   {/if}
   <SourceButton {store} />
   {#if enableReset}
