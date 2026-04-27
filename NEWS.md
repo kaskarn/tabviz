@@ -1,4 +1,4 @@
-# tabviz 0.26.0.9000
+# tabviz 0.26.0
 
 ## Painter redesign + semantic-token expansion
 
