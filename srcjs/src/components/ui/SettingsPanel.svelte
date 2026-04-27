@@ -6,6 +6,7 @@
   import V2SpacingControl from "./V2SpacingControl.svelte";
   import V2MarksControl from "./V2MarksControl.svelte";
   import V2TextControl from "./V2TextControl.svelte";
+  import V2TokensControl from "./V2TokensControl.svelte";
   import TabSelect from "./TabSelect.svelte";
   // Axis settings are per-column now (via the column configure popover on
   // viz_forest / viz_bar / viz_boxplot / viz_violin). The theme Axis tab
@@ -35,6 +36,7 @@
     { id: "spacing",  label: "Spacing", kind: "advanced" },
     { id: "viz",      label: "Viz",     kind: "advanced" },
     { id: "text",     label: "Text",    kind: "advanced" },
+    { id: "tokens",   label: "Tokens",  kind: "advanced" },
   ];
   let activeTabId = $state<string>("labels");
 
@@ -215,6 +217,8 @@
               <V2MarksControl {store} />
             {:else if tab.id === "text"}
               <V2TextControl {store} />
+            {:else if tab.id === "tokens"}
+              <V2TokensControl {store} />
             {/if}
           </div>
         {/if}
