@@ -354,6 +354,7 @@ SpacingTokens <- new_class(
     cell_padding_x       = new_property(class_numeric, default = NA_real_),
     footer_gap           = new_property(class_numeric, default = NA_real_),
     title_subtitle_gap   = new_property(class_numeric, default = NA_real_),
+    header_gap           = new_property(class_numeric, default = NA_real_),
     bottom_margin        = new_property(class_numeric, default = NA_real_),
     indent_per_level     = new_property(class_numeric, default = NA_real_)
   )

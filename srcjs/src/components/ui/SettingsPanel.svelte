@@ -30,15 +30,15 @@
    * axis → layout) so the panel reads like the package's mental model.
    */
   const tabs: { id: string; label: string; kind?: "normal" | "advanced" }[] = [
-    { id: "labels",   label: "Labels" },
-    { id: "theme",    label: "Theme" },
     { id: "layout",   label: "Layout" },
+    { id: "theme",    label: "Theme" },
+    { id: "labels",   label: "Labels" },
     { id: "spacing",  label: "Spacing", kind: "advanced" },
     { id: "viz",      label: "Viz",     kind: "advanced" },
     { id: "text",     label: "Text",    kind: "advanced" },
     { id: "tokens",   label: "Tokens",  kind: "advanced" },
   ];
-  let activeTabId = $state<string>("labels");
+  let activeTabId = $state<string>("layout");
 
   let panelRef = $state<HTMLElement | null>(null);
   let lastFocused: Element | null = null;

@@ -187,11 +187,14 @@ test_that("Dividers carries strong_on_dark for bold-mode header rule", {
   expect_equal(t@column_group@bold@rule, t@divider@strong_on_dark)
 })
 
-test_that("title and forest-axis labels default to brand_deep fg", {
+test_that("title defaults to brand_deep; forest-axis labels default to content.muted", {
   t <- resolved_default()
+  # Title carries brand identity — keeps the tone the table opens with.
   expect_equal(t@text@title@fg, t@inputs@brand_deep)
-  expect_equal(t@plot@axis_label@fg, t@inputs@brand_deep)
-  expect_equal(t@plot@tick_label@fg, t@inputs@brand_deep)
+  # Axis + tick labels are scaffolding — they should recede, not carry
+  # brand identity, hence content.muted instead of brand_deep.
+  expect_equal(t@plot@axis_label@fg, t@content@muted)
+  expect_equal(t@plot@tick_label@fg, t@content@muted)
 })
 
 test_that("L1 group bg is brand-derived in both variants", {

@@ -496,6 +496,10 @@ export interface Spacing {
   // the live widget's PlotHeader CSS (margin+border+padding). Added in
   // v0.21.x.
   titleSubtitleGap?: number;
+  // Vertical gap between the title/subtitle block and the table top.
+  // Lets authors loosen or tighten the visual separation between
+  // header copy and the data wall without touching paddings.
+  headerGap?: number;
   // Trailing buffer below the last visible band in SVG export. Added in
   // v0.21.x.
   bottomMargin?: number;

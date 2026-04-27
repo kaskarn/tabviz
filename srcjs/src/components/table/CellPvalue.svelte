@@ -93,13 +93,12 @@
 
   .pvalue-stars {
     font-size: 0.9em;
-    color: var(--tv-interval-positive, #16a34a);
+    color: var(--tv-brand, var(--tv-primary, #2563eb));
     font-weight: 600;
   }
-
-  .significant .pvalue-number {
-    font-weight: 500;
-  }
+  /* Significant p-values used to auto-bold the number — removed: rely on
+     the explicit `.cell-bold` flag (NSE/formula-driven) so authors decide
+     when to emphasize. */
 
   /* Cell styling from NSE/formulas */
   .cell-bold {

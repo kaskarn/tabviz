@@ -59,10 +59,11 @@
     },
     {
       title: "Plot scaffolding",
-      description: "Distance between table rows and the forest axis; gap between title and subtitle; footer gap.",
+      description: "Gaps inside and around the plot region — title block to table, between title and subtitle, table to axis, table to footer.",
       tokens: [
         { field: "axisGap",          label: "Axis gap",            min: 0, max: 40, step: 1 },
         { field: "titleSubtitleGap", label: "Title-subtitle gap",  min: 0, max: 40, step: 1 },
+        { field: "headerGap",        label: "Header-table gap",    min: 0, max: 40, step: 1 },
         { field: "footerGap",        label: "Footer gap",          min: 0, max: 40, step: 1 },
       ],
     },

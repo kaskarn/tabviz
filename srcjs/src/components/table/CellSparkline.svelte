@@ -13,7 +13,10 @@
 
   const chartType = $derived(options?.type ?? "line");
   const chartHeight = $derived(options?.height ?? 20);
-  const chartColor = $derived(options?.color ?? "var(--tv-primary, #2563eb)");
+  // Default to the theme's brand color rather than accent — sparklines
+  // are chrome that should ride along with the brand identity, not
+  // compete with row-level accent paint.
+  const chartColor = $derived(options?.color ?? "var(--tv-brand, var(--tv-primary, #2563eb))");
   const chartWidth = 60;
 
   // Handle nested arrays from R list columns (data may be [[values]] instead of [values])

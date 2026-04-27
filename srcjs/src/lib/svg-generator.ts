@@ -2951,7 +2951,9 @@ function renderUnifiedTableRow(
       const computedMax = barMaxValues.get(col.field);
       const maxValue = col.options?.bar?.maxValue ?? computedMax ?? 100;
       const barScale = col.options?.bar?.scale ?? "linear";
-      const barColor = col.options?.bar?.color ?? theme.accent.default;
+      const barColor = col.options?.bar?.color
+        ?? (theme.inputs as { brand?: string } | undefined)?.brand
+        ?? theme.accent.default;
       const barHeight = theme.plot.pointSize * 2;
       const textWidth = 50;
       const barAreaWidth = width - SPACING.TEXT_PADDING * 2 - textWidth;
@@ -2977,7 +2979,9 @@ function renderUnifiedTableRow(
       const raw = row.metadata[col.field] as number[] | number[][];
       const data: number[] = Array.isArray(raw[0]) ? (raw[0] as number[]) : (raw as number[]);
       const sparkHeight = col.options?.sparkline?.height ?? 16;
-      const sparkColor = col.options?.sparkline?.color ?? theme.accent.default;
+      const sparkColor = col.options?.sparkline?.color
+        ?? (theme.inputs as { brand?: string } | undefined)?.brand
+        ?? theme.accent.default;
       const sparkPadding = SPACING.TEXT_PADDING * 2;
       const path = renderSparklinePath(data, currentX + SPACING.TEXT_PADDING, y + rowHeight / 2 - sparkHeight / 2, width - sparkPadding, sparkHeight);
       lines.push(`<path d="${path}" fill="none" stroke="${sparkColor}" stroke-width="1.5"/>`);
@@ -3083,7 +3087,26 @@ function renderUnifiedTableRow(
       const hmValue = row.metadata[col.field] as number;
       if (hmValue !== undefined && hmValue !== null && !Number.isNaN(hmValue)) {
         const hmOpts = col.options?.heatmap;
-        const palette = hmOpts?.palette ?? ["#f7fbff", "#08306b"];
+        // Default palette derives light → dark from the theme's brand
+        // color (matches the live CellHeatmap component). Falls back to
+        // the historical blue palette when neither brand nor brand_deep
+        // are present (v1 themes).
+        const themeInputs = theme.inputs as { brand?: string; brandDeep?: string } | undefined;
+        const themeSurfaceBase = (theme.surface as { base?: string } | undefined)?.base ?? "#ffffff";
+        const hmBrand = themeInputs?.brand;
+        const hmBrandDeep = themeInputs?.brandDeep ?? hmBrand;
+        const defaultPalette: string[] = (hmBrand && hmBrandDeep)
+          ? [(() => {
+              const ah = hmBrand.replace("#","");
+              const bh = themeSurfaceBase.replace("#","");
+              const t = 0.92;
+              const ar=parseInt(ah.substring(0,2),16),ag=parseInt(ah.substring(2,4),16),ab=parseInt(ah.substring(4,6),16);
+              const br=parseInt(bh.substring(0,2),16),bg=parseInt(bh.substring(2,4),16),bb=parseInt(bh.substring(4,6),16);
+              const r=Math.round(ar*(1-t)+br*t), g=Math.round(ag*(1-t)+bg*t), b=Math.round(ab*(1-t)+bb*t);
+              return `#${r.toString(16).padStart(2,"0")}${g.toString(16).padStart(2,"0")}${b.toString(16).padStart(2,"0")}`;
+            })(), hmBrandDeep]
+          : ["#f7fbff", "#08306b"];
+        const palette = hmOpts?.palette ?? defaultPalette;
         const hmDecimals = hmOpts?.decimals ?? 2;
         const showValue = hmOpts?.showValue ?? true;
         const hmScale = hmOpts?.scale ?? "linear";

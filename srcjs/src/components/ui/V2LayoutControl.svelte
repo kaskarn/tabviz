@@ -38,19 +38,19 @@
     compact: {
       rowHeight: 20, headerHeight: 26, padding: 8, containerPadding: 0,
       axisGap: 8, columnGroupPadding: 6, rowGroupPadding: 0,
-      cellPaddingX: 8, footerGap: 6, titleSubtitleGap: 10,
+      cellPaddingX: 8, footerGap: 6, titleSubtitleGap: 10, headerGap: 8,
       bottomMargin: 12, indentPerLevel: 14,
     },
     comfortable: {
       rowHeight: 24, headerHeight: 32, padding: 12, containerPadding: 0,
       axisGap: 12, columnGroupPadding: 8, rowGroupPadding: 0,
-      cellPaddingX: 10, footerGap: 8, titleSubtitleGap: 13,
+      cellPaddingX: 10, footerGap: 8, titleSubtitleGap: 13, headerGap: 12,
       bottomMargin: 16, indentPerLevel: 16,
     },
     spacious: {
       rowHeight: 30, headerHeight: 40, padding: 16, containerPadding: 0,
       axisGap: 16, columnGroupPadding: 12, rowGroupPadding: 0,
-      cellPaddingX: 14, footerGap: 12, titleSubtitleGap: 18,
+      cellPaddingX: 14, footerGap: 12, titleSubtitleGap: 18, headerGap: 16,
       bottomMargin: 22, indentPerLevel: 20,
     },
   };

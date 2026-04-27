@@ -53,8 +53,8 @@ test_that("spacing serializes the density-derived fields", {
     names(out$spacing),
     c("rowHeight", "headerHeight", "padding", "containerPadding", "axisGap",
       "columnGroupPadding", "rowGroupPadding", "cellPaddingX", "cellPaddingY",
-      "groupPadding", "footerGap", "titleSubtitleGap", "bottomMargin",
-      "indentPerLevel")
+      "groupPadding", "footerGap", "titleSubtitleGap", "headerGap",
+      "bottomMargin", "indentPerLevel")
   )
   for (v in out$spacing) expect_type(v, "double")
 })

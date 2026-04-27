@@ -217,6 +217,7 @@ serialize_theme <- function(theme) {
       groupPadding       = theme@spacing@column_group_padding,  # legacy alias
       footerGap          = theme@spacing@footer_gap,
       titleSubtitleGap   = theme@spacing@title_subtitle_gap,
+      headerGap          = theme@spacing@header_gap,
       bottomMargin       = theme@spacing@bottom_margin,
       indentPerLevel     = theme@spacing@indent_per_level
     ),

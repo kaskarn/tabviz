@@ -123,7 +123,11 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    padding: 12px 8px 4px 2px;
+    /* Bottom padding is the controllable header→table gap. Sourced from
+       theme.spacing.headerGap via the --tv-header-gap CSS var so the
+       Spacing tab + R API can tune it. Falls back to the historical 4px
+       when the var is not set. */
+    padding: 12px 8px var(--tv-header-gap, 4px) 2px;
   }
 
 

@@ -1333,6 +1333,8 @@
       --tv-bg: ${theme.surface.base};
       --tv-fg: ${theme.content.primary};
       --tv-primary: ${theme.accent.default};
+      --tv-brand: ${(theme.inputs as { brand?: string } | undefined)?.brand ?? theme.accent.default};
+      --tv-brand-deep: ${(theme.inputs as { brandDeep?: string } | undefined)?.brandDeep ?? (theme.inputs as { brand?: string } | undefined)?.brand ?? theme.accent.default};
       --tv-secondary: ${theme.content.secondary};
       --tv-muted: ${theme.content.muted};
       --tv-border: ${theme.divider.subtle};
@@ -1351,8 +1353,8 @@
          them on a per-field basis. Fallback chain ends at content tones
          so v1-style themes (no brand_deep set) still degrade gracefully. */
       --tv-text-title-fg:     ${theme.text.title?.fg     ?? theme.content.primary};
-      --tv-axis-label-fg:     ${theme.plot?.axisLabel?.fg ?? theme.content.secondary};
-      --tv-axis-tick-fg:      ${theme.plot?.tickLabel?.fg ?? theme.content.secondary};
+      --tv-axis-label-fg:     ${theme.plot?.axisLabel?.fg ?? theme.content.muted};
+      --tv-axis-tick-fg:      ${theme.plot?.tickLabel?.fg ?? theme.content.muted};
       --tv-row-bg: ${theme.row.base.bg};
       --tv-alt-bg: ${theme.row.alt.bg};
       --tv-header-bg: ${headerVariant.bg};
@@ -1453,6 +1455,7 @@
       --tv-footer-gap: ${theme.spacing.footerGap ?? 8}px;
       --tv-bottom-margin: ${theme.spacing.bottomMargin ?? 16}px;
       --tv-title-subtitle-gap: ${theme.spacing.titleSubtitleGap ?? 13}px;
+      --tv-header-gap: ${theme.spacing.headerGap ?? 12}px;
       --tv-plot-width: ${layout.forestWidth}px;
       --tv-point-size: ${theme.plot.pointSize}px;
       --tv-line-width: ${theme.plot.lineWidth}px;
@@ -1584,6 +1587,7 @@
             minValue={getMinValueForColumn(visibleRows, column)}
             maxValue={getMaxValueForColumn(visibleRows, column)}
             naText={column.options?.naText}
+            {theme}
           />
         {:else if column.type === "progress"}
           <CellProgress

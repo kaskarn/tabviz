@@ -17,19 +17,19 @@ DENSITY_PRESETS <- list(
     row_height = 20, header_height = 26, padding = 8, container_padding = 0,
     axis_gap = 8, column_group_padding = 6, row_group_padding = 0,
     cell_padding_x = 8, footer_gap = 6, title_subtitle_gap = 10,
-    bottom_margin = 12, indent_per_level = 14
+    header_gap = 8, bottom_margin = 12, indent_per_level = 14
   ),
   comfortable = list(
     row_height = 24, header_height = 32, padding = 12, container_padding = 0,
     axis_gap = 12, column_group_padding = 8, row_group_padding = 0,
     cell_padding_x = 10, footer_gap = 8, title_subtitle_gap = 13,
-    bottom_margin = 16, indent_per_level = 16
+    header_gap = 12, bottom_margin = 16, indent_per_level = 16
   ),
   spacious = list(
     row_height = 30, header_height = 40, padding = 16, container_padding = 0,
     axis_gap = 16, column_group_padding = 12, row_group_padding = 0,
     cell_padding_x = 14, footer_gap = 12, title_subtitle_gap = 18,
-    bottom_margin = 22, indent_per_level = 20
+    header_gap = 16, bottom_margin = 22, indent_per_level = 20
   )
 )
 
@@ -413,12 +413,13 @@ resolve_components <- function(theme) {
     gridline  = divider@subtle,
     reference = divider@strong
   ))
-  # Axis + tick label fg defaults to brand_deep so the forest plot picks up
-  # the same identity tone the title does. Pre-fill BEFORE compose_text so
-  # the brand_deep value blocks the text-role default (content@secondary /
-  # content@muted) but other NA fields still flow through from the role.
-  if (is.na(ps@axis_label@fg)) ps@axis_label@fg <- inputs@brand_deep
-  if (is.na(ps@tick_label@fg)) ps@tick_label@fg <- inputs@brand_deep
+  # Axis + tick label fg default to content@muted — they're scaffolding,
+  # not identity, so they should recede rather than carry brand identity.
+  # Pre-fill BEFORE compose_text so this value blocks the text-role
+  # default (which would otherwise inherit the role's content color)
+  # while other NA fields still flow through from the role.
+  if (is.na(ps@axis_label@fg)) ps@axis_label@fg <- content@muted
+  if (is.na(ps@tick_label@fg)) ps@tick_label@fg <- content@muted
   ps@axis_label <- compose_text(ps@axis_label, text@label)
   ps@tick_label <- compose_text(ps@tick_label, text@tick)
   theme@plot <- ps

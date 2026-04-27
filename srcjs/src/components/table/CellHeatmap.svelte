@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { HeatmapColumnOptions } from "$types";
+  import type { HeatmapColumnOptions, WebTheme } from "$types";
   import { normalizeValue } from "$lib/scale-utils";
 
   interface Props {
@@ -8,11 +8,43 @@
     minValue?: number | null;
     maxValue?: number | null;
     naText?: string;
+    theme?: WebTheme;
   }
 
-  let { value, options, minValue, maxValue, naText }: Props = $props();
+  let { value, options, minValue, maxValue, naText, theme }: Props = $props();
 
-  const palette = $derived(options?.palette ?? ["#f7fbff", "#08306b"]);
+  // Default palette: derive light → dark from the theme's brand color.
+  // Light end is a very pale tint (brand mixed into surface base), dark end
+  // is brand_deep when the theme pins it. Falls back to the historical blue
+  // palette only when no theme is supplied (test/dev contexts).
+  const palette = $derived.by((): string[] => {
+    if (options?.palette) return options.palette;
+    const inputs = theme?.inputs as { brand?: string; brandDeep?: string } | undefined;
+    const surface = (theme?.surface as { base?: string } | undefined)?.base ?? "#ffffff";
+    const brand = inputs?.brand;
+    const brandDeep = inputs?.brandDeep ?? brand;
+    if (!brand || !brandDeep) return ["#f7fbff", "#08306b"];
+    const light = mixHex(brand, surface, 0.92);
+    return [light, brandDeep];
+  });
+
+  // Lightweight sRGB hex mix — enough for a 2-stop gradient default. The
+  // panel/R cascade uses oklch_mix for full color edits; here we just need
+  // a perceptually OK pale tint anchored to brand.
+  function mixHex(a: string, b: string, t: number): string {
+    const ah = a.replace("#", "");
+    const bh = b.replace("#", "");
+    const ar = parseInt(ah.substring(0, 2), 16);
+    const ag = parseInt(ah.substring(2, 4), 16);
+    const ab = parseInt(ah.substring(4, 6), 16);
+    const br = parseInt(bh.substring(0, 2), 16);
+    const bg = parseInt(bh.substring(2, 4), 16);
+    const bb = parseInt(bh.substring(4, 6), 16);
+    const r = Math.round(ar * (1 - t) + br * t);
+    const g = Math.round(ag * (1 - t) + bg * t);
+    const blu = Math.round(ab * (1 - t) + bb * t);
+    return `#${r.toString(16).padStart(2,"0")}${g.toString(16).padStart(2,"0")}${blu.toString(16).padStart(2,"0")}`;
+  }
   const decimals = $derived(options?.decimals ?? 2);
   const showValue = $derived(options?.showValue ?? true);
   const scale = $derived(options?.scale ?? "linear");

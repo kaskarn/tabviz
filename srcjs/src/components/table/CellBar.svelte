@@ -13,7 +13,11 @@
 
   const effectiveMax = $derived(options?.maxValue ?? maxValue);
   const showLabel = $derived(options?.showLabel ?? true);
-  const barColor = $derived(options?.color ?? "var(--tv-primary, #2563eb)");
+  // Default to the theme's brand color rather than accent — bars are
+  // chrome that should ride along with the brand identity, not compete
+  // with row-level accent paint. Falls back to --tv-primary when the
+  // brand var isn't set (e.g. v1 themes).
+  const barColor = $derived(options?.color ?? "var(--tv-brand, var(--tv-primary, #2563eb))");
   const scale = $derived(options?.scale ?? "linear");
 
   const percentage = $derived(() =>
