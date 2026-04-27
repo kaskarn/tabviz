@@ -2779,18 +2779,14 @@
     flex-direction: column;
   }
 
-  /* Paint-tool cursor feedback. When the widget is in paint mode the
-     clickable rows / cells wear a cross-hair so authors can spot where
-     their next click will land. A subtle data-row outline on hover
-     completes the affordance. */
-  :global(.tabviz-container.paint-active) .data-cell,
-  :global(.tabviz-container.paint-active) .row-interval-hit {
-    cursor: crosshair;
-  }
-  :global(.tabviz-container.paint-active[data-paint-scope="row"]) .data-cell:hover {
-    outline: 1px dashed color-mix(in srgb, var(--tv-primary, #2563eb) 60%, transparent);
-    outline-offset: -1px;
-  }
+  /* Paint-tool hover affordance. Under the always-on painter (v0.26+)
+     the historical row-scope dashed outline + crosshair cursor read as
+     noisy chrome since `.paint-active` is permanent — they fired on
+     every row hover. Dropped them; the `.paint-preview` opacity (set
+     when previewing the would-be commit) already conveys "this is the
+     click target". The cell-scope outline is kept because it usefully
+     marks a single cell within a row as the click target — a more
+     localized cue than the row preview can provide. */
   :global(.tabviz-container.paint-active[data-paint-scope="cell"]) .data-cell:hover {
     outline: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 70%, transparent);
     outline-offset: -1px;
