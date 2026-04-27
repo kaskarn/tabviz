@@ -400,20 +400,24 @@ serialize_interaction <- function(interaction) {
   # * named list of WebTheme (1-level)      → flat list (no tabs)
   # * named list of named lists of WebTheme → categorized (tabs)
   enable_themes <- interaction@enable_themes
+  serialize_themes_arg <- function(x) {
+    # Accept either a flat named list of WebTheme OR a 2-level
+    # categorized list. Detect at runtime so package_themes() (now
+    # categorized) and user-supplied flat lists both work transparently.
+    if (is_categorized_themes(x)) {
+      lapply(x, function(cat) lapply(cat, function(t) serialize_theme(t)))
+    } else {
+      lapply(x, function(t) serialize_theme(t))
+    }
+  }
   if (is.null(enable_themes)) {
     themes_config <- NULL
   } else if (identical(enable_themes, "default")) {
-    themes_config <- lapply(package_themes(), function(t) serialize_theme(t))
+    themes_config <- serialize_themes_arg(package_themes())
   } else if (is.list(enable_themes)) {
-    if (is_categorized_themes(enable_themes)) {
-      themes_config <- lapply(enable_themes, function(cat) {
-        lapply(cat, function(t) serialize_theme(t))
-      })
-    } else {
-      themes_config <- lapply(enable_themes, function(t) serialize_theme(t))
-    }
+    themes_config <- serialize_themes_arg(enable_themes)
   } else {
-    themes_config <- lapply(package_themes(), function(t) serialize_theme(t))
+    themes_config <- serialize_themes_arg(package_themes())
   }
 
   list(

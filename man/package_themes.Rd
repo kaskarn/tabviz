@@ -7,9 +7,21 @@
 package_themes()
 }
 \value{
-Named list of \link{WebTheme} objects.
+A 2-level named list of \link{WebTheme} objects.
 }
 \description{
-Returns a named list of all v2 theme presets. The default category surface
-for the in-widget switcher when \code{enable_themes = "default"}.
+Returns a 2-level named list of v2 theme presets, organized into
+categories. The first level is the category (renders as a tab in the
+in-widget theme switcher when \code{enable_themes = "default"}); the
+second level is the theme name within the category.
+}
+\details{
+Categories:
+\itemize{
+\item \code{journals} — clinical / publication identities (Cochrane, Lancet,
+JAMA, Dark).
+\item \code{lotr} — easter-egg editorial themes (Dwarven, Elvish, Hobbit).
+These are pre-release demos and may be removed before CRAN
+submission; the source will be republished on the package blog.
+}
 }

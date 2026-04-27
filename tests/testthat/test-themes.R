@@ -42,10 +42,18 @@ for (preset_name in names(preset_constructors)) {
   })
 }
 
-test_that("package_themes returns all 4 presets named", {
+test_that("package_themes returns a 2-level categorized list", {
   pkg <- package_themes()
-  expect_setequal(names(pkg), c("cochrane", "lancet", "jama", "dark"))
-  for (nm in names(pkg)) expect_s7(pkg[[nm]], "WebTheme")
+  expect_setequal(names(pkg), c("journals", "lotr"))
+  expect_setequal(names(pkg$journals), c("cochrane", "lancet", "jama", "dark"))
+  expect_setequal(names(pkg$lotr), c("dwarven", "elvish", "hobbit"))
+  for (cat in names(pkg))
+    for (nm in names(pkg[[cat]])) expect_s7(pkg[[cat]][[nm]], "WebTheme")
+})
+
+test_that("package_themes is recognized as categorized by serializer", {
+  pkg <- package_themes()
+  expect_true(tabviz:::is_categorized_themes(pkg))
 })
 
 test_that("preset overrides survive resolution", {

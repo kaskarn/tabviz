@@ -30,6 +30,7 @@ Collate:
     'utils-oklch.R'
     'utils-theme-resolve.R'
     'themes.R'
+    'themes-lotr.R'
     'themes-api.R'
     'utils-serialize-resolved.R'
     'utils-serialize.R'

@@ -82,6 +82,90 @@ export const GLYPH_REGISTRY: Readonly<Record<string, GlyphDef>> = {
     path: "M12 2l9 5v10l-9 5-9-5V7z",
     viewBox: "0 0 24 24",
   },
+
+  // ---- LOTR easter-egg glyphs (dwarven / elvish / hobbit) ------------
+  // Bespoke shapes for the lotr theme presets. Hand-rolled to read at
+  // small sizes and fall back gracefully under stroke-only rendering.
+
+  // Dwarven set — absolute-coord paths for reliable rendering at small sizes
+  pickaxe: {
+    path: "M4 20L14 10M5 5L21 11L15 15Z",
+    viewBox: "0 0 24 24",
+  },
+  anvil: {
+    path: "M3 8H21V12H3ZM10 12H14V18H10ZM4 18H20L18 22H6Z",
+    viewBox: "0 0 24 24",
+  },
+  gem: {
+    path: "M8 3H16L21 10L12 22L3 10ZM3 10H21M8 3L12 10L16 3",
+    viewBox: "0 0 24 24",
+  },
+  ale_mug: {
+    path: "M5 8H15V20H5ZM15 11H19V16H15ZM5 8L8 5L11 8L14 5L15 8",
+    viewBox: "0 0 24 24",
+  },
+  rune: {
+    path: "M7 3V21M7 5L15 3M7 12L15 10",
+    viewBox: "0 0 24 24",
+  },
+
+  // Elvish set
+  crescent: {
+    path: "M16 4a8 8 0 1 0 0 16 6 6 0 1 1 0-16z",
+    viewBox: "0 0 24 24",
+  },
+  harp: {
+    path: "M5 3h14L12 22zM9 3l1 18M13 3l-1 18M17 3l-3 18",
+    viewBox: "0 0 24 24",
+  },
+  tree: {
+    path: "M12 2L4 18h16zM10 18v4h4v-4z",
+    viewBox: "0 0 24 24",
+  },
+  bow: {
+    path: "M5 4q12 8 0 16M3 12h18M17 8l4 4-4 4",
+    viewBox: "0 0 24 24",
+  },
+  swan: {
+    path: "M3 18q3-6 11-4q5 1 7 4zM18 14q2-7-3-9",
+    viewBox: "0 0 24 24",
+  },
+
+  // Hobbit set
+  pipe: {
+    path: "M2 17H14V20H2ZM14 17V8H22V20H14Z",
+    viewBox: "0 0 24 24",
+  },
+  mushroom: {
+    path: "M 2 13 A 10 9 0 0 1 22 13 L 2 13 Z M 10 13 L 10 22 L 14 22 L 14 13 Z",
+    viewBox: "0 0 24 24",
+  },
+  footprint: {
+    path: "M6 16Q4 8 9 6Q15 5 18 9Q20 14 18 19Q15 22 11 21Q7 20 6 16Z",
+    viewBox: "0 0 24 24",
+  },
+  jar: {
+    path: "M7 3H17V6H7ZM5 6H19V22H5ZM7 13H17M7 18H17",
+    viewBox: "0 0 24 24",
+  },
+  pie: {
+    path: "M12 12V4A8 8 0 1 1 4 12Z",
+    viewBox: "0 0 24 24",
+  },
+
+  // LOTR universals
+  ring: {
+    path: "M12 4A8 8 0 1 0 12 20A8 8 0 1 0 12 4ZM12 9A3 3 0 1 1 12 15A3 3 0 1 1 12 9Z",
+    viewBox: "0 0 24 24",
+  },
+  eye: {
+    path: "M2 12Q12 4 22 12Q12 20 2 12ZM9 12A3 3 0 1 0 15 12A3 3 0 1 0 9 12Z",
+    viewBox: "0 0 24 24",
+  },
+  sword: {
+    path: "M11 2L13 2L13 16L11 16ZM6 16L18 16L18 18L6 18ZM11 18L13 18L13 22L11 22Z",
+    viewBox: "0 0 24 24",
+  },
 };
 
 /**

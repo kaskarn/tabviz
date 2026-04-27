@@ -146,16 +146,32 @@ web_theme_dark <- function() {
 
 #' All v2 preset themes
 #'
-#' Returns a named list of all v2 theme presets. The default category surface
-#' for the in-widget switcher when `enable_themes = "default"`.
+#' Returns a 2-level named list of v2 theme presets, organized into
+#' categories. The first level is the category (renders as a tab in the
+#' in-widget theme switcher when `enable_themes = "default"`); the
+#' second level is the theme name within the category.
 #'
-#' @return Named list of [WebTheme] objects.
+#' Categories:
+#' * `journals` — clinical / publication identities (Cochrane, Lancet,
+#'   JAMA, Dark).
+#' * `lotr` — easter-egg editorial themes (Dwarven, Elvish, Hobbit).
+#'   These are pre-release demos and may be removed before CRAN
+#'   submission; the source will be republished on the package blog.
+#'
+#' @return A 2-level named list of [WebTheme] objects.
 #' @export
 package_themes <- function() {
   list(
-    cochrane = web_theme_cochrane(),
-    lancet   = web_theme_lancet(),
-    jama     = web_theme_jama(),
-    dark     = web_theme_dark()
+    journals = list(
+      cochrane = web_theme_cochrane(),
+      lancet   = web_theme_lancet(),
+      jama     = web_theme_jama(),
+      dark     = web_theme_dark()
+    ),
+    lotr = list(
+      dwarven = web_theme_dwarven(),
+      elvish  = web_theme_elvish(),
+      hobbit  = web_theme_hobbit()
+    )
   )
 }

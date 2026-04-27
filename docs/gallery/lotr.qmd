@@ -1,0 +1,220 @@
+---
+title: "LOTR (Easter Egg)"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+::: {.callout-note}
+## Pre-release easter egg
+
+The themes and examples on this page (`web_theme_dwarven()`, `web_theme_elvish()`, `web_theme_hobbit()`, plus the bespoke pictogram glyphs `pickaxe`, `anvil`, `gem`, `ale_mug`, `rune`, `crescent`, `harp`, `tree`, `bow`, `swan`, `pipe`, `mushroom`, `footprint`, `jar`, `pie`, `ring`, `eye`, `sword`) are **pre-release demonstrations**. They are likely to be removed before CRAN submission and republished as standalone source on the package blog. Don't build load-bearing dashboards on top of them.
+
+These three tables exercise: the new `col_pictogram()` and `col_ring()` columns, threshold-driven `col_badge()` shapes, theme-declared web fonts (`Cinzel`, `EB Garamond`, `Cormorant Garamond`, `IM Fell English`, `UnifrakturMaguntia`), and bespoke SVG glyphs designed to read at 14 px.
+:::
+
+A late evening, an unexpected guest, three ledgers from three peoples. Each table demonstrates a complete editorial-register theme — palette, typography, glyphs — paired with content that winks at its source material.
+
+---
+
+## Erebor — Vein Yields, Hall of Records
+
+Iron-clad ledger of every shaft beneath the Lonely Mountain. By order of Thorin son of Thráin. The Drum Chamber, **abandon** status, has been redacted from the King's quarterly briefing; he requests no further inquiry.
+
+Pictograms in use: `gem` (gold carts pulled this quarter, count mode), `ale_mug` (crew songs per shift, rating mode — five mugs because the Songs of Smithing are five), `pickaxe` (axes dulled, scaled to a 100-axe ceiling). The **Balrog risk** column uses a circular `col_badge()` with a status threshold scale; Drum Chamber's score of `9` lands firmly in the negative bin.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 5
+dwarven_data <- data.frame(
+  shaft        = c("Front Hall", "Hall of Thrór", "Black Lode", "King's Vein",
+                   "Mithril Seam", "Eastern Drift", "Deep Foundry", "Drum Chamber"),
+  depth_m      = c(40, 280, 540, 720, 980, 1240, 1620, 2100),
+  q3_tonnage   = c(142, 318, 412, 88, 24, 488, 612, 0),
+  gold_carts   = c(3, 7, 6, 9, 4, 5, 2, 0),
+  songs        = c(4, 5, 4, 5, 4, 3, 2, 0),
+  axes_dulled  = c(12, 18, 15, 11, 22, 28, 35, 99),
+  balrog_risk  = c(0L, 0L, 1L, 1L, 2L, 3L, 4L, 9L),
+  status       = c("singing", "yielding", "yielding", "yielding",
+                   "watch", "watch", "hazardous", "abandon"),
+  yield_ratio  = c(1.18, 1.42, 1.31, 0.92, 0.78, 1.65, 1.84, 0.04),
+  yield_lo     = c(0.95, 1.20, 1.10, 0.74, 0.55, 1.32, 1.42, 0.01),
+  yield_hi     = c(1.42, 1.65, 1.55, 1.12, 1.10, 2.05, 2.40, 0.18)
+)
+
+forest_plot(
+  dwarven_data,
+  point = "yield_ratio", lower = "yield_lo", upper = "yield_hi",
+  label = "shaft",
+  columns = list(
+    col_numeric("depth_m", header = "Depth (m)", decimals = 0),
+    col_bar("q3_tonnage", header = "Q3 tonnage"),
+    col_pictogram("gold_carts", header = "Gold carts",
+                  glyph = "gem"),
+    col_pictogram("songs", header = "Songs / shift",
+                  glyph = "ale_mug", max_glyphs = 5),
+    col_pictogram("axes_dulled", header = "Axes dulled",
+                  glyph = "pickaxe",
+                  value_label = "trailing", label_format = "integer",
+                  max_glyphs = 5, min_value = 0, max_value = 100),
+    col_badge("balrog_risk", header = "Balrog risk",
+              shape = "circle", thresholds = c(2, 5)),
+    col_badge("status",
+              colors = c("singing"   = "#7A9B3F",
+                         "yielding"  = "#5C7AA0",
+                         "watch"     = "#D4A955",
+                         "hazardous" = "#C84638",
+                         "abandon"   = "#5A4232"))
+  ),
+  scale = "log", null_value = 1,
+  axis_label = "Yield ratio (Q3 vs Q2)",
+  title = "Erebor — Vein Yields, Hall of Records",
+  subtitle = "Iron-clad ledger of every shaft. T.A. 2941, Halimath.",
+  theme = web_theme_dwarven()
+)
+```
+
+---
+
+## Rivendell — Council of Elrond, Attendee Manifest
+
+Eight peoples. One ring. The minutes are in Sindarin and refreshments are at the second eagle. Boromir spoke for forty-two minutes; the minutes are redacted at the request of the chair.
+
+Three pictogram columns each tell a different micro-story: `star` for **wisdom** (a rating), `sword` for **valor** (also a rating; Boromir is unsurprisingly five-of-five), and `person` for **times interrupted Boromir** (a count — Gimli is leading the pack at six). The `col_ring()` for **ring temptation** uses a three-color threshold (`gold` / `purple` / `red`) keyed to 0.33 and 0.66 — Boromir's 86 % lands well inside the danger arc.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 5
+elvish_data <- data.frame(
+  delegate    = c("Elrond Half-elven", "Gandalf the Grey", "Aragorn II Elessar",
+                  "Legolas Greenleaf", "Gimli son of Glóin", "Boromir of Gondor",
+                  "Frodo Baggins", "Samwise Gamgee"),
+  race        = c("Elf", "Maia", "Man", "Elf", "Dwarf", "Man", "Hobbit", "Hobbit"),
+  wisdom      = c(5, 5, 4, 3, 3, 2, 4, 3),
+  valor       = c(4, 5, 5, 5, 5, 5, 4, 5),
+  tempt       = c(0.18, 0.32, 0.12, 0.08, 0.14, 0.86, 0.64, 0.22),
+  words_12h   = c(1240, 890, 720, 320, 480, 1880, 380, 220),
+  interrupted = c(0, 2, 1, 3, 6, 0, 1, 4),
+  lembas      = c(4, 3, 6, 5, 12, 8, 9, 14),
+  joins       = c("HOSTS", "YES", "YES", "YES", "YES", "YES", "BEARER", "GARDENER"),
+  vote_for    = c(0.95, 1.05, 0.88, 1.10, 0.92, 1.32, 0.78, 0.85),
+  vote_lo     = c(0.78, 0.85, 0.72, 0.92, 0.78, 1.10, 0.62, 0.68),
+  vote_hi     = c(1.12, 1.25, 1.05, 1.30, 1.08, 1.55, 0.98, 1.05)
+)
+
+forest_plot(
+  elvish_data,
+  point = "vote_for", lower = "vote_lo", upper = "vote_hi",
+  label = "delegate",
+  columns = list(
+    col_badge("race",
+              colors = c("Elf" = "#D4B26E", "Maia" = "#A78BBF",
+                         "Man" = "#8AB0D8", "Dwarf" = "#B86A48",
+                         "Hobbit" = "#E5A89A")),
+    col_pictogram("wisdom", header = "Wisdom",
+                  glyph = "star", max_glyphs = 5, color = "#D4B26E"),
+    col_pictogram("valor", header = "Valor",
+                  glyph = "sword", max_glyphs = 5, color = "#D67373"),
+    col_ring("tempt", header = "Ring tempt",
+             color = c("#D4B26E", "#A78BBF", "#D67373"),
+             thresholds = c(0.33, 0.66)),
+    col_bar("words_12h", header = "Words spoken (12h)"),
+    col_pictogram("interrupted", header = "Interrupted Boromir",
+                  glyph = "person"),
+    col_pictogram("lembas", header = "Lembas eaten",
+                  glyph = "leaf",
+                  value_label = "trailing", label_format = "integer",
+                  max_glyphs = 8),
+    col_badge("joins", header = "Joins fellowship",
+              colors = c("HOSTS"     = "#A78BBF",
+                         "YES"       = "#8AC18A",
+                         "BEARER"    = "#D4B26E",
+                         "GARDENER"  = "#8AC18A"))
+  ),
+  scale = "log", null_value = 1,
+  axis_label = "Council vote weight",
+  title = "Rivendell — Council of Elrond, Attendee Manifest",
+  subtitle = "Eight peoples. One ring. The minutes are in Sindarin.",
+  theme = web_theme_elvish()
+)
+```
+
+---
+
+## Hobbiton — Pantry & Meal Audit, Halimath 1418
+
+A respectable hobbit's larder is never half-full; it is half-empty only between meals (of which there are seven). The Sackville-Baggins household, as always, is showing concerning second-breakfast deficiency. Pity tea-baskets have been dispatched.
+
+`jar` (pantry stock, rating), `pie` (second-breakfast quality, rating), `mushroom` (mushroom haul, count) — three glyphs that ought to be permanently on every hobbit's letterhead. The **adventures** badge uses outline mode (`outline = TRUE`) — a hobbit's relationship with adventure is, after all, low-emphasis.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 5
+hobbit_data <- data.frame(
+  household       = c("Baggins of Bag End", "Took of Great Smials",
+                      "Brandybuck of Brandy Hall", "Gamgee of Bagshot Row",
+                      "Sackville-Baggins", "Cotton of Bywater",
+                      "Boffin of Overhill", "Proudfoot of Westfarthing"),
+  smial           = c("S.W. #1", "Tuckborough", "Buckland", "S.W. #3",
+                      "Sackville", "Bywater", "Overhill", "Westfarthing"),
+  pantry          = c(5, 5, 4, 4, 2, 4, 5, 4),
+  pipeweed_lb     = c(3.2, 4.0, 2.6, 1.6, 0.5, 1.2, 2.8, 2.0),
+  meals_per_day   = c(7.0, 7.0, 6.5, 7.0, 4.5, 6.5, 6.0, 6.5),
+  second_brkfst   = c(5, 5, 5, 5, 1, 4, 4, 5),
+  mushrooms       = c(8, 12, 6, 9, 0, 4, 5, 7),
+  adventures      = c("YES (ONE)", "MANY", "YES (ONE)", "YES (ONE)",
+                      "NONE", "NONE", "NONE", "NONE"),
+  satiation       = c(1.05, 1.12, 0.98, 1.02, 0.75, 0.95, 1.08, 0.92),
+  satiation_lo    = c(0.92, 1.00, 0.85, 0.88, 0.62, 0.82, 0.95, 0.78),
+  satiation_hi    = c(1.18, 1.25, 1.10, 1.15, 0.88, 1.08, 1.20, 1.05)
+)
+
+forest_plot(
+  hobbit_data,
+  point = "satiation", lower = "satiation_lo", upper = "satiation_hi",
+  label = "household",
+  columns = list(
+    col_text("smial", header = "Smial"),
+    col_pictogram("pantry", header = "Pantry fill",
+                  glyph = "jar", max_glyphs = 5, color = "#D97757"),
+    col_bar("pipeweed_lb", header = "Pipe-weed (lb)"),
+    col_numeric("meals_per_day", header = "Meals/day", decimals = 1),
+    col_pictogram("second_brkfst", header = "2nd brkfst",
+                  glyph = "pie", max_glyphs = 5, color = "#D97757"),
+    col_pictogram("mushrooms", header = "Mushrooms",
+                  glyph = "mushroom",
+                  value_label = "trailing", label_format = "integer",
+                  max_glyphs = 8),
+    col_badge("adventures",
+              colors = c("YES (ONE)" = "#6B8E3D",
+                         "MANY"      = "#8B5E83",
+                         "NONE"      = "#A6633E"),
+              outline = TRUE)
+  ),
+  scale = "log", null_value = 1,
+  axis_label = "Satiation index",
+  title = "Hobbiton — Pantry & Meal Audit, Halimath 1418",
+  subtitle = "A respectable hobbit's larder is never half-full.",
+  theme = web_theme_hobbit()
+)
+```
+
+---
+
+## Bring your own theme
+
+The three themes above are picked up automatically by the in-widget theme switcher (look for the **lotr** tab) when `enable_themes = "default"` — `package_themes()` returns them under the `lotr` category. To use one explicitly:
+
+```r
+forest_plot(
+  data, label = "x",
+  columns = list(...),
+  theme = web_theme_dwarven()   # or _elvish() or _hobbit()
+)
+```
+
+The themes declare their Google Fonts via `web_fonts = list(web_font(family, url), …)`. The widget injects `<link rel="stylesheet">` tags on mount and dedupes across multiple widgets on the same page. `rsvg`/PNG export uses the system font fallback (Georgia, serif) since `rsvg` does not fetch web fonts at render time — install the family locally for high-fidelity offline export.
+
+The bespoke pictogram glyphs (`pickaxe`, `harp`, `mushroom`, …) live in `glyph_registry_names()` alongside the core set (`person`, `dot`, `star`, …) and are usable from any theme — `col_pictogram(field, glyph = "harp")` works on the JAMA preset just as well, it just doesn't *match*.

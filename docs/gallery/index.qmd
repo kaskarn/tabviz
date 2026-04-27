@@ -36,6 +36,12 @@ Best for: information-dense tables. Product KPIs, A/B tests, executive summaries
 
 Best for: feature spotlights. The complete column-type catalog, publication templates, theme variants, conditional styling, and the full-monty smoke-test example.
 :::
+
+::: {.g-col-6 .g-col-md-3}
+### [LOTR (Easter Egg)](lotr.qmd)
+
+Pre-release demo. Three editorial-register themes (`dwarven`, `elvish`, `hobbit`) paired with bespoke pictogram glyphs and tongue-in-cheek source data — vein yields, council manifests, pantry audits.
+:::
 :::
 
 ---

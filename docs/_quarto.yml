@@ -34,6 +34,9 @@ website:
             href: gallery/dashboards.qmd
           - text: "Feature Showcases"
             href: gallery/showcases.qmd
+          - text: "---"
+          - text: "LOTR (Easter Egg)"
+            href: gallery/lotr.qmd
       - text: "Reference"
         menu:
           - text: "Overview"

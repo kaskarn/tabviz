@@ -1,3 +1,60 @@
+# tabviz (development)
+
+## New column types
+
+* **`col_pictogram()`** — repeat a glyph proportional to a numeric value.
+  Two modes: count (no cap) and rating (cap + ghost slots). Glyphs are
+  either registry names (`"person"`, `"skull"`, `"dot"`, `"coin"`,
+  `"star"`, `"heart"`, `"leaf"`, `"mountain"`, `"flame"`, `"flag"`,
+  `"square"`, `"triangle"`, `"sun"`, `"droplet"`, `"hexagon"`) or
+  literal unicode/emoji. Per-row glyph mapping via `glyph_field`.
+  `col_stars()` is now a thin alias.
+* **`col_ring()`** — small donut gauge with centered numeric label and
+  optional threshold-driven color shift. Auto-default palettes:
+  1 threshold → accent / negative; 2 thresholds → status positive /
+  warning / negative.
+* **`col_badge()` refactor** — adds `shape = "pill" | "circle" | "square"`,
+  `outline = TRUE/FALSE`, and a numeric `thresholds` path that pairs
+  with an unnamed `colors` vector (or auto-defaults from the status
+  palette).
+* **`col_icon(size = "xl")`** — bigger size for editorial single-glyph
+  cells. Best in tall rows.
+
+## Theming
+
+* **`web_fonts` slot on `WebTheme`** — themes can declare their own font
+  dependencies (`web_font(family, url)`). The widget injects
+  `<link rel="stylesheet">` tags on mount and dedupes across widgets.
+  `rsvg`/PNG export uses the system font fallback (does not fetch web
+  fonts).
+* **`--tv-status-{positive,negative,warning,info}` CSS vars** are now
+  emitted by every widget so any column type can reference them.
+* **`package_themes()` is now categorized** (2-level named list).
+  Categories: `journals` (cochrane, lancet, jama, dark) and `lotr`
+  (dwarven, elvish, hobbit — easter-egg presets, see below).
+* **Default theme-aware defaults.** When `color = NULL` on pictograms,
+  rings, and stars, the rendered glyphs read from `var(--tv-accent)` —
+  `col_stars()` is now blue under Cochrane (was hardcoded amber). Pass
+  an explicit hex to recover the previous look.
+
+## Pre-release easter egg — LOTR themes
+
+Three editorial-register theme presets and a bundled set of bespoke
+pictogram glyphs, plus a docs Gallery page demonstrating each. **These
+are pre-CRAN demos** — they're likely to be removed before submission
+and republished as standalone source on the package blog. Don't build
+load-bearing user examples on top of them.
+
+* New themes: `web_theme_dwarven()`, `web_theme_elvish()`,
+  `web_theme_hobbit()`. Each declares `web_fonts` for Google Fonts
+  (UnifrakturMaguntia + EB Garamond, Cinzel + Cormorant Garamond, IM
+  Fell English + IM Fell English SC).
+* New glyphs: `pickaxe`, `anvil`, `gem`, `ale_mug`, `rune`, `crescent`,
+  `harp`, `tree`, `bow`, `swan`, `pipe`, `mushroom`, `footprint`, `jar`,
+  `pie`, `ring`, `eye`, `sword`.
+* Demo pages: `docs/gallery/lotr.qmd` (Erebor vein yields, Council of
+  Elrond manifest, Hobbiton pantry audit).
+
 # tabviz 0.26.0
 
 ## Painter redesign + semantic-token expansion

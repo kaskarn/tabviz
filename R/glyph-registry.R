@@ -18,8 +18,14 @@
 #' glyph_registry_names()
 glyph_registry_names <- function() {
   c(
+    # Core set
     "person", "skull", "dot", "coin", "heart", "leaf", "mountain",
     "flame", "flag", "square", "triangle", "star", "sun", "droplet",
-    "hexagon"
+    "hexagon",
+    # LOTR easter-egg glyphs (dwarven / elvish / hobbit / universals)
+    "pickaxe", "anvil", "gem", "ale_mug", "rune",
+    "crescent", "harp", "tree", "bow", "swan",
+    "pipe", "mushroom", "footprint", "jar", "pie",
+    "ring", "eye", "sword"
   )
 }
