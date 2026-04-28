@@ -54,7 +54,7 @@
     <ResetButton {store} />
   {/if}
   {#if enableFullscreen}
-    <FullscreenButton />
+    <FullscreenButton {store} />
   {/if}
   {#if enableExport}
     <DownloadButton {store} />

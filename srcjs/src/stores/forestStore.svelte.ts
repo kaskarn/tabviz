@@ -3062,6 +3062,9 @@ export function createForestStore() {
     get naturalContentWidth() {
       return naturalContentWidth;
     },
+    get naturalContentHeight() {
+      return scalableNaturalHeight;
+    },
     get sortConfig() {
       return sortConfig;
     },

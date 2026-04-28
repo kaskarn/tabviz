@@ -5,34 +5,117 @@
   // Quarto reveal slides) don't permit Element.requestFullscreen(). The
   // overlay covers the host viewport but stays inside the document so
   // popovers, tooltips, and stacking contexts continue to work.
+  import type { ForestStore } from "$stores/forestStore.svelte";
 
-  let { container = $bindable() }: { container?: HTMLElement | null } = $props();
+  interface Props {
+    store: ForestStore;
+    container?: HTMLElement | null;
+  }
+
+  let { store, container = $bindable(null) }: Props = $props();
 
   let isFullscreen = $state(false);
+  let backdrop: HTMLDivElement | null = null;
+  let savedZoom = 1.0;
+  let savedAutoFit = true;
 
-  function toggle() {
-    if (!container) {
-      // Walk upward from the button to find the .tabviz-container ancestor.
-      const btn = document.activeElement;
-      if (btn instanceof HTMLElement) {
-        container = btn.closest(".tabviz-container") as HTMLElement | null;
+  function resolveContainer(): HTMLElement | null {
+    if (container) return container;
+    const btn = document.activeElement;
+    if (btn instanceof HTMLElement) {
+      container = btn.closest(".tabviz-container") as HTMLElement | null;
+    }
+    return container ?? null;
+  }
+
+  function enter() {
+    const c = resolveContainer();
+    if (!c) return;
+    isFullscreen = true;
+
+    // Backdrop sits below the container but above page content. Popovers are
+    // portaled to body with z-index ≥ 10001, so they naturally stack above
+    // the fullscreen container (z-index 9991). Backdrop is 9990.
+    backdrop = document.createElement("div");
+    backdrop.className = "tabviz-fullscreen-backdrop";
+    backdrop.addEventListener("click", exit);
+    document.body.appendChild(backdrop);
+    // Force a frame so the fade-in transition runs from opacity 0.
+    requestAnimationFrame(() => backdrop?.classList.add("is-active"));
+
+    c.classList.add("tabviz-fullscreen");
+    document.body.classList.add("tabviz-fullscreen-active");
+
+    // Auto-magnify: bump zoom up to +40% as long as the natural content fits
+    // the available viewport width. Disable auto-fit while fullscreen so the
+    // user-chosen zoom isn't immediately clamped back down.
+    savedZoom = store.zoom;
+    savedAutoFit = store.autoFit;
+    const naturalW = store.naturalContentWidth;
+    const naturalH = store.naturalContentHeight;
+    if (naturalW > 0) {
+      // Match the modal's 92vw / 92vh inset. Cap vertical fit too — without
+      // it, a short-and-wide table gets zoomed up to fill width and ends up
+      // too tall to fit, forcing scrolling we'd rather avoid.
+      const availW = window.innerWidth * 0.92 - 32;
+      const fitW = availW / naturalW;
+      let fit = fitW;
+      if (naturalH > 0) {
+        const availH = window.innerHeight * 0.92 - 32;
+        fit = Math.min(fit, availH / naturalH);
+      }
+      const target = Math.min(1.4, Math.max(savedZoom, fit));
+      if (target > savedZoom + 0.01) {
+        store.setAutoFit(false);
+        store.setZoom(target);
       }
     }
-    if (!container) return;
-    isFullscreen = !isFullscreen;
-    container.classList.toggle("tabviz-fullscreen", isFullscreen);
-    document.body.classList.toggle("tabviz-fullscreen-active", isFullscreen);
+  }
+
+  function exit() {
+    if (!isFullscreen) return;
+    isFullscreen = false;
+    const c = container;
+    c?.classList.remove("tabviz-fullscreen");
+    document.body.classList.remove("tabviz-fullscreen-active");
+
+    // Restore previous zoom/autofit state.
+    store.setZoom(savedZoom);
+    store.setAutoFit(savedAutoFit);
+
+    // Reset scroll positions: in auto-fit mode the container has
+    // overflow:hidden and a fixed scaledHeight, but a non-zero scrollTop
+    // left over from fullscreen browsing would leave the table visually
+    // shifted up with no scrollbar to recover it.
+    if (c) {
+      c.scrollTop = 0;
+      c.scrollLeft = 0;
+      const main = c.querySelector(".tabviz-main") as HTMLElement | null;
+      if (main) {
+        main.scrollTop = 0;
+        main.scrollLeft = 0;
+      }
+    }
+
+    // Fade backdrop out, then remove.
+    if (backdrop) {
+      const b = backdrop;
+      backdrop = null;
+      b.classList.remove("is-active");
+      setTimeout(() => b.remove(), 220);
+    }
+  }
+
+  function toggle() {
+    if (isFullscreen) exit();
+    else enter();
   }
 
   // Escape key exits fullscreen.
   $effect(() => {
     if (!isFullscreen) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        isFullscreen = false;
-        container?.classList.remove("tabviz-fullscreen");
-        document.body.classList.remove("tabviz-fullscreen-active");
-      }
+      if (e.key === "Escape") exit();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -47,12 +130,10 @@
   data-tooltip={isFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"}
 >
   {#if isFullscreen}
-    <!-- Compress / exit-fullscreen icon: four arrows pointing inward -->
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M9 21v-3a2 2 0 0 0-2-2H4M21 9h-3a2 2 0 0 1-2-2V4M9 4v3a2 2 0 0 1-2 2H4M21 15h-3a2 2 0 0 0-2 2v3" />
     </svg>
   {:else}
-    <!-- Expand / fullscreen icon: four arrows pointing outward -->
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />
     </svg>
@@ -86,21 +167,71 @@
     border-color: color-mix(in srgb, var(--tv-accent, #2563eb) 40%, var(--tv-border, #e2e8f0));
   }
 
-  /* Global styles for the overlay state — applied when the toggle is on.
-     The container expands to fill the viewport. We avoid `transform`,
-     `filter`, and `backdrop-filter` here to keep the toolbar's popover
-     positioning math intact (those would create a containing block for
-     position:fixed descendants and shift them to the wrong origin). */
+  /* Dim backdrop appended to <body>. Sits below the modal (9990) but above
+     normal page content. Popovers portaled to body land at 10001+ and stack
+     above both. */
+  :global(body > .tabviz-fullscreen-backdrop) {
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+  }
+  :global(body > .tabviz-fullscreen-backdrop.is-active) {
+    opacity: 1;
+  }
+
+  /* The widget root becomes a vertically-centered modal: 4vw breathing room
+     on each side, height shrinks to content (capped at 92vh, scrolls when
+     content is taller). Vertical centering uses `top: 50%; translateY(-50%)`
+     so a short table sits in the middle of the viewport instead of stretching
+     to fill 92vh with empty background below. Toolbar popovers are portaled
+     to <body> (see Portal.svelte) so this transform doesn't capture their
+     positioning math into the modal's local coordinate space. */
   :global(.tabviz-container.tabviz-fullscreen) {
     position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    top: 50% !important;
+    bottom: auto !important;
+    width: auto !important;
+    height: auto !important;
     max-width: none !important;
-    max-height: none !important;
-    z-index: 99998;
+    max-height: 92vh !important;
+    z-index: 9991;
     overflow: auto;
     background: var(--tv-bg, #ffffff);
+    border-radius: 12px;
+    box-shadow:
+      0 24px 64px -12px rgba(0, 0, 0, 0.45),
+      0 8px 24px -8px rgba(0, 0, 0, 0.25);
+    transform: translateY(-50%);
+    animation: tabviz-fs-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* In fullscreen the outer modal owns scrolling — suppress the inner
+     `.tabviz-main` scrollbar that non-auto-fit mode normally enables, so we
+     don't get nested scrollbars stacked on top of each other. */
+  :global(.tabviz-container.tabviz-fullscreen .tabviz-main) {
+    overflow: visible !important;
+  }
+
+  /* Keyframes carry the `translateY(-50%)` base transform forward so the
+     modal stays centered while the scale-in plays. Without this, the
+     animation would override the base transform and the modal would jump
+     down to top:50% during the 220 ms entry. */
+  @keyframes tabviz-fs-in {
+    from {
+      opacity: 0.4;
+      transform: translateY(-50%) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
   }
 
   /* Lock host page scroll while the overlay is up so the user can't
