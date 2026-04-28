@@ -1609,6 +1609,7 @@
             options={column.options?.badge}
             naText={column.options?.naText}
             {cellStyle}
+            colorOverride={effectiveVizColor(rowArg, column)}
           />
         {:else if column.type === "stars"}
           <CellStars
@@ -1622,6 +1623,7 @@
             options={column.options?.pictogram}
             naText={column.options?.naText}
             {cellStyle}
+            colorOverride={effectiveVizColor(rowArg, column)}
             glyphSelector={column.options?.pictogram?.glyphField
               ? metadata[column.options.pictogram.glyphField] as string
               : null}
@@ -1632,6 +1634,7 @@
             options={column.options?.ring}
             naText={column.options?.naText}
             {cellStyle}
+            colorOverride={effectiveVizColor(rowArg, column)}
           />
         {:else if column.type === "img"}
           <CellImg

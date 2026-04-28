@@ -3068,7 +3068,18 @@ function renderUnifiedTableRow(
         const thresholds = opts?.thresholds;
         const shape = opts?.shape ?? "pill";
         const outline = opts?.outline ?? false;
-        let badgeColor = theme.accent.default;
+        // Glyph default = identity secondary (with primary fallback in mono
+        // themes). Accent is reserved for layered emphasis only.
+        const glyphDefault = (theme.inputs as { secondary?: string; primary?: string } | undefined)?.secondary
+          ?? (theme.inputs as { primary?: string } | undefined)?.primary
+          ?? theme.accent.default;
+        // Row/cell semantic markerFill (accent/emphasis/muted). Slots in
+        // below explicit column-level intent (thresholds/colors/variants)
+        // but above theme default — same precedence as col_bar.
+        const badgeCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
+        const badgeRowBundle = resolveSemanticBundle(row.style, theme);
+        const badgeOverride = badgeCellBundle?.markerFill ?? badgeRowBundle?.markerFill ?? null;
+        let badgeColor: string = badgeOverride ?? glyphDefault;
 
         // Threshold path (numeric value bucketed into colors[]).
         if (Array.isArray(thresholds) && thresholds.length > 0 && typeof badgeValue === "number") {
@@ -3076,27 +3087,29 @@ function renderUnifiedTableRow(
             if (Array.isArray(customColors) && customColors.length === thresholds.length + 1) {
               return customColors;
             }
-            if (thresholds.length === 1) return [theme.accent.default, theme.status?.negative ?? theme.accent.default];
+            if (thresholds.length === 1) return [glyphDefault, theme.status?.negative ?? glyphDefault];
             if (thresholds.length === 2) return [
-              theme.status?.positive ?? theme.accent.default,
-              theme.status?.warning ?? theme.accent.default,
-              theme.status?.negative ?? theme.accent.default,
+              theme.status?.positive ?? glyphDefault,
+              theme.status?.warning ?? glyphDefault,
+              theme.status?.negative ?? glyphDefault,
             ];
-            return [theme.accent.default];
+            return [glyphDefault];
           })();
           let idx = 0;
           for (const t of thresholds) { if (badgeValue >= t) idx++; else break; }
-          badgeColor = stops[Math.min(idx, stops.length - 1)] ?? theme.accent.default;
+          badgeColor = stops[Math.min(idx, stops.length - 1)] ?? glyphDefault;
         } else if (customColors && !Array.isArray(customColors) && badgeText in customColors) {
           badgeColor = (customColors as Record<string, string>)[badgeText];
         } else if (variants && badgeText in variants) {
           const variant = variants[badgeText] as keyof typeof BADGE_VARIANTS | "default" | "muted";
+          // The "default" variant means "use the engagement color" (= accent).
+          // Status variants pull from theme.status.*. Muted from content.muted.
           const variantColors: Record<string, string> = {
             default: theme.accent.default,
             ...BADGE_VARIANTS,
             muted: theme.content.muted,
           };
-          badgeColor = variantColors[variant] ?? theme.accent.default;
+          badgeColor = variantColors[variant] ?? glyphDefault;
         }
 
         const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.text.body.family, 600);
@@ -3197,9 +3210,17 @@ function renderUnifiedTableRow(
           const size = opts.size ?? "base";
           // Resolve theme colors to literal values: nested <svg> elements
           // in rsvg's pipeline don't inherit CSS vars from the outer document,
-          // so var(--tv-accent) renders as transparent. Pull theme literals
-          // when no explicit color is set.
-          const filledColor = opts.color ?? theme.accent.default;
+          // so var(--tv-secondary) renders as transparent. Pull theme literals.
+          // Glyph default = identity secondary (mirrors primary in mono themes).
+          // Row/cell semantic markerFill (accent/emphasis/muted) layers in
+          // below explicit column color but above theme default.
+          const pictoGlyphDefault = (theme.inputs as { secondary?: string; primary?: string } | undefined)?.secondary
+            ?? (theme.inputs as { primary?: string } | undefined)?.primary
+            ?? theme.accent.default;
+          const pictoCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
+          const pictoRowBundle = resolveSemanticBundle(row.style, theme);
+          const pictoOverride = pictoCellBundle?.markerFill ?? pictoRowBundle?.markerFill ?? null;
+          const filledColor = opts.color ?? pictoOverride ?? pictoGlyphDefault;
           const emptyColor = opts.emptyColor ?? theme.content.muted;
 
           // Resolve glyph: single string or value-keyed map (glyph_field).
@@ -3349,7 +3370,16 @@ function renderUnifiedTableRow(
           const trackColor = opts.trackColor ?? theme.content.muted;
 
           // Pick filled color from threshold scale or single value.
-          let filledColor: string = theme.accent.default;
+          // Glyph default = identity secondary; row/cell semantic markerFill
+          // (accent/emphasis/muted) layers in below explicit column color
+          // but above theme default. Threshold path reads status palette.
+          const ringGlyphDefault = (theme.inputs as { secondary?: string; primary?: string } | undefined)?.secondary
+            ?? (theme.inputs as { primary?: string } | undefined)?.primary
+            ?? theme.accent.default;
+          const ringCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
+          const ringRowBundle = resolveSemanticBundle(row.style, theme);
+          const ringOverride = ringCellBundle?.markerFill ?? ringRowBundle?.markerFill ?? null;
+          let filledColor: string = ringOverride ?? ringGlyphDefault;
           const thresholds = opts.thresholds ?? null;
           const colorOpt = opts.color ?? null;
           if (!thresholds || thresholds.length === 0) {
@@ -3358,17 +3388,17 @@ function renderUnifiedTableRow(
           } else {
             const stops = (() => {
               if (Array.isArray(colorOpt) && colorOpt.length === thresholds.length + 1) return colorOpt;
-              if (thresholds.length === 1) return [theme.accent.default, theme.status?.negative ?? theme.accent.default];
+              if (thresholds.length === 1) return [ringGlyphDefault, theme.status?.negative ?? ringGlyphDefault];
               if (thresholds.length === 2) return [
-                theme.status?.positive ?? theme.accent.default,
-                theme.status?.warning ?? theme.accent.default,
-                theme.status?.negative ?? theme.accent.default,
+                theme.status?.positive ?? ringGlyphDefault,
+                theme.status?.warning ?? ringGlyphDefault,
+                theme.status?.negative ?? ringGlyphDefault,
               ];
-              return [theme.accent.default];
+              return [ringGlyphDefault];
             })();
             let idx = 0;
             for (const t of thresholds) { if (val >= t) idx++; else break; }
-            filledColor = stops[Math.min(idx, stops.length - 1)] ?? theme.accent.default;
+            filledColor = stops[Math.min(idx, stops.length - 1)] ?? ringGlyphDefault;
           }
 
           const fraction = maxV > minV

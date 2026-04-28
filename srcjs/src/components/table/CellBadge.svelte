@@ -6,9 +6,13 @@
     options?: BadgeColumnOptions;
     naText?: string;
     cellStyle?: CellStyle;
+    /** Row/cell semantic markerFill (accent/emphasis/muted) computed by
+     * the renderer. Slots in below explicit column-level intent
+     * (colors/thresholds/variants) but above theme default. */
+    colorOverride?: string | null;
   }
 
-  let { value, options, naText, cellStyle }: Props = $props();
+  let { value, options, naText, cellStyle, colorOverride }: Props = $props();
 
   const variants = $derived(options?.variants ?? {});
   const colors = $derived(options?.colors);
@@ -60,10 +64,13 @@
         case "error":   return "var(--tv-status-negative, #dc2626)";
         case "info":    return "var(--tv-status-info, #2563eb)";
         case "muted":   return "var(--tv-muted, #64748b)";
-        default:        return "var(--tv-secondary, var(--tv-primary, #2563eb))";
+        // "default" variant means "use the engagement color" — accent.
+        // Lets authors flag THE special value (e.g. the Ring-bearer) so
+        // it pops in accent without needing a hex literal.
+        default:        return "var(--tv-accent, var(--tv-primary, #2563eb))";
       }
     }
-    return "var(--tv-secondary, var(--tv-primary, #2563eb))";
+    return colorOverride ?? "var(--tv-secondary, var(--tv-primary, #2563eb))";
   });
 
   const sizeClass = $derived(size === "sm" ? "badge-sm" : "badge-base");

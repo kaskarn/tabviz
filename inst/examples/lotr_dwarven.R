@@ -1,8 +1,10 @@
 # LOTR Easter Egg — Dwarven theme demo (pre-release; may move to blog post)
 #
 # Erebor under the Lonely Mountain. Vein yields, Halls of Records, Q3
-# tonnage by shaft. Beards lengthen, axes dull, the King requests no
-# further inquiry into the Drum Chamber.
+# tonnage by shaft. The point of this example: show how much of the
+# theme's identity falls out of the cascade — pictogram fills, badge
+# colors, bar tints, and group-bar tones are all driven by the theme,
+# not by hex literals at the call site.
 
 library(tabviz)
 
@@ -11,8 +13,8 @@ dwarven_data <- data.frame(
                    "Mithril Seam", "Eastern Drift", "Deep Foundry", "Drum Chamber"),
   depth_m      = c(40, 280, 540, 720, 980, 1240, 1620, 2100),
   q3_tonnage   = c(142, 318, 412, 88, 24, 488, 612, 0),
-  gold_carts   = c(3, 7, 6, 9, 4, 5, 2, 0),    # carts of gold pulled this Q
-  songs        = c(4, 5, 4, 5, 4, 3, 2, 0),    # crew morale, mug rating
+  gold_carts   = c(3, 7, 6, 9, 4, 5, 2, 0),
+  songs        = c(4, 5, 4, 5, 4, 3, 2, 0),
   axes_dulled  = c(12, 18, 15, 11, 22, 28, 35, 99),
   balrog_risk  = c(0L, 0L, 1L, 1L, 2L, 3L, 4L, 9L),
   status       = c("singing", "yielding", "yielding", "yielding",
@@ -28,7 +30,11 @@ forest_plot(
   label = "shaft",
   columns = list(
     col_numeric("depth_m", header = "Depth (m)", decimals = 0),
+    # Bar with no `color` → picks up theme primary (hammered bronze).
     col_bar("q3_tonnage", header = "Q3 tonnage"),
+    # Pictograms with no `color` → picks up theme secondary (warm gold).
+    # The whole "gold ledger of the king" feel comes from the theme,
+    # not from hardcoded hexes.
     col_pictogram("gold_carts", header = "Gold carts",
                   glyph = "gem",
                   value_label = FALSE),
@@ -40,15 +46,21 @@ forest_plot(
                   label_format = "integer",
                   max_glyphs = 5,
                   min_value = 0, max_value = 100),
+    # Threshold-driven badge: c(2, 5) → 3 stops → status palette
+    # (positive / warning / negative). Risk semantics expressed as data,
+    # color comes from the theme's status colors.
     col_badge("balrog_risk", header = "Balrog risk",
               shape = "circle",
               thresholds = c(2, 5)),
+    # Categorical badge using semantic VARIANTS instead of hardcoded
+    # hexes. Each label maps to a status token; the theme's status colors
+    # provide the actual palette.
     col_badge("status",
-              colors = c("singing"   = "#7A9B3F",
-                         "yielding"  = "#5C7AA0",
-                         "watch"     = "#D4A955",
-                         "hazardous" = "#C84638",
-                         "abandon"   = "#5A4232"))
+              variants = c("singing"   = "success",
+                           "yielding"  = "info",
+                           "watch"     = "warning",
+                           "hazardous" = "error",
+                           "abandon"   = "muted"))
   ),
   scale = "log",
   null_value = 1,

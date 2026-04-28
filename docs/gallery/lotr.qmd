@@ -50,23 +50,28 @@ forest_plot(
   label = "shaft",
   columns = list(
     col_numeric("depth_m", header = "Depth (m)", decimals = 0),
+    # Bar without `color` → picks up theme primary (hammered bronze).
     col_bar("q3_tonnage", header = "Q3 tonnage"),
-    col_pictogram("gold_carts", header = "Gold carts",
-                  glyph = "gem"),
+    # Pictograms without `color` → pick up theme secondary (warm gold).
+    # No hex literals in the call — the cascade does the work.
+    col_pictogram("gold_carts", header = "Gold carts", glyph = "gem"),
     col_pictogram("songs", header = "Songs / shift",
                   glyph = "ale_mug", max_glyphs = 5),
     col_pictogram("axes_dulled", header = "Axes dulled",
                   glyph = "pickaxe",
                   value_label = "trailing", label_format = "integer",
                   max_glyphs = 5, min_value = 0, max_value = 100),
+    # Threshold badge: 2 thresholds → status palette (positive/warning/negative).
     col_badge("balrog_risk", header = "Balrog risk",
               shape = "circle", thresholds = c(2, 5)),
+    # Categorical badge with semantic VARIANTS instead of hex literals —
+    # each label maps to a status token and pulls from theme.status.
     col_badge("status",
-              colors = c("singing"   = "#7A9B3F",
-                         "yielding"  = "#5C7AA0",
-                         "watch"     = "#D4A955",
-                         "hazardous" = "#C84638",
-                         "abandon"   = "#5A4232"))
+              variants = c("singing"   = "success",
+                           "yielding"  = "info",
+                           "watch"     = "warning",
+                           "hazardous" = "error",
+                           "abandon"   = "muted"))
   ),
   scale = "log", null_value = 1,
   axis_label = "Yield ratio (Q3 vs Q2)",
@@ -101,24 +106,32 @@ elvish_data <- data.frame(
   joins       = c("HOSTS", "YES", "YES", "YES", "YES", "YES", "BEARER", "GARDENER"),
   vote_for    = c(0.95, 1.05, 0.88, 1.10, 0.92, 1.32, 0.78, 0.85),
   vote_lo     = c(0.78, 0.85, 0.72, 0.92, 0.78, 1.10, 0.62, 0.68),
-  vote_hi     = c(1.12, 1.25, 1.05, 1.30, 1.08, 1.55, 0.98, 1.05)
+  vote_hi     = c(1.12, 1.25, 1.05, 1.30, 1.08, 1.55, 0.98, 1.05),
+  # The Ring-bearer is the single row that fires the accent treatment
+  # (theme.row.accent → twilight gold). Everything else stays at theme
+  # default — no per-call hex literals.
+  row_accent  = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)
 )
 
 forest_plot(
   elvish_data,
   point = "vote_for", lower = "vote_lo", upper = "vote_hi",
   label = "delegate",
+  row_accent = "row_accent",
   columns = list(
-    col_badge("race",
-              colors = c("Elf" = "#D4B26E", "Maia" = "#A78BBF",
-                         "Man" = "#8AB0D8", "Dwarf" = "#B86A48",
-                         "Hobbit" = "#E5A89A")),
+    # Race as plain text — five arbitrary categories don't fit any
+    # semantic palette; hardcoding five hexes would defeat the showcase.
+    col_text("race", header = "Race"),
+    # Pictograms drop their hardcoded `color` — pick up theme secondary
+    # (mithril silver). Frodo's row, marked accent, switches the glyphs
+    # to twilight gold via the row.accent semantic override.
     col_pictogram("wisdom", header = "Wisdom",
-                  glyph = "star", max_glyphs = 5, color = "#D4B26E"),
+                  glyph = "star", max_glyphs = 5),
     col_pictogram("valor", header = "Valor",
-                  glyph = "sword", max_glyphs = 5, color = "#D67373"),
+                  glyph = "sword", max_glyphs = 5),
+    # Ring tempt: 2 thresholds → 3 stops → status palette. Boromir's
+    # 0.86 lands in the danger bin on its own; no per-call hex needed.
     col_ring("tempt", header = "Ring tempt",
-             color = c("#D4B26E", "#A78BBF", "#D67373"),
              thresholds = c(0.33, 0.66)),
     col_bar("words_12h", header = "Words spoken (12h)"),
     col_pictogram("interrupted", header = "Interrupted Boromir",
@@ -127,11 +140,13 @@ forest_plot(
                   glyph = "leaf",
                   value_label = "trailing", label_format = "integer",
                   max_glyphs = 8),
+    # Joins as variants — info / success status, plus "default" → accent
+    # for the Bearer (twilight gold), pinned to a single semantic axis.
     col_badge("joins", header = "Joins fellowship",
-              colors = c("HOSTS"     = "#A78BBF",
-                         "YES"       = "#8AC18A",
-                         "BEARER"    = "#D4B26E",
-                         "GARDENER"  = "#8AC18A"))
+              variants = c("HOSTS"    = "info",
+                           "YES"      = "success",
+                           "BEARER"   = "default",
+                           "GARDENER" = "success"))
   ),
   scale = "log", null_value = 1,
   axis_label = "Council vote weight",
@@ -168,29 +183,41 @@ hobbit_data <- data.frame(
                       "NONE", "NONE", "NONE", "NONE"),
   satiation       = c(1.05, 1.12, 0.98, 1.02, 0.75, 0.95, 1.08, 0.92),
   satiation_lo    = c(0.92, 1.00, 0.85, 0.88, 0.62, 0.82, 0.95, 0.78),
-  satiation_hi    = c(1.18, 1.25, 1.10, 1.15, 0.88, 1.08, 1.20, 1.05)
+  satiation_hi    = c(1.18, 1.25, 1.10, 1.15, 0.88, 1.08, 1.20, 1.05),
+  # Adventurous Tooks pop in accent (autumn rust); the Sackville-Bagginses
+  # fade in muted (problematic relatives). Everything else at theme default.
+  row_accent      = c(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  row_muted       = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE)
 )
 
 forest_plot(
   hobbit_data,
   point = "satiation", lower = "satiation_lo", upper = "satiation_hi",
   label = "household",
+  row_accent = "row_accent",
+  row_muted  = "row_muted",
   columns = list(
     col_text("smial", header = "Smial"),
+    # Pictograms without `color` → theme secondary (garden green —
+    # Sam's vegetables). Took's row picks up accent override automatically.
     col_pictogram("pantry", header = "Pantry fill",
-                  glyph = "jar", max_glyphs = 5, color = "#D97757"),
+                  glyph = "jar", max_glyphs = 5),
+    # Bar without `color` → theme primary (warm clay — Bag End brick).
     col_bar("pipeweed_lb", header = "Pipe-weed (lb)"),
     col_numeric("meals_per_day", header = "Meals/day", decimals = 1),
     col_pictogram("second_brkfst", header = "2nd brkfst",
-                  glyph = "pie", max_glyphs = 5, color = "#D97757"),
+                  glyph = "pie", max_glyphs = 5),
     col_pictogram("mushrooms", header = "Mushrooms",
                   glyph = "mushroom",
                   value_label = "trailing", label_format = "integer",
                   max_glyphs = 8),
+    # Adventures via variants — success for the typical one-time hobbit
+    # jaunt, default → accent for the unusual MANY (the Tooks), muted for
+    # NONE.
     col_badge("adventures",
-              colors = c("YES (ONE)" = "#6B8E3D",
-                         "MANY"      = "#8B5E83",
-                         "NONE"      = "#A6633E"),
+              variants = c("YES (ONE)" = "success",
+                           "MANY"      = "default",
+                           "NONE"      = "muted"),
               outline = TRUE)
   ),
   scale = "log", null_value = 1,

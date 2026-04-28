@@ -6,9 +6,13 @@
     options?: RingColumnOptions;
     naText?: string;
     cellStyle?: CellStyle;
+    /** Row/cell semantic markerFill (accent/emphasis/muted) computed by
+     * the renderer. Slots in below explicit column-level color but above
+     * theme default. */
+    colorOverride?: string | null;
   }
 
-  let { value, options, naText, cellStyle }: Props = $props();
+  let { value, options, naText, cellStyle, colorOverride }: Props = $props();
 
   // ----- option derivations -------------------------------------------------
 
@@ -48,7 +52,7 @@
     if (!thresholds || thresholds.length === 0) {
       if (typeof color === "string") return color;
       if (Array.isArray(color) && color.length === 1) return color[0];
-      return "var(--tv-secondary, var(--tv-primary))";
+      return colorOverride ?? "var(--tv-secondary, var(--tv-primary))";
     }
     // Threshold path: find the color slot for this value.
     // Threshold defaults when user passed only `thresholds`, not `color`:

@@ -9,9 +9,13 @@
     cellStyle?: CellStyle;
     /** Optional row-level field selector value when glyph is a mapping. */
     glyphSelector?: string | number | null;
+    /** Row/cell semantic markerFill (accent/emphasis/muted) computed by
+     * the renderer. Slots in below explicit column-level color but above
+     * theme default. */
+    colorOverride?: string | null;
   }
 
-  let { value, options, naText, cellStyle, glyphSelector }: Props = $props();
+  let { value, options, naText, cellStyle, glyphSelector, colorOverride }: Props = $props();
 
   // ----- option derivations -------------------------------------------------
 
@@ -28,9 +32,11 @@
   // Theme-aware defaults: null → CSS var. style_color overrides the filled
   // color (per the per-cell cascade decisions). Pictograms read identity
   // secondary by default (with primary fallback in mono themes); accent is
-  // reserved for layered emphasis only.
+  // reserved for layered emphasis only. colorOverride carries the row/cell
+  // semantic markerFill (accent/emphasis/muted) when active — slots in
+  // below explicit column-level color but above theme default.
   const filledColor = $derived(
-    cellStyle?.color ?? options?.color ?? "var(--tv-secondary, var(--tv-primary))"
+    cellStyle?.color ?? options?.color ?? colorOverride ?? "var(--tv-secondary, var(--tv-primary))"
   );
   const emptyColor = $derived(options?.emptyColor ?? "var(--tv-muted)");
   const isMutedRow = $derived(cellStyle?.muted === true);

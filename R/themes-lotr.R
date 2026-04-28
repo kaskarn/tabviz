@@ -16,9 +16,13 @@
 
 #' Dwarven theme — Erebor under the Lonely Mountain
 #'
-#' Deep cavern surface, warm copper accent, runic-inspired typography.
-#' Pairs well with [col_pictogram()] using `glyph = "pickaxe"`,
-#' `"anvil"`, `"gem"`, `"ale_mug"`, or `"rune"`.
+#' Deep cavern surface with a three-tier identity: hammered-bronze primary
+#' for headlines, warm-gold secondary for structural groupings (column
+#' bands, row bars, glyph fills), stone-veined-umber tertiary for chrome
+#' texture. Forge-ember accent reserved for layered emphasis (hover,
+#' selected, semantic accent rows). Runic-inspired typography. Pairs well
+#' with [col_pictogram()] using `glyph = "pickaxe"`, `"anvil"`, `"gem"`,
+#' `"ale_mug"`, or `"rune"`.
 #'
 #' Loads `UnifrakturMaguntia` (display) and `EB Garamond` (body) from
 #' Google Fonts via the WebTheme `web_fonts` slot.
@@ -42,13 +46,24 @@ web_theme_dwarven <- function() {
       # Cavern palette: deep brown-black canvas, slightly lighter alt-row,
       # warm gray for muted text, cream for primary text.
       neutral = c("#1F1610", "#1F1610", "#2A1F17", "#988372", "#E8D9B5"),
-      primary        = "#7A4E22",   # deep copper / hammered bronze
+      # Three-tier identity exercises the full cascade:
+      #   primary  = hammered bronze — title, leaf-header, container, series[0]
+      #   secondary = warm gold      — column-group bands, row-group bars,
+      #                                glyph-cell defaults (gemvein highlight)
+      #   tertiary = stone-veined umber — chrome texture (banding, hairlines)
+      primary        = "#7A4E22",   # hammered bronze
       primary_deep   = "#4A2D14",   # forge shadow
-      accent         = "#D4A955",   # warm gold (lands on hover/selected)
-      accent_deep    = "#A07A35",
+      secondary      = "#D4A955",   # warm gold (gemvein)
+      secondary_deep = "#A07A35",
+      tertiary       = "#6B5238",   # stone-veined umber
+      # Engagement axis: forge ember — reserved for hover, selected,
+      # row.accent treatment. Distinct enough from secondary's gold that
+      # accent-flagged rows pop without competing with the structural gold.
+      accent         = "#E0673A",   # forge ember
+      accent_deep    = "#B04A20",
       status_positive = "#8FA34A",  # gemvein green
       status_negative = "#C84638",  # forge-fire red
-      status_warning  = "#D4A955",  # gold matches accent
+      status_warning  = "#E5B842",  # candle-gold (slightly warmer than secondary)
       # Series anchors: gold, silver, copper, bronze, mithril-blue.
       series_anchors = c("#D4A955", "#A8A8A0", "#B86C42", "#7A4E22", "#5C7AA0"),
       font_body    = "'EB Garamond', Georgia, 'Times New Roman', serif",
@@ -72,10 +87,13 @@ web_theme_dwarven <- function() {
 
 #' Elvish theme — Lothlórien at twilight
 #'
-#' Deep night-sky surface, gold-and-silver accents, elegant Roman serif
-#' display with a flowing Renaissance body. Pairs with
-#' [col_pictogram()] glyphs `"crescent"`, `"harp"`, `"tree"`, `"bow"`,
-#' `"swan"`.
+#' Deep night-sky surface with a three-tier identity: starlit-navy primary
+#' for headlines, mithril-silver secondary for structural groupings (column
+#' bands, row bars, glyph fills — Lothlórien's pillars and banners),
+#' mallorn-moss tertiary for chrome texture. Twilight-gold accent reserved
+#' for layered emphasis. Elegant Roman serif display with a flowing
+#' Renaissance body. Pairs with [col_pictogram()] glyphs `"crescent"`,
+#' `"harp"`, `"tree"`, `"bow"`, `"swan"`.
 #'
 #' Loads `Cinzel` (display) and `Cormorant Garamond` (body) from Google
 #' Fonts via the WebTheme `web_fonts` slot.
@@ -99,8 +117,18 @@ web_theme_elvish <- function() {
       # Night-sky palette: indigo canvas, slightly lighter alt-row,
       # cool gray-blue muted text, near-white primary text.
       neutral = c("#0E1730", "#0E1730", "#172242", "#8090A8", "#EDEFF5"),
+      # Three-tier identity:
+      #   primary  = starlit navy   — title, leaf-header, container
+      #   secondary = mithril silver — column-group bands, row-group bars,
+      #                                glyph-cell defaults (Lothlórien's
+      #                                pillars and banners)
+      #   tertiary = mallorn moss   — chrome texture (forest-floor banding)
       primary        = "#1F3A5F",   # deep starlit navy
       primary_deep   = "#0F1F38",
+      secondary      = "#B8C2D6",   # mithril silver
+      secondary_deep = "#7A88A0",
+      tertiary       = "#3D5A4A",   # mallorn-leaf moss
+      # Engagement: twilight gold — kept for hover/selected/accent rows.
       accent         = "#D4B26E",   # mithril-touched gold (twilight gleam)
       accent_deep    = "#B89148",
       status_positive = "#8AC18A",  # mallorn green
@@ -127,8 +155,12 @@ web_theme_elvish <- function() {
 
 #' Hobbit theme — Hobbiton on a clear morning
 #'
-#' Cream parchment surface, warm rust accent, letterpress-era typography.
-#' Pairs with [col_pictogram()] glyphs `"pipe"`, `"mushroom"`,
+#' Cream parchment surface with a three-tier identity: warm-clay primary
+#' for headlines (Bag End brick), garden-green secondary for structural
+#' groupings (column bands, row bars, glyph fills — Sam's vegetables
+#' flanking the hearth), wheat-stubble-gold tertiary for chrome texture.
+#' Autumn-rust accent reserved for layered emphasis. Letterpress-era
+#' typography. Pairs with [col_pictogram()] glyphs `"pipe"`, `"mushroom"`,
 #' `"footprint"`, `"jar"`, `"pie"`, `"leaf"`.
 #'
 #' Loads two flavors of `IM Fell English` (display + body) from Google
@@ -153,11 +185,22 @@ web_theme_hobbit <- function() {
       # Parchment palette: cream canvas, slightly creamier alt-row,
       # warm-gray muted text, ink-brown primary text.
       neutral = c("#FBF3DF", "#FBF3DF", "#F2E5C5", "#8A7456", "#3A2C20"),
+      # Three-tier identity:
+      #   primary  = warm clay       — title, leaf-header (Bag End brick)
+      #   secondary = garden green    — column-group bands, row-group bars,
+      #                                 glyph-cell defaults (Sam's vegetables
+      #                                 flanking the hearth)
+      #   tertiary = harvest wheat    — chrome texture (sun-baked banding)
       primary        = "#A6633E",   # warm clay
       primary_deep   = "#7A4527",
-      accent         = "#D97757",   # autumn rust (Sam's gardening apron)
+      secondary      = "#6B8E3D",   # garden green
+      secondary_deep = "#4A6628",
+      tertiary       = "#C9A557",   # wheat-stubble gold
+      # Engagement: autumn rust — Sam's gardening apron, kept for hover/
+      # selected/accent rows.
+      accent         = "#D97757",   # autumn rust
       accent_deep    = "#B85A3D",
-      status_positive = "#6B8E3D",  # garden-leaf green
+      status_positive = "#6B8E3D",  # garden-leaf green (matches secondary)
       status_negative = "#B33B2E",  # alarm-bell red (Sackville-Baggins!)
       status_warning  = "#D4A24A",  # harvest gold
       # Series anchors: rust, leaf-green, mustard, plum, terra-cotta.
