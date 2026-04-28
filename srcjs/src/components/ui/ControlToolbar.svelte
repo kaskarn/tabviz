@@ -9,6 +9,7 @@
   import SettingsButton from "./SettingsButton.svelte";
   import TokenPicker from "./TokenPicker.svelte";
   import SourceButton from "./SourceButton.svelte";
+  import FullscreenButton from "./FullscreenButton.svelte";
 
   interface Props {
     store: ForestStore;
@@ -17,6 +18,7 @@
     enableZoomControls?: boolean;
     enableReset?: boolean;
     enablePaint?: boolean;
+    enableFullscreen?: boolean;
     onThemeChange?: (themeName: ThemeName) => void;
   }
 
@@ -27,6 +29,7 @@
     enableZoomControls = true,
     enableReset = true,
     enablePaint = true,
+    enableFullscreen = true,
     onThemeChange,
   }: Props = $props();
 
@@ -49,6 +52,9 @@
   <SourceButton {store} />
   {#if enableReset}
     <ResetButton {store} />
+  {/if}
+  {#if enableFullscreen}
+    <FullscreenButton />
   {/if}
   {#if enableExport}
     <DownloadButton {store} />

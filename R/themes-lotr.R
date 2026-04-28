@@ -55,6 +55,13 @@ web_theme_dwarven <- function() {
       font_display = "'UnifrakturMaguntia', 'EB Garamond', Georgia, serif"
     ),
     variants = ThemeVariants(density = "comfortable"),
+    # Title/subtitle override: the title fg defaults to brand_deep
+    # (forge shadow), which is invisible on the deep cavern canvas.
+    # Pin it to a warm cream that reads against the surface.
+    text = TextRoles(
+      title    = TextRole(fg = "#E8D9B5"),
+      subtitle = TextRole(fg = "#C9A87C")
+    ),
     # Inverse text override so bold-mode header band stays readable on
     # the dark canvas.
     content = Content(inverse = "#E8D9B5"),
@@ -105,6 +112,13 @@ web_theme_elvish <- function() {
       font_display = "'Cinzel', 'Cormorant Garamond', Georgia, serif"
     ),
     variants = ThemeVariants(density = "comfortable"),
+    # Title/subtitle override — brand is deep navy and invisible on the
+    # night-sky canvas. Pin to a brighter mithril gold + silver-blue for
+    # high contrast.
+    text = TextRoles(
+      title    = TextRole(fg = "#F0CB8A"),
+      subtitle = TextRole(fg = "#C8D4E8")
+    ),
     content = Content(inverse = "#EDEFF5"),
     divider = Dividers(subtle = "#1F2D52", strong = "#3D4F75")
   ))

@@ -256,6 +256,18 @@ function calculateSvgAutoWidths(
   const headerFontSize = (headerExplicit && headerExplicit !== bodySizeStr)
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
     : Math.round(fontSize * 1.05 * 100) / 100;
+  // Header font weight is theme-controlled via theme.header.text.weight
+  // (defaults to 600). estimateTextWidth() doesn't account for weight, so
+  // bolder text renders wider than the estimate. Fudge per CSS-weight
+  // rough-empirical (regular → bold ≈ +8%):
+  //   400 → 1.00, 500 → 1.02, 600 → 1.05, 700 → 1.08, 800+ → 1.10.
+  // Themes that set normal-weight headers (400) get no fudge.
+  const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
+  const headerWeightFudge = headerWeight <= 400 ? 1.00
+    : headerWeight <= 500 ? 1.02
+    : headerWeight <= 600 ? 1.05
+    : headerWeight <= 700 ? 1.08
+    : 1.10;
   const rows = spec.data.rows;
 
   // Padding values from theme (not hardcoded magic numbers)
@@ -294,7 +306,8 @@ function calculateSvgAutoWidths(
       ) {
         const pad = isVizType(col.type) ? VIZ_MARGIN * 2 : cellPadding;
         const headerWidth = Math.ceil(
-          estimateTextWidth(col.header, headerFontSize) + pad + TEXT_MEASUREMENT.RENDERING_BUFFER,
+          estimateTextWidth(col.header, headerFontSize) * headerWeightFudge +
+            pad + TEXT_MEASUREMENT.RENDERING_BUFFER,
         );
         if (headerWidth > col.width) {
           widths.set(col.id, Math.min(AUTO_WIDTH.MAX, headerWidth));
@@ -305,9 +318,12 @@ function calculateSvgAutoWidths(
 
     let maxWidth = 0;
 
-    // Measure header text with header font size
+    // Measure header text with header font size + theme-driven weight fudge.
     if (col.header) {
-      maxWidth = Math.max(maxWidth, estimateTextWidth(col.header, headerFontSize));
+      maxWidth = Math.max(
+        maxWidth,
+        estimateTextWidth(col.header, headerFontSize) * headerWeightFudge,
+      );
     }
 
     // Measure all data cell values using proper display text
@@ -333,7 +349,7 @@ function calculateSvgAutoWidths(
   // ========================================================================
   // This matches the web view's doMeasurement() logic in forestStore.svelte.ts
   // Column group headers also use scaled font size (they inherit .header-cell)
-  expandColumnGroupWidths(spec.columns, widths, headerFontSize, groupPadding, TEXT_MEASUREMENT.RENDERING_BUFFER);
+  expandColumnGroupWidths(spec.columns, widths, headerFontSize, headerWeightFudge, groupPadding, TEXT_MEASUREMENT.RENDERING_BUFFER);
 
   return widths;
 }
@@ -352,6 +368,7 @@ function expandColumnGroupWidths(
   columnDefs: ColumnDef[],
   widths: Map<string, number>,
   fontSize: number,
+  weightFudge: number,
   groupPadding: number,
   renderingBuffer: number
 ): void {
@@ -396,8 +413,11 @@ function expandColumnGroupWidths(
 
       // Check if group header needs more width than children provide
       if (col.header) {
-        // Group header needs: text width + its own padding (from theme) + rendering buffer
-        const groupHeaderWidth = estimateTextWidth(col.header, fontSize) + groupPadding + renderingBuffer;
+        // Group header needs: text width (× weight fudge for bold rendering)
+        // + its own padding (from theme) + rendering buffer.
+        const groupHeaderWidth =
+          estimateTextWidth(col.header, fontSize) * weightFudge +
+          groupPadding + renderingBuffer;
 
         const leafCols = getLeafColumns(col);
         const childrenTotalWidth = leafCols.reduce((sum, leaf) => sum + getEffectiveWidth(leaf), 0);
