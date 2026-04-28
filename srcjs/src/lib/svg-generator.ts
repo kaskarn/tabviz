@@ -2039,13 +2039,18 @@ function renderVizAnnotations(
   vizX: number,
   plotY: number,
   rowsHeight: number,
+  theme: WebTheme,
 ): string {
   if (!annotations || annotations.length === 0) return "";
   const parts: string[] = [];
+  // Reference lines are structural scaffolding (null effect / baseline),
+  // so they default to divider.strong (tertiary-tinted) — same as the
+  // forest plot's null line. Frees accent for actual layered emphasis.
+  const refDefault = theme.divider?.strong ?? "#94a3b8";
   for (const ann of annotations) {
     if (ann.type !== "reference_line") continue;
     const x = vizX + xScale(ann.x);
-    const stroke = ann.color ?? "#94a3b8";
+    const stroke = ann.color ?? refDefault;
     const strokeWidth = ann.width ?? 1;
     const opacity = ann.opacity ?? 0.6;
     const dash = ann.style === "dashed" ? "4,4" : ann.style === "dotted" ? "2,2" : "";
@@ -4283,7 +4288,10 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           plotY,
           plotY + layout.rowsHeight,
           ann.style,
-          ann.color ?? theme.accent.default,
+          // Reference lines are structural scaffolding — default to
+          // divider.strong (tertiary-tinted) to match other plot lines
+          // and free accent for actual layered emphasis.
+          ann.color ?? theme.divider?.strong ?? theme.accent.default,
           theme,
           ann.label,
           ann.width ?? 1,
@@ -4406,7 +4414,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
       parts.push(`<g clip-path="url(#${clipId})">`);
       // Reference-line annotations (drawn behind bars)
-      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight));
+      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight, theme));
       // Render bars for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -4441,7 +4449,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
       parts.push(`<g clip-path="url(#${clipId})">`);
       // Reference-line annotations (drawn behind boxes)
-      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight));
+      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight, theme));
       // Render boxplots for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
@@ -4476,7 +4484,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
       parts.push(`<g clip-path="url(#${clipId})">`);
       // Reference-line annotations (drawn behind violins)
-      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight));
+      parts.push(renderVizAnnotations(opts.annotations, xScale, vizX, plotY, layout.rowsHeight, theme));
       // Render violins for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {

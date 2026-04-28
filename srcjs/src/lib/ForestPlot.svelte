@@ -2106,7 +2106,7 @@
                   x2={colScale(annotation.x)}
                   y1={0}
                   y2={rowsAreaHeight}
-                  stroke={annotation.color ?? "var(--tv-accent)"}
+                  stroke={annotation.color ?? "var(--tv-divider-strong, var(--tv-border))"}
                   stroke-width={annotation.width ?? 1.5}
                   stroke-opacity={annotation.opacity ?? 0.6}
                   stroke-dasharray={annotation.style === "dashed" ? "6,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2278,7 +2278,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--tv-muted)"}
+                      stroke={annotation.color ?? "var(--tv-divider-strong, var(--tv-border))"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2367,7 +2367,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--tv-muted)"}
+                      stroke={annotation.color ?? "var(--tv-divider-strong, var(--tv-border))"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}
@@ -2456,7 +2456,7 @@
                       x2={sharedScale(annotation.x)}
                       y1={0}
                       y2={rowsAreaHeight}
-                      stroke={annotation.color ?? "var(--tv-muted)"}
+                      stroke={annotation.color ?? "var(--tv-divider-strong, var(--tv-border))"}
                       stroke-width={annotation.width ?? 1}
                       stroke-opacity={annotation.opacity ?? 0.6}
                       stroke-dasharray={annotation.style === "dashed" ? "4,4" : annotation.style === "dotted" ? "2,2" : ""}

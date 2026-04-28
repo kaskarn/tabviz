@@ -225,20 +225,38 @@ test_that("bold-mode header/col-group rules contrast against their own bg (compo
   )
 })
 
-test_that("title defaults to primary_deep; forest-axis labels default to content.muted", {
+test_that("title defaults to primary_deep; axis labels lean tertiary", {
   t <- resolved_default()
   # Title carries primary identity — keeps the tone the table opens with.
   expect_equal(t@text@title@fg, t@inputs@primary_deep)
-  # Axis + tick labels are scaffolding — they should recede, not carry
-  # primary identity, hence content.muted instead of primary_deep.
-  expect_equal(t@plot@axis_label@fg, t@content@muted)
-  expect_equal(t@plot@tick_label@fg, t@content@muted)
+  # Axis + tick labels are scaffolding text — should recede, but pick
+  # up a faint (10%) tertiary lean so they coordinate with axis lines
+  # and gridlines (also tertiary-tinted via the divider chain). Mirror
+  # chain collapses this to the same hue as today's content.muted in
+  # mono themes where tertiary mirrors primary.
+  expected_axis_fg <- oklch_mix(t@content@muted, t@inputs@tertiary_deep, 0.10)
+  expect_equal(t@plot@axis_label@fg, expected_axis_fg)
+  expect_equal(t@plot@tick_label@fg, expected_axis_fg)
 })
 
-test_that("L1 group bg is secondary-derived in both variants", {
+test_that("typography hierarchy maps onto identity tiers (mirror-aware)", {
+  t <- resolved_default()
+  # Subtitle and label lean secondary; caption / tick / footnote lean
+  # tertiary. Body and cell stay strictly neutral (legibility floor).
+  expect_equal(t@text@subtitle@fg, oklch_mix(t@content@secondary, t@inputs@secondary_deep, 0.30))
+  expect_equal(t@text@label@fg,    oklch_mix(t@content@secondary, t@inputs@secondary_deep, 0.20))
+  expect_equal(t@text@caption@fg,  oklch_mix(t@content@secondary, t@inputs@tertiary_deep,  0.30))
+  expect_equal(t@text@tick@fg,     oklch_mix(t@content@muted,     t@inputs@tertiary_deep,  0.10))
+  expect_equal(t@text@footnote@fg, oklch_mix(t@content@muted,     t@inputs@tertiary_deep,  0.20))
+  # Body / cell stay neutral.
+  expect_equal(t@text@body@fg, t@content@primary)
+  expect_equal(t@text@cell@fg, t@content@primary)
+})
+
+test_that("L1 group bg is secondary-derived (16% mix) in both variants", {
   light_t <- resolve_theme(WebTheme())
   bold_t  <- resolve_theme(WebTheme(variants = ThemeVariants(header_style = "bold")))
-  expected <- oklch_mix(light_t@surface@base, light_t@inputs@secondary_deep, 0.12)
+  expected <- oklch_mix(light_t@surface@base, light_t@inputs@secondary_deep, 0.16)
   expect_equal(light_t@row_group@L1@bg, expected)
   expect_equal(bold_t@row_group@L1@bg, expected)
   # Structural groupings — column and row — both live on secondary so they
@@ -257,7 +275,7 @@ test_that("two-color theme: L1 row-group bg tracks secondary, not primary", {
   # column-group bold and row-group L1 should both derive from
   # secondary_deep (green), not primary_deep (red).
   expect_equal(t@column_group@bold@bg, t@inputs@secondary_deep)
-  expected_l1 <- oklch_mix(t@surface@base, t@inputs@secondary_deep, 0.12)
+  expected_l1 <- oklch_mix(t@surface@base, t@inputs@secondary_deep, 0.16)
   expect_equal(t@row_group@L1@bg, expected_l1)
 })
 

@@ -238,34 +238,47 @@ resolve_data <- function(inputs, surface_base, content_primary, existing_series)
 
 
 # resolve_text: TextRoles bundles from Tier 1 fonts + Tier 2 content.
+#
+# Typography hierarchy maps onto the identity-tier contract:
+#   * title     = primary_deep         — identity hero
+#   * subtitle  = secondary lean (30%) — structural typography
+#   * body/cell = content.primary      — neutral (legibility floor)
+#   * label     = secondary lean (20%) — short structural text
+#   * caption   = tertiary  lean (30%) — quiet editorial chrome
+#   * tick      = tertiary  lean (10%) — scaffolding, dense grids
+#   * footnote  = tertiary  lean (20%) — quietest end of the layout
+#
+# In mono themes, secondary/tertiary mirror primary so every mix
+# resolves to the same hue at the same percentage as today's plain
+# content.muted / content.secondary — visually identical to before.
+# Polychromatic themes (where secondary or tertiary is pinned) get a
+# true 3-tier typographic look without per-theme overrides.
 resolve_text <- function(inputs, content) {
   body <- inputs@font_body
   display <- inputs@font_display
-  # Tolerate NA primary_deep for callers that bypass resolve_inputs_mirrors.
-  primary_deep <- if (is.na(inputs@primary_deep)) inputs@primary else inputs@primary_deep
+  # Tolerate NA tier_deep for callers that bypass resolve_inputs_mirrors.
+  primary_deep   <- if (is.na(inputs@primary_deep))   inputs@primary   else inputs@primary_deep
+  secondary_deep <- if (is.na(inputs@secondary_deep)) primary_deep     else inputs@secondary_deep
+  tertiary_deep  <- if (is.na(inputs@tertiary_deep))  secondary_deep   else inputs@tertiary_deep
 
-  fill_text <- function(role, defaults) {
-    for (p in names(defaults)) {
-      current <- S7::prop(role, p)
-      if (length(current) == 1L && is.na(current)) {
-        S7::prop(role, p) <- defaults[[p]]
-      }
-    }
-    role
-  }
+  subtitle_fg <- oklch_mix(content@secondary, secondary_deep, 0.30)
+  label_fg    <- oklch_mix(content@secondary, secondary_deep, 0.20)
+  caption_fg  <- oklch_mix(content@secondary, tertiary_deep,  0.30)
+  tick_fg     <- oklch_mix(content@muted,     tertiary_deep,  0.10)
+  footnote_fg <- oklch_mix(content@muted,     tertiary_deep,  0.20)
 
   TextRoles(
     # Title fg defaults to primary_deep — large, prominent text is the
     # highest-leverage place for the deep primary identity color to land.
     # Override theme@text@title@fg for a different tone.
-    title    = TextRole(family = display, size = "1.25rem",   weight = 600, figures = "proportional", fg = primary_deep,      italic = FALSE),
-    subtitle = TextRole(family = body,    size = "1rem",      weight = 400, figures = "proportional", fg = content@secondary, italic = FALSE),
-    body     = TextRole(family = body,    size = "0.875rem",  weight = 400, figures = "tabular",      fg = content@primary,   italic = FALSE),
-    cell     = TextRole(family = body,    size = "0.875rem",  weight = 400, figures = "tabular",      fg = content@primary,   italic = FALSE),
-    label    = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "tabular",      fg = content@secondary, italic = FALSE),
-    tick     = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "tabular",      fg = content@muted,     italic = FALSE),
-    footnote = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = content@muted,     italic = FALSE),
-    caption  = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = content@secondary, italic = TRUE)
+    title    = TextRole(family = display, size = "1.25rem",   weight = 600, figures = "proportional", fg = primary_deep,    italic = FALSE),
+    subtitle = TextRole(family = body,    size = "1rem",      weight = 400, figures = "proportional", fg = subtitle_fg,     italic = FALSE),
+    body     = TextRole(family = body,    size = "0.875rem",  weight = 400, figures = "tabular",      fg = content@primary, italic = FALSE),
+    cell     = TextRole(family = body,    size = "0.875rem",  weight = 400, figures = "tabular",      fg = content@primary, italic = FALSE),
+    label    = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "tabular",      fg = label_fg,        italic = FALSE),
+    tick     = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "tabular",      fg = tick_fg,         italic = FALSE),
+    footnote = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = footnote_fg,     italic = FALSE),
+    caption  = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = caption_fg,      italic = TRUE)
   )
 }
 
@@ -369,17 +382,20 @@ resolve_components <- function(theme) {
   theme@column_group <- cg
 
   # -- Row groups: L1 strongest, L3 lightest. --
-  # L1.bg is secondary-derived: a 12% mix of secondary_deep into surface.base.
+  # L1.bg is secondary-derived: a 16% mix of secondary_deep into surface.base.
   # Structural groupings — column and row — both live on secondary so they
   # read as a coordinated family in two-color themes. Routing through an
   # identity tier (rather than accent.tint_subtle) keeps the group bar in
   # a different color family from hover/selected fills (which are
   # accent.muted), so multiple highlighted rows don't merge into the bar.
-  # In mono themes secondary mirrors primary, so visuals are unchanged.
+  # 16% (up from 12%) gives row-group bars a closer visual rhyme with the
+  # column-group bold band (100% saturation) without overpowering row
+  # content; the existing weight=600 already carries the rest. In mono
+  # themes secondary mirrors primary, so the visual delta is small.
   # All three nesting levels (L1/L2/L3) share this bg — hierarchy is
   # carried by text weight + indent, not per-level tint.
   rg <- theme@row_group
-  l1_default_bg <- oklch_mix(surface@base, inputs@secondary_deep, 0.12)
+  l1_default_bg <- oklch_mix(surface@base, inputs@secondary_deep, 0.16)
   rg@L1 <- fill_na(rg@L1, list(
     bg   = l1_default_bg,
     fg   = content@primary,
@@ -491,13 +507,19 @@ resolve_components <- function(theme) {
     gridline  = divider@subtle,
     reference = divider@strong
   ))
-  # Axis + tick label fg default to content@muted — they're scaffolding,
-  # not identity, so they should recede rather than carry primary identity.
+  # Axis + tick label fg get a faint tertiary lean (10% mix into
+  # content.muted) so they coordinate with the rest of the plot
+  # scaffolding (axis line, tick marks, gridlines all already
+  # tertiary-tinted via the divider chain). Mirror chain handles mono
+  # themes — tertiary_deep mirrors primary_deep so the mix collapses to
+  # the same hue as today's plain content.muted.
   # Pre-fill BEFORE compose_text so this value blocks the text-role
   # default (which would otherwise inherit the role's content color)
   # while other NA fields still flow through from the role.
-  if (is.na(ps@axis_label@fg)) ps@axis_label@fg <- content@muted
-  if (is.na(ps@tick_label@fg)) ps@tick_label@fg <- content@muted
+  tertiary_deep <- if (is.na(theme@inputs@tertiary_deep)) theme@inputs@primary_deep else theme@inputs@tertiary_deep
+  axis_tick_label_fg <- oklch_mix(content@muted, tertiary_deep, 0.10)
+  if (is.na(ps@axis_label@fg)) ps@axis_label@fg <- axis_tick_label_fg
+  if (is.na(ps@tick_label@fg)) ps@tick_label@fg <- axis_tick_label_fg
   ps@axis_label <- compose_text(ps@axis_label, text@label)
   ps@tick_label <- compose_text(ps@tick_label, text@tick)
   theme@plot <- ps
