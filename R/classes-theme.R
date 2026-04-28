@@ -46,11 +46,20 @@ ThemeInputs <- new_class(
     neutral = new_property(class_character,
       default = c("#FFFFFF", "#F7F8FA", "#EDEFF3", "#A8AEB8", "#2A2F38")),
 
-    # Brand fill + dark companion for text/strokes. brand_deep NA = mirror brand.
-    brand      = new_property(class_character, default = "#0891b2"),
-    brand_deep = new_property(class_character, default = NA_character_),
+    # Identity (3-tier mirroring chain). Each tier carries a hex + optional
+    # _deep companion. NA flows tertiary -> secondary -> primary at resolve
+    # time; each _deep auto-derives via oklch_darken(seed, 0.15) when NA.
+    # Mono themes set only primary; two/three-color themes pin the others.
+    primary        = new_property(class_character, default = "#0891b2"),
+    primary_deep   = new_property(class_character, default = NA_character_),
+    secondary      = new_property(class_character, default = NA_character_),
+    secondary_deep = new_property(class_character, default = NA_character_),
+    tertiary       = new_property(class_character, default = NA_character_),
+    tertiary_deep  = new_property(class_character, default = NA_character_),
 
-    # Chrome accent + dark companion. accent_deep NA = mirror accent.
+    # Engagement (orthogonal to identity). Reserved for layered emphasis:
+    # hover, selected, semantic row callouts, selection edge, status.info
+    # fallback. Does NOT enter the identity mirror chain.
     accent      = new_property(class_character, default = "#0891b2"),
     accent_deep = new_property(class_character, default = NA_character_),
 
@@ -76,7 +85,10 @@ ThemeInputs <- new_class(
   ),
   validator = function(self) {
     invalid <- character()
-    color_props <- c("brand", "brand_deep", "accent", "accent_deep",
+    color_props <- c("primary", "primary_deep",
+                     "secondary", "secondary_deep",
+                     "tertiary", "tertiary_deep",
+                     "accent", "accent_deep",
                      "status_positive", "status_negative", "status_warning",
                      "status_info")
     for (p in color_props) {
@@ -168,20 +180,20 @@ Content <- new_class(
 #'
 #' `subtle` powers cell hairlines and gridlines. `strong` powers header
 #' rules, group rules, and the forest-plot axis line / tick / reference
-#' lines on light surfaces. `strong_on_dark` is the bold-mode counterpart
-#' (rule on a brand_deep header band) — must contrast against `brand_deep`,
-#' not against the table surface.
+#' lines on light surfaces. Rules sitting on dark bold-mode bands
+#' (`header.bold`, `column_group.bold`) are derived per-cluster at resolve
+#' time as `mix(content.inverse, <cluster-bg>, 0.4)` so each contrasts
+#' against its own band — there is no global "strong-on-dark" token.
 #'
 #' @usage NULL
 #' @export
 Dividers <- new_class(
   "Dividers",
   properties = list(
-    subtle         = new_property(class_character, default = NA_character_),
-    strong         = new_property(class_character, default = NA_character_),
-    strong_on_dark = new_property(class_character, default = NA_character_)
+    subtle = new_property(class_character, default = NA_character_),
+    strong = new_property(class_character, default = NA_character_)
   ),
-  validator = make_color_validator(c("subtle", "strong", "strong_on_dark"))
+  validator = make_color_validator(c("subtle", "strong"))
 )
 
 #' AccentRoles (Tier 2): chrome accent + tint ramp.
@@ -218,9 +230,9 @@ StatusColors <- new_class(
 #'
 #' The painter applies one of five RowSemantic bundles to a row or cell.
 #' One of those bundles (`row.fill`) needs a color whose identity isn't
-#' captured by accent / brand / status. `Semantics` carries that named
-#' slot — defaults to a derivation from `accent` at resolve time; authors
-#' override the slot to pin a specific token color.
+#' captured by accent / identity / status. `Semantics` carries that named
+#' slot — defaults to a derivation from `accent` at resolve time (engagement
+#' axis); authors override the slot to pin a specific token color.
 #'
 #' @usage NULL
 #' @export

@@ -30,9 +30,20 @@ col_badge(
 (e.g., \code{c("published" = "success", "draft" = "warning")})}
 
 \item{colors}{Named character vector mapping values to custom hex colors,
-which override variants (e.g., \code{c("special" = "#ff5500")})}
+which override variants (e.g., \code{c("special" = "#ff5500")}). When
+\code{thresholds} is supplied, \code{colors} must instead be an unnamed character
+vector with \code{length(thresholds) + 1} entries.}
 
 \item{size}{Badge size: "sm" or "base" (default "base")}
+
+\item{shape}{Badge shape: \code{"pill"} (default), \code{"circle"}, or \code{"square"}.}
+
+\item{outline}{Logical; if \code{TRUE}, render outline-only badges (transparent
+fill with a colored border).}
+
+\item{thresholds}{Numeric vector of sorted breakpoints for binning numeric
+values into colored badges. Mutually exclusive with \code{variants}. Pair with
+an unnamed \code{colors} vector of length \code{length(thresholds) + 1}.}
 
 \item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 

@@ -306,7 +306,7 @@ custom_theme <- web_theme(
   name = "warm",
   inputs = list(
     neutral        = c("#FEFCE8", "#FEFCE8", "#FAF6D4", "#A0855A", "#422006"),
-    brand          = "#CA8A04",
+    primary          = "#CA8A04",
     accent         = "#CA8A04",
     series_anchors = c("#CA8A04", "#16A34A", "#DC2626", "#3B82F6", "#7C3AED"),
     font_body      = "Georgia, serif"
@@ -567,7 +567,7 @@ full_monty <- tibble(
 
 # Custom theme
 monty_theme <- web_theme_dark() |>
-  set_inputs(brand = "#f59e0b") |>
+  set_inputs(primary = "#f59e0b") |>
   set_spacing(row_height = 38) |>
   set_theme_field(c("axis", "gridlines"), TRUE) |>
   set_theme_field(c("axis", "gridline_style"), "dotted")

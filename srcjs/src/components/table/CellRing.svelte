@@ -43,23 +43,24 @@
     if (cellStyle?.color) return cellStyle.color;     // per-cell override
     const thresholds = options?.thresholds;
     const color = options?.color;
-    // Single-color path (string or undefined → theme accent default)
+    // Single-color path: identity-secondary by default (with primary
+    // fallback in mono themes). Accent is reserved for layered emphasis.
     if (!thresholds || thresholds.length === 0) {
       if (typeof color === "string") return color;
       if (Array.isArray(color) && color.length === 1) return color[0];
-      return "var(--tv-accent)";
+      return "var(--tv-secondary, var(--tv-primary))";
     }
     // Threshold path: find the color slot for this value.
     // Threshold defaults when user passed only `thresholds`, not `color`:
-    //  1 threshold (2 stops) → accent / negative
+    //  1 threshold (2 stops) → secondary / negative
     //  2 thresholds (3 stops) → positive / warning / negative
-    //  3+ thresholds → no auto-default, fall back to single accent
+    //  3+ thresholds → no auto-default, fall back to single secondary
     const stops = (() => {
       if (Array.isArray(color) && color.length === thresholds.length + 1) return color;
-      if (thresholds.length === 1) return ["var(--tv-accent)", "var(--tv-status-negative)"];
+      if (thresholds.length === 1) return ["var(--tv-secondary)", "var(--tv-status-negative)"];
       if (thresholds.length === 2)
         return ["var(--tv-status-positive)", "var(--tv-status-warning)", "var(--tv-status-negative)"];
-      return ["var(--tv-accent)"];
+      return ["var(--tv-secondary)"];
     })();
     if (numericValue == null) return stops[0];
     let idx = 0;

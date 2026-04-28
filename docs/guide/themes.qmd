@@ -31,7 +31,7 @@ flowchart LR
 ```
 
 * **Step 1** — `theme = web_theme_lancet()`. Done. Four presets cover the common publication and dashboard surfaces.
-* **Step 2** — Swap a brand color, change density, switch to a serif font. The preset stays the foundation; you nudge a few inputs.
+* **Step 2** — Swap a primary color, change density, switch to a serif font. The preset stays the foundation; you nudge a few inputs.
 * **Step 3** — Reach into a specific component (e.g. the L1 row-group bar background) for surgical control. Rare; the preset cascade handles 95% of cases.
 
 ## Step 1: Pick a preset
@@ -100,7 +100,7 @@ Every theme — including all four presets — is determined by **a small set of
 | Group | Input | What it controls |
 |-------|-------|------------------|
 | Chrome | `neutral` | 5-step ramp, lightest → darkest. Drives surfaces, dividers, content |
-|  | `brand` + `brand_deep` | Brand fill (markers, accents) and dark companion (text/strokes, bold-mode header band) |
+|  | `brand` + `primary_deep` | Brand fill (markers, accents) and dark companion (text/strokes, bold-mode header band) |
 |  | `accent` + `accent_deep` | Chrome accent for hover, selection, links |
 |  | `status_*` | Positive / negative / warning / info |
 | Data | `series_anchors` | Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond. |
@@ -115,7 +115,7 @@ Build a custom theme by overriding any of these:
 my_theme <- web_theme(
   name = "my-brand",
   inputs = list(
-    brand          = "#1F3A5F",   # navy
+    primary          = "#1F3A5F",   # navy
     accent         = "#B08938",   # warm gold
     series_anchors = c("#1F3A5F", "#B08938", "#6B8E7F"),
     font_body      = "Charter, Georgia, serif"
@@ -127,24 +127,24 @@ my_theme <- web_theme(
 
 The deep companions mirror their primaries by default:
 
-* `brand_deep` defaults to `brand` (override when you want a darker stroke than fill, or a richer bold-mode header band).
+* `primary_deep` defaults to `brand` (override when you want a darker stroke than fill, or a richer bold-mode header band).
 * `accent_deep` defaults to `accent`.
 * `font_display` defaults to `font_body`.
 
 The pooled-effect diamond reads from the first series slot bundle (`theme@series[[1]]`). Override `series_anchors[1]` to recolor it; reach into `theme@series[[1]]@stroke` directly for a journal-specific outline.
 
-### What `brand_deep` actually drives
+### What `primary_deep` actually drives
 
-`brand_deep` is the dark identity tone — meant to land on text and rules
-where you want the brand to read as serious, not decorative. The resolver
+`primary_deep` is the dark identity tone — meant to land on text and rules
+where you want the primary to read as serious, not decorative. The resolver
 threads it into:
 
 * Plot title color (`text@title@fg`)
 * Forest-axis label and tick-label colors (`plot@axis_label@fg`, `plot@tick_label@fg`)
-* Cell-hairline tint — `divider@subtle` is `neutral[3]` mixed with 8% `brand_deep`, so cell borders pick up a faint identity color without muddying out
+* Cell-hairline tint — `divider@subtle` is `neutral[3]` mixed with 8% `primary_deep`, so cell borders pick up a faint identity color without muddying out
 * Bold-mode header band (`header@bold@bg`) and column-group bold band
 * Bold-mode header rule (`header@bold@rule`) via the new `divider@strong_on_dark` helper — a 40%-deep / 60%-inverse mix that contrasts against the band instead of disappearing into it
-* L1 group bar — but **only** when the active variant is `header_style = "bold"`. Under light-mode the L1 bar stays on `accent.tint_subtle` (chrome/data wall: brand only "leaks" into chrome when you've chosen brand-forward chrome).
+* L1 group bar — but **only** when the active variant is `header_style = "bold"`. Under light-mode the L1 bar stays on `accent.tint_subtle` (chrome/data wall: primary only "leaks" into chrome when you've chosen brand-forward chrome).
 
 To pin any of these, set the field directly via `set_theme_field()` and
 your value survives re-resolution. The interactive panel surfaces the same
@@ -237,7 +237,7 @@ Variants are per-table choices that don't change the theme's identity. They're o
 ```{r}
 #| eval: false
 web_theme(
-  inputs = list(brand = "#1F3A5F"),
+  inputs = list(primary = "#1F3A5F"),
   variants = list(
     density            = "comfortable",   # compact | comfortable | spacious
     header_style       = "bold",          # light  | bold
@@ -247,7 +247,7 @@ web_theme(
 ```
 
 * **`density`** drives every spacing token (row height, padding, gaps). The three presets cover almost every screen and print scenario.
-* **`header_style`** picks between a light header on the muted surface and a bold header on `brand_deep` with inverse text. Both options are *always available* on every theme — you flip the variant per table.
+* **`header_style`** picks between a light header on the muted surface and a bold header on `primary_deep` with inverse text. Both options are *always available* on every theme — you flip the variant per table.
 * **`first_column_style`** gives the row-label column an Excel-style emphasized treatment (background tint + heavier weight). Useful when your first column is genuinely a label, not data.
 
 You can also set variants directly on the `tabviz()` call as overrides (see [tabviz reference](../reference/tabviz.qmd)).
@@ -259,7 +259,7 @@ A theme has three tiers. You only ever interact with Tier 1; the other tiers are
 ```{mermaid}
 flowchart TB
     subgraph T1["Tier 1 — Inputs (you edit these)"]
-      neutral & brand & accent & series & fonts & density
+      neutral & primary & accent & series & fonts & density
     end
 
     subgraph T2C["Tier 2 — Chrome roles (derived)"]
@@ -288,7 +288,7 @@ flowchart TB
     style T3 fill:#f3e8ff
 ```
 
-**Two cascades, sharing only Tier 1.** Chrome derivation reads only chrome inputs (neutrals + brand + accent). Data derivation reads only data inputs (series anchors + status). Series anchors never affect surface tones; brand colors never bleed into row-group divider tints. This isolation makes themes predictable: changing `series_anchors` cannot accidentally shift the column-header background.
+**Two cascades, sharing only Tier 1.** Chrome derivation reads only chrome inputs (neutrals + primary + accent). Data derivation reads only data inputs (series anchors + status). Series anchors never affect surface tones; primary colors never bleed into row-group divider tints. This isolation makes themes predictable: changing `series_anchors` cannot accidentally shift the column-header background.
 
 **OKLCH derivation.** All blends, lightenings, and darkenings happen in OKLCH (perceptually uniform). The result: tints stay readable across the brightness range, and high-chroma brands don't mud out when blended with surfaces.
 
@@ -314,12 +314,12 @@ Three pipe-friendly modifiers cover the common edits:
 ```{r}
 #| eval: false
 custom <- web_theme_jama() |>
-  set_inputs(brand = "#1F3A5F", accent = "#B08938") |>
+  set_inputs(primary = "#1F3A5F", accent = "#B08938") |>
   set_variants(density = "comfortable", header_style = "bold") |>
   set_spacing(row_height = 28, axis_gap = 14)
 ```
 
-* **`set_inputs(theme, ...)`** — update Tier 1 inputs. Cascade-aware: changing `brand` clears `brand_deep` so it re-mirrors; changing `series_anchors` rebuilds the slot bundles.
+* **`set_inputs(theme, ...)`** — update Tier 1 inputs. Cascade-aware: changing `brand` clears `primary_deep` so it re-mirrors; changing `series_anchors` rebuilds the slot bundles.
 * **`set_variants(theme, ...)`** — flip per-table toggles (density / header_style / first_column_style). Density change resets spacing tokens so the new preset's values flow through.
 * **`set_spacing(theme, ...)`** — per-token spacing override on top of the density preset. Set what you care about; the rest follow density.
 
@@ -351,7 +351,7 @@ web_theme_cochrane() |>
   set_theme_field(c("series", 2L, "stroke"), "#444444")
 ```
 
-Re-resolution preserves explicit overrides on subsequent edits — `set_inputs(brand = "...")` after the override above will refresh series colors but leave `surface.base` pinned to your cream.
+Re-resolution preserves explicit overrides on subsequent edits — `set_inputs(primary = "...")` after the override above will refresh series colors but leave `surface.base` pinned to your cream.
 
 ## Going deeper: spacing and typography
 
@@ -445,8 +445,8 @@ web_theme_acme <- function() {
     name = "acme",
     inputs = list(
       neutral        = c("#FFFFFF", "#FAFAFA", "#EEEEEE", "#888888", "#222222"),
-      brand          = "#FF5500",
-      brand_deep     = "#CC3300",
+      primary          = "#FF5500",
+      primary_deep     = "#CC3300",
       accent         = "#0066CC",
       series_anchors = c("#FF5500", "#0066CC", "#00AA66", "#993399", "#666666"),
       font_body      = "Inter, system-ui, sans-serif",

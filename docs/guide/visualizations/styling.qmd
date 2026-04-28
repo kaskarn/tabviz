@@ -175,7 +175,7 @@ tabviz(trials, label = "study",
 
 ## Layer 4 — Per-row literal `marker_color`
 
-For exact control — a categorical palette, a colorblind-safe encoding, or matching a brand color — pass a column or formula to `marker_color`. Returning `NA` falls through to the layers below.
+For exact control — a categorical palette, a colorblind-safe encoding, or matching a primary color — pass a column or formula to `marker_color`. Returning `NA` falls through to the layers below.
 
 ```{r}
 tabviz(trials, label = "study",
@@ -265,7 +265,7 @@ tabviz(trials, label = "study",
 - **Stick with the theme** when the viz is single-purpose and the row's role isn't categorical. The palette already does the right thing.
 - **Use `effect_*(color = ...)`** when the color identifies the *metric* (ITT vs. per-protocol, drug A vs. B). It belongs to the effect, not the row.
 - **Use `row_accent` / `row_emphasis` / `row_muted`** when the color identifies the *row* ("this is the primary outcome", "this is exploratory"). Themable, single-source: the row text and its viz both update.
-- **Use `marker_color` (column or formula)** when you need exact-pixel control — categorical row palettes, brand alignment, colorblind-safe encodings. Use `NA` to fall through to the cascade for rows you don't want to override.
+- **Use `marker_color` (column or formula)** when you need exact-pixel control — categorical row palettes, primary alignment, colorblind-safe encodings. Use `NA` to fall through to the cascade for rows you don't want to override.
 
 ## See also
 

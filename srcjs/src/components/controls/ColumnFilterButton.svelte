@@ -47,7 +47,7 @@
     transform: translateY(-50%);
     display: inline-flex; align-items: center; justify-content: center;
     width: 18px; height: 18px; padding: 0;
-    border: none; background: transparent; color: var(--tv-secondary, #64748b);
+    border: none; background: transparent; color: var(--tv-text-muted, #64748b);
     cursor: pointer; border-radius: 3px;
     opacity: 0;
     transition: opacity .12s, background-color .12s;
@@ -64,7 +64,7 @@
   .filter-btn.active {
     opacity: 1;
     pointer-events: auto;
-    color: var(--tv-primary, #2563eb);
+    color: var(--tv-accent, #2563eb);
   }
   .filter-btn.open { background: var(--tv-border, #f1f5f9); opacity: 1; }
 </style>

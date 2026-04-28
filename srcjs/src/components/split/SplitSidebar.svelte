@@ -245,8 +245,8 @@
   }
 
   .search-input:focus {
-    border-color: var(--tv-brand, var(--tv-primary, #3b82f6));
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tv-brand, var(--tv-primary, #3b82f6)) 15%, transparent);
+    border-color: var(--tv-primary, var(--tv-accent, #3b82f6));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--tv-primary, var(--tv-accent, #3b82f6)) 15%, transparent);
   }
 
   .search-input::placeholder {
@@ -275,7 +275,7 @@
   }
 
   .footer-toggle input[type="checkbox"] {
-    accent-color: var(--tv-brand, var(--tv-primary, #2563eb));
+    accent-color: var(--tv-primary, var(--tv-accent, #2563eb));
     cursor: pointer;
     margin: 0;
   }
@@ -355,8 +355,8 @@
   }
 
   .node-btn.active {
-    background: color-mix(in srgb, var(--tv-brand, var(--tv-primary, #3b82f6)) 12%, var(--tv-bg, #fff));
-    color: var(--tv-brand, var(--tv-primary, #3b82f6));
+    background: color-mix(in srgb, var(--tv-primary, var(--tv-accent, #3b82f6)) 12%, var(--tv-bg, #fff));
+    color: var(--tv-primary, var(--tv-accent, #3b82f6));
     font-weight: 600;
   }
 

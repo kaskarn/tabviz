@@ -1372,10 +1372,18 @@
       --tv-max-height: ${maxHeight ? `${maxHeight}px` : 'none'};
       --tv-bg: ${theme.surface.base};
       --tv-fg: ${theme.content.primary};
-      --tv-primary: ${theme.accent.default};
-      --tv-brand: ${(theme.inputs as { brand?: string } | undefined)?.brand ?? theme.accent.default};
-      --tv-brand-deep: ${(theme.inputs as { brandDeep?: string } | undefined)?.brandDeep ?? (theme.inputs as { brand?: string } | undefined)?.brand ?? theme.accent.default};
-      --tv-secondary: ${theme.content.secondary};
+      /* Identity tiers (3-tier mirror chain, all set after R-side resolve). */
+      --tv-primary:        ${(theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
+      --tv-primary-deep:   ${(theme.inputs as { primaryDeep?: string } | undefined)?.primaryDeep ?? (theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
+      --tv-secondary:      ${(theme.inputs as { secondary?: string } | undefined)?.secondary ?? (theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
+      --tv-secondary-deep: ${(theme.inputs as { secondaryDeep?: string } | undefined)?.secondaryDeep ?? (theme.inputs as { primaryDeep?: string } | undefined)?.primaryDeep ?? theme.accent.default};
+      --tv-tertiary:       ${(theme.inputs as { tertiary?: string } | undefined)?.tertiary ?? (theme.inputs as { secondary?: string } | undefined)?.secondary ?? (theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
+      --tv-tertiary-deep:  ${(theme.inputs as { tertiaryDeep?: string } | undefined)?.tertiaryDeep ?? (theme.inputs as { secondaryDeep?: string } | undefined)?.secondaryDeep ?? (theme.inputs as { primaryDeep?: string } | undefined)?.primaryDeep ?? theme.accent.default};
+      /* Engagement (orthogonal to identity). */
+      --tv-accent: ${theme.accent.default};
+      /* Text-muted (was --tv-secondary in pre-rework code; renamed to free
+         up --tv-secondary for identity). */
+      --tv-text-muted: ${theme.content.secondary};
       --tv-muted: ${theme.content.muted};
       --tv-border: ${theme.divider.subtle};
       /* Strong rules — header bottom, group row bottom, axis line, tick marks,
@@ -1383,15 +1391,14 @@
          previously read --tv-border (the subtle one) for everything,
          silently flattening strong → subtle. */
       --tv-divider-strong:    ${theme.divider.strong};
-      --tv-divider-strong-on-dark: ${theme.divider.strongOnDark ?? theme.divider.strong};
       --tv-header-rule:       ${headerVariant.rule ?? theme.divider.strong};
       --tv-row-group-rule:    ${theme.rowGroup?.L1?.rule ?? theme.divider.strong};
       --tv-axis-line:         ${theme.plot?.axisLine ?? theme.divider.strong};
       --tv-axis-tick:         ${theme.plot?.tickMark ?? theme.divider.strong};
-      /* brand_deep-derived identity colors. Title, axis-label, axis-tick fg
-         all default to brand_deep on the R side; the panel can override
-         them on a per-field basis. Fallback chain ends at content tones
-         so v1-style themes (no brand_deep set) still degrade gracefully. */
+      /* primary_deep-derived identity colors. Title fg defaults to
+         primary_deep on the R side; the panel can override per-field.
+         Fallback chain ends at content tones so themes that bypass the
+         resolver still degrade gracefully. */
       --tv-text-title-fg:     ${theme.text.title?.fg     ?? theme.content.primary};
       --tv-axis-label-fg:     ${theme.plot?.axisLabel?.fg ?? theme.content.muted};
       --tv-axis-tick-fg:      ${theme.plot?.tickLabel?.fg ?? theme.content.muted};
@@ -1403,7 +1410,6 @@
       --tv-interval-line: ${theme.series?.[0]?.stroke ?? theme.accent.default};
       --tv-summary-fill: ${theme.series?.[0]?.fill ?? theme.accent.default};
       --tv-summary-border: ${theme.series?.[0]?.stroke ?? theme.accent.default};
-      --tv-accent: ${theme.accent.default};
       --tv-semantic-emphasis-fg: ${theme.row.emphasis?.fg ?? theme.content.primary};
       --tv-semantic-muted-fg:    ${theme.row.muted?.fg    ?? theme.content.muted};
       --tv-semantic-accent-fg:   ${theme.row.accent?.fg   ?? theme.accent.default};
@@ -2111,7 +2117,7 @@
                     x={colScale(annotation.x)}
                     y={rowsAreaHeight + axisGap + annoLabelBaseline + yOffset}
                     text-anchor="middle"
-                    fill={annotation.color ?? "var(--tv-secondary)"}
+                    fill={annotation.color ?? "var(--tv-text-muted)"}
                     font-size="var(--tv-font-size-sm)"
                     font-weight="500"
                   >
@@ -2820,7 +2826,7 @@
      marks a single cell within a row as the click target — a more
      localized cue than the row preview can provide. */
   :global(.tabviz-container.paint-active[data-paint-scope="cell"]) .data-cell:hover {
-    outline: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 70%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 70%, transparent);
     outline-offset: -1px;
   }
 
@@ -3002,7 +3008,7 @@
 
   .resize-handle:hover,
   .resize-handle:active {
-    background: var(--tv-primary, #2563eb);
+    background: var(--tv-accent, #2563eb);
   }
 
   /* Data cells */
@@ -3040,14 +3046,14 @@
   .primary-cell.drag-source {
     opacity: 0.55;
     transition: opacity 120ms ease-out;
-    box-shadow: inset 3px 0 0 var(--tv-primary, #2563eb);
+    box-shadow: inset 3px 0 0 var(--tv-accent, #2563eb);
   }
 
   .primary-cell.just-dropped {
     animation: tabviz-row-drop-flash 560ms ease-out 1;
   }
   @keyframes tabviz-row-drop-flash {
-    0%   { background-color: color-mix(in srgb, var(--tv-primary, #2563eb) 28%, transparent); }
+    0%   { background-color: color-mix(in srgb, var(--tv-accent, #2563eb) 28%, transparent); }
     100% { background-color: transparent; }
   }
 
@@ -3172,11 +3178,11 @@
 
   /* Editable cells: cursor + faint tint on hover so users know to double-click */
   .data-cell.editable:hover {
-    background: color-mix(in srgb, var(--tv-primary) 6%, var(--tv-bg));
+    background: color-mix(in srgb, var(--tv-accent) 6%, var(--tv-bg));
     cursor: text;
   }
   .data-cell.editable.hovered:hover {
-    background: color-mix(in srgb, var(--tv-accent) 12%, color-mix(in srgb, var(--tv-primary) 6%, var(--tv-bg)));
+    background: color-mix(in srgb, var(--tv-accent) 12%, color-mix(in srgb, var(--tv-accent) 6%, var(--tv-bg)));
   }
 
   /* Spacer row styling */
@@ -3264,9 +3270,9 @@
     margin-left: 6px;
     padding: 1px 6px;
     font-size: var(--tv-font-size-sm, 0.75rem);
-    background: color-mix(in srgb, var(--tv-primary) 15%, var(--tv-bg));
+    background: color-mix(in srgb, var(--tv-accent) 15%, var(--tv-bg));
     border-radius: 4px;
-    color: var(--tv-primary);
+    color: var(--tv-accent);
   }
 
   /* Alternating row banding */

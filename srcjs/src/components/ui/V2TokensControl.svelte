@@ -171,7 +171,7 @@
   }
   .token-desc {
     font-size: 0.75rem;
-    color: var(--tv-secondary);
+    color: var(--tv-text-muted);
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;

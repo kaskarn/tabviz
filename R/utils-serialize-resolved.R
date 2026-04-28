@@ -151,8 +151,12 @@ serialize_theme <- function(theme) {
 
     inputs = list(
       neutral        = I(theme@inputs@neutral),
-      brand          = theme@inputs@brand,
-      brandDeep      = na_to_null(theme@inputs@brand_deep),
+      primary        = theme@inputs@primary,
+      primaryDeep    = na_to_null(theme@inputs@primary_deep),
+      secondary      = na_to_null(theme@inputs@secondary),
+      secondaryDeep  = na_to_null(theme@inputs@secondary_deep),
+      tertiary       = na_to_null(theme@inputs@tertiary),
+      tertiaryDeep   = na_to_null(theme@inputs@tertiary_deep),
       accent         = theme@inputs@accent,
       accentDeep     = na_to_null(theme@inputs@accent_deep),
       statusPositive = theme@inputs@status_positive,
@@ -180,9 +184,8 @@ serialize_theme <- function(theme) {
       inverse   = theme@content@inverse
     ),
     divider = list(
-      subtle       = theme@divider@subtle,
-      strong       = theme@divider@strong,
-      strongOnDark = theme@divider@strong_on_dark
+      subtle = theme@divider@subtle,
+      strong = theme@divider@strong
     ),
     accent = list(
       default     = theme@accent@default,

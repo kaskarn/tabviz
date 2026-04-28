@@ -29,6 +29,6 @@ Examples:
 \item \code{set_theme_field(theme, c("row_group", "L1", "bg"), "#EEE")}
 \item \code{set_theme_field(theme, c("series", 1, "fill"), "#FF0000")} with an
 integer at position 2 indexing into the series list
-\item \code{set_theme_field(theme, c("inputs", "brand"), "#1F3A5F")}
+\item \code{set_theme_field(theme, c("inputs", "primary"), "#1F3A5F")}
 }
 }

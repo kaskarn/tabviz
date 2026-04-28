@@ -241,11 +241,11 @@
     display: flex;
     flex-direction: column;
     background: var(--tv-bg, #ffffff);
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 12px;
     box-shadow:
       0 24px 48px -12px color-mix(in srgb, #0f172a 35%, transparent),
-      0 4px 12px -4px color-mix(in srgb, var(--tv-primary, #2563eb) 25%, transparent);
+      0 4px 12px -4px color-mix(in srgb, var(--tv-accent, #2563eb) 25%, transparent);
     animation: card-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
@@ -277,7 +277,7 @@
   .title-block .sub {
     margin: 2px 0 0 0;
     font-size: 0.75rem;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
   }
 
   .close {
@@ -290,13 +290,13 @@
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .close:hover {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 10%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 10%, transparent);
     color: var(--tv-fg, #1a1a1a);
   }
 
@@ -311,7 +311,7 @@
     padding: 8px 14px;
     border: none;
     background: transparent;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     font-size: 0.8125rem;
     font-weight: 500;
     cursor: pointer;
@@ -325,8 +325,8 @@
   }
 
   .tab.active {
-    color: var(--tv-primary, #2563eb);
-    border-bottom-color: var(--tv-primary, #2563eb);
+    color: var(--tv-accent, #2563eb);
+    border-bottom-color: var(--tv-accent, #2563eb);
   }
 
   .code {
@@ -339,7 +339,7 @@
     font-size: 0.78rem;
     line-height: 1.55;
     color: var(--tv-fg, #1a1a1a);
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 5%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 5%, transparent);
     border-bottom: 1px solid color-mix(in srgb, var(--tv-border, #e2e8f0) 60%, transparent);
     white-space: pre;
   }
@@ -355,18 +355,18 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 18%, var(--tv-border, #e2e8f0));
     border-radius: 6px;
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--tv-primary, #2563eb);
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 6%, var(--tv-bg, #ffffff));
+    color: var(--tv-accent, #2563eb);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 6%, var(--tv-bg, #ffffff));
     cursor: pointer;
     transition: background-color 0.15s ease, border-color 0.15s ease;
   }
 
   .copy-btn:hover {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 14%, var(--tv-bg, #ffffff));
-    border-color: color-mix(in srgb, var(--tv-primary, #2563eb) 35%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 14%, var(--tv-bg, #ffffff));
+    border-color: color-mix(in srgb, var(--tv-accent, #2563eb) 35%, transparent);
   }
 </style>

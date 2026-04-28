@@ -922,8 +922,16 @@ col_icon <- function(
 #'   "default", "success", "warning", "error", "info", "muted"
 #'   (e.g., `c("published" = "success", "draft" = "warning")`)
 #' @param colors Named character vector mapping values to custom hex colors,
-#'   which override variants (e.g., `c("special" = "#ff5500")`)
+#'   which override variants (e.g., `c("special" = "#ff5500")`). When
+#'   `thresholds` is supplied, `colors` must instead be an unnamed character
+#'   vector with `length(thresholds) + 1` entries.
 #' @param size Badge size: "sm" or "base" (default "base")
+#' @param shape Badge shape: `"pill"` (default), `"circle"`, or `"square"`.
+#' @param outline Logical; if `TRUE`, render outline-only badges (transparent
+#'   fill with a colored border).
+#' @param thresholds Numeric vector of sorted breakpoints for binning numeric
+#'   values into colored badges. Mutually exclusive with `variants`. Pair with
+#'   an unnamed `colors` vector of length `length(thresholds) + 1`.
 #' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param ... Additional arguments passed to `web_col()`, including cell styling
 #'   (`bold`, `italic`, `color`, `bg`, `emphasis`, `muted`, `accent`) and

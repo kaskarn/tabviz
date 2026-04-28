@@ -1,26 +1,37 @@
 <script lang="ts">
-  // v2 Theme tab — round 2 (cascade-completion polish).
+  // v2 Theme tab — primary/secondary/tertiary identity + accent engagement.
   //
-  // Section order: Identity (Brand + Brand-deep + Accent) · Fonts · Text colors
-  //   · Surfaces · Header · Plot · Selection & accents · Dividers · Series
-  //   · Status.
+  // T1 inputs (identity, mirroring chain): primary, primary_deep, secondary,
+  // secondary_deep, tertiary, tertiary_deep. NA tiers mirror their parent
+  // (tertiary→secondary→primary). Each _deep auto-derives via
+  // oklch_darken(seed, 0.15) when not pinned.
   //
-  // Brand and Accent are both multi-write knobs:
-  //   Brand cascades to inputs.brandDeep, series[0].fill, header.bold.bg/.rule,
-  //   text.title.fg, plot.axisLabel.fg / .tickLabel.fg, divider.subtle (8%
-  //   brand-tinted), cell.border, and rowGroup.L1.bg (15% brand-tint when
-  //   header_style=bold; under light it stays on accent.tintSubtle and is
-  //   driven by Accent instead).
-  //   Accent cascades to accent.default/.muted/.tintSubtle, row.accent.*,
-  //   row.hover.bg, row.selected.bg, and rowGroup.L1.bg under light-mode
-  //   header.
-  //   Each downstream path is gated by setThemeFieldDerived (skip-if-pinned).
+  // T1 inputs (engagement, orthogonal): accent, accent_deep. Reserved for
+  // layered emphasis (hover, selected, semantic row callouts, status.info
+  // fallback). Does NOT enter the identity mirror chain.
   //
-  // The frontend has no JS resolver, so for resolved leaf paths the panel
-  //   continues to write the rendered slot directly. Brand-mix expressions
-  //   use CSS `color-mix(in oklch, ...)` which modern browsers resolve at
-  //   render time — matches the R-side OKLCH derivation closely enough that
-  //   a re-resolve isn't needed to feel responsive.
+  // Cascade summary (mirrors R/utils-theme-resolve.R contract):
+  //   primary  → primary_deep (auto unless pinned), text.title.fg,
+  //              header.bold.bg, header.bold.rule (component-local mix
+  //              against bg), series[0] anchor.
+  //   secondary → secondary_deep (auto unless pinned), columnGroup.bold.bg,
+  //              columnGroup.bold.rule (component-local mix),
+  //              rowGroup.L1/L2/L3.bg (structural groupings — column +
+  //              row — live consistently on secondary). Mirrors primary
+  //              by default.
+  //   tertiary → tertiary_deep (auto unless pinned), surface.muted,
+  //              divider.subtle, divider.strong (5% tint), cell.border,
+  //              row.alt.bg, firstColumn.bold.bg. Mirrors secondary by
+  //              default.
+  //   accent   → accent_deep (auto), accent.default/.muted/.tint_*,
+  //              row.accent.*, row.hover.bg, row.selected.bg, status.info
+  //              (fallback), semantic.fill, row.fill.bg.
+  //
+  // Each downstream path is gated by setThemeFieldDerived (skip-if-pinned).
+  // When primary changes and secondary is mirroring (not pinned), secondary
+  // is also rewritten via setDerived, then secondary's cascade runs. Same
+  // for tertiary mirroring secondary.
+
   import type { ForestStore } from "$stores/forestStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
@@ -50,9 +61,8 @@
 
   // ── Cascade helpers ─────────────────────────────────────────────────
   // Mirrors R-side `oklch_*` recipes from R/utils-theme-resolve.R. The
-  // panel runs these client-side so Brand/Accent edits propagate through
-  // every derived field without a server round-trip — values written to
-  // the wire are concrete hex (picker-compatible), not color-mix() strings.
+  // panel runs these client-side so identity-tier edits propagate through
+  // every derived field without a server round-trip.
   function neutralBaseline(): string {
     const n = inputs?.neutral as string[] | undefined;
     return n?.[2] ?? "#cbd5e1";
@@ -63,51 +73,45 @@
   function contentInverseBaseline(): string {
     return theme?.content?.inverse ?? "#ffffff";
   }
-  function brandTintedSubtleDivider(brandDeepHex: string): string {
-    // Resolver: oklch_mix(neutral_baseline_30%_to_n4, brand_deep, 0.10).
-    // n4 isn't accessible client-side; nudge from neutral[3] toward brand
-    // at 10% — recognizable brand tint on cell hairlines without
-    // dominating the layout.
-    return oklchMix(neutralBaseline(), brandDeepHex, 0.10);
-  }
-  function brandTintedSurfaceMuted(brandDeepHex: string): string {
-    // Resolver: surface.muted = oklch_mix(n[3], brand_deep, 0.04). 4%
-    // is "very subtle tint on neutral base" — the achromatic-fix in
-    // oklchMix locks to brand's hue so the result IS hue-tinted (not
-    // just intensity-shifted). Alt-row banding derives at half-strength
-    // from this (~2% effective).
-    return oklchMix(neutralBaseline(), brandDeepHex, 0.04);
-  }
-  function brandTintedAltSurface(brandDeepHex: string): string {
-    // Resolver: row.alt.bg = oklch_mix(surface.base, surface.muted, 0.5) —
-    // the alt-row banding is HALF-strength of muted from base, so it reads
-    // as subtler than the header band.
-    return oklchMix(surfaceBaseline(), brandTintedSurfaceMuted(brandDeepHex), 0.5);
-  }
-  function brandTintedL1Bg(brandDeepHex: string): string {
-    // Resolver: row_group.L1.bg = oklch_mix(surface.base, brand_deep, 0.12)
-    // in BOTH variants. Brand-derived (was variant-aware) so the group
-    // bar stays in a different color family from hover/selected (which
-    // use accent.muted) — multiple highlighted rows don't visually merge
-    // with the group bar.
-    return oklchMix(surfaceBaseline(), brandDeepHex, 0.12);
-  }
-  function strongOnDarkRule(brandDeepHex: string): string {
-    // Resolver: divider.strong_on_dark = oklch_mix(content.inverse, brand_deep, 0.40).
-    return oklchMix(contentInverseBaseline(), brandDeepHex, 0.40);
-  }
-  function accentMutedHex(accentHex: string): string {
-    return oklchMix(accentHex, surfaceBaseline(), 0.88);
-  }
-  // Lightest neutral (n[1] in resolve_chrome) — the anchor for the
-  // semantic.fill pastel-tint recipe. On a resolved wire theme this lives
-  // at theme.surface.raised; fall back to white if a v1 wire shape
-  // doesn't carry it.
   function lightestNeutral(): string {
     return (theme?.surface as { raised?: string } | undefined)?.raised ?? "#ffffff";
   }
-  // R-side: oklch_mix(accent, n[1], 0.80). Drives semantic.fill — the
-  // pastel filled-in tint applied behind the fill RowSemantic bundle.
+  // Tertiary-tinted chrome surfaces (resolver: surface.muted, divider.subtle,
+  // divider.strong, alt-row banding, L1 bg derivation all read from the
+  // tertiary_deep seed via the mirror chain).
+  function tertiaryTintedSubtleDivider(tertiaryDeepHex: string): string {
+    return oklchMix(neutralBaseline(), tertiaryDeepHex, 0.10);
+  }
+  function tertiaryTintedSurfaceMuted(tertiaryDeepHex: string): string {
+    return oklchMix(neutralBaseline(), tertiaryDeepHex, 0.04);
+  }
+  function tertiaryTintedAltSurface(tertiaryDeepHex: string): string {
+    return oklchMix(surfaceBaseline(), tertiaryTintedSurfaceMuted(tertiaryDeepHex), 0.5);
+  }
+  function tertiaryTintedStrongDivider(tertiaryDeepHex: string): string {
+    // R-side: divider.strong = oklch_mix(n[4], tertiary_deep, 0.05). n[4]
+    // isn't accessible client-side; nudge from neutral[3] toward tertiary
+    // at 5%. Strong rules stay close to neutral so structural rules don't
+    // read as accidental tints.
+    return oklchMix(neutralBaseline(), tertiaryDeepHex, 0.05);
+  }
+  // Secondary-tinted L1 row group bg (resolver: oklch_mix(surface.base,
+  // secondary_deep, 0.12)). Mirrors column-group bold — structural
+  // groupings live consistently on secondary.
+  function secondaryTintedL1Bg(secondaryDeepHex: string): string {
+    return oklchMix(surfaceBaseline(), secondaryDeepHex, 0.12);
+  }
+  // Component-local bold-band rule: oklch_mix(content.inverse, <bg>, 0.4).
+  // Used for header.bold.rule (against primary_deep) and column_group.bold.rule
+  // (against secondary_deep) — each cluster contrasts against its own bg.
+  function boldBandRule(bgHex: string): string {
+    return oklchMix(contentInverseBaseline(), bgHex, 0.40);
+  }
+
+  // Engagement (accent) helpers — unchanged.
+  function accentMutedHex(accentHex: string): string {
+    return oklchMix(accentHex, surfaceBaseline(), 0.88);
+  }
   function semanticFilledTintHex(accentHex: string): string {
     return oklchMix(accentHex, lightestNeutral(), 0.80);
   }
@@ -127,135 +131,216 @@
     const fillEmphasis = oklchChroma(oklchDarken(anchorHex, 0.05), 0.04);
     const strokeEmphasis = oklchDarken(anchorHex, 0.20);
     return { fill, stroke, fillMuted, strokeMuted, fillEmphasis, strokeEmphasis };
-    // text_fg defaults to content.primary; brand changes don't perturb it.
   }
 
-  // ── Brand multi-write ────────────────────────────────────────────────
-  // Brand changes cascade through every R-side derivation that reads
-  // brand or brand_deep. Each downstream path is gated by
-  // setThemeFieldDerived so user-pinned fields are preserved.
-  function applyBrand(hex: string) {
-    setPath(["inputs", "brand"], hex);
-    // brand_deep defaults to a 15% OKLCH-darkened brand (matches R-side
-    // resolve_inputs_mirrors). If user pinned brand_deep, downstream paths
-    // follow the pin instead of the freshly-derived dark.
-    const brandDeep = isOver(["inputs", "brandDeep"])
-      ? ((inputs?.brandDeep as string | undefined) ?? oklchDarken(hex, 0.15))
+  // Read current values with fallback chain for the mirror semantics.
+  function currentPrimary(): string {
+    return (inputs?.primary as string | undefined) ?? "#0891B2";
+  }
+  function currentPrimaryDeep(): string {
+    return (inputs?.primaryDeep as string | undefined)
+      ?? oklchDarken(currentPrimary(), 0.15);
+  }
+  function currentSecondary(): string {
+    return (inputs?.secondary as string | undefined) ?? currentPrimary();
+  }
+  function currentSecondaryDeep(): string {
+    return (inputs?.secondaryDeep as string | undefined)
+      ?? (isOver(["inputs", "secondary"])
+        ? oklchDarken(currentSecondary(), 0.15)
+        : currentPrimaryDeep());
+  }
+  function currentTertiary(): string {
+    return (inputs?.tertiary as string | undefined) ?? currentSecondary();
+  }
+  function currentTertiaryDeep(): string {
+    return (inputs?.tertiaryDeep as string | undefined)
+      ?? (isOver(["inputs", "tertiary"])
+        ? oklchDarken(currentTertiary(), 0.15)
+        : currentSecondaryDeep());
+  }
+
+  // ── Primary cascade ─────────────────────────────────────────────────
+  function applyPrimary(hex: string) {
+    setPath(["inputs", "primary"], hex);
+    // primary_deep auto-derives unless pinned.
+    const primaryDeep = isOver(["inputs", "primaryDeep"])
+      ? ((inputs?.primaryDeep as string | undefined) ?? oklchDarken(hex, 0.15))
       : oklchDarken(hex, 0.15);
-    setDerived(["inputs", "brandDeep"], brandDeep);
-    cascadeBrand(hex);
-    cascadeBrandDeep(brandDeep);
+    setDerived(["inputs", "primaryDeep"], primaryDeep);
+    cascadePrimary(hex);
+    cascadePrimaryDeep(primaryDeep);
+    // Mirror chain: if secondary is not pinned, follow primary.
+    if (!isOver(["inputs", "secondary"])) {
+      setDerived(["inputs", "secondary"], hex);
+      const secondaryDeep = isOver(["inputs", "secondaryDeep"])
+        ? ((inputs?.secondaryDeep as string | undefined) ?? primaryDeep)
+        : primaryDeep;
+      setDerived(["inputs", "secondaryDeep"], secondaryDeep);
+      cascadeSecondaryDeep(secondaryDeep);
+      // Tertiary mirrors secondary.
+      if (!isOver(["inputs", "tertiary"])) {
+        setDerived(["inputs", "tertiary"], hex);
+        const tertiaryDeep = isOver(["inputs", "tertiaryDeep"])
+          ? ((inputs?.tertiaryDeep as string | undefined) ?? secondaryDeep)
+          : secondaryDeep;
+        setDerived(["inputs", "tertiaryDeep"], tertiaryDeep);
+        cascadeTertiaryDeep(tertiaryDeep);
+      }
+    }
   }
-  function applyBrandDeep(hex: string) {
-    setPath(["inputs", "brandDeep"], hex);
-    cascadeBrandDeep(hex);
+  function applyPrimaryDeep(hex: string) {
+    setPath(["inputs", "primaryDeep"], hex);
+    cascadePrimaryDeep(hex);
+    // If secondary_deep is mirroring primary_deep (which it does in mono
+    // when secondary itself is mirroring), follow.
+    if (!isOver(["inputs", "secondaryDeep"]) && !isOver(["inputs", "secondary"])) {
+      setDerived(["inputs", "secondaryDeep"], hex);
+      cascadeSecondaryDeep(hex);
+      if (!isOver(["inputs", "tertiaryDeep"]) && !isOver(["inputs", "tertiary"])) {
+        setDerived(["inputs", "tertiaryDeep"], hex);
+        cascadeTertiaryDeep(hex);
+      }
+    }
   }
-  /** Brand drives the primary-effect series anchor (full 7-field bundle). */
-  function cascadeBrand(brand: string) {
-    const bundle = deriveSlotBundle(brand);
+  /** Primary drives the primary-effect series anchor. */
+  function cascadePrimary(primary: string) {
+    const bundle = deriveSlotBundle(primary);
     setDerived(["series", 0, "fill"],            bundle.fill);
     setDerived(["series", 0, "stroke"],          bundle.stroke);
     setDerived(["series", 0, "fillMuted"],       bundle.fillMuted);
     setDerived(["series", 0, "strokeMuted"],     bundle.strokeMuted);
     setDerived(["series", 0, "fillEmphasis"],    bundle.fillEmphasis);
     setDerived(["series", 0, "strokeEmphasis"],  bundle.strokeEmphasis);
-    // Mirror onto inputs.seriesAnchors[0] so source-export sees the edit.
     const anchors = (inputs?.seriesAnchors as string[] | undefined)?.slice() ?? [];
-    if (anchors.length > 0 && anchors[0] !== brand) {
-      anchors[0] = brand;
+    if (anchors.length > 0 && anchors[0] !== primary) {
+      anchors[0] = primary;
       setDerived(["inputs", "seriesAnchors"], anchors);
     }
   }
-  /** Brand-deep drives every Tier-3 binding the R resolver reads brand_deep into. */
-  function cascadeBrandDeep(brandDeep: string) {
-    const strongRule = strongOnDarkRule(brandDeep);
-    setDerived(["header", "bold", "bg"], brandDeep);
-    setDerived(["header", "bold", "rule"], strongRule);
-    setDerived(["columnGroup", "bold", "bg"], brandDeep);
-    setDerived(["columnGroup", "bold", "rule"], strongRule);
-    setDerived(["divider", "strongOnDark"], strongRule);
-    setDerived(["text", "title", "fg"], brandDeep);
-    setDerived(["plot", "axisLabel", "fg"], brandDeep);
-    setDerived(["plot", "tickLabel", "fg"], brandDeep);
-    const tintedSubtle = brandTintedSubtleDivider(brandDeep);
-    setDerived(["divider", "subtle"], tintedSubtle);
-    setDerived(["cell", "border"], tintedSubtle);
-    // surface.muted is the chrome-muted tone (first-column-bold; basis
-    // for the alt-row banding partner). header.light.bg defaults to
-    // surface.base — equal to the row body so it doesn't compete; the
-    // Brand cascade does NOT touch header.light.bg (it doesn't depend
-    // on brand). row.alt.bg is HALF-strength of muted — banding stays
-    // clearly subtler than chrome.
-    const tintedMuted = brandTintedSurfaceMuted(brandDeep);
-    const tintedAlt   = brandTintedAltSurface(brandDeep);
-    setDerived(["surface", "muted"], tintedMuted);
-    setDerived(["firstColumn", "bold", "bg"], tintedMuted);
-    setDerived(["row", "alt", "bg"], tintedAlt);
-    // L1.bg is brand-derived in BOTH variants — single rule, no header-
-    // style guard. Group bars stay in a brand-tinted family, hover /
-    // selected stay in an accent-tinted family, multiple highlighted
-    // rows don't visually merge with the group bar. L2/L3 default to
-    // the same value as L1 (fewer visual layers in nested groups).
-    const l1Bg = brandTintedL1Bg(brandDeep);
+  /** Primary-deep drives the leaf-header bold band + title + container chrome. */
+  function cascadePrimaryDeep(primaryDeep: string) {
+    setDerived(["text", "title", "fg"], primaryDeep);
+    setDerived(["header", "bold", "bg"], primaryDeep);
+    setDerived(["header", "bold", "rule"], boldBandRule(primaryDeep));
+  }
+
+  // ── Secondary cascade ───────────────────────────────────────────────
+  function applySecondary(hex: string) {
+    setPath(["inputs", "secondary"], hex);
+    const secondaryDeep = isOver(["inputs", "secondaryDeep"])
+      ? ((inputs?.secondaryDeep as string | undefined) ?? oklchDarken(hex, 0.15))
+      : oklchDarken(hex, 0.15);
+    setDerived(["inputs", "secondaryDeep"], secondaryDeep);
+    cascadeSecondaryDeep(secondaryDeep);
+    // Tertiary mirrors secondary.
+    if (!isOver(["inputs", "tertiary"])) {
+      setDerived(["inputs", "tertiary"], hex);
+      const tertiaryDeep = isOver(["inputs", "tertiaryDeep"])
+        ? ((inputs?.tertiaryDeep as string | undefined) ?? secondaryDeep)
+        : secondaryDeep;
+      setDerived(["inputs", "tertiaryDeep"], tertiaryDeep);
+      cascadeTertiaryDeep(tertiaryDeep);
+    }
+  }
+  function applySecondaryDeep(hex: string) {
+    setPath(["inputs", "secondaryDeep"], hex);
+    cascadeSecondaryDeep(hex);
+    if (!isOver(["inputs", "tertiaryDeep"]) && !isOver(["inputs", "tertiary"])) {
+      setDerived(["inputs", "tertiaryDeep"], hex);
+      cascadeTertiaryDeep(hex);
+    }
+  }
+  /** Secondary-deep drives structural groupings: column-group bold band
+   * AND row-group L1/L2/L3 bg. Mono themes are unchanged (secondary
+   * mirrors primary); two-color themes get coordinated structural color. */
+  function cascadeSecondaryDeep(secondaryDeep: string) {
+    setDerived(["columnGroup", "bold", "bg"], secondaryDeep);
+    setDerived(["columnGroup", "bold", "rule"], boldBandRule(secondaryDeep));
+    const l1Bg = secondaryTintedL1Bg(secondaryDeep);
     setDerived(["rowGroup", "L1", "bg"], l1Bg);
     setDerived(["rowGroup", "L2", "bg"], l1Bg);
     setDerived(["rowGroup", "L3", "bg"], l1Bg);
   }
 
-  function resetBrandDeep() {
-    clearOver(["inputs", "brandDeep"]);
-    const brand = (inputs?.brand as string | undefined) ?? "#0891B2";
-    // The default derived value: 15% darker than brand. Re-apply the full
-    // brand_deep cascade so all downstream fields refresh in lockstep.
-    applyBrandDeep(oklchDarken(brand, 0.15));
+  // ── Tertiary cascade ────────────────────────────────────────────────
+  function applyTertiary(hex: string) {
+    setPath(["inputs", "tertiary"], hex);
+    const tertiaryDeep = isOver(["inputs", "tertiaryDeep"])
+      ? ((inputs?.tertiaryDeep as string | undefined) ?? oklchDarken(hex, 0.15))
+      : oklchDarken(hex, 0.15);
+    setDerived(["inputs", "tertiaryDeep"], tertiaryDeep);
+    cascadeTertiaryDeep(tertiaryDeep);
+  }
+  function applyTertiaryDeep(hex: string) {
+    setPath(["inputs", "tertiaryDeep"], hex);
+    cascadeTertiaryDeep(hex);
+  }
+  /** Tertiary-deep drives chrome texture: surface.muted, divider tints, banding. */
+  function cascadeTertiaryDeep(tertiaryDeep: string) {
+    const tintedSubtle = tertiaryTintedSubtleDivider(tertiaryDeep);
+    const tintedStrong = tertiaryTintedStrongDivider(tertiaryDeep);
+    const tintedMuted = tertiaryTintedSurfaceMuted(tertiaryDeep);
+    const tintedAlt   = tertiaryTintedAltSurface(tertiaryDeep);
+    setDerived(["divider", "subtle"], tintedSubtle);
+    setDerived(["divider", "strong"], tintedStrong);
+    setDerived(["cell", "border"], tintedSubtle);
+    setDerived(["surface", "muted"], tintedMuted);
+    setDerived(["firstColumn", "bold", "bg"], tintedMuted);
+    setDerived(["row", "alt", "bg"], tintedAlt);
+  }
+
+  // Reset helpers — clear pin, restore mirrored value, re-cascade.
+  function resetPrimaryDeep() {
+    clearOver(["inputs", "primaryDeep"]);
+    applyPrimaryDeep(oklchDarken(currentPrimary(), 0.15));
+  }
+  function resetSecondary() {
+    clearOver(["inputs", "secondary"]);
+    clearOver(["inputs", "secondaryDeep"]);
+    // Re-apply primary which will re-mirror secondary down the chain.
+    applyPrimary(currentPrimary());
+  }
+  function resetSecondaryDeep() {
+    clearOver(["inputs", "secondaryDeep"]);
+    applySecondaryDeep(oklchDarken(currentSecondary(), 0.15));
+  }
+  function resetTertiary() {
+    clearOver(["inputs", "tertiary"]);
+    clearOver(["inputs", "tertiaryDeep"]);
+    applySecondary(currentSecondary());
+  }
+  function resetTertiaryDeep() {
+    clearOver(["inputs", "tertiaryDeep"]);
+    applyTertiaryDeep(oklchDarken(currentTertiary(), 0.15));
   }
   function resetSeriesPrimary() {
     clearOver(["series", 0, "fill"]);
-    const brand = (inputs?.brand as string | undefined) ?? "#0891B2";
-    cascadeBrand(brand);
+    cascadePrimary(currentPrimary());
   }
   function resetTitleFg() {
     clearOver(["text", "title", "fg"]);
-    const brandDeep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
-    setDerived(["text", "title", "fg"], brandDeep);
+    setDerived(["text", "title", "fg"], currentPrimaryDeep());
   }
-  function resetAxisLabelFg() {
-    clearOver(["plot", "axisLabel", "fg"]);
-    const brandDeep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
-    setDerived(["plot", "axisLabel", "fg"], brandDeep);
-  }
-  function resetTickLabelFg() {
-    clearOver(["plot", "tickLabel", "fg"]);
-    const brandDeep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
-    setDerived(["plot", "tickLabel", "fg"], brandDeep);
+  function resetHeaderBoldBg() {
+    clearOver(["header", "bold", "bg"]);
+    setDerived(["header", "bold", "bg"], currentPrimaryDeep());
   }
   function resetSubtleDivider() {
     clearOver(["divider", "subtle"]);
     clearOver(["cell", "border"]);
-    const brandDeep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
-    const tinted = brandTintedSubtleDivider(brandDeep);
+    const tinted = tertiaryTintedSubtleDivider(currentTertiaryDeep());
     setDerived(["divider", "subtle"], tinted);
     setDerived(["cell", "border"], tinted);
   }
   function resetL1Bg() {
     clearOver(["rowGroup", "L1", "bg"]);
-    // Brand-derived in both variants (no header-style branch).
-    const brandDeep = (inputs?.brandDeep as string | undefined)
-      ?? oklchDarken((inputs?.brand as string | undefined) ?? "#0891B2", 0.15);
-    setDerived(["rowGroup", "L1", "bg"], brandTintedL1Bg(brandDeep));
-  }
-  function resetHeaderBoldBg() {
-    clearOver(["header", "bold", "bg"]);
-    const deep = (inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#0891B2";
-    setDerived(["header", "bold", "bg"], deep);
+    setDerived(["rowGroup", "L1", "bg"], secondaryTintedL1Bg(currentSecondaryDeep()));
   }
 
-  // ── Accent multi-write ──────────────────────────────────────────────
-  // Same shape as Brand: cascade through every R-side derivation that
-  // reads accent or accent_deep, gated by setThemeFieldDerived.
+  // ── Accent cascade (engagement, orthogonal to identity) ─────────────
   function applyAccent(hex: string) {
     setPath(["inputs", "accent"], hex);
-    // accent_deep mirrors accent darkened by 15% (matches resolver).
     const accentDeep = isOver(["inputs", "accentDeep"])
       ? ((inputs?.accentDeep as string | undefined) ?? oklchDarken(hex, 0.15))
       : oklchDarken(hex, 0.15);
@@ -275,46 +360,29 @@
     setDerived(["row", "accent", "markerFill"], accent);
     setDerived(["row", "hover", "bg"],     muted);
     setDerived(["row", "selected", "bg"],  muted);
-    // status.info defaults to accent when NA on the R side.
     if (!inputs?.statusInfo) {
       setDerived(["status", "info"], accent);
     }
-    // Semantic-token tint (theme.semantic.fill) — pastel mix of accent
-    // into the lightest neutral. Mirror onto the bundle bg field too so
-    // the painted row's tint tracks live as the user drags the accent
-    // picker.
     setDerived(["semantic", "fill"],     filledTint);
     setDerived(["row", "fill", "bg"],    filledTint);
-    // L1/L2/L3 row-group bg are brand-derived now (handled by the Brand
-    // cascade) — Accent no longer touches rowGroup. Keeps the group-bar
-    // family distinct from hover/selected so multiple highlighted rows
-    // don't merge into the group bar.
   }
 
   // ── Inverse content cascade ─────────────────────────────────────────
-  // content.inverse lands on bold-mode header text and is the light-tone
-  // input to divider.strong_on_dark. Editing it from the panel must
-  // refresh both the bold header band's fg AND the rule mix that contrasts
-  // against the band — otherwise the inverse field reads as broken.
+  // content.inverse lands on bold-mode bands (header + column-group). Both
+  // bold rules are component-local mixes against their own bg, so editing
+  // inverse must refresh both rules.
   function setInverseContent(hex: string) {
     setPath(["content", "inverse"], hex);
     setDerived(["header", "bold", "fg"], hex);
     setDerived(["columnGroup", "bold", "fg"], hex);
-    // strong_on_dark mixes inverse and brand_deep; recompute and re-feed
-    // header.bold.rule + column_group.bold.rule.
-    const brandDeep = (inputs?.brandDeep as string | undefined)
-      ?? oklchDarken((inputs?.brand as string | undefined) ?? "#0891B2", 0.15);
-    const strongRule = oklchMix(hex, brandDeep, 0.40);
-    setDerived(["divider", "strongOnDark"], strongRule);
-    setDerived(["header", "bold", "rule"], strongRule);
-    setDerived(["columnGroup", "bold", "rule"], strongRule);
+    setDerived(["header", "bold", "rule"], oklchMix(hex, currentPrimaryDeep(), 0.40));
+    setDerived(["columnGroup", "bold", "rule"], oklchMix(hex, currentSecondaryDeep(), 0.40));
   }
 
-  // ── Strong-divider cascade ──────────────────────────────────────────
+  // ── Strong-divider passthrough ──────────────────────────────────────
   // R-side: header.light.rule, column_group.light.rule, row_group.L1.rule,
-  // and the entire forest plot scaffold (axis_line, tick_mark, reference)
-  // all default to divider.strong. The panel's Strong field has to mirror
-  // those leaves or the edit silently does nothing.
+  // and forest plot scaffold (axis_line, tick_mark, reference) all default
+  // to divider.strong. The panel's Strong field has to mirror those leaves.
   function setStrongDivider(hex: string) {
     setPath(["divider", "strong"], hex);
     setDerived(["header", "light", "rule"], hex);
@@ -331,8 +399,6 @@
     setPath(["row", "base", "bg"], hex);
   }
   function setBandingPartner(hex: string) {
-    // Banding partner targets row.alt.bg specifically. surface.muted is
-    // the chrome-header tone now — separate concept.
     setPath(["row", "alt", "bg"], hex);
   }
   function setForeground(hex: string) {
@@ -340,9 +406,6 @@
     setPath(["cell", "fg"], hex);
     setPath(["row", "base", "fg"], hex);
     setPath(["row", "alt",  "fg"], hex);
-    // R-side default: header.light.fg, columnGroup.light.fg, firstColumn.bold.fg,
-    // rowGroup.L1.fg all read content.primary. Mirror them via setDerived so a
-    // user pin survives.
     setDerived(["header", "light", "fg"], hex);
     setDerived(["columnGroup", "light", "fg"], hex);
     setDerived(["firstColumn", "bold", "fg"], hex);
@@ -392,24 +455,57 @@
 </script>
 
 {#if theme}
-  <SettingsSection title="Identity" description="Brand and Accent are the two-knob identity. Editing either cascades to all the places it lands (header band, series, title, axis labels, hover, group bar, …) — except where you've pinned a downstream value (●).">
+  <SettingsSection title="Identity" description="Three identity tiers (mirror chain: tertiary → secondary → primary). Set just primary for a mono theme; pin secondary or tertiary to break the mirror and unlock 2- or 3-color identities. Each tier's deep companion auto-darkens by 15% unless explicitly pinned. Reset (●) clears a pin.">
     <div class="identity-row">
       <ColorField
-        label="Brand"
-        value={(inputs?.brand as string | undefined) ?? theme.accent?.default ?? "#0891B2"}
-        onchange={applyBrand}
+        label="Primary"
+        hint="Identity hero — title text, bold-mode header band, series[0]"
+        value={(inputs?.primary as string | undefined) ?? theme.accent?.default ?? "#0891B2"}
+        onchange={applyPrimary}
       />
       <ColorField
-        label="Brand (deep)"
-        hint="Bold-mode header band; title; axis labels; subtle borders"
-        value={(inputs?.brandDeep as string | undefined) ?? (inputs?.brand as string | undefined) ?? "#06657E"}
-        onchange={applyBrandDeep}
-        overridden={isOver(["inputs", "brandDeep"])}
-        onreset={resetBrandDeep}
+        label="Primary (deep)"
+        hint="Bold-mode header band; title; row-group L1 tint"
+        value={(inputs?.primaryDeep as string | undefined) ?? oklchDarken(currentPrimary(), 0.15)}
+        onchange={applyPrimaryDeep}
+        overridden={isOver(["inputs", "primaryDeep"])}
+        onreset={resetPrimaryDeep}
+      />
+      <ColorField
+        label="Secondary"
+        hint="Structural groupings — column-group bold band, row-group bars; glyph-cell defaults. Mirrors Primary when not pinned."
+        value={(inputs?.secondary as string | undefined) ?? currentPrimary()}
+        onchange={applySecondary}
+        overridden={isOver(["inputs", "secondary"])}
+        onreset={resetSecondary}
+      />
+      <ColorField
+        label="Secondary (deep)"
+        hint="Column-group bold band; deep companion of Secondary."
+        value={(inputs?.secondaryDeep as string | undefined) ?? currentSecondaryDeep()}
+        onchange={applySecondaryDeep}
+        overridden={isOver(["inputs", "secondaryDeep"])}
+        onreset={resetSecondaryDeep}
+      />
+      <ColorField
+        label="Tertiary"
+        hint="Chrome texture — banding, hairlines, gridlines. Mirrors Secondary when not pinned."
+        value={(inputs?.tertiary as string | undefined) ?? currentSecondary()}
+        onchange={applyTertiary}
+        overridden={isOver(["inputs", "tertiary"])}
+        onreset={resetTertiary}
+      />
+      <ColorField
+        label="Tertiary (deep)"
+        hint="Tint seed for surface.muted, divider.subtle/strong, alt-row banding."
+        value={(inputs?.tertiaryDeep as string | undefined) ?? currentTertiaryDeep()}
+        onchange={applyTertiaryDeep}
+        overridden={isOver(["inputs", "tertiaryDeep"])}
+        onreset={resetTertiaryDeep}
       />
       <ColorField
         label="Accent"
-        hint="Hover and selected fills"
+        hint="Engagement — hover, selected, semantic row callouts, status.info fallback. Orthogonal to identity."
         value={(inputs?.accent as string | undefined) ?? theme.accent?.default ?? "#8B5CF6"}
         onchange={applyAccent}
       />
@@ -446,12 +542,12 @@
     <ColorField label="Foreground" hint="Body and cell text" value={theme.cell?.fg ?? theme.content?.primary ?? "#000000"} onchange={setForeground} />
     <ColorField label="Secondary"  value={theme.content?.secondary ?? "#444444"} onchange={(v) => setPath(["content","secondary"], v)} />
     <ColorField label="Muted"      hint="Footnotes" value={theme.content?.muted ?? "#888888"} onchange={(v) => setPath(["content","muted"], v)} />
-    <ColorField label="Inverse"    hint="Text on dark fills (bold-mode header). Cascades to header.bold.fg and the strong_on_dark rule mix." value={theme.content?.inverse ?? "#ffffff"} onchange={setInverseContent} />
+    <ColorField label="Inverse"    hint="Text on dark bands (bold-mode header + column-group). Cascades to both clusters' fg and the per-cluster rule mix." value={theme.content?.inverse ?? "#ffffff"} onchange={setInverseContent} />
   </SettingsSection>
 
   <SettingsSection title="Surfaces" description="Row backgrounds and the banding partner. The panel writes both the surface role and the row binding so the change is visible immediately.">
     <ColorField label="Background"      value={theme.row?.base?.bg ?? theme.surface?.base ?? "#ffffff"} onchange={setBackground} />
-    <ColorField label="Banding partner" hint="Alt-row background" value={theme.row?.alt?.bg ?? theme.surface?.muted ?? "#f8fafc"} onchange={setBandingPartner} />
+    <ColorField label="Banding partner" hint="Alt-row background (tertiary-tinted via surface.muted)" value={theme.row?.alt?.bg ?? theme.surface?.muted ?? "#f8fafc"} onchange={setBandingPartner} />
   </SettingsSection>
 
   <SettingsSection title="Header" description="Column-header band. Variant chosen on the Layout tab; these fields edit the active variant's colors.">
@@ -465,22 +561,18 @@
                 onchange={setHeaderFg} />
   </SettingsSection>
 
-  <SettingsSection title="Plot" description="Title and forest-axis text colors. Default to Brand-deep; pin per-field to break from the cascade.">
+  <SettingsSection title="Plot" description="Title and forest-axis text colors. Title defaults to Primary-deep; pin per-field to break from the cascade.">
     <ColorField label="Title color"
-                value={(theme.text?.title?.fg as string | undefined) ?? (inputs?.brandDeep as string | undefined) ?? "#1A1A1A"}
+                value={(theme.text?.title?.fg as string | undefined) ?? currentPrimaryDeep()}
                 onchange={(v) => setPath(["text", "title", "fg"], v)}
                 overridden={isOver(["text", "title", "fg"])}
                 onreset={resetTitleFg} />
     <ColorField label="Axis label color"
-                value={(theme.plot?.axisLabel?.fg as string | undefined) ?? (inputs?.brandDeep as string | undefined) ?? "#1A1A1A"}
-                onchange={(v) => setPath(["plot", "axisLabel", "fg"], v)}
-                overridden={isOver(["plot", "axisLabel", "fg"])}
-                onreset={resetAxisLabelFg} />
+                value={(theme.plot?.axisLabel?.fg as string | undefined) ?? theme.content?.muted ?? "#1A1A1A"}
+                onchange={(v) => setPath(["plot", "axisLabel", "fg"], v)} />
     <ColorField label="Axis tick color"
-                value={(theme.plot?.tickLabel?.fg as string | undefined) ?? (inputs?.brandDeep as string | undefined) ?? "#1A1A1A"}
-                onchange={(v) => setPath(["plot", "tickLabel", "fg"], v)}
-                overridden={isOver(["plot", "tickLabel", "fg"])}
-                onreset={resetTickLabelFg} />
+                value={(theme.plot?.tickLabel?.fg as string | undefined) ?? theme.content?.muted ?? "#1A1A1A"}
+                onchange={(v) => setPath(["plot", "tickLabel", "fg"], v)} />
   </SettingsSection>
 
   <SettingsSection title="Selection & accents" description="Per-row interaction tones plus the L1 group-bar fill.">
@@ -491,7 +583,7 @@
                   setPath(["row", "selected", "bg"], v);
                 }} />
     <ColorField label="L1 group bar"
-                hint="12% Brand-deep tint into surface base — distinct from the accent-tinted hover/selected family"
+                hint="12% Secondary-deep tint into surface base — coordinates with column-group bold band; distinct from the accent-tinted hover/selected family"
                 value={(theme.rowGroup?.L1?.bg as string | undefined) ?? "#e1e5ea"}
                 onchange={(v) => setPath(["rowGroup", "L1", "bg"], v)}
                 overridden={isOver(["rowGroup", "L1", "bg"])}
@@ -499,7 +591,7 @@
   </SettingsSection>
 
   <SettingsSection title="Dividers" description="Cell hairlines and the strong rules under header / group rows.">
-    <ColorField label="Subtle" hint="Cell borders (default: 8% Brand-deep tint)"
+    <ColorField label="Subtle" hint="Cell borders (default: 10% Tertiary-deep tint)"
                 value={theme.cell?.border ?? theme.divider?.subtle ?? "#e2e8f0"}
                 onchange={(v) => {
                   setPath(["divider", "subtle"], v);
@@ -507,7 +599,7 @@
                 }}
                 overridden={isOver(["divider", "subtle"]) || isOver(["cell", "border"])}
                 onreset={resetSubtleDivider} />
-    <ColorField label="Strong" hint="Header rule (light variant), group rules, axis line, tick marks"
+    <ColorField label="Strong" hint="Header rule (light variant), group rules, axis line, tick marks (default: 5% Tertiary-deep tint)"
                 value={theme.divider?.strong ?? "#94a3b8"}
                 onchange={setStrongDivider} />
   </SettingsSection>
@@ -557,7 +649,7 @@
     height: 1.75rem;
     border: 1px solid var(--tv-border);
     background: transparent;
-    color: var(--tv-secondary);
+    color: var(--tv-text-muted);
     border-radius: 4px;
     cursor: pointer;
     font-size: 1.1rem;
@@ -572,7 +664,7 @@
     padding: 0.35rem 0.6rem;
     border: 1px dashed var(--tv-border);
     background: transparent;
-    color: var(--tv-secondary);
+    color: var(--tv-text-muted);
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.85rem;

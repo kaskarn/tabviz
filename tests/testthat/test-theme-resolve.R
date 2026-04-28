@@ -45,9 +45,9 @@ test_that("resolve_theme expands series anchors into slot bundles", {
   expect_match(t@series[[1]]@text_fg, "^#")
 })
 
-test_that("series[1] carries the brand-derived fill (used as the pooled-effect diamond)", {
+test_that("series[1] carries the seeded fill (used as the pooled-effect diamond)", {
   t <- resolve_theme(WebTheme(inputs = ThemeInputs(
-    brand = "#1F3A5F",
+    primary = "#1F3A5F",
     series_anchors = c("#1F3A5F", "#888888")
   )))
   expect_equal(toupper(t@series[[1]]@fill), "#1F3A5F")
@@ -89,21 +89,48 @@ test_that("per-token spacing override preserved across density change", {
   expect_equal(out@spacing@header_height, DENSITY_PRESETS$spacious$header_height)
 })
 
-test_that("Tier 1 NA mirrors fire", {
-  inp <- ThemeInputs(brand = "#123456")
+test_that("Tier 1 NA mirrors fire (primary_deep auto-darkens, font_display falls back)", {
+  inp <- ThemeInputs(primary = "#123456")
   t <- resolve_theme(WebTheme(inputs = inp))
-  # brand_deep is the OKLCH-darkened brand by default — a literal mirror
+  # primary_deep is the OKLCH-darkened primary by default — a literal mirror
   # would make "deep" a misnomer. Resolved value must be a hex but NOT
-  # equal to brand (it's strictly darker).
-  expect_match(t@inputs@brand_deep, "^#[0-9A-Fa-f]{6}$")
-  expect_false(identical(toupper(t@inputs@brand_deep), "#123456"))
+  # equal to primary (it's strictly darker).
+  expect_match(t@inputs@primary_deep, "^#[0-9A-Fa-f]{6}$")
+  expect_false(identical(toupper(t@inputs@primary_deep), "#123456"))
   expect_equal(t@inputs@font_display, t@inputs@font_body)
 })
 
-test_that("explicit brand_deep is preserved", {
-  inp <- ThemeInputs(brand = "#123456", brand_deep = "#000000")
+test_that("explicit primary_deep is preserved", {
+  inp <- ThemeInputs(primary = "#123456", primary_deep = "#000000")
   t <- resolve_theme(WebTheme(inputs = inp))
-  expect_equal(toupper(t@inputs@brand_deep), "#000000")
+  expect_equal(toupper(t@inputs@primary_deep), "#000000")
+})
+
+test_that("identity mirror chain: secondary/tertiary mirror up the chain when NA", {
+  # Mono: only primary set. Both downstream tiers mirror; their _deep
+  # companions follow primary_deep (not auto-darkened from the seed) so
+  # pinned primary_deep propagates.
+  t <- resolve_theme(WebTheme(inputs = ThemeInputs(
+    primary = "#1F3A5F", primary_deep = "#0F1F38"
+  )))
+  expect_equal(toupper(t@inputs@secondary), "#1F3A5F")
+  expect_equal(toupper(t@inputs@tertiary), "#1F3A5F")
+  expect_equal(toupper(t@inputs@secondary_deep), "#0F1F38")
+  expect_equal(toupper(t@inputs@tertiary_deep), "#0F1F38")
+})
+
+test_that("identity mirror chain: pinned secondary breaks mirror; tertiary follows secondary", {
+  t <- resolve_theme(WebTheme(inputs = ThemeInputs(
+    primary = "#FF0000", secondary = "#00FF00"
+  )))
+  expect_equal(toupper(t@inputs@secondary), "#00FF00")
+  expect_equal(toupper(t@inputs@tertiary), "#00FF00")
+  # secondary was pinned -> secondary_deep auto-darkens from secondary
+  # (NOT from primary_deep, since secondary is not mirroring).
+  expect_match(t@inputs@secondary_deep, "^#[0-9A-Fa-f]{6}$")
+  expect_false(identical(toupper(t@inputs@secondary_deep), "#00FF00"))
+  # tertiary mirrors secondary -> tertiary_deep follows secondary_deep.
+  expect_equal(t@inputs@tertiary_deep, t@inputs@secondary_deep)
 })
 
 test_that("text roles get filled from font + content", {
@@ -122,7 +149,7 @@ test_that("header cluster carries both light and bold variants", {
   expect_match(t@header@light@fg, "^#")
   expect_match(t@header@bold@bg, "^#")
   expect_match(t@header@bold@fg, "^#")
-  # Bold uses brand.deep on dark; fg should be inverse (light).
+  # Bold uses primary_deep on dark; fg should be inverse (light).
   expect_equal(t@header@bold@fg, t@content@inverse)
 })
 
@@ -177,44 +204,68 @@ test_that("plot scaffolding resolves with transparent bg by default", {
   expect_equal(t@plot@reference, t@divider@strong)
 })
 
-test_that("Dividers carries strong_on_dark for bold-mode header rule", {
+test_that("bold-mode header/col-group rules contrast against their own bg (component-local)", {
   t <- resolved_default()
-  expect_match(t@divider@strong_on_dark, "^#")
-  # Bold-mode header rule reads strong_on_dark, not brand_deep (would be
-  # invisible against the brand_deep header bg).
-  expect_equal(t@header@bold@rule, t@divider@strong_on_dark)
+  # Each cluster's bold rule is a per-cluster mix(content.inverse, <its own
+  # bg>, 0.4) so it contrasts against THAT band, not a global token.
+  expect_match(t@header@bold@rule, "^#")
+  expect_match(t@column_group@bold@rule, "^#")
   expect_false(identical(t@header@bold@rule, t@header@bold@bg))
-  expect_equal(t@column_group@bold@rule, t@divider@strong_on_dark)
+  # In a mono theme, header.bold.bg == column_group.bold.bg (both =
+  # primary_deep, since secondary mirrors primary). So the rules also match.
+  expect_equal(t@header@bold@rule, t@column_group@bold@rule)
+  # Verify the formula directly.
+  expect_equal(
+    t@header@bold@rule,
+    oklch_mix(t@content@inverse, t@inputs@primary_deep, 0.40)
+  )
+  expect_equal(
+    t@column_group@bold@rule,
+    oklch_mix(t@content@inverse, t@inputs@secondary_deep, 0.40)
+  )
 })
 
-test_that("title defaults to brand_deep; forest-axis labels default to content.muted", {
+test_that("title defaults to primary_deep; forest-axis labels default to content.muted", {
   t <- resolved_default()
-  # Title carries brand identity — keeps the tone the table opens with.
-  expect_equal(t@text@title@fg, t@inputs@brand_deep)
+  # Title carries primary identity — keeps the tone the table opens with.
+  expect_equal(t@text@title@fg, t@inputs@primary_deep)
   # Axis + tick labels are scaffolding — they should recede, not carry
-  # brand identity, hence content.muted instead of brand_deep.
+  # primary identity, hence content.muted instead of primary_deep.
   expect_equal(t@plot@axis_label@fg, t@content@muted)
   expect_equal(t@plot@tick_label@fg, t@content@muted)
 })
 
-test_that("L1 group bg is brand-derived in both variants", {
+test_that("L1 group bg is secondary-derived in both variants", {
   light_t <- resolve_theme(WebTheme())
   bold_t  <- resolve_theme(WebTheme(variants = ThemeVariants(header_style = "bold")))
-  expected <- oklch_mix(light_t@surface@base, light_t@inputs@brand_deep, 0.12)
+  expected <- oklch_mix(light_t@surface@base, light_t@inputs@secondary_deep, 0.12)
   expect_equal(light_t@row_group@L1@bg, expected)
   expect_equal(bold_t@row_group@L1@bg, expected)
-  # Distinct from accent.tint_subtle in both variants — the whole point
-  # of routing through brand (rather than accent under light-mode) is to
-  # keep group bars in a different color family from hover/selected
-  # (which use accent.muted).
+  # Structural groupings — column and row — both live on secondary so they
+  # coordinate as a family. Routing through identity (rather than accent)
+  # keeps the group bar in a different color family from hover/selected
+  # (which use accent.muted), so multiple highlighted rows don't merge
+  # into the bar.
   expect_false(identical(light_t@row_group@L1@bg, light_t@accent@tint_subtle))
   expect_false(identical(bold_t@row_group@L1@bg, bold_t@accent@tint_subtle))
 })
 
+test_that("two-color theme: L1 row-group bg tracks secondary, not primary", {
+  t <- resolve_theme(WebTheme(inputs = ThemeInputs(
+    primary = "#FF0000", secondary = "#00FF00"
+  )))
+  # column-group bold and row-group L1 should both derive from
+  # secondary_deep (green), not primary_deep (red).
+  expect_equal(t@column_group@bold@bg, t@inputs@secondary_deep)
+  expected_l1 <- oklch_mix(t@surface@base, t@inputs@secondary_deep, 0.12)
+  expect_equal(t@row_group@L1@bg, expected_l1)
+})
+
 test_that("resolve_chrome and resolve_data don't cross subsystems", {
-  # Chrome derivation should not look at series_anchors.
-  inp1 <- ThemeInputs(series_anchors = c("#FF0000"))
-  inp2 <- ThemeInputs(series_anchors = c("#00FF00"))
+  # Chrome derivation should not look at series_anchors. resolve_chrome
+  # assumes resolve_inputs_mirrors() has run, so feed it mirrored inputs.
+  inp1 <- resolve_inputs_mirrors(ThemeInputs(series_anchors = c("#FF0000")))
+  inp2 <- resolve_inputs_mirrors(ThemeInputs(series_anchors = c("#00FF00")))
   c1 <- resolve_chrome(inp1)
   c2 <- resolve_chrome(inp2)
   expect_equal(c1$surface@base,  c2$surface@base)
@@ -226,7 +277,7 @@ test_that("resolve_data is deterministic given the same inputs", {
   surface_base <- "#F7F8FA"
   content_primary <- "#2A2F38"
   inp <- resolve_inputs_mirrors(
-    ThemeInputs(series_anchors = c("#1F3A5F"), brand = "#1F3A5F")
+    ThemeInputs(series_anchors = c("#1F3A5F"), primary = "#1F3A5F")
   )
   d1 <- resolve_data(inp, surface_base, content_primary, list())
   d2 <- resolve_data(inp, surface_base, content_primary, list())

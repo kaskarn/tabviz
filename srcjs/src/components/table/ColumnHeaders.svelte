@@ -270,7 +270,7 @@
     border-bottom: 1px solid var(--tv-border);
     font-weight: var(--tv-text-header-weight, 600);
     font-size: var(--tv-font-size-base);
-    color: var(--tv-secondary);
+    color: var(--tv-text-muted);
   }
 
   .tabviz-header-grid {
@@ -281,7 +281,7 @@
     border-bottom: 1px solid var(--tv-border);
     font-weight: var(--tv-text-header-weight, 600);
     font-size: var(--tv-font-size-base);
-    color: var(--tv-secondary);
+    color: var(--tv-text-muted);
   }
 
   .header-cell {
@@ -346,6 +346,6 @@
 
   .resize-handle:hover,
   .resize-handle:active {
-    background: var(--tv-primary, #2563eb);
+    background: var(--tv-accent, #2563eb);
   }
 </style>

@@ -3016,7 +3016,7 @@ function renderUnifiedTableRow(
       const barColor = col.options?.bar?.color
         ?? barCellBundle?.markerFill
         ?? barRowBundle?.markerFill
-        ?? (theme.inputs as { brand?: string } | undefined)?.brand
+        ?? (theme.inputs as { primary?: string } | undefined)?.primary
         ?? theme.accent.default;
       const barHeight = theme.plot.pointSize * 2;
       const textWidth = 50;
@@ -3048,7 +3048,7 @@ function renderUnifiedTableRow(
       const sparkColor = col.options?.sparkline?.color
         ?? sparkCellBundle?.markerFill
         ?? sparkRowBundle?.markerFill
-        ?? (theme.inputs as { brand?: string } | undefined)?.brand
+        ?? (theme.inputs as { primary?: string } | undefined)?.primary
         ?? theme.accent.default;
       const sparkPadding = SPACING.TEXT_PADDING * 2;
       const path = renderSparklinePath(data, currentX + SPACING.TEXT_PADDING, y + rowHeight / 2 - sparkHeight / 2, width - sparkPadding, sparkHeight);
@@ -3431,24 +3431,24 @@ function renderUnifiedTableRow(
       const hmValue = row.metadata[col.field] as number;
       if (hmValue !== undefined && hmValue !== null && !Number.isNaN(hmValue)) {
         const hmOpts = col.options?.heatmap;
-        // Default palette derives light → dark from the theme's brand
-        // color (matches the live CellHeatmap component). Falls back to
-        // the historical blue palette when neither brand nor brand_deep
-        // are present (v1 themes).
-        const themeInputs = theme.inputs as { brand?: string; brandDeep?: string } | undefined;
+        // Default palette derives light → dark from the theme's primary
+        // identity (matches the live CellHeatmap component). Falls back
+        // to the historical blue palette when neither primary nor
+        // primary_deep are present.
+        const themeInputs = theme.inputs as { primary?: string; primaryDeep?: string } | undefined;
         const themeSurfaceBase = (theme.surface as { base?: string } | undefined)?.base ?? "#ffffff";
-        const hmBrand = themeInputs?.brand;
-        const hmBrandDeep = themeInputs?.brandDeep ?? hmBrand;
-        const defaultPalette: string[] = (hmBrand && hmBrandDeep)
+        const hmPrimary = themeInputs?.primary;
+        const hmPrimaryDeep = themeInputs?.primaryDeep ?? hmPrimary;
+        const defaultPalette: string[] = (hmPrimary && hmPrimaryDeep)
           ? [(() => {
-              const ah = hmBrand.replace("#","");
+              const ah = hmPrimary.replace("#","");
               const bh = themeSurfaceBase.replace("#","");
               const t = 0.92;
               const ar=parseInt(ah.substring(0,2),16),ag=parseInt(ah.substring(2,4),16),ab=parseInt(ah.substring(4,6),16);
               const br=parseInt(bh.substring(0,2),16),bg=parseInt(bh.substring(2,4),16),bb=parseInt(bh.substring(4,6),16);
               const r=Math.round(ar*(1-t)+br*t), g=Math.round(ag*(1-t)+bg*t), b=Math.round(ab*(1-t)+bb*t);
               return `#${r.toString(16).padStart(2,"0")}${g.toString(16).padStart(2,"0")}${b.toString(16).padStart(2,"0")}`;
-            })(), hmBrandDeep]
+            })(), hmPrimaryDeep]
           : ["#f7fbff", "#08306b"];
         const palette = hmOpts?.palette ?? defaultPalette;
         const hmDecimals = hmOpts?.decimals ?? 2;
@@ -3512,7 +3512,7 @@ function renderUnifiedTableRow(
         const progColor = progOpts?.color
           ?? progCellBundle?.markerFill
           ?? progRowBundle?.markerFill
-          ?? (theme.inputs as { brand?: string } | undefined)?.brand
+          ?? (theme.inputs as { primary?: string } | undefined)?.brand
           ?? theme.accent.default;
         const progShowLabel = progOpts?.showLabel ?? true;
         const progScale = progOpts?.scale ?? "linear";

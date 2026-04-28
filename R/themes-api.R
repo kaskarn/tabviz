@@ -9,6 +9,32 @@
 # `web_theme` -> `web_theme` and the v1 web_theme() goes away.
 
 
+# Internal: when an inputs arg sets a tier seed (or `accent` / `font_body`),
+# add NA entries for any companions/downstream slots not also set in the
+# same call. This makes the resolver re-derive them (mirror chain for
+# identity tiers; oklch_darken for _deep companions; font_body→font_display).
+# Without this, set_inputs(primary = "#X") would leave secondary/tertiary
+# pinned at whatever the previous resolved values were instead of mirroring.
+apply_inputs_resets <- function(args) {
+  if ("primary" %in% names(args)) {
+    if (!"primary_deep"   %in% names(args)) args$primary_deep   <- NA_character_
+    if (!"secondary"      %in% names(args)) args$secondary      <- NA_character_
+    if (!"secondary_deep" %in% names(args)) args$secondary_deep <- NA_character_
+    if (!"tertiary"       %in% names(args)) args$tertiary       <- NA_character_
+    if (!"tertiary_deep"  %in% names(args)) args$tertiary_deep  <- NA_character_
+  } else if ("secondary" %in% names(args)) {
+    if (!"secondary_deep" %in% names(args)) args$secondary_deep <- NA_character_
+    if (!"tertiary"       %in% names(args)) args$tertiary       <- NA_character_
+    if (!"tertiary_deep"  %in% names(args)) args$tertiary_deep  <- NA_character_
+  } else if ("tertiary" %in% names(args)) {
+    if (!"tertiary_deep"  %in% names(args)) args$tertiary_deep  <- NA_character_
+  }
+  if ("accent"    %in% names(args) && !"accent_deep"    %in% names(args)) args$accent_deep    <- NA_character_
+  if ("font_body" %in% names(args) && !"font_display"   %in% names(args)) args$font_display   <- NA_character_
+  args
+}
+
+
 # Internal: copy non-NULL named args into a target object's properties.
 apply_named_props <- function(target, args) {
   prop_names <- S7::prop_names(target)
@@ -26,15 +52,19 @@ apply_named_props <- function(target, args) {
 #' Build a custom v2 theme from Tier 1 inputs and Tier 3 overrides.
 #'
 #' All Tier 1 inputs are passed by name; pass them as a named list via
-#' `inputs = list(brand = "...", neutral = c(...))`. Variants are similarly
+#' `inputs = list(primary = "...", neutral = c(...))`. Variants are similarly
 #' a named list. Tier 3 overrides target individual cluster fields via
 #' [set_theme_field()] after construction.
 #'
 #' @param name Theme name (string).
 #' @param inputs Named list of [ThemeInputs] property overrides
-#'   (`brand`, `accent`, `neutral`, `series_anchors`, etc.).
+#'   (`primary`, `secondary`, `tertiary`, `accent`, `neutral`,
+#'   `series_anchors`, etc.).
 #' @param variants Named list of [ThemeVariants] property overrides
 #'   (`density`, `header_style`, `first_column_style`).
+#' @param web_fonts Optional list of web-font specs to embed in the rendered
+#'   widget. Each entry is a list with `family` and `url` (and optionally
+#'   `weights`, `style`); `NULL` (default) keeps the base theme's fonts.
 #' @param base_theme Base theme to start from before applying overrides.
 #'   Defaults to the v2 default preset.
 #' @return A fully resolved [WebTheme].
@@ -53,10 +83,47 @@ web_theme <- function(
     cli::cli_abort("{.arg base_theme} must be a {.cls WebTheme}.")
   }
 
-  result <- base_theme
-  result@name <- name
-  if (!is.null(inputs))   result@inputs   <- apply_named_props(result@inputs,   inputs)
-  if (!is.null(variants)) result@variants <- apply_named_props(result@variants, variants)
+  if (!is.null(inputs)) {
+    legacy <- intersect(names(inputs), c("brand", "brand_deep"))
+    if (length(legacy) > 0L) {
+      cli::cli_abort(c(
+        "{.field {legacy}} renamed to {.field primary} / {.field primary_deep} in the theme rework.",
+        "i" = "Update {.code inputs = list(...)} to use {.field primary} and {.field primary_deep}.",
+        "i" = "Identity now has three tiers: {.field primary} / {.field secondary} / {.field tertiary}, with NA tiers mirroring up the chain."
+      ))
+    }
+    inputs <- apply_inputs_resets(inputs)
+  }
+
+  # When the caller passes any customization (inputs / variants / web_fonts),
+  # build the result from a FRESH skeleton seeded with base_theme's Tier 1
+  # inputs + variants + spec — but NOT base_theme's resolved chrome. This
+  # makes input changes propagate cleanly through the cascade. Pinned T2/T3
+  # fields on the base (e.g., a preset's hand-tuned divider) are intentionally
+  # NOT inherited, since they were tuned for the base's identity and would
+  # likely look wrong against the new inputs. Apply pins via set_theme_field
+  # AFTER web_theme() if you need them.
+  #
+  # When no customization is provided, just rename — caller is asking for
+  # base verbatim under a new name.
+  any_customization <- !is.null(inputs) || !is.null(variants) || !is.null(web_fonts)
+  if (any_customization) {
+    result <- WebTheme(
+      inputs    = base_theme@inputs,
+      variants  = base_theme@variants,
+      web_fonts = base_theme@web_fonts,
+      axis      = base_theme@axis,
+      layout    = base_theme@layout
+    )
+    result@name <- name
+  } else {
+    result <- base_theme
+    result@name <- name
+    return(result)
+  }
+
+  if (!is.null(inputs))    result@inputs    <- apply_named_props(result@inputs,   inputs)
+  if (!is.null(variants))  result@variants  <- apply_named_props(result@variants, variants)
   if (!is.null(web_fonts)) result@web_fonts <- web_fonts
 
   resolve_theme(result)
@@ -65,9 +132,13 @@ web_theme <- function(
 
 #' Update Tier 1 inputs on a v2 theme.
 #'
-#' Any input field on [ThemeInputs] can be set: `brand`, `brand_deep`,
-#' `accent`, `accent_deep`, `status_*`, `series_anchors`, `font_*`,
-#' `neutral`. Re-resolves the theme before returning.
+#' Any input field on [ThemeInputs] can be set. Identity tiers (with NA
+#' default mirroring up the chain): `primary`, `primary_deep`, `secondary`,
+#' `secondary_deep`, `tertiary`, `tertiary_deep`. Engagement: `accent`,
+#' `accent_deep`. Plus `status_*`, `series_anchors`, `font_*`, `neutral`.
+#' When a tier's seed changes and its `_deep` companion wasn't also set
+#' explicitly, the `_deep` resets to NA so resolve re-derives. Re-resolves
+#' the theme before returning.
 #'
 #' @param theme A [WebTheme].
 #' @param ... Named arguments matching [ThemeInputs] property names.
@@ -78,11 +149,15 @@ set_inputs <- function(theme, ...) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
   args <- list(...)
-  # If brand changes and brand_deep wasn't also set explicitly, reset
-  # brand_deep so resolve re-mirrors. Same for accent and font_display.
-  if ("brand"     %in% names(args) && !"brand_deep"     %in% names(args)) args$brand_deep     <- NA_character_
-  if ("accent"    %in% names(args) && !"accent_deep"    %in% names(args)) args$accent_deep    <- NA_character_
-  if ("font_body" %in% names(args) && !"font_display"   %in% names(args)) args$font_display   <- NA_character_
+  legacy <- intersect(names(args), c("brand", "brand_deep"))
+  if (length(legacy) > 0L) {
+    cli::cli_abort(c(
+      "{.field {legacy}} renamed to {.field primary} / {.field primary_deep} in the theme rework.",
+      "i" = "Pass {.code primary = ...} / {.code primary_deep = ...} instead.",
+      "i" = "Identity now has three tiers: {.field primary} / {.field secondary} / {.field tertiary}, with NA tiers mirroring up the chain."
+    ))
+  }
+  args <- apply_inputs_resets(args)
   theme@inputs <- apply_named_props(theme@inputs, args)
   # Series anchors changed -> rebuild slot bundles so every fill reflects
   # the new anchors. Explicit per-slot overrides survive (resolve only
@@ -136,7 +211,7 @@ set_variants <- function(theme,
 #' * `set_theme_field(theme, c("row_group", "L1", "bg"), "#EEE")`
 #' * `set_theme_field(theme, c("series", 1, "fill"), "#FF0000")` with an
 #'   integer at position 2 indexing into the series list
-#' * `set_theme_field(theme, c("inputs", "brand"), "#1F3A5F")`
+#' * `set_theme_field(theme, c("inputs", "primary"), "#1F3A5F")`
 #'
 #' @param theme A [WebTheme].
 #' @param path Character (or mixed character/integer) vector of property

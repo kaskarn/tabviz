@@ -163,7 +163,7 @@
     font-size: var(--tv-text-subtitle-size, var(--tv-font-size-base, 0.875rem));
     font-weight: var(--tv-text-subtitle-weight, var(--tv-font-weight-normal, 400));
     font-style: var(--tv-text-subtitle-italic, normal);
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     line-height: 1.4;
     white-space: normal;
     word-wrap: break-word;

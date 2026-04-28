@@ -462,7 +462,7 @@ tabviz(
   ),
   row_badge = "award",
   theme = web_theme_cochrane() |>
-    set_inputs(brand = "#C9082A"),  # NBA red
+    set_inputs(primary = "#C9082A"),  # NBA red
   title = "NBA Player Efficiency Ratings",
   subtitle = "Row groups by conference + column groups for Player Info / Stats",
   caption = "PER = 15 is league average. Badge shows major awards.",

@@ -17,7 +17,6 @@
   let isFullscreen = $state(false);
   let backdrop: HTMLDivElement | null = null;
   let savedZoom = 1.0;
-  let savedAutoFit = true;
 
   function resolveContainer(): HTMLElement | null {
     if (container) return container;
@@ -46,27 +45,24 @@
     c.classList.add("tabviz-fullscreen");
     document.body.classList.add("tabviz-fullscreen-active");
 
-    // Auto-magnify: bump zoom up to +40% as long as the natural content fits
-    // the available viewport width. Disable auto-fit while fullscreen so the
-    // user-chosen zoom isn't immediately clamped back down.
+    // Auto-magnify: bump zoom up to +40% if the natural content has room to
+    // grow. Auto-fit is preserved — when on, fitScale will clamp width back
+    // down if zoom-bump would overflow, so the user's resize behavior stays
+    // consistent across fullscreen toggles.
     savedZoom = store.zoom;
-    savedAutoFit = store.autoFit;
     const naturalW = store.naturalContentWidth;
     const naturalH = store.naturalContentHeight;
-    if (naturalW > 0) {
-      // Match the modal's 92vw / 92vh inset. Cap vertical fit too — without
-      // it, a short-and-wide table gets zoomed up to fill width and ends up
-      // too tall to fit, forcing scrolling we'd rather avoid.
+    if (naturalW > 0 && naturalH > 0) {
+      // Modal is left/right:4vw, max-height:80vh. Reserve a generous chrome
+      // budget on top of naturalH (title/subtitle/toolbar/header rule plus
+      // theme-specific display fonts — LOTR themes push this well past 150px)
+      // so the bumped zoom doesn't push total modal height past the 80vh cap
+      // and produce a scrollbar for content that would otherwise fit.
       const availW = window.innerWidth * 0.92 - 32;
-      const fitW = availW / naturalW;
-      let fit = fitW;
-      if (naturalH > 0) {
-        const availH = window.innerHeight * 0.92 - 32;
-        fit = Math.min(fit, availH / naturalH);
-      }
+      const availH = window.innerHeight * 0.80 - 32 - 200;
+      const fit = Math.min(availW / naturalW, availH / naturalH);
       const target = Math.min(1.4, Math.max(savedZoom, fit));
       if (target > savedZoom + 0.01) {
-        store.setAutoFit(false);
         store.setZoom(target);
       }
     }
@@ -79,9 +75,8 @@
     c?.classList.remove("tabviz-fullscreen");
     document.body.classList.remove("tabviz-fullscreen-active");
 
-    // Restore previous zoom/autofit state.
+    // Restore previous zoom (autoFit was never modified).
     store.setZoom(savedZoom);
-    store.setAutoFit(savedAutoFit);
 
     // Reset scroll positions: in auto-fit mode the container has
     // overflow:hidden and a fixed scaledHeight, but a non-zero scrollTop
@@ -151,7 +146,7 @@
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
     background: var(--tv-bg, #ffffff);
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
@@ -185,10 +180,10 @@
   }
 
   /* The widget root becomes a vertically-centered modal: 4vw breathing room
-     on each side, height shrinks to content (capped at 92vh, scrolls when
+     on each side, height shrinks to content (capped at 80vh, scrolls when
      content is taller). Vertical centering uses `top: 50%; translateY(-50%)`
      so a short table sits in the middle of the viewport instead of stretching
-     to fill 92vh with empty background below. Toolbar popovers are portaled
+     to fill 80vh with empty background below. Toolbar popovers are portaled
      to <body> (see Portal.svelte) so this transform doesn't capture their
      positioning math into the modal's local coordinate space. */
   :global(.tabviz-container.tabviz-fullscreen) {
@@ -200,9 +195,13 @@
     width: auto !important;
     height: auto !important;
     max-width: none !important;
-    max-height: 92vh !important;
+    max-height: 80vh !important;
     z-index: 9991;
-    overflow: auto;
+    /* `!important` beats `.tabviz-container.auto-fit { overflow: hidden }`
+       (same specificity, declared later in the bundle). Without this the
+       auto-fit rule wins and scaled content past 80vh gets clipped with no
+       scrollbar to recover. */
+    overflow: auto !important;
     background: var(--tv-bg, #ffffff);
     border-radius: 12px;
     box-shadow:

@@ -2,21 +2,22 @@
 #
 # Each returns a fully resolved WebTheme. Pattern: ThemeInputs() carries the
 # customer-facing palette + fonts + density. Tier 3 overrides only where the
-# journal/brand chrome can't be derived from inputs alone.
+# journal identity chrome can't be derived from inputs alone.
 #
 # Round-2 polish trimmed the preset roster to four. The remaining four cover
 # the design space we actually care about: a clean general-purpose default
 # (Cochrane), two journal-publication identities (Lancet, JAMA), and a single
-# dark-mode option. The themes are reimagined for the v2 cascade — each
-# explicitly leverages brand_deep, accent independence, density, and the
-# new strong_on_dark / variant-aware bindings.
+# dark-mode option. All presets here are mono-identity (primary set, secondary
+# and tertiary mirror primary via the resolver's mirror chain). The orthogonal
+# accent axis is exercised independently. Two/three-color editorial themes
+# can ship as separate presets (see themes-lotr.R for examples).
 
 #' Cochrane theme (v2)
 #'
-#' The package default. Cochrane heritage teal as brand, warm coral as the
-#' independent accent. Inter sans-serif, comfortable density, clean slate
-#' neutrals. Tuned as a general-purpose theme: dense systematic-review tables
-#' read well, and exploratory tables feel inviting.
+#' The package default. Cochrane heritage teal as primary identity, warm
+#' coral as the independent accent. Inter sans-serif, comfortable density,
+#' clean slate neutrals. Tuned as a general-purpose theme: dense
+#' systematic-review tables read well, and exploratory tables feel inviting.
 #'
 #' @return A [WebTheme].
 #' @export
@@ -25,18 +26,19 @@ web_theme_cochrane <- function() {
     name = "cochrane",
     inputs = ThemeInputs(
       # Slate-cool neutrals; the alt-row partner picks up a faint teal tint
-      # via the new brand-aware surface.muted derivation.
+      # via the tertiary-tinted surface.muted derivation (mirrors primary
+      # in this mono-identity preset).
       neutral = c("#FFFFFF", "#FFFFFF", "#F2F4F7", "#5B6470", "#1F2937"),
-      # Cochrane heritage teal for brand identity. brand_deep auto-derives
-      # to a darker, richer teal (15% OKLCH-darken).
-      brand   = "#0099CC",
+      # Cochrane heritage teal as primary identity. primary_deep auto-derives
+      # to a darker, richer teal (15% OKLCH-darken). Secondary and tertiary
+      # mirror primary (mono identity).
+      primary = "#0099CC",
       # Warm coral as the independent accent — a deliberate counterpoint to
-      # the cool brand. Lands on hover/selected, the L1 group bar (under
-      # light-mode header), and chrome tints. Brand and Accent are the two
-      # identity knobs; keeping them visually distinct exercises the
-      # chrome/data wall.
+      # the cool primary. Reserved for layered emphasis (hover/selected,
+      # row.accent callouts, status.info fallback). Identity and engagement
+      # are orthogonal; keeping them visually distinct exercises the wall.
       accent  = "#C8553D",
-      # Qualitative palette: brand-teal, coral, forest, violet, amber — five
+      # Qualitative palette: teal, coral, forest, violet, amber — five
       # well-spaced hues for multi-effect plots.
       series_anchors = c("#0099CC", "#C8553D", "#5C8A3F", "#7E5A99", "#D49A3A"),
       font_body = "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
@@ -59,8 +61,8 @@ web_theme_lancet <- function() {
     inputs = ThemeInputs(
       # Warm cream surface tones; n[3] is the alt-row partner / header bg.
       neutral = c("#FDFCFB", "#FDFCFB", "#F8F7F5", "#3D5A80", "#1E3A5F"),
-      brand        = "#00407A",
-      brand_deep   = "#002D54",
+      primary      = "#00407A",
+      primary_deep = "#002D54",
       # Refined old-gold (replaces the slightly muddy "darkgoldenrod"
       # #B8860B). Lands on hover, selection, L1 group bar.
       accent       = "#A6792A",
@@ -85,14 +87,14 @@ web_theme_jama <- function() {
   resolve_theme(WebTheme(
     name = "jama",
     inputs = ThemeInputs(
-      # Pure white canvas; surface.muted picks up barely any brand tint
-      # because brand = black (the 3% mix is invisible).
+      # Pure white canvas; surface.muted picks up barely any tertiary tint
+      # because primary = black (the 3% mix is invisible).
       neutral = c("#FFFFFF", "#FFFFFF", "#F9FAFB", "#555555", "#000000"),
-      brand      = "#000000",
+      primary      = "#000000",
       # Explicit: oklch_darken of black is still black, but pinning makes
       # the "no fade to derivation" intent obvious.
-      brand_deep = "#000000",
-      accent     = "#000000",
+      primary_deep = "#000000",
+      accent       = "#000000",
       # Five-step grayscale series — distinctive without color.
       series_anchors = c("#1A1A1A", "#4A4A4A", "#7A7A7A", "#9A9A9A", "#BABABA"),
       font_body = "Arial, Helvetica, sans-serif"
@@ -110,7 +112,7 @@ web_theme_jama <- function() {
 #' Dark theme (v2)
 #'
 #' Catppuccin Mocha-inspired dark canvas with a pastel marker palette and
-#' system-font typography. The brand cascade adapts for dark mode: an
+#' system-font typography. The identity cascade adapts for dark mode: an
 #' explicit `content.inverse` override keeps bold-mode header text light
 #' (otherwise the resolver's default = `n[1]` = the dark canvas, giving
 #' invisible dark-on-dark text).
@@ -122,9 +124,9 @@ web_theme_dark <- function() {
     name = "dark",
     inputs = ThemeInputs(
       neutral = c("#1E1E2E", "#1E1E2E", "#232334", "#6C7086", "#CDD6F4"),
-      brand   = "#89B4FA",
+      primary = "#89B4FA",
       # accent_deep auto-derives via 15% OKLCH-darken; bright pastel pink
-      # darkens to a slightly more saturated version. brand_deep similarly
+      # darkens to a slightly more saturated version. primary_deep similarly
       # auto-darkens — the resulting tone reads as "deeper blue" against
       # the dark canvas.
       accent  = "#F5C2E7",

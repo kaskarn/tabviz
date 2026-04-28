@@ -279,7 +279,7 @@
     font-size: var(--tv-font-size-base, 13px);
     background: var(--tv-bg, #ffffff);
     color: var(--tv-fg, #1a1a1a);
-    border: 2px solid var(--tv-primary, #2563eb);
+    border: 2px solid var(--tv-accent, #2563eb);
     border-radius: 3px;
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
@@ -304,7 +304,7 @@
   .edit-popover-title { font-weight: 600; font-size: 12px; }
   .edit-popover label {
     display: flex; flex-direction: column; gap: 3px;
-    font-size: 11px; color: var(--tv-secondary, #64748b);
+    font-size: 11px; color: var(--tv-text-muted, #64748b);
   }
   .edit-popover input[type="number"] {
     font-size: 12px; padding: 5px 7px;
@@ -312,12 +312,12 @@
     background: var(--tv-bg, #ffffff); color: var(--tv-fg, #1a1a1a);
   }
   .edit-popover input.invalid { border-color: #dc2626; }
-  .edit-popover input:focus { outline: none; border-color: var(--tv-primary, #2563eb); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+  .edit-popover input:focus { outline: none; border-color: var(--tv-accent, #2563eb); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
   .edit-popover-footer { display: flex; justify-content: flex-end; gap: 6px; }
   .edit-popover-footer button {
     padding: 4px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; font-family: inherit;
   }
-  .edit-popover-footer .primary { background: var(--tv-primary, #2563eb); border: 1px solid var(--tv-primary, #2563eb); color: #fff; }
+  .edit-popover-footer .primary { background: var(--tv-accent, #2563eb); border: 1px solid var(--tv-accent, #2563eb); color: #fff; }
   .edit-popover-footer .secondary { background: transparent; border: 1px solid var(--tv-border, #e2e8f0); color: var(--tv-fg, #1a1a1a); }
   .edit-popover-footer .secondary:hover { background: var(--tv-border, #f1f5f9); }
 </style>

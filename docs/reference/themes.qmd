@@ -75,7 +75,7 @@ web_theme(
 | Argument | Type | Default | Description |
 |---|---|---|---|
 | `name` | string | `"custom"` | Theme name (shown in the in-widget switcher and in source export). |
-| `inputs` | named list | `NULL` | Tier 1 input overrides. Any `ThemeInputs` field is valid: `neutral`, `brand`, `brand_deep`, `accent`, `accent_deep`, `status_*`, `series_anchors`, `font_body`, `font_display`, `font_mono`. Unset fields inherit from `base_theme`. |
+| `inputs` | named list | `NULL` | Tier 1 input overrides. Any `ThemeInputs` field is valid: `neutral`, `brand`, `primary_deep`, `accent`, `accent_deep`, `status_*`, `series_anchors`, `font_body`, `font_display`, `font_mono`. Unset fields inherit from `base_theme`. |
 | `variants` | named list | `NULL` | Per-table variant overrides: `density` (compact / comfortable / spacious), `header_style` (light / bold), `first_column_style` (default / bold). |
 | `base_theme` | `WebTheme` | `web_theme_cochrane()` | Starting point. The `inputs` and `variants` lists are applied on top. |
 
@@ -85,8 +85,8 @@ Example — Lancet-inspired theme with bold headers:
 custom <- web_theme(
   name = "navy-bold",
   inputs = list(
-    brand          = "#1F3A5F",
-    brand_deep     = "#0F2138",
+    primary          = "#1F3A5F",
+    primary_deep     = "#0F2138",
     accent         = "#B08938",
     series_anchors = c("#1F3A5F", "#B08938", "#6B8E7F"),
     font_body      = "Charter, Georgia, serif"
@@ -105,14 +105,14 @@ Chainable via the pipe.
 ### `set_inputs()` {#set_inputs}
 
 Update Tier 1 customer-facing inputs. Cascade-aware: changing `brand` clears
-`brand_deep` so it re-mirrors; changing `series_anchors` rebuilds the slot
+`primary_deep` so it re-mirrors; changing `series_anchors` rebuilds the slot
 bundles. The pooled-effect diamond reads from `series[1]`, so anchoring it
 is just a matter of setting the first `series_anchors` entry.
 
 ```r
 set_inputs(
   theme,
-  neutral, brand, brand_deep, accent, accent_deep,
+  neutral, brand, primary_deep, accent, accent_deep,
   status_positive, status_negative, status_warning, status_info,
   series_anchors,
   font_body, font_display, font_mono
@@ -124,7 +124,7 @@ set_inputs(
 | `theme` | `WebTheme` | Theme to modify |
 | `neutral` | `chr[5]` | 5-step ramp, lightest → darkest |
 | `brand` | hex | Brand fill color (markers, accents) |
-| `brand_deep` | hex | Dark companion for text/strokes; defaults to `brand` |
+| `primary_deep` | hex | Dark companion for text/strokes; defaults to `brand` |
 | `accent` | hex | Chrome accent (hover, selection, links) |
 | `accent_deep` | hex | Dark companion; defaults to `accent` |
 | `status_positive`, `status_negative`, `status_warning`, `status_info` | hex | Semantic status colors |
@@ -145,7 +145,7 @@ set_variants(theme, density, header_style, first_column_style)
 | Argument | Values | Description |
 |---|---|---|
 | `density` | `"compact"` / `"comfortable"` / `"spacious"` | Drives every spacing token |
-| `header_style` | `"light"` / `"bold"` | Picks between light header on muted surface and bold header on `brand_deep` |
+| `header_style` | `"light"` / `"bold"` | Picks between light header on muted surface and bold header on `primary_deep` |
 | `first_column_style` | `"default"` / `"bold"` | Excel-style emphasized first column when `"bold"` |
 
 ### `set_spacing()` {#set_spacing}
@@ -201,7 +201,7 @@ theme |> set_theme_field(c("layout", "container_border_radius"), 4)
 ```
 
 Re-resolution preserves explicit overrides on subsequent edits.
-`set_inputs(brand = "...")` after pinning `surface.base` will refresh
+`set_inputs(primary = "...")` after pinning `surface.base` will refresh
 series colors but leave `surface.base` pinned.
 
 ---
@@ -218,7 +218,7 @@ series colors but leave `surface.base` pinned.
 plot |> set_theme("jama")
 
 # Apply by object
-custom <- web_theme(inputs = list(brand = "#1F3A5F"))
+custom <- web_theme(inputs = list(primary = "#1F3A5F"))
 plot |> set_theme(custom)
 ```
 
@@ -232,7 +232,7 @@ plot |> set_theme(custom)
 my_lancet <- web_theme(
   name = "my-lancet",
   inputs = list(
-    brand          = "#0066CC",
+    primary          = "#0066CC",
     accent         = "#CC9900",
     series_anchors = c("#0066CC", "#CC9900", "#669933"),
     font_body      = "Helvetica, Arial, sans-serif",
@@ -243,7 +243,7 @@ my_lancet <- web_theme(
 
 # Swap presets, then tweak
 custom <- web_theme_lancet() |>
-  set_inputs(brand = "#0066CC") |>
+  set_inputs(primary = "#0066CC") |>
   set_variants(density = "compact") |>
   set_theme_field(c("axis", "gridlines"), TRUE)
 ```
@@ -255,7 +255,7 @@ print_theme <- web_theme(
   name = "print",
   inputs = list(
     neutral        = c("#FFFFFF", "#FFFFFF", "#FAFAFA", "#666666", "#1A1A1A"),
-    brand          = "#000000",
+    primary          = "#000000",
     accent         = "#000000",
     series_anchors = c("#1A1A1A", "#4D4D4D", "#808080", "#B3B3B3"),
     font_body      = "'Times New Roman', serif",
@@ -275,7 +275,7 @@ dark_theme <- web_theme(
   name = "dashboard-dark",
   base_theme = web_theme_dark(),
   inputs = list(
-    brand          = "#10B981",
+    primary          = "#10B981",
     accent         = "#10B981",
     series_anchors = c("#10B981", "#3B82F6", "#F59E0B", "#EF4444")
   ),

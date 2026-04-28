@@ -75,7 +75,7 @@
   .text {
     width: 140px;
     padding: 3px 6px;
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 12%, var(--tv-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-border, #e2e8f0));
     border-radius: 4px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.7rem;
@@ -86,7 +86,7 @@
   }
 
   .text:focus {
-    border-color: var(--tv-primary, #2563eb);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tv-primary, #2563eb) 15%, transparent);
+    border-color: var(--tv-accent, #2563eb);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tv-accent, #2563eb) 15%, transparent);
   }
 </style>

@@ -210,7 +210,7 @@ The same cascade works on `viz_bar`, `viz_boxplot`, and `viz_violin`. See the [s
 ## When to use `marker_color` vs semantic classes
 
 - **Semantic classes (`row_accent`, `row_emphasis`, `row_muted`)** — for "this row is special" intent. Themable: changing the theme automatically restyles markers. Reach for these first.
-- **`marker_color = "col" \| ~ formula`** — for exact-color control (categorical palettes, colorblind-safe encodings, brand colors). Wins over the semantic cascade. Returns `NA` to fall through to the semantic layer.
+- **`marker_color = "col" \| ~ formula`** — for exact-color control (categorical palettes, colorblind-safe encodings, primary colors). Wins over the semantic cascade. Returns `NA` to fall through to the semantic layer.
 :::
 
 ---

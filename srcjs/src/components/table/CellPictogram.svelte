@@ -26,9 +26,11 @@
   const layoutClass = $derived(layout === "stack" ? "layout-stack" : "layout-row");
 
   // Theme-aware defaults: null → CSS var. style_color overrides the filled
-  // color (per the per-cell cascade decisions).
+  // color (per the per-cell cascade decisions). Pictograms read identity
+  // secondary by default (with primary fallback in mono themes); accent is
+  // reserved for layered emphasis only.
   const filledColor = $derived(
-    cellStyle?.color ?? options?.color ?? "var(--tv-accent)"
+    cellStyle?.color ?? options?.color ?? "var(--tv-secondary, var(--tv-primary))"
   );
   const emptyColor = $derived(options?.emptyColor ?? "var(--tv-muted)");
   const isMutedRow = $derived(cellStyle?.muted === true);

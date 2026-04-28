@@ -42,9 +42,9 @@ web_theme_dwarven <- function() {
       # Cavern palette: deep brown-black canvas, slightly lighter alt-row,
       # warm gray for muted text, cream for primary text.
       neutral = c("#1F1610", "#1F1610", "#2A1F17", "#988372", "#E8D9B5"),
-      brand          = "#7A4E22",   # deep copper / hammered bronze
-      brand_deep     = "#4A2D14",   # forge shadow
-      accent         = "#D4A955",   # warm gold (lands on hover/selected/L1 bar)
+      primary        = "#7A4E22",   # deep copper / hammered bronze
+      primary_deep   = "#4A2D14",   # forge shadow
+      accent         = "#D4A955",   # warm gold (lands on hover/selected)
       accent_deep    = "#A07A35",
       status_positive = "#8FA34A",  # gemvein green
       status_negative = "#C84638",  # forge-fire red
@@ -55,7 +55,7 @@ web_theme_dwarven <- function() {
       font_display = "'UnifrakturMaguntia', 'EB Garamond', Georgia, serif"
     ),
     variants = ThemeVariants(density = "comfortable"),
-    # Title/subtitle override: the title fg defaults to brand_deep
+    # Title/subtitle override: the title fg defaults to primary_deep
     # (forge shadow), which is invisible on the deep cavern canvas.
     # Pin it to a warm cream that reads against the surface.
     text = TextRoles(
@@ -99,8 +99,8 @@ web_theme_elvish <- function() {
       # Night-sky palette: indigo canvas, slightly lighter alt-row,
       # cool gray-blue muted text, near-white primary text.
       neutral = c("#0E1730", "#0E1730", "#172242", "#8090A8", "#EDEFF5"),
-      brand          = "#1F3A5F",   # deep starlit navy
-      brand_deep     = "#0F1F38",
+      primary        = "#1F3A5F",   # deep starlit navy
+      primary_deep   = "#0F1F38",
       accent         = "#D4B26E",   # mithril-touched gold (twilight gleam)
       accent_deep    = "#B89148",
       status_positive = "#8AC18A",  # mallorn green
@@ -112,7 +112,7 @@ web_theme_elvish <- function() {
       font_display = "'Cinzel', 'Cormorant Garamond', Georgia, serif"
     ),
     variants = ThemeVariants(density = "comfortable"),
-    # Title/subtitle override — brand is deep navy and invisible on the
+    # Title/subtitle override — primary is deep navy and invisible on the
     # night-sky canvas. Pin to a brighter mithril gold + silver-blue for
     # high contrast.
     text = TextRoles(
@@ -153,8 +153,8 @@ web_theme_hobbit <- function() {
       # Parchment palette: cream canvas, slightly creamier alt-row,
       # warm-gray muted text, ink-brown primary text.
       neutral = c("#FBF3DF", "#FBF3DF", "#F2E5C5", "#8A7456", "#3A2C20"),
-      brand          = "#A6633E",   # warm clay
-      brand_deep     = "#7A4527",
+      primary        = "#A6633E",   # warm clay
+      primary_deep   = "#7A4527",
       accent         = "#D97757",   # autumn rust (Sam's gardening apron)
       accent_deep    = "#B85A3D",
       status_positive = "#6B8E3D",  # garden-leaf green

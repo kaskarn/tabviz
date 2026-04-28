@@ -22,7 +22,7 @@
     align-items: flex-start;
     gap: 8px;
     padding: 18px 4px;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
   }
 
   .badge {
@@ -34,8 +34,8 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--tv-primary, #2563eb);
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 10%, transparent);
+    color: var(--tv-accent, #2563eb);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 10%, transparent);
     border-radius: 999px;
   }
 

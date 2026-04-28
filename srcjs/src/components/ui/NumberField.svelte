@@ -71,7 +71,7 @@
 
   .range {
     width: 100%;
-    accent-color: var(--tv-primary, #2563eb);
+    accent-color: var(--tv-accent, #2563eb);
   }
 
   .value-display {
@@ -84,7 +84,7 @@
   }
 
   .unit {
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     margin-left: 2px;
   }
 </style>

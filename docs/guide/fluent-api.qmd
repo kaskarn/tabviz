@@ -247,7 +247,7 @@ plot |> set_theme("jama")
 plot |> set_theme(web_theme_lancet())
 
 # Modify a Tier 1 input
-plot |> set_theme(web_theme_lancet() |> set_inputs(brand = "#1a365d"))
+plot |> set_theme(web_theme_lancet() |> set_inputs(primary = "#1a365d"))
 
 # Modify spacing on the active theme (operates on a WebTheme directly)
 custom <- web_theme_lancet() |>

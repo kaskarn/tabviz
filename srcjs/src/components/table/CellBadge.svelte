@@ -29,7 +29,7 @@
   //   2. thresholds + colors[]  (numeric scale path)
   //   3. colors[value] mapping  (categorical path)
   //   4. variants[value] → semantic
-  //   5. theme accent
+  //   5. theme identity-secondary (with primary fallback in mono themes)
   const badgeColor = $derived.by(() => {
     if (cellStyle?.color) return cellStyle.color;
 
@@ -37,14 +37,14 @@
     if (Array.isArray(thresholds) && thresholds.length > 0 && typeof value === "number") {
       const stops = (() => {
         if (Array.isArray(colors) && colors.length === thresholds.length + 1) return colors;
-        if (thresholds.length === 1) return ["var(--tv-accent)", "var(--tv-status-negative)"];
+        if (thresholds.length === 1) return ["var(--tv-secondary)", "var(--tv-status-negative)"];
         if (thresholds.length === 2)
           return ["var(--tv-status-positive)", "var(--tv-status-warning)", "var(--tv-status-negative)"];
-        return ["var(--tv-accent)"];
+        return ["var(--tv-secondary)"];
       })();
       let idx = 0;
       for (const t of thresholds) { if (value >= t) idx++; else break; }
-      return stops[Math.min(idx, stops.length - 1)] ?? "var(--tv-accent)";
+      return stops[Math.min(idx, stops.length - 1)] ?? "var(--tv-secondary)";
     }
 
     // Mapping path (existing behavior).
@@ -60,10 +60,10 @@
         case "error":   return "var(--tv-status-negative, #dc2626)";
         case "info":    return "var(--tv-status-info, #2563eb)";
         case "muted":   return "var(--tv-muted, #64748b)";
-        default:        return "var(--tv-accent, #2563eb)";
+        default:        return "var(--tv-secondary, var(--tv-primary, #2563eb))";
       }
     }
-    return "var(--tv-accent, #2563eb)";
+    return "var(--tv-secondary, var(--tv-primary, #2563eb))";
   });
 
   const sizeClass = $derived(size === "sm" ? "badge-sm" : "badge-base");

@@ -67,10 +67,10 @@ The cascade splits into two independent vocabularies:
 
 | Subsystem | Inputs | Tier 2 roles | What they describe |
 |-----------|--------|--------------|--------------------|
-| **Chrome** | `neutral`, `brand`, `brand_deep`, `accent`, `accent_deep` | `surface`, `content`, `divider`, `accent.*`, `status` | The table's scaffolding — the surface a row sits on, the tone of body text, the rule between cells |
+| **Chrome** | `neutral`, `brand`, `primary_deep`, `accent`, `accent_deep` | `surface`, `content`, `divider`, `accent.*`, `status` | The table's scaffolding — the surface a row sits on, the tone of body text, the rule between cells |
 | **Data** | `series_anchors`, `status_*` | per-series `SlotBundle` (the first slot also drives the pooled-effect diamond) | The data marks — what a forest point looks like, how a row's "muted" state mutes its mark |
 
-**They never cross.** Changing `brand` cannot affect a series fill. Changing `series_anchors[3]` cannot affect a row-group divider. The two cascades meet only at theme reassembly. This isolation is what makes themes *predictable*: you can swap a brand color and know the data marks will not silently shift hue, and vice versa.
+**They never cross.** Changing `brand` cannot affect a series fill. Changing `series_anchors[3]` cannot affect a row-group divider. The two cascades meet only at theme reassembly. This isolation is what makes themes *predictable*: you can swap a primary color and know the data marks will not silently shift hue, and vice versa.
 
 ### The vocabulary at Tier 2
 
@@ -121,7 +121,7 @@ This means the cascade is debuggable. Inspect any resolved field to see exactly 
 ```{r}
 #| eval: false
 t <- web_theme_lancet()
-t@inputs@brand        # "#00407A"        (Tier 1)
+t@inputs@primary        # "#00407A"        (Tier 1)
 t@accent@tint_subtle  # derived blend     (Tier 2)
 t@row_group@L1@bg     # = accent.tint_subtle (Tier 3)
 t@series[[1]]@fill    # series anchor 1
@@ -136,7 +136,7 @@ It's worth saying what the model deliberately does not do:
 
 * **No global "muted" or "primary" color.** v1 had a single `colors$muted` that meant both "subdued text" and "deemphasized data." v2 splits these: `content.muted` for text, `slot.fill_muted` for data marks. They share Tier 1 (the brand/accent inputs) but never share a Tier 2 role.
 * **No mode-pair within one theme.** A theme is single-mode (typically light). Dark themes are paired *presets* (`web_theme_dark()`), not a `theme.dark` slot.
-* **No variant baked into the inputs.** Density, header style, first-column style are orthogonal axes. The same brand can ship as comfortable-light-default OR compact-bold-default OR any other combination.
+* **No variant baked into the inputs.** Density, header style, first-column style are orthogonal axes. The same primary can ship as comfortable-light-default OR compact-bold-default OR any other combination.
 * **No customer-tunable tints.** `accent.tint_subtle` is derived; it's not in the input list. If you need a specific tint, override the Tier 2 field directly with `set_theme_field()`. Don't add it as a Tier 1 knob.
 
 ---
@@ -187,7 +187,7 @@ Modify any of them with the v2 modifiers:
 #| eval: false
 web_theme_jama() |>
   set_inputs(
-    brand          = "#2563EB",
+    primary          = "#2563EB",
     series_anchors = c("#2563EB", "#16A34A", "#DC2626")
   ) |>
   set_variants(density = "comfortable") |>

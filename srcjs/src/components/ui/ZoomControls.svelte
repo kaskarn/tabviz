@@ -239,7 +239,7 @@
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
     background: var(--tv-bg, #ffffff);
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     font-size: 11px;
     font-weight: 500;
     cursor: pointer;
@@ -284,7 +284,7 @@
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 4px;
     background: var(--tv-bg, #ffffff);
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
@@ -310,7 +310,7 @@
     appearance: none;
     width: 14px;
     height: 14px;
-    background: var(--tv-primary, #2563eb);
+    background: var(--tv-accent, #2563eb);
     border-radius: 50%;
     cursor: pointer;
     transition: transform 0.15s ease;
@@ -323,7 +323,7 @@
   .zoom-slider::-moz-range-thumb {
     width: 14px;
     height: 14px;
-    background: var(--tv-primary, #2563eb);
+    background: var(--tv-accent, #2563eb);
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -333,7 +333,7 @@
     min-width: 36px;
     font-size: 11px;
     font-weight: 500;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     text-align: right;
   }
 
@@ -341,8 +341,8 @@
     padding: 4px 8px;
     margin: 4px 0;
     font-size: 10px;
-    color: var(--tv-primary, #2563eb);
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 10%, transparent);
+    color: var(--tv-accent, #2563eb);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 10%, transparent);
     border-radius: 4px;
   }
 
@@ -367,7 +367,7 @@
   }
 
   .action-btn svg {
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
   }
 
   .checkbox-row {
@@ -386,7 +386,7 @@
 
   .checkbox-row input {
     margin: 0;
-    accent-color: var(--tv-primary, #2563eb);
+    accent-color: var(--tv-accent, #2563eb);
   }
 
   .checkbox-hint {
@@ -423,7 +423,7 @@
 
   .select-label {
     min-width: 40px;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
   }
 
   .select-row select {
@@ -439,6 +439,6 @@
 
   .select-row select:focus {
     outline: none;
-    border-color: var(--tv-primary, #2563eb);
+    border-color: var(--tv-accent, #2563eb);
   }
 </style>

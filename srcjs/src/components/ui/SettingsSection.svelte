@@ -44,14 +44,14 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: color-mix(in srgb, var(--tv-secondary, #64748b) 85%, var(--tv-fg, #1a1a1a));
+    color: color-mix(in srgb, var(--tv-text-muted, #64748b) 85%, var(--tv-fg, #1a1a1a));
   }
 
   .description {
     margin: 0;
     font-size: 0.6875rem;
     line-height: 1.3;
-    color: color-mix(in srgb, var(--tv-secondary, #64748b) 85%, transparent);
+    color: color-mix(in srgb, var(--tv-text-muted, #64748b) 85%, transparent);
   }
 
   .section-body {

@@ -9,7 +9,7 @@ terminal_theme <- web_theme(
   name = "terminal",
   inputs = list(
     neutral = c("#0C0C0C", "#0C0C0C", "#1A1A1A", "#005500", "#00FF00"),
-    brand = "#00FF00",
+    primary = "#00FF00",
     accent = "#00FF00",
     series_anchors = c("#00FF00", "#00CC00", "#008800", "#005500", "#003300"),
     font_body = "'Courier New', monospace"

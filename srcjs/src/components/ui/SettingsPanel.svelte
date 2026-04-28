@@ -260,10 +260,10 @@
     width: clamp(320px, 40%, 440px);
     z-index: 10011;
     background: var(--tv-bg, #ffffff);
-    border-left: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
+    border-left: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     box-shadow:
       -24px 0 48px -12px color-mix(in srgb, var(--tv-fg, #0f172a) 12%, transparent),
-      -2px 0 0 0 color-mix(in srgb, var(--tv-primary, #2563eb) 5%, transparent);
+      -2px 0 0 0 color-mix(in srgb, var(--tv-accent, #2563eb) 5%, transparent);
     display: flex;
     flex-direction: column;
     outline: none;
@@ -298,7 +298,7 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
   }
 
   .bar-actions {
@@ -317,15 +317,15 @@
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .bar-icon-btn:hover:not(:disabled),
   .bar-icon-btn:focus-visible {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 12%, transparent);
-    color: var(--tv-primary, #2563eb);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, transparent);
+    color: var(--tv-accent, #2563eb);
   }
 
   .bar-icon-btn:disabled {

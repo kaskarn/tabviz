@@ -93,7 +93,7 @@
 
   .pvalue-stars {
     font-size: 0.9em;
-    color: var(--tv-brand, var(--tv-primary, #2563eb));
+    color: var(--tv-primary, var(--tv-accent, #2563eb));
     font-weight: 600;
   }
   /* Significant p-values used to auto-bold the number — removed: rely on

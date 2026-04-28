@@ -58,8 +58,8 @@
   }
 
   .toggle.on {
-    background: var(--tv-primary, #2563eb);
-    border-color: var(--tv-primary, #2563eb);
+    background: var(--tv-accent, #2563eb);
+    border-color: var(--tv-accent, #2563eb);
   }
 
   .thumb {
@@ -79,7 +79,7 @@
   }
 
   .toggle:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--tv-primary, #2563eb) 40%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--tv-accent, #2563eb) 40%, transparent);
     outline-offset: 2px;
   }
 </style>

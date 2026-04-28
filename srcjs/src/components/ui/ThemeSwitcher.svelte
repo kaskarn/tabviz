@@ -102,16 +102,16 @@
     return (availableThemes as FlatThemes)[name];
   }
 
-  // Extract a (brand, accent) pair for a theme so the dropdown row can
+  // Extract a (primary, accent) pair for a theme so the dropdown row can
   // show a tiny color preview alongside the label. Falls back to muted
   // neutrals when a theme doesn't carry resolved values (e.g. preset
   // names supplied without a custom-theme object).
-  function themeColors(name: string): { brand: string; accent: string } {
+  function themeColors(name: string): { primary: string; accent: string } {
     const t = lookupTheme(name);
-    const inputs = (t?.inputs ?? {}) as { brand?: string; accent?: string };
-    const brand  = inputs.brand  ?? (t?.surface as { base?: string } | undefined)?.base  ?? "#cbd5e1";
-    const accent = inputs.accent ?? (t?.accent  as { default?: string } | undefined)?.default ?? "#94a3b8";
-    return { brand, accent };
+    const inputs = (t?.inputs ?? {}) as { primary?: string; accent?: string };
+    const primary = inputs.primary ?? (t?.surface as { base?: string } | undefined)?.base  ?? "#cbd5e1";
+    const accent  = inputs.accent  ?? (t?.accent  as { default?: string } | undefined)?.default ?? "#94a3b8";
+    return { primary, accent };
   }
 
   function closeDropdown() {
@@ -223,7 +223,7 @@
               <span class="spacer"></span>
             {/if}
             <span class="swatch-pair" aria-hidden="true">
-              <span class="swatch" style:background={colors.brand}></span>
+              <span class="swatch" style:background={colors.primary}></span>
               <span class="swatch" style:background={colors.accent}></span>
             </span>
             <span class="label">{label}</span>
@@ -259,7 +259,7 @@
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
     background: var(--tv-bg, #ffffff);
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
   }
@@ -292,7 +292,7 @@
     flex: 1;
     border: 0;
     background: transparent;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     font-size: 12px;
     font-weight: 500;
     padding: 4px 8px;
@@ -305,8 +305,8 @@
     color: var(--tv-fg, #1a1a1a);
   }
   .tab.active {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 12%, transparent);
-    color: var(--tv-primary, #2563eb);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, transparent);
+    color: var(--tv-accent, #2563eb);
   }
 
   .dropdown-item {
@@ -330,13 +330,13 @@
   }
 
   .dropdown-item.active {
-    color: var(--tv-primary, #2563eb);
+    color: var(--tv-accent, #2563eb);
     font-weight: 500;
   }
 
   .dropdown-item svg {
     flex-shrink: 0;
-    color: var(--tv-primary, #2563eb);
+    color: var(--tv-accent, #2563eb);
   }
 
   .spacer {

@@ -49,7 +49,7 @@ test_that("v2 dispatch through tabviz preserves variant flag", {
       df, label = "Site",
       columns = list(viz_forest(point = "est", lower = "lo", upper = "hi")),
       theme = WebTheme(
-        inputs = ThemeInputs(brand_deep = "#000080"),
+        inputs = ThemeInputs(primary_deep = "#000080"),
         variants = ThemeVariants(header_style = header_style)
       ),
       .spec_only = TRUE

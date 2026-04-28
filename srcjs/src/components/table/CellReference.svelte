@@ -71,7 +71,7 @@
   }
 
   a.cell-reference {
-    color: var(--tv-primary, #2563eb);
+    color: var(--tv-accent, #2563eb);
     cursor: pointer;
   }
 

@@ -6,7 +6,8 @@
 \description{
 \code{subtle} powers cell hairlines and gridlines. \code{strong} powers header
 rules, group rules, and the forest-plot axis line / tick / reference
-lines on light surfaces. \code{strong_on_dark} is the bold-mode counterpart
-(rule on a brand_deep header band) — must contrast against \code{brand_deep},
-not against the table surface.
+lines on light surfaces. Rules sitting on dark bold-mode bands
+(\code{header.bold}, \code{column_group.bold}) are derived per-cluster at resolve
+time as \verb{mix(content.inverse, <cluster-bg>, 0.4)} so each contrasts
+against its own band — there is no global "strong-on-dark" token.
 }

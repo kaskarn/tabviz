@@ -630,7 +630,7 @@
     transition: border-color 0.1s ease, box-shadow 0.1s ease;
   }
   .search-input:focus {
-    border-color: var(--tv-primary, #3b82f6);
+    border-color: var(--tv-accent, #3b82f6);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
   }
 
@@ -657,7 +657,7 @@
   .sub-item:hover:not(.disabled),
   .sub-item.focused:not(.disabled) {
     background: var(--tv-hover, #eef2ff);
-    color: var(--tv-primary, #3b82f6);
+    color: var(--tv-accent, #3b82f6);
     outline: none;
   }
 
@@ -675,7 +675,7 @@
   }
   .menu-item.focused .breadcrumb,
   .menu-item:hover:not(.disabled) .breadcrumb {
-    color: var(--tv-primary, #3b82f6);
+    color: var(--tv-accent, #3b82f6);
     opacity: 0.8;
   }
 
@@ -693,7 +693,7 @@
   .menu-item.active .caret,
   .menu-item:hover:not(.disabled) .caret,
   .menu-item.focused:not(.disabled) .caret {
-    color: var(--tv-primary, #3b82f6);
+    color: var(--tv-accent, #3b82f6);
   }
 
   .sub-group-label {

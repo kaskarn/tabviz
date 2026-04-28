@@ -118,7 +118,7 @@
     font-size: var(--tv-text-caption-size, var(--tv-font-size-sm, 0.75rem));
     font-weight: var(--tv-text-caption-weight, var(--tv-font-weight-normal, 400));
     font-style: var(--tv-text-caption-italic, normal);
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     line-height: 1.4;
     white-space: normal;
     word-wrap: break-word;

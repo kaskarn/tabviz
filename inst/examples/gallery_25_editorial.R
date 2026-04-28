@@ -28,7 +28,7 @@ editorial_data <- data.frame(
 rivendell <- web_theme(
   name = "rivendell",
   inputs = list(
-    brand        = "#0f1626",
+    primary      = "#0f1626",
     accent       = "#d4a955",
     font_body    = "'Cormorant Garamond', Georgia, serif",
     font_display = "'Cinzel', Georgia, serif"

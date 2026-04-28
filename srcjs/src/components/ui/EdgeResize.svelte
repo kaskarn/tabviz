@@ -136,7 +136,7 @@
     top: 50%;
     height: 2px;
     transform: translateY(-50%);
-    background: var(--tv-primary, #2563eb);
+    background: var(--tv-accent, #2563eb);
     opacity: 0;
     border-radius: 1px;
     transition: opacity 0.12s ease;

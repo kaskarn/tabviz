@@ -22,7 +22,7 @@
   // paint > theme brand default. Bars are chrome that should ride brand
   // identity unless explicitly recolored.
   const barColor = $derived(
-    options?.color ?? colorOverride ?? "var(--tv-brand, var(--tv-primary, #2563eb))"
+    options?.color ?? colorOverride ?? "var(--tv-primary, var(--tv-accent, #2563eb))"
   );
   const scale = $derived(options?.scale ?? "linear");
 

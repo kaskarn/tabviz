@@ -68,21 +68,21 @@ test_that("preset overrides survive resolution", {
   expect_equal(jama@spacing@axis_gap, DENSITY_PRESETS$compact$axis_gap)
 })
 
-test_that("brand_deep defaults to a darker version of brand", {
+test_that("primary_deep defaults to a darker version of primary", {
   c <- web_theme_cochrane()
-  # The default is `oklch_darken(brand, 0.15)`. Cochrane explicitly pins
-  # brand_deep = "#006699", so check both: pinned value is darker than
-  # brand, and the type is hex.
-  expect_match(c@inputs@brand_deep, "^#[0-9A-Fa-f]{6}$")
-  brand_L      <- to_oklch(c@inputs@brand)[1, 1]
-  brand_deep_L <- to_oklch(c@inputs@brand_deep)[1, 1]
-  expect_lt(brand_deep_L, brand_L)
+  # Default is `oklch_darken(primary, 0.15)`. Cochrane lets primary_deep
+  # auto-derive; check the resolved value is a hex strictly darker than
+  # primary.
+  expect_match(c@inputs@primary_deep, "^#[0-9A-Fa-f]{6}$")
+  primary_L      <- to_oklch(c@inputs@primary)[1, 1]
+  primary_deep_L <- to_oklch(c@inputs@primary_deep)[1, 1]
+  expect_lt(primary_deep_L, primary_L)
 })
 
-test_that("brand_deep can be set explicitly per preset", {
+test_that("primary_deep can be set explicitly per preset", {
   l <- web_theme_lancet()
-  expect_equal(toupper(l@inputs@brand), "#00407A")
-  expect_equal(toupper(l@inputs@brand_deep), "#002D54")
+  expect_equal(toupper(l@inputs@primary), "#00407A")
+  expect_equal(toupper(l@inputs@primary_deep), "#002D54")
 })
 
 test_that("density flag sets compact / comfortable correctly", {

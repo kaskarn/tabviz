@@ -16,10 +16,15 @@ web_theme(
 \item{name}{Theme name (string).}
 
 \item{inputs}{Named list of \link{ThemeInputs} property overrides
-(\code{brand}, \code{accent}, \code{neutral}, \code{series_anchors}, etc.).}
+(\code{primary}, \code{secondary}, \code{tertiary}, \code{accent}, \code{neutral},
+\code{series_anchors}, etc.).}
 
 \item{variants}{Named list of \link{ThemeVariants} property overrides
 (\code{density}, \code{header_style}, \code{first_column_style}).}
+
+\item{web_fonts}{Optional list of web-font specs to embed in the rendered
+widget. Each entry is a list with \code{family} and \code{url} (and optionally
+\code{weights}, \code{style}); \code{NULL} (default) keeps the base theme's fonts.}
 
 \item{base_theme}{Base theme to start from before applying overrides.
 Defaults to the v2 default preset.}
@@ -29,7 +34,7 @@ A fully resolved \link{WebTheme}.
 }
 \description{
 All Tier 1 inputs are passed by name; pass them as a named list via
-\code{inputs = list(brand = "...", neutral = c(...))}. Variants are similarly
+\code{inputs = list(primary = "...", neutral = c(...))}. Variants are similarly
 a named list. Tier 3 overrides target individual cluster fields via
 \code{\link[=set_theme_field]{set_theme_field()}} after construction.
 }

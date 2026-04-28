@@ -49,7 +49,7 @@
 
   .segmented {
     display: flex;
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 6px;
     overflow: hidden;
     background: var(--tv-bg, #ffffff);
@@ -68,15 +68,15 @@
   }
 
   .segmented button + button {
-    border-left: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 10%, var(--tv-border, #e2e8f0));
+    border-left: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 10%, var(--tv-border, #e2e8f0));
   }
 
   .segmented button:hover:not(.selected) {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
   }
 
   .segmented button.selected {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 92%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 92%, transparent);
     color: var(--tv-bg, #ffffff);
   }
 </style>

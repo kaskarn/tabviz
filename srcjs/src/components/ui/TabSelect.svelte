@@ -152,7 +152,7 @@
     flex: 1;
     min-width: 0;
     padding: 4px 8px;
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 20%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 20%, transparent);
     border-radius: 6px;
     background: var(--tv-bg, #ffffff);
     color: var(--tv-fg, #1a1a1a);
@@ -165,7 +165,7 @@
   .tab-trigger:hover,
   .tab-trigger:focus-visible,
   .tab-trigger.open {
-    border-color: var(--tv-primary, #2563eb);
+    border-color: var(--tv-accent, #2563eb);
     outline: none;
   }
 
@@ -180,7 +180,7 @@
 
   .chev {
     flex-shrink: 0;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     transition: transform 0.18s ease;
   }
 
@@ -196,11 +196,11 @@
     overflow-y: auto;
     padding: 4px;
     background: var(--tv-bg, #ffffff);
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 18%, var(--tv-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 18%, var(--tv-border, #e2e8f0));
     border-radius: 8px;
     box-shadow:
       0 12px 32px -8px color-mix(in srgb, #0f172a 25%, transparent),
-      0 2px 6px -2px color-mix(in srgb, var(--tv-primary, #2563eb) 20%, transparent);
+      0 2px 6px -2px color-mix(in srgb, var(--tv-accent, #2563eb) 20%, transparent);
     animation: pop-in 0.14s ease-out;
   }
 
@@ -229,16 +229,16 @@
   }
 
   .tab-option:hover:not(.active) {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
   }
 
   .tab-option.active {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-bg, #ffffff));
-    color: var(--tv-primary, #2563eb);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-bg, #ffffff));
+    color: var(--tv-accent, #2563eb);
   }
 
   .tab-option.advanced {
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     font-weight: 400;
   }
 
@@ -249,7 +249,7 @@
   }
 
   .tab-option:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--tv-primary, #2563eb) 50%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--tv-accent, #2563eb) 50%, transparent);
     outline-offset: -2px;
   }
 </style>

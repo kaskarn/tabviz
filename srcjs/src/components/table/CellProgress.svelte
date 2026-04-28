@@ -20,7 +20,7 @@
   // Resolution order: per-column user override > per-row/cell semantic
   // paint > theme brand default.
   const barColor = $derived(
-    options?.color ?? colorOverride ?? "var(--tv-brand, var(--tv-primary, #2563eb))"
+    options?.color ?? colorOverride ?? "var(--tv-primary, var(--tv-accent, #2563eb))"
   );
   const scale = $derived(options?.scale ?? "linear");
 

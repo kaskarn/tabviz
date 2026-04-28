@@ -9,7 +9,7 @@ test_that("serialize_theme emits all chrome roles", {
   out <- serialize_theme(WebTheme())
   expect_named(out$surface, c("base", "muted", "raised"))
   expect_named(out$content, c("primary", "secondary", "muted", "inverse"))
-  expect_named(out$divider, c("subtle", "strong", "strongOnDark"))
+  expect_named(out$divider, c("subtle", "strong"))
   expect_named(out$accent,  c("default", "muted", "tintSubtle", "tintMedium"))
   expect_named(out$status,  c("positive", "negative", "warning", "info"))
   for (v in unlist(out$surface)) expect_match(v, "^#")

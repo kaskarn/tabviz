@@ -134,7 +134,7 @@ test_that("web_theme_lancet creates valid theme", {
   theme <- web_theme_lancet()
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "lancet")
-  expect_equal(toupper(theme@inputs@brand), "#00407A")
+  expect_equal(toupper(theme@inputs@primary), "#00407A")
 })
 
 # Column helper tests
@@ -165,7 +165,7 @@ test_that("web_theme_cochrane creates valid theme", {
   theme <- web_theme_cochrane()
   expect_true(inherits(theme, "tabviz::WebTheme"))
   expect_equal(theme@name, "cochrane")
-  expect_equal(toupper(theme@inputs@brand), "#0099CC")
+  expect_equal(toupper(theme@inputs@primary), "#0099CC")
   expect_false(theme@layout@container_border)
 })
 

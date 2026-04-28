@@ -28,7 +28,7 @@
 <style>
   .drop-indicator {
     position: fixed;
-    background: var(--tv-primary, #2563eb);
+    background: var(--tv-accent, #2563eb);
     pointer-events: none;
     z-index: 10002;
     box-shadow: 0 0 6px rgba(37, 99, 235, 0.6);

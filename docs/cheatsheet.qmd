@@ -152,7 +152,7 @@ All accept column names or formula expressions:
 tabviz(...,
   theme = web_theme_cochrane() |>
     set_inputs(
-      brand          = "#2563EB",
+      primary          = "#2563EB",
       accent         = "#1E40AF",
       series_anchors = c("#2563EB", "#16A34A", "#DC2626"),
       font_body      = "Georgia, serif"
@@ -180,7 +180,7 @@ web_theme(
   name = "my-brand",
   inputs = list(
     neutral        = c("#FFF","#FAFAFA","#EEE","#888","#222"),
-    brand          = "#1F3A5F",
+    primary          = "#1F3A5F",
     accent         = "#B08938",
     series_anchors = c("#1F3A5F", "#B08938", "#6B8E7F"),
     font_body      = "Charter, Georgia, serif"

@@ -13,24 +13,24 @@
 
   let { value, options, minValue, maxValue, naText, theme }: Props = $props();
 
-  // Default palette: derive light → dark from the theme's brand color.
-  // Light end is a very pale tint (brand mixed into surface base), dark end
-  // is brand_deep when the theme pins it. Falls back to the historical blue
-  // palette only when no theme is supplied (test/dev contexts).
+  // Default palette: derive light → dark from the theme's primary identity.
+  // Light end is a very pale tint (primary mixed into surface base), dark
+  // end is primary_deep when the theme pins it. Falls back to the historical
+  // blue palette only when no theme is supplied (test/dev contexts).
   const palette = $derived.by((): string[] => {
     if (options?.palette) return options.palette;
-    const inputs = theme?.inputs as { brand?: string; brandDeep?: string } | undefined;
+    const inputs = theme?.inputs as { primary?: string; primaryDeep?: string } | undefined;
     const surface = (theme?.surface as { base?: string } | undefined)?.base ?? "#ffffff";
-    const brand = inputs?.brand;
-    const brandDeep = inputs?.brandDeep ?? brand;
-    if (!brand || !brandDeep) return ["#f7fbff", "#08306b"];
-    const light = mixHex(brand, surface, 0.92);
-    return [light, brandDeep];
+    const primary = inputs?.primary;
+    const primaryDeep = inputs?.primaryDeep ?? primary;
+    if (!primary || !primaryDeep) return ["#f7fbff", "#08306b"];
+    const light = mixHex(primary, surface, 0.92);
+    return [light, primaryDeep];
   });
 
   // Lightweight sRGB hex mix — enough for a 2-stop gradient default. The
   // panel/R cascade uses oklch_mix for full color edits; here we just need
-  // a perceptually OK pale tint anchored to brand.
+  // a perceptually OK pale tint anchored to primary.
   function mixHex(a: string, b: string, t: number): string {
     const ah = a.replace("#", "");
     const bh = b.replace("#", "");

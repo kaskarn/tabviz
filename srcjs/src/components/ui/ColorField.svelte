@@ -168,7 +168,7 @@
   }
 
   .override-dot {
-    color: var(--tv-primary, #2563eb);
+    color: var(--tv-accent, #2563eb);
     font-size: 0.55rem;
     line-height: 1;
   }
@@ -177,7 +177,7 @@
     appearance: none;
     border: 0;
     background: transparent;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     font-size: 0.85rem;
     line-height: 1;
@@ -185,8 +185,8 @@
     border-radius: 3px;
   }
   .reset-btn:hover {
-    color: var(--tv-primary, #2563eb);
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
+    color: var(--tv-accent, #2563eb);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
   }
 
   .controls {
@@ -223,7 +223,7 @@
   }
 
   .tab.active {
-    background: var(--tv-primary, #2563eb);
+    background: var(--tv-accent, #2563eb);
     color: var(--tv-bg, #ffffff);
   }
 
@@ -254,7 +254,7 @@
 
   .theme-swatch.selected {
     box-shadow: 0 0 0 2px var(--tv-bg, #ffffff),
-                0 0 0 3px var(--tv-primary, #2563eb);
+                0 0 0 3px var(--tv-accent, #2563eb);
   }
 
   .swatch {
@@ -296,7 +296,7 @@
   .hex {
     width: 78px;
     padding: 2px 4px;
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 12%, var(--tv-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-border, #e2e8f0));
     border-radius: 4px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.7rem;
@@ -308,7 +308,7 @@
   }
 
   .hex:focus {
-    border-color: var(--tv-primary, #2563eb);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tv-primary, #2563eb) 15%, transparent);
+    border-color: var(--tv-accent, #2563eb);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tv-accent, #2563eb) 15%, transparent);
   }
 </style>

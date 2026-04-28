@@ -30,10 +30,10 @@
     margin-left: 4px;
     opacity: 0.5;
     transition: opacity 0.12s ease;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
   }
   .sort-indicator.active {
     opacity: 1;
-    color: var(--tv-primary, #2563eb);
+    color: var(--tv-accent, #2563eb);
   }
 </style>

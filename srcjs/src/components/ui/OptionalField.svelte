@@ -74,13 +74,13 @@
     align-items: center;
     gap: 3px;
     font-size: 0.65rem;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     user-select: none;
   }
 
   .inherit-toggle input {
-    accent-color: var(--tv-primary, #2563eb);
+    accent-color: var(--tv-accent, #2563eb);
     cursor: pointer;
   }
 

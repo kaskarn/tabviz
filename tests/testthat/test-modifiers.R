@@ -82,10 +82,10 @@ test_that("set_theme on WebSpec works with WebTheme object", {
     label = "study",
     columns = list(viz_forest(point = "point", lower = "lower", upper = "upper"))
   )
-  custom <- web_theme(name = "test", inputs = list(brand = "#FF0000"))
+  custom <- web_theme(name = "test", inputs = list(primary = "#FF0000"))
   updated <- set_theme(spec, custom)
   expect_equal(updated@theme@name, "test")
-  expect_equal(toupper(updated@theme@inputs@brand), "#FF0000")
+  expect_equal(toupper(updated@theme@inputs@primary), "#FF0000")
 })
 
 test_that("widget round-trip: forest_plot |> set_theme works", {

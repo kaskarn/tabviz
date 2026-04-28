@@ -223,7 +223,7 @@
   .filter-title { font-weight: 600; font-size: 12px; }
   .filter-field { display: flex; flex-direction: column; gap: 4px; }
   .filter-row { display: flex; gap: 8px; }
-  .filter-row label { display: flex; flex-direction: column; gap: 3px; flex: 1; font-size: 11px; color: var(--tv-secondary, #64748b); }
+  .filter-row label { display: flex; flex-direction: column; gap: 3px; flex: 1; font-size: 11px; color: var(--tv-text-muted, #64748b); }
   .filter-popover input[type="text"],
   .filter-popover input[type="number"],
   .filter-popover select {
@@ -233,11 +233,11 @@
     font-family: inherit; box-sizing: border-box;
   }
   .filter-popover input:focus, .filter-popover select:focus {
-    outline: none; border-color: var(--tv-primary, #2563eb);
+    outline: none; border-color: var(--tv-accent, #2563eb);
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
   }
   .filter-cat-actions { display: flex; gap: 8px; }
-  .text-btn { background: transparent; border: none; padding: 0; color: var(--tv-primary, #2563eb); font-size: 11px; cursor: pointer; }
+  .text-btn { background: transparent; border: none; padding: 0; color: var(--tv-accent, #2563eb); font-size: 11px; cursor: pointer; }
   .text-btn:hover { text-decoration: underline; }
   .filter-cat-list { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
   .filter-cat-item { display: flex; align-items: center; gap: 6px; padding: 3px 2px; border-radius: 3px; cursor: pointer; font-weight: normal; font-size: 12px; }
@@ -247,7 +247,7 @@
     padding: 5px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; font-family: inherit;
   }
   .filter-footer .primary {
-    background: var(--tv-primary, #2563eb); border: 1px solid var(--tv-primary, #2563eb); color: white;
+    background: var(--tv-accent, #2563eb); border: 1px solid var(--tv-accent, #2563eb); color: white;
   }
   .filter-footer .primary:hover { filter: brightness(0.95); }
   .filter-footer .secondary {

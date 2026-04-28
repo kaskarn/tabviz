@@ -64,10 +64,10 @@ oklch_darken <- function(hex, by) {
 #       ~260°) at 0.4 lands at hue ~135° (green) instead of the
 #       expected desaturated mid-blue.
 #   (b) Chained low-chroma mix: surface.base (chroma ~0.005) mixed with
-#       a 4-8% brand-tinted surface.muted (chroma ~0.005-0.010) at 0.5
+#       a 4-8% identity-tinted surface.muted (chroma ~0.005-0.010) at 0.5
 #       — both endpoints are below threshold, both have noise hues,
 #       shortest-path interp lands at unrelated hues. Concrete repro:
-#       brand #2f3f93 (indigo, hue ~280°) → red-hued banding (~340°).
+#       primary #2f3f93 (indigo, hue ~280°) → red-hued banding (~340°).
 #
 # Rule: when EITHER endpoint is below the chroma threshold, lock the
 # output hue to whichever endpoint carries more chroma. That's the

@@ -133,14 +133,14 @@
   .row-label {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
   .segmented {
     display: flex;
-    border: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 15%, var(--tv-border, #e2e8f0));
+    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     border-radius: 8px;
     overflow: hidden;
     background: var(--tv-bg, #ffffff);
@@ -169,15 +169,15 @@
   }
 
   .segmented button + button {
-    border-left: 1px solid color-mix(in srgb, var(--tv-primary, #2563eb) 10%, var(--tv-border, #e2e8f0));
+    border-left: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 10%, var(--tv-border, #e2e8f0));
   }
 
   .segmented button:hover:not(:disabled):not(.selected) {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
   }
 
   .segmented button.selected {
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 92%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 92%, transparent);
     color: var(--tv-bg, #ffffff);
   }
 
@@ -216,7 +216,7 @@
 
   .range-wrap input[type="range"] {
     width: 100%;
-    accent-color: var(--tv-primary, #2563eb);
+    accent-color: var(--tv-accent, #2563eb);
   }
 
   .range-value {
@@ -232,13 +232,13 @@
     align-items: center;
     gap: 6px;
     font-size: 0.7rem;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     padding-top: 6px;
   }
 
   .meta code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    background: color-mix(in srgb, var(--tv-primary, #2563eb) 8%, transparent);
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
     padding: 1px 6px;
     border-radius: 4px;
     color: var(--tv-fg, #1a1a1a);

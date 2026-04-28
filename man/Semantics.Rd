@@ -6,7 +6,7 @@
 \description{
 The painter applies one of five RowSemantic bundles to a row or cell.
 One of those bundles (\code{row.fill}) needs a color whose identity isn't
-captured by accent / brand / status. \code{Semantics} carries that named
-slot — defaults to a derivation from \code{accent} at resolve time; authors
-override the slot to pin a specific token color.
+captured by accent / identity / status. \code{Semantics} carries that named
+slot — defaults to a derivation from \code{accent} at resolve time (engagement
+axis); authors override the slot to pin a specific token color.
 }

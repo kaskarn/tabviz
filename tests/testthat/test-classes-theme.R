@@ -5,8 +5,12 @@ expect_s7_class <- function(object, class) {
 test_that("ThemeInputs constructs with sensible defaults", {
   inp <- ThemeInputs()
   expect_length(inp@neutral, 5L)
-  expect_match(inp@brand, "^#")
-  expect_true(is.na(inp@brand_deep))
+  expect_match(inp@primary, "^#")
+  expect_true(is.na(inp@primary_deep))
+  expect_true(is.na(inp@secondary))
+  expect_true(is.na(inp@secondary_deep))
+  expect_true(is.na(inp@tertiary))
+  expect_true(is.na(inp@tertiary_deep))
   expect_gt(length(inp@series_anchors), 0L)
 })
 
@@ -15,7 +19,9 @@ test_that("ThemeInputs rejects bad neutral length", {
 })
 
 test_that("ThemeInputs rejects bad hex", {
-  expect_error(ThemeInputs(brand = "not-hex"))
+  expect_error(ThemeInputs(primary = "not-hex"))
+  expect_error(ThemeInputs(secondary = "not-hex"))
+  expect_error(ThemeInputs(tertiary = "not-hex"))
   expect_error(ThemeInputs(series_anchors = c("#fff", "rgb(0,0,0)")))
 })
 

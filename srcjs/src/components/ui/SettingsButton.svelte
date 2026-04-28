@@ -35,7 +35,7 @@
     border: 1px solid var(--tv-border, #e2e8f0);
     border-radius: 6px;
     background: var(--tv-bg, #ffffff);
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease, transform 0.25s ease;
   }
@@ -46,9 +46,9 @@
   }
 
   .settings-btn.active {
-    background: var(--tv-primary, #2563eb);
+    background: var(--tv-accent, #2563eb);
     color: var(--tv-bg, #ffffff);
-    border-color: var(--tv-primary, #2563eb);
+    border-color: var(--tv-accent, #2563eb);
   }
 
   .settings-btn.active svg {

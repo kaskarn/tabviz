@@ -125,7 +125,7 @@
     padding: 6px 8px 4px;
     font-size: 11px;
     font-weight: 600;
-    color: var(--tv-secondary, #64748b);
+    color: var(--tv-text-muted, #64748b);
     border-bottom: 1px solid var(--tv-border, #e2e8f0);
     margin-bottom: 3px;
     white-space: nowrap;
