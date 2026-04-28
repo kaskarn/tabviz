@@ -46,12 +46,13 @@ serialize_row_state <- function(s) {
 
 serialize_row_semantic <- function(s) {
   list(
-    bg         = na_to_null(s@bg),
-    fg         = na_to_null(s@fg),
-    border     = na_to_null(s@border),
-    markerFill = na_to_null(s@marker_fill),
-    fontWeight = na_to_null(s@font_weight),
-    fontStyle  = na_to_null(s@font_style)
+    bg           = na_to_null(s@bg),
+    fg           = na_to_null(s@fg),
+    border       = na_to_null(s@border),
+    markerFill   = na_to_null(s@marker_fill),
+    markerStroke = na_to_null(s@marker_stroke),
+    fontWeight   = na_to_null(s@font_weight),
+    fontStyle    = na_to_null(s@font_style)
   )
 }
 

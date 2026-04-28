@@ -30,6 +30,7 @@ export const EMPTY_BUNDLE: SemanticBundle = {
   bg: null,
   border: null,
   markerFill: null,
+  markerStroke: null,
   fontWeight: null,
   fontStyle: null,
 };
@@ -42,6 +43,7 @@ export function bundleIsActive(b: SemanticBundle | null | undefined): boolean {
     b.bg != null ||
     b.border != null ||
     b.markerFill != null ||
+    b.markerStroke != null ||
     b.fontWeight != null ||
     b.fontStyle != null
   );

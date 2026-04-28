@@ -426,17 +426,28 @@ resolve_components <- function(theme) {
   rc@hover    <- fill_na(rc@hover,    list(bg = accent@muted,  fg = content@primary))
   rc@selected <- fill_na(rc@selected, list(bg = accent@muted,  fg = content@primary))
 
+  # marker_stroke companions: when an accent/emphasis/muted row replaces
+  # the marker fill, the whisker (CI line, marker outline) should track
+  # too — otherwise the result is a recolored dot on a structurally-
+  # colored line. Each token pairs its fill with an appropriate stroke:
+  #   * emphasis → content.primary (already dark; reuse for stroke)
+  #   * muted    → oklch_darken(content.muted, 0.10)
+  #   * accent   → inputs@accent_deep (the dedicated dark companion)
   rc@emphasis <- fill_na(rc@emphasis, list(
-    fg = content@primary, marker_fill = content@primary, font_weight = 600
+    fg = content@primary, marker_fill = content@primary,
+    marker_stroke = content@primary, font_weight = 600
   ))
   rc@muted <- fill_na(rc@muted, list(
-    fg = content@muted, marker_fill = content@muted
+    fg = content@muted, marker_fill = content@muted,
+    marker_stroke = oklch_darken(content@muted, 0.10)
   ))
   # accent token = bold + accent color. Weight=600 added so accent rows
   # read as a coordinated "bold + colored" treatment, not just colored
-  # text at the regular weight.
+  # text at the regular weight. marker_stroke = accent_deep pairs the
+  # marker with a darkened companion just like series anchors do.
   rc@accent <- fill_na(rc@accent, list(
-    fg = accent@default, marker_fill = accent@default, font_weight = 600
+    fg = accent@default, marker_fill = accent@default,
+    marker_stroke = inputs@accent_deep, font_weight = 600
   ))
   # bold token = pure weight bump, no color override. Useful when a row
   # should call attention to itself without recoloring.

@@ -618,6 +618,10 @@ export interface SemanticBundle {
   bg: string | null;
   border: string | null;
   markerFill: string | null;
+  /** Stroke companion to `markerFill` — drives forest-plot whiskers and
+   *  marker outlines so an accent-recolored marker doesn't sit on a
+   *  structurally-colored line. */
+  markerStroke: string | null;
   fontWeight: number | null;
   fontStyle: "normal" | "italic" | null;
 }

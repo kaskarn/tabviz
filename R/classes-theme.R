@@ -490,16 +490,22 @@ RowState <- new_class(
 RowSemantic <- new_class(
   "RowSemantic",
   properties = list(
-    bg          = new_property(class_character, default = NA_character_),
-    fg          = new_property(class_character, default = NA_character_),
-    border      = new_property(class_character, default = NA_character_),
-    marker_fill = new_property(class_character, default = NA_character_),
-    font_weight = new_property(class_numeric,   default = NA_real_),
-    font_style  = new_property(class_character, default = NA_character_)
+    bg            = new_property(class_character, default = NA_character_),
+    fg            = new_property(class_character, default = NA_character_),
+    border        = new_property(class_character, default = NA_character_),
+    marker_fill   = new_property(class_character, default = NA_character_),
+    # Stroke companion to marker_fill — drives forest-plot whiskers and
+    # the per-marker outline. Lets accent-flagged rows replace the
+    # default series stroke (typically series[0].stroke = navy in mono
+    # themes) with a properly-paired tone (e.g. accent_deep) so an
+    # accent-tinted marker doesn't sit on a structurally-colored line.
+    marker_stroke = new_property(class_character, default = NA_character_),
+    font_weight   = new_property(class_numeric,   default = NA_real_),
+    font_style    = new_property(class_character, default = NA_character_)
   ),
   validator = function(self) {
     invalid <- character()
-    for (p in c("bg", "fg", "border", "marker_fill")) {
+    for (p in c("bg", "fg", "border", "marker_fill", "marker_stroke")) {
       v <- S7::prop(self, p)
       if (!is.na(v) && !grepl(hex_pattern, v)) {
         invalid <- c(invalid, paste0(p, " = '", v, "'"))

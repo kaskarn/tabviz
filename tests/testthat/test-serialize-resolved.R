@@ -83,7 +83,7 @@ test_that("row cluster has all states + semantic bundles + banding", {
                           "banding", "selectedEdgeWidth", "borderWidth"))
   expect_named(out$row$base, c("bg", "fg"))
   expect_named(out$row$emphasis,
-               c("bg", "fg", "border", "markerFill", "fontWeight", "fontStyle"))
+               c("bg", "fg", "border", "markerFill", "markerStroke", "fontWeight", "fontStyle"))
   # Banding emits the parsed shape.
   expect_named(out$row$banding, c("mode", "level"))
 })

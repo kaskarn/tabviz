@@ -43,6 +43,19 @@ export function semanticColorFor(
   return bundle?.markerFill ?? null;
 }
 
+/** Stroke companion to `semanticColorFor`. When the active semantic
+ *  bundle pins `markerStroke`, callers can pair it with the fill so a
+ *  recolored marker rides a coherent line (whiskers in forest plots,
+ *  outlines around glyphs). Returns null when the bundle opts out. */
+export function semanticStrokeFor(
+  style: RowStyle | null | undefined,
+  theme: WebTheme | undefined,
+): string | null {
+  if (!theme) return null;
+  const bundle = resolveSemanticBundle(style, theme);
+  return bundle?.markerStroke ?? null;
+}
+
 /**
  * Resolve marker styling for one glyph.
  *

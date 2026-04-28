@@ -1877,6 +1877,12 @@ function renderInterval(
 
   // Render each effect
   const parts: string[] = [];
+  // Semantic stroke companion: when row.style is accent/emphasis/muted,
+  // use bundle.markerStroke for the whisker/CI line so a recolored marker
+  // doesn't sit on series[0].stroke. Mirrors the live RowInterval path.
+  const rowSemBundle = resolveSemanticBundle(row.style, theme);
+  const semanticLineColor = rowSemBundle?.markerStroke ?? null;
+
   validEffects.forEach((effect, idx) => {
     const effectY = yPosition + getEffectYOffset(idx, validEffects.length);
     const x1 = xScale(effect.lower!);
@@ -1884,7 +1890,7 @@ function renderInterval(
     const cx = xScale(effect.point!);
     const style = getEffectStyle(effect, idx);
     const pointSize = getPointSize(idx === 0);
-    const lineColor = defaultLineColor;
+    const lineColor = semanticLineColor ?? defaultLineColor;
 
     if (isSummaryRow) {
       // Summary row: render diamond shape spanning lower to upper.

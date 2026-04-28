@@ -5,7 +5,7 @@
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { getEffectValue } from "$lib/scale-utils";
   import { getEffectYOffset } from "$lib/rendering-constants";
-  import { resolveMarkerStyle } from "$lib/marker-styling";
+  import { resolveMarkerStyle, semanticStrokeFor } from "$lib/marker-styling";
 
   interface Props {
     row: Row;
@@ -275,7 +275,8 @@
         {@const cx = xScale(effect.point!)}
         {@const style = getEffectStyle(effect, idx)}
         {@const pointSize = getEffectSize(idx === 0)}
-        {@const lineColor = theme?.series?.[0]?.stroke ?? "#475569"}
+        {@const semanticStroke = semanticStrokeFor(row.style, theme)}
+        {@const lineColor = semanticStroke ?? theme?.series?.[0]?.stroke ?? "#475569"}
 
         {#if isSummaryRow}
           <!-- Summary row: render diamond shape spanning lower to upper.
