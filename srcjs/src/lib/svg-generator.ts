@@ -67,16 +67,14 @@ function measureTextWidth(
   fontFamily: string,
   fontWeight: number = 400
 ): number {
-  // Try canvas measurement first (only works in browser)
-  // Canvas now includes font-weight for accurate bold text measurement
+  // Try canvas measurement first (only works in browser).
   const canvasWidth = measureTextWidthCanvas(text, `${fontSize}px`, fontFamily, fontWeight);
   if (canvasWidth !== null) {
     return canvasWidth;
   }
-  // Fall back to character-class estimation (V8/Node)
-  // Apply weight multiplier since estimation doesn't account for bold
-  const weightMultiplier = 1 + Math.max(0, (fontWeight - 400) / 100) * 0.02;
-  return estimateTextWidth(text, fontSize) * weightMultiplier;
+  // Fall back to character-class estimation (V8/Node). estimateTextWidth
+  // applies the weight correction internally.
+  return estimateTextWidth(text, fontSize, fontWeight);
 }
 import {
   computeBoxplotStats,
@@ -257,17 +255,9 @@ function calculateSvgAutoWidths(
     ? Math.round(parseFontSize(headerExplicit) * 100) / 100
     : Math.round(fontSize * 1.05 * 100) / 100;
   // Header font weight is theme-controlled via theme.header.text.weight
-  // (defaults to 600). estimateTextWidth() doesn't account for weight, so
-  // bolder text renders wider than the estimate. Fudge per CSS-weight
-  // rough-empirical (regular → bold ≈ +8%):
-  //   400 → 1.00, 500 → 1.02, 600 → 1.05, 700 → 1.08, 800+ → 1.10.
-  // Themes that set normal-weight headers (400) get no fudge.
+  // (defaults to 600). Passed through to estimateTextWidth() so the
+  // width estimate reflects the actual weight that will render.
   const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
-  const headerWeightFudge = headerWeight <= 400 ? 1.00
-    : headerWeight <= 500 ? 1.02
-    : headerWeight <= 600 ? 1.05
-    : headerWeight <= 700 ? 1.08
-    : 1.10;
   const rows = spec.data.rows;
 
   // Padding values from theme (not hardcoded magic numbers)
@@ -306,7 +296,7 @@ function calculateSvgAutoWidths(
       ) {
         const pad = isVizType(col.type) ? VIZ_MARGIN * 2 : cellPadding;
         const headerWidth = Math.ceil(
-          estimateTextWidth(col.header, headerFontSize) * headerWeightFudge +
+          estimateTextWidth(col.header, headerFontSize, headerWeight) +
             pad + TEXT_MEASUREMENT.RENDERING_BUFFER,
         );
         if (headerWidth > col.width) {
@@ -318,11 +308,11 @@ function calculateSvgAutoWidths(
 
     let maxWidth = 0;
 
-    // Measure header text with header font size + theme-driven weight fudge.
+    // Measure header text at the actual header weight.
     if (col.header) {
       maxWidth = Math.max(
         maxWidth,
-        estimateTextWidth(col.header, headerFontSize) * headerWeightFudge,
+        estimateTextWidth(col.header, headerFontSize, headerWeight),
       );
     }
 
@@ -349,7 +339,7 @@ function calculateSvgAutoWidths(
   // ========================================================================
   // This matches the web view's doMeasurement() logic in forestStore.svelte.ts
   // Column group headers also use scaled font size (they inherit .header-cell)
-  expandColumnGroupWidths(spec.columns, widths, headerFontSize, headerWeightFudge, groupPadding, TEXT_MEASUREMENT.RENDERING_BUFFER);
+  expandColumnGroupWidths(spec.columns, widths, headerFontSize, headerWeight, groupPadding, TEXT_MEASUREMENT.RENDERING_BUFFER);
 
   return widths;
 }
@@ -368,7 +358,7 @@ function expandColumnGroupWidths(
   columnDefs: ColumnDef[],
   widths: Map<string, number>,
   fontSize: number,
-  weightFudge: number,
+  weight: number,
   groupPadding: number,
   renderingBuffer: number
 ): void {
@@ -413,10 +403,10 @@ function expandColumnGroupWidths(
 
       // Check if group header needs more width than children provide
       if (col.header) {
-        // Group header needs: text width (× weight fudge for bold rendering)
-        // + its own padding (from theme) + rendering buffer.
+        // Group header needs: weight-aware estimate + theme group padding
+        // + rendering buffer.
         const groupHeaderWidth =
-          estimateTextWidth(col.header, fontSize) * weightFudge +
+          estimateTextWidth(col.header, fontSize, weight) +
           groupPadding + renderingBuffer;
 
         const leafCols = getLeafColumns(col);
@@ -1136,21 +1126,33 @@ function escapeXml(text: string): string {
 }
 
 /**
- * Truncate text to fit within a given width (approximate)
- * Uses character-class width estimation matching estimateTextWidth()
+ * Truncate text to fit within a given width (approximate).
+ * Uses character-class width estimation matching estimateTextWidth().
+ * The optional `weight` parameter feeds the weight correction inside
+ * estimateTextWidth so bold-rendered headers don't get spuriously
+ * truncated when their bold render exceeds the regular-weight estimate.
  */
-function truncateText(text: string, maxWidth: number, fontSize: number, padding: number = 0): string {
+function truncateText(
+  text: string,
+  maxWidth: number,
+  fontSize: number,
+  padding: number = 0,
+  weight: number = 400,
+): string {
   const availableWidth = maxWidth - padding * 2;
 
-  // Check if full text fits using accurate estimation
-  const fullWidth = estimateTextWidth(text, fontSize);
+  // Check if full text fits using weight-aware estimation
+  const fullWidth = estimateTextWidth(text, fontSize, weight);
   if (fullWidth <= availableWidth) {
     return text;
   }
 
-  // Binary search for the longest substring that fits (including ellipsis)
+  // Binary search for the longest substring that fits (including ellipsis).
   const ellipsis = "…";
-  const ellipsisWidth = fontSize * 0.55; // Ellipsis is roughly average width
+  // Ellipsis width also scales with weight (the rendered "…" is bolder
+  // when the surrounding text is bold).
+  const ellipsisMultiplier = 1 + Math.max(0, (weight - 400) / 100) * 0.02;
+  const ellipsisWidth = fontSize * 0.55 * ellipsisMultiplier;
 
   let left = 0;
   let right = text.length;
@@ -1158,7 +1160,7 @@ function truncateText(text: string, maxWidth: number, fontSize: number, padding:
   while (left < right) {
     const mid = Math.ceil((left + right) / 2);
     const truncated = text.slice(0, mid);
-    const truncatedWidth = estimateTextWidth(truncated, fontSize) + ellipsisWidth;
+    const truncatedWidth = estimateTextWidth(truncated, fontSize, weight) + ellipsisWidth;
 
     if (truncatedWidth <= availableWidth) {
       left = mid;
@@ -2827,7 +2829,7 @@ function renderUnifiedColumnHeaders(
         if (resolveShowHeader(col.showHeader, col.header)) {
           const pad = isVizType(col.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
           const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
-          const truncatedHeader = truncateText(col.header, width, fontSize, pad);
+          const truncatedHeader = truncateText(col.header, width, fontSize, pad, fontWeight);
           lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
             font-family="${fontFamily}"
             font-size="${fontSize}px"

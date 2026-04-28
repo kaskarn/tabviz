@@ -47,9 +47,19 @@ import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "./re
  * Estimate text width using character-based approximation.
  * Used when canvas measurement is not available (e.g., SVG generation).
  *
- * This uses font-specific average character widths rather than a single multiplier.
+ * The character-class constants are tuned for **regular weight (400)**
+ * rendering. When `weight` is bolder, a multiplicative correction is
+ * applied: `1 + max(0, (weight - 400) / 100) × 0.02`. The same correction
+ * is used by `measureTextWidth()` so the canvas-vs-fallback paths agree.
+ *
+ * Per-CSS-weight examples:
+ *   400 → ×1.00, 500 → ×1.02, 600 → ×1.04, 700 → ×1.06, 800 → ×1.08.
  */
-export function estimateTextWidth(text: string, fontSize: number): number {
+export function estimateTextWidth(
+  text: string,
+  fontSize: number,
+  weight: number = 400,
+): number {
   // Character width categories (proportions of fontSize):
   // Very narrow: superscript/subscript characters (0.15) - rendered at ~50% size and narrower
   // Narrow: i, l, I, 1, punctuation, space (0.35)
@@ -83,7 +93,10 @@ export function estimateTextWidth(text: string, fontSize: number): number {
       width += fontSize * 0.55;
     }
   }
-  return width;
+  // Weight correction. The base scan is tuned for regular (400); bolder
+  // weights render slightly wider per glyph at the same fontSize.
+  const weightMultiplier = 1 + Math.max(0, (weight - 400) / 100) * 0.02;
+  return width * weightMultiplier;
 }
 
 /**
