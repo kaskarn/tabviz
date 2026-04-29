@@ -32,18 +32,6 @@
     autoPairSlots,
     resolveShowHeader,
   } from "$lib/column-compat";
-  import {
-    getColumnSchema,
-    type EditorState,
-    type FieldDescriptor,
-    type VizEffectRow,
-  } from "$lib/column-editor-schema";
-  // Side-effect import: registers all built-in schemas at module load.
-  import { COMMON_FIELDS } from "$lib/column-editor-schema-builtins";
-  import EditorSection from "./ColumnEditor/EditorSection.svelte";
-  import SchemaField from "./ColumnEditor/SchemaField.svelte";
-  import FieldPicker from "./ColumnEditor/FieldPicker.svelte";
-  import VizEffectsEditor from "./ColumnEditor/effects/VizEffectsEditor.svelte";
 
   interface Props {
     target: EditorTarget | null;
@@ -57,18 +45,68 @@
 
   let { target, available, onCommit, onClose, onRequestChangeType }: Props = $props();
 
-  // Selected column type — drives schema lookup and the editor body.
+  // Local editor state. Reinitialized whenever `target` changes.
   let selectedType = $state<ColumnType>("numeric");
+  let slotValues = $state<Record<string, string>>({});
+  let headerText = $state("");
+  let showHeader = $state(true);
+  // Light options editor — covers the most common knobs per type.
+  let optDecimals = $state<string>("");
+  let optScale = $state<"linear" | "log">("linear");
+  let optStars = $state(false);
+  let optMaxValue = $state<string>("");
+  let optShowPct = $state(false);
+  let optSparklineType = $state<"line" | "bar" | "area">("line");
+  let optPrefix = $state<string>("");
+  let optSuffix = $state<string>("");
+  let optThousandsSep = $state(false);
+  let optMaxChars = $state<string>("");
+  let optBarScale = $state<"linear" | "log" | "sqrt">("linear");
+  let optMaxStars = $state<string>("");
+  let optDomainMin = $state<string>("");
+  let optDomainMax = $state<string>("");
+  // Forest column per-column options (beyond scale). These live on the
+  // ColumnSpec.options.forest slot and override theme.axis equivalents
+  // for that specific column — a per-column forest plot's axis config
+  // is inherently column-specific.
+  let optForestNullValue = $state<string>("");
+  let optForestAxisLabel = $state<string>("");
+  let optForestShowAxis = $state<boolean>(true);
+  let optForestAxisGridlines = $state<boolean>(false);
+  let optForestAxisRangeMin = $state<string>("");
+  let optForestAxisRangeMax = $state<string>("");
+  let optForestAxisTicks = $state<string>(""); // comma-separated
+  // Content alignment (per-column) — drives the column's `align` property
+  // (cell text alignment). Shown in the header row alongside the header
+  // text input and the "show header" checkbox.
+  let optAlign = $state<"left" | "center" | "right">("left");
+  // Header-specific alignment override. `null` = inherit from `optAlign`.
+  // Surfaces as a secondary segmented button row so users can differ
+  // header text alignment from cell alignment when needed.
+  let optHeaderAlign = $state<"left" | "center" | "right" | null>(null);
 
   // ─ Multi-effect viz editor state ──────────────────────────────────────
-  // viz_bar / viz_boxplot / viz_violin columns render a list of effects
-  // (each effect = one bar / box / violin in the cell). Stored as plain
-  // records and converted to strongly-typed VizBarEffect / VizBoxplotEffect /
-  // VizViolinEffect on commit. The schema's customRenderer === "viz-effects"
-  // discriminator drives whether VizEffectsEditor renders.
+  //
+  // viz_bar / viz_boxplot / viz_violin columns render a list of "effects"
+  // (each effect = one bar / box / violin stacked in the cell). The editor
+  // keeps a raw list of effect records and a per-type schema; UI renders
+  // each row dynamically based on the active type.
+  //
+  // Effects are stored as plain records here (stringly-typed field refs)
+  // and converted back into the strongly-typed VizBarEffect /
+  // VizBoxplotEffect / VizViolinEffect on commit.
+  type VizEffectRow = {
+    label?: string;
+    color?: string;
+    opacity?: string; // stringified for the number input; empty = "no override"
+    value?: string; // viz_bar
+    data?: string; // viz_boxplot / viz_violin
+    min?: string; q1?: string; median?: string; q3?: string; max?: string; outliers?: string; // viz_boxplot
+  };
   let vizEffects = $state<VizEffectRow[]>([]);
   // viz_boxplot has two data modes: "array" uses a single `data` column;
-  // "stats" uses the five precomputed stats columns.
+  // "stats" uses the five precomputed stats columns. UI exposes a
+  // toggle so users don't have to guess which slots to fill.
   let vizBoxplotMode = $state<"array" | "stats">("array");
 
   let popoverEl: HTMLDivElement | null = $state(null);
@@ -76,158 +114,75 @@
   let resolvedTop = $state(0);
   let resolvedMaxH = $state<number | null>(null);
 
-  // ─ Schema-driven editor state ─────────────────────────────────────────
-  // For column types with a registered schema in column-editor-schema-builtins,
-  // all option values live on this single object instead of being scattered
-  // across `opt*` $state vars. As types migrate, their entries here grow and
-  // the legacy vars + {#if} branches shrink. Once every type has a schema,
-  // the legacy state model goes away.
-  let editorState = $state<EditorState>({
-    type: "numeric",
-    slots: {},
-    spec: {},
-    options: {},
-  });
-
-  function inferAlignForType(t: ColumnType): "left" | "center" | "right" {
-    if (t === "numeric" || t === "pvalue") return "right";
-    if (
-      t === "forest" || t === "bar" || t === "viz_bar" ||
-      t === "viz_boxplot" || t === "viz_violin" || t === "sparkline"
-    ) return "center";
-    return "left";
-  }
-
-  function readPath(state: EditorState, path: readonly string[]): unknown {
-    if (path[0] === "spec") {
-      return (state.spec as Record<string, unknown>)[path[1]];
-    }
-    if (path[0] === "options") {
-      const opts = state.options as Record<string, unknown>;
-      if (path.length === 2) return opts[path[1]];
-      const bucket = (opts[path[1]] as Record<string, unknown> | undefined) ?? {};
-      return bucket[path[2]];
-    }
-    return undefined;
-  }
-
-  // Lower-level write used inside buildSpecFromSchema: walks the path into
-  // an arbitrary options-shaped record. Mirrors writePath() but doesn't
-  // discriminate "spec" vs "options" — the caller has already chosen.
-  function writePathInto(
-    target: Record<string, unknown>,
-    path: readonly string[],
-    value: unknown,
-  ): void {
-    if (path[0] !== "options") return;
-    if (path.length === 2) {
-      target[path[1]] = value;
-      return;
-    }
-    const bucket = (target[path[1]] as Record<string, unknown> | undefined) ?? {};
-    bucket[path[2]] = value;
-    target[path[1]] = bucket;
-  }
-
-  function writePath(state: EditorState, path: readonly string[], value: unknown): void {
-    if (path[0] === "spec") {
-      (state.spec as Record<string, unknown>)[path[1]] = value;
-      return;
-    }
-    if (path[0] === "options") {
-      const opts = state.options as Record<string, unknown>;
-      if (path.length === 2) {
-        if (value === undefined) delete opts[path[1]];
-        else opts[path[1]] = value;
-        return;
-      }
-      const typeKey = path[1];
-      const fieldKey = path[2];
-      const bucket =
-        (opts[typeKey] as Record<string, unknown> | undefined) ?? {};
-      if (value === undefined) {
-        delete bucket[fieldKey];
-      } else {
-        bucket[fieldKey] = value;
-      }
-      if (Object.keys(bucket).length === 0) delete opts[typeKey];
-      else opts[typeKey] = bucket;
-    }
-  }
-
-  function freshEditorStateForInsert(
-    type: ColumnType,
-    schema: ReturnType<typeof getColumnSchema>,
-  ): EditorState {
-    const state: EditorState = {
-      type,
-      slots: {},
-      spec: {
-        align: inferAlignForType(type),
-        headerAlign: null,
-        showHeader: true,
-        sortable: true,
-      },
-      options: {},
-    };
-    if (schema) {
-      for (const d of [...COMMON_FIELDS, ...schema.fields]) {
-        if (d.defaultOnInsert !== undefined) {
-          writePath(state, d.path, d.defaultOnInsert);
-        }
-      }
-    }
-    return state;
-  }
-
-  function hydrateEditorStateFromExisting(ex: ColumnSpec): EditorState {
-    return {
-      type: ex.type,
-      slots: slotsFromExistingSpec(ex),
-      spec: {
-        header: ex.header,
-        align: ex.align,
-        headerAlign: ex.headerAlign ?? null,
-        showHeader: resolveShowHeader(ex.showHeader, ex.header),
-        wrap: ex.wrap,
-        sortable: ex.sortable,
-      },
-      options: structuredClone(ex.options ?? {}) as EditorState["options"],
-    };
-  }
-
-  // Initialize editor state from target (configure-existing or insert).
+  // Initialize editor state from target (insert default or existing spec).
   $effect(() => {
     if (!target) return;
-    const isViz = (t: ColumnType) =>
-      t === "viz_bar" || t === "viz_boxplot" || t === "viz_violin";
     if (target.mode === "configure" && target.existing) {
       const ex = target.existing;
       selectedType = ex.type;
-      editorState = hydrateEditorStateFromExisting(ex);
-      vizEffects = [];
-      vizBoxplotMode = "array";
-      if (isViz(ex.type)) hydrateVizEffectsFromExisting(ex);
+      headerText = ex.header ?? "";
+      showHeader = resolveShowHeader(ex.showHeader, ex.header);
+      optAlign = (ex.align as "left" | "center" | "right") ?? "left";
+      optHeaderAlign =
+        (ex.headerAlign as "left" | "center" | "right" | null | undefined) ?? null;
+      slotValues = slotsFromExistingSpec(ex);
+      hydrateOptionsFromExisting(ex);
     } else {
+      // Insert mode: type is fixed by the upstream type menu.
       selectedType = target.type ?? "text";
-      const schema = getColumnSchema(selectedType);
-      editorState = freshEditorStateForInsert(selectedType, schema);
-      vizEffects = isViz(selectedType) ? [newEffect()] : [];
-      vizBoxplotMode = "array";
-      if (target.seedOptions) {
-        // Apply preset options (e.g. Integer → decimals=0) on top of the
-        // schema's defaultOnInsert values.
-        for (const [bucketKey, bucket] of Object.entries(target.seedOptions)) {
-          if (bucket && typeof bucket === "object") {
-            for (const [k, v] of Object.entries(bucket as Record<string, unknown>)) {
-              writePath(editorState, ["options", bucketKey, k], v);
-            }
-          }
-        }
+      slotValues = {};
+      headerText = "";
+      showHeader = true;
+      resetOptions();
+      // resetOptions no longer touches optAlign/optHeaderAlign; reset
+      // them here on insert so the segmented buttons start clean.
+      optAlign = "left";
+      optHeaderAlign = null;
+      // Apply any seed options provided by the type menu (e.g. Integer → decimals=0).
+      if (target.seedOptions) hydrateOptionsFromBundle(selectedType, target.seedOptions);
+      // viz_* columns start with a single blank effect row so the user
+      // has something to fill in. Insert a second via the "Add effect"
+      // button.
+      if (selectedType === "viz_bar" || selectedType === "viz_boxplot" || selectedType === "viz_violin") {
+        vizEffects = [newEffect()];
       }
     }
   });
 
+  function resetOptions() {
+    optDecimals = "";
+    optScale = "linear";
+    optStars = false;
+    optMaxValue = "";
+    optShowPct = false;
+    optSparklineType = "line";
+    optPrefix = "";
+    optSuffix = "";
+    optThousandsSep = false;
+    optMaxChars = "";
+    optBarScale = "linear";
+    optMaxStars = "";
+    optDomainMin = "";
+    optDomainMax = "";
+    optForestNullValue = "";
+    optForestAxisLabel = "";
+    optForestShowAxis = true;
+    optForestAxisGridlines = false;
+    optForestAxisRangeMin = "";
+    optForestAxisRangeMax = "";
+    optForestAxisTicks = "";
+    // `optAlign` and `optHeaderAlign` are intentionally NOT reset here:
+    // resetOptions() runs inside `hydrateOptionsFromExisting()` (called
+    // AFTER the $effect has initialized them from `ex.align` /
+    // `ex.headerAlign`) and inside the insert branch. Clobbering them
+    // here would overwrite the just-set values and the segmented
+    // buttons would always open on "left" when a user hit Configure —
+    // that's the v0.21.x "alignment menu isn't sticky" bug.
+    vizEffects = [];
+    vizBoxplotMode = "array";
+  }
+
+  /** Seed a new effect with sensible defaults for the active viz type. */
   function newEffect(): VizEffectRow {
     return {};
   }
@@ -290,8 +245,61 @@
   }
 
   // Pull option defaults out of a partial options bundle into the editor state.
-  // All non-viz types are now schema-driven; this hook is a no-op kept around
-  // until the viz_* migration lets us delete the legacy hydrate path entirely.
+  function hydrateOptionsFromBundle(type: ColumnType, o: NonNullable<ColumnSpec["options"]>) {
+    if (type === "numeric") {
+      if (o.numeric?.decimals != null) optDecimals = String(o.numeric.decimals);
+      if (o.numeric?.prefix != null) optPrefix = o.numeric.prefix;
+      if (o.numeric?.suffix != null) optSuffix = o.numeric.suffix;
+      if (o.numeric?.thousandsSep) optThousandsSep = true;
+    }
+    if (type === "text" && o.text?.maxChars != null) optMaxChars = String(o.text.maxChars);
+    if (type === "pvalue" && o.pvalue?.stars != null) optStars = !!o.pvalue.stars;
+    if (type === "bar") {
+      if (o.bar?.maxValue != null) optMaxValue = String(o.bar.maxValue);
+      if (o.bar?.scale) optBarScale = o.bar.scale;
+    }
+    if (type === "progress") {
+      if (o.progress?.maxValue != null) optMaxValue = String(o.progress.maxValue);
+      if (o.progress?.scale) optBarScale = o.progress.scale;
+    }
+    if (type === "heatmap") {
+      if (o.heatmap?.decimals != null) optDecimals = String(o.heatmap.decimals);
+      if (o.heatmap?.scale) optBarScale = o.heatmap.scale;
+    }
+    if (type === "stars") {
+      if (o.stars?.maxStars != null) optMaxStars = String(o.stars.maxStars);
+      if (o.stars?.domain) {
+        optDomainMin = String(o.stars.domain[0]);
+        optDomainMax = String(o.stars.domain[1]);
+      }
+    }
+    if (type === "forest") {
+      if (o.forest?.scale) optScale = o.forest.scale;
+      if (o.forest?.nullValue != null) optForestNullValue = String(o.forest.nullValue);
+      if (o.forest?.axisLabel != null) optForestAxisLabel = o.forest.axisLabel;
+      if (o.forest?.showAxis != null) optForestShowAxis = !!o.forest.showAxis;
+      if (o.forest?.axisGridlines != null) optForestAxisGridlines = !!o.forest.axisGridlines;
+      if (Array.isArray(o.forest?.axisRange) && o.forest.axisRange.length === 2) {
+        optForestAxisRangeMin = String(o.forest.axisRange[0]);
+        optForestAxisRangeMax = String(o.forest.axisRange[1]);
+      }
+      if (Array.isArray(o.forest?.axisTicks)) {
+        optForestAxisTicks = o.forest.axisTicks.join(", ");
+      }
+    }
+    if (type === "interval" && o.interval?.decimals != null) optDecimals = String(o.interval.decimals);
+    if (type === "sparkline" && o.sparkline?.type) optSparklineType = o.sparkline.type;
+    if (type === "custom" && o.events?.showPct != null) optShowPct = !!o.events.showPct;
+  }
+
+  function hydrateOptionsFromExisting(ex: ColumnSpec) {
+    resetOptions();
+    if (ex.options) hydrateOptionsFromBundle(ex.type, ex.options);
+    if (ex.type === "viz_bar" || ex.type === "viz_boxplot" || ex.type === "viz_violin") {
+      hydrateVizEffectsFromExisting(ex);
+    }
+  }
+
   // Reconstruct slot→field mapping from an existing ColumnSpec.
   function slotsFromExistingSpec(ex: ColumnSpec): Record<string, string> {
     const out: Record<string, string> = {};
@@ -327,29 +335,6 @@
 
   const currentDef = $derived<VisualTypeDef | undefined>(getVisualTypeDef(selectedType));
 
-  // The schema for the currently-selected type, or undefined for legacy
-  // types still rendered through the {#if selectedType === ...} ladder.
-  const currentSchema = $derived(getColumnSchema(selectedType));
-
-  // Visible field descriptors composed from COMMON_FIELDS + schema.fields.
-  // Filtered through `visibleWhen` if present.
-  const visibleDescriptors = $derived.by<FieldDescriptor[]>(() => {
-    if (!currentSchema) return [];
-    const all = [...COMMON_FIELDS, ...currentSchema.fields];
-    return all.filter((d) => !d.visibleWhen || d.visibleWhen(editorState));
-  });
-
-  // Group descriptors by section for the EditorSection blocks.
-  const fieldsBySection = $derived.by(() => {
-    const data: FieldDescriptor[] = [];
-    const format: FieldDescriptor[] = [];
-    const advanced: FieldDescriptor[] = [];
-    for (const d of visibleDescriptors) {
-      (d.section === "data" ? data : d.section === "advanced" ? advanced : format).push(d);
-    }
-    return { data, format, advanced };
-  });
-
   // Fields compatible with each slot of the current visual type.
   const slotChoices = $derived.by<Record<string, AvailableField[]>>(() => {
     if (!currentDef) return {};
@@ -362,119 +347,232 @@
   // multi-effect editor, not slots) we require at least one effect with
   // its minimum data binding(s) filled in.
   const canCommit = $derived.by(() => {
-    // Schema-driven types: required slots live on editorState.slots.
-    if (currentSchema) {
-      // Viz custom-renderer types validate effects, not slots.
-      if (currentSchema.customRenderer === "viz-effects") {
-        if (vizEffects.length === 0) return false;
-        if (selectedType === "viz_bar") {
-          return vizEffects.every((e) => !!e.value);
-        }
-        if (selectedType === "viz_boxplot") {
-          if (vizBoxplotMode === "array") {
-            return vizEffects.every((e) => !!e.data);
-          }
-          return vizEffects.every(
-            (e) => !!e.min && !!e.q1 && !!e.median && !!e.q3 && !!e.max,
-          );
-        }
-        if (selectedType === "viz_violin") {
-          return vizEffects.every((e) => !!e.data);
-        }
-        return true;
-      }
-      for (const s of currentSchema.slots) {
-        if (s.required && !editorState.slots[s.key]) return false;
-      }
-      return true;
+    if (!currentDef) return false;
+    if (selectedType === "viz_bar") {
+      return vizEffects.length > 0 && vizEffects.every((e) => !!e.value);
     }
-    return false;
+    if (selectedType === "viz_boxplot") {
+      if (vizEffects.length === 0) return false;
+      if (vizBoxplotMode === "array") {
+        return vizEffects.every((e) => !!e.data);
+      }
+      return vizEffects.every(
+        (e) => !!e.min && !!e.q1 && !!e.median && !!e.q3 && !!e.max,
+      );
+    }
+    if (selectedType === "viz_violin") {
+      return vizEffects.length > 0 && vizEffects.every((e) => !!e.data);
+    }
+    for (const s of currentDef.slots) {
+      if (s.required && !slotValues[s.key]) return false;
+    }
+    return true;
   });
 
   // When the primary slot changes, auto-pair the others (unless the user has
-  // already set them to a non-empty value), and seed editorState.spec.header
-  // from the primary field label when the user hasn't typed one.
-  function onSchemaPrimarySlotChange(slotKey: string, value: string) {
+  // already set them to something non-empty).
+  function onPrimarySlotChange(slotKey: string, value: string) {
     if (!currentDef) return;
     const paired = autoPairSlots(currentDef, slotKey, value, available);
-    const nextSlots = { ...editorState.slots, [slotKey]: value };
+    const next = { ...slotValues, [slotKey]: value };
     for (const [k, v] of Object.entries(paired)) {
       if (k === slotKey) continue;
-      if (!nextSlots[k]) nextSlots[k] = v;
+      // Respect any explicit choice the user already made in this session.
+      if (!next[k]) next[k] = v;
     }
-    editorState.slots = nextSlots;
-    if (!editorState.spec.header) {
+    slotValues = next;
+    // Default header: match the primary field label if the user hasn't typed one.
+    if (!headerText) {
       const fld = available.find((f) => f.field === value);
-      editorState.spec.header = fld?.label ?? value;
+      headerText = fld?.label ?? value;
     }
   }
 
-  // Build a ColumnSpec out of schema-driven editor state. Mirrors the
-  // existing legacy buildSpec() in shape (id minting, alignment defaults,
-  // header fallback) but reads from editorState instead of opt* vars.
-  function buildSpecFromSchema(): ColumnSpec {
-    const schema = currentSchema!;
-    const primaryKey = schema.slots[0]?.key ?? "value";
-    // Viz custom-renderer types have empty slots; their identity comes
-    // from the first effect's primary data binding.
-    const isVizCustom = schema.customRenderer === "viz-effects";
-    const vizFirstField = isVizCustom
-      ? (vizEffects[0]?.value ?? vizEffects[0]?.data ?? vizEffects[0]?.median ?? "")
-      : "";
-    const primaryField = isVizCustom
-      ? vizFirstField
-      : (editorState.slots[primaryKey] ?? "");
-    const proposedId = primaryField ? `${editorState.type}_${primaryField}` : editorState.type;
-    const baseId =
-      target?.mode === "configure" && target.existing
-        ? target.existing.id
-        : proposedId;
+  // Build a ColumnSpec out of the editor state.
+  function buildSpec(): ColumnSpec {
+    const def = currentDef!;
+    const primary = def.slots[0]?.key;
+    // viz_* columns have empty slot lists (effects live in their own
+    // editor). For those, fall back to the first effect's data field so
+    // the spec gets a non-empty id/field on insert.
+    const isViz = selectedType === "viz_bar" || selectedType === "viz_boxplot" || selectedType === "viz_violin";
+    const vizFirstField = isViz ? (vizEffects[0]?.value ?? vizEffects[0]?.data ?? vizEffects[0]?.median ?? "") : "";
+    const primaryField = primary ? slotValues[primary] : vizFirstField;
+    // Default id scheme mirrors R's `<type>_<field>` (v0.21+). `mintUniqueColumnId`
+    // will disambiguate with a `_2` suffix if the id is already taken — the
+    // error-on-collision behavior only applies to R-authored specs, not
+    // interactive inserts where the user can't edit R source to fix a clash.
+    const proposedId = primaryField ? `${selectedType}_${primaryField}` : selectedType;
+    const baseId = target?.mode === "configure" && target.existing ? target.existing.id : proposedId;
+    // Header alignment is an explicit control now. Default suggestion on
+    // insert: right for numeric/pvalue (numeric readability), center for
+    // forest/bar-like viz columns, left otherwise. Users override via the
+    // Header row's alignment segmented.
+    const inferredAlign =
+      selectedType === "numeric" || selectedType === "pvalue" ? "right" :
+      selectedType === "forest" || selectedType === "bar" || selectedType === "viz_bar" ||
+      selectedType === "viz_boxplot" || selectedType === "viz_violin" || selectedType === "sparkline"
+        ? "center"
+        : "left";
+    const align =
+      target?.mode === "configure"
+        ? optAlign
+        : inferredAlign;
 
-    // Non-primary slot values write into options.<type>.<slotKey> by default.
-    // Schemas can override per-slot via `slotPaths` (e.g. range: min →
-    // ["options", "range", "minField"]; custom: events bucket).
-    const optionsCopy: Record<string, unknown> =
-      structuredClone(editorState.options) as Record<string, unknown>;
-    for (const slot of schema.slots.slice(1)) {
-      const v = editorState.slots[slot.key];
-      if (!v) continue;
-      const path =
-        schema.slotPaths?.[slot.key] ?? ["options", editorState.type, slot.key];
-      writePathInto(optionsCopy, path, v);
-    }
-    // Also honor slotPaths for the primary slot when set, so custom (events
-    // bucket) gets options.events.eventsField populated alongside spec.field.
-    if (schema.slotPaths?.[primaryKey] && primaryField) {
-      writePathInto(optionsCopy, schema.slotPaths[primaryKey], primaryField);
-    }
+    const spec: ColumnSpec = {
+      id: baseId,
+      header: headerText || primaryField,
+      field: primaryField,
+      type: selectedType,
+      align,
+      // `headerAlign` stays nullish when the user hasn't diverged from
+      // content alignment; renderers fall back to `align` in that case.
+      headerAlign: optHeaderAlign,
+      sortable: true,
+      isGroup: false,
+      showHeader,
+    };
 
-    // Viz custom-renderer types: assemble the effects bundle into the
-    // appropriate options bucket. Mirrors the legacy buildSpec viz_* cases.
-    if (isVizCustom) {
-      if (editorState.type === "viz_bar") {
+    const options: ColumnSpec["options"] = {};
+    switch (selectedType) {
+      case "numeric": {
+        const num: NonNullable<NonNullable<ColumnSpec["options"]>["numeric"]> = {};
+        if (optDecimals !== "") num.decimals = Number(optDecimals);
+        if (optPrefix !== "") num.prefix = optPrefix;
+        if (optSuffix !== "") num.suffix = optSuffix;
+        if (optThousandsSep) num.thousandsSep = ",";
+        if (Object.keys(num).length > 0) options.numeric = num;
+        break;
+      }
+      case "text": {
+        if (optMaxChars !== "") options.text = { maxChars: Number(optMaxChars) };
+        break;
+      }
+      case "pvalue":
+        options.pvalue = { stars: optStars };
+        break;
+      case "bar": {
+        const bar: NonNullable<NonNullable<ColumnSpec["options"]>["bar"]> = {};
+        if (optMaxValue !== "") bar.maxValue = Number(optMaxValue);
+        if (optBarScale !== "linear") bar.scale = optBarScale;
+        if (Object.keys(bar).length > 0) options.bar = bar;
+        break;
+      }
+      case "progress": {
+        const prog: NonNullable<NonNullable<ColumnSpec["options"]>["progress"]> = {};
+        if (optMaxValue !== "") prog.maxValue = Number(optMaxValue);
+        if (optBarScale !== "linear") prog.scale = optBarScale;
+        if (Object.keys(prog).length > 0) options.progress = prog;
+        break;
+      }
+      case "heatmap": {
+        const hm: NonNullable<NonNullable<ColumnSpec["options"]>["heatmap"]> = {};
+        if (optDecimals !== "") {
+          hm.decimals = Number(optDecimals);
+          hm.showValue = true;
+        }
+        if (optBarScale !== "linear") hm.scale = optBarScale;
+        if (Object.keys(hm).length > 0) options.heatmap = hm;
+        break;
+      }
+      case "stars": {
+        const st: NonNullable<NonNullable<ColumnSpec["options"]>["stars"]> = {};
+        if (optMaxStars !== "") {
+          const n = Math.max(1, Math.min(20, Math.round(Number(optMaxStars))));
+          st.maxStars = n;
+        }
+        if (optDomainMin !== "" && optDomainMax !== "") {
+          const lo = Number(optDomainMin);
+          const hi = Number(optDomainMax);
+          if (Number.isFinite(lo) && Number.isFinite(hi) && hi > lo) {
+            st.domain = [lo, hi];
+          }
+        }
+        if (Object.keys(st).length > 0) options.stars = st;
+        break;
+      }
+      case "sparkline":
+        options.sparkline = { type: optSparklineType };
+        break;
+      case "forest": {
+        const forest: NonNullable<NonNullable<ColumnSpec["options"]>["forest"]> = {
+          point: slotValues.point,
+          lower: slotValues.lower,
+          upper: slotValues.upper,
+          scale: optScale,
+          nullValue: optForestNullValue !== ""
+            ? Number(optForestNullValue)
+            : (optScale === "log" ? 1 : 0),
+          axisLabel: optForestAxisLabel,
+          showAxis: optForestShowAxis,
+        };
+        if (optForestAxisGridlines) forest.axisGridlines = true;
+        const rMin = optForestAxisRangeMin !== "" ? Number(optForestAxisRangeMin) : null;
+        const rMax = optForestAxisRangeMax !== "" ? Number(optForestAxisRangeMax) : null;
+        if (rMin != null && rMax != null && Number.isFinite(rMin) && Number.isFinite(rMax)) {
+          forest.axisRange = [rMin, rMax];
+        }
+        if (optForestAxisTicks.trim() !== "") {
+          const ticks = optForestAxisTicks
+            .split(/[,\s]+/)
+            .map((s) => Number(s))
+            .filter((n) => Number.isFinite(n));
+          if (ticks.length > 0) forest.axisTicks = ticks;
+        }
+        options.forest = forest;
+        break;
+      }
+      case "interval":
+        options.interval = {
+          point: slotValues.point,
+          lower: slotValues.lower,
+          upper: slotValues.upper,
+          ...(optDecimals !== "" ? { decimals: Number(optDecimals) } : {}),
+        };
+        break;
+      case "range":
+        options.range = {
+          minField: slotValues.min,
+          maxField: slotValues.max,
+        };
+        break;
+      case "custom":
+        options.events = {
+          eventsField: slotValues.eventsField,
+          nField: slotValues.nField,
+          showPct: optShowPct,
+        };
+        break;
+      case "reference":
+        if (slotValues.hrefField) options.reference = { hrefField: slotValues.hrefField };
+        break;
+      case "viz_bar": {
+        // Strip empty-string fields so the emitted options object is clean.
         const effects = vizEffects
           .filter((e) => e.value)
           .map((e) => {
             const out: Record<string, unknown> = { value: e.value };
-            if (e.label) out.label = e.label;
-            if (e.color) out.color = e.color;
+            if (e.label)  out.label = e.label;
+            if (e.color)  out.color = e.color;
             if (e.opacity && Number.isFinite(Number(e.opacity))) {
               out.opacity = Number(e.opacity);
             }
             return out;
           });
-        optionsCopy.bar = { type: "bar", effects };
-      } else if (editorState.type === "viz_boxplot") {
+        options.bar = { type: "bar", effects };
+        break;
+      }
+      case "viz_boxplot": {
         const effects = vizEffects.map((e) => {
           const out: Record<string, unknown> = {};
           if (vizBoxplotMode === "array") {
             if (e.data) out.data = e.data;
           } else {
-            if (e.min) out.min = e.min;
-            if (e.q1) out.q1 = e.q1;
-            if (e.median) out.median = e.median;
-            if (e.q3) out.q3 = e.q3;
-            if (e.max) out.max = e.max;
+            if (e.min)      out.min = e.min;
+            if (e.q1)       out.q1 = e.q1;
+            if (e.median)   out.median = e.median;
+            if (e.q3)       out.q3 = e.q3;
+            if (e.max)      out.max = e.max;
             if (e.outliers) out.outliers = e.outliers;
           }
           if (e.label) out.label = e.label;
@@ -484,8 +582,10 @@
           }
           return out;
         });
-        optionsCopy.boxplot = { type: "boxplot", effects };
-      } else if (editorState.type === "viz_violin") {
+        options.boxplot = { type: "boxplot", effects };
+        break;
+      }
+      case "viz_violin": {
         const effects = vizEffects
           .filter((e) => e.data)
           .map((e) => {
@@ -497,47 +597,18 @@
             }
             return out;
           });
-        optionsCopy.violin = { type: "violin", effects };
-      }
-    }
-    for (const k of Object.keys(optionsCopy)) {
-      const v = optionsCopy[k];
-      if (
-        v &&
-        typeof v === "object" &&
-        !Array.isArray(v) &&
-        Object.keys(v as Record<string, unknown>).length === 0
-      ) {
-        delete optionsCopy[k];
+        options.violin = { type: "violin", effects };
+        break;
       }
     }
 
-    const align =
-      (editorState.spec.align as "left" | "center" | "right" | undefined) ??
-      inferAlignForType(editorState.type);
-    const spec: ColumnSpec = {
-      id: baseId,
-      header: (editorState.spec.header as string | undefined) || primaryField,
-      field: primaryField,
-      type: editorState.type,
-      align,
-      headerAlign:
-        (editorState.spec.headerAlign as "left" | "center" | "right" | null | undefined) ??
-        null,
-      sortable: editorState.spec.sortable ?? true,
-      isGroup: false,
-      showHeader: editorState.spec.showHeader ?? true,
-    };
-    if (editorState.spec.wrap !== undefined) spec.wrap = editorState.spec.wrap;
-    if (Object.keys(optionsCopy).length > 0) {
-      spec.options = optionsCopy as ColumnSpec["options"];
-    }
+    if (Object.keys(options).length > 0) spec.options = options;
     return spec;
   }
 
   function commit() {
-    if (!target || !canCommit || !currentSchema) return;
-    const spec = buildSpecFromSchema();
+    if (!target || !canCommit) return;
+    const spec = buildSpec();
     onCommit(spec, target.mode, target.afterId);
   }
 
@@ -627,74 +698,444 @@
       {/if}
     </div>
 
-    <!-- Schema-driven body: renders types with a registered schema in
-         column-editor-schema-builtins.ts. Migrates the {#if selectedType
-         === ...} ladder one type at a time. -->
-    {#if currentSchema}
+    <!-- Slot filler + type-specific options -->
+    {#if currentDef}
       <div class="editor-body">
-        <!-- Data: slot field-pickers. -->
-        <EditorSection title="Data" empty={currentSchema.slots.length === 0 && fieldsBySection.data.length === 0}>
-          {#each currentSchema.slots as slot, i (slot.key)}
-            {@const choices = slotChoices[slot.key] ?? []}
-            <FieldPicker
-              label={slot.label}
-              value={editorState.slots[slot.key] ?? ""}
-              available={choices}
-              suffix={slot.required ? undefined : "optional"}
-              onchange={(v) => {
-                if (i === 0) onSchemaPrimarySlotChange(slot.key, v);
-                else editorState.slots = { ...editorState.slots, [slot.key]: v };
+        <!-- Compact slot rows: "Label: [field select]" on one line, same
+             idiom as the advanced-settings fields. Optional flag trails
+             the label in a muted hue so the eye catches required vs. not. -->
+        {#each currentDef.slots as slot, i (slot.key)}
+          {@const choices = slotChoices[slot.key] ?? []}
+          <div class="slot-row">
+            <span class="slot-label">
+              {slot.label}{#if !slot.required}<span class="slot-optional"> optional</span>{/if}
+            </span>
+            <select
+              class="slot-select"
+              value={slotValues[slot.key] ?? ""}
+              onchange={(e) => {
+                const v = (e.currentTarget as HTMLSelectElement).value;
+                if (i === 0) onPrimarySlotChange(slot.key, v);
+                else slotValues = { ...slotValues, [slot.key]: v };
               }}
-            />
-          {/each}
-          {#each fieldsBySection.data as d (d.key)}
-            <SchemaField
-              descriptor={d}
-              value={readPath(editorState, d.path)}
-              {available}
-              onchange={(v) => writePath(editorState, d.path, v)}
-            />
-          {/each}
-        </EditorSection>
+            >
+              <option value="" disabled>Select a field…</option>
+              {#each choices as f (f.field)}
+                <option value={f.field}>{f.label}</option>
+              {/each}
+            </select>
+          </div>
+        {/each}
 
-        <EditorSection title="Format" empty={fieldsBySection.format.length === 0}>
-          {#each fieldsBySection.format as d (d.key)}
-            <SchemaField
-              descriptor={d}
-              value={readPath(editorState, d.path)}
-              {available}
-              onchange={(v) => writePath(editorState, d.path, v)}
-            />
-          {/each}
-        </EditorSection>
-
-        <EditorSection
-          title="Advanced"
-          defaultOpen={false}
-          empty={fieldsBySection.advanced.length === 0}
-        >
-          {#each fieldsBySection.advanced as d (d.key)}
-            <SchemaField
-              descriptor={d}
-              value={readPath(editorState, d.path)}
-              {available}
-              onchange={(v) => writePath(editorState, d.path, v)}
-            />
-          {/each}
-        </EditorSection>
-
-        {#if currentSchema.customRenderer === "viz-effects"}
-          <VizEffectsEditor
-            type={selectedType}
-            effects={vizEffects}
-            boxplotMode={vizBoxplotMode}
-            {available}
-            onAdd={addEffect}
-            onRemove={removeEffect}
-            onMove={moveEffect}
-            onUpdate={updateEffect}
-            onBoxplotModeChange={(m) => (vizBoxplotMode = m)}
+        <!-- Compact header row: "Header: [ name box ] [✓ show]". The
+             alignment controls moved to a dedicated row below so Cell vs
+             Header align can be distinguished. -->
+        <div class="header-row">
+          <span class="editor-label">Header</span>
+          <input
+            type="text"
+            class="header-input"
+            bind:value={headerText}
+            placeholder={slotValues[currentDef.slots[0]?.key] ?? "Column header"}
+            disabled={!showHeader}
           />
+          <label class="show-check" title="Show column header">
+            <input type="checkbox" bind:checked={showHeader} />
+            <span>show</span>
+          </label>
+        </div>
+
+        <!-- Alignment row: two independent segments. Cell = content (data
+             cells), Header = column header (inherits Cell by default).
+             `optHeaderAlign = null` means "inherit" — rendered as the
+             dimmed segment state. -->
+        <div class="align-row">
+          <span class="editor-label">Align</span>
+          <div class="align-seg" role="radiogroup" aria-label="Cell alignment">
+            {#each (["left", "center", "right"] as const) as a (a)}
+              <button
+                type="button"
+                class:selected={optAlign === a}
+                onclick={() => (optAlign = a)}
+                title={`Cell align ${a}`}
+                aria-label={`Cell align ${a}`}
+              >
+                {#if a === "left"}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="15" y2="12" /><line x1="3" y1="18" x2="18" y2="18" /></svg>
+                {:else if a === "center"}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="6" y1="12" x2="18" y2="12" /><line x1="4" y1="18" x2="20" y2="18" /></svg>
+                {:else}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="6" y1="18" x2="21" y2="18" /></svg>
+                {/if}
+              </button>
+            {/each}
+          </div>
+          <span class="editor-label ml">Header</span>
+          <div class="align-seg align-seg-header" role="radiogroup" aria-label="Header alignment">
+            <button
+              type="button"
+              class="inherit-btn"
+              class:selected={optHeaderAlign == null}
+              onclick={() => (optHeaderAlign = null)}
+              title="Inherit from cell alignment"
+              aria-label="Inherit header alignment from cell"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7" /></svg>
+            </button>
+            {#each (["left", "center", "right"] as const) as a (a)}
+              <button
+                type="button"
+                class:selected={optHeaderAlign === a}
+                onclick={() => (optHeaderAlign = a)}
+                title={`Header align ${a}`}
+                aria-label={`Header align ${a}`}
+              >
+                {#if a === "left"}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="15" y2="12" /><line x1="3" y1="18" x2="18" y2="18" /></svg>
+                {:else if a === "center"}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="6" y1="12" x2="18" y2="12" /><line x1="4" y1="18" x2="20" y2="18" /></svg>
+                {:else}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="6" y1="18" x2="21" y2="18" /></svg>
+                {/if}
+              </button>
+            {/each}
+          </div>
+        </div>
+
+        <!-- Type-specific options -->
+        {#if selectedType === "numeric" || selectedType === "heatmap" || selectedType === "interval"}
+          <label class="editor-field">
+            <span>Decimals</span>
+            <input
+              type="number"
+              min="0"
+              max="10"
+              bind:value={optDecimals}
+              placeholder="auto"
+            />
+          </label>
+        {/if}
+
+        {#if selectedType === "numeric"}
+          <div class="editor-row">
+            <label class="editor-field">
+              <span>Prefix</span>
+              <input type="text" bind:value={optPrefix} placeholder="e.g. $" maxlength="4" />
+            </label>
+            <label class="editor-field">
+              <span>Suffix</span>
+              <input type="text" bind:value={optSuffix} placeholder="e.g. %" maxlength="4" />
+            </label>
+          </div>
+          <label class="editor-check">
+            <input type="checkbox" bind:checked={optThousandsSep} />
+            <span>Group thousands (1,000)</span>
+          </label>
+        {/if}
+
+        {#if selectedType === "text"}
+          <label class="editor-field">
+            <span>Max characters</span>
+            <input
+              type="number"
+              min="1"
+              bind:value={optMaxChars}
+              placeholder="no limit"
+            />
+          </label>
+        {/if}
+
+        {#if selectedType === "pvalue"}
+          <label class="editor-check">
+            <input type="checkbox" bind:checked={optStars} />
+            <span>Show significance stars</span>
+          </label>
+        {/if}
+
+        {#if selectedType === "bar" || selectedType === "progress"}
+          <label class="editor-field">
+            <span>Max value</span>
+            <input
+              type="number"
+              bind:value={optMaxValue}
+              placeholder={selectedType === "progress" ? "100" : "auto"}
+            />
+          </label>
+        {/if}
+
+        {#if selectedType === "bar" || selectedType === "progress" || selectedType === "heatmap"}
+          <label class="editor-field">
+            <span>Scale</span>
+            <select bind:value={optBarScale}>
+              <option value="linear">Linear</option>
+              <option value="log">Log</option>
+              <option value="sqrt">Sqrt</option>
+            </select>
+          </label>
+        {/if}
+
+        {#if selectedType === "stars"}
+          <label class="editor-field">
+            <span>Max stars</span>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              bind:value={optMaxStars}
+              placeholder="5"
+            />
+          </label>
+          <div class="editor-row">
+            <label class="editor-field">
+              <span>Domain min</span>
+              <input type="number" bind:value={optDomainMin} placeholder="optional" />
+            </label>
+            <label class="editor-field">
+              <span>Domain max</span>
+              <input type="number" bind:value={optDomainMax} placeholder="optional" />
+            </label>
+          </div>
+        {/if}
+
+        {#if selectedType === "forest"}
+          <div class="editor-row">
+            <label class="editor-field">
+              <span>Scale</span>
+              <select bind:value={optScale}>
+                <option value="linear">Linear</option>
+                <option value="log">Log</option>
+              </select>
+            </label>
+            <label class="editor-field">
+              <span>Null value</span>
+              <input
+                type="number"
+                step="any"
+                bind:value={optForestNullValue}
+                placeholder={optScale === "log" ? "1" : "0"}
+              />
+            </label>
+          </div>
+          <label class="editor-field">
+            <span>Axis label</span>
+            <input
+              type="text"
+              bind:value={optForestAxisLabel}
+              placeholder="Effect"
+            />
+          </label>
+          <div class="editor-row">
+            <label class="editor-field">
+              <span>Axis min</span>
+              <input type="number" step="any" bind:value={optForestAxisRangeMin} placeholder="auto" />
+            </label>
+            <label class="editor-field">
+              <span>Axis max</span>
+              <input type="number" step="any" bind:value={optForestAxisRangeMax} placeholder="auto" />
+            </label>
+          </div>
+          <label class="editor-field">
+            <span>Axis ticks</span>
+            <input
+              type="text"
+              bind:value={optForestAxisTicks}
+              placeholder="auto, or e.g. 0.5, 1, 2"
+            />
+          </label>
+          <div class="check-row">
+            <label class="editor-check">
+              <input type="checkbox" bind:checked={optForestShowAxis} />
+              <span>Show axis</span>
+            </label>
+            <label class="editor-check">
+              <input type="checkbox" bind:checked={optForestAxisGridlines} />
+              <span>Gridlines</span>
+            </label>
+          </div>
+        {/if}
+
+        {#if selectedType === "sparkline"}
+          <label class="editor-field">
+            <span>Chart type</span>
+            <select bind:value={optSparklineType}>
+              <option value="line">Line</option>
+              <option value="bar">Bar</option>
+              <option value="area">Area</option>
+            </select>
+          </label>
+        {/if}
+
+        {#if selectedType === "custom"}
+          <label class="editor-check">
+            <input type="checkbox" bind:checked={optShowPct} />
+            <span>Show percentage</span>
+          </label>
+        {/if}
+
+        <!-- ─ Multi-effect viz editor ─────────────────────────────── -->
+        <!-- viz_bar / viz_boxplot / viz_violin columns carry a list of
+             effects. Each row is one bar / box / violin in the cell.
+             Full CRUD: add, remove, reorder, edit per-effect fields. -->
+        {#if selectedType === "viz_bar" || selectedType === "viz_boxplot" || selectedType === "viz_violin"}
+          {#if selectedType === "viz_boxplot"}
+            <div class="slot-row">
+              <span class="slot-label">Data shape</span>
+              <select
+                class="slot-select"
+                value={vizBoxplotMode}
+                onchange={(e) => (vizBoxplotMode = (e.currentTarget as HTMLSelectElement).value as "array" | "stats")}
+              >
+                <option value="array">Array column (raw values)</option>
+                <option value="stats">Precomputed stats (min/Q1/median/Q3/max)</option>
+              </select>
+            </div>
+          {/if}
+
+          <div class="effects-section">
+            <div class="effects-header">
+              <span class="section-title">Effects ({vizEffects.length})</span>
+              <button type="button" class="add-effect" onclick={addEffect}>+ Add effect</button>
+            </div>
+
+            {#each vizEffects as eff, idx (idx)}
+              <div class="effect-card">
+                <div class="effect-top">
+                  <span class="effect-num">#{idx + 1}</span>
+                  <input
+                    type="text"
+                    class="effect-label"
+                    placeholder="Label (optional)"
+                    value={eff.label ?? ""}
+                    oninput={(e) => updateEffect(idx, { label: (e.currentTarget as HTMLInputElement).value })}
+                  />
+                  <div class="effect-actions">
+                    <button
+                      type="button"
+                      class="effect-move"
+                      disabled={idx === 0}
+                      title="Move up"
+                      aria-label="Move effect up"
+                      onclick={() => moveEffect(idx, -1)}
+                    >▲</button>
+                    <button
+                      type="button"
+                      class="effect-move"
+                      disabled={idx === vizEffects.length - 1}
+                      title="Move down"
+                      aria-label="Move effect down"
+                      onclick={() => moveEffect(idx, 1)}
+                    >▼</button>
+                    <button
+                      type="button"
+                      class="effect-remove"
+                      title="Remove effect"
+                      aria-label="Remove effect"
+                      onclick={() => removeEffect(idx)}
+                    >×</button>
+                  </div>
+                </div>
+
+                <!-- Data slot(s) per viz type -->
+                {#if selectedType === "viz_bar"}
+                  <div class="slot-row">
+                    <span class="slot-label">Value</span>
+                    <select
+                      class="slot-select"
+                      value={eff.value ?? ""}
+                      onchange={(e) => updateEffect(idx, { value: (e.currentTarget as HTMLSelectElement).value })}
+                    >
+                      <option value="" disabled>Select a field…</option>
+                      {#each available as f (f.field)}
+                        <option value={f.field}>{f.label}</option>
+                      {/each}
+                    </select>
+                  </div>
+                {:else if selectedType === "viz_violin"}
+                  <div class="slot-row">
+                    <span class="slot-label">Data</span>
+                    <select
+                      class="slot-select"
+                      value={eff.data ?? ""}
+                      onchange={(e) => updateEffect(idx, { data: (e.currentTarget as HTMLSelectElement).value })}
+                    >
+                      <option value="" disabled>Select an array field…</option>
+                      {#each available as f (f.field)}
+                        <option value={f.field}>{f.label}</option>
+                      {/each}
+                    </select>
+                  </div>
+                {:else if selectedType === "viz_boxplot"}
+                  {#if vizBoxplotMode === "array"}
+                    <div class="slot-row">
+                      <span class="slot-label">Data</span>
+                      <select
+                        class="slot-select"
+                        value={eff.data ?? ""}
+                        onchange={(e) => updateEffect(idx, { data: (e.currentTarget as HTMLSelectElement).value })}
+                      >
+                        <option value="" disabled>Select an array field…</option>
+                        {#each available as f (f.field)}
+                          <option value={f.field}>{f.label}</option>
+                        {/each}
+                      </select>
+                    </div>
+                  {:else}
+                    {#each (["min","q1","median","q3","max","outliers"] as const) as k (k)}
+                      <div class="slot-row">
+                        <span class="slot-label">{k === "outliers" ? "Outliers (optional)" : k.toUpperCase()}</span>
+                        <select
+                          class="slot-select"
+                          value={(eff as Record<string, string | undefined>)[k] ?? ""}
+                          onchange={(e) => updateEffect(idx, { [k]: (e.currentTarget as HTMLSelectElement).value })}
+                        >
+                          <option value="">Select a field…</option>
+                          {#each available as f (f.field)}
+                            <option value={f.field}>{f.label}</option>
+                          {/each}
+                        </select>
+                      </div>
+                    {/each}
+                  {/if}
+                {/if}
+
+                <!-- Visual overrides (color + opacity) common to all viz types -->
+                <div class="effect-visuals">
+                  <label class="effect-color">
+                    <span>Color</span>
+                    <input
+                      type="color"
+                      value={eff.color && /^#[0-9a-f]{6}$/i.test(eff.color) ? eff.color : "#3b82f6"}
+                      oninput={(e) => updateEffect(idx, { color: (e.currentTarget as HTMLInputElement).value })}
+                      aria-label="Effect color"
+                    />
+                    <input
+                      type="text"
+                      class="color-hex"
+                      placeholder="auto"
+                      value={eff.color ?? ""}
+                      oninput={(e) => updateEffect(idx, { color: (e.currentTarget as HTMLInputElement).value })}
+                    />
+                  </label>
+                  <label class="effect-opacity">
+                    <span>Opacity</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      placeholder="auto"
+                      value={eff.opacity ?? ""}
+                      oninput={(e) => updateEffect(idx, { opacity: (e.currentTarget as HTMLInputElement).value })}
+                    />
+                  </label>
+                </div>
+              </div>
+            {/each}
+
+            {#if vizEffects.length === 0}
+              <div class="effects-empty">No effects. Click "+ Add effect" to start.</div>
+            {/if}
+          </div>
         {/if}
       </div>
     {:else}
@@ -773,10 +1214,149 @@
   .change-type-link:hover {
     background: var(--tv-hover, #eef2ff);
   }
+  .editor-row {
+    display: flex;
+    gap: 8px;
+  }
+  .editor-row .editor-field {
+    flex: 1;
+    min-width: 0;
+  }
+  .check-row {
+    display: flex;
+    gap: 14px;
+  }
+
+  /* Compact single-line "Header: [input] [✓show]" row. */
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+  }
+
+  /* Alignment row: `Align: [seg]  Header: [inherit|seg]`. Lets the user
+     pick cell and header alignment independently. */
+  .align-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+  }
+  .align-row .editor-label.ml {
+    margin-left: 6px;
+  }
+  .align-seg-header .inherit-btn[class] {
+    opacity: 0.6;
+  }
+  .align-seg-header .inherit-btn.selected {
+    opacity: 1;
+  }
+  .editor-label {
+    font-size: 11px;
+    color: var(--tv-text-muted, #64748b);
+    font-weight: 500;
+  }
+  .header-input {
+    flex: 1;
+    min-width: 0;
+    padding: 3px 6px;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 4px;
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
+    font-size: 12px;
+  }
+  .header-input:disabled {
+    opacity: 0.45;
+  }
+  .align-seg {
+    display: inline-flex;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .align-seg button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--tv-text-muted, #64748b);
+    cursor: pointer;
+  }
+  .align-seg button + button {
+    border-left: 1px solid var(--tv-border, #e2e8f0);
+  }
+  .align-seg button.selected {
+    background: color-mix(in srgb, var(--tv-accent, #3b82f6) 18%, var(--tv-bg, #ffffff));
+    color: var(--tv-accent, #3b82f6);
+  }
+  .show-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 10.5px;
+    color: var(--tv-text-muted, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+  }
   .editor-body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+  /* Compact inline layout: `label | control`. Labels sit to the left in a
+     fixed column so consecutive fields line up. Two-up rows nest via
+     `.editor-row` which switches to a flex layout with `gap`. */
+  .editor-field {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 1px 0;
+  }
+  .editor-field > span {
+    font-size: 11px;
+    color: var(--tv-text-muted, #64748b);
+    font-weight: 500;
+  }
+  /* When editor-fields are arranged horizontally (e.g. Prefix | Suffix),
+     drop the wide label column — the grid would eat the row width. */
+  .editor-row .editor-field {
+    grid-template-columns: auto 1fr;
+  }
+  .editor-row .editor-field > span {
+    white-space: nowrap;
+  }
+  .col-editor-popover input[type="text"],
+  .col-editor-popover input[type="number"],
+  .col-editor-popover select {
+    width: 100%;
+    padding: 5px 7px;
+    font-size: 12px;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 4px;
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .col-editor-popover input:focus,
+  .col-editor-popover select:focus {
+    outline: none;
+    border-color: var(--tv-accent, #2563eb);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  }
+  .editor-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
   }
   .editor-empty {
     font-size: 12px;
@@ -816,5 +1396,194 @@
   }
   .editor-footer .secondary:hover {
     background: var(--tv-border, #f1f5f9);
+  }
+
+  /* ─ Compact slot rows ──────────────────────────────────────────── */
+  .slot-row {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 1px 0;
+  }
+  .slot-label {
+    font-size: 11px;
+    color: var(--tv-text-muted, #64748b);
+    font-weight: 500;
+  }
+  .slot-optional {
+    font-weight: 400;
+    opacity: 0.7;
+    font-size: 10px;
+  }
+  .slot-select {
+    width: 100%;
+    min-width: 0;
+    padding: 3px 6px;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 4px;
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
+    font-size: 12px;
+    font-family: inherit;
+  }
+
+  /* ─ Multi-effect editor ────────────────────────────────────────── */
+  .effects-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid var(--tv-border, #e2e8f0);
+    padding-top: 8px;
+  }
+  .effects-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .section-title {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tv-text-muted, #64748b);
+  }
+  .add-effect {
+    padding: 2px 8px;
+    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 20%, var(--tv-border, #e2e8f0));
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-bg, #ffffff));
+    color: var(--tv-accent, #2563eb);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .add-effect:hover {
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 16%, var(--tv-bg, #ffffff));
+  }
+
+  .effect-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 8px;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 3%, var(--tv-bg, #ffffff));
+  }
+  .effect-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .effect-num {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--tv-text-muted, #64748b);
+    font-variant-numeric: tabular-nums;
+    min-width: 18px;
+  }
+  .effect-label {
+    flex: 1;
+    min-width: 0;
+    padding: 2px 6px;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 4px;
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
+    font-size: 11px;
+    font-family: inherit;
+  }
+  .effect-actions {
+    display: inline-flex;
+    gap: 2px;
+  }
+  .effect-actions button {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 3px;
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-text-muted, #64748b);
+    font-size: 10px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .effect-actions button:hover:not(:disabled) {
+    color: var(--tv-accent, #2563eb);
+    border-color: color-mix(in srgb, var(--tv-accent, #2563eb) 40%, var(--tv-border, #e2e8f0));
+  }
+  .effect-actions button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .effect-remove {
+    color: #dc2626 !important;
+    font-size: 14px !important;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .effect-remove:hover:not(:disabled) {
+    background: rgba(220, 38, 38, 0.08) !important;
+    border-color: #dc2626 !important;
+  }
+
+  .effect-visuals {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .effect-color,
+  .effect-opacity {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--tv-text-muted, #64748b);
+  }
+  .effect-color input[type="color"] {
+    width: 22px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--tv-bg, #ffffff);
+  }
+  .color-hex {
+    width: 70px;
+    padding: 2px 4px;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 3px;
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10px;
+  }
+  .effect-opacity input[type="number"] {
+    width: 52px;
+    padding: 2px 4px;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    border-radius: 3px;
+    background: var(--tv-bg, #ffffff);
+    color: var(--tv-fg, #1a1a1a);
+    font-size: 10px;
+    font-family: inherit;
+  }
+
+  .effects-empty {
+    padding: 10px;
+    text-align: center;
+    border: 1px dashed var(--tv-border, #e2e8f0);
+    border-radius: 6px;
+    color: var(--tv-text-muted, #64748b);
+    font-size: 11px;
+    font-style: italic;
   }
 </style>
