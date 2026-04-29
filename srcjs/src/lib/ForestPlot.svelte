@@ -3126,16 +3126,15 @@
     pointer-events: auto;
   }
 
-  /* Paint mode: let clicks fall through the SVG overlay to the underlying
-     `.plot-cell` div so its onclick fires `handleCellClick` (which in
-     turn routes to `setRowSemantic` / `setCellSemantic`). Without this,
-     the SVG's `pointer-events: auto` captures the click first and the
-     row/cell paint toggle never runs — paint only worked when the user
-     happened to click outside the SVG but inside the cell boundary. */
-  :global(.tabviz-container.paint-active) .plot-overlay,
-  :global(.tabviz-container.paint-active) .plot-overlay :global(*) {
-    pointer-events: none !important;
-  }
+  /* Note: a previous rule disabled `pointer-events` on `.plot-overlay`
+     when `.paint-active` was on, so paint clicks on the forest column
+     would fall through to `.plot-cell` and trigger row/cell paint. That
+     was written for the transient pre-v0.26 painter (paint mode entered
+     explicitly via the toolbar); under the always-on painter (v0.26+)
+     `.paint-active` is permanent and the rule killed wheel/drag pan +
+     dblclick reset on the SVG overlay everywhere. The forest region's
+     pan/zoom interaction is the primary affordance there; paint still
+     works on every table cell, so the rule was dropped. */
 
   /* Row hover effect - apply to all cells in a row via CSS sibling selectors */
   /* We handle this via JavaScript by tracking hover state on rows */

@@ -102,17 +102,59 @@
     return (availableThemes as FlatThemes)[name];
   }
 
-  // Extract a (primary, accent) pair for a theme so the dropdown row can
-  // show a tiny color preview alongside the label. Falls back to muted
-  // neutrals when a theme doesn't carry resolved values (e.g. preset
-  // names supplied without a custom-theme object).
-  function themeColors(name: string): { primary: string; accent: string } {
+  // Extract identity-triad + bg/fg for a theme so the dropdown row can
+  // show a five-band color preview alongside the label. The identity triad
+  // mirrors up the chain (tertiary→secondary→primary) so for many themes
+  // the three bands collapse to identical color — that's expected and
+  // correctly reflects the theme's chosen identity character. Falls back
+  // to muted neutrals when a theme doesn't carry resolved values.
+  function themeColors(name: string): {
+    primary: string; secondary: string; tertiary: string;
+    accent: string; background: string; foreground: string;
+  } {
     const t = lookupTheme(name);
-    const inputs = (t?.inputs ?? {}) as { primary?: string; accent?: string };
-    const primary = inputs.primary ?? (t?.surface as { base?: string } | undefined)?.base  ?? "#cbd5e1";
-    const accent  = inputs.accent  ?? (t?.accent  as { default?: string } | undefined)?.default ?? "#94a3b8";
-    return { primary, accent };
+    const inputs = t?.inputs ?? {};
+    const primary    = inputs.primary    ?? t?.surface?.base    ?? "#cbd5e1";
+    const secondary  = inputs.secondary  ?? primary;
+    const tertiary   = inputs.tertiary   ?? secondary;
+    const accent     = inputs.accent     ?? "#94a3b8";
+    const background = t?.surface?.base    ?? "#ffffff";
+    const foreground = t?.content?.primary ?? "#1a1a1a";
+    return { primary, secondary, tertiary, accent, background, foreground };
   }
+
+  // Theme name renders in the theme's own display face when available, so
+  // the dropdown advertises typographic flavor at a glance. fontDisplay
+  // takes precedence over fontBody (more characterful for headings) and
+  // both fall through to the host --tv-font-family CSS var.
+  function fontFor(name: string): string | undefined {
+    const t = lookupTheme(name);
+    return t?.inputs?.fontDisplay ?? t?.inputs?.fontBody ?? undefined;
+  }
+
+  // Eager-load every available theme's web fonts so previews don't flash
+  // bare fallbacks on first dropdown open. Same dedup pattern as the per-
+  // theme injector in ForestPlot.svelte (key by URL, append <link> once).
+  $effect(() => {
+    if (typeof document === "undefined" || !availableThemes) return;
+    const themes: WebTheme[] = categorized
+      ? Object.values(availableThemes as CategorizedThemes).flatMap(cat => Object.values(cat))
+      : Object.values(availableThemes as FlatThemes);
+    for (const t of themes) {
+      const fonts = t?.webFonts;
+      if (!Array.isArray(fonts) || fonts.length === 0) continue;
+      for (const wf of fonts) {
+        if (!wf?.url || typeof wf.url !== "string") continue;
+        const safeUrl = wf.url.replace(/"/g, "");
+        if (document.querySelector(`link[rel="stylesheet"][href="${safeUrl}"]`)) continue;
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = wf.url;
+        link.dataset.tabvizWebfont = wf.family;
+        document.head.appendChild(link);
+      }
+    }
+  });
 
   function closeDropdown() {
     dropdownOpen = false;
@@ -222,11 +264,19 @@
             {:else}
               <span class="spacer"></span>
             {/if}
-            <span class="swatch-pair" aria-hidden="true">
+            <span class="swatch-strip" aria-hidden="true">
               <span class="swatch" style:background={colors.primary}></span>
+              <span class="swatch" style:background={colors.secondary}></span>
+              <span class="swatch" style:background={colors.tertiary}></span>
               <span class="swatch" style:background={colors.accent}></span>
+              <span
+                class="aa-tile"
+                style:background={colors.background}
+                style:color={colors.foreground}
+                style:font-family={fontFor(themeName)}
+              >Aa</span>
             </span>
-            <span class="label">{label}</span>
+            <span class="label" style:font-family={fontFor(themeName)}>{label}</span>
           </button>
         {/each}
       </div>
@@ -344,10 +394,13 @@
     flex-shrink: 0;
   }
 
-  /* Brand|Accent preview pair — two side-by-side swatches that flag the
-     theme's character at a glance. Sits between the active-checkmark
-     column and the label. */
-  .swatch-pair {
+  /* Identity-triad + accent + 'Aa' contrast tile preview chip — three
+     identity swatches (primary | secondary | tertiary), then accent,
+     followed by an "Aa" glyph rendered in the theme's foreground over
+     its background in the theme's display face. Conveys color
+     identity AND callout color AND text-on-bg contrast AND typographic
+     flavor in a single compact chip. */
+  .swatch-strip {
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
@@ -357,8 +410,19 @@
   }
   .swatch {
     display: block;
-    width: 11px;
+    width: 8px;
     height: 14px;
+  }
+  .aa-tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 14px;
+    padding: 0 3px;
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
   }
   .dropdown-item .label {
     flex: 1;

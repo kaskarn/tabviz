@@ -678,6 +678,26 @@ export interface WebTheme {
   layout: LayoutConfig;
   groupHeaders: GroupHeaderStyles;
   semantics: Semantics;
+  // Optional v2 wire-shape fields. The serializer in
+  // R/utils-serialize-resolved.R always emits these on resolved themes; the
+  // declarations here let the switcher and font preview code read them
+  // without `as`-casts.
+  inputs?: {
+    primary?: string;
+    primaryDeep?: string;
+    secondary?: string;
+    secondaryDeep?: string;
+    tertiary?: string;
+    tertiaryDeep?: string;
+    accent?: string;
+    accentDeep?: string;
+    fontBody?: string;
+    fontDisplay?: string;
+    fontMono?: string;
+  };
+  surface?: { base: string; muted: string; raised: string };
+  content?: { primary: string; secondary: string; muted: string; inverse: string };
+  webFonts?: Array<{ family: string; url: string }>;
 }
 
 // ============================================================================

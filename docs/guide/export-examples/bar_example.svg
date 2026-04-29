@@ -77,20 +77,20 @@
       font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="400"
-      fill="#78818E">0</text>
+      fill="#717F90">0</text>
 <line x1="221.14285714285714" x2="221.14285714285714" y1="0" y2="4" stroke="#596473" stroke-width="1"/>
 <text x="221.14285714285714" y="14"
       text-anchor="middle"
       font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="400"
-      fill="#78818E">200</text>
+      fill="#717F90">200</text>
 <text x="210" y="28"
       text-anchor="middle"
       font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="500"
-      fill="#78818E">Value</text>
+      fill="#717F90">Value</text>
 </g>
 <text class="cell-text" x="22" y="92"
     font-family="Inter, -apple-system, system-ui, 'Segoe UI', sans-serif"

@@ -77,14 +77,38 @@ export interface ZoomableParams {
 
 const WHEEL_FACTOR_PER_PIXEL = 1 / 300; // ~ 1.2× per 60px of wheel delta
 
+// A pointerdown/up that travels less than this many pixels is treated as a
+// click, not a drag — the click is forwarded through the overlay to whatever
+// is under the cursor (the `.plot-cell`) so the always-on painter can commit
+// on viz cells. Anything past the threshold counts as a pan and the click is
+// suppressed.
+const CLICK_DRAG_THRESHOLD_PX = 3;
+
 export function zoomable(node: HTMLElement, initial: ZoomableParams) {
   let params = initial;
   let dragStartClientX = 0;
+  let dragStartClientY = 0;
   let dragStartDomain: [number, number] | null = null;
   let dragPointerId: number | null = null;
+  let dragMoved = false;
 
   function nodeLocalX(clientX: number): number {
     return clientX - node.getBoundingClientRect().left;
+  }
+
+  // Click-vs-drag passthrough: when pointerup fires with no meaningful
+  // movement, locate the first element under the cursor that's NOT the
+  // overlay (or a descendant) and dispatch a click on it. This restores
+  // the always-on painter's "click anywhere paints the row" promise on
+  // forest / viz_bar / viz_boxplot / viz_violin cells while preserving
+  // wheel/drag pan + dblclick reset on those same overlays.
+  function forwardClickThrough(clientX: number, clientY: number) {
+    if (typeof document === "undefined") return;
+    const stack = document.elementsFromPoint(clientX, clientY);
+    const target = stack.find(el => el !== node && !node.contains(el));
+    if (target instanceof HTMLElement) {
+      target.click();
+    }
   }
 
   function onWheel(e: WheelEvent) {
@@ -112,8 +136,10 @@ export function zoomable(node: HTMLElement, initial: ZoomableParams) {
     const target = e.target as HTMLElement | null;
     if (target?.closest("[data-zoom-ignore], button, a, input, [role='button']")) return;
     dragStartClientX = e.clientX;
+    dragStartClientY = e.clientY;
     dragStartDomain = params.getDomain();
     dragPointerId = e.pointerId;
+    dragMoved = false;
     try {
       node.setPointerCapture(e.pointerId);
     } catch {
@@ -124,9 +150,14 @@ export function zoomable(node: HTMLElement, initial: ZoomableParams) {
 
   function onPointerMove(e: PointerEvent) {
     if (dragStartDomain == null || dragPointerId !== e.pointerId) return;
+    const dx = e.clientX - dragStartClientX;
+    const dy = e.clientY - dragStartClientY;
+    if (!dragMoved && Math.hypot(dx, dy) > CLICK_DRAG_THRESHOLD_PX) {
+      dragMoved = true;
+    }
+    if (!dragMoved) return;
     const [rangeStart, rangeEnd] = params.getPixelRange();
     const pixelSpan = rangeEnd - rangeStart;
-    const dx = e.clientX - dragStartClientX;
     const next = panByPixels(dragStartDomain, dx, pixelSpan, params.isLog);
     if (!Number.isFinite(next[0]) || !Number.isFinite(next[1]) || next[0] >= next[1]) return;
     if (params.isLog && next[0] <= 0) return;
@@ -135,14 +166,19 @@ export function zoomable(node: HTMLElement, initial: ZoomableParams) {
 
   function endDrag(e: PointerEvent) {
     if (dragPointerId !== e.pointerId) return;
+    const wasClick = !dragMoved;
+    const upX = e.clientX;
+    const upY = e.clientY;
     dragStartDomain = null;
     dragPointerId = null;
+    dragMoved = false;
     try {
       node.releasePointerCapture(e.pointerId);
     } catch {
       /* ignore */
     }
     node.style.cursor = "";
+    if (wasClick) forwardClickThrough(upX, upY);
   }
 
   function onDblClick(e: MouseEvent) {
