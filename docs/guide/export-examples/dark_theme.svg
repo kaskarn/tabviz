@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="500" height="275"
-  viewBox="0 0 500 275">
+  width="500" height="287"
+  viewBox="0 0 500 287">
 <style>
   text {
     font-variant-numeric: tabular-nums;
@@ -16,63 +16,63 @@
       font-weight="600"
       fill="#5C85C8">Dark Theme Export</text>
 <line x1="12" x2="488"
-      y1="48" y2="48"
+      y1="60" y2="60"
       stroke="#45475A" stroke-width="2"/>
-<text class="cell-text" x="22" y="64"
+<text class="cell-text" x="22" y="76"
         font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
         font-size="14.7px"
         font-weight="600"
         fill="#CDD6F4">Study</text>
-<text class="cell-text" x="282" y="64"
+<text class="cell-text" x="282" y="76"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14.7px"
           font-weight="600"
           text-anchor="start"
           fill="#CDD6F4">HR (95% CI)</text>
 <line x1="12" x2="488"
-        y1="80" y2="80"
+        y1="92" y2="92"
         stroke="#45475A" stroke-width="2"/>
-<rect x="12" y="80"
+<rect x="12" y="92"
             width="476" height="24"
             fill="#222233"/>
-<rect x="12" y="128"
+<rect x="12" y="140"
             width="476" height="24"
             fill="#222233"/>
-<line x1="230.0006922796589" x2="230.0006922796589" y1="80" y2="176"
+<line x1="230.0006922796589" x2="230.0006922796589" y1="92" y2="188"
     stroke="#898EA5" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
         <g class="interval effect-0">
-          <line x1="148.95538520317044" x2="222.36920080645828" y1="92" y2="92"
+          <line x1="148.95538520317044" x2="222.36920080645828" y1="104" y2="104"
             stroke="#6B94D8" stroke-width="1.5"/>
-          <line x1="148.95538520317044" x2="148.95538520317044" y1="89" y2="95" stroke="#6B94D8" stroke-width="1.5"/>
-          <line x1="222.36920080645828" x2="222.36920080645828" y1="89" y2="95" stroke="#6B94D8" stroke-width="1.5"/>
-          <rect x="179.20183551768244" y="86" width="12" height="12" fill="#89B4FA"/>
+          <line x1="148.95538520317044" x2="148.95538520317044" y1="101" y2="107" stroke="#6B94D8" stroke-width="1.5"/>
+          <line x1="222.36920080645828" x2="222.36920080645828" y1="101" y2="107" stroke="#6B94D8" stroke-width="1.5"/>
+          <rect x="179.20183551768244" y="98" width="12" height="12" fill="#89B4FA"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="146.36781624714052" x2="245.52752822574973" y1="116" y2="116"
+          <line x1="146.36781624714052" x2="245.52752822574973" y1="128" y2="128"
             stroke="#6B94D8" stroke-width="1.5"/>
-          <line x1="146.36781624714052" x2="146.36781624714052" y1="113" y2="119" stroke="#6B94D8" stroke-width="1.5"/>
-          <line x1="245.52752822574973" x2="245.52752822574973" y1="113" y2="119" stroke="#6B94D8" stroke-width="1.5"/>
-          <rect x="188.92957821322443" y="110" width="12" height="12" fill="#89B4FA"/>
+          <line x1="146.36781624714052" x2="146.36781624714052" y1="125" y2="131" stroke="#6B94D8" stroke-width="1.5"/>
+          <line x1="245.52752822574973" x2="245.52752822574973" y1="125" y2="131" stroke="#6B94D8" stroke-width="1.5"/>
+          <rect x="188.92957821322443" y="122" width="12" height="12" fill="#89B4FA"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="193.03424729798235" x2="225.46892677355368" y1="140" y2="140"
+          <line x1="193.03424729798235" x2="225.46892677355368" y1="152" y2="152"
             stroke="#6B94D8" stroke-width="1.5"/>
-          <line x1="193.03424729798235" x2="193.03424729798235" y1="137" y2="143" stroke="#6B94D8" stroke-width="1.5"/>
-          <line x1="225.46892677355368" x2="225.46892677355368" y1="137" y2="143" stroke="#6B94D8" stroke-width="1.5"/>
-          <rect x="203.28107791123773" y="134" width="12" height="12" fill="#89B4FA"/>
+          <line x1="193.03424729798235" x2="193.03424729798235" y1="149" y2="155" stroke="#6B94D8" stroke-width="1.5"/>
+          <line x1="225.46892677355368" x2="225.46892677355368" y1="149" y2="155" stroke="#6B94D8" stroke-width="1.5"/>
+          <rect x="203.28107791123773" y="146" width="12" height="12" fill="#89B4FA"/>
         </g>
 
         <g class="interval effect-0">
-          <line x1="194.92957821322443" x2="228.50538858968153" y1="164" y2="164"
+          <line x1="194.92957821322443" x2="228.50538858968153" y1="176" y2="176"
             stroke="#6B94D8" stroke-width="1.5"/>
-          <line x1="194.92957821322443" x2="194.92957821322443" y1="161" y2="167" stroke="#6B94D8" stroke-width="1.5"/>
-          <line x1="228.50538858968153" x2="228.50538858968153" y1="161" y2="167" stroke="#6B94D8" stroke-width="1.5"/>
-          <rect x="204.9814560165861" y="158" width="12" height="12" fill="#89B4FA"/>
+          <line x1="194.92957821322443" x2="194.92957821322443" y1="173" y2="179" stroke="#6B94D8" stroke-width="1.5"/>
+          <line x1="228.50538858968153" x2="228.50538858968153" y1="173" y2="179" stroke="#6B94D8" stroke-width="1.5"/>
+          <rect x="204.9814560165861" y="170" width="12" height="12" fill="#89B4FA"/>
         </g>
-<g transform="translate(0, 188)"><line x1="112" x2="272"
+<g transform="translate(0, 200)"><line x1="112" x2="272"
     y1="0" y2="0" stroke="#45475A" stroke-width="1"/>
 <line x1="153.9993077203411" x2="153.9993077203411" y1="0" y2="4"
       stroke="#45475A" stroke-width="1"/>
@@ -97,13 +97,13 @@
       font-weight="400"
       font-style="normal"
       fill="#868DA9">Effect</text></g>
-<text class="cell-text" x="22" y="92"
+<text class="cell-text" x="22" y="104"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">SUSTAIN-6</text>
-<text class="cell-text" x="282" y="92"
+<text class="cell-text" x="282" y="104"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
@@ -111,15 +111,15 @@
           text-anchor="start"
           fill="#CDD6F4">0.74 (0.58, 0.95)</text>
 <line x1="12" x2="488"
-          y1="104" y2="104"
+          y1="116" y2="116"
           stroke="#313244" stroke-width="1"/>
-<text class="cell-text" x="22" y="116"
+<text class="cell-text" x="22" y="128"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">PIONEER 6</text>
-<text class="cell-text" x="282" y="116"
+<text class="cell-text" x="282" y="128"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
@@ -127,15 +127,15 @@
           text-anchor="start"
           fill="#CDD6F4">0.79 (0.57, 1.11)</text>
 <line x1="12" x2="488"
-          y1="128" y2="128"
+          y1="140" y2="140"
           stroke="#313244" stroke-width="1"/>
-<text class="cell-text" x="22" y="140"
+<text class="cell-text" x="22" y="152"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">LEADER</text>
-<text class="cell-text" x="282" y="140"
+<text class="cell-text" x="282" y="152"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
@@ -143,15 +143,15 @@
           text-anchor="start"
           fill="#CDD6F4">0.87 (0.78, 0.97)</text>
 <line x1="12" x2="488"
-          y1="152" y2="152"
+          y1="164" y2="164"
           stroke="#313244" stroke-width="1"/>
-<text class="cell-text" x="22" y="164"
+<text class="cell-text" x="22" y="176"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">REWIND</text>
-<text class="cell-text" x="282" y="164"
+<text class="cell-text" x="282" y="176"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
@@ -159,7 +159,7 @@
           text-anchor="start"
           fill="#CDD6F4">0.88 (0.79, 0.99)</text>
 <line x1="12" x2="488"
-          y1="176" y2="176"
+          y1="188" y2="188"
           stroke="#313244" stroke-width="1"/>
 
 </svg>

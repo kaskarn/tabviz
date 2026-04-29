@@ -34,6 +34,7 @@ import { niceDomain } from "$lib/scale-utils";
 import { computeAxis, type AxisComputation, VIZ_MARGIN } from "$lib/axis-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
+import { glyphNaturalWidth } from "$lib/width-utils";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE, LAYOUT } from "$lib/rendering-constants";
 import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
 
@@ -1211,6 +1212,12 @@ export function createForestStore() {
           maxWidth = Math.max(maxWidth, ctx!.measureText(text).width);
         }
       }
+
+      // Glyph-column natural geometry (pictogram/icon/ring/stars):
+      // getColumnDisplayText() returns "" for these so the row loop above
+      // measures only the header. Layer in the rendered-pixel width here
+      // so columns auto-size to fit their actual data.
+      maxWidth = Math.max(maxWidth, glyphNaturalWidth(col, spec!.data.rows));
 
       // Apply padding (from theme) and constraints.
       const typeMin = AUTO_WIDTH.VISUAL_MIN[col.type] ?? AUTO_WIDTH.MIN;

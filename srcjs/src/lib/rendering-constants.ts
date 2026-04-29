@@ -231,6 +231,13 @@ export const AUTO_WIDTH = {
     stars: 84, // 5 stars at ~12px each + 32px padding
     range: 84, // visual element + 32px padding
     badge: 74, // minimum for short badges + pill padding
+    // Glyph columns: minimums chosen to fit the typical small/base size
+    // rendering. Auto-width calculation also reads the per-row geometry via
+    // glyphNaturalWidth() so columns expand to fit larger data — the
+    // minimum is just the floor when content doesn't push past it.
+    pictogram: 84, // ~5 base-size glyphs (5 × 14px + gaps + padding)
+    icon: 60, // single base-size glyph + padding
+    ring: 84, // base-size donut (24px) + label + padding
     // Viz columns (full visualization with axis) need larger minimums
     forest: 200, // forest plot with axis
     viz_bar: 150, // bar chart with axis

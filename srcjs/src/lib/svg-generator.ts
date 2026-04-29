@@ -55,7 +55,7 @@ import {
   getColumnDisplayText,
   truncateString,
 } from "./formatters";
-import { estimateTextWidth, measureTextWidthCanvas } from "./width-utils";
+import { estimateTextWidth, measureTextWidthCanvas, glyphNaturalWidth } from "./width-utils";
 
 /**
  * Measure text width - uses canvas when available (browser), falls back to estimation (V8/Node).
@@ -326,6 +326,13 @@ function calculateSvgAutoWidths(
         maxWidth = Math.max(maxWidth, estimateTextWidth(text, fontSize));
       }
     }
+
+    // Glyph-column natural geometry: pictogram, icon, ring, stars all
+    // render fixed-pixel artwork that getColumnDisplayText() can't
+    // measure as text, so without this their auto-width was just the
+    // header text and they ended up cramped. Returns 0 for non-glyph
+    // types.
+    maxWidth = Math.max(maxWidth, glyphNaturalWidth(col, rows));
 
     // Apply padding (from theme) and constraints
     // Use type-specific minimum for visual columns, else default minimum
@@ -843,6 +850,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // mirror the prior LAYOUT.BOTTOM_MARGIN constant).
   const bottomMargin = theme.spacing.bottomMargin ?? LAYOUT.BOTTOM_MARGIN;
   const totalHeight = headerTextHeight + padding +
+    (theme.spacing.headerGap ?? 12) +
     headerHeight + plotHeight +
     webAxisHeight +
     footerGap +
@@ -868,7 +876,11 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // the constant 28px region.
     titleY: padding + Math.round(titleHeight * 0.8),
     subtitleY: padding + titleHeight + titleSubtitleGap + Math.round(subtitleHeight * 0.8),
-    mainY: headerTextHeight + padding,
+    // Header → first row gap. Live widget applies it as `padding-bottom`
+    // on the header element via `--tv-header-gap` (PlotHeader.svelte:130);
+    // SVG has no header element so we fold the gap into mainY. Default 12
+    // matches the live CSS-var fallback in ForestPlot.svelte.
+    mainY: headerTextHeight + padding + (theme.spacing.headerGap ?? 12),
     // Footer Y: Match web view's layout (axisHeight + 8px footer padding-top)
     // Footer Y: axis region + themed footer gap (spacing.footer_gap).
     // footerY = caption baseline. Live widget renders the caption with
@@ -878,7 +890,8 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // top to baseline ≈ 0.85 × fontSize). Without the +captionAscent,
     // SVG and live disagreed by ~10px and the footer text overlapped
     // the axis region in the export.
-    footerY: headerTextHeight + padding + headerHeight + plotHeight + webAxisHeight
+    footerY: headerTextHeight + padding + (theme.spacing.headerGap ?? 12)
+           + headerHeight + plotHeight + webAxisHeight
            + (theme.spacing.footerGap ?? 8)
            + Math.round(parseFontSize(theme.text.label.size) * 0.85),
     axisGap,
@@ -2654,7 +2667,7 @@ function renderVizAxis(
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${400}"
-      fill="${theme.plot?.tickLabel?.fg ?? theme.content.primary}">${label}</text>`);
+      fill="${theme.plot?.tickLabel?.fg ?? theme.content.secondary}">${label}</text>`);
   }
 
   // Axis label
@@ -2664,7 +2677,7 @@ function renderVizAxis(
       font-family="${theme.text.body.family}"
       font-size="${fontSize}px"
       font-weight="${500}"
-      fill="${theme.plot?.axisLabel?.fg ?? theme.content.primary}">${escapeXml(axisLabel)}</text>`);
+      fill="${theme.plot?.axisLabel?.fg ?? theme.content.secondary}">${escapeXml(axisLabel)}</text>`);
   }
 
   return lines.join("\n");
@@ -3021,7 +3034,7 @@ function renderUnifiedTableRow(
       const barScale = col.options?.bar?.scale ?? "linear";
       // Per-cell + per-row semantic paint cascade (parity with the live
       // CellBar component): cell-paint markerFill > row-paint markerFill
-      // > brand. Tokens without markerFill (bold, fill) fall through.
+      // > primary. Tokens without markerFill (bold, fill) fall through.
       const barCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
       const barRowBundle = resolveSemanticBundle(row.style, theme);
       const barColor = col.options?.bar?.color
@@ -3467,6 +3480,54 @@ function renderUnifiedTableRow(
           }
         }
       }
+    } else if (col.type === "icon") {
+      // Render single-glyph icon cell. Mirrors CellIcon.svelte: applies
+      // mapping[value] when present, otherwise renders the value verbatim
+      // (typical case is a unicode/emoji glyph stored directly in the
+      // data column). Color cascade matches the bar/sparkline path —
+      // explicit options.color > cell-bundle markerFill > row-bundle
+      // markerFill > theme primary identity.
+      const iconRaw = row.metadata[col.field];
+      const iconOpts = col.options?.icon;
+      const iconMapping = iconOpts?.mapping ?? {};
+      let iconText: string;
+      if (iconRaw === undefined || iconRaw === null || iconRaw === "") {
+        iconText = col.naText ?? "";
+      } else {
+        const sv = String(iconRaw);
+        iconText = sv in iconMapping ? String(iconMapping[sv]) : sv;
+      }
+      if (iconText) {
+        const iconSizeKey = iconOpts?.size ?? "base";
+        const iconPx = iconSizeKey === "sm" ? 12
+          : iconSizeKey === "lg" ? 16
+          : iconSizeKey === "xl" ? 26
+          : 14;
+        const iconCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
+        const iconRowBundle = resolveSemanticBundle(row.style, theme);
+        const iconColor = iconOpts?.color
+          ?? iconCellBundle?.markerFill
+          ?? iconRowBundle?.markerFill
+          ?? theme.inputs?.primary
+          ?? theme.accent.default;
+        const iconAnchor = col.align === "right" ? "end"
+          : col.align === "left" ? "start"
+          : "middle";
+        const iconX = col.align === "right"
+          ? currentX + width - SPACING.TEXT_PADDING
+          : col.align === "left"
+            ? currentX + SPACING.TEXT_PADDING
+            : currentX + width / 2;
+        const iconY = y + rowHeight / 2;
+        lines.push(
+          `<text x="${iconX}" y="${iconY}" ` +
+          `font-family="${theme.text.body.family}" ` +
+          `font-size="${iconPx}px" ` +
+          `fill="${iconColor}" ` +
+          `dominant-baseline="middle" text-anchor="${iconAnchor}">` +
+          `${escapeXml(iconText)}</text>`
+        );
+      }
     } else if (col.type === "heatmap") {
       // Render heatmap cell with colored background
       const hmValue = row.metadata[col.field] as number;
@@ -3553,7 +3614,7 @@ function renderUnifiedTableRow(
         const progColor = progOpts?.color
           ?? progCellBundle?.markerFill
           ?? progRowBundle?.markerFill
-          ?? (theme.inputs as { primary?: string } | undefined)?.brand
+          ?? theme.inputs?.primary
           ?? theme.accent.default;
         const progShowLabel = progOpts?.showLabel ?? true;
         const progScale = progOpts?.scale ?? "linear";
