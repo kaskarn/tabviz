@@ -269,6 +269,130 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
+## Two-way Integration: Reading Widget State
+
+The widget emits **every interactive dimension** back to Shiny as named inputs.
+This lets a dashboard mirror what the user is doing inside the widget — sort
+clicks, filter changes, column show/hide, paint tokens, group collapses, even
+zoom and pan state.
+
+### The contract
+
+Every dimension is emitted as `input$<id>_<dimension>` with a uniform envelope:
+
+```r
+list(value = ..., source = "user" | "proxy", ts = <ms>)
+```
+
+`source` distinguishes user-driven mutations from proxy-pushed ones, so an
+observer can ignore its own writes:
+
+```r
+observeEvent(input$plot_sort, {
+  req(input$plot_sort$source == "user")  # don't echo proxy writes
+  current_sort <- input$plot_sort$value  # list(column =, direction =)
+  # ...react to user-driven sort change
+})
+```
+
+### `tabviz_state()` — read everything at once
+
+`tabviz_state(input, "plot")` pulls every dimension into a single named list,
+unwrapped. Use `tabviz_state_envelope()` if you need the `source` and `ts`.
+
+```r
+observe({
+  state <- tabviz_state(input, "plot")
+  str(state$sort)              # list(column = "hr", direction = "desc")
+  str(state$filters)           # list(arm = list(operator = "eq", value = "A"))
+  str(state$selected)          # c("study_1", "study_4")
+  str(state$hidden_columns)    # c("se", "ci_lo")
+  str(state$collapsed_groups)  # c("group_drug_class")
+})
+```
+
+### Dimensions emitted
+
+| Dimension | Shape |
+|---|---|
+| `sort` | `list(column, direction)` or `NULL` |
+| `filters` | named list, key = field, value = `list(operator, value)` |
+| `selected` | `character()` of row ids |
+| `hover` | row id or `NULL` |
+| `collapsed_groups` | `character()` of group ids |
+| `hidden_columns` | `character()` of column ids |
+| `column_order` | `character()` of column ids in display order |
+| `column_widths` | named numeric |
+| `cell_edits` | `list(cells, groups)` map of user-typed values |
+| `label_edits` | named list (title/subtitle/caption/footnote) |
+| `row_styles`, `cell_styles` | paint-token maps |
+| `paint_tool` | `list(token, scope)` — the active brush |
+| `zoom` | `list(zoom, autoFit, maxWidth, maxHeight, showZoomControls)` |
+| `axis_zooms` | per-forest-column pan/zoom domains |
+| `banding` | `list(mode, startsWithBand)` or `NULL` |
+| `plot_width` | numeric or `NULL` |
+| `visible_rows` | `character()` of row ids actually visible after filter+sort+collapse |
+
+There is also `input$<id>_state`, a debounced (~150 ms) bundle of every
+dimension above. Useful for bookmarking or debugging — `observe(str(input$plot_state))`
+shows the whole world.
+
+### Round-trip example
+
+```r
+ui <- fluidPage(
+  selectInput("col", "Sort column", c("hr", "n")),
+  selectInput("dir", "Direction", c("asc", "desc", "none")),
+  tabvizOutput("plot"),
+  verbatimTextOutput("status")
+)
+
+server <- function(input, output, session) {
+  output$plot <- renderTabviz({
+    tabviz(meta_data, label = "study",
+      columns = list(viz_forest("hr", "lower", "upper")))
+  })
+
+  # Shiny → Widget: dropdowns drive the widget's sort.
+  observe({
+    sort_rows(tabviz_proxy("plot"), input$col, input$dir)
+  })
+
+  # Widget → Shiny: clicking a header in the widget updates the dropdowns.
+  observeEvent(input$plot_sort, {
+    req(input$plot_sort$source == "user")  # ignore our own pushes
+    s <- input$plot_sort$value
+    updateSelectInput(session, "col", selected = s$column)
+    updateSelectInput(session, "dir", selected = s$direction)
+  })
+
+  output$status <- renderPrint(tabviz_state(input, "plot"))
+}
+```
+
+The `source == "user"` guard is the key — without it, the proxy's own writes
+would echo back into the dropdowns and you'd risk a feedback loop.
+
+## Initial State at First Paint
+
+`tabviz()` accepts three `initial_*` args so the first paint already reflects
+the dashboard's expected state — no flash of unsorted/unfiltered content
+before a proxy push lands:
+
+```r
+output$plot <- renderTabviz({
+  tabviz(meta_data, label = "study",
+    initial_sort = list(column = "hr", direction = "desc"),
+    initial_filters = list(arm = list(operator = "eq", value = "A")),
+    initial_hidden_columns = c("se", "ci_lo"),
+    columns = list(viz_forest("hr", "lower", "upper"))
+  )
+})
+```
+
+These are the constructor counterparts of `sort_rows()`, `filter_rows()`, and
+`remove_column()` — same shape, applied before mount.
+
 ## Proxy vs Re-render
 
 | Use case | Approach | Reason |

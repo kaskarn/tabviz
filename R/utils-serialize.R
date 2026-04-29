@@ -19,6 +19,7 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     availableFields = serialize_available_fields(spec),
     theme = serialize_theme(theme),
     interaction = serialize_interaction(spec@interaction),
+    initialState = serialize_initial_state(spec@initial_state),
     labels = serialize_labels(spec@labels),
     watermark = if (is.na(spec@watermark)) NULL else spec@watermark,
     watermarkColor = if (is.na(spec@watermark_color)) NULL else spec@watermark_color,
@@ -385,6 +386,33 @@ is_categorized_themes <- function(x) {
     is.list(category) && length(category) > 0L &&
       all(vapply(category, function(t) inherits(t, "tabviz::WebTheme"), logical(1)))
   }, logical(1)))
+}
+
+#' Serialize the authored initial-state bundle.
+#'
+#' Mirrors the shape `validate_initial_state()` returns. NULL passthrough
+#' (no initial state set) keeps the JSON payload free of an empty key.
+#' @keywords internal
+serialize_initial_state <- function(initial_state) {
+  if (is.null(initial_state)) return(NULL)
+  out <- list()
+  if (!is.null(initial_state$sort)) {
+    out$sort <- list(
+      column = initial_state$sort$column,
+      direction = initial_state$sort$direction
+    )
+  }
+  if (!is.null(initial_state$filters)) {
+    # JSON-friendly list of {field, operator, value} triples.
+    out$filters <- lapply(initial_state$filters, function(f) {
+      list(field = f$field, operator = f$operator, value = f$value)
+    })
+  }
+  if (!is.null(initial_state$hidden_columns)) {
+    # Force a JSON array even for length-1 vectors via toJSON's auto_unbox=TRUE.
+    out$hiddenColumns <- I(unlist(initial_state$hidden_columns))
+  }
+  if (length(out) == 0) NULL else out
 }
 
 #' @keywords internal

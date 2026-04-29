@@ -10,10 +10,13 @@ web_theme_elvish()
 A \link{WebTheme}.
 }
 \description{
-Deep night-sky surface, gold-and-silver accents, elegant Roman serif
-display with a flowing Renaissance body. Pairs with
-\code{\link[=col_pictogram]{col_pictogram()}} glyphs \code{"crescent"}, \code{"harp"}, \code{"tree"}, \code{"bow"},
-\code{"swan"}.
+Deep night-sky surface with a three-tier identity: starlit-navy primary
+for headlines, mithril-silver secondary for structural groupings (column
+bands, row bars, glyph fills — Lothlórien's pillars and banners),
+mallorn-moss tertiary for chrome texture. Twilight-gold accent reserved
+for layered emphasis. Elegant Roman serif display with a flowing
+Renaissance body. Pairs with \code{\link[=col_pictogram]{col_pictogram()}} glyphs \code{"crescent"},
+\code{"harp"}, \code{"tree"}, \code{"bow"}, \code{"swan"}.
 }
 \details{
 Loads \code{Cinzel} (display) and \verb{Cormorant Garamond} (body) from Google

@@ -208,6 +208,11 @@ WebSpec <- new_class(
     ),
     theme = new_property(class_any, default = NULL),  # Set in web_spec()
     interaction = new_property(class_any, default = NULL),  # Set in web_spec()
+    # Authored initial state applied at first paint — picked up by the widget
+    # before mount so Shiny dashboards don't see a flash of unsorted/unfiltered
+    # content before a proxy push lands. NULL means "no initial state". Set
+    # via tabviz(initial_sort=, initial_filters=, initial_hidden_columns=).
+    initial_state = new_property(class_any, default = NULL),
     labels = new_property(class_any, default = NULL),  # PlotLabels for title/subtitle/etc
     watermark = new_property(class_character, default = NA_character_),  # Optional centered diagonal watermark text
     # Watermark styling. NA defers to `theme.colors.foreground` and 0.07

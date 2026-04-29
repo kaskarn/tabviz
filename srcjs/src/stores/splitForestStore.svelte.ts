@@ -37,6 +37,10 @@ export function createSplitForestStore() {
   // Core state
   let payload = $state<SplitForestPayload | null>(null);
   let activeKey = $state<string | null>(null);
+  // Provenance of the most-recent activeKey change. Read by the Shiny binding
+  // when emitting input$<id>_active_plot so dashboards can disambiguate their
+  // own selectPlot pushes from user clicks.
+  let activeKeySource = $state<"user" | "proxy">("user");
   let searchQuery = $state("");
   let expandedNodes = $state<Set<string>>(new Set());
   let sidebarCollapsed = $state(false);
@@ -210,10 +214,11 @@ export function createSplitForestStore() {
     setSharedColumnWidths(!sharedColumnWidths);
   }
 
-  function selectSpec(key: string) {
+  function selectSpec(key: string, source: "user" | "proxy" = "user") {
     if (!payload) return;
 
     activeKey = key;
+    activeKeySource = source;
     const spec = payload.specs[key];
     if (spec) {
       activeStore.setSpec(spec);
@@ -327,6 +332,7 @@ export function createSplitForestStore() {
     // Getters
     get payload() { return payload; },
     get activeKey() { return activeKey; },
+    get activeKeySource() { return activeKeySource; },
     get activeSpec() { return activeSpec; },
     get activeStore() { return activeStore; },
     get navTree() { return filteredNavTree; },

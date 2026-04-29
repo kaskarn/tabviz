@@ -52,24 +52,30 @@ const binding: HTMLWidgetsBinding = {
   },
 };
 
-// Set up Shiny input bindings
+// Set up Shiny input bindings.
+//
+// Split-widget v1 emits envelope-wrapped {value, source, ts} for active_plot
+// and selected (paint-derived from the active sub-store). Per-active-store
+// full Tier-1 observability is deferred — consumers can still observe the
+// active sub-store's own outputs once richer cross-cutting wiring lands.
 function setupShinyBindings(widgetId: string, store: SplitForestStore) {
-  // Use $effect.root() to create a reactive context outside component initialization
   $effect.root(() => {
-    // Forward active plot selection events
     $effect(() => {
       const activeKey = store.activeKey;
-      window.Shiny?.setInputValue(`${widgetId}_active_plot`, activeKey, {
-        priority: "event",
-      });
+      window.Shiny?.setInputValue(
+        `${widgetId}_active_plot`,
+        { value: activeKey, source: store.activeKeySource, ts: Date.now() },
+        { priority: "event" },
+      );
     });
 
-    // Forward row selection from active store
     $effect(() => {
-      const ids = store.activeStore.selectedRowIds;
-      window.Shiny?.setInputValue(`${widgetId}_selected`, Array.from(ids), {
-        priority: "event",
-      });
+      const ids = Array.from(store.activeStore.selectedRowIds);
+      window.Shiny?.setInputValue(
+        `${widgetId}_selected`,
+        { value: ids, source: store.activeStore.getSource("selected"), ts: Date.now() },
+        { priority: "event" },
+      );
     });
   });
 }
@@ -89,7 +95,7 @@ if (typeof window !== "undefined" && window.Shiny) {
       if (!store) return;
 
       if (msg.method === "selectPlot" && typeof msg.args.key === "string") {
-        store.selectSpec(msg.args.key);
+        store.selectSpec(msg.args.key, "proxy");
       }
     }
   );

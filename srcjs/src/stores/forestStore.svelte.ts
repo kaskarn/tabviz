@@ -94,6 +94,28 @@ export function createForestStore() {
   // Core state
   let spec = $state<WebSpec | null>(null);
 
+  // ── Source tagging for outbound Shiny events ────────────────────────────
+  // Every setter that drives a Shiny-observable field calls markSource(<field>)
+  // after the mutation. UI-driven calls leave currentSource at 'user'; proxy
+  // dispatch wraps its handler in withSource('proxy', ...) so markSource
+  // captures 'proxy' synchronously before the $effect tick fires.
+  // lastSource is $state so observers reactively read the latest tag.
+  type SourceTag = "user" | "proxy";
+  let currentSource: SourceTag = "user";
+  let lastSource = $state<Record<string, SourceTag>>({});
+  function markSource(field: string) {
+    lastSource[field] = currentSource;
+  }
+  function withSource<T>(src: SourceTag, fn: () => T): T {
+    const prev = currentSource;
+    currentSource = src;
+    try {
+      return fn();
+    } finally {
+      currentSource = prev;
+    }
+  }
+
   // Initial dimensions (from htmlwidgets/splitStore, used as fallback before ResizeObserver fires)
   let initialWidth = $state(800);
   let initialHeight = $state(400);
@@ -1556,6 +1578,7 @@ export function createForestStore() {
     }
 
     collapsedGroups = newCollapsed;
+    markSource("collapsed_groups");
   }
 
   // Settings panel visibility
@@ -1577,13 +1600,12 @@ export function createForestStore() {
   function setBandingOverride(value: string | BandingSpec | null) {
     if (value == null) {
       bandingOverride = null;
-      return;
-    }
-    if (typeof value === "string") {
+    } else if (typeof value === "string") {
       bandingOverride = parseBandingString(value);
-      return;
+    } else {
+      bandingOverride = value;
     }
-    bandingOverride = value;
+    markSource("banding");
   }
 
   /**
@@ -1592,6 +1614,7 @@ export function createForestStore() {
    */
   function setBandingStartsWithBand(value: boolean | null) {
     bandingStartsWithBandOverride = value;
+    markSource("banding");
   }
 
   function sortBy(column: string, direction: "asc" | "desc" | "none") {
@@ -1599,6 +1622,7 @@ export function createForestStore() {
     if (direction !== "none") {
       appendOp(ops.sortRows(column, direction));
     }
+    markSource("sort");
   }
 
   // Cycle sort state for a column: none → asc → desc → none
@@ -1617,6 +1641,7 @@ export function createForestStore() {
       // sort, and there's no `sort_rows(..., direction = "none")` form in
       // the R API yet. Author can clear by re-clicking or by editing.
     }
+    markSource("sort");
   }
 
   function setFilter(filter: FilterConfig | null) {
@@ -1624,6 +1649,7 @@ export function createForestStore() {
     if (filter) {
       appendOp(ops.setFilter(filter.field, filter.operator, filter.value));
     }
+    markSource("filters");
   }
 
   // Multi-column filter API (per-header popovers)
@@ -1640,6 +1666,7 @@ export function createForestStore() {
       filters = { ...filters, [field]: filter };
       appendOp(ops.setFilter(field, filter.operator, filter.value));
     }
+    markSource("filters");
   }
 
   function clearAllFilters() {
@@ -1647,6 +1674,7 @@ export function createForestStore() {
     filters = {};
     filterConfig = null;
     if (hadFilters) appendOp(ops.clearFilters());
+    markSource("filters");
   }
 
   function getColumnFilter(field: string): ColumnFilter | null {
@@ -1791,6 +1819,7 @@ export function createForestStore() {
     }
     // Record with the 1-based new index (matches R's semantics).
     appendOp(ops.moveColumn(itemId, newIndex + 1));
+    markSource("column_order");
   }
 
   // Find the group id of a row-group, given the group id itself.
@@ -1915,6 +1944,7 @@ export function createForestStore() {
     userInsertedColumns = [...userInsertedColumns, { afterId, def: { ...def, id } }];
     const after = afterId === "__start__" ? "__start__" : afterId;
     appendOp(ops.addColumn(renderColumnBuilder(def), after));
+    markSource("column_order");
   }
 
   // Hide a column (reversible via clearColumnEdits).
@@ -1924,6 +1954,8 @@ export function createForestStore() {
     next.add(id);
     hiddenColumnIds = next;
     appendOp(ops.removeColumn(id));
+    markSource("hidden_columns");
+    markSource("column_order");
   }
 
   // Replace an existing column's spec. Works for both author-defined and
@@ -1972,6 +2004,7 @@ export function createForestStore() {
       cells: { ...cellEdits.cells, [rowId]: { ...current, [field]: value } },
     };
     appendOp(ops.setCell(rowId, field, value));
+    markSource("cell_edits");
   }
 
   function clearCellEdit(rowId: string, field: string) {
@@ -1997,6 +2030,7 @@ export function createForestStore() {
       cells: { ...cellEdits.cells, [rowId]: { ...current, [field]: label } },
     };
     appendOp(ops.setRowLabel(rowId, label));
+    markSource("cell_edits");
   }
 
   function setGroupHeader(groupId: string, text: string) {
@@ -2056,6 +2090,7 @@ export function createForestStore() {
     const next = value == null || value === "" ? null : value;
     labelEdits = { ...labelEdits, [field]: next };
     appendOp(ops.setLabelSlot(field, next));
+    markSource("label_edits");
   }
 
   /**
@@ -2078,6 +2113,7 @@ export function createForestStore() {
     if (!(field in labelEdits)) return;
     const { [field]: _omit, ...rest } = labelEdits;
     labelEdits = rest;
+    markSource("label_edits");
   }
 
   function getPlotLabel(
@@ -2107,6 +2143,7 @@ export function createForestStore() {
     // Clear any stale paint-hover marker so a token/scope switch doesn't
     // leave the previous cell highlighted in preview.
     paintHoverCellField = null;
+    markSource("paint_tool");
   }
 
   // Paint-mode hover state. Tracks "rowId:field" of the cell under the
@@ -2139,6 +2176,11 @@ export function createForestStore() {
     // Turning a token ON records the paint; turning OFF records clearing
     // (paint_row(..., NULL)). The fluent R verb mirrors this toggle.
     appendOp(ops.paintRow(rowId, on ? token : null));
+    markSource("row_styles");
+    // The active token's painted-row set IS "selection" under the current
+    // contract; mark _selected too so dashboards observing the shortcut
+    // see proxy/user provenance correctly.
+    if (token === paintTool.token) markSource("selected");
   }
 
   function setCellSemantic(
@@ -2164,6 +2206,7 @@ export function createForestStore() {
       : (() => { const { [rowId]: _r, ...rest } = styleEdits.cells; return rest; })();
     styleEdits = { ...styleEdits, cells };
     appendOp(ops.paintCell(rowId, field, on ? token : null));
+    markSource("cell_styles");
   }
 
   /** Resolved row semantic flags (spec baseline + paint overrides). */
@@ -2211,6 +2254,7 @@ export function createForestStore() {
 
   function setHovered(id: string | null) {
     hoveredRowId = id;
+    markSource("hover");
   }
 
   function setTooltip(rowId: string | null, position: { x: number; y: number } | null) {
@@ -2228,6 +2272,7 @@ export function createForestStore() {
       userResizedIds = next;
     }
     appendOp(ops.resizeColumn(columnId, w));
+    markSource("column_widths");
   }
 
   /**
@@ -2253,6 +2298,7 @@ export function createForestStore() {
 
   function setPlotWidth(newWidth: number | null) {
     plotWidthOverride = newWidth === null ? null : Math.max(100, newWidth); // min 100px
+    markSource("plot_width");
   }
 
   function getPlotWidth(): number | null {
@@ -2266,6 +2312,7 @@ export function createForestStore() {
     if (!Number.isFinite(domain[0]) || !Number.isFinite(domain[1])) return;
     if (domain[0] >= domain[1]) return;
     axisZooms = { ...axisZooms, [columnId]: { domain: [domain[0], domain[1]] } };
+    markSource("axis_zooms");
   }
 
   function resetAxisZoom(columnId: string) {
@@ -2273,6 +2320,7 @@ export function createForestStore() {
     const next = { ...axisZooms };
     delete next[columnId];
     axisZooms = next;
+    markSource("axis_zooms");
   }
 
   function getAxisZoom(columnId: string): { domain: [number, number] } | null {
@@ -2613,11 +2661,13 @@ export function createForestStore() {
   function setZoom(value: number) {
     zoom = Math.max(0.5, Math.min(2.0, value));
     persistZoomState();
+    markSource("zoom");
   }
 
   function resetZoom() {
     zoom = 1.0;
     persistZoomState();
+    markSource("zoom");
   }
 
   function zoomIn() {
@@ -2631,6 +2681,7 @@ export function createForestStore() {
   function setAutoFit(value: boolean) {
     autoFit = value;
     persistZoomState();
+    markSource("zoom");
   }
 
   function fitToWidth() {
@@ -2639,20 +2690,24 @@ export function createForestStore() {
     // Note: containerWidth from ResizeObserver is already the content box (excludes padding)
     zoom = Math.min(2.0, Math.max(0.5, containerWidth / scalableNaturalWidth));
     persistZoomState();
+    markSource("zoom");
   }
 
   function setMaxWidth(value: number | null) {
     maxWidth = value;
     persistZoomState();
+    markSource("zoom");
   }
 
   function setMaxHeight(value: number | null) {
     maxHeight = value;
     persistZoomState();
+    markSource("zoom");
   }
 
   function setShowZoomControls(show: boolean) {
     showZoomControls = show;
+    markSource("zoom");
   }
 
   // Container dimension setters (called by ForestPlot component)
@@ -3384,6 +3439,16 @@ export function createForestStore() {
     // Op recorder
     get opLog() { return opLog; },
     clearOpLog: () => { opLog = []; },
+    // Plot-level label overrides (title/subtitle/caption/footnote)
+    get labelEdits() { return labelEdits; },
+    // Forest-plot width override (null = follow auto layout)
+    get plotWidthOverride() { return plotWidthOverride; },
+    // Source tagging for outbound Shiny envelopes. getSource(field) returns
+    // 'user' | 'proxy' depending on which path most-recently mutated the
+    // field; defaults to 'user'. withSource() lets the proxy boundary mark
+    // its dispatched mutations as 'proxy' so observers can disambiguate.
+    getSource: (field: string): SourceTag => lastSource[field] ?? "user",
+    withSource,
     // Append a pre-built record (used by the split wrapper to log
     // SplitForest-level ops like set_shared_column_widths on the active
     // sub-plot's log). Internal store mutations go through the same

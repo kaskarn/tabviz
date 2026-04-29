@@ -66,6 +66,18 @@
 #' @param weight Deprecated: use marker_size instead
 #' @param theme Theme object (use `web_theme_*()` functions)
 #' @param interaction Interaction settings (use `web_interaction()`)
+#' @param initial_sort Optional `list(column =, direction =)` applied at
+#'   first paint. Direction is one of `"asc"`, `"desc"`, `"none"`. Lets a
+#'   Shiny dashboard load the widget already-sorted so the first frame
+#'   matches the server-side state.
+#' @param initial_filters Optional named list of per-field filters applied
+#'   at first paint. Each value is `list(operator =, value =)` where operator
+#'   is one of `"eq"`, `"neq"`, `"gt"`, `"lt"`, `"contains"`. Example:
+#'   `list(arm = list(operator = "eq", value = "A"))`.
+#' @param initial_hidden_columns Optional character vector of column ids to
+#'   hide at first paint. Equivalent to calling `remove_column()` immediately
+#'   after construction, but applied before mount so dashboards observing
+#'   `input$<id>_hidden_columns` see the right set on first emission.
 #' @param plot_position `r lifecycle::badge("deprecated")` No longer has
 #'   rendering effect; column order in `columns = list(...)` controls
 #'   placement. Accepted for back-compat; emits a deprecation warning.
@@ -188,6 +200,9 @@ tabviz <- function(
     weight = NULL,
     theme = web_theme_cochrane(),
     interaction = NULL,
+    initial_sort = NULL,
+    initial_filters = NULL,
+    initial_hidden_columns = NULL,
     plot_position = NULL,
     row_height = NULL,
     banding = NULL,
@@ -262,6 +277,14 @@ tabviz <- function(
     interaction <- default_interaction_for_theme(theme)
   }
   interaction@enable_themes <- finalize_enable_themes(interaction@enable_themes, theme)
+
+  # Validate + normalize initial-state args. These ride on the widget payload
+  # so the first paint reflects the requested sort / filters / hidden columns;
+  # without them, dashboards have to wait for a post-mount proxy push and the
+  # user briefly sees an unsorted view.
+  initial_state <- validate_initial_state(
+    initial_sort, initial_filters, initial_hidden_columns
+  )
 
   # Validate banding (if provided) and apply to the active theme. The tabviz()
   # arg wins over any banding already set on the theme (primary API surface).
@@ -558,6 +581,7 @@ tabviz <- function(
     groups = resolved_groups,
     theme = theme,
     interaction = interaction,
+    initial_state = initial_state,
     labels = labels,
     watermark = watermark %||% NA_character_,
     watermark_color = watermark_color %||% NA_character_,
@@ -936,4 +960,64 @@ validate_unique_column_ids <- function(cols) {
 
   lapply(cols, check)
   invisible(NULL)
+}
+
+# Validate the three `initial_*` args from tabviz() and bundle them into a
+# plain list (or NULL when nothing is set). Shape mirrors the inbound proxy
+# methods so the widget can dispatch through the same paths at first paint.
+#
+#  initial_sort:           list(column = <chr>, direction = "asc"|"desc"|"none")
+#  initial_filters:        named list, key = field, value = list(operator, value)
+#                          where operator ∈ {"eq","neq","gt","lt","contains"}
+#  initial_hidden_columns: character vector of column ids
+#
+# Returns NULL if all three are NULL/empty (signal to the JS side: skip apply).
+validate_initial_state <- function(initial_sort,
+                                   initial_filters,
+                                   initial_hidden_columns) {
+  out <- list()
+
+  if (!is.null(initial_sort)) {
+    checkmate::assert_list(initial_sort, names = "named")
+    if (!all(c("column", "direction") %in% names(initial_sort))) {
+      cli_abort(c(
+        "{.arg initial_sort} must be a list with {.field column} and {.field direction}",
+        "i" = "Example: {.code list(column = \"effect\", direction = \"desc\")}"
+      ))
+    }
+    checkmate::assert_string(initial_sort$column)
+    checkmate::assert_choice(initial_sort$direction, c("asc", "desc", "none"))
+    out$sort <- list(
+      column = initial_sort$column,
+      direction = initial_sort$direction
+    )
+  }
+
+  if (!is.null(initial_filters)) {
+    checkmate::assert_list(initial_filters, names = "named")
+    valid_ops <- c("eq", "neq", "gt", "lt", "contains")
+    out$filters <- lapply(seq_along(initial_filters), function(i) {
+      f <- initial_filters[[i]]
+      field <- names(initial_filters)[[i]]
+      checkmate::assert_string(field, .var.name = "names(initial_filters)")
+      checkmate::assert_list(f, .var.name = paste0("initial_filters$", field))
+      checkmate::assert_choice(
+        f$operator, valid_ops,
+        .var.name = paste0("initial_filters$", field, "$operator")
+      )
+      if (is.null(f$value)) {
+        cli_abort("{.arg initial_filters${field}$value} must not be NULL")
+      }
+      list(field = field, operator = f$operator, value = f$value)
+    })
+  }
+
+  if (!is.null(initial_hidden_columns)) {
+    checkmate::assert_character(
+      initial_hidden_columns, any.missing = FALSE, min.len = 1
+    )
+    out$hidden_columns <- as.list(initial_hidden_columns)
+  }
+
+  if (length(out) == 0) NULL else out
 }

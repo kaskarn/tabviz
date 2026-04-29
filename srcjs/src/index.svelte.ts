@@ -199,6 +199,11 @@ const binding: HTMLWidgetsBinding = {
           maxWidth?: number | null;
           maxHeight?: number | null;
           showZoomControls?: boolean;
+          initialState?: {
+            sort?: { column: string; direction: "asc" | "desc" | "none" };
+            filters?: Array<{ field: string; operator: string; value: unknown }>;
+            hiddenColumns?: string[];
+          };
         };
         store.setSpec(x);
         store.setDimensions(width, height);
@@ -218,6 +223,31 @@ const binding: HTMLWidgetsBinding = {
         }
         if (typeof x.showZoomControls === 'boolean') {
           store.setShowZoomControls(x.showZoomControls);
+        }
+
+        // Apply authored initial state before mount so the first paint matches
+        // the dashboard's expected sort/filter/visibility — no post-mount
+        // flash of unsorted content. Source is "user" (the author wrote it).
+        if (x.initialState) {
+          if (x.initialState.sort) {
+            store.sortBy(
+              x.initialState.sort.column,
+              x.initialState.sort.direction,
+            );
+          }
+          if (x.initialState.filters) {
+            for (const f of x.initialState.filters) {
+              store.setColumnFilter(f.field, {
+                operator: f.operator,
+                value: f.value,
+              } as Parameters<ForestStore["setColumnFilter"]>[1]);
+            }
+          }
+          if (x.initialState.hiddenColumns) {
+            for (const id of x.initialState.hiddenColumns) {
+              store.hideColumn(id);
+            }
+          }
         }
 
         // Let htmlwidgets container expand to fit content - sizing handled by CSS
@@ -245,24 +275,156 @@ const binding: HTMLWidgetsBinding = {
   },
 };
 
-// Set up Shiny input bindings
+// Set up Shiny input bindings.
+//
+// Every outbound input uses a uniform envelope: { value, source, ts }. `source`
+// is "user" for widget-driven mutations and "proxy" for Shiny-pushed ones — the
+// store's withSource() wrapper around proxy dispatch (below) makes markSource()
+// capture the right tag synchronously inside each setter, before $effect runs.
 function setupShinyBindings(widgetId: string, store: ForestStore) {
-  // Use $effect.root() to create a reactive context outside component initialization
+  const emit = (field: string, value: unknown) => {
+    if (!window.Shiny) return;
+    window.Shiny.setInputValue(
+      `${widgetId}_${field}`,
+      { value, source: store.getSource(field), ts: Date.now() },
+      { priority: "event" },
+    );
+  };
+
   $effect.root(() => {
-    // Forward selection events
+    // ── Tier 1 — core interaction ─────────────────────────────────────────
     $effect(() => {
-      const ids = store.selectedRowIds;
-      window.Shiny?.setInputValue(`${widgetId}_selected`, Array.from(ids), {
-        priority: "event",
+      emit("selected", Array.from(store.selectedRowIds));
+    });
+    $effect(() => {
+      emit("hover", store.hoveredRowId);
+    });
+    $effect(() => {
+      emit("sort", store.sortConfig);
+    });
+    $effect(() => {
+      emit("filters", store.filters);
+    });
+    $effect(() => {
+      emit("row_styles", store.styleEdits.rows);
+    });
+    $effect(() => {
+      emit("cell_styles", store.styleEdits.cells);
+    });
+    $effect(() => {
+      emit("paint_tool", store.paintTool);
+    });
+    $effect(() => {
+      emit("collapsed_groups", Array.from(store.collapsedGroups));
+    });
+    $effect(() => {
+      emit("hidden_columns", Array.from(store.hiddenColumnIds));
+    });
+    $effect(() => {
+      emit("column_order", store.allColumns.map((c) => c.id));
+    });
+    $effect(() => {
+      emit("column_widths", { ...store.columnWidths });
+    });
+    $effect(() => {
+      emit("cell_edits", store.cellEdits);
+    });
+    $effect(() => {
+      emit("label_edits", store.labelEdits);
+    });
+    $effect(() => {
+      emit("zoom", {
+        zoom: store.zoom,
+        autoFit: store.autoFit,
+        maxWidth: store.maxWidth,
+        maxHeight: store.maxHeight,
+        showZoomControls: store.showZoomControls,
       });
     });
 
-    // Forward hover events
+    // ── Tier 2 — plot/layout overrides (forest-specific) ──────────────────
     $effect(() => {
-      const hovered = store.hoveredRowId;
-      window.Shiny?.setInputValue(`${widgetId}_hover`, hovered, {
-        priority: "event",
-      });
+      emit("axis_zooms", store.axisZooms);
+    });
+    $effect(() => {
+      const mode = store.bandingOverride;
+      const startsWithBand = store.bandingStartsWithBandOverride;
+      emit("banding", mode == null && startsWithBand == null
+        ? null
+        : { mode, startsWithBand });
+    });
+    $effect(() => {
+      emit("plot_width", store.plotWidthOverride);
+    });
+
+    // ── Derived: rows currently visible after filter+collapse+sort ────────
+    // visibleRows is the same derivation the renderer uses; emit just the IDs
+    // in display order so dashboards can mirror the shown set.
+    $effect(() => {
+      emit("visible_rows", store.visibleRows.map((r) => r.id));
+    });
+
+    // ── Aggregate — debounced bundle of every Tier 1+2 dimension ──────────
+    let stateTimer: ReturnType<typeof setTimeout> | null = null;
+    $effect(() => {
+      // Touch every reactive dependency so the effect re-fires when any field
+      // changes; the actual emit is debounced via setTimeout below.
+      void store.sortConfig;
+      void store.filters;
+      void store.styleEdits;
+      void store.paintTool;
+      void store.selectedRowIds;
+      void store.collapsedGroups;
+      void store.hiddenColumnIds;
+      void store.allColumns;
+      void store.columnWidths;
+      void store.cellEdits;
+      void store.labelEdits;
+      void store.zoom;
+      void store.autoFit;
+      void store.maxWidth;
+      void store.maxHeight;
+      void store.showZoomControls;
+      void store.axisZooms;
+      void store.bandingOverride;
+      void store.bandingStartsWithBandOverride;
+      void store.plotWidthOverride;
+
+      if (stateTimer) clearTimeout(stateTimer);
+      stateTimer = setTimeout(() => {
+        if (!window.Shiny) return;
+        const bundle = {
+          sort: store.sortConfig,
+          filters: store.filters,
+          row_styles: store.styleEdits.rows,
+          cell_styles: store.styleEdits.cells,
+          paint_tool: store.paintTool,
+          selected: Array.from(store.selectedRowIds),
+          collapsed_groups: Array.from(store.collapsedGroups),
+          hidden_columns: Array.from(store.hiddenColumnIds),
+          column_order: store.allColumns.map((c) => c.id),
+          column_widths: { ...store.columnWidths },
+          cell_edits: store.cellEdits,
+          label_edits: store.labelEdits,
+          zoom: {
+            zoom: store.zoom,
+            autoFit: store.autoFit,
+            maxWidth: store.maxWidth,
+            maxHeight: store.maxHeight,
+            showZoomControls: store.showZoomControls,
+          },
+          axis_zooms: store.axisZooms,
+          banding: store.bandingOverride == null && store.bandingStartsWithBandOverride == null
+            ? null
+            : { mode: store.bandingOverride, startsWithBand: store.bandingStartsWithBandOverride },
+          plot_width: store.plotWidthOverride,
+        };
+        window.Shiny.setInputValue(
+          `${widgetId}_state`,
+          { value: bundle, source: "user", ts: Date.now() },
+          { priority: "event" },
+        );
+      }, 150);
     });
   });
 }
@@ -272,7 +434,11 @@ if (typeof window !== "undefined" && window.HTMLWidgets) {
   window.HTMLWidgets.widget(binding);
 }
 
-// Shiny proxy message handler
+// Shiny proxy message handler. withSource('proxy', ...) sets the store's
+// currentSource for the synchronous mutation block, so every markSource()
+// call inside the dispatched handler captures 'proxy' before the outbound
+// $effect tick fires. Dashboards can then filter their own writes via
+// `req(input$tbl_sort$source == "user")`.
 if (typeof window !== "undefined" && window.Shiny) {
   window.Shiny.addCustomMessageHandler(
     "tabviz-proxy",
@@ -280,7 +446,9 @@ if (typeof window !== "undefined" && window.Shiny) {
       const msg = raw as { id: string; method: string; args: Record<string, unknown> };
       const store = storeRegistry.get(msg.id);
       if (store && msg.method in proxyMethods) {
-        proxyMethods[msg.method](store, msg.args);
+        store.withSource("proxy", () => {
+          proxyMethods[msg.method](store, msg.args);
+        });
       }
     }
   );

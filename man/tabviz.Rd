@@ -39,6 +39,9 @@ tabviz(
   weight = NULL,
   theme = web_theme_cochrane(),
   interaction = NULL,
+  initial_sort = NULL,
+  initial_filters = NULL,
+  initial_hidden_columns = NULL,
   plot_position = NULL,
   row_height = NULL,
   banding = NULL,
@@ -149,6 +152,21 @@ pre-normalized multiplier.}
 \item{theme}{Theme object (use \verb{web_theme_*()} functions)}
 
 \item{interaction}{Interaction settings (use \code{web_interaction()})}
+
+\item{initial_sort}{Optional \code{list(column =, direction =)} applied at
+first paint. Direction is one of \code{"asc"}, \code{"desc"}, \code{"none"}. Lets a
+Shiny dashboard load the widget already-sorted so the first frame
+matches the server-side state.}
+
+\item{initial_filters}{Optional named list of per-field filters applied
+at first paint. Each value is \code{list(operator =, value =)} where operator
+is one of \code{"eq"}, \code{"neq"}, \code{"gt"}, \code{"lt"}, \code{"contains"}. Example:
+\code{list(arm = list(operator = "eq", value = "A"))}.}
+
+\item{initial_hidden_columns}{Optional character vector of column ids to
+hide at first paint. Equivalent to calling \code{remove_column()} immediately
+after construction, but applied before mount so dashboards observing
+\verb{input$<id>_hidden_columns} see the right set on first emission.}
 
 \item{plot_position}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} No longer has
 rendering effect; column order in \code{columns = list(...)} controls
