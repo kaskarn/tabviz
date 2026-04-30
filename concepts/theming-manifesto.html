@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Theming Manifesto – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-acf12a64177840b8d86f2d4f01b2e9fb.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-edf0d5c7e188fb8924845e7743387b91.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Dashboard Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#why-this-document-exists" id="toc-why-this-document-exists" class="nav-link active" data-scroll-target="#why-this-document-exists">Why this document exists</a></li>
+  <li><a href="#publication-quality-as-a-constraint" id="toc-publication-quality-as-a-constraint" class="nav-link" data-scroll-target="#publication-quality-as-a-constraint">Publication-quality as a constraint</a></li>
+  <li><a href="#the-two-knob-principle" id="toc-the-two-knob-principle" class="nav-link" data-scroll-target="#the-two-knob-principle">The two-knob principle</a></li>
+  <li><a href="#the-three-axis-contract" id="toc-the-three-axis-contract" class="nav-link" data-scroll-target="#the-three-axis-contract">The three-axis contract</a></li>
+  <li><a href="#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29" id="toc-why-tertiary-was-added-2026-04-28-and-removed-2026-04-29" class="nav-link" data-scroll-target="#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29">Why tertiary was added (2026-04-28) and removed (2026-04-29)</a>
+  <ul class="collapse">
+  <li><a href="#the-2026-04-28-decision" id="toc-the-2026-04-28-decision" class="nav-link" data-scroll-target="#the-2026-04-28-decision">The 2026-04-28 decision</a></li>
+  <li><a href="#the-2026-04-29-reversal" id="toc-the-2026-04-29-reversal" class="nav-link" data-scroll-target="#the-2026-04-29-reversal">The 2026-04-29 reversal</a></li>
+  </ul></li>
+  <li><a href="#mirror-chain-semantics" id="toc-mirror-chain-semantics" class="nav-link" data-scroll-target="#mirror-chain-semantics">Mirror chain semantics</a></li>
+  <li><a href="#cascade-tiers" id="toc-cascade-tiers" class="nav-link" data-scroll-target="#cascade-tiers">Cascade tiers</a></li>
+  <li><a href="#anti-patterns" id="toc-anti-patterns" class="nav-link" data-scroll-target="#anti-patterns">Anti-patterns</a>
+  <ul class="collapse">
+  <li><a href="#dont-add-a-fourth-identity-tier-or-revive-tertiary" id="toc-dont-add-a-fourth-identity-tier-or-revive-tertiary" class="nav-link" data-scroll-target="#dont-add-a-fourth-identity-tier-or-revive-tertiary">Don’t add a fourth identity tier (or revive tertiary)</a></li>
+  <li><a href="#dont-introduce-slot-typed-tier-1-anchors" id="toc-dont-introduce-slot-typed-tier-1-anchors" class="nav-link" data-scroll-target="#dont-introduce-slot-typed-tier-1-anchors">Don’t introduce slot-typed Tier 1 anchors</a></li>
+  <li><a href="#dont-mix-accent-into-default-content" id="toc-dont-mix-accent-into-default-content" class="nav-link" data-scroll-target="#dont-mix-accent-into-default-content">Don’t mix accent into default content</a></li>
+  <li><a href="#dont-tint-chrome-toward-accent" id="toc-dont-tint-chrome-toward-accent" class="nav-link" data-scroll-target="#dont-tint-chrome-toward-accent">Don’t tint chrome toward accent</a></li>
+  <li><a href="#dont-add-charm-recipes" id="toc-dont-add-charm-recipes" class="nav-link" data-scroll-target="#dont-add-charm-recipes">Don’t add charm recipes</a></li>
+  <li><a href="#dont-bypass-the-cascade" id="toc-dont-bypass-the-cascade" class="nav-link" data-scroll-target="#dont-bypass-the-cascade">Don’t bypass the cascade</a></li>
+  </ul></li>
+  <li><a href="#authoring-a-new-theme" id="toc-authoring-a-new-theme" class="nav-link" data-scroll-target="#authoring-a-new-theme">Authoring a new theme</a></li>
+  <li><a href="#open-questions" id="toc-open-questions" class="nav-link" data-scroll-target="#open-questions">Open questions</a></li>
+  <li><a href="#decision-log" id="toc-decision-log" class="nav-link" data-scroll-target="#decision-log">Decision log</a>
+  <ul class="collapse">
+  <li><a href="#tertiary-removed-chrome-migrates-to-secondary" id="toc-tertiary-removed-chrome-migrates-to-secondary" class="nav-link" data-scroll-target="#tertiary-removed-chrome-migrates-to-secondary">2026-04-29 — Tertiary removed; chrome migrates to secondary</a></li>
+  <li><a href="#tertiary-added-later-reversed" id="toc-tertiary-added-later-reversed" class="nav-link" data-scroll-target="#tertiary-added-later-reversed">2026-04-28 — Tertiary added (later reversed)</a></li>
+  <li><a href="#accent-reserved-for-layered-emphasis" id="toc-accent-reserved-for-layered-emphasis" class="nav-link" data-scroll-target="#accent-reserved-for-layered-emphasis">2026-04-28 — Accent reserved for layered emphasis</a></li>
+  <li><a href="#earlier-slot-typed-tier-1-anchors-retracted" id="toc-earlier-slot-typed-tier-1-anchors-retracted" class="nav-link" data-scroll-target="#earlier-slot-typed-tier-1-anchors-retracted">Earlier — Slot-typed Tier 1 anchors retracted</a></li>
+  </ul></li>
+  <li><a href="#see-also" id="toc-see-also" class="nav-link" data-scroll-target="#see-also">See also</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Theming Manifesto</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+<p class="subtitle lead">Why tabviz themes are shaped the way they are</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Living document — last updated 2026-04-29.</strong> The cascade reference in <a href="../concepts/styling-cascade.html">Styling Cascade</a> tells you <em>what</em> the tokens are. This document tells you <em>why</em>. Read this before proposing a fourth identity tier, a “trend” slot, a charm recipe, or otherwise expanding the surface area.</p>
+<p>Decisions get appended to the <a href="#decision-log">Decision log</a> at the bottom — never rewritten — so future maintainers can diagnose drift against original intent.</p>
+</div>
+</div>
+<section id="why-this-document-exists" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-document-exists">Why this document exists</h2>
+<p>A cascade specification is a <em>what</em>. It enumerates inputs, derived tokens, component bindings, and the formulas that connect them. It can’t tell you why the inputs are <em>those</em> inputs and not different ones, or why the cascade ends at three tiers and not four, or why a class of feature requests has been considered and rejected over and over again.</p>
+<p>This document is the <em>why</em> companion. It’s also a record: every substantive shape decision is dated and reasoned through here, so when someone proposes re-litigating one of them, the prior conversation is on the page.</p>
+<p>Three audiences:</p>
+<ul>
+<li><strong>Future contributors</strong> evaluating a feature request that touches the cascade. Read the <a href="#anti-patterns">anti-patterns</a> section first.</li>
+<li><strong>Theme authors</strong> building a new preset. The <a href="#authoring-a-new-theme">theme authoring recipe</a> is the practical starting point.</li>
+<li><strong>Curious users</strong> who want to know what they’re using. The <a href="#the-two-knob-principle">two-knob principle</a> and the <a href="#the-three-axis-contract">three-axis contract</a> are the entry points.</li>
+</ul>
+<p>If you want the formal contract, go to <a href="../concepts/styling-cascade.html">Styling Cascade</a>.</p>
+<hr>
+</section>
+<section id="publication-quality-as-a-constraint" class="level2">
+<h2 class="anchored" data-anchor-id="publication-quality-as-a-constraint">Publication-quality as a constraint</h2>
+<p>tabviz’s product wedge is <strong>publication-quality output</strong>. Not “looks professional,” not “modern aesthetic” — <em>publication-quality</em>: tables that could appear unmodified in a peer-reviewed journal article, a regulatory submission, an annual report.</p>
+<p>This is a constraint, not a label. Publication-quality is downstream of a specific aesthetic discipline:</p>
+<ul>
+<li><strong>Restraint over expressivity.</strong> A fourth color knob, an emoji recipe, a decorative glyph slot — each one is an opportunity for a user to make their table louder than it should be.</li>
+<li><strong>Fewer dimensions, used well.</strong> Two coordinated colors that read as intentional beat five independent colors that read as crowded.</li>
+<li><strong>Chrome stays neutral.</strong> Banding, hairlines, gridlines, axis text — these are scaffolding. Pull them toward the brand at low strength for cohesion; never at high strength for prominence.</li>
+<li><strong>Defaults that work everywhere.</strong> A user who pins primary and writes one line of R should get a table that wouldn’t look out of place in <em>The Lancet</em>. Anything that requires editorial intervention to look acceptable has failed.</li>
+</ul>
+<p>Most of the choices documented below are downstream of this single frame. If you find yourself defending an addition with “but the user could choose to use it well,” check that frame again. Publication-quality is what most users get <em>by default</em>, not what the most disciplined users <em>can achieve with effort</em>.</p>
+<hr>
+</section>
+<section id="the-two-knob-principle" class="level2">
+<h2 class="anchored" data-anchor-id="the-two-knob-principle">The two-knob principle</h2>
+<p>The theme contract is two knobs: <strong>identity</strong> and <strong>engagement</strong>.</p>
+<p>Identity is the brand axis — the tone the table opens with, the tone it returns to under any structural emphasis. It mirrors down the chain: secondary defaults to primary unless the author explicitly pins a second color. In a mono theme (most journals), there is one identity color; in a two-color editorial theme (LoTR-style), there are two.</p>
+<p>Engagement is the <strong>accent</strong> — the color that fires when something extra is happening. Hover. Selected. A semantic row callout. The status.info fallback. The selection edge bar. Accent is orthogonal to identity; it never enters the mirror chain. It’s also reserved: it does <em>not</em> land on default content (badges, glyph fills, ornament). Those belong on identity, where they coordinate with the rest of the table.</p>
+<p>Why two knobs and not more:</p>
+<ul>
+<li>A single identity knob makes mono themes trivial: pin primary, done.</li>
+<li>A second identity knob (secondary, mirroring primary) makes two-color editorial themes coherent without adding any complexity to mono themes.</li>
+<li>A separate engagement knob (accent) keeps the “look here” signal semantically distinct from the brand surface, so a hovered row can’t read the same color as a regular badge two rows down.</li>
+<li>Adding any knob beyond these reopens the question of which knob a new feature should land on. The contract collapses.</li>
+</ul>
+<p>Why accent is reserved for engagement:</p>
+<ul>
+<li>When accent doubled as both “the engagement color” and “the default fill for content-bearing glyph columns” (badges, pictograms, rings, stars), the same hue did two unrelated jobs and the emphasis signal lost its meaning. A hovered row read the same color as a regular badge. The 2026-04-28 redesign fixed this: glyph col defaults moved to the secondary identity axis (which mirrors primary in mono themes — visually identical to before for journal users — and lights up secondary in two-color themes).</li>
+<li>The mental model “identity for what is, accent for what’s happening” is the entire reason themes feel coherent.</li>
+</ul>
+<p>If a new role doesn’t cleanly map to one of these two axes, the answer is almost always to refine the role’s purpose, not to add a third axis.</p>
+<hr>
+</section>
+<section id="the-three-axis-contract" class="level2">
+<h2 class="anchored" data-anchor-id="the-three-axis-contract">The three-axis contract</h2>
+<p>Identity is two tiers, but the actual <em>roles</em> are three. Each axis owns exactly one job:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Axis</th>
+<th>Owns</th>
+<th>Default behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>primary</strong> (+ <code>primary_deep</code>)</td>
+<td><strong>Prominence</strong>: title text, bold leaf-header band, container border, series[0] anchor</td>
+<td>Required input. <code>_deep</code> auto-darkens by 15% (OKLCH) if NA.</td>
+</tr>
+<tr class="even">
+<td><strong>secondary</strong> (+ <code>secondary_deep</code>)</td>
+<td><strong>Structure</strong>: bold col-group band, row-group L1/L2/L3 bg, glyph col defaults (badge/pictogram/ring/stars), AND chrome texture (surface.muted, divider.subtle/strong, alt-row banding, gridline, axis/tick)</td>
+<td>NA mirrors primary. <code>secondary_deep</code> mirrors <code>primary_deep</code> when secondary is NA; auto-darkens otherwise.</td>
+</tr>
+<tr class="odd">
+<td><strong>accent</strong> (+ <code>accent_deep</code>)</td>
+<td><strong>Engagement</strong>: hover, selected, row.accent.fg, accent.tint_subtle/medium, semantic.fill, selection edge color, status.info fallback</td>
+<td>Required input. Orthogonal — never enters the identity mirror chain.</td>
+</tr>
+</tbody>
+</table>
+<p>The single rule for every theme: <strong>pin what’s distinct, mirror the rest.</strong> Mono themes pin primary only. Two-color editorial themes pin primary + secondary. Accent is always pinned (engagement is never silent).</p>
+<p>The structural axis is doing the most work. In mono themes, you don’t notice — secondary mirrors primary, so chrome and groupings read as primary-tinted variants of the canvas. In two-color themes, secondary lights up and you get coordinated movement across:</p>
+<ul>
+<li>The bold column-group band reads in secondary</li>
+<li>Row-group bars read in a 16% (or 24% under tint/bold header) mix of secondary into surface</li>
+<li>Cell hairlines and dividers carry a faint secondary tint</li>
+<li>Alt-row banding picks up the same secondary chrome</li>
+<li>Glyph cells (badges, rings, stars, pictograms) default to secondary</li>
+</ul>
+<p>All from one pin. No per-theme overrides. That’s the dividend the contract pays.</p>
+<hr>
+</section>
+<section id="why-tertiary-was-added-2026-04-28-and-removed-2026-04-29" class="level2">
+<h2 class="anchored" data-anchor-id="why-tertiary-was-added-2026-04-28-and-removed-2026-04-29">Why tertiary was added (2026-04-28) and removed (2026-04-29)</h2>
+<p>Honest record. Tertiary was a 24-hour decision and the postmortem teaches the most important lesson in this document.</p>
+<section id="the-2026-04-28-decision" class="level3">
+<h3 class="anchored" data-anchor-id="the-2026-04-28-decision">The 2026-04-28 decision</h3>
+<p>The previous architecture was <code>brand</code> / <code>brand_deep</code> + <code>accent</code>. Editorial themes (LoTR-style demos) wanted a second color for chrome texture — specifically, the umber/moss/wheat tones that distinguish the three LoTR themes from each other. Without a knob for it, theme authors were either hardcoding hex values into every chrome token (high maintenance, drifts on input change) or accepting a primary-tinted chrome that looked wrong against the bold identity bands.</p>
+<p>The proposal: rename <code>brand</code> → <code>primary</code>, add <code>secondary</code> for column-group bg + row-group bg + glyph defaults, add <code>tertiary</code> for chrome texture (surface.muted, dividers, banding, gridlines, axis/tick). Three identity tiers, each mirroring up the chain. Accent stays orthogonal.</p>
+<p>This shipped to main on 2026-04-28. Memory entry saved. Themes migrated. Validation green.</p>
+</section>
+<section id="the-2026-04-29-reversal" class="level3">
+<h3 class="anchored" data-anchor-id="the-2026-04-29-reversal">The 2026-04-29 reversal</h3>
+<p>Within 24 hours, two problems surfaced when stress-testing editorial themes:</p>
+<ol type="1">
+<li><p><strong>Three colors usually communicate worse than two.</strong> When designers could pin three identity hues, they did — even when the third hue’s only job was “tint the chrome differently from the band.” The result was tables with too much going on. Editorial restraint requires that the architecture <em>not invite</em> the third pin in the first place.</p></li>
+<li><p><strong>Chrome wants to read structurally, not ornamentally.</strong> Routing chrome through its own knob made it feel like a third identity color (because it was). Folding chrome onto the secondary axis — same axis that owns col-group bg, row-group bg, glyph defaults — collapsed it into “the structural color” instead of “the chrome color.” The mental model simplified: secondary is <em>everything that supports the primary band</em>.</p></li>
+</ol>
+<p>The reversal: <code>tertiary</code> and <code>tertiary_deep</code> removed entirely. Chrome texture migrated onto <code>secondary_deep</code> at the same mix strengths. Mono themes are visually unchanged (secondary mirrors primary). Two-color themes get one structural axis instead of two.</p>
+<p>The lesson:</p>
+<ul>
+<li><strong>Adding expressivity is reversible only if you add it carefully.</strong> Tertiary was added with full validation, full migration, full memory trail — which made the reversal cheap. A messier addition would have cost weeks.</li>
+<li><strong>A 24-hour postmortem on a fresh decision is healthier than living with the wrong shape for a quarter.</strong> The reversal entry is in this log not as embarrassment but as evidence that the loop is short.</li>
+<li><strong>The right number of identity tiers is two. Probably forever.</strong></li>
+</ul>
+<p>The LoTR themes lost nothing essential. Dwarven kept bronze (primary) + gold (secondary, now tinting chrome too) + ember (accent). The third umber pin folded into the gold cascade — and the chrome in Dwarven now reads as warm-burnished-metallurgy, which is <em>more</em> on-theme than the original cool umber against warm bronze ever was.</p>
+<hr>
+</section>
+</section>
+<section id="mirror-chain-semantics" class="level2">
+<h2 class="anchored" data-anchor-id="mirror-chain-semantics">Mirror chain semantics</h2>
+<p>The identity chain is a single rule:</p>
+<blockquote class="blockquote">
+<p>If <code>secondary</code> is NA at construction, it mirrors <code>primary</code> during resolution. If <code>secondary_deep</code> is NA, it mirrors <code>primary_deep</code> (when secondary itself is NA) or auto-darkens from secondary (when secondary is pinned).</p>
+</blockquote>
+<p>A few things to know about how this behaves:</p>
+<p><strong>Mirroring happens at resolve time, not at construction.</strong> <code>ThemeInputs(primary = "#0891b2")</code> stores <code>secondary = NA</code> literally; the NA only resolves to <code>"#0891b2"</code> after <code>resolve_theme()</code> has run. This means re-resolving an already-resolved theme is idempotent: the resolver only writes into NA-valued fields, so a previously-mirrored secondary stays at primary’s value, and a pinned secondary stays at the user’s pin.</p>
+<p><strong>Pinning a tier breaks the mirror for that tier and downstream tiers.</strong> If you pin <code>secondary</code>, <code>secondary_deep</code> no longer follows <code>primary_deep</code> — it auto-derives from your pinned secondary instead. This is the intentional break: the moment you say “I want a second color,” the deep companion tracks the second color, not the first.</p>
+<p><strong>Accent never mirrors.</strong> It’s a required input precisely because engagement is never silent. Even in a mono theme, accent is a deliberate choice (often a deliberate counterpoint — Cochrane pairs cool teal primary with warm coral accent specifically because the contrast lights up the engagement signal).</p>
+<p><strong>The mirror is not just visual.</strong> It propagates through every derived token. In a mono theme, <code>divider.strong</code> reads <code>secondary_deep</code> which mirrors <code>primary_deep</code> which auto-darkens primary — a single edit to primary cascades through dividers, surface.muted, banding, gridlines, all of it. This is the dividend that justifies the implicit-NA design over having theme authors restate primary in every cascade slot.</p>
+<hr>
+</section>
+<section id="cascade-tiers" class="level2">
+<h2 class="anchored" data-anchor-id="cascade-tiers">Cascade tiers</h2>
+<p>Three tiers, each with one job:</p>
+<ul>
+<li><p><strong>T1 — Inputs.</strong> What the customer chooses. <code>primary</code>, <code>secondary</code>, <code>accent</code>, plus <code>_deep</code> companions, plus <code>slot_style</code> (enum), <code>header_style</code> (enum), neutral ramp, status colors, series anchors, fonts. ~15 fields. This is the only tier most users edit directly.</p></li>
+<li><p><strong>T2 — Semantic roles.</strong> Derived tokens with named semantics: <code>surface.base/muted/raised</code>, <code>content.primary/secondary/muted/inverse</code>, <code>divider.subtle/strong</code>, <code>accent.default/muted/tint_subtle/tint_medium</code>, <code>semantic.fill</code>, <code>status.*</code>, plus per-slot <code>SlotBundle</code> for series marks. The resolver fills these from T1 via OKLCH formulas; users override individual fields to pin a tone.</p></li>
+<li><p><strong>T3 — Component bindings.</strong> Per-cluster overrides: <code>header.{light, tint, bold}.{bg, fg, rule}</code>, <code>column_group.*</code>, <code>row_group.L1/L2/L3.bg</code>, <code>cell.border</code>, <code>plot.axis_line/tick_mark/gridline/reference</code>. These default to T2 values with cluster-local computations (e.g., bold rule is a 40% mix of inverse against the band’s own bg). Users can pin individual leaves; the rest cascade from T2.</p></li>
+</ul>
+<p>Three tiers of overrides means three chances for a user to break a required relationship. Construction-time validation (<code>validate_resolved_theme</code>) catches the obvious failures (bold-band contrast, body-text contrast) at theme construction — <em>not</em> at render — so the error message points at the source of the bad pin, not at a downstream symptom. WCAG AA Large (3.0) for chrome bold text; AA Normal (4.5) for body text. Tests can opt out with <code>.validate = FALSE</code>.</p>
+<p>The cascade is fully introspectable from R:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">inspect_resolved</span>(<span class="fu">web_theme_cochrane</span>(), <span class="st">"header.bold.bg"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $path: "header.bold.bg"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $value: "#006B9C"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $cascade: c("inputs$primary_deep", "inputs$primary")</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $derivation: "inputs$primary_deep (auto: oklch_darken(primary, 0.15))"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>The same provenance feeds the widget’s Theme tab tooltips — single source of truth for “where did this hex come from?”.</p>
+<hr>
+</section>
+<section id="anti-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="anti-patterns">Anti-patterns</h2>
+<p>These are not “things we haven’t gotten around to.” These are things tabviz will <em>refuse to do</em>. If you encounter one in a feature request, push back.</p>
+<section id="dont-add-a-fourth-identity-tier-or-revive-tertiary" class="level3">
+<h3 class="anchored" data-anchor-id="dont-add-a-fourth-identity-tier-or-revive-tertiary">Don’t add a fourth identity tier (or revive tertiary)</h3>
+<p>Two-knob is canonical. Tertiary was added on 2026-04-28 and removed on 2026-04-29 — see the <a href="#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29">postmortem</a>. Any future proposal to add a third identity color must either (a) demonstrate a use case that the secondary mirror chain genuinely cannot serve, or (b) explain why the prior reversal’s reasoning no longer applies. Aesthetic preference for three colors is not sufficient — the reversal happened <em>because</em> designers reached for three when two would have read better.</p>
+</section>
+<section id="dont-introduce-slot-typed-tier-1-anchors" class="level3">
+<h3 class="anchored" data-anchor-id="dont-introduce-slot-typed-tier-1-anchors">Don’t introduce slot-typed Tier 1 anchors</h3>
+<p>A previous architectural proposal added <code>slot.trend</code>, <code>slot.distribution</code>, <code>slot.range</code>, etc. as Tier 1 anchors keyed to recipe types. This was <strong>considered and retracted</strong>. The two-knob model handles every case the slot-typed proposal addressed (via accent-tint and identity-deep derivations). Reintroducing slot-typed anchors adds dimensionality that the cascade has to thread through every component binding for near-zero practical gain.</p>
+</section>
+<section id="dont-mix-accent-into-default-content" class="level3">
+<h3 class="anchored" data-anchor-id="dont-mix-accent-into-default-content">Don’t mix accent into default content</h3>
+<p>Accent owns engagement. Hover, selected, callouts, status.info, semantic row treatments. It does <em>not</em> own:</p>
+<ul>
+<li>Default badge fills</li>
+<li>Glyph cell defaults (rings, stars, pictograms)</li>
+<li>Ornament that fires by default</li>
+</ul>
+<p>Those belong on the secondary identity axis. The 2026-04-28 redesign documented this explicitly: glyph col defaults moved from accent to secondary precisely so the engagement signal stays meaningful. If you find yourself wanting accent on a content surface that’s always rendered, the correct fix is almost certainly identity, not accent.</p>
+</section>
+<section id="dont-tint-chrome-toward-accent" class="level3">
+<h3 class="anchored" data-anchor-id="dont-tint-chrome-toward-accent">Don’t tint chrome toward accent</h3>
+<p>Chrome (banding, dividers, gridlines, axis text) is structural. It tints toward <code>secondary_deep</code> — which in mono themes mirrors <code>primary_deep</code>, so chrome stays cohesive with the brand. Tinting chrome toward accent makes hovered/selected rows merge into the chrome band. This was wrong before the cascade rework and would still be wrong after.</p>
+</section>
+<section id="dont-add-charm-recipes" class="level3">
+<h3 class="anchored" data-anchor-id="dont-add-charm-recipes">Don’t add charm recipes</h3>
+<p>Pictogram arrays, emoji marks, decorative glyph recipes, isotype-style visualizations. These are charming in stress-test demos but distract from publication-quality positioning. The recipe library is intentionally small: it grows when a serious publication-quality use case demonstrably isn’t covered (e.g., gauge-against-target, dots-of-N, stacked-bar proportion compositions are on the roadmap), not when a demo would be fun.</p>
+<p>The boundary check: would this recipe appear in <em>The Lancet</em>? If no, hold the line.</p>
+</section>
+<section id="dont-bypass-the-cascade" class="level3">
+<h3 class="anchored" data-anchor-id="dont-bypass-the-cascade">Don’t bypass the cascade</h3>
+<p>Every now and then a feature request asks for a theme override that “skips” the cascade — a one-off color that doesn’t flow through any of the derivations, doesn’t participate in mirroring, can’t be inspected. This signal almost always means the cascade is missing a case. The right response is to extend the cascade (add the slot to T2 or T3, document its derivation, run validation), not to introduce a side door.</p>
+<p>If genuinely no T1/T2/T3 location fits, that’s a decision-quality moment. Stop and re-examine the role’s semantics before committing to a new slot.</p>
+<hr>
+</section>
+</section>
+<section id="authoring-a-new-theme" class="level2">
+<h2 class="anchored" data-anchor-id="authoring-a-new-theme">Authoring a new theme</h2>
+<p>The recipe is short. Most themes need only Tier 1 inputs.</p>
+<p><strong>Mono theme</strong> (the journal default — Cochrane, Lancet, JAMA fall here):</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>my_theme <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"my_journal"</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">primary =</span> <span class="st">"#0F4C81"</span>,     <span class="co"># identity hero</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent  =</span> <span class="st">"#C8553D"</span>,     <span class="co"># warm engagement counterpoint</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#0F4C81"</span>, <span class="st">"#C8553D"</span>, <span class="st">"#5C8A3F"</span>, <span class="st">"#7E5A99"</span>, <span class="st">"#D49A3A"</span>),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body =</span> <span class="st">"Georgia, 'Times New Roman', serif"</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>That’s it. Secondary mirrors primary; chrome reads as primary-tinted; glyph defaults read primary; engagement (hover/selected/info) reads accent. The contract gives you a coherent table with two pinned values.</p>
+<p><strong>Two-color editorial theme</strong> (LoTR-style):</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>my_editorial <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"my_editorial"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">primary   =</span> <span class="st">"#7A4E22"</span>,   <span class="co"># bronze</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">secondary =</span> <span class="st">"#D4A955"</span>,   <span class="co"># gold — drives col-group bands, row-group bars,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                             <span class="co">#        glyph defaults, AND chrome texture</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent    =</span> <span class="st">"#E0673A"</span>,   <span class="co"># ember — hover, selected, status.info</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#D4A955"</span>, <span class="st">"#A8A8A0"</span>, <span class="st">"#B86C42"</span>, <span class="st">"#7A4E22"</span>, <span class="st">"#5C7AA0"</span>),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body =</span> <span class="st">"'EB Garamond', Georgia, serif"</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">header_style =</span> <span class="st">"bold"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>One additional pin (secondary) and one variant flip (header_style) — the rest cascades.</p>
+<p><strong>Verifying your theme:</strong></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check what a specific leaf resolved to + why.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">inspect_resolved</span>(my_theme, <span class="st">"header.bold.bg"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">inspect_resolved</span>(my_theme, <span class="st">"divider.strong"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">inspect_resolved</span>(my_theme, <span class="st">"row_group.L1.bg"</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Construction-time validation runs automatically — broken contrast</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># aborts at web_theme() with a structured error pointing at the leaf.</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># To bypass for experimental / synthetic colors:</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>my_test <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(..., <span class="at">.validate =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p><strong>What to override at T2/T3 (and when):</strong></p>
+<ul>
+<li>Override at T1 first. 90% of themes never need to touch T2 or T3.</li>
+<li>Override at T2 when a <em>family</em> of derived tokens needs adjustment — e.g., <code>divider.strong</code> to pin the rule color across header/group/axis.</li>
+<li>Override at T3 only for cluster-specific tweaks — e.g., a particular preset wants the bold-mode header band darker than its primary_deep would give.</li>
+</ul>
+<p>The wider you cast the override, the higher up the cascade you should pin it. T3 overrides are bandages; T1 overrides are intent.</p>
+<hr>
+</section>
+<section id="open-questions" class="level2">
+<h2 class="anchored" data-anchor-id="open-questions">Open questions</h2>
+<p>The architecture is mature enough that big redesigns are unlikely. Outstanding questions are tactical:</p>
+<ul>
+<li><strong>Recipe fallbacks at narrow widths.</strong> Whether violins below a width threshold should automatically degrade to density strip / boxplot. Could be guidance or runtime fallback. No current opinion.</li>
+<li><strong>Slot.style additional variants.</strong> Currently three values (<code>fill_with_darker_stroke</code>, <code>flat_fill</code>, <code>outlined</code>). A “stroke_only” variant has been suggested for very dense plots. Not yet implemented; awaiting a real-world need.</li>
+<li><strong>Header tint strength.</strong> The tint variant is a 12% mix of primary_deep into surface.base. This was chosen by eye; whether 10% or 15% reads better is taste-dependent and may benefit from per-theme override.</li>
+</ul>
+<p>When new questions arise, append to the <a href="#decision-log">Decision log</a>. When questions get resolved, move them out of this section and into the log entry that resolved them.</p>
+<hr>
+</section>
+<section id="decision-log" class="level2">
+<h2 class="anchored" data-anchor-id="decision-log">Decision log</h2>
+<p>Append-only. Newest first. Each entry: date, decision, alternatives considered, reasoning. Future maintainers should append, not rewrite.</p>
+<section id="tertiary-removed-chrome-migrates-to-secondary" class="level3">
+<h3 class="anchored" data-anchor-id="tertiary-removed-chrome-migrates-to-secondary">2026-04-29 — Tertiary removed; chrome migrates to secondary</h3>
+<p><strong>Decision.</strong> Drop <code>tertiary</code> and <code>tertiary_deep</code> from <code>ThemeInputs</code>. Chrome texture (surface.muted, divider.subtle/strong, alt-row banding, gridline, axis/tick) now reads from <code>secondary_deep</code> at the same mix strengths. Identity is two tiers (primary + secondary mirror chain) plus orthogonal accent.</p>
+<p><strong>Alternatives considered.</strong> - Keep three tiers, lower the bar for what tertiary owns. Rejected: doesn’t solve the “designers reach for three colors” problem. - Add a separate <code>chrome_tint</code> knob (not in identity chain). Rejected: same expressivity creep with extra surface area. - Keep three tiers but make tertiary “advanced-only” (hidden from default panels). Rejected: API surface stays bloated; documentation cost is high; the prompt to use three colors is structural, not UI.</p>
+<p><strong>Reasoning.</strong> See <a href="#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29">the postmortem</a>. Two-knob is canonical. Bundled with this rework: <code>slot_style</code> lifted to T1; <code>header_style</code> expanded with <code>tint</code> variant; row-group L1 bg gains header_style-driven subtle/strong strength; construction-time contrast validation; <code>inspect_resolved()</code> introspection API; 7 presets migrated (LoTR trio rebalanced as 2-color).</p>
+<p><strong>Migration cost.</strong> ~3 hours of focused refactoring. Caught a real bug along the way: dark theme’s auto-derived <code>primary_deep</code> (#5C85C8) had 2.57:1 contrast against its inverse text — pinned darker to #2E5290 (5.33:1).</p>
+</section>
+<section id="tertiary-added-later-reversed" class="level3">
+<h3 class="anchored" data-anchor-id="tertiary-added-later-reversed">2026-04-28 — Tertiary added (later reversed)</h3>
+<p><strong>Decision.</strong> Add <code>tertiary</code> and <code>tertiary_deep</code> to <code>ThemeInputs</code>. Three identity tiers in a mirror chain (primary → secondary → tertiary). Tertiary owns chrome texture.</p>
+<p><strong>Reasoning at the time.</strong> Editorial themes wanted a third color for chrome texture distinct from the structural secondary; pinning it kept chrome cohesive without per-theme hardcoded hex values.</p>
+<p><strong>Reversed within 24 hours.</strong> See the 2026-04-29 entry above.</p>
+</section>
+<section id="accent-reserved-for-layered-emphasis" class="level3">
+<h3 class="anchored" data-anchor-id="accent-reserved-for-layered-emphasis">2026-04-28 — Accent reserved for layered emphasis</h3>
+<p><strong>Decision.</strong> Glyph col defaults (badge, pictogram, ring, stars) move from <code>accent</code> to <code>secondary</code> identity. Accent is reserved strictly for <strong>layered emphasis</strong>: roles that fire when something extra is happening (hover, selected, semantic row callouts, selection edge, status.info fallback).</p>
+<p><strong>Reasoning.</strong> When accent doubled as both “the engagement color” and “the default fill for content-bearing glyph columns,” the same hue did two unrelated jobs and the emphasis signal lost meaning — a hovered row read the same color as a regular badge two rows down.</p>
+<p>This decision survives the 2026-04-29 tertiary reversal unchanged. It’s the most important constraint on what accent does.</p>
+</section>
+<section id="earlier-slot-typed-tier-1-anchors-retracted" class="level3">
+<h3 class="anchored" data-anchor-id="earlier-slot-typed-tier-1-anchors-retracted">Earlier — Slot-typed Tier 1 anchors retracted</h3>
+<p><strong>Decision.</strong> Do not introduce <code>slot.trend</code>, <code>slot.distribution</code>, <code>slot.range</code>, etc. as Tier 1 anchors keyed to recipe types.</p>
+<p><strong>Reasoning.</strong> The two-knob theme architecture (identity + accent with cascade-pinning + element overrides) handles the cases the slot-typed proposal addressed. Reintroducing slot-typed anchors adds dimensionality that the cascade has to thread through every component binding for near-zero practical gain.</p>
+<p>This is documented in <code>engineering-priorities.md</code> §“Anti-priorities” as a binding constraint on future architecture work.</p>
+<hr>
+</section>
+</section>
+<section id="see-also" class="level2">
+<h2 class="anchored" data-anchor-id="see-also">See also</h2>
+<ul>
+<li><a href="../concepts/styling-cascade.html">Styling Cascade</a> — the formal contract (what)</li>
+<li><code>?inspect_resolved</code> — the introspection API used in examples above</li>
+<li><code>R/utils-theme-validate.R</code> — construction-time validation invariants</li>
+<li><code>R/utils-theme-resolve.R</code> — the resolver that materializes T2/T3</li>
+<li><code>R/themes.R</code>, <code>R/themes-lotr.R</code> — preset themes as canonical examples</li>
+</ul>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Theming Manifesto"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Why tabviz themes are shaped the way they are"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tabviz)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>**Living document — last updated 2026-04-29.**</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>The cascade reference in <span class="co">[</span><span class="ot">Styling Cascade</span><span class="co">](styling-cascade.qmd)</span> tells you *what*</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>the tokens are. This document tells you *why*. Read this before proposing a</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>fourth identity tier, a "trend" slot, a charm recipe, or otherwise expanding</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>the surface area.</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>Decisions get appended to the <span class="co">[</span><span class="ot">Decision log</span><span class="co">](#decision-log)</span> at the bottom —</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>never rewritten — so future maintainers can diagnose drift against</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>original intent.</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## Why this document exists</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>A cascade specification is a *what*. It enumerates inputs, derived tokens,</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>component bindings, and the formulas that connect them. It can't tell you</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>why the inputs are *those* inputs and not different ones, or why the cascade</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>ends at three tiers and not four, or why a class of feature requests has</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>been considered and rejected over and over again.</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>This document is the *why* companion. It's also a record: every substantive</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>shape decision is dated and reasoned through here, so when someone proposes</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>re-litigating one of them, the prior conversation is on the page.</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>Three audiences:</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Future contributors** evaluating a feature request that touches the</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>  cascade. Read the <span class="co">[</span><span class="ot">anti-patterns</span><span class="co">](#anti-patterns)</span> section first.</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Theme authors** building a new preset. The</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  <span class="co">[</span><span class="ot">theme authoring recipe</span><span class="co">](#authoring-a-new-theme)</span> is the practical</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>  starting point.</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Curious users** who want to know what they're using. The</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>  <span class="co">[</span><span class="ot">two-knob principle</span><span class="co">](#the-two-knob-principle)</span> and the</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>  <span class="co">[</span><span class="ot">three-axis contract</span><span class="co">](#the-three-axis-contract)</span> are the entry points.</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>If you want the formal contract, go to <span class="co">[</span><span class="ot">Styling Cascade</span><span class="co">](styling-cascade.qmd)</span>.</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="fu">## Publication-quality as a constraint</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>tabviz's product wedge is **publication-quality output**. Not "looks</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>professional," not "modern aesthetic" — *publication-quality*: tables that</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>could appear unmodified in a peer-reviewed journal article, a regulatory</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>submission, an annual report.</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>This is a constraint, not a label. Publication-quality is downstream of a</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>specific aesthetic discipline:</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Restraint over expressivity.** A fourth color knob, an emoji recipe, a</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>  decorative glyph slot — each one is an opportunity for a user to make</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>  their table louder than it should be.</span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Fewer dimensions, used well.** Two coordinated colors that read as</span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>  intentional beat five independent colors that read as crowded.</span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Chrome stays neutral.** Banding, hairlines, gridlines, axis text —</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>  these are scaffolding. Pull them toward the brand at low strength for</span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>  cohesion; never at high strength for prominence.</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Defaults that work everywhere.** A user who pins primary and writes</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>  one line of R should get a table that wouldn't look out of place in</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>  *The Lancet*. Anything that requires editorial intervention to look</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>  acceptable has failed.</span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>Most of the choices documented below are downstream of this single frame.</span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>If you find yourself defending an addition with "but the user could choose</span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>to use it well," check that frame again. Publication-quality is what most</span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>users get *by default*, not what the most disciplined users *can achieve</span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>with effort*.</span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a><span class="fu">## The two-knob principle</span></span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>The theme contract is two knobs: **identity** and **engagement**.</span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>Identity is the brand axis — the tone the table opens with, the tone it</span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>returns to under any structural emphasis. It mirrors down the chain:</span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a>secondary defaults to primary unless the author explicitly pins a second</span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>color. In a mono theme (most journals), there is one identity color; in a</span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a>two-color editorial theme (LoTR-style), there are two.</span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a>Engagement is the **accent** — the color that fires when something extra is</span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>happening. Hover. Selected. A semantic row callout. The status.info fallback.</span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>The selection edge bar. Accent is orthogonal to identity; it never enters</span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>the mirror chain. It's also reserved: it does *not* land on default content</span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a>(badges, glyph fills, ornament). Those belong on identity, where they</span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>coordinate with the rest of the table.</span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a>Why two knobs and not more:</span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A single identity knob makes mono themes trivial: pin primary, done.</span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A second identity knob (secondary, mirroring primary) makes two-color</span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a>  editorial themes coherent without adding any complexity to mono themes.</span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>A separate engagement knob (accent) keeps the "look here" signal</span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a>  semantically distinct from the brand surface, so a hovered row can't</span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a>  read the same color as a regular badge two rows down.</span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Adding any knob beyond these reopens the question of which knob a new</span>
+<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a>  feature should land on. The contract collapses.</span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a>Why accent is reserved for engagement:</span>
+<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>When accent doubled as both "the engagement color" and "the default fill</span>
+<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a>  for content-bearing glyph columns" (badges, pictograms, rings, stars), the</span>
+<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a>  same hue did two unrelated jobs and the emphasis signal lost its meaning.</span>
+<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a>  A hovered row read the same color as a regular badge. The 2026-04-28</span>
+<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a>  redesign fixed this: glyph col defaults moved to the secondary identity</span>
+<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a>  axis (which mirrors primary in mono themes — visually identical to before</span>
+<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a>  for journal users — and lights up secondary in two-color themes).</span>
+<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The mental model "identity for what is, accent for what's happening"</span>
+<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a>  is the entire reason themes feel coherent.</span>
+<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>If a new role doesn't cleanly map to one of these two axes, the answer is</span>
+<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>almost always to refine the role's purpose, not to add a third axis.</span>
+<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a><span class="fu">## The three-axis contract</span></span>
+<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a>Identity is two tiers, but the actual *roles* are three. Each axis owns</span>
+<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a>exactly one job:</span>
+<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Axis <span class="pp">|</span> Owns <span class="pp">|</span> Default behavior <span class="pp">|</span></span>
+<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **primary** (+ `primary_deep`) | **Prominence**: title text, bold leaf-header band, container border, series<span class="co">[</span><span class="ot">0</span><span class="co">]</span> anchor <span class="pp">|</span> Required input. <span class="in">`_deep`</span> auto-darkens by 15% (OKLCH) if NA. <span class="pp">|</span></span>
+<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **secondary** (+ `secondary_deep`) | **Structure**: bold col-group band, row-group L1/L2/L3 bg, glyph col defaults (badge/pictogram/ring/stars), AND chrome texture (surface.muted, divider.subtle/strong, alt-row banding, gridline, axis/tick) <span class="pp">|</span> NA mirrors primary. <span class="in">`secondary_deep`</span> mirrors <span class="in">`primary_deep`</span> when secondary is NA; auto-darkens otherwise. <span class="pp">|</span></span>
+<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> **accent** (+ `accent_deep`) | **Engagement**: hover, selected, row.accent.fg, accent.tint_subtle/medium, semantic.fill, selection edge color, status.info fallback <span class="pp">|</span> Required input. Orthogonal — never enters the identity mirror chain. <span class="pp">|</span></span>
+<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a>The single rule for every theme: **pin what's distinct, mirror the rest.**</span>
+<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a>Mono themes pin primary only. Two-color editorial themes pin primary +</span>
+<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a>secondary. Accent is always pinned (engagement is never silent).</span>
+<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a>The structural axis is doing the most work. In mono themes, you don't</span>
+<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a>notice — secondary mirrors primary, so chrome and groupings read as</span>
+<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a>primary-tinted variants of the canvas. In two-color themes, secondary</span>
+<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a>lights up and you get coordinated movement across:</span>
+<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The bold column-group band reads in secondary</span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Row-group bars read in a 16% (or 24% under tint/bold header) mix of</span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a>  secondary into surface</span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Cell hairlines and dividers carry a faint secondary tint</span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Alt-row banding picks up the same secondary chrome</span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Glyph cells (badges, rings, stars, pictograms) default to secondary</span>
+<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a>All from one pin. No per-theme overrides. That's the dividend the contract</span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a>pays.</span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a><span class="fu">## Why tertiary was added (2026-04-28) and removed (2026-04-29)</span></span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a>Honest record. Tertiary was a 24-hour decision and the postmortem teaches</span>
+<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a>the most important lesson in this document.</span>
+<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a><span class="fu">### The 2026-04-28 decision</span></span>
+<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a>The previous architecture was <span class="in">`brand`</span> / <span class="in">`brand_deep`</span> + <span class="in">`accent`</span>. Editorial</span>
+<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a>themes (LoTR-style demos) wanted a second color for chrome texture —</span>
+<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a>specifically, the umber/moss/wheat tones that distinguish the three LoTR</span>
+<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a>themes from each other. Without a knob for it, theme authors were either</span>
+<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a>hardcoding hex values into every chrome token (high maintenance, drifts on</span>
+<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a>input change) or accepting a primary-tinted chrome that looked wrong</span>
+<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a>against the bold identity bands.</span>
+<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a>The proposal: rename <span class="in">`brand`</span> → <span class="in">`primary`</span>, add <span class="in">`secondary`</span> for column-group</span>
+<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a>bg + row-group bg + glyph defaults, add <span class="in">`tertiary`</span> for chrome texture</span>
+<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a>(surface.muted, dividers, banding, gridlines, axis/tick). Three identity</span>
+<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a>tiers, each mirroring up the chain. Accent stays orthogonal.</span>
+<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a>This shipped to main on 2026-04-28. Memory entry saved. Themes migrated.</span>
+<span id="cb5-181"><a href="#cb5-181" aria-hidden="true" tabindex="-1"></a>Validation green.</span>
+<span id="cb5-182"><a href="#cb5-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-183"><a href="#cb5-183" aria-hidden="true" tabindex="-1"></a><span class="fu">### The 2026-04-29 reversal</span></span>
+<span id="cb5-184"><a href="#cb5-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-185"><a href="#cb5-185" aria-hidden="true" tabindex="-1"></a>Within 24 hours, two problems surfaced when stress-testing editorial</span>
+<span id="cb5-186"><a href="#cb5-186" aria-hidden="true" tabindex="-1"></a>themes:</span>
+<span id="cb5-187"><a href="#cb5-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-188"><a href="#cb5-188" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Three colors usually communicate worse than two.** When designers</span>
+<span id="cb5-189"><a href="#cb5-189" aria-hidden="true" tabindex="-1"></a>   could pin three identity hues, they did — even when the third hue's</span>
+<span id="cb5-190"><a href="#cb5-190" aria-hidden="true" tabindex="-1"></a>   only job was "tint the chrome differently from the band." The result</span>
+<span id="cb5-191"><a href="#cb5-191" aria-hidden="true" tabindex="-1"></a>   was tables with too much going on. Editorial restraint requires that</span>
+<span id="cb5-192"><a href="#cb5-192" aria-hidden="true" tabindex="-1"></a>   the architecture *not invite* the third pin in the first place.</span>
+<span id="cb5-193"><a href="#cb5-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-194"><a href="#cb5-194" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Chrome wants to read structurally, not ornamentally.** Routing chrome</span>
+<span id="cb5-195"><a href="#cb5-195" aria-hidden="true" tabindex="-1"></a>   through its own knob made it feel like a third identity color (because</span>
+<span id="cb5-196"><a href="#cb5-196" aria-hidden="true" tabindex="-1"></a>   it was). Folding chrome onto the secondary axis — same axis that owns</span>
+<span id="cb5-197"><a href="#cb5-197" aria-hidden="true" tabindex="-1"></a>   col-group bg, row-group bg, glyph defaults — collapsed it into "the</span>
+<span id="cb5-198"><a href="#cb5-198" aria-hidden="true" tabindex="-1"></a>   structural color" instead of "the chrome color." The mental model</span>
+<span id="cb5-199"><a href="#cb5-199" aria-hidden="true" tabindex="-1"></a>   simplified: secondary is *everything that supports the primary band*.</span>
+<span id="cb5-200"><a href="#cb5-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-201"><a href="#cb5-201" aria-hidden="true" tabindex="-1"></a>The reversal: <span class="in">`tertiary`</span> and <span class="in">`tertiary_deep`</span> removed entirely. Chrome</span>
+<span id="cb5-202"><a href="#cb5-202" aria-hidden="true" tabindex="-1"></a>texture migrated onto <span class="in">`secondary_deep`</span> at the same mix strengths. Mono</span>
+<span id="cb5-203"><a href="#cb5-203" aria-hidden="true" tabindex="-1"></a>themes are visually unchanged (secondary mirrors primary). Two-color</span>
+<span id="cb5-204"><a href="#cb5-204" aria-hidden="true" tabindex="-1"></a>themes get one structural axis instead of two.</span>
+<span id="cb5-205"><a href="#cb5-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-206"><a href="#cb5-206" aria-hidden="true" tabindex="-1"></a>The lesson:</span>
+<span id="cb5-207"><a href="#cb5-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-208"><a href="#cb5-208" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Adding expressivity is reversible only if you add it carefully.**</span>
+<span id="cb5-209"><a href="#cb5-209" aria-hidden="true" tabindex="-1"></a>  Tertiary was added with full validation, full migration, full memory</span>
+<span id="cb5-210"><a href="#cb5-210" aria-hidden="true" tabindex="-1"></a>  trail — which made the reversal cheap. A messier addition would have</span>
+<span id="cb5-211"><a href="#cb5-211" aria-hidden="true" tabindex="-1"></a>  cost weeks.</span>
+<span id="cb5-212"><a href="#cb5-212" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**A 24-hour postmortem on a fresh decision is healthier than living</span>
+<span id="cb5-213"><a href="#cb5-213" aria-hidden="true" tabindex="-1"></a>  with the wrong shape for a quarter.** The reversal entry is in this</span>
+<span id="cb5-214"><a href="#cb5-214" aria-hidden="true" tabindex="-1"></a>  log not as embarrassment but as evidence that the loop is short.</span>
+<span id="cb5-215"><a href="#cb5-215" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**The right number of identity tiers is two. Probably forever.**</span>
+<span id="cb5-216"><a href="#cb5-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-217"><a href="#cb5-217" aria-hidden="true" tabindex="-1"></a>The LoTR themes lost nothing essential. Dwarven kept bronze (primary)</span>
+<span id="cb5-218"><a href="#cb5-218" aria-hidden="true" tabindex="-1"></a><span class="ss">+ </span>gold (secondary, now tinting chrome too) + ember (accent). The third</span>
+<span id="cb5-219"><a href="#cb5-219" aria-hidden="true" tabindex="-1"></a>umber pin folded into the gold cascade — and the chrome in Dwarven now</span>
+<span id="cb5-220"><a href="#cb5-220" aria-hidden="true" tabindex="-1"></a>reads as warm-burnished-metallurgy, which is *more* on-theme than the</span>
+<span id="cb5-221"><a href="#cb5-221" aria-hidden="true" tabindex="-1"></a>original cool umber against warm bronze ever was.</span>
+<span id="cb5-222"><a href="#cb5-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-223"><a href="#cb5-223" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-224"><a href="#cb5-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-225"><a href="#cb5-225" aria-hidden="true" tabindex="-1"></a><span class="fu">## Mirror chain semantics</span></span>
+<span id="cb5-226"><a href="#cb5-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-227"><a href="#cb5-227" aria-hidden="true" tabindex="-1"></a>The identity chain is a single rule:</span>
+<span id="cb5-228"><a href="#cb5-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-229"><a href="#cb5-229" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; If </span><span class="in">`secondary`</span><span class="at"> is NA at construction, it mirrors </span><span class="in">`primary`</span><span class="at"> during</span></span>
+<span id="cb5-230"><a href="#cb5-230" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; resolution. If </span><span class="in">`secondary_deep`</span><span class="at"> is NA, it mirrors </span><span class="in">`primary_deep`</span><span class="at"> (when</span></span>
+<span id="cb5-231"><a href="#cb5-231" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; secondary itself is NA) or auto-darkens from secondary (when secondary</span></span>
+<span id="cb5-232"><a href="#cb5-232" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; is pinned).</span></span>
+<span id="cb5-233"><a href="#cb5-233" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-234"><a href="#cb5-234" aria-hidden="true" tabindex="-1"></a>A few things to know about how this behaves:</span>
+<span id="cb5-235"><a href="#cb5-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-236"><a href="#cb5-236" aria-hidden="true" tabindex="-1"></a>**Mirroring happens at resolve time, not at construction.**</span>
+<span id="cb5-237"><a href="#cb5-237" aria-hidden="true" tabindex="-1"></a><span class="in">`ThemeInputs(primary = "#0891b2")`</span> stores <span class="in">`secondary = NA`</span> literally; the</span>
+<span id="cb5-238"><a href="#cb5-238" aria-hidden="true" tabindex="-1"></a>NA only resolves to <span class="in">`"#0891b2"`</span> after <span class="in">`resolve_theme()`</span> has run. This</span>
+<span id="cb5-239"><a href="#cb5-239" aria-hidden="true" tabindex="-1"></a>means re-resolving an already-resolved theme is idempotent: the resolver</span>
+<span id="cb5-240"><a href="#cb5-240" aria-hidden="true" tabindex="-1"></a>only writes into NA-valued fields, so a previously-mirrored secondary</span>
+<span id="cb5-241"><a href="#cb5-241" aria-hidden="true" tabindex="-1"></a>stays at primary's value, and a pinned secondary stays at the user's pin.</span>
+<span id="cb5-242"><a href="#cb5-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-243"><a href="#cb5-243" aria-hidden="true" tabindex="-1"></a>**Pinning a tier breaks the mirror for that tier and downstream tiers.**</span>
+<span id="cb5-244"><a href="#cb5-244" aria-hidden="true" tabindex="-1"></a>If you pin <span class="in">`secondary`</span>, <span class="in">`secondary_deep`</span> no longer follows <span class="in">`primary_deep`</span></span>
+<span id="cb5-245"><a href="#cb5-245" aria-hidden="true" tabindex="-1"></a>— it auto-derives from your pinned secondary instead. This is the</span>
+<span id="cb5-246"><a href="#cb5-246" aria-hidden="true" tabindex="-1"></a>intentional break: the moment you say "I want a second color," the deep</span>
+<span id="cb5-247"><a href="#cb5-247" aria-hidden="true" tabindex="-1"></a>companion tracks the second color, not the first.</span>
+<span id="cb5-248"><a href="#cb5-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-249"><a href="#cb5-249" aria-hidden="true" tabindex="-1"></a>**Accent never mirrors.** It's a required input precisely because</span>
+<span id="cb5-250"><a href="#cb5-250" aria-hidden="true" tabindex="-1"></a>engagement is never silent. Even in a mono theme, accent is a deliberate</span>
+<span id="cb5-251"><a href="#cb5-251" aria-hidden="true" tabindex="-1"></a>choice (often a deliberate counterpoint — Cochrane pairs cool teal primary</span>
+<span id="cb5-252"><a href="#cb5-252" aria-hidden="true" tabindex="-1"></a>with warm coral accent specifically because the contrast lights up the</span>
+<span id="cb5-253"><a href="#cb5-253" aria-hidden="true" tabindex="-1"></a>engagement signal).</span>
+<span id="cb5-254"><a href="#cb5-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-255"><a href="#cb5-255" aria-hidden="true" tabindex="-1"></a>**The mirror is not just visual.** It propagates through every derived</span>
+<span id="cb5-256"><a href="#cb5-256" aria-hidden="true" tabindex="-1"></a>token. In a mono theme, <span class="in">`divider.strong`</span> reads <span class="in">`secondary_deep`</span> which</span>
+<span id="cb5-257"><a href="#cb5-257" aria-hidden="true" tabindex="-1"></a>mirrors <span class="in">`primary_deep`</span> which auto-darkens primary — a single edit to</span>
+<span id="cb5-258"><a href="#cb5-258" aria-hidden="true" tabindex="-1"></a>primary cascades through dividers, surface.muted, banding, gridlines, all</span>
+<span id="cb5-259"><a href="#cb5-259" aria-hidden="true" tabindex="-1"></a>of it. This is the dividend that justifies the implicit-NA design over</span>
+<span id="cb5-260"><a href="#cb5-260" aria-hidden="true" tabindex="-1"></a>having theme authors restate primary in every cascade slot.</span>
+<span id="cb5-261"><a href="#cb5-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-262"><a href="#cb5-262" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-263"><a href="#cb5-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-264"><a href="#cb5-264" aria-hidden="true" tabindex="-1"></a><span class="fu">## Cascade tiers</span></span>
+<span id="cb5-265"><a href="#cb5-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-266"><a href="#cb5-266" aria-hidden="true" tabindex="-1"></a>Three tiers, each with one job:</span>
+<span id="cb5-267"><a href="#cb5-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-268"><a href="#cb5-268" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**T1 — Inputs.** What the customer chooses. <span class="in">`primary`</span>, <span class="in">`secondary`</span>,</span>
+<span id="cb5-269"><a href="#cb5-269" aria-hidden="true" tabindex="-1"></a>  <span class="in">`accent`</span>, plus <span class="in">`_deep`</span> companions, plus <span class="in">`slot_style`</span> (enum),</span>
+<span id="cb5-270"><a href="#cb5-270" aria-hidden="true" tabindex="-1"></a>  <span class="in">`header_style`</span> (enum), neutral ramp, status colors, series anchors,</span>
+<span id="cb5-271"><a href="#cb5-271" aria-hidden="true" tabindex="-1"></a>  fonts. ~15 fields. This is the only tier most users edit directly.</span>
+<span id="cb5-272"><a href="#cb5-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-273"><a href="#cb5-273" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**T2 — Semantic roles.** Derived tokens with named semantics:</span>
+<span id="cb5-274"><a href="#cb5-274" aria-hidden="true" tabindex="-1"></a>  <span class="in">`surface.base/muted/raised`</span>, <span class="in">`content.primary/secondary/muted/inverse`</span>,</span>
+<span id="cb5-275"><a href="#cb5-275" aria-hidden="true" tabindex="-1"></a>  <span class="in">`divider.subtle/strong`</span>, <span class="in">`accent.default/muted/tint_subtle/tint_medium`</span>,</span>
+<span id="cb5-276"><a href="#cb5-276" aria-hidden="true" tabindex="-1"></a>  <span class="in">`semantic.fill`</span>, <span class="in">`status.*`</span>, plus per-slot <span class="in">`SlotBundle`</span> for series</span>
+<span id="cb5-277"><a href="#cb5-277" aria-hidden="true" tabindex="-1"></a>  marks. The resolver fills these from T1 via OKLCH formulas; users</span>
+<span id="cb5-278"><a href="#cb5-278" aria-hidden="true" tabindex="-1"></a>  override individual fields to pin a tone.</span>
+<span id="cb5-279"><a href="#cb5-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-280"><a href="#cb5-280" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**T3 — Component bindings.** Per-cluster overrides: `header.{light,</span>
+<span id="cb5-281"><a href="#cb5-281" aria-hidden="true" tabindex="-1"></a>  tint, bold}.{bg, fg, rule}<span class="in">`, `</span>column_group.*<span class="in">`, `</span>row_group.L1/L2/L3.bg`,</span>
+<span id="cb5-282"><a href="#cb5-282" aria-hidden="true" tabindex="-1"></a>  <span class="in">`cell.border`</span>, <span class="in">`plot.axis_line/tick_mark/gridline/reference`</span>. These</span>
+<span id="cb5-283"><a href="#cb5-283" aria-hidden="true" tabindex="-1"></a>  default to T2 values with cluster-local computations (e.g., bold rule</span>
+<span id="cb5-284"><a href="#cb5-284" aria-hidden="true" tabindex="-1"></a>  is a 40% mix of inverse against the band's own bg). Users can pin</span>
+<span id="cb5-285"><a href="#cb5-285" aria-hidden="true" tabindex="-1"></a>  individual leaves; the rest cascade from T2.</span>
+<span id="cb5-286"><a href="#cb5-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-287"><a href="#cb5-287" aria-hidden="true" tabindex="-1"></a>Three tiers of overrides means three chances for a user to break a</span>
+<span id="cb5-288"><a href="#cb5-288" aria-hidden="true" tabindex="-1"></a>required relationship. Construction-time validation</span>
+<span id="cb5-289"><a href="#cb5-289" aria-hidden="true" tabindex="-1"></a>(<span class="in">`validate_resolved_theme`</span>) catches the obvious failures (bold-band</span>
+<span id="cb5-290"><a href="#cb5-290" aria-hidden="true" tabindex="-1"></a>contrast, body-text contrast) at theme construction — *not* at render —</span>
+<span id="cb5-291"><a href="#cb5-291" aria-hidden="true" tabindex="-1"></a>so the error message points at the source of the bad pin, not at a</span>
+<span id="cb5-292"><a href="#cb5-292" aria-hidden="true" tabindex="-1"></a>downstream symptom. WCAG AA Large (3.0) for chrome bold text; AA Normal</span>
+<span id="cb5-293"><a href="#cb5-293" aria-hidden="true" tabindex="-1"></a>(4.5) for body text. Tests can opt out with <span class="in">`.validate = FALSE`</span>.</span>
+<span id="cb5-294"><a href="#cb5-294" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-295"><a href="#cb5-295" aria-hidden="true" tabindex="-1"></a>The cascade is fully introspectable from R:</span>
+<span id="cb5-296"><a href="#cb5-296" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-299"><a href="#cb5-299" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-300"><a href="#cb5-300" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb5-301"><a href="#cb5-301" aria-hidden="true" tabindex="-1"></a><span class="fu">inspect_resolved</span>(<span class="fu">web_theme_cochrane</span>(), <span class="st">"header.bold.bg"</span>)</span>
+<span id="cb5-302"><a href="#cb5-302" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $path: "header.bold.bg"</span></span>
+<span id="cb5-303"><a href="#cb5-303" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $value: "#006B9C"</span></span>
+<span id="cb5-304"><a href="#cb5-304" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $cascade: c("inputs$primary_deep", "inputs$primary")</span></span>
+<span id="cb5-305"><a href="#cb5-305" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $derivation: "inputs$primary_deep (auto: oklch_darken(primary, 0.15))"</span></span>
+<span id="cb5-306"><a href="#cb5-306" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-307"><a href="#cb5-307" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-308"><a href="#cb5-308" aria-hidden="true" tabindex="-1"></a>The same provenance feeds the widget's Theme tab tooltips — single</span>
+<span id="cb5-309"><a href="#cb5-309" aria-hidden="true" tabindex="-1"></a>source of truth for "where did this hex come from?".</span>
+<span id="cb5-310"><a href="#cb5-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-311"><a href="#cb5-311" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-312"><a href="#cb5-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-313"><a href="#cb5-313" aria-hidden="true" tabindex="-1"></a><span class="fu">## Anti-patterns</span></span>
+<span id="cb5-314"><a href="#cb5-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-315"><a href="#cb5-315" aria-hidden="true" tabindex="-1"></a>These are not "things we haven't gotten around to." These are things tabviz</span>
+<span id="cb5-316"><a href="#cb5-316" aria-hidden="true" tabindex="-1"></a>will *refuse to do*. If you encounter one in a feature request, push back.</span>
+<span id="cb5-317"><a href="#cb5-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-318"><a href="#cb5-318" aria-hidden="true" tabindex="-1"></a><span class="fu">### Don't add a fourth identity tier (or revive tertiary)</span></span>
+<span id="cb5-319"><a href="#cb5-319" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-320"><a href="#cb5-320" aria-hidden="true" tabindex="-1"></a>Two-knob is canonical. Tertiary was added on 2026-04-28 and removed on</span>
+<span id="cb5-321"><a href="#cb5-321" aria-hidden="true" tabindex="-1"></a>2026-04-29 — see the <span class="co">[</span><span class="ot">postmortem</span><span class="co">](#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29)</span>.</span>
+<span id="cb5-322"><a href="#cb5-322" aria-hidden="true" tabindex="-1"></a>Any future proposal to add a third identity color must either (a)</span>
+<span id="cb5-323"><a href="#cb5-323" aria-hidden="true" tabindex="-1"></a>demonstrate a use case that the secondary mirror chain genuinely cannot</span>
+<span id="cb5-324"><a href="#cb5-324" aria-hidden="true" tabindex="-1"></a>serve, or (b) explain why the prior reversal's reasoning no longer</span>
+<span id="cb5-325"><a href="#cb5-325" aria-hidden="true" tabindex="-1"></a>applies. Aesthetic preference for three colors is not sufficient — the</span>
+<span id="cb5-326"><a href="#cb5-326" aria-hidden="true" tabindex="-1"></a>reversal happened *because* designers reached for three when two would</span>
+<span id="cb5-327"><a href="#cb5-327" aria-hidden="true" tabindex="-1"></a>have read better.</span>
+<span id="cb5-328"><a href="#cb5-328" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-329"><a href="#cb5-329" aria-hidden="true" tabindex="-1"></a><span class="fu">### Don't introduce slot-typed Tier 1 anchors</span></span>
+<span id="cb5-330"><a href="#cb5-330" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-331"><a href="#cb5-331" aria-hidden="true" tabindex="-1"></a>A previous architectural proposal added <span class="in">`slot.trend`</span>, <span class="in">`slot.distribution`</span>,</span>
+<span id="cb5-332"><a href="#cb5-332" aria-hidden="true" tabindex="-1"></a><span class="in">`slot.range`</span>, etc. as Tier 1 anchors keyed to recipe types. This was</span>
+<span id="cb5-333"><a href="#cb5-333" aria-hidden="true" tabindex="-1"></a>**considered and retracted**. The two-knob model handles every case the</span>
+<span id="cb5-334"><a href="#cb5-334" aria-hidden="true" tabindex="-1"></a>slot-typed proposal addressed (via accent-tint and identity-deep</span>
+<span id="cb5-335"><a href="#cb5-335" aria-hidden="true" tabindex="-1"></a>derivations). Reintroducing slot-typed anchors adds dimensionality that</span>
+<span id="cb5-336"><a href="#cb5-336" aria-hidden="true" tabindex="-1"></a>the cascade has to thread through every component binding for</span>
+<span id="cb5-337"><a href="#cb5-337" aria-hidden="true" tabindex="-1"></a>near-zero practical gain.</span>
+<span id="cb5-338"><a href="#cb5-338" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-339"><a href="#cb5-339" aria-hidden="true" tabindex="-1"></a><span class="fu">### Don't mix accent into default content</span></span>
+<span id="cb5-340"><a href="#cb5-340" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-341"><a href="#cb5-341" aria-hidden="true" tabindex="-1"></a>Accent owns engagement. Hover, selected, callouts, status.info, semantic</span>
+<span id="cb5-342"><a href="#cb5-342" aria-hidden="true" tabindex="-1"></a>row treatments. It does *not* own:</span>
+<span id="cb5-343"><a href="#cb5-343" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-344"><a href="#cb5-344" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Default badge fills</span>
+<span id="cb5-345"><a href="#cb5-345" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Glyph cell defaults (rings, stars, pictograms)</span>
+<span id="cb5-346"><a href="#cb5-346" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Ornament that fires by default</span>
+<span id="cb5-347"><a href="#cb5-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-348"><a href="#cb5-348" aria-hidden="true" tabindex="-1"></a>Those belong on the secondary identity axis. The 2026-04-28 redesign</span>
+<span id="cb5-349"><a href="#cb5-349" aria-hidden="true" tabindex="-1"></a>documented this explicitly: glyph col defaults moved from accent to</span>
+<span id="cb5-350"><a href="#cb5-350" aria-hidden="true" tabindex="-1"></a>secondary precisely so the engagement signal stays meaningful. If you find</span>
+<span id="cb5-351"><a href="#cb5-351" aria-hidden="true" tabindex="-1"></a>yourself wanting accent on a content surface that's always rendered, the</span>
+<span id="cb5-352"><a href="#cb5-352" aria-hidden="true" tabindex="-1"></a>correct fix is almost certainly identity, not accent.</span>
+<span id="cb5-353"><a href="#cb5-353" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-354"><a href="#cb5-354" aria-hidden="true" tabindex="-1"></a><span class="fu">### Don't tint chrome toward accent</span></span>
+<span id="cb5-355"><a href="#cb5-355" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-356"><a href="#cb5-356" aria-hidden="true" tabindex="-1"></a>Chrome (banding, dividers, gridlines, axis text) is structural. It tints</span>
+<span id="cb5-357"><a href="#cb5-357" aria-hidden="true" tabindex="-1"></a>toward <span class="in">`secondary_deep`</span> — which in mono themes mirrors <span class="in">`primary_deep`</span>, so</span>
+<span id="cb5-358"><a href="#cb5-358" aria-hidden="true" tabindex="-1"></a>chrome stays cohesive with the brand. Tinting chrome toward accent makes</span>
+<span id="cb5-359"><a href="#cb5-359" aria-hidden="true" tabindex="-1"></a>hovered/selected rows merge into the chrome band. This was wrong before</span>
+<span id="cb5-360"><a href="#cb5-360" aria-hidden="true" tabindex="-1"></a>the cascade rework and would still be wrong after.</span>
+<span id="cb5-361"><a href="#cb5-361" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-362"><a href="#cb5-362" aria-hidden="true" tabindex="-1"></a><span class="fu">### Don't add charm recipes</span></span>
+<span id="cb5-363"><a href="#cb5-363" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-364"><a href="#cb5-364" aria-hidden="true" tabindex="-1"></a>Pictogram arrays, emoji marks, decorative glyph recipes, isotype-style</span>
+<span id="cb5-365"><a href="#cb5-365" aria-hidden="true" tabindex="-1"></a>visualizations. These are charming in stress-test demos but distract from</span>
+<span id="cb5-366"><a href="#cb5-366" aria-hidden="true" tabindex="-1"></a>publication-quality positioning. The recipe library is intentionally</span>
+<span id="cb5-367"><a href="#cb5-367" aria-hidden="true" tabindex="-1"></a>small: it grows when a serious publication-quality use case demonstrably</span>
+<span id="cb5-368"><a href="#cb5-368" aria-hidden="true" tabindex="-1"></a>isn't covered (e.g., gauge-against-target, dots-of-N, stacked-bar</span>
+<span id="cb5-369"><a href="#cb5-369" aria-hidden="true" tabindex="-1"></a>proportion compositions are on the roadmap), not when a demo would be</span>
+<span id="cb5-370"><a href="#cb5-370" aria-hidden="true" tabindex="-1"></a>fun.</span>
+<span id="cb5-371"><a href="#cb5-371" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-372"><a href="#cb5-372" aria-hidden="true" tabindex="-1"></a>The boundary check: would this recipe appear in *The Lancet*? If no, hold</span>
+<span id="cb5-373"><a href="#cb5-373" aria-hidden="true" tabindex="-1"></a>the line.</span>
+<span id="cb5-374"><a href="#cb5-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-375"><a href="#cb5-375" aria-hidden="true" tabindex="-1"></a><span class="fu">### Don't bypass the cascade</span></span>
+<span id="cb5-376"><a href="#cb5-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-377"><a href="#cb5-377" aria-hidden="true" tabindex="-1"></a>Every now and then a feature request asks for a theme override that</span>
+<span id="cb5-378"><a href="#cb5-378" aria-hidden="true" tabindex="-1"></a>"skips" the cascade — a one-off color that doesn't flow through any of</span>
+<span id="cb5-379"><a href="#cb5-379" aria-hidden="true" tabindex="-1"></a>the derivations, doesn't participate in mirroring, can't be inspected.</span>
+<span id="cb5-380"><a href="#cb5-380" aria-hidden="true" tabindex="-1"></a>This signal almost always means the cascade is missing a case. The right</span>
+<span id="cb5-381"><a href="#cb5-381" aria-hidden="true" tabindex="-1"></a>response is to extend the cascade (add the slot to T2 or T3, document its</span>
+<span id="cb5-382"><a href="#cb5-382" aria-hidden="true" tabindex="-1"></a>derivation, run validation), not to introduce a side door.</span>
+<span id="cb5-383"><a href="#cb5-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-384"><a href="#cb5-384" aria-hidden="true" tabindex="-1"></a>If genuinely no T1/T2/T3 location fits, that's a decision-quality moment.</span>
+<span id="cb5-385"><a href="#cb5-385" aria-hidden="true" tabindex="-1"></a>Stop and re-examine the role's semantics before committing to a new slot.</span>
+<span id="cb5-386"><a href="#cb5-386" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-387"><a href="#cb5-387" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-388"><a href="#cb5-388" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-389"><a href="#cb5-389" aria-hidden="true" tabindex="-1"></a><span class="fu">## Authoring a new theme</span></span>
+<span id="cb5-390"><a href="#cb5-390" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-391"><a href="#cb5-391" aria-hidden="true" tabindex="-1"></a>The recipe is short. Most themes need only Tier 1 inputs.</span>
+<span id="cb5-392"><a href="#cb5-392" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-393"><a href="#cb5-393" aria-hidden="true" tabindex="-1"></a>**Mono theme** (the journal default — Cochrane, Lancet, JAMA fall here):</span>
+<span id="cb5-394"><a href="#cb5-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-397"><a href="#cb5-397" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-398"><a href="#cb5-398" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb5-399"><a href="#cb5-399" aria-hidden="true" tabindex="-1"></a>my_theme <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb5-400"><a href="#cb5-400" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"my_journal"</span>,</span>
+<span id="cb5-401"><a href="#cb5-401" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb5-402"><a href="#cb5-402" aria-hidden="true" tabindex="-1"></a>    <span class="at">primary =</span> <span class="st">"#0F4C81"</span>,     <span class="co"># identity hero</span></span>
+<span id="cb5-403"><a href="#cb5-403" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent  =</span> <span class="st">"#C8553D"</span>,     <span class="co"># warm engagement counterpoint</span></span>
+<span id="cb5-404"><a href="#cb5-404" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#0F4C81"</span>, <span class="st">"#C8553D"</span>, <span class="st">"#5C8A3F"</span>, <span class="st">"#7E5A99"</span>, <span class="st">"#D49A3A"</span>),</span>
+<span id="cb5-405"><a href="#cb5-405" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body =</span> <span class="st">"Georgia, 'Times New Roman', serif"</span></span>
+<span id="cb5-406"><a href="#cb5-406" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-407"><a href="#cb5-407" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-408"><a href="#cb5-408" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-409"><a href="#cb5-409" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-410"><a href="#cb5-410" aria-hidden="true" tabindex="-1"></a>That's it. Secondary mirrors primary; chrome reads as primary-tinted;</span>
+<span id="cb5-411"><a href="#cb5-411" aria-hidden="true" tabindex="-1"></a>glyph defaults read primary; engagement (hover/selected/info) reads</span>
+<span id="cb5-412"><a href="#cb5-412" aria-hidden="true" tabindex="-1"></a>accent. The contract gives you a coherent table with two pinned values.</span>
+<span id="cb5-413"><a href="#cb5-413" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-414"><a href="#cb5-414" aria-hidden="true" tabindex="-1"></a>**Two-color editorial theme** (LoTR-style):</span>
+<span id="cb5-415"><a href="#cb5-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-418"><a href="#cb5-418" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-419"><a href="#cb5-419" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb5-420"><a href="#cb5-420" aria-hidden="true" tabindex="-1"></a>my_editorial <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(</span>
+<span id="cb5-421"><a href="#cb5-421" aria-hidden="true" tabindex="-1"></a>  <span class="at">name =</span> <span class="st">"my_editorial"</span>,</span>
+<span id="cb5-422"><a href="#cb5-422" aria-hidden="true" tabindex="-1"></a>  <span class="at">inputs =</span> <span class="fu">list</span>(</span>
+<span id="cb5-423"><a href="#cb5-423" aria-hidden="true" tabindex="-1"></a>    <span class="at">primary   =</span> <span class="st">"#7A4E22"</span>,   <span class="co"># bronze</span></span>
+<span id="cb5-424"><a href="#cb5-424" aria-hidden="true" tabindex="-1"></a>    <span class="at">secondary =</span> <span class="st">"#D4A955"</span>,   <span class="co"># gold — drives col-group bands, row-group bars,</span></span>
+<span id="cb5-425"><a href="#cb5-425" aria-hidden="true" tabindex="-1"></a>                             <span class="co">#        glyph defaults, AND chrome texture</span></span>
+<span id="cb5-426"><a href="#cb5-426" aria-hidden="true" tabindex="-1"></a>    <span class="at">accent    =</span> <span class="st">"#E0673A"</span>,   <span class="co"># ember — hover, selected, status.info</span></span>
+<span id="cb5-427"><a href="#cb5-427" aria-hidden="true" tabindex="-1"></a>    <span class="at">series_anchors =</span> <span class="fu">c</span>(<span class="st">"#D4A955"</span>, <span class="st">"#A8A8A0"</span>, <span class="st">"#B86C42"</span>, <span class="st">"#7A4E22"</span>, <span class="st">"#5C7AA0"</span>),</span>
+<span id="cb5-428"><a href="#cb5-428" aria-hidden="true" tabindex="-1"></a>    <span class="at">font_body =</span> <span class="st">"'EB Garamond', Georgia, serif"</span></span>
+<span id="cb5-429"><a href="#cb5-429" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb5-430"><a href="#cb5-430" aria-hidden="true" tabindex="-1"></a>  <span class="at">variants =</span> <span class="fu">list</span>(<span class="at">header_style =</span> <span class="st">"bold"</span>)</span>
+<span id="cb5-431"><a href="#cb5-431" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-432"><a href="#cb5-432" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-433"><a href="#cb5-433" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-434"><a href="#cb5-434" aria-hidden="true" tabindex="-1"></a>One additional pin (secondary) and one variant flip (header_style) — the</span>
+<span id="cb5-435"><a href="#cb5-435" aria-hidden="true" tabindex="-1"></a>rest cascades.</span>
+<span id="cb5-436"><a href="#cb5-436" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-437"><a href="#cb5-437" aria-hidden="true" tabindex="-1"></a>**Verifying your theme:**</span>
+<span id="cb5-438"><a href="#cb5-438" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-441"><a href="#cb5-441" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-442"><a href="#cb5-442" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb5-443"><a href="#cb5-443" aria-hidden="true" tabindex="-1"></a><span class="co"># Check what a specific leaf resolved to + why.</span></span>
+<span id="cb5-444"><a href="#cb5-444" aria-hidden="true" tabindex="-1"></a><span class="fu">inspect_resolved</span>(my_theme, <span class="st">"header.bold.bg"</span>)</span>
+<span id="cb5-445"><a href="#cb5-445" aria-hidden="true" tabindex="-1"></a><span class="fu">inspect_resolved</span>(my_theme, <span class="st">"divider.strong"</span>)</span>
+<span id="cb5-446"><a href="#cb5-446" aria-hidden="true" tabindex="-1"></a><span class="fu">inspect_resolved</span>(my_theme, <span class="st">"row_group.L1.bg"</span>)</span>
+<span id="cb5-447"><a href="#cb5-447" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-448"><a href="#cb5-448" aria-hidden="true" tabindex="-1"></a><span class="co"># Construction-time validation runs automatically — broken contrast</span></span>
+<span id="cb5-449"><a href="#cb5-449" aria-hidden="true" tabindex="-1"></a><span class="co"># aborts at web_theme() with a structured error pointing at the leaf.</span></span>
+<span id="cb5-450"><a href="#cb5-450" aria-hidden="true" tabindex="-1"></a><span class="co"># To bypass for experimental / synthetic colors:</span></span>
+<span id="cb5-451"><a href="#cb5-451" aria-hidden="true" tabindex="-1"></a>my_test <span class="ot">&lt;-</span> <span class="fu">web_theme</span>(..., <span class="at">.validate =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb5-452"><a href="#cb5-452" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-453"><a href="#cb5-453" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-454"><a href="#cb5-454" aria-hidden="true" tabindex="-1"></a>**What to override at T2/T3 (and when):**</span>
+<span id="cb5-455"><a href="#cb5-455" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-456"><a href="#cb5-456" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Override at T1 first. 90% of themes never need to touch T2 or T3.</span>
+<span id="cb5-457"><a href="#cb5-457" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Override at T2 when a *family* of derived tokens needs adjustment —</span>
+<span id="cb5-458"><a href="#cb5-458" aria-hidden="true" tabindex="-1"></a>  e.g., <span class="in">`divider.strong`</span> to pin the rule color across header/group/axis.</span>
+<span id="cb5-459"><a href="#cb5-459" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Override at T3 only for cluster-specific tweaks — e.g., a particular</span>
+<span id="cb5-460"><a href="#cb5-460" aria-hidden="true" tabindex="-1"></a>  preset wants the bold-mode header band darker than its primary_deep</span>
+<span id="cb5-461"><a href="#cb5-461" aria-hidden="true" tabindex="-1"></a>  would give.</span>
+<span id="cb5-462"><a href="#cb5-462" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-463"><a href="#cb5-463" aria-hidden="true" tabindex="-1"></a>The wider you cast the override, the higher up the cascade you should</span>
+<span id="cb5-464"><a href="#cb5-464" aria-hidden="true" tabindex="-1"></a>pin it. T3 overrides are bandages; T1 overrides are intent.</span>
+<span id="cb5-465"><a href="#cb5-465" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-466"><a href="#cb5-466" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-467"><a href="#cb5-467" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-468"><a href="#cb5-468" aria-hidden="true" tabindex="-1"></a><span class="fu">## Open questions</span></span>
+<span id="cb5-469"><a href="#cb5-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-470"><a href="#cb5-470" aria-hidden="true" tabindex="-1"></a>The architecture is mature enough that big redesigns are unlikely.</span>
+<span id="cb5-471"><a href="#cb5-471" aria-hidden="true" tabindex="-1"></a>Outstanding questions are tactical:</span>
+<span id="cb5-472"><a href="#cb5-472" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-473"><a href="#cb5-473" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Recipe fallbacks at narrow widths.** Whether violins below a width</span>
+<span id="cb5-474"><a href="#cb5-474" aria-hidden="true" tabindex="-1"></a>  threshold should automatically degrade to density strip / boxplot.</span>
+<span id="cb5-475"><a href="#cb5-475" aria-hidden="true" tabindex="-1"></a>  Could be guidance or runtime fallback. No current opinion.</span>
+<span id="cb5-476"><a href="#cb5-476" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Slot.style additional variants.** Currently three values</span>
+<span id="cb5-477"><a href="#cb5-477" aria-hidden="true" tabindex="-1"></a>  (<span class="in">`fill_with_darker_stroke`</span>, <span class="in">`flat_fill`</span>, <span class="in">`outlined`</span>). A "stroke_only"</span>
+<span id="cb5-478"><a href="#cb5-478" aria-hidden="true" tabindex="-1"></a>  variant has been suggested for very dense plots. Not yet implemented;</span>
+<span id="cb5-479"><a href="#cb5-479" aria-hidden="true" tabindex="-1"></a>  awaiting a real-world need.</span>
+<span id="cb5-480"><a href="#cb5-480" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Header tint strength.** The tint variant is a 12% mix of primary_deep</span>
+<span id="cb5-481"><a href="#cb5-481" aria-hidden="true" tabindex="-1"></a>  into surface.base. This was chosen by eye; whether 10% or 15% reads</span>
+<span id="cb5-482"><a href="#cb5-482" aria-hidden="true" tabindex="-1"></a>  better is taste-dependent and may benefit from per-theme override.</span>
+<span id="cb5-483"><a href="#cb5-483" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-484"><a href="#cb5-484" aria-hidden="true" tabindex="-1"></a>When new questions arise, append to the <span class="co">[</span><span class="ot">Decision log</span><span class="co">](#decision-log)</span>.</span>
+<span id="cb5-485"><a href="#cb5-485" aria-hidden="true" tabindex="-1"></a>When questions get resolved, move them out of this section and into the</span>
+<span id="cb5-486"><a href="#cb5-486" aria-hidden="true" tabindex="-1"></a>log entry that resolved them.</span>
+<span id="cb5-487"><a href="#cb5-487" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-488"><a href="#cb5-488" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-489"><a href="#cb5-489" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-490"><a href="#cb5-490" aria-hidden="true" tabindex="-1"></a><span class="fu">## Decision log</span></span>
+<span id="cb5-491"><a href="#cb5-491" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-492"><a href="#cb5-492" aria-hidden="true" tabindex="-1"></a>Append-only. Newest first. Each entry: date, decision, alternatives</span>
+<span id="cb5-493"><a href="#cb5-493" aria-hidden="true" tabindex="-1"></a>considered, reasoning. Future maintainers should append, not rewrite.</span>
+<span id="cb5-494"><a href="#cb5-494" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-495"><a href="#cb5-495" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-04-29 — Tertiary removed; chrome migrates to secondary</span></span>
+<span id="cb5-496"><a href="#cb5-496" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-497"><a href="#cb5-497" aria-hidden="true" tabindex="-1"></a>**Decision.** Drop <span class="in">`tertiary`</span> and <span class="in">`tertiary_deep`</span> from <span class="in">`ThemeInputs`</span>.</span>
+<span id="cb5-498"><a href="#cb5-498" aria-hidden="true" tabindex="-1"></a>Chrome texture (surface.muted, divider.subtle/strong, alt-row banding,</span>
+<span id="cb5-499"><a href="#cb5-499" aria-hidden="true" tabindex="-1"></a>gridline, axis/tick) now reads from <span class="in">`secondary_deep`</span> at the same mix</span>
+<span id="cb5-500"><a href="#cb5-500" aria-hidden="true" tabindex="-1"></a>strengths. Identity is two tiers (primary + secondary mirror chain) plus</span>
+<span id="cb5-501"><a href="#cb5-501" aria-hidden="true" tabindex="-1"></a>orthogonal accent.</span>
+<span id="cb5-502"><a href="#cb5-502" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-503"><a href="#cb5-503" aria-hidden="true" tabindex="-1"></a>**Alternatives considered.**</span>
+<span id="cb5-504"><a href="#cb5-504" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Keep three tiers, lower the bar for what tertiary owns. Rejected:</span>
+<span id="cb5-505"><a href="#cb5-505" aria-hidden="true" tabindex="-1"></a>  doesn't solve the "designers reach for three colors" problem.</span>
+<span id="cb5-506"><a href="#cb5-506" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Add a separate <span class="in">`chrome_tint`</span> knob (not in identity chain). Rejected:</span>
+<span id="cb5-507"><a href="#cb5-507" aria-hidden="true" tabindex="-1"></a>  same expressivity creep with extra surface area.</span>
+<span id="cb5-508"><a href="#cb5-508" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Keep three tiers but make tertiary "advanced-only" (hidden from default</span>
+<span id="cb5-509"><a href="#cb5-509" aria-hidden="true" tabindex="-1"></a>  panels). Rejected: API surface stays bloated; documentation cost is</span>
+<span id="cb5-510"><a href="#cb5-510" aria-hidden="true" tabindex="-1"></a>  high; the prompt to use three colors is structural, not UI.</span>
+<span id="cb5-511"><a href="#cb5-511" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-512"><a href="#cb5-512" aria-hidden="true" tabindex="-1"></a>**Reasoning.** See <span class="co">[</span><span class="ot">the postmortem</span><span class="co">](#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29)</span>.</span>
+<span id="cb5-513"><a href="#cb5-513" aria-hidden="true" tabindex="-1"></a>Two-knob is canonical. Bundled with this rework: <span class="in">`slot_style`</span> lifted to</span>
+<span id="cb5-514"><a href="#cb5-514" aria-hidden="true" tabindex="-1"></a>T1; <span class="in">`header_style`</span> expanded with <span class="in">`tint`</span> variant; row-group L1 bg gains</span>
+<span id="cb5-515"><a href="#cb5-515" aria-hidden="true" tabindex="-1"></a>header_style-driven subtle/strong strength; construction-time contrast</span>
+<span id="cb5-516"><a href="#cb5-516" aria-hidden="true" tabindex="-1"></a>validation; <span class="in">`inspect_resolved()`</span> introspection API; 7 presets migrated</span>
+<span id="cb5-517"><a href="#cb5-517" aria-hidden="true" tabindex="-1"></a>(LoTR trio rebalanced as 2-color).</span>
+<span id="cb5-518"><a href="#cb5-518" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-519"><a href="#cb5-519" aria-hidden="true" tabindex="-1"></a>**Migration cost.** ~3 hours of focused refactoring. Caught a real bug</span>
+<span id="cb5-520"><a href="#cb5-520" aria-hidden="true" tabindex="-1"></a>along the way: dark theme's auto-derived <span class="in">`primary_deep`</span> (#5C85C8) had</span>
+<span id="cb5-521"><a href="#cb5-521" aria-hidden="true" tabindex="-1"></a>2.57:1 contrast against its inverse text — pinned darker to #2E5290</span>
+<span id="cb5-522"><a href="#cb5-522" aria-hidden="true" tabindex="-1"></a>(5.33:1).</span>
+<span id="cb5-523"><a href="#cb5-523" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-524"><a href="#cb5-524" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-04-28 — Tertiary added (later reversed)</span></span>
+<span id="cb5-525"><a href="#cb5-525" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-526"><a href="#cb5-526" aria-hidden="true" tabindex="-1"></a>**Decision.** Add <span class="in">`tertiary`</span> and <span class="in">`tertiary_deep`</span> to <span class="in">`ThemeInputs`</span>. Three</span>
+<span id="cb5-527"><a href="#cb5-527" aria-hidden="true" tabindex="-1"></a>identity tiers in a mirror chain (primary → secondary → tertiary).</span>
+<span id="cb5-528"><a href="#cb5-528" aria-hidden="true" tabindex="-1"></a>Tertiary owns chrome texture.</span>
+<span id="cb5-529"><a href="#cb5-529" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-530"><a href="#cb5-530" aria-hidden="true" tabindex="-1"></a>**Reasoning at the time.** Editorial themes wanted a third color for</span>
+<span id="cb5-531"><a href="#cb5-531" aria-hidden="true" tabindex="-1"></a>chrome texture distinct from the structural secondary; pinning it kept</span>
+<span id="cb5-532"><a href="#cb5-532" aria-hidden="true" tabindex="-1"></a>chrome cohesive without per-theme hardcoded hex values.</span>
+<span id="cb5-533"><a href="#cb5-533" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-534"><a href="#cb5-534" aria-hidden="true" tabindex="-1"></a>**Reversed within 24 hours.** See the 2026-04-29 entry above.</span>
+<span id="cb5-535"><a href="#cb5-535" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-536"><a href="#cb5-536" aria-hidden="true" tabindex="-1"></a><span class="fu">### 2026-04-28 — Accent reserved for layered emphasis</span></span>
+<span id="cb5-537"><a href="#cb5-537" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-538"><a href="#cb5-538" aria-hidden="true" tabindex="-1"></a>**Decision.** Glyph col defaults (badge, pictogram, ring, stars) move</span>
+<span id="cb5-539"><a href="#cb5-539" aria-hidden="true" tabindex="-1"></a>from <span class="in">`accent`</span> to <span class="in">`secondary`</span> identity. Accent is reserved strictly for</span>
+<span id="cb5-540"><a href="#cb5-540" aria-hidden="true" tabindex="-1"></a>**layered emphasis**: roles that fire when something extra is happening</span>
+<span id="cb5-541"><a href="#cb5-541" aria-hidden="true" tabindex="-1"></a>(hover, selected, semantic row callouts, selection edge, status.info</span>
+<span id="cb5-542"><a href="#cb5-542" aria-hidden="true" tabindex="-1"></a>fallback).</span>
+<span id="cb5-543"><a href="#cb5-543" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-544"><a href="#cb5-544" aria-hidden="true" tabindex="-1"></a>**Reasoning.** When accent doubled as both "the engagement color" and</span>
+<span id="cb5-545"><a href="#cb5-545" aria-hidden="true" tabindex="-1"></a>"the default fill for content-bearing glyph columns," the same hue did</span>
+<span id="cb5-546"><a href="#cb5-546" aria-hidden="true" tabindex="-1"></a>two unrelated jobs and the emphasis signal lost meaning — a hovered row</span>
+<span id="cb5-547"><a href="#cb5-547" aria-hidden="true" tabindex="-1"></a>read the same color as a regular badge two rows down.</span>
+<span id="cb5-548"><a href="#cb5-548" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-549"><a href="#cb5-549" aria-hidden="true" tabindex="-1"></a>This decision survives the 2026-04-29 tertiary reversal unchanged. It's</span>
+<span id="cb5-550"><a href="#cb5-550" aria-hidden="true" tabindex="-1"></a>the most important constraint on what accent does.</span>
+<span id="cb5-551"><a href="#cb5-551" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-552"><a href="#cb5-552" aria-hidden="true" tabindex="-1"></a><span class="fu">### Earlier — Slot-typed Tier 1 anchors retracted</span></span>
+<span id="cb5-553"><a href="#cb5-553" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-554"><a href="#cb5-554" aria-hidden="true" tabindex="-1"></a>**Decision.** Do not introduce <span class="in">`slot.trend`</span>, <span class="in">`slot.distribution`</span>,</span>
+<span id="cb5-555"><a href="#cb5-555" aria-hidden="true" tabindex="-1"></a><span class="in">`slot.range`</span>, etc. as Tier 1 anchors keyed to recipe types.</span>
+<span id="cb5-556"><a href="#cb5-556" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-557"><a href="#cb5-557" aria-hidden="true" tabindex="-1"></a>**Reasoning.** The two-knob theme architecture (identity + accent with</span>
+<span id="cb5-558"><a href="#cb5-558" aria-hidden="true" tabindex="-1"></a>cascade-pinning + element overrides) handles the cases the slot-typed</span>
+<span id="cb5-559"><a href="#cb5-559" aria-hidden="true" tabindex="-1"></a>proposal addressed. Reintroducing slot-typed anchors adds dimensionality</span>
+<span id="cb5-560"><a href="#cb5-560" aria-hidden="true" tabindex="-1"></a>that the cascade has to thread through every component binding for</span>
+<span id="cb5-561"><a href="#cb5-561" aria-hidden="true" tabindex="-1"></a>near-zero practical gain.</span>
+<span id="cb5-562"><a href="#cb5-562" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-563"><a href="#cb5-563" aria-hidden="true" tabindex="-1"></a>This is documented in <span class="in">`engineering-priorities.md`</span> §"Anti-priorities" as</span>
+<span id="cb5-564"><a href="#cb5-564" aria-hidden="true" tabindex="-1"></a>a binding constraint on future architecture work.</span>
+<span id="cb5-565"><a href="#cb5-565" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-566"><a href="#cb5-566" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb5-567"><a href="#cb5-567" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-568"><a href="#cb5-568" aria-hidden="true" tabindex="-1"></a><span class="fu">## See also</span></span>
+<span id="cb5-569"><a href="#cb5-569" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-570"><a href="#cb5-570" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Styling Cascade</span><span class="co">](styling-cascade.qmd)</span> — the formal contract (what)</span>
+<span id="cb5-571"><a href="#cb5-571" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`?inspect_resolved`</span> — the introspection API used in examples above</span>
+<span id="cb5-572"><a href="#cb5-572" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`R/utils-theme-validate.R`</span> — construction-time validation invariants</span>
+<span id="cb5-573"><a href="#cb5-573" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`R/utils-theme-resolve.R`</span> — the resolver that materializes T2/T3</span>
+<span id="cb5-574"><a href="#cb5-574" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`R/themes.R`</span>, <span class="in">`R/themes-lotr.R`</span> — preset themes as canonical examples</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
