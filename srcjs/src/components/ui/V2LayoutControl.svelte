@@ -11,6 +11,7 @@
   import BooleanField from "./BooleanField.svelte";
   import NumberField from "./NumberField.svelte";
   import BandingControl from "./BandingControl.svelte";
+  import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
 
   interface Props {
     store: ForestStore;
@@ -19,15 +20,23 @@
 
   const variants = $derived(store.spec?.theme?.variants);
   const layout   = $derived(store.spec?.theme?.layout);
+  const inputs   = $derived(store.spec?.theme?.inputs);
+  const theme    = $derived(store.spec?.theme);
 
   function setVariant(field: string, value: string) {
     store.setThemeField(["variants", field], value);
+  }
+  function setInput(field: string, value: unknown) {
+    store.setThemeField(["inputs", field], value);
   }
   function setLayout(field: string, value: unknown) {
     store.setThemeField(["layout", field], value);
   }
   function setSpacing(field: string, value: number) {
     store.setThemeField(["spacing", field], value);
+  }
+  function setDerived(path: (string | number)[], value: unknown) {
+    store.setThemeFieldDerived(path, value);
   }
 
   // Mirror of R's DENSITY_PRESETS so density-picker edits the same tokens
@@ -62,6 +71,70 @@
       for (const [field, val] of Object.entries(preset)) setSpacing(field, val);
     }
   }
+
+  // ── header_style cascade ──────────────────────────────────────────
+  // Mirrors R-side resolve_components: header_style gates the row-group
+  // L1 bg strength (16% under "light", 24% under "tint"/"bold"). Re-derive
+  // the cached L1/L2/L3 bg so the visible band tracks the new variant.
+  function surfaceBaseline(): string {
+    return theme?.surface?.base ?? "#ffffff";
+  }
+  function currentSecondaryDeep(): string {
+    const sd = inputs?.secondaryDeep as string | undefined;
+    if (sd) return sd;
+    const pd = inputs?.primaryDeep as string | undefined;
+    if (pd) return pd;
+    const p = inputs?.primary as string | undefined;
+    return p ? oklchDarken(p, 0.15) : "#475569";
+  }
+  function changeHeaderStyle(value: string) {
+    setVariant("headerStyle", value);
+    const strength = value === "light" ? 0.16 : 0.24;
+    const l1Bg = oklchMix(surfaceBaseline(), currentSecondaryDeep(), strength);
+    setDerived(["rowGroup", "L1", "bg"], l1Bg);
+    setDerived(["rowGroup", "L2", "bg"], l1Bg);
+    setDerived(["rowGroup", "L3", "bg"], l1Bg);
+  }
+
+  // ── slot_style cascade ────────────────────────────────────────────
+  // Re-derives every series slot bundle under the new fill/stroke pairing
+  // convention. Reads the canonical anchor from inputs.seriesAnchors[i]
+  // (NOT from the rendered series[i].fill, which under "outlined" is
+  // already the surface-mixed lightened value — using it as the anchor
+  // would compound the lightening on every click).
+  function changeSlotStyle(value: "fill_with_darker_stroke" | "flat_fill" | "outlined") {
+    setInput("slotStyle", value);
+    const anchors = (inputs?.seriesAnchors as string[] | undefined) ?? [];
+    const surface = surfaceBaseline();
+    for (let i = 0; i < anchors.length; i++) {
+      const anchor = anchors[i];
+      if (!anchor) continue;
+      const fillMuted = oklchMix(anchor, surface, 0.65);
+      if (value === "flat_fill") {
+        const emphasis = oklchChroma(oklchDarken(anchor, 0.05), 0.04);
+        setDerived(["series", i, "fill"],            anchor);
+        setDerived(["series", i, "stroke"],          anchor);
+        setDerived(["series", i, "fillMuted"],       fillMuted);
+        setDerived(["series", i, "strokeMuted"],     fillMuted);
+        setDerived(["series", i, "fillEmphasis"],    emphasis);
+        setDerived(["series", i, "strokeEmphasis"],  emphasis);
+      } else if (value === "outlined") {
+        setDerived(["series", i, "fill"],            oklchMix(anchor, surface, 0.15));
+        setDerived(["series", i, "stroke"],          anchor);
+        setDerived(["series", i, "fillMuted"],       oklchMix(anchor, surface, 0.08));
+        setDerived(["series", i, "strokeMuted"],     oklchDarken(fillMuted, 0.10));
+        setDerived(["series", i, "fillEmphasis"],    oklchMix(anchor, surface, 0.30));
+        setDerived(["series", i, "strokeEmphasis"],  oklchDarken(anchor, 0.20));
+      } else {
+        setDerived(["series", i, "fill"],            anchor);
+        setDerived(["series", i, "stroke"],          oklchDarken(anchor, 0.10));
+        setDerived(["series", i, "fillMuted"],       fillMuted);
+        setDerived(["series", i, "strokeMuted"],     oklchDarken(fillMuted, 0.10));
+        setDerived(["series", i, "fillEmphasis"],    oklchChroma(oklchDarken(anchor, 0.05), 0.04));
+        setDerived(["series", i, "strokeEmphasis"],  oklchDarken(anchor, 0.20));
+      }
+    }
+  }
 </script>
 
 {#if variants}
@@ -78,15 +151,29 @@
     />
   </SettingsSection>
 
-  <SettingsSection title="Header style" description="Light reads on the muted surface; bold puts the column-header row on a dark fill with inverse text.">
+  <SettingsSection title="Header style" description="Light = bare surface band; tint = subtle primary-tinted band; bold = full primary_deep band with inverse text. Tint and bold also drive a stronger row-group bar.">
     <SegmentedField
       label=""
       value={variants.headerStyle}
       options={[
         { value: "light", label: "Light" },
+        { value: "tint",  label: "Tint" },
         { value: "bold",  label: "Bold" },
       ]}
-      onchange={(v) => setVariant("headerStyle", v)}
+      onchange={changeHeaderStyle}
+    />
+  </SettingsSection>
+
+  <SettingsSection title="Slot style" description="How every series mark pairs fill and stroke. Fill + stroke is the publication default; flat reads as a single tone; outlined makes the stroke carry the anchor identity with a near-surface fill.">
+    <SegmentedField
+      label=""
+      value={(inputs?.slotStyle as ("fill_with_darker_stroke" | "flat_fill" | "outlined" | undefined)) ?? "fill_with_darker_stroke"}
+      options={[
+        { value: "fill_with_darker_stroke", label: "Fill + stroke" },
+        { value: "flat_fill",               label: "Flat" },
+        { value: "outlined",                label: "Outlined" },
+      ]}
+      onchange={changeSlotStyle}
     />
   </SettingsSection>
 

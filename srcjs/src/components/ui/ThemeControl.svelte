@@ -35,7 +35,6 @@
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
   import FontFamilyPicker from "./FontFamilyPicker.svelte";
-  import SegmentedField from "./SegmentedField.svelte";
   import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
 
   interface Props {
@@ -407,63 +406,9 @@
     setPath(["header", activeHeaderVariant(), "fg"], hex);
   }
 
-  // ── header_style (T1 enum) — flips the active header variant. ──────
-  // Updating the variant changes which {light,tint,bold} block the
-  // renderer reads; the cached resolved hexes for all three variants
-  // remain in place, so the switch is instant and reversible.
-  function applyHeaderStyle(value: "light" | "tint" | "bold") {
-    setPath(["variants", "headerStyle"], value);
-    // header_style gates the row-group L1 bg strength (16% under light,
-    // 24% under tint/bold — matches R/utils-theme-resolve.R). Re-derive
-    // so the cached value reflects the new variant.
-    const secondaryDeep = currentSecondaryDeep();
-    const strength = value === "light" ? 0.16 : 0.24;
-    const l1Bg = oklchMix(surfaceBaseline(), secondaryDeep, strength);
-    setDerived(["rowGroup", "L1", "bg"], l1Bg);
-    setDerived(["rowGroup", "L2", "bg"], l1Bg);
-    setDerived(["rowGroup", "L3", "bg"], l1Bg);
-  }
-
-  // ── slot_style (T1 enum) — flips data-mark fill/stroke convention. ──
-  // Re-derives every series slot bundle under the new convention.
-  function applySlotStyle(value: "fill_with_darker_stroke" | "flat_fill" | "outlined") {
-    setPath(["inputs", "slotStyle"], value);
-    if (Array.isArray(theme?.series)) {
-      const surface = surfaceBaseline();
-      const styleNow = value;
-      for (let i = 0; i < theme.series.length; i++) {
-        const anchor = (theme.series[i] as { fill?: string })?.fill;
-        if (!anchor) continue;
-        // Inline reproduction of deriveSlotBundle for the new style;
-        // we can't call it because it reads currentSlotStyle() which
-        // returns the OLD value until setPath finishes propagating.
-        const fillMuted = oklchMix(anchor, surface, 0.65);
-        if (styleNow === "flat_fill") {
-          const emphasis = oklchChroma(oklchDarken(anchor, 0.05), 0.04);
-          setDerived(["series", i, "fill"],            anchor);
-          setDerived(["series", i, "stroke"],          anchor);
-          setDerived(["series", i, "fillMuted"],       fillMuted);
-          setDerived(["series", i, "strokeMuted"],     fillMuted);
-          setDerived(["series", i, "fillEmphasis"],    emphasis);
-          setDerived(["series", i, "strokeEmphasis"],  emphasis);
-        } else if (styleNow === "outlined") {
-          setDerived(["series", i, "fill"],            oklchMix(anchor, surface, 0.15));
-          setDerived(["series", i, "stroke"],          anchor);
-          setDerived(["series", i, "fillMuted"],       oklchMix(anchor, surface, 0.08));
-          setDerived(["series", i, "strokeMuted"],     oklchDarken(fillMuted, 0.10));
-          setDerived(["series", i, "fillEmphasis"],    oklchMix(anchor, surface, 0.30));
-          setDerived(["series", i, "strokeEmphasis"],  oklchDarken(anchor, 0.20));
-        } else {
-          setDerived(["series", i, "fill"],            anchor);
-          setDerived(["series", i, "stroke"],          oklchDarken(anchor, 0.10));
-          setDerived(["series", i, "fillMuted"],       fillMuted);
-          setDerived(["series", i, "strokeMuted"],     oklchDarken(fillMuted, 0.10));
-          setDerived(["series", i, "fillEmphasis"],    oklchChroma(oklchDarken(anchor, 0.05), 0.04));
-          setDerived(["series", i, "strokeEmphasis"],  oklchDarken(anchor, 0.20));
-        }
-      }
-    }
-  }
+  // header_style and slot_style live in the Layout tab now (the structural
+  // variants natural home — alongside density and first_column_style).
+  // Their cascade-mirror logic moved to V2LayoutControl.svelte.
 
   // ── Series (compact list) ────────────────────────────────────────────
   function setSeriesFill(idx: number, hex: string) {
@@ -505,25 +450,18 @@
     </div>
     <p class="zone-description">
       Two identity tiers (secondary mirrors primary when NA) plus orthogonal
-      accent and two structural enums. Everything else in this panel cascades
-      from these. Pinned values show a reset (●).
+      accent. Everything else in this panel cascades from these.
+      Structural variants (slot style, header style) live on the Layout tab.
+      Pinned values show a reset (●).
     </p>
 
-    <SettingsSection title="Identity colors" description="Set just primary for a mono theme; pin secondary to unlock a coordinated 2-color identity (column groups, row groups, glyph defaults, AND chrome texture all light up under secondary). Each tier's deep companion auto-darkens by 15% unless explicitly pinned.">
+    <SettingsSection title="Identity colors" description="Set just primary for a mono theme; pin secondary to unlock a coordinated 2-color identity (column groups, row groups, glyph defaults, AND chrome texture all light up under secondary). Each tier's `_deep` companion lives in Roles below — it auto-darkens by 15% from the seed and can be pinned there if the auto-derivation isn't quite right.">
       <div class="identity-row">
         <ColorField
           label="Primary"
           hint="Identity hero — title text, bold-mode header band, series[0]"
           value={(inputs?.primary as string | undefined) ?? theme.accent?.default ?? "#0891B2"}
           onchange={applyPrimary}
-        />
-        <ColorField
-          label="Primary (deep)"
-          hint="Bold-mode header band; title; row-group L1 tint"
-          value={(inputs?.primaryDeep as string | undefined) ?? oklchDarken(currentPrimary(), 0.15)}
-          onchange={applyPrimaryDeep}
-          overridden={isOver(["inputs", "primaryDeep"])}
-          onreset={resetPrimaryDeep}
         />
         <ColorField
           label="Secondary"
@@ -534,45 +472,12 @@
           onreset={resetSecondary}
         />
         <ColorField
-          label="Secondary (deep)"
-          hint="Column-group bold band; row-group L1 tint; chrome texture (surface.muted, dividers, banding)."
-          value={(inputs?.secondaryDeep as string | undefined) ?? currentSecondaryDeep()}
-          onchange={applySecondaryDeep}
-          overridden={isOver(["inputs", "secondaryDeep"])}
-          onreset={resetSecondaryDeep}
-        />
-        <ColorField
           label="Accent"
           hint="Engagement — hover, selected, semantic row callouts, status.info fallback. Orthogonal to identity."
           value={(inputs?.accent as string | undefined) ?? theme.accent?.default ?? "#8B5CF6"}
           onchange={applyAccent}
         />
       </div>
-    </SettingsSection>
-
-    <SettingsSection title="Structural rules" description="Two T1 enums that switch the data-mark fill/stroke convention and the header band style. Both cascade through the resolver — flipping either changes the look of every applicable component at once.">
-      <SegmentedField
-        label="Slot style"
-        hint="How every series mark pairs fill and stroke. fill_with_darker_stroke is the publication default."
-        value={(inputs?.slotStyle as ("fill_with_darker_stroke" | "flat_fill" | "outlined" | undefined)) ?? "fill_with_darker_stroke"}
-        options={[
-          { label: "Fill + stroke", value: "fill_with_darker_stroke" },
-          { label: "Flat",          value: "flat_fill" },
-          { label: "Outlined",      value: "outlined" },
-        ]}
-        onchange={applySlotStyle}
-      />
-      <SegmentedField
-        label="Header style"
-        hint="Light = bare surface; tint = subtle primary-tinted band; bold = full primary_deep band with inverse text. Tint and bold also drive a stronger row-group bar."
-        value={(theme.variants?.headerStyle as ("light" | "tint" | "bold" | undefined)) ?? "light"}
-        options={[
-          { label: "Light", value: "light" },
-          { label: "Tint",  value: "tint" },
-          { label: "Bold",  value: "bold" },
-        ]}
-        onchange={applyHeaderStyle}
-      />
     </SettingsSection>
 
     <SettingsSection title="Fonts" description="Body is the primary face for cells, headers, labels; display is for plot titles only.">
@@ -613,6 +518,27 @@
       pins the value (resolver stops re-deriving on input change); the reset
       (●) returns it to the cascade. Hints describe the default derivation.
     </p>
+
+    <SettingsSection title="Deep companions" description="Auto-derived as oklch_darken(seed, 0.15) from each identity tier. Drive bold-mode bands, structural tints, and chrome texture. Pin here if the auto-derivation isn't quite right.">
+      <div class="identity-row">
+        <ColorField
+          label="Primary (deep)"
+          hint="Bold-mode header band; title color"
+          value={(inputs?.primaryDeep as string | undefined) ?? oklchDarken(currentPrimary(), 0.15)}
+          onchange={applyPrimaryDeep}
+          overridden={isOver(["inputs", "primaryDeep"])}
+          onreset={resetPrimaryDeep}
+        />
+        <ColorField
+          label="Secondary (deep)"
+          hint="Column-group bold band; row-group L1 tint; chrome texture (surface.muted, dividers, banding)"
+          value={(inputs?.secondaryDeep as string | undefined) ?? currentSecondaryDeep()}
+          onchange={applySecondaryDeep}
+          overridden={isOver(["inputs", "secondaryDeep"])}
+          onreset={resetSecondaryDeep}
+        />
+      </div>
+    </SettingsSection>
 
     <SettingsSection title="Text colors" description="Primary is body; secondary is subtitles/captions; muted is footnotes.">
       <ColorField label="Foreground" hint="Body and cell text" value={theme.cell?.fg ?? theme.content?.primary ?? "#000000"} onchange={setForeground} />

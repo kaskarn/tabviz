@@ -1,5 +1,22 @@
 # tabviz (development)
 
+## Theme tab — refinements (v0.27.2)
+
+* **Slot style and header style moved to the Layout tab.** They were
+  duplicated between Theme and Layout — Layout was the natural home
+  (alongside density and first_column_style as structural variants).
+  Theme's "Structural rules" section removed; Layout gains a Slot style
+  picker and the existing Header style picker grows the `tint` option.
+* **Slot style "outlined" cumulative-fade bug fixed.** The cascade was
+  reading the rendered `series[i].fill` as the anchor source — under
+  outlined, that value is already a 15% surface mix, so each click
+  compounded the lightening. Now reads from `inputs.seriesAnchors[i]`
+  (the canonical anchor preserved across style flips).
+* **`_deep` color pickers moved from Identity to a "Deep companions"
+  subsection in Roles.** Identity zone is now three swatches (primary,
+  secondary, accent) — the conceptual axes only. Deep companions belong
+  with the other derived-with-override-pin tokens.
+
 ## Column editor — Phase C MVP (v0.27.1)
 
 * **`ColumnTypeMenu` seed presets expanded.** Five new insert-time
