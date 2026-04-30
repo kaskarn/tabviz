@@ -1,5 +1,14 @@
 # tabviz (development)
 
+## R CMD check clean (v0.27.4)
+
+* **Non-ASCII WARNING fixed.** The cascade rework introduced em dashes
+  (`—`), right arrows (`→`), ellipsis (`…`), and box-drawing horizontals
+  (`─`) into `R/classes-theme.R` and `R/inspect-resolved.R` (roxygen
+  blocks + string literals). Replaced with ASCII equivalents
+  (`--`, `->`, `...`, `-`). `R CMD check` now reports 0E / 0W / 1 NOTE
+  (environmental — "unable to verify current time").
+
 ## Theme tab — tint cascade fix (v0.27.3)
 
 * **Header tint and column-group tint bands now respond to identity edits.**

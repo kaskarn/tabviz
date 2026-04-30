@@ -7,7 +7,7 @@
 #
 # Implementation: a hand-authored registry maps each well-known leaf path
 # to its resolver recipe. Adding a leaf requires updating both the
-# resolver (R/utils-theme-resolve.R) AND this registry — they describe
+# resolver (R/utils-theme-resolve.R) AND this registry -- they describe
 # the same contract from two angles. The cost of duplication is low
 # (~25 leaves) and the recipe-as-data shape is also what the JS Theme
 # tab needs for inline cascade tooltips.
@@ -28,10 +28,10 @@
 # Adding a leaf: copy an existing entry, update cascade + derivation +
 # value_getter. Keep entries grouped by component cluster for readability.
 RESOLVED_LEAVES <- list(
-  # ── Header (light / tint / bold) ──────────────────────────────────
+  # -- Header (light / tint / bold) ----------------------------------
   "header.light.bg" = list(
     cascade    = c("surface$base"),
-    derivation = "surface.base (publication default — bare surface)",
+    derivation = "surface.base (publication default -- bare surface)",
     value_getter = function(t) t@header@light@bg
   ),
   "header.light.fg" = list(
@@ -70,7 +70,7 @@ RESOLVED_LEAVES <- list(
     value_getter = function(t) t@header@bold@rule
   ),
 
-  # ── Column group (light / tint / bold) ────────────────────────────
+  # -- Column group (light / tint / bold) ----------------------------
   "column_group.bold.bg" = list(
     cascade    = c("inputs$secondary_deep", "inputs$primary_deep"),
     derivation = "inputs$secondary_deep (mirrors primary_deep when secondary NA)",
@@ -92,14 +92,14 @@ RESOLVED_LEAVES <- list(
     value_getter = function(t) t@column_group@tint@bg
   ),
 
-  # ── Row group ────────────────────────────────────────────────────
+  # -- Row group ----------------------------------------------------
   "row_group.L1.bg" = list(
     cascade    = c("inputs$secondary_deep", "surface$base", "variants$header_style"),
     derivation = "16% mix (header_style=light) or 24% mix (tint/bold) of secondary_deep into surface.base",
     value_getter = function(t) t@row_group@L1@bg
   ),
 
-  # ── Surface (chrome) ─────────────────────────────────────────────
+  # -- Surface (chrome) ---------------------------------------------
   "surface.base" = list(
     cascade    = c("inputs$neutral[2]"),
     derivation = "neutral[2] (lightest end of neutral ramp)",
@@ -107,11 +107,11 @@ RESOLVED_LEAVES <- list(
   ),
   "surface.muted" = list(
     cascade    = c("inputs$neutral[3]", "inputs$secondary_deep"),
-    derivation = "4% oklch_mix(neutral[3], secondary_deep) — chrome texture",
+    derivation = "4% oklch_mix(neutral[3], secondary_deep) -- chrome texture",
     value_getter = function(t) t@surface@muted
   ),
 
-  # ── Dividers ─────────────────────────────────────────────────────
+  # -- Dividers -----------------------------------------------------
   "divider.subtle" = list(
     cascade    = c("inputs$neutral[3]", "inputs$neutral[4]", "inputs$secondary_deep"),
     derivation = "10% oklch_mix(divider_neutral, secondary_deep)",
@@ -123,7 +123,7 @@ RESOLVED_LEAVES <- list(
     value_getter = function(t) t@divider@strong
   ),
 
-  # ── Accent ───────────────────────────────────────────────────────
+  # -- Accent -------------------------------------------------------
   "accent.default" = list(
     cascade    = c("inputs$accent"),
     derivation = "inputs$accent (orthogonal to identity)",
@@ -131,7 +131,7 @@ RESOLVED_LEAVES <- list(
   ),
   "accent.muted" = list(
     cascade    = c("inputs$accent", "surface$base"),
-    derivation = "88% oklch_mix(accent, surface.base) — hover/selected tint",
+    derivation = "88% oklch_mix(accent, surface.base) -- hover/selected tint",
     value_getter = function(t) t@accent@muted
   ),
   "accent.tint_subtle" = list(
@@ -146,11 +146,11 @@ RESOLVED_LEAVES <- list(
   ),
   "semantic.fill" = list(
     cascade    = c("inputs$accent", "inputs$neutral[1]"),
-    derivation = "80% oklch_mix(accent, neutral[1]) — soft row-fill tint",
+    derivation = "80% oklch_mix(accent, neutral[1]) -- soft row-fill tint",
     value_getter = function(t) t@semantic@fill
   ),
 
-  # ── Content ──────────────────────────────────────────────────────
+  # -- Content ------------------------------------------------------
   "content.primary" = list(
     cascade    = c("inputs$neutral[5]"),
     derivation = "neutral[5] (darkest end of neutral ramp)",
@@ -162,10 +162,10 @@ RESOLVED_LEAVES <- list(
     value_getter = function(t) t@content@inverse
   ),
 
-  # ── Text roles ───────────────────────────────────────────────────
+  # -- Text roles ---------------------------------------------------
   "text.title.fg" = list(
     cascade    = c("inputs$primary_deep"),
-    derivation = "inputs$primary_deep — identity hero",
+    derivation = "inputs$primary_deep -- identity hero",
     value_getter = function(t) t@text@title@fg
   ),
   "text.tick.fg" = list(
@@ -174,7 +174,7 @@ RESOLVED_LEAVES <- list(
     value_getter = function(t) t@text@tick@fg
   ),
 
-  # ── Plot scaffold ────────────────────────────────────────────────
+  # -- Plot scaffold ------------------------------------------------
   "plot.axis_line" = list(
     cascade    = c("divider$strong"),
     derivation = "divider.strong",
@@ -191,16 +191,16 @@ RESOLVED_LEAVES <- list(
 #'
 #' Returns the resolved hex value alongside the cascade path and
 #' derivation rule that produced it. Useful for debugging themes
-#' (custom or preset) — answers "why is this hex this value?" by
+#' (custom or preset) -- answers "why is this hex this value?" by
 #' showing the upstream T1 inputs and the derivation formula.
 #'
 #' Only well-known leaves are introspected (see internal
-#' `RESOLVED_LEAVES` registry — covers headers, column/row groups,
+#' `RESOLVED_LEAVES` registry -- covers headers, column/row groups,
 #' surface, dividers, accent ramp, content, text roles, plot
 #' scaffold). Unknown paths abort with a list of supported leaves.
 #'
 #' @param theme A resolved [WebTheme].
-#' @param path Character — the leaf address as a dotted string,
+#' @param path Character -- the leaf address as a dotted string,
 #'   e.g. `"header.bold.bg"`, `"divider.strong"`, `"accent.muted"`.
 #' @return A list with:
 #'   * `path`: the address you queried

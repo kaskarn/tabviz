@@ -59,7 +59,7 @@ ThemeInputs <- new_class(
     # glyph col defaults (badge/pictogram/ring/stars), AND chrome texture
     # (surface.muted, divider.subtle, divider.strong, alt-row banding,
     # gridline, axis/tick). One axis, one role: structural identity.
-    # Tertiary was removed 2026-04-29 — its sole job (chrome) collapsed
+    # Tertiary was removed 2026-04-29 -- its sole job (chrome) collapsed
     # onto secondary. See vignettes/theming.Rmd decision log.
     primary        = new_property(class_character, default = "#0891b2"),
     primary_deep   = new_property(class_character, default = NA_character_),
@@ -79,7 +79,7 @@ ThemeInputs <- new_class(
     status_info     = new_property(class_character, default = NA_character_),
 
     # Data series anchors. Variable length; one anchor per slot. The
-    # pooled-effect (summary) diamond reads from `series_anchors[1]` —
+    # pooled-effect (summary) diamond reads from `series_anchors[1]` --
     # there is no separate summary_anchor input. Themes that want a
     # distinct summary outline override `theme@series[[1]]@stroke`
     # explicitly.
@@ -92,18 +92,18 @@ ThemeInputs <- new_class(
     font_display = new_property(class_character, default = NA_character_),
     font_mono    = new_property(class_character, default = NA_character_),
 
-    # Slot rendering style — how each SlotBundle's fill/stroke pair relate.
+    # Slot rendering style -- how each SlotBundle's fill/stroke pair relate.
     # Centralizes a convention that previously lived implicitly inside
     # derive_slot_bundle().
     #   "fill_with_darker_stroke" (default): fill = anchor, stroke =
-    #     oklch_darken(anchor, 0.10). The publication-default — every mark
+    #     oklch_darken(anchor, 0.10). The publication-default -- every mark
     #     is a filled shape with a darker outline for contrast and edge
     #     definition.
     #   "flat_fill": stroke matches fill (no contrast pairing). Reads as
-    #     a single tone — best on light, dense plots where outlines would
+    #     a single tone -- best on light, dense plots where outlines would
     #     visually crowd small marks.
     #   "outlined": fill leans toward surface, stroke carries the anchor.
-    #     Outline-only marks — useful in editorial themes that want
+    #     Outline-only marks -- useful in editorial themes that want
     #     skeletal-feel data marks against a textured surface.
     slot_style = new_property(class_character,
       default = "fill_with_darker_stroke")
@@ -140,7 +140,7 @@ ThemeInputs <- new_class(
         c("fill_with_darker_stroke", "flat_fill", "outlined")) {
       return(paste0(
         "slot_style must be one of: ",
-        "'fill_with_darker_stroke', 'flat_fill', 'outlined' — got '",
+        "'fill_with_darker_stroke', 'flat_fill', 'outlined' -- got '",
         self@slot_style, "'"
       ))
     }
@@ -156,13 +156,13 @@ ThemeInputs <- new_class(
 #' their three header variants or default/bold first-column variants.
 #'
 #' `header_style` accepts:
-#'   * `"light"` — surface-base bg, content-primary text, divider.strong
+#'   * `"light"` -- surface-base bg, content-primary text, divider.strong
 #'     rule. The publication default; minimal chrome.
-#'   * `"tint"` — light primary-tinted bg (~12% mix of primary_deep into
+#'   * `"tint"` -- light primary-tinted bg (~12% mix of primary_deep into
 #'     surface.base), content-primary text, divider.strong rule. A
 #'     middle ground between light and bold; useful for editorial section
 #'     headers that should announce themselves without going full inverse.
-#'   * `"bold"` — primary_deep bg, content.inverse text, component-local
+#'   * `"bold"` -- primary_deep bg, content.inverse text, component-local
 #'     rule (40% mix of inverse into bg). Maximum chrome; reads as a
 #'     branded band.
 #'
@@ -226,7 +226,7 @@ Content <- new_class(
 #' lines on light surfaces. Rules sitting on dark bold-mode bands
 #' (`header.bold`, `column_group.bold`) are derived per-cluster at resolve
 #' time as `mix(content.inverse, <cluster-bg>, 0.4)` so each contrasts
-#' against its own band — there is no global "strong-on-dark" token.
+#' against its own band -- there is no global "strong-on-dark" token.
 #'
 #' @usage NULL
 #' @export
@@ -274,7 +274,7 @@ StatusColors <- new_class(
 #' The painter applies one of five RowSemantic bundles to a row or cell.
 #' One of those bundles (`row.fill`) needs a color whose identity isn't
 #' captured by accent / identity / status. `Semantics` carries that named
-#' slot — defaults to a derivation from `accent` at resolve time (engagement
+#' slot -- defaults to a derivation from `accent` at resolve time (engagement
 #' axis); authors override the slot to pin a specific token color.
 #'
 #' @usage NULL
@@ -313,7 +313,7 @@ SlotBundle <- new_class(
     fill_emphasis   = new_property(class_character, default = NA_character_),
     stroke_emphasis = new_property(class_character, default = NA_character_),
     text_fg         = new_property(class_character, default = NA_character_),
-    # Marker shape for forest points + similar viz marks. NA → renderer
+    # Marker shape for forest points + similar viz marks. NA -> renderer
     # picks a default from a 4-shape rotation (square / circle / diamond
     # / triangle). Authors who want a fixed shape per slot pin one of
     # those four values.
@@ -539,7 +539,7 @@ RowSemantic <- new_class(
     fg            = new_property(class_character, default = NA_character_),
     border        = new_property(class_character, default = NA_character_),
     marker_fill   = new_property(class_character, default = NA_character_),
-    # Stroke companion to marker_fill — drives forest-plot whiskers and
+    # Stroke companion to marker_fill -- drives forest-plot whiskers and
     # the per-marker outline. Lets accent-flagged rows replace the
     # default series stroke (typically series[0].stroke = navy in mono
     # themes) with a properly-paired tone (e.g. accent_deep) so an
@@ -574,9 +574,9 @@ RowSemantic <- new_class(
 #'
 #' Semantic-token bundles (emphasis/muted/accent/bold/fill) are
 #' RowSemantic visual presets. The painter UI applies one of them to a row
-#' or cell at a time; data columns (`row_emphasis_col`, `row_bold_col`, …)
+#' or cell at a time; data columns (`row_emphasis_col`, `row_bold_col`, ...)
 #' do the same per-row from the data. Each bundle is a flat list of visual
-#' overrides — bg / fg / border / marker_fill / font_weight / font_style —
+#' overrides -- bg / fg / border / marker_fill / font_weight / font_style --
 #' that the renderer paints when the row's flag fires.
 #'
 #' @usage NULL
@@ -784,7 +784,7 @@ WebTheme <- new_class(
     # The frontend appends a <link rel=stylesheet> per URL (deduped across
     # widgets on the same page). Theme authors are still responsible for
     # naming the family in `text$body$family` / `text$title$family`.
-    # Note: rsvg/PNG export does not fetch webfonts — the system stack
+    # Note: rsvg/PNG export does not fetch webfonts -- the system stack
     # falls back. For high-fidelity export, install the font locally.
     web_fonts = new_property(class_list, default = list()),
     inputs   = new_property(ThemeInputs,    default = ThemeInputs()),
@@ -853,7 +853,7 @@ WebTheme <- new_class(
 #'
 #' Theme authors are still responsible for referencing the loaded family
 #' in `font_body` / `font_display` (etc.). `web_font()` only declares the
-#' load — it doesn't change the theme's font stacks.
+#' load -- it doesn't change the theme's font stacks.
 #'
 #' Note: PNG/SVG export through `rsvg` does not fetch webfonts. The
 #' system fallback stack will be used. For high-fidelity offline export,
