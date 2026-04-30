@@ -1,5 +1,14 @@
 # tabviz (development)
 
+## Theme tab — tint cascade fix (v0.27.3)
+
+* **Header tint and column-group tint bands now respond to identity edits.**
+  The client-side `cascadePrimaryDeep` / `cascadeSecondaryDeep` were writing
+  the bold variants but not the tint variants — so editing primary or
+  secondary in the Theme tab updated the bold-mode bands but left the tint
+  bands stale. Now both cascades also write the 12% mix-into-surface for
+  their corresponding tint variant, matching the R resolver's logic.
+
 ## Theme tab — refinements (v0.27.2)
 
 * **Slot style and header style moved to the Layout tab.** They were

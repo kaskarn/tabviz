@@ -232,11 +232,14 @@
       setDerived(["inputs", "seriesAnchors"], anchors);
     }
   }
-  /** Primary-deep drives the leaf-header bold band + title + container chrome. */
+  /** Primary-deep drives the leaf-header bold + tint bands, the title, and
+   * container chrome. Tint bg is a 12% mix of primary_deep into the
+   * surface base — mirrors R/utils-theme-resolve.R's tint variant. */
   function cascadePrimaryDeep(primaryDeep: string) {
     setDerived(["text", "title", "fg"], primaryDeep);
     setDerived(["header", "bold", "bg"], primaryDeep);
     setDerived(["header", "bold", "rule"], boldBandRule(primaryDeep));
+    setDerived(["header", "tint", "bg"], oklchMix(surfaceBaseline(), primaryDeep, 0.12));
   }
 
   // ── Secondary cascade ───────────────────────────────────────────────
@@ -263,6 +266,7 @@
     // Structural groupings.
     setDerived(["columnGroup", "bold", "bg"], secondaryDeep);
     setDerived(["columnGroup", "bold", "rule"], boldBandRule(secondaryDeep));
+    setDerived(["columnGroup", "tint", "bg"], oklchMix(surfaceBaseline(), secondaryDeep, 0.12));
     const l1Bg = secondaryTintedL1Bg(secondaryDeep);
     setDerived(["rowGroup", "L1", "bg"], l1Bg);
     setDerived(["rowGroup", "L2", "bg"], l1Bg);
