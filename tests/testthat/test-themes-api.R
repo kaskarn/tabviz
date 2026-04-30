@@ -32,9 +32,12 @@ test_that("web_theme(inputs=...) propagates input changes through derived chrome
   # Two-tier: changing primary AND secondary should cascade into header.bold.bg
   # (primary_deep) AND column_group.bold.bg (secondary_deep), even though the
   # base theme had those fields already resolved to its own primary_deep.
+  # .validate=FALSE because the synthetic R/G primary/secondary fail the
+  # bold-band contrast invariant — this test is about cascade propagation.
   t <- web_theme(
     base_theme = web_theme_cochrane(),
-    inputs = list(primary = "#FF0000", secondary = "#00FF00")
+    inputs = list(primary = "#FF0000", secondary = "#00FF00"),
+    .validate = FALSE
   )
   expect_equal(toupper(t@inputs@primary),   "#FF0000")
   expect_equal(toupper(t@inputs@secondary), "#00FF00")

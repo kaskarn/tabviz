@@ -13,21 +13,15 @@
 # add NA entries for any companions/downstream slots not also set in the
 # same call. This makes the resolver re-derive them (mirror chain for
 # identity tiers; oklch_darken for _deep companions; font_body→font_display).
-# Without this, set_inputs(primary = "#X") would leave secondary/tertiary
-# pinned at whatever the previous resolved values were instead of mirroring.
+# Without this, set_inputs(primary = "#X") would leave secondary pinned at
+# whatever the previous resolved value was instead of mirroring.
 apply_inputs_resets <- function(args) {
   if ("primary" %in% names(args)) {
     if (!"primary_deep"   %in% names(args)) args$primary_deep   <- NA_character_
     if (!"secondary"      %in% names(args)) args$secondary      <- NA_character_
     if (!"secondary_deep" %in% names(args)) args$secondary_deep <- NA_character_
-    if (!"tertiary"       %in% names(args)) args$tertiary       <- NA_character_
-    if (!"tertiary_deep"  %in% names(args)) args$tertiary_deep  <- NA_character_
   } else if ("secondary" %in% names(args)) {
     if (!"secondary_deep" %in% names(args)) args$secondary_deep <- NA_character_
-    if (!"tertiary"       %in% names(args)) args$tertiary       <- NA_character_
-    if (!"tertiary_deep"  %in% names(args)) args$tertiary_deep  <- NA_character_
-  } else if ("tertiary" %in% names(args)) {
-    if (!"tertiary_deep"  %in% names(args)) args$tertiary_deep  <- NA_character_
   }
   if ("accent"    %in% names(args) && !"accent_deep"    %in% names(args)) args$accent_deep    <- NA_character_
   if ("font_body" %in% names(args) && !"font_display"   %in% names(args)) args$font_display   <- NA_character_
@@ -58,8 +52,10 @@ apply_named_props <- function(target, args) {
 #'
 #' @param name Theme name (string).
 #' @param inputs Named list of [ThemeInputs] property overrides
-#'   (`primary`, `secondary`, `tertiary`, `accent`, `neutral`,
-#'   `series_anchors`, etc.).
+#'   (`primary`, `secondary`, `accent`, `neutral`,
+#'   `series_anchors`, etc.). Identity is a 2-tier mirror chain: `primary`
+#'   plus optional `secondary`; NA secondary mirrors primary. `accent` is
+#'   orthogonal — it never enters the identity chain.
 #' @param variants Named list of [ThemeVariants] property overrides
 #'   (`density`, `header_style`, `first_column_style`).
 #' @param web_fonts Optional list of web-font specs to embed in the rendered
@@ -67,6 +63,10 @@ apply_named_props <- function(target, args) {
 #'   `weights`, `style`); `NULL` (default) keeps the base theme's fonts.
 #' @param base_theme Base theme to start from before applying overrides.
 #'   Defaults to the v2 default preset.
+#' @param .validate Whether to run construction-time contrast validation
+#'   on the resolved theme. Default `TRUE`. Set to `FALSE` only for tests
+#'   that intentionally use synthetic high-saturation colors to verify
+#'   cascade mechanics — production callers should leave validation on.
 #' @return A fully resolved [WebTheme].
 #' @export
 web_theme <- function(
@@ -74,7 +74,8 @@ web_theme <- function(
     inputs = NULL,
     variants = NULL,
     web_fonts = NULL,
-    base_theme = web_theme_cochrane()) {
+    base_theme = web_theme_cochrane(),
+    .validate = TRUE) {
   checkmate::assert_string(name)
   checkmate::assert_list(inputs, names = "named", null.ok = TRUE)
   checkmate::assert_list(variants, names = "named", null.ok = TRUE)
@@ -89,7 +90,15 @@ web_theme <- function(
       cli::cli_abort(c(
         "{.field {legacy}} renamed to {.field primary} / {.field primary_deep} in the theme rework.",
         "i" = "Update {.code inputs = list(...)} to use {.field primary} and {.field primary_deep}.",
-        "i" = "Identity now has three tiers: {.field primary} / {.field secondary} / {.field tertiary}, with NA tiers mirroring up the chain."
+        "i" = "Identity is a 2-tier mirror chain: {.field primary} / {.field secondary}, plus orthogonal {.field accent}."
+      ))
+    }
+    removed <- intersect(names(inputs), c("tertiary", "tertiary_deep"))
+    if (length(removed) > 0L) {
+      cli::cli_abort(c(
+        "{.field {removed}} was removed in the 2026-04-29 cascade rework.",
+        "i" = "Chrome texture (banding, dividers, gridlines) now reads from {.field secondary_deep}.",
+        "i" = "If you previously pinned tertiary, fold its color into {.field secondary} or drop the pin to mirror primary."
       ))
     }
     inputs <- apply_inputs_resets(inputs)
@@ -126,15 +135,15 @@ web_theme <- function(
   if (!is.null(variants))  result@variants  <- apply_named_props(result@variants, variants)
   if (!is.null(web_fonts)) result@web_fonts <- web_fonts
 
-  resolve_theme(result)
+  resolve_theme(result, .validate = .validate)
 }
 
 
 #' Update Tier 1 inputs on a v2 theme.
 #'
 #' Any input field on [ThemeInputs] can be set. Identity tiers (with NA
-#' default mirroring up the chain): `primary`, `primary_deep`, `secondary`,
-#' `secondary_deep`, `tertiary`, `tertiary_deep`. Engagement: `accent`,
+#' default mirroring): `primary`, `primary_deep`, `secondary`,
+#' `secondary_deep` (NA secondary mirrors primary). Engagement: `accent`,
 #' `accent_deep`. Plus `status_*`, `series_anchors`, `font_*`, `neutral`.
 #' When a tier's seed changes and its `_deep` companion wasn't also set
 #' explicitly, the `_deep` resets to NA so resolve re-derives. Re-resolves
@@ -154,7 +163,15 @@ set_inputs <- function(theme, ...) {
     cli::cli_abort(c(
       "{.field {legacy}} renamed to {.field primary} / {.field primary_deep} in the theme rework.",
       "i" = "Pass {.code primary = ...} / {.code primary_deep = ...} instead.",
-      "i" = "Identity now has three tiers: {.field primary} / {.field secondary} / {.field tertiary}, with NA tiers mirroring up the chain."
+      "i" = "Identity is a 2-tier mirror chain: {.field primary} / {.field secondary}, plus orthogonal {.field accent}."
+    ))
+  }
+  removed <- intersect(names(args), c("tertiary", "tertiary_deep"))
+  if (length(removed) > 0L) {
+    cli::cli_abort(c(
+      "{.field {removed}} was removed in the 2026-04-29 cascade rework.",
+      "i" = "Chrome texture (banding, dividers, gridlines) now reads from {.field secondary_deep}.",
+      "i" = "If you previously pinned tertiary, fold its color into {.field secondary} or drop the pin to mirror primary."
     ))
   }
   args <- apply_inputs_resets(args)

@@ -687,13 +687,12 @@ export interface WebTheme {
     primaryDeep?: string;
     secondary?: string;
     secondaryDeep?: string;
-    tertiary?: string;
-    tertiaryDeep?: string;
     accent?: string;
     accentDeep?: string;
     fontBody?: string;
     fontDisplay?: string;
     fontMono?: string;
+    slotStyle?: "fill_with_darker_stroke" | "flat_fill" | "outlined";
   };
   surface?: { base: string; muted: string; raised: string };
   content?: { primary: string; secondary: string; muted: string; inverse: string };

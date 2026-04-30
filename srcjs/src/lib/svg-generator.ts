@@ -31,6 +31,7 @@ import { resolveMarkerStyle } from "./marker-styling";
 import { computeBandIndexes } from "./banding";
 import { resolveSemanticBundle } from "./semantic-styling";
 import { GLYPH_REGISTRY, resolveGlyph } from "./glyph-registry";
+import { activeHeaderVariant } from "./header-variant";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -2057,7 +2058,7 @@ function renderVizAnnotations(
   if (!annotations || annotations.length === 0) return "";
   const parts: string[] = [];
   // Reference lines are structural scaffolding (null effect / baseline),
-  // so they default to divider.strong (tertiary-tinted) — same as the
+  // so they default to divider.strong (secondary-tinted) — same as the
   // forest plot's null line. Frees accent for actual layered emphasis.
   const refDefault = theme.divider?.strong ?? "#94a3b8";
   for (const ann of annotations) {
@@ -2823,7 +2824,7 @@ function renderUnifiedColumnHeaders(
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
-        fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(labelHeader)}</text>`);
+        fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(labelHeader)}</text>`);
     }
     currentX += labelWidth;
 
@@ -2844,7 +2845,7 @@ function renderUnifiedColumnHeaders(
           font-size="${fontSize}px"
           font-weight="${boldWeight}"
           text-anchor="middle"
-          fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(col.header)}</text>`);
+          fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(col.header)}</text>`);
         groupBorders.push({ x1: currentX, x2: currentX + groupWidth });
         currentX += groupWidth;
       } else {
@@ -2859,7 +2860,7 @@ function renderUnifiedColumnHeaders(
             font-size="${fontSize}px"
             font-weight="${fontWeight}"
             text-anchor="${anchor}"
-            fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(truncatedHeader)}</text>`);
+            fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(truncatedHeader)}</text>`);
         }
         currentX += width;
       }
@@ -2889,7 +2890,7 @@ function renderUnifiedColumnHeaders(
                 font-size="${fontSize}px"
                 font-weight="${fontWeight}"
                 text-anchor="${anchor}"
-                fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(sub.header)}</text>`);
+                fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(sub.header)}</text>`);
             }
             currentX += width;
           }
@@ -2907,7 +2908,7 @@ function renderUnifiedColumnHeaders(
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
-        fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(labelHeader)}</text>`);
+        fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(labelHeader)}</text>`);
     }
     currentX += labelWidth;
 
@@ -2926,7 +2927,7 @@ function renderUnifiedColumnHeaders(
           font-size="${fontSize}px"
           font-weight="${fontWeight}"
           text-anchor="${anchor}"
-          fill="${(theme.variants?.headerStyle === "bold" ? theme.header.bold.fg : theme.header.light.fg)}">${escapeXml(truncatedHeader)}</text>`);
+          fill="${(activeHeaderVariant(theme).fg)}">${escapeXml(truncatedHeader)}</text>`);
       }
       currentX += width;
     }
@@ -4105,9 +4106,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
 
   // Top table border - frames column headers (symmetric with header bottom border)
   const headerBorderW = 2;
-  const headerVariantRule = theme.variants?.headerStyle === "bold"
-    ? (theme.header?.bold?.rule ?? theme.divider.strong ?? theme.divider.subtle)
-    : (theme.header?.light?.rule ?? theme.divider.strong ?? theme.divider.subtle);
+  const headerVariantRule = activeHeaderVariant(theme).rule
+    ?? theme.divider.strong
+    ?? theme.divider.subtle;
   if (headerBorderW > 0) {
     parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
       y1="${layout.mainY}" y2="${layout.mainY}"
@@ -4122,7 +4123,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     // Paint the header-row background band first so subsequent cells can
     // draw text on top. Uses colors.headerBg (which cascades from rowBg in
     // set_colors so existing themes render identically).
-    const headerBg = (theme.variants?.headerStyle === "bold" ? theme.header.bold.bg : theme.header.light.bg);
+    const headerBg = activeHeaderVariant(theme).bg;
     if (headerBg && headerBg !== theme.surface.base) {
       parts.push(`<rect x="${padding}" y="${headerY}"
         width="${layout.totalWidth - padding * 2}" height="${layout.headerHeight}"
@@ -4350,7 +4351,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           plotY + layout.rowsHeight,
           ann.style,
           // Reference lines are structural scaffolding — default to
-          // divider.strong (tertiary-tinted) to match other plot lines
+          // divider.strong (secondary-tinted) to match other plot lines
           // and free accent for actual layered emphasis.
           ann.color ?? theme.divider?.strong ?? theme.accent.default,
           theme,

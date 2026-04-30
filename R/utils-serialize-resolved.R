@@ -156,8 +156,6 @@ serialize_theme <- function(theme) {
       primaryDeep    = na_to_null(theme@inputs@primary_deep),
       secondary      = na_to_null(theme@inputs@secondary),
       secondaryDeep  = na_to_null(theme@inputs@secondary_deep),
-      tertiary       = na_to_null(theme@inputs@tertiary),
-      tertiaryDeep   = na_to_null(theme@inputs@tertiary_deep),
       accent         = theme@inputs@accent,
       accentDeep     = na_to_null(theme@inputs@accent_deep),
       statusPositive = theme@inputs@status_positive,
@@ -167,7 +165,8 @@ serialize_theme <- function(theme) {
       seriesAnchors  = I(theme@inputs@series_anchors),
       fontBody       = theme@inputs@font_body,
       fontDisplay    = na_to_null(theme@inputs@font_display),
-      fontMono       = na_to_null(theme@inputs@font_mono)
+      fontMono       = na_to_null(theme@inputs@font_mono),
+      slotStyle      = theme@inputs@slot_style
     ),
 
     axis   = axis_block,
@@ -244,11 +243,13 @@ serialize_theme <- function(theme) {
 
     header = list(
       light = serialize_header_variant(theme@header@light),
+      tint  = serialize_header_variant(theme@header@tint),
       bold  = serialize_header_variant(theme@header@bold),
       text  = serialize_text_role(theme@header@text)
     ),
     columnGroup = list(
       light = serialize_header_variant(theme@column_group@light),
+      tint  = serialize_header_variant(theme@column_group@tint),
       bold  = serialize_header_variant(theme@column_group@bold),
       text  = serialize_text_role(theme@column_group@text)
     ),

@@ -45,6 +45,47 @@ test_that("resolve_theme expands series anchors into slot bundles", {
   expect_match(t@series[[1]]@text_fg, "^#")
 })
 
+test_that("slot_style: default fill_with_darker_stroke pairs anchor with darker stroke", {
+  t <- resolve_theme(WebTheme(inputs = ThemeInputs(
+    primary = "#1F3A5F",
+    series_anchors = c("#1F3A5F")
+  )))
+  expect_equal(t@inputs@slot_style, "fill_with_darker_stroke")
+  expect_equal(toupper(t@series[[1]]@fill), "#1F3A5F")
+  # Stroke is anchor darkened ~10% — different from fill.
+  expect_false(identical(t@series[[1]]@fill, t@series[[1]]@stroke))
+})
+
+test_that("slot_style flat_fill: stroke matches fill (no contrast pair)", {
+  t <- resolve_theme(WebTheme(inputs = ThemeInputs(
+    series_anchors = c("#1F3A5F"),
+    slot_style = "flat_fill"
+  )))
+  expect_equal(t@series[[1]]@fill, t@series[[1]]@stroke)
+  expect_equal(t@series[[1]]@fill_muted, t@series[[1]]@stroke_muted)
+})
+
+test_that("slot_style outlined: stroke carries anchor; fill leans surface", {
+  t <- resolve_theme(WebTheme(inputs = ThemeInputs(
+    primary = "#1F3A5F",
+    series_anchors = c("#1F3A5F"),
+    slot_style = "outlined"
+  )))
+  # Stroke carries the anchor identity.
+  expect_equal(toupper(t@series[[1]]@stroke), "#1F3A5F")
+  # Fill is mostly surface — should NOT equal anchor.
+  expect_false(identical(toupper(t@series[[1]]@fill), "#1F3A5F"))
+  # Fill should be closer to surface than to anchor.
+  expect_match(t@series[[1]]@fill, "^#")
+})
+
+test_that("slot_style validator rejects unknown values", {
+  expect_error(
+    ThemeInputs(slot_style = "decorative"),
+    "slot_style"
+  )
+})
+
 test_that("series[1] carries the seeded fill (used as the pooled-effect diamond)", {
   t <- resolve_theme(WebTheme(inputs = ThemeInputs(
     primary = "#1F3A5F",
@@ -54,18 +95,21 @@ test_that("series[1] carries the seeded fill (used as the pooled-effect diamond)
 })
 
 test_that("user-set fields survive resolution (idempotence + override)", {
+  # .validate=FALSE: surface.base is intentionally a synthetic high-sat
+  # color (#FF00FF) to make cascade preservation easy to spot — would
+  # fail contrast validation, but this test isn't about legibility.
   t <- WebTheme()
   t@surface@base <- "#FF00FF"
   t@series <- list(SlotBundle(fill = "#ABCDEF"))
   t@row@hover@bg <- "#123456"
 
-  out <- resolve_theme(t)
+  out <- resolve_theme(t, .validate = FALSE)
   expect_equal(toupper(out@surface@base), "#FF00FF")
   expect_equal(toupper(out@series[[1]]@fill), "#ABCDEF")
   expect_equal(toupper(out@row@hover@bg), "#123456")
 
   # Re-resolving must not change anything (idempotence).
-  out2 <- resolve_theme(out)
+  out2 <- resolve_theme(out, .validate = FALSE)
   expect_equal(toupper(out2@surface@base), "#FF00FF")
   expect_equal(toupper(out2@row@hover@bg), "#123456")
 })
@@ -106,31 +150,31 @@ test_that("explicit primary_deep is preserved", {
   expect_equal(toupper(t@inputs@primary_deep), "#000000")
 })
 
-test_that("identity mirror chain: secondary/tertiary mirror up the chain when NA", {
-  # Mono: only primary set. Both downstream tiers mirror; their _deep
-  # companions follow primary_deep (not auto-darkened from the seed) so
-  # pinned primary_deep propagates.
+test_that("identity mirror chain: secondary mirrors primary when NA", {
+  # Mono: only primary set. Secondary mirrors; its _deep companion
+  # follows primary_deep (not auto-darkened from the seed) so pinned
+  # primary_deep propagates.
   t <- resolve_theme(WebTheme(inputs = ThemeInputs(
     primary = "#1F3A5F", primary_deep = "#0F1F38"
   )))
   expect_equal(toupper(t@inputs@secondary), "#1F3A5F")
-  expect_equal(toupper(t@inputs@tertiary), "#1F3A5F")
   expect_equal(toupper(t@inputs@secondary_deep), "#0F1F38")
-  expect_equal(toupper(t@inputs@tertiary_deep), "#0F1F38")
 })
 
-test_that("identity mirror chain: pinned secondary breaks mirror; tertiary follows secondary", {
+test_that("identity mirror chain: pinned secondary breaks the mirror", {
+  # Synthetic R/G primary/secondary make the cascade mechanics easy to
+  # spot. .validate=FALSE because the resulting bright secondary fails
+  # the bold-band contrast invariant — the test is about mirror
+  # mechanics, not legibility.
   t <- resolve_theme(WebTheme(inputs = ThemeInputs(
     primary = "#FF0000", secondary = "#00FF00"
-  )))
+  )), .validate = FALSE)
   expect_equal(toupper(t@inputs@secondary), "#00FF00")
-  expect_equal(toupper(t@inputs@tertiary), "#00FF00")
   # secondary was pinned -> secondary_deep auto-darkens from secondary
   # (NOT from primary_deep, since secondary is not mirroring).
   expect_match(t@inputs@secondary_deep, "^#[0-9A-Fa-f]{6}$")
   expect_false(identical(toupper(t@inputs@secondary_deep), "#00FF00"))
-  # tertiary mirrors secondary -> tertiary_deep follows secondary_deep.
-  expect_equal(t@inputs@tertiary_deep, t@inputs@secondary_deep)
+  expect_false(identical(t@inputs@secondary_deep, t@inputs@primary_deep))
 })
 
 test_that("text roles get filled from font + content", {
@@ -225,40 +269,77 @@ test_that("bold-mode header/col-group rules contrast against their own bg (compo
   )
 })
 
-test_that("title defaults to primary_deep; axis labels lean tertiary", {
+test_that("title defaults to primary_deep; axis labels lean secondary", {
   t <- resolved_default()
   # Title carries primary identity — keeps the tone the table opens with.
   expect_equal(t@text@title@fg, t@inputs@primary_deep)
   # Axis + tick labels are scaffolding text — should recede, but pick
-  # up a faint (10%) tertiary lean so they coordinate with axis lines
-  # and gridlines (also tertiary-tinted via the divider chain). Mirror
+  # up a faint (10%) secondary lean so they coordinate with axis lines
+  # and gridlines (also secondary-tinted via the divider chain). Mirror
   # chain collapses this to the same hue as today's content.muted in
-  # mono themes where tertiary mirrors primary.
-  expected_axis_fg <- oklch_mix(t@content@muted, t@inputs@tertiary_deep, 0.10)
+  # mono themes where secondary mirrors primary.
+  expected_axis_fg <- oklch_mix(t@content@muted, t@inputs@secondary_deep, 0.10)
   expect_equal(t@plot@axis_label@fg, expected_axis_fg)
   expect_equal(t@plot@tick_label@fg, expected_axis_fg)
 })
 
 test_that("typography hierarchy maps onto identity tiers (mirror-aware)", {
   t <- resolved_default()
-  # Subtitle and label lean secondary; caption / tick / footnote lean
-  # tertiary. Body and cell stay strictly neutral (legibility floor).
+  # All chrome typography (subtitle, label, caption, tick, footnote) leans
+  # secondary at varying strengths (post-2026-04-29 cascade rework: tertiary
+  # was retired; chrome typography migrated to secondary). Body and cell
+  # stay strictly neutral (legibility floor).
   expect_equal(t@text@subtitle@fg, oklch_mix(t@content@secondary, t@inputs@secondary_deep, 0.30))
   expect_equal(t@text@label@fg,    oklch_mix(t@content@secondary, t@inputs@secondary_deep, 0.20))
-  expect_equal(t@text@caption@fg,  oklch_mix(t@content@secondary, t@inputs@tertiary_deep,  0.30))
-  expect_equal(t@text@tick@fg,     oklch_mix(t@content@muted,     t@inputs@tertiary_deep,  0.10))
-  expect_equal(t@text@footnote@fg, oklch_mix(t@content@muted,     t@inputs@tertiary_deep,  0.20))
+  expect_equal(t@text@caption@fg,  oklch_mix(t@content@secondary, t@inputs@secondary_deep, 0.30))
+  expect_equal(t@text@tick@fg,     oklch_mix(t@content@muted,     t@inputs@secondary_deep, 0.10))
+  expect_equal(t@text@footnote@fg, oklch_mix(t@content@muted,     t@inputs@secondary_deep, 0.20))
   # Body / cell stay neutral.
   expect_equal(t@text@body@fg, t@content@primary)
   expect_equal(t@text@cell@fg, t@content@primary)
 })
 
-test_that("L1 group bg is secondary-derived (16% mix) in both variants", {
+test_that("header_style tint: light primary-deep tint band, dark text, divider rule", {
+  t <- resolve_theme(WebTheme(
+    inputs   = ThemeInputs(primary = "#1F3A5F", primary_deep = "#0F1F38"),
+    variants = ThemeVariants(header_style = "tint")
+  ))
+  # Tint bg = 12% primary_deep mix into surface.base — different from both
+  # surface.base (light variant) and primary_deep (bold variant).
+  expect_false(identical(t@header@tint@bg, t@surface@base))
+  expect_false(identical(t@header@tint@bg, t@inputs@primary_deep))
+  expect_match(t@header@tint@bg, "^#")
+  # Text stays dark (primary), rule reads divider.strong — matches light.
+  expect_equal(t@header@tint@fg, t@content@primary)
+  expect_equal(t@header@tint@rule, t@divider@strong)
+})
+
+test_that("header_style validator rejects unknown values", {
+  expect_error(
+    ThemeVariants(header_style = "decorative"),
+    "header_style"
+  )
+})
+
+test_that("L1 group bg: subtle (16%) under header light; strong (24%) under tint/bold", {
   light_t <- resolve_theme(WebTheme())
+  tint_t  <- resolve_theme(WebTheme(variants = ThemeVariants(header_style = "tint")))
   bold_t  <- resolve_theme(WebTheme(variants = ThemeVariants(header_style = "bold")))
-  expected <- oklch_mix(light_t@surface@base, light_t@inputs@secondary_deep, 0.16)
-  expect_equal(light_t@row_group@L1@bg, expected)
-  expect_equal(bold_t@row_group@L1@bg, expected)
+  expect_equal(
+    light_t@row_group@L1@bg,
+    oklch_mix(light_t@surface@base, light_t@inputs@secondary_deep, 0.16)
+  )
+  expect_equal(
+    tint_t@row_group@L1@bg,
+    oklch_mix(tint_t@surface@base, tint_t@inputs@secondary_deep, 0.24)
+  )
+  expect_equal(
+    bold_t@row_group@L1@bg,
+    oklch_mix(bold_t@surface@base, bold_t@inputs@secondary_deep, 0.24)
+  )
+  # Tint and bold share the strong tint; light is distinguishably weaker.
+  expect_equal(tint_t@row_group@L1@bg, bold_t@row_group@L1@bg)
+  expect_false(identical(light_t@row_group@L1@bg, bold_t@row_group@L1@bg))
   # Structural groupings — column and row — both live on secondary so they
   # coordinate as a family. Routing through identity (rather than accent)
   # keeps the group bar in a different color family from hover/selected
@@ -269,11 +350,14 @@ test_that("L1 group bg is secondary-derived (16% mix) in both variants", {
 })
 
 test_that("two-color theme: L1 row-group bg tracks secondary, not primary", {
+  # Synthetic R/G primary/secondary; .validate=FALSE for cascade
+  # mechanics test (synthetic colors fail bold-band contrast).
   t <- resolve_theme(WebTheme(inputs = ThemeInputs(
     primary = "#FF0000", secondary = "#00FF00"
-  )))
+  )), .validate = FALSE)
   # column-group bold and row-group L1 should both derive from
-  # secondary_deep (green), not primary_deep (red).
+  # secondary_deep (green), not primary_deep (red). header_style defaults
+  # to "light" -> 16% mix.
   expect_equal(t@column_group@bold@bg, t@inputs@secondary_deep)
   expected_l1 <- oklch_mix(t@surface@base, t@inputs@secondary_deep, 0.16)
   expect_equal(t@row_group@L1@bg, expected_l1)
@@ -329,4 +413,26 @@ test_that("variants flip header/first-column without mutating Tier 2", {
   # dispatch, not a Tier 3 mutation).
   expect_equal(t_light@header@light@bg, t_bold@header@light@bg)
   expect_equal(t_light@header@bold@bg,  t_bold@header@bold@bg)
+})
+
+
+test_that("validator: aborts at construction when bold-band contrast is broken", {
+  # Pale-blue primary auto-derives to a too-light primary_deep, so the
+  # default near-white content.inverse fails the bold-band contrast bar.
+  expect_error(
+    resolve_theme(WebTheme(inputs = ThemeInputs(
+      primary = "#C8D4E8"   # very pale slate; auto-darkens to ~#99A4B7 (~2.5:1)
+    ))),
+    "header bold band"
+  )
+})
+
+test_that("validator: .validate=FALSE bypasses contrast checks", {
+  # Same broken cascade as above — but .validate=FALSE means we get the
+  # resolved theme back without an abort.
+  t <- resolve_theme(
+    WebTheme(inputs = ThemeInputs(primary = "#C8D4E8")),
+    .validate = FALSE
+  )
+  expect_match(t@header@bold@bg, "^#")
 })

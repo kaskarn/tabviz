@@ -9,15 +9,18 @@ web_theme(
   inputs = NULL,
   variants = NULL,
   web_fonts = NULL,
-  base_theme = web_theme_cochrane()
+  base_theme = web_theme_cochrane(),
+  .validate = TRUE
 )
 }
 \arguments{
 \item{name}{Theme name (string).}
 
 \item{inputs}{Named list of \link{ThemeInputs} property overrides
-(\code{primary}, \code{secondary}, \code{tertiary}, \code{accent}, \code{neutral},
-\code{series_anchors}, etc.).}
+(\code{primary}, \code{secondary}, \code{accent}, \code{neutral},
+\code{series_anchors}, etc.). Identity is a 2-tier mirror chain: \code{primary}
+plus optional \code{secondary}; NA secondary mirrors primary. \code{accent} is
+orthogonal — it never enters the identity chain.}
 
 \item{variants}{Named list of \link{ThemeVariants} property overrides
 (\code{density}, \code{header_style}, \code{first_column_style}).}
@@ -28,6 +31,11 @@ widget. Each entry is a list with \code{family} and \code{url} (and optionally
 
 \item{base_theme}{Base theme to start from before applying overrides.
 Defaults to the v2 default preset.}
+
+\item{.validate}{Whether to run construction-time contrast validation
+on the resolved theme. Default \code{TRUE}. Set to \code{FALSE} only for tests
+that intentionally use synthetic high-saturation colors to verify
+cascade mechanics — production callers should leave validation on.}
 }
 \value{
 A fully resolved \link{WebTheme}.

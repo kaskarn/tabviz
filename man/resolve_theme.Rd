@@ -4,10 +4,16 @@
 \alias{resolve_theme}
 \title{Resolve a theme: fill all NA-default Tier 2 / Tier 3 fields.}
 \usage{
-resolve_theme(theme)
+resolve_theme(theme, .validate = TRUE)
 }
 \arguments{
 \item{theme}{A \link{WebTheme} object.}
+
+\item{.validate}{Whether to run construction-time contrast validation
+on the resolved theme. Default \code{TRUE}. Set to \code{FALSE} only for tests
+that intentionally use synthetic high-saturation colors to verify
+cascade mechanics — production callers should leave validation on so
+broken overrides surface at construction rather than at render.}
 }
 \value{
 A \link{WebTheme} object with NA fields populated.
@@ -21,5 +27,7 @@ user-set overrides survive re-resolution. Runs all derivations in OKLCH
 Resolution order: mirror Tier 1 NAs, derive Tier 2 chrome (surface,
 content, divider, accent), derive Tier 2 data (series slot bundles,
 summary, status), derive text roles, derive spacing from density preset,
-fill Tier 3 component clusters from the resolved Tier 2 tokens.
+fill Tier 3 component clusters from the resolved Tier 2 tokens, then
+run construction-time contrast validation (internal
+\code{validate_resolved_theme()} — see \code{R/utils-theme-validate.R}).
 }

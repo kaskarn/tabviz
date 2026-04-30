@@ -48,8 +48,9 @@ A theme is **a small set of customer choices** plus the rules for turning those 
 ```
        ┌─ Tier 3: Component bindings (header, row, cell, plot, marks…) ─┐
        │   ┌─ Tier 2: Semantic roles (surface, content, divider…) ──┐   │
-       │   │   ┌─ Tier 1: Inputs (12 customer choices) ──────────┐  │   │
-       │   │   │   neutral, brand, accent, series, fonts, …      │  │   │
+       │   │   ┌─ Tier 1: Inputs (~15 customer choices) ─────────┐  │   │
+       │   │   │   neutral, primary, secondary, accent,           │  │   │
+       │   │   │   slot_style, header_style, series, fonts, …     │  │   │
        │   │   └──────────────────────────────────────────────────┘  │   │
        │   └─────────────────────────────────────────────────────────┘   │
        └─────────────────────────────────────────────────────────────────┘
@@ -67,10 +68,12 @@ The cascade splits into two independent vocabularies:
 
 | Subsystem | Inputs | Tier 2 roles | What they describe |
 |-----------|--------|--------------|--------------------|
-| **Chrome** | `neutral`, `brand`, `primary_deep`, `accent`, `accent_deep` | `surface`, `content`, `divider`, `accent.*`, `status` | The table's scaffolding — the surface a row sits on, the tone of body text, the rule between cells |
-| **Data** | `series_anchors`, `status_*` | per-series `SlotBundle` (the first slot also drives the pooled-effect diamond) | The data marks — what a forest point looks like, how a row's "muted" state mutes its mark |
+| **Chrome** | `neutral`, `primary`, `primary_deep`, `secondary`, `secondary_deep`, `accent`, `accent_deep`, `slot_style`, `header_style` | `surface`, `content`, `divider`, `accent.*`, `status`, `semantic` | The table's scaffolding — the surface a row sits on, the tone of body text, the rule between cells |
+| **Data** | `series_anchors`, `status_*`, `slot_style` (shared) | per-series `SlotBundle` (the first slot also drives the pooled-effect diamond) | The data marks — what a forest point looks like, how a row's "muted" state mutes its mark |
 
-**They never cross.** Changing `brand` cannot affect a series fill. Changing `series_anchors[3]` cannot affect a row-group divider. The two cascades meet only at theme reassembly. This isolation is what makes themes *predictable*: you can swap a primary color and know the data marks will not silently shift hue, and vice versa.
+**They never cross at the chrome/data boundary.** Changing `primary` cannot affect a series fill (other than the seeded `series[1]`). Changing `series_anchors[3]` cannot affect a row-group divider. The two cascades meet only at theme reassembly. This isolation is what makes themes *predictable*: you can swap a primary color and know the data marks will not silently shift hue, and vice versa.
+
+`slot_style` (`fill_with_darker_stroke` | `flat_fill` | `outlined`) is the one input both cascades read — chrome doesn't use it, but it determines the fill/stroke pairing convention for every series `SlotBundle`. See the [Theming Manifesto](theming-manifesto.qmd) for the full two-knob principle (identity + engagement) and why the contract is shaped this way.
 
 ### The vocabulary at Tier 2
 
@@ -85,12 +88,13 @@ Tier 2 names matter because they're how Tier 3 (and overrides) refer to the syst
 | `content.secondary` | Subtitles, captions |
 | `content.muted` | Axis labels, footnotes |
 | `content.inverse` | Text on dark fills (bold-mode header) |
-| `divider.subtle` | Cell hairlines, gridlines |
-| `divider.strong` | Header rule, group L1 underline |
+| `divider.subtle` | Cell hairlines, gridlines (10% mix of `secondary_deep` into neutral) |
+| `divider.strong` | Header rule, group L1 underline, axis line, tick marks (5% mix of `secondary_deep`) |
 | `accent.default` | Selection bar, hover focus |
 | `accent.muted` | Hover row fill, selected row fill |
-| `accent.tint.subtle` | L1 group bar (light header) |
-| `accent.tint.medium` | Cascading bold-mode tints |
+| `accent.tint_subtle` | Subtle accent-tinted treatments |
+| `accent.tint_medium` | Cascading bold-mode tints |
+| `semantic.fill` | Soft row-fill tint (80% mix of `accent` into neutral) |
 
 Data:
 
@@ -108,7 +112,15 @@ A `SlotBundle` carries every state for one slot. The renderer always reads the r
 
 ### Variants pick, they don't synthesize
 
-`header_style ∈ {light, bold}` and `first_column_style ∈ {default, bold}` are per-table toggles. Both variants are *always pre-resolved* on every theme: `theme$header$light` and `theme$header$bold` both carry full bg/fg/rule values. Flipping the variant at render time is a cheap dispatch — `theme$variants$header_style == "bold" ? theme$header$bold : theme$header$light`.
+`header_style ∈ {light, tint, bold}` and `first_column_style ∈ {default, bold}` are per-table toggles. All three header variants are *always pre-resolved* on every theme: `theme$header$light`, `theme$header$tint`, and `theme$header$bold` all carry full bg/fg/rule values. Flipping the variant at render time is a cheap dispatch — the renderer reads `theme$header[theme$variants$header_style]`.
+
+The three header variants:
+
+* `light` — bare surface bg, content.primary text, divider.strong rule. The publication default.
+* `tint` — light primary-tinted bg (12% mix of `primary_deep` into surface.base), content.primary text, divider.strong rule. A middle ground for editorial section headers.
+* `bold` — `primary_deep` bg, content.inverse text, component-local rule (40% mix of inverse into bg). Maximum chrome.
+
+`header_style` also gates the row-group L1 bg strength: 16% mix of `secondary_deep` into surface under `light`, 24% under `tint`/`bold`. Row-group bars track the leaf header's visual weight automatically — single rule from a single T1 input.
 
 `density ∈ {compact, comfortable, spacious}` is similar but generates a full `SpacingTokens` table at resolve time. Per-token `set_spacing()` overrides land *on top* of the density preset.
 
@@ -116,28 +128,61 @@ A `SlotBundle` carries every state for one slot. The renderer always reads the r
 
 `resolve_theme(theme) -> WebTheme` is idempotent and pure. Run it twice, get the same answer. Override any field, re-run resolution, your override survives (resolution only fills NA-valued fields).
 
-This means the cascade is debuggable. Inspect any resolved field to see exactly what it is:
+This means the cascade is debuggable. Inspect any resolved field directly via S7 accessors:
 
 ```{r}
 #| eval: false
 t <- web_theme_lancet()
-t@inputs@primary        # "#00407A"        (Tier 1)
-t@accent@tint_subtle  # derived blend     (Tier 2)
-t@row_group@L1@bg     # = accent.tint_subtle (Tier 3)
-t@series[[1]]@fill    # series anchor 1
-t@series[[1]]@stroke  # OKLCH-darkened companion
+t@inputs@primary       # "#00407A"        (Tier 1)
+t@accent@tint_subtle   # derived blend    (Tier 2)
+t@row_group@L1@bg      # secondary-tinted (Tier 3)
+t@series[[1]]@fill     # series anchor 1
+t@series[[1]]@stroke   # OKLCH-paired companion (per slot_style)
 ```
 
+Or use `inspect_resolved()` for a value + cascade + derivation summary:
+
+```{r}
+#| eval: false
+inspect_resolved(t, "header.bold.bg")
+#> $path: "header.bold.bg"
+#> $value: "#002D54"
+#> $cascade: c("inputs$primary_deep", "inputs$primary")
+#> $derivation: "inputs$primary_deep (auto: oklch_darken(primary, 0.15))"
+```
+
+`inspect_resolved()` returns the resolved hex alongside the cascade chain that produced it — useful for debugging custom themes and for surfacing cascade tooltips in the widget's Theme tab. The same registry shape feeds both the R REPL and the panel UI.
+
 OKLCH is the underlying color algebra. All blends, lightenings, and darkenings happen in OKLCH (perceptually uniform), with a final clip to sRGB. Quantitative claim: a 12% blend toward `surface.base` looks 12% blended whether the starting hue is navy, gold, or magenta.
+
+### Construction-time validation
+
+`resolve_theme()` runs a final pass that checks contrast invariants on the fully-resolved theme — bold-band header text reading on its band, body text reading on the surface, etc. WCAG AA Large (3.0) for chrome bold text; AA Normal (4.5) for body text. Failures abort at construction (not at render) with a structured `cli` message naming the broken invariant *and* the cascade path the user can override to fix it.
+
+```r
+# Hypothetical broken theme: pale primary auto-darkens to a primary_deep
+# that doesn't carry enough contrast against the default inverse text.
+resolve_theme(WebTheme(inputs = ThemeInputs(primary = "#C8D4E8")))
+#> Error in `validate_resolved_theme(theme)`:
+#> Theme failed 1 contrast invariant.
+#> i Each violation lists the cascade path you can override to fix it.
+#> x header bold band: header.bold.fg must read on header.bold.bg
+#>   fg=#FFFFFF on bg=#99A4B7 -> contrast=2.52 (need >=3.0)
+#>   cascade: header.bold.fg <- header.bold.bg <- content.inverse <- inputs$primary_deep
+```
+
+Tests using synthetic high-saturation colors to verify cascade mechanics can opt out: `resolve_theme(theme, .validate = FALSE)`.
 
 ### What this is *not*
 
 It's worth saying what the model deliberately does not do:
 
-* **No global "muted" or "primary" color.** v1 had a single `colors$muted` that meant both "subdued text" and "deemphasized data." v2 splits these: `content.muted` for text, `slot.fill_muted` for data marks. They share Tier 1 (the brand/accent inputs) but never share a Tier 2 role.
+* **No global "muted" or "primary" color.** v1 had a single `colors$muted` that meant both "subdued text" and "deemphasized data." v2 splits these: `content.muted` for text, `slot.fill_muted` for data marks. They share Tier 1 (the primary/secondary/accent inputs) but never share a Tier 2 role.
+* **No third identity tier.** Identity is two tiers — `primary` plus optional `secondary` (mirrors primary when NA), with orthogonal `accent` for engagement. A `tertiary` knob was added on 2026-04-28 and removed on 2026-04-29 — see the [Theming Manifesto](theming-manifesto.qmd#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29) for the postmortem.
 * **No mode-pair within one theme.** A theme is single-mode (typically light). Dark themes are paired *presets* (`web_theme_dark()`), not a `theme.dark` slot.
 * **No variant baked into the inputs.** Density, header style, first-column style are orthogonal axes. The same primary can ship as comfortable-light-default OR compact-bold-default OR any other combination.
 * **No customer-tunable tints.** `accent.tint_subtle` is derived; it's not in the input list. If you need a specific tint, override the Tier 2 field directly with `set_theme_field()`. Don't add it as a Tier 1 knob.
+* **No accent on default ornament.** Accent owns engagement (hover, selected, callouts). Glyph col defaults (badges, pictograms, rings, stars) read `secondary`, not `accent` — so a hovered row never reads the same color as a regular badge two rows down.
 
 ---
 

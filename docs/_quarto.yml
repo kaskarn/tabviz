@@ -19,6 +19,8 @@ website:
             href: concepts/data-flow.qmd
           - text: "Styling Cascade"
             href: concepts/styling-cascade.qmd
+          - text: "Theming Manifesto"
+            href: concepts/theming-manifesto.qmd
       - text: "Cheatsheet"
         href: cheatsheet.qmd
       - text: "Gallery"

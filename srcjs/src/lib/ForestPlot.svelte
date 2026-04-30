@@ -54,6 +54,7 @@
   import { computeBoxplotStats } from "$lib/viz-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { zoomable } from "$lib/zoom-interactions";
+  import { activeHeaderVariant } from "$lib/header-variant";
   import {
     GROUP_HEADER_OPACITY,
     ROW_HOVER_OPACITY,
@@ -1360,7 +1361,7 @@
   const cssVars = $derived.by(() => {
     if (!theme) return '';
     // Pick the active header / first-column variant per theme.variants.
-    const headerVariant = theme.variants?.headerStyle === 'bold' ? theme.header.bold : theme.header.light;
+    const headerVariant = activeHeaderVariant(theme);
     const firstColBold = theme.variants?.firstColumnStyle === 'bold';
     const firstColVariant = firstColBold ? theme.firstColumn?.bold : theme.firstColumn?.plain;
     const firstColBg     = firstColVariant?.bg     ?? "transparent";
@@ -1372,13 +1373,11 @@
       --tv-max-height: ${maxHeight ? `${maxHeight}px` : 'none'};
       --tv-bg: ${theme.surface.base};
       --tv-fg: ${theme.content.primary};
-      /* Identity tiers (3-tier mirror chain, all set after R-side resolve). */
+      /* Identity tiers (2-tier mirror chain: secondary→primary). */
       --tv-primary:        ${(theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
       --tv-primary-deep:   ${(theme.inputs as { primaryDeep?: string } | undefined)?.primaryDeep ?? (theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
       --tv-secondary:      ${(theme.inputs as { secondary?: string } | undefined)?.secondary ?? (theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
       --tv-secondary-deep: ${(theme.inputs as { secondaryDeep?: string } | undefined)?.secondaryDeep ?? (theme.inputs as { primaryDeep?: string } | undefined)?.primaryDeep ?? theme.accent.default};
-      --tv-tertiary:       ${(theme.inputs as { tertiary?: string } | undefined)?.tertiary ?? (theme.inputs as { secondary?: string } | undefined)?.secondary ?? (theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
-      --tv-tertiary-deep:  ${(theme.inputs as { tertiaryDeep?: string } | undefined)?.tertiaryDeep ?? (theme.inputs as { secondaryDeep?: string } | undefined)?.secondaryDeep ?? (theme.inputs as { primaryDeep?: string } | undefined)?.primaryDeep ?? theme.accent.default};
       /* Engagement (orthogonal to identity). */
       --tv-accent: ${theme.accent.default};
       /* Text-muted (was --tv-secondary in pre-rework code; renamed to free

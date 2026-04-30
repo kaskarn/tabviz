@@ -6,20 +6,22 @@
 # user-set overrides survive re-resolution. The function is idempotent.
 #
 # T1 input axes:
-#   * Identity (3-tier mirror chain): primary / secondary / tertiary, each
-#     with a _deep companion. NA defaults flow tertiary -> secondary ->
-#     primary; each _deep auto-derives via oklch_darken(seed, 0.15) when NA.
+#   * Identity (2-tier mirror chain): primary / secondary, each with a
+#     _deep companion. NA secondary mirrors primary; each _deep
+#     auto-derives via oklch_darken(seed, 0.15) when NA, except
+#     secondary_deep which mirrors primary_deep when secondary is NA.
 #   * Engagement (orthogonal): accent / accent_deep. Reserved for layered
 #     emphasis (hover, selected, semantic row callouts, selection edge,
 #     status.info fallback). Does not enter the identity mirror chain.
 #
 # T2 ownership:
 #   * Chrome texture (surface.muted, divider.subtle, divider.strong, and
-#     row.alt banding via surface.muted) reads from tertiary_deep — which,
-#     via the mirror chain, falls back to whatever the deepest-set
-#     identity tier is. Mono themes get primary-tinted texture for free.
-#   * Identity chrome (header.bold band, container border, row_group L1)
-#     reads from primary_deep.
+#     row.alt banding via surface.muted) reads from secondary_deep — which,
+#     via the mirror chain, falls back to primary_deep when secondary is
+#     unset. Mono themes get primary-tinted texture for free; two-color
+#     editorial themes get coordinated chrome under the secondary axis.
+#   * Identity chrome (header.bold band, container border) reads from
+#     primary_deep.
 #   * Engagement (accent.*, semantic.fill, status.info fallback, glyph col
 #     defaults consumed by the frontend) reads from accent / inputs.
 #
@@ -35,11 +37,14 @@
 #     so visuals are unchanged.
 #
 # Hard rule: chrome derivation reads only chrome inputs (neutrals, identity
-# tiers via tertiary_deep, accent for accent.*). Data derivation reads only
+# tiers via secondary_deep, accent for accent.*). Data derivation reads only
 # data inputs (series_anchors, status_*) plus surface.base for muted
 # blends. The two cascades meet only at WebTheme reassembly. The
 # pooled-effect "summary" mark reads from series[[1]] — there is no
 # separate summary slot.
+#
+# Tertiary was removed 2026-04-29 — its sole job (chrome texture) collapsed
+# onto secondary. See vignettes/theming.Rmd decision log.
 
 # Density presets: each entry maps every SpacingTokens field to a numeric.
 DENSITY_PRESETS <- list(
@@ -79,21 +84,19 @@ fill_na <- function(obj, defaults) {
 
 # Mirror Tier 1 NA fields through the identity chain and to engagement.
 #
-# Identity rule: a tier that's NA mirrors its parent (secondary <- primary,
-# tertiary <- secondary). When a tier mirrors, ITS _deep companion also
-# mirrors the parent's _deep — so a pinned primary_deep propagates through
-# the chain in mono themes instead of being silently re-darkened from the
-# seed. When a tier is pinned (non-NA), its _deep auto-derives via
-# oklch_darken(seed, 0.15) unless explicitly set.
+# Identity rule: NA secondary mirrors primary. When secondary mirrors, its
+# _deep companion also mirrors primary_deep — so a pinned primary_deep
+# propagates through the chain in mono themes instead of being silently
+# re-darkened from the seed. When secondary is pinned (non-NA), its _deep
+# auto-derives via oklch_darken(secondary, 0.15) unless explicitly set.
 #
 # Engagement: accent_deep auto-derives from accent; status.info falls back
 # to accent; font_display falls back to font_body.
 resolve_inputs_mirrors <- function(inputs) {
-  # Capture each identity tier's mirroring state BEFORE filling. We need to
-  # know whether secondary/tertiary were originally NA (mirroring) so the
-  # _deep companion can follow the parent's _deep (vs. auto-darken from seed).
+  # Capture secondary's mirroring state BEFORE filling. We need to know
+  # whether secondary was originally NA (mirroring) so its _deep companion
+  # can follow primary_deep (vs. auto-darken from a freshly-mirrored seed).
   secondary_was_na <- is.na(inputs@secondary)
-  tertiary_was_na  <- is.na(inputs@tertiary)
 
   # Primary chain.
   if (is.na(inputs@primary_deep)) inputs@primary_deep <- oklch_darken(inputs@primary, 0.15)
@@ -106,14 +109,6 @@ resolve_inputs_mirrors <- function(inputs) {
     inputs@secondary_deep <- oklch_darken(inputs@secondary, 0.15)
   }
 
-  # Tertiary chain.
-  if (tertiary_was_na) {
-    inputs@tertiary <- inputs@secondary
-    if (is.na(inputs@tertiary_deep)) inputs@tertiary_deep <- inputs@secondary_deep
-  } else if (is.na(inputs@tertiary_deep)) {
-    inputs@tertiary_deep <- oklch_darken(inputs@tertiary, 0.15)
-  }
-
   if (is.na(inputs@accent_deep))   inputs@accent_deep   <- oklch_darken(inputs@accent, 0.15)
   if (is.na(inputs@font_display))  inputs@font_display  <- inputs@font_body
   if (is.na(inputs@status_info))   inputs@status_info   <- inputs@accent
@@ -122,18 +117,19 @@ resolve_inputs_mirrors <- function(inputs) {
 
 
 # resolve_chrome: ThemeInputs -> list of T2 chrome objects.
-# Reads identity tiers (via tertiary_deep for chrome texture) + accent.
+# Reads identity tiers (via secondary_deep for chrome texture) + accent.
 # Does NOT read series_anchors. Assumes resolve_inputs_mirrors() has
 # already run, so every identity tier and its _deep companion is set.
 resolve_chrome <- function(inputs) {
   n <- inputs@neutral
 
   # Chrome texture (surface.muted, divider tints, alt-row banding) reads
-  # from tertiary_deep. Via the mirror chain, this falls back to
-  # secondary_deep then primary_deep, so mono themes still pick up
-  # primary-tinted chrome — and 2/3-color themes get coordinated texture
-  # in the deepest-set identity tier without per-theme overrides.
-  chrome_tint <- inputs@tertiary_deep
+  # from secondary_deep. Via the mirror chain, this falls back to
+  # primary_deep when secondary is unset — mono themes pick up
+  # primary-tinted chrome; two-color editorial themes get coordinated
+  # texture under the same secondary axis that owns col-group bg,
+  # row-group bg, and glyph col defaults. One axis, one structural role.
+  chrome_tint <- inputs@secondary_deep
 
   # surface.muted is a 4% chrome_tint mix into n[3] — hue-locked by
   # oklch_mix so it reads as identity-tinted, not just intensity-shifted.
@@ -193,17 +189,57 @@ resolve_chrome <- function(inputs) {
 # resolve_data: per-anchor SlotBundle derivation.
 # Reads series_anchors + status_*. Reads surface_base for muted blends
 # but does not write to any chrome token.
-derive_slot_bundle <- function(anchor, surface_base, content_primary) {
+#
+# slot_style centralizes the fill/stroke pairing convention that was
+# previously hardcoded into this function. Default
+# "fill_with_darker_stroke" preserves prior behavior exactly. Two
+# alternatives are available:
+#   "flat_fill" — stroke matches fill (no contrast pair). Reads as a
+#     single tone; useful on dense plots where outlines visually crowd
+#     small marks.
+#   "outlined" — fill leans toward surface; stroke carries the anchor.
+#     Outline-only marks for editorial themes that want skeletal data
+#     against a textured surface.
+derive_slot_bundle <- function(anchor, surface_base, content_primary,
+                                slot_style = "fill_with_darker_stroke") {
   fill_muted <- oklch_mix(anchor, surface_base, 0.65)
-  SlotBundle(
-    fill            = anchor,
-    stroke          = oklch_darken(anchor, 0.10),
-    fill_muted      = fill_muted,
-    stroke_muted    = oklch_darken(fill_muted, 0.10),
-    fill_emphasis   = oklch_chroma(oklch_darken(anchor, 0.05), 0.04),
-    stroke_emphasis = oklch_darken(anchor, 0.20),
-    text_fg         = content_primary
-  )
+
+  if (identical(slot_style, "flat_fill")) {
+    SlotBundle(
+      fill            = anchor,
+      stroke          = anchor,
+      fill_muted      = fill_muted,
+      stroke_muted    = fill_muted,
+      fill_emphasis   = oklch_chroma(oklch_darken(anchor, 0.05), 0.04),
+      stroke_emphasis = oklch_chroma(oklch_darken(anchor, 0.05), 0.04),
+      text_fg         = content_primary
+    )
+  } else if (identical(slot_style, "outlined")) {
+    # 85% surface + 15% anchor: fill is barely tinted; the anchor identity
+    # lives in the stroke.
+    outline_fill       <- oklch_mix(anchor, surface_base, 0.15)
+    outline_fill_muted <- oklch_mix(anchor, surface_base, 0.08)
+    SlotBundle(
+      fill            = outline_fill,
+      stroke          = anchor,
+      fill_muted      = outline_fill_muted,
+      stroke_muted    = oklch_darken(fill_muted, 0.10),
+      fill_emphasis   = oklch_mix(anchor, surface_base, 0.30),
+      stroke_emphasis = oklch_darken(anchor, 0.20),
+      text_fg         = content_primary
+    )
+  } else {
+    # Default: "fill_with_darker_stroke" — current convention preserved.
+    SlotBundle(
+      fill            = anchor,
+      stroke          = oklch_darken(anchor, 0.10),
+      fill_muted      = fill_muted,
+      stroke_muted    = oklch_darken(fill_muted, 0.10),
+      fill_emphasis   = oklch_chroma(oklch_darken(anchor, 0.05), 0.04),
+      stroke_emphasis = oklch_darken(anchor, 0.20),
+      text_fg         = content_primary
+    )
+  }
 }
 
 # Fill NA fields of an existing SlotBundle from a freshly-derived one,
@@ -219,9 +255,10 @@ fill_slot_bundle <- function(existing, derived) {
 
 resolve_data <- function(inputs, surface_base, content_primary, existing_series) {
   anchors <- inputs@series_anchors
+  slot_style <- inputs@slot_style
   series <- vector("list", length(anchors))
   for (i in seq_along(anchors)) {
-    derived <- derive_slot_bundle(anchors[i], surface_base, content_primary)
+    derived <- derive_slot_bundle(anchors[i], surface_base, content_primary, slot_style)
     existing <- if (i <= length(existing_series)) existing_series[[i]] else SlotBundle()
     series[[i]] <- fill_slot_bundle(existing, derived)
   }
@@ -239,33 +276,34 @@ resolve_data <- function(inputs, surface_base, content_primary, existing_series)
 
 # resolve_text: TextRoles bundles from Tier 1 fonts + Tier 2 content.
 #
-# Typography hierarchy maps onto the identity-tier contract:
+# Typography hierarchy maps onto the two-axis identity contract:
 #   * title     = primary_deep         — identity hero
 #   * subtitle  = secondary lean (30%) — structural typography
 #   * body/cell = content.primary      — neutral (legibility floor)
 #   * label     = secondary lean (20%) — short structural text
-#   * caption   = tertiary  lean (30%) — quiet editorial chrome
-#   * tick      = tertiary  lean (10%) — scaffolding, dense grids
-#   * footnote  = tertiary  lean (20%) — quietest end of the layout
+#   * caption   = secondary lean (30%) — quiet editorial chrome
+#   * tick      = secondary lean (10%) — scaffolding, dense grids
+#   * footnote  = secondary lean (20%) — quietest end of the layout
 #
-# In mono themes, secondary/tertiary mirror primary so every mix
-# resolves to the same hue at the same percentage as today's plain
-# content.muted / content.secondary — visually identical to before.
-# Polychromatic themes (where secondary or tertiary is pinned) get a
-# true 3-tier typographic look without per-theme overrides.
+# Caption/tick/footnote previously leaned toward tertiary; tertiary was
+# removed 2026-04-29 and chrome typography now leans toward secondary.
+# In mono themes secondary mirrors primary so every mix resolves to the
+# same hue at the same percentage as plain content.muted /
+# content.secondary — visually identical. Two-color editorial themes get
+# coordinated chrome typography under the same axis that owns chrome
+# texture — single structural axis, one tinting source.
 resolve_text <- function(inputs, content) {
   body <- inputs@font_body
   display <- inputs@font_display
   # Tolerate NA tier_deep for callers that bypass resolve_inputs_mirrors.
   primary_deep   <- if (is.na(inputs@primary_deep))   inputs@primary   else inputs@primary_deep
   secondary_deep <- if (is.na(inputs@secondary_deep)) primary_deep     else inputs@secondary_deep
-  tertiary_deep  <- if (is.na(inputs@tertiary_deep))  secondary_deep   else inputs@tertiary_deep
 
   subtitle_fg <- oklch_mix(content@secondary, secondary_deep, 0.30)
   label_fg    <- oklch_mix(content@secondary, secondary_deep, 0.20)
-  caption_fg  <- oklch_mix(content@secondary, tertiary_deep,  0.30)
-  tick_fg     <- oklch_mix(content@muted,     tertiary_deep,  0.10)
-  footnote_fg <- oklch_mix(content@muted,     tertiary_deep,  0.20)
+  caption_fg  <- oklch_mix(content@secondary, secondary_deep, 0.30)
+  tick_fg     <- oklch_mix(content@muted,     secondary_deep, 0.10)
+  footnote_fg <- oklch_mix(content@muted,     secondary_deep, 0.20)
 
   TextRoles(
     # Title fg defaults to primary_deep — large, prominent text is the
@@ -342,6 +380,16 @@ resolve_components <- function(theme) {
     fg   = content@primary,
     rule = divider@strong
   ))
+  # Tint variant: a light primary-deep tint (12%) into surface.base, dark
+  # text. Middle ground between light (bare surface) and bold (full
+  # primary_deep band). Editorial section/article headers want this when
+  # full bold reads as too aggressive; group-heading bg gets a stronger
+  # variant under tint as well (see Phase A.5 groupHeading subtle/strong).
+  hdr@tint <- fill_na(hdr@tint, list(
+    bg   = oklch_mix(surface@base, inputs@primary_deep, 0.12),
+    fg   = content@primary,
+    rule = divider@strong
+  ))
   hdr@bold <- fill_na(hdr@bold, list(
     bg   = inputs@primary_deep,
     fg   = content@inverse,
@@ -364,6 +412,16 @@ resolve_components <- function(theme) {
     fg   = content@primary,
     rule = divider@strong
   ))
+  # Column-group tint variant: 12% mix of secondary_deep into surface.base.
+  # Mirrors the leaf header's tint pattern but reads through secondary so
+  # two-color themes get coordinated section/article header split for free.
+  # In mono themes secondary_deep mirrors primary_deep so the visual
+  # output collapses to the same hue as the leaf header tint.
+  cg@tint <- fill_na(cg@tint, list(
+    bg   = oklch_mix(surface@base, inputs@secondary_deep, 0.12),
+    fg   = content@primary,
+    rule = divider@strong
+  ))
   cg@bold <- fill_na(cg@bold, list(
     # Column-group bold band reads from secondary_deep (mirrors
     # primary_deep in mono themes, so no visual delta). In two-color
@@ -381,21 +439,27 @@ resolve_components <- function(theme) {
   )
   theme@column_group <- cg
 
-  # -- Row groups: L1 strongest, L3 lightest. --
-  # L1.bg is secondary-derived: a 16% mix of secondary_deep into surface.base.
+  # -- Row groups: subtle/strong variant pair driven by header_style. --
+  # L1.bg is secondary-derived: a mix of secondary_deep into surface.base.
+  # Strength tracks header_style so the row-group band's visual weight
+  # coordinates with the leaf header's:
+  #   header_style "light" → 16% mix (subtle)  — quiet group dividers
+  #     under bare-surface headers.
+  #   header_style "tint"  → 24% mix (strong)  — group bands match the
+  #     editorial section-header weight.
+  #   header_style "bold"  → 24% mix (strong)  — group bands cohere with
+  #     the bold-band leaf header without competing with it.
+  # Single rule from a single T1 input. No per-theme overrides needed.
   # Structural groupings — column and row — both live on secondary so they
   # read as a coordinated family in two-color themes. Routing through an
   # identity tier (rather than accent.tint_subtle) keeps the group bar in
   # a different color family from hover/selected fills (which are
   # accent.muted), so multiple highlighted rows don't merge into the bar.
-  # 16% (up from 12%) gives row-group bars a closer visual rhyme with the
-  # column-group bold band (100% saturation) without overpowering row
-  # content; the existing weight=600 already carries the rest. In mono
-  # themes secondary mirrors primary, so the visual delta is small.
   # All three nesting levels (L1/L2/L3) share this bg — hierarchy is
   # carried by text weight + indent, not per-level tint.
   rg <- theme@row_group
-  l1_default_bg <- oklch_mix(surface@base, inputs@secondary_deep, 0.16)
+  l1_strength <- if (theme@variants@header_style == "light") 0.16 else 0.24
+  l1_default_bg <- oklch_mix(surface@base, inputs@secondary_deep, l1_strength)
   rg@L1 <- fill_na(rg@L1, list(
     bg   = l1_default_bg,
     fg   = content@primary,
@@ -507,17 +571,17 @@ resolve_components <- function(theme) {
     gridline  = divider@subtle,
     reference = divider@strong
   ))
-  # Axis + tick label fg get a faint tertiary lean (10% mix into
+  # Axis + tick label fg get a faint secondary lean (10% mix into
   # content.muted) so they coordinate with the rest of the plot
   # scaffolding (axis line, tick marks, gridlines all already
-  # tertiary-tinted via the divider chain). Mirror chain handles mono
-  # themes — tertiary_deep mirrors primary_deep so the mix collapses to
-  # the same hue as today's plain content.muted.
+  # secondary-tinted via the divider chain). Mirror chain handles mono
+  # themes — secondary_deep mirrors primary_deep so the mix collapses to
+  # the same hue as plain content.muted.
   # Pre-fill BEFORE compose_text so this value blocks the text-role
   # default (which would otherwise inherit the role's content color)
   # while other NA fields still flow through from the role.
-  tertiary_deep <- if (is.na(theme@inputs@tertiary_deep)) theme@inputs@primary_deep else theme@inputs@tertiary_deep
-  axis_tick_label_fg <- oklch_mix(content@muted, tertiary_deep, 0.10)
+  secondary_deep <- if (is.na(theme@inputs@secondary_deep)) theme@inputs@primary_deep else theme@inputs@secondary_deep
+  axis_tick_label_fg <- oklch_mix(content@muted, secondary_deep, 0.10)
   if (is.na(ps@axis_label@fg)) ps@axis_label@fg <- axis_tick_label_fg
   if (is.na(ps@tick_label@fg)) ps@tick_label@fg <- axis_tick_label_fg
   ps@axis_label <- compose_text(ps@axis_label, text@label)
@@ -537,12 +601,19 @@ resolve_components <- function(theme) {
 #' Resolution order: mirror Tier 1 NAs, derive Tier 2 chrome (surface,
 #' content, divider, accent), derive Tier 2 data (series slot bundles,
 #' summary, status), derive text roles, derive spacing from density preset,
-#' fill Tier 3 component clusters from the resolved Tier 2 tokens.
+#' fill Tier 3 component clusters from the resolved Tier 2 tokens, then
+#' run construction-time contrast validation (internal
+#' `validate_resolved_theme()` — see `R/utils-theme-validate.R`).
 #'
 #' @param theme A [WebTheme] object.
+#' @param .validate Whether to run construction-time contrast validation
+#'   on the resolved theme. Default `TRUE`. Set to `FALSE` only for tests
+#'   that intentionally use synthetic high-saturation colors to verify
+#'   cascade mechanics — production callers should leave validation on so
+#'   broken overrides surface at construction rather than at render.
 #' @return A [WebTheme] object with NA fields populated.
 #' @export
-resolve_theme <- function(theme) {
+resolve_theme <- function(theme, .validate = TRUE) {
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
@@ -598,6 +669,14 @@ resolve_theme <- function(theme) {
 
   # Step 6: component clusters.
   theme <- resolve_components(theme)
+
+  # Step 7: validate contrast invariants on the fully resolved theme.
+  # Aborts at construction (vs at render) so users see the error at the
+  # source of the bad override. See R/utils-theme-validate.R for the
+  # invariant list and rationale. Tests can opt out via .validate=FALSE
+  # when synthesizing intentionally-broken-but-mechanically-correct
+  # cascades.
+  if (isTRUE(.validate)) validate_resolved_theme(theme)
 
   theme
 }

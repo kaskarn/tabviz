@@ -2,7 +2,7 @@
 % Please edit documentation in R/classes-theme.R
 \name{HeaderCluster}
 \alias{HeaderCluster}
-\title{HeaderCluster: column-header bindings with light/bold variants.}
+\title{HeaderCluster: column-header bindings with light/tint/bold variants.}
 \description{
 Active variant is selected by \code{theme@variants@header_style}.
 }

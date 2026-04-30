@@ -1,0 +1,564 @@
+---
+title: "Theming Manifesto"
+subtitle: "Why tabviz themes are shaped the way they are"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+::: {.callout-note}
+**Living document — last updated 2026-04-29.**
+The cascade reference in [Styling Cascade](styling-cascade.qmd) tells you *what*
+the tokens are. This document tells you *why*. Read this before proposing a
+fourth identity tier, a "trend" slot, a charm recipe, or otherwise expanding
+the surface area.
+
+Decisions get appended to the [Decision log](#decision-log) at the bottom —
+never rewritten — so future maintainers can diagnose drift against
+original intent.
+:::
+
+## Why this document exists
+
+A cascade specification is a *what*. It enumerates inputs, derived tokens,
+component bindings, and the formulas that connect them. It can't tell you
+why the inputs are *those* inputs and not different ones, or why the cascade
+ends at three tiers and not four, or why a class of feature requests has
+been considered and rejected over and over again.
+
+This document is the *why* companion. It's also a record: every substantive
+shape decision is dated and reasoned through here, so when someone proposes
+re-litigating one of them, the prior conversation is on the page.
+
+Three audiences:
+
+- **Future contributors** evaluating a feature request that touches the
+  cascade. Read the [anti-patterns](#anti-patterns) section first.
+- **Theme authors** building a new preset. The
+  [theme authoring recipe](#authoring-a-new-theme) is the practical
+  starting point.
+- **Curious users** who want to know what they're using. The
+  [two-knob principle](#the-two-knob-principle) and the
+  [three-axis contract](#the-three-axis-contract) are the entry points.
+
+If you want the formal contract, go to [Styling Cascade](styling-cascade.qmd).
+
+---
+
+## Publication-quality as a constraint
+
+tabviz's product wedge is **publication-quality output**. Not "looks
+professional," not "modern aesthetic" — *publication-quality*: tables that
+could appear unmodified in a peer-reviewed journal article, a regulatory
+submission, an annual report.
+
+This is a constraint, not a label. Publication-quality is downstream of a
+specific aesthetic discipline:
+
+- **Restraint over expressivity.** A fourth color knob, an emoji recipe, a
+  decorative glyph slot — each one is an opportunity for a user to make
+  their table louder than it should be.
+- **Fewer dimensions, used well.** Two coordinated colors that read as
+  intentional beat five independent colors that read as crowded.
+- **Chrome stays neutral.** Banding, hairlines, gridlines, axis text —
+  these are scaffolding. Pull them toward the brand at low strength for
+  cohesion; never at high strength for prominence.
+- **Defaults that work everywhere.** A user who pins primary and writes
+  one line of R should get a table that wouldn't look out of place in
+  *The Lancet*. Anything that requires editorial intervention to look
+  acceptable has failed.
+
+Most of the choices documented below are downstream of this single frame.
+If you find yourself defending an addition with "but the user could choose
+to use it well," check that frame again. Publication-quality is what most
+users get *by default*, not what the most disciplined users *can achieve
+with effort*.
+
+---
+
+## The two-knob principle
+
+The theme contract is two knobs: **identity** and **engagement**.
+
+Identity is the brand axis — the tone the table opens with, the tone it
+returns to under any structural emphasis. It mirrors down the chain:
+secondary defaults to primary unless the author explicitly pins a second
+color. In a mono theme (most journals), there is one identity color; in a
+two-color editorial theme (LoTR-style), there are two.
+
+Engagement is the **accent** — the color that fires when something extra is
+happening. Hover. Selected. A semantic row callout. The status.info fallback.
+The selection edge bar. Accent is orthogonal to identity; it never enters
+the mirror chain. It's also reserved: it does *not* land on default content
+(badges, glyph fills, ornament). Those belong on identity, where they
+coordinate with the rest of the table.
+
+Why two knobs and not more:
+
+- A single identity knob makes mono themes trivial: pin primary, done.
+- A second identity knob (secondary, mirroring primary) makes two-color
+  editorial themes coherent without adding any complexity to mono themes.
+- A separate engagement knob (accent) keeps the "look here" signal
+  semantically distinct from the brand surface, so a hovered row can't
+  read the same color as a regular badge two rows down.
+- Adding any knob beyond these reopens the question of which knob a new
+  feature should land on. The contract collapses.
+
+Why accent is reserved for engagement:
+
+- When accent doubled as both "the engagement color" and "the default fill
+  for content-bearing glyph columns" (badges, pictograms, rings, stars), the
+  same hue did two unrelated jobs and the emphasis signal lost its meaning.
+  A hovered row read the same color as a regular badge. The 2026-04-28
+  redesign fixed this: glyph col defaults moved to the secondary identity
+  axis (which mirrors primary in mono themes — visually identical to before
+  for journal users — and lights up secondary in two-color themes).
+- The mental model "identity for what is, accent for what's happening"
+  is the entire reason themes feel coherent.
+
+If a new role doesn't cleanly map to one of these two axes, the answer is
+almost always to refine the role's purpose, not to add a third axis.
+
+---
+
+## The three-axis contract
+
+Identity is two tiers, but the actual *roles* are three. Each axis owns
+exactly one job:
+
+| Axis | Owns | Default behavior |
+|---|---|---|
+| **primary** (+ `primary_deep`) | **Prominence**: title text, bold leaf-header band, container border, series[0] anchor | Required input. `_deep` auto-darkens by 15% (OKLCH) if NA. |
+| **secondary** (+ `secondary_deep`) | **Structure**: bold col-group band, row-group L1/L2/L3 bg, glyph col defaults (badge/pictogram/ring/stars), AND chrome texture (surface.muted, divider.subtle/strong, alt-row banding, gridline, axis/tick) | NA mirrors primary. `secondary_deep` mirrors `primary_deep` when secondary is NA; auto-darkens otherwise. |
+| **accent** (+ `accent_deep`) | **Engagement**: hover, selected, row.accent.fg, accent.tint_subtle/medium, semantic.fill, selection edge color, status.info fallback | Required input. Orthogonal — never enters the identity mirror chain. |
+
+The single rule for every theme: **pin what's distinct, mirror the rest.**
+Mono themes pin primary only. Two-color editorial themes pin primary +
+secondary. Accent is always pinned (engagement is never silent).
+
+The structural axis is doing the most work. In mono themes, you don't
+notice — secondary mirrors primary, so chrome and groupings read as
+primary-tinted variants of the canvas. In two-color themes, secondary
+lights up and you get coordinated movement across:
+
+- The bold column-group band reads in secondary
+- Row-group bars read in a 16% (or 24% under tint/bold header) mix of
+  secondary into surface
+- Cell hairlines and dividers carry a faint secondary tint
+- Alt-row banding picks up the same secondary chrome
+- Glyph cells (badges, rings, stars, pictograms) default to secondary
+
+All from one pin. No per-theme overrides. That's the dividend the contract
+pays.
+
+---
+
+## Why tertiary was added (2026-04-28) and removed (2026-04-29)
+
+Honest record. Tertiary was a 24-hour decision and the postmortem teaches
+the most important lesson in this document.
+
+### The 2026-04-28 decision
+
+The previous architecture was `brand` / `brand_deep` + `accent`. Editorial
+themes (LoTR-style demos) wanted a second color for chrome texture —
+specifically, the umber/moss/wheat tones that distinguish the three LoTR
+themes from each other. Without a knob for it, theme authors were either
+hardcoding hex values into every chrome token (high maintenance, drifts on
+input change) or accepting a primary-tinted chrome that looked wrong
+against the bold identity bands.
+
+The proposal: rename `brand` → `primary`, add `secondary` for column-group
+bg + row-group bg + glyph defaults, add `tertiary` for chrome texture
+(surface.muted, dividers, banding, gridlines, axis/tick). Three identity
+tiers, each mirroring up the chain. Accent stays orthogonal.
+
+This shipped to main on 2026-04-28. Memory entry saved. Themes migrated.
+Validation green.
+
+### The 2026-04-29 reversal
+
+Within 24 hours, two problems surfaced when stress-testing editorial
+themes:
+
+1. **Three colors usually communicate worse than two.** When designers
+   could pin three identity hues, they did — even when the third hue's
+   only job was "tint the chrome differently from the band." The result
+   was tables with too much going on. Editorial restraint requires that
+   the architecture *not invite* the third pin in the first place.
+
+2. **Chrome wants to read structurally, not ornamentally.** Routing chrome
+   through its own knob made it feel like a third identity color (because
+   it was). Folding chrome onto the secondary axis — same axis that owns
+   col-group bg, row-group bg, glyph defaults — collapsed it into "the
+   structural color" instead of "the chrome color." The mental model
+   simplified: secondary is *everything that supports the primary band*.
+
+The reversal: `tertiary` and `tertiary_deep` removed entirely. Chrome
+texture migrated onto `secondary_deep` at the same mix strengths. Mono
+themes are visually unchanged (secondary mirrors primary). Two-color
+themes get one structural axis instead of two.
+
+The lesson:
+
+- **Adding expressivity is reversible only if you add it carefully.**
+  Tertiary was added with full validation, full migration, full memory
+  trail — which made the reversal cheap. A messier addition would have
+  cost weeks.
+- **A 24-hour postmortem on a fresh decision is healthier than living
+  with the wrong shape for a quarter.** The reversal entry is in this
+  log not as embarrassment but as evidence that the loop is short.
+- **The right number of identity tiers is two. Probably forever.**
+
+The LoTR themes lost nothing essential. Dwarven kept bronze (primary)
++ gold (secondary, now tinting chrome too) + ember (accent). The third
+umber pin folded into the gold cascade — and the chrome in Dwarven now
+reads as warm-burnished-metallurgy, which is *more* on-theme than the
+original cool umber against warm bronze ever was.
+
+---
+
+## Mirror chain semantics
+
+The identity chain is a single rule:
+
+> If `secondary` is NA at construction, it mirrors `primary` during
+> resolution. If `secondary_deep` is NA, it mirrors `primary_deep` (when
+> secondary itself is NA) or auto-darkens from secondary (when secondary
+> is pinned).
+
+A few things to know about how this behaves:
+
+**Mirroring happens at resolve time, not at construction.**
+`ThemeInputs(primary = "#0891b2")` stores `secondary = NA` literally; the
+NA only resolves to `"#0891b2"` after `resolve_theme()` has run. This
+means re-resolving an already-resolved theme is idempotent: the resolver
+only writes into NA-valued fields, so a previously-mirrored secondary
+stays at primary's value, and a pinned secondary stays at the user's pin.
+
+**Pinning a tier breaks the mirror for that tier and downstream tiers.**
+If you pin `secondary`, `secondary_deep` no longer follows `primary_deep`
+— it auto-derives from your pinned secondary instead. This is the
+intentional break: the moment you say "I want a second color," the deep
+companion tracks the second color, not the first.
+
+**Accent never mirrors.** It's a required input precisely because
+engagement is never silent. Even in a mono theme, accent is a deliberate
+choice (often a deliberate counterpoint — Cochrane pairs cool teal primary
+with warm coral accent specifically because the contrast lights up the
+engagement signal).
+
+**The mirror is not just visual.** It propagates through every derived
+token. In a mono theme, `divider.strong` reads `secondary_deep` which
+mirrors `primary_deep` which auto-darkens primary — a single edit to
+primary cascades through dividers, surface.muted, banding, gridlines, all
+of it. This is the dividend that justifies the implicit-NA design over
+having theme authors restate primary in every cascade slot.
+
+---
+
+## Cascade tiers
+
+Three tiers, each with one job:
+
+- **T1 — Inputs.** What the customer chooses. `primary`, `secondary`,
+  `accent`, plus `_deep` companions, plus `slot_style` (enum),
+  `header_style` (enum), neutral ramp, status colors, series anchors,
+  fonts. ~15 fields. This is the only tier most users edit directly.
+
+- **T2 — Semantic roles.** Derived tokens with named semantics:
+  `surface.base/muted/raised`, `content.primary/secondary/muted/inverse`,
+  `divider.subtle/strong`, `accent.default/muted/tint_subtle/tint_medium`,
+  `semantic.fill`, `status.*`, plus per-slot `SlotBundle` for series
+  marks. The resolver fills these from T1 via OKLCH formulas; users
+  override individual fields to pin a tone.
+
+- **T3 — Component bindings.** Per-cluster overrides: `header.{light,
+  tint, bold}.{bg, fg, rule}`, `column_group.*`, `row_group.L1/L2/L3.bg`,
+  `cell.border`, `plot.axis_line/tick_mark/gridline/reference`. These
+  default to T2 values with cluster-local computations (e.g., bold rule
+  is a 40% mix of inverse against the band's own bg). Users can pin
+  individual leaves; the rest cascade from T2.
+
+Three tiers of overrides means three chances for a user to break a
+required relationship. Construction-time validation
+(`validate_resolved_theme`) catches the obvious failures (bold-band
+contrast, body-text contrast) at theme construction — *not* at render —
+so the error message points at the source of the bad pin, not at a
+downstream symptom. WCAG AA Large (3.0) for chrome bold text; AA Normal
+(4.5) for body text. Tests can opt out with `.validate = FALSE`.
+
+The cascade is fully introspectable from R:
+
+```{r}
+#| eval: false
+inspect_resolved(web_theme_cochrane(), "header.bold.bg")
+#> $path: "header.bold.bg"
+#> $value: "#006B9C"
+#> $cascade: c("inputs$primary_deep", "inputs$primary")
+#> $derivation: "inputs$primary_deep (auto: oklch_darken(primary, 0.15))"
+```
+
+The same provenance feeds the widget's Theme tab tooltips — single
+source of truth for "where did this hex come from?".
+
+---
+
+## Anti-patterns
+
+These are not "things we haven't gotten around to." These are things tabviz
+will *refuse to do*. If you encounter one in a feature request, push back.
+
+### Don't add a fourth identity tier (or revive tertiary)
+
+Two-knob is canonical. Tertiary was added on 2026-04-28 and removed on
+2026-04-29 — see the [postmortem](#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29).
+Any future proposal to add a third identity color must either (a)
+demonstrate a use case that the secondary mirror chain genuinely cannot
+serve, or (b) explain why the prior reversal's reasoning no longer
+applies. Aesthetic preference for three colors is not sufficient — the
+reversal happened *because* designers reached for three when two would
+have read better.
+
+### Don't introduce slot-typed Tier 1 anchors
+
+A previous architectural proposal added `slot.trend`, `slot.distribution`,
+`slot.range`, etc. as Tier 1 anchors keyed to recipe types. This was
+**considered and retracted**. The two-knob model handles every case the
+slot-typed proposal addressed (via accent-tint and identity-deep
+derivations). Reintroducing slot-typed anchors adds dimensionality that
+the cascade has to thread through every component binding for
+near-zero practical gain.
+
+### Don't mix accent into default content
+
+Accent owns engagement. Hover, selected, callouts, status.info, semantic
+row treatments. It does *not* own:
+
+- Default badge fills
+- Glyph cell defaults (rings, stars, pictograms)
+- Ornament that fires by default
+
+Those belong on the secondary identity axis. The 2026-04-28 redesign
+documented this explicitly: glyph col defaults moved from accent to
+secondary precisely so the engagement signal stays meaningful. If you find
+yourself wanting accent on a content surface that's always rendered, the
+correct fix is almost certainly identity, not accent.
+
+### Don't tint chrome toward accent
+
+Chrome (banding, dividers, gridlines, axis text) is structural. It tints
+toward `secondary_deep` — which in mono themes mirrors `primary_deep`, so
+chrome stays cohesive with the brand. Tinting chrome toward accent makes
+hovered/selected rows merge into the chrome band. This was wrong before
+the cascade rework and would still be wrong after.
+
+### Don't add charm recipes
+
+Pictogram arrays, emoji marks, decorative glyph recipes, isotype-style
+visualizations. These are charming in stress-test demos but distract from
+publication-quality positioning. The recipe library is intentionally
+small: it grows when a serious publication-quality use case demonstrably
+isn't covered (e.g., gauge-against-target, dots-of-N, stacked-bar
+proportion compositions are on the roadmap), not when a demo would be
+fun.
+
+The boundary check: would this recipe appear in *The Lancet*? If no, hold
+the line.
+
+### Don't bypass the cascade
+
+Every now and then a feature request asks for a theme override that
+"skips" the cascade — a one-off color that doesn't flow through any of
+the derivations, doesn't participate in mirroring, can't be inspected.
+This signal almost always means the cascade is missing a case. The right
+response is to extend the cascade (add the slot to T2 or T3, document its
+derivation, run validation), not to introduce a side door.
+
+If genuinely no T1/T2/T3 location fits, that's a decision-quality moment.
+Stop and re-examine the role's semantics before committing to a new slot.
+
+---
+
+## Authoring a new theme
+
+The recipe is short. Most themes need only Tier 1 inputs.
+
+**Mono theme** (the journal default — Cochrane, Lancet, JAMA fall here):
+
+```{r}
+#| eval: false
+my_theme <- web_theme(
+  name = "my_journal",
+  inputs = list(
+    primary = "#0F4C81",     # identity hero
+    accent  = "#C8553D",     # warm engagement counterpoint
+    series_anchors = c("#0F4C81", "#C8553D", "#5C8A3F", "#7E5A99", "#D49A3A"),
+    font_body = "Georgia, 'Times New Roman', serif"
+  )
+)
+```
+
+That's it. Secondary mirrors primary; chrome reads as primary-tinted;
+glyph defaults read primary; engagement (hover/selected/info) reads
+accent. The contract gives you a coherent table with two pinned values.
+
+**Two-color editorial theme** (LoTR-style):
+
+```{r}
+#| eval: false
+my_editorial <- web_theme(
+  name = "my_editorial",
+  inputs = list(
+    primary   = "#7A4E22",   # bronze
+    secondary = "#D4A955",   # gold — drives col-group bands, row-group bars,
+                             #        glyph defaults, AND chrome texture
+    accent    = "#E0673A",   # ember — hover, selected, status.info
+    series_anchors = c("#D4A955", "#A8A8A0", "#B86C42", "#7A4E22", "#5C7AA0"),
+    font_body = "'EB Garamond', Georgia, serif"
+  ),
+  variants = list(header_style = "bold")
+)
+```
+
+One additional pin (secondary) and one variant flip (header_style) — the
+rest cascades.
+
+**Verifying your theme:**
+
+```{r}
+#| eval: false
+# Check what a specific leaf resolved to + why.
+inspect_resolved(my_theme, "header.bold.bg")
+inspect_resolved(my_theme, "divider.strong")
+inspect_resolved(my_theme, "row_group.L1.bg")
+
+# Construction-time validation runs automatically — broken contrast
+# aborts at web_theme() with a structured error pointing at the leaf.
+# To bypass for experimental / synthetic colors:
+my_test <- web_theme(..., .validate = FALSE)
+```
+
+**What to override at T2/T3 (and when):**
+
+- Override at T1 first. 90% of themes never need to touch T2 or T3.
+- Override at T2 when a *family* of derived tokens needs adjustment —
+  e.g., `divider.strong` to pin the rule color across header/group/axis.
+- Override at T3 only for cluster-specific tweaks — e.g., a particular
+  preset wants the bold-mode header band darker than its primary_deep
+  would give.
+
+The wider you cast the override, the higher up the cascade you should
+pin it. T3 overrides are bandages; T1 overrides are intent.
+
+---
+
+## Open questions
+
+The architecture is mature enough that big redesigns are unlikely.
+Outstanding questions are tactical:
+
+- **Recipe fallbacks at narrow widths.** Whether violins below a width
+  threshold should automatically degrade to density strip / boxplot.
+  Could be guidance or runtime fallback. No current opinion.
+- **Slot.style additional variants.** Currently three values
+  (`fill_with_darker_stroke`, `flat_fill`, `outlined`). A "stroke_only"
+  variant has been suggested for very dense plots. Not yet implemented;
+  awaiting a real-world need.
+- **Header tint strength.** The tint variant is a 12% mix of primary_deep
+  into surface.base. This was chosen by eye; whether 10% or 15% reads
+  better is taste-dependent and may benefit from per-theme override.
+
+When new questions arise, append to the [Decision log](#decision-log).
+When questions get resolved, move them out of this section and into the
+log entry that resolved them.
+
+---
+
+## Decision log
+
+Append-only. Newest first. Each entry: date, decision, alternatives
+considered, reasoning. Future maintainers should append, not rewrite.
+
+### 2026-04-29 — Tertiary removed; chrome migrates to secondary
+
+**Decision.** Drop `tertiary` and `tertiary_deep` from `ThemeInputs`.
+Chrome texture (surface.muted, divider.subtle/strong, alt-row banding,
+gridline, axis/tick) now reads from `secondary_deep` at the same mix
+strengths. Identity is two tiers (primary + secondary mirror chain) plus
+orthogonal accent.
+
+**Alternatives considered.**
+- Keep three tiers, lower the bar for what tertiary owns. Rejected:
+  doesn't solve the "designers reach for three colors" problem.
+- Add a separate `chrome_tint` knob (not in identity chain). Rejected:
+  same expressivity creep with extra surface area.
+- Keep three tiers but make tertiary "advanced-only" (hidden from default
+  panels). Rejected: API surface stays bloated; documentation cost is
+  high; the prompt to use three colors is structural, not UI.
+
+**Reasoning.** See [the postmortem](#why-tertiary-was-added-2026-04-28-and-removed-2026-04-29).
+Two-knob is canonical. Bundled with this rework: `slot_style` lifted to
+T1; `header_style` expanded with `tint` variant; row-group L1 bg gains
+header_style-driven subtle/strong strength; construction-time contrast
+validation; `inspect_resolved()` introspection API; 7 presets migrated
+(LoTR trio rebalanced as 2-color).
+
+**Migration cost.** ~3 hours of focused refactoring. Caught a real bug
+along the way: dark theme's auto-derived `primary_deep` (#5C85C8) had
+2.57:1 contrast against its inverse text — pinned darker to #2E5290
+(5.33:1).
+
+### 2026-04-28 — Tertiary added (later reversed)
+
+**Decision.** Add `tertiary` and `tertiary_deep` to `ThemeInputs`. Three
+identity tiers in a mirror chain (primary → secondary → tertiary).
+Tertiary owns chrome texture.
+
+**Reasoning at the time.** Editorial themes wanted a third color for
+chrome texture distinct from the structural secondary; pinning it kept
+chrome cohesive without per-theme hardcoded hex values.
+
+**Reversed within 24 hours.** See the 2026-04-29 entry above.
+
+### 2026-04-28 — Accent reserved for layered emphasis
+
+**Decision.** Glyph col defaults (badge, pictogram, ring, stars) move
+from `accent` to `secondary` identity. Accent is reserved strictly for
+**layered emphasis**: roles that fire when something extra is happening
+(hover, selected, semantic row callouts, selection edge, status.info
+fallback).
+
+**Reasoning.** When accent doubled as both "the engagement color" and
+"the default fill for content-bearing glyph columns," the same hue did
+two unrelated jobs and the emphasis signal lost meaning — a hovered row
+read the same color as a regular badge two rows down.
+
+This decision survives the 2026-04-29 tertiary reversal unchanged. It's
+the most important constraint on what accent does.
+
+### Earlier — Slot-typed Tier 1 anchors retracted
+
+**Decision.** Do not introduce `slot.trend`, `slot.distribution`,
+`slot.range`, etc. as Tier 1 anchors keyed to recipe types.
+
+**Reasoning.** The two-knob theme architecture (identity + accent with
+cascade-pinning + element overrides) handles the cases the slot-typed
+proposal addressed. Reintroducing slot-typed anchors adds dimensionality
+that the cascade has to thread through every component binding for
+near-zero practical gain.
+
+This is documented in `engineering-priorities.md` §"Anti-priorities" as
+a binding constraint on future architecture work.
+
+---
+
+## See also
+
+- [Styling Cascade](styling-cascade.qmd) — the formal contract (what)
+- `?inspect_resolved` — the introspection API used in examples above
+- `R/utils-theme-validate.R` — construction-time validation invariants
+- `R/utils-theme-resolve.R` — the resolver that materializes T2/T3
+- `R/themes.R`, `R/themes-lotr.R` — preset themes as canonical examples

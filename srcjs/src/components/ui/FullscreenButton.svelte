@@ -18,6 +18,37 @@
   let backdrop: HTMLDivElement | null = null;
   let savedZoom = 1.0;
 
+  // visualViewport gives us the actual visible viewport in CSS pixels
+  // accounting for browser pinch-zoom / Cmd-+ display zoom. Falls back
+  // to window.innerWidth/Height in legacy environments where the API
+  // is missing (the values match in the absence of zoom).
+  function viewportWidth(): number {
+    return window.visualViewport?.width ?? window.innerWidth;
+  }
+  function viewportHeight(): number {
+    return window.visualViewport?.height ?? window.innerHeight;
+  }
+
+  // Compute the auto-magnify target zoom from the current viewport.
+  // Factored out so the visualViewport.resize listener can re-run it
+  // when the user changes browser zoom while fullscreen is active.
+  function autoMagnifyTarget(): number | null {
+    const naturalW = store.naturalContentWidth;
+    const naturalH = store.naturalContentHeight;
+    if (!(naturalW > 0 && naturalH > 0)) return null;
+    // Modal is left/right:4vw, max-height:80vh. Reserve a generous chrome
+    // budget on top of naturalH (title/subtitle/toolbar/header rule plus
+    // theme-specific display fonts — LOTR themes push this well past 150px)
+    // so the bumped zoom doesn't push total modal height past the 80vh cap
+    // and produce a scrollbar for content that would otherwise fit.
+    const availW = viewportWidth() * 0.92 - 32;
+    const availH = viewportHeight() * 0.80 - 32 - 200;
+    const fit = Math.min(availW / naturalW, availH / naturalH);
+    return Math.min(1.4, Math.max(savedZoom, fit));
+  }
+
+  let viewportListener: (() => void) | null = null;
+
   function resolveContainer(): HTMLElement | null {
     if (container) return container;
     const btn = document.activeElement;
@@ -50,21 +81,21 @@
     // down if zoom-bump would overflow, so the user's resize behavior stays
     // consistent across fullscreen toggles.
     savedZoom = store.zoom;
-    const naturalW = store.naturalContentWidth;
-    const naturalH = store.naturalContentHeight;
-    if (naturalW > 0 && naturalH > 0) {
-      // Modal is left/right:4vw, max-height:80vh. Reserve a generous chrome
-      // budget on top of naturalH (title/subtitle/toolbar/header rule plus
-      // theme-specific display fonts — LOTR themes push this well past 150px)
-      // so the bumped zoom doesn't push total modal height past the 80vh cap
-      // and produce a scrollbar for content that would otherwise fit.
-      const availW = window.innerWidth * 0.92 - 32;
-      const availH = window.innerHeight * 0.80 - 32 - 200;
-      const fit = Math.min(availW / naturalW, availH / naturalH);
-      const target = Math.min(1.4, Math.max(savedZoom, fit));
-      if (target > savedZoom + 0.01) {
-        store.setZoom(target);
-      }
+    const target = autoMagnifyTarget();
+    if (target !== null && target > savedZoom + 0.01) {
+      store.setZoom(target);
+    }
+
+    // Re-run auto-magnify when the user changes browser zoom while
+    // fullscreen is active (visualViewport.resize fires on Cmd+/Cmd-/
+    // pinch-zoom). Reads the live viewport so the table stays sized to
+    // the current visible CSS pixel area.
+    if (window.visualViewport) {
+      viewportListener = () => {
+        const t = autoMagnifyTarget();
+        if (t !== null) store.setZoom(t);
+      };
+      window.visualViewport.addEventListener("resize", viewportListener);
     }
   }
 
@@ -74,6 +105,12 @@
     const c = container;
     c?.classList.remove("tabviz-fullscreen");
     document.body.classList.remove("tabviz-fullscreen-active");
+
+    // Stop tracking visualViewport resize once the modal is closed.
+    if (viewportListener && window.visualViewport) {
+      window.visualViewport.removeEventListener("resize", viewportListener);
+      viewportListener = null;
+    }
 
     // Restore previous zoom (autoFit was never modified).
     store.setZoom(savedZoom);

@@ -10,12 +10,13 @@ web_theme_hobbit()
 A \link{WebTheme}.
 }
 \description{
-Cream parchment surface with a three-tier identity: warm-clay primary
+Cream parchment surface with a two-tier identity: warm-clay primary
 for headlines (Bag End brick), garden-green secondary for structural
 groupings (column bands, row bars, glyph fills — Sam's vegetables
-flanking the hearth), wheat-stubble-gold tertiary for chrome texture.
-Autumn-rust accent reserved for layered emphasis. Letterpress-era
-typography. Pairs with \code{\link[=col_pictogram]{col_pictogram()}} glyphs \code{"pipe"}, \code{"mushroom"},
+flanking the hearth — plus chrome texture, banding and hairlines
+green-tinted like garden hedgerow against parchment). Autumn-rust
+accent reserved for layered emphasis. Letterpress-era typography.
+Pairs with \code{\link[=col_pictogram]{col_pictogram()}} glyphs \code{"pipe"}, \code{"mushroom"},
 \code{"footprint"}, \code{"jar"}, \code{"pie"}, \code{"leaf"}.
 }
 \details{

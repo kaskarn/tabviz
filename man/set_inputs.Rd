@@ -16,8 +16,8 @@ The updated \link{WebTheme} (re-resolved).
 }
 \description{
 Any input field on \link{ThemeInputs} can be set. Identity tiers (with NA
-default mirroring up the chain): \code{primary}, \code{primary_deep}, \code{secondary},
-\code{secondary_deep}, \code{tertiary}, \code{tertiary_deep}. Engagement: \code{accent},
+default mirroring): \code{primary}, \code{primary_deep}, \code{secondary},
+\code{secondary_deep} (NA secondary mirrors primary). Engagement: \code{accent},
 \code{accent_deep}. Plus \verb{status_*}, \code{series_anchors}, \verb{font_*}, \code{neutral}.
 When a tier's seed changes and its \verb{_deep} companion wasn't also set
 explicitly, the \verb{_deep} resets to NA so resolve re-derives. Re-resolves

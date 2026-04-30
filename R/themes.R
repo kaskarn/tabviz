@@ -8,9 +8,9 @@
 # the design space we actually care about: a clean general-purpose default
 # (Cochrane), two journal-publication identities (Lancet, JAMA), and a single
 # dark-mode option. All presets here are mono-identity (primary set, secondary
-# and tertiary mirror primary via the resolver's mirror chain). The orthogonal
-# accent axis is exercised independently. Two/three-color editorial themes
-# can ship as separate presets (see themes-lotr.R for examples).
+# mirrors primary via the resolver's mirror chain). The orthogonal accent
+# axis is exercised independently. Two-color editorial themes can ship as
+# separate presets (see themes-lotr.R for examples).
 
 #' Cochrane theme (v2)
 #'
@@ -26,12 +26,12 @@ web_theme_cochrane <- function() {
     name = "cochrane",
     inputs = ThemeInputs(
       # Slate-cool neutrals; the alt-row partner picks up a faint teal tint
-      # via the tertiary-tinted surface.muted derivation (mirrors primary
+      # via the secondary-tinted surface.muted derivation (mirrors primary
       # in this mono-identity preset).
       neutral = c("#FFFFFF", "#FFFFFF", "#F2F4F7", "#5B6470", "#1F2937"),
       # Cochrane heritage teal as primary identity. primary_deep auto-derives
-      # to a darker, richer teal (15% OKLCH-darken). Secondary and tertiary
-      # mirror primary (mono identity).
+      # to a darker, richer teal (15% OKLCH-darken). Secondary mirrors
+      # primary in this mono-identity preset.
       primary = "#0099CC",
       # Warm coral as the independent accent — a deliberate counterpoint to
       # the cool primary. Reserved for layered emphasis (hover/selected,
@@ -87,7 +87,7 @@ web_theme_jama <- function() {
   resolve_theme(WebTheme(
     name = "jama",
     inputs = ThemeInputs(
-      # Pure white canvas; surface.muted picks up barely any tertiary tint
+      # Pure white canvas; surface.muted picks up barely any secondary tint
       # because primary = black (the 3% mix is invisible).
       neutral = c("#FFFFFF", "#FFFFFF", "#F9FAFB", "#555555", "#000000"),
       primary      = "#000000",
@@ -125,10 +125,17 @@ web_theme_dark <- function() {
     inputs = ThemeInputs(
       neutral = c("#1E1E2E", "#1E1E2E", "#232334", "#6C7086", "#CDD6F4"),
       primary = "#89B4FA",
+      # primary_deep is pinned (NOT auto-derived) because the dark theme
+      # uses primary_deep as the BOLD-MODE HEADER BAND with light text on
+      # top. A 15%-darken of #89B4FA only reaches #5C85C8, which doesn't
+      # carry enough contrast against the light Catppuccin text (#CDD6F4)
+      # to clear WCAG AA — construction-time validation rejects it.
+      # Pinning to a much darker navy (#2E5290) gives ~5.3:1 contrast and
+      # reads as a properly-deep companion to the bright pastel primary.
+      primary_deep = "#2E5290",
       # accent_deep auto-derives via 15% OKLCH-darken; bright pastel pink
-      # darkens to a slightly more saturated version. primary_deep similarly
-      # auto-darkens — the resulting tone reads as "deeper blue" against
-      # the dark canvas.
+      # darkens to a slightly more saturated version that still pairs
+      # against the light text used elsewhere.
       accent  = "#F5C2E7",
       # Catppuccin-Mocha-inspired qualitative palette: blue / green /
       # peach / pink / lavender.

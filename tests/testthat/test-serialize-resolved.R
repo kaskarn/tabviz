@@ -59,12 +59,14 @@ test_that("spacing serializes the density-derived fields", {
   for (v in out$spacing) expect_type(v, "double")
 })
 
-test_that("header cluster carries both variants + text", {
+test_that("header cluster carries all three variants + text", {
   out <- serialize_theme(WebTheme())
-  expect_named(out$header, c("light", "bold", "text"))
+  expect_named(out$header, c("light", "tint", "bold", "text"))
   expect_named(out$header$light, c("bg", "fg", "rule"))
+  expect_named(out$header$tint,  c("bg", "fg", "rule"))
   expect_named(out$header$bold,  c("bg", "fg", "rule"))
   expect_match(out$header$light$bg, "^#")
+  expect_match(out$header$tint$bg,  "^#")
   expect_match(out$header$bold$bg,  "^#")
 })
 

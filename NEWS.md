@@ -1,5 +1,61 @@
 # tabviz (development)
 
+## Theming cascade rework (BREAKING — package is experimental)
+
+* **`tertiary` and `tertiary_deep` removed from `ThemeInputs`.** Identity is
+  now a 2-tier mirror chain (primary + secondary, with secondary mirroring
+  primary when NA) plus orthogonal `accent`. Chrome texture (surface.muted,
+  divider.subtle/strong, alt-row banding, gridline, axis/tick) migrated to
+  read from `secondary_deep` at the same mix strengths. Mono themes
+  visually unchanged; two-color themes get coordinated structure + chrome
+  under a single axis. See the new
+  [Theming Manifesto](https://kaskarn.github.io/tabviz/concepts/theming-manifesto.html)
+  for the postmortem on the 24-hour tertiary arc.
+* **`slot_style` lifted to T1.** New `ThemeInputs` enum:
+  `"fill_with_darker_stroke"` (default — current behavior) | `"flat_fill"` |
+  `"outlined"`. Centralizes the convention previously hardcoded inside
+  `derive_slot_bundle()`.
+* **`header_style` gains a `"tint"` variant.** Was `{light, bold}`; now
+  `{light, tint, bold}`. The new `tint` band is a 12% mix of `primary_deep`
+  into `surface.base` — middle ground between `light` (bare surface) and
+  `bold` (full primary_deep band). `header_style` also gates the row-group
+  L1 bg strength: 16% under `light`, 24% under `tint`/`bold`.
+* **Construction-time contrast validation.** `resolve_theme()` runs a
+  validation pass on the fully-resolved theme. WCAG AA Large (3.0) for
+  chrome bold text; AA Normal (4.5) for body text. Failures abort at
+  construction (not at render) with a structured `cli` message naming the
+  broken invariant *and* the cascade path the user can override to fix it.
+  Tests using synthetic colors can opt out via `.validate = FALSE`.
+* **`inspect_resolved()` introspection API.** New exported function:
+  `inspect_resolved(theme, "header.bold.bg")` returns value + cascade chain
+  + derivation text for ~25 well-known leaves. Useful for debugging custom
+  themes; same registry shape feeds the widget's Theme tab tooltips.
+* **Theme tab redesign in the widget panel.** Three explicit zones
+  (Identity / Roles / Components) with tagged headers and accent-rule
+  separators, plus segmented enum pickers for `slot_style` and
+  `header_style` in the Identity zone.
+* **Preset migrations.** Dwarven / Elvish / Hobbit rebalanced as 2-color
+  (third pin folded into the secondary cascade). Dark theme's
+  `primary_deep` pinned darker (#2E5290 vs auto-derived #5C85C8) — the new
+  contrast validator caught the original auto-derived value at 2.57:1
+  against its inverse text. Dwarven `secondary_deep` darkened to #8A6628
+  to clear the new validator floor.
+
+## Lifecycle
+
+* `lifecycle::signal_stage("experimental")` retained for this release.
+  Planned to drop **post-CRAN-stabilization** — once the cascade rework
+  has settled in real usage and CRAN check is clean across major
+  platforms, the next release moves the package out of experimental.
+
+## Other improvements
+
+* **Fullscreen widget honors browser zoom.** `FullscreenButton` now reads
+  `window.visualViewport.width/height` (zoom-aware) instead of
+  `window.innerWidth/innerHeight`, and registers a `visualViewport.resize`
+  listener that retriggers auto-magnify when the user changes browser
+  zoom while fullscreen is active.
+
 ## New column types
 
 * **`col_pictogram()`** — repeat a glyph proportional to a numeric value.

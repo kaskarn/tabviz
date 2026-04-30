@@ -1,9 +1,11 @@
-# 3-tier theming system for tabviz (v2).
+# 3-tier theming system for tabviz.
 #
-# Defines the v2 theme classes alongside v1 (R/classes-theme.R). v2 adds a
-# strict 3-tier cascade: ThemeInputs (T1) -> semantic roles (T2) -> component
-# clusters (T3). Chrome and data tokens are parallel hierarchies that share
-# only Tier 1.
+# Defines a strict 3-tier cascade: ThemeInputs (T1) -> semantic roles (T2)
+# -> component clusters (T3). T1 carries a 2-tier identity mirror chain
+# (primary + secondary) plus an orthogonal accent axis; T2/T3 derive from
+# T1 via resolve_theme(). Chrome and data tokens are parallel hierarchies
+# that share only Tier 1. See vignettes/theming.Rmd for the manifesto and
+# vignettes/cascade.Rmd for the precise spec.
 #
 # PR 3 lands resolve_theme() which fills NA-default fields from upstream
 # inputs (OKLCH derivations). PR 4 ports the 9 presets to construct via
@@ -46,16 +48,23 @@ ThemeInputs <- new_class(
     neutral = new_property(class_character,
       default = c("#FFFFFF", "#F7F8FA", "#EDEFF3", "#A8AEB8", "#2A2F38")),
 
-    # Identity (3-tier mirroring chain). Each tier carries a hex + optional
-    # _deep companion. NA flows tertiary -> secondary -> primary at resolve
-    # time; each _deep auto-derives via oklch_darken(seed, 0.15) when NA.
-    # Mono themes set only primary; two/three-color themes pin the others.
+    # Identity (2-tier mirroring chain). Each tier carries a hex + optional
+    # _deep companion. NA flows secondary -> primary at resolve time;
+    # primary_deep auto-derives via oklch_darken(primary, 0.15) when NA, and
+    # secondary_deep mirrors primary_deep when secondary itself is NA, else
+    # auto-derives from secondary the same way. Mono themes set only
+    # primary; two-color editorial themes pin secondary as well.
+    #
+    # Secondary owns structure: bold col-group band, row-group L1/L2/L3 bg,
+    # glyph col defaults (badge/pictogram/ring/stars), AND chrome texture
+    # (surface.muted, divider.subtle, divider.strong, alt-row banding,
+    # gridline, axis/tick). One axis, one role: structural identity.
+    # Tertiary was removed 2026-04-29 — its sole job (chrome) collapsed
+    # onto secondary. See vignettes/theming.Rmd decision log.
     primary        = new_property(class_character, default = "#0891b2"),
     primary_deep   = new_property(class_character, default = NA_character_),
     secondary      = new_property(class_character, default = NA_character_),
     secondary_deep = new_property(class_character, default = NA_character_),
-    tertiary       = new_property(class_character, default = NA_character_),
-    tertiary_deep  = new_property(class_character, default = NA_character_),
 
     # Engagement (orthogonal to identity). Reserved for layered emphasis:
     # hover, selected, semantic row callouts, selection edge, status.info
@@ -81,13 +90,28 @@ ThemeInputs <- new_class(
     font_body    = new_property(class_character,
       default = "system-ui, -apple-system, sans-serif"),
     font_display = new_property(class_character, default = NA_character_),
-    font_mono    = new_property(class_character, default = NA_character_)
+    font_mono    = new_property(class_character, default = NA_character_),
+
+    # Slot rendering style — how each SlotBundle's fill/stroke pair relate.
+    # Centralizes a convention that previously lived implicitly inside
+    # derive_slot_bundle().
+    #   "fill_with_darker_stroke" (default): fill = anchor, stroke =
+    #     oklch_darken(anchor, 0.10). The publication-default — every mark
+    #     is a filled shape with a darker outline for contrast and edge
+    #     definition.
+    #   "flat_fill": stroke matches fill (no contrast pairing). Reads as
+    #     a single tone — best on light, dense plots where outlines would
+    #     visually crowd small marks.
+    #   "outlined": fill leans toward surface, stroke carries the anchor.
+    #     Outline-only marks — useful in editorial themes that want
+    #     skeletal-feel data marks against a textured surface.
+    slot_style = new_property(class_character,
+      default = "fill_with_darker_stroke")
   ),
   validator = function(self) {
     invalid <- character()
     color_props <- c("primary", "primary_deep",
                      "secondary", "secondary_deep",
-                     "tertiary", "tertiary_deep",
                      "accent", "accent_deep",
                      "status_positive", "status_negative", "status_warning",
                      "status_info")
@@ -112,6 +136,14 @@ ThemeInputs <- new_class(
     if (length(invalid) > 0L) {
       return(paste("Invalid hex color values:", paste(invalid, collapse = ", ")))
     }
+    if (!self@slot_style %in%
+        c("fill_with_darker_stroke", "flat_fill", "outlined")) {
+      return(paste0(
+        "slot_style must be one of: ",
+        "'fill_with_darker_stroke', 'flat_fill', 'outlined' — got '",
+        self@slot_style, "'"
+      ))
+    }
     NULL
   }
 )
@@ -121,7 +153,18 @@ ThemeInputs <- new_class(
 #'
 #' These compose freely. `density` drives the spacing scale; `header_style`
 #' and `first_column_style` flip the corresponding component clusters between
-#' their light/bold or default/bold variants.
+#' their three header variants or default/bold first-column variants.
+#'
+#' `header_style` accepts:
+#'   * `"light"` — surface-base bg, content-primary text, divider.strong
+#'     rule. The publication default; minimal chrome.
+#'   * `"tint"` — light primary-tinted bg (~12% mix of primary_deep into
+#'     surface.base), content-primary text, divider.strong rule. A
+#'     middle ground between light and bold; useful for editorial section
+#'     headers that should announce themselves without going full inverse.
+#'   * `"bold"` — primary_deep bg, content.inverse text, component-local
+#'     rule (40% mix of inverse into bg). Maximum chrome; reads as a
+#'     branded band.
 #'
 #' @usage NULL
 #' @export
@@ -136,8 +179,8 @@ ThemeVariants <- new_class(
     if (!self@density %in% c("compact", "comfortable", "spacious")) {
       return("density must be one of 'compact', 'comfortable', 'spacious'")
     }
-    if (!self@header_style %in% c("light", "bold")) {
-      return("header_style must be 'light' or 'bold'")
+    if (!self@header_style %in% c("light", "tint", "bold")) {
+      return("header_style must be one of 'light', 'tint', 'bold'")
     }
     if (!self@first_column_style %in% c("default", "bold")) {
       return("first_column_style must be 'default' or 'bold'")
@@ -404,7 +447,7 @@ HeaderVariant <- new_class(
   validator = make_color_validator(c("bg", "fg", "rule"))
 )
 
-#' HeaderCluster: column-header bindings with light/bold variants.
+#' HeaderCluster: column-header bindings with light/tint/bold variants.
 #'
 #' Active variant is selected by `theme@variants@header_style`.
 #'
@@ -414,6 +457,7 @@ HeaderCluster <- new_class(
   "HeaderCluster",
   properties = list(
     light = new_property(HeaderVariant, default = HeaderVariant()),
+    tint  = new_property(HeaderVariant, default = HeaderVariant()),
     bold  = new_property(HeaderVariant, default = HeaderVariant()),
     text  = new_property(TextRole,      default = TextRole())
   )
@@ -429,6 +473,7 @@ ColumnGroupCluster <- new_class(
   "ColumnGroupCluster",
   properties = list(
     light = new_property(HeaderVariant, default = HeaderVariant()),
+    tint  = new_property(HeaderVariant, default = HeaderVariant()),
     bold  = new_property(HeaderVariant, default = HeaderVariant()),
     text  = new_property(TextRole,      default = TextRole())
   )

@@ -14,7 +14,7 @@
       font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
       font-size="16px"
       font-weight="600"
-      fill="#5C85C8">Dark Theme Export</text>
+      fill="#2E5290">Dark Theme Export</text>
 <line x1="12" x2="488"
       y1="60" y2="60"
       stroke="#45475A" stroke-width="2"/>
@@ -34,10 +34,10 @@
         stroke="#45475A" stroke-width="2"/>
 <rect x="12" y="92"
             width="476" height="24"
-            fill="#222233"/>
+            fill="#212132"/>
 <rect x="12" y="140"
             width="476" height="24"
-            fill="#222233"/>
+            fill="#212132"/>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="92" y2="188"
     stroke="#898EA5" stroke-width="1" stroke-opacity="0.6" stroke-dasharray="6,4"/>
 
@@ -81,7 +81,7 @@
       font-size="12px"
       font-weight="400"
       font-style="normal"
-      fill="#868DA9">0.60</text>
+      fill="#8188A3">0.60</text>
 <line x1="230.0006922796589" x2="230.0006922796589" y1="0" y2="4"
       stroke="#45475A" stroke-width="1"/>
 <text x="230.0006922796589" y="16" text-anchor="middle"
@@ -89,14 +89,14 @@
       font-size="12px"
       font-weight="400"
       font-style="normal"
-      fill="#868DA9">1.00</text>
+      fill="#8188A3">1.00</text>
 <text x="192" y="28"
       text-anchor="middle"
       font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
       font-size="12px"
       font-weight="400"
       font-style="normal"
-      fill="#868DA9">Effect</text></g>
+      fill="#8188A3">Effect</text></g>
 <text class="cell-text" x="22" y="104"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"

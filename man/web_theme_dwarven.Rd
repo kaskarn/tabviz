@@ -10,13 +10,13 @@ web_theme_dwarven()
 A \link{WebTheme}.
 }
 \description{
-Deep cavern surface with a three-tier identity: hammered-bronze primary
+Deep cavern surface with a two-tier identity: hammered-bronze primary
 for headlines, warm-gold secondary for structural groupings (column
-bands, row bars, glyph fills), stone-veined-umber tertiary for chrome
-texture. Forge-ember accent reserved for layered emphasis (hover,
-selected, semantic accent rows). Runic-inspired typography. Pairs well
-with \code{\link[=col_pictogram]{col_pictogram()}} using \code{glyph = "pickaxe"}, \code{"anvil"}, \code{"gem"},
-\code{"ale_mug"}, or \code{"rune"}.
+bands, row bars, glyph fills, plus chrome texture — banding, hairlines,
+gridlines all gold-tinted). Forge-ember accent reserved for layered
+emphasis (hover, selected, semantic accent rows). Runic-inspired
+typography. Pairs well with \code{\link[=col_pictogram]{col_pictogram()}} using \code{glyph = "pickaxe"},
+\code{"anvil"}, \code{"gem"}, \code{"ale_mug"}, or \code{"rune"}.
 }
 \details{
 Loads \code{UnifrakturMaguntia} (display) and \verb{EB Garamond} (body) from

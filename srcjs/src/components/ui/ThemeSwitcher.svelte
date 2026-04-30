@@ -102,25 +102,24 @@
     return (availableThemes as FlatThemes)[name];
   }
 
-  // Extract identity-triad + bg/fg for a theme so the dropdown row can
-  // show a five-band color preview alongside the label. The identity triad
-  // mirrors up the chain (tertiary→secondary→primary) so for many themes
-  // the three bands collapse to identical color — that's expected and
-  // correctly reflects the theme's chosen identity character. Falls back
-  // to muted neutrals when a theme doesn't carry resolved values.
+  // Extract identity pair + bg/fg for a theme so the dropdown row can
+  // show a four-band color preview alongside the label. The identity pair
+  // mirrors up the chain (secondary→primary) so for mono themes the two
+  // bands collapse to identical color — that's expected and correctly
+  // reflects the theme's chosen identity character. Falls back to muted
+  // neutrals when a theme doesn't carry resolved values.
   function themeColors(name: string): {
-    primary: string; secondary: string; tertiary: string;
+    primary: string; secondary: string;
     accent: string; background: string; foreground: string;
   } {
     const t = lookupTheme(name);
     const inputs = t?.inputs ?? {};
     const primary    = inputs.primary    ?? t?.surface?.base    ?? "#cbd5e1";
     const secondary  = inputs.secondary  ?? primary;
-    const tertiary   = inputs.tertiary   ?? secondary;
     const accent     = inputs.accent     ?? "#94a3b8";
     const background = t?.surface?.base    ?? "#ffffff";
     const foreground = t?.content?.primary ?? "#1a1a1a";
-    return { primary, secondary, tertiary, accent, background, foreground };
+    return { primary, secondary, accent, background, foreground };
   }
 
   // Theme name renders in the theme's own display face when available, so
@@ -267,7 +266,6 @@
             <span class="swatch-strip" aria-hidden="true">
               <span class="swatch" style:background={colors.primary}></span>
               <span class="swatch" style:background={colors.secondary}></span>
-              <span class="swatch" style:background={colors.tertiary}></span>
               <span class="swatch" style:background={colors.accent}></span>
               <span
                 class="aa-tile"
@@ -394,12 +392,12 @@
     flex-shrink: 0;
   }
 
-  /* Identity-triad + accent + 'Aa' contrast tile preview chip — three
-     identity swatches (primary | secondary | tertiary), then accent,
-     followed by an "Aa" glyph rendered in the theme's foreground over
-     its background in the theme's display face. Conveys color
-     identity AND callout color AND text-on-bg contrast AND typographic
-     flavor in a single compact chip. */
+  /* Identity-pair + accent + 'Aa' contrast tile preview chip — two
+     identity swatches (primary | secondary), then accent, followed by
+     an "Aa" glyph rendered in the theme's foreground over its background
+     in the theme's display face. Conveys color identity AND callout
+     color AND text-on-bg contrast AND typographic flavor in a single
+     compact chip. */
   .swatch-strip {
     display: inline-flex;
     flex-shrink: 0;
