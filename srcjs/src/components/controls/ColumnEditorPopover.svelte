@@ -898,6 +898,7 @@
         {/if}
 
         {#if selectedType === "forest"}
+          <!-- Format zone: highest-impact knobs always visible. -->
           <div class="editor-row">
             <label class="editor-field">
               <span>Scale</span>
@@ -924,34 +925,38 @@
               placeholder="Effect"
             />
           </label>
-          <div class="editor-row">
+          <!-- Advanced zone: range, ticks, gridlines, axis visibility. -->
+          <details class="editor-advanced">
+            <summary>Advanced</summary>
+            <div class="editor-row">
+              <label class="editor-field">
+                <span>Axis min</span>
+                <input type="number" step="any" bind:value={optForestAxisRangeMin} placeholder="auto" />
+              </label>
+              <label class="editor-field">
+                <span>Axis max</span>
+                <input type="number" step="any" bind:value={optForestAxisRangeMax} placeholder="auto" />
+              </label>
+            </div>
             <label class="editor-field">
-              <span>Axis min</span>
-              <input type="number" step="any" bind:value={optForestAxisRangeMin} placeholder="auto" />
+              <span>Axis ticks</span>
+              <input
+                type="text"
+                bind:value={optForestAxisTicks}
+                placeholder="auto, or e.g. 0.5, 1, 2"
+              />
             </label>
-            <label class="editor-field">
-              <span>Axis max</span>
-              <input type="number" step="any" bind:value={optForestAxisRangeMax} placeholder="auto" />
-            </label>
-          </div>
-          <label class="editor-field">
-            <span>Axis ticks</span>
-            <input
-              type="text"
-              bind:value={optForestAxisTicks}
-              placeholder="auto, or e.g. 0.5, 1, 2"
-            />
-          </label>
-          <div class="check-row">
-            <label class="editor-check">
-              <input type="checkbox" bind:checked={optForestShowAxis} />
-              <span>Show axis</span>
-            </label>
-            <label class="editor-check">
-              <input type="checkbox" bind:checked={optForestAxisGridlines} />
-              <span>Gridlines</span>
-            </label>
-          </div>
+            <div class="check-row">
+              <label class="editor-check">
+                <input type="checkbox" bind:checked={optForestShowAxis} />
+                <span>Show axis</span>
+              </label>
+              <label class="editor-check">
+                <input type="checkbox" bind:checked={optForestAxisGridlines} />
+                <span>Gridlines</span>
+              </label>
+            </div>
+          </details>
         {/if}
 
         {#if selectedType === "sparkline"}
@@ -1225,6 +1230,45 @@
   .check-row {
     display: flex;
     gap: 14px;
+  }
+
+  /* Advanced disclosure — collapsed by default, opens to show
+     less-frequently-tuned knobs. Used per column type to keep the
+     Format zone compact while leaving every R-side arg reachable.
+     Pattern introduced in the Phase C (column editor v3) MVP. */
+  .editor-advanced {
+    margin-top: 6px;
+    border-top: 1px dashed color-mix(in srgb, var(--tv-border, #e2e8f0) 80%, transparent);
+    padding-top: 6px;
+  }
+  .editor-advanced > summary {
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tv-text-muted, #64748b);
+    list-style: none;
+    padding: 2px 0;
+    user-select: none;
+  }
+  .editor-advanced > summary::-webkit-details-marker {
+    display: none;
+  }
+  .editor-advanced > summary::before {
+    content: "▸ ";
+    display: inline-block;
+    transition: transform 0.15s ease;
+    color: color-mix(in srgb, var(--tv-text-muted, #64748b) 70%, transparent);
+  }
+  .editor-advanced[open] > summary::before {
+    transform: rotate(90deg);
+  }
+  .editor-advanced > summary:hover {
+    color: var(--tv-fg, #1a1a1a);
+  }
+  .editor-advanced > *:not(summary) {
+    margin-top: 6px;
   }
 
   /* Compact single-line "Header: [input] [✓show]" row. */

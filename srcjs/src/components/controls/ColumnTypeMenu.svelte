@@ -63,9 +63,11 @@
       items: [
         { kind: "leaf", key: "number", label: "Number", type: "numeric" },
         { kind: "leaf", key: "integer", label: "Integer", type: "numeric", seedOptions: { numeric: { decimals: 0 } } },
+        { kind: "leaf", key: "compact_int", label: "Compact int (1.2k)", type: "numeric", seedOptions: { numeric: { decimals: 0, abbreviate: true } } },
         { kind: "leaf", key: "percent", label: "Percent", type: "numeric", seedOptions: { numeric: { suffix: "%" } } },
         { kind: "leaf", key: "currency", label: "Currency", type: "numeric", seedOptions: { numeric: { prefix: "$", decimals: 2 } } },
         { kind: "leaf", key: "pvalue", label: "P-value", type: "pvalue" },
+        { kind: "leaf", key: "pvalue_stars", label: "P-value w/ stars", type: "pvalue", seedOptions: { pvalue: { stars: true } } },
       ],
     },
     {
@@ -90,6 +92,8 @@
             { kind: "leaf", key: "progress", label: "Fill bar", type: "progress" },
             { kind: "leaf", key: "sparkline", label: "Sparkline", type: "sparkline" },
             { kind: "leaf", key: "heatmap", label: "Heatmap", type: "heatmap" },
+            { kind: "leaf", key: "heatmap_diverging", label: "Diverging heatmap", type: "heatmap", seedOptions: { heatmap: { palette: "diverging" } } },
+            { kind: "leaf", key: "heatmap_sequential", label: "Sequential heatmap", type: "heatmap", seedOptions: { heatmap: { palette: "sequential" } } },
             { kind: "leaf", key: "stars", label: "Stars", type: "stars" },
             { kind: "leaf", key: "pictogram", label: "Pictogram", type: "pictogram" },
             { kind: "leaf", key: "ring", label: "Ring", type: "ring" },
@@ -99,6 +103,7 @@
           label: "Complex",
           items: [
             { kind: "leaf", key: "forest", label: "Forest plot", type: "forest" },
+            { kind: "leaf", key: "forest_log", label: "Forest plot (log)", type: "forest", seedOptions: { forest: { scale: "log", nullValue: 1 } } },
           ],
         },
       ],

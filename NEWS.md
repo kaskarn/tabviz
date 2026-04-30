@@ -1,5 +1,23 @@
 # tabviz (development)
 
+## Column editor — Phase C MVP (v0.27.1)
+
+* **`ColumnTypeMenu` seed presets expanded.** Five new insert-time
+  presets: `Compact int (1.2k)`, `P-value w/ stars`, `Diverging
+  heatmap`, `Sequential heatmap`, `Forest plot (log)`. Each pre-fills
+  the matching `col_*` options so the inserted column lands ready to
+  use, no popover round-trip needed.
+* **Advanced disclosure on the column editor's busiest type
+  (`viz_forest`).** Split into Format zone (Scale, Null value, Axis
+  label — always visible) + Advanced disclosure (Axis min/max, Axis
+  ticks, Show axis, Gridlines — collapsed by default). New
+  `.editor-advanced` CSS is reusable for the next types to curate.
+* **Note: this is a scoped MVP.** The full schema-driven registry
+  rewrite (Phase C in the broader plan) is intentionally deferred
+  pending editorial sign-off on field curation — the previous
+  schema-driven attempt was reverted in commit 2fa6ed8 because it
+  form-dumped every R-side arg into the popover.
+
 ## Theming cascade rework (BREAKING — package is experimental)
 
 * **`tertiary` and `tertiary_deep` removed from `ThemeInputs`.** Identity is
