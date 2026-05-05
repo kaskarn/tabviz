@@ -20,3 +20,4 @@
 ^\.quarto$
 ^CRAN-SUBMISSION$
 ^tests/visual$
+^tests/manual$

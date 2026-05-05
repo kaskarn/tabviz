@@ -11,13 +11,13 @@ their three header variants or default/bold first-column variants.
 \details{
 \code{header_style} accepts:
 \itemize{
-\item \code{"light"} — surface-base bg, content-primary text, divider.strong
+\item \code{"light"} -- surface-base bg, content-primary text, divider.strong
 rule. The publication default; minimal chrome.
-\item \code{"tint"} — light primary-tinted bg (~12\% mix of primary_deep into
+\item \code{"tint"} -- light primary-tinted bg (~12\% mix of primary_deep into
 surface.base), content-primary text, divider.strong rule. A
 middle ground between light and bold; useful for editorial section
 headers that should announce themselves without going full inverse.
-\item \code{"bold"} — primary_deep bg, content.inverse text, component-local
+\item \code{"bold"} -- primary_deep bg, content.inverse text, component-local
 rule (40\% mix of inverse into bg). Maximum chrome; reads as a
 branded band.
 }

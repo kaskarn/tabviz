@@ -1,8 +1,16 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
-  import { exportToSVG, exportToPNG, triggerDownload, generateFilename } from "$lib/export";
+  import {
+    exportToSVG,
+    exportToPNG,
+    triggerDownload,
+    tryShowSaveFilePicker,
+    downloadsLikelyBlocked,
+    generateFilename,
+  } from "$lib/export";
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
+  import ExportFallbackModal from "./ExportFallbackModal.svelte";
 
   interface Props {
     store: ForestStore;
@@ -14,8 +22,37 @@
   let isExporting = $state(false);
   let triggerEl: HTMLButtonElement | null = $state(null);
 
+  // Fallback modal state — shown when downloads are blocked at the host level
+  // (VSCode webview, sandboxed iframes without allow-downloads).
+  let fallbackOpen = $state(false);
+  let fallbackFormat = $state<"svg" | "png">("svg");
+  let fallbackPayload = $state<string | Blob>("");
+  let fallbackFilename = $state("");
+
   function closeDropdown() {
     dropdownOpen = false;
+  }
+
+  /**
+   * Layered save: File System Access API → anchor.click() → fallback modal.
+   *
+   * The anchor-click failure is silent in webviews, so we can't fall through
+   * based on outcome — we feature-test the environment up front and skip
+   * tier 2 when downloads are likely blocked. Modal is the always-safe floor.
+   */
+  async function saveBlob(blob: Blob, filename: string, mimeType: string, format: "svg" | "png", svgSource?: string) {
+    const picked = await tryShowSaveFilePicker(blob, filename, mimeType);
+    if (picked === "saved" || picked === "cancelled") return;
+
+    if (!downloadsLikelyBlocked()) {
+      triggerDownload(blob, filename);
+      return;
+    }
+
+    fallbackFormat = format;
+    fallbackPayload = format === "svg" && svgSource !== undefined ? svgSource : blob;
+    fallbackFilename = filename;
+    fallbackOpen = true;
   }
 
   async function handleExportSVG() {
@@ -28,7 +65,8 @@
       const dimensions = store.getExportDimensions();
       const svgString = exportToSVG(activeSpec, dimensions);
       const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-      triggerDownload(blob, generateFilename("svg"));
+      const filename = generateFilename("svg");
+      await saveBlob(blob, filename, "image/svg+xml", "svg", svgString);
     } catch (error) {
       console.error("Failed to export SVG:", error);
     } finally {
@@ -45,7 +83,8 @@
       isExporting = true;
       const dimensions = store.getExportDimensions();
       const blob = await exportToPNG(activeSpec, dimensions, 2);
-      triggerDownload(blob, generateFilename("png"));
+      const filename = generateFilename("png");
+      await saveBlob(blob, filename, "image/png", "png");
     } catch (error) {
       console.error("Failed to export PNG:", error);
     } finally {
@@ -113,6 +152,14 @@
     </Portal>
   {/if}
 </div>
+
+<ExportFallbackModal
+  open={fallbackOpen}
+  format={fallbackFormat}
+  payload={fallbackPayload}
+  filename={fallbackFilename}
+  onclose={() => (fallbackOpen = false)}
+/>
 
 <style>
   .download-button-wrapper {

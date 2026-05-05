@@ -1,5 +1,34 @@
 # tabviz (development)
 
+## IDE download button -- layered fallback (v0.27.5)
+
+* **Download button now degrades gracefully in IDE viewers.** The previous
+  implementation used the standard `URL.createObjectURL` + anchor-`download`
+  pattern, which is silently no-op'd by VSCode's webview (CSP/sandbox at
+  the host level) and by sandboxed iframes lacking `allow-downloads`.
+  Users reported the button "looking good" but producing no file.
+* **Three-tier flow in `DownloadButton.svelte`:**
+  1. `window.showSaveFilePicker()` (File System Access API) when available
+     -- works in some restricted contexts where anchor-click silently fails;
+  2. existing `triggerDownload()` anchor-click path, skipped up front when
+     the environment looks blocked (UA contains `vscode`, or
+     `frameElement.sandbox` is set without `allow-downloads`);
+  3. new `ExportFallbackModal` that shows the SVG source (with copy-to-
+     clipboard) or PNG preview (with `ClipboardItem` image-write), plus
+     a one-line pointer at `save_plot(x, "...")` for the scripted path.
+  Modal is the always-safe floor: detection is heuristic, but the modal
+  itself is non-destructive.
+* **No new R API.** `save_plot()` already covers the scripted export path
+  (V8 + rsvg pipeline, handles `WebSpec` / htmlwidget / `SplitForest`);
+  the modal hint points at it directly rather than growing CRAN surface.
+* **Manual repro harness at `tests/manual/sandbox-download.R`.** Generates
+  an HTML page that iframes a tabviz example with
+  `sandbox="allow-scripts allow-same-origin"`, letting the modal flow be
+  exercised in any browser without an IDE. Build artifacts gitignored.
+* **Stragglers from v0.27.4 ASCII normalization.** Six `man/*.Rd` files
+  that still contained an em dash (`---`) or right arrow have been
+  regenerated to ASCII, completing the v0.27.4 sweep.
+
 ## R CMD check clean (v0.27.4)
 
 * **Non-ASCII WARNING fixed.** The cascade rework introduced em dashes

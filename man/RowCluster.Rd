@@ -10,8 +10,8 @@ width controls the accent bar on selected rows.
 \details{
 Semantic-token bundles (emphasis/muted/accent/bold/fill) are
 RowSemantic visual presets. The painter UI applies one of them to a row
-or cell at a time; data columns (\code{row_emphasis_col}, \code{row_bold_col}, …)
+or cell at a time; data columns (\code{row_emphasis_col}, \code{row_bold_col}, ...)
 do the same per-row from the data. Each bundle is a flat list of visual
-overrides — bg / fg / border / marker_fill / font_weight / font_style —
+overrides -- bg / fg / border / marker_fill / font_weight / font_style --
 that the renderer paints when the row's flag fires.
 }

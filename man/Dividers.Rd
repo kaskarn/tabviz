@@ -9,5 +9,5 @@ rules, group rules, and the forest-plot axis line / tick / reference
 lines on light surfaces. Rules sitting on dark bold-mode bands
 (\code{header.bold}, \code{column_group.bold}) are derived per-cluster at resolve
 time as \verb{mix(content.inverse, <cluster-bg>, 0.4)} so each contrasts
-against its own band — there is no global "strong-on-dark" token.
+against its own band -- there is no global "strong-on-dark" token.
 }

@@ -27,7 +27,7 @@ multiple widgets on a page).
 \details{
 Theme authors are still responsible for referencing the loaded family
 in \code{font_body} / \code{font_display} (etc.). \code{web_font()} only declares the
-load — it doesn't change the theme's font stacks.
+load -- it doesn't change the theme's font stacks.
 
 Note: PNG/SVG export through \code{rsvg} does not fetch webfonts. The
 system fallback stack will be used. For high-fidelity offline export,

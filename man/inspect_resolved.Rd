@@ -9,7 +9,7 @@ inspect_resolved(theme, path)
 \arguments{
 \item{theme}{A resolved \link{WebTheme}.}
 
-\item{path}{Character — the leaf address as a dotted string,
+\item{path}{Character -- the leaf address as a dotted string,
 e.g. \code{"header.bold.bg"}, \code{"divider.strong"}, \code{"accent.muted"}.}
 }
 \value{
@@ -24,12 +24,12 @@ A list with:
 \description{
 Returns the resolved hex value alongside the cascade path and
 derivation rule that produced it. Useful for debugging themes
-(custom or preset) — answers "why is this hex this value?" by
+(custom or preset) -- answers "why is this hex this value?" by
 showing the upstream T1 inputs and the derivation formula.
 }
 \details{
 Only well-known leaves are introspected (see internal
-\code{RESOLVED_LEAVES} registry — covers headers, column/row groups,
+\code{RESOLVED_LEAVES} registry -- covers headers, column/row groups,
 surface, dividers, accent ramp, content, text roles, plot
 scaffold). Unknown paths abort with a list of supported leaves.
 }
