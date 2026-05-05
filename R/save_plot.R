@@ -158,6 +158,24 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, which = NU
   # Generate SVG using V8
   svg_string <- generate_svg_v8(spec_json, options_list)
 
+  # Embed web fonts (Google Fonts URLs from theme@web_fonts) so the export
+  # carries its own glyphs. V8 can't fetch fonts; this is the R-side step
+  # that closes the gap for SVG, PNG, and PDF exports. Failure degrades
+  # gracefully to system font fallback (matches pre-embed behavior).
+  web_fonts <- tryCatch(spec@theme@web_fonts, error = function(e) list())
+  if (length(web_fonts) > 0L) {
+    svg_string <- tryCatch(
+      embed_web_fonts(svg_string, web_fonts),
+      error = function(e) {
+        cli::cli_warn(c(
+          "Could not embed web fonts; SVG will use system fallback.",
+          "i" = conditionMessage(e)
+        ))
+        svg_string
+      }
+    )
+  }
+
   # Ensure output directory exists
   output_dir <- dirname(file)
   if (!dir.exists(output_dir) && output_dir != ".") {

@@ -1,5 +1,69 @@
 # tabviz (development)
 
+## SVG export WYSIWYG audit (v0.28.2)
+
+The V8-driven SVG export had drifted from the live widget on four axes the
+user-facing audit surfaced. All four are addressed in this release; PNGs
+under `tests/visual/output/` regenerated as the baseline.
+
+* **Web fonts now embed into SVG / PNG / PDF exports.** Previously
+  `theme@web_fonts` (Google Fonts URLs declared by the LOTR / editorial
+  themes) only flowed to the live HTML widget — the SVG generator emitted
+  `font-family="Cinzel"` by name and rsvg / PowerPoint silently fell back
+  to system-ui because no glyphs were attached. New `R/utils-embed-fonts.R`
+  fetches each Google Fonts CSS payload (with a desktop UA so we get woff2,
+  not ttf), parses every `@font-face` block, downloads the woff2 binaries,
+  base64-encodes them, and splices proper `@font-face` rules — preserving
+  weight / style / unicode-range — into the SVG's `<style>` element.
+  Session-cached so repeat exports don't refetch. `save_plot()` calls
+  this between `generate_svg_v8()` and the file write; failure degrades
+  gracefully (warn + system fallback, identical to pre-fix behavior).
+  `curl` added to Suggests.
+
+* **PowerPoint row alignment fixed.** The SVG `<style>` block declared
+  `.cell-text { dominant-baseline: central; }` and 16 cell-text elements
+  relied on it. PowerPoint's SVG import (and several other renderers)
+  ignores `<style>` blocks, treating `<text>` as `dominant-baseline:
+  alphabetic` — so y-coordinate landed at the row center but the baseline
+  dropped by ~half-cap-height, producing the "row alignment off" symptom.
+  Inlined `dominant-baseline="central"` as an SVG attribute on every
+  cell-text element and dropped the CSS rule.
+
+* **Inline bars now match `CellBar.svelte`.** SVG bars rendered without
+  the gray track pill, at `opacity="0.7"` (washed out), at
+  `theme.plot.pointSize * 2` height (forest-marker geometry leaking into
+  bar styling), and with cell-body label font instead of `--tv-font-size-sm`.
+  Rewrote the bar block: track rect at `theme.divider.subtle` painted
+  first, fill at full opacity, fixed `BAR.HEIGHT = 8`, label at
+  `fontSize × BAR.LABEL_SCALE`. New `BAR` constants (`HEIGHT`, `RADIUS`,
+  `LABEL_SCALE`, `LABEL_MIN_WIDTH`, `GAP`) live in `rendering-constants.ts`.
+
+* **Sparklines now match `CellSparkline.svelte`.** Previously the SVG
+  generator only rendered straight `M..L..` line segments and ignored the
+  `type` option. Added `computeSparklinePoints()` (10 % y-domain padding +
+  edge inset to match the Svelte component) and `catmullRomPath()` — a
+  port of d3-shape's centripetal Catmull-Rom (alpha = 0.5) that emits
+  cubic-bezier `C` commands so the curve geometry matches d3 exactly.
+  `area` variant fills under the curve at `SPARKLINE.AREA_OPACITY`; `bar`
+  variant emits per-point rects at `SPARKLINE.BAR_OPACITY`; `line` variant
+  adds the missing end-dot circle.
+
+* **Header truncation calibration.** Two header-width paths were
+  off-by-a-few-pixels:
+  - `truncateText()` in the single-row header branch was called without
+    `fontWeight`, so bold headers got truncated against a regular-weight
+    estimate (the two-tier branch already passed weight; only the
+    single-tier path was broken).
+  - `calculateSvgLabelWidth()` measured the primary header at body
+    fontSize and weight 400, but the header is rendered bold at scaled-up
+    `headerFontSize`; long primary headers squeezed the label column.
+    Now mirrors the scaling logic in `calculateSvgAutoWidths()`.
+  Also bumped the `estimateTextWidth` weight-correction coefficient
+  (0.02 → 0.035 per 100 weight units) — calibrated against canvas
+  measurement for Inter / system-ui at weight 600, where the previous
+  value under-budgeted by ~3 % and triggered sporadic single-word
+  ellipsis.
+
 ## Theme controls audit (v0.28.1)
 
 * **Reset / spec-swap now clears `themeOverrides`.** Pinning a derived

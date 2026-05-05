@@ -53,6 +53,44 @@ export const BADGE = {
   GAP: 6,
 } as const;
 
+/**
+ * Inline-bar (col_bar) geometry. Mirrors CellBar.svelte's CSS contract so
+ * the SVG export renders the same shape as the live widget. Decoupled from
+ * theme.plot.pointSize (which is forest-marker geometry, not bar styling).
+ */
+export const BAR = {
+  /** Track + fill height in px (CSS: .bar-track height: 8px) */
+  HEIGHT: 8,
+  /** Track corner radius (CSS: border-radius: 2px) */
+  RADIUS: 2,
+  /** Label font size multiplier vs body (CSS: --tv-font-size-sm ≈ 0.75rem) */
+  LABEL_SCALE: 0.75,
+  /** Minimum label cell width (CSS: .bar-label min-width: 32px) */
+  LABEL_MIN_WIDTH: 32,
+  /** Gap between bar track and label (CSS: .cell-bar gap: 6px) */
+  GAP: 6,
+  /** Track fill opacity (subtle band behind the bar) */
+  TRACK_OPACITY: 1,
+} as const;
+
+/**
+ * Sparkline (col_sparkline) geometry. Mirrors CellSparkline.svelte.
+ */
+export const SPARKLINE = {
+  /** Stroke width for line and area variants */
+  STROKE_WIDTH: 1.5,
+  /** Inner padding so stroke isn't clipped at edges */
+  PADDING: 2,
+  /** Area fill opacity */
+  AREA_OPACITY: 0.3,
+  /** Bar variant fill opacity */
+  BAR_OPACITY: 0.8,
+  /** End-dot radius for line variant */
+  DOT_RADIUS: 2,
+  /** Catmull-Rom curve tension (matches d3 curveCatmullRom.alpha(0.5)) */
+  CURVE_ALPHA: 0.5,
+} as const;
+
 // ============================================================================
 // Layout Constants
 // ============================================================================

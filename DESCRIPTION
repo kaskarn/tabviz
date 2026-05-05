@@ -1,6 +1,6 @@
 Package: tabviz
 Title: Interactive Tables with Embedded Visualizations
-Version: 0.28.1
+Version: 0.28.2
 Authors@R:
     person("Antoine", "Baldassari", , "baldassarian@gmail.com", role = c("aut", "cre"))
 Author: Antoine Baldassari [aut, cre]
@@ -39,6 +39,7 @@ Collate:
     'modifiers.R'
     'web_spec.R'
     'split_table.R'
+    'utils-embed-fonts.R'
     'save_plot.R'
     'forest_plot.R'
     'shiny.R'
@@ -64,7 +65,8 @@ Suggests:
     testthat (>= 3.0.0),
     V8 (>= 4.0.0),
     rsvg (>= 2.0.0),
-    processx (>= 3.8.0)
+    processx (>= 3.8.0),
+    curl (>= 5.0.0)
 Config/testthat/edition: 3
 URL: https://github.com/kaskarn/tabviz, https://kaskarn.github.io/tabviz/
 BugReports: https://github.com/kaskarn/tabviz/issues

@@ -42,6 +42,8 @@ import {
   COLUMN_GROUP,
   TEXT_MEASUREMENT,
   BADGE,
+  BAR,
+  SPARKLINE,
   GROUP_HEADER_OPACITY,
   EFFECT,
   getEffectYOffset,
@@ -464,6 +466,16 @@ function countGroupDescendantRows(
  */
 function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | undefined): number {
   const fontSize = parseFontSize(spec.theme.text.body.size);
+  // Header in the primary (label) column is rendered bold at the same scaled
+  // header font size as `calculateSvgAutoWidths`. Mirror that scaling here so
+  // a long primary header doesn't squeeze the label column and trigger
+  // ellipsis in the live header.
+  const headerExplicit = spec.theme.header?.text?.size;
+  const bodySizeStr = spec.theme.text.body.size;
+  const headerFontSize = (headerExplicit && headerExplicit !== bodySizeStr)
+    ? Math.round(parseFontSize(headerExplicit) * 100) / 100
+    : Math.round(fontSize * 1.05 * 100) / 100;
+  const headerWeight = (spec.theme.header?.text as { weight?: number } | undefined)?.weight ?? 600;
   // Use theme-based padding (not hardcoded magic numbers)
   const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
   let maxWidth = 0;
@@ -482,9 +494,9 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
     return groupDepth + 1;
   };
 
-  // Measure primary column header
+  // Measure primary column header at scaled header fontSize+weight
   if (primaryHeader) {
-    maxWidth = Math.max(maxWidth, estimateTextWidth(primaryHeader, fontSize));
+    maxWidth = Math.max(maxWidth, estimateTextWidth(primaryHeader, headerFontSize, headerWeight));
   }
 
   // Measure all labels (including group depth, row indent, and badges)
@@ -1164,8 +1176,8 @@ function truncateText(
   // Binary search for the longest substring that fits (including ellipsis).
   const ellipsis = "…";
   // Ellipsis width also scales with weight (the rendered "…" is bolder
-  // when the surrounding text is bold).
-  const ellipsisMultiplier = 1 + Math.max(0, (weight - 400) / 100) * 0.02;
+  // when the surrounding text is bold). Coefficient matches estimateTextWidth.
+  const ellipsisMultiplier = 1 + Math.max(0, (weight - 400) / 100) * 0.035;
   const ellipsisWidth = fontSize * 0.55 * ellipsisMultiplier;
 
   let left = 0;
@@ -1504,7 +1516,7 @@ function renderGroupHeader(
   // Group header text (label)
   const fontStyle = italic ? ' font-style="italic"' : '';
   const labelX = x + SPACING.TEXT_PADDING + indent;
-  lines.push(`<text class="cell-text" x="${labelX}" y="${textY}"
+  lines.push(`<text class="cell-text" dominant-baseline="central" x="${labelX}" y="${textY}"
     font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"${fontStyle}
@@ -1518,7 +1530,7 @@ function renderGroupHeader(
     const labelWidth = measureTextWidth(label, fontSize, theme.text.body.family, fontWeight);
     const countX = labelX + labelWidth + 6; // 6px gap (matches web's flex gap)
     const countFontSize = parseFontSize(theme.text.label.size ?? "0.75rem");
-    lines.push(`<text class="cell-text" x="${countX}" y="${textY}"
+    lines.push(`<text class="cell-text" dominant-baseline="central" x="${countX}" y="${textY}"
       font-family="${theme.text.body.family}"
       font-size="${countFontSize}px"
       font-weight="${400}"
@@ -1676,29 +1688,108 @@ function getCellValue(row: Row, col: ColumnSpec): string {
   return str;
 }
 
-function renderSparklinePath(data: number[], x: number, y: number, width: number, height: number): string {
-  // Filter out NaN and non-finite values to prevent invalid SVG paths
-  const validData = data.filter(v => Number.isFinite(v));
-  if (validData.length === 0) return "";
+type SparklinePoint = [number, number];
 
-  // Handle single value case (avoid division by zero in i / (length - 1))
+/**
+ * Project sparkline values into pixel coordinates inside `(x, y, width, height)`.
+ * Mirrors `CellSparkline.svelte`: 10% y-domain padding for breathing room and
+ * `SPARKLINE.PADDING` so the stroke isn't clipped at the bbox edges.
+ */
+function computeSparklinePoints(
+  data: number[],
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  padding: number = SPARKLINE.PADDING,
+): SparklinePoint[] {
+  const validData = data.filter(v => Number.isFinite(v));
+  if (validData.length === 0) return [];
   if (validData.length === 1) {
-    const px = x + width / 2;
-    const py = y + height / 2;
-    return `M${px.toFixed(1)},${py.toFixed(1)}`;
+    return [[x + width / 2, y + height / 2]];
   }
 
+  const innerW = Math.max(0, width - padding * 2);
+  const innerH = Math.max(0, height - padding * 2);
   const min = Math.min(...validData);
   const max = Math.max(...validData);
-  const range = max - min || 1;
+  const yPad = (max - min) * 0.1 || 1;
+  const domainMin = min - yPad;
+  const domainMax = max + yPad;
+  const yRange = domainMax - domainMin || 1;
 
-  const points = validData.map((v, i) => {
-    const px = x + (i / (validData.length - 1)) * width;
-    const py = y + height - ((v - min) / range) * height;
-    return `${px.toFixed(1)},${py.toFixed(1)}`;
-  });
+  const N = validData.length;
+  const out: SparklinePoint[] = [];
+  for (let i = 0; i < N; i++) {
+    const px = x + padding + (i / (N - 1)) * innerW;
+    const py = y + padding + innerH - ((validData[i] - domainMin) / yRange) * innerH;
+    out.push([px, py]);
+  }
+  return out;
+}
 
-  return `M${points.join("L")}`;
+/**
+ * Centripetal Catmull-Rom path (alpha=0.5 by default), expressed as a
+ * sequence of cubic-bezier `C` commands. Algebra is a port of d3-shape's
+ * `curveCatmullRom` so the SVG export matches the live widget visually.
+ *
+ * Endpoints are handled by duplicating the boundary point as the implicit
+ * neighbor (same as d3's open variant).
+ */
+function catmullRomPath(
+  points: SparklinePoint[],
+  alpha: number = SPARKLINE.CURVE_ALPHA,
+): string {
+  const fmt = (n: number) => n.toFixed(2);
+  const N = points.length;
+  if (N === 0) return "";
+  if (N === 1) return `M${fmt(points[0][0])},${fmt(points[0][1])}`;
+  if (N === 2) {
+    return `M${fmt(points[0][0])},${fmt(points[0][1])}L${fmt(points[1][0])},${fmt(points[1][1])}`;
+  }
+
+  const eps = 1e-9;
+  const segs: string[] = [`M${fmt(points[0][0])},${fmt(points[0][1])}`];
+  for (let i = 0; i < N - 1; i++) {
+    const p0 = points[i - 1] ?? points[i];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2] ?? points[i + 1];
+
+    const l01a = Math.pow(Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), alpha);
+    const l12a = Math.pow(Math.hypot(p2[0] - p1[0], p2[1] - p1[1]), alpha);
+    const l23a = Math.pow(Math.hypot(p3[0] - p2[0], p3[1] - p2[1]), alpha);
+    const l01_2a = l01a * l01a;
+    const l12_2a = l12a * l12a;
+    const l23_2a = l23a * l23a;
+
+    let b1x: number;
+    let b1y: number;
+    if (l01a > eps) {
+      const a = 2 * l01_2a + 3 * l01a * l12a + l12_2a;
+      const n = 3 * l01a * (l01a + l12a);
+      b1x = (a * p1[0] - l12_2a * p0[0] + l01_2a * p2[0]) / n;
+      b1y = (a * p1[1] - l12_2a * p0[1] + l01_2a * p2[1]) / n;
+    } else {
+      b1x = p1[0];
+      b1y = p1[1];
+    }
+
+    let b2x: number;
+    let b2y: number;
+    if (l23a > eps) {
+      const b = 2 * l23_2a + 3 * l23a * l12a + l12_2a;
+      const m = 3 * l23a * (l23a + l12a);
+      b2x = (b * p2[0] + l23_2a * p1[0] - l12_2a * p3[0]) / m;
+      b2y = (b * p2[1] + l23_2a * p1[1] - l12_2a * p3[1]) / m;
+    } else {
+      b2x = p2[0];
+      b2y = p2[1];
+    }
+
+    segs.push(`C${fmt(b1x)},${fmt(b1y)} ${fmt(b2x)},${fmt(b2y)} ${fmt(p2[0])},${fmt(p2[1])}`);
+  }
+  return segs.join("");
 }
 
 function renderInterval(
@@ -2824,7 +2915,7 @@ function renderUnifiedColumnHeaders(
 
     // Label column spans both rows
     if (showLabelHeader) {
-      lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
@@ -2844,7 +2935,7 @@ function renderUnifiedColumnHeaders(
           return sum + getColWidth(c as ColumnSpec);
         }, 0);
         const textX = currentX + groupWidth / 2;
-        lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, row1Height)}"
+        lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${getTextY(y, row1Height)}"
           font-family="${fontFamily}"
           font-size="${fontSize}px"
           font-weight="${boldWeight}"
@@ -2859,7 +2950,7 @@ function renderUnifiedColumnHeaders(
           const pad = isVizType(col.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
           const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
           const truncatedHeader = truncateText(col.header, width, fontSize, pad, fontWeight);
-          lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
+          lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${getTextY(y, headerHeight)}"
             font-family="${fontFamily}"
             font-size="${fontSize}px"
             font-weight="${fontWeight}"
@@ -2889,7 +2980,7 @@ function renderUnifiedColumnHeaders(
             if (resolveShowHeader(sub.showHeader, sub.header)) {
               const pad = isVizType(sub.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
               const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
-              lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
+              lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${getTextY(y + row1Height, row2Height)}"
                 font-family="${fontFamily}"
                 font-size="${fontSize}px"
                 font-weight="${fontWeight}"
@@ -2908,7 +2999,7 @@ function renderUnifiedColumnHeaders(
     let currentX = x;
 
     if (showLabelHeader) {
-      lines.push(`<text class="cell-text" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
+      lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + SPACING.TEXT_PADDING}" y="${getTextY(y, headerHeight)}"
         font-family="${fontFamily}"
         font-size="${fontSize}px"
         font-weight="${fontWeight}"
@@ -2924,9 +3015,9 @@ function renderUnifiedColumnHeaders(
         // region's left/right edges (where the axis begins).
         const pad = isVizType(col.type) ? VIZ_MARGIN : SPACING.TEXT_PADDING;
         const { textX, anchor } = getTextPositionPadded(currentX, width, headerAlign, pad);
-        const truncatedHeader = truncateText(col.header, width, fontSize, pad);
+        const truncatedHeader = truncateText(col.header, width, fontSize, pad, fontWeight);
 
-        lines.push(`<text class="cell-text" x="${textX}" y="${getTextY(y, headerHeight)}"
+        lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${getTextY(y, headerHeight)}"
           font-family="${fontFamily}"
           font-size="${fontSize}px"
           font-weight="${fontWeight}"
@@ -2988,7 +3079,7 @@ function renderUnifiedTableRow(
 
   // Don't truncate labels - they're the primary row identifier and the width
   // was already computed to fit them (either by browser measurement or SVG estimation)
-  lines.push(`<text class="cell-text" x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
+  lines.push(`<text class="cell-text" dominant-baseline="central" x="${x + SPACING.TEXT_PADDING + indent}" y="${textY}"
     font-family="${theme.text.body.family}"
     font-size="${fontSize}px"
     font-weight="${fontWeight}"
@@ -3009,7 +3100,7 @@ function renderUnifiedTableRow(
 
     lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
       rx="3" fill="${theme.accent.default}" opacity="0.15"/>`);
-    lines.push(`<text class="cell-text" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
+    lines.push(`<text class="cell-text" dominant-baseline="central" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
       text-anchor="middle"
       font-family="${theme.text.body.family}"
       font-size="${badgeFontSize}px"
@@ -3032,11 +3123,16 @@ function renderUnifiedTableRow(
     const { textX, anchor } = getTextPosition(currentX, width, col.align);
 
     if (col.type === "bar" && typeof row.metadata[col.field] === "number") {
-      // Render bar
+      // Render bar — geometry mirrors CellBar.svelte:
+      //   [track 8px-tall pill at divider.subtle][gap 6][label min-width 32]
+      // Fill rect rendered at full opacity (NOT 0.7 — matches CSS contract).
+      // Bar height fixed at BAR.HEIGHT, decoupled from theme.plot.pointSize
+      // (which is forest-marker geometry, not bar styling).
       const barValue = row.metadata[col.field] as number;
       const computedMax = barMaxValues.get(col.field);
       const maxValue = col.options?.bar?.maxValue ?? computedMax ?? 100;
       const barScale = col.options?.bar?.scale ?? "linear";
+      const showLabel = col.options?.bar?.showLabel ?? true;
       // Per-cell + per-row semantic paint cascade (parity with the live
       // CellBar component): cell-paint markerFill > row-paint markerFill
       // > primary. Tokens without markerFill (bold, fill) fall through.
@@ -3047,10 +3143,14 @@ function renderUnifiedTableRow(
         ?? barRowBundle?.markerFill
         ?? (theme.inputs as { primary?: string } | undefined)?.primary
         ?? theme.accent.default;
-      const barHeight = theme.plot.pointSize * 2;
-      const textWidth = 50;
-      const barAreaWidth = width - SPACING.TEXT_PADDING * 2 - textWidth;
-      const barWidth = normalizeValue(barValue, 0, maxValue, barScale) * barAreaWidth;
+      const trackColor = theme.divider.subtle ?? "#e2e8f0";
+      const barHeight = BAR.HEIGHT;
+      const labelFontSize = fontSize * BAR.LABEL_SCALE;
+      const labelReserved = showLabel ? BAR.GAP + BAR.LABEL_MIN_WIDTH : 0;
+      const barAreaWidth = Math.max(0, width - SPACING.TEXT_PADDING * 2 - labelReserved);
+      const barFillWidth = normalizeValue(barValue, 0, maxValue, barScale) * barAreaWidth;
+      const barX = currentX + SPACING.TEXT_PADDING;
+      const barY = y + rowHeight / 2 - barHeight / 2;
 
       // Respect row styling for bar value text
       const rowStyle = row.style;
@@ -3058,19 +3158,33 @@ function renderUnifiedTableRow(
         ? 600
         : 400;
 
-      lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${y + rowHeight / 2 - barHeight / 2}"
-        width="${Math.max(0, barWidth)}" height="${barHeight}"
-        fill="${barColor}" opacity="0.7" rx="2"/>`);
-      lines.push(`<text class="cell-text" x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
-        font-family="${theme.text.body.family}"
-        font-size="${fontSize}px"
-        font-weight="${barFontWeight}"
-        text-anchor="end"
-        fill="${theme.content.primary}">${formatNumber(barValue)}</text>`);
+      // Track (background pill) — rendered first so the fill paints over it.
+      lines.push(`<rect x="${barX}" y="${barY}"
+        width="${barAreaWidth}" height="${barHeight}"
+        fill="${trackColor}" rx="${BAR.RADIUS}"/>`);
+      // Fill (no opacity — full saturation matches CellBar's rgba CSS).
+      lines.push(`<rect x="${barX}" y="${barY}"
+        width="${Math.max(0, barFillWidth)}" height="${barHeight}"
+        fill="${barColor}" rx="${BAR.RADIUS}"/>`);
+      if (showLabel) {
+        // Match CellBar.svelte's formattedValue() rounding.
+        const labelText = barValue >= 100
+          ? barValue.toFixed(0)
+          : barValue >= 10
+            ? barValue.toFixed(1)
+            : barValue.toFixed(2);
+        lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
+          font-family="${theme.text.body.family}"
+          font-size="${labelFontSize}px"
+          font-weight="${barFontWeight}"
+          text-anchor="end"
+          fill="${theme.content.primary}">${labelText}</text>`);
+      }
     } else if (col.type === "sparkline" && Array.isArray(row.metadata[col.field])) {
-      // Render sparkline
+      // Render sparkline — variant + smoothing + end-dot match CellSparkline.svelte.
       const raw = row.metadata[col.field] as number[] | number[][];
       const data: number[] = Array.isArray(raw[0]) ? (raw[0] as number[]) : (raw as number[]);
+      const sparkType = col.options?.sparkline?.type ?? "line";
       const sparkHeight = col.options?.sparkline?.height ?? 16;
       const sparkCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
       const sparkRowBundle = resolveSemanticBundle(row.style, theme);
@@ -3079,9 +3193,46 @@ function renderUnifiedTableRow(
         ?? sparkRowBundle?.markerFill
         ?? (theme.inputs as { primary?: string } | undefined)?.primary
         ?? theme.accent.default;
-      const sparkPadding = SPACING.TEXT_PADDING * 2;
-      const path = renderSparklinePath(data, currentX + SPACING.TEXT_PADDING, y + rowHeight / 2 - sparkHeight / 2, width - sparkPadding, sparkHeight);
-      lines.push(`<path d="${path}" fill="none" stroke="${sparkColor}" stroke-width="1.5"/>`);
+      const sparkPadX = SPACING.TEXT_PADDING;
+      const sparkX = currentX + sparkPadX;
+      const sparkY = y + rowHeight / 2 - sparkHeight / 2;
+      const sparkW = Math.max(0, width - sparkPadX * 2);
+      const points = computeSparklinePoints(data, sparkX, sparkY, sparkW, sparkHeight);
+
+      if (points.length === 0) {
+        // Nothing to draw
+      } else if (sparkType === "bar") {
+        // Per-point rect from the value down to the bottom of the chart area.
+        // Mirrors CellSparkline.svelte:88-97 (bar type).
+        const innerH = Math.max(0, sparkHeight - SPARKLINE.PADDING * 2);
+        const baselineY = sparkY + SPARKLINE.PADDING + innerH;
+        const barW = points.length > 1
+          ? Math.max(1, (sparkW - SPARKLINE.PADDING * 2) / points.length - 1)
+          : Math.max(1, sparkW * 0.5);
+        for (const [px, py] of points) {
+          const h = Math.max(0, baselineY - py);
+          lines.push(`<rect x="${(px - barW / 2).toFixed(2)}" y="${py.toFixed(2)}"
+            width="${barW.toFixed(2)}" height="${h.toFixed(2)}"
+            fill="${sparkColor}" opacity="${SPARKLINE.BAR_OPACITY}"/>`);
+        }
+      } else if (sparkType === "area") {
+        // Filled area below the curve + stroked curve on top.
+        const linePathD = catmullRomPath(points);
+        const innerH = Math.max(0, sparkHeight - SPARKLINE.PADDING * 2);
+        const baselineY = sparkY + SPARKLINE.PADDING + innerH;
+        // Close the area by returning along the baseline.
+        const last = points[points.length - 1];
+        const first = points[0];
+        const areaPathD = `${linePathD}L${last[0].toFixed(2)},${baselineY.toFixed(2)}L${first[0].toFixed(2)},${baselineY.toFixed(2)}Z`;
+        lines.push(`<path d="${areaPathD}" fill="${sparkColor}" opacity="${SPARKLINE.AREA_OPACITY}"/>`);
+        lines.push(`<path d="${linePathD}" fill="none" stroke="${sparkColor}" stroke-width="${SPARKLINE.STROKE_WIDTH}"/>`);
+      } else {
+        // Default: line + end dot.
+        const pathD = catmullRomPath(points);
+        lines.push(`<path d="${pathD}" fill="none" stroke="${sparkColor}" stroke-width="${SPARKLINE.STROKE_WIDTH}"/>`);
+        const last = points[points.length - 1];
+        lines.push(`<circle cx="${last[0].toFixed(2)}" cy="${last[1].toFixed(2)}" r="${SPARKLINE.DOT_RADIUS}" fill="${sparkColor}"/>`);
+      }
     } else if (col.type === "badge") {
       // Render badge cell. Now supports shape (pill/circle/square),
       // outline mode, and threshold-driven color scale (numeric values).
@@ -3166,7 +3317,7 @@ function renderUnifiedTableRow(
           lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
             rx="${radius}" fill="${badgeColor}" opacity="0.15"/>`);
         }
-        lines.push(`<text class="cell-text" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
+        lines.push(`<text class="cell-text" dominant-baseline="central" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
           text-anchor="middle"
           font-family="${theme.text.body.family}"
           font-size="${badgeFontSize}px"
@@ -3600,7 +3751,7 @@ function renderUnifiedTableRow(
           fill="${bgColor}" rx="2"/>`);
 
         if (showValue) {
-          lines.push(`<text class="cell-text" x="${currentX + width / 2}" y="${textY}"
+          lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + width / 2}" y="${textY}"
             font-family="${theme.text.body.family}"
             font-size="${fontSize * 0.9}px"
             font-weight="${400}"
@@ -3641,7 +3792,7 @@ function renderUnifiedTableRow(
           fill="${progColor}" rx="5"/>`);
 
         if (progShowLabel) {
-          lines.push(`<text class="cell-text" x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
+          lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
             font-family="${theme.text.body.family}"
             font-size="${fontSize * 0.9}px"
             font-weight="${400}"
@@ -3703,7 +3854,7 @@ function renderUnifiedTableRow(
         const blockTop = y + (rowHeight - blockHeight) / 2;
         for (let li = 0; li < wrappedLines.length; li++) {
           const lineY = blockTop + li * lineHeightPx + Math.round(fontSize * 0.8);
-          lines.push(`<text class="cell-text" x="${textX}" y="${lineY}"
+          lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${lineY}"
             font-family="${theme.text.body.family}"
             font-size="${fontSize}px"
             font-weight="${cellFontWeight}"
@@ -3712,7 +3863,7 @@ function renderUnifiedTableRow(
             fill="${cellColor}">${escapeXml(wrappedLines[li])}</text>`);
         }
       } else {
-        lines.push(`<text class="cell-text" x="${textX}" y="${textY}"
+        lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${textY}"
           font-family="${theme.text.body.family}"
           font-size="${fontSize}px"
           font-weight="${cellFontWeight}"
@@ -4087,8 +4238,6 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   text {
     font-variant-numeric: tabular-nums;
   }
-  /* Use dominant-baseline for cell text to match CSS flex centering */
-  .cell-text { dominant-baseline: central; }
 </style>`);
 
   // Background

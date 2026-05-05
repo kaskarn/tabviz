@@ -49,11 +49,14 @@ import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "./re
  *
  * The character-class constants are tuned for **regular weight (400)**
  * rendering. When `weight` is bolder, a multiplicative correction is
- * applied: `1 + max(0, (weight - 400) / 100) × 0.02`. The same correction
+ * applied: `1 + max(0, (weight - 400) / 100) × 0.035`. The same correction
  * is used by `measureTextWidth()` so the canvas-vs-fallback paths agree.
+ * Calibrated against canvas measurement for Inter/system-ui at weight 600
+ * — the older 0.02 coefficient under-budgeted by ~3% and triggered
+ * sporadic header ellipsis.
  *
  * Per-CSS-weight examples:
- *   400 → ×1.00, 500 → ×1.02, 600 → ×1.04, 700 → ×1.06, 800 → ×1.08.
+ *   400 → ×1.000, 500 → ×1.035, 600 → ×1.070, 700 → ×1.105, 800 → ×1.140.
  */
 export function estimateTextWidth(
   text: string,
@@ -95,7 +98,7 @@ export function estimateTextWidth(
   }
   // Weight correction. The base scan is tuned for regular (400); bolder
   // weights render slightly wider per glyph at the same fontSize.
-  const weightMultiplier = 1 + Math.max(0, (weight - 400) / 100) * 0.02;
+  const weightMultiplier = 1 + Math.max(0, (weight - 400) / 100) * 0.035;
   return width * weightMultiplier;
 }
 
