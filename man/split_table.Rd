@@ -19,7 +19,13 @@ navigation, e.
 }}
 
 \item{shared_axis}{Whether to use the same axis range across all plots.
-Default is \code{FALSE} (each plot auto-scales to its data).}
+Default is \code{FALSE} (each plot auto-scales to its data). Note that even
+with \code{FALSE}, sub-plots often land on near-identical tick sets because
+the auto-fit always includes the null value (\code{include_null = TRUE}) and
+pads by \code{ci_clip_factor}, then snaps to nice round ticks -- so for the
+typical forest-plot case (effects clustered around a common null), the
+independently-computed axes naturally agree. Set \code{shared_axis = TRUE}
+only when you need a guaranteed single shared range across every plot.}
 
 \item{shared_column_widths}{Whether every sub-plot uses identical
 per-column widths. Default \code{FALSE} (each plot sizes to its own content).

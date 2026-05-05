@@ -1,5 +1,31 @@
 # tabviz (development)
 
+## Theme controls audit (v0.28.1)
+
+* **Reset / spec-swap now clears `themeOverrides`.** Pinning a derived
+  path (e.g. `inputs.secondaryDeep`) flagged it in the override Set so
+  cascade writes would skip it. `resetState()` and `setSpec()` cleared
+  `themeEdits` but not the Set, so the pin survived reset and silently
+  blocked future cascade derivations. Both call sites now clear the
+  Set.
+* **Row-group background fallback no longer leaks accent.** When the
+  resolver didn't populate `rowGroup.LN.bg`, `renderGroupHeader()` was
+  tinting from `theme.accent.default` — violating the post-rework
+  contract that accent is reserved for emphasis layers (hover /
+  selected / semantic / status.info). Production themes always set the
+  bg via the resolver so visual output is unchanged, but caller-supplied
+  themes that omit the field would have leaked accent into structural
+  chrome. Switched to `secondaryDeep ?? secondary ?? primary`.
+* **`col_pictogram()` doc no longer breaks PDF manual.** The roxygen
+  example referenced a literal star glyph; LaTeX could not typeset
+  U+2605 and `R CMD check --as-cran` failed with an ERROR on the PDF
+  manual stage. Replaced with prose. Codoc mismatch on `save_plot()`
+  (the new `which =` arg from v0.28.0 was not in the `.Rd` file)
+  resolved by re-running `devtools::document()`.
+* **Bundled LOTR examples** (`lotr_hobbit`, `lotr_elvish`) updated to
+  describe the two-tier identity + accent cascade rather than the
+  retired three-tier model.
+
 ## Split harmonization (v0.28.0)
 
 * **Theme edits now persist across split navigation.** Previously, editing

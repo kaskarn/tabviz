@@ -33,7 +33,7 @@ col_pictogram(
 \item{width}{Column width in pixels (NULL for auto-sizing).}
 
 \item{glyph}{Either a single string (registry name like \code{"person"},
-\code{"skull"}, etc., or a literal unicode character like \code{"★"}) OR a
+\code{"skull"}, etc., or a literal unicode character such as a star) OR a
 named character vector mapping row-field values to glyph specs (e.g.
 \code{c("low" = "leaf", "high" = "flame")}). See \code{\link[=glyph_registry_names]{glyph_registry_names()}}
 for the bundled set.}

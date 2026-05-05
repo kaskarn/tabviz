@@ -1066,7 +1066,7 @@ col_badge <- function(
 #' @param header Column header (default NULL, uses field name).
 #' @param width Column width in pixels (NULL for auto-sizing).
 #' @param glyph Either a single string (registry name like `"person"`,
-#'   `"skull"`, etc., or a literal unicode character like `"★"`) OR a
+#'   `"skull"`, etc., or a literal unicode character such as a star) OR a
 #'   named character vector mapping row-field values to glyph specs (e.g.
 #'   `c("low" = "leaf", "high" = "flame")`). See [glyph_registry_names()]
 #'   for the bundled set.

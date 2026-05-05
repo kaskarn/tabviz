@@ -4,7 +4,7 @@
 \alias{save_plot}
 \title{Save a forest plot as a static image}
 \usage{
-save_plot(x, file, width = 800, height = NULL, scale = 2, ...)
+save_plot(x, file, width = 800, height = NULL, scale = 2, which = NULL, ...)
 }
 \arguments{
 \item{x}{A WebSpec object, forest_plot() htmlwidget output, or SplitForest}
@@ -23,6 +23,12 @@ based on content}
 
 \item{scale}{Scaling factor for PNG output (default: 2 for retina quality)}
 
+\item{which}{For SplitForest only. \code{NULL} (default) dumps every subview
+to the directory derived from \code{file}. A string picks one subview by
+key (e.g. \code{"Male__Young"}); an integer picks the i-th subview by the
+order specs were created. With \code{which} set, \code{file} is treated as a
+single-file path and its extension determines format.}
+
 \item{...}{Additional arguments (currently unused)}
 }
 \value{
@@ -35,7 +41,8 @@ output between R and web exports.
 }
 \details{
 For SplitForest objects, this function dispatches to \code{save_split_table()}
-to export all sub-plots to a directory structure.
+to export all sub-plots to a directory structure. To save just one
+subview to a single file, pass \code{which = "<key>"} or an integer index.
 }
 \examples{
 \dontrun{
