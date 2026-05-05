@@ -4,10 +4,10 @@
 # hobbit's larder is never half-full; it is half-empty only between
 # meals (of which there are seven).
 #
-# Showcases the 3-tier cascade: warm-clay primary (Bag End brick),
-# garden-green secondary (Sam's vegetables — column groups, row bars,
-# glyph fills), wheat-stubble tertiary (chrome). Autumn-rust accent
-# reserved for the household with the rare adventures.
+# Showcases the two-tier identity + accent cascade: warm-clay primary
+# (Bag End brick), garden-green secondary (Sam's vegetables — column
+# groups, row bars, glyph fills, wheat-stubble chrome texture).
+# Autumn-rust accent reserved for the household with the rare adventures.
 
 library(tabviz)
 

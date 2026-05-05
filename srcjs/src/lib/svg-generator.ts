@@ -1462,12 +1462,16 @@ function renderGroupHeader(
   let background: string | null = tier.bg ?? null;
   const borderBottom = tier.borderBottom ?? false;
 
-  // Compute background from primary if not explicitly set
+  // Fallback when the resolver didn't populate rowGroup.LN.bg: tint
+  // from secondary (post-2026-04-29 cascade — accent is reserved for
+  // emphasis layers and must not paint structural chrome).
   if (!background) {
-    const primary = theme.accent.default;
+    const tint = theme.inputs?.secondaryDeep
+      ?? theme.inputs?.secondary
+      ?? theme.inputs?.primary
+      ?? "#000000";
     const opacity = level === 1 ? 0.15 : level === 2 ? 0.10 : 0.06;
-    // Parse hex and create rgba
-    const hex = primary.replace("#", "");
+    const hex = tint.replace("#", "");
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);

@@ -1023,6 +1023,7 @@ export function createForestStore() {
     // panel's "View source" feature emits `web_theme_<baseThemeName>() |> ...`.
     baseThemeName = newSpec.theme?.name ?? "default";
     themeEdits = {};
+    themeOverrides = new Set();
 
     // Coerce banding default to "row" when the data has no groups. The R
     // default is "group" (deepest-level alternation), but on group-less data
@@ -2873,6 +2874,7 @@ export function createForestStore() {
 
     // ── Theme customizations (in-panel edits / banding overrides) ────────
     themeEdits = {};
+    themeOverrides = new Set();
     bandingOverride = null;
     bandingStartsWithBandOverride = null;
 

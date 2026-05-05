@@ -3,10 +3,10 @@
 # Council of Elrond, Rivendell, 25 Narquelië, T.A. 3018. Eight peoples,
 # one ring. The minutes are in Sindarin. Refreshments at the second eagle.
 #
-# Showcases the 3-tier theme cascade: starlit-navy primary on title +
-# leaf header; mithril-silver secondary on column-group bands and glyph
-# defaults; mallorn-moss tertiary tints chrome texture; twilight-gold
-# accent reserved for the Ring-bearer (the one row that should pop).
+# Showcases the two-tier identity + accent cascade: starlit-navy primary
+# on title + leaf header; mithril-silver secondary on column-group bands,
+# glyph defaults, and chrome texture; twilight-gold accent reserved for
+# the Ring-bearer (the one row that should pop).
 
 library(tabviz)
 
