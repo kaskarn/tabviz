@@ -750,15 +750,50 @@ serialize_annotation <- function(ann) {
 #' @return A nested list suitable for jsonlite::toJSON
 #' @keywords internal
 serialize_split_table <- function(split_table, include_forest = TRUE) {
-  # Serialize each spec
+  # Hoist blocks that are identical across every subset spec
+  # (columns/theme/interaction/watermark/...) into a single `base` block.
+  # `create_subset_spec()` inherits these from the base spec by construction,
+  # so emitting them once -- instead of N times -- cuts both R serialize
+  # time and JSON payload size. Each subview entry then carries only what
+  # actually differs: data (with its filtered groups/summaries) and labels
+  # (subview-specific combined title).
+  if (length(split_table@specs) == 0L) {
+    cli_abort("SplitForest has no specs to serialize.")
+  }
+  first_key <- names(split_table@specs)[[1]]
+  base_spec <- split_table@specs[[first_key]]
+
+  theme <- base_spec@theme %||% web_theme_cochrane()
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli_abort("{.arg theme} must be a {.cls WebTheme} object.")
+  }
+
+  base_block <- list(
+    columns         = lapply(base_spec@columns, serialize_column),
+    extraColumns    = lapply(base_spec@extra_columns, serialize_column),
+    availableFields = serialize_available_fields(base_spec),
+    theme           = serialize_theme(theme),
+    interaction     = serialize_interaction(base_spec@interaction),
+    initialState    = serialize_initial_state(base_spec@initial_state),
+    watermark        = if (is.na(base_spec@watermark)) NULL else base_spec@watermark,
+    watermarkColor   = if (is.na(base_spec@watermark_color)) NULL else base_spec@watermark_color,
+    watermarkOpacity = if (is.na(base_spec@watermark_opacity)) NULL else base_spec@watermark_opacity,
+    layout           = list(plotWidth = "auto"),
+    originalCall     = if (is.na(base_spec@original_call)) NULL else base_spec@original_call
+  )
+
   serialized_specs <- list()
   for (key in names(split_table@specs)) {
     spec <- split_table@specs[[key]]
-    serialized_specs[[key]] <- serialize_spec(spec, include_forest = include_forest)
+    serialized_specs[[key]] <- list(
+      data   = serialize_data(spec, include_forest),
+      labels = serialize_labels(spec@labels)
+    )
   }
 
   list(
     type = "split_table",
+    base = base_block,
     splitVars = I(split_table@split_vars),  # Force array serialization even for length-1
     navTree = serialize_nav_tree(split_table@split_tree),
     specs = serialized_specs,

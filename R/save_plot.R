@@ -7,7 +7,8 @@
 #' output between R and web exports.
 #'
 #' For SplitForest objects, this function dispatches to `save_split_table()`
-#' to export all sub-plots to a directory structure.
+#' to export all sub-plots to a directory structure. To save just one
+#' subview to a single file, pass `which = "<key>"` or an integer index.
 #'
 #' @param x A WebSpec object, forest_plot() htmlwidget output, or SplitForest
 #' @param file Output file path (or directory for SplitForest). Extension determines format:
@@ -18,6 +19,11 @@
 #' @param height Plot height in pixels. If NULL (default), auto-calculated
 #'   based on content
 #' @param scale Scaling factor for PNG output (default: 2 for retina quality)
+#' @param which For SplitForest only. `NULL` (default) dumps every subview
+#'   to the directory derived from `file`. A string picks one subview by
+#'   key (e.g. `"Male__Young"`); an integer picks the i-th subview by the
+#'   order specs were created. With `which` set, `file` is treated as a
+#'   single-file path and its extension determines format.
 #' @param ... Additional arguments (currently unused)
 #'
 #' @return Invisibly returns the file path
@@ -60,7 +66,7 @@
 #' }
 #'
 #' @export
-save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
+save_plot <- function(x, file, width = 800, height = NULL, scale = 2, which = NULL, ...) {
   # Validate inputs
   if (missing(file) || is.null(file)) {
     cli_abort("{.arg file} is required")
@@ -68,6 +74,30 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, ...) {
 
   # Dispatch to save_split_table() if x is a SplitForest
   if (S7_inherits(x, SplitForest)) {
+    # `which` selects a single subview, demoting save to the WebSpec branch.
+    if (!is.null(which)) {
+      keys <- names(x@specs)
+      picked_key <- if (is.character(which)) {
+        if (!which %in% keys) {
+          cli_abort(c(
+            "{.arg which} = {.val {which}} is not a subview key.",
+            "i" = "Available keys: {.val {keys}}"
+          ))
+        }
+        which
+      } else if (is.numeric(which)) {
+        idx <- as.integer(which)
+        if (idx < 1L || idx > length(keys)) {
+          cli_abort("{.arg which} = {idx} is out of range (1..{length(keys)}).")
+        }
+        keys[[idx]]
+      } else {
+        cli_abort("{.arg which} must be a string key or integer index.")
+      }
+      return(save_plot(x@specs[[picked_key]], file = file,
+                       width = width, height = height, scale = scale, ...))
+    }
+
     # Determine format and path from file argument
     ext <- tolower(tools::file_ext(file))
     if (ext %in% c("svg", "pdf", "png")) {
@@ -302,6 +332,11 @@ save_split_table <- function(x, path, format = c("svg", "pdf", "png"),
 
   # Track exported files
   exported_files <- character()
+  # Track paths already used so different keys that sanitize to the same
+  # filename don't silently overwrite each other (e.g. "a/b" and "a-b"
+  # both become "a-b.svg"). Collisions get a short hash suffix and warn.
+  seen_paths <- character()
+  collisions <- character()
 
  # Export each spec
   for (key in names(split_table@specs)) {
@@ -327,9 +362,25 @@ save_split_table <- function(x, path, format = c("svg", "pdf", "png"),
       file_path <- file.path(path, filename)
     }
 
+    if (file_path %in% seen_paths) {
+      hash <- substr(rlang::hash(key), 1, 6)
+      collisions <- c(collisions, key)
+      file_path <- sub(paste0("\\.", format, "$"),
+                       paste0("_", hash, ".", format), file_path)
+    }
+    seen_paths <- c(seen_paths, file_path)
+
     # Export individual spec
     save_plot(spec, file_path, width = width, height = height, scale = scale)
     exported_files <- c(exported_files, file_path)
+  }
+
+  if (length(collisions) > 0) {
+    cli::cli_warn(c(
+      "Filename collisions resolved with short hash suffixes",
+      "i" = "Affected key{?s}: {.val {collisions}}",
+      "i" = "Rename split values to avoid characters that sanitize identically (e.g. {.val /} and {.val -} both become {.val -})."
+    ))
   }
 
   cli::cli_alert_success("Exported {length(exported_files)} plot{?s} to {.path {path}}")

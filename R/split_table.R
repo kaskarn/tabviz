@@ -12,7 +12,13 @@
 #'     navigation, e.
 #'   - `c("region", "age_group")` creates Region > Age Group hierarchy
 #' @param shared_axis Whether to use the same axis range across all plots.
-#'   Default is `FALSE` (each plot auto-scales to its data).
+#'   Default is `FALSE` (each plot auto-scales to its data). Note that even
+#'   with `FALSE`, sub-plots often land on near-identical tick sets because
+#'   the auto-fit always includes the null value (`include_null = TRUE`) and
+#'   pads by `ci_clip_factor`, then snaps to nice round ticks -- so for the
+#'   typical forest-plot case (effects clustered around a common null), the
+#'   independently-computed axes naturally agree. Set `shared_axis = TRUE`
+#'   only when you need a guaranteed single shared range across every plot.
 #' @param shared_column_widths Whether every sub-plot uses identical
 #'   per-column widths. Default `FALSE` (each plot sizes to its own content).
 #'   Set `TRUE` to make stacked screenshots (PowerPoint, slides) line up —

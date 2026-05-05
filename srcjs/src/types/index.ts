@@ -1003,11 +1003,31 @@ export interface NavTreeNode {
   children: NavTreeNode[] | null;
 }
 
+/**
+ * Subset of WebSpec fields that legitimately differ between subviews:
+ * data (filtered rows + filtered groups/summaries) and labels (combined
+ * title with subview label). Everything else is hoisted into `base`.
+ */
+export type SplitSubviewOverride = Pick<WebSpec, "data" | "labels">;
+
 export interface SplitForestPayload {
   type: "split_forest";
   splitVars: string[];
   navTree: NavTreeNode[];
-  specs: Record<string, WebSpec>;
+  /**
+   * Shared base spec: theme, columns, interaction, etc. -- everything
+   * that is identical across every subview by construction (`split_table`'s
+   * `create_subset_spec` inherits these from the base spec). The R-side
+   * serializer emits this block once instead of N times.
+   */
+  base?: Omit<WebSpec, "data" | "labels">;
+  /**
+   * Per-subview overrides. With `base` present these are partial and the
+   * frontend reconstitutes a full WebSpec via `{...base, ...override}`.
+   * Older payloads (no `base`) carried full WebSpecs here -- that path
+   * still works for backward compatibility on the wire.
+   */
+  specs: Record<string, WebSpec | SplitSubviewOverride>;
   sharedAxis: boolean;
   sharedColumnWidths?: boolean;
   axisRange: { min: number; max: number } | null;

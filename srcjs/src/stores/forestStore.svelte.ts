@@ -2654,6 +2654,47 @@ export function createForestStore() {
     themeEdits = {};
   }
 
+  /**
+   * Snapshot the full theme state for cross-spec persistence.
+   * Used by SplitForestStore so cascade edits, overrides, and edit-tracking
+   * survive subview navigation -- without this, every selectSpec() reset
+   * theme to the new spec's original.
+   */
+  function captureThemeSnapshot(): {
+    theme: WebSpec["theme"];
+    themeEdits: Record<string, Record<string, unknown>>;
+    themeOverrides: string[];
+    baseThemeName: string;
+  } | null {
+    if (!spec || !spec.theme) return null;
+    return {
+      theme: cloneTheme(spec.theme),
+      themeEdits: structuredClone(themeEdits),
+      themeOverrides: Array.from(themeOverrides),
+      baseThemeName,
+    };
+  }
+
+  /**
+   * Reapply a snapshot to the current spec. Doesn't touch initialTheme --
+   * Reset still snaps back to the spec's R-side baseline, which is correct
+   * because subset specs all share the same base theme by construction.
+   */
+  function applyThemeSnapshot(snap: {
+    theme: WebSpec["theme"];
+    themeEdits: Record<string, Record<string, unknown>>;
+    themeOverrides: string[];
+    baseThemeName: string;
+  }) {
+    if (!spec) return;
+    spec = { ...spec, theme: cloneTheme(snap.theme) };
+    themeEdits = structuredClone(snap.themeEdits);
+    themeOverrides = new Set(snap.themeOverrides);
+    baseThemeName = snap.baseThemeName;
+    clearAutoWidthsKeepingUserResizes();
+    measureAutoColumns();
+  }
+
   // ============================================================================
   // Zoom & Auto-fit Controls
   // ============================================================================
@@ -3422,6 +3463,8 @@ export function createForestStore() {
     setPlotWidth,
     setTheme,
     setThemeObject,
+    captureThemeSnapshot,
+    applyThemeSnapshot,
     // Zoom & auto-fit actions
     setZoom,
     resetZoom,

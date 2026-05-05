@@ -1,5 +1,51 @@
 # tabviz (development)
 
+## Split harmonization (v0.28.0)
+
+* **Theme edits now persist across split navigation.** Previously, editing
+  the theme on subview B then switching to A wiped B's edits because
+  `selectSpec()` -> `setSpec()` reset themeEdits/themeOverrides on every
+  switch. The shared `userThemeObject` only captured theme-picker swaps,
+  not the cascade fns (`cascadePrimaryDeep` / `cascadeSecondaryDeep`)
+  that write directly to the active spec. Fix: lift the full theme
+  state above the subview tier via new `captureThemeSnapshot()` /
+  `applyThemeSnapshot()` methods on `ForestStore`. `SplitForestStore`
+  captures before each `selectSpec()` and reapplies after, so cascade
+  edits, overrides, and themeEdits all survive navigation. Theme-picker
+  / `resetTheme()` clear the snapshot to start fresh.
+* **`save_plot()` gains `which =` for single-subview export.** Previously,
+  `save_plot(sf, "out.svg")` always dumped every subview to the parent
+  directory; saving just one subview required `save_plot(sf@specs[[k]], ...)`.
+  Now: `save_plot(sf, "out.svg", which = "key")` or `which = 1L` saves the
+  picked subview to a single file. NULL preserves the dump-all behavior.
+* **`save_split_table()` warns and hash-dedupes filename collisions.** The
+  `sanitize_filename()` mapping (`"a/b" -> "a-b"`, `"a-b" -> "a-b"`) used
+  to silently overwrite. Collisions now get a 6-char hash suffix on the
+  duplicate(s) and a `cli::cli_warn` lists the affected keys so the user
+  can rename split values upstream if they care about predictable paths.
+* **Hoisted-base wire format for split payloads.** `serialize_split_table()`
+  now emits theme/columns/extraColumns/availableFields/interaction/
+  initialState/watermark/layout/originalCall once at the payload root in
+  a `base` block; per-subview entries carry only `data` and `labels`.
+  R-side: `resolve_theme()`, `serialize_column()`, and friends run once
+  per split instead of N times. Wire side: payload size scales with
+  rows-per-subview rather than subview count for the duplicated metadata.
+  Frontend: `SplitForestStore.setPayload()` reconstitutes full WebSpecs
+  via `{...base, ...override}` so all downstream code (column-width
+  snapshot, store activation, ForestPlot mount) sees the familiar shape.
+  Backward-compatible with older payloads that carry full specs without
+  a `base` block.
+* **`shared_axis` documentation clarified.** Adds a note that even with
+  `shared_axis = FALSE`, sub-plots often land on near-identical tick sets
+  because auto-fit always includes the null value (`include_null = TRUE`)
+  and pads by `ci_clip_factor`, then snaps to nice round ticks -- so for
+  the typical forest-plot case (effects clustered around a common null),
+  independently-computed axes naturally agree. Set `shared_axis = TRUE`
+  only when you need a guaranteed single shared range.
+* **Tests:** new coverage for `which=` (string + integer + unknown-key
+  rejection) and the collision-dedupe path. `test-save-plot.R` is now 14
+  tests (was 4); full suite 1308 / 0 fail.
+
 ## IDE download button -- layered fallback (v0.27.5)
 
 * **Download button now degrades gracefully in IDE viewers.** The previous

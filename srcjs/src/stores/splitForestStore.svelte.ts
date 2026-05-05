@@ -58,6 +58,14 @@ export function createSplitForestStore() {
   let userTheme = $state<ThemeName | null>(null);
   let userThemeObject = $state<WebTheme | null>(null);
 
+  // Full theme snapshot captured from the active forest store before each
+  // navigation. Lifts cascade edits, overrides, and themeEdits above the
+  // subview tier so they persist across selectSpec() calls -- without this,
+  // editing theme on subview B and switching to A wipes B's edits because
+  // setSpec() resets themeEdits/themeOverrides.
+  type ThemeSnapshot = ReturnType<NonNullable<ReturnType<typeof createForestStore>["captureThemeSnapshot"]>>;
+  let themeSnapshot = $state<ThemeSnapshot | null>(null);
+
   // Container dimensions
   let containerWidth = $state(800);
   let containerHeight = $state(600);
@@ -107,6 +115,20 @@ export function createSplitForestStore() {
 
   // Actions
   function setPayload(p: SplitForestPayload) {
+    // Hoisted-base wire format: R serializes shared blocks (theme, columns,
+    // interaction, ...) once at the payload root; per-subview entries carry
+    // only data + labels. Reconstitute full WebSpecs here so everything
+    // downstream (column-width snapshot, store activation, ForestPlot mount)
+    // sees the familiar shape. Older payloads carry full specs and skip
+    // this step; both formats work.
+    if (p.base) {
+      const base = p.base;
+      const merged: Record<string, WebSpec> = {};
+      for (const [key, override] of Object.entries(p.specs)) {
+        merged[key] = { ...base, ...(override as Partial<WebSpec>) } as WebSpec;
+      }
+      p = { ...p, specs: merged };
+    }
     payload = p;
     // Snapshot original per-spec column widths. When the R arg
     // `shared_column_widths = TRUE` was passed, the widths stamped by the
@@ -117,7 +139,7 @@ export function createSplitForestStore() {
     originalWidths = new Map();
     for (const [key, spec] of Object.entries(p.specs)) {
       const colMap = new Map<string, number | "auto" | undefined>();
-      for (const col of spec.columns ?? []) {
+      for (const col of (spec as WebSpec).columns ?? []) {
         colMap.set(col.id, col.width ?? undefined);
       }
       originalWidths.set(key, colMap);
@@ -217,15 +239,26 @@ export function createSplitForestStore() {
   function selectSpec(key: string, source: "user" | "proxy" = "user") {
     if (!payload) return;
 
+    // Snapshot the active store's theme state BEFORE switching specs --
+    // setSpec() clears themeEdits/themeOverrides, so cascade edits would
+    // be lost without this. Skipped on initial load (no prior activeKey).
+    if (activeKey && activeStore.spec) {
+      themeSnapshot = activeStore.captureThemeSnapshot();
+    }
+
     activeKey = key;
     activeKeySource = source;
     const spec = payload.specs[key];
     if (spec) {
       activeStore.setSpec(spec);
-      // Re-apply the persisted user theme. The v2 object path is preferred
-      // — the preset-name fallback would load from the v1-shaped local
-      // THEME_PRESETS and crash the v2 renderer.
-      if (userThemeObject) {
+      // Restore order matters: snapshot reapplication wins over the
+      // theme-name/object fallback because it carries the full edit history
+      // (cascades + overrides + themeEdits). Fallbacks only fire if no
+      // snapshot exists yet (e.g. theme was switched via the picker before
+      // any navigation).
+      if (themeSnapshot) {
+        activeStore.applyThemeSnapshot(themeSnapshot);
+      } else if (userThemeObject) {
         activeStore.setThemeObject(userThemeObject);
       } else if (userTheme) {
         activeStore.setTheme(userTheme);
@@ -303,6 +336,9 @@ export function createSplitForestStore() {
   function setTheme(themeName: ThemeName) {
     userTheme = themeName;
     userThemeObject = null;
+    // Theme-picker is an intent to start fresh -- discard any cascade
+    // snapshot from before the switch.
+    themeSnapshot = null;
     activeStore.setTheme(themeName);
   }
 
@@ -312,12 +348,14 @@ export function createSplitForestStore() {
   function setThemeObject(theme: WebTheme, themeName?: ThemeName) {
     userThemeObject = theme;
     userTheme = themeName ?? null;
+    themeSnapshot = null;
     activeStore.setThemeObject(theme);
   }
 
   function resetTheme() {
     userTheme = null;
     userThemeObject = null;
+    themeSnapshot = null;
     // Re-apply original spec theme
     if (activeKey && payload) {
       const spec = payload.specs[activeKey];
