@@ -105,7 +105,7 @@ tabviz(compare_violin, label = "condition",
 | Argument | Default | Purpose |
 |---|---|---|
 | `header` | `NULL` | Column header text |
-| `width` | `150` | Column width in pixels |
+| `width` | `NULL` (auto) | Column width in pixels |
 | `scale` | `"linear"` | `"linear"` or `"log"` |
 | `axis_range` | auto | Fixed axis range `c(min, max)` |
 | `axis_ticks` | auto | Custom tick positions |
@@ -115,6 +115,8 @@ tabviz(compare_violin, label = "condition",
 | `show_quartiles` | `FALSE` | Show Q1/Q3 dashed lines |
 | `axis_label` | `"Value"` | Label text below the axis |
 | `show_axis` | `TRUE` | Show the axis |
+| `null_value` | `NULL` | Optional reference value — paints a dashed line at this position |
+| `annotations` | `NULL` | List of [`refline()`](../recipes.qmd#pin-a-custom-reference-line-on-a-forest) items |
 
 ## `effect_violin()` Arguments
 
@@ -123,7 +125,7 @@ tabviz(compare_violin, label = "condition",
 | `data` | Column containing array of values (required) |
 | `label` | Display label for legend |
 | `color` | Violin fill color |
-| `opacity` | Fill opacity (default `0.5`). Was `fill_opacity` before 0.9.0. |
+| `opacity` | Fill opacity (default `0.5`) |
 
 ## See Also
 

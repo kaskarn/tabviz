@@ -205,9 +205,10 @@ tabviz(direction_data,
 
 | Topic | What you'll learn |
 |-------|-------------------|
-| [Columns](columns.qmd) | All 16+ column types |
-| [Row Styling](row-styling.qmd) | Headers, summaries, indentation, badges |
+| [Columns](columns.qmd) | The full `col_*()` / `viz_*()` catalog |
+| [Row Styling](row-styling.qmd) | Headers, summaries, indentation, badges, semantic tokens |
 | [Cell Styling](cell-styling.qmd) | Conditional formatting for individual cells |
-| [Row Groups](row-groups.qmd) | Collapsible groups |
+| [Row Groups](row-groups.qmd) | Collapsible groups, hierarchical nesting |
 | [Forest Plots](visualizations/forest-plots.qmd) | Advanced forest column options |
-| [Themes](themes.qmd) | Preset themes and customization |
+| [Themes](themes.qmd) | Preset themes (4 journal + 3 LOTR) and customization |
+| [Export → Pagination](export.qmd#pagination) | Break long tables across multiple PDF pages |

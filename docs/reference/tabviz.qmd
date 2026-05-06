@@ -39,6 +39,8 @@ tabviz(
   width = NULL, height = NULL, elementId = NULL,
   # Splitting
   split_by = NULL, shared_axis = FALSE, shared_column_widths = FALSE,
+  # Pagination
+  paginate = NULL,
   .spec_only = FALSE
 )
 ```
@@ -80,9 +82,10 @@ All row-styling arguments accept either a **column name (string)** that holds th
 | `row_icon` | emoji/unicode | `NULL` | Icon on the label cell. |
 | `row_indent` | numeric | `NULL` | Indentation level. |
 | `row_type` | character | `NULL` | One of `"data"`, `"header"`, `"summary"`, `"spacer"`. |
-| `row_emphasis` | logical | `NULL` | Bold + foreground color. |
-| `row_muted` | logical | `NULL` | Muted (lighter, reduced prominence). |
-| `row_accent` | logical | `NULL` | Theme accent color. |
+| `row_emphasis` | logical | `NULL` | Bold + theme primary color. |
+| `row_muted` | logical | `NULL` | Lighter, reduced prominence. |
+| `row_accent` | logical | `NULL` | Bold + theme accent color (most common). |
+| `row_fill` | logical | `NULL` | Bold + a strong row fill (auto-contrasting fg). |
 
 ### Marker styling
 
@@ -115,6 +118,12 @@ Same column-name-or-formula pattern as row styling:
 | `split_by` | `character` | `NULL` | Column name(s) to split into one plot per unique value/combination, returning a `SplitForest` widget. |
 | `shared_axis` | `logical(1)` | `FALSE` | When `split_by` is set, share an axis range across all sub-plots. |
 | `shared_column_widths` | `logical(1)` | `FALSE` | When `split_by` is set, stamp identical per-column widths across every sub-plot so columns line up when screenshots are stacked. Added in v0.16. |
+
+### Pagination
+
+| Argument | Type | Default | Description |
+|---|---|---|---|
+| `paginate` | `PaginateSpec` / shortcut | `NULL` | Break a long table across multiple pages. Accepts `NULL` (off), `TRUE` (default `paginate_spec()`), a positive integer (rows-per-page shorthand), or a `PaginateSpec` from `paginate_spec()` / `paginate_letter()` / `paginate_a4()` / `paginate_slide()`. Cascades into every `split_by` subview. See [Export → Pagination](../guide/export.qmd#pagination). |
 
 ### Other
 
@@ -224,4 +233,4 @@ tabviz(meta,
 - [Styling modifiers](styling.qmd) — `set_row_style()`, `set_marker_style()`, `set_zoom()`
 - [Themes](themes.qmd) — `web_theme_*()` builders and `set_*()` modifiers
 - [Interaction](interaction.qmd) — `web_interaction()`
-- [Export](export.qmd) — `save_plot()` for SVG / PNG / PDF
+- [Export](export.qmd) — `save_plot()` for SVG / PNG / PDF, plus pagination for long tables

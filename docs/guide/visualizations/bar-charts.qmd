@@ -8,20 +8,20 @@ library(tabviz)
 library(dplyr)
 ```
 
-`viz_bar()` creates horizontal bar charts for comparing magnitude across rows. Bars share a common axis so the eye can compare values directly.
+`viz_bar()` creates horizontal bar charts that share a common axis across rows so the eye can compare magnitudes directly. Use it for counts, scores, percentages, or any single-value-per-row metric.
 
 ::: {.callout-note}
 ## `viz_bar()` vs `col_bar()`
 
-`viz_bar()` is a **focal column** with its own axis — designed for cross-row comparisons. If you only need a simple inline weight indicator inside a cell (no axis, no scale), reach for [`col_bar()`](../columns.qmd#visualizations) instead.
+`viz_bar()` is a **focal column** with its own axis — designed for cross-row comparisons. If you only need a quick inline weight indicator inside a cell (no axis, no scale), reach for [`col_bar()`](../columns.qmd#col_bar) instead.
 :::
 
-## Basic Usage
+## Quick example
 
 ```{r}
 bar_data <- data.frame(
   metric = c("Response Rate", "Completion Rate", "Retention Rate", "Satisfaction"),
-  value = c(78, 92, 85, 88),
+  value  = c(78, 92, 85, 88),
   category = c("Primary", "Primary", "Secondary", "Secondary")
 )
 
@@ -31,7 +31,7 @@ tabviz(bar_data, label = "metric",
     viz_bar(
       effect_bar("value"),
       header = "Rate (%)",
-      width = 200,
+      width  = 200,
       axis_range = c(0, 100)
     ),
     col_numeric("value", "%", width = 60)
@@ -40,13 +40,13 @@ tabviz(bar_data, label = "metric",
 )
 ```
 
-## Multiple Effects
+## Multiple effects (grouped bars)
 
-Wrap several `effect_bar()` items to compare values per row with grouped bars:
+Pass several `effect_bar()` items to compare values per row with grouped bars:
 
 ```{r}
 comparison_data <- data.frame(
-  region = c("North America", "Europe", "Asia Pacific", "Latin America"),
+  region   = c("North America", "Europe", "Asia Pacific", "Latin America"),
   q1_sales = c(245, 189, 312, 98),
   q2_sales = c(278, 215, 345, 125),
   q3_sales = c(312, 242, 398, 156)
@@ -59,39 +59,182 @@ tabviz(comparison_data, label = "region",
       effect_bar("q2_sales", label = "Q2", color = "#22c55e"),
       effect_bar("q3_sales", label = "Q3", color = "#f59e0b"),
       header = "Quarterly Sales ($K)",
-      width = 250
+      width  = 250
     )
   ),
   title = "Regional Sales Comparison"
 )
 ```
 
-## `viz_bar()` Arguments
+When you don't pass per-effect colors, the theme's `series_anchors` fill them automatically — switching themes restyles every bar. See [Visualization Styling — Layer 1](styling.qmd#layer-1-theme-palette) for the full palette flow.
+
+## `viz_bar()` arguments
 
 | Argument | Default | Purpose |
 |---|---|---|
-| `header` | `NULL` | Column header text |
-| `width` | `150` | Column width in pixels |
-| `scale` | `"linear"` | `"linear"` or `"log"` |
-| `axis_range` | auto | Fixed axis range `c(min, max)` |
-| `axis_ticks` | auto | Custom tick positions |
-| `axis_gridlines` | `FALSE` | Show vertical gridlines |
-| `axis_label` | `"Value"` | Label text below the axis |
-| `show_axis` | `TRUE` | Show the axis |
+| `...` | required | One or more `effect_bar()` items, optionally followed by named cell-styling args (see below) |
+| `header` | `NULL` | Column header. `NULL` resolves to the primary effect's label / field name |
+| `show_header` | `TRUE` | Render the header cell above the chart |
+| `header_align` | `"center"` | `"left"` / `"center"` / `"right"` |
+| `width` | `NULL` (auto) | Column width in pixels |
+| `scale` | `"linear"` | `"linear"` or `"log"` (log requires all-positive values) |
+| `axis_range` | auto | Numeric `c(min, max)`; auto-computed when `NULL` |
+| `axis_ticks` | auto | Numeric vector of explicit tick positions |
+| `axis_gridlines` | `FALSE` | Show vertical gridlines at tick positions |
+| `axis_label` | `"Value"` | Label rendered below the axis |
+| `show_axis` | `TRUE` | Hide the axis with `FALSE` for compact dashboard tiles |
+| `null_value` | `NULL` | Optional reference value — paints a dashed line at this position (a synthetic `refline()`) |
+| `annotations` | `NULL` | List of [`refline()`](../recipes.qmd#pin-a-custom-reference-line-on-a-forest) items for additional reference lines (`forest_annotation()` is forest-specific and ignored here) |
 
-## `effect_bar()` Arguments
+::: {.callout-note}
+## Cell-styling passthrough
 
-| Argument | Purpose |
-|---|---|
-| `value` | Column name containing the bar value |
-| `label` | Display label (used in legends with multiple effects) |
-| `color` | Bar fill color |
-| `opacity` | Bar opacity 0–1 (default `0.85`) |
+Named arguments that follow the `effect_bar()` items are forwarded to `web_col()`:
+`bold`, `italic`, `color`, `bg`, `badge`, `icon`, `emphasis`, `muted`, `accent`. Cell-level args that don't make sense for a graphical column (`na_text`, `tooltip`, `formatter`) are silently ignored — rows with no valid data are skipped, not text-filled.
+:::
 
-## See Also
+## `effect_bar()` arguments
 
-- [Visualization Styling](styling.qmd) — How `row_accent` / `marker_color` cascade into bar fills
-- [Visualizations Overview](index.qmd) — Tooltips, export, common features
-- [Boxplots](boxplots.qmd) — Distribution summaries with `viz_boxplot()`
-- [Violin Plots](violin-plots.qmd) — Full distributions with `viz_violin()`
-- [Columns: `col_bar()`](../columns.qmd#visualizations) — Inline weight bars without an axis
+| Argument | Default | Purpose |
+|---|---|---|
+| `value` | required | Column name containing the bar value |
+| `label` | `NULL` | Display label (used in legends and as the resolved column header for single-effect viz) |
+| `color` | `NULL` | Bar fill color (overrides the theme palette for this effect) |
+| `opacity` | `NULL` | Bar opacity in `[0, 1]` |
+
+## Axis control
+
+Every axis option lives on `viz_bar()` directly. Set them per column.
+
+### Fixed range
+
+```{r}
+tabviz(bar_data, label = "metric",
+  columns = list(
+    viz_bar(effect_bar("value"),
+            header = "Rate (%)",
+            axis_range = c(0, 100))
+  ),
+  title = "Axis pinned to 0–100"
+)
+```
+
+### Custom ticks and gridlines
+
+```{r}
+tabviz(bar_data, label = "metric",
+  columns = list(
+    viz_bar(effect_bar("value"),
+            header = "Rate (%)",
+            axis_range = c(0, 100),
+            axis_ticks = c(0, 25, 50, 75, 100),
+            axis_gridlines = TRUE)
+  ),
+  title = "Custom ticks + gridlines"
+)
+```
+
+### Log scale
+
+`scale = "log"` requires every bar value to be positive. Useful for population counts, dollar magnitudes, or any quantity that spans orders of magnitude.
+
+```{r}
+log_data <- data.frame(
+  city = c("Tokyo", "Delhi", "Shanghai", "São Paulo", "Manila"),
+  pop  = c(37e6, 32e6, 28e6, 22e6, 14e6)
+)
+
+tabviz(log_data, label = "city",
+  columns = list(
+    viz_bar(effect_bar("pop"), header = "Population",
+            scale = "log",
+            axis_label = "Metro population (log scale)")
+  )
+)
+```
+
+### Hide the axis for dense dashboards
+
+```{r}
+mini <- bar_data |> head(3)
+
+tabviz(mini, label = "metric",
+  columns = list(
+    viz_bar(effect_bar("value"),
+            header = "%",
+            show_axis = FALSE,
+            width = 120,
+            axis_range = c(0, 100))
+  )
+)
+```
+
+## Reference lines
+
+Use `null_value` for a single dashed line at a baseline / target / threshold. For multiple lines, pass a list of `refline()` items via `annotations`.
+
+```{r}
+target_data <- data.frame(
+  team = c("Alpha", "Bravo", "Charlie", "Delta"),
+  score = c(72, 88, 65, 91)
+)
+
+tabviz(target_data, label = "team",
+  columns = list(
+    viz_bar(effect_bar("score"),
+            header = "Score",
+            axis_range = c(0, 100),
+            null_value = 80)
+  ),
+  title = "null_value = 80 — target line"
+)
+```
+
+```{r}
+tabviz(target_data, label = "team",
+  columns = list(
+    viz_bar(effect_bar("score"),
+            header = "Score",
+            axis_range = c(0, 100),
+            annotations = list(
+              refline(60, label = "Floor",  style = "dashed", color = "#dc2626"),
+              refline(80, label = "Target", style = "solid",  color = "#16a34a"),
+              refline(95, label = "Stretch", style = "dotted", color = "#0369a1")
+            ))
+  ),
+  title = "Custom annotation set"
+)
+```
+
+## Styling cascade
+
+Bar colors resolve through the same four-layer cascade as every other `viz_*()` column — the theme palette is the default, per-effect `color = "..."` pins a series identity, semantic row tokens (`row_accent`, `row_emphasis`, `row_muted`, `row_bold`, `row_fill`) reach into bars on tagged rows, and per-row `marker_color` wins for exact pixel control. See [Visualization Styling](styling.qmd) for the full cascade with rendered examples.
+
+```{r}
+tabviz(target_data, label = "team",
+  columns = list(
+    viz_bar(effect_bar("score"),
+            header = "Score",
+            axis_range = c(0, 100),
+            null_value = 80)
+  ),
+  row_accent = ~ score >= 80,
+  title = "row_accent reaches into bars",
+  subtitle = "Teams ≥ 80 take the theme accent fill"
+)
+```
+
+## When to reach for what
+
+- **`viz_bar()`** when you need a focal axis-backed comparison across rows (counts, scores, percentages).
+- **`col_bar()`** ([Columns](../columns.qmd#col_bar)) when you only need an inline weight indicator inside a cell — no shared axis, no scale, fits next to a label.
+- **`viz_boxplot()` / `viz_violin()`** when you have a *distribution* per row, not a single value.
+- **`viz_forest()`** when you have point + lower + upper (confidence intervals).
+
+## See also
+
+- [Visualization Styling](styling.qmd) — The 4-layer color cascade across all viz types
+- [Visualizations Overview](index.qmd) — Tooltips, export, shared features
+- [Columns — `col_bar()`](../columns.qmd#col_bar) — Inline cell-level bars
+- [Forest Plots](forest-plots.qmd) — Confidence intervals
+- [Boxplots](boxplots.qmd) / [Violin Plots](violin-plots.qmd) — Distribution viz

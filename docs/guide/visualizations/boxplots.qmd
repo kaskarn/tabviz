@@ -127,7 +127,7 @@ tabviz(multi_box_data, label = "timepoint",
 | Argument | Default | Purpose |
 |---|---|---|
 | `header` | `NULL` | Column header text |
-| `width` | `150` | Column width in pixels |
+| `width` | `NULL` (auto) | Column width in pixels |
 | `scale` | `"linear"` | `"linear"` or `"log"` |
 | `axis_range` | auto | Fixed axis range `c(min, max)` |
 | `axis_ticks` | auto | Custom tick positions |
@@ -136,6 +136,8 @@ tabviz(multi_box_data, label = "timepoint",
 | `whisker_type` | `"iqr"` | `"iqr"` (1.5×IQR) or `"minmax"` |
 | `axis_label` | `"Value"` | Label text below the axis |
 | `show_axis` | `TRUE` | Show the axis |
+| `null_value` | `NULL` | Optional reference value — paints a dashed line at this position |
+| `annotations` | `NULL` | List of [`refline()`](../recipes.qmd#pin-a-custom-reference-line-on-a-forest) items |
 
 ## `effect_boxplot()` Arguments
 
@@ -146,7 +148,7 @@ tabviz(multi_box_data, label = "timepoint",
 | `outliers` | Column containing outlier values (optional, mode 2) |
 | `label` | Display label for legend |
 | `color` | Box fill color |
-| `opacity` | Box fill opacity (default `0.7`). Was `fill_opacity` before 0.9.0. |
+| `opacity` | Box fill opacity (default `0.7`) |
 
 ## See Also
 
