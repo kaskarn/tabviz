@@ -89,6 +89,53 @@ update_column_in_spec <- function(spec, key, mutator) {
 }
 
 # ----------------------------------------------------------------------------
+# Pagination
+# ----------------------------------------------------------------------------
+
+#' Configure pagination on an existing WebSpec or htmlwidget
+#'
+#' Fluent modifier mirroring the `paginate = ...` argument on [tabviz()].
+#' Useful at the end of a pipe when the pagination policy is decided after
+#' the spec has been built (or when toggling a saved spec on/off without
+#' re-running the constructor).
+#'
+#' @param x A `WebSpec` object or an htmlwidget created by [tabviz()].
+#' @param ... Either a single `PaginateSpec` / shortcut value passed
+#'   positionally (e.g. `paginate(x, paginate_letter())`, `paginate(x, 50)`,
+#'   `paginate(x, TRUE)`, `paginate(x, NULL)`), or named arguments forwarded
+#'   to [paginate_spec()] (e.g. `paginate(x, rows = 20, orphan_min = 5)`).
+#'
+#' @return The modified `WebSpec` (or widget).
+#'
+#' @examples
+#' \dontrun{
+#' tabviz(data, label = "study") |> paginate(rows = 30)
+#' tabviz(data, label = "study") |> paginate(paginate_letter())
+#' tabviz(data, label = "study", paginate = TRUE) |> paginate(NULL)  # turn off
+#' }
+#'
+#' @seealso [paginate_spec()], [paginate_letter()], [paginate_a4()],
+#'   [paginate_slide()].
+#' @export
+paginate <- function(x, ...) {
+  args <- list(...)
+  spec <- extract_spec(x)
+
+  # Positional shortcut: single unnamed arg is a PaginateSpec or shortcut value.
+  # Otherwise, forward named args to paginate_spec().
+  ps <- if (length(args) == 1L && (is.null(names(args)) || identical(names(args), ""))) {
+    as_paginate_spec(args[[1]])
+  } else if (length(args) == 0L) {
+    paginate_spec()
+  } else {
+    do.call(paginate_spec, args)
+  }
+
+  spec@paginate <- ps
+  repack(x, spec)
+}
+
+# ----------------------------------------------------------------------------
 # Row-level styling
 # ----------------------------------------------------------------------------
 

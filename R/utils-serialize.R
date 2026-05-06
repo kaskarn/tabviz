@@ -24,10 +24,52 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     watermark = if (is.na(spec@watermark)) NULL else spec@watermark,
     watermarkColor = if (is.na(spec@watermark_color)) NULL else spec@watermark_color,
     watermarkOpacity = if (is.na(spec@watermark_opacity)) NULL else spec@watermark_opacity,
+    paginate = serialize_paginate(spec),
     layout = list(
       plotWidth = "auto"
     ),
     originalCall = if (is.na(spec@original_call)) NULL else spec@original_call
+  )
+}
+
+#' Serialize a PaginateSpec + computed breakpoints
+#'
+#' Returns NULL when no paginate spec is attached. Otherwise emits the spec
+#' fields (camelCased) plus a `pages` array of 0-based row index ranges so
+#' the Svelte viewer can slice `displayRows` directly without re-deriving.
+#' @keywords internal
+serialize_paginate <- function(spec) {
+  ps <- spec@paginate
+  if (is.null(ps) || !S7_inherits(ps, PaginateSpec)) return(NULL)
+
+  breaks <- compute_page_breaks(spec, ps)
+  pages <- if (is.null(breaks) || breaks$n_pages == 0L) {
+    list()
+  } else {
+    Map(function(s, e) list(startIdx = as.integer(s) - 1L, endIdx = as.integer(e) - 1L),
+        breaks$page_starts, breaks$page_ends)
+  }
+
+  # page_label is rendered to a stable wire value. Functions degrade to the
+  # default ("x_of_y") for the frontend; R-side PDF render can still honor
+  # the function form by reading the spec object directly.
+  page_label_wire <- ps@page_label
+  if (is.function(page_label_wire)) page_label_wire <- "x_of_y"
+  if (isTRUE(page_label_wire)) page_label_wire <- "x_of_y"
+  if (isFALSE(page_label_wire)) page_label_wire <- FALSE
+
+  list(
+    rows = ps@rows,
+    breakOn = ps@break_on,
+    keepGroups = ps@keep_groups,
+    orphanMin = ps@orphan_min,
+    repeatHeader = ps@repeat_header,
+    repeatLegend = ps@repeat_legend,
+    repeatTitle = ps@repeat_title,
+    footnotesOn = ps@footnotes_on,
+    pageLabel = page_label_wire,
+    pages = pages,
+    nPages = length(pages)
   )
 }
 
@@ -786,8 +828,9 @@ serialize_split_table <- function(split_table, include_forest = TRUE) {
   for (key in names(split_table@specs)) {
     spec <- split_table@specs[[key]]
     serialized_specs[[key]] <- list(
-      data   = serialize_data(spec, include_forest),
-      labels = serialize_labels(spec@labels)
+      data     = serialize_data(spec, include_forest),
+      labels   = serialize_labels(spec@labels),
+      paginate = serialize_paginate(spec)
     )
   }
 

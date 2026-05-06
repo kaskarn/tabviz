@@ -66,7 +66,8 @@
 #' }
 #'
 #' @export
-save_plot <- function(x, file, width = 800, height = NULL, scale = 2, which = NULL, ...) {
+save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
+                      which = NULL, paginate = NULL, ...) {
   # Validate inputs
   if (missing(file) || is.null(file)) {
     cli_abort("{.arg file} is required")
@@ -95,7 +96,8 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, which = NU
         cli_abort("{.arg which} must be a string key or integer index.")
       }
       return(save_plot(x@specs[[picked_key]], file = file,
-                       width = width, height = height, scale = scale, ...))
+                       width = width, height = height, scale = scale,
+                       paginate = paginate, ...))
     }
 
     # Determine format and path from file argument
@@ -110,7 +112,8 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, which = NU
       format <- "svg"
     }
     return(save_split_table(x, path = path, format = format,
-                             width = width, height = height, scale = scale, ...))
+                             width = width, height = height, scale = scale,
+                             paginate = paginate, ...))
   }
 
   # Check for V8 package
@@ -140,6 +143,47 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2, which = NU
       "Unsupported file format: {.file .{ext}}",
       "i" = "Supported formats: .svg, .pdf, .png"
     ))
+  }
+
+  # Resolve paginate precedence: call-site arg overrides spec-level @paginate.
+  # `as_paginate_spec()` accepts NULL/TRUE/FALSE/integer/PaginateSpec; the
+  # caller can also pass an explicit `paginate = NULL` to flatten when the
+  # underlying spec has pagination configured.
+  paginate_resolved <- if (missing(paginate)) {
+    spec@paginate
+  } else {
+    as_paginate_spec(paginate)
+  }
+
+  # Multi-page PDF: render one SVG per logical page, convert each to PDF,
+  # and merge into a single .pdf with qpdf. Falls back to a numbered series
+  # if qpdf is unavailable.
+  if (ext == "pdf" && !is.null(paginate_resolved)) {
+    breaks <- compute_page_breaks(spec, paginate_resolved)
+    if (!is.null(breaks) && breaks$n_pages > 1L) {
+      return(invisible(render_paginated_pdf(
+        spec = spec,
+        paginate = paginate_resolved,
+        breaks = breaks,
+        file = file,
+        width = width,
+        height = height
+      )))
+    }
+    # n_pages == 0 or 1: fall through to the single-page path with paginate
+    # cleared on a clone so the renderer doesn't re-trigger anything.
+    spec@paginate <- NULL
+  }
+
+  # Single-image formats with paginate set: warn and flatten. Authors who
+  # want explicit single-page output for a paginated spec can pass
+  # `paginate = NULL` to silence the warning.
+  if (ext %in% c("png", "svg") && !is.null(paginate_resolved)) {
+    cli::cli_warn(c(
+      "{.arg paginate} ignored: {.file .{ext}} is a single-image format.",
+      "i" = "Saved the full table as one image. Use {.code paginate = NULL} to silence, or save to {.file .pdf} for paginated output."
+    ))
+    spec@paginate <- NULL
   }
 
   # Serialize spec to JSON

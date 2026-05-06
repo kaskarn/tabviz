@@ -206,6 +206,95 @@ tabviz(regional_data, label = "study",
 
 ---
 
+## Pagination — long tables across multiple pages
+
+Long meta-analyses or multi-cohort registries often need to span more rows than fit on a printed page. `paginate = paginate_spec()` (or one of the presets — `paginate_letter()`, `paginate_a4()`, `paginate_slide()`) breaks the table into pages: the HTML viewer renders one page at a time with prev/next controls and a continuous-mode toggle, and `save_plot(*.pdf)` emits a true multi-page PDF.
+
+```{r}
+set.seed(2026)
+n_studies <- 72
+cohorts <- c("Phase III RCT", "Real-world evidence", "Registry")
+counts  <- c(24, 30, 18)
+
+meta <- data.frame(
+  study = c(
+    sprintf("Trial %02d", 1:counts[1]),
+    sprintf("RWE %02d",  1:counts[2]),
+    sprintf("Reg %02d",  1:counts[3])
+  ),
+  cohort = rep(cohorts, times = counts),
+  year   = sample(2010:2024, n_studies, replace = TRUE),
+  n      = sample(c(120, 240, 480, 960, 1900, 3800), n_studies, replace = TRUE),
+  hr     = round(rnorm(n_studies, 0.92, 0.18), 2),
+  se     = round(runif(n_studies, 0.06, 0.20), 2)
+)
+meta$lower <- pmax(0.20, round(meta$hr - 1.96 * meta$se, 2))
+meta$upper <- round(meta$hr + 1.96 * meta$se, 2)
+
+tabviz(
+  meta,
+  label = "study",
+  group = "cohort",
+  columns = list(
+    col_numeric("year", "Year", decimals = 0),
+    col_n("n"),
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               header = "HR (95% CI)", scale = "log", null_value = 1,
+               axis_label = "Hazard ratio"),
+    col_interval("hr", "lower", "upper", header = "HR")
+  ),
+  theme = web_theme_jama(),
+  title = "GLP-1 receptor agonists — pooled cardiovascular meta-analysis",
+  subtitle = "72 studies across three cohorts; paginate at 30 rows per page",
+  caption = "Use the prev/next controls below the plot to walk through pages, or switch to continuous mode to scroll.",
+  paginate = paginate_letter()
+)
+```
+
+`paginate` cascades into every `split_by` subview — each subview owns its own page set, paginating independently:
+
+```{r}
+set.seed(404)
+regions <- c("North America", "Europe", "Asia-Pacific", "Latin America")
+sites_per_region <- 18
+n <- length(regions) * sites_per_region
+
+split_data <- data.frame(
+  site = unlist(lapply(seq_along(regions), function(i) {
+    sprintf("%s site %02d", substr(regions[i], 1, 4), seq_len(sites_per_region))
+  })),
+  region = rep(regions, each = sites_per_region),
+  arm    = rep(c("Treatment", "Placebo"), length.out = n),
+  n      = sample(c(80, 120, 240, 400), n, replace = TRUE),
+  rr     = round(rnorm(n, 0.85, 0.14), 2)
+)
+split_data$lower <- pmax(0.30, round(split_data$rr - 0.18, 2))
+split_data$upper <- round(split_data$rr + 0.18, 2)
+
+tabviz(
+  split_data,
+  label = "site",
+  group = "arm",
+  split_by = "region",
+  columns = list(
+    col_n("n"),
+    viz_forest(point = "rr", lower = "lower", upper = "upper",
+               header = "Risk ratio (95% CI)",
+               scale = "log", null_value = 1,
+               axis_label = "Risk ratio"),
+    col_interval("rr", "lower", "upper", header = "RR")
+  ),
+  theme = web_theme_cochrane(),
+  title = "Multi-region efficacy",
+  subtitle = "Each region paginates independently at 10 rows per page",
+  paginate = paginate_spec(rows = 10)
+)
+```
+
+See [Export → Pagination](../guide/export.qmd#pagination) for the full configuration surface and PDF export details.
+
+---
+
 ## All Theme Variants {#all-theme-variants}
 
 Compare all 9 built-in themes:

@@ -4,7 +4,16 @@
 \alias{save_plot}
 \title{Save a forest plot as a static image}
 \usage{
-save_plot(x, file, width = 800, height = NULL, scale = 2, which = NULL, ...)
+save_plot(
+  x,
+  file,
+  width = 800,
+  height = NULL,
+  scale = 2,
+  which = NULL,
+  paginate = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A WebSpec object, forest_plot() htmlwidget output, or SplitForest}

@@ -459,7 +459,11 @@ create_subset_spec <- function(base_spec, subset_data, label) {
     # Carry the base spec's captured original call into every sub-spec so the
     # "View source" panel can show the user's actual `tabviz()` line rather
     # than the `tabviz(...)` placeholder.
-    original_call = base_spec@original_call
+    original_call = base_spec@original_call,
+    # Pagination cascades to every subview. With `break_on = "split"` (the
+    # default), each subview is the page-break boundary by definition; the
+    # row-count budget then applies independently within each subview.
+    paginate = base_spec@paginate
   )
 }
 

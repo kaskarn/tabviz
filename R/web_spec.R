@@ -114,6 +114,14 @@
 #'   shares identical per-column widths. Default `FALSE`. Set `TRUE` when you
 #'   plan to stack screenshots (slides / PowerPoint) and want columns to line
 #'   up. Widths are computed once from the combined data.
+#' @param paginate Pagination configuration. One of: `NULL` (default — no
+#'   pagination), `TRUE` (default [paginate_spec()]), a positive integer
+#'   (rows-per-page shorthand), or a `PaginateSpec` from [paginate_spec()]
+#'   or one of its presets ([paginate_letter()], `paginate_a4()`,
+#'   `paginate_slide()`). The HTML viewer renders one page at a time with
+#'   prev/next controls; PDF export emits one PDF page per logical page.
+#'   Single-image formats (PNG, SVG) warn and flatten unless the spec is
+#'   forced at [save_plot()] time.
 #' @param .spec_only If TRUE, return the WebSpec object instead of rendering.
 #' @param .original_call Internal. Overrides the `match.call()` capture used
 #'   by the "View source" panel. Wrapping entry points (e.g. `forest_plot()`)
@@ -212,6 +220,7 @@ tabviz <- function(
     split_by = NULL,
     shared_axis = FALSE,
     shared_column_widths = FALSE,
+    paginate = NULL,
     .spec_only = FALSE,
     # Internal: override the match.call() capture. Used by entry points that
     # wrap tabviz() (e.g. forest_plot()) so their call appears in the
@@ -603,7 +612,8 @@ tabviz <- function(
     marker_opacity_col = style_resolved$marker_opacity,
     marker_size_col = style_resolved$marker_size,
     weight_col = style_resolved$weight,
-    original_call = .tabviz_call
+    original_call = .tabviz_call,
+    paginate = as_paginate_spec(paginate)
   )
 
   # Return spec only if requested

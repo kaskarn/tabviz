@@ -51,6 +51,7 @@ tabviz(
   split_by = NULL,
   shared_axis = FALSE,
   shared_column_widths = FALSE,
+  paginate = NULL,
   .spec_only = FALSE,
   .original_call = NULL,
   axis_range = lifecycle::deprecated(),
@@ -196,6 +197,15 @@ across all split plots. Default is \code{FALSE}.}
 shares identical per-column widths. Default \code{FALSE}. Set \code{TRUE} when you
 plan to stack screenshots (slides / PowerPoint) and want columns to line
 up. Widths are computed once from the combined data.}
+
+\item{paginate}{Pagination configuration. One of: \code{NULL} (default — no
+pagination), \code{TRUE} (default \code{\link[=paginate_spec]{paginate_spec()}}), a positive integer
+(rows-per-page shorthand), or a \code{PaginateSpec} from \code{\link[=paginate_spec]{paginate_spec()}}
+or one of its presets (\code{\link[=paginate_letter]{paginate_letter()}}, \code{paginate_a4()},
+\code{paginate_slide()}). The HTML viewer renders one page at a time with
+prev/next controls; PDF export emits one PDF page per logical page.
+Single-image formats (PNG, SVG) warn and flatten unless the spec is
+forced at \code{\link[=save_plot]{save_plot()}} time.}
 
 \item{.spec_only}{If TRUE, return the WebSpec object instead of rendering.}
 

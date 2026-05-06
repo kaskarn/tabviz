@@ -149,6 +149,108 @@ save_plot(p, "figure.pdf", width = 800)
 | `3` | 216 DPI | Presentations |
 | `4` | 288 DPI | High-res print |
 
+## Pagination — long tables across multiple pages {#pagination}
+
+When a table is taller than a printed page (long meta-analyses, multi-cohort registries), attach `paginate = paginate_spec()` (or one of the presets) to break it into pages. The HTML viewer renders one page at a time with prev/next controls; `save_plot(*.pdf)` emits a multi-page PDF.
+
+```{r}
+data(glp1_trials)
+# Synthesize a longer dataset for demonstration
+big <- do.call(rbind, replicate(4, glp1_trials |>
+  dplyr::filter(row_type == "data"), simplify = FALSE))
+big$study <- sprintf("%s %02d", big$study, seq_len(nrow(big)))
+
+p_long <- big |>
+  tabviz(
+    label = "study",
+    group = "group",
+    columns = list(
+      col_text("drug", "Drug"),
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1, width = 180),
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
+    ),
+    theme = web_theme_jama(),
+    title = "Long meta-analysis (paginated)",
+    paginate = paginate_letter()
+  )
+
+save_plot(p_long, "export-examples/paginated.pdf", width = 700)
+```
+
+The result is a multi-page PDF — one PDF page per logical page, merged via `qpdf::pdf_combine()`:
+
+```{r}
+qpdf::pdf_length("export-examples/paginated.pdf")
+```
+
+### Configuring pagination
+
+`paginate_spec()` exposes the full configuration; presets (`paginate_letter()`, `paginate_a4()`, `paginate_slide()`) pick sensible row counts for common formats.
+
+| Argument | Default | Purpose |
+|---|---|---|
+| `rows` | `30` | Maximum data rows per page |
+| `break_on` | `"split"` | Where forced breaks occur: `"split"`, `"group"`, or `"none"` |
+| `keep_groups` | `TRUE` | Never break inside a group — push to next page instead |
+| `orphan_min` | `3` | Minimum rows on a trailing page; pulls rows back if too thin |
+| `repeat_header` / `repeat_legend` / `repeat_title` | `TRUE` | Repeat page furniture on every PDF page |
+| `footnotes_on` | `"last"` | `"last"` (final page only) or `"every"` |
+| `page_label` | `"x_of_y"` | `TRUE`/`FALSE`/`"x"`/`"x_of_y"` or a `function(page, total)` |
+| `oversized_group_policy` | `"overflow"` | What to do when a single group is larger than `rows`: `"overflow"`, `"warn"`, `"error"` |
+
+### Shortcuts
+
+The `paginate` argument on `tabviz()` and `save_plot()` accepts several shortcut forms:
+
+```r
+tabviz(data, ..., paginate = TRUE)              # default paginate_spec()
+tabviz(data, ..., paginate = 50)                # rows-per-page shorthand
+tabviz(data, ..., paginate = paginate_letter()) # preset
+tabviz(data, ..., paginate = NULL)              # explicit "no pagination"
+```
+
+A fluent modifier `paginate()` is also available for use after construction:
+
+```r
+tabviz(data, ...) |> paginate(rows = 20, orphan_min = 5)
+tabviz(data, ..., paginate = TRUE) |> paginate(NULL)  # turn off
+```
+
+### Override at save time
+
+`save_plot()` accepts its own `paginate` argument that overrides whatever is on the spec — useful for one-off renders without rebuilding:
+
+```r
+# Force a denser page count for one render
+save_plot(p_long, "out.pdf", paginate = paginate_spec(rows = 50))
+
+# Flatten a paginated spec for a single-image format
+save_plot(p_long, "out.png", paginate = NULL)
+```
+
+::: {.callout-note}
+## Single-image formats flatten by default
+
+`.png` and `.svg` are single-image formats and cannot represent multiple pages. When you save a paginated tabviz to one of these, the spec is flattened to a single image and a `cli` warning fires. Pass `paginate = NULL` at the call site to silence the warning, or save to `.pdf` for true paginated output.
+:::
+
+::: {.callout-note}
+## Multi-page PDF needs `qpdf`
+
+Each page is rendered separately to SVG → PDF (via `rsvg`), then the per-page PDFs are merged with `qpdf::pdf_combine()`. If `qpdf` is not installed, `save_plot()` falls back to writing a numbered series (`out_p01.pdf`, `out_p02.pdf`, ...) and emits a warning. Install with `install.packages("qpdf")`.
+:::
+
+### Pagination + `split_by`
+
+When `split_by` is active, `paginate` cascades to every subview — each subview owns its own page set with its own row-count budget. Saving emits one combined multi-page PDF per split leaf:
+
+```r
+sf <- tabviz(data, ..., split_by = "region", paginate = paginate_spec(rows = 20))
+save_plot(attr(sf, "splitforest"), "out/region.pdf", width = 700)
+# Writes: out/North.pdf, out/South.pdf, ... — each with its own pages
+```
+
 ## Exporting Split Tables
 
 Pass a `SplitForest` (the output of `split_table()`) to `save_split_table()` to write one file per subgroup. The directory structure mirrors the split hierarchy.

@@ -1,5 +1,71 @@
 # tabviz (development)
 
+## Pagination — long tables across multiple pages (v0.29.0)
+
+`tabviz()` and `save_plot()` gain a `paginate` argument that breaks long
+tables into pages. The HTML viewer renders one page at a time with
+prev/next controls and a continuous-mode toggle; `save_plot(*.pdf)` emits
+a true multi-page PDF (one PDF page per logical page, merged via
+`qpdf::pdf_combine()`); single-image formats (`.png`, single `.svg`)
+flatten with a warning and accept `paginate = NULL` to silence.
+
+* **Public API.** `paginate_spec()` exposes the full configuration
+  (`rows`, `break_on`, `keep_groups`, `orphan_min`, `repeat_header` /
+  `repeat_legend` / `repeat_title`, `footnotes_on`, `page_label`,
+  `oversized_group_policy`). Presets: `paginate_letter()`,
+  `paginate_a4()`, `paginate_slide()` (each accepts a portrait /
+  landscape orientation where applicable). Shortcuts on the `paginate`
+  argument: `paginate = TRUE` (default `paginate_spec()`),
+  `paginate = <integer>` (rows-per-page), `paginate = NULL` (off). New
+  fluent modifier `paginate(x, ...)` mirrors the constructor.
+
+* **Architecture: compute breakpoints once, ship them on the wire.** The
+  HTML viewer used to risk drifting from the static export — different
+  renderers, different breakpoint logic, different page boundaries. The
+  fix: `compute_page_breaks()` runs on the R side at serialize time over
+  the same flattened display rows the frontend builds, and the resulting
+  page-range array is stored on the wire as `spec.paginate.pages`. The
+  Svelte viewer slices `displayRows` by those ranges; the PDF export
+  consumes the same ranges. Breakpoints can never disagree.
+
+* **Group integrity by default.** `keep_groups = TRUE` (default) prevents
+  page breaks inside a group — if a group plus the current page would
+  exceed `rows`, the group moves to the next page in its entirety. Groups
+  larger than the row budget overflow onto their own page; the offending
+  group IDs are listed via `cli::cli_inform()`.
+
+* **Orphan control.** `orphan_min = 3` (default) prevents the trailing
+  page from holding fewer than three rows by pulling rows back from the
+  prior page — eliminates the ugly 1-row dangling page.
+
+* **`split_by` × pagination.** `paginate` cascades into every subview;
+  each subview owns its own page set with its own row-count budget.
+  `save_plot(<SplitForest>, "out/region.pdf")` writes one combined
+  multi-page PDF per split leaf (`out/North.pdf`, `out/South.pdf`, ...).
+
+* **`save_plot()` override.** A `paginate = ...` argument at the call
+  site overrides whatever is on the spec — pass an explicit spec to
+  force pagination on a render, or `paginate = NULL` to flatten a
+  paginated tabviz to a single image without warnings.
+
+* **`qpdf` fallback.** Multi-page PDF merging uses `qpdf` (Suggests). If
+  `qpdf` is not installed, `save_plot()` falls back to writing a
+  numbered series (`out_p01.pdf`, `out_p02.pdf`, ...) and warns.
+
+* **V8 context reuse.** A single V8 context is created per
+  `save_plot()` call and reused across all logical pages — context
+  setup is ~200 ms, so per-page reuse matters for documents with more
+  than a handful of pages.
+
+Out of scope for this release (planned follow-ups): PPTX export,
+manual user-marked page breaks, height-based fitting (instead of row
+count), column-axis pagination for very wide tables.
+
+Gallery: `gallery_26_paginate_meta_analysis.R` (long meta-analysis,
+letter portrait), `gallery_27_paginate_split.R` (paginated subviews
+across a `split_by`). Documentation: `docs/guide/export.qmd#pagination`,
+`docs/gallery/showcases.qmd`.
+
 ## SVG export WYSIWYG audit (v0.28.2)
 
 The V8-driven SVG export had drifted from the live widget on four axes the

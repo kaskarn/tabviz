@@ -6,8 +6,6 @@
   text {
     font-variant-numeric: tabular-nums;
   }
-  /* Use dominant-baseline for cell text to match CSS flex centering */
-  .cell-text { dominant-baseline: central; }
 </style>
 <rect width="100%" height="100%" fill="#1E1E2E"/>
 <text x="12" y="31"
@@ -18,12 +16,12 @@
 <line x1="12" x2="488"
       y1="60" y2="60"
       stroke="#45475A" stroke-width="2"/>
-<text class="cell-text" x="22" y="76"
+<text class="cell-text" dominant-baseline="central" x="22" y="76"
         font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
         font-size="14.7px"
         font-weight="600"
         fill="#CDD6F4">Study</text>
-<text class="cell-text" x="282" y="76"
+<text class="cell-text" dominant-baseline="central" x="282" y="76"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14.7px"
           font-weight="600"
@@ -97,13 +95,13 @@
       font-weight="400"
       font-style="normal"
       fill="#8188A3">Effect</text></g>
-<text class="cell-text" x="22" y="104"
+<text class="cell-text" dominant-baseline="central" x="22" y="104"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">SUSTAIN-6</text>
-<text class="cell-text" x="282" y="104"
+<text class="cell-text" dominant-baseline="central" x="282" y="104"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
@@ -113,13 +111,13 @@
 <line x1="12" x2="488"
           y1="116" y2="116"
           stroke="#313244" stroke-width="1"/>
-<text class="cell-text" x="22" y="128"
+<text class="cell-text" dominant-baseline="central" x="22" y="128"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">PIONEER 6</text>
-<text class="cell-text" x="282" y="128"
+<text class="cell-text" dominant-baseline="central" x="282" y="128"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
@@ -129,13 +127,13 @@
 <line x1="12" x2="488"
           y1="140" y2="140"
           stroke="#313244" stroke-width="1"/>
-<text class="cell-text" x="22" y="152"
+<text class="cell-text" dominant-baseline="central" x="22" y="152"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">LEADER</text>
-<text class="cell-text" x="282" y="152"
+<text class="cell-text" dominant-baseline="central" x="282" y="152"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"
@@ -145,13 +143,13 @@
 <line x1="12" x2="488"
           y1="164" y2="164"
           stroke="#313244" stroke-width="1"/>
-<text class="cell-text" x="22" y="176"
+<text class="cell-text" dominant-baseline="central" x="22" y="176"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="14px"
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">REWIND</text>
-<text class="cell-text" x="282" y="176"
+<text class="cell-text" dominant-baseline="central" x="282" y="176"
           font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
           font-size="14px"
           font-weight="400"

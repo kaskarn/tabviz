@@ -745,6 +745,33 @@ export interface PlotLabels {
 // Main Spec (what R sends to JS)
 // ============================================================================
 
+/** A single page's row-index window (0-based, inclusive) into the rendered
+ *  display rows. Computed R-side at serialize time so the viewer and the
+ *  PDF export agree on where pages start and end. */
+export interface PageRange {
+  startIdx: number;
+  endIdx: number;
+}
+
+/** Pagination config sent from R. Breakpoints (`pages`) are precomputed
+ *  R-side in `compute_page_breaks()` so the viewer never re-derives them. */
+export interface PaginationConfig {
+  rows: number;
+  breakOn: "split" | "group" | "none";
+  keepGroups: boolean;
+  orphanMin: number;
+  repeatHeader: boolean;
+  repeatLegend: boolean;
+  repeatTitle: boolean;
+  footnotesOn: "last" | "every";
+  /** `"x_of_y"`, `"x"`, or `false` to hide. Functions on the R side are
+   *  resolved to `"x_of_y"` for the wire (R handles function-form labels
+   *  at PDF render time). */
+  pageLabel: "x_of_y" | "x" | false;
+  pages: PageRange[];
+  nPages: number;
+}
+
 export interface WebSpec {
   data: WebData;
   columns: ColumnDef[];
@@ -759,6 +786,9 @@ export interface WebSpec {
   watermarkColor?: string;
   /** Watermark fill-opacity, 0–1. Default 0.07 if undefined. */
   watermarkOpacity?: number;
+  /** Optional pagination config — see `paginate_spec()` on the R side.
+   *  Undefined means no pagination (single-page output). */
+  paginate?: PaginationConfig;
   /** Verbatim deparse of the user's original `tabviz(...)` call, captured
    *  R-side. Shown as the baseline line in the "View source" panel above
    *  the recorded fluent operations. Undefined for fluent-api-only specs. */

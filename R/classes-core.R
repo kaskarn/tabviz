@@ -166,6 +166,58 @@ PlotLabels <- new_class(
   )
 )
 
+#' PaginateSpec: Pagination configuration for a tabviz
+#'
+#' Use [paginate_spec()] (or shortcuts `paginate = TRUE` / `paginate = <int>`
+#' / `paginate_letter()` / `paginate_a4()` / `paginate_slide()`) on `tabviz()`
+#' to break long tables into multiple pages. The HTML viewer renders one page
+#' at a time with prev/next controls; PDF export emits one logical page per
+#' PDF page (merged via `qpdf::pdf_combine`).
+#'
+#' Breakpoints are computed once on the R side and stored on the wire so the
+#' HTML viewer and PDF export agree on where pages start and end.
+#'
+#' @export
+PaginateSpec <- new_class(
+  "PaginateSpec",
+  properties = list(
+    rows = new_property(class_integer, default = 30L),
+    break_on = new_property(class_character, default = "split"),
+    keep_groups = new_property(class_logical, default = TRUE),
+    orphan_min = new_property(class_integer, default = 3L),
+    repeat_header = new_property(class_logical, default = TRUE),
+    repeat_legend = new_property(class_logical, default = TRUE),
+    repeat_title = new_property(class_logical, default = TRUE),
+    footnotes_on = new_property(class_character, default = "last"),
+    # page_label accepts TRUE/FALSE, "x", "x_of_y", or a function (rendered
+    # at runtime). class_any keeps the door open for the function form;
+    # constructor-side validation enforces the allowed shapes.
+    page_label = new_property(class_any, default = "x_of_y"),
+    oversized_group_policy = new_property(class_character, default = "overflow")
+  ),
+  validator = function(self) {
+    if (length(self@rows) != 1L || self@rows < 1L) {
+      return("`rows` must be a positive integer scalar")
+    }
+    if (!self@break_on %in% c("split", "group", "none")) {
+      return("`break_on` must be one of: split, group, none")
+    }
+    if (length(self@orphan_min) != 1L || self@orphan_min < 0L) {
+      return("`orphan_min` must be a non-negative integer scalar")
+    }
+    if (self@orphan_min >= self@rows) {
+      return("`orphan_min` must be less than `rows`")
+    }
+    if (!self@footnotes_on %in% c("last", "every")) {
+      return("`footnotes_on` must be one of: last, every")
+    }
+    if (!self@oversized_group_policy %in% c("overflow", "warn", "error")) {
+      return("`oversized_group_policy` must be one of: overflow, warn, error")
+    }
+    NULL
+  }
+)
+
 #' WebSpec: Core specification for web-native table visualizations
 #'
 #' This is the central data structure that can be rendered as:
@@ -247,7 +299,14 @@ WebSpec <- new_class(
     # — surfaces in the "View source" panel as the baseline above the
     # recorded fluent operations. Captured once at the entry point; not
     # updated by modifiers. NA when absent (fluent-api-only specs).
-    original_call = new_property(class_character, default = NA_character_)
+    original_call = new_property(class_character, default = NA_character_),
+    # Optional pagination spec — see [paginate_spec()]. NULL means single-page
+    # output. Breakpoints are computed at serialization time so the HTML
+    # viewer and PDF export agree on where pages start/end. Stored as
+    # class_any so NULL ("no pagination") and a PaginateSpec are both valid;
+    # constructor-side coercion via `as_paginate_spec()` keeps the value
+    # canonical.
+    paginate = new_property(class_any, default = NULL)
   ),
   validator = function(self) {
     # Validate optional columns if specified

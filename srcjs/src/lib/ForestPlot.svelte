@@ -2555,6 +2555,59 @@
         {/if}
       </div>
 
+      <!-- Pagination controls (only when spec.paginate is set) -->
+      {#if store.totalPages > 1}
+        {@const pageLabel = spec?.paginate?.pageLabel ?? "x_of_y"}
+        {@const showLabel = pageLabel !== false && !store.continuousMode}
+        <div class="pager-controls" role="navigation" aria-label="Pagination">
+          <button
+            type="button"
+            class="pager-btn"
+            disabled={store.continuousMode || store.currentPage <= 1}
+            onclick={() => store.prevPage()}
+            aria-label="Previous page"
+            data-tooltip="Previous page"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M10 4 L6 8 L10 12" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          {#if showLabel}
+            <span class="pager-label">
+              {#if pageLabel === "x"}
+                {store.currentPage}
+              {:else}
+                Page {store.currentPage} of {store.totalPages}
+              {/if}
+            </span>
+          {:else if store.continuousMode}
+            <span class="pager-label pager-label-continuous">{store.totalPages} pages</span>
+          {/if}
+          <button
+            type="button"
+            class="pager-btn"
+            disabled={store.continuousMode || store.currentPage >= store.totalPages}
+            onclick={() => store.nextPage()}
+            aria-label="Next page"
+            data-tooltip="Next page"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M6 4 L10 8 L6 12" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="pager-mode-btn"
+            class:active={store.continuousMode}
+            onclick={() => store.setContinuousMode(!store.continuousMode)}
+            aria-pressed={store.continuousMode}
+            data-tooltip={store.continuousMode ? "Switch to paginated view" : "Switch to continuous view"}
+          >
+            {store.continuousMode ? "Paginated" : "Continuous"}
+          </button>
+        </div>
+      {/if}
+
       <!-- Plot footer (caption, footnote) -->
       <PlotFooter
         caption={labelCaption}
@@ -3279,6 +3332,71 @@
   /* Alternating row banding */
   .row-odd {
     background: var(--tv-alt-bg);
+  }
+
+  /* Pagination controls — sit between the plot body and the footer.
+     Styled as muted chrome so they read as widget UI rather than content. */
+  .pager-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-top: 1px solid var(--tv-border, #e2e8f0);
+    color: var(--tv-text-muted, #64748b);
+    font-size: var(--tv-font-size-sm, 0.75rem);
+    user-select: none;
+  }
+  .pager-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    background: var(--tv-bg, #fff);
+    color: var(--tv-text, #1f2937);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  }
+  .pager-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-bg, #fff));
+    border-color: var(--tv-accent, #2563eb);
+    color: var(--tv-accent, #2563eb);
+  }
+  .pager-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .pager-label {
+    min-width: 88px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .pager-label-continuous {
+    font-style: italic;
+  }
+  .pager-mode-btn {
+    margin-left: auto;
+    padding: 3px 10px;
+    border: 1px solid var(--tv-border, #e2e8f0);
+    background: var(--tv-bg, #fff);
+    color: var(--tv-text-muted, #64748b);
+    border-radius: 4px;
+    font-size: var(--tv-font-size-sm, 0.75rem);
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  }
+  .pager-mode-btn:hover {
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, var(--tv-bg, #fff));
+    border-color: var(--tv-accent, #2563eb);
+    color: var(--tv-accent, #2563eb);
+  }
+  .pager-mode-btn.active {
+    background: var(--tv-accent, #2563eb);
+    color: var(--tv-bg, #fff);
+    border-color: var(--tv-accent, #2563eb);
   }
 
 </style>

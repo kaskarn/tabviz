@@ -139,6 +139,13 @@ export function createForestStore() {
   // Settings panel visibility (gear button + slide-in)
   let settingsOpen = $state<boolean>(false);
 
+  // Pagination state (only meaningful when spec.paginate is set):
+  //   currentPage   — 1-based; clamped to [1, totalPages] in setSpec/changes.
+  //   continuousMode — when true, viewer renders all pages stacked with
+  //                    page-break rules instead of one page at a time.
+  let currentPage = $state<number>(1);
+  let continuousMode = $state<boolean>(false);
+
   // ── Theme customizations ────────────────────────────────────────────────
   // In-panel edits to the active theme, tracked per section. The live
   // spec.theme is mutated in lockstep so the widget re-renders immediately;
@@ -631,9 +638,12 @@ export function createForestStore() {
     return false;
   }
 
-  // Derived: display rows (interleaves group headers with data rows)
-  // Groups rows by groupId, shows ancestor headers, outputs in hierarchical order
-  const displayRows = $derived.by((): DisplayRow[] => {
+  // Derived: full display rows (interleaves group headers with data rows)
+  // Groups rows by groupId, shows ancestor headers, outputs in hierarchical
+  // order. Pagination is applied as a separate filter step below
+  // (`paginatedRows` / `displayRows`); this derivation is the unfiltered
+  // source of truth.
+  const fullDisplayRows = $derived.by((): DisplayRow[] => {
     if (!spec) return [];
 
     const result: DisplayRow[] = [];
@@ -743,6 +753,90 @@ export function createForestStore() {
 
     return result;
   });
+
+  // Pagination derived. Pages come precomputed from R (`spec.paginate.pages`,
+  // 0-based startIdx/endIdx into spec.data.rows) so the viewer never has to
+  // re-derive breakpoints — that keeps the static PDF export and the live
+  // HTML viewer in lockstep.
+  const totalPages = $derived(spec?.paginate?.nPages ?? 0);
+  const isPaginated = $derived(totalPages > 0 && !continuousMode);
+
+  // The data-row IDs that fall inside the current page window. Empty set
+  // when no pagination is active. Recomputed on currentPage / spec change.
+  const currentPageRowIds = $derived.by((): Set<string> => {
+    if (!spec?.paginate || continuousMode) return new Set();
+    const page = spec.paginate.pages[currentPage - 1];
+    if (!page) return new Set();
+    const ids = new Set<string>();
+    const rows = spec.data.rows;
+    for (let i = page.startIdx; i <= page.endIdx && i < rows.length; i++) {
+      ids.add(rows[i].id);
+    }
+    return ids;
+  });
+
+  // The slice of fullDisplayRows visible in the current page. Group headers
+  // are included whenever at least one descendant data row belongs to the
+  // page (so a parent header still fronts its child group on pages where
+  // only the child has rows).
+  const paginatedRows = $derived.by((): DisplayRow[] => {
+    if (!isPaginated) return fullDisplayRows;
+    const rowIds = currentPageRowIds;
+    if (rowIds.size === 0) return [];
+
+    const include = new Array(fullDisplayRows.length).fill(false);
+    for (let i = 0; i < fullDisplayRows.length; i++) {
+      const dr = fullDisplayRows[i];
+      if (dr.type === "data" && rowIds.has(dr.row.id)) include[i] = true;
+    }
+    // A group_header is included iff at least one descendant displayRow
+    // (until a sibling/ancestor group_header at depth <= myDepth) is in.
+    for (let i = 0; i < fullDisplayRows.length; i++) {
+      const dr = fullDisplayRows[i];
+      if (dr.type !== "group_header") continue;
+      const myDepth = dr.depth;
+      for (let j = i + 1; j < fullDisplayRows.length; j++) {
+        const dj = fullDisplayRows[j];
+        if (dj.type === "group_header" && dj.depth <= myDepth) break;
+        if (include[j]) {
+          include[i] = true;
+          break;
+        }
+      }
+    }
+    const out: DisplayRow[] = [];
+    for (let i = 0; i < fullDisplayRows.length; i++) {
+      if (include[i]) out.push(fullDisplayRows[i]);
+    }
+    return out;
+  });
+
+  // The canonical "rows currently on screen" list. When pagination is
+  // active and the user is not in continuous mode, this is the page slice
+  // (with its group headers); otherwise it's the full displayRows. All
+  // downstream consumers (layout, render loops, drag-drop) use this so the
+  // grid, axis row, and overlays all line up with the visible rows.
+  const displayRows = $derived(isPaginated ? paginatedRows : fullDisplayRows);
+
+  function setCurrentPage(p: number) {
+    if (totalPages === 0) {
+      currentPage = 1;
+      return;
+    }
+    currentPage = Math.max(1, Math.min(totalPages, Math.floor(p)));
+  }
+
+  function nextPage() {
+    if (currentPage < totalPages) currentPage += 1;
+  }
+
+  function prevPage() {
+    if (currentPage > 1) currentPage -= 1;
+  }
+
+  function setContinuousMode(v: boolean) {
+    continuousMode = v;
+  }
 
   // Derived: maximum group depth (1-based; 0 when there are no groups).
   const maxGroupDepth = $derived.by((): number => {
@@ -1019,6 +1113,11 @@ export function createForestStore() {
     // Reset the op log too — a new spec is a new "session" as far as
     // recording fluent R calls is concerned.
     opLog = [];
+    // Pagination resets to page 1 with each spec swap (split-by navigation
+    // flows through setSpec, and "the same page index across different data"
+    // would point at unrelated rows). Continuous-mode toggle is preserved as
+    // a viewing preference.
+    currentPage = 1;
     // Reset theme-edit tracking to the incoming theme's name; the settings
     // panel's "View source" feature emits `web_theme_<baseThemeName>() |> ...`.
     baseThemeName = newSpec.theme?.name ?? "default";
@@ -3091,6 +3190,21 @@ export function createForestStore() {
     get displayRows() {
       return displayRows;
     },
+    get paginatedRows() {
+      return paginatedRows;
+    },
+    get currentPage() {
+      return currentPage;
+    },
+    get totalPages() {
+      return totalPages;
+    },
+    get isPaginated() {
+      return isPaginated;
+    },
+    get continuousMode() {
+      return continuousMode;
+    },
     get bandIndexes() {
       return bandIndexes;
     },
@@ -3377,6 +3491,10 @@ export function createForestStore() {
 
     // Actions
     setSpec,
+    setCurrentPage,
+    nextPage,
+    prevPage,
+    setContinuousMode,
     setDimensions,
     selectRow,
     setSelectedRows,
