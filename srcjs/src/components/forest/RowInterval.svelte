@@ -195,7 +195,7 @@
     const themeEffectColors = theme?.series?.map(s => s.fill);
     // Per-series marker shapes ride on the SlotBundle now: theme.series[i].shape
     // (NA on the wire = null → fall through to the 4-shape rotation).
-    const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
+    const defaultShapes: MarkerShape[] = ["circle", "square", "diamond", "triangle"];
 
     // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color.
     // Summary rows use `colors.summaryFill` as their base so the diamond honors

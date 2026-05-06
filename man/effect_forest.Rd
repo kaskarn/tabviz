@@ -25,7 +25,7 @@ effect_forest(
 
 \item{color}{Color for this effect (optional)}
 
-\item{shape}{Marker shape: "square" (default), "circle", "diamond", "triangle"}
+\item{shape}{Marker shape: "circle" (default), "square", "diamond", "triangle"}
 
 \item{opacity}{Marker opacity from 0 to 1 (optional)}
 }

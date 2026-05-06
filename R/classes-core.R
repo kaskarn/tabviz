@@ -95,7 +95,7 @@ EffectSpec <- new_class(
 #' @param upper Column name for upper bounds
 #' @param label Display label (defaults to point column name)
 #' @param color Color for this effect (optional)
-#' @param shape Marker shape: "square" (default), "circle", "diamond", "triangle"
+#' @param shape Marker shape: "circle" (default), "square", "diamond", "triangle"
 #' @param opacity Marker opacity from 0 to 1 (optional)
 #'
 #' @return An EffectSpec object

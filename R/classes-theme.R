@@ -314,7 +314,7 @@ SlotBundle <- new_class(
     stroke_emphasis = new_property(class_character, default = NA_character_),
     text_fg         = new_property(class_character, default = NA_character_),
     # Marker shape for forest points + similar viz marks. NA -> renderer
-    # picks a default from a 4-shape rotation (square / circle / diamond
+    # picks a default from a 4-shape rotation (circle / square / diamond
     # / triangle). Authors who want a fixed shape per slot pin one of
     # those four values.
     shape           = new_property(class_character, default = NA_character_)

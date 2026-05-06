@@ -1895,7 +1895,7 @@ function renderInterval(
     const themeEffectColors = theme.series.map(s => s.fill);
     // Per-series marker shapes ride on the SlotBundle (theme.series[i].shape).
     // Null/undefined → fall through to the 4-shape rotation.
-    const defaultShapes: MarkerShape[] = ["square", "circle", "diamond", "triangle"];
+    const defaultShapes: MarkerShape[] = ["circle", "square", "diamond", "triangle"];
 
     // Resolve Layer 1+2 (per-effect literal or palette cycle) into a base color.
     // Summary rows use `colors.summaryFill` as their base so the diamond honors
@@ -1927,7 +1927,7 @@ function renderInterval(
     // 2. effect.shape (if set)
     // 3. theme.series[idx].shape (if set; per-slot author override)
     // 4. defaultShapes[idx % 4] (the 4-shape rotation)
-    // 4. Default shapes: square, circle, diamond, triangle (cycling)
+    // 4. Default shapes: circle, square, diamond, triangle (cycling)
     let shape: MarkerShape;
     const themeSlotShape = (theme.series?.[idx] as { shape?: MarkerShape | null } | undefined)?.shape ?? null;
     if (isPrimary && markerStyle?.shape) {
