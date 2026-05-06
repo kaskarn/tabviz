@@ -19,7 +19,7 @@ When something isn't working, check:
 3. **NAs** — Are there unexpected missing values?
 4. **Scale** — Using `scale = "log"` with non-positive values?
 5. **Dependencies** — Is `V8` installed (always required) and `rsvg` (for PNG/PDF)?
-6. **Deprecated arguments** — Did 0.9.0 rename what you're passing? See [Recent renames](#recent-renames).
+6. **Deprecated arguments** — `tabviz(axis_range / axis_ticks / axis_gridlines / zoom / auto_fit / weight)` were deprecated in 0.9.0; pass them to `viz_forest()` (axis_*) or pipe through `set_zoom()` instead. `forest_plot()` keeps the axis args native.
 
 ## Data Issues
 
@@ -456,22 +456,52 @@ forest_plot(test_data,
 sessionInfo()
 ```
 
-## Recent renames {#recent-renames}
+## Pagination
 
-The 0.9.0 release renamed several arguments. The old names still work for one cycle and emit `lifecycle::deprecate_warn()` — but if you're hitting a "no such argument" error, check this table:
+### "Why didn't my paginate spec page my PNG?"
 
-| Old | New | Where |
-|---|---|---|
-| `col_interval(..., sep = " ")` | `separator = " "` | `col_interval()` |
-| `col_reference(..., icon = TRUE)` | `show_icon = TRUE` | `col_reference()` |
-| `col_n()`, `col_bar()`, `col_pvalue()`, `col_sparkline()` with no `field` | Pass `field` explicitly | `col_*()` |
-| `set_colors()`, `set_typography()`, `set_shapes()`, `set_axis()`, `set_layout()`, `set_group_headers()`, `set_effect_colors()`, `set_marker_shapes()` | `set_inputs()`, `set_variants()`, `set_spacing()`, `set_theme_field(theme, path, value)` | v2 modifier surface (theme rewrite) |
-| `web_interaction(show_filters = ...)` | `enable_filters = ...` | `web_interaction()` |
-| `tabviz(axis_range=, axis_ticks=, axis_gridlines=)` | Pass to `viz_forest()` on the forest column | `tabviz()` |
-| `tabviz(zoom=, auto_fit=, max_width=, max_height=, show_zoom_controls=)` | Pipe to `set_zoom()` after constructing the widget | `tabviz()` |
-| `tabviz(weight = "col")` | `marker_size = "col"` | `tabviz()` |
+`save_plot(<paginated spec>, "out.png")` warns and flattens by default — single-image formats can't represent multiple pages. To silence the warning when you want a flattened image:
 
-`forest_plot()` still accepts `axis_range`, `axis_ticks`, and `axis_gridlines` natively — those were only deprecated on `tabviz()`.
+```r
+save_plot(p, "out.png", paginate = NULL)  # explicit "flatten this render"
+```
+
+Or save to PDF for true multi-page output:
+
+```r
+save_plot(p, "out.pdf")  # multi-page PDF via qpdf::pdf_combine
+```
+
+### Multi-page PDF wrote a numbered series instead of one file
+
+`save_plot(*.pdf, paginate = ...)` merges per-page PDFs via `qpdf::pdf_combine()`. When the `qpdf` package isn't installed, it falls back to writing `out_p01.pdf`, `out_p02.pdf`, ... and emits a warning. Install `qpdf` to merge into one file:
+
+```r
+install.packages("qpdf")
+```
+
+`qpdf` is in `Suggests` (lightweight C++ binding, ~3 MB).
+
+### "My SplitForest paginate didn't cascade"
+
+Pagination cascades into every subview when set on the underlying `tabviz()` call. If you constructed the spec without `paginate`, then piped through `split_table()`, the subviews carry no pagination. Either set `paginate` on the original `tabviz()` call (recommended), or pipe `paginate()` after split:
+
+```r
+sf <- tabviz(data, ..., paginate = paginate_letter(),
+             split_by = "region")
+```
+
+## Widget rendering in knitr
+
+### "My split_table widget rendered as a wall of `@ specs : List of 6` text"
+
+Fixed in this audit cycle. `SplitForest` (the object returned by `split_table()` and by `tabviz(..., .spec_only = TRUE) |> split_table(...)`) now carries a registered `knit_print` method, so a chunk whose last value is one renders as the live interactive widget. Same for `WebSpec` from `tabviz(..., .spec_only = TRUE)`.
+
+If you still see the structure dump in your own project, you're likely on an old install. Reinstall:
+
+```r
+remotes::install_github("kaskarn/tabviz")
+```
 
 ## Getting Help
 

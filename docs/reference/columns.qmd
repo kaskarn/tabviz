@@ -9,16 +9,10 @@ library(tabviz)
 
 Reference for every column-defining helper: data columns (`col_*()`), per-row visualization columns (`viz_*()`), the low-level `web_col()` constructor, column groups, and the per-effect helpers used by multi-effect viz columns.
 
-:::{.callout-important}
-## `field` is now a required argument
-
-`col_n()`, `col_bar()`, `col_pvalue()`, and `col_sparkline()` previously had implicit defaults for `field` (`"n"`, `"weight"`, `"pvalue"`, `"trend"`). Those defaults are soft-deprecated since 0.9.0 — pass the column name explicitly. Other `col_*()` helpers have always required `field`.
-:::
-
-All `col_*()` helpers also accept the cell-styling arguments documented in [Cell-level styling](#cell-level-styling) below: `bold`, `italic`, `color`, `bg`, `badge`, `icon`, `emphasis`, `muted`, `accent`, plus `align`, `header_align`, `wrap`, `sortable`, `na_text`, `tooltip`, and `formatter`.
+All `col_*()` helpers require `field` (the data column name) as the first positional argument. They also accept the cell-styling arguments documented in [Cell-level styling](#cell-level-styling) below: `bold`, `italic`, `color`, `bg`, `badge`, `icon`, `emphasis`, `muted`, `accent`, `fill`, plus `align`, `header_align`, `wrap`, `sortable`, `na_text`, `tooltip`, and `formatter`.
 
 ::: {.callout-note}
-## `tooltip` and `formatter` (added in 0.9.0)
+## `tooltip` and `formatter` cell args
 
 - `tooltip = "<col>"` — column whose values are the per-cell hover text
 - `formatter = function(x) ...` — escape hatch for custom value rendering. The function receives the raw column vector and must return a character vector of the same length; the output is rendered as text. Use this when the built-in numeric/interval/percent formatting can't express the desired output.
@@ -163,13 +157,6 @@ col_interval(point, lower, upper,
 | `imprecise_threshold` | `numeric(1)` | `NULL` | When `upper / lower` exceeds this, render `"--"`. |
 | `na_text` | `character(1)` | `NULL` | Text for NA point values. |
 
-:::{.callout-warning}
-## Updated in 0.9.0
-- `point` / `lower` / `upper` are now required. The implicit fallback that read these from a sibling `viz_forest()` is soft-deprecated and emits `lifecycle::deprecate_warn()`.
-- `digits`, `thousands_sep`, `abbreviate` added to match the rest of the numeric formatting vocabulary.
-- `sep` was renamed to `separator`; the old name still works with a deprecation warning.
-:::
-
 ### `col_events()` {#col_events}
 
 ```r
@@ -190,11 +177,6 @@ col_events(events, n,
 | `abbreviate` | `logical(1)` | `FALSE` | Shorten large values (`"1.1K/12K"`). |
 | `na_text` | `character(1)` | `NULL` | Text for NA values. |
 
-::: {.callout-warning}
-## Renamed in 0.9.0
-The arguments were called `events_field` and `n_field`. Both are still accepted with a deprecation warning; new code should use `events` and `n`.
-:::
-
 ### `col_currency()` {#col_currency}
 
 ```r
@@ -214,11 +196,6 @@ col_currency(field, header = NULL, width = NULL,
 | `abbreviate` | `logical(1)` | `FALSE` | Shorten large values (`"$1.2M"`). |
 | `position` | `"prefix"` or `"suffix"` | `"prefix"` | Symbol placement. |
 | `na_text` | `character(1)` | `NULL` | Text for NA values. |
-
-::: {.callout-warning}
-## Updated in 0.9.0
-`thousands_sep` was a `TRUE/FALSE` flag; now accepts a string. `digits` and `abbreviate` are new.
-:::
 
 ### `col_date()` {#col_date}
 
@@ -273,12 +250,6 @@ col_range(low, high,
 
 Body cells default to `align = "right"` (numeric convention).
 
-::: {.callout-warning}
-## Updated in 0.9.0
-- `min_field` and `max_field` are still accepted with a deprecation warning; new code should use `low` and `high`.
-- `digits`, `thousands_sep`, `abbreviate` added to match the rest of the numeric formatting vocabulary.
-:::
-
 ### `col_reference()` {#col_reference}
 
 Truncated text with optional outbound link and tooltip.
@@ -295,11 +266,6 @@ col_reference(field, header = "Reference", width = NULL,
 | `href_field` | `character(1)` | `NULL` | URL column (optional). |
 | `max_chars` | `integer(1)` | `30` | Truncation length. |
 | `show_icon` | `logical(1)` | `TRUE` | Show external-link icon when `href_field` is set. |
-
-:::{.callout-note}
-## `icon` is deprecated
-Use `show_icon` instead. The old `icon` argument still works for one cycle and emits `lifecycle::deprecate_warn()`.
-:::
 
 ---
 
@@ -535,11 +501,6 @@ effect_boxplot(min, q1, median, q3, max,
                color = NULL, opacity = 0.7)
 ```
 
-::: {.callout-warning}
-## Renamed in 0.9.0
-`fill_opacity` is now `opacity` (matching `effect_forest()` / `effect_bar()`). The old name still works with a deprecation warning.
-:::
-
 ### `viz_violin()` {#viz_violin}
 
 ```r
@@ -559,11 +520,6 @@ viz_violin(...,                # one or more effect_violin() objects
 ```r
 effect_violin(data, label = NULL, color = NULL, opacity = 0.5)
 ```
-
-::: {.callout-warning}
-## Renamed in 0.9.0
-`fill_opacity` is now `opacity`. The old name still works with a deprecation warning.
-:::
 
 ---
 

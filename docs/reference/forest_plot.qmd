@@ -63,6 +63,12 @@ forest_plot(
 In `tabviz()`, these arguments were deprecated in 0.9.0 and now live on `viz_forest()`. `forest_plot()` keeps them as native arguments and forwards them into the auto-built forest column — that's the whole point of the wrapper.
 :::
 
+:::{.callout-tip}
+## Pagination flows through
+
+Pass `paginate = paginate_letter()` (or any other [pagination shortcut](tabviz.qmd#pagination)) to break a long table across multiple PDF pages — `forest_plot()` forwards `paginate` to `tabviz()` via `...`. See the [Export → Pagination](../guide/export.qmd#pagination) guide for the full surface.
+:::
+
 ## Return value
 
 An htmlwidget. When `split_by` is set or `x` is a `SplitForest`, returns the split-table widget.

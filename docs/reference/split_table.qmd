@@ -38,14 +38,37 @@ Both top-level entry points accept `split_by` and `shared_axis` directly. They b
 ```r
 # Equivalent
 tabviz(data, label = "study",
-       columns = list(viz_forest("or", "lo", "hi")),
+       columns = list(viz_forest(point = "or", lower = "lo", upper = "hi")),
        split_by = "region", shared_axis = TRUE)
 
 tabviz(data, label = "study",
-       columns = list(viz_forest("or", "lo", "hi")),
+       columns = list(viz_forest(point = "or", lower = "lo", upper = "hi")),
        .spec_only = TRUE) |>
   split_table(by = "region", shared_axis = TRUE) |>
   forest_plot()
+```
+
+## Pagination cascades through splits
+
+Set `paginate = ...` on the underlying `tabviz()` call (or pipe `paginate()` after `split_table()`) and the spec is propagated into every subview. Each subview paginates independently with its own row-count budget; PDF export emits one combined multi-page PDF per split leaf:
+
+```r
+sf <- tabviz(data, label = "study",
+             columns = list(viz_forest(point = "or", lower = "lower", upper = "upper")),
+             paginate = paginate_letter(),
+             .spec_only = TRUE) |>
+  split_table(by = "region")
+
+save_plot(sf, "out/region.pdf")  # writes out/Americas.pdf, out/Europe.pdf, ...
+```
+
+## Single-subview export with `save_plot(which = ...)`
+
+`save_plot()` accepts a `SplitForest` directly. Without `which =`, it dispatches to `save_split_table()` and writes one file per leaf into a directory. With `which =`, it extracts a single subview by **key** (e.g. `"Male__Young"`) or 1-based **integer index** and writes to a single file:
+
+```r
+save_plot(sf, "out/europe.svg", which = "Europe")   # named subview
+save_plot(sf, "out/first.svg",  which = 1L)         # by index
 ```
 
 ## Examples
@@ -84,13 +107,19 @@ forest_plot(data,
 #| eval: false
 # Build the SplitForest explicitly to export
 sf <- tabviz(data, label = "study",
-             columns = list(viz_forest("or", "lower", "upper")),
+             columns = list(viz_forest(point = "or", lower = "lower", upper = "upper")),
              .spec_only = TRUE) |>
   split_table(by = c("sex", "age_group"), shared_axis = TRUE)
 
-sf                              # printed summary of the SplitForest
+sf                              # in a knitr chunk, renders as the live widget
 save_split_table(sf, "out/")    # one file per sub-plot
 ```
+
+::: {.callout-note}
+## SplitForest renders as a widget in knitr chunks
+
+A `SplitForest` carries a registered `knit_print` method (since this audit cycle), so a chunk whose last value is `sf` renders as the interactive split widget rather than dumping the S7 object's internal structure as raw text. At an interactive prompt outside knitr, `print(sf)` still prints a one-line summary.
+:::
 
 ## Related
 

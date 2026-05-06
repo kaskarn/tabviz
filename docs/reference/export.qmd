@@ -38,9 +38,28 @@ save_plot(p, "figures/forest.pdf", width = 800)
 
 - SVG only: `V8` (always required).
 - PNG / PDF: also requires the `rsvg` package.
+- Multi-page PDF (paginated): also requires the `qpdf` package, which merges the per-page PDFs. Missing `qpdf` falls back to a numbered series (`out_p01.pdf`, …) with a warning.
 
-There is no headless-browser dependency — exports run entirely in R via V8 and rsvg.
+There is no headless-browser dependency — exports run entirely in R via V8, rsvg, and qpdf.
 :::
+
+## Pagination
+
+Long tables can span multiple PDF pages. Attach a [`paginate_spec()`](columns.qmd#paginate) to the `tabviz()` call (or pass `paginate = ...` to `save_plot()` to override per render):
+
+```{r}
+#| eval: false
+p <- tabviz(data, label = "study",
+            columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi")),
+            paginate = paginate_letter())   # 30 rows / page
+
+save_plot(p, "figures/forest.pdf")          # multi-page PDF via qpdf::pdf_combine
+save_plot(p, "figures/forest.png")          # warns + flattens to one image
+save_plot(p, "figures/forest.png",
+          paginate = NULL)                  # silence the flatten warning
+```
+
+For `SplitForest` outputs, pagination cascades into every subview — `save_plot()` writes one combined multi-page PDF per split leaf. See [Export → Pagination](../guide/export.qmd#pagination) in the guide for the full surface, defaults, and `qpdf`-missing fallback details.
 
 ## Related
 
