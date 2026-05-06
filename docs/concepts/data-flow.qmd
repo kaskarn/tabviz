@@ -77,27 +77,56 @@ The formula `~ pval < 0.05` becomes a vector of `TRUE`/`FALSE` values—one per 
 
 ### Stage 3: JSON Serialization
 
-The configured specification converts to JSON for the JavaScript frontend:
+The configured specification converts to JSON for the Svelte frontend. `serialize_spec()` (in `R/utils-serialize.R`) emits a top-level object with these keys:
 
-```json
+```jsonc
 {
-  "data": [...],
-  "columns": [...],
-  "theme": {...},
-  "styles": {
-    "row_bold": [true, false, true, ...],
-    "marker_color": ["#16a34a", "#64748b", ...]
-  }
+  "data":          { "rows": [...], "groups": [...], "summaries": [...] },
+  "columns":       [...],
+  "extraColumns":  [...],
+  "theme":         { ... },
+  "interaction":   { ... },
+  "labels":        { "title": ..., "subtitle": ..., ... },
+  "paginate":      { "rows": 30, "pages": [...], "nPages": 3, ... },  // when set
+  "layout":        { "plotWidth": "auto" }
+}
+```
+
+Per-row styling lives **inside each row's object**, not in a parallel array — so a `row_bold` flag computed by `~ pval < 0.05` lands on `row.style.bold`:
+
+```jsonc
+// One element of data.rows
+{
+  "id":       "row_1",
+  "label":    "Smith 2020",
+  "groupId":  null,
+  "metadata": { "hr": 0.72, "lower": 0.55, "upper": 0.95, "is_sig": true },
+  "style":    { "bold": true }
+}
+```
+
+When `paginate = paginate_spec(...)` is set, breakpoints are computed once R-side over the same flattened display rows the frontend renders, then shipped as 0-based row ranges so the viewer and the PDF export agree on page boundaries:
+
+```jsonc
+"paginate": {
+  "rows":         30,
+  "breakOn":      "split",
+  "keepGroups":   true,
+  "pageLabel":    "x_of_y",
+  "pages":        [{ "startIdx": 0,  "endIdx": 29 },
+                   { "startIdx": 30, "endIdx": 59 }],
+  "nPages":       2
 }
 ```
 
 ### Stage 4: Svelte Rendering
 
 The Svelte component receives the JSON and renders the interactive table with:
-- Sortable columns
+- Sortable columns (default; opt out per column with `sortable = FALSE`)
 - Collapsible groups
-- Hover tooltips
-- Export functionality
+- Hover tooltips (opt-in via `web_interaction(tooltip_fields = ...)`)
+- Page controls when `paginate` is set
+- Static export to SVG / PNG / PDF
 
 ## Data Requirements
 
@@ -117,17 +146,32 @@ meta_data <- data.frame(
 )
 ```
 
+#### Row kinds via `row_type`
+
+By default every row is a data row with a marker. Pass `row_type = "<col>"` to `tabviz()` (with a column whose values are `"data"`, `"header"`, `"summary"`, or `"spacer"`) to mix in:
+
+| `row_type` | Behavior | Marker |
+|---|---|---|
+| `"data"` | Standard row | Point with CI line |
+| `"header"` | Section header (point/lower/upper should be `NA`) | None |
+| `"summary"` | Pooled / subtotal row | Diamond |
+| `"spacer"` | Empty separator (point/lower/upper should be `NA`) | None |
+
+See [Row Styling](../guide/row-styling.qmd#row-types) for the full specification.
+
 ### Column Types
 
-tabviz handles standard R types:
+`col_*()` family covers cell content; `viz_*()` family adds shared-axis charts in their own column. tabviz infers a `field_category` from each data column (`numeric`, `integer`, `string`, `logical`, `date`, `array-numeric`, `other`) which the interactive column picker uses to filter compatible types.
 
-| R Type | Column Functions | Notes |
-|--------|-----------------|-------|
-| character | `col_text()`, `col_badge()` | Text display |
-| numeric | `col_numeric()`, `col_n()`, `col_percent()` | Formatted numbers |
-| integer | `col_n()` | Sample sizes |
-| logical | Row/marker styling | TRUE/FALSE conditions |
-| list | `col_sparkline()` | Nested numeric vectors |
+| R Type | Cell columns (`col_*`) | Visualization columns (`viz_*`) |
+|---|---|---|
+| character | `col_text`, `col_label`, `col_badge`, `col_icon`, `col_reference` | — |
+| numeric | `col_numeric`, `col_n`, `col_percent`, `col_currency`, `col_pvalue`, `col_progress`, `col_heatmap`, `col_stars`, `col_pictogram`, `col_ring`, `col_bar` | `viz_bar` (one value), `viz_forest` (point + CI), `viz_boxplot` / `viz_violin` (per-row arrays via list-columns or pre-computed stats) |
+| integer | `col_n` | `viz_bar` |
+| logical | Row / cell semantic flags | — (read indirectly via `row_*` / cell `style_*`) |
+| date | `col_date` | — |
+| list of numeric | `col_sparkline` | `viz_boxplot` (raw or quartiles), `viz_violin` (KDE) |
+| paired numeric | `col_interval`, `col_events`, `col_range` | — |
 
 ### Missing Values
 

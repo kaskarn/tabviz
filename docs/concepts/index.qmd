@@ -13,9 +13,9 @@ The mental models that make tabviz easier to use. Read these once and the rest o
 
 | Page | What you'll learn |
 |------|-------------------|
-| [Data Flow](data-flow.qmd) | How a `data.frame` becomes JSON, then a Svelte widget — and what that means for column references, formulas, and grouping. |
-| [Styling Cascade](styling-cascade.qmd) | The four-layer precedence model: theme defaults → row → cell → marker. Where to put a style depends on which layer you want to override. |
-| [Theming Manifesto](theming-manifesto.qmd) | *Why* themes are shaped the way they are. Living document with the two-knob principle, three-axis contract, anti-patterns, and an append-only decision log. Read this before proposing a fourth identity tier. |
+| [Data Flow](data-flow.qmd) | How a `data.frame` becomes JSON, then a Svelte widget — what column references resolve to, when formulas evaluate, the actual wire shape (rows / styles / paginate), and how grouping and pagination flow through. |
+| [Styling Cascade](styling-cascade.qmd) | The four-layer precedence model: theme → row → cell → marker. The five semantic tokens (`emphasis` / `muted` / `accent` / `bold` / `fill`), how they map to theme paths, and how `row_*` semantic flags reach into viz-cell colors. |
+| [Theming Manifesto](theming-manifesto.qmd) | *Why* themes are shaped the way they are. Two-knob principle (identity + engagement), three-axis contract, anti-patterns, the seven shipped presets, and an append-only decision log. Read this before proposing a fourth identity tier. |
 
 ## At a glance
 

@@ -265,16 +265,18 @@ tabviz(meta_data,
 | Argument | Effect |
 |----------|--------|
 | `row_type` | Controls row behavior (header, data, summary, spacer) |
-| `row_bold` | Bold text |
 | `row_italic` | Italic text |
-| `row_color` | Text color |
-| `row_bg` | Background color |
+| `row_color` | Literal text color |
+| `row_bg` | Literal background color |
 | `row_indent` | Indentation level |
-| `row_emphasis` | Theme-aware emphasis (reads `theme$row$emphasis`) |
-| `row_muted` | Theme-aware de-emphasis (reads `theme$row$muted`) |
-| `row_accent` | Theme-aware accent (reads `theme$row$accent`) |
+| `row_badge`, `row_icon` | Badge / icon on the leftmost text cell |
+| `row_emphasis` *(semantic)* | Bold + theme primary text/marker (reads `theme$row$emphasis`) |
+| `row_muted` *(semantic)* | Lighter color, reduced prominence (reads `theme$row$muted`) |
+| `row_accent` *(semantic)* | Bold + theme accent text/marker (reads `theme$row$accent`) |
+| `row_bold` *(semantic)* | Weight bump only, no color change (reads `theme$row$bold`) |
+| `row_fill` *(semantic)* | Bold + strong row-fill background (reads `theme$row$fill`); `fg` auto-contrasts |
 
-The three semantic flags (`row_emphasis`, `row_muted`, `row_accent`) reach into the theme's `row.{emphasis,muted,accent}` cluster. That cluster is itself a Tier 3 binding derived from Tier 2 — so these flags pick up theme-appropriate colors automatically, regardless of the active preset.
+The **five semantic flags** (`row_emphasis`, `row_muted`, `row_accent`, `row_bold`, `row_fill`) each reach into the matching `RowSemantic` bundle on `theme$row`. Each bundle carries `bg`, `fg`, `border`, `marker_fill`, `font_weight`, `font_style` — so flipping `row_accent = "is_primary"` restyles the row text *and* its viz cells in lockstep. See [Themes — Semantic tokens](../guide/themes.qmd#semantic-tokens) for the full bundle structure and per-token customization.
 
 ### Layer 3: Cell Styling
 
@@ -367,7 +369,7 @@ Inside any viz column (`viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`), th
 | Layer | Source | Behavior |
 |---|---|---|
 | 4. Per-row literal | `tabviz(marker_color = "col" \| ~ formula)` | Wins when value is non-`NA`. `NA` falls through to Layer 3. |
-| 3. Row semantic class | `row_accent` / `row_emphasis` / `row_muted = "col" \| ~ formula` | **Single-effect viz:** fill replaced with the theme's `row.{accent,emphasis,muted}.marker_fill`. **Multi-effect viz:** per-effect fill preserved, outline (stroke) added in the theme color. `FALSE`/absent falls through to Layer 2. |
+| 3. Row semantic class | `row_emphasis` / `row_muted` / `row_accent` / `row_bold` / `row_fill = "col" \| ~ formula` | **Single-effect viz:** fill replaced with the token's theme color (`theme@row@<token>@marker_fill`). **Multi-effect viz:** per-effect fill preserved, outline (stroke) added in the token color. `FALSE`/absent falls through to Layer 2. |
 | 2. Per-effect literal | `effect_forest(color = "#hex")` (and `effect_bar`/`effect_boxplot`/`effect_violin`) | Sets fill for that effect on all rows. |
 | 1. Theme palette | `theme$series[[i]]@fill` | Invisible default; effect index cycles. |
 
@@ -375,9 +377,11 @@ Semantic class → theme field mapping (v2):
 
 | Class | Theme path |
 |---|---|
-| `row_accent` | `theme@row@accent@marker_fill` |
 | `row_emphasis` | `theme@row@emphasis@marker_fill` |
 | `row_muted` | `theme@row@muted@marker_fill` |
+| `row_accent` | `theme@row@accent@marker_fill` |
+| `row_bold` | `theme@row@bold@marker_fill` |
+| `row_fill` | `theme@row@fill@marker_fill` |
 
 The cascade applies uniformly to all four viz_* columns. The single-effect vs multi-effect distinction is automatic — based on `length(effects)`.
 

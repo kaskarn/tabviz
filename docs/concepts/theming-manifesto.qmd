@@ -9,7 +9,7 @@ library(tabviz)
 ```
 
 ::: {.callout-note}
-**Living document — last updated 2026-04-29.**
+**Living document.**
 The cascade reference in [Styling Cascade](styling-cascade.qmd) tells you *what*
 the tokens are. This document tells you *why*. Read this before proposing a
 fourth identity tier, a "trend" slot, a charm recipe, or otherwise expanding
@@ -554,6 +554,26 @@ This is documented in `engineering-priorities.md` §"Anti-priorities" as
 a binding constraint on future architecture work.
 
 ---
+
+## The seven shipped presets
+
+Preset constructors that ship with the package. The four journal presets
+are restraint-led; the three LOTR presets exercise the full surface
+(display fonts, secondary tier, distinctive accents) and are useful as
+worked examples of the manifesto's principles in non-journal contexts.
+
+| Preset | Source | Aesthetic discipline |
+|---|---|---|
+| `web_theme_cochrane()` | `R/themes.R` | Package default; teal + warm coral, comfortable density |
+| `web_theme_lancet()` | `R/themes.R` | Lancet navy + old-gold, Georgia serif |
+| `web_theme_jama()` | `R/themes.R` | Black-and-white, ultra-compact, strong dividers |
+| `web_theme_dark()` | `R/themes.R` | Catppuccin Mocha-inspired |
+| `web_theme_dwarven()` | `R/themes-lotr.R` | Stone neutrals, forge-glow accent, broad serif display |
+| `web_theme_elvish()` | `R/themes-lotr.R` | Twilight surface, mithril silvers, calligraphic serif |
+| `web_theme_hobbit()` | `R/themes-lotr.R` | Parchment + green, hand-set body face, hearth accent |
+
+`package_themes()` returns these as a 2-level named list (`journals` /
+`lotr`); `set_theme(spec, "<name>")` switches by string name.
 
 ## See also
 

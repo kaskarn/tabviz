@@ -44,7 +44,7 @@
             stroke="#050505" stroke-width="1.5"/>
           <line x1="138.95538520317044" x2="138.95538520317044" y1="79" y2="85" stroke="#050505" stroke-width="1.5"/>
           <line x1="212.36920080645828" x2="212.36920080645828" y1="79" y2="85" stroke="#050505" stroke-width="1.5"/>
-          <rect x="169.20183551768244" y="76" width="12" height="12" fill="#1A1A1A"/>
+          <circle cx="175.20183551768244" cy="82" r="6" fill="#1A1A1A"/>
         </g>
 
         <g class="interval effect-0">
@@ -52,7 +52,7 @@
             stroke="#050505" stroke-width="1.5"/>
           <line x1="136.36781624714052" x2="136.36781624714052" y1="97" y2="103" stroke="#050505" stroke-width="1.5"/>
           <line x1="235.52752822574973" x2="235.52752822574973" y1="97" y2="103" stroke="#050505" stroke-width="1.5"/>
-          <rect x="178.92957821322443" y="94" width="12" height="12" fill="#1A1A1A"/>
+          <circle cx="184.92957821322443" cy="100" r="6" fill="#1A1A1A"/>
         </g>
 
         <g class="interval effect-0">
@@ -60,7 +60,7 @@
             stroke="#050505" stroke-width="1.5"/>
           <line x1="183.03424729798235" x2="183.03424729798235" y1="115" y2="121" stroke="#050505" stroke-width="1.5"/>
           <line x1="215.46892677355368" x2="215.46892677355368" y1="115" y2="121" stroke="#050505" stroke-width="1.5"/>
-          <rect x="193.28107791123773" y="112" width="12" height="12" fill="#1A1A1A"/>
+          <circle cx="199.28107791123773" cy="118" r="6" fill="#1A1A1A"/>
         </g>
 
         <g class="interval effect-0">
@@ -68,7 +68,7 @@
             stroke="#050505" stroke-width="1.5"/>
           <line x1="184.92957821322443" x2="184.92957821322443" y1="133" y2="139" stroke="#050505" stroke-width="1.5"/>
           <line x1="218.50538858968153" x2="218.50538858968153" y1="133" y2="139" stroke="#050505" stroke-width="1.5"/>
-          <rect x="194.9814560165861" y="130" width="12" height="12" fill="#1A1A1A"/>
+          <circle cx="200.9814560165861" cy="136" r="6" fill="#1A1A1A"/>
         </g>
 <g transform="translate(0, 153)"><line x1="102" x2="262"
     y1="0" y2="0" stroke="#000000" stroke-width="1"/>
