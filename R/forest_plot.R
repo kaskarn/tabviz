@@ -248,3 +248,24 @@ forest_plot_split <- function(x, width = NULL, height = NULL, elementId = NULL) 
 
   widget
 }
+
+# `knit_print` methods for `SplitForest` and `WebSpec` so chunks that
+# end with one of these objects render as an interactive widget instead
+# of dumping the S7 object's internal structure as raw `<pre>` text.
+#
+# Implementation note: S7 class strings (`"tabviz::SplitForest"`,
+# `"tabviz::WebSpec"`) contain `::`, which can't appear in R function
+# names — so we can't use the usual `knit_print.tabviz::SplitForest <-`
+# pattern, and `@exportS3Method` doesn't help. Instead we define plain
+# functions and bind them to the right S3 class strings via
+# `registerS3method` at package load time (see `.onLoad` in zzz.R).
+# This lets knitr's S3 dispatch find them when it walks `class(x)`.
+#' @noRd
+knit_print_splitforest <- function(x, ...) {
+  knitr::knit_print(forest_plot_split(x), ...)
+}
+
+#' @noRd
+knit_print_webspec <- function(x, ...) {
+  knitr::knit_print(render_tabviz_widget(x), ...)
+}
