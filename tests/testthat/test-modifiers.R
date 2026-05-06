@@ -50,6 +50,39 @@ test_that("tabviz(banding=) threads into the row cluster", {
   )
 })
 
+test_that("set_row_style wires every semantic token into the WebSpec", {
+  data <- data.frame(
+    study      = c("A", "B", "C"),
+    point      = c(1, 2, 3),
+    lower      = c(0.5, 1.5, 2.5),
+    upper      = c(1.5, 2.5, 3.5),
+    is_primary = c(TRUE, FALSE, FALSE),
+    is_quiet   = c(FALSE, TRUE, FALSE),
+    is_loud    = c(FALSE, FALSE, TRUE),
+    is_bold    = c(TRUE, FALSE, TRUE),
+    is_pooled  = c(FALSE, FALSE, TRUE)
+  )
+  spec <- web_spec(data = data, label = "study",
+                   columns = list(viz_forest(point = "point",
+                                             lower = "lower",
+                                             upper = "upper")))
+
+  out <- set_row_style(
+    spec,
+    bold     = "is_bold",
+    emphasis = "is_primary",
+    muted    = "is_quiet",
+    accent   = "is_loud",
+    fill     = "is_pooled"
+  )
+
+  expect_equal(out@row_bold_col,     "is_bold")
+  expect_equal(out@row_emphasis_col, "is_primary")
+  expect_equal(out@row_muted_col,    "is_quiet")
+  expect_equal(out@row_accent_col,   "is_loud")
+  expect_equal(out@row_fill_col,     "is_pooled")
+})
+
 test_that("set_theme on WebSpec works with name string", {
   data <- data.frame(
     study = c("A", "B"),
@@ -68,6 +101,44 @@ test_that("set_theme on WebSpec works with name string", {
 
   updated <- set_theme(spec, "jama")
   expect_equal(updated@theme@name, "jama")
+})
+
+test_that("set_theme on WebSpec accepts every shipped preset by name", {
+  data <- data.frame(
+    study = c("A", "B"),
+    point = c(1, 2),
+    lower = c(0.5, 1.5),
+    upper = c(1.5, 2.5)
+  )
+  spec <- web_spec(
+    data = data,
+    label = "study",
+    columns = list(
+      viz_forest(point = "point", lower = "lower", upper = "upper")
+    )
+  )
+
+  preset_names <- c("cochrane", "lancet", "jama", "dark",
+                    "dwarven", "elvish", "hobbit")
+
+  for (nm in preset_names) {
+    updated <- set_theme(spec, nm)
+    expect_equal(updated@theme@name, nm,
+                 info = sprintf("set_theme(spec, %s)", shQuote(nm)))
+  }
+
+  # `default` is a non-breaking alias for cochrane.
+  expect_equal(set_theme(spec, "default")@theme@name, "cochrane")
+})
+
+test_that("set_theme errors on unknown name with the valid set listed", {
+  data <- data.frame(study = c("A", "B"),
+                     point = c(1, 2), lower = c(0.5, 1.5), upper = c(1.5, 2.5))
+  spec <- web_spec(data = data, label = "study",
+                   columns = list(viz_forest(point = "point",
+                                             lower = "lower",
+                                             upper = "upper")))
+  expect_error(set_theme(spec, "modern"), "Unknown theme name")
 })
 
 test_that("set_theme on WebSpec works with WebTheme object", {

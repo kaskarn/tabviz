@@ -1,5 +1,23 @@
 # tabviz (development)
 
+## Fluent API parity fixes
+
+Two parity gaps surfaced by the reference-docs audit:
+
+* **`set_row_style()` gains a `fill` argument.** Mirrors
+  `tabviz(row_fill = ...)`, the fifth and last semantic token in the
+  `RowCluster` set (after `emphasis`, `muted`, `accent`, `bold`). Use
+  for pooled / overall summary rows that should pop with a strong
+  themed fill and auto-contrasting foreground.
+
+* **`set_theme(name)` accepts the LOTR presets by string name.** The
+  string-name path on `set_theme()` previously routed only the four
+  journal presets (`cochrane` / `lancet` / `jama` / `dark`) plus the
+  `default` alias. `set_theme("dwarven")`, `"elvish"`, and `"hobbit"`
+  now resolve to `web_theme_dwarven()` / `web_theme_elvish()` /
+  `web_theme_hobbit()`, completing parity with the seven shipped
+  presets.
+
 ## Pagination — long tables across multiple pages (v0.29.0)
 
 `tabviz()` and `save_plot()` gain a `paginate` argument that breaks long

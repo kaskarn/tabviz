@@ -157,6 +157,10 @@ paginate <- function(x, ...) {
 #' @param emphasis Column name containing logical values for emphasis styling (uses theme primary color)
 #' @param muted Column name containing logical values for muted styling (uses theme muted color)
 #' @param accent Column name containing logical values for accent styling (uses theme accent color)
+#' @param fill Column name containing logical values for fill styling — bold +
+#'   a strong row-fill background with auto-contrasting foreground. Mirrors
+#'   `tabviz(row_fill = ...)`. The fifth and last semantic token in the
+#'   `RowCluster` set; use for pooled / overall summary rows.
 #'
 #' @return The modified WebSpec object (or widget)
 #'
@@ -182,7 +186,8 @@ set_row_style <- function(
     weight = NULL,
     emphasis = NULL,
     muted = NULL,
-    accent = NULL) {
+    accent = NULL,
+    fill = NULL) {
   spec <- extract_spec(x)
   if (!is.null(bold)) spec@row_bold_col <- bold
   if (!is.null(italic)) spec@row_italic_col <- italic
@@ -196,6 +201,7 @@ set_row_style <- function(
   if (!is.null(emphasis)) spec@row_emphasis_col <- emphasis
   if (!is.null(muted)) spec@row_muted_col <- muted
   if (!is.null(accent)) spec@row_accent_col <- accent
+  if (!is.null(fill)) spec@row_fill_col <- fill
   repack(x, spec)
 }
 
@@ -315,10 +321,15 @@ set_marker_style <- function(
 #' @export
 set_theme <- function(x, theme) {
   theme_map <- list(
+    # Journal presets (R/themes.R)
     cochrane = web_theme_cochrane,
     lancet   = web_theme_lancet,
     jama     = web_theme_jama,
     dark     = web_theme_dark,
+    # LOTR presets (R/themes-lotr.R) — illustrative, non-journal
+    dwarven  = web_theme_dwarven,
+    elvish   = web_theme_elvish,
+    hobbit   = web_theme_hobbit,
     # "default" is no longer a constructor; the package default is
     # Cochrane. Keep "default" routing here as a non-breaking alias for
     # set_theme("default") call sites in the wild.

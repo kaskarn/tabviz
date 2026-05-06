@@ -17,7 +17,8 @@ set_row_style(
   weight = NULL,
   emphasis = NULL,
   muted = NULL,
-  accent = NULL
+  accent = NULL,
+  fill = NULL
 )
 }
 \arguments{
@@ -46,6 +47,11 @@ set_row_style(
 \item{muted}{Column name containing logical values for muted styling (uses theme muted color)}
 
 \item{accent}{Column name containing logical values for accent styling (uses theme accent color)}
+
+\item{fill}{Column name containing logical values for fill styling — bold +
+a strong row-fill background with auto-contrasting foreground. Mirrors
+\code{tabviz(row_fill = ...)}. The fifth and last semantic token in the
+\code{RowCluster} set; use for pooled / overall summary rows.}
 }
 \value{
 The modified WebSpec object (or widget)
