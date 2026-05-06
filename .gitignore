@@ -34,10 +34,16 @@ docs/tests/
 docs/site_libs/
 docs/guide/*.html
 docs/guide/*.rmarkdown
+docs/guide/styling/*.html
+docs/guide/visualizations/*.html
 docs/reference/*.html
 docs/concepts/*.html
 docs/technical/*.html
+docs/gallery/*.html
+docs/dev/*.html
+docs/deep-dives/*.html
 docs/index.html
+docs/cheatsheet.html
 .quarto/
 **/*_cache/
 cran-comments.md
