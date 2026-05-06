@@ -8,73 +8,33 @@ library(tabviz)
 library(dplyr)
 ```
 
-This guide covers per-cell styling, which allows you to apply different formatting to individual cells based on data values.
+This guide covers per-cell styling — formatting that applies to individual cells inside a specific column, with optional conditions on the cell's own value or other columns in the row.
 
 ::: {.callout-tip}
-## The Styling Hierarchy
+## Where this fits
 
-tabviz applies styles in order of specificity:
-
-1. **Theme defaults** (base colors, fonts)
-2. **Row styles** (`row_bold`, `row_color`) - apply to entire rows
-3. **Cell styles** (`col_*(bold = ...)`) - override for specific cells
-
-More specific styles override less specific ones. This lets you set row-wide defaults and override individual cells.
+This page covers the **Cell layer** of the styling cascade. For the overall picture (Theme → Row → Cell → Marker, in order of increasing specificity) see [Styling Overview](styling/index.qmd). For row-wide formatting and the semantic-token shortcuts (`row_accent`, `row_emphasis`, `row_muted`, `row_bold`, `row_fill`), see [Row Styling](row-styling.qmd).
 :::
-
-## Row vs Cell Styling
-
-tabviz offers two levels of styling:
-
-| Level | Parameters | Scope | Use When |
-|-------|------------|-------|----------|
-| **Row** | `row_bold`, `row_color`, `row_indent`, `row_badge` | Entire row | Headers, summaries, highlighting rows |
-| **Cell** | `bold`, `color`, `bg`, `badge`, `icon` on columns | Specific cells | Conditional formatting, significance |
-
-Cell styling takes precedence over row styling when both are specified.
-
-## Semantic Row Styling
-
-For quick conditional formatting, use semantic styling classes that apply theme-appropriate styles:
-
-| Parameter | Effect | Use For |
-|-----------|--------|---------|
-| `row_emphasis` | Bold text, darker color | Key results, primary endpoints |
-| `row_muted` | Lighter color, reduced prominence | Secondary results, supporting data |
-| `row_accent` | Theme accent color | Highlighted findings, special rows |
-
-```{r}
-#| eval: false
-# Add semantic styling columns to your data
-data <- data |>
-  mutate(
-    is_primary = endpoint == "Primary",
-    is_secondary = grepl("Secondary", endpoint)
-  )
-
-tabviz(data, ...,
-  row_emphasis = "is_primary",
-  row_muted = "is_secondary"
-)
-```
-
-These semantic styles use theme colors automatically, so they adapt when switching themes.
 
 ## Cell Style Parameters
 
-Every `col_*()` function accepts these styling parameters:
+Every `col_*()` function accepts these styling parameters. The first six are literal — you set the value directly. The last five are **theme-aware semantic tokens**: tag a cell with `accent` and the theme paints it in its own accent color, restyling automatically when you swap themes.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `bold` | Column name or formula | Bold text when TRUE |
 | `italic` | Column name or formula | Italic text when TRUE |
-| `color` | Column name or formula | Text color |
-| `bg` | Column name or formula | Background color |
+| `color` | Column name or formula | Text color (literal CSS color) |
+| `bg` | Column name or formula | Background color (literal CSS color) |
 | `badge` | Column name or formula | Badge label |
 | `icon` | Column name or formula | Emoji/unicode icon |
-| `emphasis` | Column name or formula | Theme-aware emphasis (bold + foreground) |
-| `muted` | Column name or formula | Theme-aware muted styling |
-| `accent` | Column name or formula | Theme-aware accent styling |
+| `emphasis` *(semantic)* | Column name or formula | Bold + theme primary color |
+| `muted` *(semantic)* | Column name or formula | Lighter color, reduced prominence |
+| `accent` *(semantic)* | Column name or formula | Bold + theme accent color |
+| `bold` *(semantic)* | Column name or formula | Weight bump only, no color change. Same name as the literal `bold` above; pass via the `style_bold` arg if you need to disambiguate. |
+| `fill` *(semantic)* | Column name or formula | Bold + strong row-fill background (auto-contrasting fg) |
+
+The literal `color` / `bg` win over semantic tokens on the same cell — they're more specific. See [Themes — Semantic tokens](themes.qmd#semantic-tokens) for the underlying `RowSemantic` bundles.
 
 Each parameter accepts either:
 
@@ -370,3 +330,10 @@ Keep your data organized by using consistent naming:
 | Icon | `_icon` | `status_icon` |
 
 This makes it clear which columns are data vs styling, and helps when debugging formatting issues.
+
+## See Also
+
+- [Styling Overview](styling/index.qmd) — Where this layer fits in the cascade
+- [Row Styling](row-styling.qmd) — Whole-row formatting and semantic-token shortcuts
+- [Themes](themes.qmd) — Theme-aware color tokens (`accent`, `emphasis`, etc.)
+- [Columns](columns.qmd) — `col_*()` argument reference

@@ -33,7 +33,13 @@ tabviz styling is a four-layer cascade — each layer targets a more specific sc
 | **Cell** | `bold`, `color`, `bg`, … inside `col_*()` | Per-column overrides |
 | **Marker** | `marker_color`, `marker_shape`, `marker_size`, `marker_opacity` on `tabviz()` | Forest-plot point appearance |
 
-More specific layers win: cell beats row, row beats theme, formula expressions beat everything.
+More specific layers win: marker beats cell, cell beats row, row beats theme. Formula expressions and column-name strings are equivalent at every layer — pick whichever reads better at the call site.
+
+::: {.callout-tip}
+## Semantic shortcuts
+
+Theme-aware semantic tokens — `row_emphasis`, `row_muted`, `row_accent`, `row_bold`, `row_fill` (and the matching `emphasis` / `muted` / `accent` / `bold` / `fill` cell-level args) — let you say "this row/cell is special" without picking literal colors. They restyle automatically when you swap themes. See [Themes — Semantic tokens](../themes.qmd#semantic-tokens) for the full list.
+:::
 
 ## 1. Theme Level
 

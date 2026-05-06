@@ -10,6 +10,12 @@ library(dplyr)
 
 Control the visual appearance of individual rows using `row_*` parameters. This gives you precise control over text styling, indentation, colors, and badges—essential for creating publication-ready meta-analysis figures.
 
+::: {.callout-tip}
+## Where this fits
+
+This page covers the **Row layer** of the styling cascade. For the overall picture (Theme → Row → Cell → Marker, in order of increasing specificity) see [Styling Overview](styling/index.qmd).
+:::
+
 ## Text Styling
 
 Control text appearance with `row_bold`, `row_italic`, and `row_color`:
@@ -137,13 +143,15 @@ Use sparingly—subtle tints work best.
 
 ## Semantic Styling
 
-For theme-aware styling that adapts automatically when you change themes, use semantic shortcuts:
+For theme-aware styling that adapts automatically when you change themes, use one of the **five semantic tokens**. Each names a visual treatment that the theme paints in its own colors — a row "tagged" with `row_accent` will pick the active theme's accent color, so the same code restyles itself when you swap from JAMA to Lancet.
 
-| Parameter | Effect |
-|-----------|--------|
-| `row_emphasis` | Bold text + theme primary color (for key results) |
-| `row_muted` | Lighter color, reduced prominence (for secondary data) |
-| `row_accent` | Theme accent color (for highlighted findings) |
+| Parameter | Treatment | Use for |
+|-----------|-----------|---------|
+| `row_emphasis` | Bold + primary-color text and marker | Key results, primary endpoints |
+| `row_muted` | Lighter color, reduced prominence | Secondary results, exploratory data |
+| `row_accent` | Bold + accent-color text and marker (most common) | Highlighted findings, callouts |
+| `row_bold` | Just a weight bump, no color change | Distinguish without coloring |
+| `row_fill` | Bold + a strong row fill (auto-contrasting fg) | Summary / pooled rows |
 
 ```{r}
 #| eval: false
@@ -154,11 +162,12 @@ tabviz(data,
                null_value = 1, scale = "log")
   ),
   row_emphasis = "is_primary",   # Column with TRUE/FALSE
-  row_muted = "is_secondary"     # Column with TRUE/FALSE
+  row_muted    = "is_secondary", # Column with TRUE/FALSE
+  row_fill     = "is_pooled"     # Column with TRUE/FALSE — strong row fill
 )
 ```
 
-These adapt automatically to any theme, so you don't need to update color values when switching from `web_theme_jama()` to `web_theme_lancet()`.
+These adapt automatically to any theme, so you don't need to update color values when switching from `web_theme_jama()` to `web_theme_lancet()`. See [Themes — Semantic tokens](themes.qmd#semantic-tokens) for the underlying `RowSemantic` bundles and per-token customization.
 
 ### Cascading into viz cells
 
@@ -387,7 +396,7 @@ Not every row-level parameter is anchored the same way. Some attach to the *row*
 | Parameter | Bound to | Stable under column reorder? |
 |-----------|----------|------------------------------|
 | `row_bold`, `row_italic`, `row_color`, `row_bg` | Row CSS class | ✅ Yes |
-| `row_emphasis`, `row_muted`, `row_accent` | Row CSS class (theme-aware) | ✅ Yes |
+| `row_emphasis`, `row_muted`, `row_accent`, `row_bold`, `row_fill` | Row CSS class (theme-aware) | ✅ Yes |
 | `row_indent` | Row CSS class (applies to label column) | ✅ Yes |
 | `row_type` (`"data"`, `"header"`, `"summary"`, `"spacer"`) | Row CSS class | ✅ Yes |
 | **`row_badge`, `row_icon`** | First visible text column's cell | ⚠️ No — re-attaches if first column changes |
@@ -435,9 +444,11 @@ All `row_*` parameters accept either a **column name** (string) or a **formula e
 | `row_indent` | Integer (0, 1, 2, ...) | Indentation level |
 | `row_badge` | Text | Badge label |
 | `row_icon` | Emoji/unicode | Icon before label |
-| `row_emphasis` | `TRUE`/`FALSE` | Theme-aware emphasis styling |
-| `row_muted` | `TRUE`/`FALSE` | Theme-aware muted styling |
-| `row_accent` | `TRUE`/`FALSE` | Theme-aware accent styling |
+| `row_emphasis` | `TRUE`/`FALSE` | Bold + theme primary text/marker |
+| `row_muted` | `TRUE`/`FALSE` | Lighter color, reduced prominence |
+| `row_accent` | `TRUE`/`FALSE` | Bold + theme accent text/marker |
+| `row_bold` (semantic) | `TRUE`/`FALSE` | Weight bump only, no color change |
+| `row_fill` | `TRUE`/`FALSE` | Bold + strong row fill (auto-contrasting fg) |
 | `row_type` | `"data"`, `"header"`, `"summary"`, `"spacer"` | Row behavior and marker type |
 
 ::: {.callout-note}
@@ -459,4 +470,5 @@ row_bold = ~ pval < 0.05
 - [Row Groups](row-groups.qmd) — Automatic collapsible sections from column values
 - [Visualization Styling](visualizations/styling.qmd) — How `row_accent` / `row_emphasis` / `row_muted` cascade into viz cells
 - [Fluent API](fluent-api.qmd) — Pipe-based equivalents (`set_row_style()`) for programmatic workflows
-- [forest_plot()](../reference/tabviz.qmd) — All arguments
+- [Styling Overview](styling/index.qmd) — Where this layer fits in the cascade
+- [tabviz()](../reference/tabviz.qmd) — All arguments

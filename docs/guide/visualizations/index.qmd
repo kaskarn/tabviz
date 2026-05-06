@@ -96,5 +96,4 @@ See [Export](../export.qmd) for details.
 - [Boxplots](boxplots.qmd) — Distribution summaries with `viz_boxplot()`
 - [Violin Plots](violin-plots.qmd) — Full distributions with `viz_violin()`
 - [Visualization Styling](styling.qmd) — The 4-layer color cascade across all viz types
-- [Distribution Plots](distribution-plots.qmd) — Choosing among bar / box / violin
 - [Columns](../columns.qmd) — Inline columns including `col_bar()` and `col_sparkline()`

@@ -176,9 +176,9 @@ At deeper banding levels (e.g. `banding = "group-2"` with nested groups),
 the L1 bar's explicit fill is preserved unchanged — only the banded
 level loses its explicit fill.
 
-### Semantic tokens — naming visual treatments
+### Semantic tokens — naming visual treatments {#semantic-tokens}
 
-Tabviz ships with six **semantic tokens** that name visual treatments
+Tabviz ships with **five semantic tokens** that name visual treatments
 you can apply to a row or cell. Each token is a `RowSemantic` bundle on
 `theme.row`: `bg`, `fg`, `border`, `marker_fill`, `font_weight`,
 `font_style`. The renderer picks one token per row/cell and paints its
@@ -186,12 +186,11 @@ bundle.
 
 | Token       | Default treatment                                                    |
 |-------------|----------------------------------------------------------------------|
-| `mute`      | Lighter color, reduced prominence                                    |
-| `bold`      | Just a weight bump — no color change                                 |
+| `emphasis`  | Bold + primary text and marker                                       |
+| `muted`     | Lighter color, reduced prominence                                    |
 | `accent`    | Bold + accent-color text and marker (most common)                    |
-| `highlight` | Bold + a pale "marker" background (defaults to a derived `theme.semantic.highlight`) |
-| `fill`      | Bold + a strong row fill (defaults to a derived `theme.semantic.fill`); fg auto-contrasts |
-| `emphasis`  | Legacy: bold + primary text and marker (kept for back-compat)        |
+| `bold`      | Just a weight bump — no color change                                 |
+| `fill`      | Bold + a strong row fill (defaults to a derived `theme.semantic.fill`); `fg` auto-contrasts |
 
 Two paths to apply a token to a row:
 
@@ -207,7 +206,7 @@ Two paths to apply a token to a row:
    ```
 
 2. **Painter (interactive)** — click the paintbrush icon, pick a chip
-   (`mute` / `bold` / `accent` / `highlight` / `fill`), then click rows
+   (`emphasis` / `muted` / `accent` / `bold` / `fill`), then click rows
    or cells to stamp the token on. Hover before clicking shows a
    semi-transparent preview of the would-be visual. The painter
    defaults to `accent` + row-scope on first open. Toggle Row/Cell
@@ -217,12 +216,12 @@ Two paths to apply a token to a row:
 
 Two ways to override:
 
-* **Tier-2 named colors** for the highlight + fill backgrounds:
+* **Tier-2 named color** for the fill background — pin a specific color
+  for the `fill` token instead of letting it derive from `accent`:
 
   ```{r}
   #| eval: false
-  set_theme_field(t, c("semantic", "highlight"), "#FFE58F")  # custom marker yellow
-  set_theme_field(t, c("semantic", "fill"),      "#1F3A5F")  # custom fill navy
+  set_theme_field(t, c("semantic", "fill"), "#1F3A5F")  # custom fill navy
   ```
 
   Or interactively: Settings panel → **Tokens** tab → Token colors.
@@ -231,8 +230,8 @@ Two ways to override:
 
   ```{r}
   #| eval: false
-  set_theme_field(t, c("row", "fill", "fg"),          "#FFFFFF")  # force white text on fill rows
-  set_theme_field(t, c("row", "highlight", "border"), "#C8553D")  # red border on highlight rows
+  set_theme_field(t, c("row", "fill",   "fg"),     "#FFFFFF")  # force white text on fill rows
+  set_theme_field(t, c("row", "accent", "border"), "#C8553D")  # red border on accent rows
   ```
 
   Or interactively: Settings panel → **Tokens** tab → expand a token →

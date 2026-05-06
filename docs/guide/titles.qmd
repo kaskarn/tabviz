@@ -91,29 +91,22 @@ tabviz(demo_data,
 )
 ```
 
-## Axis Labels
+## Axis labels live on the visualization column
 
-For forest plot columns, use `axis_label` within `viz_forest()` to label the x-axis:
+Axis labels (the text below a forest / bar / box / violin chart's x-axis) are a property of the **viz column**, not of the table. Set them inside the `viz_*()` constructor with `axis_label = "..."`:
 
-```{r}
-glp1_trials |>
-  filter(row_type == "data", group == "Main Trials") |>
-  head(3) |>
-  tabviz(
-    label = "study",
-    title = "Treatment Effect",
-    columns = list(
-      viz_forest(point = "hr", lower = "lower", upper = "upper",
-                 scale = "log", null_value = 1,
-                 axis_label = "Hazard Ratio (95% CI)")
-    )
-  )
+```r
+viz_forest(point = "hr", lower = "lower", upper = "upper",
+           scale = "log", null_value = 1,
+           axis_label = "Hazard Ratio (95% CI)")
 ```
+
+See [Forest Plots — Axis Control](visualizations/forest-plots.qmd#axis-control) for the full set of axis options (`axis_range`, `axis_ticks`, `axis_gridlines`, `axis_label`).
 
 ---
 
 ## See Also
 
 - [Themes](themes.qmd) — Control label typography and colors
-- [Visualizations](visualizations/) — Forest plots and other graphical columns
+- [Visualizations](visualizations/index.qmd) — Forest plots and other graphical columns
 - [Export](export.qmd) — Save figures with labels intact

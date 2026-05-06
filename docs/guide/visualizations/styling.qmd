@@ -11,6 +11,12 @@ set.seed(20250423)
 
 Every `viz_*` column — `viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin` — participates in the same color cascade. Markers, bars, boxes, and violins all resolve their fill (and sometimes their outline) by walking four layers from general to specific. Most of the time you only touch the layer that matches your intent and let the rest stay defaulted.
 
+::: {.callout-tip}
+## Where this fits
+
+This page is the **Marker layer** of the styling cascade in detail — how a glyph's fill and outline resolve. For the overall package-level cascade (Theme → Row → Cell → Marker) see [Styling Overview](../styling/index.qmd). For the row-text side of the same semantic tokens that drive Layer 3 below, see [Row Styling](../row-styling.qmd).
+:::
+
 ## The four layers
 
 Each glyph's color is decided by the most-specific layer that has a value:
@@ -18,7 +24,7 @@ Each glyph's color is decided by the most-specific layer that has a value:
 | Layer | Source | Wins when… |
 |---|---|---|
 | **4. Per-row literal** | `marker_color = "col"` or `~ formula` on `tabviz()` | Value is non-`NA` for that row. |
-| **3. Row semantic class** | `row_accent` / `row_emphasis` / `row_muted` on `tabviz()` | Layer 4 is `NA`. **Single-effect:** replaces fill with theme color. **Multi-effect:** preserves per-effect fill, adds an outline in the theme color. |
+| **3. Row semantic class** | `row_emphasis` / `row_muted` / `row_accent` / `row_bold` / `row_fill` on `tabviz()` | Layer 4 is `NA`. **Single-effect:** replaces fill with the token's theme color. **Multi-effect:** preserves per-effect fill, adds an outline in the token's color. |
 | **2. Per-effect literal** | `effect_*(color = "#hex")` inside `viz_*()` | Layers 3–4 don't apply. Sets the fill for that effect on every row. |
 | **1. Theme palette** | `theme.shapes.effect_colors[i]` | Nothing else is set. Effects cycle through the palette by index. |
 
@@ -129,7 +135,7 @@ tabviz(sales, label = "region",
 
 ## Layer 3 — Row semantic cascade
 
-`row_accent`, `row_emphasis`, and `row_muted` already style row text (see [Row Styling](../row-styling.qmd)). They also reach into viz cells. The behavior depends on whether the viz column has one effect or several.
+The five semantic tokens — `row_emphasis`, `row_muted`, `row_accent`, `row_bold`, `row_fill` — already style row text (see [Row Styling](../row-styling.qmd)). They also reach into viz cells. The behavior depends on whether the viz column has one effect or several.
 
 ### Single-effect: fill replacement
 
@@ -264,7 +270,7 @@ tabviz(trials, label = "study",
 
 - **Stick with the theme** when the viz is single-purpose and the row's role isn't categorical. The palette already does the right thing.
 - **Use `effect_*(color = ...)`** when the color identifies the *metric* (ITT vs. per-protocol, drug A vs. B). It belongs to the effect, not the row.
-- **Use `row_accent` / `row_emphasis` / `row_muted`** when the color identifies the *row* ("this is the primary outcome", "this is exploratory"). Themable, single-source: the row text and its viz both update.
+- **Use a row semantic token** (`row_accent` / `row_emphasis` / `row_muted` / `row_bold` / `row_fill`) when the color identifies the *row* ("this is the primary outcome", "this is exploratory"). Themable, single-source: the row text and its viz both update.
 - **Use `marker_color` (column or formula)** when you need exact-pixel control — categorical row palettes, primary alignment, colorblind-safe encodings. Use `NA` to fall through to the cascade for rows you don't want to override.
 
 ## See also
