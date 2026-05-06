@@ -349,6 +349,79 @@ clear_edits(x)
 
 ---
 
+## Labels and watermark
+
+Title / subtitle / caption / footnote / watermark have dedicated single-slot verbs that mirror the `tabviz()` arguments. Each accepts `NULL` to clear the slot.
+
+### set_title() / set_subtitle() / set_caption() / set_footnote() {#set_title}
+
+```r
+set_title(x, title)         # NULL clears
+set_subtitle(x, subtitle)
+set_caption(x, caption)
+set_footnote(x, footnote)
+```
+
+### set_watermark() {#set_watermark}
+
+```r
+set_watermark(x, text = NULL, color = NULL, opacity = NULL)
+```
+
+A diagonally-rotated watermark across the full plot region. Pass `text = NULL` to clear. `color` is a CSS color (defaults to `theme.colors.foreground`); `opacity` is a number in `[0, 1]` (default `0.07`).
+
+---
+
+## Painter (semantic-token stamping)
+
+The painter applies one of the five semantic tokens (`emphasis` / `muted` / `accent` / `bold` / `fill`) to a row or cell — equivalent to setting the matching `row_*` flag for that single row, but as a fluent verb suitable for piped one-shot updates and proxy dispatch.
+
+### paint_row() {#paint_row}
+
+```r
+paint_row(x, row_id, token = c("emphasis", "muted", "accent", "bold", "fill"))
+```
+
+### paint_cell() {#paint_cell}
+
+```r
+paint_cell(x, row_id, field, token = c("emphasis", "muted", "accent", "bold", "fill"))
+```
+
+---
+
+## Pagination
+
+### paginate() {#paginate}
+
+Fluent modifier mirroring [`tabviz(paginate = ...)`](tabviz.qmd#pagination). Useful at the end of a pipe when the pagination policy is decided after the spec has been built, or for toggling on/off without re-running the constructor.
+
+```r
+paginate(x, ...)
+```
+
+`...` accepts either a single positional `PaginateSpec` / shortcut value (`paginate(x, paginate_letter())`, `paginate(x, 50)`, `paginate(x, TRUE)`, `paginate(x, NULL)`) or named arguments forwarded to [`paginate_spec()`](columns.qmd#paginate) (`paginate(x, rows = 20, orphan_min = 5)`).
+
+```r
+spec |> paginate(rows = 30)         # sensible defaults
+spec |> paginate(paginate_letter()) # preset
+spec |> paginate(NULL)              # turn off
+```
+
+---
+
+## Split-by column widths
+
+### set_shared_column_widths() {#set_shared_column_widths}
+
+```r
+set_shared_column_widths(x, enabled = TRUE)
+```
+
+When the input is a `SplitForest` (or htmlwidget over one), stamp identical per-column widths across every sub-plot so columns line up tile-to-tile when screenshots are stacked. Works through the proxy too — equivalent to flipping the **Align column widths** checkbox in the sidebar footer.
+
+---
+
 ## Global controls
 
 `set_theme()` and `set_zoom()` are documented in the [styling reference](styling.qmd#set_theme) — they are global presentation modifiers rather than data verbs, but they accept the same input shapes (spec / widget / proxy where applicable).
@@ -386,6 +459,17 @@ clear_edits(x)
 | `set_cell()` | Overwrite a cell (proxy) |
 | `set_row_label()` | Rename a row (proxy) |
 | `clear_edits()` | Discard in-widget edits (proxy) |
+
+### Labels, watermark, painter, pagination, splits
+
+| Function | Purpose |
+|----------|---------|
+| `set_title()` / `set_subtitle()` / `set_caption()` / `set_footnote()` | Single-slot label setters; `NULL` clears |
+| `set_watermark()` | Diagonal full-plot watermark text + color + opacity |
+| `paint_row()` | Stamp a semantic token (`emphasis` / `muted` / `accent` / `bold` / `fill`) on one row |
+| `paint_cell()` | Stamp a semantic token on one cell |
+| `paginate()` | Configure / clear pagination on an existing spec |
+| `set_shared_column_widths()` | Toggle aligned per-column widths across split sub-plots |
 
 ## See Also
 

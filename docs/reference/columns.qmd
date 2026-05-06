@@ -372,6 +372,39 @@ col_stars(field, header = NULL, width = NULL,
 
 `domain = c(min, max)` remaps arbitrary input ranges into `[0, max_stars]`.
 
+### `col_pictogram()` {#col_pictogram}
+
+```r
+col_pictogram(field, header = NULL, width = NULL,
+              glyph = "person", glyph_field = NULL,
+              max_glyphs = NULL, half_glyphs = FALSE,
+              min_value = NULL, max_value = NULL,
+              color = NULL, empty_color = NULL,
+              size = c("base", "sm", "lg"),
+              layout = c("row", "stack"),
+              value_label = FALSE,
+              label_format = NULL, label_decimals = 1,
+              na_text = NULL, ...)
+```
+
+Repeated glyphs as either a count (render `round(value)` glyphs) or a rating (fill `value` of `max_glyphs`). `glyph_field = "<col>"` paired with a named-vector `glyph` selects per-row glyphs (`glyph = c("low" = "leaf", "high" = "flame")`). `min_value` / `max_value` remap an arbitrary input range into `[0, max_glyphs]` (rating mode). `value_label` accepts `FALSE` / `TRUE` (= `"trailing"`) / `"leading"` / `"trailing"`.
+
+### `col_ring()` {#col_ring}
+
+```r
+col_ring(field, header = NULL, width = NULL,
+         min_value = 0, max_value = 1,
+         color = NULL, thresholds = NULL,
+         track_color = NULL,
+         size = c("base", "sm", "lg"),
+         show_label = TRUE,
+         label_format = c("percent", "decimal", "integer"),
+         label_decimals = 0,
+         na_text = NULL, ...)
+```
+
+Donut gauge that fills `(value - min_value) / (max_value - min_value)` of a circle. `thresholds` is a numeric vector of breakpoints (raw input units) where the arc color shifts; pass a paired `color` vector of length `length(thresholds) + 1`, or omit `color` for the auto-defaulted positive/warning/negative palette (with up to two thresholds).
+
 ### `col_img()` {#col_img}
 
 ```r
@@ -568,9 +601,9 @@ The constructor every `col_*()` helper delegates to. Use this directly only when
 web_col(field,
         header = NULL,
         type = c("text", "numeric", "interval", "bar", "pvalue",
-                 "sparkline", "icon", "badge", "stars", "img",
-                 "reference", "range", "forest", "heatmap",
-                 "progress", "viz_bar", "viz_boxplot",
+                 "sparkline", "icon", "badge", "stars", "pictogram",
+                 "ring", "img", "reference", "range", "forest",
+                 "heatmap", "progress", "viz_bar", "viz_boxplot",
                  "viz_violin", "custom"),
         width = NULL,
         align = NULL, header_align = NULL,
@@ -582,7 +615,8 @@ web_col(field,
         bold = NULL, italic = NULL,
         color = NULL, bg = NULL,
         badge = NULL, icon = NULL,
-        emphasis = NULL, muted = NULL, accent = NULL)
+        emphasis = NULL, muted = NULL, accent = NULL,
+        fill = NULL)
 ```
 
 Returns a `ColumnSpec`.
@@ -595,15 +629,16 @@ Every `col_*()` helper accepts the same set of cell-styling arguments via `...`.
 
 | Argument | Resolved value | Effect |
 |---|---|---|
-| `bold` | logical | Bold text. |
+| `bold` | logical | Bold text (literal weight). |
 | `italic` | logical | Italic text. |
-| `color` | CSS color | Text color. |
-| `bg` | CSS color | Cell background. |
+| `color` | CSS color | Text color (literal). |
+| `bg` | CSS color | Cell background (literal). |
 | `badge` | character | Inline badge in the cell. |
 | `icon` | emoji/unicode | Icon next to value. |
-| `emphasis` | logical | Theme-aware emphasis (bold + foreground). |
-| `muted` | logical | Theme-aware muted (lighter). |
-| `accent` | logical | Theme accent color. |
+| `emphasis` *(semantic)* | logical | Bold + theme primary color. |
+| `muted` *(semantic)* | logical | Lighter color, reduced prominence. |
+| `accent` *(semantic)* | logical | Bold + theme accent color. |
+| `fill` *(semantic)* | logical | Bold + strong row-fill background; `fg` auto-contrasts. |
 
 ```r
 # Bold significant p-values, color them

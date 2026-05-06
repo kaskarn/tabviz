@@ -68,7 +68,52 @@ the browser. See the full list in [Styling](styling.qmd) and the
 | Data     | `update_data()` (proxy requires a `WebSpec`) |
 | Groups   | `toggle_group()` |
 | Cells    | `set_cell()`, `set_row_label()`, `clear_edits()` (proxy-only) |
-| Global   | `set_theme()`, `set_zoom()`, styling `set_*` verbs |
+| Global   | `set_theme()`, `set_zoom()`, `paginate()`, styling `set_*` verbs |
+| Labels & watermark | `set_title()`, `set_subtitle()`, `set_caption()`, `set_footnote()`, `set_watermark()` |
+| Painter  | `paint_row()`, `paint_cell()` (apply a semantic token) |
+| Split    | `set_shared_column_widths()` (align column widths across sub-plots) |
+
+## Reading widget state {#reading-widget-state}
+
+Tabviz widgets emit per-dimension Shiny inputs as users interact (sort, filter, drag, edit, paginate, …). Two helpers wrap the boilerplate of pulling them all together:
+
+### `tabviz_state()` {#tabviz_state}
+
+Returns a named list of every observability dimension the widget exposes. The envelope (`source`, `ts`) is stripped — values only.
+
+```r
+tabviz_state(input, id)
+```
+
+| Argument | Type | Description |
+|---|---|---|
+| `input` | Shiny `input` object | Passed through from `server` |
+| `id` | `character(1)` | Widget output id (the same one passed to `tabvizOutput()`) |
+
+```r
+observe({
+  state <- tabviz_state(input, "tbl")
+  # state$sort, state$filters, state$collapsed_groups, ...
+})
+```
+
+### `tabviz_state_envelope()` {#tabviz_state_envelope}
+
+Like `tabviz_state()` but preserves each dimension's envelope, so callers see `source` (`"user"` / `"proxy"`) and `ts` alongside the value. Use this to ignore proxy-originated mutations and avoid feedback loops:
+
+```r
+observe({
+  sort <- input[["tbl_sort"]]
+  req(sort, sort$source == "user")
+  # react only to user-driven sort changes
+})
+
+# Or pull all dimensions at once:
+env <- tabviz_state_envelope(input, "tbl")
+env$sort$value      # the value
+env$sort$source     # "user" or "proxy"
+env$sort$ts         # timestamp
+```
 
 ## Split-Table Bindings
 

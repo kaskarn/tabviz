@@ -52,6 +52,8 @@ forest_plot(data, point = "hr", lower = "lo", upper = "hi", label = "study")
 | [`col_icon()`](columns.qmd#col_icon) | Icon / emoji per row |
 | [`col_badge()`](columns.qmd#col_badge) | Colored status badge |
 | [`col_stars()`](columns.qmd#col_stars) | Star rating |
+| [`col_pictogram()`](columns.qmd#col_pictogram) | Repeated glyphs as count or rating |
+| [`col_ring()`](columns.qmd#col_ring) | Donut gauge with optional thresholds |
 | [`col_img()`](columns.qmd#col_img) | Inline image |
 
 ## Per-row visualization columns
@@ -88,16 +90,16 @@ Fluent verbs that mutate a `WebSpec`, htmlwidget, or `tabviz_proxy`. See [Stylin
 
 | Function | Description |
 |---|---|
-| [`set_row_style()`](styling.qmd#set_row_style) | Row-level styling (bold / color / type / indent / …) |
+| [`set_row_style()`](styling.qmd#set_row_style) | Row-level styling (literal + 5 semantic tokens incl. `fill`) |
 | [`set_column_style()`](styling.qmd#set_column_style) | Per-cell styling for one column |
 | [`set_marker_style()`](styling.qmd#set_marker_style) | Marker color / shape / opacity / size |
 | [`set_zoom()`](styling.qmd#set_zoom) | Zoom and container constraints |
-| [`set_theme()`](styling.qmd#set_theme) | Apply a theme by name or object |
+| [`set_theme()`](styling.qmd#set_theme) | Apply a theme by name (any of the 7 presets) or object |
 | [`selectable_themes()`](styling.qmd#selectable_themes) | Curate the in-widget theme switcher |
 
 ## Themes
 
-### Preset themes
+### Preset themes (seven shipped)
 
 | Function | Description |
 |---|---|
@@ -105,15 +107,18 @@ Fluent verbs that mutate a `WebSpec`, htmlwidget, or `tabviz_proxy`. See [Stylin
 | [`web_theme_lancet()`](themes.qmd#web_theme_lancet)     | Lancet navy + refined gold, Georgia serif, comfortable |
 | [`web_theme_jama()`](themes.qmd#web_theme_jama)         | JAMA all-B&W, ultra-compact, Arial |
 | [`web_theme_dark()`](themes.qmd#web_theme_dark)         | Catppuccin Mocha-inspired dark canvas |
+| [`web_theme_dwarven()`](themes.qmd#web_theme_dwarven)   | Stone neutrals, forge-glow accent, broad serif display |
+| [`web_theme_elvish()`](themes.qmd#web_theme_elvish)     | Twilight surface, mithril silvers, calligraphic serif |
+| [`web_theme_hobbit()`](themes.qmd#web_theme_hobbit)     | Parchment + green, hand-set body face, hearth accent |
 | [`web_theme()`](themes.qmd#web_theme)                   | Generic custom-theme constructor |
-| [`package_themes()`](themes.qmd#package_themes)         | Named list of every shipped theme (Cochrane / Lancet / JAMA / Dark) |
+| [`package_themes()`](themes.qmd#package_themes)         | 2-level named list (`journals` + `lotr`) of every shipped theme |
 
 ### Theme modifiers
 
 | Function | Description |
 |---|---|
-| [`set_inputs()`](themes.qmd#set_inputs) | Tier 1 inputs (brand, accent, series, fonts, status) |
-| [`set_variants()`](themes.qmd#set_variants) | Per-table variants (density, header_style, first_column_style) |
+| [`set_inputs()`](themes.qmd#set_inputs) | Tier 1 inputs (`primary` / `secondary` / `accent` / `status_*` / `series_anchors` / `slot_style` / fonts) |
+| [`set_variants()`](themes.qmd#set_variants) | Per-table variants (`density`, `header_style`, `first_column_style`) |
 | [`set_spacing()`](themes.qmd#set_spacing) | Per-token spacing override on top of the density preset |
 | [`set_theme_field()`](themes.qmd#set_theme_field) | Generic deep setter; `path` walks the theme tree |
 
@@ -138,6 +143,18 @@ Same dispatch on `WebSpec` / htmlwidget / `tabviz_proxy` — see [Data operation
 | [`update_data()`](data-ops.qmd#update_data) | Replace the data frame |
 | [`toggle_group()`](data-ops.qmd#toggle_group) | Collapse / expand groups |
 | [`set_cell()`](data-ops.qmd#set_cell), [`set_row_label()`](data-ops.qmd#set_row_label), [`clear_edits()`](data-ops.qmd#clear_edits) | Proxy-only cell edits |
+| [`set_title()`](data-ops.qmd#set_title) / `set_subtitle()` / `set_caption()` / `set_footnote()` | Single-slot label setters; `NULL` clears |
+| [`set_watermark()`](data-ops.qmd#set_watermark) | Diagonal full-plot watermark |
+| [`paint_row()`](data-ops.qmd#paint_row) / [`paint_cell()`](data-ops.qmd#paint_cell) | Stamp a semantic token (`emphasis` / `muted` / `accent` / `bold` / `fill`) |
+| [`set_shared_column_widths()`](data-ops.qmd#set_shared_column_widths) | Align column widths across split sub-plots |
+
+## Pagination
+
+| Function | Description |
+|---|---|
+| [`paginate_spec()`](columns.qmd#paginate) | Construct a `PaginateSpec` (rows, break_on, orphan_min, …) |
+| `paginate_letter()` / `paginate_a4()` / `paginate_slide()` | Page-size presets |
+| [`paginate()`](data-ops.qmd#paginate) | Fluent modifier — set / update / clear pagination on an existing spec |
 
 ## Interaction
 
@@ -157,6 +174,7 @@ Same dispatch on `WebSpec` / htmlwidget / `tabviz_proxy` — see [Data operation
 | [`tabviz_proxy()`](shiny.qmd#tabviz_proxy) | Proxy for live updates |
 | [`splitTabvizOutput()`](shiny.qmd#splitTabvizOutput) / [`renderSplitTabviz()`](shiny.qmd#renderSplitTabviz) | Split-table bindings |
 | [`split_tabviz_proxy()`](shiny.qmd#split_tabviz_proxy) / [`split_tabviz_select()`](shiny.qmd#split_tabviz_select) | Split-table proxy |
+| [`tabviz_state()`](shiny.qmd#tabviz_state) / [`tabviz_state_envelope()`](shiny.qmd#tabviz_state_envelope) | Pull every observability dimension the widget emits into a single named list (with or without provenance envelope) |
 
 ## Export
 
@@ -167,4 +185,4 @@ Same dispatch on `WebSpec` / htmlwidget / `tabviz_proxy` — see [Data operation
 
 ## Troubleshooting
 
-[Troubleshooting guide](troubleshooting.qmd) — common errors and the recent (0.9.0) renames.
+[Troubleshooting guide](troubleshooting.qmd) — common errors and recipes.

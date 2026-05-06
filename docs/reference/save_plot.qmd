@@ -16,24 +16,30 @@ The pipeline runs entirely in R: the spec is serialized to JSON, the bundled Jav
 ## `save_plot()` {#save_plot}
 
 ```r
-save_plot(x, file, width = 800, height = NULL, scale = 2, ...)
+save_plot(x, file,
+          width = 800, height = NULL, scale = 2,
+          which = NULL, paginate = NULL,
+          ...)
 ```
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
-| `x` | `WebSpec` / htmlwidget / `SplitForest` | required | The plot to export. `SplitForest` is dispatched to `save_split_table()`. |
-| `file` | `character(1)` | required | Output file path (or directory for `SplitForest`). Extension determines the format: `.svg`, `.pdf`, or `.png`. |
+| `x` | `WebSpec` / htmlwidget / `SplitForest` | required | The plot to export. `SplitForest` is dispatched to `save_split_table()` unless `which` is set. |
+| `file` | `character(1)` | required | Output file path (or directory for `SplitForest` without `which`). Extension determines format: `.svg`, `.pdf`, or `.png`. |
 | `width` | `numeric(1)` | `800` | Plot width in pixels. |
 | `height` | `numeric(1)` | `NULL` (auto) | Plot height in pixels; auto-calculated from content when `NULL`. |
 | `scale` | `numeric(1)` | `2` | Scaling factor for PNG output (2 = retina). |
-| `...` | — | — | Currently unused. |
+| `which` | string / integer / `NULL` | `NULL` | For `SplitForest` only. `NULL` (default) writes every subview into a directory; pass a key string (`"Male__Young"`) or 1-based integer index to extract a single subview to `file` and demote the path to a single-file write. |
+| `paginate` | `PaginateSpec` / shortcut / `NULL` | `NULL` | Override the spec's pagination at the call site. Accepts `NULL` (off), `TRUE`, a positive integer, or a `PaginateSpec` from [`paginate_spec()`](columns.qmd#paginate). When set on a `.pdf` save, emits a multi-page PDF; on a `.png` / `.svg` save, warns and flattens (use `paginate = NULL` to silence). See [Pagination in the Export guide](../guide/export.qmd#pagination). |
+| `...` | — | — | Reserved for future format-specific options. |
 
-**Returns:** the output `file` path, invisibly.
+**Returns:** the output `file` path, invisibly. For paginated PDF output without `qpdf`, returns the character vector of numbered-series paths.
 
 ### Dependencies
 
 - **SVG**: `V8` (always required for the generator).
 - **PDF / PNG**: also requires the `rsvg` package.
+- **Multi-page PDF (paginated)**: also requires the `qpdf` package, used to merge per-page PDFs into one. If `qpdf` is not installed, `save_plot()` falls back to writing a numbered series (`out_p01.pdf`, `out_p02.pdf`, …) and emits a warning.
 
 There is no headless-browser dependency.
 
@@ -54,6 +60,20 @@ p <- forest_plot(data, point = "hr", lower = "lo", upper = "hi", label = "study"
 save_plot(p, "figures/forest.svg")                       # vector
 save_plot(p, "figures/forest.png", width = 1200, scale = 3)
 save_plot(p, "figures/forest.pdf", width = 800)
+
+# Long table — multi-page PDF (requires qpdf in Suggests)
+save_plot(p, "figures/forest.pdf",
+          paginate = paginate_letter())                   # 30 rows / page
+
+# Force a denser pagination on this render only
+save_plot(p, "figures/dense.pdf",
+          paginate = paginate_spec(rows = 50))
+
+# Flatten a paginated spec for a single-image PNG without warning
+save_plot(p, "figures/single.png", paginate = NULL)
+
+# SplitForest — extract one subview to a single file
+save_plot(split_p, "figures/male.svg", which = "Male")
 ```
 
 ---
@@ -66,6 +86,7 @@ Export every sub-plot in a `SplitForest` to a directory tree mirroring the split
 save_split_table(x, path,
                  format = c("svg", "pdf", "png"),
                  width = 800, height = NULL, scale = 2,
+                 paginate = NULL,
                  ...)
 ```
 
@@ -75,7 +96,8 @@ save_split_table(x, path,
 | `path` | `character(1)` | required | Output directory; created if it doesn't exist. |
 | `format` | choice | `"svg"` | `"svg"`, `"pdf"`, or `"png"`. |
 | `width` / `height` / `scale` | — | as in `save_plot()` | Forwarded to `save_plot()` for each sub-plot. |
-| `...` | — | — | Currently unused. |
+| `paginate` | `PaginateSpec` / shortcut / `NULL` | `NULL` | Override the per-spec pagination at the call site. Cascades into every subview. With `format = "pdf"`, each split leaf becomes one combined multi-page PDF (e.g. `path/Male.pdf` containing all of Male's pages). |
+| `...` | — | — | Reserved for future format-specific options. |
 
 **Returns:** a character vector of exported file paths, invisibly.
 

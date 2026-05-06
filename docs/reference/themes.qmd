@@ -21,18 +21,24 @@ For the conceptual model see the [Themes guide](../guide/themes.qmd) and the
 ## Preset themes
 
 `web_theme_*()` builders return a fully resolved `WebTheme`. They take no
-arguments — chain modifiers to customize.
+arguments — chain modifiers to customize. Seven presets ship: four
+**journal** themes (restraint-led, designed for publication) and three
+**LOTR** themes (illustrative, exercise the full surface for talks /
+blog posts / themed reports).
 
-| Theme | Purpose | Notable defaults |
-|---|---|---|
-| [`web_theme_cochrane()`](#web_theme_cochrane) | The package default | Cochrane teal + warm-coral accent, Inter sans-serif, comfortable density |
-| [`web_theme_lancet()`](#web_theme_lancet)     | Lancet-style editorial | Navy + refined old-gold + warm cream, Georgia serif |
-| [`web_theme_jama()`](#web_theme_jama)         | JAMA / print journals | Pure black-and-white, ultra-compact, strong dividers, Arial |
-| [`web_theme_dark()`](#web_theme_dark)         | Dark-mode viewing | Catppuccin Mocha-inspired canvas, pastel markers |
+| Theme | Source | Purpose | Notable defaults |
+|---|---|---|---|
+| [`web_theme_cochrane()`](#web_theme_cochrane) | `R/themes.R` | The package default | Cochrane teal + warm-coral accent, Inter sans-serif, comfortable density |
+| [`web_theme_lancet()`](#web_theme_lancet)     | `R/themes.R` | Lancet-style editorial | Navy + refined old-gold + warm cream, Georgia serif |
+| [`web_theme_jama()`](#web_theme_jama)         | `R/themes.R` | JAMA / print journals | Pure black-and-white, ultra-compact, strong dividers, Arial |
+| [`web_theme_dark()`](#web_theme_dark)         | `R/themes.R` | Dark-mode viewing | Catppuccin Mocha-inspired canvas, pastel markers |
+| [`web_theme_dwarven()`](#web_theme_dwarven)   | `R/themes-lotr.R` | Talks, themed reports | Stone neutrals, forge-glow accent, broad serif display |
+| [`web_theme_elvish()`](#web_theme_elvish)     | `R/themes-lotr.R` | Talks, themed reports | Twilight surface, mithril silvers, calligraphic serif |
+| [`web_theme_hobbit()`](#web_theme_hobbit)     | `R/themes-lotr.R` | Talks, themed reports | Parchment + green, hand-set body face, hearth accent |
 
 ```r
 tabviz(data, label = "study",
-       columns = list(viz_forest("hr", "lo", "hi")),
+       columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi")),
        theme = web_theme_lancet())
 ```
 
@@ -40,6 +46,9 @@ tabviz(data, label = "study",
 ### `web_theme_lancet()` {#web_theme_lancet}
 ### `web_theme_jama()` {#web_theme_jama}
 ### `web_theme_dark()` {#web_theme_dark}
+### `web_theme_dwarven()` {#web_theme_dwarven}
+### `web_theme_elvish()` {#web_theme_elvish}
+### `web_theme_hobbit()` {#web_theme_hobbit}
 
 All preset builders take no arguments and return a fully resolved `WebTheme`.
 
@@ -47,13 +56,24 @@ All preset builders take no arguments and return a fully resolved `WebTheme`.
 
 ## `package_themes()` {#package_themes}
 
-Returns a named list of every theme distributed with the package — handy for
-the `enable_themes` argument of [`web_interaction()`](interaction.qmd) or for
-iterating in tests.
+Returns a 2-level named list of every theme distributed with the package
+(`journals` and `lotr`) — handy for the `enable_themes` argument of
+[`web_interaction()`](interaction.qmd) or for iterating in tests. The
+nested shape is preserved by the in-widget switcher when you pass it
+through, producing a tabbed picker (one tab per category).
 
 ```r
-package_themes()
-# $cochrane, $lancet, $jama, $dark
+package_themes() |> str(max.level = 2)
+# List of 2
+#  $ journals:List of 4
+#   ..$ cochrane: <WebTheme>
+#   ..$ lancet  : <WebTheme>
+#   ..$ jama    : <WebTheme>
+#   ..$ dark    : <WebTheme>
+#  $ lotr    :List of 3
+#   ..$ dwarven: <WebTheme>
+#   ..$ elvish : <WebTheme>
+#   ..$ hobbit : <WebTheme>
 ```
 
 ---
@@ -75,9 +95,10 @@ web_theme(
 | Argument | Type | Default | Description |
 |---|---|---|---|
 | `name` | string | `"custom"` | Theme name (shown in the in-widget switcher and in source export). |
-| `inputs` | named list | `NULL` | Tier 1 input overrides. Any `ThemeInputs` field is valid: `neutral`, `brand`, `primary_deep`, `accent`, `accent_deep`, `status_*`, `series_anchors`, `font_body`, `font_display`, `font_mono`. Unset fields inherit from `base_theme`. |
-| `variants` | named list | `NULL` | Per-table variant overrides: `density` (compact / comfortable / spacious), `header_style` (light / bold), `first_column_style` (default / bold). |
+| `inputs` | named list | `NULL` | Tier 1 input overrides. Any `ThemeInputs` field is valid: `neutral`, `primary` / `primary_deep`, `secondary` / `secondary_deep`, `accent` / `accent_deep`, `status_positive` / `status_negative` / `status_warning` / `status_info`, `series_anchors`, `slot_style`, `font_body` / `font_display` / `font_mono`. Unset fields inherit from `base_theme`. (Legacy `brand` accepted with deprecation warning; rewrite as `primary`.) |
+| `variants` | named list | `NULL` | Per-table variant overrides: `density` (`compact` / `comfortable` / `spacious`), `header_style` (`light` / `tint` / `bold`), `first_column_style` (`default` / `bold`). |
 | `base_theme` | `WebTheme` | `web_theme_cochrane()` | Starting point. The `inputs` and `variants` lists are applied on top. |
+| `.validate` | logical | `TRUE` | Run construction-time contrast validation on the resolved theme. |
 
 Example — Lancet-inspired theme with bold headers:
 
@@ -104,17 +125,20 @@ Chainable via the pipe.
 
 ### `set_inputs()` {#set_inputs}
 
-Update Tier 1 customer-facing inputs. Cascade-aware: changing `brand` clears
-`primary_deep` so it re-mirrors; changing `series_anchors` rebuilds the slot
-bundles. The pooled-effect diamond reads from `series[1]`, so anchoring it
-is just a matter of setting the first `series_anchors` entry.
+Update Tier 1 customer-facing inputs. Cascade-aware: changing `primary`
+clears `primary_deep` so it re-derives; changing `series_anchors` rebuilds
+the slot bundles. The pooled-effect diamond reads from `series[1]`, so
+anchoring it is just a matter of setting the first `series_anchors` entry.
 
 ```r
 set_inputs(
   theme,
-  neutral, brand, primary_deep, accent, accent_deep,
+  neutral,
+  primary, primary_deep, secondary, secondary_deep,
+  accent, accent_deep,
   status_positive, status_negative, status_warning, status_info,
   series_anchors,
+  slot_style,
   font_body, font_display, font_mono
 )
 ```
@@ -123,14 +147,17 @@ set_inputs(
 |---|---|---|
 | `theme` | `WebTheme` | Theme to modify |
 | `neutral` | `chr[5]` | 5-step ramp, lightest → darkest |
-| `brand` | hex | Brand fill color (markers, accents) |
-| `primary_deep` | hex | Dark companion for text/strokes; defaults to `brand` |
-| `accent` | hex | Chrome accent (hover, selection, links) |
+| `primary` | hex | Primary identity (markers, accents) |
+| `primary_deep` | hex | Dark companion for text / strokes / bold-mode header band. Auto-derives by darkening `primary` when `NA` |
+| `secondary` | hex | Secondary identity. Owns chrome texture (`surface.muted`, dividers, banding) and structural defaults (column-group bold band, row-group L1/L2/L3 bg, glyph-column defaults). Mirrors `primary` when `NA` |
+| `secondary_deep` | hex | Dark companion for `secondary`. Mirrors `secondary`'s deep companion when `NA` |
+| `accent` | hex | Engagement layer — hover, selected, semantic row callouts, selection edge. Orthogonal to identity |
 | `accent_deep` | hex | Dark companion; defaults to `accent` |
 | `status_positive`, `status_negative`, `status_warning`, `status_info` | hex | Semantic status colors |
-| `series_anchors` | `chr[]` | Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond. |
+| `series_anchors` | `chr[]` | Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond |
+| `slot_style` | `"fill_with_darker_stroke"` (default) / `"flat_fill"` / `"outlined"` | How each `SlotBundle`'s fill / stroke pair relate |
 | `font_body` | string | Primary CSS font-family |
-| `font_display` | string | Optional title face; defaults to `font_body` |
+| `font_display` | string | Optional title face; mirrors `font_body` when `NA` |
 | `font_mono` | string | Optional monospace face |
 
 ### `set_variants()` {#set_variants}
@@ -145,7 +172,7 @@ set_variants(theme, density, header_style, first_column_style)
 | Argument | Values | Description |
 |---|---|---|
 | `density` | `"compact"` / `"comfortable"` / `"spacious"` | Drives every spacing token |
-| `header_style` | `"light"` / `"bold"` | Picks between light header on muted surface and bold header on `primary_deep` |
+| `header_style` | `"light"` / `"tint"` / `"bold"` | Light header on muted surface, primary-tinted band, or bold header on `primary_deep` |
 | `first_column_style` | `"default"` / `"bold"` | Excel-style emphasized first column when `"bold"` |
 
 ### `set_spacing()` {#set_spacing}
@@ -190,7 +217,7 @@ theme |> set_theme_field(c("row_group", "L1", "bg"), "#EEEEEE")
 theme |> set_theme_field(c("series", 2L, "stroke"), "#444444")
 
 # Set Tier 1 inputs surgically
-theme |> set_theme_field(c("inputs", "brand"), "#FF0000")
+theme |> set_theme_field(c("inputs", "primary"), "#FF0000")
 
 # Tweak axis config
 theme |> set_theme_field(c("axis", "gridlines"), TRUE)
@@ -310,7 +337,7 @@ For the conceptual model and how the cascades compose, see
 | `header` | `HeaderCluster` | 3 | light + bold variants |
 | `column_group` | `ColumnGroupCluster` | 3 | Column-group header |
 | `row_group` | `RowGroupCluster` | 3 | L1 / L2 / L3 tiers |
-| `row` | `RowCluster` | 3 | base / alt / hover / selected + emphasis / muted / accent |
+| `row` | `RowCluster` | 3 | base / alt / hover / selected + the five semantic bundles (`emphasis`, `muted`, `accent`, `bold`, `fill`) |
 | `cell` | `CellCluster` | 3 | bg / fg / border / text |
 | `first_column` | `FirstColumnCluster` | 3 | plain + bold variants |
 | `plot` | `PlotScaffold` | 3 | axis / tick / gridline / reference + mark sizes |

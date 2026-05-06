@@ -37,25 +37,27 @@ set_row_style(
   weight = NULL,
   emphasis = NULL,
   muted = NULL,
-  accent = NULL
+  accent = NULL,
+  fill = NULL
 )
 ```
 
 | Argument | Type | Default | Description |
 |---|---|---|---|
 | `x` | `WebSpec` / htmlwidget | required | Spec or widget. |
-| `bold` | column name | `NULL` | Logical column for bold rows. |
-| `italic` | column name | `NULL` | Logical column for italic rows. |
-| `color` | column name | `NULL` | CSS color column for row text. |
-| `bg` | column name | `NULL` | CSS color column for row background. |
+| `bold` | column name | `NULL` | Logical column → semantic `bold` token (weight bump only, no color change). |
+| `italic` | column name | `NULL` | Logical column for italic rows (literal). |
+| `color` | column name | `NULL` | CSS color column for row text (literal). |
+| `bg` | column name | `NULL` | CSS color column for row background (literal). |
 | `badge` | column name | `NULL` | Text column rendered as a badge on the label cell. |
 | `icon` | column name | `NULL` | Emoji/unicode column rendered on the label cell. |
 | `indent` | column name | `NULL` | Numeric column for label indentation. |
 | `type` | column name | `NULL` | One of `"data"`, `"header"`, `"summary"`, `"spacer"`. |
 | `weight` | column name | `NULL` | Numeric column driving marker size. Same shape as `marker_size`. |
-| `emphasis` | column name | `NULL` | Logical column → bold + foreground color. |
-| `muted` | column name | `NULL` | Logical column → muted styling. |
-| `accent` | column name | `NULL` | Logical column → accent color. |
+| `emphasis` | column name | `NULL` | Logical column → semantic `emphasis` token (bold + theme primary). |
+| `muted` | column name | `NULL` | Logical column → semantic `muted` token (lighter, reduced prominence). |
+| `accent` | column name | `NULL` | Logical column → semantic `accent` token (bold + theme accent). |
+| `fill` | column name | `NULL` | Logical column → semantic `fill` token (bold + strong row-fill background; `fg` auto-contrasts). |
 
 **Returns:** modified input (`WebSpec` or htmlwidget).
 
@@ -179,7 +181,7 @@ set_theme(x, theme)
 | `x` | `WebSpec` / htmlwidget / `tabviz_proxy` | |
 | `theme` | character or `WebTheme` | Either a built-in name or a `web_theme_*()` object. |
 
-**Built-in names:** `"default"`, `"minimal"`, `"dark"`, `"jama"`, `"lancet"`, `"modern"`, `"presentation"`, `"cochrane"`, `"nature"`.
+**Built-in names:** `"cochrane"`, `"lancet"`, `"jama"`, `"dark"`, `"dwarven"`, `"elvish"`, `"hobbit"`. `"default"` is accepted as a non-breaking alias for `"cochrane"`. Pass a `WebTheme` object directly for anything else.
 
 ```r
 tabviz(data, label = "study",
