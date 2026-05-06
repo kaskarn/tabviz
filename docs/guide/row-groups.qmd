@@ -17,6 +17,12 @@ Organize your forest plot into collapsible sections using the `group` parameter.
 | `group = c("region", "country")` | Hierarchical nesting — outer level collapses inner levels |
 | `group = list(web_group("North", collapsed = FALSE), web_group("South", collapsed = TRUE))` | Explicit definitions; lets you set initial collapse state and custom labels |
 
+::: {.callout-note}
+## `web_group(id, ...)` contract
+
+The `id` of each `web_group()` must match a value present in the corresponding data column — that's how tabviz knows which rows belong to which group. With `web_group("North", ...)` and `web_group("South", ...)`, the data must have a column whose values include `"North"` and `"South"` (tabviz auto-detects which column). Use `label =` if you want the displayed header to differ from the data value.
+:::
+
 ## Basic Grouping
 
 Pass a column name to `group` to create collapsible sections:
@@ -30,11 +36,13 @@ grouped_data <- data.frame(
   upper = c(1.1, 1.15, 1.4, 1.7, 1.3)
 )
 
-forest_plot(grouped_data,
-  point = "or", lower = "lower", upper = "upper",
+tabviz(grouped_data,
   label = "study",
   group = "region",
-  null_value = 1
+  columns = list(
+    viz_forest(point = "or", lower = "lower", upper = "upper",
+               null_value = 1)
+  )
 )
 ```
 
@@ -71,11 +79,13 @@ hierarchical_data <- data.frame(
   upper = c(0.99, 1.10, 0.98, 1.03, 1.07, 1.11, 1.07, 0.98, 1.04)
 )
 
-forest_plot(hierarchical_data,
-  point = "or", lower = "lower", upper = "upper",
+tabviz(hierarchical_data,
   label = "study",
   group = c("region", "country"),
-  null_value = 1, scale = "log",
+  columns = list(
+    viz_forest(point = "or", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  ),
   theme = web_theme_cochrane()
 )
 ```
@@ -103,11 +113,13 @@ custom_theme <- web_theme_cochrane() |>
   set_theme_field(c("row_group", "L2", "text", "size"),  "0.95rem") |>
   set_spacing(indent_per_level = 20)
 
-forest_plot(hierarchical_data,
-  point = "or", lower = "lower", upper = "upper",
+tabviz(hierarchical_data,
   label = "study",
   group = c("region", "country"),
-  null_value = 1, scale = "log",
+  columns = list(
+    viz_forest(point = "or", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  ),
   theme = custom_theme
 )
 ```
@@ -127,14 +139,16 @@ To have groups start in a collapsed state, you'll need to use explicit group def
 
 ```{r}
 #| eval: false
-forest_plot(grouped_data,
-  point = "or", lower = "lower", upper = "upper",
+tabviz(grouped_data,
   label = "study",
   group = list(
     web_group("North", collapsed = FALSE),
     web_group("South", collapsed = TRUE)
   ),
-  null_value = 1
+  columns = list(
+    viz_forest(point = "or", lower = "lower", upper = "upper",
+               null_value = 1)
+  )
 )
 ```
 
@@ -161,4 +175,4 @@ You can combine both approaches—use `group` for automatic organization and `ro
 
 - [Row Styling](row-styling.qmd) — Manual row types, headers, summaries, and visual styling
 - [Themes](themes.qmd) — Customize group header appearance
-- [forest_plot()](../reference/tabviz.qmd) — Complete argument reference
+- [tabviz()](../reference/tabviz.qmd) — Complete argument reference

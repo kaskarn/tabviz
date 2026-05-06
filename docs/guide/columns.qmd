@@ -56,6 +56,8 @@ The `col_*()` helpers are thin, opinionated wrappers over [`web_col()`](../refer
 | `col_icon(field)` | Icons / emoji | `mapping`, `size`, `color` |
 | `col_badge(field)` | Status chips | `variants`, `colors`, `size` |
 | `col_stars(field)` | Rating (1–N stars) | `max_stars`, `color`, `empty_color`, `half_stars`, `min_value`, `max_value`, `size` |
+| `col_pictogram(field)` | Glyph counts or rating piles | `glyph`, `glyph_field`, `max_glyphs`, `half_glyphs`, `min_value`, `max_value`, `color`, `empty_color`, `size`, `layout`, `value_label`, `label_format`, `label_decimals` |
+| `col_ring(field)` | Donut gauge with optional thresholds | `min_value`, `max_value`, `color`, `thresholds`, `track_color`, `size`, `show_label`, `label_format`, `label_decimals` |
 | `col_img(field)` | Inline images | `height`, `max_width`, `fallback`, `shape` |
 | `col_reference(field)` | Truncated text + optional link | `href_field`, `max_chars`, `show_icon` |
 | `col_group(header, ...)` | Group child columns under one header | — |
@@ -521,6 +523,72 @@ col_stars("quality")                              # 1–5 default
 col_stars("quality", max_stars = 10, half_stars = TRUE)
 col_stars("score_0_100", min_value = 0, max_value = 100)   # remap to star count
 col_stars("rating", size = "lg")                            # larger glyphs
+```
+
+#### `col_pictogram()`
+
+Repeated glyphs as either a count (render `round(value)` glyphs) or a rating (fill `value` of `max_glyphs`). Useful for "isotype"-style displays — three persons for n = 3, four-of-five skulls for a risk score.
+
+| Arg | Effect |
+|---|---|
+| `glyph` | Glyph name (`"person"`, `"skull"`, `"leaf"`, `"flame"`, `"coin"`, …) or a named character vector for per-row glyph selection (paired with `glyph_field`) |
+| `glyph_field` | Column name whose value picks the key in a named `glyph` vector |
+| `max_glyphs` | `NULL` → count mode; integer → rating mode |
+| `half_glyphs` | Allow half-fill on the boundary glyph |
+| `min_value` / `max_value` | Remap input range into `[0, max_glyphs]` (rating mode) |
+| `color` / `empty_color` | Filled / unfilled glyph colors (defaults follow the active theme) |
+| `size` | `"sm"` / `"base"` / `"lg"` |
+| `layout` | `"row"` (default) or `"stack"` — vertical pile, best in tall rows |
+| `value_label` | `FALSE` / `TRUE` (= `"trailing"`) / `"leading"` / `"trailing"` |
+| `label_format`, `label_decimals` | `"integer"` or `"decimal"`; decimal places when decimal |
+
+```{r}
+#| eval: false
+# Count mode — three persons for n = 3
+col_pictogram("score", glyph = "person", value_label = TRUE)
+
+# Rating mode — three of five skulls
+col_pictogram("perf", glyph = "skull", max_glyphs = 5,
+              color = "#f97316", empty_color = "#3f3f46")
+
+# Per-row glyph selection — leaf on "low" rows, flame on "high"
+col_pictogram("count", glyph = c("low" = "leaf", "high" = "flame"),
+              glyph_field = "category")
+
+# Vertical stack with trailing label (use in tall rows next to a viz column)
+col_pictogram("eaten", glyph = "coin", layout = "stack",
+              value_label = "trailing")
+```
+
+#### `col_ring()`
+
+Donut gauge — fills `(value - min_value) / (max_value - min_value)` of a circle, with optional threshold-driven color shifts. Pairs well with proportional or score-style data.
+
+| Arg | Effect |
+|---|---|
+| `min_value` / `max_value` | Input range (default `0` / `1` — fraction) |
+| `color` | Filled arc color. Single color, or character vector of length `length(thresholds) + 1` |
+| `thresholds` | Numeric breakpoints (raw input units) where arc color shifts |
+| `track_color` | Unfilled track color (default theme muted) |
+| `size` | `"sm"` (~18 px) / `"base"` (~24 px) / `"lg"` (~32 px) |
+| `show_label` | Show numeric value to the right of the ring |
+| `label_format`, `label_decimals` | `"percent"` (default) / `"decimal"` / `"integer"` |
+
+```{r}
+#| eval: false
+# Single-color ring, value as fraction [0, 1]
+col_ring("temptation", color = "#d4a955")
+
+# Two-color threshold (gold below 50%, red above)
+col_ring("temptation",
+         color = c("#d4a955", "#a855f7"), thresholds = 0.5)
+
+# Three-color status: positive / warning / negative (auto-defaulted colors)
+col_ring("risk", thresholds = c(0.33, 0.66))
+
+# Integer score on [0, 100]
+col_ring("score", min_value = 0, max_value = 100,
+         label_format = "integer")
 ```
 
 ### Media and links

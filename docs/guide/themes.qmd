@@ -30,7 +30,7 @@ flowchart LR
     style C fill:#93c5fd
 ```
 
-* **Step 1** — `theme = web_theme_lancet()`. Done. Four presets cover the common publication and dashboard surfaces.
+* **Step 1** — `theme = web_theme_lancet()`. Done. Seven presets cover the common publication, dashboard, and illustrative surfaces.
 * **Step 2** — Swap a primary color, change density, switch to a serif font. The preset stays the foundation; you nudge a few inputs.
 * **Step 3** — Reach into a specific component (e.g. the L1 row-group bar background) for surgical control. Rare; the preset cascade handles 95% of cases.
 
@@ -38,14 +38,17 @@ flowchart LR
 
 ```{r}
 #| eval: false
-forest_plot(
-  meta_data, point = "hr", lower = "lower", upper = "upper",
-  label = "study",
+tabviz(
+  meta_data, label = "study",
+  columns = list(
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  ),
   theme = web_theme_lancet()
 )
 ```
 
-Four presets ship in the package — each leans into a clear identity rather than trying to be everything:
+Seven presets ship in the package — four **journal-style** themes designed for publication, and three **illustrative LOTR** themes that exercise the full surface for non-journal contexts (talks, blog posts, internal reports). Each leans into a clear identity rather than trying to be everything.
 
 | Preset | Style | Designed for |
 |--------|-------|--------------|
@@ -53,6 +56,9 @@ Four presets ship in the package — each leans into a clear identity rather tha
 | `web_theme_lancet()`   | Lancet navy + refined old-gold + warm cream, Georgia serif, comfortable | Lancet-style editorial layouts |
 | `web_theme_jama()`     | Pure black-and-white, ultra-compact, strong dividers throughout, Arial | JAMA / print journal submissions |
 | `web_theme_dark()`     | Catppuccin Mocha-inspired dark canvas with pastel marker palette | Dark-mode viewing |
+| `web_theme_dwarven()`  | Stone neutrals, forge-glow accent, broad serif display | Talks, blog posts, themed reports |
+| `web_theme_elvish()`   | Twilight surface, mithril silvers, calligraphic serif | Talks, blog posts, themed reports |
+| `web_theme_hobbit()`   | Parchment + green, hand-set body face, hearth accent | Talks, blog posts, themed reports |
 
 Switch presets at any point with `set_theme()`:
 
@@ -61,14 +67,14 @@ Switch presets at any point with `set_theme()`:
 my_table |> set_theme("jama")
 ```
 
-The full registry is in `package_themes()`.
+The full registry is in `package_themes()` (returns a 2-level list keyed `journals` / `lotr`).
 
 ### Curating the in-widget switcher
 
 The in-widget settings panel includes a theme dropdown that lets readers
-swap between presets without reloading. By default it shows all four
-package themes; pass `enable_themes = list(...)` to `web_interaction()`
-or `selectable_themes()` to curate the menu:
+swap between presets without reloading. By default it shows every package
+theme; pass `enable_themes = list(...)` to `web_interaction()` or
+`selectable_themes()` to curate the menu:
 
 ```{r}
 #| eval: false
@@ -95,18 +101,20 @@ category, a `Current` tab is prepended.
 
 ## Step 2: Tweak inputs
 
-Every theme — including all four presets — is determined by **a small set of customer-facing inputs**. There are twelve of them:
+Every theme — including every preset — is determined by **a small set of customer-facing inputs** on `ThemeInputs`. They split into three logical groups:
 
 | Group | Input | What it controls |
 |-------|-------|------------------|
-| Chrome | `neutral` | 5-step ramp, lightest → darkest. Drives surfaces, dividers, content |
-|  | `brand` + `primary_deep` | Brand fill (markers, accents) and dark companion (text/strokes, bold-mode header band) |
-|  | `accent` + `accent_deep` | Chrome accent for hover, selection, links |
-|  | `status_*` | Positive / negative / warning / info |
+| Chrome | `neutral` | 5-step ramp, lightest → darkest. Drives surfaces, dividers, content. |
+|  | `primary` + `primary_deep` | Primary identity (markers, accents) and its dark companion (text, strokes, bold-mode header band). `primary_deep` auto-derives by darkening `primary` when left `NA`. |
+|  | `secondary` + `secondary_deep` | Secondary identity. Owns chrome texture (`surface.muted`, dividers, banding, gridlines) and structural defaults (column-group bold band, L1/L2/L3 row-group bg, glyph-column defaults). Mirrors `primary` when left `NA`. |
+|  | `accent` + `accent_deep` | Engagement layer — orthogonal to identity. Drives hover, selected, semantic row callouts, selection edge. |
+|  | `status_positive` / `status_negative` / `status_warning` / `status_info` | Semantic status colors. |
 | Data | `series_anchors` | Per-effect anchor colors (variable length). The first anchor also drives the pooled-effect diamond. |
-| Type | `font_body` | Primary face for cells, headers, labels |
-|  | `font_display` | Optional title face (defaults to body) |
-|  | `font_mono` | Optional monospace face (e.g. for IDs) |
+|  | `slot_style` | How each `SlotBundle`'s fill / stroke pair relate. One of `"fill_with_darker_stroke"` (default), `"flat_fill"`, `"outlined"`. |
+| Type | `font_body` | Primary face for cells, headers, labels. |
+|  | `font_display` | Optional title face. Mirrors `font_body` when `NA`. |
+|  | `font_mono` | Optional monospace face (e.g. for IDs). |
 
 Build a custom theme by overriding any of these:
 
@@ -125,11 +133,12 @@ my_theme <- web_theme(
 
 `web_theme()` starts from `web_theme_cochrane()` unless you pass a different `base_theme`. Anything you *don't* set inherits from the base.
 
-The deep companions mirror their primaries by default:
+The deep companions and secondary tier follow predictable defaults:
 
-* `primary_deep` defaults to `brand` (override when you want a darker stroke than fill, or a richer bold-mode header band).
-* `accent_deep` defaults to `accent`.
-* `font_display` defaults to `font_body`.
+* `primary_deep` auto-derives by darkening `primary` when left `NA` (override when you want a richer bold-mode header band or a journal-specific stroke).
+* `secondary` mirrors `primary` when `NA`; `secondary_deep` mirrors `secondary`'s deep companion.
+* `accent_deep` mirrors `accent`.
+* `font_display` mirrors `font_body`.
 
 The pooled-effect diamond reads from the first series slot bundle (`theme@series[[1]]`). Override `series_anchors[1]` to recolor it; reach into `theme@series[[1]]@stroke` directly for a journal-specific outline.
 
@@ -319,7 +328,7 @@ custom <- web_theme_jama() |>
   set_spacing(row_height = 28, axis_gap = 14)
 ```
 
-* **`set_inputs(theme, ...)`** — update Tier 1 inputs. Cascade-aware: changing `brand` clears `primary_deep` so it re-mirrors; changing `series_anchors` rebuilds the slot bundles.
+* **`set_inputs(theme, ...)`** — update Tier 1 inputs. Cascade-aware: changing `primary` clears `primary_deep` so it re-derives; changing `series_anchors` rebuilds the slot bundles.
 * **`set_variants(theme, ...)`** — flip per-table toggles (density / header_style / first_column_style). Density change resets spacing tokens so the new preset's values flow through.
 * **`set_spacing(theme, ...)`** — per-token spacing override on top of the density preset. Set what you care about; the rest follow density.
 
@@ -395,30 +404,51 @@ web_theme_cochrane() |>
   set_theme_field(c("text", "title", "italic"), TRUE)
 ```
 
-## The 9 presets — when to use which
+## The seven presets — when to use which
+
+The four journal presets are the workhorses; the three LOTR presets exercise the full surface (display fonts, secondary tier, distinctive accents) and are great for talks, blog posts, or themed reports where you want personality without hand-rolling a brand theme.
 
 ```{r}
 #| eval: false
-# Black & white journal style — JAMA submissions, dense print
-forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
-            label = "study", theme = web_theme_jama())
+forest_args <- list(
+  label = "study",
+  columns = list(
+    viz_forest(point = "hr", lower = "lower", upper = "upper",
+               scale = "log", null_value = 1)
+  )
+)
 
-# Lancet navy with serif typography — Lancet submissions
-forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
-            label = "study", theme = web_theme_lancet())
+# --- Journal presets --------------------------------------------------------
 
-# Modern dashboard — vibrant, spacious, screen-first
-forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
-            label = "study", theme = web_theme_cochrane())
+# Cochrane — package default; teal + warm coral, comfortable density
+do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_cochrane())))
 
-# Slide deck — oversized markers, thick lines, large type
-forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
-            label = "study", theme = web_theme_cochrane() |> set_variants(density = "spacious"))
+# Lancet — navy + old-gold + warm cream, Georgia serif
+do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_lancet())))
 
-# Dark mode — Catppuccin-inspired
-forest_plot(meta_data, point = "hr", lower = "lower", upper = "upper",
-            label = "study", theme = web_theme_dark())
+# JAMA — black-and-white, ultra-compact, strong dividers, Arial
+do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_jama())))
+
+# Dark mode — Catppuccin Mocha-inspired
+do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_dark())))
+
+# Slide deck variant — any preset can flip to spacious density
+do.call(tabviz, c(list(meta_data), forest_args,
+                  list(theme = web_theme_cochrane() |> set_variants(density = "spacious"))))
+
+# --- LOTR illustrative presets ---------------------------------------------
+
+# Dwarven — stone neutrals, forge-glow accent, broad serif display
+do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_dwarven())))
+
+# Elvish — twilight surface, mithril silvers, calligraphic serif
+do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_elvish())))
+
+# Hobbit — parchment + green, hand-set body face, hearth accent
+do.call(tabviz, c(list(meta_data), forest_args, list(theme = web_theme_hobbit())))
 ```
+
+See the [Gallery → LOTR Easter Egg](../gallery/lotr.qmd) page for a worked LOTR example.
 
 ## Editing themes interactively
 
@@ -426,7 +456,7 @@ Every rendered table carries a settings gear. The in-widget panel exposes the v2
 
 | Tab | Edits |
 |-----|-------|
-| **Theme** | Tier 1 inputs — brand, accent, status, series anchors, fonts |
+| **Theme** | Tier 1 inputs — primary, secondary, accent, status, series anchors, fonts |
 | **Layout** | Variants (density / header style / first column style), banding, container border |
 | **Spacing** | Per-token overrides on top of the density preset (collapsed Advanced section) |
 | **Marks** | Series slot bundles (anchor + expandable 7-field editor), summary slot, plot mark sizes |
@@ -457,7 +487,7 @@ web_theme_acme <- function() {
 }
 
 # Now share it across the team
-forest_plot(data, ..., theme = web_theme_acme())
+tabviz(data, label = "study", columns = list(...), theme = web_theme_acme())
 ```
 
 Pass to `set_theme()` either by string (when registered as a preset) or by handing the constructed `WebTheme` object directly:
@@ -470,8 +500,8 @@ my_table |> set_theme(web_theme_acme())
 ## Reference summary
 
 * `web_theme()` — custom-theme constructor (inputs + variants + base).
-* `web_theme_*()` — 9 preset constructors.
-* `package_themes()` — named list of all preset constructors.
+* `web_theme_*()` — 7 preset constructors (`cochrane`, `lancet`, `jama`, `dark`, `dwarven`, `elvish`, `hobbit`).
+* `package_themes()` — 2-level named list (`journals` / `lotr`) of all preset constructors.
 * `set_theme(spec, theme)` — switch a `WebSpec` to a different theme.
 * `set_inputs(theme, ...)` — update Tier 1 inputs.
 * `set_variants(theme, ...)` — update per-table variants.

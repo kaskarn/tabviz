@@ -73,7 +73,7 @@ Each `col_*()` function defines a column. The most common helpers:
 | `col_interval()` | Point (CI) | `col_interval("hr", "lo", "hi", header = "HR")` |
 | `col_pvalue()` | P-values | `col_pvalue("pval")` |
 
-See [Columns](columns.qmd) for all 16+ column types.
+See [Columns](columns.qmd) for the full catalog.
 
 ## Adding more columns
 
@@ -93,7 +93,7 @@ tabviz(meta_data,
 
 ## Applying themes
 
-tabviz includes 9 publication-ready themes:
+tabviz ships with seven publication-ready themes — four journal-style presets and three illustrative LOTR-flavored themes:
 
 ```{r}
 #| layout-ncol: 2
@@ -118,7 +118,10 @@ tabviz(meta_data[1:3, ],
 )
 ```
 
-**Available themes**: `web_theme_cochrane()`, `web_theme_jama()`, `web_theme_lancet()`, `web_theme_cochrane()`, `web_theme_cochrane()`, `web_theme_cochrane()`, `web_theme_cochrane() |> set_variants(density = "spacious")`, `web_theme_dark()`, `web_theme_jama()`. See [Themes](themes.qmd).
+**Journal presets**: `web_theme_cochrane()` (default), `web_theme_lancet()`, `web_theme_jama()`, `web_theme_dark()`.
+**LOTR presets**: `web_theme_dwarven()`, `web_theme_elvish()`, `web_theme_hobbit()`.
+
+See [Themes](themes.qmd) for customization, the `set_*()` modifier family, and how to register your own preset.
 
 ## Row styling
 

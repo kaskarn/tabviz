@@ -2,24 +2,61 @@
 title: "Guide Overview"
 ---
 
-This guide takes you from your first table to advanced styling, interactivity, and Shiny integration. Read in order, or jump to a chapter.
+This guide takes you from your first table to advanced styling, interactivity, and Shiny integration. Pages are grouped into the same sections you see in the sidebar — read top-to-bottom for the curriculum, or jump to whichever section you need.
 
-## Reading order
+## Get going
 
-| # | Chapter | What you'll learn |
-|---|---|---|
-| 1 | [Quick Start](quick-start.qmd) | Install tabviz and render your first table |
-| 2 | [Columns](columns.qmd) | The `col_*()` / `viz_*()` system and column groups |
-| 3 | [Row Styling](row-styling.qmd) | Bold, italic, color, indentation, badges |
-| 4 | [Cell Styling](cell-styling.qmd) | Conditional formatting per cell |
-| 5 | [Row Groups](row-groups.qmd) | Collapsible hierarchical sections |
-| 6 | [Forest Plots](visualizations/forest-plots.qmd) | `viz_forest()` and multi-effect rows |
-| 7 | [Themes](themes.qmd) | Preset themes and `set_*()` modifiers |
-| 8 | [Fluent API](fluent-api.qmd) | Pipe-based post-build modifiers |
-| 9 | [Interactivity](interactivity.qmd) | Sort, filter, drag, edit, tooltips |
-| 10 | [Split Plots](split-plots.qmd) | Sidebar navigation for subgroups |
-| 11 | [Shiny Integration](shiny.qmd) | Reactive tables and proxy updates |
-| 12 | [Export](export.qmd) | Save to SVG, PNG, or PDF |
+| Page | What you'll learn |
+|---|---|
+| [Quick Start](quick-start.qmd) | Install tabviz, render your first table, layer in styling, themes, and conditional formatting |
+
+## Structure — what the table contains
+
+| Page | What you'll learn |
+|---|---|
+| [Column Types](columns.qmd) | Every `col_*()` and the four `viz_*()` columns, with formatting, alignment, and column groups |
+| [Row Groups](row-groups.qmd) | Flat, hierarchical, and explicit collapsible sections via `group` and `web_group()` |
+| [Titles & Labels](titles.qmd) | Title, subtitle, caption, footnote, axis label |
+| [Split Plots](split-plots.qmd) | Sidebar navigation across subgroups via `split_by` / `split_table()` |
+
+## Styling — colors, weights, themes
+
+| Page | What you'll learn |
+|---|---|
+| [Row Styling](row-styling.qmd) | Bold, italic, color, indentation, badges; semantic row tokens |
+| [Cell Styling](cell-styling.qmd) | Per-cell conditional formatting with formula expressions and the `.x` pronoun |
+| [Themes](themes.qmd) | The seven presets, the input cascade (Tier 1 → 2 → 3), and `set_*()` modifiers |
+
+## Working with built tables
+
+| Page | What you'll learn |
+|---|---|
+| [Fluent API](fluent-api.qmd) | Pipe-based modifiers that work on `WebSpec`, htmlwidget, and Shiny proxy uniformly |
+| [Recipes](recipes.qmd) | Composed snippets — significance highlighting, p-value formatting, reusable styling pipelines |
+
+## Visualizations — embedded charts
+
+| Page | What you'll learn |
+|---|---|
+| [Forest Plots](visualizations/forest-plots.qmd) | `viz_forest()` arguments, multi-effect rows, axis control, annotations |
+| [Bar Charts](visualizations/bar-charts.qmd) | Magnitude comparisons across rows with `viz_bar()` |
+| [Boxplots](visualizations/boxplots.qmd) | Median + spread + outliers with `viz_boxplot()` |
+| [Violin Plots](visualizations/violin-plots.qmd) | Distribution shapes with `viz_violin()` |
+| [Visualization Styling](visualizations/styling.qmd) | The marker-styling cascade across all `viz_*()` columns |
+
+## Interaction & integration
+
+| Page | What you'll learn |
+|---|---|
+| [Interactivity](interactivity.qmd) | Sort, filter, drag, in-place edit, tooltips |
+| [Shiny](shiny.qmd) | Reactive tables and proxy-based incremental updates |
+
+## Output
+
+| Page | What you'll learn |
+|---|---|
+| [Export](export.qmd) | Save to SVG / PDF / PNG, paginate long tables, export split tables |
+| [Package Data](package-data.qmd) | The five datasets shipped with the package, used throughout this guide |
 
 ## Two entry points
 
