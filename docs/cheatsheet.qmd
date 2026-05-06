@@ -91,60 +91,67 @@ Forest-axis arguments live **inside** `viz_forest()`:
 | `col_percent()` | Percentages | `col_percent("rate")` |
 | `col_events()` | Events / N format | `col_events("events", "n")` |
 | `col_pvalue()` | P-values with stars | `col_pvalue("pvalue", stars = TRUE)` |
+| `col_currency()` | Money | `col_currency("price", symbol = "$")` |
+| `col_date()` | Dates | `col_date("enrolled", format = "%b %Y")` |
 | `col_bar()` | Inline horizontal bars | `col_bar("weight")` |
 | `col_sparkline()` | Mini charts | `col_sparkline("trend")` |
+| `col_heatmap()` | Color-scale cells | `col_heatmap("score")` |
+| `col_progress()` | Progress bars | `col_progress("completion")` |
 | `col_badge()` | Colored badges | `col_badge("status")` |
 | `col_icon()` | Icons / emoji | `col_icon("flag")` |
 | `col_stars()` | Star ratings | `col_stars("quality")` |
+| `col_pictogram()` | Glyph piles (count or rating) | `col_pictogram("score", glyph = "person")` |
+| `col_ring()` | Donut gauges with thresholds | `col_ring("temptation", thresholds = 0.5)` |
 | `col_img()` | Inline images | `col_img("logo_url")` |
 | `col_reference()` | Truncated links | `col_reference("doi", show_icon = TRUE)` |
 | `col_range()` | Min-max ranges | `col_range("min", "max")` |
 | `col_group()` | Wrap columns under one header | `col_group("Results", col_interval(...), col_pvalue("pvalue"))` |
 
-:::{.callout-important}
-## Always pass an explicit `field` to `col_*`
-Each `col_*()` takes its source column as the first argument
-(`col_n("n")`, `col_pvalue("pvalue")`, `col_interval("hr", "lo", "hi")`).
-The old auto-detect of CI columns from a sibling `viz_forest()` is being phased out.
-:::
+The first positional argument of every `col_*()` is the data column name (the `field`). Cell-styling args (`bold`, `color`, `bg`, `emphasis`/`muted`/`accent`/`bold`/`fill`, `tooltip`, `formatter`, ...) accept a column name or a `~ formula`.
 
 ## Row styling arguments
 
 | Argument | Values | Effect |
 |---|---|---|
 | `row_type` | `"data"`, `"header"`, `"summary"`, `"spacer"` | Row behavior |
-| `row_bold` | `TRUE` / `FALSE` | Bold text |
-| `row_italic` | `TRUE` / `FALSE` | Italic text |
-| `row_color` | CSS color | Text color |
-| `row_bg` | CSS color | Background color |
+| `row_italic` | `TRUE` / `FALSE` | Italic text (literal) |
+| `row_color` | CSS color | Text color (literal) |
+| `row_bg` | CSS color | Background color (literal) |
 | `row_indent` | `0`, `1`, `2`, ... | Indentation level |
-| `row_badge` | Text | Badge label |
-| `row_emphasis` | `TRUE` / `FALSE` | Bold + primary color |
-| `row_muted` | `TRUE` / `FALSE` | Lighter color |
-| `row_accent` | `TRUE` / `FALSE` | Accent color |
+| `row_badge`, `row_icon` | Text / emoji | Badge / icon on the leftmost cell |
+| `row_emphasis` *(semantic)* | `TRUE` / `FALSE` | Bold + theme primary |
+| `row_muted` *(semantic)* | `TRUE` / `FALSE` | Lighter color, reduced prominence |
+| `row_accent` *(semantic)* | `TRUE` / `FALSE` | Bold + theme accent (most common) |
+| `row_bold` *(semantic)* | `TRUE` / `FALSE` | Weight bump only, no color change |
+| `row_fill` *(semantic)* | `TRUE` / `FALSE` | Bold + strong row-fill background; `fg` auto-contrasts |
 
-All accept column names or formula expressions: `row_bold = ~ pvalue < 0.05`.
+All accept column names or formula expressions: `row_bold = ~ pvalue < 0.05`. The five **semantic** flags map to bundles on `theme$row` so they restyle automatically when you swap themes.
 
 ## Marker styling arguments
 
 | Argument | Values | Effect |
 |---|---|---|
 | `marker_color` | CSS color | Fill color |
-| `marker_shape` | `"square"`, `"circle"`, `"diamond"`, `"triangle"` | Shape |
+| `marker_shape` | `"circle"` (default), `"square"`, `"diamond"`, `"triangle"` | Shape |
 | `marker_opacity` | `0` to `1` | Transparency |
 | `marker_size` | Multiplier or column | Size (1 = default; pass a column name to scale by data, e.g. `marker_size = "n"`) |
 
 All accept column names or formula expressions:
 `marker_color = ~ ifelse(sig, "green", "gray")`.
 
-## Built-in themes
+## Built-in themes (seven shipped)
+
+Four journal presets and three illustrative LOTR presets. `set_theme(spec, "<name>")` switches by string; pass a `WebTheme` object directly for anything custom.
 
 | Theme | Style |
 |---|---|
-| `web_theme_cochrane()` | The package default. Cochrane teal + coral accent, Inter, comfortable |
-| `web_theme_lancet()`   | Lancet navy + gold, Georgia serif, comfortable |
+| `web_theme_cochrane()` | Package default. Cochrane teal + warm-coral accent, Inter, comfortable |
+| `web_theme_lancet()`   | Lancet navy + refined old-gold, Georgia serif, comfortable |
 | `web_theme_jama()`     | JAMA all-B&W, ultra-compact, Arial |
 | `web_theme_dark()`     | Catppuccin Mocha-inspired dark canvas |
+| `web_theme_dwarven()`  | Stone neutrals, forge-glow accent, broad serif display |
+| `web_theme_elvish()`   | Twilight surface, mithril silvers, calligraphic serif |
+| `web_theme_hobbit()`   | Parchment + green, hand-set body face, hearth accent |
 
 ## Theme modifiers (fluent)
 
@@ -167,11 +174,11 @@ tabviz(...,
 
 | Modifier | What it edits |
 |---|---|
-| `set_inputs()` | Tier 1 inputs (brand, accent, series, fonts, status) |
-| `set_variants()` | Per-table toggles (density, header_style, first_column_style) |
+| `set_inputs()` | Tier 1 inputs (`primary` / `secondary` / `accent` + their `_deep` companions, `status_*`, `series_anchors`, `slot_style`, fonts) |
+| `set_variants()` | Per-table toggles (`density`, `header_style` `light/tint/bold`, `first_column_style`) |
 | `set_spacing()` | Per-token spacing override on top of the density preset |
 | `set_theme_field(theme, path, value)` | Generic deep setter; `path` walks the theme tree |
-| `set_theme()` | Swap to a different preset (or `WebTheme` object) |
+| `set_theme()` | Swap to a different preset (any of the 7 by name) or a `WebTheme` object |
 
 ### Build a custom theme from scratch
 
@@ -329,6 +336,39 @@ save_plot(p, "plot.svg")              # Vector
 save_plot(p, "plot.png", scale = 2)   # Raster (2x resolution)
 save_plot(p, "plot.pdf")              # Print
 ```
+
+## Pagination
+
+Break long tables across multiple pages. HTML viewer renders one page at a time with prev/next; `save_plot(*.pdf)` emits a true multi-page PDF.
+
+```r
+# Defaults (30 rows / page, group integrity, orphan_min = 3)
+tabviz(data, ..., paginate = TRUE)
+
+# Rows-per-page shorthand
+tabviz(data, ..., paginate = 50)
+
+# Format presets
+tabviz(data, ..., paginate = paginate_letter())
+tabviz(data, ..., paginate = paginate_a4(orient = "landscape"))
+tabviz(data, ..., paginate = paginate_slide())
+
+# Full control
+tabviz(data, ..., paginate = paginate_spec(rows = 25, orphan_min = 5,
+                                           break_on = "split"))
+
+# Override per render (keep the spec, change for one save)
+save_plot(p, "out.pdf", paginate = paginate_spec(rows = 50))
+
+# Flatten a paginated spec for a PNG without a warning
+save_plot(p, "out.png", paginate = NULL)
+
+# Fluent modifier — set / clear pagination on an existing spec
+spec |> paginate(rows = 30)
+spec |> paginate(NULL)              # turn off
+```
+
+Multi-page PDF merges per-page PDFs via `qpdf::pdf_combine()` (in Suggests). Missing `qpdf` falls back to a numbered series with a warning.
 
 ## Quick patterns
 
