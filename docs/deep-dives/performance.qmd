@@ -26,20 +26,27 @@ tabviz is designed for interactive visualization of tabular data. Performance de
 
 ### 1. Pagination
 
-For very large datasets, display a subset with navigation:
+For long tables — meta-analyses with hundreds of rows, multi-cohort registries, etc. — attach a [`paginate_spec()`](../guide/export.qmd#pagination) to break the rendering across pages:
 
 ```{r}
 #| eval: false
-# Display 100 rows at a time
-page_size <- 100
-current_page <- 1
+# Defaults: 30 rows / page, group integrity, orphan_min = 3
+tabviz(big_data, label = "study",
+       columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi")),
+       paginate = TRUE)
 
-tabviz(
-  data[(current_page - 1) * page_size + 1:page_size, ],
-  label = "study",
-  columns = list(viz_forest(...))
-)
+# Format presets
+tabviz(big_data, ..., paginate = paginate_letter())   # 30 / page
+tabviz(big_data, ..., paginate = paginate_a4("landscape"))
+tabviz(big_data, ..., paginate = paginate_slide())    # 16 / page (16:9 slides)
+
+# Full control
+tabviz(big_data, ..., paginate = paginate_spec(rows = 50, orphan_min = 5))
 ```
+
+The HTML viewer renders one page at a time with prev/next controls (and a continuous-mode toggle); `save_plot(*.pdf)` emits a true multi-page PDF with breakpoints precomputed once R-side so the static export and the live viewer can never disagree on page boundaries. Single-image formats (PNG, single SVG) flatten with a warning — pass `paginate = NULL` at `save_plot()` to silence.
+
+Multi-page PDF merges per-page PDFs via `qpdf::pdf_combine()` (in Suggests). Missing `qpdf` falls back to a numbered series with a warning. For very long documents the V8 SVG-generator context is reused across pages — context creation is ~200 ms each, so reuse matters once you're past 5–10 pages.
 
 ### 2. Aggregation
 
@@ -319,7 +326,7 @@ system.time({
 
 | Scenario | Recommendation |
 |----------|----------------|
-| > 1,000 rows | Consider pagination or aggregation |
+| > 1,000 rows | Reach for `paginate = paginate_letter()` (or aggregation) — see the Pagination section above |
 | Many sparklines | Limit to 30-50 data points each |
 | Shiny with frequent updates | Use proxy methods |
 | Batch export | Use SVG when possible, cleanup memory |

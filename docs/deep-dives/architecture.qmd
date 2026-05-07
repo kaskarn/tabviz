@@ -23,23 +23,26 @@ tabviz uses [S7](https://rconsortium.github.io/S7/), R's modern object-oriented 
 flowchart TB
     subgraph WebSpec["WebSpec (Root)"]
         data["data.frame"]
-        columns["List&lt;ColumnSpec&gt;"]
+        columns["List&lt;ColumnSpec | ColumnGroup&gt;"]
         groups["List&lt;GroupSpec&gt;"]
         theme["WebTheme"]
         interaction["InteractionSpec"]
-        annotations["List&lt;Annotation&gt;"]
+        paginate["PaginateSpec?"]
     end
 
-    subgraph Theme["WebTheme"]
-        colors["ColorPalette"]
-        typography["Typography"]
-        spacing["Spacing"]
-        shapes["Shapes"]
-        axis["AxisConfig"]
-        layout["LayoutConfig"]
+    subgraph Theme["WebTheme (3-tier resolved)"]
+        inputs["ThemeInputs (T1)"]
+        variants["ThemeVariants (T1)"]
+        chrome["surface / content / divider / accent (T2)"]
+        data2["series / summary / status (T2)"]
+        clusters["row / cell / header / row_group / plot / ... (T3)"]
     end
 
     WebSpec --> Theme
+    inputs --> chrome
+    inputs --> data2
+    chrome --> clusters
+    data2 --> clusters
 ```
 
 ## Class Hierarchy
@@ -48,39 +51,44 @@ flowchart TB
 
 | Class | Purpose |
 |-------|---------|
-| `WebSpec` | Root specification containing all data and configuration |
+| `WebSpec` | Root specification — every field of `tabviz()` lands somewhere on this object |
 | `GroupSpec` | Row grouping definition with optional nesting |
-| `EffectSpec` | Multi-effect plot configuration (multiple intervals per row) |
-| `GroupSummary` | Aggregate statistics for a group |
+| `EffectSpec` | Per-effect spec for multi-effect viz columns (point + lower + upper + style) |
+| `GroupSummary` | Aggregate statistics for a group (pooled estimate diamond) |
 | `PlotLabels` | Title, subtitle, caption, footnote text |
-| `Heterogeneity` | Meta-analysis heterogeneity statistics (optional) |
+| `PaginateSpec` | Pagination configuration (rows per page, break_on, orphan_min, …); see [Pagination](../guide/export.qmd#pagination) |
+| `SplitForest` | A `tabviz(split_by = ...)` result — named list of per-subview `WebSpec`s plus the navigation tree |
 
 ### Theme Classes (`R/classes-theme.R`)
 
-| Class | Purpose |
-|-------|---------|
-| `WebTheme` | Complete theme specification (composes all below) |
-| `ColorPalette` | All color definitions (background, foreground, intervals, etc.) |
-| `Typography` | Font family, sizes, weights |
-| `Spacing` | Row height, padding, gaps |
-| `Shapes` | Point size, line width, border radius |
-| `AxisConfig` | Axis range, ticks, gridlines |
-| `LayoutConfig` | Plot position, cell padding, borders |
+The theme system is resolved through three tiers. **Tier 1** is what authors edit; **Tier 2** is the chrome / data role bindings derived from Tier 1; **Tier 3** is the per-component bundles the renderer actually paints.
+
+| Tier | Classes | Purpose |
+|---|---|---|
+| 1 — inputs | `ThemeInputs`, `ThemeVariants` | The 16 customer-facing inputs (`primary`, `secondary`, `accent`, `status_*`, `series_anchors`, `slot_style`, fonts) plus three per-table variants (`density`, `header_style`, `first_column_style`). |
+| 2 — chrome roles | `Surfaces`, `Content`, `Dividers`, `AccentRoles`, `StatusColors`, `Semantics` | Derived from chrome inputs (neutrals + primary + accent). Drives surface tones, body text, dividers, status colors, semantic-token base colors. |
+| 2 — data roles | `SlotBundle` (per series anchor) | Derived from data inputs (`series_anchors` + `slot_style`). Each anchor expands into a 7-field bundle: `fill`, `stroke`, `fill_muted`, `stroke_muted`, `fill_emphasis`, `stroke_emphasis`, `text_fg`. |
+| 2 — typography & spacing | `TextRole`, `TextRoles`, `SpacingTokens` | 8 named text roles; 12 density-derived numeric tokens. |
+| 3 — component bundles | `HeaderCluster` / `HeaderVariant` (`light`/`tint`/`bold`), `ColumnGroupCluster`, `RowGroupCluster` / `RowGroupTier`, `RowCluster` (`base`/`alt`/`hover`/`selected` + 5 `RowSemantic` bundles `emphasis`/`muted`/`accent`/`bold`/`fill`), `CellCluster`, `FirstColumnCluster` / `FirstColumnVariant`, `PlotScaffold`, `MarksRecipes` / `MarkRecipe`, `AnnotationCluster` | Component-by-component bindings the renderer reads at paint time. |
+| config | `AxisConfig`, `Layout` | Forest x-axis range / ticks / gridlines / etc.; layout-level plot width and container border. |
+
+The composition root is `WebTheme`; see [Theming Manifesto](../concepts/theming-manifesto.qmd) for the *why* behind this shape.
 
 ### Component Classes (`R/classes-components.R`)
 
 | Class | Purpose |
 |-------|---------|
-| `ColumnSpec` | Single column definition |
+| `ColumnSpec` | Single column definition (data + visualization columns alike) |
 | `ColumnGroup` | Hierarchical column header grouping |
-| `InteractionSpec` | UI interaction toggles (sort, collapse, select, etc.) |
+| `InteractionSpec` | UI interaction toggles (sort, collapse, select, edit, themes, etc.) |
+| `VizBarEffect`, `VizBoxplotEffect`, `VizViolinEffect` | Per-effect specs for the corresponding `viz_*()` columns |
 
 ### Annotation Classes (`R/classes-annotations.R`)
 
 | Class | Purpose |
 |-------|---------|
-| `ReferenceLine` | Vertical reference line at specific x value |
-| `CustomAnnotation` | Shape annotation on specific rows |
+| `ReferenceLine` | Vertical reference line at a specific x value (`refline()`) |
+| `CustomAnnotation` | Shape annotation tied to specific rows (`forest_annotation()`, frontend WIP) |
 
 ## Design Patterns
 
@@ -117,25 +125,35 @@ This pattern provides:
 
 ### 2. Composition Over Inheritance
 
-`WebTheme` composes six sub-classes rather than inheriting or flattening:
+`WebTheme` composes ~20 sub-classes across the three theme tiers rather than inheriting or flattening:
 
 ```r
 WebTheme <- new_class("WebTheme", properties = list(
-  name = new_property(class_character, default = "default"),
-  colors = new_property(ColorPalette, default = ColorPalette()),
-  typography = new_property(Typography, default = Typography()),
-  spacing = new_property(Spacing, default = Spacing()),
-  shapes = new_property(Shapes, default = Shapes()),
-  axis = new_property(AxisConfig, default = AxisConfig()),
-  layout = new_property(LayoutConfig, default = LayoutConfig())
+  name = ...,
+  inputs   = ThemeInputs(),     # T1 — what authors edit
+  variants = ThemeVariants(),   # T1 — per-table toggles
+  surface  = Surfaces(),        # T2 — chrome roles, derived
+  content  = Content(),         # T2
+  divider  = Dividers(),        # T2
+  accent   = AccentRoles(),     # T2
+  status   = StatusColors(),    # T2
+  semantic = Semantics(),       # T2 — named token color slots
+  series   = list(SlotBundle()),# T2 — per-series-anchor bundles
+  text     = TextRoles(),       # T2 — 8 text roles
+  spacing  = SpacingTokens(),   # T2 — density-derived numerics
+  header / row_group / row / cell / first_column / plot / ...,  # T3 component bundles
+  axis     = AxisConfig(),      # config
+  layout   = Layout()           # config
 ))
 ```
 
 Benefits:
 
-- **Targeted modification** — Change only what you need: `theme@colors@primary`
-- **Reusable components** — `ColorPalette` could be used elsewhere
-- **Cleaner API** — 6 grouped settings vs 30+ flat properties
+- **Targeted modification** — Change only what you need:
+  `theme@inputs@primary`, `theme@row@accent@marker_fill`,
+  `theme@series[[1]]@stroke`.
+- **Pure derivation** — `resolve_theme()` is idempotent; given the same Tier 1 inputs you get the same Tier 2 / Tier 3 trees, every time.
+- **Surgical overrides** — `set_theme_field()` walks the tree by `path` and pins a single leaf without disturbing siblings; subsequent `set_inputs()` re-resolves but preserves explicit pins.
 
 ### 3. Fluent Modifiers
 
@@ -155,7 +173,7 @@ The four core theme modifiers:
 
 | Modifier | Edits |
 |----------|-------|
-| `set_inputs()` | Tier 1 customer inputs (brand, accent, series, fonts, status) |
+| `set_inputs()` | Tier 1 customer inputs (`primary` / `secondary` / `accent` and their `_deep` companions, `status_*`, `series_anchors`, `slot_style`, fonts) |
 | `set_variants()` | Per-table variants (density, header_style, first_column_style) |
 | `set_spacing()` | Per-token spacing override on top of the density preset |
 | `set_theme_field(theme, path, value)` | Generic deep setter; `path` is a character/integer vector walking the theme tree |
@@ -180,48 +198,68 @@ WebSpec <- new_class("WebSpec", properties = list(
   # Source data
   data = class_data.frame,
 
-  # Column mappings (optional)
-  label_col = new_property(class_character, default = NA_character_),
-  group_col = new_property(class_character, default = NA_character_),
-  marker_size_col = new_property(class_character, default = NA_character_),
-  weight_col = new_property(class_character, default = NA_character_),  # deprecated alias
-
   # Column specifications
-  columns = new_property(class_list, default = list()),
+  columns = list(),
+  extra_columns = list(),
+  available_exclude = character(),
 
-  # Configuration
-  theme = new_property(class_any, default = NULL),
-  ...
+  # Group / summary structure
+  groups = list(),          # List<GroupSpec>
+  summaries = list(),       # List<GroupSummary>
+  overall_summary = NULL,   # GroupSummary | NULL
+  group_col = NA_character_,
+  group_cols = character(0),
+
+  # Theme + interaction + initial state
+  theme = ...,              # WebTheme
+  interaction = ...,        # InteractionSpec
+  initial_state = NULL,
+  labels = NULL,            # PlotLabels
+
+  # Pagination (v0.29+)
+  paginate = NULL,          # PaginateSpec | NULL — see Pagination guide
+
+  # Watermark
+  watermark = NA_character_,
+  watermark_color = NA_character_,
+  watermark_opacity = NA_real_,
+
+  # Row-level column mappings
+  row_bold_col, row_italic_col, row_color_col, row_bg_col,
+  row_badge_col, row_icon_col, row_indent_col, row_type_col,
+
+  # Semantic row tokens (5 — `bold` doubles up with the row_bold above)
+  row_emphasis_col, row_muted_col, row_accent_col, row_fill_col,
+
+  # Marker styling
+  marker_color_col, marker_shape_col, marker_size_col, marker_opacity_col,
+  weight_col,               # deprecated alias for marker_size_col
+
+  # Verbatim deparse of the entry-point call (View source panel)
+  original_call = NA_character_
 ))
 ```
 
-### Row Styling Column Mappings
+### Row styling column mappings
 
-Row-level styling is controlled via column references:
+Row-level styling stores the **column name** containing the values, not the values themselves. The five semantic tokens (`row_emphasis`, `row_muted`, `row_accent`, `row_bold`, `row_fill`) map to the five `RowSemantic` bundles on `theme@row` — naming "this row is special" rather than picking literal colors:
 
-```r
-# We store the column name containing the values:
-row_bold_col = new_property(class_character, default = NA_character_)
-row_italic_col = new_property(class_character, default = NA_character_)
-row_color_col = new_property(class_character, default = NA_character_)
-row_bg_col = new_property(class_character, default = NA_character_)
-```
-
-Usage in `tabviz()`:
 ```r
 tabviz(data,
   label = "study",
-  columns = list(viz_forest(...)),
-  row_bold = "is_summary",    # Column name, not values
-  row_badge = "significance"  # Column name
+  columns = list(viz_forest(point = "hr", lower = "lo", upper = "hi")),
+  row_bold     = "is_summary",       # bare column name
+  row_accent   = ~ pval < 0.05,      # or a formula
+  row_badge    = "significance",
+  row_fill     = "is_pooled"         # 5th semantic token
 )
 ```
 
-This pattern:
+Formulas are evaluated against the data frame at construction time and reduced to logical / character vectors stored under the matching `row_*_col` slot. This pattern keeps data and configuration separate, supports dynamic per-row styling from data columns, and avoids duplicating data in the spec.
 
-- Keeps data and configuration separate
-- Allows dynamic styling from data columns
-- Avoids duplicating data in the spec
+### Pagination
+
+When `paginate = paginate_spec(...)` is set, the breakpoints are computed once R-side over the same flattened display rows the frontend builds, then shipped on the wire as 0-based row ranges (`spec.paginate.pages`). The Svelte viewer slices `displayRows` by those ranges and the PDF export consumes the same ranges — drift between viewer and static export is structurally impossible. See [Data Flow](../concepts/data-flow.qmd) for the wire format.
 
 ## ColumnSpec Design
 
@@ -310,6 +348,34 @@ method(as.data.frame, WebSpec) <- function(x, ...) {
   x@data
 }
 ```
+
+### knit_print for WebSpec / SplitForest
+
+S7 class strings carry the `pkg::Class` prefix (e.g. `"tabviz::WebSpec"`),
+which can't appear in R function names — so the standard
+`knit_print.tabviz::SplitForest <-` pattern is illegal and `@exportS3Method`
+doesn't help. Instead, plain handlers in `R/forest_plot.R` are bound to
+the raw class strings via `registerS3method()` in `.onLoad`:
+
+```r
+# R/forest_plot.R
+knit_print_splitforest <- function(x, ...) {
+  knitr::knit_print(forest_plot_split(x), ...)
+}
+knit_print_webspec <- function(x, ...) {
+  knitr::knit_print(render_tabviz_widget(x), ...)
+}
+
+# R/zzz.R — registered at package load time
+registerS3method("knit_print", "tabviz::SplitForest",
+                 knit_print_splitforest, envir = asNamespace("knitr"))
+```
+
+Without this binding, knitr's auto-print fell back to S7's default print
+on a chunk whose last value was a `WebSpec` or `SplitForest` — which
+dumped the object's internal structure as raw `<pre>` text. The
+registered handlers route through `forest_plot_split()` /
+`render_tabviz_widget()` so chunks render as live widgets.
 
 ## Best Practices
 
