@@ -297,7 +297,7 @@ See [Export → Pagination](../guide/export.qmd#pagination) for the full configu
 
 ## All Theme Variants {#all-theme-variants}
 
-Compare all 9 built-in themes:
+Compare the seven built-in themes — four journal presets and three LOTR-flavored editorial themes:
 
 ```{r}
 #| layout-ncol: 3
@@ -318,10 +318,16 @@ make_plot <- function(theme_fn, name) {
   )
 }
 
+# Journal presets
 make_plot(web_theme_cochrane, "Cochrane")
 make_plot(web_theme_lancet,   "Lancet")
 make_plot(web_theme_jama,     "JAMA")
 make_plot(web_theme_dark,     "Dark")
+
+# LOTR presets
+make_plot(web_theme_dwarven,  "Dwarven")
+make_plot(web_theme_elvish,   "Elvish")
+make_plot(web_theme_hobbit,   "Hobbit")
 ```
 
 ---

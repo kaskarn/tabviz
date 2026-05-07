@@ -40,8 +40,8 @@ tabviz(
 ```
 
 ::: {.callout-tip}
-## Theme Variations
-The same data structure works with any theme. Try `web_theme_lancet()`, `web_theme_cochrane()`, or `web_theme_cochrane()` for different journal styles. See [Feature Showcases](showcases.qmd#all-theme-variants) for a visual comparison of all 9 built-in themes.
+## Theme variations
+The same data structure works with any theme. Try `web_theme_lancet()`, `web_theme_jama()`, or `web_theme_dark()` for different journal styles, or one of the LOTR presets (`web_theme_dwarven()` / `web_theme_elvish()` / `web_theme_hobbit()`) for non-journal contexts. See [Feature Showcases](showcases.qmd#all-theme-variants) for a visual comparison of all seven built-in themes.
 :::
 
 ---

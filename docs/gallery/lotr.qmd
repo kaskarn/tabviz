@@ -10,7 +10,7 @@ library(tabviz)
 ::: {.callout-note}
 ## Pre-release easter egg
 
-The themes and examples on this page (`web_theme_dwarven()`, `web_theme_elvish()`, `web_theme_hobbit()`, plus the bespoke pictogram glyphs `pickaxe`, `anvil`, `gem`, `ale_mug`, `rune`, `crescent`, `harp`, `tree`, `bow`, `swan`, `pipe`, `mushroom`, `footprint`, `jar`, `pie`, `ring`, `eye`, `sword`) are **pre-release demonstrations**. They are likely to be removed before CRAN submission and republished as standalone source on the package blog. Don't build load-bearing dashboards on top of them.
+The themes and examples on this page (`web_theme_dwarven()`, `web_theme_elvish()`, `web_theme_hobbit()`, plus a set of bespoke pictogram glyphs — used below: `gem`, `ale_mug`, `pickaxe`, `sword`, `jar`, `pie`, `mushroom`, plus more in `glyph_registry_names()`) are **pre-release demonstrations**. They are likely to be removed before CRAN submission and republished as standalone source on the package blog. Don't build load-bearing dashboards on top of them.
 
 These three tables exercise: the new `col_pictogram()` and `col_ring()` columns, threshold-driven `col_badge()` shapes, theme-declared web fonts (`Cinzel`, `EB Garamond`, `Cormorant Garamond`, `IM Fell English`, `UnifrakturMaguntia`), and bespoke SVG glyphs designed to read at 14 px.
 :::
@@ -44,9 +44,8 @@ dwarven_data <- data.frame(
   yield_hi     = c(1.42, 1.65, 1.55, 1.12, 1.10, 2.05, 2.40, 0.18)
 )
 
-forest_plot(
+tabviz(
   dwarven_data,
-  point = "yield_ratio", lower = "yield_lo", upper = "yield_hi",
   label = "shaft",
   columns = list(
     col_numeric("depth_m", header = "Depth (m)", decimals = 0),
@@ -71,10 +70,12 @@ forest_plot(
                            "yielding"  = "info",
                            "watch"     = "warning",
                            "hazardous" = "error",
-                           "abandon"   = "muted"))
+                           "abandon"   = "muted")),
+    viz_forest(point = "yield_ratio", lower = "yield_lo", upper = "yield_hi",
+               scale = "log", null_value = 1,
+               axis_label = "Yield ratio (Q3 vs Q2)",
+               show_header = FALSE)
   ),
-  scale = "log", null_value = 1,
-  axis_label = "Yield ratio (Q3 vs Q2)",
   title = "Erebor — Vein Yields, Hall of Records",
   subtitle = "Iron-clad ledger of every shaft. T.A. 2941, Halimath.",
   theme = web_theme_dwarven()
@@ -87,7 +88,7 @@ forest_plot(
 
 Eight peoples. One ring. The minutes are in Sindarin and refreshments are at the second eagle. Boromir spoke for forty-two minutes; the minutes are redacted at the request of the chair.
 
-Three pictogram columns each tell a different micro-story: `star` for **wisdom** (a rating), `sword` for **valor** (also a rating; Boromir is unsurprisingly five-of-five), and `person` for **times interrupted Boromir** (a count — Gimli is leading the pack at six). The `col_ring()` for **ring temptation** uses a three-color threshold (`gold` / `purple` / `red`) keyed to 0.33 and 0.66 — Boromir's 86 % lands well inside the danger arc.
+Three pictogram columns each tell a different micro-story: `star` for **wisdom** (a rating), `sword` for **valor** (also a rating; Boromir is unsurprisingly five-of-five), and `person` for **times interrupted Boromir** (a count — Gimli is leading the pack at six). The `col_ring()` for **ring temptation** is keyed to 0.33 and 0.66 with no explicit colors — the cascade resolves to the theme's status palette (positive / warning / negative). Boromir's 86 % lands well inside the negative arc.
 
 ```{r}
 #| fig-width: 12
@@ -113,9 +114,8 @@ elvish_data <- data.frame(
   row_accent  = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)
 )
 
-forest_plot(
+tabviz(
   elvish_data,
-  point = "vote_for", lower = "vote_lo", upper = "vote_hi",
   label = "delegate",
   row_accent = "row_accent",
   columns = list(
@@ -146,10 +146,12 @@ forest_plot(
               variants = c("HOSTS"    = "info",
                            "YES"      = "success",
                            "BEARER"   = "default",
-                           "GARDENER" = "success"))
+                           "GARDENER" = "success")),
+    viz_forest(point = "vote_for", lower = "vote_lo", upper = "vote_hi",
+               scale = "log", null_value = 1,
+               axis_label = "Council vote weight",
+               show_header = FALSE)
   ),
-  scale = "log", null_value = 1,
-  axis_label = "Council vote weight",
   title = "Rivendell — Council of Elrond, Attendee Manifest",
   subtitle = "Eight peoples. One ring. The minutes are in Sindarin.",
   theme = web_theme_elvish()
@@ -190,9 +192,8 @@ hobbit_data <- data.frame(
   row_muted       = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE)
 )
 
-forest_plot(
+tabviz(
   hobbit_data,
-  point = "satiation", lower = "satiation_lo", upper = "satiation_hi",
   label = "household",
   row_accent = "row_accent",
   row_muted  = "row_muted",
@@ -218,10 +219,12 @@ forest_plot(
               variants = c("YES (ONE)" = "success",
                            "MANY"      = "default",
                            "NONE"      = "muted"),
-              outline = TRUE)
+              outline = TRUE),
+    viz_forest(point = "satiation", lower = "satiation_lo", upper = "satiation_hi",
+               scale = "log", null_value = 1,
+               axis_label = "Satiation index",
+               show_header = FALSE)
   ),
-  scale = "log", null_value = 1,
-  axis_label = "Satiation index",
   title = "Hobbiton — Pantry & Meal Audit, Halimath 1418",
   subtitle = "A respectable hobbit's larder is never half-full.",
   theme = web_theme_hobbit()
@@ -235,7 +238,7 @@ forest_plot(
 The three themes above are picked up automatically by the in-widget theme switcher (look for the **lotr** tab) when `enable_themes = "default"` — `package_themes()` returns them under the `lotr` category. To use one explicitly:
 
 ```r
-forest_plot(
+tabviz(
   data, label = "x",
   columns = list(...),
   theme = web_theme_dwarven()   # or _elvish() or _hobbit()
