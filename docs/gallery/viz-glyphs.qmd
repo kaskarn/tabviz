@@ -1,0 +1,356 @@
+---
+title: "Pictograms & Rings"
+description: "Every mode of col_pictogram() and col_ring(), with the cascade from row tokens into glyph cells"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+Two recently-shipped column types — `col_pictogram()` (repeated glyphs, count or rating) and `col_ring()` (donut gauges with thresholds) — together cover the "small visual quantum" niche that bare numbers, percentages, and bars can't hit cleanly. This page walks every meaningful mode of each, then composes them on a worked dashboard.
+
+For the full argument list see the [Reference](../reference/columns.qmd#col_pictogram); for theme cascading into glyph color see [Visualization Styling](../guide/visualizations/styling.qmd).
+
+## `col_pictogram()` — count mode
+
+The default. `glyph` repeats `round(value)` times per row. Use it when the metric is a small integer count and the reader benefits from visual heft per item.
+
+```{r}
+counts <- data.frame(
+  team    = c("Backend", "Frontend", "Platform", "Data"),
+  prs     = c(3, 7, 4, 2),
+  reviews = c(12, 18, 9, 5)
+)
+
+tabviz(counts, label = "team",
+  columns = list(
+    col_pictogram("prs", header = "PRs merged",
+                  glyph = "person"),
+    col_pictogram("reviews", header = "Reviews",
+                  glyph = "person",
+                  value_label = "trailing", label_format = "integer")
+  ),
+  title = "Sprint summary — count mode"
+)
+```
+
+## `col_pictogram()` — rating mode
+
+Pass `max_glyphs` to switch to rating mode: render exactly `max_glyphs` glyphs per row, the first `value` filled, the remainder muted. Use it when the metric is a bounded score.
+
+```{r}
+ratings <- data.frame(
+  product = c("Widget Pro", "Widget Lite", "Widget Plus", "Widget Max"),
+  quality = c(4.5, 3.8, 4.8, 4.1),
+  service = c(5,   3,   5,   4),
+  perf    = c(3,   4,   5,   3)
+)
+
+tabviz(ratings, label = "product",
+  columns = list(
+    col_pictogram("quality", header = "Quality",
+                  glyph = "star", max_glyphs = 5,
+                  half_glyphs = TRUE,
+                  value_label = "trailing", label_decimals = 1),
+    col_pictogram("service", header = "Service",
+                  glyph = "star", max_glyphs = 5),
+    col_pictogram("perf",    header = "Performance",
+                  glyph = "star", max_glyphs = 5)
+  ),
+  title = "Product ratings — rating mode (max_glyphs = 5)"
+)
+```
+
+`half_glyphs = TRUE` allows a half-filled boundary glyph for fractional values (4.5 stars renders as four full + one half). Without it, the value rounds.
+
+## Range remapping (rating mode + `min_value` / `max_value`)
+
+When the input range isn't `[0, max_glyphs]`, pass both `min_value` and `max_value` to remap. Useful for percentages, scores on arbitrary scales, etc.
+
+```{r}
+risk <- data.frame(
+  asset       = c("AAA Bonds", "Corp Bond", "Equity Idx", "Emerging", "Crypto"),
+  risk_score  = c(8, 22, 48, 67, 92)        # 0–100 scale
+)
+
+tabviz(risk, label = "asset",
+  columns = list(
+    # Map [0, 100] into [0, 5] skulls
+    col_pictogram("risk_score", header = "Risk",
+                  glyph = "skull", max_glyphs = 5,
+                  min_value = 0, max_value = 100,
+                  color = "#dc2626", empty_color = "#e5e7eb",
+                  value_label = "trailing", label_format = "integer")
+  ),
+  title = "Risk score — remapped from [0, 100] into [0, 5]"
+)
+```
+
+## Per-row glyph selection via `glyph_field`
+
+Pass `glyph` as a *named character vector* and pair with `glyph_field` to pick a different glyph per row. Useful when the same metric is best read with category-specific iconography.
+
+```{r}
+energy <- data.frame(
+  source     = c("Solar farm", "Wind farm", "Hydro plant",
+                 "Geothermal", "Biomass"),
+  capacity   = c(8, 12, 6, 4, 3),
+  category   = c("solar", "wind", "hydro", "geothermal", "biomass")
+)
+
+tabviz(energy, label = "source",
+  columns = list(
+    col_pictogram("capacity", header = "Capacity (units)",
+                  glyph = c(solar      = "leaf",
+                            wind       = "leaf",
+                            hydro      = "leaf",
+                            geothermal = "flame",
+                            biomass    = "leaf"),
+                  glyph_field = "category",
+                  color = "#16a34a")
+  ),
+  title = "Renewable capacity — per-row glyph selection"
+)
+```
+
+## Layout — `row` vs `stack`
+
+Default layout is `row` — glyphs lay horizontally. `layout = "stack"` piles them vertically. Best in tall rows (rows that already include a `viz_*` column) where horizontal real estate is at a premium and vertical space is plentiful.
+
+```{r}
+#| fig-height: 5
+restaurants <- data.frame(
+  spot       = c("Cafe A", "Bistro B", "Diner C", "Trattoria D"),
+  meals      = c(3, 4, 2, 5),
+  hr         = c(0.85, 1.05, 0.92, 0.78),
+  lo         = c(0.62, 0.78, 0.66, 0.55),
+  hi         = c(1.16, 1.42, 1.27, 1.10)
+)
+
+tabviz(restaurants, label = "spot",
+  columns = list(
+    col_pictogram("meals", header = "Meals",
+                  glyph = "pie", max_glyphs = 5,
+                  layout = "stack",
+                  value_label = "trailing", label_format = "integer"),
+    viz_forest(point = "hr", lower = "lo", upper = "hi",
+               null_value = 1, scale = "log",
+               axis_label = "Effect"),
+    col_interval("hr", "lo", "hi", header = "HR (95% CI)")
+  ),
+  row_height = 56,                               # tall rows so stack fits
+  title = "Layout = 'stack' alongside a viz column"
+)
+```
+
+## `col_ring()` — single color, fraction range
+
+Default: input range `[0, 1]`, single color from the theme accent. Best for "% to target"-style metrics.
+
+```{r}
+goals <- data.frame(
+  initiative = c("Onboarding", "Activation", "Retention", "Expansion", "Win-back"),
+  q3_target  = c(0.85, 0.72, 0.91, 0.58, 0.31)
+)
+
+tabviz(goals, label = "initiative",
+  columns = list(
+    col_ring("q3_target", header = "% to Q3 target",
+             label_format = "percent", label_decimals = 0)
+  ),
+  title = "Single-color ring — default theme accent fill"
+)
+```
+
+## `col_ring()` — one threshold (binary palette)
+
+One `thresholds` value splits the range into two bins. With no explicit `color`, the package picks a sensible warning / safe palette automatically.
+
+```{r}
+budgets <- data.frame(
+  team       = c("Engineering", "Marketing", "Sales", "Ops", "G&A"),
+  spent      = c(0.42, 0.78, 0.91, 0.55, 0.38)
+)
+
+tabviz(budgets, label = "team",
+  columns = list(
+    col_ring("spent", header = "Budget spent",
+             thresholds = 0.80,                # over-budget after 80%
+             label_format = "percent")
+  ),
+  title = "One-threshold ring — auto-palette (under / over)"
+)
+```
+
+## `col_ring()` — two thresholds (status palette)
+
+Two thresholds → three bins → the cascade resolves to the theme's `status` palette: `positive` for the lowest band, `warning` for the middle, `negative` for the highest. No hex literals needed; the colors come from the theme.
+
+```{r}
+risk_ring <- data.frame(
+  project   = c("Apollo", "Bedrock", "Cypress", "Drift", "Echo", "Falcon"),
+  risk      = c(0.12, 0.35, 0.51, 0.68, 0.78, 0.91)
+)
+
+tabviz(risk_ring, label = "project",
+  columns = list(
+    col_ring("risk", header = "Risk score",
+             thresholds = c(0.33, 0.66),       # auto positive / warning / negative
+             label_format = "percent", label_decimals = 0)
+  ),
+  title = "Two-threshold ring — auto status palette"
+)
+```
+
+Switch the theme to JAMA, Lancet, or any custom theme and the colors restyle automatically — `status_*` is a Tier 1 input.
+
+## `col_ring()` — explicit colors with thresholds
+
+Pass an explicit `color` vector when you want to pin specific shades. Length must equal `length(thresholds) + 1`.
+
+```{r}
+score_card <- data.frame(
+  metric  = c("DAU", "WAU", "MAU", "L7d", "L30d"),
+  value   = c(0.18, 0.42, 0.71, 0.55, 0.83)
+)
+
+tabviz(score_card, label = "metric",
+  columns = list(
+    col_ring("value", header = "Engagement",
+             thresholds = c(0.30, 0.60),
+             color = c("#dc2626", "#f59e0b", "#16a34a"),
+             label_format = "percent", label_decimals = 0)
+  ),
+  title = "Explicit colors with thresholds"
+)
+```
+
+## `col_ring()` — sizes
+
+Three sizes are available: `"sm"` (≈18 px), `"base"` (≈24 px, default), `"lg"` (≈32 px). Larger rings may exceed a normal `rowHeight` — best used in tall rows that already contain a `viz_*` column or when `row_height` is bumped up.
+
+```{r}
+sizes <- data.frame(
+  metric    = c("Small ring", "Base ring", "Large ring"),
+  value_sm  = c(0.65, 0.65, 0.65),
+  value_md  = c(0.65, 0.65, 0.65),
+  value_lg  = c(0.65, 0.65, 0.65)
+)
+
+tabviz(sizes, label = "metric",
+  columns = list(
+    col_ring("value_sm", header = "sm",   size = "sm",
+             label_format = "percent", label_decimals = 0),
+    col_ring("value_md", header = "base", size = "base",
+             label_format = "percent", label_decimals = 0),
+    col_ring("value_lg", header = "lg",   size = "lg",
+             label_format = "percent", label_decimals = 0)
+  ),
+  row_height = 44,
+  title = "Ring sizes side by side"
+)
+```
+
+## Theme cascade — semantic row tokens reach into glyphs
+
+`row_accent`, `row_emphasis`, `row_muted`, `row_bold`, `row_fill` all reach into pictogram and ring fills the same way they reach into forest markers. Tag a row with the semantic intent; the cascade resolves the color from the theme.
+
+```{r}
+escalations <- data.frame(
+  account     = c("Acme Corp", "Bedrock LLC", "Cosmic Inc",
+                  "Delta Co",  "Eclipse Ltd"),
+  health      = c(0.88, 0.42, 0.65, 0.91, 0.18),
+  open_tix    = c(2, 12, 6, 1, 18),
+  is_critical = c(FALSE, FALSE, FALSE, FALSE, TRUE),  # row_accent
+  is_top      = c(FALSE, FALSE, FALSE, TRUE,  FALSE)  # row_fill
+)
+
+tabviz(escalations, label = "account",
+  columns = list(
+    col_ring("health", header = "Health",
+             thresholds = c(0.40, 0.75),
+             label_format = "percent", label_decimals = 0),
+    col_pictogram("open_tix", header = "Open tickets",
+                  glyph = "person",
+                  value_label = "trailing", label_format = "integer",
+                  max_glyphs = 12)
+  ),
+  row_accent = "is_critical",
+  row_fill   = "is_top",
+  title    = "Account health — semantic tokens reach into glyph cells",
+  subtitle = "Eclipse Ltd carries the accent; Delta Co carries the fill."
+)
+```
+
+## Putting it together — survey-feedback dashboard
+
+A six-row dashboard that exercises every mode covered above. Each segment shows: NPS as a ring (auto status palette), promoter / detractor counts as horizontal pictograms, CSAT as a remapped rating-mode pictogram, and a 5-quarter trend sparkline for context.
+
+```{r}
+#| fig-height: 6
+feedback <- data.frame(
+  segment        = c("Enterprise", "Mid-market", "SMB",
+                     "Self-serve",  "Education", "Public"),
+  nps            = c(0.62, 0.48, 0.31, 0.08, 0.74, 0.44),
+  csat_5pt       = c(4.5,  4.1,  3.7,  3.2,  4.7,  3.9),
+  promoters      = c(11,   8,    6,    3,    13,   7),
+  detractors     = c(2,    3,    8,    14,   1,    4),
+  trend          = I(list(
+    c(78, 80, 82, 85, 87), c(72, 75, 78, 80, 82),
+    c(65, 68, 70, 72, 74), c(60, 62, 64, 65, 66),
+    c(82, 85, 87, 88, 89), c(70, 73, 75, 77, 78)
+  )),
+  is_top         = c(FALSE, FALSE, FALSE, FALSE, TRUE,  FALSE),
+  is_concern     = c(FALSE, FALSE, FALSE, TRUE,  FALSE, FALSE)
+)
+
+tabviz(feedback, label = "segment",
+  columns = list(
+    col_ring("nps", header = "NPS",
+             thresholds = c(0.20, 0.50),                  # auto status palette
+             label_format = "percent", label_decimals = 0),
+    col_pictogram("csat_5pt", header = "CSAT (5pt)",
+                  glyph = "star", max_glyphs = 5,
+                  half_glyphs = TRUE,
+                  value_label = "trailing", label_decimals = 1),
+    col_pictogram("promoters", header = "Promoters",
+                  glyph = "person",
+                  value_label = "trailing", label_format = "integer",
+                  max_glyphs = 14),
+    col_pictogram("detractors", header = "Detractors",
+                  glyph = "person",
+                  value_label = "trailing", label_format = "integer",
+                  max_glyphs = 14,
+                  color = "#dc2626"),
+    col_sparkline("trend", "5q trend")
+  ),
+  row_fill   = "is_top",
+  row_accent = "is_concern",
+  theme = web_theme_cochrane(),
+  title    = "Customer feedback — pictograms + rings end-to-end",
+  subtitle = "Education leads (row_fill); Self-serve flagged for response-rate concern (row_accent)."
+)
+```
+
+## When to reach for what
+
+| Metric shape | Reach for |
+|---|---|
+| Small integer count (1–15) | `col_pictogram(...)` count mode |
+| Bounded rating (1–5, 0–10) | `col_pictogram(..., max_glyphs = ...)` |
+| Fractional metric in `[0, 1]` | `col_ring(...)` |
+| `[0, 1]` metric with "good / bad" cutoff | `col_ring(..., thresholds = X)` |
+| `[0, 1]` metric with "low / mid / high" bands | `col_ring(..., thresholds = c(X, Y))` (auto status palette) |
+| Anything outside `[0, 1]` | Add `min_value` / `max_value` |
+| Want category-specific iconography | `col_pictogram(glyph = c(...), glyph_field = "...")` |
+| Need the value next to the glyph | `value_label = "trailing"` (or `"leading"`) |
+| Glyph piles in a tall row | `layout = "stack"` |
+
+## See also
+
+- [Reference → `col_pictogram()`](../reference/columns.qmd#col_pictogram) and [`col_ring()`](../reference/columns.qmd#col_ring) — every argument.
+- [Domain Dashboards](dashboards.qmd) — sports / survey / portfolio examples that use these in context.
+- [LOTR (Easter Egg)](lotr.qmd) — three full-page demos using the bespoke glyph set.
+- [Visualization Styling](../guide/visualizations/styling.qmd) — the four-layer cascade that drives glyph color.
