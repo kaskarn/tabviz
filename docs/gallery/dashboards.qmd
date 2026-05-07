@@ -1,5 +1,6 @@
 ---
-title: "Dashboard Examples"
+title: "Domain Dashboards"
+description: "Information-dense dashboards across sports, survey, finance, ops, and climate"
 ---
 
 ```{r}
@@ -8,11 +9,217 @@ library(tabviz)
 library(dplyr)
 ```
 
-Information-dense dashboards built from `tabviz()` column primitives — heatmaps, progress bars, sparklines, badges, currency, and the occasional in-line forest plot. Each example targets a different domain (product, ops, climate, sports) but uses the same data-frame-plus-columns API.
+`tabviz()` works as well outside the journal as inside. This page collects dense, information-rich dashboards from six domains — sports analytics, customer feedback, portfolio performance, product metrics, airline ops, climate science — built with the same `columns = list(...)` API. Each example leans into the column types that fit the domain (rings for percentages, pictograms for counts and ratings, sparklines for trends, viz_forest for confidence intervals on any interval-shaped metric).
 
-## Product Metrics Dashboard
+## Sports analytics — NBA player efficiency
 
-Track product KPIs with sparklines, bars, stars, currency, and trend indicators:
+Three dimensions in one row: shooting efficiency (rings — `FG%` / `3P%` / `FT%`), accumulated honors (pictograms in rating mode for All-Star appearances), and a focal forest plot for Player Efficiency Rating with 95% CIs. Row groups by conference; row accent on All-Stars.
+
+```{r}
+#| fig-height: 9
+data(nba_efficiency)
+
+# Synthesize a few realistic-feeling secondary stats so we can exercise
+# col_ring / col_pictogram / viz_bar on top of the per-CI forest.
+set.seed(2024)
+nba_dash <- nba_efficiency |>
+  mutate(
+    fg_pct      = round(runif(n(), 0.42, 0.58), 3),
+    three_pct   = round(runif(n(), 0.30, 0.42), 3),
+    ft_pct      = round(runif(n(), 0.70, 0.92), 3),
+    all_star_n  = pmin(15L, sample(0:9, n(), replace = TRUE) +
+                            ifelse(all_star, 1L, 0L)),
+    is_mvp      = award == "MVP"
+  )
+
+tabviz(nba_dash,
+  label = "player",
+  group = "conference",
+  columns = list(
+    col_group("Player",
+      col_text("team", "Team", width = 50),
+      col_text("position", "Pos", width = 40)
+    ),
+    col_group("Volume",
+      col_numeric("games", "GP", decimals = 0),
+      col_numeric("ppg", "PPG", decimals = 1)
+    ),
+    col_group("Shooting",
+      col_ring("fg_pct",    header = "FG%",
+               thresholds = c(0.45, 0.52)),
+      col_ring("three_pct", header = "3P%",
+               thresholds = c(0.34, 0.39)),
+      col_ring("ft_pct",    header = "FT%",
+               thresholds = c(0.75, 0.85))
+    ),
+    col_pictogram("all_star_n", header = "All-Star apps",
+                  glyph = "star", max_glyphs = 15,
+                  value_label = "trailing", label_format = "integer"),
+    viz_forest(point = "per", lower = "per_lower", upper = "per_upper",
+               null_value = 15,
+               axis_label = "Player Efficiency Rating (95% CI)"),
+    col_badge("award", "Award",
+      variants = list(
+        MVP                = "success",
+        `All-NBA 1st`      = "info",
+        `All-NBA 2nd`      = "warning",
+        `All-NBA 3rd`      = "muted",
+        `Defensive POY`    = "info",
+        `6th Man`          = "muted",
+        `Most Improved`    = "muted",
+        `Rookie of Year`   = "muted",
+        `All-Star`         = "muted"
+      ))
+  ),
+  row_accent = "all_star",       # bold + theme accent on All-Stars
+  row_fill   = "is_mvp",         # strong fill on MVP row
+  theme = web_theme_cochrane() |>
+    set_inputs(primary = "#1d428a", accent = "#c8102e"),  # NBA blue + red
+  title    = "NBA Player Efficiency Dashboard",
+  subtitle = "PER = 15 is league average. Rings show shooting efficiency by typical-range thresholds.",
+  caption  = "All-Star rows accented; MVP row gets the row.fill token."
+)
+```
+
+::: {.callout-tip}
+## What this exercises
+
+- **`col_ring()` with `thresholds`**: each shooting-percentage column flips color at a typical-range cutoff (e.g. FG% green ≥ 0.52, amber 0.45–0.52, red < 0.45). No hex literals — the cascade resolves to the theme's status palette.
+- **`col_pictogram()` rating mode**: `max_glyphs = 15` with `value_label = "trailing"` shows accumulated All-Star appearances visually + numerically.
+- **`row_accent` and `row_fill` together**: the 26 All-Stars take the accent token (bold + accent color), and the single MVP row layers the fill token on top — strongest visual hierarchy reserved for the rarest case.
+- **Custom-tinted theme** via `set_inputs()` — NBA blue + red without rebuilding from scratch.
+:::
+
+---
+
+## Customer satisfaction survey
+
+Likert-style satisfaction scores as rings (with auto-defaulted positive / warning / negative palette), detractor counts as pictograms, response progress as bars. Row fill flags the segment with the strongest result; row accent flags any with concerning scores.
+
+```{r}
+#| fig-height: 6
+survey <- data.frame(
+  segment      = c("Enterprise — strategic", "Enterprise — mid-market",
+                   "SMB — paid",             "SMB — self-serve",
+                   "Education",              "Public sector"),
+  responses    = c(412, 287, 1820, 4560, 198, 142),
+  response_rate= c(0.71, 0.58, 0.32, 0.18, 0.62, 0.49),
+  csat         = c(0.87, 0.82, 0.74, 0.66, 0.89, 0.78),         # 0–1
+  nps          = c( 62,  48,  31,   8,  74,  44),                # -100 to 100
+  ces          = c(0.82, 0.76, 0.68, 0.55, 0.85, 0.71),
+  detractors   = c(  2,   3,   8,  14,   1,   4),
+  promoters    = c(  9,   8,   6,   3,  11,   7),
+  trend        = I(list(
+    c(78, 80, 82, 85, 87), c(72, 75, 78, 80, 82),
+    c(65, 68, 70, 72, 74), c(60, 62, 64, 65, 66),
+    c(82, 85, 87, 88, 89), c(70, 73, 75, 77, 78)
+  )),
+  is_top       = c(FALSE, FALSE, FALSE, FALSE, TRUE, FALSE),     # row_fill
+  is_concern   = c(FALSE, FALSE, FALSE, TRUE,  FALSE, FALSE)     # row_accent
+)
+
+tabviz(survey,
+  label = "segment",
+  columns = list(
+    col_n("responses", "N"),
+    col_progress("response_rate", "Response rate", max_value = 1,
+                 show_label = TRUE),
+    col_group("Satisfaction",
+      col_ring("csat", header = "CSAT", thresholds = c(0.70, 0.85)),
+      col_ring("ces",  header = "CES",  thresholds = c(0.65, 0.80))
+    ),
+    col_numeric("nps", "NPS", decimals = 0),
+    col_pictogram("detractors", header = "Detractors",
+                  glyph = "person", layout = "row"),
+    col_pictogram("promoters",  header = "Promoters",
+                  glyph = "person", layout = "row"),
+    col_sparkline("trend", "5q trend")
+  ),
+  row_fill   = "is_top",
+  row_accent = "is_concern",
+  theme = web_theme_cochrane(),
+  title    = "Customer satisfaction by segment",
+  subtitle = "CSAT and CES bands set per the program's typical-range thresholds; trend on the right.",
+  caption  = "SMB self-serve flagged for response-rate concern; Education leads on every metric."
+)
+```
+
+::: {.callout-note}
+## When to reach for what
+
+- **Use `col_ring()`** when the metric has a natural percentage / fraction shape *and* falls into typical "good / OK / concern" bands. The threshold-driven palette tells the story at a glance.
+- **Use `col_pictogram()`** when the metric is a **count** that benefits from visual heft (one icon per detractor, one star per appearance) — it reads faster than a bare number for small counts.
+- **Use `col_sparkline()`** when you need direction without precision; for axis-comparable trends across rows reach for `viz_bar()` or `viz_forest()` instead.
+:::
+
+---
+
+## Portfolio performance
+
+Twelve-month return with a 95% CI as the focal forest column, allocation share as a ring, position counts as a pictogram, and a Sharpe-ratio bar. Row-level accent on assets that beat their benchmark; row fill on the overall portfolio summary.
+
+```{r}
+#| fig-height: 7
+portfolio <- data.frame(
+  asset        = c("US Large Cap", "US Small Cap", "International Dev",
+                   "Emerging Mkts", "US IG Bonds",  "TIPS",
+                   "Gold",         "Real Estate",   "Cash",
+                   "PORTFOLIO"),
+  category     = c("Equity", "Equity", "Equity", "Equity",
+                   "Fixed Income", "Fixed Income",
+                   "Alternative", "Alternative", "Cash",
+                   "Total"),
+  allocation   = c(0.32, 0.10, 0.12, 0.06, 0.22, 0.05,
+                   0.04, 0.06, 0.03, 1.00),
+  positions    = c(  4,    3,    5,    3,    6,    1,
+                     1,    2,    0,   25L),
+  return_pct   = c(0.183, 0.122, 0.094, 0.072, 0.041, 0.025,
+                   0.158, 0.108, 0.043, 0.118),
+  return_lo    = c(0.142, 0.062, 0.038, 0.005, 0.020, 0.008,
+                   0.090, 0.058, 0.041, 0.092),
+  return_hi    = c(0.224, 0.182, 0.150, 0.139, 0.062, 0.042,
+                   0.226, 0.158, 0.045, 0.144),
+  sharpe       = c(1.45, 0.86, 0.72, 0.41, 1.02, 0.62,
+                   0.94, 0.81, NA,   1.18),
+  beats_bench  = c(TRUE, FALSE, FALSE, FALSE, TRUE, TRUE,
+                   FALSE, TRUE, FALSE, TRUE),
+  row_type     = c(rep("data", 9), "summary"),
+  is_total     = c(rep(FALSE, 9), TRUE)
+)
+
+tabviz(portfolio,
+  label = "asset",
+  group = "category",
+  columns = list(
+    col_ring("allocation", header = "Alloc",
+             thresholds = c(0.05, 0.20)),     # tiny / typical / heavy
+    col_pictogram("positions", header = "Positions",
+                  glyph = "person",
+                  value_label = "trailing", label_format = "integer",
+                  max_glyphs = 6),
+    viz_forest(point = "return_pct", lower = "return_lo", upper = "return_hi",
+               null_value = 0,
+               axis_label = "12-month return (95% CI)"),
+    col_percent("return_pct", "Return", multiply = TRUE),
+    col_numeric("sharpe",     "Sharpe", decimals = 2),
+    col_badge("beats_bench", "vs Benchmark",
+      variants = list(`TRUE` = "success", `FALSE` = "muted"))
+  ),
+  row_type   = "row_type",
+  row_accent = "beats_bench",     # bold + accent on outperformers
+  row_fill   = "is_total",        # strong fill on overall portfolio row
+  theme = web_theme_lancet(),
+  title    = "Portfolio performance — trailing twelve months",
+  subtitle = "Allocation share, position count, return CI, and Sharpe ratio per holding category.",
+  caption  = "Outperforming holdings highlighted with the accent token; overall portfolio row uses the fill token."
+)
+```
+
+---
+
+## Product metrics
+
+Five product variants tracked across revenue, growth, margin, units sold, and a 12-month trend:
 
 ```{r}
 product_metrics <- data.frame(
@@ -52,9 +259,9 @@ tabviz(product_metrics, label = "product",
 
 ---
 
-## A/B Test Results
+## A/B test results
 
-Compare conversion rates across experiment variants with confidence intervals and winner badges:
+Conversion lift with a 95% CI per variant, p-value, and a verdict badge. The control row is a `row_type = "summary"` baseline.
 
 ```{r}
 ab_test_results <- data.frame(
@@ -101,9 +308,9 @@ tabviz(ab_test_results, label = "variant",
 
 ---
 
-## Airline Performance
+## Airline performance
 
-Airline delay metrics with heatmaps for on-time percentage and progress bars for satisfaction:
+Carrier delays with a heatmap on on-time percentage, a progress bar for satisfaction, and a 12-month delay trend:
 
 ```{r}
 data(airline_delays)
@@ -112,375 +319,34 @@ airline_summary <- airline_delays |>
   filter(month == "Apr") |>
   select(carrier, carrier_type, on_time_pct, delay_vs_avg, satisfaction, flights, trend)
 
-tabviz(
-  airline_summary,
-  label = "carrier",
+tabviz(airline_summary, label = "carrier",
   columns = list(
     col_badge("carrier_type", "Type",
-      variants = list(
-        Legacy = "info",
-        `Low-Cost` = "success",
-        `Ultra Low-Cost` = "warning"
-      )),
+      variants = list(Legacy = "info", `Low-Cost` = "success",
+                      `Ultra Low-Cost` = "warning")),
     col_n("flights", "Flights", abbreviate = TRUE),
-    col_heatmap("on_time_pct", "On-Time %",
+    col_heatmap("on_time_pct", "On-Time",
       palette = c("#fee2e2", "#dcfce7"),
-      min_value = 0.65, max_value = 0.95,
-      decimals = 2, show_value = TRUE),
+      min_value = 0.65, max_value = 0.95, decimals = 2, show_value = TRUE),
     col_progress("satisfaction", "Satisfaction", max_value = 5),
     col_numeric("delay_vs_avg", "Delay vs Avg", decimals = 1),
     col_sparkline("trend", "12-Month Trend")
   ),
-  row_bg = ~ case_when(
-    on_time_pct > 0.85 ~ "#dcfce7",
-    on_time_pct < 0.75 ~ "#fee2e2",
-    TRUE ~ NA_character_
-  ),
   theme = web_theme_cochrane(),
-  title = "Airline Performance Dashboard"
+  title = "Airline Performance — April"
 )
 ```
 
 ---
 
-## Executive Summary
+## Climate — regional temperature anomalies
 
-A visually rich C-suite dashboard using progress bars, heatmaps, sparklines, and badges:
-
-```{r}
-exec_data <- data.frame(
-  metric = c("Revenue", "Profit Margin", "Customer Count", "Retention Rate",
-             "Net Promoter Score", "Employee Satisfaction"),
-  current_val = c(142000000, 0.197, 45200, 0.92, 72, 4.1),
-  target_val = c(150000000, 0.200, 50000, 0.95, 75, 4.5),
-  pct_to_target = c(0.947, 0.985, 0.904, 0.968, 0.960, 0.911),
-  health = c(88, 92, 78, 95, 85, 72),
-  status = c("On Track", "On Track", "Behind", "On Track", "On Track", "At Risk"),
-  trend = I(list(
-    c(120, 125, 130, 128, 135, 138, 140, 142),
-    c(0.18, 0.185, 0.19, 0.188, 0.192, 0.195, 0.196, 0.197),
-    c(38, 40, 41, 42, 43, 44, 44.5, 45.2),
-    c(0.88, 0.89, 0.90, 0.91, 0.91, 0.92, 0.92, 0.92),
-    c(65, 67, 68, 70, 71, 72, 72, 72),
-    c(3.8, 3.9, 3.9, 4.0, 4.0, 4.1, 4.1, 4.1)
-  ))
-)
-
-tabviz(exec_data,
-  label = "metric",
-  columns = list(
-    col_badge("status", "Status",
-      variants = list(
-        `On Track` = "success",
-        Behind = "warning",
-        `At Risk` = "error"
-      )),
-    col_progress("pct_to_target", "Progress to Target", max_value = 1),
-    col_heatmap("health", "Health",
-      palette = c("#fef3c7", "#dcfce7"),
-      min_value = 60, max_value = 100, decimals = 0),
-    col_sparkline("trend", "8-Quarter Trend")
-  ),
-  theme = web_theme_cochrane() |> set_variants(density = "spacious"),
-  title = "Q4 Executive Summary"
-)
-```
-
----
-
-## Dark Mode Dashboard
-
-A server monitoring dashboard using the dark theme with heatmaps, progress bars, badges, and sparklines:
-
-```{r}
-server_data <- data.frame(
-  server = c("prod-web-01", "prod-web-02", "prod-api-01",
-             "prod-db-01", "prod-cache-01", "staging-01"),
-  status = c("Healthy", "Healthy", "Warning", "Healthy", "Critical", "Maintenance"),
-  cpu_load = c(42, 67, 88, 35, 95, 12),
-  memory_pct = c(0.58, 0.72, 0.91, 0.45, 0.97, 0.22),
-  disk_pct = c(0.45, 0.62, 0.78, 0.88, 0.93, 0.31),
-  uptime_days = c(142, 142, 89, 365, 23, 3),
-  requests = I(list(
-    c(1200, 1350, 1500, 1420, 1600, 1550, 1700, 1650, 1800, 1750, 1900, 1850),
-    c(1100, 1250, 1400, 1350, 1500, 1450, 1600, 1550, 1700, 1650, 1800, 1750),
-    c(800, 900, 950, 1100, 1300, 1500, 1800, 2100, 2400, 2600, 2800, 3000),
-    c(500, 520, 510, 530, 540, 535, 550, 545, 560, 555, 570, 565),
-    c(400, 420, 450, 480, 520, 580, 650, 750, 900, 1100, 1400, 1800),
-    c(50, 60, 55, 45, 40, 35, 30, 25, 20, 15, 10, 8)
-  ))
-)
-
-tabviz(server_data, label = "server",
-  columns = list(
-    col_badge("status", "Status",
-      variants = list(
-        Healthy = "success",
-        Warning = "warning",
-        Critical = "error",
-        Maintenance = "info"
-      )),
-    col_heatmap("cpu_load", "CPU %",
-      palette = c("#dcfce7", "#fee2e2"),
-      min_value = 0, max_value = 100, decimals = 0),
-    col_progress("memory_pct", "Memory", max_value = 1),
-    col_progress("disk_pct", "Disk", max_value = 1),
-    col_n("uptime_days", "Uptime (d)"),
-    col_sparkline("requests", "Traffic (12h)")
-  ),
-  theme = web_theme_dark(),
-  title = "Infrastructure Monitor"
-)
-```
-
----
-
-## Org Chart Executive Dashboard
-
-A table-only view (no forest plot) of company org structure — row styling carries the hierarchy: summary row at the top, bolded department headers, indented sub-teams, and a sparkline showing 6-month headcount trend.
-
-```{r}
-exec_dashboard <- tibble(
-  department = c(
-    "COMPANY TOTAL", "",
-    "Engineering", "  Platform", "  Infrastructure", "  Mobile",
-    "",
-    "Product", "  Design", "  Research",
-    "",
-    "Sales", "  Enterprise", "  SMB"
-  ),
-  headcount = c(1250, NA, 480, 180, 150, 150, NA, 220, 85, 135, NA, 550, 320, 230),
-  revenue_m = c(185, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 185, 142, 43),
-  growth = c(24, NA, 32, 45, 28, 18, NA, 28, 35, 22, NA, 18, 22, 12),
-  satisfaction = c(78, NA, 82, 85, 80, 81, NA, 76, 79, 74, NA, 75, 77, 72),
-  trend = list(
-    c(1050, 1100, 1150, 1180, 1220, 1250), NULL,
-    c(380, 400, 420, 440, 460, 480), c(140, 150, 160, 170, 175, 180),
-    c(120, 130, 140, 145, 148, 150), c(120, 120, 125, 130, 140, 150), NULL,
-    c(180, 190, 200, 208, 215, 220), c(65, 70, 75, 80, 82, 85),
-    c(115, 120, 125, 128, 132, 135), NULL,
-    c(490, 505, 520, 532, 542, 550), c(280, 290, 300, 308, 315, 320),
-    c(210, 215, 220, 224, 227, 230)
-  ),
-  effect = rep(1, 14), lower = rep(0.9, 14), upper = rep(1.1, 14),
-  rtype = c("summary", "spacer", "header", rep("data", 3), "spacer",
-            "header", "data", "data", "spacer", "header", "data", "data"),
-  rbold = c(TRUE, FALSE, TRUE, rep(FALSE, 3), FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE),
-  rindent = c(0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1),
-  rcolor = c("#16a34a", NA, "#2563eb", NA, NA, NA, NA, "#2563eb", NA, NA, NA, "#2563eb", NA, NA)
-)
-
-tabviz(
-  exec_dashboard,
-  label = "department",
-  columns = list(
-    col_numeric("headcount", "HC"),
-    col_numeric("revenue_m", "Rev $M"),
-    col_bar("growth", "Growth %"),
-    col_numeric("satisfaction", "eNPS"),
-    col_sparkline("trend", "6M Trend")
-  ),
-  row_type = "rtype", row_bold = "rbold", row_indent = "rindent", row_color = "rcolor",
-  theme = web_theme_cochrane(),
-  title = "Executive Dashboard",
-  subtitle = "Table-only with hierarchical org structure",
-  caption = "Using tabviz() with row styling for org charts"
-)
-```
-
----
-
-## Financial Benchmarks
-
-A SaaS peer-group benchmark: revenue in millions USD, YoY growth, gross margin, quartile ranking, and a quarterly ARR trend sparkline. Row background is colored by quartile.
-
-```{r}
-set.seed(2026)
-saas_peers <- data.frame(
-  company = c("Aurora Cloud", "Beacon Labs", "Cirrus IO", "Delta Forge",
-              "Ember Systems", "Fathom AI", "Helios Data", "Ion Works",
-              "Juno Metrics", "Kestrel Security"),
-  revenue_m = c(842, 612, 1204, 318, 186, 2450, 945, 428, 276, 1567),
-  yoy_growth = c(0.28, 0.42, 0.18, 0.65, 0.88, 0.22, 0.35, 0.52, 0.71, 0.15),
-  margin = c(0.74, 0.68, 0.81, 0.59, 0.52, 0.85, 0.77, 0.63, 0.55, 0.79),
-  arr_trend = I(lapply(1:10, function(i) {
-    base <- runif(1, 80, 220)
-    cumsum(c(base, rnorm(11, mean = base * 0.08, sd = base * 0.04)))
-  })),
-  quartile = c("Q2", "Q1", "Q2", "Q1", "Q1", "Q3", "Q2", "Q1", "Q1", "Q3")
-)
-
-tabviz(saas_peers, label = "company",
-  columns = list(
-    col_currency("revenue_m", "Revenue ($M)", decimals = 0),
-    col_bar("yoy_growth", "YoY Growth", max_value = 1),
-    col_bar("margin", "Gross Margin", max_value = 1),
-    col_sparkline("arr_trend", "ARR (12Q)"),
-    col_badge("quartile", "Quartile",
-      variants = list(Q1 = "success", Q2 = "info", Q3 = "warning", Q4 = "error"))
-  ),
-  row_bg = ~ case_when(
-    quartile == "Q1" ~ "#ecfdf5",
-    quartile == "Q4" ~ "#fef2f2",
-    TRUE ~ NA_character_
-  ),
-  theme = web_theme_cochrane(),
-  title = "SaaS Peer Benchmark",
-  subtitle = "Revenue, growth, margin, and ARR trajectory across 10 companies"
-)
-```
-
----
-
-## Academic / Education
-
-Meta-analysis of test-score interventions grouped by grade band. Effect sizes are Cohen's *d* with 95% CIs; forest plot uses `null_value = 0` with a linear scale.
-
-```{r}
-set.seed(7)
-n_int <- 14
-interventions <- data.frame(
-  intervention = c(
-    "Phonics Tutoring", "Small-Group Reading", "1:1 Math Coach",
-    "Peer Tutoring", "Summer Bridge", "After-School Math",
-    "Writing Workshop", "STEM Lab Rotation", "Flipped Classroom",
-    "Project-Based Learning", "Socratic Seminars", "AP Prep Bootcamp",
-    "Career Mentorship", "Digital Literacy"
-  ),
-  grade_level = c("K-5", "K-5", "K-5", "K-5",
-                  "6-8", "6-8", "6-8", "6-8", "6-8",
-                  "9-12", "9-12", "9-12", "9-12", "9-12"),
-  n = c(842, 1204, 416, 988, 612, 524, 368, 892, 1056, 742, 488, 934, 612, 1120),
-  effect_size = c(0.42, 0.58, 0.71, 0.33, 0.28, 0.12, 0.45, 0.38,
-                  0.52, 0.22, 0.61, 0.35, 0.48, -0.04),
-  ci_lo = c(0.28, 0.41, 0.52, 0.18, 0.11, -0.05, 0.22, 0.22,
-            0.38, 0.05, 0.42, 0.19, 0.28, -0.20),
-  ci_hi = c(0.56, 0.75, 0.90, 0.48, 0.45, 0.29, 0.68, 0.54,
-            0.66, 0.39, 0.80, 0.51, 0.68, 0.12)
-) |>
-  mutate(
-    status = case_when(
-      ci_lo > 0.2 ~ "Pass",
-      ci_hi < 0.1 ~ "Fail",
-      TRUE ~ "Improvement"
-    )
-  )
-
-tabviz(interventions,
-  label = "intervention",
-  group = "grade_level",
-  columns = list(
-    col_n("n"),
-    viz_forest(point = "effect_size", lower = "ci_lo", upper = "ci_hi",
-               scale = "linear", null_value = 0,
-               axis_label = "Effect size (Cohen's d)"),
-    col_interval("effect_size", "ci_lo", "ci_hi", header = "d (95% CI)")
-  ),
-  row_badge = "status",
-  theme = web_theme_lancet(),
-  title = "Test-Score Interventions by Grade Band",
-  subtitle = "Row groups: K-5 / 6-8 / 9-12. Badge shows pre-registered pass criterion (d > 0.2, CI excludes 0).",
-  footnote = "Synthetic data modeled on typical education meta-analysis effect sizes."
-)
-```
-
----
-
-## Operations / QC
-
-Manufacturing-line process monitoring: capacity utilization bars, yield sparklines, a defect-rate heatmap, and a status badge. `row_bg` flags critical lines.
-
-```{r}
-set.seed(99)
-qc_lines <- data.frame(
-  line = c("Line-01", "Line-02", "Line-03", "Line-04", "Line-05",
-           "Line-06", "Line-07", "Line-08", "Line-09"),
-  defect_rate = c(0.018, 0.042, 0.009, 0.068, 0.021, 0.015, 0.055, 0.033, 0.012),
-  target = rep(0.025, 9),
-  capacity_used = c(0.82, 0.74, 0.91, 0.58, 0.88, 0.79, 0.45, 0.85, 0.93),
-  yield_trend = I(lapply(1:9, function(i) {
-    base <- runif(1, 0.88, 0.98)
-    pmin(1, pmax(0.75, base + cumsum(rnorm(24, 0, 0.01))))
-  })),
-  status = c("In control", "Warning", "In control", "Critical", "In control",
-             "In control", "Critical", "Warning", "In control")
-)
-
-tabviz(qc_lines, label = "line",
-  columns = list(
-    col_heatmap("defect_rate", "Defect Rate",
-      palette = c("#dcfce7", "#fee2e2"),
-      min_value = 0, max_value = 0.08, decimals = 3),
-    col_numeric("target", "Target", decimals = 3),
-    col_bar("capacity_used", "Capacity", max_value = 1),
-    col_sparkline("yield_trend", "Yield (24h)"),
-    col_badge("status", "Status",
-      variants = list(
-        `In control` = "success",
-        Warning = "warning",
-        Critical = "error"
-      ))
-  ),
-  row_bg = ~ case_when(
-    status == "Critical" ~ "#fef2f2",
-    status == "Warning" ~ "#fffbeb",
-    TRUE ~ NA_character_
-  ),
-  theme = web_theme_cochrane(),
-  title = "Production-Line QC Dashboard",
-  subtitle = "Defect rate vs target, capacity utilization, and 24-hour yield trend"
-)
-```
-
----
-
-## Sports Analytics: NBA Player Efficiency
-
-Non-clinical use case — forest plots work for any interval data. Here player efficiency ratings with 95% CIs are grouped by conference, with team/position column groups and award badges.
-
-```{r}
-#| fig-height: 8
-data(nba_efficiency)
-
-tabviz(
-  nba_efficiency,
-  label = "player",
-  group = "conference",
-  columns = list(
-    col_group("Player Info",
-      col_text("team", "Team", width = 50),
-      col_text("position", "Pos", width = 40)
-    ),
-    col_group("Stats",
-      col_numeric("ppg", "PPG"),
-      col_numeric("games", "GP", decimals = 0)
-    ),
-    viz_forest(point = "per", lower = "per_lower", upper = "per_upper",
-               null_value = 15,
-               axis_label = "Player Efficiency Rating"),
-    col_interval("per", "per_lower", "per_upper", header = "PER (95% CI)")
-  ),
-  row_badge = "award",
-  theme = web_theme_cochrane() |>
-    set_inputs(primary = "#C9082A"),  # NBA red
-  title = "NBA Player Efficiency Ratings",
-  subtitle = "Row groups by conference + column groups for Player Info / Stats",
-  caption = "PER = 15 is league average. Badge shows major awards.",
-  footnote = "Data simulated based on typical NBA statistics"
-)
-```
-
----
-
-## Climate Science: Regional Temperature Anomalies
-
-Environmental data example using the `climate_temps` dataset — the same interval-estimate structure used in clinical forest plots maps cleanly onto temperature anomalies vs. a pre-industrial baseline.
+The same interval-estimate structure that runs clinical forest plots maps cleanly onto temperature anomalies vs. a pre-industrial baseline. Marker shape encodes confidence; marker color signals severity:
 
 ```{r}
 data(climate_temps)
 
-tabviz(
-  climate_temps,
+tabviz(climate_temps,
   label = "region",
   group = "category",
   columns = list(
@@ -494,8 +360,18 @@ tabviz(
   marker_color = ~ ifelse(anomaly > 1.5, "#dc2626", ifelse(anomaly > 1.0, "#f59e0b", "#3b82f6")),
   theme = web_theme_cochrane() |>
     set_theme_field(c("axis", "gridlines"), TRUE),
-  title = "Regional Temperature Anomalies",
+  title    = "Regional Temperature Anomalies",
   subtitle = "Grouped by geographic category, shaped by confidence level",
-  caption = "Red = significant warming, Blue = cooling or below baseline"
+  caption  = "Red ≥ 1.5 °C, amber 1.0–1.5 °C, blue < 1.0 °C; circle = high confidence."
 )
 ```
+
+---
+
+## See also
+
+- [Long Meta-Analysis](meta-analysis.qmd) — pooled summaries + pagination across 70 studies.
+- [Pictogram & Ring Deep Dive](viz-glyphs.qmd) — every mode of `col_pictogram()` and `col_ring()`.
+- [Compose Your Own Brand](brand-design.qmd) — building the NBA / Lancet / journal themes from scratch.
+- [Visualization Styling](../guide/visualizations/styling.qmd) — the four-layer marker-color cascade across `viz_*` columns.
+- [Reference → Columns](../reference/columns.qmd) — every `col_*` and `viz_*` argument.
