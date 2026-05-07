@@ -457,57 +457,7 @@ See [Fluent API](../guide/fluent-api.qmd) and [Themes](../guide/themes.qmd).
 
 ## Publication Templates
 
-Two journal-style treatments of the same underlying forest-plot structure. The only thing that changes is the theme (`web_theme_jama`, `web_theme_lancet`) and the row/column grouping — use these as drop-in templates for manuscript figures.
-
-### JAMA Style
-
-Dense, minimal, black and white. Interaction p-values for subgroups.
-
-```{r}
-jama_data <- tibble(
-  subgroup = c(
-    "Overall",
-    "",
-    "Age",
-    "  <65 years", "  >=65 years",
-    "",
-    "Sex",
-    "  Male", "  Female",
-    "",
-    "Baseline risk",
-    "  Low", "  Intermediate", "  High"
-  ),
-  hr = c(0.76, NA, NA, 0.72, 0.82, NA, NA, 0.74, 0.79, NA, NA, 0.85, 0.75, 0.68),
-  lower = c(0.68, NA, NA, 0.62, 0.70, NA, NA, 0.64, 0.67, NA, NA, 0.72, 0.63, 0.54),
-  upper = c(0.85, NA, NA, 0.84, 0.96, NA, NA, 0.86, 0.93, NA, NA, 1.00, 0.89, 0.86),
-  n = c(8500, NA, NA, 4200, 4300, NA, NA, 5200, 3300, NA, NA, 2800, 3400, 2300),
-  p_int = c(NA, NA, NA, NA, 0.18, NA, NA, NA, 0.42, NA, NA, NA, NA, 0.03),
-  rtype = c("summary", "spacer", "header", "data", "data", "spacer", "header", "data", "data", "spacer", "header", "data", "data", "data"),
-  rbold = c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE),
-  rindent = c(0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1)
-)
-
-tabviz(
-  jama_data,
-  label = "subgroup",
-  columns = list(
-    col_numeric("n", "No."),
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1,
-               axis_label = "Hazard Ratio (95% CI)"),
-    col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
-    col_pvalue("p_int", "P Interaction")
-  ),
-  row_type = "rtype", row_bold = "rbold", row_indent = "rindent",
-  theme = web_theme_jama(),
-  title = "Figure 2. Subgroup Analyses",
-  footnote = "HR indicates hazard ratio. P values are for interaction."
-)
-```
-
-### Lancet Style
-
-Serif fonts, blue palette, with row grouping and column grouping.
+A single drop-in journal-style template demonstrating a row-grouped, column-grouped efficacy figure for a Lancet-style submission. To produce a JAMA / Cochrane / dark / LOTR variant, swap the `theme = web_theme_lancet()` line — every other element survives unchanged.
 
 ```{r}
 lancet_data <- tibble(
@@ -547,52 +497,14 @@ tabviz(
     col_interval("hr", "lower", "upper", header = "HR (95% CI)")
   ),
   theme = web_theme_lancet(),
-  title = "Figure 3: Efficacy Outcomes",
+  title    = "Figure 3: Efficacy Outcomes",
   subtitle = "Row groups by endpoint type + column groups by treatment arm",
-  caption = "HR<1 favours treatment.",
+  caption  = "HR<1 favours treatment.",
   footnote = "Cox proportional hazards model stratified by region."
 )
 ```
 
-### Minimal Print
-
-Maximum density, pure black and white, with row and column grouping.
-
-```{r}
-minimal_data <- tibble(
-  trial = c("ADVANCE", "CARDINAL", "ELEVATE", "FRONTIER", "GENESIS", "HORIZON"),
-  phase = c("Phase III", "Phase III", "Phase III", "Phase II", "Phase II", "Phase III"),
-  n = c(1680, 1520, 1890, 2100, 980, 1450),
-  events = c(168, 152, 189, 210, 98, 145),
-  hr = c(0.74, 0.78, 0.71, 0.82, 0.69, 0.76),
-  lower = c(0.62, 0.66, 0.60, 0.71, 0.55, 0.64),
-  upper = c(0.88, 0.92, 0.84, 0.95, 0.87, 0.90),
-  weight = c(17.2, 16.8, 19.5, 21.2, 10.1, 15.2)
-)
-
-tabviz(
-  minimal_data,
-  label = "trial",
-  group = "phase",
-  columns = list(
-    col_group("Sample",
-      col_n("n"),
-      col_numeric("events", "Events")
-    ),
-    col_group("Results",
-      col_bar("weight"),
-      viz_forest(point = "hr", lower = "lower", upper = "upper",
-                 scale = "log", null_value = 1,
-                 axis_label = "Hazard Ratio"),
-      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
-    )
-  ),
-  theme = web_theme_jama(),
-  title = "Forest Plot",
-  subtitle = "Row groups by phase + column groups for Sample / Results",
-  footnote = "Random-effects model. Weights from inverse variance."
-)
-```
+For a worked walkthrough of building a custom branded theme from scratch — neutrals → primary → accent → series anchors → fonts → variants → field pins → wrapped function — see [Compose Your Own Brand](brand-design.qmd). For a full long-table treatment with pagination and pooled summaries see [Long Meta-Analysis](meta-analysis.qmd).
 
 ---
 

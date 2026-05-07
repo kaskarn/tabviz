@@ -8,142 +8,83 @@ library(tabviz)
 library(dplyr)
 ```
 
-A tour of `tabviz()` in action. Every figure on the sub-pages is a live widget rendered from the same data-frame-plus-columns API — sort columns, click filter funnels, drag rows or columns where enabled, double-click to edit. Pick the gallery that matches the kind of visualization you have in mind.
+Live `tabviz()` widgets across nine pages. Every figure renders from the same data-frame-plus-columns API — sort columns, click filter funnels, drag rows or columns, double-click cells to edit, switch themes from the gear icon. Pick the page closest to what you want to build.
 
-## By Category
+## Flagship galleries
+
+::: {.grid}
+::: {.g-col-12 .g-col-md-6}
+### [Long Meta-Analysis](meta-analysis.qmd)
+
+70 studies across three cohorts with cohort-level and overall pooled summaries, paginated across three pages. Exercises the most-recently-shipped surface end-to-end: pagination, the five-token semantic surface (`row_fill` on the overall row, `row_accent` on significant), `row_type = "summary"` for pooled diamonds.
+:::
+
+::: {.g-col-12 .g-col-md-6}
+### [Domain Dashboards](dashboards.qmd)
+
+Information-dense dashboards across sports analytics, customer feedback, portfolio performance, product metrics, airline ops, and climate science. Rings, pictograms, sparklines, heatmaps, badges — each lead picks the column types that fit its domain.
+:::
+
+::: {.g-col-12 .g-col-md-6}
+### [Compose Your Own Brand](brand-design.qmd)
+
+End-to-end build of a fictional pharma brand (Acme Cardio Research) one named input at a time. Eight progressive steps from neutrals to a wrapped `web_theme_acme()` constructor, each with the rendered table at that stage so you see exactly which input controls what.
+:::
+
+::: {.g-col-12 .g-col-md-6}
+### [Pictograms & Rings](viz-glyphs.qmd)
+
+Every mode of `col_pictogram()` and `col_ring()` with realistic per-mode examples — count vs rating, range remapping, per-row glyph selection, layout = "stack", auto status-palette thresholds, and the row-token cascade reaching into glyph cells. Closes with a six-row survey-feedback dashboard putting them all together.
+:::
+:::
+
+## More galleries
 
 ::: {.grid}
 ::: {.g-col-6 .g-col-md-3}
-### [Interactivity](interactive.qmd)
-
-Best for: showing off live behavior. Sort, filter, drag-and-drop, double-click editing, theme switcher, all with WYSIWYG SVG/PNG export.
-:::
-
-::: {.g-col-6 .g-col-md-3}
 ### [Clinical Examples](clinical.qmd)
 
-Best for: meta-analyses and trial reports. JAMA / Lancet-style forest plots, subgroup analyses, multi-arm dose-response, nested hierarchical groups.
+JAMA / Lancet-style forest plots, subgroup analyses, multi-arm dose-response, nested hierarchical groups.
 :::
 
 ::: {.g-col-6 .g-col-md-3}
-### [Dashboard Examples](dashboards.qmd)
+### [Interactivity Tour](interactive.qmd)
 
-Best for: information-dense tables. Product KPIs, A/B tests, executive summaries, org charts, sports and climate analytics — heatmaps, sparklines, badges, progress bars.
+Live-behavior showcase: sort, filter, drag-and-drop, double-click editing, theme switcher, WYSIWYG SVG/PNG export.
 :::
 
 ::: {.g-col-6 .g-col-md-3}
 ### [Feature Showcases](showcases.qmd)
 
-Best for: feature spotlights. The complete column-type catalog, publication templates, theme variants, conditional styling, and the full-monty smoke-test example.
+Statistical models, distribution viz, conditional styling, fluent customization, publication templates, and the full-monty smoke test.
 :::
 
 ::: {.g-col-6 .g-col-md-3}
 ### [LOTR (Easter Egg)](lotr.qmd)
 
-Pre-release demo. Three editorial-register themes (`dwarven`, `elvish`, `hobbit`) paired with bespoke pictogram glyphs and tongue-in-cheek source data — vein yields, council manifests, pantry audits.
+Three editorial-register themes (`dwarven`, `elvish`, `hobbit`) with bespoke pictogram glyphs and tongue-in-cheek source data.
 :::
 :::
 
----
+## Example sources
 
-## Row Groups × Column Groups
-
-One widget, two axes of grouping: rows grouped by treatment arm (collapsible), columns grouped by purpose ("Demographics", "Efficacy"). Drag rows inside a treatment group to reorder; drag columns inside a column group without disturbing the other group.
-
-```{r}
-data(effect_sizes)
-
-tabviz(effect_sizes,
-  label = "study",
-  group = "treatment",
-  columns = list(
-    col_group("Demographics",
-      col_text("region", "Region"),
-      col_text("phase", "Phase"),
-      col_n("n", "N")
-    ),
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1,
-               axis_label = "Hazard Ratio"),
-    col_group("Efficacy",
-      col_interval("hr", "lower", "upper", header = "HR (95% CI)"),
-      col_badge("direction", "Direction",
-        variants = list(
-          `Favors Treatment` = "success",
-          `Favors Control` = "error",
-          `No Effect` = "muted"
-        )),
-      col_badge("significant", "Signif",
-        variants = list(`TRUE` = "success", `FALSE` = "muted"))
-    )
-  ),
-  interaction = web_interaction_full(),
-  theme = web_theme_cochrane(),
-  title = "Row groups and column groups on the same plot"
-)
-```
-
----
-
-## Project Portfolio Dashboard
-
-A data-rich dashboard combining heatmaps, progress bars, currency, dates, badges, and sparklines — no forest plot needed. Full interactivity is on; try filtering the "Status" column.
-
-```{r}
-portfolio <- data.frame(
-  project = c("Cloud Migration", "Mobile App v3", "Data Platform",
-               "Security Audit", "API Gateway", "ML Pipeline"),
-  status = c("On Track", "At Risk", "Completed", "On Track", "Delayed", "On Track"),
-  budget = c(2400000, 890000, 1250000, 340000, 720000, 1800000),
-  spent_pct = c(0.62, 0.88, 1.00, 0.45, 0.71, 0.33),
-  health = c(92, 58, 100, 85, 42, 78),
-  due_date = as.Date(c("2025-12-31", "2025-09-30", "2025-06-15",
-                        "2025-08-31", "2025-11-15", "2026-03-31")),
-  team_size = c(12, 8, 6, 4, 9, 7),
-  velocity = I(list(
-    c(34, 38, 42, 45, 48, 52, 55, 58, 60, 62, 65, 68),
-    c(28, 32, 30, 25, 22, 18, 20, 15, 12, 14, 16, 18),
-    c(40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95),
-    c(15, 18, 20, 22, 25, 28, 30, 32, 35, 38, 40, 42),
-    c(30, 28, 25, 22, 20, 18, 22, 24, 20, 18, 15, 12),
-    c(10, 15, 20, 25, 28, 32, 35, 38, 42, 45, 48, 50)
-  ))
-)
-
-tabviz(portfolio, label = "project",
-  columns = list(
-    col_badge("status", "Status",
-      variants = list(
-        `On Track` = "success",
-        `At Risk` = "warning",
-        Completed = "info",
-        Delayed = "error"
-      )),
-    col_currency("budget", "Budget", decimals = 0),
-    col_progress("spent_pct", "Budget Used", max_value = 1),
-    col_heatmap("health", "Health Score",
-      palette = c("#fee2e2", "#dcfce7"),
-      min_value = 0, max_value = 100, decimals = 0),
-    col_date("due_date", "Due Date", format = "%b %d, %Y"),
-    col_n("team_size", "Team"),
-    col_sparkline("velocity", "Velocity (12w)")
-  ),
-  interaction = web_interaction_full(),
-  theme = web_theme_cochrane(),
-  title = "Project Portfolio Dashboard"
-)
-```
-
----
-
-## Example Sources
-
-All examples are available as R scripts in the package:
+Every gallery example is also available as a runnable R script in the package:
 
 ```r
-# List available examples
-list.files(system.file("examples", package = "tabviz"))
+# List the curated gallery examples shipped with the package
+list.files(system.file("examples", package = "tabviz"), pattern = "^gallery_")
 
-# Run an example
-source(system.file("examples", "jama_style.R", package = "tabviz"))
+# Run one
+source(system.file("examples", "gallery_26_paginate_meta_analysis.R",
+                   package = "tabviz"))
 ```
+
+## Where to read first
+
+| If you're… | Start here |
+|---|---|
+| New to tabviz | [Quick Start](../guide/quick-start.qmd), then [Long Meta-Analysis](meta-analysis.qmd) for the flagship use case. |
+| Building a non-clinical dashboard | [Domain Dashboards](dashboards.qmd). |
+| Designing a branded theme | [Compose Your Own Brand](brand-design.qmd) and the [Themes guide](../guide/themes.qmd). |
+| Picking column types for new data | [Pictograms & Rings](viz-glyphs.qmd) plus [Reference → Columns](../reference/columns.qmd). |
+| Looking for the cheatsheet | [One-page cheatsheet](../cheatsheet.qmd). |

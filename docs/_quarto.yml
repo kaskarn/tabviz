@@ -28,12 +28,19 @@ website:
           - text: "Gallery Overview"
             href: gallery/index.qmd
           - text: "---"
-          - text: "Interactivity"
-            href: gallery/interactive.qmd
+          - text: "Long Meta-Analysis"
+            href: gallery/meta-analysis.qmd
+          - text: "Domain Dashboards"
+            href: gallery/dashboards.qmd
+          - text: "Compose Your Own Brand"
+            href: gallery/brand-design.qmd
+          - text: "Pictograms & Rings"
+            href: gallery/viz-glyphs.qmd
+          - text: "---"
           - text: "Clinical Examples"
             href: gallery/clinical.qmd
-          - text: "Dashboard Examples"
-            href: gallery/dashboards.qmd
+          - text: "Interactivity Tour"
+            href: gallery/interactive.qmd
           - text: "Feature Showcases"
             href: gallery/showcases.qmd
           - text: "---"

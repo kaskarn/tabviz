@@ -10,6 +10,12 @@ library(dplyr)
 
 Publication-style meta-analyses and trial figures. Each example pairs a `viz_forest()` column with a textual `col_interval()` summary, then swaps the theme to match a target journal.
 
+::: {.callout-tip}
+## Looking for the long-meta-analysis treatment?
+
+For 70 studies across three cohorts with cohort-level + overall pooled summaries and pagination across multiple pages, see the [Long Meta-Analysis](meta-analysis.qmd) flagship gallery — that's the canonical extended treatment. The examples on this page focus on shorter, more focused clinical patterns.
+:::
+
 ## JAMA-Style Forest Plot
 
 Classic medical-journal style with clean typography:
@@ -43,49 +49,6 @@ tabviz(
 ## Theme variations
 The same data structure works with any theme. Try `web_theme_lancet()`, `web_theme_jama()`, or `web_theme_dark()` for different journal styles, or one of the LOTR presets (`web_theme_dwarven()` / `web_theme_elvish()` / `web_theme_hobbit()`) for non-journal contexts. See [Feature Showcases](showcases.qmd#all-theme-variants) for a visual comparison of all seven built-in themes.
 :::
-
----
-
-## Subgroup Analysis
-
-Forest plot with subgroup headers and indentation:
-
-```{r}
-subgroup_data <- tibble(
-  label = c(
-    "Overall Population", "",
-    "Age",
-    "  < 65 years", "  >= 65 years", "",
-    "Sex",
-    "  Male", "  Female", "",
-    "Prior CV Disease",
-    "  Yes", "  No"
-  ),
-  hr = c(0.78, NA, NA, 0.72, 0.85, NA, NA, 0.76, 0.82, NA, NA, 0.74, 0.81),
-  lower = c(0.68, NA, NA, 0.58, 0.72, NA, NA, 0.64, 0.68, NA, NA, 0.61, 0.66),
-  upper = c(0.89, NA, NA, 0.89, 1.00, NA, NA, 0.90, 0.99, NA, NA, 0.90, 0.99),
-  n = c(15234, NA, NA, 7821, 7413, NA, NA, 9140, 6094, NA, NA, 8542, 6692),
-  rtype = c("summary", "spacer", "header", "data", "data", "spacer",
-            "header", "data", "data", "spacer", "header", "data", "data"),
-  rbold = c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE,
-            TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE)
-)
-
-tabviz(subgroup_data,
-  label = "label",
-  columns = list(
-    col_n("n"),
-    viz_forest(point = "hr", lower = "lower", upper = "upper",
-               scale = "log", null_value = 1,
-               axis_label = "Hazard Ratio"),
-    col_interval("hr", "lower", "upper", header = "HR (95% CI)")
-  ),
-  row_type = "rtype",
-  row_bold = "rbold",
-  theme = web_theme_jama(),
-  title = "Subgroup Analysis"
-)
-```
 
 ---
 
