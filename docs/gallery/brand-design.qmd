@@ -1,0 +1,277 @@
+---
+title: "Compose Your Own Brand"
+description: "Building a branded theme from scratch — neutrals, identity, accent, fonts, variants, pins"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+library(dplyr)
+```
+
+The v2 theme system is built so authoring a branded theme is a sequence of **single-input edits** — each one obviously about one thing — rather than a big monolithic `web_theme_acme()` wrapper to bisect when something goes wrong. This page walks the build end-to-end for a fictional brand, *Acme Cardio Research*, with the rendered table at every step so you can see exactly which input controls what.
+
+Each step is one named input on `web_theme()` (or one `set_*()` call). At the end, we wrap the result as a one-shot constructor.
+
+## The shared dataset
+
+Every step renders the same eight-row meta-analysis so the only thing changing across the renders is the theme:
+
+```{r}
+acme_data <- data.frame(
+  study  = c("ACME-101", "PROVE-IT", "CADENCE", "VANGUARD-2",
+             "STELLAR", "ENDEAVOUR", "SUMMIT", "Pooled"),
+  cohort = c("Phase III", "Phase III", "Phase III",
+             "Real-world", "Real-world", "Real-world",
+             "Registry",   "Pooled"),
+  n      = c(2400, 1850, 3120, 980,  4200, 2180, 1640,  16370),
+  hr     = c(0.78, 0.82, 0.74, 0.85, 0.79, 0.81, 0.88,  0.79),
+  lower  = c(0.65, 0.71, 0.62, 0.69, 0.69, 0.70, 0.74,  0.74),
+  upper  = c(0.93, 0.95, 0.88, 1.05, 0.91, 0.94, 1.05,  0.85),
+  pvalue = c(0.005, 0.008, 0.0001, 0.13, 0.0002, 0.005, 0.18, NA),
+  row_type = c(rep("data", 7), "summary"),
+  is_pooled = c(rep(FALSE, 7), TRUE)
+)
+
+render_acme <- function(theme, title = NULL, subtitle = NULL) {
+  tabviz(acme_data,
+    label = "study",
+    group = "cohort",
+    columns = list(
+      col_n("n"),
+      col_pvalue("pvalue", "P", stars = TRUE),
+      viz_forest(point = "hr", lower = "lower", upper = "upper",
+                 scale = "log", null_value = 1,
+                 axis_label = "Hazard ratio (95% CI)"),
+      col_interval("hr", "lower", "upper", header = "HR (95% CI)")
+    ),
+    row_type = "row_type",
+    row_fill = "is_pooled",
+    theme = theme,
+    title = title %||% "Acme Cardio Research — pooled meta-analysis",
+    subtitle = subtitle
+  )
+}
+```
+
+## Step 0 — start from `web_theme_cochrane()`
+
+The package default is the cleanest, broadest-use preset; everything that follows is a delta from this baseline.
+
+```{r}
+render_acme(
+  theme    = web_theme_cochrane(),
+  subtitle = "Step 0 — package default"
+)
+```
+
+## Step 1 — pick the neutral ramp
+
+Five greys, lightest to darkest. This drives every surface tone (`base`, `muted`, `raised`), every divider, and every body-text color in the chrome cascade. Acme leans slightly cool with a hint of blue undertone so the chrome reads as quietly editorial.
+
+```{r}
+acme_t1 <- web_theme(
+  inputs = list(
+    neutral = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230")
+  )
+)
+
+render_acme(acme_t1, subtitle = "Step 1 — cool-leaning neutrals")
+```
+
+## Step 2 — pick the primary identity
+
+Acme's primary is `#1E3A5F` — a deep editorial navy. `primary_deep` auto-derives by darkening; we let it.
+
+```{r}
+acme_t2 <- web_theme(
+  inputs = list(
+    neutral = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
+    primary = "#1E3A5F"
+  )
+)
+
+render_acme(acme_t2, subtitle = "Step 2 — primary navy")
+```
+
+Notice the marker fill, the title color, and the cell-hairline tint all picked up the new identity at once. The chrome cascade does this automatically — there's no per-component knob to flip.
+
+## Step 3 — pick the accent (engagement layer)
+
+`accent` is reserved for engagement: hover, selected rows, semantic row callouts (`row_accent`), the selection edge, and the `status.info` fallback. **Never identity** — keep it visually distinct from `primary`. Acme picks a warm amber to counterpoint the cool navy.
+
+```{r}
+acme_t3 <- web_theme(
+  inputs = list(
+    neutral = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
+    primary = "#1E3A5F",
+    accent  = "#C8893F"          # amber engagement
+  )
+)
+
+render_acme(acme_t3, subtitle = "Step 3 — amber accent")
+```
+
+## Step 4 — series anchors for multi-effect plots
+
+`series_anchors` is the per-effect color pool for multi-effect viz columns (multi-arm forest, grouped bars, multiple boxplots per row). The first anchor also drives the pooled-effect diamond fill. Each anchor expands into a 7-field `SlotBundle` with derived muted / emphasized variants, so you only pin the anchor.
+
+```{r}
+acme_t4 <- web_theme(
+  inputs = list(
+    neutral        = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
+    primary        = "#1E3A5F",
+    accent         = "#C8893F",
+    series_anchors = c("#1E3A5F", "#C8893F", "#5A8B71", "#A4456E", "#7E5A99")
+  )
+)
+
+render_acme(acme_t4, subtitle = "Step 4 — five-anchor series palette (mostly invisible here — single-effect)")
+```
+
+The single-effect forest in this example only consumes the first anchor; switch to a multi-effect `effect_forest()` list and the rest cycle in.
+
+## Step 5 — fonts
+
+Acme picks an editorial serif for display copy and a humanist sans for body. `font_display` falls back to `font_body` when `NA`, so we name both explicitly.
+
+```{r}
+acme_t5 <- web_theme(
+  inputs = list(
+    neutral        = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
+    primary        = "#1E3A5F",
+    accent         = "#C8893F",
+    series_anchors = c("#1E3A5F", "#C8893F", "#5A8B71", "#A4456E", "#7E5A99"),
+    font_body      = "'IBM Plex Sans', system-ui, sans-serif",
+    font_display   = "'IBM Plex Serif', Georgia, serif"
+  ),
+  web_fonts = list(
+    web_font("IBM Plex Sans",
+             "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"),
+    web_font("IBM Plex Serif",
+             "https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&display=swap")
+  )
+)
+
+render_acme(acme_t5, subtitle = "Step 5 — IBM Plex Sans + Serif via web_fonts")
+```
+
+The widget injects `<link rel="stylesheet">` tags on mount for any `web_fonts` declared on the theme; SVG / PNG / PDF export embeds the `@font-face` rules into the SVG so the static output carries its glyphs (when a fallback is needed, the browser substitutes — see [Themes guide](../guide/themes.qmd) for details).
+
+## Step 6 — pick variants
+
+Variants are the per-table toggles that don't change identity. Acme picks **comfortable** density and a **tint** header — a primary-tinted band that sits halfway between the default light header and the maximum-chrome bold header.
+
+```{r}
+acme_t6 <- web_theme(
+  inputs = list(
+    neutral        = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
+    primary        = "#1E3A5F",
+    accent         = "#C8893F",
+    series_anchors = c("#1E3A5F", "#C8893F", "#5A8B71", "#A4456E", "#7E5A99"),
+    font_body      = "'IBM Plex Sans', system-ui, sans-serif",
+    font_display   = "'IBM Plex Serif', Georgia, serif"
+  ),
+  variants = list(
+    density       = "comfortable",
+    header_style  = "tint",
+    first_column_style = "default"
+  ),
+  web_fonts = list(
+    web_font("IBM Plex Sans",
+             "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"),
+    web_font("IBM Plex Serif",
+             "https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&display=swap")
+  )
+)
+
+render_acme(acme_t6, subtitle = "Step 6 — comfortable density, tint header")
+```
+
+## Step 7 — pin a single field with `set_theme_field()`
+
+Almost every theme can be expressed entirely through Tier 1 inputs. The one place you reach for `set_theme_field()` is when you want to override a single derived field without disturbing the rest of the cascade — e.g., turning gridlines on, forcing a specific axis tick color, or pinning the row-group L1 background to a brand-specific shade.
+
+Here, Acme wants visible axis gridlines (default off) and a slightly stronger tick label:
+
+```{r}
+acme_t7 <- acme_t6 |>
+  set_theme_field(c("axis", "gridlines"), TRUE) |>
+  set_theme_field(c("plot", "tick_label", "weight"), 500)
+
+render_acme(acme_t7, subtitle = "Step 7 — gridlines on, slightly stronger tick label")
+```
+
+These overrides survive subsequent `set_inputs()` calls — the resolver fills NA-valued fields and leaves explicit pins alone.
+
+## Step 8 — wrap as a function
+
+Once you're happy, wrap the whole theme in a named function for team-wide use. Anyone on your team gets a one-line theme without learning the input model.
+
+```{r}
+web_theme_acme <- function() {
+  web_theme(
+    name = "acme",
+    inputs = list(
+      neutral        = c("#FFFFFF", "#FAFBFE", "#EEF1F7", "#5C6675", "#1A2230"),
+      primary        = "#1E3A5F",
+      accent         = "#C8893F",
+      series_anchors = c("#1E3A5F", "#C8893F", "#5A8B71", "#A4456E", "#7E5A99"),
+      font_body      = "'IBM Plex Sans', system-ui, sans-serif",
+      font_display   = "'IBM Plex Serif', Georgia, serif"
+    ),
+    variants = list(
+      density            = "comfortable",
+      header_style       = "tint",
+      first_column_style = "default"
+    ),
+    web_fonts = list(
+      web_font("IBM Plex Sans",
+               "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"),
+      web_font("IBM Plex Serif",
+               "https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&display=swap")
+    )
+  ) |>
+    set_theme_field(c("axis", "gridlines"), TRUE) |>
+    set_theme_field(c("plot", "tick_label", "weight"), 500)
+}
+
+# Now the whole team writes:
+render_acme(web_theme_acme(), subtitle = "Step 8 — wrapped as web_theme_acme()")
+```
+
+## Putting it on a different table
+
+Same theme, different data — column types and content shift, the brand stays consistent:
+
+```{r}
+sales <- data.frame(
+  region   = c("Americas", "Europe", "Asia-Pac", "MENA"),
+  q1       = c(2.4, 1.9, 2.1, 0.7),
+  q2       = c(2.7, 2.0, 2.3, 0.8),
+  q3       = c(3.1, 2.2, 2.5, 0.9),
+  q4       = c(3.4, 2.4, 2.8, 1.0),
+  yoy      = c(0.18, 0.11, 0.16, 0.22)
+)
+
+tabviz(sales, label = "region",
+  columns = list(
+    col_currency("q1", "Q1", decimals = 1),
+    col_currency("q2", "Q2", decimals = 1),
+    col_currency("q3", "Q3", decimals = 1),
+    col_currency("q4", "Q4", decimals = 1),
+    col_percent("yoy", "YoY"),
+    viz_bar(effect_bar("q4"), header = "Q4 ($B)", axis_range = c(0, 4))
+  ),
+  theme = web_theme_acme(),
+  title = "Acme Cardio — regional revenue",
+  subtitle = "Same theme function, different schema."
+)
+```
+
+## See also
+
+- [Themes — Guide](../guide/themes.qmd) — the conceptual model of inputs / variants / overrides.
+- [Themes — Reference](../reference/themes.qmd) — every `web_theme()` argument and `set_*()` modifier.
+- [Theming Manifesto](../concepts/theming-manifesto.qmd) — *why* the cascade is shaped this way (two-knob principle, three-axis contract, anti-patterns).
+- [LOTR (Easter Egg)](lotr.qmd) — three real shipped examples of theme functions wrapped this same way.
