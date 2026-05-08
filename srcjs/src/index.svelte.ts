@@ -176,6 +176,16 @@ export const proxyMethods: Record<string, (store: ForestStore, args: Record<stri
       store.setShowZoomControls(args.showZoomControls);
     }
   },
+  setAspectRatio: (store, args) => {
+    // R sends `ratio = NA_real_` to clear; the proxy serializer turns that
+    // into `null` over the wire. A finite positive number pins the target.
+    const r = args.ratio;
+    if (r == null || (typeof r === "number" && (!Number.isFinite(r) || r <= 0))) {
+      store.setTargetAspect(null);
+    } else if (typeof r === "number") {
+      store.setTargetAspect(r);
+    }
+  },
 };
 
 // HTMLWidgets binding

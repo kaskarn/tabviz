@@ -264,6 +264,13 @@ export function createForestStore() {
   // Plot width override (for resizing the forest plot area)
   let plotWidthOverride = $state<number | null>(null);
 
+  // Target aspect ratio (Phase 4.6). `null` = render at natural; any positive
+  // number triggers a Mode-3 lever-ladder relayout (flex-column absorption +
+  // row-height scaling). Mirrors `WebSpec.targetAspect` and is seeded from
+  // it in `setSpec()`. The settings-panel slider writes it; "View source"
+  // emits `set_aspect_ratio(N)` (or `NULL` when cleared).
+  let targetAspect = $state<number | null>(null);
+
   // Per-column pan/zoom overrides keyed by column id. Only viz columns
   // (forest, viz_bar, viz_boxplot, viz_violin) consult this map. Session-only.
   let axisZooms = $state<Record<string, { domain: [number, number] }>>({});
@@ -921,7 +928,11 @@ export function createForestStore() {
       };
     }
 
-    const rowHeight = spec.theme.spacing.rowHeight;
+    // Natural rowHeight from the theme; the targetAspect lever ladder may
+    // scale it below to absorb the height delta when an aspect target is
+    // pinned. Width-side absorption happens via forestWidth further down.
+    const naturalRowHeight = spec.theme.spacing.rowHeight;
+    let rowHeight = naturalRowHeight;
     // Header height auto-grows when the configured value can't fit the
     // font's text region across the (possibly multi-tier) header. Several
     // shipped theme presets default to 24-30 px, which leaves zero
@@ -961,10 +972,57 @@ export function createForestStore() {
     // Honouring the theme value lets the Layout settings field actually
     // drive the live render — historically only SVG export read it.
     const themePlotWidth = spec.theme.layout?.plotWidth;
-    const forestWidth = hasForest
+    let forestWidth = hasForest
       ? (plotWidthOverride
         ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
       : 0;
+
+    // ── Aspect-ratio target (Phase 4.6 lever ladder, live) ──────────────
+    // When targetAspect is pinned (via set_aspect_ratio() or the in-widget
+    // slider), reshape the layout to hit it: flex columns absorb the width
+    // delta (capped at [0.5×, 2×] of natural — the default save-time cap
+    // applied to the live render too); rowHeight scales for the height
+    // delta. This mirrors `generateSVGForAspectTarget` in svg-generator.ts.
+    if (targetAspect != null && hasForest) {
+      const FLEX_CAP = 2;
+      const naturalForestWidth = forestWidth;
+      const naturalNonForestWidth = effectiveWidth - naturalForestWidth;
+      // Approximate naturalHeight from the natural rowHeight × row count
+      // plus header + axis chrome we already computed above. Plot height
+      // hasn't been calculated yet at this point; we use displayRows.length
+      // × naturalRowHeight as a proxy and add chrome. This matches the
+      // SVG path closely enough for slider feedback (the precise R-side
+      // path uses computeLayout for exact dims).
+      const approxRowsHeight = displayRows.length * naturalRowHeight;
+      const approxChromeHeight =
+        headerHeight + axisHeight + spec.theme.spacing.padding * 2;
+      const approxNaturalHeight = approxRowsHeight + approxChromeHeight;
+      const approxNaturalWidth = effectiveWidth;
+      const naturalAspect = approxNaturalWidth / approxNaturalHeight;
+
+      // Solve target dims: keep effectiveWidth as the canvas width, derive
+      // target height from the requested aspect.
+      const targetWidth = approxNaturalWidth;
+      const targetHeight = targetWidth / targetAspect;
+
+      // Lever 1 (width): cap-clamped flex absorption. With effectiveWidth
+      // fixed (the canvas drives that), the slider rarely changes width
+      // — but if it did, this is where flex columns would absorb it.
+      const proposedForest = targetWidth - naturalNonForestWidth;
+      const cappedForest = Math.max(
+        naturalForestWidth / FLEX_CAP,
+        Math.min(naturalForestWidth * FLEX_CAP, proposedForest),
+      );
+      forestWidth = Math.max(0, cappedForest);
+
+      // Lever 2 (height): scale rowHeight against rows-section only.
+      const targetRowsHeight = Math.max(
+        targetHeight - approxChromeHeight,
+        approxRowsHeight * 0.1,
+      );
+      rowHeight = (targetRowsHeight / approxRowsHeight) * naturalRowHeight;
+    }
+
     const tableWidth = effectiveWidth - forestWidth;
 
     const hasOverall = !!spec.data.overall;
@@ -1123,6 +1181,14 @@ export function createForestStore() {
     baseThemeName = newSpec.theme?.name ?? "default";
     themeEdits = {};
     themeOverrides = new Set();
+
+    // Seed the aspect-ratio target from the spec (set R-side by
+    // `set_aspect_ratio()` or by the `target_aspect` field). null/undefined
+    // means "render at natural"; the slider sits at the natural detent.
+    const rawTarget = newSpec.targetAspect;
+    targetAspect = (typeof rawTarget === "number" && rawTarget > 0)
+      ? rawTarget
+      : null;
 
     // Coerce banding default to "row" when the data has no groups. The R
     // default is "group" (deepest-level alternation), but on group-less data
@@ -2405,6 +2471,24 @@ export function createForestStore() {
     return plotWidthOverride;
   }
 
+  // -- Aspect-ratio target (Phase 4.6) ---------------------------------------
+  // Setter pushes a record onto the op log so "View source" can emit
+  // `set_aspect_ratio(N)` (or `set_aspect_ratio(NULL)` when cleared). The
+  // layout derived above reads `targetAspect` directly and walks the lever
+  // ladder; mutations here automatically propagate through the reactive
+  // graph.
+  function setTargetAspect(ratio: number | null): void {
+    if (ratio != null && (!Number.isFinite(ratio) || ratio <= 0)) return;
+    const next = ratio == null ? null : ratio;
+    if (targetAspect === next) return;
+    targetAspect = next;
+    appendOp(ops.setAspectRatio(next));
+  }
+
+  function getTargetAspect(): number | null {
+    return targetAspect;
+  }
+
   // -- Per-column axis pan/zoom ------------------------------------------------
   // Writes replace the whole map object so Svelte's $state detects the change.
   function setAxisZoom(columnId: string, domain: [number, number]) {
@@ -3581,6 +3665,9 @@ export function createForestStore() {
     setColumnWidth,
     previewColumnWidth,
     setPlotWidth,
+    setTargetAspect,
+    getTargetAspect,
+    get targetAspect() { return targetAspect; },
     setTheme,
     setThemeObject,
     captureThemeSnapshot,

@@ -33,6 +33,7 @@ export interface OpRecord {
     | "paint_row"
     | "paint_cell"
     | "set_theme"
+    | "set_aspect_ratio"
     | "set_shared_column_widths"
     | "sort_rows"
     | "filter_rows"
@@ -188,6 +189,19 @@ export const ops = {
   setTheme: (name: string): OpRecord => ({
     kind: "set_theme",
     rCall: rCall("set_theme", [rPositional(name)]),
+    ts: now(),
+  }),
+
+  /**
+   * Aspect-ratio target. `NULL` clears (renders at natural). Any positive
+   * number pins the spec to that aspect; `save_plot()` reads it as the
+   * default `ratio`, and the in-widget aspect slider drives it live.
+   */
+  setAspectRatio: (ratio: number | null): OpRecord => ({
+    kind: "set_aspect_ratio",
+    rCall: rCall("set_aspect_ratio", [
+      ratio == null ? "NULL" : rPositional(Math.round(ratio * 1000) / 1000),
+    ]),
     ts: now(),
   }),
 
