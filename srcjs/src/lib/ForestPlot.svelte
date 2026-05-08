@@ -834,18 +834,38 @@
     // All columns in order, viz columns get fixed widths
     for (const col of allColumns) {
       if (vizColumnTypes.includes(col.type)) {
-        // Viz columns: check dynamic width first, then col.width (from R), then type-specific options, then layout default
+        // Forest columns are structural: width is layout-driven (the
+        // lever ladder + `layout.forestWidth`), not content-measured.
+        // The auto-width measurer still writes to `columnWidths` for
+        // forest (a header-min sizing) but the layout's value is the
+        // authoritative one — explicit `col.width` (from R) wins
+        // first, then `col.options.forest.width`, then layout. Dynamic
+        // (interactive resize) widths apply only when the user
+        // actually drag-resizes the column.
         const dynamicWidth = columnWidthsSnapshot[col.id];
+        const userResized = store.userResizedIds?.has?.(col.id) ?? false;
         let vizWidth: number;
 
-        if (typeof dynamicWidth === "number") {
-          vizWidth = dynamicWidth;
-        } else if (typeof col.width === "number") {
-          vizWidth = col.width;
-        } else if (col.type === "forest") {
-          vizWidth = col.options?.forest?.width ?? layout.forestWidth;
+        if (col.type === "forest") {
+          if (typeof col.width === "number") {
+            vizWidth = col.width;
+          } else if (typeof col.options?.forest?.width === "number") {
+            vizWidth = col.options.forest.width;
+          } else if (userResized && typeof dynamicWidth === "number") {
+            vizWidth = dynamicWidth;
+          } else {
+            vizWidth = layout.forestWidth;
+          }
         } else {
-          vizWidth = layout.forestWidth;
+          // Other viz columns: keep the original priority order
+          // (dynamic > col.width > layout default).
+          if (typeof dynamicWidth === "number") {
+            vizWidth = dynamicWidth;
+          } else if (typeof col.width === "number") {
+            vizWidth = col.width;
+          } else {
+            vizWidth = layout.forestWidth;
+          }
         }
         parts.push(`${vizWidth}px`);
       } else {

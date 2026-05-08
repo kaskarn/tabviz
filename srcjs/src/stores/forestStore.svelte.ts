@@ -3746,6 +3746,7 @@ export function createForestStore() {
     getTargetAspect,
     get targetAspect() { return targetAspect; },
     get targetAspectAnchor() { return spec?.targetAspectAnchor ?? "width"; },
+    get userResizedIds() { return userResizedIds; },
     setTheme,
     setThemeObject,
     captureThemeSnapshot,
