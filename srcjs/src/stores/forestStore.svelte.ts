@@ -993,6 +993,14 @@ export function createForestStore() {
     // hasForest gate dropped (Phase 7A): tabular tables get aspect
     // handling too. When there's no forest, Lever 1A is a no-op but the
     // height ladder still runs.
+    //
+    // Phase 7E: when anchor wants target_w > canvas (typical for
+    // anchor="height" / "auto" at wide ratios), `layoutWidth` lifts
+    // the canvas cap so the grid renders at the requested width and
+    // the container overflows horizontally (existing auto-fit / scroll
+    // machinery handles display). When anchor="width" or there's no
+    // expansion, layoutWidth stays at canvas and behavior is identical.
+    let layoutWidth = effectiveWidth;
     if (targetAspect != null) {
       const FLEX_CAP = 2;
       const naturalForestWidth = forestWidth;
@@ -1019,10 +1027,16 @@ export function createForestStore() {
       let targetWidth: number;
       let targetHeight: number;
       if (resolvedAnchor === "height") {
-        // Anchor height: try to preserve natural rowHeight by growing
-        // width. Capped at canvas in widget (Phase 7E will lift this).
+        // Anchor height: preserve natural rowHeight by growing width.
+        // Phase 7E: cap lifted — target_w may exceed the canvas, in
+        // which case `layoutWidth` carries the expansion through to the
+        // grid render, and the container's auto-fit / scroll handles
+        // the visual fit.
         targetHeight = approxNaturalHeight;
-        targetWidth = Math.min(approxNaturalHeight * targetAspect, approxNaturalWidth);
+        targetWidth = approxNaturalHeight * targetAspect;
+        if (targetWidth > approxNaturalWidth) {
+          layoutWidth = targetWidth;
+        }
       } else {
         // Anchor width: canvas dictates; height falls out of the ratio.
         targetWidth = approxNaturalWidth;
@@ -1062,7 +1076,7 @@ export function createForestStore() {
       }
     }
 
-    const tableWidth = effectiveWidth - forestWidth;
+    const tableWidth = layoutWidth - forestWidth;
 
     const hasOverall = !!spec.data.overall;
 
@@ -1115,7 +1129,7 @@ export function createForestStore() {
     const nullValue = forestOptions?.nullValue ?? (scale === "log" ? 1 : 0);
 
     return {
-      totalWidth: effectiveWidth,
+      totalWidth: layoutWidth,
       totalHeight: Math.max(effectiveHeight, plotHeight + headerHeight + axisHeight + spec.theme.spacing.padding * 2),
       tableWidth,
       forestWidth,
@@ -1180,9 +1194,16 @@ export function createForestStore() {
       : 1;
   });
 
-  // Derived: actual rendered scale = zoom × fitScale (when autoFit) or just zoom
+  // Derived: actual rendered scale = zoom × fitScale (when autoFit) or just zoom.
+  // Phase 7E: when an aspect target is pinned, the min-zoom floor lifts
+  // from 0.5 to 0.7 so auto-fit can't shrink content below readability.
+  // Below the floor, the container overflows horizontally instead of
+  // shrinking further — the user can scroll to see content at readable
+  // font size, matching the "font size relative to width decreases"
+  // intent of wide aspects.
+  const minZoomFloor = $derived(targetAspect != null ? 0.7 : 0.5);
   const actualScale = $derived(
-    autoFit ? Math.max(0.5, zoom * fitScale) : Math.max(0.5, Math.min(2.0, zoom))
+    autoFit ? Math.max(minZoomFloor, zoom * fitScale) : Math.max(minZoomFloor, Math.min(2.0, zoom))
   );
 
   // Derived: is auto-fit currently clamping the zoom?

@@ -1,5 +1,22 @@
 # tabviz (development)
 
+## Live-widget aspect expansion (Phase 7E)
+
+When the in-widget aspect-ratio slider drives a target wider than the
+canvas (typical for `anchor = "auto"` at wide ratios), the widget now
+expands its layout to the requested width rather than capping at the
+canvas. The existing auto-fit machinery shrinks the rendered output
+to fit the container; if the requested aspect would force shrinking
+below a legibility floor (`min-zoom = 0.7` when an aspect target is
+pinned, vs `0.5` otherwise), auto-fit stops shrinking — the widget
+overflows horizontally rather than continue squishing fonts past
+readability.
+
+End result: dragging the slider to "wide" no longer either squishes
+rows (Phase 7A's floor) or shrinks fonts to nothing (now Phase 7E's
+min-zoom floor); it preserves both row height and font size and lets
+the widget overflow as needed.
+
 ## Aspect-ratio diagnostics + `auto_wrap` heuristic
 
 Two further refinements layered on top of the legibility floor and
