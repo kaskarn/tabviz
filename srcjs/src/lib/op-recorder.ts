@@ -196,11 +196,15 @@ export const ops = {
    * Aspect-ratio target. `NULL` clears (renders at natural). Any positive
    * number pins the spec to that aspect; `save_plot()` reads it as the
    * default `ratio`, and the in-widget aspect slider drives it live.
+   * `anchor` mirrors the R-side arg; "width" is the default and is omitted
+   * from the emitted call to keep it terse.
    */
-  setAspectRatio: (ratio: number | null): OpRecord => ({
+  setAspectRatio: (ratio: number | null,
+                   anchor?: "width" | "height" | "auto"): OpRecord => ({
     kind: "set_aspect_ratio",
     rCall: rCall("set_aspect_ratio", [
       ratio == null ? "NULL" : rPositional(Math.round(ratio * 1000) / 1000),
+      anchor && anchor !== "width" ? rNamed("anchor", anchor) : null,
     ]),
     ts: now(),
   }),

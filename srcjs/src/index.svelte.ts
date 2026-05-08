@@ -185,6 +185,12 @@ export const proxyMethods: Record<string, (store: ForestStore, args: Record<stri
     } else if (typeof r === "number") {
       store.setTargetAspect(r);
     }
+    // Phase 7C: anchor= payload field. The store's `setTargetAspectAnchor`
+    // updates the spec and triggers a relayout.
+    const a = args.anchor;
+    if (typeof a === "string" && (a === "width" || a === "height" || a === "auto")) {
+      store.setTargetAspectAnchor(a as "width" | "height" | "auto");
+    }
   },
 };
 

@@ -432,7 +432,7 @@ render_paginated_pdf <- function(spec, paginate, breaks, file,
       natural <- jsonlite::fromJSON(natural_json)
       target <- resolve_target_dims_with_natural(
         list(width = options_list$width, height = options_list$height,
-             ratio = options_list$ratio),
+             ratio = options_list$ratio, anchor = options_list$anchor),
         natural
       )
       options_list <- list(

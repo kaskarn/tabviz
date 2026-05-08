@@ -324,7 +324,17 @@ WebSpec <- new_class(
     # widget's interactive control. `NA_real_` (default) means render at
     # natural aspect; a positive number triggers Mode-3 relayout via the
     # lever ladder. Set via `set_aspect_ratio()` (fluent / proxy / interactive).
-    target_aspect = new_property(class_numeric, default = NA_real_)
+    target_aspect = new_property(class_numeric, default = NA_real_),
+    # Resolution rule when only `ratio` is given (no width / height pinned).
+    # Phase 7C controls how target dims fall out of the ratio:
+    #   - "width" (default): preserves v0.30 behavior — target_w = natural_w,
+    #     target_h = natural_w / ratio. Aggressive on row-shrink at wide ratios.
+    #   - "height": target_h = natural_h, target_w = natural_h × ratio.
+    #     Preserves rowHeight at wide ratios; output grows wider.
+    #   - "auto": picks "width" or "height" based on whether the requested
+    #     ratio is wider or taller than natural — readability-first default
+    #     (recommended; will become the package default in a future minor).
+    target_aspect_anchor = new_property(class_character, default = "width")
   ),
   validator = function(self) {
     # Validate optional columns if specified

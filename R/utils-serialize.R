@@ -31,6 +31,8 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     # Optional save-time / interactive aspect-ratio target. Wire as `null`
     # for the natural (unset) case so the TS side can branch on presence.
     targetAspect = if (is.na(spec@target_aspect)) NULL else as.numeric(spec@target_aspect),
+    # Anchor rule for ratio-only target-dim resolution (Phase 7C).
+    targetAspectAnchor = spec@target_aspect_anchor,
     originalCall = if (is.na(spec@original_call)) NULL else spec@original_call
   )
 }

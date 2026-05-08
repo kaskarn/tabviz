@@ -1154,19 +1154,36 @@ paint_cell <- function(x, row_id, field, token) {
 #' @param x A `WebSpec` object, htmlwidget, or `tabviz_proxy`.
 #' @param ratio Numeric target aspect ratio (`width / height`). Pass
 #'   `NULL` to clear (render at natural).
+#' @param anchor How target dims are resolved when only `ratio` is
+#'   given. `"width"` (default) preserves v0.30 behaviour: target
+#'   width = natural width, target height = natural width / ratio
+#'   — aggressive on row-shrink at wide ratios. `"height"` does the
+#'   opposite: target height = natural height, target width =
+#'   natural height × ratio — preserves rowHeight at wide ratios by
+#'   growing the output wider. `"auto"` picks based on whether the
+#'   requested ratio is wider or taller than the spec's natural
+#'   aspect — readability-first; recommended.
 #'
 #' @return The modified WebSpec, htmlwidget, or proxy (invisibly).
 #'
 #' @examples
 #' \dontrun{
 #' tabviz(data, label = "study", columns = list(viz_forest("hr", "lo", "hi"))) |>
-#'   set_aspect_ratio(2)            # 2:1 wide
+#'   set_aspect_ratio(2)                       # 2:1, anchor "width"
+#'
+#' tabviz(...) |>
+#'   set_aspect_ratio(2, anchor = "auto")      # readability-first
 #' }
 #'
 #' @export
-set_aspect_ratio <- function(x, ratio) {
+set_aspect_ratio <- function(x, ratio, anchor = c("width", "height", "auto")) {
+  anchor <- match.arg(anchor)
+
   if (inherits(x, "tabviz_proxy")) {
-    payload <- list(ratio = if (is.null(ratio)) NA_real_ else as.numeric(ratio))
+    payload <- list(
+      ratio = if (is.null(ratio)) NA_real_ else as.numeric(ratio),
+      anchor = anchor
+    )
     return(invoke_proxy_method(x, "setAspectRatio", payload))
   }
 
@@ -1178,6 +1195,7 @@ set_aspect_ratio <- function(x, ratio) {
                              .var.name = "ratio")
     spec@target_aspect <- as.numeric(ratio)
   }
+  spec@target_aspect_anchor <- anchor
   repack(x, spec)
 }
 

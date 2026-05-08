@@ -10,6 +10,7 @@ save_plot(
   width = NULL,
   height = NULL,
   ratio = NULL,
+  anchor = NULL,
   flex = TRUE,
   scale = 2,
   which = NULL,

@@ -11,6 +11,7 @@ save_split_table(
   width = NULL,
   height = NULL,
   ratio = NULL,
+  anchor = NULL,
   flex = TRUE,
   scale = 2,
   paginate = NULL,

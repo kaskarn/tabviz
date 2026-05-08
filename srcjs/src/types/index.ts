@@ -801,6 +801,12 @@ export interface WebSpec {
    *  ladder. Set R-side via `set_aspect_ratio()` (fluent / proxy) and,
    *  later, by an in-widget aspect-ratio slider. */
   targetAspect?: number | null;
+  /** Anchor rule for ratio-only target-dim resolution (Phase 7C):
+   *   - "width": target_w = natural_w, target_h = natural_w / ratio
+   *   - "height": target_h = natural_h, target_w = natural_h * ratio
+   *   - "auto": pick whichever preserves natural's *limiting* dim
+   *  Default "width" (preserves v0.30 behaviour). */
+  targetAspectAnchor?: "width" | "height" | "auto";
   /** Verbatim deparse of the user's original `tabviz(...)` call, captured
    *  R-side. Shown as the baseline line in the "View source" panel above
    *  the recorded fluent operations. Undefined for fluent-api-only specs. */

@@ -4182,28 +4182,37 @@ export function computeNaturalDimensions(spec: WebSpec): {
 }
 
 /**
- * Mode 3 lever ladder. Precomputes natural dimensions, scales the
- * theme's row-height to absorb the height delta, and rewrites
- * `options.width` so the standard layout path absorbs the width delta
- * via flex columns (capped at `flexCap`). Returns the SVG produced by
- * the standard render with those adjusted inputs — the result's
- * actual width / height match the target via *layout calculation*,
- * not SVG-stretching.
+ * Mode 3 lever ladder (Phase 7A — direction-aware, width-first).
  *
- * Lever 1 (width): flex columns absorb the width delta, capped at
- * `[naturalForest / flexCap, naturalForest * flexCap]`.
+ * For an aspect-changed render, the layout is recalculated to hit the
+ * target dims by walking explicit levers — never by SVG-stretching the
+ * output. Levers run in priority order so the user's intent
+ * ("preserve readability" implicit when going wide; "use vertical
+ * space for content" implicit when going tall) is honoured.
  *
- * Lever 2 (width fallback): when Lever 1 saturates, the residual delta
- * is delivered to the standard at-least-width path, which scales
- * remaining auto-width columns up to the requested totalWidth. (This
- * matches the existing forestWidth absorption logic — Lever 2 width is
- * implicit in the standard layout's behavior when totalWidth exceeds
- * what the cap-clamped forest can absorb.)
+ * **Width ladder (always, both directions):**
+ *   1A. Flex columns absorb cap-clamped at `[naturalFlex/flexCap, naturalFlex*flexCap]`.
+ *   1B. Non-flex auto-width columns proportionally scale to absorb the residual.
+ *       (Replaces v0.30's at-least-width-fallback piggyback, which
+ *       incorrectly let forest grow past the cap when the inner
+ *       generateSVG re-applied the at-least-width logic.)
  *
- * Lever 2 (height): rowHeight is scaled by `targetHeight / naturalHeight`
- * proportionally. Other chrome (header / axis / footer / padding) stays
- * at natural — keeping fonts and section spacing readable while the row
- * track absorbs the height delta.
+ * **Height ladder (direction-aware):**
+ *   - When `targetHeight > naturalHeight` (taller): split delta between
+ *     vertical chrome spacing tokens (`headerGap` / `axisGap` /
+ *     `footerGap` / `headerHeight`) and `rowHeight`. Spacing absorbs a
+ *     small share so the table doesn't look top-heavy at extreme
+ *     ratios. (Phase 7D will introduce auto-wrap as Lever 2B before
+ *     these.)
+ *   - When `targetHeight < naturalHeight` (shorter): shrink `rowHeight`
+ *     first, **floored at `MIN_ROW_HEIGHT` = `1.4 × body_font_size + 4`**
+ *     for legibility. If the floor saturates and the aspect can't be
+ *     met, the remainder is silently approximate — Phase 7B's
+ *     diagnostic will surface this in a follow-up.
+ *
+ * Live widget mirror: `forestStore.svelte.ts`'s layout-derived getter
+ * runs the same ladder so slider drag and `save_plot()` agree on
+ * shape.
  */
 function generateSVGForAspectTarget(
   spec: WebSpec,
@@ -4213,66 +4222,160 @@ function generateSVGForAspectTarget(
   const targetHeight = options.targetHeight as number;
   const flexCap = Math.max(1, options.flexCap ?? 2);
 
-  // Compute natural baseline. Empty options = natural dims.
+  // ----- Natural baseline -----
   const naturalLayout = computeLayout(spec, {});
+  const allColumns = flattenAllColumns(spec.columns);
+  const autoWidths = calculateSvgAutoWidths(spec, allColumns);
+
+  // Classify columns. A column is "flex" iff it opts in via `flex: true`
+  // AND has no explicit numeric width. Non-flex auto-width columns
+  // (`flex !== true && width is auto/null`) participate in Lever 1B.
+  // Pinned columns (numeric width) are immutable.
+  const isFlex = (c: ColumnSpec): boolean =>
+    c.flex === true && (c.width === "auto" || c.width == null);
+  const isNonFlexAuto = (c: ColumnSpec): boolean =>
+    !isFlex(c) && (c.width === "auto" || c.width == null);
+  const nonFlexAutoCols = allColumns.filter(isNonFlexAuto);
   const naturalForestWidth = naturalLayout.forestWidth;
-  const naturalNonForestWidth = naturalLayout.totalWidth - naturalForestWidth;
-
-  // --- Lever 1 + Lever 2 (width) ---
-  // Forest's natural absorption: target = naturalNonForest + clampedForest.
-  // If proposedForest exceeds [naturalForest/cap, naturalForest*cap], we
-  // saturate the cap and let the standard at-least-width path deliver
-  // the remainder via non-flex auto-width columns.
-  const proposedForestWidth = targetWidth - naturalNonForestWidth;
-  const cappedForestWidth = Math.max(
-    naturalForestWidth / flexCap,
-    Math.min(naturalForestWidth * flexCap, proposedForestWidth),
-  );
-  // The width passed to the standard layout: when cap saturates and
-  // targetWidth > cappedForest + naturalNonForest, the at-least-width
-  // path absorbs the residual into auto-width columns.
-  const adjustedWidth = Math.max(
-    targetWidth,
-    cappedForestWidth + naturalNonForestWidth,
+  // Sum of natural auto-widths across non-flex auto cols. Used by Lever
+  // 1B to scale them proportionally.
+  const naturalNonFlexSum = nonFlexAutoCols.reduce(
+    (s, c) => s + (autoWidths.get(c.id) ?? 0),
+    0,
   );
 
-  // --- Lever 2 (height) ---
-  // Scale rowHeight so the layout's totalHeight ends up at targetHeight.
-  // Non-row chrome (header / axis / footer / padding) stays at natural,
-  // so the scale factor must account for it:
-  //   totalH = chromeH + plotH
-  //   targetH = chromeH + scaledPlotH
-  //         => scaledPlotH / plotH = (targetH - chromeH) / plotH
-  // We use plotHeight (rows-section) and (totalHeight - plotHeight) as
-  // chrome — both available on the InternalLayout return. When the
-  // requested height is smaller than the chrome, fall back to a small
-  // positive scale so the result is degraded but renderable rather
-  // than producing a negative row height.
-  const chromeHeight = naturalLayout.totalHeight - naturalLayout.plotHeight;
-  const targetPlotHeight = Math.max(targetHeight - chromeHeight, naturalLayout.plotHeight * 0.1);
-  const heightScale = targetPlotHeight / naturalLayout.plotHeight;
+  // ----- Width ladder (1A → 1B) -----
+  // Lever 1A: cap-clamped flex absorption.
+  const widthDelta = targetWidth - naturalLayout.totalWidth;
+  let targetForestWidth = naturalForestWidth;
+  let widthResidual = widthDelta;
+  if (naturalForestWidth > 0 && flexCap > 1) {
+    const proposedFlex = naturalForestWidth + widthDelta;
+    const cappedFlex = Math.max(
+      naturalForestWidth / flexCap,
+      Math.min(naturalForestWidth * flexCap, proposedFlex),
+    );
+    targetForestWidth = cappedFlex;
+    widthResidual = widthDelta - (cappedFlex - naturalForestWidth);
+  }
+  // Lever 1B: distribute the residual proportionally across non-flex
+  // auto-width columns. When residual > 0 (cap saturated for growth)
+  // they widen; when < 0 (saturated for shrink) they narrow. Bounded
+  // below by natural*0.25 so columns can't collapse to zero.
+  let nonFlexScale = 1;
+  if (Math.abs(widthResidual) > 0.5 && naturalNonFlexSum > 0) {
+    nonFlexScale = Math.max(
+      0.25,
+      (naturalNonFlexSum + widthResidual) / naturalNonFlexSum,
+    );
+  }
 
-  // Deep-clone the spec and scale the theme's row-height. structuredClone
-  // is available in the V8 / browser runtimes we target; fall back to a
-  // shallow plus targeted copy if it isn't.
+  // ----- Height ladder (direction-aware) -----
+  const naturalRowHeight = spec.theme.spacing?.rowHeight ?? 32;
+  const naturalPlotHeight = naturalLayout.plotHeight;
+  const naturalChromeHeight = naturalLayout.totalHeight - naturalPlotHeight;
+  const heightDelta = targetHeight - naturalLayout.totalHeight;
+  // MIN_ROW_HEIGHT keeps text readable when shrinking. 1.4 × font + 4
+  // matches the line-height + 4 px breathing pattern used in
+  // computeAxisLayout / measureWrap. Falls back to 14 px floor.
+  const bodyFontSize = parseFontSize(spec.theme.text.body.size);
+  const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
+
+  let rowHeightScale = 1;
+  let chromeScale = 1;
+
+  if (heightDelta > 0) {
+    // Taller: chrome takes a fixed share, rowHeight takes the rest.
+    // Without auto-wrap (Phase 7D), this avoids 100 % rowHeight
+    // ballooning at very tall aspects.
+    const CHROME_SHARE = 0.35;
+    const chromeDelta = heightDelta * CHROME_SHARE;
+    const rowDelta = heightDelta - chromeDelta;
+    if (naturalChromeHeight > 0)
+      chromeScale = (naturalChromeHeight + chromeDelta) / naturalChromeHeight;
+    if (naturalPlotHeight > 0)
+      rowHeightScale = (naturalPlotHeight + rowDelta) / naturalPlotHeight;
+  } else if (heightDelta < 0) {
+    // Shorter: rowHeight first, floored at MIN_ROW_HEIGHT for legibility.
+    const targetPlotHeight = Math.max(0, targetHeight - naturalChromeHeight);
+    const proposedRowHeight = (targetPlotHeight / naturalPlotHeight) * naturalRowHeight;
+    if (proposedRowHeight >= MIN_ROW_HEIGHT) {
+      rowHeightScale = proposedRowHeight / naturalRowHeight;
+    } else {
+      // Floor saturated: pin rowHeight at MIN_ROW_HEIGHT and shrink
+      // chrome to absorb the remainder.
+      rowHeightScale = MIN_ROW_HEIGHT / naturalRowHeight;
+      const flooredPlotHeight = MIN_ROW_HEIGHT * (naturalPlotHeight / naturalRowHeight);
+      const residualHeight = targetHeight - (naturalChromeHeight + flooredPlotHeight);
+      if (naturalChromeHeight > 0) {
+        chromeScale = Math.max(
+          0.4,
+          (naturalChromeHeight + residualHeight) / naturalChromeHeight,
+        );
+      }
+    }
+  }
+
+  // ----- Apply: spec clone -----
   const adjustedSpec: WebSpec = (typeof structuredClone === "function"
     ? structuredClone(spec)
     : JSON.parse(JSON.stringify(spec))) as WebSpec;
-  const adjustedTheme = adjustedSpec.theme;
-  if (adjustedTheme && adjustedTheme.spacing) {
-    const naturalRH = adjustedTheme.spacing.rowHeight ?? 32;
-    adjustedTheme.spacing.rowHeight = naturalRH * heightScale;
+
+  // 1A: pin flex column width via layout.plotWidth (the renderer's
+  // forestWidth override).
+  if (adjustedSpec.layout) {
+    adjustedSpec.layout.plotWidth = targetForestWidth;
+  } else {
+    (adjustedSpec as { layout?: { plotWidth?: number } }).layout = {
+      plotWidth: targetForestWidth,
+    };
   }
 
-  // Recurse into the standard render path with width set and target*
-  // cleared (so we don't loop). The output's actual dims fall out of
-  // the layout — Mode 3's "calculate, never stretch" contract.
+  // 1B: write explicit numeric widths on non-flex auto-width columns
+  // so the inner render uses them directly instead of recomputing
+  // auto-widths from content.
+  if (Math.abs(nonFlexScale - 1) > 1e-6) {
+    for (const col of flattenAllColumns(adjustedSpec.columns)) {
+      if (isNonFlexAuto(col)) {
+        const natural = autoWidths.get(col.id);
+        if (typeof natural === "number") {
+          col.width = natural * nonFlexScale;
+        }
+      }
+    }
+  }
+
+  // 2A + 2C: scale theme spacing tokens. Vertical chrome scales by
+  // chromeScale; rowHeight by rowHeightScale.
+  if (adjustedSpec.theme?.spacing) {
+    const sp = adjustedSpec.theme.spacing as Record<string, number | undefined>;
+    sp.rowHeight = (sp.rowHeight ?? 32) * rowHeightScale;
+    if (Math.abs(chromeScale - 1) > 1e-6) {
+      // Vertical chrome contributors. headerGap / axisGap / footerGap /
+      // headerHeight are the user-visible bands; padding is sliced top
+      // and bottom too but is also a horizontal contributor — leaving
+      // it alone here keeps width unchanged (Phase 7C) at the cost of
+      // some chrome under-delivery on extreme tall ratios (the 7B
+      // diagnostic surfaces this when target is missed by > 5 %).
+      const VERTICAL_KEYS = ["headerGap", "axisGap", "footerGap", "headerHeight",
+                             "rowGroupPadding", "bottomMargin", "titleSubtitleGap"];
+      for (const k of VERTICAL_KEYS) {
+        if (typeof sp[k] === "number") sp[k] = (sp[k] as number) * chromeScale;
+      }
+    }
+  }
+
+  // ----- Render at exact target width -----
+  // We've sized every column explicitly; the standard at-least-width
+  // path won't kick in (totalTableWidth + flex == targetWidth by
+  // construction, modulo Lever 1B's < targetWidth saturation, which is
+  // intentional). Pass width=targetWidth so the SVG root reports it.
   const innerOptions: ExportOptions = {
     ...options,
     targetWidth: undefined,
     targetHeight: undefined,
     flexCap: undefined,
-    width: adjustedWidth,
+    width: targetWidth,
     height: undefined,
   };
   return generateSVG(adjustedSpec, innerOptions);

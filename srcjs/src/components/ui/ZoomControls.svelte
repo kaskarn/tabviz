@@ -60,6 +60,13 @@
   });
 
   const aspectIsPinned = $derived(store.targetAspect != null);
+  // Phase 7C: anchor toggle. ON => "auto" (readability-first); OFF =>
+  // "width" (v0.30 strict-aspect default, shrinks rows for wide ratios).
+  // Reads off the spec; default in the widget skews ON when user hasn't
+  // pinned a non-"width" anchor explicitly.
+  const aspectAutoAnchor = $derived(
+    (store.targetAspectAnchor ?? "width") !== "width"
+  );
 
   function handleAspectSlider(event: Event) {
     const raw = parseFloat((event.target as HTMLInputElement).value);
@@ -74,6 +81,11 @@
 
   function resetAspect() {
     store.setTargetAspect(null);
+  }
+
+  function handleAnchorToggle(event: Event) {
+    const on = (event.target as HTMLInputElement).checked;
+    store.setTargetAspectAnchor(on ? "auto" : "width");
   }
 
   // Max size options
@@ -242,9 +254,15 @@
 
       <div class="divider"></div>
 
-      <!-- Aspect ratio: reshapes the layout (Phase 4.6 lever ladder).
-           Slider snaps to natural at center; flex columns absorb width
-           changes (capped at 2×), row heights absorb height changes. -->
+      <!-- Aspect ratio: reshapes the layout (Phase 4.6 + 7A/C lever ladder).
+           Slider snaps to natural at center. Anchor (Phase 7C) controls how
+           ratio resolves to absolute dims when only ratio is given:
+           "width" anchors width and shrinks rows for wide ratios (the v0.30
+           default; aspect strict but rows squish); "auto" anchors the
+           limiting dim and grows the other (readability-first; aspect may
+           be approximate). The toggle is ON-by-default in the widget so
+           interactive use surfaces readable layouts; flipping it off
+           reproduces save_plot()'s default. -->
       <div class="section-label">Aspect ratio</div>
       <div class="aspect-row">
         <input
@@ -259,6 +277,15 @@
         />
         <span class="aspect-value">{aspectDisplayRatio}:1</span>
       </div>
+      <label class="checkbox-row">
+        <input
+          type="checkbox"
+          checked={aspectAutoAnchor}
+          onchange={handleAnchorToggle}
+        />
+        <span>Readable rows</span>
+        <span class="checkbox-hint">Grow size to keep rows</span>
+      </label>
       {#if aspectIsPinned}
         <button class="action-btn" onclick={resetAspect} title="Render at natural aspect">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

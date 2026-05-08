@@ -1,5 +1,52 @@
 # tabviz (development)
 
+## Lever-ladder sophistication: legibility floor + `anchor` argument
+
+Two refinements to the v0.30.0 aspect-ratio dimension contract:
+
+* **Direction-aware lever ordering with a legibility floor.** When an
+  aspect change requires *shrinking* the height (typically the case
+  for ratios wider than natural), `rowHeight` no longer collapses
+  freely — it is now floored at `MIN_ROW_HEIGHT = 1.4 × body_font + 4`
+  for legibility. Tall aspects share the height delta between chrome
+  spacing tokens (`headerGap` / `axisGap` / `footerGap` / `headerHeight`
+  / etc.) and `rowHeight` so the table doesn't balloon into rows of
+  whitespace. Width-side absorption is now explicit: flex columns
+  absorb cap-clamped, then non-flex auto-width columns scale
+  proportionally — replacing the v0.30 at-least-width fallback that
+  silently let forest grow past the cap.
+
+* **`anchor` argument on `save_plot()` + `set_aspect_ratio()`.** When
+  `ratio` is the only sizing arg, `anchor` controls how target dims
+  fall out of it:
+  * `"width"` *(default — preserves v0.30 behaviour)*: `target_w =
+    natural_w`, `target_h = natural_w / ratio`. Aspect strict; rows
+    can floor at `MIN_ROW_HEIGHT` for very wide ratios.
+  * `"height"`: `target_h = natural_h`, `target_w = natural_h × ratio`.
+    Preserves natural row size — wide ratios grow output width
+    instead.
+  * `"auto"`: picks the limiting-dim anchor. Wider-than-natural ratios
+    behave like `"height"`; taller-than-natural like `"width"`.
+    Readability-first; recommended.
+
+  ```r
+  save_plot(p, "wide.svg", ratio = 2, anchor = "auto")  # 2:1, rows readable
+  spec |> set_aspect_ratio(2, anchor = "auto")          # spec-level pin
+  ```
+
+  The widget's aspect slider gains a "Readable rows" toggle
+  (`anchor = "auto"` when on; `"width"` when off) so interactive
+  drags surface readable layouts by default. The slider's selection
+  round-trips into `set_aspect_ratio(N, anchor = ...)` via "View
+  source".
+
+  **Why opt-in instead of breaking the default**: the natural aspect
+  of a spec depends on column content and row count, so `"auto"` could
+  silently flip its behaviour on a data refresh that crosses the
+  natural-aspect threshold. The `"width"` default keeps v0.30 call
+  sites bit-identical; `"auto"` will become the package default in a
+  future minor.
+
 ## Aspect-ratio first dimension contract for `save_plot()` (v0.30.0)
 
 `save_plot()` now treats the spec's *natural* shape as the invariant and

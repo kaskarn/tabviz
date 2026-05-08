@@ -977,50 +977,89 @@ export function createForestStore() {
         ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
       : 0;
 
-    // ── Aspect-ratio target (Phase 4.6 lever ladder, live) ──────────────
+    // ── Aspect-ratio target (Phase 4.6 + 7A lever ladder, live) ─────────
     // When targetAspect is pinned (via set_aspect_ratio() or the in-widget
-    // slider), reshape the layout to hit it: flex columns absorb the width
-    // delta (capped at [0.5×, 2×] of natural — the default save-time cap
-    // applied to the live render too); rowHeight scales for the height
-    // delta. This mirrors `generateSVGForAspectTarget` in svg-generator.ts.
-    if (targetAspect != null && hasForest) {
+    // slider), reshape the layout to hit it. Mirrors
+    // `generateSVGForAspectTarget` in svg-generator.ts but on the
+    // live-widget surface, where:
+    //   - The canvas dictates effectiveWidth, so width doesn't change
+    //     (Lever 1B / 1C don't fire; Phase 7E will expand intrinsic
+    //     width past the canvas to honour ultra-wide aspects).
+    //   - Lever 1A still fires (forest cap-clamp) for parity.
+    //   - Height ladder is direction-aware: taller aspects share the
+    //     delta with chrome (Phase 7A); shorter aspects floor rowHeight
+    //     at MIN_ROW_HEIGHT for legibility.
+    //
+    // hasForest gate dropped (Phase 7A): tabular tables get aspect
+    // handling too. When there's no forest, Lever 1A is a no-op but the
+    // height ladder still runs.
+    if (targetAspect != null) {
       const FLEX_CAP = 2;
       const naturalForestWidth = forestWidth;
-      const naturalNonForestWidth = effectiveWidth - naturalForestWidth;
-      // Approximate naturalHeight from the natural rowHeight × row count
-      // plus header + axis chrome we already computed above. Plot height
-      // hasn't been calculated yet at this point; we use displayRows.length
-      // × naturalRowHeight as a proxy and add chrome. This matches the
-      // SVG path closely enough for slider feedback (the precise R-side
-      // path uses computeLayout for exact dims).
       const approxRowsHeight = displayRows.length * naturalRowHeight;
       const approxChromeHeight =
         headerHeight + axisHeight + spec.theme.spacing.padding * 2;
       const approxNaturalHeight = approxRowsHeight + approxChromeHeight;
       const approxNaturalWidth = effectiveWidth;
-      const naturalAspect = approxNaturalWidth / approxNaturalHeight;
+      const naturalAspect = approxNaturalWidth > 0 && approxNaturalHeight > 0
+        ? approxNaturalWidth / approxNaturalHeight
+        : 1;
 
-      // Solve target dims: keep effectiveWidth as the canvas width, derive
-      // target height from the requested aspect.
-      const targetWidth = approxNaturalWidth;
-      const targetHeight = targetWidth / targetAspect;
+      // Target dims — anchor decides which natural dim is preserved
+      // (Phase 7C). In the live widget, the canvas constrains width, so
+      // anchor="height" / "auto" producing target_w > canvas is a no-op
+      // until Phase 7E expands intrinsic width past the canvas. For now
+      // we cap target_w at canvas; the aspect target is approximate
+      // when anchor wants more.
+      const rawAnchor = spec.targetAspectAnchor ?? "width";
+      const resolvedAnchor: "width" | "height" =
+        rawAnchor === "auto"
+          ? (targetAspect >= naturalAspect ? "height" : "width")
+          : rawAnchor;
+      let targetWidth: number;
+      let targetHeight: number;
+      if (resolvedAnchor === "height") {
+        // Anchor height: try to preserve natural rowHeight by growing
+        // width. Capped at canvas in widget (Phase 7E will lift this).
+        targetHeight = approxNaturalHeight;
+        targetWidth = Math.min(approxNaturalHeight * targetAspect, approxNaturalWidth);
+      } else {
+        // Anchor width: canvas dictates; height falls out of the ratio.
+        targetWidth = approxNaturalWidth;
+        targetHeight = targetWidth / targetAspect;
+      }
 
-      // Lever 1 (width): cap-clamped flex absorption. With effectiveWidth
-      // fixed (the canvas drives that), the slider rarely changes width
-      // — but if it did, this is where flex columns would absorb it.
-      const proposedForest = targetWidth - naturalNonForestWidth;
-      const cappedForest = Math.max(
-        naturalForestWidth / FLEX_CAP,
-        Math.min(naturalForestWidth * FLEX_CAP, proposedForest),
-      );
-      forestWidth = Math.max(0, cappedForest);
+      // ----- Lever 1A (width): cap-clamped flex absorption. -----
+      if (hasForest) {
+        const widthDelta = targetWidth - approxNaturalWidth; // 0 in widget today
+        const proposedFlex = naturalForestWidth + widthDelta;
+        const cappedFlex = Math.max(
+          naturalForestWidth / FLEX_CAP,
+          Math.min(naturalForestWidth * FLEX_CAP, proposedFlex),
+        );
+        forestWidth = Math.max(0, cappedFlex);
+      }
 
-      // Lever 2 (height): scale rowHeight against rows-section only.
-      const targetRowsHeight = Math.max(
-        targetHeight - approxChromeHeight,
-        approxRowsHeight * 0.1,
-      );
-      rowHeight = (targetRowsHeight / approxRowsHeight) * naturalRowHeight;
+      // ----- Height ladder (direction-aware). -----
+      const heightDelta = targetHeight - approxNaturalHeight;
+      const bodyFontSize = parseFontSize(spec.theme.text.body.size);
+      const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
+
+      if (heightDelta > 0 && approxRowsHeight > 0) {
+        // Taller: chrome takes a share; rowHeight takes the rest. Without
+        // auto-wrap (Phase 7D) and chrome-mutability (would require
+        // header/axis state to be `let` in this scope), we under-deliver
+        // the chrome share — rowHeight grows but won't 100 %-balloon.
+        const CHROME_SHARE = 0.35;
+        const rowDelta = heightDelta * (1 - CHROME_SHARE);
+        rowHeight = naturalRowHeight + rowDelta / displayRows.length;
+      } else if (heightDelta < 0 && approxRowsHeight > 0) {
+        // Shorter: rowHeight floored at MIN_ROW_HEIGHT for legibility.
+        const targetRowsHeight = targetHeight - approxChromeHeight;
+        const proposedRowHeight =
+          (targetRowsHeight / approxRowsHeight) * naturalRowHeight;
+        rowHeight = Math.max(MIN_ROW_HEIGHT, proposedRowHeight);
+      }
     }
 
     const tableWidth = effectiveWidth - forestWidth;
@@ -2489,6 +2528,22 @@ export function createForestStore() {
     return targetAspect;
   }
 
+  // Phase 7C: anchor for ratio-only target-dim resolution. Mutates the
+  // *spec* (so the layout-derived getter picks it up reactively) plus
+  // appends an op so "View source" emits the matching set_aspect_ratio()
+  // call. No-op when the anchor doesn't change (avoids spurious op log
+  // entries when the slider is dragged).
+  function setTargetAspectAnchor(anchor: "width" | "height" | "auto"): void {
+    if (!spec) return;
+    const current = spec.targetAspectAnchor ?? "width";
+    if (current === anchor) return;
+    spec = { ...spec, targetAspectAnchor: anchor };
+    // Re-emit the active aspect with the new anchor so source code reflects it.
+    if (targetAspect != null) {
+      appendOp(ops.setAspectRatio(targetAspect, anchor));
+    }
+  }
+
   // -- Per-column axis pan/zoom ------------------------------------------------
   // Writes replace the whole map object so Svelte's $state detects the change.
   function setAxisZoom(columnId: string, domain: [number, number]) {
@@ -3666,8 +3721,10 @@ export function createForestStore() {
     previewColumnWidth,
     setPlotWidth,
     setTargetAspect,
+    setTargetAspectAnchor,
     getTargetAspect,
     get targetAspect() { return targetAspect; },
+    get targetAspectAnchor() { return spec?.targetAspectAnchor ?? "width"; },
     setTheme,
     setThemeObject,
     captureThemeSnapshot,

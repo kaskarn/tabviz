@@ -101,6 +101,7 @@
 #' @export
 save_plot <- function(x, file,
                       width = NULL, height = NULL, ratio = NULL,
+                      anchor = NULL,
                       flex = TRUE, scale = 2,
                       which = NULL, paginate = NULL, ...) {
   if (missing(file) || is.null(file)) {
@@ -130,6 +131,7 @@ save_plot <- function(x, file,
       }
       return(save_plot(x@specs[[picked_key]], file = file,
                        width = width, height = height, ratio = ratio,
+                       anchor = anchor,
                        flex = flex, scale = scale,
                        paginate = paginate, ...))
     }
@@ -144,6 +146,7 @@ save_plot <- function(x, file,
     }
     return(save_split_table(x, path = path, format = format,
                              width = width, height = height, ratio = ratio,
+                             anchor = anchor,
                              flex = flex, scale = scale,
                              paginate = paginate, ...))
   }
@@ -188,8 +191,12 @@ save_plot <- function(x, file,
   # default when call-site `ratio` is NULL (set via `set_aspect_ratio()`).
   ratio_resolved <- resolve_target_aspect(ratio, spec)
 
+  # Anchor precedence: explicit call-site arg > spec field > "width" default.
+  anchor_resolved <- resolve_target_aspect_anchor(anchor, spec)
+
   # Mode + target dim resolution. Errors on over-spec.
-  dim_plan <- resolve_dimension_plan(width, height, ratio_resolved)
+  dim_plan <- resolve_dimension_plan(width, height, ratio_resolved,
+                                     anchor_resolved)
 
   # Resolve paginate precedence: call-site arg overrides spec-level @paginate.
   paginate_resolved <- if (missing(paginate)) {
@@ -324,11 +331,29 @@ resolve_target_aspect <- function(ratio, spec) {
   NULL
 }
 
+# Anchor for ratio-only target-dim resolution (Phase 7C). Precedence:
+# call-site `anchor` > spec's `@target_aspect_anchor` > "width" default.
+# `anchor = NULL` (default save_plot signature) defers to spec / default.
+#' @noRd
+resolve_target_aspect_anchor <- function(anchor, spec) {
+  if (!is.null(anchor)) {
+    return(match.arg(anchor, c("width", "height", "auto")))
+  }
+  spec_anchor <- tryCatch(spec@target_aspect_anchor, error = function(e) "width")
+  if (is.character(spec_anchor) && length(spec_anchor) == 1L &&
+      spec_anchor %in% c("width", "height", "auto")) {
+    return(spec_anchor)
+  }
+  "width"
+}
+
 # Resolve mode + target dimensions from (width, height, ratio). Errors
 # when over-specified. Target dims are computed lazily -- only Mode 3
-# needs them, and only after natural dims are known.
+# needs them, and only after natural dims are known. `anchor` is carried
+# through to `resolve_target_dims_with_natural()` (only consulted when
+# `ratio` is the sole trigger).
 #' @noRd
-resolve_dimension_plan <- function(width, height, ratio) {
+resolve_dimension_plan <- function(width, height, ratio, anchor = "width") {
   has_w <- !is.null(width)
   has_h <- !is.null(height)
   has_r <- !is.null(ratio)
@@ -352,7 +377,8 @@ resolve_dimension_plan <- function(width, height, ratio) {
   if ((has_w && has_h) || has_r) {
     return(list(
       mode = "aspect_changed",
-      width = width, height = height, ratio = ratio
+      width = width, height = height, ratio = ratio,
+      anchor = anchor
     ))
   }
 
@@ -395,6 +421,7 @@ v8_options_for_mode <- function(dim_plan, flex_cap) {
       width = dim_plan$width,
       height = dim_plan$height,
       ratio = dim_plan$ratio,
+      anchor = dim_plan$anchor %||% "width",
       flexCap = flex_cap
     ))
   }
@@ -426,7 +453,19 @@ resolve_target_dims_with_natural <- function(dim_plan, natural) {
                 height = dim_plan$height))
   }
   if (has_r) {
-    # ratio alone: target_w = natural_w, target_h = natural_w / ratio.
+    # ratio alone: anchor decides which natural dim is preserved.
+    anchor <- dim_plan$anchor %||% "width"
+    if (anchor == "auto") {
+      # Wider-than-natural ratio anchors height (output grows wider);
+      # taller-than-natural anchors width (output grows taller). The
+      # readability-first rule.
+      anchor <- if (dim_plan$ratio >= natural$aspect) "height" else "width"
+    }
+    if (anchor == "height") {
+      return(list(width = natural$height * dim_plan$ratio,
+                  height = natural$height))
+    }
+    # anchor == "width" (default, v0.30 behaviour).
     return(list(width = natural$width,
                 height = natural$width / dim_plan$ratio))
   }
@@ -523,7 +562,7 @@ generate_svg_v8 <- function(spec_json, options = list()) {
     natural <- jsonlite::fromJSON(natural_json)
     target <- resolve_target_dims_with_natural(
       list(width = options$width, height = options$height,
-           ratio = options$ratio),
+           ratio = options$ratio, anchor = options$anchor),
       natural
     )
     options_json <- jsonlite::toJSON(
@@ -602,6 +641,7 @@ extract_webspec <- function(x) {
 #' @export
 save_split_table <- function(x, path, format = c("svg", "pdf", "png"),
                               width = NULL, height = NULL, ratio = NULL,
+                              anchor = NULL,
                               flex = TRUE, scale = 2,
                               paginate = NULL, ...) {
   format <- match.arg(format)
@@ -651,6 +691,7 @@ save_split_table <- function(x, path, format = c("svg", "pdf", "png"),
 
     save_plot(spec, file_path,
               width = width, height = height, ratio = ratio,
+              anchor = anchor,
               flex = flex, scale = scale,
               paginate = paginate)
     exported_files <- c(exported_files, file_path)

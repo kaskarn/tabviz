@@ -4,13 +4,23 @@
 \alias{set_aspect_ratio}
 \title{Pin a target aspect ratio on a tabviz}
 \usage{
-set_aspect_ratio(x, ratio)
+set_aspect_ratio(x, ratio, anchor = c("width", "height", "auto"))
 }
 \arguments{
 \item{x}{A \code{WebSpec} object, htmlwidget, or \code{tabviz_proxy}.}
 
 \item{ratio}{Numeric target aspect ratio (\code{width / height}). Pass
 \code{NULL} to clear (render at natural).}
+
+\item{anchor}{How target dims are resolved when only \code{ratio} is
+given. \code{"width"} (default) preserves v0.30 behaviour: target
+width = natural width, target height = natural width / ratio
+— aggressive on row-shrink at wide ratios. \code{"height"} does the
+opposite: target height = natural height, target width =
+natural height × ratio — preserves rowHeight at wide ratios by
+growing the output wider. \code{"auto"} picks based on whether the
+requested ratio is wider or taller than the spec's natural
+aspect — readability-first; recommended.}
 }
 \value{
 The modified WebSpec, htmlwidget, or proxy (invisibly).
@@ -36,7 +46,10 @@ the running widget — same path as \code{set_theme()} etc.}
 \examples{
 \dontrun{
 tabviz(data, label = "study", columns = list(viz_forest("hr", "lo", "hi"))) |>
-  set_aspect_ratio(2)            # 2:1 wide
+  set_aspect_ratio(2)                       # 2:1, anchor "width"
+
+tabviz(...) |>
+  set_aspect_ratio(2, anchor = "auto")      # readability-first
 }
 
 }
