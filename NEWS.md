@@ -1,5 +1,66 @@
 # tabviz (development)
 
+## Aspect-ratio first dimension contract for `save_plot()` (v0.30.0)
+
+`save_plot()` now treats the spec's *natural* shape as the invariant and
+treats `width` / `height` / `ratio` as aspect / display levers — no
+silent overflow, no silent clipping. Three modes:
+
+* **Natural** — no `width` / `height` / `ratio`. Render at the spec's
+  natural dimensions.
+* **Display-scaled** — exactly one of `width` or `height`. Same content,
+  just scaled (SVG `viewBox` keeps coordinates intact). Aspect ratio
+  preserved.
+* **Aspect-changed** — both `width` *and* `height`, or `ratio`. Triggers
+  a relayout via the lever ladder. Flex-eligible columns absorb the
+  width delta; row heights scale to absorb the height delta. The output
+  is rendered at the new layout, **never SVG-stretched**.
+
+Companion changes:
+
+* **`flex` argument on every column.** `viz_forest()`, `viz_bar()`,
+  `viz_boxplot()`, `viz_violin()` default to `flex = TRUE` (matching
+  the existing implicit "fill remaining width" feel for forest); every
+  other column defaults to `flex = FALSE`. Override per call:
+  `viz_forest(..., flex = FALSE)` pins it at natural width.
+* **`save_plot(flex = ...)` cap.** `TRUE` (default) caps each flex
+  column at `[0.5×, 2×]` of natural; `FALSE` disables flex absorption
+  entirely; a numeric `N >= 1` sets a custom cap.
+* **`save_plot(ratio = X)`.** Discoverable alias for "Mode 3 with
+  target aspect", with sensible compositions across `width` / `height`
+  / `ratio`. Over-specifying all three errors.
+* **`set_aspect_ratio(x, ratio)`.** Fluent / proxy modifier that pins
+  a target aspect on the spec. `save_plot()` reads it as the default
+  for `ratio`; the live widget reads it for the (future) interactive
+  control. `set_aspect_ratio(x, NULL)` clears.
+* **`tabviz_natural_dimensions(x)`.** Public helper that returns
+  `list(width, height, aspect)` without rendering — useful for sizing
+  Quarto / RMarkdown chunks.
+* **`scale` is PNG-only.** Passing `scale` to a `.svg` or `.pdf` save
+  now warns. (Vector formats are resolution-independent; pass `width`
+  for higher density instead.)
+
+### Migrating from pre-v0.30 dimension behavior
+
+* `save_plot(p, "out.svg", width = 400)` on a 6-column table that's
+  naturally ~900 px wide **previously** silently produced a 911 px
+  SVG (overflowed past the requested width). It now produces an SVG
+  whose root `width="400"` and `viewBox` carries the natural
+  coordinates, so renderers display-scale uniformly to 400 px.
+* `save_plot(p, "out.svg", height = 200)` on a 30-row table
+  **previously** silently clipped content. It now scales the SVG
+  uniformly to 200 px tall (small but unclipped). For an actual
+  shorter layout, pass both dims or `ratio`: `save_plot(p, "out.svg",
+  height = 200, ratio = 4)`.
+* `save_plot(p, "out.pdf", scale = 4)` **previously** silently ignored
+  `scale`. It now warns. Vector PDF doesn't change density; pass
+  `width` to grow the layout.
+* `save_plot()` no longer has a positional `width = 800` default. Code
+  that called `save_plot(p, "out.svg")` and relied on the implicit
+  800 px output keeps working — that's exactly the natural width for
+  most specs — but the SVG root now reports the spec's actual natural
+  width rather than a forced 800.
+
 ## Fluent API parity fixes
 
 Two parity gaps surfaced by the reference-docs audit:

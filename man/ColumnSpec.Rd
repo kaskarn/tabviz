@@ -15,6 +15,7 @@ ColumnSpec(
   show_header = NA,
   wrap = FALSE,
   sortable = TRUE,
+  flex = FALSE,
   options = list(),
   style_bold = NULL,
   style_italic = NULL,

@@ -216,6 +216,18 @@ export interface ExportOptions {
   scale?: number;
   backgroundColor?: string;
 
+  // Mode 3 (aspect-changed) — driven by R-side `save_plot()` lever ladder.
+  // Both must be set to trigger; flexCap defaults to 2 ([0.5×, 2×]).
+  // - targetWidth absorbed by flex columns first (capped at flexCap×natural);
+  //   remainder is delivered via the existing at-least-width path so non-
+  //   flex auto-width columns size as usual.
+  // - targetHeight scales theme.spacing.rowHeight proportionally so the
+  //   layout *calculates* a new height rather than clipping. Non-row
+  //   chrome (header / axis / footer) stays at natural.
+  targetWidth?: number;
+  targetHeight?: number;
+  flexCap?: number;
+
   // NEW: Complete pre-computed layout from browser (WYSIWYG path)
   precomputedLayout?: PrecomputedLayout;
 
@@ -779,20 +791,21 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const rightTableWidth =
     rightColumns.reduce((sum, c) => sum + getEffectiveWidth(c, autoWidths), 0);
 
-  // For unified model: count non-forest columns width
+  // For unified model: count non-flex columns width. A flex column (forest
+  // by default; opt-in for any other type via `flex: true`) absorbs the
+  // remaining width and is excluded from the table-width sum here.
+  const isFlexColumn = (c: ColumnSpec): boolean =>
+    c.flex === true && (c.width === "auto" || c.width == null);
   const unifiedNonForestWidth = unifiedColumns
-    .filter(c => c.type !== "forest")
+    .filter(c => !isFlexColumn(c))
     .reduce((sum, c) => sum + getEffectiveWidth(c, autoWidths), 0);
 
-  // Forest width calculation - "tables first" approach
+  // Flex (forest-equivalent) width calculation - "tables first" approach.
+  // The variable is still named `forestWidth` downstream because the
+  // renderer threads a single per-flex-column width through layout; in
+  // practice tabviz today renders at most one flex column per spec.
   const baseWidth = options.width ?? LAYOUT.DEFAULT_WIDTH;
-  // Check for any flex-viz column (forest or viz_*) that consumes
-  // `layout.forestWidth` as its expand-to-fill width when width="auto".
-  const hasForestColumns = allColumns.some(
-    c => c.type === "forest" ||
-         ((c.type === "viz_bar" || c.type === "viz_boxplot" || c.type === "viz_violin") &&
-          (c.width === "auto" || c.width == null)),
-  );
+  const hasForestColumns = allColumns.some(isFlexColumn);
   const includeForest = hasForestColumns;
 
   // Total table width includes legacy positioned columns AND unified non-forest columns
@@ -4140,6 +4153,132 @@ function getForestColumnSettings(spec: WebSpec): ForestColumnSettings {
 // ============================================================================
 
 /**
+ * Compute the natural dimensions of a spec without rendering.
+ *
+ * Calls `computeLayout()` with empty options so width / height are derived
+ * purely from the spec's column widths, row count, theme spacing, and chrome
+ * (header, footer, axis). Cheap-ish (no SVG string emission) and useful for:
+ *
+ *   - the public `tabviz_natural_dimensions(spec)` R helper
+ *   - the lever-ladder code that needs to know natural dimensions before
+ *     deciding how to absorb an aspect change
+ *   - test assertions that pin the natural shape of fixture specs
+ *
+ * Returns logical px (matching what `generateSVG()` would emit at default
+ * options).
+ */
+export function computeNaturalDimensions(spec: WebSpec): {
+  width: number;
+  height: number;
+  aspect: number;
+} {
+  validateSpec(spec);
+  const layout = computeLayout(spec, {});
+  return {
+    width:  layout.totalWidth,
+    height: layout.totalHeight,
+    aspect: layout.totalWidth / layout.totalHeight,
+  };
+}
+
+/**
+ * Mode 3 lever ladder. Precomputes natural dimensions, scales the
+ * theme's row-height to absorb the height delta, and rewrites
+ * `options.width` so the standard layout path absorbs the width delta
+ * via flex columns (capped at `flexCap`). Returns the SVG produced by
+ * the standard render with those adjusted inputs — the result's
+ * actual width / height match the target via *layout calculation*,
+ * not SVG-stretching.
+ *
+ * Lever 1 (width): flex columns absorb the width delta, capped at
+ * `[naturalForest / flexCap, naturalForest * flexCap]`.
+ *
+ * Lever 2 (width fallback): when Lever 1 saturates, the residual delta
+ * is delivered to the standard at-least-width path, which scales
+ * remaining auto-width columns up to the requested totalWidth. (This
+ * matches the existing forestWidth absorption logic — Lever 2 width is
+ * implicit in the standard layout's behavior when totalWidth exceeds
+ * what the cap-clamped forest can absorb.)
+ *
+ * Lever 2 (height): rowHeight is scaled by `targetHeight / naturalHeight`
+ * proportionally. Other chrome (header / axis / footer / padding) stays
+ * at natural — keeping fonts and section spacing readable while the row
+ * track absorbs the height delta.
+ */
+function generateSVGForAspectTarget(
+  spec: WebSpec,
+  options: ExportOptions,
+): string {
+  const targetWidth = options.targetWidth as number;
+  const targetHeight = options.targetHeight as number;
+  const flexCap = Math.max(1, options.flexCap ?? 2);
+
+  // Compute natural baseline. Empty options = natural dims.
+  const naturalLayout = computeLayout(spec, {});
+  const naturalForestWidth = naturalLayout.forestWidth;
+  const naturalNonForestWidth = naturalLayout.totalWidth - naturalForestWidth;
+
+  // --- Lever 1 + Lever 2 (width) ---
+  // Forest's natural absorption: target = naturalNonForest + clampedForest.
+  // If proposedForest exceeds [naturalForest/cap, naturalForest*cap], we
+  // saturate the cap and let the standard at-least-width path deliver
+  // the remainder via non-flex auto-width columns.
+  const proposedForestWidth = targetWidth - naturalNonForestWidth;
+  const cappedForestWidth = Math.max(
+    naturalForestWidth / flexCap,
+    Math.min(naturalForestWidth * flexCap, proposedForestWidth),
+  );
+  // The width passed to the standard layout: when cap saturates and
+  // targetWidth > cappedForest + naturalNonForest, the at-least-width
+  // path absorbs the residual into auto-width columns.
+  const adjustedWidth = Math.max(
+    targetWidth,
+    cappedForestWidth + naturalNonForestWidth,
+  );
+
+  // --- Lever 2 (height) ---
+  // Scale rowHeight so the layout's totalHeight ends up at targetHeight.
+  // Non-row chrome (header / axis / footer / padding) stays at natural,
+  // so the scale factor must account for it:
+  //   totalH = chromeH + plotH
+  //   targetH = chromeH + scaledPlotH
+  //         => scaledPlotH / plotH = (targetH - chromeH) / plotH
+  // We use plotHeight (rows-section) and (totalHeight - plotHeight) as
+  // chrome — both available on the InternalLayout return. When the
+  // requested height is smaller than the chrome, fall back to a small
+  // positive scale so the result is degraded but renderable rather
+  // than producing a negative row height.
+  const chromeHeight = naturalLayout.totalHeight - naturalLayout.plotHeight;
+  const targetPlotHeight = Math.max(targetHeight - chromeHeight, naturalLayout.plotHeight * 0.1);
+  const heightScale = targetPlotHeight / naturalLayout.plotHeight;
+
+  // Deep-clone the spec and scale the theme's row-height. structuredClone
+  // is available in the V8 / browser runtimes we target; fall back to a
+  // shallow plus targeted copy if it isn't.
+  const adjustedSpec: WebSpec = (typeof structuredClone === "function"
+    ? structuredClone(spec)
+    : JSON.parse(JSON.stringify(spec))) as WebSpec;
+  const adjustedTheme = adjustedSpec.theme;
+  if (adjustedTheme && adjustedTheme.spacing) {
+    const naturalRH = adjustedTheme.spacing.rowHeight ?? 32;
+    adjustedTheme.spacing.rowHeight = naturalRH * heightScale;
+  }
+
+  // Recurse into the standard render path with width set and target*
+  // cleared (so we don't loop). The output's actual dims fall out of
+  // the layout — Mode 3's "calculate, never stretch" contract.
+  const innerOptions: ExportOptions = {
+    ...options,
+    targetWidth: undefined,
+    targetHeight: undefined,
+    flexCap: undefined,
+    width: adjustedWidth,
+    height: undefined,
+  };
+  return generateSVG(adjustedSpec, innerOptions);
+}
+
+/**
  * Generate SVG for forest plot export.
  *
  * Supports two layout modes:
@@ -4154,6 +4293,19 @@ function getForestColumnSettings(spec: WebSpec): ForestColumnSettings {
 export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string {
   // Validate input
   validateSpec(spec);
+
+  // Mode 3 (aspect-changed) lever ladder. R-side passes targetWidth +
+  // targetHeight + flexCap; we precompute natural dims, scale rowHeight
+  // for the height delta, and rewrite options.width to the cap-clamped
+  // flex absorption value. The recursive call then runs the standard
+  // layout path on the adjusted spec, so width / height fall out of the
+  // layout calculation rather than being SVG-stretched.
+  if (
+    typeof options.targetWidth === "number" &&
+    typeof options.targetHeight === "number"
+  ) {
+    return generateSVGForAspectTarget(spec, options);
+  }
 
   const theme = spec.theme;
   const padding = theme.spacing.padding;

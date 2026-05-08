@@ -8,51 +8,46 @@ save_split_table(
   x,
   path,
   format = c("svg", "pdf", "png"),
-  width = 800,
+  width = NULL,
   height = NULL,
+  ratio = NULL,
+  flex = TRUE,
   scale = 2,
+  paginate = NULL,
   ...
 )
 }
 \arguments{
 \item{x}{A SplitForest object or forest_plot() output with split_by}
 
-\item{path}{Output directory path. Directory will be created if it doesn't exist.}
+\item{path}{Output directory path. Created if it doesn't exist.}
 
 \item{format}{Output format: "svg" (default), "pdf", or "png"}
 
-\item{width}{Plot width in pixels (default: 800)}
+\item{width, height, ratio, flex, scale}{See \code{save_plot()}.}
 
-\item{height}{Plot height in pixels. If NULL (default), auto-calculated}
+\item{paginate}{See \code{save_plot()}. Per-subview pagination on PDF.}
 
-\item{scale}{Scaling factor for PNG output (default: 2 for retina quality)}
-
-\item{...}{Additional arguments (currently unused)}
+\item{...}{Reserved for future use.}
 }
 \value{
 Invisibly returns a character vector of exported file paths
 }
 \description{
 Exports all plots in a SplitForest to a directory structure that mirrors
-the split hierarchy. Each sub-plot is saved as a separate file.
+the split hierarchy. Each sub-plot is saved as a separate file. Each
+subview's aspect contract is independent — \code{width} / \code{height} / \code{ratio}
+/ \code{flex} apply per-subview.
 }
 \examples{
 \dontrun{
-# Create a split forest
 split_result <- data |>
   tabviz(label = "study", columns = list(
     viz_forest(point = "or", lower = "lower", upper = "upper")
   )) |>
   split_table(by = c("sex", "age_group"))
 
-# Export to directory
 save_split_table(split_result, "output/plots")
-
-# Creates:
-# output/plots/Male/Male_Young.svg
-# output/plots/Male/Male_Old.svg
-# output/plots/Female/Female_Young.svg
-# output/plots/Female/Female_Old.svg
 }
 
 }

@@ -1130,6 +1130,58 @@ paint_cell <- function(x, row_id, field, token) {
 }
 
 # ----------------------------------------------------------------------------
+# Aspect-ratio target — fluent + proxy
+# ----------------------------------------------------------------------------
+
+#' Pin a target aspect ratio on a tabviz
+#'
+#' Sets the spec's `target_aspect` field (read by `save_plot()` as the
+#' default for `ratio`, and by the widget's interactive control as the
+#' starting position). `set_aspect_ratio(NULL)` clears the target —
+#' equivalent to "render at natural aspect".
+#'
+#' Three input surfaces share the same machinery:
+#'
+#' \describe{
+#'   \item{Fluent (WebSpec / htmlwidget)}{Pins the target on the spec.
+#'     The widget renders at that aspect; `save_plot()` honours it.}
+#'   \item{`save_plot(..., ratio = X)`}{Save-time override of the spec's
+#'     target for that render only.}
+#'   \item{Proxy (`tabviz_proxy`)}{Sends a `setAspectRatio` message to
+#'     the running widget — same path as `set_theme()` etc.}
+#' }
+#'
+#' @param x A `WebSpec` object, htmlwidget, or `tabviz_proxy`.
+#' @param ratio Numeric target aspect ratio (`width / height`). Pass
+#'   `NULL` to clear (render at natural).
+#'
+#' @return The modified WebSpec, htmlwidget, or proxy (invisibly).
+#'
+#' @examples
+#' \dontrun{
+#' tabviz(data, label = "study", columns = list(viz_forest("hr", "lo", "hi"))) |>
+#'   set_aspect_ratio(2)            # 2:1 wide
+#' }
+#'
+#' @export
+set_aspect_ratio <- function(x, ratio) {
+  if (inherits(x, "tabviz_proxy")) {
+    payload <- list(ratio = if (is.null(ratio)) NA_real_ else as.numeric(ratio))
+    return(invoke_proxy_method(x, "setAspectRatio", payload))
+  }
+
+  spec <- extract_spec(x)
+  if (is.null(ratio)) {
+    spec@target_aspect <- NA_real_
+  } else {
+    checkmate::assert_number(ratio, lower = 1e-3, finite = TRUE,
+                             .var.name = "ratio")
+    spec@target_aspect <- as.numeric(ratio)
+  }
+  repack(x, spec)
+}
+
+# ----------------------------------------------------------------------------
 # SplitForest — toggle shared column widths at construction time
 # ----------------------------------------------------------------------------
 

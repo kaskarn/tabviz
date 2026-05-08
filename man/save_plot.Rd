@@ -7,8 +7,10 @@
 save_plot(
   x,
   file,
-  width = 800,
+  width = NULL,
   height = NULL,
+  ratio = NULL,
+  flex = TRUE,
   scale = 2,
   which = NULL,
   paginate = NULL,
@@ -18,19 +20,33 @@ save_plot(
 \arguments{
 \item{x}{A WebSpec object, forest_plot() htmlwidget output, or SplitForest}
 
-\item{file}{Output file path (or directory for SplitForest). Extension determines format:
-\itemize{
-\item \code{.svg} - Scalable Vector Graphics
-\item \code{.pdf} - PDF document (requires rsvg package)
-\item \code{.png} - PNG image (requires rsvg package)
-}}
+\item{file}{Output file path (or directory for SplitForest). Extension
+determines format: \code{.svg}, \code{.pdf}, or \code{.png}.}
 
-\item{width}{Plot width in pixels (default: 800)}
+\item{width}{Display width in pixels. \code{NULL} (default) preserves natural.
+With \code{height} or \code{ratio}, triggers relayout (Mode 3).}
 
-\item{height}{Plot height in pixels. If NULL (default), auto-calculated
-based on content}
+\item{height}{Display height in pixels. \code{NULL} (default) preserves
+natural. With \code{width} or \code{ratio}, triggers relayout (Mode 3).}
 
-\item{scale}{Scaling factor for PNG output (default: 2 for retina quality)}
+\item{ratio}{Target aspect ratio (\code{width / height}). \code{NULL} (default)
+preserves natural. Mutually exclusive with passing both \code{width} and
+\code{height}. When set with one of \code{width} / \code{height}, the other is
+computed from the ratio. When set alone, target width = natural width
+and target height = natural width / ratio. Falls back to the spec's
+\code{target_aspect} (set via \code{set_aspect_ratio()}) if call-site \code{ratio}
+is \code{NULL}.}
+
+\item{flex}{Flex-column cap for the lever-ladder. \code{TRUE} (default)
+uses cap = 2 (each flex column may grow / shrink within \verb{[0.5×, 2×]}
+of natural). \code{FALSE} disables flex absorption — every column is
+pinned at natural width regardless of its column-level \code{flex}. A
+numeric \code{N >= 1} sets a custom cap (\code{flex = 1.5} is conservative;
+\code{flex = Inf} removes the cap entirely).}
+
+\item{scale}{Raster fidelity multiplier for PNG output (default 2 for
+retina). Ignored — and warned about — for vector outputs (SVG, PDF),
+which are resolution-independent.}
 
 \item{which}{For SplitForest only. \code{NULL} (default) dumps every subview
 to the directory derived from \code{file}. A string picks one subview by
@@ -38,56 +54,58 @@ key (e.g. \code{"Male__Young"}); an integer picks the i-th subview by the
 order specs were created. With \code{which} set, \code{file} is treated as a
 single-file path and its extension determines format.}
 
-\item{...}{Additional arguments (currently unused)}
+\item{paginate}{Pagination spec (see \code{paginate_spec()}). Multi-page PDFs
+only; warned-and-flattened for SVG / PNG.}
+
+\item{...}{Reserved for future use.}
 }
 \value{
 Invisibly returns the file path
 }
 \description{
-Exports a forest plot to a static file format (SVG, PDF, or PNG).
-Uses a shared JavaScript SVG generator via the V8 package for consistent
-output between R and web exports.
+Exports a forest plot to SVG, PDF, or PNG. The output's \emph{shape} is
+derived from the spec's natural dimensions; \code{width}, \code{height}, and
+\code{ratio} are display / aspect levers, not size forcers.
 }
-\details{
-For SplitForest objects, this function dispatches to \code{save_split_table()}
-to export all sub-plots to a directory structure. To save just one
-subview to a single file, pass \code{which = "<key>"} or an integer index.
+\section{Sizing modes}{
+\describe{
+\item{\strong{Natural}}{No \code{width} / \code{height} / \code{ratio}. Renders at the
+spec's natural dimensions (column widths plus theme chrome, row
+count times row height plus header/axis/footer chrome).}
+\item{\strong{Display-scaled}}{Exactly one of \code{width} / \code{height}. Renders
+at natural; the SVG root is stamped with the requested dim while
+\code{viewBox} keeps content coordinates intact. The other dim is
+derived from natural aspect. PNG raster size honours \code{scale}.}
+\item{\strong{Aspect-changed}}{Both \code{width} and \code{height}, or \code{ratio},
+trigger a relayout: flex-eligible columns (those with
+\code{flex = TRUE}, the default for \verb{viz_*} / forest columns) absorb
+width changes — capped to \verb{[1/flex, flex]} of natural — and row
+heights scale to absorb the height delta. The output is rendered
+at the new layout, not SVG-stretched.}
 }
+
+For SplitForest objects, dispatches to \code{save_split_table()} to export
+all sub-plots to a directory. To save just one subview, pass \code{which}.
+}
+
 \examples{
 \dontrun{
-# Create a forest plot spec
 spec <- web_spec(
   data.frame(
-    study = c("Study A", "Study B", "Study C"),
-    estimate = c(1.2, 0.8, 1.5),
+    study = c("A", "B", "C"),
+    hr = c(1.2, 0.8, 1.5),
     lower = c(0.9, 0.5, 1.1),
     upper = c(1.6, 1.2, 2.0)
   ),
-  point = "estimate",
-  lower = "lower",
-  upper = "upper",
-  label = "study"
+  point = "hr", lower = "lower", upper = "upper", label = "study"
 )
 
-# Save as SVG
-save_plot(spec, "forest.svg")
-
-# Save as PNG with custom dimensions
-save_plot(spec, "forest.png", width = 1200)
-
-# Save from htmlwidget output
-p <- forest_plot(spec)
-save_plot(p, "forest.svg")
-
-# Save a SplitForest to a directory
-split_result <- data |>
-  tabviz(label = "study", columns = list(
-    viz_forest(point = "estimate", lower = "lower", upper = "upper")
-  )) |>
-  split_table(by = c("sex", "age_group"))
-
-save_plot(split_result, "output/plots")
-# Creates: output/plots/Male/Male_Young.svg, etc.
+save_plot(spec, "out.svg")                          # Natural
+save_plot(spec, "out.svg", width = 1200)            # Display-scaled
+save_plot(spec, "out.svg", ratio = 2)               # 2:1 wide
+save_plot(spec, "out.svg", width = 1200, height = 600)  # explicit aspect
+save_plot(spec, "out.svg", width = 1200, flex = FALSE)  # no flex absorption
+save_plot(spec, "out.png", width = 1200, scale = 2)     # 2400 px PNG
 }
 
 }

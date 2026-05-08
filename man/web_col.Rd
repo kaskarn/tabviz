@@ -17,6 +17,7 @@ web_col(
   show_header = NULL,
   wrap = FALSE,
   sortable = TRUE,
+  flex = NULL,
   options = list(),
   na_text = NULL,
   bold = NULL,
@@ -66,6 +67,14 @@ segments word-wrap within the column's content width. The row
 track auto-grows to fit.}
 
 \item{sortable}{Whether sortable}
+
+\item{flex}{Whether the column absorbs remaining width when the
+save-time aspect ratio differs from the spec's natural aspect.
+\code{NULL} (default) resolves by type: \code{viz_forest()}, \code{viz_bar()},
+\code{viz_boxplot()}, \code{viz_violin()} default to \code{TRUE}; every other
+column type defaults to \code{FALSE}. Pass \code{TRUE} / \code{FALSE} explicitly to
+override. See \code{save_plot(flex = ...)} for the per-render cap on
+how far flex columns may stretch.}
 
 \item{options}{Named list of type-specific options}
 

@@ -1,81 +1,114 @@
-# Static image export for forest plots using V8 JavaScript engine
+# Static image export — aspect-ratio-first dimension contract.
+#
+# `save_plot()` operates in one of three modes:
+#
+#   - **Mode 1 (Natural)**: no `width` / `height` / `ratio`. Render at the
+#     spec's natural dimensions. Cheap; no relayout.
+#   - **Mode 2 (Display-scaled)**: exactly one of `width` / `height`. Render
+#     at natural, then stamp the requested dim on the SVG root and compute
+#     the other from natural aspect (the SVG's `viewBox` keeps content
+#     coordinates intact, so renderers display-scale uniformly). Pure SVG
+#     scaling; no layout recompute.
+#   - **Mode 3 (Aspect-changed)**: both `width` and `height`, or `ratio`,
+#     trigger a layout recompute via the lever ladder. Flex-eligible
+#     columns absorb width changes (capped via `flex`); row heights scale
+#     for the height delta. Never SVG-stretched — always recalculated.
+#
+# For paginated PDFs each page is a separate spec slice, so the aspect
+# contract applies per-page.
 
 #' Save a forest plot as a static image
 #'
-#' Exports a forest plot to a static file format (SVG, PDF, or PNG).
-#' Uses a shared JavaScript SVG generator via the V8 package for consistent
-#' output between R and web exports.
+#' Exports a forest plot to SVG, PDF, or PNG. The output's *shape* is
+#' derived from the spec's natural dimensions; `width`, `height`, and
+#' `ratio` are display / aspect levers, not size forcers.
 #'
-#' For SplitForest objects, this function dispatches to `save_split_table()`
-#' to export all sub-plots to a directory structure. To save just one
-#' subview to a single file, pass `which = "<key>"` or an integer index.
+#' # Sizing modes
+#'
+#' \describe{
+#'   \item{**Natural**}{No `width` / `height` / `ratio`. Renders at the
+#'     spec's natural dimensions (column widths plus theme chrome, row
+#'     count times row height plus header/axis/footer chrome).}
+#'   \item{**Display-scaled**}{Exactly one of `width` / `height`. Renders
+#'     at natural; the SVG root is stamped with the requested dim while
+#'     `viewBox` keeps content coordinates intact. The other dim is
+#'     derived from natural aspect. PNG raster size honours `scale`.}
+#'   \item{**Aspect-changed**}{Both `width` and `height`, or `ratio`,
+#'     trigger a relayout: flex-eligible columns (those with
+#'     `flex = TRUE`, the default for `viz_*` / forest columns) absorb
+#'     width changes — capped to `[1/flex, flex]` of natural — and row
+#'     heights scale to absorb the height delta. The output is rendered
+#'     at the new layout, not SVG-stretched.}
+#' }
+#'
+#' For SplitForest objects, dispatches to `save_split_table()` to export
+#' all sub-plots to a directory. To save just one subview, pass `which`.
 #'
 #' @param x A WebSpec object, forest_plot() htmlwidget output, or SplitForest
-#' @param file Output file path (or directory for SplitForest). Extension determines format:
-#'   - `.svg` - Scalable Vector Graphics
-#'   - `.pdf` - PDF document (requires rsvg package)
-#'   - `.png` - PNG image (requires rsvg package)
-#' @param width Plot width in pixels (default: 800)
-#' @param height Plot height in pixels. If NULL (default), auto-calculated
-#'   based on content
-#' @param scale Scaling factor for PNG output (default: 2 for retina quality)
+#' @param file Output file path (or directory for SplitForest). Extension
+#'   determines format: `.svg`, `.pdf`, or `.png`.
+#' @param width Display width in pixels. `NULL` (default) preserves natural.
+#'   With `height` or `ratio`, triggers relayout (Mode 3).
+#' @param height Display height in pixels. `NULL` (default) preserves
+#'   natural. With `width` or `ratio`, triggers relayout (Mode 3).
+#' @param ratio Target aspect ratio (`width / height`). `NULL` (default)
+#'   preserves natural. Mutually exclusive with passing both `width` and
+#'   `height`. When set with one of `width` / `height`, the other is
+#'   computed from the ratio. When set alone, target width = natural width
+#'   and target height = natural width / ratio. Falls back to the spec's
+#'   `target_aspect` (set via `set_aspect_ratio()`) if call-site `ratio`
+#'   is `NULL`.
+#' @param flex Flex-column cap for the lever-ladder. `TRUE` (default)
+#'   uses cap = 2 (each flex column may grow / shrink within `[0.5×, 2×]`
+#'   of natural). `FALSE` disables flex absorption — every column is
+#'   pinned at natural width regardless of its column-level `flex`. A
+#'   numeric `N >= 1` sets a custom cap (`flex = 1.5` is conservative;
+#'   `flex = Inf` removes the cap entirely).
+#' @param scale Raster fidelity multiplier for PNG output (default 2 for
+#'   retina). Ignored — and warned about — for vector outputs (SVG, PDF),
+#'   which are resolution-independent.
 #' @param which For SplitForest only. `NULL` (default) dumps every subview
 #'   to the directory derived from `file`. A string picks one subview by
 #'   key (e.g. `"Male__Young"`); an integer picks the i-th subview by the
 #'   order specs were created. With `which` set, `file` is treated as a
 #'   single-file path and its extension determines format.
-#' @param ... Additional arguments (currently unused)
+#' @param paginate Pagination spec (see `paginate_spec()`). Multi-page PDFs
+#'   only; warned-and-flattened for SVG / PNG.
+#' @param ... Reserved for future use.
 #'
 #' @return Invisibly returns the file path
 #'
 #' @examples
 #' \dontrun{
-#' # Create a forest plot spec
 #' spec <- web_spec(
 #'   data.frame(
-#'     study = c("Study A", "Study B", "Study C"),
-#'     estimate = c(1.2, 0.8, 1.5),
+#'     study = c("A", "B", "C"),
+#'     hr = c(1.2, 0.8, 1.5),
 #'     lower = c(0.9, 0.5, 1.1),
 #'     upper = c(1.6, 1.2, 2.0)
 #'   ),
-#'   point = "estimate",
-#'   lower = "lower",
-#'   upper = "upper",
-#'   label = "study"
+#'   point = "hr", lower = "lower", upper = "upper", label = "study"
 #' )
 #'
-#' # Save as SVG
-#' save_plot(spec, "forest.svg")
-#'
-#' # Save as PNG with custom dimensions
-#' save_plot(spec, "forest.png", width = 1200)
-#'
-#' # Save from htmlwidget output
-#' p <- forest_plot(spec)
-#' save_plot(p, "forest.svg")
-#'
-#' # Save a SplitForest to a directory
-#' split_result <- data |>
-#'   tabviz(label = "study", columns = list(
-#'     viz_forest(point = "estimate", lower = "lower", upper = "upper")
-#'   )) |>
-#'   split_table(by = c("sex", "age_group"))
-#'
-#' save_plot(split_result, "output/plots")
-#' # Creates: output/plots/Male/Male_Young.svg, etc.
+#' save_plot(spec, "out.svg")                          # Natural
+#' save_plot(spec, "out.svg", width = 1200)            # Display-scaled
+#' save_plot(spec, "out.svg", ratio = 2)               # 2:1 wide
+#' save_plot(spec, "out.svg", width = 1200, height = 600)  # explicit aspect
+#' save_plot(spec, "out.svg", width = 1200, flex = FALSE)  # no flex absorption
+#' save_plot(spec, "out.png", width = 1200, scale = 2)     # 2400 px PNG
 #' }
 #'
 #' @export
-save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
+save_plot <- function(x, file,
+                      width = NULL, height = NULL, ratio = NULL,
+                      flex = TRUE, scale = 2,
                       which = NULL, paginate = NULL, ...) {
-  # Validate inputs
   if (missing(file) || is.null(file)) {
     cli_abort("{.arg file} is required")
   }
 
   # Dispatch to save_split_table() if x is a SplitForest
   if (S7_inherits(x, SplitForest)) {
-    # `which` selects a single subview, demoting save to the WebSpec branch.
     if (!is.null(which)) {
       keys <- names(x@specs)
       picked_key <- if (is.character(which)) {
@@ -96,27 +129,25 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
         cli_abort("{.arg which} must be a string key or integer index.")
       }
       return(save_plot(x@specs[[picked_key]], file = file,
-                       width = width, height = height, scale = scale,
+                       width = width, height = height, ratio = ratio,
+                       flex = flex, scale = scale,
                        paginate = paginate, ...))
     }
 
-    # Determine format and path from file argument
     ext <- tolower(tools::file_ext(file))
     if (ext %in% c("svg", "pdf", "png")) {
-      # file has extension - use parent directory and extract format
       path <- dirname(file)
       format <- ext
     } else {
-      # file is a directory path - use as-is with default format
       path <- file
       format <- "svg"
     }
     return(save_split_table(x, path = path, format = format,
-                             width = width, height = height, scale = scale,
+                             width = width, height = height, ratio = ratio,
+                             flex = flex, scale = scale,
                              paginate = paginate, ...))
   }
 
-  # Check for V8 package
   if (!requireNamespace("V8", quietly = TRUE)) {
     cli_abort(c(
       "Package {.pkg V8} is required for {.fn save_plot}",
@@ -124,10 +155,7 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
     ))
   }
 
-  # Extract WebSpec from input
   spec <- extract_webspec(x)
-
-  # Validate spec
   if (is.null(spec)) {
     cli_abort(c(
       "{.arg x} must be a WebSpec object or forest_plot() output",
@@ -135,9 +163,7 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
     ))
   }
 
-  # Determine format from extension
   ext <- tolower(tools::file_ext(file))
-
   if (!ext %in% c("svg", "pdf", "png")) {
     cli_abort(c(
       "Unsupported file format: {.file .{ext}}",
@@ -145,10 +171,27 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
     ))
   }
 
+  # `scale` is a raster-fidelity multiplier (PNG-only). PDF / SVG are
+  # vector formats — flag the misuse rather than silently dropping it.
+  if (ext %in% c("svg", "pdf") && !missing(scale) && !identical(scale, 2)) {
+    cli::cli_warn(c(
+      "{.arg scale} is ignored for vector output ({.file .{ext}}).",
+      "i" = "{.arg scale} only affects raster (PNG) fidelity.",
+      "i" = "For higher-quality vector output, increase {.arg width} instead."
+    ))
+  }
+
+  # Resolve flex cap (TRUE = 2, FALSE = 1, numeric = N).
+  flex_cap <- resolve_flex_cap(flex)
+
+  # Resolve aspect-ratio fallback: spec's `target_aspect` field acts as a
+  # default when call-site `ratio` is NULL (set via `set_aspect_ratio()`).
+  ratio_resolved <- resolve_target_aspect(ratio, spec)
+
+  # Mode + target dim resolution. Errors on over-spec.
+  dim_plan <- resolve_dimension_plan(width, height, ratio_resolved)
+
   # Resolve paginate precedence: call-site arg overrides spec-level @paginate.
-  # `as_paginate_spec()` accepts NULL/TRUE/FALSE/integer/PaginateSpec; the
-  # caller can also pass an explicit `paginate = NULL` to flatten when the
-  # underlying spec has pagination configured.
   paginate_resolved <- if (missing(paginate)) {
     spec@paginate
   } else {
@@ -157,7 +200,8 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
 
   # Multi-page PDF: render one SVG per logical page, convert each to PDF,
   # and merge into a single .pdf with qpdf. Falls back to a numbered series
-  # if qpdf is unavailable.
+  # if qpdf is unavailable. Each page is a separate spec slice; the aspect
+  # contract applies per-page.
   if (ext == "pdf" && !is.null(paginate_resolved)) {
     breaks <- compute_page_breaks(spec, paginate_resolved)
     if (!is.null(breaks) && breaks$n_pages > 1L) {
@@ -166,18 +210,13 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
         paginate = paginate_resolved,
         breaks = breaks,
         file = file,
-        width = width,
-        height = height
+        dim_plan = dim_plan,
+        flex_cap = flex_cap
       )))
     }
-    # n_pages == 0 or 1: fall through to the single-page path with paginate
-    # cleared on a clone so the renderer doesn't re-trigger anything.
     spec@paginate <- NULL
   }
 
-  # Single-image formats with paginate set: warn and flatten. Authors who
-  # want explicit single-page output for a paginated spec can pass
-  # `paginate = NULL` to silence the warning.
   if (ext %in% c("png", "svg") && !is.null(paginate_resolved)) {
     cli::cli_warn(c(
       "{.arg paginate} ignored: {.file .{ext}} is a single-image format.",
@@ -186,7 +225,6 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
     spec@paginate <- NULL
   }
 
-  # Serialize spec to JSON
   spec_json <- jsonlite::toJSON(
     serialize_spec(spec),
     auto_unbox = TRUE,
@@ -194,18 +232,20 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
     na = "null"
   )
 
-  # Build options
-  options_list <- list()
-  if (!is.null(width)) options_list$width <- width
-  if (!is.null(height)) options_list$height <- height
+  # Render. Mode 3 passes target dims to V8 for relayout; Modes 1 / 2 pass
+  # nothing (V8 emits at natural).
+  v8_options <- v8_options_for_mode(dim_plan, flex_cap)
+  svg_string <- generate_svg_v8(spec_json, v8_options)
 
-  # Generate SVG using V8
-  svg_string <- generate_svg_v8(spec_json, options_list)
+  # Mode 2: post-process the SVG root so it display-scales to the
+  # requested width or height. Content coordinates stay at natural via
+  # the (untouched) viewBox.
+  if (dim_plan$mode == "display_scaled") {
+    svg_string <- apply_display_scaling(svg_string, dim_plan)
+  }
 
   # Embed web fonts (Google Fonts URLs from theme@web_fonts) so the export
-  # carries its own glyphs. V8 can't fetch fonts; this is the R-side step
-  # that closes the gap for SVG, PNG, and PDF exports. Failure degrades
-  # gracefully to system font fallback (matches pre-embed behavior).
+  # carries its own glyphs.
   web_fonts <- tryCatch(spec@theme@web_fonts, error = function(e) list())
   if (length(web_fonts) > 0L) {
     svg_string <- tryCatch(
@@ -220,18 +260,14 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
     )
   }
 
-  # Ensure output directory exists
   output_dir <- dirname(file)
   if (!dir.exists(output_dir) && output_dir != ".") {
     dir.create(output_dir, recursive = TRUE)
   }
 
-  # Output based on format
   if (ext == "svg") {
-    # Write SVG directly
     writeLines(svg_string, file)
   } else if (ext %in% c("pdf", "png")) {
-    # Convert SVG to raster/PDF using rsvg
     if (!requireNamespace("rsvg", quietly = TRUE)) {
       cli_abort(c(
         "Package {.pkg rsvg} is required for {.file .{ext}} output",
@@ -239,7 +275,6 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
       ))
     }
 
-    # Write temporary SVG
     temp_svg <- tempfile(fileext = ".svg")
     on.exit(unlink(temp_svg), add = TRUE)
     writeLines(svg_string, temp_svg)
@@ -247,12 +282,11 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
     if (ext == "pdf") {
       rsvg::rsvg_pdf(temp_svg, file)
     } else {
-      # PNG with scaling - let rsvg auto-detect height from SVG if not specified
-      if (is.null(height)) {
-        rsvg::rsvg_png(temp_svg, file, width = width * scale)
-      } else {
-        rsvg::rsvg_png(temp_svg, file, width = width * scale, height = height * scale)
-      }
+      # PNG: rsvg honours the SVG root's intrinsic width/height (which we
+      # set in display_scaled mode) and aspect via viewBox. `scale`
+      # multiplies the raster pixel count.
+      svg_dims <- parse_svg_root_dims(svg_string)
+      rsvg::rsvg_png(temp_svg, file, width = round(svg_dims$width * scale))
     }
   }
 
@@ -261,18 +295,212 @@ save_plot <- function(x, file, width = 800, height = NULL, scale = 2,
   invisible(file)
 }
 
+# ---- Mode resolution helpers ------------------------------------------------
+
+# `flex` arg semantics: TRUE -> 2 (default cap), FALSE -> 1 (no flex),
+# numeric N >= 1 -> N. Values < 1 are user error (would invert the cap).
+#' @noRd
+resolve_flex_cap <- function(flex) {
+  if (isTRUE(flex)) return(2)
+  if (isFALSE(flex)) return(1)
+  checkmate::assert_number(flex, lower = 1, finite = FALSE,
+                           .var.name = "flex")
+  flex
+}
+
+# Spec's @target_aspect is the fluent / interactive default; call-site
+# `ratio` overrides. Returns NULL when neither is set.
+#' @noRd
+resolve_target_aspect <- function(ratio, spec) {
+  if (!is.null(ratio)) {
+    checkmate::assert_number(ratio, lower = 1e-3, finite = TRUE,
+                             .var.name = "ratio")
+    return(as.numeric(ratio))
+  }
+  spec_target <- tryCatch(spec@target_aspect, error = function(e) NA_real_)
+  if (!is.na(spec_target) && is.numeric(spec_target) && spec_target > 0) {
+    return(as.numeric(spec_target))
+  }
+  NULL
+}
+
+# Resolve mode + target dimensions from (width, height, ratio). Errors
+# when over-specified. Target dims are computed lazily — only Mode 3
+# needs them, and only after natural dims are known.
+#' @noRd
+resolve_dimension_plan <- function(width, height, ratio) {
+  has_w <- !is.null(width)
+  has_h <- !is.null(height)
+  has_r <- !is.null(ratio)
+
+  if (has_w) checkmate::assert_number(width, lower = 1)
+  if (has_h) checkmate::assert_number(height, lower = 1)
+
+  if (has_w && has_h && has_r) {
+    cli_abort(c(
+      "Over-specified dimensions",
+      "i" = "Cannot pass {.arg width}, {.arg height}, and {.arg ratio} together — pick at most two.",
+      "i" = "(`ratio` is `width / height`, so any two determine the third.)"
+    ))
+  }
+
+  if (!has_w && !has_h && !has_r) {
+    return(list(mode = "natural"))
+  }
+
+  # Mode 3: aspect-changed.
+  if ((has_w && has_h) || has_r) {
+    return(list(
+      mode = "aspect_changed",
+      width = width, height = height, ratio = ratio
+    ))
+  }
+
+  # Mode 2: display-scaled (exactly one of width / height).
+  list(
+    mode = "display_scaled",
+    width = width, height = height
+  )
+}
+
+# ---- V8 options assembly ----------------------------------------------------
+
+# Mode 1 / 2 send no width/height to V8 (renderer emits at natural).
+# Mode 3 needs both target dims; if only one + ratio is set, we'll resolve
+# the missing dim from natural aspect after the V8 natural-dims call.
+#' @noRd
+v8_options_for_mode <- function(dim_plan, flex_cap) {
+  if (dim_plan$mode != "aspect_changed") {
+    return(list())
+  }
+
+  # Defer target-dim resolution until natural dims are known.
+  natural <- NULL  # populated below if needed
+
+  has_w <- !is.null(dim_plan$width)
+  has_h <- !is.null(dim_plan$height)
+  has_r <- !is.null(dim_plan$ratio)
+
+  if (has_w && has_h) {
+    target_w <- dim_plan$width
+    target_h <- dim_plan$height
+  } else {
+    # Need natural dims to resolve. Caller supplies the spec via dim_plan
+    # in Phase 4.5+; for now, the V8 helper computes natural and we
+    # resolve there. To keep this function pure and side-effect-free,
+    # callers that need ratio-only / one-dim-plus-ratio should call
+    # `resolve_target_dims_with_natural()` after natural is known.
+    return(list(
+      .phase3_pending = TRUE,
+      width = dim_plan$width,
+      height = dim_plan$height,
+      ratio = dim_plan$ratio,
+      flexCap = flex_cap
+    ))
+  }
+
+  list(
+    targetWidth = target_w,
+    targetHeight = target_h,
+    flexCap = flex_cap
+  )
+}
+
+# Given natural dims and a dim_plan with at least one of (width, height,
+# ratio), compute (target_w, target_h). For Mode 3.
+#' @noRd
+resolve_target_dims_with_natural <- function(dim_plan, natural) {
+  has_w <- !is.null(dim_plan$width)
+  has_h <- !is.null(dim_plan$height)
+  has_r <- !is.null(dim_plan$ratio)
+
+  if (has_w && has_h) {
+    return(list(width = dim_plan$width, height = dim_plan$height))
+  }
+  if (has_w && has_r) {
+    return(list(width = dim_plan$width,
+                height = dim_plan$width / dim_plan$ratio))
+  }
+  if (has_h && has_r) {
+    return(list(width = dim_plan$height * dim_plan$ratio,
+                height = dim_plan$height))
+  }
+  if (has_r) {
+    # ratio alone: target_w = natural_w, target_h = natural_w / ratio.
+    return(list(width = natural$width,
+                height = natural$width / dim_plan$ratio))
+  }
+  # Should not reach here — Mode 3 requires at least one trigger.
+  list(width = natural$width, height = natural$height)
+}
+
+# ---- SVG root dimension helpers (post-process for Mode 2) -------------------
+
+# Parse the SVG root tag's width / height attributes. Renderer always
+# emits both, so a missing match is treated as a renderer bug.
+#' @noRd
+parse_svg_root_dims <- function(svg_string) {
+  root <- regmatches(svg_string, regexpr("<svg[^>]*>", svg_string))
+  if (length(root) == 0L) {
+    cli::cli_abort("Could not locate <svg> root in renderer output.")
+  }
+  w <- regmatches(root, regexpr('width="[0-9.]+"', root))
+  h <- regmatches(root, regexpr('height="[0-9.]+"', root))
+  if (length(w) == 0L || length(h) == 0L) {
+    cli::cli_abort("SVG root is missing width / height attributes.")
+  }
+  width <- as.numeric(sub('width="([0-9.]+)"', "\\1", w))
+  height <- as.numeric(sub('height="([0-9.]+)"', "\\1", h))
+  list(width = width, height = height, aspect = width / height)
+}
+
+# Replace the SVG root's width / height attributes (preserving the rest
+# of the tag, including the viewBox so coordinates stay at natural).
+#' @noRd
+set_svg_root_dims <- function(svg_string, width, height) {
+  # The renderer emits the root as a multi-line tag; the regex matches
+  # the whole tag and we surgically replace just the width/height attrs.
+  root_match <- regexpr("<svg[^>]*>", svg_string)
+  if (root_match[1] < 1L) {
+    cli::cli_abort("Could not locate <svg> root in renderer output.")
+  }
+  root <- regmatches(svg_string, root_match)
+  new_root <- root
+  new_root <- sub('width="[0-9.]+"',
+                  sprintf('width="%g"', width), new_root)
+  new_root <- sub('height="[0-9.]+"',
+                  sprintf('height="%g"', height), new_root)
+  regmatches(svg_string, root_match) <- new_root
+  svg_string
+}
+
+# Mode 2: post-process the rendered (natural) SVG so its root width /
+# height match the requested dim while preserving viewBox.
+#' @noRd
+apply_display_scaling <- function(svg_string, dim_plan) {
+  natural <- parse_svg_root_dims(svg_string)
+  if (!is.null(dim_plan$width)) {
+    new_w <- as.numeric(dim_plan$width)
+    new_h <- new_w / natural$aspect
+  } else {
+    new_h <- as.numeric(dim_plan$height)
+    new_w <- new_h * natural$aspect
+  }
+  set_svg_root_dims(svg_string, new_w, new_h)
+}
+
+# ---- V8 invocation ----------------------------------------------------------
+
 #' Generate SVG using V8 JavaScript engine
 #'
 #' @param spec_json JSON string of WebSpec
-#' @param options List of export options (width, height)
+#' @param options List of export options (width, height, targetWidth, etc.)
 #' @return SVG string
 #' @noRd
 generate_svg_v8 <- function(spec_json, options = list()) {
-  # Get path to bundled JS
   js_file <- system.file("js/svg-generator.js", package = "tabviz")
 
   if (js_file == "" || !file.exists(js_file)) {
-    # Fallback for development
     js_file <- file.path(
       system.file(package = "tabviz"),
       "..", "..", "inst", "js", "svg-generator.js"
@@ -285,19 +513,32 @@ generate_svg_v8 <- function(spec_json, options = list()) {
     }
   }
 
-  # Create V8 context
+  # Phase 3 deferred path: caller passed a `.phase3_pending` placeholder
+  # because target dims couldn't be resolved without natural. Resolve now
+  # by calling the natural-dims V8 entry first, then re-issuing options.
+  if (isTRUE(options$.phase3_pending)) {
+    ctx <- V8::v8()
+    ctx$source(js_file)
+    natural_json <- ctx$call("computeNaturalDimensions", spec_json)
+    natural <- jsonlite::fromJSON(natural_json)
+    target <- resolve_target_dims_with_natural(
+      list(width = options$width, height = options$height,
+           ratio = options$ratio),
+      natural
+    )
+    options_json <- jsonlite::toJSON(
+      list(targetWidth = target$width,
+           targetHeight = target$height,
+           flexCap = options$flexCap),
+      auto_unbox = TRUE
+    )
+    return(ctx$call("generateSVG", spec_json, V8::JS(options_json)))
+  }
+
   ctx <- V8::v8()
-
-  # Load the SVG generator
   ctx$source(js_file)
-
-  # Convert options to JSON
   options_json <- jsonlite::toJSON(options, auto_unbox = TRUE)
-
-  # Call generateSVG
-  svg_string <- ctx$call("generateSVG", spec_json, V8::JS(options_json))
-
-  svg_string
+  ctx$call("generateSVG", spec_json, V8::JS(options_json))
 }
 
 #' Extract WebSpec from various input types
@@ -306,21 +547,15 @@ generate_svg_v8 <- function(spec_json, options = list()) {
 #' @return WebSpec object or NULL
 #' @noRd
 extract_webspec <- function(x) {
-  # Direct WebSpec (check S7 class)
   if (S7_inherits(x, WebSpec)) {
     return(x)
   }
 
-  # htmlwidget from forest_plot()
   if (inherits(x, "htmlwidget")) {
-    # Check for attached spec
     spec <- attr(x, "webspec")
     if (!is.null(spec) && S7_inherits(spec, WebSpec)) {
       return(spec)
     }
-
-    # Try to extract from widget data
-    # The x$x contains the serialized payload
     if (!is.null(x$x)) {
       cli_warn(c(
         "Cannot extract WebSpec from htmlwidget",
@@ -340,46 +575,38 @@ extract_webspec <- function(x) {
 #' Save a split forest plot collection to a directory
 #'
 #' Exports all plots in a SplitForest to a directory structure that mirrors
-#' the split hierarchy. Each sub-plot is saved as a separate file.
+#' the split hierarchy. Each sub-plot is saved as a separate file. Each
+#' subview's aspect contract is independent — `width` / `height` / `ratio`
+#' / `flex` apply per-subview.
 #'
 #' @param x A SplitForest object or forest_plot() output with split_by
-#' @param path Output directory path. Directory will be created if it doesn't exist.
+#' @param path Output directory path. Created if it doesn't exist.
 #' @param format Output format: "svg" (default), "pdf", or "png"
-#' @param width Plot width in pixels (default: 800)
-#' @param height Plot height in pixels. If NULL (default), auto-calculated
-#' @param scale Scaling factor for PNG output (default: 2 for retina quality)
-#' @param ... Additional arguments (currently unused)
+#' @param width,height,ratio,flex,scale See `save_plot()`.
+#' @param paginate See `save_plot()`. Per-subview pagination on PDF.
+#' @param ... Reserved for future use.
 #'
 #' @return Invisibly returns a character vector of exported file paths
 #'
 #' @examples
 #' \dontrun{
-#' # Create a split forest
 #' split_result <- data |>
 #'   tabviz(label = "study", columns = list(
 #'     viz_forest(point = "or", lower = "lower", upper = "upper")
 #'   )) |>
 #'   split_table(by = c("sex", "age_group"))
 #'
-#' # Export to directory
 #' save_split_table(split_result, "output/plots")
-#'
-#' # Creates:
-#' # output/plots/Male/Male_Young.svg
-#' # output/plots/Male/Male_Old.svg
-#' # output/plots/Female/Female_Young.svg
-#' # output/plots/Female/Female_Old.svg
 #' }
 #'
 #' @export
 save_split_table <- function(x, path, format = c("svg", "pdf", "png"),
-                               width = 800, height = NULL, scale = 2, ...) {
-  # Match format argument
+                              width = NULL, height = NULL, ratio = NULL,
+                              flex = TRUE, scale = 2,
+                              paginate = NULL, ...) {
   format <- match.arg(format)
 
-  # Extract SplitForest from input
   split_table <- extract_splitforest(x)
-
   if (is.null(split_table)) {
     cli_abort(c(
       "{.arg x} must be a SplitForest object or forest_plot() output with split_by",
@@ -387,33 +614,23 @@ save_split_table <- function(x, path, format = c("svg", "pdf", "png"),
     ))
   }
 
-  # Create output directory if needed
   if (!dir.exists(path)) {
     dir.create(path, recursive = TRUE)
   }
 
-  # Track exported files
   exported_files <- character()
-  # Track paths already used so different keys that sanitize to the same
-  # filename don't silently overwrite each other (e.g. "a/b" and "a-b"
-  # both become "a-b.svg"). Collisions get a short hash suffix and warn.
   seen_paths <- character()
   collisions <- character()
 
- # Export each spec
   for (key in names(split_table@specs)) {
     spec <- split_table@specs[[key]]
 
-    # Build file path from key (hierarchical)
-    # e.g., "Male__Young" -> "Male/Male_Young.svg"
     parts <- strsplit(key, "__", fixed = TRUE)[[1]]
-
-    # Sanitize each part for use in filenames/directories
     safe_parts <- vapply(parts, sanitize_filename, character(1))
 
     if (length(safe_parts) > 1) {
-      # Create subdirectory for parent levels
-      subdir <- file.path(path, paste(safe_parts[-length(safe_parts)], collapse = .Platform$file.sep))
+      subdir <- file.path(path, paste(safe_parts[-length(safe_parts)],
+                                       collapse = .Platform$file.sep))
       if (!dir.exists(subdir)) {
         dir.create(subdir, recursive = TRUE)
       }
@@ -432,8 +649,10 @@ save_split_table <- function(x, path, format = c("svg", "pdf", "png"),
     }
     seen_paths <- c(seen_paths, file_path)
 
-    # Export individual spec
-    save_plot(spec, file_path, width = width, height = height, scale = scale)
+    save_plot(spec, file_path,
+              width = width, height = height, ratio = ratio,
+              flex = flex, scale = scale,
+              paginate = paginate)
     exported_files <- c(exported_files, file_path)
   }
 
@@ -456,14 +675,11 @@ save_split_table <- function(x, path, format = c("svg", "pdf", "png"),
 #' @return SplitForest object or NULL
 #' @noRd
 extract_splitforest <- function(x) {
-  # Direct SplitForest (check S7 class)
   if (S7_inherits(x, SplitForest)) {
     return(x)
   }
 
-  # htmlwidget from forest_plot() with split_by
   if (inherits(x, "htmlwidget")) {
-    # Check for attached splitforest
     sf <- attr(x, "splitforest")
     if (!is.null(sf) && S7_inherits(sf, SplitForest)) {
       return(sf)
@@ -475,31 +691,17 @@ extract_splitforest <- function(x) {
 }
 
 #' Sanitize a string for use as a filename
-#'
-#' Replaces characters that are problematic in filenames across platforms.
-#'
-#' @param x Character string to sanitize
-#' @return Sanitized string safe for use as filename
 #' @noRd
 sanitize_filename <- function(x) {
-  # Replace problematic characters with safe alternatives
-  # These are invalid on Windows: \ / : * ? " < > |
-  # Also handle other problematic chars like newlines, tabs
   x <- gsub("[/\\\\*?\"<>|]", "-", x)
-  x <- gsub(":", " -", x)  # Colon to " -" for readability (e.g., "Risk: High" -> "Risk - High")
+  x <- gsub(":", " -", x)
   x <- gsub("[\r\n\t]", " ", x)
-
-  # Collapse multiple spaces/dashes to single
   x <- gsub("-+", "-", x)
   x <- gsub(" +", " ", x)
-
-  # Trim leading/trailing whitespace and dashes
   x <- gsub("^[- ]+|[- ]+$", "", x)
 
-  # If empty after sanitization, use placeholder
   if (nchar(x) == 0) {
     x <- "unnamed"
   }
-
   x
 }

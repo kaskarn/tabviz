@@ -363,7 +363,9 @@ slice_spec_for_page <- function(spec, page_start, page_end) {
 # Reuses one V8 context across all pages — context creation is ~200 ms,
 # so per-page reuse matters for >5-page documents.
 #' @noRd
-render_paginated_pdf <- function(spec, paginate, breaks, file, width, height) {
+render_paginated_pdf <- function(spec, paginate, breaks, file,
+                                 dim_plan = list(mode = "natural"),
+                                 flex_cap = 2) {
   if (!requireNamespace("V8", quietly = TRUE)) {
     cli::cli_abort(c(
       "Package {.pkg V8} is required for {.fn save_plot}",
@@ -393,10 +395,14 @@ render_paginated_pdf <- function(spec, paginate, breaks, file, width, height) {
   ctx <- V8::v8()
   ctx$source(js_file)
 
-  options_list <- list()
-  if (!is.null(width)) options_list$width <- width
-  if (!is.null(height)) options_list$height <- height
-  options_json <- jsonlite::toJSON(options_list, auto_unbox = TRUE)
+  # Per-page aspect contract: Mode 1 emits at natural; Mode 2 post-processes
+  # the SVG root; Mode 3 sends target dims to V8. For the deferred Mode-3
+  # path (ratio-only or width+ratio etc.) we resolve target dims on the
+  # first page using its natural dims and then reuse for the remaining
+  # pages — page-to-page natural dims vary slightly but the user is
+  # expressing a *target* aspect, not a per-page absolute, so reusing the
+  # first page's resolution keeps pages visually consistent.
+  options_list <- v8_options_for_mode(dim_plan, flex_cap)
 
   web_fonts <- tryCatch(spec@theme@web_fonts, error = function(e) list())
 
@@ -420,7 +426,28 @@ render_paginated_pdf <- function(spec, paginate, breaks, file, width, height) {
       na = "null"
     )
 
+    # Resolve deferred Mode-3 options on first page using its natural dims.
+    if (isTRUE(options_list$.phase3_pending)) {
+      natural_json <- ctx$call("computeNaturalDimensions", spec_json)
+      natural <- jsonlite::fromJSON(natural_json)
+      target <- resolve_target_dims_with_natural(
+        list(width = options_list$width, height = options_list$height,
+             ratio = options_list$ratio),
+        natural
+      )
+      options_list <- list(
+        targetWidth = target$width,
+        targetHeight = target$height,
+        flexCap = options_list$flexCap
+      )
+    }
+    options_json <- jsonlite::toJSON(options_list, auto_unbox = TRUE)
     svg_string <- ctx$call("generateSVG", spec_json, V8::JS(options_json))
+
+    # Mode 2: post-process the SVG root for display scaling per-page.
+    if (identical(dim_plan$mode, "display_scaled")) {
+      svg_string <- apply_display_scaling(svg_string, dim_plan)
+    }
 
     if (length(web_fonts) > 0L) {
       svg_string <- tryCatch(

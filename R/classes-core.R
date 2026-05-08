@@ -306,7 +306,12 @@ WebSpec <- new_class(
     # class_any so NULL ("no pagination") and a PaginateSpec are both valid;
     # constructor-side coercion via `as_paginate_spec()` keeps the value
     # canonical.
-    paginate = new_property(class_any, default = NULL)
+    paginate = new_property(class_any, default = NULL),
+    # Target aspect ratio (width / height) for static export and the
+    # widget's interactive control. `NA_real_` (default) means render at
+    # natural aspect; a positive number triggers Mode-3 relayout via the
+    # lever ladder. Set via `set_aspect_ratio()` (fluent / proxy / interactive).
+    target_aspect = new_property(class_numeric, default = NA_real_)
   ),
   validator = function(self) {
     # Validate optional columns if specified

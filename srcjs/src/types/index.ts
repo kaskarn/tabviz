@@ -467,6 +467,12 @@ export interface ColumnSpec {
    */
   wrap?: boolean | number;
   sortable: boolean;
+  /**
+   * Whether the column absorbs remaining width when the save-time aspect
+   * ratio differs from natural. Defaults via type: `forest` / `viz_bar` /
+   * `viz_boxplot` / `viz_violin` => true, everything else => false.
+   */
+  flex?: boolean;
   options?: ColumnOptions;
   isGroup: false;
   // Style mapping: column names containing per-cell style values
@@ -789,6 +795,12 @@ export interface WebSpec {
   /** Optional pagination config — see `paginate_spec()` on the R side.
    *  Undefined means no pagination (single-page output). */
   paginate?: PaginationConfig;
+  /** Target aspect ratio (`width / height`) for static export and the
+   *  widget's interactive control. `null` / undefined means render at
+   *  natural; a positive number triggers Mode-3 relayout via the lever
+   *  ladder. Set R-side via `set_aspect_ratio()` (fluent / proxy) and,
+   *  later, by an in-widget aspect-ratio slider. */
+  targetAspect?: number | null;
   /** Verbatim deparse of the user's original `tabviz(...)` call, captured
    *  R-side. Shown as the baseline line in the "View source" panel above
    *  the recorded fluent operations. Undefined for fluent-api-only specs. */

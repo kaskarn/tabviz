@@ -28,6 +28,9 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     layout = list(
       plotWidth = "auto"
     ),
+    # Optional save-time / interactive aspect-ratio target. Wire as `null`
+    # for the natural (unset) case so the TS side can branch on presence.
+    targetAspect = if (is.na(spec@target_aspect)) NULL else as.numeric(spec@target_aspect),
     originalCall = if (is.na(spec@original_call)) NULL else spec@original_call
   )
 }
@@ -357,6 +360,7 @@ serialize_column <- function(col) {
     # TRUE -> 1, integer passes through. Frontend reads max-extra-lines.
     wrap = if (is.logical(col@wrap)) as.integer(col@wrap) else as.integer(col@wrap),
     sortable = col@sortable,
+    flex = isTRUE(col@flex),
     isGroup = FALSE
   )
 
