@@ -1530,6 +1530,7 @@
   bind:this={containerRef}
   class="tabviz-container"
   class:auto-fit={autoFit}
+  class:has-aspect-pin={store.targetAspect != null}
   class:has-max-width={maxWidth !== null}
   class:has-max-height={maxHeight !== null}
   class:zoomed={zoom !== 1.0}
@@ -2908,6 +2909,19 @@
     flex: none;
     width: max-content;
     /* Centering is applied via inline margin-left style */
+  }
+
+  /* Aspect-pin override (Phase 7E): when an aspect target is pinned via
+     the slider or set_aspect_ratio(), let the container scroll
+     horizontally rather than auto-fit-shrink. The lever ladder produces
+     a layout sized for the requested aspect; auto-fit's transform-scale
+     would shrink fonts past readability, so we render at natural size
+     and trust the scrollbar. */
+  :global(.tabviz-container.auto-fit.has-aspect-pin) {
+    overflow: auto;
+  }
+  :global(.tabviz-container.auto-fit.has-aspect-pin) .tabviz-scalable {
+    transform: none;
   }
 
   /* No auto-fit: render at zoom level, scrollbars if needed */

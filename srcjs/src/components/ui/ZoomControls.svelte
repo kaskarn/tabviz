@@ -75,6 +75,17 @@
       store.setTargetAspect(null);
       return;
     }
+    // First drag off natural: auto-flip the anchor to "auto" so the
+    // slider produces a visible relayout. Without this, the widget
+    // defaults to anchor="width" (matching save_plot's back-compat
+    // default) and the row-height floor saturates immediately on wide
+    // ratios — slider drags appear inert. Only fires on the
+    // null -> non-null transition so users who explicitly toggled
+    // "Readable rows" off keep their choice on subsequent drags.
+    const isFirstDrag = store.targetAspect == null;
+    if (isFirstDrag && (store.targetAspectAnchor ?? "width") === "width") {
+      store.setTargetAspectAnchor("auto");
+    }
     const ratio = naturalAspect * Math.pow(2, raw);
     store.setTargetAspect(ratio);
   }
