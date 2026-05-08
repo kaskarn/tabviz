@@ -11,7 +11,6 @@
   import BooleanField from "./BooleanField.svelte";
   import NumberField from "./NumberField.svelte";
   import BandingControl from "./BandingControl.svelte";
-  import AspectRatioControl from "./AspectRatioControl.svelte";
   import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
 
   interface Props {
@@ -206,7 +205,5 @@
     />
   </SettingsSection>
 {/if}
-
-<AspectRatioControl {store} />
 
 <BandingControl {store} />

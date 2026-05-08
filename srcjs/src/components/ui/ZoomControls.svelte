@@ -23,6 +23,59 @@
   const displayPercent = $derived(Math.round(actualScale * 100));
   const zoomPercent = $derived(Math.round(zoom * 100));
 
+  // ── Aspect-ratio slider (Phase 4.6) ─────────────────────────────────────
+  // Sizes the layout's *shape*, distinct from zoom (scale of the render)
+  // and max-size (container constraint). Slider lives in log space so equal
+  // drag distances map to equal aspect-ratio multipliers; -1..+1 covers the
+  // default flex cap (natural × [0.5, 2]). A sticky detent at zero snaps
+  // back to natural within ±5% so "render at natural" is unambiguous.
+  const ASPECT_SLIDER_MIN = -1;
+  const ASPECT_SLIDER_MAX = 1;
+  const ASPECT_STICKY_TOLERANCE = 0.05;
+
+  // Natural aspect from layout: back out the lever-laddered rowHeight so
+  // the slider sits at zero whenever the user hasn't pinned a target.
+  const naturalAspect = $derived.by(() => {
+    const layout = store.layout;
+    const spec = store.spec;
+    if (!layout || !spec) return 1;
+    const rowsCount = layout.rowHeights?.length ?? 0;
+    const naturalRowH = spec.theme.spacing.rowHeight;
+    const naturalRowsH = rowsCount * naturalRowH;
+    const chrome = layout.totalHeight - (layout.rowHeight * rowsCount);
+    const naturalH = naturalRowsH + chrome;
+    const naturalW = layout.totalWidth;
+    return naturalH > 0 ? naturalW / naturalH : 1;
+  });
+
+  const aspectSliderValue = $derived.by(() => {
+    const t = store.targetAspect;
+    if (t == null || naturalAspect <= 0) return 0;
+    return Math.log2(t / naturalAspect);
+  });
+
+  const aspectDisplayRatio = $derived.by(() => {
+    const t = store.targetAspect ?? naturalAspect;
+    return Math.round(t * 100) / 100;
+  });
+
+  const aspectIsPinned = $derived(store.targetAspect != null);
+
+  function handleAspectSlider(event: Event) {
+    const raw = parseFloat((event.target as HTMLInputElement).value);
+    if (!Number.isFinite(raw)) return;
+    if (Math.abs(raw) <= ASPECT_STICKY_TOLERANCE) {
+      store.setTargetAspect(null);
+      return;
+    }
+    const ratio = naturalAspect * Math.pow(2, raw);
+    store.setTargetAspect(ratio);
+  }
+
+  function resetAspect() {
+    store.setTargetAspect(null);
+  }
+
   // Max size options
   const MAX_WIDTH_OPTIONS = [
     { value: null, label: 'None' },
@@ -176,7 +229,7 @@
         Fit to width
       </button>
 
-      <!-- Auto-fit checkbox -->
+<!-- Auto-fit checkbox -->
       <label class="checkbox-row">
         <input
           type="checkbox"
@@ -186,6 +239,35 @@
         <span>Auto-fit</span>
         <span class="checkbox-hint">Shrink if too large</span>
       </label>
+
+      <div class="divider"></div>
+
+      <!-- Aspect ratio: reshapes the layout (Phase 4.6 lever ladder).
+           Slider snaps to natural at center; flex columns absorb width
+           changes (capped at 2×), row heights absorb height changes. -->
+      <div class="section-label">Aspect ratio</div>
+      <div class="aspect-row">
+        <input
+          type="range"
+          class="aspect-slider"
+          min={ASPECT_SLIDER_MIN}
+          max={ASPECT_SLIDER_MAX}
+          step="0.01"
+          value={aspectSliderValue}
+          oninput={handleAspectSlider}
+          aria-label="Target aspect ratio"
+        />
+        <span class="aspect-value">{aspectDisplayRatio}:1</span>
+      </div>
+      {#if aspectIsPinned}
+        <button class="action-btn" onclick={resetAspect} title="Render at natural aspect">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          Reset to natural
+        </button>
+      {/if}
 
       <div class="divider"></div>
 
@@ -327,6 +409,58 @@
     border: none;
     border-radius: 50%;
     cursor: pointer;
+  }
+
+  /* Aspect-ratio slider: same visual treatment as the zoom slider so the
+     two read as siblings inside the same dropdown. The center detent for
+     "natural" is implemented in JS (sticky tolerance), not CSS. */
+  .aspect-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+  }
+
+  .aspect-slider {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--tv-border, #e2e8f0);
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  .aspect-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--tv-accent, #2563eb);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  .aspect-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+
+  .aspect-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--tv-accent, #2563eb);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .aspect-value {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--tv-text-muted, #64748b);
+    min-width: 3.5em;
+    text-align: right;
   }
 
   .zoom-value {
