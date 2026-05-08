@@ -45,7 +45,7 @@ trials$row_type <- "data"
 pooled <- trials |>
   group_by(cohort) |>
   summarize(
-    study  = paste0("Pooled — ", cohort),
+    study  = paste0("Pooled — ", dplyr::first(cohort)),
     year   = NA_integer_,
     n      = sum(n),
     hr     = round(exp(mean(log(hr))), 2),
