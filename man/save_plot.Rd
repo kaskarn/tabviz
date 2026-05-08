@@ -11,6 +11,7 @@ save_plot(
   height = NULL,
   ratio = NULL,
   anchor = NULL,
+  auto_wrap = FALSE,
   flex = TRUE,
   scale = 2,
   which = NULL,

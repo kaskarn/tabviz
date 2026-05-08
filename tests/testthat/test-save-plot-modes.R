@@ -119,7 +119,10 @@ test_that("Mode 3 with extreme ratio: legibility floor gives approximate aspect"
 
   tmp <- tempfile(fileext = ".svg")
   on.exit(unlink(tmp), add = TRUE)
-  suppressMessages(save_plot(spec, tmp, ratio = 2))
+  expect_warning(
+    suppressMessages(save_plot(spec, tmp, ratio = 2)),
+    "Aspect target not fully reached"
+  )
 
   d <- parse_svg_dims(tmp)
   # Achieved is between natural and target — the ladder moved toward 2
@@ -260,13 +263,13 @@ test_that("anchor = 'auto' picks 'width' for taller-than-natural ratios", {
 
   tmp <- tempfile(fileext = ".svg")
   on.exit(unlink(tmp), add = TRUE)
-  suppressMessages(save_plot(spec, tmp, ratio = 0.5, anchor = "auto"))
+  # Phase 7B diagnostic fires when chrome can't scale fully (font-
+  # derived heights are pinned).
+  suppressWarnings(suppressMessages(
+    save_plot(spec, tmp, ratio = 0.5, anchor = "auto")))
 
   d <- parse_svg_dims(tmp)
-  # Auto = "width" here -> width stays at natural, height grows. The
-  # chrome doesn't scale fully (font-derived heights are pinned), so the
-  # achieved aspect undershoots target by some single-digit %. Phase 7B's
-  # diagnostic surfaces this; here we just check directionality.
+  # Auto = "width" here -> width stays at natural, height grows.
   expect_equal(d$w, natural$width, tolerance = 1)
   expect_gt(d$h, natural$height)
   expect_lt(d$aspect, natural$aspect)         # moved toward target
@@ -293,6 +296,83 @@ test_that("set_aspect_ratio() round-trips the anchor field", {
   suppressMessages(save_plot(spec_auto, tmp))
   d <- parse_svg_dims(tmp)
   expect_equal(d$aspect, 2, tolerance = 0.05)
+})
+
+# Fixture with long-text content so auto-wrap actually has something to
+# wrap. Short-content fixtures (the default `make_fixture()`) cannot
+# benefit from wrap because the content fits on one line regardless.
+make_long_text_fixture <- function() {
+  df <- data.frame(
+    study = c("CARDIO-1", "DIABETES-2", "CANCER-3", "STROKE-4", "RENAL-5"),
+    description = c(
+      "Effect of long-term once-weekly semaglutide on cardiovascular outcomes in patients with type 2 diabetes",
+      "Comparison of basal insulin combined with GLP-1 receptor agonist vs basal-bolus insulin therapy",
+      "Pembrolizumab plus chemotherapy as first-line therapy for advanced non-small-cell lung cancer",
+      "Endovascular thrombectomy for acute ischemic stroke with large vessel occlusion in elderly patients",
+      "Tolvaptan in autosomal dominant polycystic kidney disease with reduced glomerular filtration rate"
+    ),
+    hr = c(0.85, 0.92, 0.74, 0.88, 0.81),
+    lower = c(0.72, 0.81, 0.62, 0.75, 0.68),
+    upper = c(1.00, 1.04, 0.88, 1.04, 0.96),
+    n = c(3297, 4156, 2854, 1670, 1599)
+  )
+  tabviz(df, label = "study",
+    columns = list(
+      col_text("description", "Description"),
+      col_n("n"),
+      viz_forest(point = "hr", lower = "lower", upper = "upper")
+    ),
+    .spec_only = TRUE)
+}
+
+test_that("auto_wrap=TRUE bumps wrap on text columns at tall aspects (Phase 7D)", {
+  skip_if_no_v8()
+  spec <- make_long_text_fixture()
+
+  tmp <- tempfile(fileext = ".svg")
+  on.exit(unlink(tmp), add = TRUE)
+  # Auto-wrap emits a cli_inform listing bumped columns when it fires.
+  expect_message(
+    suppressWarnings(save_plot(spec, tmp, ratio = 0.3, auto_wrap = TRUE)),
+    "Auto-wrap bumped"
+  )
+
+  d <- parse_svg_dims(tmp)
+  natural <- tabviz_natural_dimensions(spec)
+  # Auto-wrap produces a measurably taller layout than auto_wrap=FALSE.
+  expect_gt(d$h, natural$height)
+})
+
+test_that("auto_wrap=FALSE (default) leaves wrap untouched", {
+  skip_if_no_v8()
+  spec <- make_long_text_fixture()
+
+  tmp <- tempfile(fileext = ".svg")
+  on.exit(unlink(tmp), add = TRUE)
+  # No "Auto-wrap" message when the flag is off.
+  expect_no_message(
+    suppressWarnings(save_plot(spec, tmp, ratio = 0.5)),
+    message = "Auto-wrap"
+  )
+})
+
+test_that("auto_wrap is idempotent (deterministic)", {
+  skip_if_no_v8()
+  spec <- make_long_text_fixture()
+
+  tmp1 <- tempfile(fileext = ".svg")
+  tmp2 <- tempfile(fileext = ".svg")
+  on.exit(unlink(c(tmp1, tmp2)), add = TRUE)
+
+  suppressMessages(suppressWarnings(
+    save_plot(spec, tmp1, ratio = 0.3, auto_wrap = TRUE)))
+  suppressMessages(suppressWarnings(
+    save_plot(spec, tmp2, ratio = 0.3, auto_wrap = TRUE)))
+
+  d1 <- parse_svg_dims(tmp1)
+  d2 <- parse_svg_dims(tmp2)
+  expect_equal(d1$w, d2$w)
+  expect_equal(d1$h, d2$h)
 })
 
 test_that("Column constructors expose flex defaults via ColumnSpec", {

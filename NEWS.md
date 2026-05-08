@@ -1,5 +1,38 @@
 # tabviz (development)
 
+## Aspect-ratio diagnostics + `auto_wrap` heuristic
+
+Two further refinements layered on top of the legibility floor and
+`anchor` work:
+
+* **Achieved-vs-target diagnostic.** When the lever ladder can't reach
+  the requested aspect within 5 % (typically the row-height floor
+  saturating, or chrome under-delivering on tall ratios), `save_plot()`
+  emits a `cli::cli_warn()` reporting the achieved dimensions and a
+  direction-aware hint (e.g. *"Try `anchor = "auto"` to grow width
+  instead of shrinking row height"*). No-op within tolerance.
+
+* **`auto_wrap = TRUE` on `save_plot()` (Phase 7D).** When the target
+  is taller than natural and the rest of the height ladder would
+  inflate `rowHeight` into whitespace, the renderer now optionally
+  bumps `wrap` on text / label columns so the extra vertical space
+  carries content instead of air. A fixed-point loop (≤ 3 iterations,
+  wrap cap of 5 per column) bumps eligible columns by 1 each step,
+  re-measures, and stops when the achieved height meets the target,
+  the cap saturates, or no further growth is observed (short content
+  early-exit). A `cli::cli_inform()` lists the columns whose wrap was
+  bumped + final values, so authors can pin them on the spec for the
+  next render.
+
+  ```r
+  save_plot(p, "tall.svg", ratio = 0.3, auto_wrap = TRUE)
+  # ℹ Auto-wrap bumped 2 columns:
+  # • description -> wrap = 1
+  # • notes       -> wrap = 1
+  ```
+
+  Off by default; opt-in until the heuristic has more flight time.
+
 ## Lever-ladder sophistication: legibility floor + `anchor` argument
 
 Two refinements to the v0.30.0 aspect-ratio dimension contract:

@@ -101,7 +101,7 @@
 #' @export
 save_plot <- function(x, file,
                       width = NULL, height = NULL, ratio = NULL,
-                      anchor = NULL,
+                      anchor = NULL, auto_wrap = FALSE,
                       flex = TRUE, scale = 2,
                       which = NULL, paginate = NULL, ...) {
   if (missing(file) || is.null(file)) {
@@ -131,7 +131,7 @@ save_plot <- function(x, file,
       }
       return(save_plot(x@specs[[picked_key]], file = file,
                        width = width, height = height, ratio = ratio,
-                       anchor = anchor,
+                       anchor = anchor, auto_wrap = auto_wrap,
                        flex = flex, scale = scale,
                        paginate = paginate, ...))
     }
@@ -194,6 +194,8 @@ save_plot <- function(x, file,
   # Anchor precedence: explicit call-site arg > spec field > "width" default.
   anchor_resolved <- resolve_target_aspect_anchor(anchor, spec)
 
+  checkmate::assert_flag(auto_wrap)
+
   # Mode + target dim resolution. Errors on over-spec.
   dim_plan <- resolve_dimension_plan(width, height, ratio_resolved,
                                      anchor_resolved)
@@ -242,13 +244,35 @@ save_plot <- function(x, file,
   # Render. Mode 3 passes target dims to V8 for relayout; Modes 1 / 2 pass
   # nothing (V8 emits at natural).
   v8_options <- v8_options_for_mode(dim_plan, flex_cap)
-  svg_string <- generate_svg_v8(spec_json, v8_options)
+  if (auto_wrap && dim_plan$mode == "aspect_changed") {
+    v8_options$autoWrap <- TRUE
+  }
+  v8_result <- generate_svg_v8(spec_json, v8_options, return_metadata = TRUE)
+  svg_string <- v8_result$svg
+  # Phase 7D: surface auto-wrap bumps so authors can pin them next time.
+  if (length(v8_result$auto_wrap_bumps) > 0L) {
+    bump_lines <- vapply(v8_result$auto_wrap_bumps, function(b) {
+      sprintf("%s -> wrap = %d", b$id, as.integer(b$wrap))
+    }, character(1))
+    cli::cli_inform(c(
+      "i" = "Auto-wrap bumped {length(bump_lines)} column{?s}:",
+      stats::setNames(bump_lines, rep("*", length(bump_lines)))
+    ))
+  }
 
   # Mode 2: post-process the SVG root so it display-scales to the
   # requested width or height. Content coordinates stay at natural via
   # the (untouched) viewBox.
   if (dim_plan$mode == "display_scaled") {
     svg_string <- apply_display_scaling(svg_string, dim_plan)
+  }
+
+  # Phase 7B: surface aspect targets that the lever ladder couldn't reach
+  # (typically the legibility floor saturating, or flex-cap saturation
+  # without anchor="auto" room to grow). One-shot warn per render; no-op
+  # within tolerance.
+  if (dim_plan$mode == "aspect_changed") {
+    diagnose_achieved_aspect(svg_string, dim_plan, spec)
   }
 
   # Embed web fonts (Google Fonts URLs from theme@web_fonts) so the export
@@ -513,6 +537,67 @@ set_svg_root_dims <- function(svg_string, width, height) {
   svg_string
 }
 
+# Phase 7B: emit a one-shot warning when the achieved aspect deviates
+# from target by more than `ASPECT_TOLERANCE`. Computes target dims from
+# the dim_plan + spec's natural dimensions (so call-site knows what was
+# asked) and compares to the rendered SVG's actual root width/height.
+#
+# Common saturation cases:
+#   - Wide ratio with anchor="width" hitting the rowHeight floor.
+#   - Tall ratio under-delivered chrome scale (font-derived chrome
+#     doesn't scale; addressed by anchor="auto" + Phase 7D auto-wrap).
+#   - Mode-3 width+height where neither the flex cap nor the floor
+#     allow the layout to reach both target dims simultaneously.
+#
+# Suggests the appropriate remedy in the warning body based on the
+# observed direction of the miss.
+#' @noRd
+ASPECT_TOLERANCE <- 0.05  # 5 % relative aspect mismatch
+#' @noRd
+diagnose_achieved_aspect <- function(svg_string, dim_plan, spec) {
+  achieved <- tryCatch(parse_svg_root_dims(svg_string),
+                       error = function(e) NULL)
+  if (is.null(achieved)) return(invisible(NULL))
+
+  natural <- tabviz_natural_dimensions(spec)
+  target <- resolve_target_dims_with_natural(dim_plan, natural)
+  target_aspect <- target$width / target$height
+
+  rel_err <- abs(achieved$aspect - target_aspect) / target_aspect
+  if (!is.finite(rel_err) || rel_err <= ASPECT_TOLERANCE) {
+    return(invisible(NULL))
+  }
+
+  # Emit a single cli_warn. The "How to apply:" hints are direction-aware.
+  hint_lines <- character()
+  if (achieved$aspect < target_aspect) {
+    # Achieved is taller than target = layout couldn't shrink height
+    # enough OR couldn't grow width enough.
+    if (!is.null(dim_plan$ratio) && (dim_plan$anchor %||% "width") != "auto") {
+      hint_lines <- c(hint_lines,
+        "i" = "Try {.code anchor = \"auto\"} to grow width instead of shrinking row height.")
+    } else {
+      hint_lines <- c(hint_lines,
+        "i" = "Row-height legibility floor saturated. Reduce row count, increase {.arg height}, or relax {.arg flex}.")
+    }
+  } else {
+    # Achieved is wider than target = layout couldn't grow width enough
+    # or shrink height enough (rarer: usually means flex cap clamped a
+    # non-flex column too aggressively).
+    hint_lines <- c(hint_lines,
+      "i" = "Try a wider {.arg flex} cap (default 2) or pin a non-flex column's {.code width} explicitly.")
+  }
+
+  cli::cli_warn(c(
+    "Aspect target not fully reached.",
+    "i" = sprintf("Asked %.3f:1; rendered %.0f x %.0f (achieved %.3f:1).",
+                  target_aspect, achieved$width, achieved$height,
+                  achieved$aspect),
+    hint_lines
+  ))
+  invisible(NULL)
+}
+
 # Mode 2: post-process the rendered (natural) SVG so its root width /
 # height match the requested dim while preserving viewBox.
 #' @noRd
@@ -534,9 +619,14 @@ apply_display_scaling <- function(svg_string, dim_plan) {
 #'
 #' @param spec_json JSON string of WebSpec
 #' @param options List of export options (width, height, targetWidth, etc.)
-#' @return SVG string
+#' @param return_metadata If TRUE, return a list with `svg` plus the
+#'   side-channel metadata stashed by the renderer (e.g. Phase 7D's
+#'   `lastAutoWrapResult`). Default FALSE preserves the legacy
+#'   string-return interface.
+#' @return SVG string, or a list when `return_metadata = TRUE`.
 #' @noRd
-generate_svg_v8 <- function(spec_json, options = list()) {
+generate_svg_v8 <- function(spec_json, options = list(),
+                            return_metadata = FALSE) {
   js_file <- system.file("js/svg-generator.js", package = "tabviz")
 
   if (js_file == "" || !file.exists(js_file)) {
@@ -568,16 +658,47 @@ generate_svg_v8 <- function(spec_json, options = list()) {
     options_json <- jsonlite::toJSON(
       list(targetWidth = target$width,
            targetHeight = target$height,
-           flexCap = options$flexCap),
+           flexCap = options$flexCap,
+           autoWrap = isTRUE(options$autoWrap)),
       auto_unbox = TRUE
     )
-    return(ctx$call("generateSVG", spec_json, V8::JS(options_json)))
+    svg <- ctx$call("generateSVG", spec_json, V8::JS(options_json))
+    if (return_metadata) {
+      return(list(svg = svg, auto_wrap_bumps = read_auto_wrap_bumps(ctx)))
+    }
+    return(svg)
   }
 
   ctx <- V8::v8()
   ctx$source(js_file)
   options_json <- jsonlite::toJSON(options, auto_unbox = TRUE)
-  ctx$call("generateSVG", spec_json, V8::JS(options_json))
+  svg <- ctx$call("generateSVG", spec_json, V8::JS(options_json))
+  if (return_metadata) {
+    return(list(svg = svg, auto_wrap_bumps = read_auto_wrap_bumps(ctx)))
+  }
+  svg
+}
+
+# Read Phase 7D's `lastAutoWrapResult` global from a V8 context. Returns
+# an empty list when the renderer didn't run an auto-wrap loop (or the
+# global is missing). Result shape: list(list(id=..., wrap=...), ...).
+#' @noRd
+read_auto_wrap_bumps <- function(ctx) {
+  raw <- tryCatch(ctx$get("lastAutoWrapResult"), error = function(e) NULL)
+  if (is.null(raw)) return(list())
+  # V8's `get` returns a data.frame or list-of-lists depending on shape.
+  # Normalize to list(list(id=..., wrap=...)) for consistent handling.
+  if (is.data.frame(raw) && nrow(raw) > 0L) {
+    return(lapply(seq_len(nrow(raw)), function(i) {
+      list(id = as.character(raw$id[i]), wrap = as.integer(raw$wrap[i]))
+    }))
+  }
+  if (is.list(raw) && length(raw) > 0L && !is.null(raw[[1]]$id)) {
+    return(lapply(raw, function(b) {
+      list(id = as.character(b$id), wrap = as.integer(b$wrap))
+    }))
+  }
+  list()
 }
 
 #' Extract WebSpec from various input types

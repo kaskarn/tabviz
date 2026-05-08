@@ -227,6 +227,12 @@ export interface ExportOptions {
   targetWidth?: number;
   targetHeight?: number;
   flexCap?: number;
+  /** Phase 7D: when true, the height ladder kicks off with an auto-wrap
+   *  loop that bumps `wrap` on text/label columns to absorb tall-aspect
+   *  height delta with content rather than whitespace. Caller sees the
+   *  bumped column ids on `globalThis.lastAutoWrapResult` (R reads via
+   *  V8::v8()$get). */
+  autoWrap?: boolean;
 
   // NEW: Complete pre-computed layout from browser (WYSIWYG path)
   precomputedLayout?: PrecomputedLayout;
@@ -4284,7 +4290,109 @@ function generateSVGForAspectTarget(
   let rowHeightScale = 1;
   let chromeScale = 1;
 
-  if (heightDelta > 0) {
+  // Phase 7D: auto-wrap loop. When the target is taller than natural,
+  // try to absorb the height delta by bumping `wrap` on eligible
+  // text/label columns instead of growing rowHeight + chrome. Each
+  // iteration bumps wrap by 1 across all eligible columns and
+  // re-measures via `computeLayout`; loop stops when achieved height
+  // reaches target, the wrap cap (5) saturates, or the iteration cap
+  // (3) is hit. Overshoots are rolled back one step.
+  //
+  // Only fires when:
+  //   - `options.autoWrap === true` (opt-in via save_plot(auto_wrap=TRUE))
+  //   - `heightDelta > naturalLayout.totalHeight * 0.15` (>= 15 %
+  //     headroom, otherwise the wrap dance isn't worth the layout passes)
+  //   - At least one eligible column exists
+  //
+  // When auto-wrap consumes the delta, the chrome / rowHeight scales
+  // stay at 1.0 — the height ladder hands off to wrap entirely.
+  let autoWrapBumpedCols: Array<{ id: string; wrap: number }> = [];
+  let autoWrapConsumedDelta = false;
+  if (options.autoWrap === true && heightDelta > naturalLayout.totalHeight * 0.15) {
+    const WRAP_CAP = 5;
+    const ITER_CAP = 3;
+    // Eligibility: text/label columns with wrap < WRAP_CAP. Author wrap
+    // values are respected as a floor — we only bump UP from whatever
+    // value is set. (A future refinement: distinguish "explicitly pinned"
+    // via a sentinel default — see plan, Phase 7D notes.)
+    const wrapValue = (c: ColumnSpec): number => {
+      const w = c.wrap as unknown;
+      if (typeof w === "number") return w;
+      if (w === true) return 1;
+      return 0;
+    };
+    const eligible = allColumns
+      .filter(c => (c.type === "text" || c.type === "label"))
+      .filter(c => wrapValue(c) < WRAP_CAP);
+
+    if (eligible.length > 0) {
+      // Working clone for the loop. We re-clone after the loop to
+      // preserve the natural baseline for the height-ladder math below
+      // (in case auto-wrap doesn't fully consume the delta and we need
+      // to fall through to chrome / rowHeight scaling).
+      const wrapClone: WebSpec = (typeof structuredClone === "function"
+        ? structuredClone(spec)
+        : JSON.parse(JSON.stringify(spec))) as WebSpec;
+      const wrapMap = new Map(eligible.map(c => [c.id, wrapValue(c)]));
+      let prevHeight = naturalLayout.totalHeight;
+
+      for (let iter = 0; iter < ITER_CAP; iter++) {
+        // Bump every eligible column by 1.
+        let anyBumped = false;
+        for (const id of wrapMap.keys()) {
+          const cur = wrapMap.get(id)!;
+          if (cur < WRAP_CAP) {
+            wrapMap.set(id, cur + 1);
+            anyBumped = true;
+          }
+        }
+        if (!anyBumped) break;
+
+        // Apply to clone + re-measure.
+        for (const col of flattenAllColumns(wrapClone.columns)) {
+          if (wrapMap.has(col.id)) col.wrap = wrapMap.get(col.id)!;
+        }
+        const testLayout = computeLayout(wrapClone, {});
+        const achieved = testLayout.totalHeight;
+
+        // Early exit: bumping wrap had no effect on layout height.
+        // Content is short enough that the wrap allowance doesn't
+        // trigger any actual line wrapping — bumping further is
+        // pointless. Roll back the last bump (it was a no-op) and exit.
+        if (achieved <= prevHeight + 0.5) {
+          for (const id of wrapMap.keys()) {
+            wrapMap.set(id, Math.max(0, wrapMap.get(id)! - 1));
+          }
+          break;
+        }
+
+        if (achieved >= targetHeight) {
+          // Hit or overshot. If overshot significantly, roll back one step.
+          const overshoot = achieved - targetHeight;
+          const undershoot = targetHeight - prevHeight;
+          if (overshoot > undershoot && iter > 0) {
+            // Previous step was closer — restore it.
+            for (const id of wrapMap.keys()) {
+              wrapMap.set(id, Math.max(0, wrapMap.get(id)! - 1));
+            }
+          }
+          autoWrapConsumedDelta = true;
+          break;
+        }
+        prevHeight = achieved;
+      }
+
+      // Record bumps that exceed the author's original wrap value.
+      autoWrapBumpedCols = Array.from(wrapMap.entries())
+        .filter(([id, w]) => {
+          const orig = eligible.find(c => c.id === id);
+          return orig != null && w > wrapValue(orig);
+        })
+        .map(([id, wrap]) => ({ id, wrap }));
+    }
+  }
+
+  if (heightDelta > 0 && !autoWrapConsumedDelta) {
     // Taller: chrome takes a fixed share, rowHeight takes the rest.
     // Without auto-wrap (Phase 7D), this avoids 100 % rowHeight
     // ballooning at very tall aspects.
@@ -4345,6 +4453,16 @@ function generateSVGForAspectTarget(
     }
   }
 
+  // 7D: write bumped wrap values onto eligible columns. Renderer
+  // grows row heights to accommodate; layout naturally lands closer
+  // to targetHeight without scaling chrome / rowHeight.
+  if (autoWrapBumpedCols.length > 0) {
+    const bumpMap = new Map(autoWrapBumpedCols.map(b => [b.id, b.wrap]));
+    for (const col of flattenAllColumns(adjustedSpec.columns)) {
+      if (bumpMap.has(col.id)) col.wrap = bumpMap.get(col.id)!;
+    }
+  }
+
   // 2A + 2C: scale theme spacing tokens. Vertical chrome scales by
   // chromeScale; rowHeight by rowHeightScale.
   if (adjustedSpec.theme?.spacing) {
@@ -4365,6 +4483,12 @@ function generateSVGForAspectTarget(
     }
   }
 
+  // 7D: stash auto-wrap result on globalThis so R-side can retrieve it
+  // and emit a cli_inform listing the bumped columns. Cleared on every
+  // call so consecutive renders don't show stale info.
+  (globalThis as { lastAutoWrapResult?: unknown }).lastAutoWrapResult =
+    autoWrapBumpedCols;
+
   // ----- Render at exact target width -----
   // We've sized every column explicitly; the standard at-least-width
   // path won't kick in (totalTableWidth + flex == targetWidth by
@@ -4375,6 +4499,7 @@ function generateSVGForAspectTarget(
     targetWidth: undefined,
     targetHeight: undefined,
     flexCap: undefined,
+    autoWrap: undefined,
     width: targetWidth,
     height: undefined,
   };
