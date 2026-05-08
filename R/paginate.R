@@ -506,7 +506,7 @@ compute_group_runs <- function(x) {
   x_chr <- ifelse(is.na(x), sentinel, as.character(x))
   r <- rle(x_chr)
   ends <- cumsum(r$lengths)
-  starts <- c(1L, head(ends, -1L) + 1L)
+  starts <- c(1L, utils::head(ends, -1L) + 1L)
   ids <- ifelse(r$values == sentinel, NA_character_, r$values)
   Map(function(s, e, id) list(start = as.integer(s), end = as.integer(e), id = id),
       starts, ends, ids)

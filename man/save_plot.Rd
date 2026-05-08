@@ -38,14 +38,14 @@ and target height = natural width / ratio. Falls back to the spec's
 is \code{NULL}.}
 
 \item{flex}{Flex-column cap for the lever-ladder. \code{TRUE} (default)
-uses cap = 2 (each flex column may grow / shrink within \verb{[0.5×, 2×]}
-of natural). \code{FALSE} disables flex absorption — every column is
+uses cap = 2 (each flex column may grow / shrink within \verb{[0.5x, 2x]}
+of natural). \code{FALSE} disables flex absorption -- every column is
 pinned at natural width regardless of its column-level \code{flex}. A
 numeric \code{N >= 1} sets a custom cap (\code{flex = 1.5} is conservative;
 \code{flex = Inf} removes the cap entirely).}
 
 \item{scale}{Raster fidelity multiplier for PNG output (default 2 for
-retina). Ignored — and warned about — for vector outputs (SVG, PDF),
+retina). Ignored -- and warned about -- for vector outputs (SVG, PDF),
 which are resolution-independent.}
 
 \item{which}{For SplitForest only. \code{NULL} (default) dumps every subview
@@ -79,7 +79,7 @@ derived from natural aspect. PNG raster size honours \code{scale}.}
 \item{\strong{Aspect-changed}}{Both \code{width} and \code{height}, or \code{ratio},
 trigger a relayout: flex-eligible columns (those with
 \code{flex = TRUE}, the default for \verb{viz_*} / forest columns) absorb
-width changes — capped to \verb{[1/flex, flex]} of natural — and row
+width changes -- capped to \verb{[1/flex, flex]} of natural -- and row
 heights scale to absorb the height delta. The output is rendered
 at the new layout, not SVG-stretched.}
 }

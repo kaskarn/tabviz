@@ -177,6 +177,19 @@ PlotLabels <- new_class(
 #' Breakpoints are computed once on the R side and stored on the wire so the
 #' HTML viewer and PDF export agree on where pages start and end.
 #'
+#' @param rows Maximum data rows per page (positive integer).
+#' @param break_on Where forced page breaks may occur: `"split"`, `"group"`,
+#'   or `"none"`.
+#' @param keep_groups If `TRUE`, never break in the middle of a group.
+#' @param orphan_min Minimum rows on a trailing page.
+#' @param repeat_header,repeat_legend,repeat_title Whether the column
+#'   header / legend / title repeat on each page.
+#' @param footnotes_on Where footnotes appear: `"last"` or `"every"`.
+#' @param page_label Page-of-N rendering: `TRUE` / `FALSE`, `"x"`,
+#'   `"x_of_y"`, or a function.
+#' @param oversized_group_policy What to do when a single group exceeds
+#'   `rows`: `"overflow"`, `"warn"`, or `"error"`.
+#'
 #' @export
 PaginateSpec <- new_class(
   "PaginateSpec",

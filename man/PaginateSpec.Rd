@@ -17,6 +17,27 @@ PaginateSpec(
   oversized_group_policy = "overflow"
 )
 }
+\arguments{
+\item{rows}{Maximum data rows per page (positive integer).}
+
+\item{break_on}{Where forced page breaks may occur: \code{"split"}, \code{"group"},
+or \code{"none"}.}
+
+\item{keep_groups}{If \code{TRUE}, never break in the middle of a group.}
+
+\item{orphan_min}{Minimum rows on a trailing page.}
+
+\item{repeat_header, repeat_legend, repeat_title}{Whether the column
+header / legend / title repeat on each page.}
+
+\item{footnotes_on}{Where footnotes appear: \code{"last"} or \code{"every"}.}
+
+\item{page_label}{Page-of-N rendering: \code{TRUE} / \code{FALSE}, \code{"x"},
+\code{"x_of_y"}, or a function.}
+
+\item{oversized_group_policy}{What to do when a single group exceeds
+\code{rows}: \code{"overflow"}, \code{"warn"}, or \code{"error"}.}
+}
 \description{
 Use \code{\link[=paginate_spec]{paginate_spec()}} (or shortcuts \code{paginate = TRUE} / \verb{paginate = <int>}
 / \code{paginate_letter()} / \code{paginate_a4()} / \code{paginate_slide()}) on \code{tabviz()}

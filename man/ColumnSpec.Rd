@@ -59,6 +59,11 @@ track auto-grows to fit.}
 
 \item{sortable}{Whether the column is sortable}
 
+\item{flex}{Whether the column absorbs remaining width when the
+save-time aspect ratio differs from natural. Default per type:
+\code{viz_forest} / \code{viz_bar} / \code{viz_boxplot} / \code{viz_violin} => \code{TRUE},
+every other column => \code{FALSE}. See \code{web_col()} for the resolver.}
+
 \item{options}{Named list of type-specific options}
 
 \item{style_bold}{Column name containing logical values for per-cell bold styling}

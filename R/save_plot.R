@@ -1,4 +1,4 @@
-# Static image export — aspect-ratio-first dimension contract.
+# Static image export -- aspect-ratio-first dimension contract.
 #
 # `save_plot()` operates in one of three modes:
 #
@@ -12,7 +12,7 @@
 #   - **Mode 3 (Aspect-changed)**: both `width` and `height`, or `ratio`,
 #     trigger a layout recompute via the lever ladder. Flex-eligible
 #     columns absorb width changes (capped via `flex`); row heights scale
-#     for the height delta. Never SVG-stretched — always recalculated.
+#     for the height delta. Never SVG-stretched -- always recalculated.
 #
 # For paginated PDFs each page is a separate spec slice, so the aspect
 # contract applies per-page.
@@ -36,7 +36,7 @@
 #'   \item{**Aspect-changed**}{Both `width` and `height`, or `ratio`,
 #'     trigger a relayout: flex-eligible columns (those with
 #'     `flex = TRUE`, the default for `viz_*` / forest columns) absorb
-#'     width changes — capped to `[1/flex, flex]` of natural — and row
+#'     width changes -- capped to `[1/flex, flex]` of natural -- and row
 #'     heights scale to absorb the height delta. The output is rendered
 #'     at the new layout, not SVG-stretched.}
 #' }
@@ -59,13 +59,13 @@
 #'   `target_aspect` (set via `set_aspect_ratio()`) if call-site `ratio`
 #'   is `NULL`.
 #' @param flex Flex-column cap for the lever-ladder. `TRUE` (default)
-#'   uses cap = 2 (each flex column may grow / shrink within `[0.5×, 2×]`
-#'   of natural). `FALSE` disables flex absorption — every column is
+#'   uses cap = 2 (each flex column may grow / shrink within `[0.5x, 2x]`
+#'   of natural). `FALSE` disables flex absorption -- every column is
 #'   pinned at natural width regardless of its column-level `flex`. A
 #'   numeric `N >= 1` sets a custom cap (`flex = 1.5` is conservative;
 #'   `flex = Inf` removes the cap entirely).
 #' @param scale Raster fidelity multiplier for PNG output (default 2 for
-#'   retina). Ignored — and warned about — for vector outputs (SVG, PDF),
+#'   retina). Ignored -- and warned about -- for vector outputs (SVG, PDF),
 #'   which are resolution-independent.
 #' @param which For SplitForest only. `NULL` (default) dumps every subview
 #'   to the directory derived from `file`. A string picks one subview by
@@ -172,7 +172,7 @@ save_plot <- function(x, file,
   }
 
   # `scale` is a raster-fidelity multiplier (PNG-only). PDF / SVG are
-  # vector formats — flag the misuse rather than silently dropping it.
+  # vector formats -- flag the misuse rather than silently dropping it.
   if (ext %in% c("svg", "pdf") && !missing(scale) && !identical(scale, 2)) {
     cli::cli_warn(c(
       "{.arg scale} is ignored for vector output ({.file .{ext}}).",
@@ -325,7 +325,7 @@ resolve_target_aspect <- function(ratio, spec) {
 }
 
 # Resolve mode + target dimensions from (width, height, ratio). Errors
-# when over-specified. Target dims are computed lazily — only Mode 3
+# when over-specified. Target dims are computed lazily -- only Mode 3
 # needs them, and only after natural dims are known.
 #' @noRd
 resolve_dimension_plan <- function(width, height, ratio) {
@@ -339,7 +339,7 @@ resolve_dimension_plan <- function(width, height, ratio) {
   if (has_w && has_h && has_r) {
     cli_abort(c(
       "Over-specified dimensions",
-      "i" = "Cannot pass {.arg width}, {.arg height}, and {.arg ratio} together — pick at most two.",
+      "i" = "Cannot pass {.arg width}, {.arg height}, and {.arg ratio} together -- pick at most two.",
       "i" = "(`ratio` is `width / height`, so any two determine the third.)"
     ))
   }
@@ -430,7 +430,7 @@ resolve_target_dims_with_natural <- function(dim_plan, natural) {
     return(list(width = natural$width,
                 height = natural$width / dim_plan$ratio))
   }
-  # Should not reach here — Mode 3 requires at least one trigger.
+  # Should not reach here -- Mode 3 requires at least one trigger.
   list(width = natural$width, height = natural$height)
 }
 
@@ -576,7 +576,7 @@ extract_webspec <- function(x) {
 #'
 #' Exports all plots in a SplitForest to a directory structure that mirrors
 #' the split hierarchy. Each sub-plot is saved as a separate file. Each
-#' subview's aspect contract is independent — `width` / `height` / `ratio`
+#' subview's aspect contract is independent -- `width` / `height` / `ratio`
 #' / `flex` apply per-subview.
 #'
 #' @param x A SplitForest object or forest_plot() output with split_by

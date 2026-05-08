@@ -20,6 +20,10 @@
 #'   segments word-wrap within the column's content width. The row
 #'   track auto-grows to fit.
 #' @param sortable Whether the column is sortable
+#' @param flex Whether the column absorbs remaining width when the
+#'   save-time aspect ratio differs from natural. Default per type:
+#'   `viz_forest` / `viz_bar` / `viz_boxplot` / `viz_violin` => `TRUE`,
+#'   every other column => `FALSE`. See `web_col()` for the resolver.
 #' @param options Named list of type-specific options
 #' @param style_bold Column name containing logical values for per-cell bold styling
 #' @param style_italic Column name containing logical values for per-cell italic styling

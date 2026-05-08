@@ -36,7 +36,7 @@ Invisibly returns a character vector of exported file paths
 \description{
 Exports all plots in a SplitForest to a directory structure that mirrors
 the split hierarchy. Each sub-plot is saved as a separate file. Each
-subview's aspect contract is independent — \code{width} / \code{height} / \code{ratio}
+subview's aspect contract is independent -- \code{width} / \code{height} / \code{ratio}
 / \code{flex} apply per-subview.
 }
 \examples{
