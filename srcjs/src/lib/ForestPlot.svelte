@@ -662,6 +662,30 @@
   // Returns "max-content" for auto-width columns (sizes to content, won't shrink)
   // Returns "{n}px" for fixed-width columns
   // Uses columnWidthsSnapshot to ensure Svelte 5 reactivity
+  /**
+   * Effective render width for a non-forest viz column (viz_bar /
+   * viz_boxplot / viz_violin). Applies the aspect-ratio scale (Phase
+   * 7E Lever 1B) unless the user has manually resized the column.
+   * Forest columns use their own `layout.forestWidth` path
+   * (lever-laddered already); this helper covers the other viz types
+   * whose scale + SVG overlay both need aspect-aware widths.
+   */
+  function effectiveVizWidth(col: ColumnSpec): number {
+    const dynamicWidth = columnWidthsSnapshot[col.id];
+    const userResized = store.userResizedIds?.has?.(col.id) ?? false;
+    let base: number;
+    if (typeof col.width === "number") {
+      base = col.width;
+    } else if (typeof dynamicWidth === "number") {
+      base = dynamicWidth;
+    } else {
+      base = layout.forestWidth;
+    }
+    const scale = layout.aspectNonForestScale ?? 1;
+    if (userResized || Math.abs(scale - 1) < 1e-6) return base;
+    return base * scale;
+  }
+
   function getColWidth(column: ColumnSpec): string {
     // Phase 7E Lever 1B: scale measured / explicit widths by the aspect
     // factor when an aspect target expanded the layout past flex
@@ -969,10 +993,15 @@
 
   // Update forest column positions and header height when refs change or layout changes
   $effect(() => {
-    // Reference these to re-run when columns/plot resize
+    // Reference these to re-run when columns/plot resize. The aspect-
+    // ratio scale (Phase 7E Lever 1B) widens non-flex columns without
+    // changing layout.forestWidth in some regimes, so it needs its own
+    // dependency hook here — otherwise viz overlays render at the new
+    // width but their `left` positions stay at the old grid offsets.
     const _ = columnWidthsSnapshot;
     const __ = layout.forestWidth;
-    const ___ = headerDepth;
+    const ___ = layout.aspectNonForestScale;
+    const ____ = headerDepth;
 
     // Wait for DOM to update before measuring
     tick().then(() => {
@@ -1024,9 +1053,8 @@
         const opts = col.options?.vizBar;
         if (!opts) continue;
 
-        // Check dynamic width first, then static width, then options, then layout default
-        const dynamicWidth = columnWidthsSnapshot[col.id];
-        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : layout.forestWidth);
+        // Aspect-aware render width (Phase 7E Lever 1B).
+        const vizWidth = effectiveVizWidth(col);
 
         // If axisRange is specified, use it; otherwise compute from all rows
         let domainMin = opts.axisRange?.[0];
@@ -1063,9 +1091,7 @@
         const opts = col.options?.vizBoxplot;
         if (!opts) continue;
 
-        // Check dynamic width first, then static width, then options, then layout default
-        const dynamicWidth = columnWidthsSnapshot[col.id];
-        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : layout.forestWidth);
+        const vizWidth = effectiveVizWidth(col);
 
         let domainMin = opts.axisRange?.[0];
         let domainMax = opts.axisRange?.[1];
@@ -1116,9 +1142,7 @@
         const opts = col.options?.vizViolin;
         if (!opts) continue;
 
-        // Check dynamic width first, then static width, then options, then layout default
-        const dynamicWidth = columnWidthsSnapshot[col.id];
-        const vizWidth = typeof dynamicWidth === "number" ? dynamicWidth : (typeof col.width === "number" ? col.width : layout.forestWidth);
+        const vizWidth = effectiveVizWidth(col);
 
         let domainMin = opts.axisRange?.[0];
         let domainMax = opts.axisRange?.[1];
@@ -2297,8 +2321,7 @@
         <!-- SVG overlays: viz_bar columns -->
         {#each vizColumns.filter(vc => vc.column.type === "viz_bar") as vc (vc.column.id)}
           {@const vizOpts = vc.column.options?.vizBar}
-          {@const dynamicVizWidth = columnWidthsSnapshot[vc.column.id]}
-          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (typeof vc.column.width === "number" ? vc.column.width : layout.forestWidth)}
+          {@const vizWidth = effectiveVizWidth(vc.column)}
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
@@ -2386,8 +2409,7 @@
         <!-- SVG overlays: viz_boxplot columns -->
         {#each vizColumns.filter(vc => vc.column.type === "viz_boxplot") as vc (vc.column.id)}
           {@const vizOpts = vc.column.options?.vizBoxplot}
-          {@const dynamicVizWidth = columnWidthsSnapshot[vc.column.id]}
-          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (typeof vc.column.width === "number" ? vc.column.width : layout.forestWidth)}
+          {@const vizWidth = effectiveVizWidth(vc.column)}
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
@@ -2475,8 +2497,7 @@
         <!-- SVG overlays: viz_violin columns -->
         {#each vizColumns.filter(vc => vc.column.type === "viz_violin") as vc (vc.column.id)}
           {@const vizOpts = vc.column.options?.vizViolin}
-          {@const dynamicVizWidth = columnWidthsSnapshot[vc.column.id]}
-          {@const vizWidth = typeof dynamicVizWidth === "number" ? dynamicVizWidth : (typeof vc.column.width === "number" ? vc.column.width : layout.forestWidth)}
+          {@const vizWidth = effectiveVizWidth(vc.column)}
           {@const vizLeft = forestColumnPositions.get(vc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const sharedScale = vizColumnScales.get(vc.column.id)}
