@@ -832,9 +832,24 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     forestWidth = Math.max(availableForForest, LAYOUT.MIN_FOREST_WIDTH);
   }
 
-  // Total width: expand if content needs more space than requested width
+  // Total width.
+  //
+  // - When `options.width` is set (explicit at-least), totalWidth is
+  //   `max(width, neededWidth)` per the v0.30 contract.
+  // - When `options.width` is unset AND there's no flex column, total
+  //   = neededWidth — no padding-on-the-right with `LAYOUT.DEFAULT_WIDTH`.
+  //   Previously a tabular spec (no forest, no flex) would render at
+  //   the hardcoded 800 px even when content needed only ~400, leaving
+  //   visible empty space on the right.
+  // - When `options.width` is unset AND there's a flex column, the
+  //   default-width hint applies: forest expands to fill 800 (or the
+  //   computed available), so totalWidth ends up ~800. This preserves
+  //   v0.30's "natural forest plot is 800 wide" baseline.
   const neededWidth = padding * 2 + totalTableWidth + forestWidth;
-  const totalWidth = Math.max(options.width ?? baseWidth, neededWidth);
+  const widthFloor = includeForest
+    ? (options.width ?? LAYOUT.DEFAULT_WIDTH)
+    : (options.width ?? neededWidth);
+  const totalWidth = Math.max(widthFloor, neededWidth);
 
   // If totalWidth is larger than neededWidth and forest width wasn't explicitly set,
   // expand forest to fill the remaining space (prevents gap on right side)
