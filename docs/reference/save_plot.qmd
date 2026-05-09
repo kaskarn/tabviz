@@ -111,18 +111,29 @@ save_plot(split_p, "figures/male.svg", which = "Male")
 
 ## `set_aspect_ratio()` {#set_aspect_ratio}
 
-Pin an aspect ratio on the spec itself, so every render — `save_plot()`, the htmlwidget, future interactive controls — picks it up by default.
+Pin an aspect ratio on the spec itself, so every render — `save_plot()`, the htmlwidget, the interactive aspect slider — picks it up by default. Backed by two `WebSpec` fields:
+
+* `target_aspect` — the numeric ratio (`width / height`), or `NA_real_` for natural.
+* `target_aspect_anchor` — `"width"` / `"height"` / `"auto"`, controls how target dims fall out of `ratio`.
+
+`save_plot(..., ratio = X, anchor = ...)` overrides the spec-level values for one render only.
 
 ```r
-set_aspect_ratio(x, ratio)
+set_aspect_ratio(x, ratio, anchor = c("width", "height", "auto"))
 ```
 
 | Argument | Type | Description |
 |---|---|---|
 | `x` | `WebSpec` / htmlwidget / `tabviz_proxy` | The spec or live widget to modify. |
-| `ratio` | `numeric(1)` / `NULL` | Target aspect ratio. `NULL` clears the target — equivalent to "render at natural aspect". |
+| `ratio` | `numeric(1)` / `NULL` | Target aspect ratio (`width / height`). `NULL` clears the target — equivalent to "render at natural aspect". |
+| `anchor` | choice | Resolution rule when only `ratio` is given. `"width"` *(default)*: target width = natural width, target height = natural width / ratio. `"height"`: anchors height instead — wide ratios grow output width rather than shrinking row height. `"auto"`: picks based on whether the requested ratio is wider or taller than the spec's natural aspect — readability-first; recommended. |
 
-`save_plot(..., ratio = X)` overrides the spec-level value for one render only.
+```r
+# 2:1 wide, with row height preserved (output grows wider)
+spec |> set_aspect_ratio(2, anchor = "auto")
+```
+
+The in-widget aspect-ratio slider (in the toolbar's zoom dropdown) drives the same fields live; its "Readable rows" toggle flips the anchor between `"width"` and `"auto"`. See [Interactivity](../guide/interactivity.qmd#aspect-ratio-slider) for the full surface.
 
 ---
 

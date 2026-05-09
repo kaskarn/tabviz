@@ -217,6 +217,22 @@ Exports are WYSIWYG: zooming or panning in the browser changes what `save_plot()
 
 On log-scale forests (`viz_forest(scale = "log")`), gestures that would push the lower bound to zero or below are ignored.
 
+## Aspect-ratio slider {#aspect-ratio-slider}
+
+The toolbar's zoom button (the magnifier icon) opens a dropdown with three sizing controls: zoom level, fit-to-width, and an **aspect-ratio slider** that drives the same lever ladder that `save_plot(ratio = ...)` uses for static export.
+
+| Control | Action |
+|---|---|
+| Zoom slider (50–200 %) | Scales the entire rendered widget. Same as Cmd +/–. |
+| Fit-to-width button | Resets to a scale that matches the container width. |
+| **Aspect-ratio slider** | Reshapes the layout — flex columns absorb width changes (capped at 2× of natural), row heights absorb height changes. Sticky detent at the spec's natural aspect; drag-and-release returns to natural cleanly. |
+| **Readable rows toggle** | Below the aspect slider. When **on**, the slider uses `anchor = "auto"`: wide ratios grow output width and preserve row legibility, scaling content to fit the canvas. When **off**, behaves like `anchor = "width"`: narrows row heights to fit a strict aspect within the canvas. The toggle auto-flips on first slider drag so interactive use is "ambitious" by default. |
+| Max-width / max-height selects | Container constraints, independent of the aspect slider. |
+
+Behind the scenes, the slider mutates the spec's `target_aspect` and `target_aspect_anchor` fields. The "View source" panel emits the corresponding `set_aspect_ratio(N, anchor = "auto")` call so any slider position round-trips into reproducible R code. The settings panel's **Spacing** tab also shows a banner and live row-height value when the slider is active (see [Themes — live spacing values](themes.qmd#aspect-aware-spacing)).
+
+For the static-export side of the same machinery, see [`save_plot(..., ratio = , anchor = )`](../reference/save_plot.qmd#save_plot) and [`set_aspect_ratio()`](../reference/save_plot.qmd#set_aspect_ratio).
+
 ## Row Selection
 
 Selected rows are tracked internally and persist during sorting and filtering.

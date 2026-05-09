@@ -795,6 +795,16 @@ export interface WebSpec {
   /** Optional pagination config — see `paginate_spec()` on the R side.
    *  Undefined means no pagination (single-page output). */
   paginate?: PaginationConfig;
+  /** Initial interactive state set R-side (sort / filters / hidden
+   *  columns) and applied once on widget mount. The R-side serializer
+   *  (`R/utils-serialize.R::serialize_initial_state`) writes this; the
+   *  htmlwidgets binding consumes it in
+   *  `srcjs/src/index.svelte.ts::renderValue` to seed the store. */
+  initialState?: {
+    sort?: { column: string; direction: "asc" | "desc" | "none" };
+    filters?: Array<{ field: string; operator: string; value: unknown }>;
+    hiddenColumns?: string[];
+  };
   /** Target aspect ratio (`width / height`) for static export and the
    *  widget's interactive control. `null` / undefined means render at
    *  natural; a positive number triggers Mode-3 relayout via the lever

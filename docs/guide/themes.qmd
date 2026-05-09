@@ -379,6 +379,16 @@ Re-resolution preserves explicit overrides on subsequent edits — `set_inputs(p
 
 `set_spacing()` overrides any of these per-token; the rest fall back to the active density preset. Read [Density](../concepts/styling-cascade.qmd) for how spacing tokens flow into the renderer.
 
+### Aspect-aware spacing {#aspect-aware-spacing}
+
+When the in-widget [aspect-ratio slider](interactivity.qmd#aspect-ratio-slider) is engaged (or `set_aspect_ratio()` is pinned on the spec), the lever ladder scales `row_height` to absorb the height delta. The Spacing settings tab reflects this live:
+
+- A small banner at the top of the tab explains: *"Row height is currently driven by the aspect-ratio slider. Editing it will clear the aspect target."*
+- The `Row height` field reads its **effective** value (post-lever-ladder) rather than the raw spec value, and is labelled `Row height (aspect)` to flag its provenance.
+- Editing the field clears `target_aspect` (so your typed value pins, the slider returns to natural). View-source emits the new `set_spacing(row_height = ...)` call cleanly, with no overlap with `set_aspect_ratio()`.
+
+Other spacing tokens (`header_height`, `axis_gap`, `header_gap`, `footer_gap`, etc.) keep their authored values in the live widget, so the slider's effect is concentrated on `row_height`. Static export via `save_plot()` honours the full lever ladder including chrome scaling — when achieved aspect deviates from target by > 5 %, a `cli::cli_warn()` surfaces the residual.
+
 ### Typography roles
 
 A theme exposes eight named text roles:

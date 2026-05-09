@@ -41,13 +41,27 @@ save_plot(p, "export-examples/forest_example.svg", width = 700)
 
 ## `save_plot()` Arguments
 
+`save_plot()` operates in three sizing modes — see the [reference](../reference/save_plot.qmd#save_plot) for the full table. The short version: which args you pass determines the mode, not the values.
+
 | Argument | Default | Purpose |
 |---|---|---|
 | `x` | required | A `WebSpec`, htmlwidget, or `SplitForest` |
 | `file` | required | Output path; format inferred from extension (`.svg`, `.png`, `.pdf`) |
-| `width` | `800` | Output width in pixels |
-| `height` | `NULL` | Output height (auto-derived from content if `NULL`) |
-| `scale` | `2` | Pixel-density multiplier for raster output |
+| `width` | `NULL` | Display width in pixels. `NULL` preserves natural; with `height` or `ratio` triggers relayout. |
+| `height` | `NULL` | Display height in pixels. Same semantics as `width`. |
+| `ratio` | `NULL` | Target aspect ratio (`width / height`). Mode-3 trigger. |
+| `anchor` | `NULL` | When only `ratio` is given, picks `"width"` / `"height"` / `"auto"` for how dims fall out of it. |
+| `flex` | `TRUE` | Cap on flex-column absorption (`TRUE` = 2× / 0.5×; `FALSE` = no flex; numeric = custom). |
+| `auto_wrap` | `FALSE` | Bump `wrap` on long-text columns to fill tall-aspect height with content. |
+| `scale` | `2` | Raster fidelity multiplier for PNG (warns on `.svg` / `.pdf`). |
+
+**Natural mode** (no `width` / `height` / `ratio`) renders at the spec's intrinsic dimensions — exactly what `tabviz_natural_dimensions()` reports:
+
+```{r}
+#| eval: false
+# Natural — let the spec decide its own shape
+save_plot(p, "natural.svg")
+```
 
 ## Format Comparison
 

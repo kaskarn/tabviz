@@ -1,5 +1,16 @@
 # tabviz (development)
 
+## Bug fixes
+
+* **Tabular specs (no flex column) report content-width as natural.**
+  Previously `tabviz_natural_dimensions()` and `save_plot()` rendered
+  tabular specs at a forced 800 px wide regardless of content,
+  leaving a right-edge gap. The 800-pixel floor now only applies
+  when a flex column (e.g. `viz_forest()`) is present and can absorb
+  the slack. Pure-tabular specs render at their intrinsic content
+  width — no gap, and `fig.width = dims$width` chunk sizing now
+  reflects actual content. Forest specs are unchanged.
+
 ## Live-widget aspect expansion (Phase 7E)
 
 When the in-widget aspect-ratio slider drives a target wider than the

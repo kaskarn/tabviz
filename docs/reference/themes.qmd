@@ -191,6 +191,14 @@ set_spacing(
 
 All values are numeric (pixels).
 
+::: {.callout-note}
+## Live aspect-driven `row_height` in the widget
+
+When the in-widget [aspect-ratio slider](../guide/interactivity.qmd#aspect-ratio-slider) is engaged, the lever ladder scales `row_height` to absorb the height delta. The Spacing settings tab reads the **effective** (post-lever-ladder) value, banner-flagged "Row height (aspect)". Editing the field clears the aspect target so the user-typed value pins. See [Themes guide — aspect-aware spacing](../guide/themes.qmd#aspect-aware-spacing).
+
+Other tokens (`header_height`, gaps, paddings) keep the value `set_spacing()` writes; only `row_height` is live-driven by the slider.
+:::
+
 ### `set_theme_field()` {#set_theme_field}
 
 Generic deep setter. Walks the theme tree by `path` and replaces the leaf

@@ -671,13 +671,19 @@
    * whose scale + SVG overlay both need aspect-aware widths.
    */
   function effectiveVizWidth(col: ColumnSpec): number {
+    // Priority: user-resized dynamic width (drag) > author's explicit
+    // `col.width` > `layout.forestWidth` fallback. Matches the
+    // gridTemplateColumns derivation so scale + grid-template + d3
+    // ranges agree. (Earlier draft put `col.width` first, which could
+    // ignore a user resize on a column that had an authored width —
+    // unified now.)
     const dynamicWidth = columnWidthsSnapshot[col.id];
     const userResized = store.userResizedIds?.has?.(col.id) ?? false;
     let base: number;
-    if (typeof col.width === "number") {
-      base = col.width;
-    } else if (typeof dynamicWidth === "number") {
+    if (typeof dynamicWidth === "number") {
       base = dynamicWidth;
+    } else if (typeof col.width === "number") {
+      base = col.width;
     } else {
       base = layout.forestWidth;
     }
@@ -893,22 +899,11 @@
             vizWidth = layout.forestWidth;
           }
         } else {
-          // Other viz columns: keep the original priority order
-          // (dynamic > col.width > layout default).
-          if (typeof dynamicWidth === "number") {
-            vizWidth = dynamicWidth;
-          } else if (typeof col.width === "number") {
-            vizWidth = col.width;
-          } else {
-            vizWidth = layout.forestWidth;
-          }
-          // Phase 7E Lever 1B: non-forest viz columns also scale with
-          // aspect (they're not flex). User-resized columns pin.
-          const scale = layout.aspectNonForestScale ?? 1;
-          const userResized = store.userResizedIds?.has?.(col.id) ?? false;
-          if (!userResized && Math.abs(scale - 1) > 1e-6) {
-            vizWidth = vizWidth * scale;
-          }
+          // Non-forest viz columns: route through the shared
+          // `effectiveVizWidth()` helper so the grid template, d3
+          // scale ranges, and SVG overlay viewBoxes all agree on the
+          // post-aspect-scale width.
+          vizWidth = effectiveVizWidth(col);
         }
         parts.push(`${vizWidth}px`);
       } else {

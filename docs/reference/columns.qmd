@@ -9,7 +9,18 @@ library(tabviz)
 
 Reference for every column-defining helper: data columns (`col_*()`), per-row visualization columns (`viz_*()`), the low-level `web_col()` constructor, column groups, and the per-effect helpers used by multi-effect viz columns.
 
-All `col_*()` helpers require `field` (the data column name) as the first positional argument. They also accept the cell-styling arguments documented in [Cell-level styling](#cell-level-styling) below: `bold`, `italic`, `color`, `bg`, `badge`, `icon`, `emphasis`, `muted`, `accent`, `fill`, plus `align`, `header_align`, `wrap`, `sortable`, `na_text`, `tooltip`, and `formatter`.
+All `col_*()` helpers require `field` (the data column name) as the first positional argument. They also accept the cell-styling arguments documented in [Cell-level styling](#cell-level-styling) below: `bold`, `italic`, `color`, `bg`, `badge`, `icon`, `emphasis`, `muted`, `accent`, `fill`, plus `align`, `header_align`, `wrap`, `sortable`, `na_text`, `tooltip`, `formatter`, and `flex`.
+
+::: {.callout-note}
+## `flex` — opt-in to aspect-ratio absorption
+
+Each column carries a `flex` flag that tells `save_plot()`'s lever ladder *whether the column may grow / shrink to absorb a width delta when an aspect target is pinned*. Defaults:
+
+- `viz_forest()`, `viz_bar()`, `viz_boxplot()`, `viz_violin()` → `flex = TRUE`
+- everything else → `flex = FALSE`
+
+Pass `flex = TRUE` on a non-viz column to opt in (it will scale with the forest plot under wide aspects), or `flex = FALSE` on a viz column to pin its width and force the height ladder to absorb the delta. The save-time `save_plot(flex = N)` arg caps how far each flex column may stretch — see [`save_plot()`](save_plot.qmd#save_plot).
+:::
 
 ::: {.callout-note}
 ## `tooltip` and `formatter` cell args
