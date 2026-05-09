@@ -360,16 +360,14 @@ export function createForestStore() {
     const firstForest = forestColumns[0]?.column;
     const hasForest = forestColumns.length > 0;
 
-    // Use override if set, otherwise calculate default (25% of width, min 200px)
-    // Forest column width precedence (v0.25.0): runtime drag override
-    // > theme.layout.plotWidth (numeric) > auto (25% of width, min 200).
-    // Honouring the theme value lets the Layout settings field actually
-    // drive the live render — historically only SVG export read it.
-    const themePlotWidth = spec.theme.layout?.plotWidth;
-    const forestWidth = hasForest
-      ? (plotWidthOverride
-        ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
-      : 0;
+    // Read forestWidth from `layout` so the aspect-ratio lever ladder
+    // (Phase 7E Lever 1A) propagates here. Pre-Phase-7E this function
+    // computed forestWidth independently from canvas defaults — the
+    // result was that circles + CI lines kept the OLD forest range
+    // when the slider moved, giving a "squished into left half"
+    // artifact that resizing a column would shake loose. Layout is
+    // the single source of truth now.
+    const forestWidth = hasForest ? layout.forestWidth : 0;
 
     // Get scale and nullValue from first forest column options
     const forestOptions = firstForest?.options?.forest;
@@ -426,17 +424,12 @@ export function createForestStore() {
     const isLog = (forestOptions?.scale ?? "linear") === "log";
     const { plotRegion } = axisComputation;
 
-    // Use override if set, otherwise calculate default (25% of width, min 200px)
+    // Read forestWidth from `layout` so the aspect-ratio lever ladder
+    // (Phase 7E) flows into xScale's range. Same fix as axisComputation
+    // above — keeps circles, CI lines, and axis ticks in sync with the
+    // current forest column width when the aspect slider moves.
     const hasForest = forestColumns.length > 0;
-    // Forest column width precedence (v0.25.0): runtime drag override
-    // > theme.layout.plotWidth (numeric) > auto (25% of width, min 200).
-    // Honouring the theme value lets the Layout settings field actually
-    // drive the live render — historically only SVG export read it.
-    const themePlotWidth = spec.theme.layout?.plotWidth;
-    const forestWidth = hasForest
-      ? (plotWidthOverride
-        ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
-      : 0;
+    const forestWidth = hasForest ? layout.forestWidth : 0;
 
     // Add padding to range so edge labels don't get clipped
     const rangeStart = VIZ_MARGIN;

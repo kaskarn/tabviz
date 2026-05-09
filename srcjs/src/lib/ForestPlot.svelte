@@ -1168,13 +1168,27 @@
     for (const fc of forestColumns) {
       const col = fc.column;
       const forestOpts = col.options?.forest;
-      // Check dynamic width first, then static width, then type-specific options, then layout default
+      // Forest columns are layout-driven (lever ladder + theme defaults),
+      // not content-measured — same priority order as `gridTemplateColumns`
+      // and `getColWidth` (Phase 7E forest fix). Without this, the d3
+      // scale's range stayed stuck at the header-min auto-width
+      // (`columnWidthsSnapshot[col.id]`) when the aspect slider moved,
+      // squishing circles + CI lines into the left half of a wider
+      // viewBox. Manually resizing a column "fixed" it because that
+      // mutated columnWidths and triggered a re-derivation that
+      // happened to refresh the scale range too.
+      const userResized = store.userResizedIds?.has?.(col.id) ?? false;
       const dynamicWidth = columnWidthsSnapshot[col.id];
-      const colWidth = typeof dynamicWidth === "number"
-        ? dynamicWidth
-        : typeof col.width === "number"
-        ? col.width
-        : (forestOpts?.width ?? layout.forestWidth);
+      let colWidth: number;
+      if (typeof col.width === "number") {
+        colWidth = col.width;
+      } else if (typeof forestOpts?.width === "number") {
+        colWidth = forestOpts.width;
+      } else if (userResized && typeof dynamicWidth === "number") {
+        colWidth = dynamicWidth;
+      } else {
+        colWidth = layout.forestWidth;
+      }
       const isLog = forestOpts?.scale === "log";
 
       // Use the global domain from axisComputation, then let any per-column
@@ -2092,7 +2106,14 @@
         {#each forestColumns as fc (fc.column.id)}
           {@const forestOpts = fc.column.options?.forest}
           {@const dynamicForestWidth = columnWidthsSnapshot[fc.column.id]}
-          {@const forestWidth = typeof dynamicForestWidth === "number" ? dynamicForestWidth : (typeof fc.column.width === "number" ? fc.column.width : (forestOpts?.width ?? layout.forestWidth))}
+          {@const forestUserResized = store.userResizedIds?.has?.(fc.column.id) ?? false}
+          {@const forestWidth = typeof fc.column.width === "number"
+            ? fc.column.width
+            : (typeof forestOpts?.width === "number"
+              ? forestOpts.width
+              : (forestUserResized && typeof dynamicForestWidth === "number"
+                ? dynamicForestWidth
+                : layout.forestWidth))}
           {@const forestLeft = forestColumnPositions.get(fc.column.id) ?? 0}
           {@const axisGap = theme?.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}
           {@const nullValue = forestOpts?.nullValue ?? layout.nullValue}
