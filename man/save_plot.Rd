@@ -39,6 +39,23 @@ and target height = natural width / ratio. Falls back to the spec's
 \code{target_aspect} (set via \code{set_aspect_ratio()}) if call-site \code{ratio}
 is \code{NULL}.}
 
+\item{anchor}{How target dims are resolved when only \code{ratio} is given.
+\code{"width"} \emph{(default)} preserves v0.30 behaviour: target width =
+natural width, target height = natural width / ratio. \code{"height"}
+anchors height instead (target width = natural height x ratio) so
+wide ratios grow output width rather than shrinking row height.
+\code{"auto"} picks based on whether the requested ratio is wider or
+taller than the spec's natural aspect — readability-first;
+recommended. \code{NULL} (default) defers to the spec's
+\code{target_aspect_anchor} field, then falls back to \code{"width"}.}
+
+\item{auto_wrap}{When \code{TRUE} and the requested aspect is taller than
+natural, the height ladder runs an auto-wrap loop that bumps \code{wrap}
+on text / label columns to absorb the height delta with content
+instead of inflated row height. Capped at 3 iterations and \code{wrap = 5}
+per column; emits a \code{cli_inform} listing the columns whose wrap was
+bumped. Default \code{FALSE} (opt-in).}
+
 \item{flex}{Flex-column cap for the lever-ladder. \code{TRUE} (default)
 uses cap = 2 (each flex column may grow / shrink within \verb{[0.5x, 2x]}
 of natural). \code{FALSE} disables flex absorption -- every column is

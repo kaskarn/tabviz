@@ -25,7 +25,7 @@ save_split_table(
 
 \item{format}{Output format: "svg" (default), "pdf", or "png"}
 
-\item{width, height, ratio, flex, scale}{See \code{save_plot()}.}
+\item{width, height, ratio, anchor, flex, scale}{See \code{save_plot()}.}
 
 \item{paginate}{See \code{save_plot()}. Per-subview pagination on PDF.}
 

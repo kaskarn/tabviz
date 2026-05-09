@@ -58,6 +58,21 @@
 #'   and target height = natural width / ratio. Falls back to the spec's
 #'   `target_aspect` (set via `set_aspect_ratio()`) if call-site `ratio`
 #'   is `NULL`.
+#' @param anchor How target dims are resolved when only `ratio` is given.
+#'   `"width"` *(default)* preserves v0.30 behaviour: target width =
+#'   natural width, target height = natural width / ratio. `"height"`
+#'   anchors height instead (target width = natural height x ratio) so
+#'   wide ratios grow output width rather than shrinking row height.
+#'   `"auto"` picks based on whether the requested ratio is wider or
+#'   taller than the spec's natural aspect — readability-first;
+#'   recommended. `NULL` (default) defers to the spec's
+#'   `target_aspect_anchor` field, then falls back to `"width"`.
+#' @param auto_wrap When `TRUE` and the requested aspect is taller than
+#'   natural, the height ladder runs an auto-wrap loop that bumps `wrap`
+#'   on text / label columns to absorb the height delta with content
+#'   instead of inflated row height. Capped at 3 iterations and `wrap = 5`
+#'   per column; emits a `cli_inform` listing the columns whose wrap was
+#'   bumped. Default `FALSE` (opt-in).
 #' @param flex Flex-column cap for the lever-ladder. `TRUE` (default)
 #'   uses cap = 2 (each flex column may grow / shrink within `[0.5x, 2x]`
 #'   of natural). `FALSE` disables flex absorption -- every column is
@@ -742,7 +757,7 @@ extract_webspec <- function(x) {
 #' @param x A SplitForest object or forest_plot() output with split_by
 #' @param path Output directory path. Created if it doesn't exist.
 #' @param format Output format: "svg" (default), "pdf", or "png"
-#' @param width,height,ratio,flex,scale See `save_plot()`.
+#' @param width,height,ratio,anchor,flex,scale See `save_plot()`.
 #' @param paginate See `save_plot()`. Per-subview pagination on PDF.
 #' @param ... Reserved for future use.
 #'
