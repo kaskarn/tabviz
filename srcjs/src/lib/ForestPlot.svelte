@@ -2950,15 +2950,14 @@
     /* Centering is applied via inline margin-left style */
   }
 
-  /* Aspect-pin override (Phase 7E): when an aspect target is pinned via
-     the slider or set_aspect_ratio(), the lever ladder produces a
-     wider/taller layout than canvas. Auto-fit's transform-scale shrinks
-     it to fit; the min-zoom floor (0.7 when pinned, see store actualScale)
-     prevents shrinking past readability. When the floor saturates,
-     content overflows the canvas and we trust the scrollbar. */
-  :global(.tabviz-container.auto-fit.has-aspect-pin) {
-    overflow: auto;
-  }
+  /* Aspect-pin (Phase 7E): the lever ladder produces a wider/taller
+     layout than canvas when an aspect target is pinned. Under auto-fit,
+     the store's actualScale shrinks-to-fit (using both width and
+     height) so the entire layout stays in-bounds — no scrollbar, the
+     content just gets smaller. Without auto-fit, the container's
+     `:not(.auto-fit)` rule already provides overflow:auto for manual
+     zoom-and-scroll. So we don't need a dedicated has-aspect-pin
+     override here anymore. */
 
   /* No auto-fit: render at zoom level, scrollbars if needed */
   :global(.tabviz-container:not(.auto-fit)) {

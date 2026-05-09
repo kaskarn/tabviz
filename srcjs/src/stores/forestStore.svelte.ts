@@ -1231,32 +1231,52 @@ export function createForestStore() {
     return totalColumnWidth + forestWidth + padding;
   });
 
-  // Derived: fit scale - how much we'd need to shrink to fit container
-  // Only applies when autoFit is true; value < 1 means content is being clamped
+  // Derived: fit scale - how much we'd need to shrink to fit container.
+  // When an aspect target is pinned (Phase 7E), considers BOTH width
+  // *and* height — wide ratios grow width past canvas, tall ratios grow
+  // height past canvas; either should shrink-to-fit so the content
+  // stays in-bounds without scrolling. Without an aspect target, only
+  // width-fit applies (preserves the v0.30 behaviour that vertical
+  // overflow scrolls naturally).
   const fitScale = $derived.by((): number => {
-    // Don't scale until we have measurements
     if (containerWidth <= 0 || scalableNaturalWidth <= 0) return 1;
-
-    // Calculate scaled content width
-    // Note: padding is handled by container CSS, not in this calculation.
-    // containerWidth from ResizeObserver is the content box (excludes padding).
-    // scalableNaturalWidth is the natural width of the scalable content.
     const contentWidth = scalableNaturalWidth * zoom;
-
-    // Only shrink if content exceeds container (never enlarge)
-    return contentWidth > containerWidth
+    const widthFit = contentWidth > containerWidth
       ? containerWidth / contentWidth
       : 1;
+
+    // Aspect-pin path: also fit height. ResizeObserver's
+    // scalableNaturalHeight tracks the rendered grid height; container
+    // height is the canvas. Take the tighter of the two so wide AND
+    // tall aspect targets both stay in-bounds.
+    if (targetAspect != null && containerHeight > 0 && scalableNaturalHeight > 0) {
+      const contentHeight = scalableNaturalHeight * zoom;
+      const heightFit = contentHeight > containerHeight
+        ? containerHeight / contentHeight
+        : 1;
+      return Math.min(widthFit, heightFit);
+    }
+
+    return widthFit;
   });
 
   // Derived: actual rendered scale = zoom × fitScale (when autoFit) or just zoom.
-  // Phase 7E: when an aspect target is pinned, the min-zoom floor lifts
-  // from 0.5 to 0.7 so auto-fit can't shrink content below readability.
-  // Below the floor, the container overflows horizontally instead of
-  // shrinking further — the user can scroll to see content at readable
-  // font size, matching the "font size relative to width decreases"
-  // intent of wide aspects.
-  const minZoomFloor = $derived(targetAspect != null ? 0.7 : 0.5);
+  //
+  // Phase 7E: when an aspect target is pinned AND auto-fit is on, drop
+  // the min-zoom floor so content seamlessly resizes to fit the canvas
+  // — that's the core promise of auto-fit. The user's "font size
+  // relative to width decreases" intent is met by content shrinking;
+  // shrinking below readability is the price of an aspect target the
+  // canvas can't honour at native size, and is a deliberate user
+  // choice. The hard floor of 0.05 prevents complete invisibility on
+  // pathological extremes.
+  //
+  // Without aspect pin, the original 0.5 floor stays — protects
+  // unintentional shrinkage under tight container constraints (e.g.
+  // mobile RStudio viewer).
+  const minZoomFloor = $derived(
+    targetAspect != null ? (autoFit ? 0.05 : 0.5) : 0.5
+  );
   const actualScale = $derived(
     autoFit ? Math.max(minZoomFloor, zoom * fitScale) : Math.max(minZoomFloor, Math.min(2.0, zoom))
   );
