@@ -35,17 +35,18 @@
 
   // Natural aspect from layout: back out the lever-laddered rowHeight so
   // the slider sits at zero whenever the user hasn't pinned a target.
+  // Phase 7E hardening: prefer the layout's stable pre-mutation
+  // naturalAspect over deriving here. The store-side value uses
+  // pre-lever-ladder canvas + natural rowHeight + chrome; deriving
+  // from `layout.totalWidth` after mutation drifts the baseline and
+  // the slider position <-> ratio mapping changes on every drag —
+  // which is what made the slider feel "wild".
   const naturalAspect = $derived.by(() => {
-    const layout = store.layout;
-    const spec = store.spec;
-    if (!layout || !spec) return 1;
-    const rowsCount = layout.rowHeights?.length ?? 0;
-    const naturalRowH = spec.theme.spacing.rowHeight;
-    const naturalRowsH = rowsCount * naturalRowH;
-    const chrome = layout.totalHeight - (layout.rowHeight * rowsCount);
-    const naturalH = naturalRowsH + chrome;
-    const naturalW = layout.totalWidth;
-    return naturalH > 0 ? naturalW / naturalH : 1;
+    const fromLayout = store.layout?.naturalAspect;
+    if (typeof fromLayout === "number" && fromLayout > 0 && Number.isFinite(fromLayout)) {
+      return fromLayout;
+    }
+    return 1;
   });
 
   const aspectSliderValue = $derived.by(() => {

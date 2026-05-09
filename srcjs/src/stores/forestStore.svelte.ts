@@ -1038,8 +1038,16 @@ export function createForestStore() {
         // which case `layoutWidth` carries the expansion through to the
         // grid render, and the container's auto-fit / scroll handles
         // the visual fit.
+        //
+        // Hard cap: layoutWidth never exceeds 8x canvas. The TARGET_
+        // ASPECT_MAX = 10 setter clamp keeps `targetAspect` finite, but
+        // even ratio = 10 on a tall spec could blow up rendered DOM
+        // size; 8x canvas is the practical visible / scrollable cap
+        // (auto-fit's min-zoom 0.7 means anything past ~1.4x canvas
+        // already overflows + scrolls).
+        const MAX_LAYOUT_WIDTH = approxNaturalWidth * 8;
         targetHeight = approxNaturalHeight;
-        targetWidth = approxNaturalHeight * targetAspect;
+        targetWidth = Math.min(approxNaturalHeight * targetAspect, MAX_LAYOUT_WIDTH);
         if (targetWidth > approxNaturalWidth) {
           layoutWidth = targetWidth;
         }
@@ -1152,6 +1160,21 @@ export function createForestStore() {
     const scale = forestOptions?.scale ?? "linear";
     const nullValue = forestOptions?.nullValue ?? (scale === "log" ? 1 : 0);
 
+    // Stable natural aspect (Phase 7E hardening): pre-mutation
+    // approximation. Used by the in-widget slider as the *fixed*
+    // baseline so slider value <-> ratio mapping doesn't drift as
+    // the lever ladder shifts the layout. naturalRowHeight,
+    // displayRows.length, and the chrome estimate are all
+    // pre-mutation values; effectiveWidth (canvas) doesn't depend
+    // on targetAspect.
+    const stableNaturalRowsHeight = displayRows.length * naturalRowHeight;
+    const stableNaturalChromeHeight =
+      headerHeight + axisHeight + spec.theme.spacing.padding * 2;
+    const stableNaturalHeight = stableNaturalRowsHeight + stableNaturalChromeHeight;
+    const stableNaturalAspect = stableNaturalHeight > 0
+      ? effectiveWidth / stableNaturalHeight
+      : 1;
+
     return {
       totalWidth: layoutWidth,
       totalHeight: Math.max(effectiveHeight, plotHeight + headerHeight + axisHeight + spec.theme.spacing.padding * 2),
@@ -1162,6 +1185,9 @@ export function createForestStore() {
       // gridTemplateColumns / getColWidth so wider aspect ratios stay
       // monotonic past the flex cap. 1 by default = no change.
       aspectNonForestScale,
+      // Phase 7E hardening: stable natural aspect so the slider has
+      // a fixed reference point regardless of current targetAspect.
+      naturalAspect: stableNaturalAspect,
       headerHeight,
       rowHeight,
       plotHeight,
@@ -2566,12 +2592,24 @@ export function createForestStore() {
   // layout derived above reads `targetAspect` directly and walks the lever
   // ladder; mutations here automatically propagate through the reactive
   // graph.
+  // Hard bounds on a settable aspect ratio. Below TARGET_ASPECT_MIN /
+  // above TARGET_ASPECT_MAX, the lever ladder produces visually broken
+  // layouts (rows clipped to floor + degenerate widths) and at extreme
+  // values the layout grows past sane DOM sizes (millions of pixels).
+  // 0.1 to 10 covers any sensible aspect from 1:10 (mobile-ish portrait)
+  // to 10:1 (a banner) and rejects nonsense input from the slider /
+  // proxy / fluent API alike.
+  const TARGET_ASPECT_MIN = 0.1;
+  const TARGET_ASPECT_MAX = 10;
   function setTargetAspect(ratio: number | null): void {
-    if (ratio != null && (!Number.isFinite(ratio) || ratio <= 0)) return;
-    const next = ratio == null ? null : ratio;
-    if (targetAspect === next) return;
-    targetAspect = next;
-    appendOp(ops.setAspectRatio(next));
+    if (ratio != null && !Number.isFinite(ratio)) return;
+    if (ratio != null && ratio <= 0) return;
+    const clamped = ratio == null
+      ? null
+      : Math.max(TARGET_ASPECT_MIN, Math.min(TARGET_ASPECT_MAX, ratio));
+    if (targetAspect === clamped) return;
+    targetAspect = clamped;
+    appendOp(ops.setAspectRatio(clamped));
   }
 
   function getTargetAspect(): number | null {

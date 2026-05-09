@@ -894,6 +894,11 @@ export interface ComputedLayout {
    *  when targetAspect expands the layout past flex saturation. 1 by
    *  default; > 1 widens columns proportionally; < 1 narrows them. */
   aspectNonForestScale?: number;
+  /** Phase 7E hardening: pre-mutation natural aspect (canvas /
+   *  natural-height-estimate). Used by the in-widget aspect slider
+   *  as a stable reference so the slider position <-> ratio mapping
+   *  doesn't drift when targetAspect mutates the layout. */
+  naturalAspect?: number;
   headerHeight: number;
   rowHeight: number;
   plotHeight: number;
