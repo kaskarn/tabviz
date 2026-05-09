@@ -663,9 +663,21 @@
   // Returns "{n}px" for fixed-width columns
   // Uses columnWidthsSnapshot to ensure Svelte 5 reactivity
   function getColWidth(column: ColumnSpec): string {
+    // Phase 7E Lever 1B: scale measured / explicit widths by the aspect
+    // factor when an aspect target expanded the layout past flex
+    // saturation. Forest columns have their own (layout-driven) path so
+    // aren't multiplied here. User-resized columns are pinned at the
+    // exact resize value (the aspect scale only applies to columns the
+    // user hasn't manually resized).
+    const scale = layout.aspectNonForestScale ?? 1;
+    const userResized = store.userResizedIds?.has?.(column.id) ?? false;
+    const apply = (w: number): string => {
+      if (userResized || Math.abs(scale - 1) < 1e-6) return `${w}px`;
+      return `${w * scale}px`;
+    };
     const dynamicWidth = columnWidthsSnapshot[column.id];
-    if (typeof dynamicWidth === "number") return `${dynamicWidth}px`;
-    if (typeof column.width === "number") return `${column.width}px`;
+    if (typeof dynamicWidth === "number") return apply(dynamicWidth);
+    if (typeof column.width === "number") return apply(column.width);
     return "max-content";
   }
 
@@ -865,6 +877,13 @@
             vizWidth = col.width;
           } else {
             vizWidth = layout.forestWidth;
+          }
+          // Phase 7E Lever 1B: non-forest viz columns also scale with
+          // aspect (they're not flex). User-resized columns pin.
+          const scale = layout.aspectNonForestScale ?? 1;
+          const userResized = store.userResizedIds?.has?.(col.id) ?? false;
+          if (!userResized && Math.abs(scale - 1) > 1e-6) {
+            vizWidth = vizWidth * scale;
           }
         }
         parts.push(`${vizWidth}px`);
@@ -2932,16 +2951,13 @@
   }
 
   /* Aspect-pin override (Phase 7E): when an aspect target is pinned via
-     the slider or set_aspect_ratio(), let the container scroll
-     horizontally rather than auto-fit-shrink. The lever ladder produces
-     a layout sized for the requested aspect; auto-fit's transform-scale
-     would shrink fonts past readability, so we render at natural size
-     and trust the scrollbar. */
+     the slider or set_aspect_ratio(), the lever ladder produces a
+     wider/taller layout than canvas. Auto-fit's transform-scale shrinks
+     it to fit; the min-zoom floor (0.7 when pinned, see store actualScale)
+     prevents shrinking past readability. When the floor saturates,
+     content overflows the canvas and we trust the scrollbar. */
   :global(.tabviz-container.auto-fit.has-aspect-pin) {
     overflow: auto;
-  }
-  :global(.tabviz-container.auto-fit.has-aspect-pin) .tabviz-scalable {
-    transform: none;
   }
 
   /* No auto-fit: render at zoom level, scrollbars if needed */

@@ -1000,6 +1000,12 @@ export function createForestStore() {
     // the container overflows horizontally (existing auto-fit / scroll
     // machinery handles display). When anchor="width" or there's no
     // expansion, layoutWidth stays at canvas and behavior is identical.
+    // Aspect-scale factor for non-forest columns (Phase 7E Lever 1B).
+    // Default 1 (no scaling). When targetAspect expands the layout
+    // beyond what flex (forest) absorbs at the cap, this carries the
+    // residual into non-flex column widths so the slider continues to
+    // produce visible change past the flex saturation point.
+    let aspectNonForestScale = 1;
     let layoutWidth = effectiveWidth;
     if (targetAspect != null) {
       const FLEX_CAP = 2;
@@ -1044,14 +1050,32 @@ export function createForestStore() {
       }
 
       // ----- Lever 1A (width): cap-clamped flex absorption. -----
-      if (hasForest) {
-        const widthDelta = targetWidth - approxNaturalWidth; // 0 in widget today
+      const widthDelta = targetWidth - approxNaturalWidth;
+      let widthAbsorbedByFlex = 0;
+      if (hasForest && Math.abs(widthDelta) > 0.5) {
         const proposedFlex = naturalForestWidth + widthDelta;
         const cappedFlex = Math.max(
           naturalForestWidth / FLEX_CAP,
           Math.min(naturalForestWidth * FLEX_CAP, proposedFlex),
         );
         forestWidth = Math.max(0, cappedFlex);
+        widthAbsorbedByFlex = cappedFlex - naturalForestWidth;
+      }
+
+      // ----- Lever 1B (width): non-flex auto-width column scaling. -----
+      // When the flex cap saturates and there's residual width to
+      // absorb, scale all non-flex columns proportionally. Without
+      // this, ratio drags past ~1.5 are inert (forest hits 2x cap and
+      // nothing else grows).
+      const widthResidual = widthDelta - widthAbsorbedByFlex;
+      if (Math.abs(widthResidual) > 0.5) {
+        const naturalNonForestSum = approxNaturalWidth - naturalForestWidth;
+        if (naturalNonForestSum > 0) {
+          aspectNonForestScale = Math.max(
+            0.25,
+            (naturalNonForestSum + widthResidual) / naturalNonForestSum,
+          );
+        }
       }
 
       // ----- Height ladder (direction-aware). -----
@@ -1133,6 +1157,11 @@ export function createForestStore() {
       totalHeight: Math.max(effectiveHeight, plotHeight + headerHeight + axisHeight + spec.theme.spacing.padding * 2),
       tableWidth,
       forestWidth,
+      // Phase 7E Lever 1B: non-flex column scale factor. Multiply
+      // measured column widths by this in the renderer's
+      // gridTemplateColumns / getColWidth so wider aspect ratios stay
+      // monotonic past the flex cap. 1 by default = no change.
+      aspectNonForestScale,
       headerHeight,
       rowHeight,
       plotHeight,
@@ -3747,6 +3776,21 @@ export function createForestStore() {
     get targetAspect() { return targetAspect; },
     get targetAspectAnchor() { return spec?.targetAspectAnchor ?? "width"; },
     get userResizedIds() { return userResizedIds; },
+    // Phase 7E diagnostic: surface zoom-related state so the puppeteer
+    // probe can see what auto-fit is doing.
+    get _aspectDiag() {
+      return {
+        scalableNaturalWidth,
+        scalableNaturalHeight,
+        containerWidth,
+        containerHeight,
+        zoom,
+        autoFit,
+        actualScale,
+        fitScale,
+        isClamped,
+      };
+    },
     setTheme,
     setThemeObject,
     captureThemeSnapshot,

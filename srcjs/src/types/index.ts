@@ -890,6 +890,10 @@ export interface ComputedLayout {
   totalHeight: number;
   tableWidth: number;
   forestWidth: number;
+  /** Phase 7E Lever 1B: scale factor for non-flex auto-width columns
+   *  when targetAspect expands the layout past flex saturation. 1 by
+   *  default; > 1 widens columns proportionally; < 1 narrows them. */
+  aspectNonForestScale?: number;
   headerHeight: number;
   rowHeight: number;
   plotHeight: number;
