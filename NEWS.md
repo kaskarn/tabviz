@@ -1,5 +1,18 @@
 # tabviz (development)
 
+## Polish
+
+* **`muted` semantic token now applies to viz marks as well as text.**
+  Previously the muted token (via `row_muted` / `set_row_style(muted=)`)
+  only faded text — viz_bar bars, viz_boxplot boxes, viz_violin paths,
+  and forest-plot markers / whiskers rendered at full intensity, which
+  made muted rows feel half-styled. Muted marks now render at
+  `fill-opacity 0.4` and `stroke-opacity 0.8` (silhouette preserved,
+  fill clearly recedes), symmetric with the muted-text treatment.
+  Loud tokens (`fill`, `accent`, `emphasis`, `bold`) suppress the
+  muted reduction via the existing precedence cascade — no behaviour
+  change for those.
+
 ## Bug fixes
 
 * **Tabular specs (no flex column) report content-width as natural.**

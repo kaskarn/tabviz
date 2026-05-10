@@ -3,6 +3,7 @@
   import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
   import { computeBoxplotStats, computeQuartiles, computeOutliers } from "$lib/viz-utils";
   import { resolveMarkerStyle } from "$lib/marker-styling";
+  import { semanticMarkOpacity } from "$lib/semantic-styling";
 
   interface Props {
     row: Row;
@@ -156,6 +157,9 @@
         {@const outlierR = (theme?.plot?.pointSize ?? 6) * 0.4}
         {@const outlierStroke = themeLineWidth}
         {@const color = ms.fill}
+        {@const mutedOp = semanticMarkOpacity(row.style)}
+        {@const fillOp = mutedOp ? opacity * mutedOp.fill : opacity}
+        {@const strokeOp = mutedOp ? mutedOp.stroke : 1}
 
         <!-- Whisker lines (min to Q1, Q3 to max) -->
           <!-- Left whisker -->
@@ -166,6 +170,7 @@
             y2={boxCenterY}
             stroke={lineColor}
             stroke-width={lineWidth}
+            stroke-opacity={strokeOp}
           />
           <!-- Left whisker cap -->
           <line
@@ -175,6 +180,7 @@
             y2={boxCenterY + boxConfig.boxHeight / 4}
             stroke={lineColor}
             stroke-width={lineWidth}
+            stroke-opacity={strokeOp}
           />
 
           <!-- Right whisker -->
@@ -185,6 +191,7 @@
             y2={boxCenterY}
             stroke={lineColor}
             stroke-width={lineWidth}
+            stroke-opacity={strokeOp}
           />
           <!-- Right whisker cap -->
           <line
@@ -194,6 +201,7 @@
             y2={boxCenterY + boxConfig.boxHeight / 4}
             stroke={lineColor}
             stroke-width={lineWidth}
+            stroke-opacity={strokeOp}
           />
 
         <!-- Box (Q1 to Q3) -->
@@ -203,9 +211,10 @@
           width={Math.max(2, xScale(stats.q3) - xScale(stats.q1))}
           height={boxConfig.boxHeight}
           fill={color}
-          fill-opacity={opacity}
+          fill-opacity={fillOp}
           stroke={lineColor}
           stroke-width={lineWidth}
+          stroke-opacity={strokeOp}
           class="box-rect"
         />
 
@@ -217,6 +226,7 @@
           y2={boxY + boxConfig.boxHeight}
           stroke={lineColor}
           stroke-width={Math.max(2, lineWidth)}
+          stroke-opacity={strokeOp}
         />
 
         <!-- Outliers -->
@@ -229,6 +239,7 @@
               fill="none"
               stroke={color}
               stroke-width={outlierStroke}
+              stroke-opacity={strokeOp}
               class="outlier"
             />
           {/each}

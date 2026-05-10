@@ -85,3 +85,22 @@ export function resolveSemanticBundle(
   if (!token) return null;
   return row[token] ?? null;
 }
+
+/**
+ * Opacity multipliers for viz marks (forest circles, viz_bar fills,
+ * viz_boxplot boxes, viz_violin paths) when the row / cell carries a
+ * semantic token. Today only `muted` produces non-default values — fill
+ * fades to 40 %, stroke to 80 % so the silhouette stays readable while
+ * the mark visibly recedes. Symmetric with the muted-text treatment.
+ *
+ * Returns `null` when no opacity adjustment applies (no token, or token
+ * is "loud" like accent / emphasis / bold / fill — those promote
+ * visibility, not reduce it). Renderers should multiply this onto any
+ * pre-existing `style.opacity` rather than replace.
+ */
+export function semanticMarkOpacity(
+  style: RowStyle | CellStyle | undefined | null,
+): { fill: number; stroke: number } | null {
+  if (activeSemanticToken(style) !== "muted") return null;
+  return { fill: 0.4, stroke: 0.8 };
+}

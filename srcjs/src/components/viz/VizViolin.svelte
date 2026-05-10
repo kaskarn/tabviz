@@ -3,6 +3,7 @@
   import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
   import { computeKDE, computeQuartiles, normalizeKDE } from "$lib/viz-utils";
   import { resolveMarkerStyle } from "$lib/marker-styling";
+  import { semanticMarkOpacity } from "$lib/semantic-styling";
 
   interface Props {
     row: Row;
@@ -162,14 +163,18 @@
         {@const violinStrokeW = ms.stroke ? ms.strokeWidth : themeLineWidth * 0.33}
         {@const medianStrokeW = Math.max(1, themeLineWidth * 1.3)}
         {@const quartileStrokeW = Math.max(0.5, themeLineWidth * 0.67)}
+        {@const mutedOp = semanticMarkOpacity(row.style)}
+        {@const fillOp = mutedOp ? opacity * mutedOp.fill : opacity}
+        {@const strokeOp = mutedOp ? mutedOp.stroke : 1}
 
         <!-- Violin shape -->
         <path
           d={path}
           fill={ms.fill}
-          fill-opacity={opacity}
+          fill-opacity={fillOp}
           stroke={lineColor}
           stroke-width={violinStrokeW}
+          stroke-opacity={strokeOp}
           class="violin-path"
         />
 
@@ -183,6 +188,7 @@
             y2={violinCenterY + violinConfig.maxWidth * 0.6}
             stroke={lineColor}
             stroke-width={medianStrokeW}
+            stroke-opacity={strokeOp}
           />
         {/if}
 
@@ -198,6 +204,7 @@
             stroke={lineColor}
             stroke-width={quartileStrokeW}
             stroke-dasharray="2,2"
+            stroke-opacity={strokeOp}
           />
           <line
             x1={q3X}
@@ -207,6 +214,7 @@
             stroke={lineColor}
             stroke-width={quartileStrokeW}
             stroke-dasharray="2,2"
+            stroke-opacity={strokeOp}
           />
         {/if}
       {/if}

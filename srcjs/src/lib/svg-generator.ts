@@ -29,7 +29,7 @@ import { computeArrowDimensions, renderArrowPath } from "./arrow-utils";
 import { isVizType, resolveShowHeader } from "./column-compat";
 import { resolveMarkerStyle } from "./marker-styling";
 import { computeBandIndexes } from "./banding";
-import { resolveSemanticBundle } from "./semantic-styling";
+import { resolveSemanticBundle, semanticMarkOpacity } from "./semantic-styling";
 import { GLYPH_REGISTRY, resolveGlyph } from "./glyph-registry";
 import { activeHeaderVariant } from "./header-variant";
 import {
@@ -1987,15 +1987,28 @@ function renderInterval(
     return { fill: ms.fill, stroke: ms.stroke, strokeWidth: ms.strokeWidth, shape, opacity };
   }
 
-  // Helper to render marker shape
-  function renderMarker(cx: number, effectY: number, size: number, style: { fill: string; stroke: string | null; strokeWidth: number; shape: MarkerShape; opacity: number }): string {
+  // Helper to render marker shape. `mutedOp` (when present) layers a
+  // `muted`-token reduction on top of any author-set marker opacity:
+  // fill scales by `mutedOp.fill`, stroke gets `stroke-opacity =
+  // mutedOp.stroke`. Symmetric with the muted-text treatment so the
+  // semantic feels coherent across content types.
+  function renderMarker(
+    cx: number, effectY: number, size: number,
+    style: { fill: string; stroke: string | null; strokeWidth: number; shape: MarkerShape; opacity: number },
+    mutedOp?: { fill: number; stroke: number } | null,
+  ): string {
     const { fill, stroke, strokeWidth, shape, opacity } = style;
-    const opacityAttr = opacity < 1 ? ` fill-opacity="${opacity}"` : "";
-    const strokeAttr = stroke ? ` stroke="${stroke}" stroke-width="${strokeWidth}"` : "";
+    const fillOpacity = mutedOp ? opacity * mutedOp.fill : opacity;
+    const fillOpacityAttr = fillOpacity < 1 ? ` fill-opacity="${fillOpacity}"` : "";
+    const strokeOpacityAttr = mutedOp && mutedOp.stroke < 1
+      ? ` stroke-opacity="${mutedOp.stroke}"` : "";
+    const strokeAttr = stroke
+      ? ` stroke="${stroke}" stroke-width="${strokeWidth}"${strokeOpacityAttr}`
+      : "";
 
     switch (shape) {
       case "circle":
-        return `<circle cx="${cx}" cy="${effectY}" r="${size}" fill="${fill}"${opacityAttr}${strokeAttr}/>`;
+        return `<circle cx="${cx}" cy="${effectY}" r="${size}" fill="${fill}"${fillOpacityAttr}${strokeAttr}/>`;
       case "diamond": {
         const pts = [
           `${cx},${effectY - size}`,
@@ -2003,7 +2016,7 @@ function renderInterval(
           `${cx},${effectY + size}`,
           `${cx - size},${effectY}`
         ].join(' ');
-        return `<polygon points="${pts}" fill="${fill}"${opacityAttr}${strokeAttr}/>`;
+        return `<polygon points="${pts}" fill="${fill}"${fillOpacityAttr}${strokeAttr}/>`;
       }
       case "triangle": {
         const pts = [
@@ -2011,10 +2024,10 @@ function renderInterval(
           `${cx + size},${effectY + size}`,
           `${cx - size},${effectY + size}`
         ].join(' ');
-        return `<polygon points="${pts}" fill="${fill}"${opacityAttr}${strokeAttr}/>`;
+        return `<polygon points="${pts}" fill="${fill}"${fillOpacityAttr}${strokeAttr}/>`;
       }
       default: // square
-        return `<rect x="${cx - size}" y="${effectY - size}" width="${size * 2}" height="${size * 2}" fill="${fill}"${opacityAttr}${strokeAttr}/>`;
+        return `<rect x="${cx - size}" y="${effectY - size}" width="${size * 2}" height="${size * 2}" fill="${fill}"${fillOpacityAttr}${strokeAttr}/>`;
     }
   }
 
@@ -2025,6 +2038,10 @@ function renderInterval(
   // doesn't sit on series[0].stroke. Mirrors the live RowInterval path.
   const rowSemBundle = resolveSemanticBundle(row.style, theme);
   const semanticLineColor = rowSemBundle?.markerStroke ?? null;
+  // Muted-token mark opacity: layered onto each marker / summary
+  // diamond / line below. Symmetric with the muted-text reduction.
+  const mutedOp = semanticMarkOpacity(row.style);
+  const mutedLineOpacityAttr = mutedOp ? ` stroke-opacity="${mutedOp.stroke}"` : "";
 
   validEffects.forEach((effect, idx) => {
     const effectY = yPosition + getEffectYOffset(idx, validEffects.length);
@@ -2040,7 +2057,8 @@ function renderInterval(
       // Note: Summary diamonds are intentionally NOT clipped - they represent
       // the overall effect size and typically shouldn't extend beyond axis limits.
       // If clipping is needed in the future, clamp x1/x2 to clipBounds.
-      const opacityAttr = style.opacity < 1 ? ` fill-opacity="${style.opacity}"` : "";
+      const summaryFillOp = mutedOp ? style.opacity * mutedOp.fill : style.opacity;
+      const opacityAttr = summaryFillOp < 1 ? ` fill-opacity="${summaryFillOp}"` : "";
       const diamondPoints = [
         `${x1},${effectY}`,
         `${cx},${effectY - halfDiamondHeight}`,
@@ -2050,7 +2068,7 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx} summary">
           <polygon points="${diamondPoints}"
-            fill="${style.fill}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? theme.accent.default}" stroke-width="1"/>
+            fill="${style.fill}"${opacityAttr} stroke="${theme.series?.[0]?.stroke ?? theme.accent.default}" stroke-width="1"${mutedLineOpacityAttr}/>
         </g>`);
     } else {
       // Regular row: CI line with whiskers and marker
@@ -2088,22 +2106,24 @@ function renderInterval(
       let leftEnd = "";
       if (clippedLeft) {
         // Arrow pointing left with scaled dimensions (include opacity from theme)
-        const arrowOpacity = arrowConfig.opacity < 1 ? ` fill-opacity="${arrowConfig.opacity}"` : "";
+        const arrowFill = mutedOp ? arrowConfig.opacity * mutedOp.fill : arrowConfig.opacity;
+        const arrowOpacity = arrowFill < 1 ? ` fill-opacity="${arrowFill}"` : "";
         leftEnd = `<path d="${renderArrowPath("left", leftArrowX, effectY, arrowConfig)}" fill="${arrowConfig.color}"${arrowOpacity}/>`;
       } else {
         // Normal whisker (use scaled whisker height matching arrow)
-        leftEnd = `<line x1="${clampedX1}" x2="${clampedX1}" y1="${effectY - arrowHalfHeight}" y2="${effectY + arrowHalfHeight}" stroke="${lineColor}" stroke-width="${lineWidth}"/>`;
+        leftEnd = `<line x1="${clampedX1}" x2="${clampedX1}" y1="${effectY - arrowHalfHeight}" y2="${effectY + arrowHalfHeight}" stroke="${lineColor}" stroke-width="${lineWidth}"${mutedLineOpacityAttr}/>`;
       }
 
       // Build right end: whisker or arrow
       let rightEnd = "";
       if (clippedRight) {
         // Arrow pointing right with scaled dimensions (include opacity from theme)
-        const arrowOpacity = arrowConfig.opacity < 1 ? ` fill-opacity="${arrowConfig.opacity}"` : "";
+        const arrowFill = mutedOp ? arrowConfig.opacity * mutedOp.fill : arrowConfig.opacity;
+        const arrowOpacity = arrowFill < 1 ? ` fill-opacity="${arrowFill}"` : "";
         rightEnd = `<path d="${renderArrowPath("right", rightArrowX, effectY, arrowConfig)}" fill="${arrowConfig.color}"${arrowOpacity}/>`;
       } else {
         // Normal whisker
-        rightEnd = `<line x1="${clampedX2}" x2="${clampedX2}" y1="${effectY - arrowHalfHeight}" y2="${effectY + arrowHalfHeight}" stroke="${lineColor}" stroke-width="${lineWidth}"/>`;
+        rightEnd = `<line x1="${clampedX2}" x2="${clampedX2}" y1="${effectY - arrowHalfHeight}" y2="${effectY + arrowHalfHeight}" stroke="${lineColor}" stroke-width="${lineWidth}"${mutedLineOpacityAttr}/>`;
       }
 
       // Clamp point estimate to visible range so markers don't render outside
@@ -2115,10 +2135,10 @@ function renderInterval(
       parts.push(`
         <g class="interval effect-${idx}">
           <line x1="${clampedX1}" x2="${clampedX2}" y1="${effectY}" y2="${effectY}"
-            stroke="${lineColor}" stroke-width="${lineWidth}"/>
+            stroke="${lineColor}" stroke-width="${lineWidth}"${mutedLineOpacityAttr}/>
           ${leftEnd}
           ${rightEnd}
-          ${renderMarker(clampedCx, effectY, pointSize, style)}
+          ${renderMarker(clampedCx, effectY, pointSize, style, mutedOp)}
         </g>`);
     }
   });
@@ -2253,12 +2273,16 @@ function renderVizBar(
     const ms = resolveMarkerStyle(baseColor, row.markerStyle?.color ?? null, row.style, numEffects, theme);
     const rowOpacity = row.markerStyle?.opacity ?? null;
     const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? 0.85);
-    const strokeAttr = ms.stroke ? ` stroke="${ms.stroke}" stroke-width="${ms.strokeWidth}"` : "";
+    const mutedOp = semanticMarkOpacity(row.style);
+    const fillOp = mutedOp ? opacity * mutedOp.fill : opacity;
+    const strokeOpAttr = mutedOp && mutedOp.stroke < 1 ? ` stroke-opacity="${mutedOp.stroke}"` : "";
+    const strokeAttr = ms.stroke
+      ? ` stroke="${ms.stroke}" stroke-width="${ms.strokeWidth}"${strokeOpAttr}` : "";
 
     parts.push(`<rect
       x="${barXStart}" y="${barY}"
       width="${Math.max(1, barW)}" height="${barHeight}"
-      fill="${ms.fill}" fill-opacity="${opacity}"${strokeAttr} rx="2"
+      fill="${ms.fill}" fill-opacity="${fillOp}"${strokeAttr} rx="2"
       class="viz-bar-segment"/>`);
   });
 
@@ -2351,43 +2375,47 @@ function renderVizBoxplot(
     // Theme's shapes.lineWidth drives the whisker/box outlines by default.
     // Per-effect stroke overrides via ms.stroke still win, as before.
     const strokeWidth = ms.stroke ? ms.strokeWidth : themeLineWidth;
+    const mutedOp = semanticMarkOpacity(row.style);
+    const fillOp = mutedOp ? opacity * mutedOp.fill : opacity;
+    const strokeOp = mutedOp ? mutedOp.stroke : 1;
+    const strokeOpAttr = strokeOp < 1 ? ` stroke-opacity="${strokeOp}"` : "";
 
     // Whisker lines
     // Left whisker
     parts.push(`<line
       x1="${vizX + xScale(stats.min)}" x2="${vizX + xScale(stats.q1)}"
       y1="${boxCenterY}" y2="${boxCenterY}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
     // Left whisker cap
     parts.push(`<line
       x1="${vizX + xScale(stats.min)}" x2="${vizX + xScale(stats.min)}"
       y1="${boxCenterY - boxHeight / 4}" y2="${boxCenterY + boxHeight / 4}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
 
     // Right whisker
     parts.push(`<line
       x1="${vizX + xScale(stats.q3)}" x2="${vizX + xScale(stats.max)}"
       y1="${boxCenterY}" y2="${boxCenterY}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
     // Right whisker cap
     parts.push(`<line
       x1="${vizX + xScale(stats.max)}" x2="${vizX + xScale(stats.max)}"
       y1="${boxCenterY - boxHeight / 4}" y2="${boxCenterY + boxHeight / 4}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
 
     // Box (Q1 to Q3)
     const boxW = Math.max(2, xScale(stats.q3) - xScale(stats.q1));
     parts.push(`<rect
       x="${vizX + xScale(stats.q1)}" y="${boxY}"
       width="${boxW}" height="${boxHeight}"
-      fill="${ms.fill}" fill-opacity="${opacity}"
-      stroke="${strokeColor}" stroke-width="${strokeWidth}"/>`);
+      fill="${ms.fill}" fill-opacity="${fillOp}"
+      stroke="${strokeColor}" stroke-width="${strokeWidth}"${strokeOpAttr}/>`);
 
     // Median line
     parts.push(`<line
       x1="${vizX + xScale(stats.median)}" x2="${vizX + xScale(stats.median)}"
       y1="${boxY}" y2="${boxY + boxHeight}"
-      stroke="${strokeColor}" stroke-width="${Math.max(2, strokeWidth)}"/>`);
+      stroke="${strokeColor}" stroke-width="${Math.max(2, strokeWidth)}"${strokeOpAttr}/>`);
 
     // Outliers — point size and stroke width scale with the theme's
     // shapes.pointSize / lineWidth so outliers match forest-plot markers.
@@ -2396,7 +2424,7 @@ function renderVizBoxplot(
         parts.push(`<circle
           cx="${vizX + xScale(outlier)}" cy="${boxCenterY}"
           r="${outlierR}"
-          fill="none" stroke="${ms.fill}" stroke-width="${themeLineWidth}"/>`);
+          fill="none" stroke="${ms.fill}" stroke-width="${themeLineWidth}"${strokeOpAttr}/>`);
       }
     }
   });
@@ -2484,6 +2512,9 @@ function renderVizViolin(
     const opacity = rowOpacity !== null ? rowOpacity : (effect.opacity ?? effect.fillOpacity ?? 0.5);
     const violinStroke = ms.stroke ?? lineColor;
     const violinStrokeW = ms.stroke ? ms.strokeWidth : violinStrokeDefault;
+    const mutedOp = semanticMarkOpacity(row.style);
+    const fillOp = mutedOp ? opacity * mutedOp.fill : opacity;
+    const strokeOpAttr = mutedOp && mutedOp.stroke < 1 ? ` stroke-opacity="${mutedOp.stroke}"` : "";
 
     // Generate violin path
     const normalized = normalizeKDE(kde, maxWidth);
@@ -2506,8 +2537,8 @@ function renderVizViolin(
 
     parts.push(`<path
       d="${pathPoints.join(" ")}"
-      fill="${ms.fill}" fill-opacity="${opacity}"
-      stroke="${violinStroke}" stroke-width="${violinStrokeW}"/>`);
+      fill="${ms.fill}" fill-opacity="${fillOp}"
+      stroke="${violinStroke}" stroke-width="${violinStrokeW}"${strokeOpAttr}/>`);
 
     // Median line
     if (options.showMedian !== false && quartiles) {
@@ -2515,7 +2546,7 @@ function renderVizViolin(
       parts.push(`<line
         x1="${medianX}" x2="${medianX}"
         y1="${violinCenterY - maxWidth * 0.6}" y2="${violinCenterY + maxWidth * 0.6}"
-        stroke="${lineColor}" stroke-width="${medianStrokeW}"/>`);
+        stroke="${lineColor}" stroke-width="${medianStrokeW}"${strokeOpAttr}/>`);
     }
 
     // Quartile lines
@@ -2525,11 +2556,11 @@ function renderVizViolin(
       parts.push(`<line
         x1="${q1X}" x2="${q1X}"
         y1="${violinCenterY - maxWidth * 0.4}" y2="${violinCenterY + maxWidth * 0.4}"
-        stroke="${lineColor}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"/>`);
+        stroke="${lineColor}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"${strokeOpAttr}/>`);
       parts.push(`<line
         x1="${q3X}" x2="${q3X}"
         y1="${violinCenterY - maxWidth * 0.4}" y2="${violinCenterY + maxWidth * 0.4}"
-        stroke="${lineColor}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"/>`);
+        stroke="${lineColor}" stroke-width="${quartileStrokeW}" stroke-dasharray="2,2"${strokeOpAttr}/>`);
     }
   });
 

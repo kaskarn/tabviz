@@ -2,6 +2,7 @@
   import type { Row, WebTheme, VizBarColumnOptions, VizBarEffect } from "$types";
   import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
   import { resolveMarkerStyle } from "$lib/marker-styling";
+  import { semanticMarkOpacity } from "$lib/semantic-styling";
 
   interface Props {
     row: Row;
@@ -111,6 +112,9 @@
         {@const barWidth = Math.abs(xScale(value) - xScale(0))}
         {@const ms = getMarkerStyle(effect, idx)}
         {@const opacity = getEffectOpacity(effect)}
+        {@const mutedOp = semanticMarkOpacity(row.style)}
+        {@const fillOp = mutedOp ? opacity * mutedOp.fill : opacity}
+        {@const strokeOp = mutedOp ? mutedOp.stroke : 1}
 
         <rect
           x={barX}
@@ -118,9 +122,10 @@
           width={Math.max(1, barWidth)}
           height={barConfig.barHeight}
           fill={ms.fill}
-          fill-opacity={opacity}
+          fill-opacity={fillOp}
           stroke={ms.stroke}
           stroke-width={ms.strokeWidth}
+          stroke-opacity={strokeOp}
           rx="2"
           class="bar-segment"
         />

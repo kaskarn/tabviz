@@ -6,6 +6,7 @@
   import { getEffectValue } from "$lib/scale-utils";
   import { getEffectYOffset } from "$lib/rendering-constants";
   import { resolveMarkerStyle, semanticStrokeFor } from "$lib/marker-styling";
+  import { semanticMarkOpacity } from "$lib/semantic-styling";
 
   interface Props {
     row: Row;
@@ -277,6 +278,9 @@
         {@const pointSize = getEffectSize(idx === 0)}
         {@const semanticStroke = semanticStrokeFor(row.style, theme)}
         {@const lineColor = semanticStroke ?? theme?.series?.[0]?.stroke ?? "#475569"}
+        {@const mutedOp = semanticMarkOpacity(effectiveStyleForMarker)}
+        {@const fillOp = mutedOp ? style.opacity * mutedOp.fill : style.opacity}
+        {@const strokeOp = mutedOp ? mutedOp.stroke : 1}
 
         {#if isSummaryRow}
           <!-- Summary row: render diamond shape spanning lower to upper.
@@ -292,9 +296,10 @@
           <polygon
             points={summaryDiamondPoints}
             fill={style.fill}
-            fill-opacity={style.opacity}
+            fill-opacity={fillOp}
             stroke={theme?.series?.[0]?.stroke ?? "#1d4ed8"}
             stroke-width="1"
+            stroke-opacity={strokeOp}
             class="point-estimate"
           />
         {:else}
@@ -311,13 +316,14 @@
             y2={effectY}
             stroke={lineColor}
             stroke-width={theme?.plot?.lineWidth ?? 1.5}
+            stroke-opacity={strokeOp}
           />
           <!-- Left whisker or arrow if clipped -->
           {#if clippedL}
             <path
               d={renderArrowPath("left", leftArrowX, effectY, arrowConfig)}
               fill={arrowConfig.color}
-              fill-opacity={arrowConfig.opacity}
+              fill-opacity={mutedOp ? arrowConfig.opacity * mutedOp.fill : arrowConfig.opacity}
             />
           {:else}
             <line
@@ -327,6 +333,7 @@
               y2={effectY + whiskerHalfHeight}
               stroke={lineColor}
               stroke-width={theme?.plot?.lineWidth ?? 1.5}
+              stroke-opacity={strokeOp}
             />
           {/if}
           <!-- Right whisker or arrow if clipped -->
@@ -334,7 +341,7 @@
             <path
               d={renderArrowPath("right", rightArrowX, effectY, arrowConfig)}
               fill={arrowConfig.color}
-              fill-opacity={arrowConfig.opacity}
+              fill-opacity={mutedOp ? arrowConfig.opacity * mutedOp.fill : arrowConfig.opacity}
             />
           {:else}
             <line
@@ -344,6 +351,7 @@
               y2={effectY + whiskerHalfHeight}
               stroke={lineColor}
               stroke-width={theme?.plot?.lineWidth ?? 1.5}
+              stroke-opacity={strokeOp}
             />
           {/if}
 
@@ -357,9 +365,10 @@
               cy={effectY}
               r={pointSize}
               fill={style.fill}
-              fill-opacity={style.opacity}
+              fill-opacity={fillOp}
               stroke={style.stroke}
               stroke-width={style.strokeWidth}
+              stroke-opacity={strokeOp}
               class="point-estimate"
             />
           {:else if style.shape === "diamond"}
@@ -372,9 +381,10 @@
             <polygon
               points={diamondPts}
               fill={style.fill}
-              fill-opacity={style.opacity}
+              fill-opacity={fillOp}
               stroke={style.stroke}
               stroke-width={style.strokeWidth}
+              stroke-opacity={strokeOp}
               class="point-estimate"
             />
           {:else if style.shape === "triangle"}
@@ -386,9 +396,10 @@
             <polygon
               points={trianglePts}
               fill={style.fill}
-              fill-opacity={style.opacity}
+              fill-opacity={fillOp}
               stroke={style.stroke}
               stroke-width={style.strokeWidth}
+              stroke-opacity={strokeOp}
               class="point-estimate"
             />
           {:else}
@@ -399,9 +410,10 @@
               width={pointSize * 2}
               height={pointSize * 2}
               fill={style.fill}
-              fill-opacity={style.opacity}
+              fill-opacity={fillOp}
               stroke={style.stroke}
               stroke-width={style.strokeWidth}
+              stroke-opacity={strokeOp}
               class="point-estimate"
             />
           {/if}
