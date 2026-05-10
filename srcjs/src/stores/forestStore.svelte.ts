@@ -1201,17 +1201,25 @@ export function createForestStore() {
 
     const DEFAULT_COLUMN_WIDTH = 100;
 
-    // Calculate sum of all column widths (excluding forest columns which have separate width).
-    // The primary (leftmost) column is part of allColumns — no separate label-column slot.
+    // Calculate sum of all column widths (excluding forest columns
+    // which have separate width). Phase 7E: apply aspectNonForestScale
+    // to non-flex columns unless the user has manually resized — keeps
+    // this aggregate in sync with `gridTemplateColumns` and
+    // `getExportDimensions` so the SVG export's at-least-width path
+    // doesn't see a sub-content-width "natural" floor.
+    const aspectScale = layout.aspectNonForestScale ?? 1;
     let totalColumnWidth = 0;
     for (const col of allColumns) {
       // Skip forest columns - they have their own width calculation
       if (col.type === "forest") continue;
       // Use computed width if available, otherwise spec width, otherwise default
-      const w = columnWidths[col.id]
+      const userResized = userResizedIds.has(col.id);
+      const base = (columnWidths[col.id]
         ?? (typeof col.width === 'number' ? col.width : null)
-        ?? DEFAULT_COLUMN_WIDTH;
-      totalColumnWidth += w;
+        ?? DEFAULT_COLUMN_WIDTH);
+      const scaled = (userResized || Math.abs(aspectScale - 1) < 1e-6)
+        ? base : base * aspectScale;
+      totalColumnWidth += scaled;
     }
 
     // Use layout.forestWidth for consistent WYSIWYG export

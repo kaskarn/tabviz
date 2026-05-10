@@ -692,6 +692,44 @@
     return base * scale;
   }
 
+  /**
+   * Effective on-screen pixel width for any column (forest / viz / data).
+   * Mirrors the priority + scale rules of `gridTemplateColumns` and
+   * `getColWidth` so drag-resize math, layout positioning, and any
+   * other consumer that needs the actual rendered width agrees with
+   * what the user sees.
+   *
+   * Centralized here to avoid drift; previously inlined in the
+   * `onpointerdown` resize handlers, which broke when an aspect
+   * target scaled non-flex columns — drag delta was applied to the
+   * UNscaled width while the visual was scaled, so a 50px drag
+   * produced 0 visual change after resize commit.
+   */
+  function effectiveColumnWidth(col: ColumnSpec): number {
+    if (col.type === "forest") {
+      if (typeof col.width === "number") return col.width;
+      if (typeof col.options?.forest?.width === "number") return col.options.forest.width;
+      const userResized = store.userResizedIds?.has?.(col.id) ?? false;
+      const dynamicWidth = columnWidthsSnapshot[col.id];
+      if (userResized && typeof dynamicWidth === "number") return dynamicWidth;
+      return layout.forestWidth;
+    }
+    if (vizColumnTypes.includes(col.type)) {
+      return effectiveVizWidth(col);
+    }
+    // Non-viz data column: parse the same priority + scale as
+    // `getColWidth()`.
+    const dynamicWidth = columnWidthsSnapshot[col.id];
+    const userResized = store.userResizedIds?.has?.(col.id) ?? false;
+    let base: number;
+    if (typeof dynamicWidth === "number") base = dynamicWidth;
+    else if (typeof col.width === "number") base = col.width;
+    else return 80; // fallback for "auto"-string columns awaiting measurement
+    const scale = layout.aspectNonForestScale ?? 1;
+    if (userResized || Math.abs(scale - 1) < 1e-6) return base;
+    return base * scale;
+  }
+
   function getColWidth(column: ColumnSpec): string {
     // Phase 7E Lever 1B: scale measured / explicit widths by the aspect
     // factor when an aspect target expanded the layout past flex
@@ -1848,7 +1886,7 @@
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div
                   class="resize-handle"
-                  onpointerdown={(e) => startColumnResize(e, column.id, columnWidthsSnapshot[column.id] ?? vizDefaultWidth)}
+                  onpointerdown={(e) => startColumnResize(e, column.id, effectiveColumnWidth(column))}
                 ></div>
               {/if}
             </div>
@@ -1893,7 +1931,7 @@
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <div
                   class="resize-handle"
-                  onpointerdown={(e) => startColumnResize(e, column.id, columnWidthsSnapshot[column.id] ?? (typeof column.width === 'number' ? column.width : 80))}
+                  onpointerdown={(e) => startColumnResize(e, column.id, effectiveColumnWidth(column))}
                 ></div>
               {/if}
             </div>
