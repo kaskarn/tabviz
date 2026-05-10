@@ -1068,9 +1068,24 @@ export function createForestStore() {
       // absorb, scale all non-flex columns proportionally. Without
       // this, ratio drags past ~1.5 are inert (forest hits 2x cap and
       // nothing else grows).
+      //
+      // Denominator: actual sum of measured non-flex column widths
+      // (NOT `approxNaturalWidth - naturalForestWidth`, which is the
+      // canvas portion *including chrome*). Using the canvas portion
+      // makes the scale too small — columns expand by less than the
+      // residual, leaving "ghost width" claimed by `layoutWidth` but
+      // never allocated to any rendered element. The SVG export then
+      // serializes the under-scaled columns, producing a downloaded
+      // SVG whose actual w/h ratio is far from the requested one.
       const widthResidual = widthDelta - widthAbsorbedByFlex;
       if (Math.abs(widthResidual) > 0.5) {
-        const naturalNonForestSum = approxNaturalWidth - naturalForestWidth;
+        let naturalNonForestSum = 0;
+        for (const c of allColumns) {
+          if (c.type === "forest") continue;
+          const w = columnWidths[c.id]
+            ?? (typeof c.width === "number" ? c.width : 0);
+          naturalNonForestSum += w;
+        }
         if (naturalNonForestSum > 0) {
           aspectNonForestScale = Math.max(
             0.25,
