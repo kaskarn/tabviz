@@ -904,6 +904,18 @@ export interface ComputedLayout {
    *  when targetAspect expands the layout past flex saturation. 1 by
    *  default; > 1 widens columns proportionally; < 1 narrows them. */
   aspectNonForestScale?: number;
+  /** Lever 2C: scale factor applied to headerHeight + axisHeight so
+   *  chrome can absorb / shed height when an aspect target is pinned.
+   *  1 by default; > 1 grows chrome (taller aspects); < 1 shrinks it
+   *  (floored at 0.4 so axis labels stay readable). The values on
+   *  `headerHeight` / `axisHeight` below are already pre-multiplied. */
+  chromeScale?: number;
+  /** Lever-ladder intent: the exact width / height the aspect target
+   *  asked for. Non-null only when `targetAspect` is pinned. Export
+   *  dimensions route through these so downloads match the requested
+   *  aspect bit-exactly, bypassing any DOM-measurement lag. */
+  aspectTargetWidth?: number | null;
+  aspectTargetHeight?: number | null;
   /** Phase 7E hardening: pre-mutation natural aspect (canvas /
    *  natural-height-estimate). Used by the in-widget aspect slider
    *  as a stable reference so the slider position <-> ratio mapping

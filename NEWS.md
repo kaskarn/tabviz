@@ -15,6 +15,20 @@
 
 ## Bug fixes
 
+* **Live-widget aspect-ratio download now honours the requested ratio
+  exactly.** Two coupled defects landed: (a) the live store's height
+  ladder reserved 35 % of every `heightDelta` for chrome growth but
+  chrome was rigid, so 35 % of every target was silently dropped;
+  (b) `getExportDimensions()` re-derived `naturalHeight` /
+  `naturalWidth` independently of the lever ladder, so the exporter
+  used stale numbers. Wiring Lever 2C (chrome scaling) into the live
+  store and routing export dims through new `aspectTargetWidth` /
+  `aspectTargetHeight` layout fields fixes both. Empirically: ratio
+  0.3 (very narrow) used to ship at 0.21; now ships at 0.30. Ratio
+  2 used to ship at 1.22; now ships at 2.00. Naturally-laid-out
+  specs (no aspect pin) are unchanged — `chromeScale` defaults to 1
+  and the new fields are null.
+
 * **Tabular specs (no flex column) report content-width as natural.**
   Previously `tabviz_natural_dimensions()` and `save_plot()` rendered
   tabular specs at a forced 800 px wide regardless of content,

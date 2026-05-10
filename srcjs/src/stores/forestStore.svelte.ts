@@ -999,6 +999,9 @@ export function createForestStore() {
     // residual into non-flex column widths so the slider continues to
     // produce visible change past the flex saturation point.
     let aspectNonForestScale = 1;
+    let chromeScale = 1;
+    let aspectTargetWidth: number | null = null;
+    let aspectTargetHeight: number | null = null;
     let layoutWidth = effectiveWidth;
     if (targetAspect != null) {
       const FLEX_CAP = 2;
@@ -1049,6 +1052,8 @@ export function createForestStore() {
         targetWidth = approxNaturalWidth;
         targetHeight = targetWidth / targetAspect;
       }
+      aspectTargetWidth = targetWidth;
+      aspectTargetHeight = targetHeight;
 
       // ----- Lever 1A (width): cap-clamped flex absorption. -----
       const widthDelta = targetWidth - approxNaturalWidth;
@@ -1094,27 +1099,61 @@ export function createForestStore() {
         }
       }
 
-      // ----- Height ladder (direction-aware). -----
+      // ----- Height ladder (direction-aware). Mirrors the static
+      // `generateSVGForAspectTarget` math (svg-generator.ts:4441-4471)
+      // so live + downloaded SVG agree pixel-for-pixel:
+      //   - Taller (Phase 7A + Lever 2C): split heightDelta into a
+      //     chrome share (CHROME_SHARE = 0.35) and a row share. Chrome
+      //     scaling is applied to headerHeight + axisHeight below so
+      //     header / axis bands grow proportionally.
+      //   - Shorter (Lever 2A + 2C): rowHeight first, floored at
+      //     MIN_ROW_HEIGHT for legibility. When the floor saturates,
+      //     chrome shrinks to absorb the residual (floored at 0.4 so
+      //     axis labels stay readable).
+      // Padding (spec.theme.spacing.padding) is intentionally NOT
+      // scaled — keeps horizontal layout stable and mirrors the
+      // svg-generator behaviour; tradeoff is a few px of slop vs the
+      // exact target, far smaller than the systematic ~30 % shortfall
+      // this fixes.
       const heightDelta = targetHeight - approxNaturalHeight;
       const bodyFontSize = parseFontSize(spec.theme.text.body.size);
       const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
+      const naturalChromeHeight = approxChromeHeight;
+      const naturalPlotHeight = approxRowsHeight;
 
-      if (heightDelta > 0 && approxRowsHeight > 0) {
-        // Taller: chrome takes a share; rowHeight takes the rest. Without
-        // auto-wrap (Phase 7D) and chrome-mutability (would require
-        // header/axis state to be `let` in this scope), we under-deliver
-        // the chrome share — rowHeight grows but won't 100 %-balloon.
+      if (heightDelta > 0 && naturalPlotHeight > 0) {
         const CHROME_SHARE = 0.35;
-        const rowDelta = heightDelta * (1 - CHROME_SHARE);
+        const chromeDelta = heightDelta * CHROME_SHARE;
+        const rowDelta = heightDelta - chromeDelta;
+        if (naturalChromeHeight > 0)
+          chromeScale = (naturalChromeHeight + chromeDelta) / naturalChromeHeight;
         rowHeight = naturalRowHeight + rowDelta / displayRows.length;
-      } else if (heightDelta < 0 && approxRowsHeight > 0) {
-        // Shorter: rowHeight floored at MIN_ROW_HEIGHT for legibility.
-        const targetRowsHeight = targetHeight - approxChromeHeight;
+      } else if (heightDelta < 0 && naturalPlotHeight > 0) {
+        const targetPlotHeight = Math.max(0, targetHeight - naturalChromeHeight);
         const proposedRowHeight =
-          (targetRowsHeight / approxRowsHeight) * naturalRowHeight;
-        rowHeight = Math.max(MIN_ROW_HEIGHT, proposedRowHeight);
+          (targetPlotHeight / naturalPlotHeight) * naturalRowHeight;
+        if (proposedRowHeight >= MIN_ROW_HEIGHT) {
+          rowHeight = proposedRowHeight;
+        } else {
+          rowHeight = MIN_ROW_HEIGHT;
+          const flooredPlotHeight = MIN_ROW_HEIGHT * displayRows.length;
+          const residualHeight =
+            targetHeight - (naturalChromeHeight + flooredPlotHeight);
+          if (naturalChromeHeight > 0) {
+            chromeScale = Math.max(
+              0.4,
+              (naturalChromeHeight + residualHeight) / naturalChromeHeight,
+            );
+          }
+        }
       }
     }
+    // Apply Lever 2C: scale chrome by the ladder's chromeScale. The
+    // unscaled `headerHeight` / `axisHeight` declared above stay the
+    // natural baseline (used by stableNaturalChromeHeight below); the
+    // scaled values are what every consumer sees via `layout`.
+    const scaledHeaderHeight = headerHeight * chromeScale;
+    const scaledAxisHeight = axisHeight * chromeScale;
 
     const tableWidth = layoutWidth - forestWidth;
 
@@ -1185,7 +1224,7 @@ export function createForestStore() {
 
     return {
       totalWidth: layoutWidth,
-      totalHeight: Math.max(effectiveHeight, plotHeight + headerHeight + axisHeight + spec.theme.spacing.padding * 2),
+      totalHeight: Math.max(effectiveHeight, plotHeight + scaledHeaderHeight + scaledAxisHeight + spec.theme.spacing.padding * 2),
       tableWidth,
       forestWidth,
       // Phase 7E Lever 1B: non-flex column scale factor. Multiply
@@ -1193,13 +1232,22 @@ export function createForestStore() {
       // gridTemplateColumns / getColWidth so wider aspect ratios stay
       // monotonic past the flex cap. 1 by default = no change.
       aspectNonForestScale,
+      // Lever 2C: chrome scale factor. Already pre-applied to the
+      // headerHeight / axisHeight emitted below; exposed so the
+      // export path can sanity-check parity.
+      chromeScale,
+      // Lever-ladder intent: exact target dimensions when an aspect
+      // target is pinned. getExportDimensions() routes through these
+      // so downloads honour the requested aspect exactly.
+      aspectTargetWidth,
+      aspectTargetHeight,
       // Phase 7E hardening: stable natural aspect so the slider has
       // a fixed reference point regardless of current targetAspect.
       naturalAspect: stableNaturalAspect,
-      headerHeight,
+      headerHeight: scaledHeaderHeight,
       rowHeight,
       plotHeight,
-      axisHeight,
+      axisHeight: scaledAxisHeight,
       nullValue,
       summaryYPosition: plotHeight - rowHeight,
       showOverallSummary: hasOverall,
@@ -3773,11 +3821,19 @@ export function createForestStore() {
         headerHeight: layout.headerHeight,
         headerDepth,
 
-        // Overall dimensions
-        width: naturalContentWidth * zoom,
-        height: (scalableNaturalHeight || 400) * zoom,
-        naturalWidth: currentX,
-        naturalHeight: totalRowsHeight + layout.headerHeight + layout.axisHeight,
+        // Overall dimensions. When an aspect target is pinned, route
+        // through the lever ladder's `aspectTargetWidth` /
+        // `aspectTargetHeight` so downloads honour the requested
+        // aspect bit-exactly. ResizeObserver-measured
+        // scalableNaturalHeight can lag the layout state for one
+        // frame at slider end-points, and `naturalContentWidth` for
+        // width — using the lever target sidesteps both. Falls back
+        // to the natural-derived values when no aspect is pinned.
+        width: (layout.aspectTargetWidth ?? naturalContentWidth) * zoom,
+        height: (layout.aspectTargetHeight ?? scalableNaturalHeight ?? 400) * zoom,
+        naturalWidth: layout.aspectTargetWidth ?? currentX,
+        naturalHeight: layout.aspectTargetHeight
+          ?? (totalRowsHeight + layout.headerHeight + layout.axisHeight),
 
         // Legacy fields for backwards compatibility
         // Use actual first forest column width (may be resized) for consistent layout
