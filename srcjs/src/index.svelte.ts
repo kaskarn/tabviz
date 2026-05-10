@@ -154,6 +154,43 @@ export const proxyMethods: Record<string, (store: ForestStore, args: Record<stri
     store.clearAllEdits();
   },
 
+  // ---- Paint (semantic-flag toggles) ----
+  // R's `paint_row(proxy, row_id, token)` sends `{rowId, token}`. A
+  // string token paints; `NA_character_` (-> null over wire) clears
+  // every active token on that row. The store's `setRowSemantic`
+  // takes (rowId, token, on) — translate the clear-all case by
+  // mirroring the spec baseline + current edits.
+  setRowSemantic: (store, args) => {
+    const rowId = typeof args.rowId === "string" ? args.rowId : null;
+    if (!rowId) return;
+    const token = args.token;
+    if (typeof token === "string") {
+      store.setRowSemantic(rowId, token as never, true);
+    } else {
+      // null / undefined / NA -> clear every painted token on the row.
+      const tokens: ReadonlyArray<string> =
+        ["bold", "emphasis", "muted", "accent", "fill"];
+      for (const t of tokens) {
+        store.setRowSemantic(rowId, t as never, false);
+      }
+    }
+  },
+  setCellSemantic: (store, args) => {
+    const rowId = typeof args.rowId === "string" ? args.rowId : null;
+    const field = typeof args.field === "string" ? args.field : null;
+    if (!rowId || !field) return;
+    const token = args.token;
+    if (typeof token === "string") {
+      store.setCellSemantic(rowId, field, token as never, true);
+    } else {
+      const tokens: ReadonlyArray<string> =
+        ["bold", "emphasis", "muted", "accent", "fill"];
+      for (const t of tokens) {
+        store.setCellSemantic(rowId, field, t as never, false);
+      }
+    }
+  },
+
   // ---- Global ----
   setTheme: (store, args) => {
     if (typeof args.name === "string") {

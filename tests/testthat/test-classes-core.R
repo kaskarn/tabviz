@@ -96,6 +96,50 @@ test_that("viz_forest accepts log scale with positive null_value", {
   expect_equal(forest_col@options$forest$nullValue, 1)
 })
 
+test_that("viz_forest rejects NA null_value (regression)", {
+  expect_error(
+    viz_forest(point = "p", lower = "l", upper = "u", null_value = NA_real_),
+    "cannot be NA"
+  )
+})
+
+test_that("viz_forest rejects non-positive null_value on log scale (regression)", {
+  expect_error(
+    viz_forest(point = "p", lower = "l", upper = "u",
+               scale = "log", null_value = 0),
+    "must be positive on a log scale"
+  )
+  expect_error(
+    viz_forest(point = "p", lower = "l", upper = "u",
+               scale = "log", null_value = -1),
+    "must be positive on a log scale"
+  )
+})
+
+test_that("viz_forest rejects degenerate axis_range (regression)", {
+  expect_error(
+    viz_forest(point = "p", lower = "l", upper = "u",
+               axis_range = c(0, 0)),
+    "strictly increasing"
+  )
+  expect_error(
+    viz_forest(point = "p", lower = "l", upper = "u",
+               axis_range = c(2, 1)),
+    "strictly increasing"
+  )
+  expect_error(
+    viz_forest(point = "p", lower = "l", upper = "u",
+               axis_range = c(NA_real_, 1)),
+    "axis_range"
+  )
+  # Log scale + non-positive lower bound rejected.
+  expect_error(
+    viz_forest(point = "p", lower = "l", upper = "u",
+               scale = "log", axis_range = c(0, 1)),
+    "must be positive on a log scale"
+  )
+})
+
 test_that("GroupSpec creates valid object", {
   group <- GroupSpec(
     id = "group1",

@@ -1990,9 +1990,41 @@ viz_forest <- function(
     }
   }
 
-  # Default null_value based on scale
+  # Default null_value based on scale.
   if (is.null(null_value)) {
     null_value <- if (scale == "log") 1 else 0
+  } else {
+    # `assert_number(..., finite = TRUE)` doesn't reject NA — guard
+    # explicitly. NA would serialize as `null` and the renderer would
+    # produce a degenerate / missing reference line.
+    if (is.na(null_value)) {
+      cli_abort(c(
+        "{.arg null_value} cannot be NA.",
+        "i" = "Pass a finite numeric (e.g. 1 for log scale, 0 for linear), or NULL to use the scale-appropriate default."
+      ))
+    }
+    checkmate::assert_number(null_value, finite = TRUE,
+                             .var.name = "null_value")
+    if (scale == "log" && null_value <= 0) {
+      cli_abort("{.arg null_value} must be positive on a log scale; got {.val {null_value}}.")
+    }
+  }
+
+  # Validate axis_range when supplied: length-2, finite, monotonic.
+  # Without this, `c(0, 0)` or `c(NA, 1)` slips through to the renderer
+  # and produces a degenerate d3 scale.
+  if (!is.null(axis_range)) {
+    checkmate::assert_numeric(axis_range, len = 2L, any.missing = FALSE,
+                              finite = TRUE, .var.name = "axis_range")
+    if (axis_range[1] >= axis_range[2]) {
+      cli_abort(c(
+        "{.arg axis_range} must be strictly increasing.",
+        "i" = "Got {.code c({axis_range[1]}, {axis_range[2]})}; the first element must be less than the second."
+      ))
+    }
+    if (scale == "log" && axis_range[1] <= 0) {
+      cli_abort("{.arg axis_range} lower bound must be positive on a log scale; got {.val {axis_range[1]}}.")
+    }
   }
 
   # Serialize effects inline in the forest options

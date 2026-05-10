@@ -122,6 +122,12 @@ save_plot <- function(x, file,
   if (missing(file) || is.null(file)) {
     cli_abort("{.arg file} is required")
   }
+  # Reject empty / NA paths upfront — `tools::file_ext("")` returns
+  # `""` which then errors much later in the unsupported-format check
+  # with a confusing "{.file .}" message. Catch here with a clearer
+  # error.
+  checkmate::assert_string(file, min.chars = 1L, na.ok = FALSE,
+                           .var.name = "file")
 
   # Dispatch to save_split_table() if x is a SplitForest
   if (S7_inherits(x, SplitForest)) {

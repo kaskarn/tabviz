@@ -114,6 +114,20 @@ test_that("compute_page_breaks() applies orphan_min by pulling rows back", {
   expect_equal(sizes, c(30L, 28L, 3L))
 })
 
+test_that("compute_page_breaks() falls back to merging when prior page can't donate (regression)", {
+  # 14 rows with rows=12, orphan_min=10. Default split: 12 + 2.
+  # Pulling 8 rows from page 1 would leave it at 4, below orphan_min=10.
+  # Fix: merge instead — single 14-row page. Tradeoff: rows-per-page
+  # cap exceeded by 2 to honour orphan_min.
+  df <- data.frame(study = paste0("s", 1:14))
+  spec <- tabviz(df, label = "study", .spec_only = TRUE)
+  spec@paginate <- paginate_spec(rows = 12, orphan_min = 10)
+  br <- compute_page_breaks(spec)
+  sizes <- br$page_ends - br$page_starts + 1L
+  expect_equal(br$n_pages, 1L)
+  expect_equal(sizes, 14L)
+})
+
 test_that("compute_page_breaks() returns NULL when no spec is attached", {
   df <- data.frame(study = paste0("s", 1:5))
   spec <- tabviz(df, label = "study", .spec_only = TRUE)

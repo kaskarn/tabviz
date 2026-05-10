@@ -287,15 +287,30 @@ compute_page_breaks <- function(spec, paginate = NULL) {
 
   # Orphan control: pull rows from the prior page if the trailing page is
   # too thin. Only meaningful with >= 2 pages.
+  #
+  # Strategy: try the simple pull first (prior page can spare `shortfall`
+  # rows AND keep at least `orphan_min` itself). If that's not possible,
+  # fall back to merging the trailing page into the prior page entirely
+  # — better than violating the orphan_min contract on the last page.
+  # The merged page may temporarily exceed `rows_per_page` by up to
+  # `orphan_min - 1` rows; that's a deliberate trade-off vs. emitting
+  # an orphan-violating final page.
   if (orphan_min > 0L && length(page_ends) >= 2L) {
     last_idx <- length(page_ends)
     last_size <- page_ends[last_idx] - page_starts[last_idx] + 1L
     if (last_size < orphan_min) {
       shortfall <- orphan_min - last_size
       prior_size <- page_ends[last_idx - 1L] - page_starts[last_idx - 1L] + 1L
-      if (prior_size > shortfall) {
+      # Prior page must keep at least `orphan_min` rows after donating.
+      if (prior_size - shortfall >= orphan_min) {
         page_ends[last_idx - 1L] <- page_ends[last_idx - 1L] - shortfall
         page_starts[last_idx] <- page_ends[last_idx - 1L] + 1L
+      } else {
+        # Can't donate without making the prior page itself orphan-thin.
+        # Merge: extend prior page to absorb the last page entirely.
+        page_ends[last_idx - 1L] <- page_ends[last_idx]
+        page_starts <- page_starts[-last_idx]
+        page_ends <- page_ends[-last_idx]
       }
     }
   }

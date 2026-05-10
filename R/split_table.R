@@ -211,6 +211,25 @@ split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE
         all_point <- all_point[!is.na(all_point) & all_point > 0]
         all_lower <- all_lower[!is.na(all_lower) & all_lower > 0]
         all_upper <- all_upper[!is.na(all_upper) & all_upper > 0]
+      } else {
+        # Linear: drop NAs so the post-filter empty-data check below
+        # sees the right state. min(c(NA, null_value), na.rm = TRUE)
+        # would have masked the all-NA condition.
+        all_point <- all_point[!is.na(all_point)]
+        all_lower <- all_lower[!is.na(all_lower)]
+        all_upper <- all_upper[!is.na(all_upper)]
+      }
+
+      # Guard: when every effect column is all-NA, we have no data to
+      # anchor a domain on. Synthesize a sensible default range around
+      # `null_value` (linear: ±1, log: ÷2 / ×2) so downstream
+      # `nice_domain()` doesn't get a degenerate input.
+      if (length(all_point) == 0L && length(all_lower) == 0L && length(all_upper) == 0L) {
+        if (is_log) {
+          all_point <- c(null_value / 2, null_value * 2)
+        } else {
+          all_point <- c(null_value - 1, null_value + 1)
+        }
       }
 
       # Compute raw estimate range (point estimates + null value)

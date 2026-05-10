@@ -1296,6 +1296,17 @@ export function createForestStore() {
     axisZooms = {};
     userResizedIds = new Set();
     wrapLineCounts = {};
+    // UI-ephemeral state that's anchored to row / column ids in the
+    // PREVIOUS spec — clear it so a split-by navigation (or any
+    // setSpec swap) doesn't flash a tooltip pointing at a row that
+    // no longer exists, or open a filter popover anchored to a
+    // missing column.
+    hoveredRowId = null;
+    tooltipRowId = null;
+    tooltipPosition = null;
+    filterPopoverTarget = null;
+    editingTarget = null;
+    dragState = null;
     // Reset the op log too — a new spec is a new "session" as far as
     // recording fluent R calls is concerned.
     opLog = [];

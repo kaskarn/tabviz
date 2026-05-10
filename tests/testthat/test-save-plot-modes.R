@@ -145,6 +145,13 @@ test_that("Mode 3: width + height triggers relayout to target aspect", {
   expect_equal(d$h, 400, tolerance = 1)
 })
 
+test_that("save_plot rejects empty file path (regression)", {
+  skip_if_no_v8()
+  spec <- make_fixture()
+  expect_error(save_plot(spec, ""), "file")
+  expect_error(save_plot(spec, NA_character_), "file")
+})
+
 test_that("Over-specified dimensions error", {
   skip_if_no_v8()
   spec <- make_fixture()
