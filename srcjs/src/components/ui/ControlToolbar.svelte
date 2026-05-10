@@ -6,6 +6,7 @@
   import DownloadButton from "./DownloadButton.svelte";
   import ResetButton from "./ResetButton.svelte";
   import ZoomControls from "./ZoomControls.svelte";
+  import AspectLockPill from "./AspectLockPill.svelte";
   import SettingsButton from "./SettingsButton.svelte";
   import TokenPicker from "./TokenPicker.svelte";
   import SourceButton from "./SourceButton.svelte";
@@ -40,6 +41,10 @@
 </script>
 
 <div class="control-toolbar">
+  <!-- Aspect-lock pill: visible only when targetAspect is set. Sits at
+       the start of the toolbar so users notice the lock without having
+       to drill into the zoom dropdown. -->
+  <AspectLockPill {store} />
   {#if showZoomControls}
     <ZoomControls {store} />
   {/if}
