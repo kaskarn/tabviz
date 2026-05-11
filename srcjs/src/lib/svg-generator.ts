@@ -4326,6 +4326,38 @@ function generateSVGForAspectTarget(
   const naturalRowHeight = spec.theme.spacing?.rowHeight ?? 32;
   const naturalPlotHeight = naturalLayout.plotHeight;
   const naturalChromeHeight = naturalLayout.totalHeight - naturalPlotHeight;
+  // chromeScale's denominator is the *scalable* subset of natural
+  // chrome (the spec.theme.spacing values the apply step below
+  // actually scales, weighted by which ones contribute to this
+  // spec's totalHeight), NOT `naturalChromeHeight`. The latter
+  // also includes fixed, font-derived bits (axisRegionHeight,
+  // header/footer text-height) and `padding` (deliberately not
+  // scaled — keeps width unchanged at Phase 7C). Using the full
+  // chrome as denominator under-delivered: `chromeScale ×
+  // scalableSubset + fixedSubset` came out short of
+  // `naturalChromeHeight + chromeDelta`. Mirror keys exactly with
+  // the apply step at the bottom of this function — and gate each
+  // key on whether the corresponding chrome contributor is
+  // actually rendered for this spec (no footer → no footerGap, no
+  // title+subtitle pair → no titleSubtitleGap, etc.).
+  const sp = spec.theme.spacing as Record<string, number | undefined>;
+  const VERTICAL_KEYS = ["headerGap", "axisGap", "footerGap", "headerHeight",
+                         "rowGroupPadding", "bottomMargin", "titleSubtitleGap"];
+  const hasTitle = !!spec.labels?.title;
+  const hasSubtitle = !!spec.labels?.subtitle;
+  const hasFooter = !!(spec.labels?.caption || spec.labels?.footnote);
+  const hasAxis = naturalLayout.axisHeight > 0;
+  const groupHeaderCount = buildDisplayRows(spec).filter(
+    r => r.type === "group_header" && (r as { depth?: number }).depth === 0,
+  ).length;
+  const scalableChromeHeight =
+      (sp.headerGap ?? 12)
+    + (sp.headerHeight ?? 0)
+    + (hasAxis ? (sp.axisGap ?? 12) : 0)
+    + (hasFooter ? (sp.footerGap ?? 8) : 0)
+    + (sp.bottomMargin ?? LAYOUT.BOTTOM_MARGIN)
+    + (hasTitle && hasSubtitle ? (sp.titleSubtitleGap ?? 13) : 0)
+    + groupHeaderCount * (sp.rowGroupPadding ?? 0);
   const heightDelta = targetHeight - naturalLayout.totalHeight;
   // MIN_ROW_HEIGHT keeps text readable when shrinking. 1.4 × font + 4
   // matches the line-height + 4 px breathing pattern used in
@@ -4445,8 +4477,8 @@ function generateSVGForAspectTarget(
     const CHROME_SHARE = 0.35;
     const chromeDelta = heightDelta * CHROME_SHARE;
     const rowDelta = heightDelta - chromeDelta;
-    if (naturalChromeHeight > 0)
-      chromeScale = (naturalChromeHeight + chromeDelta) / naturalChromeHeight;
+    if (scalableChromeHeight > 0)
+      chromeScale = (scalableChromeHeight + chromeDelta) / scalableChromeHeight;
     if (naturalPlotHeight > 0)
       rowHeightScale = (naturalPlotHeight + rowDelta) / naturalPlotHeight;
   } else if (heightDelta < 0) {
@@ -4461,10 +4493,10 @@ function generateSVGForAspectTarget(
       rowHeightScale = MIN_ROW_HEIGHT / naturalRowHeight;
       const flooredPlotHeight = MIN_ROW_HEIGHT * (naturalPlotHeight / naturalRowHeight);
       const residualHeight = targetHeight - (naturalChromeHeight + flooredPlotHeight);
-      if (naturalChromeHeight > 0) {
+      if (scalableChromeHeight > 0) {
         chromeScale = Math.max(
           0.4,
-          (naturalChromeHeight + residualHeight) / naturalChromeHeight,
+          (scalableChromeHeight + residualHeight) / scalableChromeHeight,
         );
       }
     }
@@ -4516,13 +4548,13 @@ function generateSVGForAspectTarget(
     sp.rowHeight = (sp.rowHeight ?? 32) * rowHeightScale;
     if (Math.abs(chromeScale - 1) > 1e-6) {
       // Vertical chrome contributors. headerGap / axisGap / footerGap /
-      // headerHeight are the user-visible bands; padding is sliced top
-      // and bottom too but is also a horizontal contributor — leaving
-      // it alone here keeps width unchanged (Phase 7C) at the cost of
-      // some chrome under-delivery on extreme tall ratios (the 7B
-      // diagnostic surfaces this when target is missed by > 5 %).
-      const VERTICAL_KEYS = ["headerGap", "axisGap", "footerGap", "headerHeight",
-                             "rowGroupPadding", "bottomMargin", "titleSubtitleGap"];
+      // headerHeight are the user-visible bands; padding is sliced
+      // top and bottom too but is also a horizontal contributor —
+      // leaving it alone keeps width unchanged (Phase 7C). The same
+      // key list is the chromeScale denominator above
+      // (`scalableChromeHeight`), so what we scale here matches what
+      // the math budgets — no under-delivery from "scale solves for
+      // 155 px but only 72 px is mutable" anymore.
       for (const k of VERTICAL_KEYS) {
         if (typeof sp[k] === "number") sp[k] = (sp[k] as number) * chromeScale;
       }

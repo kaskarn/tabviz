@@ -1006,7 +1006,20 @@ export function createForestStore() {
     if (targetAspect != null) {
       const FLEX_CAP = 2;
       const naturalForestWidth = forestWidth;
-      const approxRowsHeight = displayRows.length * naturalRowHeight;
+      // Effective row-slot count for the height budget: data rows
+      // contribute 1 slot each (spacers are absorbed at half their
+      // weight but with rowHeight ≥ MIN_ROW_HEIGHT they round close
+      // enough), plus 1.5 slots for the overall-summary row when
+      // present (mirrors the `hasOverall ? rowHeight * 1.5 : 0`
+      // term in plotHeight below). Without this, the lever ladder
+      // budgets for `displayRows.length` slots but the renderer
+      // pours rowDelta into `length + 1.5` slots — overshooting
+      // totalHeight by `overall * 1.5 / length` of the requested
+      // height delta.
+      const hasOverallForBudget = !!spec.data.overall;
+      const effectiveRowSlots =
+        displayRows.length + (hasOverallForBudget ? 1.5 : 0);
+      const approxRowsHeight = effectiveRowSlots * naturalRowHeight;
       const approxChromeHeight =
         headerHeight + axisHeight + spec.theme.spacing.padding * 2;
       const approxNaturalHeight = approxRowsHeight + approxChromeHeight;
@@ -1120,14 +1133,23 @@ export function createForestStore() {
       const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
       const naturalChromeHeight = approxChromeHeight;
       const naturalPlotHeight = approxRowsHeight;
+      // chromeScale denominator is the *scalable* subset of natural
+      // chrome — `headerHeight + axisHeight`, NOT
+      // `naturalChromeHeight` (which also folds in `padding * 2`,
+      // intentionally unscaled to keep width stable). Using the
+      // full chrome as denominator under-delivered by
+      // `padding * 2 * chromeDelta / naturalChromeHeight` (a few %
+      // at extreme ratios). Mirrors the same fix in
+      // svg-generator.ts so live + static stay in lock-step.
+      const scalableChromeHeight = headerHeight + axisHeight;
 
       if (heightDelta > 0 && naturalPlotHeight > 0) {
         const CHROME_SHARE = 0.35;
         const chromeDelta = heightDelta * CHROME_SHARE;
         const rowDelta = heightDelta - chromeDelta;
-        if (naturalChromeHeight > 0)
-          chromeScale = (naturalChromeHeight + chromeDelta) / naturalChromeHeight;
-        rowHeight = naturalRowHeight + rowDelta / displayRows.length;
+        if (scalableChromeHeight > 0)
+          chromeScale = (scalableChromeHeight + chromeDelta) / scalableChromeHeight;
+        rowHeight = naturalRowHeight + rowDelta / effectiveRowSlots;
       } else if (heightDelta < 0 && naturalPlotHeight > 0) {
         const targetPlotHeight = Math.max(0, targetHeight - naturalChromeHeight);
         const proposedRowHeight =
@@ -1136,13 +1158,13 @@ export function createForestStore() {
           rowHeight = proposedRowHeight;
         } else {
           rowHeight = MIN_ROW_HEIGHT;
-          const flooredPlotHeight = MIN_ROW_HEIGHT * displayRows.length;
+          const flooredPlotHeight = MIN_ROW_HEIGHT * effectiveRowSlots;
           const residualHeight =
             targetHeight - (naturalChromeHeight + flooredPlotHeight);
-          if (naturalChromeHeight > 0) {
+          if (scalableChromeHeight > 0) {
             chromeScale = Math.max(
               0.4,
-              (naturalChromeHeight + residualHeight) / naturalChromeHeight,
+              (scalableChromeHeight + residualHeight) / scalableChromeHeight,
             );
           }
         }

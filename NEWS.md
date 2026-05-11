@@ -29,6 +29,21 @@
   specs (no aspect pin) are unchanged — `chromeScale` defaults to 1
   and the new fields are null.
 
+* **Aspect-pinned exports (live + R `save_plot()`) now content-fill
+  exactly.** Follow-up to the previous fix: with chrome scaling in
+  place, the `chromeScale` denominator was still the full
+  `naturalChromeHeight` (which folds in unscaled `padding`),
+  causing the multiplier to over-deliver chrome and over-shoot
+  totalHeight by a few percent. Both ladders now use the *scalable*
+  subset of chrome (the spec.theme.spacing tokens that actually get
+  scaled, gated by which contributors are rendered for this spec).
+  The live store also now budgets row slots correctly for the
+  `overall` summary row (1.5 × rowHeight contribution), eliminating
+  the residual ~5 % overshoot at narrow ratios. R-side `save_plot()`
+  now meets the requested aspect exactly without the
+  "Aspect target not fully reached" warning that used to fire at
+  narrow ratios.
+
 * **Tabular specs (no flex column) report content-width as natural.**
   Previously `tabviz_natural_dimensions()` and `save_plot()` rendered
   tabular specs at a forced 800 px wide regardless of content,
