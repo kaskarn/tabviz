@@ -1138,6 +1138,40 @@ export interface SplitForestPayload {
 }
 
 // ============================================================================
+// Shiny outbound envelope (JS → R wire contract)
+// ============================================================================
+
+/**
+ * Provenance tag for outbound Shiny inputs. Every widget-driven mutation
+ * carries `"user"`; mutations dispatched from R via the proxy channel
+ * carry `"proxy"`. Dashboards filter their own writes with this — e.g.,
+ * `req(input$tbl_sort$source == "user")`.
+ *
+ * See docs/dev/source-tagging.md for the full contract and rationale.
+ */
+export type SourceTag = "user" | "proxy";
+
+/**
+ * Uniform envelope wrapping every value the widget pushes to Shiny via
+ * `Shiny.setInputValue`. The envelope shape is part of the JS → R wire
+ * contract and is consumed by R-side readers
+ * `tabviz::tabviz_state()` / `tabviz::tabviz_state_envelope()`.
+ *
+ * Fields:
+ *   - `value`: the actual payload (typed per emitter; bundle shape for `_state`)
+ *   - `source`: provenance tag; see `SourceTag`
+ *   - `ts`: epoch milliseconds at emission; lets observers detect stale events
+ *
+ * Use `shinyEnvelope()` from `$lib/shiny-envelope` to construct one.
+ * See docs/dev/source-tagging.md for the full contract.
+ */
+export interface ShinyEnvelope<T = unknown> {
+  value: T;
+  source: SourceTag;
+  ts: number;
+}
+
+// ============================================================================
 // HTMLWidgets Integration
 // ============================================================================
 

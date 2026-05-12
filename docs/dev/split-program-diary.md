@@ -92,3 +92,33 @@ Filing: 136-pass-6-fail is the running JS test baseline going forward. If I ever
 
 One observation: the validator catches version drift at *both* widget render paths (single + split) AND at R-side serialize time (the sync test). That's three independent enforcement points for one contract. Belt-and-braces, but the spec is explicit that this is the most load-bearing piece of infrastructure in the program, so the redundancy is appropriate.
 
+### 0a-PR2: ShinyEnvelope&lt;T&gt; type — and the verbatimModuleSyntax detour
+
+PR2 was supposed to be a one-day exercise: define a TS interface for the `{value, source, ts}` shape, apply it at the 5 construction sites, write a doc. It was that, mostly. One small detour worth mentioning because it might trip up future PRs touching this area.
+
+I initially put the runtime helper `shinyEnvelope()` next to the type in `$types/index.ts`. Cleanest from "shared wire contract lives together" view. But `tsconfig.json` has `verbatimModuleSyntax: true`, which means `import type { ... }` and `import { ... }` for runtime values can't mix freely. Every existing `import type { ... } from "$types"` would need to become either `import { type ..., shinyEnvelope }` (mixed inline syntax) or split into two imports. Ugly diff, and confusing precedent — once `$types` exports both, the rule "types only here" is broken.
+
+So the helper moved to `$lib/shiny-envelope.ts`. Three files (the two widget entries and the source slice) now import types from `$types` and the helper from `$lib`. That's the conventional shape: types are types, runtime is runtime. Phase 2's source-tree restructure will eventually relocate the helper into the `htmlwidgets/` adapter (it's an adapter concern) but the type stays in spec/types — the type describes the wire contract, the helper just constructs it.
+
+Also folded: the source slice's local `SourceTag` definition. Previously the slice was the sole owner; now it imports from `$types` and re-exports the name for slice consumers. Tiny cleanup, but it's the right place — `SourceTag` is part of the wire contract, not internal store state.
+
+The doc (`docs/dev/source-tagging.md`) ended up being the most useful artifact. Writing it forced me to articulate the synchronous capture story precisely: `withSource("proxy", () => ...)` is a synchronous wrapper, `currentSource` is a plain `let` (not `$state`), and every `markSource("foo")` call inside the wrapper body lands while `currentSource` is still `"proxy"` — *no `await`, no `setTimeout`, no `$effect.flush()` in between*. That synchronous window is why source tagging is sound, and it's the kind of contract that's easy to break silently if a future change introduces an awaited or scheduled step. Now it's in a doc that someone touching `withSource` will hopefully read.
+
+Results: build clean, bun test 136 pass / 6 pre-existing fail (no new failures from the envelope refactor), R tests beautiful, visual smoke clean.
+
+A small note on the helpers' calling shape. The old code was:
+```ts
+emit("selected", Array.from(store.selectedRowIds));
+// inside emit:
+window.Shiny.setInputValue(`${widgetId}_${field}`, { value, source: store.getSource(field), ts: Date.now() }, ...);
+```
+
+New code:
+```ts
+emit("selected", Array.from(store.selectedRowIds));
+// inside emit:
+window.Shiny.setInputValue(`${widgetId}_${field}`, shinyEnvelope(value, store.getSource(field)), ...);
+```
+
+Three things shorter — `value:` keyword, the comma after, the `ts: Date.now()` field. Tiny readability win, real maintenance win (envelope shape is now defined once).
+

@@ -14,7 +14,8 @@
 // (c) "method-only split" per spec §5.1-Q8). See
 // docs/dev/store-decomposition-idiom.md for the decision record.
 
-export type SourceTag = "user" | "proxy";
+import type { SourceTag } from "$types";
+export type { SourceTag };
 
 export interface SourceSlice {
   markSource: (field: string) => void;

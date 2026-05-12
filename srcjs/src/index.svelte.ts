@@ -3,6 +3,7 @@ import type { ThemeName } from "$lib/theme-presets";
 import ForestPlot from "$lib/ForestPlot.svelte";
 import { createForestStore, type ForestStore } from "$stores/forestStore.svelte";
 import { exportToSVG, exportToPNG } from "$lib/export";
+import { shinyEnvelope } from "$lib/shiny-envelope";
 import { validateSpecVersion } from "$spec";
 import { mount, unmount } from "svelte";
 import "./styles.css";
@@ -334,16 +335,17 @@ const binding: HTMLWidgetsBinding = {
 
 // Set up Shiny input bindings.
 //
-// Every outbound input uses a uniform envelope: { value, source, ts }. `source`
-// is "user" for widget-driven mutations and "proxy" for Shiny-pushed ones — the
-// store's withSource() wrapper around proxy dispatch (below) makes markSource()
-// capture the right tag synchronously inside each setter, before $effect runs.
+// Every outbound input uses the uniform ShinyEnvelope: { value, source, ts }.
+// `source` is "user" for widget-driven mutations and "proxy" for Shiny-pushed
+// ones — the store's withSource() wrapper around proxy dispatch (below) makes
+// markSource() capture the right tag synchronously inside each setter, before
+// $effect runs. See docs/dev/source-tagging.md for the contract.
 function setupShinyBindings(widgetId: string, store: ForestStore) {
   const emit = (field: string, value: unknown) => {
     if (!window.Shiny) return;
     window.Shiny.setInputValue(
       `${widgetId}_${field}`,
-      { value, source: store.getSource(field), ts: Date.now() },
+      shinyEnvelope(value, store.getSource(field)),
       { priority: "event" },
     );
   };
@@ -478,7 +480,7 @@ function setupShinyBindings(widgetId: string, store: ForestStore) {
         };
         window.Shiny.setInputValue(
           `${widgetId}_state`,
-          { value: bundle, source: "user", ts: Date.now() },
+          shinyEnvelope(bundle, "user"),
           { priority: "event" },
         );
       }, 150);

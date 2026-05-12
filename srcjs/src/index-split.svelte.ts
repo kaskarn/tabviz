@@ -1,6 +1,7 @@
 import type { SplitForestPayload, HTMLWidgetsBinding, WidgetInstance } from "$types";
 import SplitForestPlot from "$lib/SplitForestPlot.svelte";
 import { createSplitForestStore, type SplitForestStore } from "$stores/splitForestStore.svelte";
+import { shinyEnvelope } from "$lib/shiny-envelope";
 import { validateSpecVersion } from "$spec";
 import { mount, unmount } from "svelte";
 import "./styles.css";
@@ -58,17 +59,18 @@ const binding: HTMLWidgetsBinding = {
 
 // Set up Shiny input bindings.
 //
-// Split-widget v1 emits envelope-wrapped {value, source, ts} for active_plot
-// and selected (paint-derived from the active sub-store). Per-active-store
+// Split-widget v1 emits ShinyEnvelope-wrapped values for active_plot and
+// selected (paint-derived from the active sub-store). Per-active-store
 // full Tier-1 observability is deferred — consumers can still observe the
 // active sub-store's own outputs once richer cross-cutting wiring lands.
+// See docs/dev/source-tagging.md for the envelope contract.
 function setupShinyBindings(widgetId: string, store: SplitForestStore) {
   $effect.root(() => {
     $effect(() => {
       const activeKey = store.activeKey;
       window.Shiny?.setInputValue(
         `${widgetId}_active_plot`,
-        { value: activeKey, source: store.activeKeySource, ts: Date.now() },
+        shinyEnvelope(activeKey, store.activeKeySource),
         { priority: "event" },
       );
     });
@@ -77,7 +79,7 @@ function setupShinyBindings(widgetId: string, store: SplitForestStore) {
       const ids = Array.from(store.activeStore.selectedRowIds);
       window.Shiny?.setInputValue(
         `${widgetId}_selected`,
-        { value: ids, source: store.activeStore.getSource("selected"), ts: Date.now() },
+        shinyEnvelope(ids, store.activeStore.getSource("selected")),
         { priority: "event" },
       );
     });
