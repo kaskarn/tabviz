@@ -1,10 +1,10 @@
-import type { WebSpec, HTMLWidgetsBinding, WidgetInstance, ColumnSpec } from "$types";
-import type { ThemeName } from "$lib/theme-presets";
+import type { WebSpec, HTMLWidgetsBinding, WidgetInstance } from "$types";
 import ForestPlot from "$lib/ForestPlot.svelte";
 import { createForestStore, type ForestStore } from "$stores/forestStore.svelte";
 import { exportToSVG, exportToPNG } from "$lib/export";
 import { shinyEnvelope } from "$lib/shiny-envelope";
 import { validateSpecVersion } from "$spec";
+import { normalize } from "$spec/proxy-args.ts";
 import {
   exposeDevHook,
   hasShiny,
@@ -24,134 +24,106 @@ const storeRegistry = new Map<string, ForestStore>();
 exposeDevHook("__tabvizStoreRegistry", storeRegistry);
 
 // Proxy method handlers. Keys match the method names sent from R's
-// invoke_proxy_method(); values read the JSON-decoded args and dispatch
-// into the Svelte store. Keep this table flat — one entry per verb.
+// invoke_proxy_method(); each value normalizes the raw wire payload via
+// `normalize.<method>` from `$spec/proxy-args.ts` then dispatches into
+// the store with typed args. Coercion lives in normalize, not here.
+//
+// Adding a new method:
+//   1. Add an interface + normalize entry in $spec/proxy-args.ts
+//   2. Add a handler below that calls the normalizer and dispatches
+//   3. Add a behavior test in srcjs/src/index.proxy.test.ts
 export const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unknown>) => void> = {
-  updateData: (store, args) => {
-    if (args.spec) {
-      store.setSpec(args.spec as WebSpec);
-    }
+  updateData: (store, raw) => {
+    const a = normalize.updateData(raw);
+    if (!a) return;
+    store.setSpec(a.spec);
   },
-  toggleGroup: (store, args) => {
-    store.toggleGroup(
-      args.groupId as string,
-      args.collapsed as boolean | undefined
-    );
+  toggleGroup: (store, raw) => {
+    const a = normalize.toggleGroup(raw);
+    if (!a) return;
+    store.toggleGroup(a.groupId, a.collapsed);
   },
-  applyFilter: (store, args) => {
-    // Accepts either legacy FilterConfig { field, operator, value } or
-    // new multi-column { field, filter: ColumnFilter }.
-    if (args.filter && typeof args.filter === "object") {
-      const f = args.filter as Record<string, unknown>;
-      if ("kind" in f) {
-        store.setColumnFilter(f.field as string, f as unknown as Parameters<ForestStore["setColumnFilter"]>[1]);
-        return;
-      }
-      store.setFilter(args.filter as Parameters<ForestStore["setFilter"]>[0]);
-    } else if (args.field && "filter" in args) {
-      store.setColumnFilter(args.field as string, args.filter as Parameters<ForestStore["setColumnFilter"]>[1]);
+  applyFilter: (store, raw) => {
+    const a = normalize.applyFilter(raw);
+    if (!a) return;
+    if (a.kind === "column") {
+      store.setColumnFilter(a.field, a.filter);
+    } else {
+      store.setFilter(a.filter);
     }
   },
   clearFilter: (store) => {
     store.clearAllFilters();
   },
-  sortBy: (store, args) => {
-    store.sortBy(
-      args.column as string,
-      args.direction as "asc" | "desc" | "none"
-    );
+  sortBy: (store, raw) => {
+    const a = normalize.sortBy(raw);
+    if (!a) return;
+    store.sortBy(a.column, a.direction);
   },
 
   // ---- Column ops ----
-  addColumn: (store, args) => {
-    const column = args.column as ColumnSpec | undefined;
-    if (!column) return;
-    const afterId = typeof args.afterId === "string" ? args.afterId : "";
-    store.insertColumn(column, afterId);
+  addColumn: (store, raw) => {
+    const a = normalize.addColumn(raw);
+    if (!a) return;
+    store.insertColumn(a.column, a.afterId);
   },
-  hideColumn: (store, args) => {
-    if (typeof args.id === "string") store.hideColumn(args.id);
+  hideColumn: (store, raw) => {
+    const a = normalize.hideColumn(raw);
+    if (!a) return;
+    store.hideColumn(a.id);
   },
-  moveColumn: (store, args) => {
-    const itemId = args.itemId as string | undefined;
-    if (!itemId) return;
-    let newIndex: number | undefined;
-    if (typeof args.newIndex === "number" && Number.isFinite(args.newIndex)) {
-      newIndex = args.newIndex;
-    } else if (typeof args.before === "string" && args.before) {
-      // Position relative to another column id.
-      const scope = store.findColumnScope(itemId) ?? "__root__";
+  moveColumn: (store, raw) => {
+    const a = normalize.moveColumn(raw);
+    if (!a) return;
+    let newIndex: number;
+    if (a.position.kind === "index") {
+      newIndex = a.position.value;
+    } else {
+      // "before" mode: resolve the target sibling's index from the store's
+      // current column scope. This dispatch step is the genuine reason
+      // S12 keeps both positional modes (R can't resolve sibling indexes
+      // without store knowledge). See the diary's PR4 note.
+      const scope = store.findColumnScope(a.itemId) ?? "__root__";
       const siblings = store.siblingsForColumnScope(scope).map((d) => d.id);
-      const targetIdx = siblings.indexOf(args.before);
-      if (targetIdx >= 0) newIndex = targetIdx;
+      const targetIdx = siblings.indexOf(a.position.value);
+      if (targetIdx < 0) return;
+      newIndex = targetIdx;
     }
-    if (newIndex === undefined) return;
-    store.moveColumnItem(itemId, newIndex);
+    store.moveColumnItem(a.itemId, newIndex);
   },
-  setColumnWidth: (store, args) => {
-    if (typeof args.columnId === "string" && typeof args.width === "number") {
-      store.setColumnWidth(args.columnId, args.width);
-    }
+  setColumnWidth: (store, raw) => {
+    const a = normalize.setColumnWidth(raw);
+    if (!a) return;
+    store.setColumnWidth(a.columnId, a.width);
   },
-  updateColumn: (store, args) => {
-    const id = args.id as string | undefined;
-    if (!id) return;
-    // R sends a `changes` payload of named properties to merge. Resolve the
-    // current ColumnSpec from the store's effective column defs, merge, and
-    // write back via updateColumn(id, newSpec).
-    const current = store.allColumns.find((c) => c.id === id);
-    if (!current) return;
-    const changes = (args.changes as Record<string, unknown>) ?? {};
-    const topProps = new Set([
-      "header", "align", "headerAlign", "header_align", "wrap",
-      "sortable", "width", "type", "field",
-    ]);
-    const next: ColumnSpec = { ...current };
-    for (const [k, v] of Object.entries(changes)) {
-      if (k === "options" && typeof v === "object" && v !== null) {
-        next.options = { ...(next.options ?? {}), ...(v as Record<string, unknown>) };
-      } else if (topProps.has(k)) {
-        const destKey = k === "header_align" ? "headerAlign" : k;
-        (next as unknown as Record<string, unknown>)[destKey] = v;
-      } else {
-        // Unknown key falls into options (mirrors R-side semantics).
-        next.options = { ...(next.options ?? {}), [k]: v };
-      }
-    }
-    store.updateColumn(id, next);
+  updateColumn: (store, raw) => {
+    const a = normalize.updateColumn(raw);
+    if (!a) return;
+    store.updateColumnPatch(a.id, a.patch);
   },
 
   // ---- Row ops ----
-  selectRows: (store, args) => {
-    const ids = Array.isArray(args.rowIds) ? (args.rowIds as unknown[]).map(String) : [];
-    store.setSelectedRows(ids);
+  selectRows: (store, raw) => {
+    const a = normalize.selectRows(raw);
+    if (!a) return;
+    store.setSelectedRows(a.rowIds);
   },
-  moveRow: (store, args) => {
-    const rowId = args.rowId as string | undefined;
-    if (!rowId) return;
-    let newIndex: number | undefined;
-    if (typeof args.newIndex === "number" && Number.isFinite(args.newIndex)) {
-      newIndex = args.newIndex;
-    } else if (typeof args.before === "string" && args.before) {
-      // Need row's scope to resolve an id-relative position.
-      // Store doesn't expose a direct getter, but siblings-for-scope can be
-      // derived via spec.data.rows. Keep this simple: only numeric moves for now.
-      return;
-    }
-    if (newIndex === undefined) return;
-    store.moveRowItem(rowId, newIndex);
+  moveRow: (store, raw) => {
+    const a = normalize.moveRow(raw);
+    if (!a) return;
+    store.moveRowItem(a.rowId, a.position.value);
   },
 
   // ---- Cell edits ----
-  setCell: (store, args) => {
-    if (typeof args.rowId === "string" && typeof args.field === "string") {
-      store.setCellValue(args.rowId, args.field, args.value as Parameters<ForestStore["setCellValue"]>[2]);
-    }
+  setCell: (store, raw) => {
+    const a = normalize.setCell(raw);
+    if (!a) return;
+    store.setCellValue(a.rowId, a.field, a.value as Parameters<ForestStore["setCellValue"]>[2]);
   },
-  setRowLabel: (store, args) => {
-    if (typeof args.rowId === "string" && typeof args.label === "string") {
-      store.setRowLabel(args.rowId, args.label);
-    }
+  setRowLabel: (store, raw) => {
+    const a = normalize.setRowLabel(raw);
+    if (!a) return;
+    store.setRowLabel(a.rowId, a.label);
   },
   clearEdits: (store) => {
     store.clearAllEdits();
@@ -161,76 +133,58 @@ export const proxyMethods: Record<string, (store: ForestStore, args: Record<stri
   // R's `paint_row(proxy, row_id, token)` sends `{rowId, token}`. A
   // string token paints; `NA_character_` (-> null over wire) clears
   // every active token on that row. The store's `setRowSemantic`
-  // takes (rowId, token, on) — translate the clear-all case by
-  // mirroring the spec baseline + current edits.
-  setRowSemantic: (store, args) => {
-    const rowId = typeof args.rowId === "string" ? args.rowId : null;
-    if (!rowId) return;
-    const token = args.token;
-    if (typeof token === "string") {
-      store.setRowSemantic(rowId, token as never, true);
+  // takes (rowId, token, on); the clear-all case fans out below.
+  setRowSemantic: (store, raw) => {
+    const a = normalize.setRowSemantic(raw);
+    if (!a) return;
+    if (a.token !== null) {
+      store.setRowSemantic(a.rowId, a.token, true);
     } else {
-      // null / undefined / NA -> clear every painted token on the row.
-      const tokens: ReadonlyArray<string> =
+      // Clear all painted tokens on the row. The PR6 milestone adds a
+      // dedicated store.clearSemantic() method (S5); for PR4 we still
+      // fan out manually here.
+      const tokens: ReadonlyArray<"bold" | "emphasis" | "muted" | "accent" | "fill"> =
         ["bold", "emphasis", "muted", "accent", "fill"];
-      for (const t of tokens) {
-        store.setRowSemantic(rowId, t as never, false);
-      }
+      for (const t of tokens) store.setRowSemantic(a.rowId, t, false);
     }
   },
-  setCellSemantic: (store, args) => {
-    const rowId = typeof args.rowId === "string" ? args.rowId : null;
-    const field = typeof args.field === "string" ? args.field : null;
-    if (!rowId || !field) return;
-    const token = args.token;
-    if (typeof token === "string") {
-      store.setCellSemantic(rowId, field, token as never, true);
+  setCellSemantic: (store, raw) => {
+    const a = normalize.setCellSemantic(raw);
+    if (!a) return;
+    if (a.token !== null) {
+      store.setCellSemantic(a.rowId, a.field, a.token, true);
     } else {
-      const tokens: ReadonlyArray<string> =
+      const tokens: ReadonlyArray<"bold" | "emphasis" | "muted" | "accent" | "fill"> =
         ["bold", "emphasis", "muted", "accent", "fill"];
-      for (const t of tokens) {
-        store.setCellSemantic(rowId, field, t as never, false);
-      }
+      for (const t of tokens) store.setCellSemantic(a.rowId, a.field, t, false);
     }
   },
 
   // ---- Global ----
-  setTheme: (store, args) => {
-    if (typeof args.name === "string") {
-      store.setTheme(args.name as ThemeName);
+  setTheme: (store, raw) => {
+    const a = normalize.setTheme(raw);
+    if (!a) return;
+    if (a.kind === "name") {
+      store.setTheme(a.name);
     }
-    // Full WebTheme payloads are not yet applied runtime-side; silently
-    // accept so the proxy call doesn't error, and let the future wire-up
-    // populate `args.theme` into a store method.
+    // Full WebTheme payloads aren't applied runtime-side yet; the
+    // normalizer accepts them so the proxy call doesn't error. Future
+    // store wiring will add `setThemeObject(a.theme)` here.
   },
-  setZoom: (store, args) => {
-    if (typeof args.zoom === "number") store.setZoom(args.zoom);
-    if (typeof args.autoFit === "boolean") store.setAutoFit(args.autoFit);
-    if (args.maxWidth === null || typeof args.maxWidth === "number") {
-      store.setMaxWidth(args.maxWidth as number | null);
-    }
-    if (args.maxHeight === null || typeof args.maxHeight === "number") {
-      store.setMaxHeight(args.maxHeight as number | null);
-    }
-    if (typeof args.showZoomControls === "boolean") {
-      store.setShowZoomControls(args.showZoomControls);
-    }
+  setZoom: (store, raw) => {
+    const a = normalize.setZoom(raw);
+    if (!a) return;
+    if (a.zoom !== undefined) store.setZoom(a.zoom);
+    if (a.autoFit !== undefined) store.setAutoFit(a.autoFit);
+    if (a.maxWidth !== undefined) store.setMaxWidth(a.maxWidth);
+    if (a.maxHeight !== undefined) store.setMaxHeight(a.maxHeight);
+    if (a.showZoomControls !== undefined) store.setShowZoomControls(a.showZoomControls);
   },
-  setAspectRatio: (store, args) => {
-    // R sends `ratio = NA_real_` to clear; the proxy serializer turns that
-    // into `null` over the wire. A finite positive number pins the target.
-    const r = args.ratio;
-    if (r == null || (typeof r === "number" && (!Number.isFinite(r) || r <= 0))) {
-      store.setTargetAspect(null);
-    } else if (typeof r === "number") {
-      store.setTargetAspect(r);
-    }
-    // Phase 7C: anchor= payload field. The store's `setTargetAspectAnchor`
-    // updates the spec and triggers a relayout.
-    const a = args.anchor;
-    if (typeof a === "string" && (a === "width" || a === "height" || a === "auto")) {
-      store.setTargetAspectAnchor(a as "width" | "height" | "auto");
-    }
+  setAspectRatio: (store, raw) => {
+    const a = normalize.setAspectRatio(raw);
+    if (!a) return;
+    store.setTargetAspect(a.ratio);
+    if (a.anchor !== undefined) store.setTargetAspectAnchor(a.anchor);
   },
 };
 

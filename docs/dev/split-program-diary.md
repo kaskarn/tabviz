@@ -142,3 +142,31 @@ Results: build clean, bun test still 136 pass / 6 pre-existing fail, R tests pas
 
 `grep -n "window\." srcjs/src/index*.ts` returns only comments. Done.
 
+### 0a-PR4: typed proxy dispatch — and the S12 pushback
+
+This was the meatiest PR in Phase 0a. The job: lift all the `as string` / `as ColumnSpec` / `as never` coercions out of the per-handler bodies into one normalization layer, define typed argument interfaces per method, move `updateColumn`'s in-dispatcher merge logic into the store.
+
+Spec called for items S1, S7, S11, S12 in this PR. Three of them landed clean. S12 needed pushback.
+
+**S12 in the spec said:** "`moveColumn` / `moveRow` have parallel before/newIndex inference. Pick one positional model; remove inference."
+
+When I actually read the code: the inference branch (`before = "column_name"`) requires reading the store's current column scope to look up the target sibling's index. That resolution can only happen JS-side — R doesn't know the widget's current column layout. So "remove inference" wasn't really an option; the inference is genuine work, not sloppiness.
+
+I reframed S12: keep both positional modes (R needs both to support its `move_column(x, field, to = "col_name")` and `move_column(x, field, to = 3)` user-facing modes), but type them as a discriminated union (`{ kind: "index", value: number } | { kind: "before", value: string }`) instead of a `newIndex?: number; before?: string` parallel-fields pair. Now the type system enforces that exactly one mode is present, and the dispatcher's resolution step is explicitly the "before-mode requires store knowledge" piece — not a defensive fall-through.
+
+This is the first time during execution that the spec's prescription needed a real reframing. Filed in the diary, noted in the proxy-args.ts comments, and the normalizer's `MoveColumnArgs` type carries the rationale inline.
+
+**The bigger architectural payoff** of this PR: every proxy handler in `index.svelte.ts` is now ~3 lines (`const a = normalize.method(raw); if (!a) return; store.doThing(a.field1, a.field2);`). The 200-line dispatch table compressed down to a much flatter shape, and the typed args mean future renames or shape changes propagate via tsc rather than via grep.
+
+**A small wart introduced** that I want to flag: the semantic-token clear-all case still iterates over `["bold", "emphasis", "muted", "accent", "fill"]` in two places inside the dispatch handlers. PR6 (S5) will introduce `store.clearSemantic(rowId)` and these loops disappear. For PR4 the fan-out stays where it is — keeps the diff focused.
+
+**One thing I deliberately did NOT do** that the spec implies: the `setTheme` handler still ignores the `theme` payload variant (`a.kind === "theme"`). The normalizer accepts both `{name: "lancet"}` and `{theme: {...}}` shapes, but the store's `setTheme(name)` method only handles names. Honoring `theme` payloads requires a `store.setThemeObject(theme)` method, which is C5 territory (Phase 0c). For PR4 the proxy preserves today's behavior: theme payloads are typed at the wire boundary, accepted without error, but no-op'd in the dispatcher. Comment in the handler explains.
+
+**Store change:** added `store.updateColumnPatch(id, patch)`. Internally finds the current column spec, merges the partial patch (top-level fields replace; `options` deep-merges), calls existing `updateColumn(id, fullSpec)`. Existing Svelte callers of `store.updateColumn(id, fullSpec)` are untouched. Proxy dispatcher uses the new patch method.
+
+Test fixture changes: `index.proxy.test.ts` got a new fake-store method (`updateColumnPatch`) and three of its existing tests were updated to assert calls land on `updateColumnPatch` (with the typed `patch` arg) instead of `updateColumn` (with a full spec). Plus a new test specifically for the `header_align → headerAlign` boundary normalization (S7 in action).
+
+Results: 137 pass / 6 pre-existing fail (one new test added for the header_align case), R tests beautiful, visual smoke clean across 5 representative examples.
+
+`grep "as string\|as never\|as Record" srcjs/src/index.svelte.ts` — still a few `as` casts in the dispatcher, but they're now narrow (e.g., one `as Parameters<ForestStore["setCellValue"]>[2]` because the store's cell value type is itself untyped — proper typing of that signature is later work). The proxy table has gone from ~200 lines of coercion-heavy code to ~120 lines of typed dispatch.
+

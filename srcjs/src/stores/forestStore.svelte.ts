@@ -2356,6 +2356,45 @@ export function createForestStore() {
     appendOp(ops.updateColumn(id, patch));
   }
 
+  /**
+   * Apply a partial patch to a column. Reads the current spec from the
+   * effective column defs, merges the patch (top-level fields replace;
+   * `options` deep-merges), and persists via {@link updateColumn}.
+   *
+   * Replaces the imperative merge logic that previously lived in
+   * `proxyMethods.updateColumn` (spec S11). Other callers can use this
+   * for "modify these fields, keep the rest" semantics without having
+   * to re-construct a full ColumnSpec.
+   */
+  function updateColumnPatch(
+    id: string,
+    patch: {
+      header?: ColumnSpec["header"];
+      align?: ColumnSpec["align"];
+      headerAlign?: ColumnSpec["headerAlign"];
+      wrap?: ColumnSpec["wrap"];
+      sortable?: ColumnSpec["sortable"];
+      width?: ColumnSpec["width"];
+      type?: ColumnSpec["type"];
+      field?: ColumnSpec["field"];
+      options?: Record<string, unknown>;
+    },
+  ) {
+    const current = allColumns.find((c) => c.id === id);
+    if (!current) return;
+    const next: ColumnSpec = { ...current };
+    if (patch.header !== undefined)      next.header = patch.header;
+    if (patch.align !== undefined)       next.align = patch.align;
+    if (patch.headerAlign !== undefined) next.headerAlign = patch.headerAlign;
+    if (patch.wrap !== undefined)        next.wrap = patch.wrap;
+    if (patch.sortable !== undefined)    next.sortable = patch.sortable;
+    if (patch.width !== undefined)       next.width = patch.width;
+    if (patch.type !== undefined)        next.type = patch.type;
+    if (patch.field !== undefined)       next.field = patch.field;
+    if (patch.options !== undefined)     next.options = { ...(next.options ?? {}), ...patch.options };
+    updateColumn(id, next);
+  }
+
   // Drop all user-driven add/hide/configure edits.
   function clearColumnEdits() {
     userInsertedColumns = [];
@@ -3942,6 +3981,7 @@ export function createForestStore() {
     insertColumn,
     hideColumn,
     updateColumn,
+    updateColumnPatch,
     clearColumnEdits,
     // Edit
     startEdit,

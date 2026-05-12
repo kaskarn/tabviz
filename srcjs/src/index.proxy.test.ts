@@ -22,6 +22,7 @@ function makeFakeStore(overrides: Record<string, unknown> = {}) {
     moveColumnItem: record("moveColumnItem"),
     setColumnWidth: record("setColumnWidth"),
     updateColumn: record("updateColumn"),
+    updateColumnPatch: record("updateColumnPatch"),
     setSelectedRows: record("setSelectedRows"),
     moveRowItem: record("moveRowItem"),
     setCellValue: record("setCellValue"),
@@ -135,23 +136,32 @@ describe("proxyMethods dispatch", () => {
     });
   });
 
-  test("updateColumn merges changes into current column", () => {
+  test("updateColumn produces a typed patch with top-level fields", () => {
     const s = makeFakeStore();
     dispatch("updateColumn", { id: "hr", changes: { header: "Hazard", align: "right" } }, s);
     const entry = (s.calls as { method: string; args: unknown[] }[])[0];
-    expect(entry.method).toBe("updateColumn");
-    const [id, next] = entry.args as [string, Record<string, unknown>];
+    expect(entry.method).toBe("updateColumnPatch");
+    const [id, patch] = entry.args as [string, Record<string, unknown>];
     expect(id).toBe("hr");
-    expect(next.header).toBe("Hazard");
-    expect(next.align).toBe("right");
+    expect(patch.header).toBe("Hazard");
+    expect(patch.align).toBe("right");
   });
 
-  test("updateColumn unknown key merges into options", () => {
+  test("updateColumn unknown key folds into options patch", () => {
     const s = makeFakeStore();
     dispatch("updateColumn", { id: "hr", changes: { minValue: 0 } }, s);
     const entry = (s.calls as { method: string; args: unknown[] }[])[0];
-    const [, next] = entry.args as [string, Record<string, unknown>];
-    expect((next.options as Record<string, unknown>).minValue).toBe(0);
+    const [, patch] = entry.args as [string, Record<string, unknown>];
+    expect((patch.options as Record<string, unknown>).minValue).toBe(0);
+  });
+
+  test("updateColumn normalizes header_align → headerAlign at the boundary", () => {
+    const s = makeFakeStore();
+    dispatch("updateColumn", { id: "hr", changes: { header_align: "center" } }, s);
+    const entry = (s.calls as { method: string; args: unknown[] }[])[0];
+    const [, patch] = entry.args as [string, Record<string, unknown>];
+    expect(patch.headerAlign).toBe("center");
+    expect(patch.header_align).toBeUndefined();
   });
 
   test("selectRows -> setSelectedRows", () => {
