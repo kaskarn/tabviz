@@ -1317,33 +1317,19 @@ export function createForestStore() {
     return totalColumnWidth + forestWidth + padding;
   });
 
-  // Derived: fit scale - how much we'd need to shrink to fit container.
-  // When an aspect target is pinned (Phase 7E), considers BOTH width
-  // *and* height — wide ratios grow width past canvas, tall ratios grow
-  // height past canvas; either should shrink-to-fit so the content
-  // stays in-bounds without scrolling. Without an aspect target, only
-  // width-fit applies (preserves the v0.30 behaviour that vertical
-  // overflow scrolls naturally).
+  // Derived: fit scale — how much we'd need to shrink to fit the
+  // container width. Vertical overflow always scrolls naturally;
+  // applying heightFit when aspect was pinned (the prior Phase 7E
+  // behaviour) made the slider feel awful — the whole widget
+  // CSS-scaled smaller as the user dragged narrower, then snapped
+  // back when the slider was released. Width-only fit + vertical
+  // scroll is the symmetric, smooth model.
   const fitScale = $derived.by((): number => {
     if (containerWidth <= 0 || scalableNaturalWidth <= 0) return 1;
     const contentWidth = scalableNaturalWidth * zoom;
-    const widthFit = contentWidth > containerWidth
+    return contentWidth > containerWidth
       ? containerWidth / contentWidth
       : 1;
-
-    // Aspect-pin path: also fit height. ResizeObserver's
-    // scalableNaturalHeight tracks the rendered grid height; container
-    // height is the canvas. Take the tighter of the two so wide AND
-    // tall aspect targets both stay in-bounds.
-    if (targetAspect != null && containerHeight > 0 && scalableNaturalHeight > 0) {
-      const contentHeight = scalableNaturalHeight * zoom;
-      const heightFit = contentHeight > containerHeight
-        ? containerHeight / contentHeight
-        : 1;
-      return Math.min(widthFit, heightFit);
-    }
-
-    return widthFit;
   });
 
   // Derived: actual rendered scale = zoom × fitScale (when autoFit) or just zoom.

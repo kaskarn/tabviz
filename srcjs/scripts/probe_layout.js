@@ -32,6 +32,8 @@ async function main(htmlPath) {
           padding: store.spec?.theme?.spacing?.padding,
           totalWidth: L?.totalWidth,
           totalHeight: L?.totalHeight,
+          actualScale: store.actualScale,
+          isClamped: store.isClamped,
           dimsW: D?.width, dimsH: D?.height,
           dimsNW: D?.naturalWidth, dimsNH: D?.naturalHeight,
         };

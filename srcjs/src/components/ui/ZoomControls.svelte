@@ -16,8 +16,6 @@
   const autoFit = $derived(store.autoFit);
   const actualScale = $derived(store.actualScale);
   const isClamped = $derived(store.isClamped);
-  const maxWidth = $derived(store.maxWidth);
-  const maxHeight = $derived(store.maxHeight);
 
   // Display percentages
   const displayPercent = $derived(Math.round(actualScale * 100));
@@ -100,22 +98,6 @@
     store.setTargetAspectAnchor(on ? "auto" : "width");
   }
 
-  // Max size options
-  const MAX_WIDTH_OPTIONS = [
-    { value: null, label: 'None' },
-    { value: 600, label: '600px' },
-    { value: 800, label: '800px' },
-    { value: 1000, label: '1000px' },
-    { value: 1200, label: '1200px' },
-  ];
-
-  const MAX_HEIGHT_OPTIONS = [
-    { value: null, label: 'None' },
-    { value: 400, label: '400px' },
-    { value: 600, label: '600px' },
-    { value: 800, label: '800px' },
-  ];
-
   function closeDropdown() {
     dropdownOpen = false;
   }
@@ -124,20 +106,6 @@
   function handleZoomSlider(event: Event) {
     const target = event.target as HTMLInputElement;
     store.setZoom(parseFloat(target.value) / 100);
-  }
-
-  // Handle max-width select
-  function handleMaxWidthChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    const value = target.value === 'null' ? null : parseInt(target.value);
-    store.setMaxWidth(value);
-  }
-
-  // Handle max-height select
-  function handleMaxHeightChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    const value = target.value === 'null' ? null : parseInt(target.value);
-    store.setMaxHeight(value);
   }
 
   // Close dropdown when clicking outside. The popover is portaled to
@@ -307,39 +275,6 @@
           Reset to natural
         </button>
       {/if}
-
-      <div class="divider"></div>
-
-      <!-- Max Size section -->
-      <div class="section-label">Max Size</div>
-
-      <div class="select-row">
-        <label>
-          <span class="select-label">Width</span>
-          <select
-            value={maxWidth === null ? 'null' : maxWidth}
-            onchange={handleMaxWidthChange}
-          >
-            {#each MAX_WIDTH_OPTIONS as opt}
-              <option value={opt.value === null ? 'null' : opt.value}>{opt.label}</option>
-            {/each}
-          </select>
-        </label>
-      </div>
-
-        <div class="select-row">
-          <label>
-            <span class="select-label">Height</span>
-            <select
-              value={maxHeight === null ? 'null' : maxHeight}
-              onchange={handleMaxHeightChange}
-            >
-              {#each MAX_HEIGHT_OPTIONS as opt}
-                <option value={opt.value === null ? 'null' : opt.value}>{opt.label}</option>
-              {/each}
-            </select>
-          </label>
-        </div>
       </div>
     </Portal>
   {/if}
@@ -583,35 +518,4 @@
     color: var(--tv-muted, #94a3b8);
   }
 
-  .select-row {
-    padding: 4px 8px;
-  }
-
-  .select-row label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-  }
-
-  .select-label {
-    min-width: 40px;
-    color: var(--tv-text-muted, #64748b);
-  }
-
-  .select-row select {
-    flex: 1;
-    padding: 4px 8px;
-    border: 1px solid var(--tv-border, #e2e8f0);
-    border-radius: 4px;
-    background: var(--tv-bg, #ffffff);
-    color: var(--tv-fg, #1a1a1a);
-    font-size: 11px;
-    cursor: pointer;
-  }
-
-  .select-row select:focus {
-    outline: none;
-    border-color: var(--tv-accent, #2563eb);
-  }
 </style>

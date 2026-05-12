@@ -1,5 +1,14 @@
 # tabviz (development)
 
+## UI changes
+
+* **Removed "Max Size" Width / Height dropdowns from the zoom &
+  sizing menu.** The aspect-ratio slider + auto-fit cover the
+  sizing model now; the explicit max-dim selects predate that and
+  had become menu clutter. R API and Shiny proxy unchanged —
+  `set_zoom(max_width = ..., max_height = ...)` still works for
+  programmatic use.
+
 ## Polish
 
 * **`muted` semantic token now applies to viz marks as well as text.**
@@ -14,6 +23,17 @@
   change for those.
 
 ## Bug fixes
+
+* **Aspect slider no longer shrinks the whole widget when dragging
+  below natural aspect.** Previously, the live widget's auto-fit
+  machinery applied a CSS-transform downscale on the height axis
+  when an aspect target made the rendered layout taller than the
+  canvas, then snapped back when the slider crossed natural-aspect
+  or was released. Auto-fit now respects width only; vertical
+  overflow scrolls naturally. Trade-off: very tall pinned aspects
+  (e.g. `set_aspect_ratio(0.3)`) extend below the visible fold and
+  require scrolling — the explicit choice the user made by pinning
+  a tall aspect.
 
 * **Live-widget aspect-ratio download now honours the requested ratio
   exactly.** Two coupled defects landed: (a) the live store's height
