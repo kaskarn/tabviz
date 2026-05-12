@@ -1270,6 +1270,11 @@ export function createForestStore() {
       rowHeight,
       plotHeight,
       axisHeight: scaledAxisHeight,
+      // Font-derived axisRegion size — exposed so the export path
+      // can back out a spec axisGap value that recomputes to the
+      // live `axisHeight` (= axisGap + axisRegionHeight) after the
+      // renderer re-derives axisRegionHeight from the same theme.
+      axisRegionHeight: axisGeom.axisRegionHeight,
       nullValue,
       summaryYPosition: plotHeight - rowHeight,
       showOverallSummary: hasOverall,
@@ -3430,6 +3435,39 @@ export function createForestStore() {
       ? { ...(spec.labels ?? {}), ...labelEdits }
       : spec.labels;
 
+    // When an aspect target is pinned, embed the live lever-laddered
+    // chrome / row dimensions into the exported theme so the static
+    // renderer (which recomputes layout from `theme.spacing.*`)
+    // produces the same row heights, header band, and axis spacing
+    // the user sees on screen. Without this, the SVG bounds match
+    // the aspect target but inner content renders at the natural
+    // unscaled rowHeight / headerHeight, leaving large blank space
+    // (the "doesn't render WYSIWYG" symptom). `axisGap` is back-
+    // computed so `axisGap + axisRegionHeight` lands on the live
+    // post-ladder `axisHeight` after the renderer re-derives
+    // axisRegionHeight from the (unchanged) theme typography.
+    let themeForExport = spec.theme;
+    if (
+      targetAspect != null &&
+      layout.aspectTargetHeight != null &&
+      layout.rowHeight != null
+    ) {
+      const naturalAxisGap = spec.theme.spacing.axisGap
+        ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP;
+      const axisRegionH = layout.axisRegionHeight
+        ?? Math.max(0, layout.axisHeight - naturalAxisGap);
+      const exportedAxisGap = Math.max(0, layout.axisHeight - axisRegionH);
+      themeForExport = {
+        ...spec.theme,
+        spacing: {
+          ...spec.theme.spacing,
+          rowHeight: layout.rowHeight,
+          headerHeight: layout.headerHeight,
+          axisGap: exportedAxisGap,
+        },
+      };
+    }
+
     return {
       ...spec,
       columns: effectiveColumnDefs,
@@ -3439,6 +3477,7 @@ export function createForestStore() {
         groups: groupsOut,
       },
       labels: mergedLabels,
+      theme: themeForExport,
     };
   });
 

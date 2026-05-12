@@ -932,6 +932,12 @@ export interface ComputedLayout {
   rowHeight: number;
   plotHeight: number;
   axisHeight: number;
+  /** Font-derived portion of axisHeight (axisHeight = axisGap +
+   *  axisRegionHeight when an axis column is present). Exposed so
+   *  the export path can back out an axisGap value that produces
+   *  the right post-ladder axisHeight when the renderer recomputes
+   *  axisRegionHeight from the theme. */
+  axisRegionHeight?: number;
   nullValue: number;
   summaryYPosition: number;
   showOverallSummary: boolean;
