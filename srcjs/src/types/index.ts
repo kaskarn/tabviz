@@ -1184,6 +1184,18 @@ declare global {
       setInputValue: (name: string, value: unknown, opts?: { priority?: string }) => void;
       addCustomMessageHandler: (type: string, handler: (msg: unknown) => void) => void;
     };
+    /** Dev hook: exposes the export helpers for puppeteer / playwright
+     *  integration tests. Lives behind the `expose-dev-hook` mechanism in
+     *  $lib/htmlwidgets-glue; tests should treat presence as best-effort
+     *  (production builds may strip this in a future minor). */
+    __tabvizExports?: {
+      exportToSVG: (...args: unknown[]) => unknown;
+      exportToPNG: (...args: unknown[]) => unknown;
+    };
+    /** Dev hook: registry of widget stores indexed by element id. Used by
+     *  puppeteer scripts to inspect widget state without going through
+     *  Shiny. Same caveat as `__tabvizExports`. */
+    __tabvizStoreRegistry?: Map<string, unknown>;
   }
 }
 

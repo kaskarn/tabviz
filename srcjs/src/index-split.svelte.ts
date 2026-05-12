@@ -3,6 +3,12 @@ import SplitForestPlot from "$lib/SplitForestPlot.svelte";
 import { createSplitForestStore, type SplitForestStore } from "$stores/splitForestStore.svelte";
 import { shinyEnvelope } from "$lib/shiny-envelope";
 import { validateSpecVersion } from "$spec";
+import {
+  hasShiny,
+  registerCustomMessageHandler,
+  registerWidget,
+  setShinyInput,
+} from "./htmlwidgets-glue";
 import { mount, unmount } from "svelte";
 import "./styles.css";
 
@@ -45,7 +51,7 @@ const binding: HTMLWidgetsBinding = {
         });
 
         // Set up Shiny event forwarding if in Shiny context
-        if (window.Shiny && el.id) {
+        if (hasShiny() && el.id) {
           setupShinyBindings(el.id, store);
         }
       },
@@ -68,44 +74,35 @@ function setupShinyBindings(widgetId: string, store: SplitForestStore) {
   $effect.root(() => {
     $effect(() => {
       const activeKey = store.activeKey;
-      window.Shiny?.setInputValue(
+      setShinyInput(
         `${widgetId}_active_plot`,
         shinyEnvelope(activeKey, store.activeKeySource),
-        { priority: "event" },
       );
     });
 
     $effect(() => {
       const ids = Array.from(store.activeStore.selectedRowIds);
-      window.Shiny?.setInputValue(
+      setShinyInput(
         `${widgetId}_selected`,
         shinyEnvelope(ids, store.activeStore.getSource("selected")),
-        { priority: "event" },
       );
     });
   });
 }
 
 // Register with HTMLWidgets
-if (typeof window !== "undefined" && window.HTMLWidgets) {
-  window.HTMLWidgets.widget(binding);
-}
+registerWidget(binding);
 
 // Shiny proxy message handler
-if (typeof window !== "undefined" && window.Shiny) {
-  window.Shiny.addCustomMessageHandler(
-    "tabviz-split-proxy",
-    (raw: unknown) => {
-      const msg = raw as { id: string; method: string; args: Record<string, unknown> };
-      const store = storeRegistry.get(msg.id);
-      if (!store) return;
+registerCustomMessageHandler("tabviz-split-proxy", (raw: unknown) => {
+  const msg = raw as { id: string; method: string; args: Record<string, unknown> };
+  const store = storeRegistry.get(msg.id);
+  if (!store) return;
 
-      if (msg.method === "selectPlot" && typeof msg.args.key === "string") {
-        store.selectSpec(msg.args.key, "proxy");
-      }
-    }
-  );
-}
+  if (msg.method === "selectPlot" && typeof msg.args.key === "string") {
+    store.selectSpec(msg.args.key, "proxy");
+  }
+});
 
 // Export for potential npm package use
 export { SplitForestPlot, createSplitForestStore };

@@ -122,3 +122,23 @@ window.Shiny.setInputValue(`${widgetId}_${field}`, shinyEnvelope(value, store.ge
 
 Three things shorter — `value:` keyword, the comma after, the `ts: Date.now()` field. Tiny readability win, real maintenance win (envelope shape is now defined once).
 
+### 0a-PR3: window globals → htmlwidgets-glue.ts
+
+This one was tidy. The plan: every `window.HTMLWidgets`, `window.Shiny`, `window.__tabviz*` reference relocates to one module, both entry files import from it, no entry touches a global directly. Spec calls the file `htmlwidgets-glue.ts` (eventually renamed to `htmlwidgets/glue.ts` during Phase 2's source-tree restructure).
+
+Inventory found 14 access sites total across the two entry files. They map to four distinct concerns:
+- HTMLWidgets registration (one each, single + split)
+- Shiny custom-message handlers (one each — different channels, `tabviz-proxy` and `tabviz-split-proxy`)
+- Shiny setInputValue calls (3 in single, 2 in split — already mostly funneled through `emit()` helpers)
+- Dev hooks (only in single — `__tabvizExports`, `__tabvizStoreRegistry`)
+
+The glue module ended up with five exports: `registerWidget`, `registerCustomMessageHandler`, `setShinyInput`, `hasShiny`, `exposeDevHook`. Each is one or two safe lines. The `exposeDevHook` typing was the only non-trivial bit — it uses a literal-union constraint `K extends "__tabvizExports" | "__tabvizStoreRegistry"` so the function rejects unknown dev-hook names at compile time. Closed set, documented in `$types`.
+
+I also took the opportunity to move the dev-hook type declarations from inline `as unknown as { ... }` casts into proper `Window` interface fields in `$types`. Now `window.__tabvizExports = ...` typechecks cleanly. Before: three lines of cast gymnastics per dev hook. After: one line each. Tiny win, but the surrounding code is much easier to read.
+
+A small judgment call: should `setShinyInput` also handle envelope construction, taking `(field, value, source)` and wrapping internally? I left it taking a pre-built `ShinyEnvelope<T>` and called `shinyEnvelope()` at the call sites. Reasoning: source-tagging is per-emission (each call wants a different source tag based on which field is emitted), so the call site has to read source anyway; passing in the envelope makes the source-tagging decision visible at every emission rather than buried in the helper. Reads well in the diff. (If we ever ship a third construction path that wants to skip the envelope, we'd regret coupling them.)
+
+Results: build clean, bun test still 136 pass / 6 pre-existing fail, R tests pass, visual smoke clean.
+
+`grep -n "window\." srcjs/src/index*.ts` returns only comments. Done.
+

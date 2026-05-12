@@ -5,22 +5,23 @@ import { createForestStore, type ForestStore } from "$stores/forestStore.svelte"
 import { exportToSVG, exportToPNG } from "$lib/export";
 import { shinyEnvelope } from "$lib/shiny-envelope";
 import { validateSpecVersion } from "$spec";
+import {
+  exposeDevHook,
+  hasShiny,
+  registerCustomMessageHandler,
+  registerWidget,
+  setShinyInput,
+} from "./htmlwidgets-glue";
 import { mount, unmount } from "svelte";
 import "./styles.css";
 
 // Development hook: expose export helpers under window.__tabvizExports
-if (typeof window !== "undefined") {
-  (window as unknown as { __tabvizExports: { exportToSVG: typeof exportToSVG; exportToPNG: typeof exportToPNG } }).__tabvizExports = { exportToSVG, exportToPNG };
-}
+exposeDevHook("__tabvizExports", { exportToSVG, exportToPNG });
 
-// Store registry for Shiny proxy support
+// Store registry for Shiny proxy support. Also exposed as a dev hook
+// (`window.__tabvizStoreRegistry`) for puppeteer / playwright introspection.
 const storeRegistry = new Map<string, ForestStore>();
-
-// Expose the registry (and a few helpers) to window for debugging / automated tests.
-// This is a development aid; safe to leave in production — the surface is read-only.
-if (typeof window !== "undefined") {
-  (window as unknown as { __tabvizStoreRegistry: Map<string, ForestStore> }).__tabvizStoreRegistry = storeRegistry;
-}
+exposeDevHook("__tabvizStoreRegistry", storeRegistry);
 
 // Proxy method handlers. Keys match the method names sent from R's
 // invoke_proxy_method(); values read the JSON-decoded args and dispatch
@@ -321,7 +322,7 @@ const binding: HTMLWidgetsBinding = {
         });
 
         // Set up Shiny event forwarding if in Shiny context
-        if (window.Shiny && el.id) {
+        if (hasShiny() && el.id) {
           setupShinyBindings(el.id, store);
         }
       },
@@ -342,11 +343,9 @@ const binding: HTMLWidgetsBinding = {
 // $effect runs. See docs/dev/source-tagging.md for the contract.
 function setupShinyBindings(widgetId: string, store: ForestStore) {
   const emit = (field: string, value: unknown) => {
-    if (!window.Shiny) return;
-    window.Shiny.setInputValue(
+    setShinyInput(
       `${widgetId}_${field}`,
       shinyEnvelope(value, store.getSource(field)),
-      { priority: "event" },
     );
   };
 
@@ -451,7 +450,7 @@ function setupShinyBindings(widgetId: string, store: ForestStore) {
 
       if (stateTimer) clearTimeout(stateTimer);
       stateTimer = setTimeout(() => {
-        if (!window.Shiny) return;
+        if (!hasShiny()) return;
         const bundle = {
           sort: store.sortConfig,
           filters: store.filters,
@@ -478,40 +477,29 @@ function setupShinyBindings(widgetId: string, store: ForestStore) {
             : { mode: store.bandingOverride, startsWithBand: store.bandingStartsWithBandOverride },
           plot_width: store.plotWidthOverride,
         };
-        window.Shiny.setInputValue(
-          `${widgetId}_state`,
-          shinyEnvelope(bundle, "user"),
-          { priority: "event" },
-        );
+        setShinyInput(`${widgetId}_state`, shinyEnvelope(bundle, "user"));
       }, 150);
     });
   });
 }
 
 // Register with HTMLWidgets
-if (typeof window !== "undefined" && window.HTMLWidgets) {
-  window.HTMLWidgets.widget(binding);
-}
+registerWidget(binding);
 
 // Shiny proxy message handler. withSource('proxy', ...) sets the store's
 // currentSource for the synchronous mutation block, so every markSource()
 // call inside the dispatched handler captures 'proxy' before the outbound
 // $effect tick fires. Dashboards can then filter their own writes via
-// `req(input$tbl_sort$source == "user")`.
-if (typeof window !== "undefined" && window.Shiny) {
-  window.Shiny.addCustomMessageHandler(
-    "tabviz-proxy",
-    (raw: unknown) => {
-      const msg = raw as { id: string; method: string; args: Record<string, unknown> };
-      const store = storeRegistry.get(msg.id);
-      if (store && msg.method in proxyMethods) {
-        store.withSource("proxy", () => {
-          proxyMethods[msg.method](store, msg.args);
-        });
-      }
-    }
-  );
-}
+// `req(input$tbl_sort$source == "user")`. See docs/dev/source-tagging.md.
+registerCustomMessageHandler("tabviz-proxy", (raw: unknown) => {
+  const msg = raw as { id: string; method: string; args: Record<string, unknown> };
+  const store = storeRegistry.get(msg.id);
+  if (store && msg.method in proxyMethods) {
+    store.withSource("proxy", () => {
+      proxyMethods[msg.method](store, msg.args);
+    });
+  }
+});
 
 // Export for potential npm package use
 export { ForestPlot, createForestStore };
