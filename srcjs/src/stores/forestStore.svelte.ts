@@ -49,6 +49,7 @@ function anyForestColumnGroups(columns: ColumnDef[] | undefined): boolean {
 }
 import { resolveShowHeader } from "$lib/column-compat";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
+import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte.ts";
 
 /**
  * Set of ids the frontend store reserves for its own use — a user column
@@ -95,26 +96,14 @@ export function createForestStore() {
   let spec = $state<WebSpec | null>(null);
 
   // ── Source tagging for outbound Shiny events ────────────────────────────
-  // Every setter that drives a Shiny-observable field calls markSource(<field>)
-  // after the mutation. UI-driven calls leave currentSource at 'user'; proxy
-  // dispatch wraps its handler in withSource('proxy', ...) so markSource
-  // captures 'proxy' synchronously before the $effect tick fires.
-  // lastSource is $state so observers reactively read the latest tag.
-  type SourceTag = "user" | "proxy";
-  let currentSource: SourceTag = "user";
-  let lastSource = $state<Record<string, SourceTag>>({});
-  function markSource(field: string) {
-    lastSource[field] = currentSource;
-  }
-  function withSource<T>(src: SourceTag, fn: () => T): T {
-    const prev = currentSource;
-    currentSource = src;
-    try {
-      return fn();
-    } finally {
-      currentSource = prev;
-    }
-  }
+  // Extracted to $stores/slices/source.svelte.ts as the Q8 spike (idiom (c),
+  // "method-only split"). See docs/dev/store-decomposition-idiom.md for the
+  // decision record. Call sites use `source.markSource(field)` /
+  // `source.withSource('proxy', () => ...)` instead of the previous closure-
+  // local helpers. Behaviour identical.
+  const source = createSourceSlice();
+  const markSource = source.markSource;
+  const withSource = source.withSource;
 
   // Initial dimensions (from htmlwidgets/splitStore, used as fallback before ResizeObserver fires)
   let initialWidth = $state(800);
@@ -4041,7 +4030,7 @@ export function createForestStore() {
     // 'user' | 'proxy' depending on which path most-recently mutated the
     // field; defaults to 'user'. withSource() lets the proxy boundary mark
     // its dispatched mutations as 'proxy' so observers can disambiguate.
-    getSource: (field: string): SourceTag => lastSource[field] ?? "user",
+    getSource: source.getSource,
     withSource,
     // Append a pre-built record (used by the split wrapper to log
     // SplitForest-level ops like set_shared_column_widths on the active
