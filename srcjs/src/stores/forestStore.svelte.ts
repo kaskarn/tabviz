@@ -4049,10 +4049,25 @@ export function createForestStore() {
    * firing twice, double-clicks, value-didn't-actually-change cases) while
    * still recording every distinct action — genuine backtracking like
    * resize A → resize B → resize A stays in the log.
+   *
+   * Coalescing: for kinds where each emission is a slider-tick update
+   * (only the latest value matters; intermediate values are noise),
+   * a consecutive run of the same kind is collapsed to its last value.
+   * Used by the aspect-ratio slider, whose `oninput` fires per pixel
+   * of drag — without coalescing the View-source panel showed a
+   * dozen `set_aspect_ratio(0.961)` / `set_aspect_ratio(0.975)` / …
+   * lines for one drag. Coalescing across kinds is NOT done — once
+   * a different action interrupts the chain, the slider segment is
+   * sealed and the next slider-tick starts a fresh entry.
    */
   function appendOp(record: OpRecord): void {
     const prev = opLog[opLog.length - 1];
     if (prev && prev.rCall === record.rCall) return;
+    const isCoalesceKind = record.kind === "set_aspect_ratio";
+    if (prev && isCoalesceKind && prev.kind === record.kind) {
+      opLog = [...opLog.slice(0, -1), record];
+      return;
+    }
     opLog = [...opLog, record];
   }
 }
