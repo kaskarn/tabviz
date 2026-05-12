@@ -557,6 +557,13 @@ export interface Spacing {
   // Trailing buffer below the last visible band in SVG export. Added in
   // v0.21.x.
   bottomMargin?: number;
+  /** Per-nesting-level indent for row-group headers. Source value;
+   *  R-side resolution (utils-theme-resolve.R:487-488) inherits this
+   *  into `theme.rowGroup.indentPerLevel` when the latter is unset,
+   *  and the renderer reads from `rowGroup.indentPerLevel`. This
+   *  field exists for serializer parity; consumers should prefer
+   *  `theme.rowGroup.indentPerLevel`. */
+  indentPerLevel?: number;
   /** @deprecated Alias for columnGroupPadding. Emitted by the R serializer
    *  for back-compat; reads here should migrate to columnGroupPadding. */
   groupPadding: number;

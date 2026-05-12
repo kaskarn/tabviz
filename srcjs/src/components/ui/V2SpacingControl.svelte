@@ -53,10 +53,32 @@
 
   const aspectActive = $derived(store.targetAspect != null);
 
+  // Most spacing tokens live under `theme.spacing.*`, but
+  // `indentPerLevel` is read by the renderer from
+  // `theme.rowGroup.indentPerLevel` (svg-generator.ts:1529). R-side
+  // resolution inherits row_group.indent_per_level from
+  // spacing.indent_per_level when the former is NA
+  // (utils-theme-resolve.R:487-488), so serialized specs typically
+  // carry the same value at both paths — but the live panel must
+  // write to where the renderer reads, otherwise edits don't
+  // propagate. Override the path here for the outlier; everything
+  // else lands at `["spacing", field]`.
+  function themePath(field: string): string[] {
+    if (field === "indentPerLevel") return ["rowGroup", "indentPerLevel"];
+    return ["spacing", field];
+  }
+
   function effectiveValue(field: string): number {
     if (aspectActive && ASPECT_DRIVEN_FIELDS.has(field)) {
       const live = store.layout?.[field as keyof typeof store.layout];
       if (typeof live === "number") return Math.round(live * 100) / 100;
+    }
+    if (field === "indentPerLevel") {
+      const rg = store.spec?.theme?.rowGroup as Record<string, number | undefined> | undefined;
+      const inherited = rg?.indentPerLevel
+        ?? (spacing?.[field] as number | undefined)
+        ?? 0;
+      return inherited;
     }
     return (spacing?.[field] ?? 0) as number;
   }
@@ -70,7 +92,7 @@
     if (aspectActive && ASPECT_DRIVEN_FIELDS.has(field)) {
       store.setTargetAspect(null);
     }
-    store.setThemeField(["spacing", field], value);
+    store.setThemeField(themePath(field), value);
   }
 
   // Coherent groups instead of one flat list. Ranges chosen to cover
