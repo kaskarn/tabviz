@@ -27,21 +27,29 @@
   const spacing = $derived(store.spec?.theme?.spacing);
 
   // Phase B: when an aspect target is pinned, the live lever ladder
-  // overrides `rowHeight` (and, on the SVG path, vertical chrome
-  // tokens). Show the LIVE post-ladder value in the panel so what the
-  // user sees in the field matches what they see on screen. Only the
-  // tokens the lever ladder actually mutates are aspect-driven; others
-  // reflect the spec value as before.
+  // overrides several layout tokens. Show the LIVE post-ladder value
+  // in the panel so what the user sees in the field matches what
+  // they see on screen — and so that editing the field produces the
+  // expected rendered result (WYSIWYG, not "input × chromeScale").
   //
-  // Aspect-driven tokens map: token name -> getter for live value off
-  // store.layout. The widget only mutates rowHeight; svg-generator also
-  // scales headerGap/axisGap/footerGap/headerHeight/rowGroupPadding/
-  // bottomMargin/titleSubtitleGap, but those are NOT applied in the
-  // live widget store today (they stay at the spec value), so listing
-  // only rowHeight here matches what the user actually observes in the
-  // browser. SVG export honours the full lever ladder via the R-side
-  // path; that's a render-time concern, not a panel-display one.
-  const ASPECT_DRIVEN_FIELDS = new Set(["rowHeight"]);
+  // Live-store mutations (post-Lever-2C):
+  //   - `rowHeight`         scaled by `rowHeightScale`
+  //   - `headerHeight`      scaled by `chromeScale`
+  //
+  // `axisHeight` is also scaled by `chromeScale` in the live store,
+  // but it's a composite of `axisGap + axisRegionHeight` (the latter
+  // is font-derived and fixed). Editing `axisGap` while aspect is
+  // pinned still works directionally, but doesn't get the full
+  // WYSIWYG treatment yet — left out of this set for now.
+  //
+  // For each field in the set, editing the field while a target is
+  // pinned clears the target (see `set()` below) so the user's value
+  // lands directly instead of being multiplied by the ladder on the
+  // next reactive pass.
+  const ASPECT_DRIVEN_FIELDS = new Set([
+    "rowHeight",
+    "headerHeight",
+  ]);
 
   const aspectActive = $derived(store.targetAspect != null);
 
@@ -116,8 +124,8 @@
   {#if aspectActive}
     <div class="aspect-banner">
       <span class="aspect-icon" aria-hidden="true">⚭</span>
-      Row height is currently driven by the aspect-ratio slider. Editing
-      it will clear the aspect target.
+      Row height and header height are currently driven by the
+      aspect-ratio slider. Editing either will clear the aspect target.
     </div>
   {/if}
   {#each sections as section (section.title)}
