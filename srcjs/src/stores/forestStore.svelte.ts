@@ -3104,7 +3104,12 @@ export function createForestStore() {
     if (!spec || !spec.theme) return null;
     return {
       theme: cloneTheme(spec.theme),
-      themeEdits: structuredClone(themeEdits),
+      // `themeEdits` is a `$state` proxy; structuredClone can throw
+      // DataCloneError on the proxy itself (DOMException, even when
+      // contents are plain). `$state.snapshot()` is Svelte 5's
+      // canonical "unwrap to plain value" — produces a structured-
+      // cloneable copy that we own.
+      themeEdits: $state.snapshot(themeEdits) as Record<string, Record<string, unknown>>,
       themeOverrides: Array.from(themeOverrides),
       baseThemeName,
     };
@@ -3123,7 +3128,10 @@ export function createForestStore() {
   }) {
     if (!spec) return;
     spec = { ...spec, theme: cloneTheme(snap.theme) };
-    themeEdits = structuredClone(snap.themeEdits);
+    // snap.themeEdits was unwrapped via $state.snapshot at capture
+    // time, so it's already plain. structuredClone works here, but
+    // a shallow walk is enough — $state(...) re-proxies on assign.
+    themeEdits = JSON.parse(JSON.stringify(snap.themeEdits));
     themeOverrides = new Set(snap.themeOverrides);
     baseThemeName = snap.baseThemeName;
     clearAutoWidthsKeepingUserResizes();
