@@ -19,7 +19,9 @@
       "$components/*": ["./src/components/*"],
       "$stores/*": ["./src/stores/*"],
       "$types": ["./src/types/index.ts"],
-      "$types/*": ["./src/types/*"]
+      "$types/*": ["./src/types/*"],
+      "$spec": ["./src/spec/index.ts"],
+      "$spec/*": ["./src/spec/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.svelte"]

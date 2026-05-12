@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tabviz.dev/spec/v1.0.json",
+  "title": "tabviz wire-format spec, v1.0",
+  "description": "Initial top-level schema for the tabviz WebSpec and SplitForestPayload wire formats. Permissive on nested object shape (additionalProperties: true) so v1.x minor bumps remain backward-compatible by contract. Future minor revisions add nested-object definitions; major bumps replace this file with v2.0.json plus a migration handler.",
+  "$defs": {
+    "specVersion": {
+      "type": "string",
+      "pattern": "^1(?:\\.[0-9]+(?:\\.[0-9]+)?)?$",
+      "description": "Semver-shaped version string. Major must be `1` for this schema; minor is additive (older readers ignore unknown fields)."
+    },
+    "webSpec": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["version", "data", "columns", "theme", "interaction", "layout"],
+      "properties": {
+        "version": { "$ref": "#/$defs/specVersion" },
+        "data": { "type": "object" },
+        "columns": { "type": "array", "items": { "type": "object" } },
+        "extraColumns": { "type": "array", "items": { "type": "object" } },
+        "availableFields": { "type": "array" },
+        "theme": { "type": "object" },
+        "interaction": { "type": "object" },
+        "layout": { "type": "object" },
+        "labels": { "type": "object" },
+        "watermark": { "type": ["string", "null"] },
+        "watermarkColor": { "type": ["string", "null"] },
+        "watermarkOpacity": { "type": ["number", "null"] },
+        "paginate": { "type": ["object", "null"] },
+        "initialState": { "type": ["object", "null"] },
+        "targetAspect": { "type": ["number", "null"] },
+        "targetAspectAnchor": { "type": "string", "enum": ["width", "height", "auto"] },
+        "originalCall": { "type": ["string", "null"] }
+      }
+    },
+    "splitForestPayload": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["version", "type", "splitVars", "navTree", "specs"],
+      "properties": {
+        "version": { "$ref": "#/$defs/specVersion" },
+        "type": {
+          "type": "string",
+          "description": "Discriminator. R currently emits 'split_table'; the TS type calls it 'split_forest'. This mismatch is on the synchronization-audit list (spec §2.5-G6) and will be reconciled in a future minor."
+        },
+        "splitVars": { "type": "array", "items": { "type": "string" } },
+        "navTree": { "type": "array" },
+        "base": { "type": "object" },
+        "specs": { "type": "object" },
+        "sharedAxis": { "type": "boolean" },
+        "sharedColumnWidths": { "type": "boolean" },
+        "axisRange": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["min", "max"],
+              "properties": {
+                "min": { "type": "number" },
+                "max": { "type": "number" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/webSpec" },
+    { "$ref": "#/$defs/splitForestPayload" }
+  ]
+}

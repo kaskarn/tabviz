@@ -3,6 +3,7 @@ import type { ThemeName } from "$lib/theme-presets";
 import ForestPlot from "$lib/ForestPlot.svelte";
 import { createForestStore, type ForestStore } from "$stores/forestStore.svelte";
 import { exportToSVG, exportToPNG } from "$lib/export";
+import { validateSpecVersion } from "$spec";
 import { mount, unmount } from "svelte";
 import "./styles.css";
 
@@ -246,6 +247,9 @@ const binding: HTMLWidgetsBinding = {
 
     return {
       renderValue: (raw: unknown) => {
+        // Validate wire-format version before handing off to the store; throws
+        // with a clear message on unrecognized major. See $spec/index.ts.
+        validateSpecVersion(raw as { version?: unknown }, "WebSpec");
         const x = raw as WebSpec & {
           zoom?: number;
           autoFit?: boolean;

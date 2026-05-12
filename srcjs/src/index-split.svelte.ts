@@ -1,6 +1,7 @@
 import type { SplitForestPayload, HTMLWidgetsBinding, WidgetInstance } from "$types";
 import SplitForestPlot from "$lib/SplitForestPlot.svelte";
 import { createSplitForestStore, type SplitForestStore } from "$stores/splitForestStore.svelte";
+import { validateSpecVersion } from "$spec";
 import { mount, unmount } from "svelte";
 import "./styles.css";
 
@@ -22,6 +23,9 @@ const binding: HTMLWidgetsBinding = {
 
     return {
       renderValue: (raw: unknown) => {
+        // Validate wire-format version before handing off to the store; throws
+        // with a clear message on unrecognized major. See $spec/index.ts.
+        validateSpecVersion(raw as { version?: unknown }, "SplitForestPayload");
         const x = raw as SplitForestPayload;
         store.setPayload(x);
         store.setDimensions(width, height);

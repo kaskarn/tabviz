@@ -67,3 +67,28 @@ One swatches-test thing worth filing for later, since the diary is the right pla
 
 Onward to 0a-PR1.
 
+### 0a-PR1: versioning + JSON Schema, with two opportunistic findings
+
+The job for this PR was clean and small: add `version: "1.0"` to the wire format, emit it from R, validate it JS-side, publish a JSON Schema, write a sync test. The spec's prescription for this is precise enough that I could have done it on autopilot. I tried not to autopilot anyway — being deliberate at the start of a long program is the cheapest insurance against mid-program regret. Two things that needed actual choices:
+
+**Where to put the validator.** I created `srcjs/src/spec/` for it, with a `$spec` path alias added to tsconfig + all three vite configs. The spec doc (§3.1) describes `/spec` as one of the eventual published subpaths; making the source directory exist now signals that, and lets future code import from `$spec` from day one rather than getting refactored later. Cheap forward-compat. The module exports `CURRENT_VERSION`, `SUPPORTED_MAJORS`, `parseSpecVersion`, and `validateSpecVersion`. The parser deliberately accepts `"1"`, `"1.0"`, `"1.0.3"`, and rejects `"v1.0"`, `"latest"`, `"1.0-pre"` — the spec said the bookkeeping noise of an explicit `-pre` suffix wasn't worth it, so we lean on a clean number format and the fact that publication-stability is a separate signal.
+
+**Where to put the R-side constant.** I created `R/wire-version.R` with a single `WIRE_FORMAT_VERSION <- "1.0"` plus a comment block explaining the sync contract. This is the simplest possible "single source of truth on the R side." The test (`tests/testthat/test-wire-version.R`) reads the TS file with `readLines()` + a regex and asserts the two constants match. Generated-vs-doc-tested was the open question from spec §4 Phase 0e item 1; I went with doc-tested because the R and JS sides have independent release cadences (so generating one from the other would mean a build-time coupling we don't yet need) and because the regex-and-compare is dead simple and fails loud at `devtools::test()` time.
+
+Two opportunistic findings while I was in the code:
+
+1. **The split-widget type discriminator is mismatched between R and TS.** R emits `type = "split_table"`. TS declared `type: "split_forest"`. Runtime never actually checked, so the mismatch has been latent since whenever it was introduced. I widened the TS type to `string` and added a comment pointing at the §2.5-G6 sync audit; the actual reconciliation (pick one name and use it everywhere) happens later. The JSON Schema mirrors this — the `type` field validates as any string, not an enum. Mid-flight discovery filed.
+
+2. **`tabviz()` requires a `label` argument**, even in the tiniest test fixture. I learned this the hard way by writing `tabviz(mtcars[1:3, ], col_text("mpg"))` in the version-emission test and watching it die in `check_column()`. The right shape is `tabviz(df, label = "study", .spec_only = TRUE)`. Trivial typo but it tickled a small thought: `tabviz()` has a pretty opinionated default — every plot wants a row label. Maybe that's right (forest plots really do always have one) but it's also a piece of the chart-vs-table ontology question from spec §0 — labels presume a table stance. Filing this thought, not acting on it.
+
+Results:
+
+- Build: clean, all three artifacts.
+- `bun test`: 136 pass / 6 fail (same 6 swatch pre-existing fails, +14 new spec validator tests pass).
+- `devtools::test()`: clean. The new `wire-version` context shows 3 PASS — the sync check, the emission check, plus an implicit "the package still loads" via every other test running.
+- Visual smoke: representative gallery subset (jama, cochrane, nested_groups, sparklines_bars) — all render byte-identical.
+
+Filing: 136-pass-6-fail is the running JS test baseline going forward. If I ever see 7+ fails, something I did broke it.
+
+One observation: the validator catches version drift at *both* widget render paths (single + split) AND at R-side serialize time (the sync test). That's three independent enforcement points for one contract. Belt-and-braces, but the spec is explicit that this is the most load-bearing piece of infrastructure in the program, so the redundancy is appropriate.
+

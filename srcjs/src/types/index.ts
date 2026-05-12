@@ -786,6 +786,11 @@ export interface PaginationConfig {
 }
 
 export interface WebSpec {
+  /** Wire-format version. Validated on ingest by `$spec/validateSpecVersion`.
+   *  Pre-release: emitted as "1.0"; policy informal. Post-publish: minor bumps
+   *  are strictly additive (older readers ignore unknown fields); major bumps
+   *  require migration handlers. See `docs/dev/frontend-split-spec.md` §3.4. */
+  version: string;
   data: WebData;
   columns: ColumnDef[];
   extraColumns?: ColumnDef[];
@@ -1103,7 +1108,14 @@ export interface NavTreeNode {
 export type SplitSubviewOverride = Pick<WebSpec, "data" | "labels">;
 
 export interface SplitForestPayload {
-  type: "split_forest";
+  /** Wire-format version. See WebSpec.version for the policy. */
+  version: string;
+  /** Discriminator. R currently emits `"split_table"`; the historical TS
+   *  literal was `"split_forest"`. The runtime never actually checked this
+   *  field, so the mismatch has been latent. Tracked under §2.5-G6 (sync
+   *  audit) for reconciliation in a future minor; widened to `string` until
+   *  resolved so neither side breaks. */
+  type: string;
   splitVars: string[];
   navTree: NavTreeNode[];
   /**

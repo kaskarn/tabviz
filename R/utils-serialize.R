@@ -13,6 +13,11 @@ serialize_spec <- function(spec, include_forest = TRUE) {
   }
 
   list(
+    # Wire-format version. Validated JS-side by `$spec/validateSpecVersion`.
+    # Bump alongside `WIRE_FORMAT_VERSION` in `R/wire-version.R` and
+    # `srcjs/src/spec/index.ts::CURRENT_VERSION` (sync point — see
+    # docs/dev/frontend-split-spec.md §2.5 G6 and §3.4 versioning policy).
+    version = WIRE_FORMAT_VERSION,
     data = serialize_data(spec, include_forest),
     columns = lapply(spec@columns, serialize_column),
     extraColumns = lapply(spec@extra_columns, serialize_column),
@@ -841,6 +846,8 @@ serialize_split_table <- function(split_table, include_forest = TRUE) {
   }
 
   list(
+    # Wire-format version. See WIRE_FORMAT_VERSION definition in R/wire-version.R.
+    version = WIRE_FORMAT_VERSION,
     type = "split_table",
     base = base_block,
     splitVars = I(split_table@split_vars),  # Force array serialization even for length-1
