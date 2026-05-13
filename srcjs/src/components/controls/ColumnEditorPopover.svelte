@@ -35,6 +35,7 @@
   import ForestOptionsEditor from "./ForestOptionsEditor.svelte";
   import SparklineOptionsEditor from "./SparklineOptionsEditor.svelte";
   import NumericDomainOptionsEditor from "./NumericDomainOptionsEditor.svelte";
+  import StarsOptionsEditor from "./StarsOptionsEditor.svelte";
 
   interface Props {
     target: EditorTarget | null;
@@ -83,9 +84,13 @@
   let optThousandsSep = $state(false);
   let optMaxChars = $state<string>("");
   // optBarScale moved into NumericDomainOptionsEditor (Phase 0c-C3).
-  let optMaxStars = $state<string>("");
-  let optDomainMin = $state<string>("");
-  let optDomainMax = $state<string>("");
+  // Stars state moved to StarsOptionsEditor sub-component (Phase 0c-C3).
+  type StarsEditorRef = {
+    reset(): void;
+    hydrateFromSpec(o: NonNullable<ColumnSpec["options"]>): void;
+    build(): NonNullable<NonNullable<ColumnSpec["options"]>["stars"]>;
+  };
+  let starsEditor = $state<StarsEditorRef | null>(null);
   // Forest column per-column options (beyond scale). These live on the
   // ColumnSpec.options.forest slot and override theme.axis equivalents
   // for that specific column — a per-column forest plot's axis config
@@ -186,9 +191,7 @@
     optSuffix = "";
     optThousandsSep = false;
     optMaxChars = "";
-    optMaxStars = "";
-    optDomainMin = "";
-    optDomainMax = "";
+    starsEditor?.reset();
     forestEditor?.reset();
     // `optAlign` and `optHeaderAlign` are intentionally NOT reset here:
     // resetOptions() runs inside `hydrateOptionsFromExisting()` (called
@@ -279,13 +282,7 @@
       if (o.heatmap?.decimals != null) optDecimals = String(o.heatmap.decimals);
       heatmapEditor?.hydrateFromSpec(o);
     }
-    if (type === "stars") {
-      if (o.stars?.maxStars != null) optMaxStars = String(o.stars.maxStars);
-      if (o.stars?.domain) {
-        optDomainMin = String(o.stars.domain[0]);
-        optDomainMax = String(o.stars.domain[1]);
-      }
-    }
+    if (type === "stars") starsEditor?.hydrateFromSpec(o);
     if (type === "forest") {
       forestEditor?.hydrateFromSpec(o);
     }
@@ -473,18 +470,7 @@
         break;
       }
       case "stars": {
-        const st: NonNullable<NonNullable<ColumnSpec["options"]>["stars"]> = {};
-        if (optMaxStars !== "") {
-          const n = Math.max(1, Math.min(20, Math.round(Number(optMaxStars))));
-          st.maxStars = n;
-        }
-        if (optDomainMin !== "" && optDomainMax !== "") {
-          const lo = Number(optDomainMin);
-          const hi = Number(optDomainMax);
-          if (Number.isFinite(lo) && Number.isFinite(hi) && hi > lo) {
-            st.domain = [lo, hi];
-          }
-        }
+        const st = starsEditor?.build() ?? {};
         if (Object.keys(st).length > 0) options.stars = st;
         break;
       }
@@ -842,26 +828,7 @@
         {/if}
 
         {#if selectedType === "stars"}
-          <label class="editor-field">
-            <span>Max stars</span>
-            <input
-              type="number"
-              min="1"
-              max="20"
-              bind:value={optMaxStars}
-              placeholder="5"
-            />
-          </label>
-          <div class="editor-row">
-            <label class="editor-field">
-              <span>Domain min</span>
-              <input type="number" bind:value={optDomainMin} placeholder="optional" />
-            </label>
-            <label class="editor-field">
-              <span>Domain max</span>
-              <input type="number" bind:value={optDomainMax} placeholder="optional" />
-            </label>
-          </div>
+          <StarsOptionsEditor bind:this={starsEditor} />
         {/if}
 
         {#if selectedType === "forest"}
