@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import type { AvailableField } from "$types";
-  import { isTypeSatisfiable, getVisualTypeDef } from "$lib/column-compat";
+  import { isTypeSatisfiable, getVisualTypeDef } from "$lib/column-types";
   import { tick } from "svelte";
 
   interface Props {

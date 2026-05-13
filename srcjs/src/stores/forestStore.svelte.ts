@@ -46,7 +46,7 @@ function anyForestColumnGroups(columns: ColumnDef[] | undefined): boolean {
   if (!columns) return false;
   return columns.some(c => c.isGroup);
 }
-import { resolveShowHeader } from "$lib/column-compat";
+import { resolveShowHeader } from "$lib/column-types";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte.ts";
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events.ts";
@@ -257,9 +257,11 @@ export function createForestStore() {
   // Plot width override (for resizing the forest plot area)
   let plotWidthOverride = $state<number | null>(null);
 
-  // Target aspect ratio (Phase 4.6). `null` = render at natural; any positive
-  // number triggers a Mode-3 lever-ladder relayout (flex-column absorption +
-  // row-height scaling). Mirrors `WebSpec.targetAspect` and is seeded from
+  // Target aspect ratio. `null` = render at natural; any positive number
+  // triggers an aspect-ladder relayout (forest absorption + non-forest
+  // column scale + height ladder; see the doc-comment header at the
+  // start of the `layout` derivation). Mirrors `WebSpec.targetAspect`
+  // and is seeded from
   // it in `setSpec()`. The settings-panel slider writes it; "View source"
   // emits `set_aspect_ratio(N)` (or `NULL` when cleared).
   let targetAspect = $state<number | null>(null);
@@ -350,13 +352,12 @@ export function createForestStore() {
     const firstForest = forestColumns[0]?.column;
     const hasForest = forestColumns.length > 0;
 
-    // Read forestWidth from `layout` so the aspect-ratio lever ladder
-    // (Phase 7E Lever 1A) propagates here. Pre-Phase-7E this function
-    // computed forestWidth independently from canvas defaults — the
-    // result was that circles + CI lines kept the OLD forest range
-    // when the slider moved, giving a "squished into left half"
-    // artifact that resizing a column would shake loose. Layout is
-    // the single source of truth now.
+    // Read forestWidth from `layout` so the aspect-ladder Stage-1
+    // forest-absorption result propagates here. Before this fix the
+    // function computed forestWidth independently from canvas defaults,
+    // so circles + CI lines kept the OLD forest range when the slider
+    // moved (a "squished into left half" artifact that resizing a
+    // column would shake loose). Layout is the single source of truth.
     const forestWidth = hasForest ? layout.forestWidth : 0;
 
     // Get scale and nullValue from first forest column options
@@ -414,10 +415,11 @@ export function createForestStore() {
     const isLog = (forestOptions?.scale ?? "linear") === "log";
     const { plotRegion } = axisComputation;
 
-    // Read forestWidth from `layout` so the aspect-ratio lever ladder
-    // (Phase 7E) flows into xScale's range. Same fix as axisComputation
-    // above — keeps circles, CI lines, and axis ticks in sync with the
-    // current forest column width when the aspect slider moves.
+    // Read forestWidth from `layout` so the aspect ladder's Stage 1
+    // (forest absorption) flows into xScale's range. Same fix as
+    // axisComputation above — keeps circles, CI lines, and axis ticks
+    // in sync with the current forest column width when the aspect
+    // slider moves.
     const hasForest = forestColumns.length > 0;
     const forestWidth = hasForest ? layout.forestWidth : 0;
 
@@ -960,34 +962,62 @@ export function createForestStore() {
         ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
       : 0;
 
-    // ── Aspect-ratio target (Phase 4.6 + 7A lever ladder, live) ─────────
-    // When targetAspect is pinned (via set_aspect_ratio() or the in-widget
-    // slider), reshape the layout to hit it. Mirrors
-    // `generateSVGForAspectTarget` in svg-generator.ts but on the
-    // live-widget surface, where:
-    //   - The canvas dictates effectiveWidth, so width doesn't change
-    //     (Lever 1B / 1C don't fire; Phase 7E will expand intrinsic
-    //     width past the canvas to honour ultra-wide aspects).
-    //   - Lever 1A still fires (forest cap-clamp) for parity.
-    //   - Height ladder is direction-aware: taller aspects share the
-    //     delta with chrome (Phase 7A); shorter aspects floor rowHeight
-    //     at MIN_ROW_HEIGHT for legibility.
+    // ═══════════════════════════════════════════════════════════════════
+    // Aspect ladder — reshape the layout to hit a target aspect ratio
+    // ═══════════════════════════════════════════════════════════════════
     //
-    // hasForest gate dropped (Phase 7A): tabular tables get aspect
-    // handling too. When there's no forest, Lever 1A is a no-op but the
-    // height ladder still runs.
+    // When `targetAspect` is pinned (via set_aspect_ratio() or the
+    // in-widget slider), reshape the layout to hit `width / height ==
+    // targetAspect`. Live-widget version mirrors the static-export math
+    // in svg-generator.ts's `generateSVGForAspectTarget`; both sides MUST
+    // stay in lock-step so the downloaded SVG matches the live view.
     //
-    // Phase 7E: when anchor wants target_w > canvas (typical for
-    // anchor="height" / "auto" at wide ratios), `layoutWidth` lifts
-    // the canvas cap so the grid renders at the requested width and
-    // the container overflows horizontally (existing auto-fit / scroll
-    // machinery handles display). When anchor="width" or there's no
-    // expansion, layoutWidth stays at canvas and behavior is identical.
-    // Aspect-scale factor for non-forest columns (Phase 7E Lever 1B).
-    // Default 1 (no scaling). When targetAspect expands the layout
-    // beyond what flex (forest) absorbs at the cap, this carries the
-    // residual into non-flex column widths so the slider continues to
-    // produce visible change past the flex saturation point.
+    // Anchor model (anchor in {"width", "height", "auto"}):
+    //   - "width":  preserve natural width, grow / shrink height
+    //   - "height": preserve natural height, grow / shrink width — may
+    //              expand `layoutWidth` past the canvas (see layoutWidth
+    //              note below)
+    //   - "auto":   pick the dim that yields the smaller delta from
+    //              natural; falls through to "height" for wide targets
+    //              and "width" for tall ones.
+    //
+    // Three width stages (only fire when targetAspect changes width):
+    //   1. Forest absorption: when a forest column is present, it flexes
+    //      to absorb width delta up to FLEX_CAP × natural (= 2× by
+    //      default). Within the cap this is the only width change.
+    //   2. Non-forest column scale: when stage 1 saturates (delta exceeds
+    //      what flex can absorb), the residual width spreads across non-
+    //      flex columns via `aspectNonForestScale`. Floored at 0.25 so
+    //      narrow targets don't collapse columns to zero. Without this
+    //      stage, slider drags past forest's cap would be inert.
+    //   3. Layout overflow: when anchor="height" or "auto" wants a width
+    //      greater than the canvas, `layoutWidth` lifts past the canvas
+    //      cap (capped at 8× canvas for sanity). The container's existing
+    //      auto-fit / scroll machinery handles the visual fit; the wire
+    //      width matches the requested aspect exactly. anchor="width"
+    //      paths never trigger this stage.
+    //
+    // Height ladder (direction-aware): when height delta is nonzero,
+    //   - Taller targets: split delta into chrome share (CHROME_SHARE =
+    //     0.35, applied to header + axis via `chromeScale`) and row
+    //     share (applied to rowHeight). Padding stays unscaled to keep
+    //     horizontal layout stable.
+    //   - Shorter targets: shrink rowHeight first, floored at
+    //     MIN_ROW_HEIGHT for legibility. When the floor saturates, chrome
+    //     shrinks to absorb the residual (floored at 0.4 so axis labels
+    //     stay readable).
+    //
+    // Tabular (no-forest) tables also get height handling. Stage 1 is a
+    // no-op without a forest column, but stages 2-3 + the height ladder
+    // still run.
+    //
+    // The variables below carry stage outputs into the rest of the
+    // layout derivation; descriptive names track the algorithm above.
+
+    // Stage 2 output — non-forest column scale factor. Default 1 (no
+    // change). When stage 1 saturates, the residual width is spread
+    // across non-flex columns via this multiplier so the slider keeps
+    // producing visible change past the flex cap.
     let aspectNonForestScale = 1;
     let chromeScale = 1;
     let aspectTargetWidth: number | null = null;
@@ -1018,12 +1048,10 @@ export function createForestStore() {
         ? approxNaturalWidth / approxNaturalHeight
         : 1;
 
-      // Target dims — anchor decides which natural dim is preserved
-      // (Phase 7C). In the live widget, the canvas constrains width, so
-      // anchor="height" / "auto" producing target_w > canvas is a no-op
-      // until Phase 7E expands intrinsic width past the canvas. For now
-      // we cap target_w at canvas; the aspect target is approximate
-      // when anchor wants more.
+      // Resolve target dims from anchor. anchor="auto" picks "height"
+      // for wide targets (where preserving natural-h grows w) and "width"
+      // for tall targets (where preserving natural-w grows h). The
+      // layout-overflow stage (3) handles target_w > canvas when needed.
       const rawAnchor = spec.targetAspectAnchor ?? "width";
       const resolvedAnchor: "width" | "height" =
         rawAnchor === "auto"
@@ -1032,18 +1060,16 @@ export function createForestStore() {
       let targetWidth: number;
       let targetHeight: number;
       if (resolvedAnchor === "height") {
-        // Anchor height: preserve natural rowHeight by growing width.
-        // Phase 7E: cap lifted — target_w may exceed the canvas, in
-        // which case `layoutWidth` carries the expansion through to the
-        // grid render, and the container's auto-fit / scroll handles
-        // the visual fit.
+        // Anchor=height: preserve natural rowHeight by growing width.
+        // Stage 3 fires when targetWidth > canvas — `layoutWidth` lifts
+        // past the canvas cap so the grid renders at the requested width
+        // and the container's auto-fit / scroll handles the visual fit.
         //
-        // Hard cap: layoutWidth never exceeds 8x canvas. The TARGET_
+        // Hard cap: layoutWidth never exceeds 8× canvas. The TARGET_
         // ASPECT_MAX = 10 setter clamp keeps `targetAspect` finite, but
-        // even ratio = 10 on a tall spec could blow up rendered DOM
-        // size; 8x canvas is the practical visible / scrollable cap
-        // (auto-fit's min-zoom 0.7 means anything past ~1.4x canvas
-        // already overflows + scrolls).
+        // even ratio = 10 on a tall spec could blow up rendered DOM size;
+        // 8× canvas is the practical visible / scrollable cap (auto-fit's
+        // min-zoom 0.7 means anything past ~1.4× already overflows).
         const MAX_LAYOUT_WIDTH = approxNaturalWidth * 8;
         targetHeight = approxNaturalHeight;
         targetWidth = Math.min(approxNaturalHeight * targetAspect, MAX_LAYOUT_WIDTH);
@@ -1058,7 +1084,9 @@ export function createForestStore() {
       aspectTargetWidth = targetWidth;
       aspectTargetHeight = targetHeight;
 
-      // ----- Lever 1A (width): cap-clamped flex absorption. -----
+      // ── Stage 1 — Forest absorption (cap-clamped flex). ──────────
+      // Forest column flexes to absorb width delta up to FLEX_CAP×
+      // natural. Within the cap, it's the only width stage that fires.
       const widthDelta = targetWidth - approxNaturalWidth;
       let widthAbsorbedByFlex = 0;
       if (hasForest && Math.abs(widthDelta) > 0.5) {
@@ -1071,20 +1099,17 @@ export function createForestStore() {
         widthAbsorbedByFlex = cappedFlex - naturalForestWidth;
       }
 
-      // ----- Lever 1B (width): non-flex auto-width column scaling. -----
-      // When the flex cap saturates and there's residual width to
-      // absorb, scale all non-flex columns proportionally. Without
-      // this, ratio drags past ~1.5 are inert (forest hits 2x cap and
-      // nothing else grows).
+      // ── Stage 2 — Non-forest column scale. ───────────────────────
+      // When stage 1 saturates and there's residual width to absorb,
+      // scale all non-flex columns proportionally. Without this stage,
+      // slider drags past forest's 2× cap would be inert.
       //
-      // Denominator: actual sum of measured non-flex column widths
-      // (NOT `approxNaturalWidth - naturalForestWidth`, which is the
-      // canvas portion *including chrome*). Using the canvas portion
-      // makes the scale too small — columns expand by less than the
-      // residual, leaving "ghost width" claimed by `layoutWidth` but
-      // never allocated to any rendered element. The SVG export then
-      // serializes the under-scaled columns, producing a downloaded
-      // SVG whose actual w/h ratio is far from the requested one.
+      // Denominator nuance: the actual sum of measured non-flex column
+      // widths, NOT `approxNaturalWidth - naturalForestWidth`. The
+      // latter folds in chrome (padding), which makes the scale factor
+      // too small — columns grow by less than the residual, leaving
+      // "ghost width" claimed by `layoutWidth` but never allocated to
+      // any rendered element. The downloaded SVG then has wrong w/h.
       const widthResidual = widthDelta - widthAbsorbedByFlex;
       if (Math.abs(widthResidual) > 0.5) {
         let naturalNonForestSum = 0;
@@ -1102,22 +1127,20 @@ export function createForestStore() {
         }
       }
 
-      // ----- Height ladder (direction-aware). Mirrors the static
-      // `generateSVGForAspectTarget` math (svg-generator.ts:4441-4471)
-      // so live + downloaded SVG agree pixel-for-pixel:
-      //   - Taller (Phase 7A + Lever 2C): split heightDelta into a
-      //     chrome share (CHROME_SHARE = 0.35) and a row share. Chrome
-      //     scaling is applied to headerHeight + axisHeight below so
-      //     header / axis bands grow proportionally.
-      //   - Shorter (Lever 2A + 2C): rowHeight first, floored at
+      // ── Height ladder (direction-aware). ─────────────────────────
+      // Mirrors `generateSVGForAspectTarget` in svg-generator.ts so the
+      // live widget and downloaded SVG agree pixel-for-pixel.
+      //   - Taller targets: split heightDelta into chrome share
+      //     (CHROME_SHARE = 0.35) and row share. Chrome scaling is
+      //     applied via chromeScale to headerHeight + axisHeight below.
+      //   - Shorter targets: shrink rowHeight first, floored at
       //     MIN_ROW_HEIGHT for legibility. When the floor saturates,
-      //     chrome shrinks to absorb the residual (floored at 0.4 so
-      //     axis labels stay readable).
+      //     chrome shrinks to absorb residual (floored at 0.4 so axis
+      //     labels stay readable).
       // Padding (spec.theme.spacing.padding) is intentionally NOT
-      // scaled — keeps horizontal layout stable and mirrors the
-      // svg-generator behaviour; tradeoff is a few px of slop vs the
-      // exact target, far smaller than the systematic ~30 % shortfall
-      // this fixes.
+      // scaled — keeps horizontal layout stable. Tradeoff: a few px of
+      // slop vs the exact target, far smaller than the systematic ~30%
+      // shortfall this offsets.
       const heightDelta = targetHeight - approxNaturalHeight;
       const bodyFontSize = parseFontSize(spec.theme.text.body.size);
       const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
@@ -1160,7 +1183,7 @@ export function createForestStore() {
         }
       }
     }
-    // Apply Lever 2C: scale chrome by the ladder's chromeScale. The
+    // Apply chromeScale: scale chrome by the height ladder's output. The
     // unscaled `headerHeight` / `axisHeight` declared above stay the
     // natural baseline (used by stableNaturalChromeHeight below); the
     // scaled values are what every consumer sees via `layout`.
@@ -1219,13 +1242,12 @@ export function createForestStore() {
     const scale = forestOptions?.scale ?? "linear";
     const nullValue = forestOptions?.nullValue ?? (scale === "log" ? 1 : 0);
 
-    // Stable natural aspect (Phase 7E hardening): pre-mutation
-    // approximation. Used by the in-widget slider as the *fixed*
-    // baseline so slider value <-> ratio mapping doesn't drift as
-    // the lever ladder shifts the layout. naturalRowHeight,
-    // displayRows.length, and the chrome estimate are all
-    // pre-mutation values; effectiveWidth (canvas) doesn't depend
-    // on targetAspect.
+    // Stable natural aspect — pre-mutation approximation. Used by the
+    // in-widget slider as the *fixed* baseline so the slider's value ↔
+    // ratio mapping doesn't drift as the aspect ladder reshapes the
+    // layout. naturalRowHeight, displayRows.length, and the chrome
+    // estimate are all pre-mutation values; effectiveWidth (canvas)
+    // doesn't depend on targetAspect.
     const stableNaturalRowsHeight = displayRows.length * naturalRowHeight;
     const stableNaturalChromeHeight =
       headerHeight + axisHeight + spec.theme.spacing.padding * 2;
@@ -1239,22 +1261,22 @@ export function createForestStore() {
       totalHeight: Math.max(effectiveHeight, plotHeight + scaledHeaderHeight + scaledAxisHeight + spec.theme.spacing.padding * 2),
       tableWidth,
       forestWidth,
-      // Phase 7E Lever 1B: non-flex column scale factor. Multiply
+      // Stage 2 output — non-flex column scale factor. Multiply
       // measured column widths by this in the renderer's
       // gridTemplateColumns / getColWidth so wider aspect ratios stay
       // monotonic past the flex cap. 1 by default = no change.
       aspectNonForestScale,
-      // Lever 2C: chrome scale factor. Already pre-applied to the
-      // headerHeight / axisHeight emitted below; exposed so the
+      // Height-ladder output — chrome scale factor. Already pre-applied
+      // to the headerHeight / axisHeight emitted below; exposed so the
       // export path can sanity-check parity.
       chromeScale,
-      // Lever-ladder intent: exact target dimensions when an aspect
-      // target is pinned. getExportDimensions() routes through these
-      // so downloads honour the requested aspect exactly.
+      // Exact aspect-target dimensions when targetAspect is pinned.
+      // getExportDimensions() routes through these so downloads honour
+      // the requested aspect exactly.
       aspectTargetWidth,
       aspectTargetHeight,
-      // Phase 7E hardening: stable natural aspect so the slider has
-      // a fixed reference point regardless of current targetAspect.
+      // Stable natural aspect — fixed reference point for the slider
+      // regardless of current targetAspect.
       naturalAspect: stableNaturalAspect,
       headerHeight: scaledHeaderHeight,
       rowHeight,
@@ -1282,7 +1304,7 @@ export function createForestStore() {
     const DEFAULT_COLUMN_WIDTH = 100;
 
     // Calculate sum of all column widths (excluding forest columns
-    // which have separate width). Phase 7E: apply aspectNonForestScale
+    // which have separate width). Apply Stage-2 aspectNonForestScale
     // to non-flex columns unless the user has manually resized — keeps
     // this aggregate in sync with `gridTemplateColumns` and
     // `getExportDimensions` so the SVG export's at-least-width path
@@ -1314,11 +1336,11 @@ export function createForestStore() {
 
   // Derived: fit scale — how much we'd need to shrink to fit the
   // container width. Vertical overflow always scrolls naturally;
-  // applying heightFit when aspect was pinned (the prior Phase 7E
-  // behaviour) made the slider feel awful — the whole widget
-  // CSS-scaled smaller as the user dragged narrower, then snapped
-  // back when the slider was released. Width-only fit + vertical
-  // scroll is the symmetric, smooth model.
+  // applying heightFit when aspect was pinned (the prior behaviour)
+  // made the slider feel awful — the whole widget CSS-scaled smaller
+  // as the user dragged narrower, then snapped back when the slider
+  // was released. Width-only fit + vertical scroll is the symmetric,
+  // smooth model.
   const fitScale = $derived.by((): number => {
     if (containerWidth <= 0 || scalableNaturalWidth <= 0) return 1;
     const contentWidth = scalableNaturalWidth * zoom;
@@ -1329,9 +1351,9 @@ export function createForestStore() {
 
   // Derived: actual rendered scale = zoom × fitScale (when autoFit) or just zoom.
   //
-  // Phase 7E: when an aspect target is pinned AND auto-fit is on, drop
-  // the min-zoom floor so content seamlessly resizes to fit the canvas
-  // — that's the core promise of auto-fit. The user's "font size
+  // When an aspect target is pinned AND auto-fit is on, drop the
+  // min-zoom floor so content seamlessly resizes to fit the canvas —
+  // that's the core promise of auto-fit. The user's "font size
   // relative to width decreases" intent is met by content shrinking;
   // shrinking below readability is the price of an aspect target the
   // canvas can't honour at native size, and is a deliberate user
@@ -2740,7 +2762,7 @@ export function createForestStore() {
     return plotWidthOverride;
   }
 
-  // -- Aspect-ratio target (Phase 4.6) ---------------------------------------
+  // -- Aspect-ratio target ----------------------------------------------------
   // Setter pushes a record onto the op log so "View source" can emit
   // `set_aspect_ratio(N)` (or `set_aspect_ratio(NULL)` when cleared). The
   // layout derived above reads `targetAspect` directly and walks the lever
@@ -2770,11 +2792,12 @@ export function createForestStore() {
     return targetAspect;
   }
 
-  // Phase 7C: anchor for ratio-only target-dim resolution. Mutates the
-  // *spec* (so the layout-derived getter picks it up reactively) plus
-  // appends an op so "View source" emits the matching set_aspect_ratio()
-  // call. No-op when the anchor doesn't change (avoids spurious op log
-  // entries when the slider is dragged).
+  // Set the anchor mode for the aspect ladder's target-dim resolution
+  // ("width" preserves natural-w, "height" preserves natural-h, "auto"
+  // picks at runtime). Mutates the *spec* (so the layout-derived getter
+  // picks it up reactively) plus appends an op so "View source" emits
+  // the matching set_aspect_ratio() call. No-op when the anchor doesn't
+  // change (avoids spurious op log entries when the slider is dragged).
   function setTargetAspectAnchor(anchor: "width" | "height" | "auto"): void {
     if (!spec) return;
     const current = spec.targetAspectAnchor ?? "width";
@@ -3819,13 +3842,13 @@ export function createForestStore() {
       // in absolute overlays that don't consume flow width.
       const widths = columnWidths;
 
-      // Phase 7E: route widths through the lever ladder so the
-      // downloaded SVG matches what the user sees on screen when
-      // an aspect target is pinned. Forest columns prefer
-      // `layout.forestWidth` (lever-laddered) over the auto-measured
-      // header-min width unless the user manually resized; non-forest
-      // columns multiply their measured width by
-      // `layout.aspectNonForestScale` unless user-resized. Mirrors
+      // Route widths through the aspect ladder so the downloaded SVG
+      // matches what the user sees on screen when an aspect target is
+      // pinned. Forest columns prefer `layout.forestWidth` (Stage 1
+      // output) over the auto-measured header-min width unless the
+      // user manually resized; non-forest columns multiply their
+      // measured width by `layout.aspectNonForestScale` (Stage 2 output)
+      // unless user-resized. Mirrors
       // `gridTemplateColumns` and `effectiveVizWidth()` in ForestPlot.
       const aspectScale = layout.aspectNonForestScale ?? 1;
 
@@ -4091,8 +4114,8 @@ export function createForestStore() {
     get targetAspect() { return targetAspect; },
     get targetAspectAnchor() { return spec?.targetAspectAnchor ?? "width"; },
     get userResizedIds() { return userResizedIds; },
-    // Phase 7E diagnostic: surface zoom-related state so the puppeteer
-    // probe can see what auto-fit is doing.
+    // Aspect-ladder diagnostic: surface zoom-related state so the
+    // puppeteer probe can see what auto-fit is doing.
     get _aspectDiag() {
       return {
         scalableNaturalWidth,

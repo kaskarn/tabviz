@@ -31,7 +31,7 @@
     slotCompatibleFields,
     autoPairSlots,
     resolveShowHeader,
-  } from "$lib/column-compat";
+  } from "$lib/column-types";
 
   interface Props {
     target: EditorTarget | null;

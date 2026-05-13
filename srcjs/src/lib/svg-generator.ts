@@ -26,7 +26,7 @@ import type {
 import { niceDomain, DOMAIN_PADDING, getEffectValue, normalizeValue } from "./scale-utils";
 import { computeAxis, generateTicks, VIZ_MARGIN, type AxisComputation } from "./axis-utils";
 import { computeArrowDimensions, renderArrowPath } from "./arrow-utils";
-import { isVizType, resolveShowHeader } from "./column-compat";
+import { isVizType, resolveShowHeader } from "./column-types";
 import { resolveMarkerStyle } from "./marker-styling";
 import { computeBandIndexes } from "./banding";
 import { resolveSemanticBundle, semanticMarkOpacity } from "./semantic-styling";

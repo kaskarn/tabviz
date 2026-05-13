@@ -35,7 +35,7 @@
   import HeaderContextMenu, { type ContextMenuTarget } from "$components/controls/HeaderContextMenu.svelte";
   import ColumnEditorPopover, { type EditorTarget } from "$components/controls/ColumnEditorPopover.svelte";
   import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
-  import { getVisualTypeDef, isVizType, resolveShowHeader } from "$lib/column-compat";
+  import { getVisualTypeDef, isVizType, resolveShowHeader } from "$lib/column-types";
   import { resolveSemanticBundle, activeSemanticToken } from "$lib/semantic-styling";
   import { computeAxisLayout, textRegionHeight } from "$lib/typography-layout";
   import {

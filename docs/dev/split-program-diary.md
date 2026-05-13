@@ -324,3 +324,28 @@ Results: 159 pass / 6 pre-existing fail (unchanged — orphans had no tests), R 
 
 Phase 0b done. One PR. Roughly 30 minutes of audit + 10 minutes of removal.
 
+### 0c-PR1: C11 + C7 — rename + aspect-ladder vocabulary cleanup
+
+Two small Phase 0c items combined in one PR. The work was almost entirely comment-and-name churn, which is the cleanest kind of refactor: the algorithm doesn't move, and the visual battery catches any accidental real change.
+
+**C11 (column-compat.ts rename).** The spec said this file was "editor-specific" and should relocate to `components/controls/`. The audit said otherwise: 4 of 7 exports (`resolveShowHeader`, `isVizType`, `VISUAL_TYPES`, `getVisualTypeDef`) are used by the store, the svg-generator, and ForestPlot. Editor-specific it is not. Renamed in place to `column-types.ts` instead of relocating; updated the 5 callers; updated the file's own header comment to explain what's actually in it (two concerns sharing one metadata table). Five import-path updates, one mv, one header-comment rewrite. Done.
+
+**C7 (aspect-ladder vocabulary cleanup).** The aspect-ratio relayout code had ~28 references to internal jargon: "Lever 1A", "Lever 1B", "Phase 7E", "Phase 4.6", "Phase 7C", "Phase 2C". Useful when you wrote the code; opaque a year later. Rewrote the algorithm header as a single doc-comment block at the top of the `layout` derivation explaining:
+- The anchor model (width / height / auto)
+- Three width stages (forest absorption → non-forest column scale → layout overflow)
+- Direction-aware height ladder (taller targets grow chrome + rows; shorter targets shrink rows first, then chrome)
+
+Then renamed every "Lever X" / "Phase X" mention in the rest of the file to descriptive names ("Stage 1 — Forest absorption", "Height ladder", etc.). Variable names already in the code were already descriptive (`aspectNonForestScale`, `chromeScale`, `aspectTargetWidth`) — kept as-is.
+
+**MFD-5: the pinning tests aren't testable.** The spec called for "unit tests pinning current behavior at known aspect-ratio inputs." I wrote a test file with 4 tests for the contract (`targetAspect=null` → no fire; `targetAspect=2` → height shrinks; `targetAspect=0.7` → chromeScale > 1; naturalAspect is finite). Then I tried to run it and discovered `bun:test` doesn't execute Svelte 5 runes outside a Svelte context. `$state` is undefined; the store factory throws on first call.
+
+Then I checked the existing `forestStore.reorder.test.ts` — same issue. It's been silently failing since runes were adopted, contributing 4 of the "6 pre-existing fail" baseline I've been tracking through every PR. I'd been miscounting the rotten apples.
+
+This is real test-infrastructure debt. Fixing it requires either (a) a different runner (vitest + svelte plugin), or (b) a runes shim for bun. Neither is C7's scope; both will matter when Phase 0c-C1 starts decomposing the store and we want store-level unit tests. Filed as MFD-5 with a "fix this before C1" tag.
+
+I deleted my pinning test file rather than land 4 more silent-fail tests. The visual battery (45 examples touching the aspect ladder) is the actual regression net for the algorithm; that's been green throughout. Net: C7 lands without unit-test coverage, but with significantly clearer reading.
+
+Results: build clean, bun test 159/6 unchanged, R tests beautiful, visual smoke clean.
+
+Two items down, ten to go in Phase 0c.
+

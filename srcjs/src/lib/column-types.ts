@@ -1,5 +1,17 @@
-// Registry of visual column types + slot compatibility helpers used by the
-// interactive column editor (see ColumnEditorPopover.svelte).
+// Column-type registry + helpers.
+//
+// Two distinct concerns, kept together because they share the VISUAL_TYPES
+// metadata table:
+//   1. Editor-facing slot compatibility (slotCompatibleFields, isTypeSatisfiable,
+//      autoPairSlots, getVisualTypeDef) — used by ColumnEditorPopover and
+//      ColumnTypeMenu in components/controls/.
+//   2. Cross-cutting column-type predicates and helpers (isVizType,
+//      resolveShowHeader) — used by the store, ForestPlot, and svg-generator.
+//
+// Phase 0c-C11 renamed this file from column-compat.ts (the "-compat" was
+// misleading — there's no back-compat shim here). The spec proposed
+// relocating to components/controls/, but the cross-cutting helpers (4 of
+// 7 exports) made that wrong. Renamed in place under $lib/ instead.
 
 import type {
   AvailableField,
