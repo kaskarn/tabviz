@@ -1,3 +1,43 @@
+<!--
+  ForestPlot — top-level renderer for a single (non-split) tabviz widget.
+
+  Phase 0c-C2 audit (2026-05): originally 3526 lines. After
+  ForestOverlays extraction (Phase 0c-PR12) the parent is 3329 lines.
+
+  The original spec proposed splitting into ForestHeader / ForestTableBody
+  / ForestPlotBody / ForestControls / ForestOverlays + a thin orchestrator
+  (<500 lines). Implementation reality required revising that plan:
+
+  - **ForestHeader, ForestControls** dropped: the title/subtitle region
+    and the toolbar/settings region are already single-component mounts
+    (PlotHeader / ControlToolbar / SettingsPanel). Wrapping them adds
+    files without reducing complexity.
+
+  - **ForestOverlays** done: the popover-chain glue + drop indicator +
+    tooltip lifted out clean (Phase 0c-PR12).
+
+  - **ForestTableBody + ForestPlotBody** deferred with justification:
+    both live inside the same CSS Grid container (`.tabviz-main`) and
+    share grid-row / grid-column placements. Extracting them as siblings
+    would either (a) require both components to render at the top level
+    inside the grid via Svelte fragments + identical grid-placement
+    props, or (b) duplicate the grid wrapper which breaks layout. Plus
+    they share ~30 derived values and helper methods (gridTemplateColumns,
+    layout, xScale, displayRows, bandIndexes, getCellStyle,
+    paintCellPreviewToken, etc.) which would all need to be threaded
+    via props or context.
+
+    The cleaner refactor — extracting the entire `.tabviz-main` block as
+    a single ForestMain component — moves ~950 lines but adds one
+    intermediate component with prop drilling for those 30 shared
+    values. Net complexity shifts more than it reduces.
+
+    Phase 1.x follow-up: revisit once the createTabviz factory is in
+    place; the cleaner state-passing mechanism (via the factory's
+    instance API rather than ad-hoc props) may make a fuller decomp
+    viable. For now this file lives above the 700-line threshold with
+    this justification per the spec's stopping rule.
+-->
 <script lang="ts">
   import { tick } from "svelte";
   import type { ForestStore } from "$stores/forestStore.svelte";

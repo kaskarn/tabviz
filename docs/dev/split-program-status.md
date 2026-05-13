@@ -15,7 +15,9 @@ A high-level dashboard for the program described in `docs/dev/frontend-split-spe
 | Pre-step 1 — Q8 idiom spike | ✅ done | Idiom (c) "method-only split" chosen; `23e18b4` |
 | **Phase 0a — Structural debt** | ✅ **done** | All S1-S14 closed; S15 deferred to 0c-C12 per spec sequencing |
 | **Phase 0b — Dead code** | ✅ **done** | D1/D2/D5 were false positives (active code); D4 found 5 real orphans removed |
-| **Phase 0c — Size/clarity** | 🟡 in progress | C11, C7, C8, C9, C6, C4, C10, C3 done. Test-runner upgrade (vitest) shipped. C2, C5, C1 still ahead. |
+| **Phase 0c — Size/clarity** | ✅ **done** (with documented Phase 1.x deferrals) | Closed: C3, C4, C6, C7, C8, C9, C10, C11 + test runner + ForestOverlays (C2 partial). Deferred to Phase 1.x with inline-justification per the stopping rule: remaining C2 (TableBody+PlotBody), C5 (theme resolver port), C1 (forestStore decomp), C12-a (View Source per spec sequencing). |
+| **Phase 0d — Documentation** | ⏳ next up | G1 JSON Schema final, G2 event contract doc, G5 forest-specific field reference, versioning policy doc, public-API README draft |
+| **Phase 0e — Sync audit** | ⏳ pending (parallel with 0d) | Already partly wired: TABVIZ_STATE_FIELDS sync test (0a-PR5). Remaining: tabviz-proxy method-name list, column type names, wire field conventions doc |
 | Phase 0c — Size/clarity | ⏳ pending | Longest phase; C1 forestStore decomposition is the long pole |
 | Phase 0d — Documentation | ⏳ pending | Mostly writing |
 | Phase 0e — Synchronization audit | ⏳ pending | Parallel with 0d |
@@ -72,12 +74,13 @@ Per spec §4. The longest phase — estimated 7-8 weeks. Lands as small PRs acro
 | 5 | **C9** — svg-generator decomposition audit | ✅ done (0c-PR3) |
 | 6 | **C5** — Theme presets + JS resolver port (cascade-rework gate confirmed open) | ⏳ pending |
 | 7 | **C3** — ColumnEditorPopover decomposition (~3 days) | ✅ done. 6 sub-components extracted (Forest, Sparkline, NumericDomain (bar/progress/heatmap), Stars, Numeric, Viz_*). Parent 1633 → 1012 lines. Remaining inline blocks (text/pvalue/custom/interval — 1-2 controls each) documented as intentionally not extracted; the parent's size is justified by the cohesive form shell. |
-| 8 | **C2** — ForestPlot.svelte decomposition (~1 week) | 🟡 in progress: ForestOverlays extracted (0c-PR12), parent 3526 → 3329 lines. ForestHeader / ForestControls dropped from the split plan (they're 2-line wrappers around existing components; low value). Remaining: ForestTableBody (~355 template lines), ForestPlotBody (~454 lines). |
-| 9 | **C4** — Other large components audit (~1 week, optional splits) | ⏳ pending |
-| 10 | **C10** — Split widget shell decomposition (~3 days) | ⏳ pending |
-| 11 | **C1** — forestStore decomposition (~3 weeks; long pole; idiom proven by Q8 spike) | ⏳ pending |
-| 12 | **C12-a** — View Source refactor + R-target via registry (~1 week) | ⏳ pending |
-| - | **v2-theme test-fixture rewrite** (MFD-1, MFD-5 follow-up) | ⏳ blocked-by-research; needed before C1 |
+| 8 | **C2** — ForestPlot.svelte decomposition (~1 week) | 🟡 partial. ForestOverlays extracted (0c-PR12), parent 3526 → 3329 lines. ForestHeader/ForestControls dropped (2-line wrappers, low value). ForestTableBody + ForestPlotBody **deferred to Phase 1.x** with inline justification — both live inside the same CSS Grid and share ~30 derived values; cleaner to revisit once the createTabviz factory provides better state-passing primitives. |
+| 9 | **C4** — Other large components audit | ✅ done (0c-PR5) |
+| 10 | **C10** — Split widget shell decomposition | ✅ done (0c-PR5) |
+| 11 | **C1** — forestStore decomposition (~3 weeks; long pole) | 🟡 partial. Q8 spike extracted source-tagging slice (0c-PR0 / 23e18b4). Remaining ~10 slices **deferred to Phase 1.x** — the pattern is proven; the remaining slice extractions are mechanical but multi-week, and the createTabviz factory's instance-API shape will inform some slice boundaries. |
+| 12 | **C12-a** — View Source refactor + R-target via registry (~1 week) | ⏳ **deferred to Phase 1.5** per spec sequencing |
+| - | **C5** — Theme presets + JS resolver port (~1.5-2 weeks) | ⏳ **deferred to Phase 1.x**. R resolver is 682 lines of OKLCH/mirror-chain/cluster derivation across 7 pipeline steps; porting is real new functionality (per §0 exception), and the work is more valuable shipped alongside the createTheme JS factory in Phase 1. |
+| - | **v2-theme test-fixture rewrite** (MFD-1, MFD-5 follow-up) | ⏳ deferred — tests are skipped with clear pointers; fixture migration can land alongside C1 when that happens. |
 
 Done in this iteration: 0c-PR1 + 0c-PR2 + 0c-PR3. Six items closed (C7, C8, C9, C11 + test-runner + Phase 0b D4).
 
