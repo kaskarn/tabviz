@@ -33,6 +33,8 @@
     resolveShowHeader,
   } from "$lib/column-types";
   import ForestOptionsEditor from "./ForestOptionsEditor.svelte";
+  import SparklineOptionsEditor from "./SparklineOptionsEditor.svelte";
+  import NumericDomainOptionsEditor from "./NumericDomainOptionsEditor.svelte";
 
   interface Props {
     target: EditorTarget | null;
@@ -54,14 +56,33 @@
   // Light options editor — covers the most common knobs per type.
   let optDecimals = $state<string>("");
   let optStars = $state(false);
-  let optMaxValue = $state<string>("");
+  // bar/progress/heatmap maxValue + scale moved to NumericDomainOptionsEditor
+  // sub-components (Phase 0c-C3). Three separate bind:this refs because
+  // each type's component is rendered conditionally and we need to dispatch
+  // build()/hydrate()/reset() to the active one.
+  type NumericDomainEditorRef = {
+    reset(): void;
+    hydrateFromSpec(o: NonNullable<ColumnSpec["options"]>): void;
+    build(): NonNullable<NonNullable<ColumnSpec["options"]>["bar"]>
+            | NonNullable<NonNullable<ColumnSpec["options"]>["progress"]>
+            | NonNullable<NonNullable<ColumnSpec["options"]>["heatmap"]>;
+  };
+  let barEditor = $state<NumericDomainEditorRef | null>(null);
+  let progressEditor = $state<NumericDomainEditorRef | null>(null);
+  let heatmapEditor = $state<NumericDomainEditorRef | null>(null);
   let optShowPct = $state(false);
-  let optSparklineType = $state<"line" | "bar" | "area">("line");
+  // Sparkline state moved to SparklineOptionsEditor sub-component (Phase 0c-C3).
+  type SparklineEditorRef = {
+    reset(): void;
+    hydrateFromSpec(o: NonNullable<ColumnSpec["options"]>): void;
+    build(): { type: "line" | "bar" | "area" };
+  };
+  let sparklineEditor = $state<SparklineEditorRef | null>(null);
   let optPrefix = $state<string>("");
   let optSuffix = $state<string>("");
   let optThousandsSep = $state(false);
   let optMaxChars = $state<string>("");
-  let optBarScale = $state<"linear" | "log" | "sqrt">("linear");
+  // optBarScale moved into NumericDomainOptionsEditor (Phase 0c-C3).
   let optMaxStars = $state<string>("");
   let optDomainMin = $state<string>("");
   let optDomainMax = $state<string>("");
@@ -156,14 +177,15 @@
   function resetOptions() {
     optDecimals = "";
     optStars = false;
-    optMaxValue = "";
+    barEditor?.reset();
+    progressEditor?.reset();
+    heatmapEditor?.reset();
     optShowPct = false;
-    optSparklineType = "line";
+    sparklineEditor?.reset();
     optPrefix = "";
     optSuffix = "";
     optThousandsSep = false;
     optMaxChars = "";
-    optBarScale = "linear";
     optMaxStars = "";
     optDomainMin = "";
     optDomainMax = "";
@@ -251,17 +273,11 @@
     }
     if (type === "text" && o.text?.maxChars != null) optMaxChars = String(o.text.maxChars);
     if (type === "pvalue" && o.pvalue?.stars != null) optStars = !!o.pvalue.stars;
-    if (type === "bar") {
-      if (o.bar?.maxValue != null) optMaxValue = String(o.bar.maxValue);
-      if (o.bar?.scale) optBarScale = o.bar.scale;
-    }
-    if (type === "progress") {
-      if (o.progress?.maxValue != null) optMaxValue = String(o.progress.maxValue);
-      if (o.progress?.scale) optBarScale = o.progress.scale;
-    }
+    if (type === "bar") barEditor?.hydrateFromSpec(o);
+    if (type === "progress") progressEditor?.hydrateFromSpec(o);
     if (type === "heatmap") {
       if (o.heatmap?.decimals != null) optDecimals = String(o.heatmap.decimals);
-      if (o.heatmap?.scale) optBarScale = o.heatmap.scale;
+      heatmapEditor?.hydrateFromSpec(o);
     }
     if (type === "stars") {
       if (o.stars?.maxStars != null) optMaxStars = String(o.stars.maxStars);
@@ -274,7 +290,7 @@
       forestEditor?.hydrateFromSpec(o);
     }
     if (type === "interval" && o.interval?.decimals != null) optDecimals = String(o.interval.decimals);
-    if (type === "sparkline" && o.sparkline?.type) optSparklineType = o.sparkline.type;
+    if (type === "sparkline") sparklineEditor?.hydrateFromSpec(o);
     if (type === "custom" && o.events?.showPct != null) optShowPct = !!o.events.showPct;
   }
 
@@ -438,26 +454,21 @@
         options.pvalue = { stars: optStars };
         break;
       case "bar": {
-        const bar: NonNullable<NonNullable<ColumnSpec["options"]>["bar"]> = {};
-        if (optMaxValue !== "") bar.maxValue = Number(optMaxValue);
-        if (optBarScale !== "linear") bar.scale = optBarScale;
-        if (Object.keys(bar).length > 0) options.bar = bar;
+        const bar = barEditor?.build() ?? {};
+        if (Object.keys(bar).length > 0) options.bar = bar as NonNullable<NonNullable<ColumnSpec["options"]>["bar"]>;
         break;
       }
       case "progress": {
-        const prog: NonNullable<NonNullable<ColumnSpec["options"]>["progress"]> = {};
-        if (optMaxValue !== "") prog.maxValue = Number(optMaxValue);
-        if (optBarScale !== "linear") prog.scale = optBarScale;
-        if (Object.keys(prog).length > 0) options.progress = prog;
+        const prog = progressEditor?.build() ?? {};
+        if (Object.keys(prog).length > 0) options.progress = prog as NonNullable<NonNullable<ColumnSpec["options"]>["progress"]>;
         break;
       }
       case "heatmap": {
-        const hm: NonNullable<NonNullable<ColumnSpec["options"]>["heatmap"]> = {};
+        const hm = (heatmapEditor?.build() ?? {}) as NonNullable<NonNullable<ColumnSpec["options"]>["heatmap"]>;
         if (optDecimals !== "") {
           hm.decimals = Number(optDecimals);
           hm.showValue = true;
         }
-        if (optBarScale !== "linear") hm.scale = optBarScale;
         if (Object.keys(hm).length > 0) options.heatmap = hm;
         break;
       }
@@ -478,7 +489,7 @@
         break;
       }
       case "sparkline":
-        options.sparkline = { type: optSparklineType };
+        if (sparklineEditor) options.sparkline = sparklineEditor.build();
         break;
       case "forest": {
         if (forestEditor) {
@@ -820,26 +831,14 @@
           </label>
         {/if}
 
-        {#if selectedType === "bar" || selectedType === "progress"}
-          <label class="editor-field">
-            <span>Max value</span>
-            <input
-              type="number"
-              bind:value={optMaxValue}
-              placeholder={selectedType === "progress" ? "100" : "auto"}
-            />
-          </label>
+        {#if selectedType === "bar"}
+          <NumericDomainOptionsEditor type="bar" bind:this={barEditor} />
         {/if}
-
-        {#if selectedType === "bar" || selectedType === "progress" || selectedType === "heatmap"}
-          <label class="editor-field">
-            <span>Scale</span>
-            <select bind:value={optBarScale}>
-              <option value="linear">Linear</option>
-              <option value="log">Log</option>
-              <option value="sqrt">Sqrt</option>
-            </select>
-          </label>
+        {#if selectedType === "progress"}
+          <NumericDomainOptionsEditor type="progress" bind:this={progressEditor} />
+        {/if}
+        {#if selectedType === "heatmap"}
+          <NumericDomainOptionsEditor type="heatmap" bind:this={heatmapEditor} />
         {/if}
 
         {#if selectedType === "stars"}
@@ -870,14 +869,7 @@
         {/if}
 
         {#if selectedType === "sparkline"}
-          <label class="editor-field">
-            <span>Chart type</span>
-            <select bind:value={optSparklineType}>
-              <option value="line">Line</option>
-              <option value="bar">Bar</option>
-              <option value="area">Area</option>
-            </select>
-          </label>
+          <SparklineOptionsEditor bind:this={sparklineEditor} />
         {/if}
 
         {#if selectedType === "custom"}
