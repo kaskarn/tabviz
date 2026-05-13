@@ -15,7 +15,7 @@ A high-level dashboard for the program described in `docs/dev/frontend-split-spe
 | Pre-step 1 — Q8 idiom spike | ✅ done | Idiom (c) "method-only split" chosen; `23e18b4` |
 | **Phase 0a — Structural debt** | ✅ **done** | All S1-S14 closed; S15 deferred to 0c-C12 per spec sequencing |
 | **Phase 0b — Dead code** | ✅ **done** | D1/D2/D5 were false positives (active code); D4 found 5 real orphans removed |
-| **Phase 0c — Size/clarity** | 🟡 in progress | C11, C7, C8, C9, C6, C4, C10 done. Test-runner upgrade (vitest) shipped. C3 in progress (forest extraction done; ~9 type blocks remain). C2, C5, C1 still ahead. |
+| **Phase 0c — Size/clarity** | 🟡 in progress | C11, C7, C8, C9, C6, C4, C10, C3 done. Test-runner upgrade (vitest) shipped. C2, C5, C1 still ahead. |
 | Phase 0c — Size/clarity | ⏳ pending | Longest phase; C1 forestStore decomposition is the long pole |
 | Phase 0d — Documentation | ⏳ pending | Mostly writing |
 | Phase 0e — Synchronization audit | ⏳ pending | Parallel with 0d |
@@ -71,7 +71,7 @@ Per spec §4. The longest phase — estimated 7-8 weeks. Lands as small PRs acro
 | 4 | **C8** — width-utils dual measurement path audit | ✅ done (0c-PR3) |
 | 5 | **C9** — svg-generator decomposition audit | ✅ done (0c-PR3) |
 | 6 | **C5** — Theme presets + JS resolver port (cascade-rework gate confirmed open) | ⏳ pending |
-| 7 | **C3** — ColumnEditorPopover decomposition (~3 days) | 🟡 in progress: 7 of 10 type blocks extracted (forest, sparkline, bar, progress, heatmap, stars, numeric). Remaining: viz_* (biggest, vizEffects array), text, pvalue, custom (these last three are 1-2 lines each — may inline or extract trivially). File at 1449 lines, down from 1633. |
+| 7 | **C3** — ColumnEditorPopover decomposition (~3 days) | ✅ done. 6 sub-components extracted (Forest, Sparkline, NumericDomain (bar/progress/heatmap), Stars, Numeric, Viz_*). Parent 1633 → 1012 lines. Remaining inline blocks (text/pvalue/custom/interval — 1-2 controls each) documented as intentionally not extracted; the parent's size is justified by the cohesive form shell. |
 | 8 | **C2** — ForestPlot.svelte decomposition (~1 week) | ⏳ pending |
 | 9 | **C4** — Other large components audit (~1 week, optional splits) | ⏳ pending |
 | 10 | **C10** — Split widget shell decomposition (~3 days) | ⏳ pending |

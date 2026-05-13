@@ -1,3 +1,31 @@
+<!--
+  ColumnEditorPopover — popover for inserting / configuring a column.
+
+  Phase 0c-C3 audit (2026-05): originally 1633 lines. After per-type
+  option extraction this shell is ~1010 lines. Remaining size is the
+  cohesive workflow shell: type selection, slot wiring, popover
+  viewport clamping, commit pipeline, alignment controls. None of
+  these extract cleanly into siblings — they're a single form.
+
+  Per-type extractions (the big-impact ones):
+  - ForestOptionsEditor (forest)
+  - SparklineOptionsEditor (sparkline)
+  - NumericDomainOptionsEditor (bar, progress, heatmap — shared)
+  - StarsOptionsEditor (stars)
+  - NumericOptionsEditor (numeric)
+  - VizOptionsEditor (viz_bar, viz_boxplot, viz_violin — shared)
+
+  Tiny remaining inline blocks (intentionally not extracted, each is
+  1-2 controls):
+  - text → optMaxChars input
+  - pvalue → optStars checkbox
+  - custom → optShowPct checkbox
+  - interval / heatmap → shared optDecimals input (heatmap also reads
+    showValue side-effect)
+
+  Pattern for adding a new per-type editor: see ForestOptionsEditor
+  + option-slices/forest-options.svelte.ts as the canonical template.
+-->
 <script lang="ts" module>
   import type { ColumnSpec as _ColumnSpec, ColumnType as _ColumnType } from "$types";
 
