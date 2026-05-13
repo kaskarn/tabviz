@@ -170,3 +170,45 @@ Results: 137 pass / 6 pre-existing fail (one new test added for the header_align
 
 `grep "as string\|as never\|as Record" srcjs/src/index.svelte.ts` — still a few `as` casts in the dispatcher, but they're now narrow (e.g., one `as Parameters<ForestStore["setCellValue"]>[2]` because the store's cell value type is itself untyped — proper typing of that signature is later work). The proxy table has gone from ~200 lines of coercion-heavy code to ~120 lines of typed dispatch.
 
+### 0a-PR5: typed event emitter — the linchpin
+
+The biggest PR in Phase 0a, both in scope and in load-bearing-ness. The store gains a typed pub/sub event emitter; the Shiny adapter stops using its own `$effect` blocks to listen to store state and instead subscribes via `store.on(event, callback)`. The R-side `TABVIZ_STATE_FIELDS` list now has a CI-enforced JS counterpart (`SHINY_EVENT_FIELDS`) that fails the test suite if they drift.
+
+**Design choice that took a minute to settle**: where to put the per-dimension `$effect` blocks that *fire* the typed events. Two options:
+- (a) Inside the store factory — store internally watches its own state and fires events. Adapter is pure subscribe.
+- (b) Inside the adapter — adapter watches store state via the public API and fires events.
+
+(a) is what shipped. Pros: the store's reactive state stays an implementation detail; consumers don't need to know it uses runes; events fire whether or not a particular consumer is watching. Cons: `$effect.root()` runs inside the factory, which is unusual — most Svelte 5 effects live inside components or component-scoped runes. The Svelte docs do support `$effect.root` outside components for exactly this case, but it's the kind of thing that surprises a reader. Added a section header comment in the store factory naming the construct and pointing to the spec items.
+
+**Twenty event subscriptions, replacing twenty effects.** Looking at the diff line-by-line:
+
+```ts
+// Before (in setupShinyBindings):
+$effect(() => emit("selected", Array.from(store.selectedRowIds)));
+$effect(() => emit("hover", store.hoveredRowId));
+// ... 18 more $effect blocks
+
+// After:
+store.on("selected", (value) => emit(EVENT_TO_SHINY_FIELD.selected, value));
+store.on("hover", (value) => emit(EVENT_TO_SHINY_FIELD.hover, value));
+// ... 18 more
+```
+
+Same shape, different mechanism. The wire field name is now looked up from `EVENT_TO_SHINY_FIELD` rather than hardcoded, which means there's exactly one place where camelCase events meet snake_case Shiny inputs. The aggregate `_state` debounce becomes a single `store.on("change", ...)` subscription with the same setTimeout dance — no longer needs to manually `void` every reactive dependency, because the store's `change` event fires whenever any dimension does.
+
+**The sync test was the second-most-careful part of this PR.** R's `TABVIZ_STATE_FIELDS` lives in `R/shiny.R`; JS's `SHINY_EVENT_FIELDS` lives in `srcjs/src/spec/events.ts`. The wire-version doc-test (from PR1) already reads the TS file with `readLines` + regex to check `CURRENT_VERSION`; I extended it with a second test that does the same pattern for the event-fields list. Uses `regexec` with PERL syntax to grab the array literal body, then `gregexpr` to extract every quoted string. R's `expect_setequal` compares as sets — order-independent. The test catches drift: add a field to one side without the other, full devtools::test() fails loud.
+
+**The PaintTool minor wart**: turns out the store's `paintTool` state is typed inline (`$state<{ token: SemanticToken; scope: "row" | "cell" }>(...)`) without an exported type. So my `TabvizEvents` interface needs to declare `paintTool: PaintTool` and define `PaintTool` somewhere. I put it in `$spec/events.ts` itself, with a comment that it should lift to `$types` once the store's internal types graduate (Phase 1). Tiny structural debt acknowledged in place.
+
+**A `void store.x` chain I removed** in the adapter: the prior code had a 20-line block of `void store.sortConfig; void store.filters; ...` to register dependencies for the debounce $effect. Gone now — the store's `change` event already fires when any of these changes, the adapter subscribes once. Net diff for `setupShinyBindings` is ~30 lines shorter even though the work is the same.
+
+**One small thing the spec called for that I tacked on instead of deferring**: tests for the event emitter slice itself. 8 tests covering multi-subscriber delivery, unsubscribe, throwing-listener isolation, self-unsubscribe-during-emit, undefined payloads, destroy. Caught one design nuance I wouldn't have otherwise noticed: a listener that unsubscribes itself mid-emit shouldn't skip other listeners in the same emit cycle. The implementation defensively copies the listener set before iterating, so this works.
+
+Results:
+- Build: clean (tabviz.js grew ~1.3kB, expected — added emitter slice + per-event $effects).
+- bun test: 145 pass / 6 pre-existing fail (was 137 / 6; +8 from events.test.ts).
+- devtools::test(): clean. wire-version context now shows 5 PASS (up from 3 — added the SHINY_EVENT_FIELDS sync test + a confirmation test).
+- Visual battery (7 representative examples including row_styling and multi_effect, which exercise paint and forest-effect paths): all clean.
+
+A real moment for the program: with PR5 done, the store has its eventual public-API shape on the *output* side too. PR4 typed the inputs; PR5 typed the outputs. Both halves of the contract are now in place; PR1 versions the spec, PR2 types the envelope, PR3 isolates the globals. The interesting part of the future "createTabviz" factory is just a thin layer that exposes these things to a consumer who doesn't know they're talking through htmlwidgets.
+

@@ -50,6 +50,8 @@ function anyForestColumnGroups(columns: ColumnDef[] | undefined): boolean {
 import { resolveShowHeader } from "$lib/column-compat";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte.ts";
+import { createEventEmitter, type EventEmitter } from "$stores/slices/events.ts";
+import type { TabvizEvents } from "$spec/events.ts";
 
 /**
  * Set of ids the frontend store reserves for its own use — a user column
@@ -3517,6 +3519,92 @@ export function createForestStore() {
     };
   });
 
+  // ──────────────────────────────────────────────────────────────────────
+  // Typed event emitter (spec S3 — Phase 0a-PR5)
+  // ──────────────────────────────────────────────────────────────────────
+  // Per-dimension events fire reactively from $effect blocks whenever
+  // the underlying state changes. Consumers subscribe via store.on(...);
+  // the Shiny adapter forwards to setShinyInput, the future JS public
+  // API surfaces .on() directly. See $spec/events.ts for the typed
+  // payload contract and $stores/slices/events.ts for the emitter.
+  const events: EventEmitter<TabvizEvents> = createEventEmitter<TabvizEvents>();
+  $effect.root(() => {
+    // Tier 1 — core interaction
+    $effect(() => {
+      // Inline reproduction of the `selectedRowIds` getter logic so the
+      // $effect tracks the underlying state without going through the
+      // public API.
+      const active = paintTool.token;
+      const ids: string[] = [];
+      for (const rowId of Object.keys(styleEdits.rows)) {
+        if (styleEdits.rows[rowId]?.[active]) ids.push(rowId);
+      }
+      events.emit("selected", ids);
+    });
+    $effect(() => { events.emit("hover", hoveredRowId); });
+    $effect(() => { events.emit("sort", sortConfig as TabvizEvents["sort"]); });
+    $effect(() => { events.emit("filters", filters); });
+    $effect(() => { events.emit("rowStyles", styleEdits.rows); });
+    $effect(() => { events.emit("cellStyles", styleEdits.cells); });
+    $effect(() => { events.emit("paintTool", paintTool); });
+    $effect(() => { events.emit("collapsedGroups", Array.from(collapsedGroups)); });
+    $effect(() => { events.emit("hiddenColumns", Array.from(hiddenColumnIds)); });
+    $effect(() => { events.emit("columnOrder", allColumns.map((c) => c.id)); });
+    $effect(() => { events.emit("columnWidths", { ...columnWidths }); });
+    $effect(() => { events.emit("cellEdits", cellEdits); });
+    $effect(() => { events.emit("labelEdits", labelEdits); });
+    $effect(() => {
+      events.emit("zoom", {
+        zoom, autoFit, maxWidth, maxHeight, showZoomControls,
+      } as unknown as TabvizEvents["zoom"]);
+    });
+
+    // Tier 2 — forest/plot-specific overrides
+    $effect(() => { events.emit("axisZooms", axisZooms as unknown as TabvizEvents["axisZooms"]); });
+    $effect(() => {
+      const mode = bandingOverride;
+      const startsWithBand = bandingStartsWithBandOverride;
+      events.emit(
+        "banding",
+        mode == null && startsWithBand == null
+          ? null
+          : { mode: mode as unknown as string | null, startsWithBand },
+      );
+    });
+    $effect(() => { events.emit("plotWidth", plotWidthOverride); });
+
+    // Derived — visibleRows IDs in display order
+    $effect(() => { events.emit("visibleRows", visibleRows.map((r) => r.id)); });
+
+    // Aggregate `change` — fires when any of the above does. The adapter
+    // uses this to drive the debounced `_state` bundle without having to
+    // touch every dependency individually.
+    $effect(() => {
+      // Touch every dimension so the effect re-fires when any changes.
+      // Read-only `void` references — no work, just dependency tracking.
+      void sortConfig;
+      void filters;
+      void styleEdits;
+      void paintTool;
+      void collapsedGroups;
+      void hiddenColumnIds;
+      void allColumns;
+      void columnWidths;
+      void cellEdits;
+      void labelEdits;
+      void zoom;
+      void autoFit;
+      void maxWidth;
+      void maxHeight;
+      void showZoomControls;
+      void axisZooms;
+      void bandingOverride;
+      void bandingStartsWithBandOverride;
+      void plotWidthOverride;
+      events.emit("change", undefined);
+    });
+  });
+
   return {
     // Getters (reactive)
     get spec() {
@@ -4072,6 +4160,10 @@ export function createForestStore() {
     // its dispatched mutations as 'proxy' so observers can disambiguate.
     getSource: source.getSource,
     withSource,
+    // Typed event emitter (spec S3). Subscribe with store.on(event, cb).
+    // The Shiny adapter consumes per-dimension events and `change`; future
+    // JS API consumers use .on directly. See $spec/events.ts for events.
+    on: events.on,
     // Append a pre-built record (used by the split wrapper to log
     // SplitForest-level ops like set_shared_column_widths on the active
     // sub-plot's log). Internal store mutations go through the same

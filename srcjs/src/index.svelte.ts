@@ -5,6 +5,7 @@ import { exportToSVG, exportToPNG } from "$lib/export";
 import { shinyEnvelope } from "$lib/shiny-envelope";
 import { validateSpecVersion } from "$spec";
 import { normalize } from "$spec/proxy-args.ts";
+import { EVENT_TO_SHINY_FIELD } from "$spec/events.ts";
 import {
   exposeDevHook,
   hasShiny,
@@ -303,137 +304,68 @@ function setupShinyBindings(widgetId: string, store: ForestStore) {
     );
   };
 
-  $effect.root(() => {
-    // ── Tier 1 — core interaction ─────────────────────────────────────────
-    $effect(() => {
-      emit("selected", Array.from(store.selectedRowIds));
-    });
-    $effect(() => {
-      emit("hover", store.hoveredRowId);
-    });
-    $effect(() => {
-      emit("sort", store.sortConfig);
-    });
-    $effect(() => {
-      emit("filters", store.filters);
-    });
-    $effect(() => {
-      emit("row_styles", store.styleEdits.rows);
-    });
-    $effect(() => {
-      emit("cell_styles", store.styleEdits.cells);
-    });
-    $effect(() => {
-      emit("paint_tool", store.paintTool);
-    });
-    $effect(() => {
-      emit("collapsed_groups", Array.from(store.collapsedGroups));
-    });
-    $effect(() => {
-      emit("hidden_columns", Array.from(store.hiddenColumnIds));
-    });
-    $effect(() => {
-      emit("column_order", store.allColumns.map((c) => c.id));
-    });
-    $effect(() => {
-      emit("column_widths", { ...store.columnWidths });
-    });
-    $effect(() => {
-      emit("cell_edits", store.cellEdits);
-    });
-    $effect(() => {
-      emit("label_edits", store.labelEdits);
-    });
-    $effect(() => {
-      emit("zoom", {
-        zoom: store.zoom,
-        autoFit: store.autoFit,
-        maxWidth: store.maxWidth,
-        maxHeight: store.maxHeight,
-        showZoomControls: store.showZoomControls,
-      });
-    });
+  // Per-dimension subscriptions — the store fires typed events from its
+  // reactive $effect blocks (see forestStore::eventEmitter), we map each
+  // to its snake_case Shiny field name via EVENT_TO_SHINY_FIELD and forward.
+  // Replaces the prior $effect.root(() => $effect(...) x18) block; same
+  // wire behavior, narrower contract.
+  store.on("selected", (value) => emit(EVENT_TO_SHINY_FIELD.selected, value));
+  store.on("hover", (value) => emit(EVENT_TO_SHINY_FIELD.hover, value));
+  store.on("sort", (value) => emit(EVENT_TO_SHINY_FIELD.sort, value));
+  store.on("filters", (value) => emit(EVENT_TO_SHINY_FIELD.filters, value));
+  store.on("rowStyles", (value) => emit(EVENT_TO_SHINY_FIELD.rowStyles, value));
+  store.on("cellStyles", (value) => emit(EVENT_TO_SHINY_FIELD.cellStyles, value));
+  store.on("paintTool", (value) => emit(EVENT_TO_SHINY_FIELD.paintTool, value));
+  store.on("collapsedGroups", (value) => emit(EVENT_TO_SHINY_FIELD.collapsedGroups, value));
+  store.on("hiddenColumns", (value) => emit(EVENT_TO_SHINY_FIELD.hiddenColumns, value));
+  store.on("columnOrder", (value) => emit(EVENT_TO_SHINY_FIELD.columnOrder, value));
+  store.on("columnWidths", (value) => emit(EVENT_TO_SHINY_FIELD.columnWidths, value));
+  store.on("cellEdits", (value) => emit(EVENT_TO_SHINY_FIELD.cellEdits, value));
+  store.on("labelEdits", (value) => emit(EVENT_TO_SHINY_FIELD.labelEdits, value));
+  store.on("zoom", (value) => emit(EVENT_TO_SHINY_FIELD.zoom, value));
+  store.on("axisZooms", (value) => emit(EVENT_TO_SHINY_FIELD.axisZooms, value));
+  store.on("banding", (value) => emit(EVENT_TO_SHINY_FIELD.banding, value));
+  store.on("plotWidth", (value) => emit(EVENT_TO_SHINY_FIELD.plotWidth, value));
+  store.on("visibleRows", (value) => emit(EVENT_TO_SHINY_FIELD.visibleRows, value));
 
-    // ── Tier 2 — plot/layout overrides (forest-specific) ──────────────────
-    $effect(() => {
-      emit("axis_zooms", store.axisZooms);
-    });
-    $effect(() => {
-      const mode = store.bandingOverride;
-      const startsWithBand = store.bandingStartsWithBandOverride;
-      emit("banding", mode == null && startsWithBand == null
-        ? null
-        : { mode, startsWithBand });
-    });
-    $effect(() => {
-      emit("plot_width", store.plotWidthOverride);
-    });
-
-    // ── Derived: rows currently visible after filter+collapse+sort ────────
-    // visibleRows is the same derivation the renderer uses; emit just the IDs
-    // in display order so dashboards can mirror the shown set.
-    $effect(() => {
-      emit("visible_rows", store.visibleRows.map((r) => r.id));
-    });
-
-    // ── Aggregate — debounced bundle of every Tier 1+2 dimension ──────────
-    let stateTimer: ReturnType<typeof setTimeout> | null = null;
-    $effect(() => {
-      // Touch every reactive dependency so the effect re-fires when any field
-      // changes; the actual emit is debounced via setTimeout below.
-      void store.sortConfig;
-      void store.filters;
-      void store.styleEdits;
-      void store.paintTool;
-      void store.selectedRowIds;
-      void store.collapsedGroups;
-      void store.hiddenColumnIds;
-      void store.allColumns;
-      void store.columnWidths;
-      void store.cellEdits;
-      void store.labelEdits;
-      void store.zoom;
-      void store.autoFit;
-      void store.maxWidth;
-      void store.maxHeight;
-      void store.showZoomControls;
-      void store.axisZooms;
-      void store.bandingOverride;
-      void store.bandingStartsWithBandOverride;
-      void store.plotWidthOverride;
-
-      if (stateTimer) clearTimeout(stateTimer);
-      stateTimer = setTimeout(() => {
-        if (!hasShiny()) return;
-        const bundle = {
-          sort: store.sortConfig,
-          filters: store.filters,
-          row_styles: store.styleEdits.rows,
-          cell_styles: store.styleEdits.cells,
-          paint_tool: store.paintTool,
-          selected: Array.from(store.selectedRowIds),
-          collapsed_groups: Array.from(store.collapsedGroups),
-          hidden_columns: Array.from(store.hiddenColumnIds),
-          column_order: store.allColumns.map((c) => c.id),
-          column_widths: { ...store.columnWidths },
-          cell_edits: store.cellEdits,
-          label_edits: store.labelEdits,
-          zoom: {
-            zoom: store.zoom,
-            autoFit: store.autoFit,
-            maxWidth: store.maxWidth,
-            maxHeight: store.maxHeight,
-            showZoomControls: store.showZoomControls,
-          },
-          axis_zooms: store.axisZooms,
-          banding: store.bandingOverride == null && store.bandingStartsWithBandOverride == null
-            ? null
-            : { mode: store.bandingOverride, startsWithBand: store.bandingStartsWithBandOverride },
-          plot_width: store.plotWidthOverride,
-        };
-        setShinyInput(`${widgetId}_state`, shinyEnvelope(bundle, "user"));
-      }, 150);
-    });
+  // Aggregate — debounced `_state` bundle. The store's `change` event
+  // fires on every mutation; we coalesce 150ms of activity into a single
+  // setInputValue with the current snapshot. The snapshot is read from
+  // the store's reactive getters at flush time, not from the event
+  // payload (which is empty for `change`).
+  let stateTimer: ReturnType<typeof setTimeout> | null = null;
+  store.on("change", () => {
+    if (stateTimer) clearTimeout(stateTimer);
+    stateTimer = setTimeout(() => {
+      if (!hasShiny()) return;
+      const bundle = {
+        sort: store.sortConfig,
+        filters: store.filters,
+        row_styles: store.styleEdits.rows,
+        cell_styles: store.styleEdits.cells,
+        paint_tool: store.paintTool,
+        selected: Array.from(store.selectedRowIds),
+        collapsed_groups: Array.from(store.collapsedGroups),
+        hidden_columns: Array.from(store.hiddenColumnIds),
+        column_order: store.allColumns.map((c) => c.id),
+        column_widths: { ...store.columnWidths },
+        cell_edits: store.cellEdits,
+        label_edits: store.labelEdits,
+        zoom: {
+          zoom: store.zoom,
+          autoFit: store.autoFit,
+          maxWidth: store.maxWidth,
+          maxHeight: store.maxHeight,
+          showZoomControls: store.showZoomControls,
+        },
+        axis_zooms: store.axisZooms,
+        banding: store.bandingOverride == null && store.bandingStartsWithBandOverride == null
+          ? null
+          : { mode: store.bandingOverride, startsWithBand: store.bandingStartsWithBandOverride },
+        plot_width: store.plotWidthOverride,
+      };
+      setShinyInput(`${widgetId}_state`, shinyEnvelope(bundle, "user"));
+    }, 150);
   });
 }
 

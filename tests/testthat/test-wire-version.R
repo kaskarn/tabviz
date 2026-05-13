@@ -46,3 +46,38 @@ test_that("serialize_spec emits version on every payload", {
   payload <- serialize_spec(spec)
   expect_identical(payload$version, WIRE_FORMAT_VERSION)
 })
+
+# ──────────────────────────────────────────────────────────────────────
+# Sync check: TABVIZ_STATE_FIELDS (R) ↔ SHINY_EVENT_FIELDS (JS)
+# ──────────────────────────────────────────────────────────────────────
+# When the widget's typed event emitter (Phase 0a-S3) ships a new field,
+# both lists must update. The two lists' contents must be identical (as
+# sets); the test below extracts the JS list with a regex and compares.
+
+test_that("TABVIZ_STATE_FIELDS matches SHINY_EVENT_FIELDS in srcjs/src/spec/events.ts", {
+  ts_path <- testthat::test_path("..", "..", "srcjs", "src", "spec", "events.ts")
+  skip_if_not(file.exists(ts_path), "Could not locate srcjs/src/spec/events.ts")
+
+  ts_source <- paste(readLines(ts_path), collapse = "\n")
+
+  # Match: export const SHINY_EVENT_FIELDS = [...content...] as const;
+  ts_match <- regmatches(
+    ts_source,
+    regexec(
+      "export\\s+const\\s+SHINY_EVENT_FIELDS\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as\\s+const",
+      ts_source,
+      perl = TRUE
+    )
+  )
+  expect_true(
+    length(ts_match) >= 1 && length(ts_match[[1]]) >= 2,
+    info = "Could not find SHINY_EVENT_FIELDS array literal in srcjs/src/spec/events.ts"
+  )
+
+  raw <- ts_match[[1]][2]
+  # Extract every quoted string from the array body, ignoring comments.
+  ts_fields <- regmatches(raw, gregexpr('"([^"]+)"', raw, perl = TRUE))[[1]]
+  ts_fields <- gsub('^"|"$', "", ts_fields)
+
+  expect_setequal(ts_fields, TABVIZ_STATE_FIELDS)
+})
