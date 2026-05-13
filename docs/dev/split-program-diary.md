@@ -250,3 +250,46 @@ Spec items S4 (consolidate filter API) and D3 (remove legacy `setFilter`). The l
 
 Results: 156 pass / 6 pre-existing fail (was 155, +1 from PR7 net — added 3 new tests, removed 1 legacy, +2 net + 1 new boundary test). R tests 100% pass including the updated shiny-proxy test (59/59). Visual smoke clean.
 
+### 0a-PR8: split widget joins the typed-dispatch club
+
+S14: apply the typed-dispatch + normalizer pattern to the split widget. The split widget today exposes exactly one proxy method (`selectPlot`) and two outputs (`active_plot`, `selected`). So the "S1-S12 applied to the split widget" prescription scales down to: type the one dispatch, leave the two outputs alone.
+
+**Scope judgment, recorded for the next time someone reads this**: I considered also building a typed event emitter on the split store, mirroring PR5's pattern. Decided against it. Reasoning: PR5's event emitter pays for itself when there are ~19 events sharing the same wire envelope and the same effect-driven emission machinery. The split widget has 2. The existing $effect blocks already use the typed `shinyEnvelope()` constructor and the `setShinyInput()` glue, so they're typed-enough at the wire boundary. Building a parallel emitter for 2 events would be more lines of code, not fewer. The spec's "same typed-dispatch + typed-events refactor needed" line is honored in spirit (the inner activeStore already has its 19 typed events as of PR5) without taking the prescription too literally.
+
+What landed:
+- New `SelectPlotArgs` interface + `normalize.selectPlot()` validator in `$spec/proxy-args.ts`. Same shape as every other normalizer: validates `key: string`, returns null on rejection.
+- `index-split.svelte.ts`: introduced a `splitProxyMethods` dispatch table (currently one entry). Custom-message handler routes through the table. Future split-widget methods (re-pane, reorder, etc.) drop in as siblings.
+- New `index-split.proxy.test.ts` test fixture: 3 tests covering successful dispatch, type rejection, and missing-key rejection. Mirrors the main widget's test fixture shape.
+- Build: clean; bun test 159/6 (was 156/6, +3 split tests); R tests beautiful; visual smoke clean.
+
+**Phase 0a is complete.** Eight PRs over what's been a long bout, from "WebSpec version field" to "split widget typed dispatch." 15 of the 15 structural debt items (S1-S15) are addressed:
+- S1: typed proxy dispatch ✓ (PR4)
+- S2: typed Shiny envelope ✓ (PR2)
+- S3: typed event emitter ✓ (PR5)
+- S4: dual filter API consolidated ✓ (PR7)
+- S5: clearSemantic / clearCellSemantic ✓ (PR6)
+- S6: spec versioning ✓ (PR1)
+- S7: snake/camel single normalization ✓ (PR4)
+- S8: setTheme explicit discrimination ✓ (PR4 + PR6)
+- S9: setAspectRatio explicit contract ✓ (PR4 + PR6)
+- S10: window globals isolated ✓ (PR3)
+- S11: store.updateColumnPatch ✓ (PR4)
+- S12: typed move positional union ✓ (PR4 — reframed)
+- S13: TABVIZ_STATE_FIELDS sync ✓ (PR5)
+- S14: split widget treatment ✓ (PR8)
+- S15: View Source multi-target — *deferred*. This was added during the spec's round-2 review as the JS-target View Source work and is genuinely Phase 0c-C12 territory (the architectural refactor lives in 0c, the JS target ships in Phase 1.5 once createTabviz is stable). Not a Phase 0a item.
+
+Plus the partial bonus from PR1's mid-flight discoveries: spec versioning sync mechanism committed; the split-widget type discriminator drift documented; the swatches.test.ts pre-existing failures filed.
+
+Net delta on the codebase, end of Phase 0a:
+- `index.svelte.ts`: ~510 lines → ~210 lines (-58% size, much higher signal density)
+- `index-split.svelte.ts`: ~108 lines → ~120 lines (slight growth from typed dispatch table, but with much clearer structure)
+- `forestStore.svelte.ts`: ~4260 lines → ~4250 lines (a wash; PR5 added the event emitter block, PR7 removed the legacy filter)
+- 5 new files: $spec/index.ts (+v1.0.json), $spec/proxy-args.ts, $spec/events.ts, $stores/slices/source.svelte.ts, $stores/slices/events.ts + their tests + the wire-version doc-test + the split-proxy test
+- Two docs: docs/dev/source-tagging.md, docs/dev/store-decomposition-idiom.md
+- This diary, now several thousand words longer
+
+What's next: Phase 0b (dead code), Phase 0c (size/clarity refactor including C1 = forestStore decomposition into slices), Phase 0d (documentation), Phase 0e (synchronization audit). The biggest single remaining item is C1 — three weeks of careful Svelte-runes-composition work to decompose the store along the domain seams identified in the spec. The Q8 spike has already proved the idiom works on the source-tagging slice; the rest is mechanical but high-volume.
+
+A real moment of satisfaction: the program's hardest design questions (versioning, envelope, events, dispatch) are all answered with working code now. The remaining phases are decomposition (mechanical), documentation (writing), and integration (with the npm publish + web-app consumer). The architectural risk has dropped substantially.
+

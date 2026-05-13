@@ -3,6 +3,7 @@ import SplitForestPlot from "$lib/SplitForestPlot.svelte";
 import { createSplitForestStore, type SplitForestStore } from "$stores/splitForestStore.svelte";
 import { shinyEnvelope } from "$lib/shiny-envelope";
 import { validateSpecVersion } from "$spec";
+import { normalize } from "$spec/proxy-args.ts";
 import {
   hasShiny,
   registerCustomMessageHandler,
@@ -93,15 +94,28 @@ function setupShinyBindings(widgetId: string, store: SplitForestStore) {
 // Register with HTMLWidgets
 registerWidget(binding);
 
-// Shiny proxy message handler
+// Shiny proxy message handler.
+//
+// Dispatch table mirrors the single-widget shape from index.svelte.ts
+// (typed normalizer per method; handlers receive typed args). Currently
+// the split widget exposes only `selectPlot`; future methods (re-pane,
+// reorder panes, etc.) land here as siblings.
+const splitProxyMethods: Record<string, (store: SplitForestStore, args: Record<string, unknown>) => void> = {
+  selectPlot: (store, raw) => {
+    const a = normalize.selectPlot(raw);
+    if (!a) return;
+    store.selectSpec(a.key, "proxy");
+  },
+};
+export { splitProxyMethods };
+
 registerCustomMessageHandler("tabviz-split-proxy", (raw: unknown) => {
   const msg = raw as { id: string; method: string; args: Record<string, unknown> };
   const store = storeRegistry.get(msg.id);
   if (!store) return;
-
-  if (msg.method === "selectPlot" && typeof msg.args.key === "string") {
-    store.selectSpec(msg.args.key, "proxy");
-  }
+  const handler = splitProxyMethods[msg.method];
+  if (!handler) return;
+  handler(store, msg.args);
 });
 
 // Export for potential npm package use

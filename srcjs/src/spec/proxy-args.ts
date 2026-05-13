@@ -36,6 +36,22 @@ export interface UpdateDataArgs {
   spec: WebSpec;
 }
 
+// ────────────────────────────────────────────────────────────────────────
+// Split-widget proxy methods (channel: tabviz-split-proxy)
+// ────────────────────────────────────────────────────────────────────────
+
+/**
+ * `selectPlot` — change the active pane in a split widget. The single
+ * argument is the pane key (a string identifier from the nav tree).
+ *
+ * Routed by `index-split.svelte.ts`, NOT `index.svelte.ts` — these two
+ * widgets share the proxy-args namespace but dispatch to separate
+ * stores via separate Shiny custom-message channels.
+ */
+export interface SelectPlotArgs {
+  key: string;
+}
+
 /** `toggleGroup` — collapse/expand a row group. */
 export interface ToggleGroupArgs {
   groupId: string;
@@ -210,6 +226,11 @@ export const normalize = {
   updateData(raw: Record<string, unknown>): UpdateDataArgs | null {
     if (!raw.spec || typeof raw.spec !== "object") return null;
     return { spec: raw.spec as WebSpec };
+  },
+
+  selectPlot(raw: Record<string, unknown>): SelectPlotArgs | null {
+    if (typeof raw.key !== "string") return null;
+    return { key: raw.key };
   },
 
   toggleGroup(raw: Record<string, unknown>): ToggleGroupArgs | null {
