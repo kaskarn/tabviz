@@ -378,6 +378,29 @@ Two MFDs partially closed (1, 5), one (the v2-fixture rewrite) opened as a follo
 
 Two "audit-then-decide" items from the spec. Both verdicts came in as "the existing structure is correct; document the rationale and move on." Net code change: header comments only.
 
+### 0c-PR4 + PR5: C6 + C4/C10 audits — short and clean
+
+C6 (CSS constants migration) turned out to be 90% already done — `rendering-constants.ts` had a `generateCSSVariables()` helper that emitted opacities as CSS custom properties. ForestPlot was inlining the same two `${VAR}` substitutions next to the helper instead of using it. Replaced with `${generateCSSVariables()}`. Removed an orphan (`GROUP_HEADER_HOVER_OPACITY`, never consumed). Updated the file header to document the partition (CSS-shaped go through the helper; algorithmic stay as TS).
+
+C10 (split widget shell) + C4 (other large components): combined audit PR. SplitForestPlot (117 lines) and SplitSidebar (387 lines) are well under threshold and cohesive — no split. ColumnTypeMenu (717 lines) is marginally over but coherent, justified inline. ThemeControl (737 lines, 54 functions) is dense and would benefit from a real split into 4 sibling controls — punted with a TODO comment in the file (~1 day of follow-up work).
+
+### 0c-PR6: C3 ColumnEditorPopover — first per-type extraction (forest)
+
+The big one. ColumnEditorPopover is 1633 lines with 30+ coupled `$state` declarations for per-column-type options. The spec proposed splitting into TypePicker + OptionsEditor + EditorPreview siblings. After reading the file carefully, I made the call that the natural split is BY COLUMN TYPE — each of the ~10 option blocks (forest, viz_*, bar, sparkline, badge, icon, stars, pictogram, ring, heatmap, progress) becomes its own sibling component. The "TypePicker" already exists as ColumnTypeMenu (a separate file). "EditorPreview" doesn't exist in the current code and would be speculative new functionality.
+
+The pattern, established by this PR for forest:
+1. `option-slices/forest-options.svelte.ts` — slice factory using the Q8 idiom. Owns all forest-specific `$state` declarations. Exposes them via getter/setter pairs plus `reset()`, `hydrateFromSpec(o)`, `buildOptions({point, lower, upper})` helpers.
+2. `ForestOptionsEditor.svelte` — calls `createForestOptionsSlice()`, renders the form controls bound to the slice's reactive properties, exports `reset / hydrateFromSpec / build / getScale` for the parent to call via `bind:this`.
+3. Parent integration: drop the inline state declarations + reset / hydrate / build logic for forest; render `<ForestOptionsEditor bind:this={forestEditor} />` conditionally on `selectedType === "forest"`; delegate lifecycle calls.
+
+A non-obvious wrinkle: Svelte 5 scopes `<style>` blocks per-component. The forest UI was using `.editor-field`, `.editor-row`, `.check-row`, `.editor-advanced` (with nice details-summary marker animation), all defined in the parent. Those selectors don't reach the child's DOM, so I duplicated the styles in the child component. For the eventual full split, the right answer is probably either a shared `editor-form-styles.css` imported by each child or `:global()` selectors in the parent. For one component, duplication is fine and well-isolated.
+
+Counting: ColumnEditorPopover shed ~150 lines. ForestOptionsEditor is ~165 lines (with the duplicated CSS). Total source size +15 lines — but the parent's complexity dropped meaningfully and the pattern is mechanical to replicate.
+
+For the remaining 9 type blocks: each is one PR of the same shape. Sparkline is the simplest (single select). Viz options are the most complex (shared vizEffects array state across three column types — that one warrants careful design). Bar/progress share a block. The rest are small.
+
+Calling this iteration here — solid clean breakpoint at "pattern established + forest done." Next iteration: continue with sparkline + bar/progress (the easy ones), then viz, then the long-tail rest.
+
 **C8 (width-utils dual measurement path).** Spec speculated the canvas fallback was "rarely exercised." Audit said no: the estimation path is the HOT path for V8 export. Every R-driven PDF/PNG render goes through V8 (no DOM), every text width computation goes through `estimateTextWidth`. The canvas path is what's optional — only fires when running in a real browser. So the hybrid try-canvas-then-estimate at the call sites in `svg-generator.ts` is correct, and the dual implementation in `width-utils.ts` is necessary. Kept as-is; added a comment block to the module header explaining this so the next reader doesn't speculate the same wrong thing the spec did.
 
 **C9 (svg-generator decomposition).** Audit found 49 functions across 5,347 lines. Per-column-type renders (`renderInterval`, `renderDiamond`, `renderVizBar`, `renderVizBoxplot`, `renderVizViolin`) DO split out cleanly along their boundaries — each is a self-contained function taking spec + row + options + layout + theme. But every render function uses private helpers also defined in this file (style resolution, layout pre-processing, etc.). Splitting per-column-type without also extracting the helpers would create circular import risk or require lots of helper-passing. Estimated ~1 week of work to do it properly.
