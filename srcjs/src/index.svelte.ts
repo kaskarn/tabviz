@@ -1,9 +1,8 @@
 import type { WebSpec, HTMLWidgetsBinding, WidgetInstance } from "$types";
-import ForestPlot from "$lib/ForestPlot.svelte";
-import { createForestStore, type ForestStore } from "$stores/forestStore.svelte";
+import type { ForestStore } from "$stores/forestStore.svelte";
+import { createTabviz, type TabvizInstance } from "$lib/createTabviz";
 import { exportToSVG, exportToPNG } from "$lib/export";
 import { shinyEnvelope } from "$lib/shiny-envelope";
-import { validateSpecVersion } from "$spec";
 import { normalize } from "$spec/proxy-args.ts";
 import { EVENT_TO_SHINY_FIELD } from "$spec/events.ts";
 import {
@@ -13,7 +12,6 @@ import {
   registerWidget,
   setShinyInput,
 } from "./htmlwidgets-glue";
-import { mount, unmount } from "svelte";
 import "./styles.css";
 
 // Development hook: expose export helpers under window.__tabvizExports
@@ -177,101 +175,37 @@ export const proxyMethods: Record<string, (store: ForestStore, args: Record<stri
   },
 };
 
-// HTMLWidgets binding
+// HTMLWidgets binding — consumes the public `createTabviz` factory.
+// Phase 1: the factory now owns wire-version validation, spec ingestion,
+// initial-state seeding, zoom-field application, and the Svelte mount.
+// This adapter is a thin shell.
 const binding: HTMLWidgetsBinding = {
   name: "tabviz",
   type: "output",
   factory: (el: HTMLElement, width: number, height: number): WidgetInstance => {
-    let component: ReturnType<typeof mount> | null = null;
-    const store = createForestStore();
-
-    // Register store for potential Shiny proxy access
-    if (el.id) {
-      storeRegistry.set(el.id, store);
-    }
+    let instance: TabvizInstance | null = null;
 
     return {
       renderValue: (raw: unknown) => {
-        // Validate wire-format version before handing off to the store; throws
-        // with a clear message on unrecognized major. See $spec/index.ts.
-        validateSpecVersion(raw as { version?: unknown }, "WebSpec");
-        const x = raw as WebSpec & {
-          zoom?: number;
-          autoFit?: boolean;
-          maxWidth?: number | null;
-          maxHeight?: number | null;
-          showZoomControls?: boolean;
-          initialState?: {
-            sort?: { column: string; direction: "asc" | "desc" | "none" };
-            filters?: Array<{ field: string; operator: string; value: unknown }>;
-            hiddenColumns?: string[];
-          };
-        };
-        store.setSpec(x);
-        store.setDimensions(width, height);
-
-        // Apply zoom and sizing settings from R
-        if (typeof x.zoom === 'number') {
-          store.setZoom(x.zoom);
-        }
-        if (typeof x.autoFit === 'boolean') {
-          store.setAutoFit(x.autoFit);
-        }
-        if (x.maxWidth !== undefined) {
-          store.setMaxWidth(x.maxWidth);
-        }
-        if (x.maxHeight !== undefined) {
-          store.setMaxHeight(x.maxHeight);
-        }
-        if (typeof x.showZoomControls === 'boolean') {
-          store.setShowZoomControls(x.showZoomControls);
-        }
-
-        // Apply authored initial state before mount so the first paint matches
-        // the dashboard's expected sort/filter/visibility — no post-mount
-        // flash of unsorted content. Source is "user" (the author wrote it).
-        if (x.initialState) {
-          if (x.initialState.sort) {
-            store.sortBy(
-              x.initialState.sort.column,
-              x.initialState.sort.direction,
-            );
+        const x = raw as WebSpec;
+        if (instance === null) {
+          // First mount: factory validates the spec version, ingests the
+          // spec + initial state, applies zoom fields, mounts ForestPlot.
+          instance = createTabviz(el, x, { width, height });
+          // Register the store reference for proxy + Shiny adapters.
+          if (el.id) storeRegistry.set(el.id, instance.store);
+          // Let htmlwidgets container expand to fit content (sizing handled by CSS).
+          el.style.height = "auto";
+          if (hasShiny() && el.id) {
+            setupShinyBindings(el.id, instance.store);
           }
-          if (x.initialState.filters) {
-            for (const f of x.initialState.filters) {
-              store.setColumnFilter(f.field, {
-                operator: f.operator,
-                value: f.value,
-              } as Parameters<ForestStore["setColumnFilter"]>[1]);
-            }
-          }
-          if (x.initialState.hiddenColumns) {
-            for (const id of x.initialState.hiddenColumns) {
-              store.hideColumn(id);
-            }
-          }
-        }
-
-        // Let htmlwidgets container expand to fit content - sizing handled by CSS
-        el.style.height = 'auto';
-
-        if (component) {
-          unmount(component);
-        }
-
-        component = mount(ForestPlot, {
-          target: el,
-          props: { store },
-        });
-
-        // Set up Shiny event forwarding if in Shiny context
-        if (hasShiny() && el.id) {
-          setupShinyBindings(el.id, store);
+        } else {
+          instance.update(x);
         }
       },
 
       resize: (newWidth: number, newHeight: number) => {
-        store.setDimensions(newWidth, newHeight);
+        instance?.store.setDimensions(newWidth, newHeight);
       },
     };
   },

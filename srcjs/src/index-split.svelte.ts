@@ -1,8 +1,7 @@
 import type { SplitForestPayload, HTMLWidgetsBinding, WidgetInstance } from "$types";
-import SplitForestPlot from "$lib/SplitForestPlot.svelte";
-import { createSplitForestStore, type SplitForestStore } from "$stores/splitForestStore.svelte";
+import type { SplitForestStore } from "$stores/splitForestStore.svelte";
+import { createSplitTabviz, type SplitTabvizInstance } from "$lib/createSplitTabviz";
 import { shinyEnvelope } from "$lib/shiny-envelope";
-import { validateSpecVersion } from "$spec";
 import { normalize } from "$spec/proxy-args.ts";
 import {
   hasShiny,
@@ -10,55 +9,38 @@ import {
   registerWidget,
   setShinyInput,
 } from "./htmlwidgets-glue";
-import { mount, unmount } from "svelte";
 import "./styles.css";
 
 // Store registry for Shiny proxy support
 const storeRegistry = new Map<string, SplitForestStore>();
 
-// HTMLWidgets binding for split forest
+// HTMLWidgets binding — consumes the public `createSplitTabviz` factory.
+// Phase 1: factory owns wire-version validation, payload ingestion, mount.
 const binding: HTMLWidgetsBinding = {
   name: "tabviz_split",
   type: "output",
   factory: (el: HTMLElement, width: number, height: number): WidgetInstance => {
-    let component: ReturnType<typeof mount> | null = null;
-    const store = createSplitForestStore();
-
-    // Register store for potential Shiny proxy access
-    if (el.id) {
-      storeRegistry.set(el.id, store);
-    }
+    let instance: SplitTabvizInstance | null = null;
 
     return {
       renderValue: (raw: unknown) => {
-        // Validate wire-format version before handing off to the store; throws
-        // with a clear message on unrecognized major. See $spec/index.ts.
-        validateSpecVersion(raw as { version?: unknown }, "SplitForestPayload");
         const x = raw as SplitForestPayload;
-        store.setPayload(x);
-        store.setDimensions(width, height);
-
-        // Set container to fill available space
-        el.style.height = '100%';
-        el.style.minHeight = '400px';
-
-        if (component) {
-          unmount(component);
-        }
-
-        component = mount(SplitForestPlot, {
-          target: el,
-          props: { store },
-        });
-
-        // Set up Shiny event forwarding if in Shiny context
-        if (hasShiny() && el.id) {
-          setupShinyBindings(el.id, store);
+        if (instance === null) {
+          instance = createSplitTabviz(el, x, { width, height });
+          if (el.id) storeRegistry.set(el.id, instance.store);
+          // Set container to fill available space.
+          el.style.height = "100%";
+          el.style.minHeight = "400px";
+          if (hasShiny() && el.id) {
+            setupShinyBindings(el.id, instance.store);
+          }
+        } else {
+          instance.update(x);
         }
       },
 
       resize: (newWidth: number, newHeight: number) => {
-        store.setDimensions(newWidth, newHeight);
+        instance?.store.setDimensions(newWidth, newHeight);
       },
     };
   },
