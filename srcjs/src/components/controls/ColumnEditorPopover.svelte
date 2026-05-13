@@ -32,6 +32,7 @@
     autoPairSlots,
     resolveShowHeader,
   } from "$lib/column-types";
+  import ForestOptionsEditor from "./ForestOptionsEditor.svelte";
 
   interface Props {
     target: EditorTarget | null;
@@ -52,7 +53,6 @@
   let showHeader = $state(true);
   // Light options editor — covers the most common knobs per type.
   let optDecimals = $state<string>("");
-  let optScale = $state<"linear" | "log">("linear");
   let optStars = $state(false);
   let optMaxValue = $state<string>("");
   let optShowPct = $state(false);
@@ -69,13 +69,17 @@
   // ColumnSpec.options.forest slot and override theme.axis equivalents
   // for that specific column — a per-column forest plot's axis config
   // is inherently column-specific.
-  let optForestNullValue = $state<string>("");
-  let optForestAxisLabel = $state<string>("");
-  let optForestShowAxis = $state<boolean>(true);
-  let optForestAxisGridlines = $state<boolean>(false);
-  let optForestAxisRangeMin = $state<string>("");
-  let optForestAxisRangeMax = $state<string>("");
-  let optForestAxisTicks = $state<string>(""); // comma-separated
+  // Forest options moved to ForestOptionsEditor sub-component (Phase 0c-C3).
+  // The parent reads/writes via `bind:this={forestEditor}` and calls
+  // forestEditor.{reset,hydrateFromSpec,build,getScale}() from the lifecycle
+  // hooks (resetOptions, hydrateOptionsFromBundle, buildSpec).
+  type ForestEditorRef = {
+    reset(): void;
+    hydrateFromSpec(o: NonNullable<ColumnSpec["options"]>): void;
+    build(args: { point: string; lower: string; upper: string }): NonNullable<NonNullable<ColumnSpec["options"]>["forest"]>;
+    getScale(): "linear" | "log";
+  };
+  let forestEditor = $state<ForestEditorRef | null>(null);
   // Content alignment (per-column) — drives the column's `align` property
   // (cell text alignment). Shown in the header row alongside the header
   // text input and the "show header" checkbox.
@@ -151,7 +155,6 @@
 
   function resetOptions() {
     optDecimals = "";
-    optScale = "linear";
     optStars = false;
     optMaxValue = "";
     optShowPct = false;
@@ -164,13 +167,7 @@
     optMaxStars = "";
     optDomainMin = "";
     optDomainMax = "";
-    optForestNullValue = "";
-    optForestAxisLabel = "";
-    optForestShowAxis = true;
-    optForestAxisGridlines = false;
-    optForestAxisRangeMin = "";
-    optForestAxisRangeMax = "";
-    optForestAxisTicks = "";
+    forestEditor?.reset();
     // `optAlign` and `optHeaderAlign` are intentionally NOT reset here:
     // resetOptions() runs inside `hydrateOptionsFromExisting()` (called
     // AFTER the $effect has initialized them from `ex.align` /
@@ -274,18 +271,7 @@
       }
     }
     if (type === "forest") {
-      if (o.forest?.scale) optScale = o.forest.scale;
-      if (o.forest?.nullValue != null) optForestNullValue = String(o.forest.nullValue);
-      if (o.forest?.axisLabel != null) optForestAxisLabel = o.forest.axisLabel;
-      if (o.forest?.showAxis != null) optForestShowAxis = !!o.forest.showAxis;
-      if (o.forest?.axisGridlines != null) optForestAxisGridlines = !!o.forest.axisGridlines;
-      if (Array.isArray(o.forest?.axisRange) && o.forest.axisRange.length === 2) {
-        optForestAxisRangeMin = String(o.forest.axisRange[0]);
-        optForestAxisRangeMax = String(o.forest.axisRange[1]);
-      }
-      if (Array.isArray(o.forest?.axisTicks)) {
-        optForestAxisTicks = o.forest.axisTicks.join(", ");
-      }
+      forestEditor?.hydrateFromSpec(o);
     }
     if (type === "interval" && o.interval?.decimals != null) optDecimals = String(o.interval.decimals);
     if (type === "sparkline" && o.sparkline?.type) optSparklineType = o.sparkline.type;
@@ -495,31 +481,13 @@
         options.sparkline = { type: optSparklineType };
         break;
       case "forest": {
-        const forest: NonNullable<NonNullable<ColumnSpec["options"]>["forest"]> = {
-          point: slotValues.point,
-          lower: slotValues.lower,
-          upper: slotValues.upper,
-          scale: optScale,
-          nullValue: optForestNullValue !== ""
-            ? Number(optForestNullValue)
-            : (optScale === "log" ? 1 : 0),
-          axisLabel: optForestAxisLabel,
-          showAxis: optForestShowAxis,
-        };
-        if (optForestAxisGridlines) forest.axisGridlines = true;
-        const rMin = optForestAxisRangeMin !== "" ? Number(optForestAxisRangeMin) : null;
-        const rMax = optForestAxisRangeMax !== "" ? Number(optForestAxisRangeMax) : null;
-        if (rMin != null && rMax != null && Number.isFinite(rMin) && Number.isFinite(rMax)) {
-          forest.axisRange = [rMin, rMax];
+        if (forestEditor) {
+          options.forest = forestEditor.build({
+            point: slotValues.point,
+            lower: slotValues.lower,
+            upper: slotValues.upper,
+          });
         }
-        if (optForestAxisTicks.trim() !== "") {
-          const ticks = optForestAxisTicks
-            .split(/[,\s]+/)
-            .map((s) => Number(s))
-            .filter((n) => Number.isFinite(n));
-          if (ticks.length > 0) forest.axisTicks = ticks;
-        }
-        options.forest = forest;
         break;
       }
       case "interval":
@@ -898,65 +866,7 @@
         {/if}
 
         {#if selectedType === "forest"}
-          <!-- Format zone: highest-impact knobs always visible. -->
-          <div class="editor-row">
-            <label class="editor-field">
-              <span>Scale</span>
-              <select bind:value={optScale}>
-                <option value="linear">Linear</option>
-                <option value="log">Log</option>
-              </select>
-            </label>
-            <label class="editor-field">
-              <span>Null value</span>
-              <input
-                type="number"
-                step="any"
-                bind:value={optForestNullValue}
-                placeholder={optScale === "log" ? "1" : "0"}
-              />
-            </label>
-          </div>
-          <label class="editor-field">
-            <span>Axis label</span>
-            <input
-              type="text"
-              bind:value={optForestAxisLabel}
-              placeholder="Effect"
-            />
-          </label>
-          <!-- Advanced zone: range, ticks, gridlines, axis visibility. -->
-          <details class="editor-advanced">
-            <summary>Advanced</summary>
-            <div class="editor-row">
-              <label class="editor-field">
-                <span>Axis min</span>
-                <input type="number" step="any" bind:value={optForestAxisRangeMin} placeholder="auto" />
-              </label>
-              <label class="editor-field">
-                <span>Axis max</span>
-                <input type="number" step="any" bind:value={optForestAxisRangeMax} placeholder="auto" />
-              </label>
-            </div>
-            <label class="editor-field">
-              <span>Axis ticks</span>
-              <input
-                type="text"
-                bind:value={optForestAxisTicks}
-                placeholder="auto, or e.g. 0.5, 1, 2"
-              />
-            </label>
-            <div class="check-row">
-              <label class="editor-check">
-                <input type="checkbox" bind:checked={optForestShowAxis} />
-                <span>Show axis</span>
-              </label>
-              <label class="editor-check">
-                <input type="checkbox" bind:checked={optForestAxisGridlines} />
-                <span>Gridlines</span>
-              </label>
-            </div>
-          </details>
+          <ForestOptionsEditor bind:this={forestEditor} />
         {/if}
 
         {#if selectedType === "sparkline"}
@@ -1227,49 +1137,10 @@
     flex: 1;
     min-width: 0;
   }
-  .check-row {
-    display: flex;
-    gap: 14px;
-  }
-
-  /* Advanced disclosure — collapsed by default, opens to show
-     less-frequently-tuned knobs. Used per column type to keep the
-     Format zone compact while leaving every R-side arg reachable.
-     Pattern introduced in the Phase C (column editor v3) MVP. */
-  .editor-advanced {
-    margin-top: 6px;
-    border-top: 1px dashed color-mix(in srgb, var(--tv-border, #e2e8f0) 80%, transparent);
-    padding-top: 6px;
-  }
-  .editor-advanced > summary {
-    cursor: pointer;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--tv-text-muted, #64748b);
-    list-style: none;
-    padding: 2px 0;
-    user-select: none;
-  }
-  .editor-advanced > summary::-webkit-details-marker {
-    display: none;
-  }
-  .editor-advanced > summary::before {
-    content: "▸ ";
-    display: inline-block;
-    transition: transform 0.15s ease;
-    color: color-mix(in srgb, var(--tv-text-muted, #64748b) 70%, transparent);
-  }
-  .editor-advanced[open] > summary::before {
-    transform: rotate(90deg);
-  }
-  .editor-advanced > summary:hover {
-    color: var(--tv-fg, #1a1a1a);
-  }
-  .editor-advanced > *:not(summary) {
-    margin-top: 6px;
-  }
+  /* `.check-row` and `.editor-advanced` (+ its descendants) moved to
+     ForestOptionsEditor.svelte in Phase 0c-C3. They were forest-only
+     styles in this file; will likely re-appear in other per-type
+     sub-component CSS as each block is extracted. */
 
   /* Compact single-line "Header: [input] [✓show]" row. */
   .header-row {
