@@ -21,7 +21,7 @@ A high-level dashboard for the program described in `docs/dev/frontend-split-spe
 | Phase 0c — Size/clarity | ⏳ pending | Longest phase; C1 forestStore decomposition is the long pole |
 | Phase 0d — Documentation | ⏳ pending | Mostly writing |
 | Phase 0e — Synchronization audit | ⏳ pending | Parallel with 0d |
-| Phase 1 — Extract createTabviz / createSplitTabviz | ⏳ pending | Becomes mechanical after 0a-0c |
+| **Phase 1 — Extract createTabviz / createSplitTabviz** | ✅ **done** | createTabviz (269 lines) + createSplitTabviz (74 lines) shipped as the public API. Htmlwidget bindings are now thin shells around the factories. Full visual battery (45 examples) clean. |
 | Phase 1.5 — View Source JS target | ⏳ pending | Gated on Phase 1 |
 | Phase 2 — Restructure source tree | ⏳ pending | File moves |
 | Phase 3 — Publish | ⏳ pending | npm + CI gates |
