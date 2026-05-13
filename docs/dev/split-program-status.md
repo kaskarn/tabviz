@@ -72,7 +72,7 @@ Per spec §4. The longest phase — estimated 7-8 weeks. Lands as small PRs acro
 | 5 | **C9** — svg-generator decomposition audit | ✅ done (0c-PR3) |
 | 6 | **C5** — Theme presets + JS resolver port (cascade-rework gate confirmed open) | ⏳ pending |
 | 7 | **C3** — ColumnEditorPopover decomposition (~3 days) | ✅ done. 6 sub-components extracted (Forest, Sparkline, NumericDomain (bar/progress/heatmap), Stars, Numeric, Viz_*). Parent 1633 → 1012 lines. Remaining inline blocks (text/pvalue/custom/interval — 1-2 controls each) documented as intentionally not extracted; the parent's size is justified by the cohesive form shell. |
-| 8 | **C2** — ForestPlot.svelte decomposition (~1 week) | ⏳ pending |
+| 8 | **C2** — ForestPlot.svelte decomposition (~1 week) | 🟡 in progress: ForestOverlays extracted (0c-PR12), parent 3526 → 3329 lines. ForestHeader / ForestControls dropped from the split plan (they're 2-line wrappers around existing components; low value). Remaining: ForestTableBody (~355 template lines), ForestPlotBody (~454 lines). |
 | 9 | **C4** — Other large components audit (~1 week, optional splits) | ⏳ pending |
 | 10 | **C10** — Split widget shell decomposition (~3 days) | ⏳ pending |
 | 11 | **C1** — forestStore decomposition (~3 weeks; long pole; idiom proven by Q8 spike) | ⏳ pending |
