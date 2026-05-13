@@ -56,10 +56,9 @@
   import { zoomable } from "$lib/zoom-interactions";
   import { activeHeaderVariant } from "$lib/header-variant";
   import {
-    GROUP_HEADER_OPACITY,
-    ROW_HOVER_OPACITY,
     TEXT_MEASUREMENT,
     BADGE_VARIANTS,
+    generateCSSVariables,
   } from "$lib/rendering-constants";
   import {
     formatNumber,
@@ -1626,8 +1625,7 @@
       --tv-group-border-width: 1px;
       --tv-container-border: ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : 'none'};
       --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
-      --tv-group-header-opacity: ${GROUP_HEADER_OPACITY};
-      --tv-row-hover-opacity: ${ROW_HOVER_OPACITY};
+      ${generateCSSVariables()}
       --tv-actual-scale: ${actualScale};
       --tv-zoom: ${zoom};
     `.trim();

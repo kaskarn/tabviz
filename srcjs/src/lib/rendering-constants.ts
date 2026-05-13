@@ -1,12 +1,26 @@
 /**
  * Shared rendering constants for forest plots
  *
- * These constants are used by both the web-native Svelte renderer
- * and the pure-data SVG generator to ensure visual consistency.
+ * Two partitions, kept together because they're conceptually related:
  *
- * IMPORTANT: When changing any of these values, both renderers will
- * automatically use the new values. For CSS-based values in Svelte,
- * these are injected as CSS custom properties.
+ *   1. CSS-shaped constants (opacities, ratios consumed by `var(--tv-…)`
+ *      in scoped styles) — emitted as CSS custom properties via
+ *      `generateCSSVariables()`. Live in ForestPlot.svelte's runtime
+ *      style block.
+ *   2. Algorithmic constants (SVG path math, layout estimation, text
+ *      measurement) — consumed directly by the Svelte renderer and the
+ *      pure svg-generator. Stay as TS exports.
+ *
+ * Phase 0c-C6 audit: the spec called for moving CSS-shaped constants
+ * to custom properties — most of that migration was already in place
+ * via `generateCSSVariables()`. The C6 work was minor: removing one
+ * orphan (`GROUP_HEADER_HOVER_OPACITY`, never consumed) and routing
+ * ForestPlot's inline-style emission through the helper rather than
+ * inlining the same two `${VAR}` substitutions.
+ *
+ * Adding a new constant: decide which partition. CSS-shaped → add to
+ * `generateCSSVariables()`. Algorithmic → keep as TS export, never
+ * cross the CSS boundary.
  */
 
 // ============================================================================
@@ -23,8 +37,8 @@ export const GROUP_HEADER_OPACITY = 0.05; // 5%
 /** Opacity for hovered rows */
 export const ROW_HOVER_OPACITY = 0.12; // 12%
 
-/** Opacity for group header hover state */
-export const GROUP_HEADER_HOVER_OPACITY = 0.15; // 15%
+// `GROUP_HEADER_HOVER_OPACITY` removed in Phase 0c-C6 (orphan; no
+// consumers in CSS or TS).
 
 // ============================================================================
 // Text Measurement Constants
