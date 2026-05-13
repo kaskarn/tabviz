@@ -15,6 +15,7 @@ A high-level dashboard for the program described in `docs/dev/frontend-split-spe
 | Pre-step 1 — Q8 idiom spike | ✅ done | Idiom (c) "method-only split" chosen; `23e18b4` |
 | **Phase 0a — Structural debt** | ✅ **done** | All S1-S14 closed; S15 deferred to 0c-C12 per spec sequencing |
 | **Phase 0b — Dead code** | ✅ **done** | D1/D2/D5 were false positives (active code); D4 found 5 real orphans removed |
+| **Phase 0c — Size/clarity** | 🟡 in progress (3 of 12) | C11, C7, C8, C9 done. Test-runner upgrade (vitest) shipped as 0c-PR2. C2, C3, C5, C1 still ahead. |
 | Phase 0c — Size/clarity | ⏳ pending | Longest phase; C1 forestStore decomposition is the long pole |
 | Phase 0d — Documentation | ⏳ pending | Mostly writing |
 | Phase 0e — Synchronization audit | ⏳ pending | Parallel with 0d |
@@ -57,24 +58,28 @@ Items found during execution that aren't in the original spec §2.5 but are wort
 | MFD-4 | `tabviz()` requires `label` arg even for tiny test fixtures. Not a problem, but a small UX note. | P3 | Out of scope for the split program |
 | MFD-5 | `bun:test` doesn't execute Svelte 5 runes (`$state`, `$derived`). `forestStore.reorder.test.ts` has been silently failing since runes were adopted — its 4 failures fold into the 6-fail baseline. Any new tests that need to call `createForestStore()` from a `.svelte.ts` file will hit the same wall. Requires a different runner (vitest + svelte plugin) OR an in-process runes shim. | P2 | **Infrastructure addressed in 0c-PR2:** vitest + `@sveltejs/vite-plugin-svelte` now run `.svelte.test.ts` files. Test fixtures still need v2-theme migration (skipped for now). |
 
-## Phase 0c — what's coming next (long phase)
+## Phase 0c — sequencing + done so far
 
-Per spec §4. The longest phase — estimated 7-8 weeks. Will land as many small PRs across multiple loop iterations. Suggested execution order (easy-first to build momentum):
+Per spec §4. The longest phase — estimated 7-8 weeks. Lands as small PRs across multiple iterations.
 
-1. **C11** — Rename `column-compat.ts` → `column-types-registry.ts` (~half day)
-2. **C7** — Aspect ladder lever rename + doc-comment + pinning tests (~3 days, behavior unchanged)
-3. **C6** — Migrate CSS-shaped constants from `rendering-constants.ts` to CSS custom properties (~3 days)
-4. **C8** — Width-utils dual measurement path audit (~1 day, possibly simplify)
-5. **C9** — svg-generator decomposition audit (~2 days audit; +1 week if split clean)
-6. **C5** — Theme presets + JS resolver port (~1.5-2 weeks, gated on cascade-rework status confirmed open)
-7. **C3** — ColumnEditorPopover decomposition (~3 days)
-8. **C2** — ForestPlot.svelte decomposition (~1 week)
-9. **C4** — Other large components audit (~1 week, optional splits)
-10. **C10** — Split widget shell decomposition (~3 days)
-11. **C1** — forestStore decomposition (~3 weeks; the long pole; Q8 idiom already proven)
-12. **C12-a** — View Source refactor + R-target via registry (~1 week)
+| # | Item | Status |
+|---|---|---|
+| 1 | **C11** — Rename column-compat.ts → column-types.ts (relocate dropped after audit) | ✅ done (0c-PR1) |
+| 2 | **C7** — Aspect ladder vocabulary cleanup + doc-comment | ✅ done (0c-PR1) |
+| - | **Test runner** — vitest + Svelte plugin for runes-using tests | ✅ done (0c-PR2) |
+| 3 | **C6** — Migrate CSS-shaped constants to CSS custom properties | ⏳ next up |
+| 4 | **C8** — width-utils dual measurement path audit | ✅ done (0c-PR3) |
+| 5 | **C9** — svg-generator decomposition audit | ✅ done (0c-PR3) |
+| 6 | **C5** — Theme presets + JS resolver port (cascade-rework gate confirmed open) | ⏳ pending |
+| 7 | **C3** — ColumnEditorPopover decomposition (~3 days) | ⏳ pending |
+| 8 | **C2** — ForestPlot.svelte decomposition (~1 week) | ⏳ pending |
+| 9 | **C4** — Other large components audit (~1 week, optional splits) | ⏳ pending |
+| 10 | **C10** — Split widget shell decomposition (~3 days) | ⏳ pending |
+| 11 | **C1** — forestStore decomposition (~3 weeks; long pole; idiom proven by Q8 spike) | ⏳ pending |
+| 12 | **C12-a** — View Source refactor + R-target via registry (~1 week) | ⏳ pending |
+| - | **v2-theme test-fixture rewrite** (MFD-1, MFD-5 follow-up) | ⏳ blocked-by-research; needed before C1 |
 
-Items can fan out — C5 and C1 can be paused if either gets stuck.
+Done in this iteration: 0c-PR1 + 0c-PR2 + 0c-PR3. Six items closed (C7, C8, C9, C11 + test-runner + Phase 0b D4).
 
 ## Reading order for someone joining mid-program
 
