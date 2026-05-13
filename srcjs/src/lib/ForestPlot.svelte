@@ -11,7 +11,7 @@
   import PlotFooter from "$components/forest/PlotFooter.svelte";
   import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
-  import Tooltip from "$components/ui/Tooltip.svelte";
+  import ForestOverlays from "./ForestOverlays.svelte";
   import CellBar from "$components/table/CellBar.svelte";
   import CellPvalue from "$components/table/CellPvalue.svelte";
   import CellSparkline from "$components/table/CellSparkline.svelte";
@@ -30,12 +30,11 @@
   import SettingsPanel from "$components/ui/SettingsPanel.svelte";
   import SortIndicator from "$components/controls/SortIndicator.svelte";
   import ColumnFilterButton from "$components/controls/ColumnFilterButton.svelte";
-  import ColumnFilterPopover from "$components/controls/ColumnFilterPopover.svelte";
+  // ColumnFilterPopover, HeaderContextMenu, ColumnTypeMenu, ColumnEditorPopover
+  // moved into ForestOverlays (Phase 0c-C2). Tooltip + DropIndicator + EditableCell
+  // also moved there.
   import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
-  import HeaderContextMenu, { type ContextMenuTarget } from "$components/controls/HeaderContextMenu.svelte";
-  import ColumnEditorPopover, { type EditorTarget } from "$components/controls/ColumnEditorPopover.svelte";
-  import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
-  import { getVisualTypeDef, isVizType, resolveShowHeader } from "$lib/column-types";
+  import { isVizType, resolveShowHeader } from "$lib/column-types";
   import { resolveSemanticBundle, activeSemanticToken } from "$lib/semantic-styling";
   import { computeAxisLayout, textRegionHeight } from "$lib/typography-layout";
   import {
@@ -44,9 +43,7 @@
     paintLayoutOverlay,
     reportLayoutMeasurements,
   } from "$lib/debug-layout";
-  import DropIndicator from "$components/controls/DropIndicator.svelte";
   import { hitTestRowGaps } from "$lib/dnd-utils";
-  import EditableCell from "$components/controls/EditableCell.svelte";
   import VizBar from "$components/viz/VizBar.svelte";
   import VizBoxplot from "$components/viz/VizBoxplot.svelte";
   import VizViolin from "$components/viz/VizViolin.svelte";
@@ -172,131 +169,18 @@
   let scalableRef: HTMLDivElement | undefined = $state();
 
   // Interactive column-editor state: right-click menu → type menu → editor popover.
-  let headerContextMenu = $state<ContextMenuTarget | null>(null);
-  let columnTypeMenuTarget = $state<TypeMenuTarget | null>(null);
-  let columnEditorTarget = $state<EditorTarget | null>(null);
-  // Remembered anchor + afterId so "Change type…" can reopen the menu where it was.
-  let typeMenuMemory = $state<{ anchorX: number; anchorY: number; afterId?: string; existingId?: string } | null>(null);
-
-  function openHeaderContextMenu(column: ColumnSpec, e: MouseEvent) {
-    if (!spec?.interaction.enableEdit) return;
-    e.preventDefault();
-    columnEditorTarget = null;
-    const def = getVisualTypeDef(column.type);
-    // Offer "Configure…" when either the slot-based editor can round-trip
-    // this type, OR the column is a viz_* type (bar/boxplot/violin) which
-    // uses the multi-effect editor built into the configure popover
-    // (added in v0.18).
-    const isMultiEffectViz =
-      column.type === "viz_bar" ||
-      column.type === "viz_boxplot" ||
-      column.type === "viz_violin";
-    const canConfigure =
-      isMultiEffectViz ||
-      (!!def && !def.authorOnly && def.slots.length > 0);
-    headerContextMenu = {
-      columnId: column.id,
-      columnHeader: column.header ?? column.field,
-      anchorX: e.clientX,
-      anchorY: e.clientY,
-      canHide: true,
-      canConfigure,
-      headerShown: resolveShowHeader(column.showHeader, column.header),
-    };
-  }
-
-  function handleContextMenuAction(action: "hide" | "insert" | "configure" | "toggle-header") {
-    const target = headerContextMenu;
-    if (!target) return;
-    const col = store.allColumns.find((c) => c.id === target.columnId);
-    headerContextMenu = null;
-    if (action === "hide") {
-      store.hideColumn(target.columnId);
-      return;
-    }
-    if (action === "toggle-header" && col) {
-      const next: ColumnSpec = { ...col, showHeader: !target.headerShown };
-      store.updateColumn(col.id, next);
-      return;
-    }
-    if (action === "insert") {
-      typeMenuMemory = { anchorX: target.anchorX, anchorY: target.anchorY, afterId: target.columnId };
-      columnTypeMenuTarget = { anchorX: target.anchorX, anchorY: target.anchorY, afterId: target.columnId };
-      return;
-    }
-    if (action === "configure" && col) {
-      typeMenuMemory = { anchorX: target.anchorX, anchorY: target.anchorY, existingId: col.id };
-      columnEditorTarget = {
-        mode: "configure",
-        anchorX: target.anchorX,
-        anchorY: target.anchorY,
-        existing: col,
-      };
-    }
-  }
-
-  function handleTypePick(pick: TypePick) {
-    const mem = typeMenuMemory;
-    columnTypeMenuTarget = null;
-    if (!mem) return;
-    if (mem.existingId) {
-      // "Change type" flow: find the existing column, open editor in configure mode
-      // but with the new type + seeded options replacing its config.
-      const existing = store.allColumns.find((c) => c.id === mem.existingId);
-      if (!existing) return;
-      columnEditorTarget = {
-        mode: "configure",
-        anchorX: mem.anchorX,
-        anchorY: mem.anchorY,
-        existing: { ...existing, type: pick.type, options: pick.seedOptions },
-        type: pick.type,
-        presetLabel: pick.presetLabel,
-        seedOptions: pick.seedOptions,
-      };
-    } else {
-      columnEditorTarget = {
-        mode: "insert",
-        anchorX: mem.anchorX,
-        anchorY: mem.anchorY,
-        afterId: mem.afterId,
-        type: pick.type,
-        presetLabel: pick.presetLabel,
-        seedOptions: pick.seedOptions,
-      };
-    }
-  }
-
-  function handleRequestChangeType() {
-    const cur = columnEditorTarget;
-    if (!cur) return;
-    typeMenuMemory = {
-      anchorX: cur.anchorX,
-      anchorY: cur.anchorY,
-      afterId: cur.afterId,
-      existingId: cur.existing?.id,
-    };
-    columnEditorTarget = null;
-    columnTypeMenuTarget = {
-      anchorX: cur.anchorX,
-      anchorY: cur.anchorY,
-      afterId: cur.afterId,
-      existingId: cur.existing?.id,
-    };
-  }
-
-  function handleEditorCommit(
-    newSpec: ColumnSpec,
-    mode: "insert" | "configure",
-    afterId?: string,
-  ) {
-    if (mode === "insert") {
-      store.insertColumn(newSpec, afterId ?? "__start__");
-    } else {
-      store.updateColumn(newSpec.id, newSpec);
-    }
-    columnEditorTarget = null;
-    typeMenuMemory = null;
-  }
+  // headerContextMenu, columnTypeMenuTarget, columnEditorTarget moved into
+  // ForestOverlays (Phase 0c-C2). The parent's column-header click handlers
+  // call overlays.openHeaderContextMenu(...) via the bind:this ref below.
+  type ForestOverlaysRef = {
+    openHeaderContextMenu: (column: ColumnSpec, e: MouseEvent) => void;
+  };
+  let overlays = $state<ForestOverlaysRef | null>(null);
+  // typeMenuMemory + openHeaderContextMenu + handleContextMenuAction +
+  // handleTypePick + handleRequestChangeType + handleEditorCommit all
+  // moved into ForestOverlays (Phase 0c-C2). Column-header click handlers
+  // now call `overlays?.openHeaderContextMenu(column, e)` via the
+  // bind:this ref above.
 
   // Local state for dimensions (measured by ResizeObserver)
   let containerContentWidth = $state(0);
@@ -870,41 +754,8 @@
     return indices;
   }
 
-  // Compute the drop-indicator position/extent for a column-DnD target index.
-  function computeColumnBand(siblingIds: string[], targetIndex: number): { x: number; start: number; end: number } | null {
-    if (!containerRef || siblingIds.length === 0) return null;
-    const els: HTMLElement[] = [];
-    for (const id of siblingIds) {
-      const el = containerRef.querySelector<HTMLElement>(`[data-header-id="${CSS.escape(id)}"]`);
-      if (el) els.push(el);
-    }
-    if (els.length === 0) return null;
-    const rects = els.map((el) => el.getBoundingClientRect());
-    const idx = Math.max(0, Math.min(rects.length, targetIndex));
-    const x = idx === 0 ? rects[0].left : rects[idx - 1].right;
-    // Extend the line from the header top down through the table body.
-    const start = Math.min(...rects.map((r) => r.top));
-    const containerRect = containerRef.getBoundingClientRect();
-    const end = containerRect.bottom;
-    return { x, start, end };
-  }
-
-  // Compute the drop-indicator position/extent for a row-DnD target index.
-  function computeRowBand(allowedIndices: number[], targetIndex: number): { y: number; start: number; end: number } | null {
-    if (!containerRef || allowedIndices.length === 0) return null;
-    const els: HTMLElement[] = [];
-    for (const di of allowedIndices) {
-      const el = containerRef.querySelector<HTMLElement>(`[data-display-index="${di}"]`);
-      if (el) els.push(el);
-    }
-    if (els.length === 0) return null;
-    const rects = els.map((el) => el.getBoundingClientRect());
-    const idx = Math.max(0, Math.min(rects.length, targetIndex));
-    const y = idx === 0 ? rects[0].top : rects[idx - 1].bottom;
-    // Extend across the current container width so the line spans the whole table.
-    const containerRect = containerRef.getBoundingClientRect();
-    return { y, start: containerRect.left, end: containerRect.right };
-  }
+  // computeColumnBand + computeRowBand moved into ForestOverlays
+  // (Phase 0c-C2). They're used only by the drop-indicator render.
 
   // Compute CSS grid template columns: columns in order (primary column first).
   const gridTemplateColumns = $derived.by(() => {
@@ -1864,7 +1715,7 @@
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
               style:text-align={column.headerAlign ?? column.align}
-              oncontextmenu={(e) => openHeaderContextMenu(column, e)}
+              oncontextmenu={(e) => overlays?.openHeaderContextMenu(column, e)}
               onclick={canSortViz ? (e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest('.resize-handle') || target.closest('.drag-handle')) return;
@@ -1906,7 +1757,7 @@
               style:grid-column="{cell.gridColumnStart}"
               style:grid-row="{cell.rowStart} / span {cell.rowSpan}"
               style:text-align={column.headerAlign ?? column.align}
-              oncontextmenu={(e) => openHeaderContextMenu(column, e)}
+              oncontextmenu={(e) => overlays?.openHeaderContextMenu(column, e)}
               onclick={canSort ? (e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest('.resize-handle') || target.closest('.drag-handle')) return;
@@ -2739,56 +2590,10 @@
       />
     </div>
 
-    <!-- Tooltip (only shown if tooltipFields is specified) -->
-    <Tooltip row={tooltipRow} position={tooltipPosition} fields={spec?.interaction?.tooltipFields} {theme} />
-
-    <!-- Drop indicator for drag-and-drop (rendered at root; fixed-positioned) -->
-    {#if store.dragState?.active && store.dragState.indicatorIndex != null}
-      {@const dragKind = store.dragState.kind}
-      {#if dragKind === "column" || dragKind === "column_group"}
-        {@const siblings = store.siblingsForColumnScope(store.dragState.scopeKey).map(s => s.id)}
-        {@const band = computeColumnBand(siblings, store.dragState.indicatorIndex)}
-        {#if band}
-          <DropIndicator orientation="vertical" x={band.x} start={band.start} end={band.end} />
-        {/if}
-      {:else}
-        {@const indices = dragKind === "row"
-          ? (() => { const ids = new Set(store.siblingsForRowScope(store.dragState.scopeKey)); const r: number[] = []; store.displayRows.forEach((dr, i) => { if (dr.type === "data" && ids.has(dr.row.id)) r.push(i); }); return r; })()
-          : (() => { const ids = new Set(store.siblingsForRowGroupScope(store.dragState.scopeKey)); const r: number[] = []; store.displayRows.forEach((dr, i) => { if (dr.type === "group_header" && ids.has(dr.group.id)) r.push(i); }); return r; })()}
-        {@const band = computeRowBand(indices, store.dragState.indicatorIndex)}
-        {#if band}
-          <DropIndicator orientation="horizontal" y={band.y} start={band.start} end={band.end} />
-        {/if}
-      {/if}
-    {/if}
-
-    <!-- Editable cell overlay -->
-    {#if store.editingTarget}
-      <EditableCell {store} target={store.editingTarget} root={containerRef} />
-    {/if}
-
-    <!-- Column filter popover (rendered at root so it escapes the scaled wrapper) -->
-    <ColumnFilterPopover {store} />
-
-    <!-- Right-click column menu → type menu → interactive column editor -->
-    <HeaderContextMenu
-      target={headerContextMenu}
-      onAction={handleContextMenuAction}
-      onClose={() => (headerContextMenu = null)}
-    />
-    <ColumnTypeMenu
-      target={columnTypeMenuTarget}
-      available={store.availableFields}
-      onPick={handleTypePick}
-      onClose={() => { columnTypeMenuTarget = null; typeMenuMemory = null; }}
-    />
-    <ColumnEditorPopover
-      target={columnEditorTarget}
-      available={store.availableFields}
-      onCommit={handleEditorCommit}
-      onClose={() => { columnEditorTarget = null; typeMenuMemory = null; }}
-      onRequestChangeType={handleRequestChangeType}
-    />
+    <!-- Tooltip + DropIndicator + EditableCell + ColumnFilterPopover +
+         HeaderContextMenu + ColumnTypeMenu + ColumnEditorPopover. All
+         encapsulated by ForestOverlays as of Phase 0c-C2. -->
+    <ForestOverlays bind:this={overlays} {store} {containerRef} />
   {:else}
     <div class="tabviz-empty">No data</div>
   {/if}
