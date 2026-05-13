@@ -36,6 +36,7 @@
   import SparklineOptionsEditor from "./SparklineOptionsEditor.svelte";
   import NumericDomainOptionsEditor from "./NumericDomainOptionsEditor.svelte";
   import StarsOptionsEditor from "./StarsOptionsEditor.svelte";
+  import NumericOptionsEditor from "./NumericOptionsEditor.svelte";
 
   interface Props {
     target: EditorTarget | null;
@@ -55,7 +56,16 @@
   let headerText = $state("");
   let showHeader = $state(true);
   // Light options editor — covers the most common knobs per type.
+  // `optDecimals` lives here for heatmap + interval (which share the
+  // input but each store the value in their own options bundle).
+  // Numeric's decimals moved into NumericOptionsEditor (Phase 0c-C3).
   let optDecimals = $state<string>("");
+  type NumericEditorRef = {
+    reset(): void;
+    hydrateFromSpec(o: NonNullable<ColumnSpec["options"]>): void;
+    build(): NonNullable<NonNullable<ColumnSpec["options"]>["numeric"]>;
+  };
+  let numericEditor = $state<NumericEditorRef | null>(null);
   let optStars = $state(false);
   // bar/progress/heatmap maxValue + scale moved to NumericDomainOptionsEditor
   // sub-components (Phase 0c-C3). Three separate bind:this refs because
@@ -79,9 +89,7 @@
     build(): { type: "line" | "bar" | "area" };
   };
   let sparklineEditor = $state<SparklineEditorRef | null>(null);
-  let optPrefix = $state<string>("");
-  let optSuffix = $state<string>("");
-  let optThousandsSep = $state(false);
+  // optPrefix / optSuffix / optThousandsSep moved into NumericOptionsEditor.
   let optMaxChars = $state<string>("");
   // optBarScale moved into NumericDomainOptionsEditor (Phase 0c-C3).
   // Stars state moved to StarsOptionsEditor sub-component (Phase 0c-C3).
@@ -187,9 +195,7 @@
     heatmapEditor?.reset();
     optShowPct = false;
     sparklineEditor?.reset();
-    optPrefix = "";
-    optSuffix = "";
-    optThousandsSep = false;
+    numericEditor?.reset();
     optMaxChars = "";
     starsEditor?.reset();
     forestEditor?.reset();
@@ -268,12 +274,7 @@
 
   // Pull option defaults out of a partial options bundle into the editor state.
   function hydrateOptionsFromBundle(type: ColumnType, o: NonNullable<ColumnSpec["options"]>) {
-    if (type === "numeric") {
-      if (o.numeric?.decimals != null) optDecimals = String(o.numeric.decimals);
-      if (o.numeric?.prefix != null) optPrefix = o.numeric.prefix;
-      if (o.numeric?.suffix != null) optSuffix = o.numeric.suffix;
-      if (o.numeric?.thousandsSep) optThousandsSep = true;
-    }
+    if (type === "numeric") numericEditor?.hydrateFromSpec(o);
     if (type === "text" && o.text?.maxChars != null) optMaxChars = String(o.text.maxChars);
     if (type === "pvalue" && o.pvalue?.stars != null) optStars = !!o.pvalue.stars;
     if (type === "bar") barEditor?.hydrateFromSpec(o);
@@ -435,11 +436,7 @@
     const options: ColumnSpec["options"] = {};
     switch (selectedType) {
       case "numeric": {
-        const num: NonNullable<NonNullable<ColumnSpec["options"]>["numeric"]> = {};
-        if (optDecimals !== "") num.decimals = Number(optDecimals);
-        if (optPrefix !== "") num.prefix = optPrefix;
-        if (optSuffix !== "") num.suffix = optSuffix;
-        if (optThousandsSep) num.thousandsSep = ",";
+        const num = numericEditor?.build() ?? {};
         if (Object.keys(num).length > 0) options.numeric = num;
         break;
       }
@@ -768,7 +765,9 @@
         </div>
 
         <!-- Type-specific options -->
-        {#if selectedType === "numeric" || selectedType === "heatmap" || selectedType === "interval"}
+        {#if selectedType === "heatmap" || selectedType === "interval"}
+          <!-- heatmap and interval still use the parent-owned optDecimals;
+               their full options editors will land in follow-up C3 PRs. -->
           <label class="editor-field">
             <span>Decimals</span>
             <input
@@ -782,20 +781,7 @@
         {/if}
 
         {#if selectedType === "numeric"}
-          <div class="editor-row">
-            <label class="editor-field">
-              <span>Prefix</span>
-              <input type="text" bind:value={optPrefix} placeholder="e.g. $" maxlength="4" />
-            </label>
-            <label class="editor-field">
-              <span>Suffix</span>
-              <input type="text" bind:value={optSuffix} placeholder="e.g. %" maxlength="4" />
-            </label>
-          </div>
-          <label class="editor-check">
-            <input type="checkbox" bind:checked={optThousandsSep} />
-            <span>Group thousands (1,000)</span>
-          </label>
+          <NumericOptionsEditor bind:this={numericEditor} />
         {/if}
 
         {#if selectedType === "text"}
