@@ -747,9 +747,21 @@ filter_rows <- function(
   apply_spec_or_proxy(
     x, transform,
     proxy_method = "applyFilter",
-    proxy_args = list(filter = list(
-      field = field, operator = operator, value = value
-    ))
+    proxy_args = list(
+      # Typed ColumnFilter shape (spec §2.5-S4 + Phase 0a-PR7). `kind`
+      # is metadata for the filter UI; the JS-side matchColumnFilter()
+      # picks behavior off `operator` + `value` regardless. Default to
+      # "text" here — the column may be numeric, but the proxy-driven
+      # filter still works because numeric operators (gt/lt/...) operate
+      # on the underlying value, not on the filter UI's interpretation.
+      field = field,
+      filter = list(
+        kind = "text",
+        field = field,
+        operator = operator,
+        value = value
+      )
+    )
   )
 }
 

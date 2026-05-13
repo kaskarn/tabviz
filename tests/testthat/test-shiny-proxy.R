@@ -59,14 +59,17 @@ test_that("sort_rows on proxy sends sortBy message", {
   expect_equal(calls[[1]]$message$args, list(column = "hr", direction = "desc"))
 })
 
-test_that("filter_rows on proxy sends applyFilter message", {
+test_that("filter_rows on proxy sends applyFilter with typed ColumnFilter shape", {
   sess <- fake_session()
   p <- fake_proxy(sess)
   filter_rows(p, "hr", operator = "gt", value = 1)
   calls <- sess$calls()
   expect_equal(calls[[1]]$message$method, "applyFilter")
+  # Post-Phase-0a-PR7 wire shape (spec S4 + D3): field is hoisted to
+  # the top level and the inner `filter` is a ColumnFilter with `kind`.
+  expect_equal(calls[[1]]$message$args$field, "hr")
   expect_equal(calls[[1]]$message$args$filter,
-               list(field = "hr", operator = "gt", value = 1))
+               list(kind = "text", field = "hr", operator = "gt", value = 1))
 })
 
 test_that("clear_filters on proxy sends clearFilter", {

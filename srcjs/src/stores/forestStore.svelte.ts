@@ -7,7 +7,6 @@ import type {
   ColumnDef,
   ColumnGroup,
   SortConfig,
-  FilterConfig,
   FiltersState,
   ColumnFilter,
   ColumnKind,
@@ -118,7 +117,10 @@ export function createForestStore() {
   // selectedRowIds getter below; no separate state to keep in sync.
   let collapsedGroups = $state<Set<string>>(new Set());
   let sortConfig = $state<SortConfig | null>(null);
-  let filterConfig = $state<FilterConfig | null>(null);
+  // Legacy single-field filterConfig state removed in Phase 0a-PR7
+  // (spec S4 + D3). The multi-column `filters` map below is the
+  // only filter surface; setColumnFilter is the only setter; the
+  // applyFilter rendering path in visibleRows is gone.
   let filters = $state<FiltersState>({});
   let hoveredRowId = $state<string | null>(null);
 
@@ -309,12 +311,9 @@ export function createForestStore() {
       return { ...r, style: mergedStyle, cellStyles: mergedCells };
     });
 
-    // Legacy single-filter (Shiny proxy backward-compat)
-    if (filterConfig) {
-      rows = applyFilter(rows, filterConfig);
-    }
-
-    // New multi-column filter state (per-header popovers)
+    // Multi-column filter state (per-header popovers). Post-Phase-0a-PR7
+    // this is the only filter path; the legacy single-filter rendering
+    // step was removed.
     if (Object.keys(filters).length > 0) {
       rows = applyFilters(rows, filters);
     }
@@ -2024,13 +2023,9 @@ export function createForestStore() {
     markSource("sort");
   }
 
-  function setFilter(filter: FilterConfig | null) {
-    filterConfig = filter;
-    if (filter) {
-      appendOp(ops.setFilter(filter.field, filter.operator, filter.value));
-    }
-    markSource("filters");
-  }
+  // Legacy `setFilter(filter: FilterConfig | null)` removed in
+  // Phase 0a-PR7 (spec S4 + D3). All filtering now flows through
+  // setColumnFilter below.
 
   // Multi-column filter API (per-header popovers)
   function setColumnFilter(field: string, filter: ColumnFilter | null) {
@@ -2050,9 +2045,8 @@ export function createForestStore() {
   }
 
   function clearAllFilters() {
-    const hadFilters = Object.keys(filters).length > 0 || filterConfig !== null;
+    const hadFilters = Object.keys(filters).length > 0;
     filters = {};
-    filterConfig = null;
     if (hadFilters) appendOp(ops.clearFilters());
     markSource("filters");
   }
@@ -3351,7 +3345,6 @@ export function createForestStore() {
     clearAllPaint();
     collapsedGroups = new Set();
     sortConfig = null;
-    filterConfig = null;
     filters = {};
 
     // ── Row & column reorder / inserts / hides / cell edits ──────────────
@@ -3812,9 +3805,6 @@ export function createForestStore() {
     get sortConfig() {
       return sortConfig;
     },
-    get filterConfig() {
-      return filterConfig;
-    },
     get filters() {
       return filters;
     },
@@ -4075,7 +4065,6 @@ export function createForestStore() {
     resetThemeEdits,
     sortBy,
     toggleSort,
-    setFilter,
     setColumnFilter,
     clearAllFilters,
     getColumnFilter,
@@ -4289,30 +4278,9 @@ function matchColumnFilter(row: Row, f: ColumnFilter): boolean {
   }
 }
 
-// Helper functions
-function applyFilter(rows: Row[], config: FilterConfig): Row[] {
-  return rows.filter((row) => {
-    const value = row.metadata[config.field] ?? (row as unknown as Record<string, unknown>)[config.field];
-
-    switch (config.operator) {
-      case "eq":
-        return value === config.value;
-      case "neq":
-        return value !== config.value;
-      case "gt":
-        return typeof value === "number" && value > (config.value as number);
-      case "lt":
-        return typeof value === "number" && value < (config.value as number);
-      case "contains":
-        return (
-          typeof value === "string" &&
-          value.toLowerCase().includes((config.value as string).toLowerCase())
-        );
-      default:
-        return true;
-    }
-  });
-}
+// Legacy `applyFilter(rows, config: FilterConfig)` removed in
+// Phase 0a-PR7 (spec S4 + D3). Multi-column filtering now flows
+// exclusively through `applyFilters` above.
 
 /**
  * Walk `spec.columns` (including ColumnGroup descendants) and return the

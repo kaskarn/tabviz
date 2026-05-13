@@ -47,11 +47,7 @@ export const proxyMethods: Record<string, (store: ForestStore, args: Record<stri
   applyFilter: (store, raw) => {
     const a = normalize.applyFilter(raw);
     if (!a) return;
-    if (a.kind === "column") {
-      store.setColumnFilter(a.field, a.filter);
-    } else {
-      store.setFilter(a.filter);
-    }
+    store.setColumnFilter(a.field, a.filter);
   },
   clearFilter: (store) => {
     store.clearAllFilters();

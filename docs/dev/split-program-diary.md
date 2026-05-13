@@ -228,3 +228,25 @@ Results: 155 pass / 6 pre-existing fail (was 145, +10), R tests beautiful, visua
 
 This was a moment to appreciate the foundation: every one of these three items took 5-15 minutes to ship because PR4 + PR5 made the dispatch table and event emitter clean enough that the changes were obvious. S5's "add a method, replace a loop" was 30 lines. S9's "tighten an `else` branch" was 5 lines. Without the typed-args + per-method normalizer scaffolding, each would have meant rewriting more code AND the tests would have been harder to write because the fake store's mock surface wasn't typed.
 
+### 0a-PR7: filter API consolidation
+
+Spec items S4 (consolidate filter API) and D3 (remove legacy `setFilter`). The legacy single-field filter path turned out to be tendrils-deep: it lived in the store as `filterConfig` state + `setFilter` method + `applyFilter` rendering function + `get filterConfig` public API; in `$types/index.ts` as the `FilterConfig` interface; in the proxy dispatcher as a separate route; AND in R as the wire payload that `filter_rows()` emitted. Removing it cleanly meant touching all of those simultaneously.
+
+**R side**: `filter_rows()` in `R/modifiers.R` now emits the typed `ColumnFilter` shape (`{kind, field, operator, value}`). Picked `kind = "text"` as a default — the JS-side `matchColumnFilter()` ignores `kind` entirely and dispatches on `operator` + `value`, so the choice is essentially metadata for filter UI components (which don't fire on proxy-driven filters anyway). Wire payload is now `{field, filter: {kind, field, operator, value}}` matching the inline-field shape the normalizer already accepts.
+
+**JS side**:
+- `proxy-args.ts`: dropped the `kind: "legacy"` discriminated-union arm; `ApplyFilterArgs` simplifies to a single `{field, filter: ColumnFilter}` interface. Normalizer now rejects (returns null) payloads without `kind`.
+- `index.svelte.ts`: the dispatcher's `applyFilter` handler drops the if/else; one line of dispatch.
+- `forestStore.svelte.ts`: removed `filterConfig` state, `setFilter()`, `get filterConfig`, the rendering-path `if (filterConfig) rows = applyFilter(...)` branch, the standalone `applyFilter` helper (~25 lines below the factory). Cleaned up `clearAllFilters` and the spec-reset path to not reference the removed state.
+- `$types/index.ts`: removed the `FilterConfig` interface itself (D3).
+
+**Tests**:
+- `index.proxy.test.ts`: dropped the "legacy routes to setFilter" test; added two new tests for the two valid wire shapes (inline-field vs external-field), plus one asserting the rejected-as-no-op behavior for the old shape.
+- `tests/testthat/test-shiny-proxy.R`: updated the R proxy-call test to assert the new wire shape including `kind = "text"` and the field-at-top-level layout.
+
+**Counting wins**: forestStore.svelte.ts is ~50 lines shorter. `proxy-args.ts` is ~10 lines shorter. The proxy dispatcher's `applyFilter` is one line. The types module loses the `FilterConfig` interface entirely.
+
+**Worth noting**: this PR took noticeably longer than PR6 (5-10 min items) because the legacy path touched more places. The lesson: when the spec says "remove the X" and X has more than two callers, expect tendrils. Worth re-scanning §2.5 for similar items where the textbook description ("remove the legacy thing") understates the actual surface — and tracking that in mid-flight discoveries if found. Quick re-read says no other consolidation items have similar fan-out; we're clear.
+
+Results: 156 pass / 6 pre-existing fail (was 155, +1 from PR7 net — added 3 new tests, removed 1 legacy, +2 net + 1 new boundary test). R tests 100% pass including the updated shiny-proxy test (59/59). Visual smoke clean.
+

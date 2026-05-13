@@ -13,7 +13,6 @@ function makeFakeStore(overrides: Record<string, unknown> = {}) {
     calls,
     setSpec: record("setSpec"),
     toggleGroup: record("toggleGroup"),
-    setFilter: record("setFilter"),
     setColumnFilter: record("setColumnFilter"),
     clearAllFilters: record("clearAllFilters"),
     sortBy: record("sortBy"),
@@ -71,16 +70,27 @@ describe("proxyMethods dispatch", () => {
     });
   });
 
-  test("applyFilter legacy routes to setFilter", () => {
-    const s = makeFakeStore();
-    dispatch("applyFilter", { filter: { field: "hr", operator: "gt", value: 1 } }, s);
-    expect((s.calls as { method: string }[])[0].method).toBe("setFilter");
-  });
-
-  test("applyFilter multi-column routes to setColumnFilter", () => {
+  test("applyFilter with typed ColumnFilter (inline field) routes to setColumnFilter", () => {
     const s = makeFakeStore();
     dispatch("applyFilter", { filter: { field: "hr", kind: "numeric", operator: "gt", value: 1 } }, s);
     expect((s.calls as { method: string }[])[0].method).toBe("setColumnFilter");
+  });
+
+  test("applyFilter with typed ColumnFilter (external field) routes to setColumnFilter", () => {
+    const s = makeFakeStore();
+    dispatch("applyFilter", { field: "hr", filter: { kind: "text", operator: "gt", value: 1 } }, s);
+    const entry = (s.calls as { method: string; args: unknown[] }[])[0];
+    expect(entry.method).toBe("setColumnFilter");
+    expect(entry.args[0]).toBe("hr");
+  });
+
+  test("applyFilter without `kind` (post-PR7 legacy shape) is rejected as no-op", () => {
+    // Spec S4 + D3: legacy {filter: {field, operator, value}} without
+    // `kind` is no longer accepted. Normalizer returns null, dispatcher
+    // silently drops, no setter called.
+    const s = makeFakeStore();
+    dispatch("applyFilter", { filter: { field: "hr", operator: "gt", value: 1 } }, s);
+    expect((s.calls as unknown[]).length).toBe(0);
   });
 
   test("clearFilter -> clearAllFilters", () => {

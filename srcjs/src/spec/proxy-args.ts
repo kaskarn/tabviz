@@ -21,7 +21,6 @@ import type {
   ColumnDef,
   ColumnFilter,
   ColumnSpec,
-  FilterConfig,
   SemanticToken,
   WebSpec,
   WebTheme,
@@ -44,13 +43,16 @@ export interface ToggleGroupArgs {
 }
 
 /**
- * `applyFilter` — pre-S4-consolidation accepts both legacy (single
- * field, `FilterConfig`) and multi-column (`ColumnFilter`). After PR7
- * ships S4 + D3, this collapses to just the multi-column shape.
+ * `applyFilter` — single typed shape post-PR7 (spec S4 + D3): always
+ * carries a per-column `ColumnFilter` keyed by `field`. The pre-PR7
+ * legacy `FilterConfig` shape is no longer accepted; payloads in that
+ * shape are rejected by `normalize.applyFilter` and the dispatcher
+ * silently drops them.
  */
-export type ApplyFilterArgs =
-  | { kind: "legacy"; filter: FilterConfig }
-  | { kind: "column"; field: string; filter: ColumnFilter };
+export interface ApplyFilterArgs {
+  field: string;
+  filter: ColumnFilter;
+}
 
 /** `sortBy` — set sort on one column. */
 export interface SortByArgs {
@@ -217,19 +219,23 @@ export const normalize = {
   },
 
   applyFilter(raw: Record<string, unknown>): ApplyFilterArgs | null {
-    // Two wire shapes today:
-    //   (a) legacy:    { filter: { field, operator, value } }
-    //   (b) multi-col: { filter: { field, kind, operator, value, ... } }
-    //   (c) multi-col: { field, filter: { kind, operator, value, ... } }
+    // Post-PR7 wire shape (spec S4 + D3): exactly one of
+    //   (a) { filter: { field, kind, operator, value, ... } }
+    //   (b) { field, filter: { kind, operator, value, ... } }
+    // The legacy untyped {filter: {field, operator, value}} shape is
+    // rejected — R-side `filter_rows` was updated in the same PR to
+    // always emit `kind`. If we see an old payload, return null
+    // (dispatcher silently drops, dashboards continue working).
     if (raw.filter && typeof raw.filter === "object") {
       const f = raw.filter as Record<string, unknown>;
+      // Inline-field shape (a)
       if ("kind" in f && typeof f.field === "string") {
-        return { kind: "column", field: f.field, filter: f as unknown as ColumnFilter };
+        return { field: f.field, filter: f as unknown as ColumnFilter };
       }
-      return { kind: "legacy", filter: raw.filter as FilterConfig };
-    }
-    if (typeof raw.field === "string" && raw.filter && typeof raw.filter === "object") {
-      return { kind: "column", field: raw.field, filter: raw.filter as ColumnFilter };
+      // External-field shape (b)
+      if (typeof raw.field === "string" && "kind" in f) {
+        return { field: raw.field, filter: f as unknown as ColumnFilter };
+      }
     }
     return null;
   },

@@ -980,14 +980,10 @@ export interface SortConfig {
   direction: "asc" | "desc";
 }
 
-export interface FilterConfig {
-  field: string;
-  operator: "eq" | "neq" | "gt" | "lt" | "contains";
-  value: unknown;
-}
+// Legacy `FilterConfig` removed in Phase 0a-PR7 (spec S4 + D3).
+// The multi-column ColumnFilter shape below is the only filter type.
 
 // Multi-column filter state (keyed by column field).
-// Replaces FilterConfig for multi-filter UX; FilterConfig kept for Shiny proxy compat.
 export type FilterOperator =
   | "contains"
   | "eq"
