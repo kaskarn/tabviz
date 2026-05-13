@@ -2628,6 +2628,38 @@ export function createForestStore() {
     markSource("cell_styles");
   }
 
+  // The full set of semantic tokens, kept in lockstep with the SemanticToken
+  // union in $types. Used by clearSemantic / clearCellSemantic to fan out a
+  // single "clear all" call into individual setRowSemantic / setCellSemantic
+  // calls. Spec §2.5-S5 introduced these helpers so the proxy dispatcher
+  // doesn't have to iterate this list manually anymore.
+  const ALL_SEMANTIC_TOKENS: ReadonlyArray<SemanticToken> = [
+    "bold", "emphasis", "muted", "accent", "fill",
+  ];
+
+  /**
+   * Clear every semantic token on `rowId`. Mirrors what R's
+   * `paint_row(proxy, row_id, NA_character_)` expresses: "remove all
+   * paint from this row." Implemented as a fan-out over the token set
+   * so each token-clear records its own op in the log (matches the
+   * pre-S5 behavior; users undoing a clear-all see token-by-token undo).
+   */
+  function clearSemantic(rowId: string) {
+    for (const token of ALL_SEMANTIC_TOKENS) {
+      setRowSemantic(rowId, token, false);
+    }
+  }
+
+  /**
+   * Clear every semantic token on a single cell. Mirrors the row-scoped
+   * version above, scoped to (rowId, field).
+   */
+  function clearCellSemantic(rowId: string, field: string) {
+    for (const token of ALL_SEMANTIC_TOKENS) {
+      setCellSemantic(rowId, field, token, false);
+    }
+  }
+
   /** Resolved row semantic flags (spec baseline + paint overrides). */
   function getRowSemantic(row: Row, token: SemanticToken): boolean {
     const override = styleEdits.rows[row.id]?.[token];
@@ -4092,6 +4124,8 @@ export function createForestStore() {
     paintCellWithActiveToken,
     setRowSemantic,
     setCellSemantic,
+    clearSemantic,
+    clearCellSemantic,
     getRowSemantic,
     getCellSemantic,
     clearAllPaint,

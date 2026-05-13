@@ -34,6 +34,12 @@ function makeFakeStore(overrides: Record<string, unknown> = {}) {
     setMaxWidth: record("setMaxWidth"),
     setMaxHeight: record("setMaxHeight"),
     setShowZoomControls: record("setShowZoomControls"),
+    setRowSemantic: record("setRowSemantic"),
+    setCellSemantic: record("setCellSemantic"),
+    clearSemantic: record("clearSemantic"),
+    clearCellSemantic: record("clearCellSemantic"),
+    setTargetAspect: record("setTargetAspect"),
+    setTargetAspectAnchor: record("setTargetAspectAnchor"),
     allColumns: [{ id: "hr", field: "hr", type: "numeric", options: { numeric: { decimals: 2 } } }],
     findColumnScope: () => "__root__",
     siblingsForColumnScope: () => [{ id: "hr" }, { id: "lower" }],
@@ -222,5 +228,85 @@ describe("proxyMethods dispatch", () => {
     expect(methods).toContain("setZoom");
     expect(methods).toContain("setAutoFit");
     expect(methods).toContain("setMaxWidth");
+  });
+
+  // ── Semantic paint (PR6 / S5) ─────────────────────────────────────────
+  test("setRowSemantic with string token -> setRowSemantic(rowId, token, true)", () => {
+    const s = makeFakeStore();
+    dispatch("setRowSemantic", { rowId: "r1", token: "emphasis" }, s);
+    const entry = (s.calls as { method: string; args: unknown[] }[])[0];
+    expect(entry.method).toBe("setRowSemantic");
+    expect(entry.args).toEqual(["r1", "emphasis", true]);
+  });
+
+  test("setRowSemantic with null token -> clearSemantic(rowId)", () => {
+    const s = makeFakeStore();
+    dispatch("setRowSemantic", { rowId: "r1", token: null }, s);
+    const entry = (s.calls as { method: string; args: unknown[] }[])[0];
+    expect(entry.method).toBe("clearSemantic");
+    expect(entry.args).toEqual(["r1"]);
+  });
+
+  test("setCellSemantic with string token -> setCellSemantic(...)", () => {
+    const s = makeFakeStore();
+    dispatch("setCellSemantic", { rowId: "r1", field: "hr", token: "muted" }, s);
+    const entry = (s.calls as { method: string; args: unknown[] }[])[0];
+    expect(entry.method).toBe("setCellSemantic");
+    expect(entry.args).toEqual(["r1", "hr", "muted", true]);
+  });
+
+  test("setCellSemantic with null token -> clearCellSemantic(rowId, field)", () => {
+    const s = makeFakeStore();
+    dispatch("setCellSemantic", { rowId: "r1", field: "hr", token: null }, s);
+    const entry = (s.calls as { method: string; args: unknown[] }[])[0];
+    expect(entry.method).toBe("clearCellSemantic");
+    expect(entry.args).toEqual(["r1", "hr"]);
+  });
+
+  // ── setAspectRatio explicit contract (PR6 / S9) ───────────────────────
+  test("setAspectRatio with finite positive ratio -> setTargetAspect(ratio)", () => {
+    const s = makeFakeStore();
+    dispatch("setAspectRatio", { ratio: 1.6 }, s);
+    const entry = (s.calls as { method: string; args: unknown[] }[])[0];
+    expect(entry.method).toBe("setTargetAspect");
+    expect(entry.args).toEqual([1.6]);
+  });
+
+  test("setAspectRatio with null ratio -> setTargetAspect(null) (clear)", () => {
+    const s = makeFakeStore();
+    dispatch("setAspectRatio", { ratio: null }, s);
+    const entry = (s.calls as { method: string; args: unknown[] }[])[0];
+    expect(entry.method).toBe("setTargetAspect");
+    expect(entry.args).toEqual([null]);
+  });
+
+  test("setAspectRatio with NaN -> no-op (rejected, no setter called)", () => {
+    const s = makeFakeStore();
+    dispatch("setAspectRatio", { ratio: NaN }, s);
+    expect((s.calls as unknown[]).length).toBe(0);
+  });
+
+  test("setAspectRatio with non-positive ratio -> no-op", () => {
+    const s = makeFakeStore();
+    dispatch("setAspectRatio", { ratio: -1 }, s);
+    expect((s.calls as unknown[]).length).toBe(0);
+  });
+
+  test("setAspectRatio honors anchor when present", () => {
+    const s = makeFakeStore();
+    dispatch("setAspectRatio", { ratio: 1.6, anchor: "height" }, s);
+    const methods = (s.calls as { method: string }[]).map((c) => c.method);
+    expect(methods).toContain("setTargetAspect");
+    expect(methods).toContain("setTargetAspectAnchor");
+  });
+
+  // ── setTheme explicit discrimination (PR6 / S8) ───────────────────────
+  test("setTheme with theme payload is accepted but no-ops today", () => {
+    const s = makeFakeStore();
+    dispatch("setTheme", { theme: { /* opaque payload */ } as unknown as object }, s);
+    // Theme objects aren't applied runtime-side until C5 ships the
+    // setThemeObject store method. For now the dispatcher accepts the
+    // payload without erroring.
+    expect((s.calls as unknown[]).length).toBe(0);
   });
 });

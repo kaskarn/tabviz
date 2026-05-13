@@ -133,20 +133,14 @@ export const proxyMethods: Record<string, (store: ForestStore, args: Record<stri
   // ---- Paint (semantic-flag toggles) ----
   // R's `paint_row(proxy, row_id, token)` sends `{rowId, token}`. A
   // string token paints; `NA_character_` (-> null over wire) clears
-  // every active token on that row. The store's `setRowSemantic`
-  // takes (rowId, token, on); the clear-all case fans out below.
+  // every active token on that row via store.clearSemantic.
   setRowSemantic: (store, raw) => {
     const a = normalize.setRowSemantic(raw);
     if (!a) return;
     if (a.token !== null) {
       store.setRowSemantic(a.rowId, a.token, true);
     } else {
-      // Clear all painted tokens on the row. The PR6 milestone adds a
-      // dedicated store.clearSemantic() method (S5); for PR4 we still
-      // fan out manually here.
-      const tokens: ReadonlyArray<"bold" | "emphasis" | "muted" | "accent" | "fill"> =
-        ["bold", "emphasis", "muted", "accent", "fill"];
-      for (const t of tokens) store.setRowSemantic(a.rowId, t, false);
+      store.clearSemantic(a.rowId);
     }
   },
   setCellSemantic: (store, raw) => {
@@ -155,9 +149,7 @@ export const proxyMethods: Record<string, (store: ForestStore, args: Record<stri
     if (a.token !== null) {
       store.setCellSemantic(a.rowId, a.field, a.token, true);
     } else {
-      const tokens: ReadonlyArray<"bold" | "emphasis" | "muted" | "accent" | "fill"> =
-        ["bold", "emphasis", "muted", "accent", "fill"];
-      for (const t of tokens) store.setCellSemantic(a.rowId, a.field, t, false);
+      store.clearCellSemantic(a.rowId, a.field);
     }
   },
 

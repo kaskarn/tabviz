@@ -347,6 +347,11 @@ export const normalize = {
   },
 
   setAspectRatio(raw: Record<string, unknown>): SetAspectRatioArgs | null {
+    // Spec §2.5-S9: explicit contract. `null` (or R's NA_real_ → null
+    // over wire) clears the target. A finite positive number pins it.
+    // Anything else (NaN, Infinity, <=0, non-numeric) is invalid input
+    // and we reject the call rather than inferring a clear — silent
+    // inference was the bug this normalizer is paying down.
     let ratio: number | null;
     const r = raw.ratio;
     if (isNA(r)) {
@@ -354,8 +359,7 @@ export const normalize = {
     } else if (isFiniteNumber(r) && r > 0) {
       ratio = r;
     } else {
-      // Non-finite or <=0 → treat as clear (matches today's defensive behavior).
-      ratio = null;
+      return null;
     }
     const a = raw.anchor;
     const anchor: SetAspectRatioArgs["anchor"] =

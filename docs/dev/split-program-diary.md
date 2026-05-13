@@ -212,3 +212,19 @@ Results:
 
 A real moment for the program: with PR5 done, the store has its eventual public-API shape on the *output* side too. PR4 typed the inputs; PR5 typed the outputs. Both halves of the contract are now in place; PR1 versions the spec, PR2 types the envelope, PR3 isolates the globals. The interesting part of the future "createTabviz" factory is just a thin layer that exposes these things to a consumer who doesn't know they're talking through htmlwidgets.
 
+### 0a-PR6: three small contract cleanups in one PR
+
+This was the small one. Spec items S5, S8, S9. Combined estimate: half a day. Actual time: about the same. Worth doing together because they share the same test fixture and the same dispatcher file.
+
+**S5 — `clearSemantic` / `clearCellSemantic` on the store.** The setRowSemantic dispatch handler still had a hardcoded `for (const t of ["bold", "emphasis", "muted", "accent", "fill"])` loop when clearing all paint from a row. Same loop in setCellSemantic. Lifted the iteration into two store methods that fan out over a private `ALL_SEMANTIC_TOKENS` constant. The token list now lives in one place and the dispatcher's handler shrinks to two lines per method. Each token-clear still records its own op in the log, matching pre-S5 behavior — undo is still token-by-token, not "one big clear."
+
+**S8 — `setTheme` explicit discrimination.** Mostly already done in PR4's normalizer (discriminated union `{kind: "name", name} | {kind: "theme", theme}`). The dispatcher honored `kind: "name"` and accepted `kind: "theme"` payloads silently (no-op, with comment explaining why — the store doesn't have a `setThemeObject` method until Phase 0c-C5). PR6 added a behavior test that asserts theme payloads route to no-op-but-no-error. Once C5 lands, that test gets updated to assert it routes to `setThemeObject`.
+
+**S9 — `setAspectRatio` no inference.** The normalizer was treating NaN/Infinity/<=0 as "clear" silently. Now those reject and the dispatcher returns null (no-op). The legitimate clear case (R's `NA_real_` → null) still works. This is a small behavior tightening — previously a buggy caller passing NaN would silently clear the aspect; now it gets a no-op and the state stays intact. Defensive, on balance correct.
+
+**Test fixture expansion.** Added 10 new tests covering semantic paint (both set and clear, both row and cell scopes) and the aspect-ratio contract (positive ratio, null ratio, NaN, negative, anchor). The fake store gained `setTargetAspect` and `setTargetAspectAnchor` recorders. These are tests that should have existed all along but somehow didn't until now. They'll catch S5/S8/S9 regressions next time someone touches the dispatcher.
+
+Results: 155 pass / 6 pre-existing fail (was 145, +10), R tests beautiful, visual smoke clean.
+
+This was a moment to appreciate the foundation: every one of these three items took 5-15 minutes to ship because PR4 + PR5 made the dispatch table and event emitter clean enough that the changes were obvious. S5's "add a method, replace a loop" was 30 lines. S9's "tighten an `else` branch" was 5 lines. Without the typed-args + per-method normalizer scaffolding, each would have meant rewriting more code AND the tests would have been harder to write because the fake store's mock surface wasn't typed.
+
