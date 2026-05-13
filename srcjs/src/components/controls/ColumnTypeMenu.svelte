@@ -1,3 +1,14 @@
+<!--
+  ColumnTypeMenu — popover menu for picking a column type (forest, bar,
+  numeric, text, etc.) in insert + replace flows.
+
+  Phase 0c-C4 audit (2026-05): 717 lines, 14 functions. Marginally over
+  the spec's 700-line stopping-rule threshold, but cohesive — every
+  function in here is part of one workflow (open menu → render category
+  groups → select a leaf → emit a TypePick). The module-script exports
+  (TypeMenuTarget, TypePick) are tiny and not split candidates. No split
+  needed; size stays as-is with this justification.
+-->
 <script lang="ts" module>
   import type { ColumnSpec, ColumnType } from "$types";
 
