@@ -71,7 +71,7 @@ Per spec §4. The longest phase — estimated 7-8 weeks. Lands as small PRs acro
 | 4 | **C8** — width-utils dual measurement path audit | ✅ done (0c-PR3) |
 | 5 | **C9** — svg-generator decomposition audit | ✅ done (0c-PR3) |
 | 6 | **C5** — Theme presets + JS resolver port (cascade-rework gate confirmed open) | ⏳ pending |
-| 7 | **C3** — ColumnEditorPopover decomposition (~3 days) | 🟡 in progress: forest done (0c-PR6); 9 type blocks remain (viz, bar, sparkline, badge, icon, stars, pictogram, ring, heatmap, progress, range) |
+| 7 | **C3** — ColumnEditorPopover decomposition (~3 days) | 🟡 in progress: 7 of 10 type blocks extracted (forest, sparkline, bar, progress, heatmap, stars, numeric). Remaining: viz_* (biggest, vizEffects array), text, pvalue, custom (these last three are 1-2 lines each — may inline or extract trivially). File at 1449 lines, down from 1633. |
 | 8 | **C2** — ForestPlot.svelte decomposition (~1 week) | ⏳ pending |
 | 9 | **C4** — Other large components audit (~1 week, optional splits) | ⏳ pending |
 | 10 | **C10** — Split widget shell decomposition (~3 days) | ⏳ pending |
