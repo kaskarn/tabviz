@@ -31,6 +31,12 @@
  * while the SVG generator uses estimateTextWidth() since it runs in a
  * DOM-free environment (R's V8 engine).
  *
+ * Phase 0c-C8 audit (2026-05): the dual path is genuinely necessary, not
+ * overkill. The estimation fallback is exercised on every V8 export
+ * (R's PDF/PNG render pipeline runs without a DOM), so it's a hot path,
+ * not a degraded backup. Kept as-is with hybrid try-canvas-then-estimate
+ * at the call sites in svg-generator.ts.
+ *
  * See rendering-constants.ts for detailed documentation of the width
  * calculation algorithm and constants.
  */

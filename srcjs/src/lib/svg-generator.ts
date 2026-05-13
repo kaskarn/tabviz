@@ -3,6 +3,26 @@
  *
  * This module generates complete SVG strings from WebSpec data without any DOM access.
  * It can be used both in the browser and in Node.js/V8 environments.
+ *
+ * === SIZE NOTE (Phase 0c-C9 audit, 2026-05) ===
+ *
+ * This file is 5,300+ lines because it houses every per-column-type render
+ * function (renderInterval, renderDiamond, renderVizBar, renderVizBoxplot,
+ * renderVizViolin) plus the structural ones (header, footer, group-header,
+ * unified column-headers, unified table-row) plus a parallel layout pass
+ * (generateSVGForAspectTarget). The per-column-type functions DO split out
+ * cleanly along their own boundaries — each takes spec/row/options + layout
+ * + theme and returns SVG strings.
+ *
+ * BUT: every render function shares helpers that live in this same file
+ * (applyVerticalCellAlign, resolveMarkerStyle and other style-resolution
+ * helpers, the layout pre-processors, etc.). Splitting per-column-type
+ * would require pulling those helpers into a separate shared module too,
+ * or creating circular-import risk. Estimated ~1 week of work.
+ *
+ * Per the spec's stopping rule, the size justification stays here: this
+ * file remains > 700 lines because the natural decomposition requires
+ * its own follow-on PR (left as a future item, not blocking).
  */
 
 import type {

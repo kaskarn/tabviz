@@ -374,3 +374,17 @@ Net delta:
 
 Two MFDs partially closed (1, 5), one (the v2-fixture rewrite) opened as a follow-up. Net Phase 0c progress.
 
+### 0c-PR3: C8 + C9 audits — both are "leave alone with documentation"
+
+Two "audit-then-decide" items from the spec. Both verdicts came in as "the existing structure is correct; document the rationale and move on." Net code change: header comments only.
+
+**C8 (width-utils dual measurement path).** Spec speculated the canvas fallback was "rarely exercised." Audit said no: the estimation path is the HOT path for V8 export. Every R-driven PDF/PNG render goes through V8 (no DOM), every text width computation goes through `estimateTextWidth`. The canvas path is what's optional — only fires when running in a real browser. So the hybrid try-canvas-then-estimate at the call sites in `svg-generator.ts` is correct, and the dual implementation in `width-utils.ts` is necessary. Kept as-is; added a comment block to the module header explaining this so the next reader doesn't speculate the same wrong thing the spec did.
+
+**C9 (svg-generator decomposition).** Audit found 49 functions across 5,347 lines. Per-column-type renders (`renderInterval`, `renderDiamond`, `renderVizBar`, `renderVizBoxplot`, `renderVizViolin`) DO split out cleanly along their boundaries — each is a self-contained function taking spec + row + options + layout + theme. But every render function uses private helpers also defined in this file (style resolution, layout pre-processing, etc.). Splitting per-column-type without also extracting the helpers would create circular import risk or require lots of helper-passing. Estimated ~1 week of work to do it properly.
+
+Verdict: split is feasible but not urgent. Per the spec's stopping rule for files > 700 lines, the file gets an inline justification comment at the top. Future PR can pick up the split if/when there's a forcing function (e.g., a need to lazy-load just the forest-renderer for a stripped-down package variant).
+
+Both audits done. Two MFDs not retired but neither was supposed to be retired here. Spec items C8 and C9 marked done — the audit was the work, the conclusion documented.
+
+Net: a small, almost-no-code PR. Useful for the next reader; necessary for the spec checklist.
+
