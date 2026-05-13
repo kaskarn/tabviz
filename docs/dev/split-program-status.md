@@ -56,15 +56,24 @@ Items found during execution that aren't in the original spec §2.5 but are wort
 | MFD-3 | `themes-api.R` has a stale `_v2` transition comment referencing PR 10. The rename completed; the comment didn't. | P2 (doc) | Phase 0d |
 | MFD-4 | `tabviz()` requires `label` arg even for tiny test fixtures. Not a problem, but a small UX note. | P3 | Out of scope for the split program |
 
-## Phase 0b — what's coming next
+## Phase 0c — what's coming next (long phase)
 
-Per spec §4:
-1. **D1** — Audit `setContinuousMode` callers; remove if unused
-2. **D2** — Audit `previewColumnWidth`, `previewLabel`, other `preview*` methods
-3. **D4** — Run usage audit across ~80 store methods; remove orphans
-4. **D5** — Audit `__tabvizExports`, `__tabvizStoreRegistry` usage in tests + scripts; gate behind `__DEV__` or remove
+Per spec §4. The longest phase — estimated 7-8 weeks. Will land as many small PRs across multiple loop iterations. Suggested execution order (easy-first to build momentum):
 
-Estimated 3-4 days of work. One PR.
+1. **C11** — Rename `column-compat.ts` → `column-types-registry.ts` (~half day)
+2. **C7** — Aspect ladder lever rename + doc-comment + pinning tests (~3 days, behavior unchanged)
+3. **C6** — Migrate CSS-shaped constants from `rendering-constants.ts` to CSS custom properties (~3 days)
+4. **C8** — Width-utils dual measurement path audit (~1 day, possibly simplify)
+5. **C9** — svg-generator decomposition audit (~2 days audit; +1 week if split clean)
+6. **C5** — Theme presets + JS resolver port (~1.5-2 weeks, gated on cascade-rework status confirmed open)
+7. **C3** — ColumnEditorPopover decomposition (~3 days)
+8. **C2** — ForestPlot.svelte decomposition (~1 week)
+9. **C4** — Other large components audit (~1 week, optional splits)
+10. **C10** — Split widget shell decomposition (~3 days)
+11. **C1** — forestStore decomposition (~3 weeks; the long pole; Q8 idiom already proven)
+12. **C12-a** — View Source refactor + R-target via registry (~1 week)
+
+Items can fan out — C5 and C1 can be paused if either gets stuck.
 
 ## Reading order for someone joining mid-program
 
