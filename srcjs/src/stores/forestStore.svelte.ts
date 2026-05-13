@@ -1878,16 +1878,12 @@ export function createForestStore() {
     initialHeight = h;
   }
 
-  // selectRow / setSelectedRows are now thin wrappers over the painter:
-  // "selecting" a row IS painting it with the currently-active token.
-  // The visible "selected" set is whatever rows have the active token
-  // painted on them (see selectedRowIds getter below). Keeping these
-  // function names so R-side proxies (e.g. setSelectedRows from the
-  // shiny proxy) still work without renaming.
-  function selectRow(id: string) {
-    paintRowWithActiveToken(id);
-  }
-
+  // setSelectedRows: thin wrapper over the painter — "selecting" a row IS
+  // painting it with the currently-active token. The visible "selected"
+  // set is whatever rows have the active token painted on them (see
+  // selectedRowIds getter below). The R-side proxy `setSelectedRows`
+  // routes through this method. The single-row `selectRow` helper that
+  // used to live here was removed in Phase 0b (orphan; no callers).
   function setSelectedRows(ids: string[]) {
     // Replace = clear all rows currently painted with the active token,
     // then paint the given list. Mirrors the historical
@@ -2520,14 +2516,8 @@ export function createForestStore() {
     labelEdits = { ...labelEdits, [field]: next };
   }
 
-  function clearLabelEdit(
-    field: "title" | "subtitle" | "caption" | "footnote",
-  ) {
-    if (!(field in labelEdits)) return;
-    const { [field]: _omit, ...rest } = labelEdits;
-    labelEdits = rest;
-    markSource("label_edits");
-  }
+  // `clearLabelEdit` removed in Phase 0b (orphan; no callers). The
+  // setLabel(field, "")/null path serves the same role for live UI.
 
   function getPlotLabel(
     field: "title" | "subtitle" | "caption" | "footnote",
@@ -3048,41 +3038,9 @@ export function createForestStore() {
     themeOverrides = next;
   }
 
-  /**
-   * Apply an edit to one field of one row-level semantic bundle
-   * (e.g. `theme.row.emphasis.bg`). v2 stores semantics as nested
-   * RowSemantic bundles inside the row cluster.
-   */
-  function setSemanticField(
-    token: "emphasis" | "muted" | "accent",
-    field: string,
-    value: unknown,
-  ) {
-    if (!spec || !spec.theme?.row) return;
-
-    const prevRow = spec.theme.row as Record<string, unknown> & {
-      [k in "emphasis" | "muted" | "accent"]: Record<string, unknown>;
-    };
-    const prevBundle = prevRow[token] ?? {};
-    spec = {
-      ...spec,
-      theme: {
-        ...spec.theme,
-        row: {
-          ...prevRow,
-          [token]: { ...prevBundle, [field]: value },
-        },
-      },
-    };
-
-    const nextEdits = { ...themeEdits };
-    const prevSection = (nextEdits.row ?? {}) as Record<string, Record<string, unknown>>;
-    nextEdits.row = {
-      ...prevSection,
-      [token]: { ...(prevSection[token] ?? {}), [field]: value },
-    };
-    themeEdits = nextEdits;
-  }
+  // `setSemanticField` removed in Phase 0b (orphan; no callers). The
+  // setThemeField path covers the same edits via a generic path-based
+  // API.
 
   /**
    * Set the table watermark. Empty string clears the watermark (matches the
@@ -3829,7 +3787,6 @@ export function createForestStore() {
     get exportSpec() {
       return exportSpec;
     },
-    getRowDepth,
     getColumnWidth,
     getPlotWidth,
     // Per-column pan/zoom
@@ -4044,7 +4001,6 @@ export function createForestStore() {
     prevPage,
     setContinuousMode,
     setDimensions,
-    selectRow,
     setSelectedRows,
     toggleGroup,
     openSettings,
@@ -4057,7 +4013,6 @@ export function createForestStore() {
     isOverridden,
     clearOverride,
     previewThemeField,
-    setSemanticField,
     setWatermark,
     previewWatermark,
     setWatermarkColor,
@@ -4104,7 +4059,6 @@ export function createForestStore() {
     getLabel,
     setLabel,
     previewLabel,
-    clearLabelEdit,
     getPlotLabel,
     // Paint tool
     setPaintTool,
@@ -4170,9 +4124,8 @@ export function createForestStore() {
     setScalableNaturalDimensions,
     setContainerElementId,
     resetState,
-    // Op recorder
+    // Op recorder. `clearOpLog` removed in Phase 0b (orphan; no callers).
     get opLog() { return opLog; },
-    clearOpLog: () => { opLog = []; },
     // Plot-level label overrides (title/subtitle/caption/footnote)
     get labelEdits() { return labelEdits; },
     // Forest-plot width override (null = follow auto layout)

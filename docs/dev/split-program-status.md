@@ -14,7 +14,7 @@ A high-level dashboard for the program described in `docs/dev/frontend-split-spe
 | Pre-step 2 — Cascade-rework status read | ✅ done | C5 gate open; R-side cascade rework substantially landed |
 | Pre-step 1 — Q8 idiom spike | ✅ done | Idiom (c) "method-only split" chosen; `23e18b4` |
 | **Phase 0a — Structural debt** | ✅ **done** | All S1-S14 closed; S15 deferred to 0c-C12 per spec sequencing |
-| Phase 0b — Dead code | ⏳ pending | Next up; small scope |
+| **Phase 0b — Dead code** | ✅ **done** | D1/D2/D5 were false positives (active code); D4 found 5 real orphans removed |
 | Phase 0c — Size/clarity | ⏳ pending | Longest phase; C1 forestStore decomposition is the long pole |
 | Phase 0d — Documentation | ⏳ pending | Mostly writing |
 | Phase 0e — Synchronization audit | ⏳ pending | Parallel with 0d |

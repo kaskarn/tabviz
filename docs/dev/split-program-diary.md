@@ -293,3 +293,34 @@ What's next: Phase 0b (dead code), Phase 0c (size/clarity refactor including C1 
 
 A real moment of satisfaction: the program's hardest design questions (versioning, envelope, events, dispatch) are all answered with working code now. The remaining phases are decomposition (mechanical), documentation (writing), and integration (with the npm publish + web-app consumer). The architectural risk has dropped substantially.
 
+### 0b-PR: dead code audit — the spec was mostly wrong
+
+Phase 0b started with four candidates the spec speculated were dead: `setContinuousMode`, `previewColumnWidth`/`previewLabel`/etc., plus an orphan audit across the ~80 store methods, plus a dev-hook gate decision.
+
+**D1 (`setContinuousMode`)**: alive and well. Drives the paginated-vs-continuous toolbar toggle in `ForestPlot.svelte:2717`. Spec speculation was wrong.
+
+**D2 (`preview*` methods)**: also alive. All four (`previewLabel`, `previewWatermark`, `previewColumnWidth`, `previewThemeField`) have active callers in the V2 controls and ForestPlot. They drive live-edit preview state during user input (typing in a text field shows the preview before commit). Spec speculation wrong again.
+
+**D5 (dev-hook globals)**: heavily used by puppeteer scripts in `srcjs/scripts/`. Keep both `__tabvizExports` and `__tabvizStoreRegistry` exposed. The spec's suggested `__DEV__` gating would break the test scripts.
+
+**D4 (orphan store methods)**: this is where actual dead code lived. Audit found five public methods with zero callers anywhere in the codebase:
+- `selectRow(id)` — thin wrapper that called `paintRowWithActiveToken`; redundant
+- `clearLabelEdit(field)` — `setLabel(field, null)` covers the same case
+- `setSemanticField(token, field, value)` — generic `setThemeField` covers it via path-based API
+- `clearOpLog()` — never called by anyone
+- `getRowDepth(groupId)` (store-public version) — used internally only; the export was useless
+
+All five removed. Function definitions removed too where they were no longer needed (selectRow's body, clearLabelEdit's body, setSemanticField's body). `getRowDepth` and `clearOpLog` had their public-API entries removed; the internal `getRowDepth` function and `opLog` state remain because internal callers still use them.
+
+**Net delta**: ~70 lines removed from `forestStore.svelte.ts`. Each removal is small but cumulative; the store's surface area shrinks accordingly.
+
+**The real insight from Phase 0b**: the spec's speculation about specific dead code was 80% wrong. The author wrote the spec at one moment in time and named four candidates that turned out to be three false positives + one nebulous audit. The actual dead code (the 5 orphans) wasn't named in the spec at all — it surfaced only by walking the public surface methodically.
+
+Lesson for the next time someone writes a paydown spec: instead of naming suspected items, prescribe the *audit itself* and let the audit find the items. "Run a method-by-method caller audit and remove orphans" produces better results than "I think these specific four methods might be dead."
+
+Filing this in the diary because it shapes how I'd write the next paydown spec — declare the audits, not the conclusions. Mid-flight discovery, no action needed beyond noting it.
+
+Results: 159 pass / 6 pre-existing fail (unchanged — orphans had no tests), R tests beautiful, visual smoke clean.
+
+Phase 0b done. One PR. Roughly 30 minutes of audit + 10 minutes of removal.
+
