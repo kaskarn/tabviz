@@ -411,3 +411,21 @@ Both audits done. Two MFDs not retired but neither was supposed to be retired he
 
 Net: a small, almost-no-code PR. Useful for the next reader; necessary for the spec checklist.
 
+
+### 0c-PR13: C1 first slice — cells
+
+Phase 0c-C1 PR1. The first real slice extraction after the Q8 source-tagging spike. Cells slice picks up `cellEdits`, `labelEdits`, `wrapLineCounts`, and `editingTarget`, plus the 12 methods that mutate them (startEdit, endEdit, setCellValue, clearCellEdit, setRowLabel, setGroupHeader, setForestCellValues, getDisplayValue, getLabel, setLabel, previewLabel, getPlotLabel).
+
+Slice deps follow the plan agent's bag pattern: `getAllColumns`, `getSpec`, `appendOp`, `markSource`. All four are forward references in `forestStore.svelte.ts` — wrapping in arrow closures sidesteps the temporal-dead-zone since the slice is constructed once at the top of `createForestStore()` and its methods are only called later.
+
+A few wiring notes worth recording:
+
+- `clearAllEdits()` stayed in the main factory. It also resets `styleEdits` and `paintTool` which belong to the (not-yet-extracted) semantics slice. Cells' contribution is `cells.reset()` plus the inline semantics writes. Once semantics ships, clearAllEdits becomes `cells.reset(); semantics.reset();`.
+- `wrapLineCounts` is owned by cells but WRITTEN by `measureAutoColumns` (still in the main factory pending the columns slice). Slice exposes `setWrapLineCounts(counts)` for this writer. Reads inside the `layout` $derived become `cells.wrapLineCounts[id]`.
+- Reactivity check: every external reader (the layout $derived, exportSpec, tooltipRow, the `$effect` event-emitter block, the `void cells.cellEdits` change-aggregate tracker, and the public-API getters) routes through the slice getter. The visual battery (45/45) and 1489/1489 R tests confirm reactivity propagates correctly through one layer of getter indirection.
+
+vitest spec at `src/stores/slices/cells.runes.ts`: 17 unit tests covering each method, the read helpers, label edits (including the empty-string-to-null collapse), wrapLineCounts setter, editingTarget toggle, and reset. Stub deps inject a fake `appendOp` and `markSource` so we observe op-log + source-tag contracts without needing the full store.
+
+Gates: tsc 0 errors, bun test 161 pass (no baseline change), vitest 21 pass (4 reorder + 17 cells), R `devtools::test()` 1489/1489, visual battery 45/45 (1 skip baseline).
+
+One slice down, eight to go. Next per the plan: theme — bounded state, dep injection (calls columns.measureAutoColumns), validates the slice→slice constructor-arg pattern before the cross-slice $derived spike (axis) at slice #3.

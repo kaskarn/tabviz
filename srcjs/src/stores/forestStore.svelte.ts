@@ -13,10 +13,7 @@ import type {
   FilterOperator,
   RowOrderOverrides,
   ColumnOrderOverrides,
-  CellEdits,
-  EditValue,
   DragState,
-  EditTarget,
   ComputedLayout,
   DisplayRow,
   GroupHeaderRow,
@@ -49,6 +46,7 @@ function anyForestColumnGroups(columns: ColumnDef[] | undefined): boolean {
 import { resolveShowHeader } from "$lib/column-types";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte";
+import { createCellsSlice } from "$stores/slices/cells.svelte";
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
 
@@ -105,6 +103,20 @@ export function createForestStore() {
   const source = createSourceSlice();
   const markSource = source.markSource;
   const withSource = source.withSource;
+
+  // ── Cell + label edits ──────────────────────────────────────────────────
+  // Phase 0c-C1 PR1. Owns `cellEdits`, `labelEdits`, `wrapLineCounts`, and
+  // `editingTarget`. Reads `allColumns` + `spec` via closure deps (forward
+  // references — resolved at call time, not slice-construction time);
+  // pushes ops via `appendOp` and source-tags via `markSource`. Both
+  // `allColumns` and `appendOp` are declared further down in this file;
+  // wrapping them in arrow-fn closures sidesteps the temporal-dead-zone.
+  const cells = createCellsSlice({
+    getAllColumns: () => allColumns,
+    getSpec: () => spec,
+    appendOp: (record) => appendOp(record),
+    markSource,
+  });
 
   // Initial dimensions (from htmlwidgets/splitStore, used as fallback before ResizeObserver fires)
   let initialWidth = $state(800);
@@ -176,25 +188,15 @@ export function createForestStore() {
   // User-modified view state (session-only; feeds exportSpec for WYSIWYG)
   let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
-  let cellEdits = $state<CellEdits>({ cells: {}, groups: {} });
-  // Per-row max wrapped line count across all wrap-enabled cells. Computed
-  // by `measureAutoColumns()` using canvas text measurement against the
-  // FINAL column widths. Zero/missing entries fall back to single-line
-  // (rowHeights[i] = spacing.rowHeight). Layout derives rowHeights[i] for
-  // wrapped rows from this map.
-  let wrapLineCounts = $state<Record<string, number>>({});
+  // cellEdits / labelEdits / wrapLineCounts / editingTarget all live on
+  // the cells slice (Phase 0c-C1 PR1). Read via `cells.cellEdits` etc.;
+  // mutate via the slice methods exposed below on the public API. The
+  // slice is constructed below `spec` declaration so its dependency
+  // closures can resolve everything they need at call time.
   // Append-only log of recorded fluent-R operations (see contract above).
+  // (Stays in main factory for now; will migrate to a `history` micro-slice
+  // alongside `appendOp` per the C1 plan.)
   let opLog = $state<OpRecord[]>([]);
-
-  // Plot-level label overrides (title / subtitle / caption / footnote). Keys
-  // match EditTarget.labelField. `null` means "cleared to empty" — the export
-  // path collapses these to `null` on spec.labels so R code round-trips cleanly.
-  let labelEdits = $state<{
-    title?: string | null;
-    subtitle?: string | null;
-    caption?: string | null;
-    footnote?: string | null;
-  }>({});
 
   // Semantic-flag overrides, set via the paint tool. Structure mirrors
   // cellEdits: per-row for row-scoped paint, per-cell for cell-scoped paint.
@@ -238,9 +240,9 @@ export function createForestStore() {
   // When present, takes precedence over the original spec.columns entry.
   let columnSpecOverrides = $state<Record<string, ColumnSpec>>({});
 
-  // Transient UI state for DnD / edit / filter overlays
+  // Transient UI state for DnD / edit / filter overlays.
+  // `editingTarget` moved to the cells slice in 0c-C1 PR1.
   let dragState = $state<DragState | null>(null);
-  let editingTarget = $state<EditTarget | null>(null);
   let filterPopoverTarget = $state<{ field: string; header: string; anchorX: number; anchorY: number } | null>(null);
 
   // Tooltip state
@@ -1216,7 +1218,7 @@ export function createForestStore() {
       } else if (displayRow.type === "group_header") {
         h = rowHeight;
       } else if (displayRow.type === "data") {
-        const lines = wrapLineCounts[displayRow.row.id] ?? 1;
+        const lines = cells.wrapLineCounts[displayRow.row.id] ?? 1;
         h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
       } else {
         h = rowHeight;
@@ -1391,7 +1393,9 @@ export function createForestStore() {
     // id happened to match.
     axisZooms = {};
     userResizedIds = new Set();
-    wrapLineCounts = {};
+    // Cell + label edits + editingTarget + wrapLineCounts all reset
+    // via the cells slice.
+    cells.reset();
     // UI-ephemeral state that's anchored to row / column ids in the
     // PREVIOUS spec — clear it so a split-by navigation (or any
     // setSpec swap) doesn't flash a tooltip pointing at a row that
@@ -1401,7 +1405,6 @@ export function createForestStore() {
     tooltipRowId = null;
     tooltipPosition = null;
     filterPopoverTarget = null;
-    editingTarget = null;
     dragState = null;
     // Reset the op log too — a new spec is a new "session" as far as
     // recording fluent R calls is concerned.
@@ -1882,7 +1885,7 @@ export function createForestStore() {
       // Only mutate state when the measurement actually changed — Svelte
       // 5 runes assign-equal still triggers downstream $derived; cheap to
       // skip a no-op write.
-      const prev = wrapLineCounts;
+      const prev = cells.wrapLineCounts;
       let changed = false;
       const prevKeys = Object.keys(prev);
       const nextKeys = Object.keys(counts);
@@ -1890,7 +1893,7 @@ export function createForestStore() {
       else {
         for (const k of nextKeys) if (prev[k] !== counts[k]) { changed = true; break; }
       }
-      if (changed) wrapLineCounts = counts;
+      if (changed) cells.setWrapLineCounts(counts);
     }
   }
 
@@ -2420,135 +2423,16 @@ export function createForestStore() {
   // Edit actions
   // =========================================================================
 
-  function startEdit(target: EditTarget) {
-    editingTarget = target;
-  }
-
-  function endEdit() {
-    editingTarget = null;
-  }
-
-  function setCellValue(rowId: string, field: string, value: EditValue) {
-    const current = cellEdits.cells[rowId] ?? {};
-    cellEdits = {
-      ...cellEdits,
-      cells: { ...cellEdits.cells, [rowId]: { ...current, [field]: value } },
-    };
-    appendOp(ops.setCell(rowId, field, value));
-    markSource("cell_edits");
-  }
-
-  function clearCellEdit(rowId: string, field: string) {
-    const current = cellEdits.cells[rowId];
-    if (!current) return;
-    const { [field]: _omit, ...rest } = current;
-    const cells = Object.keys(rest).length
-      ? { ...cellEdits.cells, [rowId]: rest }
-      : (() => { const { [rowId]: _r, ...rm } = cellEdits.cells; return rm; })();
-    cellEdits = { ...cellEdits, cells };
-  }
-
-  function setRowLabel(rowId: string, label: string) {
-    // The "row label" is the primary column's cell — resolving at call time
-    // means reordering columns doesn't migrate prior label edits.
-    const field = allColumns[0]?.field;
-    if (!field) return;
-    // Inline the cellEdits update so we can emit a `set_row_label()` record
-    // (more semantic than the `set_cell()` that setCellValue would push).
-    const current = cellEdits.cells[rowId] ?? {};
-    cellEdits = {
-      ...cellEdits,
-      cells: { ...cellEdits.cells, [rowId]: { ...current, [field]: label } },
-    };
-    appendOp(ops.setRowLabel(rowId, label));
-    markSource("cell_edits");
-  }
-
-  function setGroupHeader(groupId: string, text: string) {
-    cellEdits = { ...cellEdits, groups: { ...cellEdits.groups, [groupId]: text } };
-  }
-
-  function setForestCellValues(
-    rowId: string,
-    forestColId: string,
-    est: EditValue,
-    lo: EditValue,
-    hi: EditValue,
-  ) {
-    if (!spec) return;
-    const col = allColumns.find((c) => c.id === forestColId);
-    const forestOpts = col?.options?.forest;
-    // Primary field names come from the column's forest options when set,
-    // otherwise fall back to conventional metadata keys ("est","lo","hi").
-    const pointField = forestOpts?.point ?? "est";
-    const lowerField = forestOpts?.lower ?? "lo";
-    const upperField = forestOpts?.upper ?? "hi";
-    const current = cellEdits.cells[rowId] ?? {};
-    cellEdits = {
-      ...cellEdits,
-      cells: {
-        ...cellEdits.cells,
-        [rowId]: { ...current, [pointField]: est, [lowerField]: lo, [upperField]: hi },
-      },
-    };
-  }
-
-  function getDisplayValue(row: Row, field: string): unknown {
-    const edited = cellEdits.cells[row.id]?.[field];
-    return edited !== undefined ? edited : row.metadata[field];
-  }
-
-  function getLabel(row: Row): string {
-    const field = allColumns[0]?.field;
-    const edited = field ? cellEdits.cells[row.id]?.[field] : undefined;
-    return edited !== undefined && edited !== null ? String(edited) : row.label;
-  }
-
+  // Cell + label edit actions live on the `cells` slice (Phase 0c-C1 PR1).
+  // Public API re-exports them via `cells.X` passthrough below.
+  //
+  // `clearAllEdits()` stays in the main factory because it also resets
+  // semantics-owned state (`styleEdits`, `paintTool`). When the
+  // semantics slice ships it becomes `cells.reset(); semantics.reset();`.
   function clearAllEdits() {
-    cellEdits = { cells: {}, groups: {} };
-    labelEdits = {};
+    cells.reset();
     styleEdits = { rows: {}, cells: {} };
     paintTool = { token: "accent", scope: "row" };
-  }
-
-  // Plot-level labels (title / subtitle / caption / footnote). Live session
-  // state sits in `labelEdits`; the exporter merges into `spec.labels` so
-  // "View source" reproduces the edit.
-  function setLabel(
-    field: "title" | "subtitle" | "caption" | "footnote",
-    value: string | null,
-  ) {
-    const next = value == null || value === "" ? null : value;
-    labelEdits = { ...labelEdits, [field]: next };
-    appendOp(ops.setLabelSlot(field, next));
-    markSource("label_edits");
-  }
-
-  /**
-   * Live-preview a title/subtitle/caption/footnote edit without recording.
-   * Callers wired to `<input oninput={...}>` should use this while the user
-   * types, then call `setLabel()` on blur/Enter to commit one op-log entry
-   * per finished edit.
-   */
-  function previewLabel(
-    field: "title" | "subtitle" | "caption" | "footnote",
-    value: string | null,
-  ) {
-    const next = value == null || value === "" ? null : value;
-    labelEdits = { ...labelEdits, [field]: next };
-  }
-
-  // `clearLabelEdit` removed in Phase 0b (orphan; no callers). The
-  // setLabel(field, "")/null path serves the same role for live UI.
-
-  function getPlotLabel(
-    field: "title" | "subtitle" | "caption" | "footnote",
-  ): string | null {
-    if (field in labelEdits) {
-      const v = labelEdits[field];
-      return v == null ? null : v;
-    }
-    return spec?.labels?.[field] ?? null;
   }
 
   // ── Paint tool ───────────────────────────────────────────────────────
@@ -3334,8 +3218,7 @@ export function createForestStore() {
     userInsertedColumns = [];
     hiddenColumnIds = new Set();
     columnSpecOverrides = {};
-    cellEdits = { cells: {}, groups: {} };
-    labelEdits = {};
+    cells.reset();
     styleEdits = { rows: {}, cells: {} };
     paintTool = { token: "accent", scope: "row" };
     opLog = [];
@@ -3361,7 +3244,6 @@ export function createForestStore() {
     tooltipRowId = null;
     tooltipPosition = null;
     dragState = null;
-    editingTarget = null;
     filterPopoverTarget = null;
 
     // ── Restore theme from the initial snapshot ──────────────────────────
@@ -3393,7 +3275,7 @@ export function createForestStore() {
     if (!tooltipRowId || !spec) return null;
     const base = spec.data.rows.find((r) => r.id === tooltipRowId);
     if (!base) return null;
-    const edited = cellEdits.cells[base.id];
+    const edited = cells.cellEdits.cells[base.id];
     if (!edited) return base;
     const primaryField = allColumns[0]?.field;
     const newLabel = primaryField && edited[primaryField] != null ? String(edited[primaryField]) : base.label;
@@ -3417,7 +3299,7 @@ export function createForestStore() {
     for (const dr of displayRows) {
       if (dr.type === "data") {
         const base = dr.row;
-        const editedMeta = cellEdits.cells[base.id];
+        const editedMeta = cells.cellEdits.cells[base.id];
         if (editedMeta) {
           const editedLabel = primaryField && editedMeta[primaryField] != null
             ? String(editedMeta[primaryField])
@@ -3475,8 +3357,8 @@ export function createForestStore() {
 
     // Merge any session-level label edits into spec.labels so "View source"
     // reproduces interactive title/subtitle/caption/footnote changes.
-    const mergedLabels = Object.keys(labelEdits).length
-      ? { ...(spec.labels ?? {}), ...labelEdits }
+    const mergedLabels = Object.keys(cells.labelEdits).length
+      ? { ...(spec.labels ?? {}), ...cells.labelEdits }
       : spec.labels;
 
     // When an aspect target is pinned, embed the live lever-laddered
@@ -3557,8 +3439,8 @@ export function createForestStore() {
     $effect(() => { events.emit("hiddenColumns", Array.from(hiddenColumnIds)); });
     $effect(() => { events.emit("columnOrder", allColumns.map((c) => c.id)); });
     $effect(() => { events.emit("columnWidths", { ...columnWidths }); });
-    $effect(() => { events.emit("cellEdits", cellEdits); });
-    $effect(() => { events.emit("labelEdits", labelEdits); });
+    $effect(() => { events.emit("cellEdits", cells.cellEdits); });
+    $effect(() => { events.emit("labelEdits", cells.labelEdits); });
     $effect(() => {
       events.emit("zoom", {
         zoom, autoFit, maxWidth, maxHeight, showZoomControls,
@@ -3596,8 +3478,8 @@ export function createForestStore() {
       void hiddenColumnIds;
       void allColumns;
       void columnWidths;
-      void cellEdits;
-      void labelEdits;
+      void cells.cellEdits;
+      void cells.labelEdits;
       void zoom;
       void autoFit;
       void maxWidth;
@@ -3796,13 +3678,13 @@ export function createForestStore() {
       return columnOrderOverrides;
     },
     get cellEdits() {
-      return cellEdits;
+      return cells.cellEdits;
     },
     get dragState() {
       return dragState;
     },
     get editingTarget() {
-      return editingTarget;
+      return cells.editingTarget;
     },
     get filterPopoverTarget() {
       return filterPopoverTarget;
@@ -4070,19 +3952,19 @@ export function createForestStore() {
     updateColumn,
     updateColumnPatch,
     clearColumnEdits,
-    // Edit
-    startEdit,
-    endEdit,
-    setCellValue,
-    clearCellEdit,
-    setRowLabel,
-    setGroupHeader,
-    setForestCellValues,
-    getDisplayValue,
-    getLabel,
-    setLabel,
-    previewLabel,
-    getPlotLabel,
+    // Edit — cell + label methods live on the cells slice (Phase 0c-C1 PR1).
+    startEdit: cells.startEdit,
+    endEdit: cells.endEdit,
+    setCellValue: cells.setCellValue,
+    clearCellEdit: cells.clearCellEdit,
+    setRowLabel: cells.setRowLabel,
+    setGroupHeader: cells.setGroupHeader,
+    setForestCellValues: cells.setForestCellValues,
+    getDisplayValue: cells.getDisplayValue,
+    getLabel: cells.getLabel,
+    setLabel: cells.setLabel,
+    previewLabel: cells.previewLabel,
+    getPlotLabel: cells.getPlotLabel,
     // Paint tool
     setPaintTool,
     setPaintHoverCellField,
@@ -4150,7 +4032,7 @@ export function createForestStore() {
     // Op recorder. `clearOpLog` removed in Phase 0b (orphan; no callers).
     get opLog() { return opLog; },
     // Plot-level label overrides (title/subtitle/caption/footnote)
-    get labelEdits() { return labelEdits; },
+    get labelEdits() { return cells.labelEdits; },
     // Forest-plot width override (null = follow auto layout)
     get plotWidthOverride() { return plotWidthOverride; },
     // Source tagging for outbound Shiny envelopes. getSource(field) returns
