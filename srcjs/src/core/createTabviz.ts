@@ -23,6 +23,7 @@ import type {
   ZoomState,
   SortConfig,
 } from "$types";
+import type { SetZoomArgs } from "$spec/proxy-args";
 import type { TabvizEvents } from "$spec/events";
 import type {
   EventListener,
@@ -66,7 +67,7 @@ export interface TabvizInstance {
   /** Apply a theme by preset name or full WebTheme object. */
   setTheme(themeOrName: string | WebTheme): void;
   /** Partial zoom-state update. Any subset of fields is valid. */
-  setZoom(args: Partial<ZoomState>): void;
+  setZoom(args: SetZoomArgs): void;
   /**
    * Pin or clear the target aspect. `ratio: null` clears.
    * `anchor` defaults to `"width"` if omitted; "auto" picks at runtime.

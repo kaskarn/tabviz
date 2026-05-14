@@ -85,5 +85,7 @@ export function exposeDevHook<K extends "__tabvizExports" | "__tabvizStoreRegist
 ): void {
   if (typeof window === "undefined") return;
   // K is a literal union, so this assignment is safe by construction.
-  (window as Window & Record<K, NonNullable<Window[K]>>)[name] = value;
+  // The `unknown` cast is needed because TS can't prove that the
+  // intersection-narrowed value satisfies the index signature exactly.
+  (window as Window & Record<K, NonNullable<Window[K]>>)[name] = value as unknown as (Window & Record<K, NonNullable<Window[K]>>)[K];
 }
