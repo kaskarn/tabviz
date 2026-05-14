@@ -84,19 +84,46 @@ surface.
 
 ## Building
 
-Three build configs produce three IIFE bundles for R's htmlwidgets +
-V8:
+Four build paths produce four artifact sets:
 
 ```sh
-npm run build           # all three
+npm run build           # the three R-side IIFE bundles
 npm run build:widget    # inst/htmlwidgets/tabviz.js
 npm run build:split     # inst/htmlwidgets/tabviz_split.js
 npm run build:v8        # inst/js/svg-generator.js
+npm run build:npm       # dist/ ESM bundles + style.css + .d.ts types
 ```
 
-The npm publishable artifacts (ESM bundles per subpath, separate
-`style.css`) are gated on Phase 3 of the split program — see
-[`docs/dev/frontend-split-spec.md`](../docs/dev/frontend-split-spec.md).
+R-side bundles ship vendored inside `inst/` for `htmlwidgets` consumers.
+The npm path emits per-subpath ESM into `dist/`:
+
+```
+dist/
+├── index.mjs          # @tabviz/core entry
+├── svelte.mjs         # @tabviz/core/svelte entry
+├── export.mjs         # @tabviz/core/export entry
+├── spec.mjs           # @tabviz/core/spec entry
+├── style.css          # standalone CSS for npm consumers
+├── chunks/            # shared chunks
+├── core/, svelte/, export/, spec/, …   # emitted .d.ts trees
+```
+
+`build:npm` runs vite, then `tsc --emitDeclarationOnly`, then a small
+postprocessor (`scripts/rewrite-dts-aliases.mjs`) that rewrites the
+internal `$lib`/`$stores`/`$types`/… aliases in the published .d.ts
+files to relative paths so npm consumers don't need our `tsconfig.paths`.
+
+### CI gates
+
+Two scripts gate publish-readiness:
+
+```sh
+npm run check:size       # fails on any bundle >10% over budget
+npm run check:lockfiles  # validates package-lock.json + bun.lock both sync with package.json
+```
+
+The size budget lives in `bundle-size-budget.json` (raw bytes,
+intentional growth is bumped in the same PR with justification).
 
 ### Toolchain
 
