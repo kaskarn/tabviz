@@ -26,9 +26,17 @@ package — one repo, one version, one source of truth.
 | `@tabviz/core/spec` | TypeScript types + JSON Schema (`v1.0.json`) | Consumers validating wire payloads |
 | `@tabviz/core/htmlwidgets` | R-side htmlwidgets adapters | The R package's vendored build artifacts (not for direct npm use) |
 
-No framework assumptions on the main entry — `createTabviz` works in
-any TS/JS environment. The `/svelte` subpath is for consumers who want
-to compose the Svelte components directly.
+## Installation
+
+```sh
+npm install @tabviz/core svelte
+```
+
+Svelte is the underlying component runtime. You don't write Svelte
+code — `createTabviz` returns a plain imperative handle — but the
+main entry and the `/svelte` subpath both need Svelte 5 installed as
+a peer. The `/export` and `/spec` subpaths are framework-free and
+work without it.
 
 ## Quick start (preview)
 
@@ -64,7 +72,9 @@ The `createTabviz` factory returns a typed
 `setAspectRatio`, `on` (typed event subscriptions), `destroy`. Internally
 it mounts the Svelte components into the host element; from the React /
 Vue / Solid side you treat the host element + instance handle as an
-opaque imperative widget.
+opaque imperative widget. You still install Svelte as a peer dep (the
+runtime is bundled-less so the consumer's app and `@tabviz/core` share
+the same Svelte instance).
 
 ## Source layout
 
