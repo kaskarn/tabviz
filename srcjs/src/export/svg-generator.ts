@@ -627,6 +627,7 @@ interface InternalLayout extends ComputedLayout {
   rowsHeight: number;               // Height of display rows only (excludes overall summary)
   autoWidths: Map<string, number>;  // Add auto-widths to layout
   labelWidth: number;               // Calculated label column width
+  rowPaddedAfter: boolean[];        // Per-row flag: gets bottom row-group padding
 }
 
 function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number = 0): InternalLayout {
@@ -1938,7 +1939,9 @@ function renderInterval(
 
   // Helper to get style for an effect
   function getEffectStyle(effect: ResolvedEffect, idx: number): {
-    color: string;
+    fill: string;
+    stroke: string | null;
+    strokeWidth: number;
     shape: MarkerShape;
     opacity: number;
   } {
@@ -3733,7 +3736,7 @@ function renderUnifiedTableRow(
       const iconMapping = iconOpts?.mapping ?? {};
       let iconText: string;
       if (iconRaw === undefined || iconRaw === null || iconRaw === "") {
-        iconText = col.naText ?? "";
+        iconText = col.options?.naText ?? "";
       } else {
         const sv = String(iconRaw);
         iconText = sv in iconMapping ? String(iconMapping[sv]) : sv;
@@ -4360,7 +4363,7 @@ function generateSVGForAspectTarget(
   // key on whether the corresponding chrome contributor is
   // actually rendered for this spec (no footer → no footerGap, no
   // title+subtitle pair → no titleSubtitleGap, etc.).
-  const sp = spec.theme.spacing as Record<string, number | undefined>;
+  const sp = spec.theme.spacing as unknown as Record<string, number | undefined>;
   const VERTICAL_KEYS = ["headerGap", "axisGap", "footerGap", "headerHeight",
                          "rowGroupPadding", "bottomMargin", "titleSubtitleGap"];
   const hasTitle = !!spec.labels?.title;
@@ -4420,7 +4423,7 @@ function generateSVGForAspectTarget(
       return 0;
     };
     const eligible = allColumns
-      .filter(c => (c.type === "text" || c.type === "label"))
+      .filter(c => c.type === "text")
       .filter(c => wrapValue(c) < WRAP_CAP);
 
     if (eligible.length > 0) {
@@ -4564,7 +4567,7 @@ function generateSVGForAspectTarget(
   // 2A + 2C: scale theme spacing tokens. Vertical chrome scales by
   // chromeScale; rowHeight by rowHeightScale.
   if (adjustedSpec.theme?.spacing) {
-    const sp = adjustedSpec.theme.spacing as Record<string, number | undefined>;
+    const sp = adjustedSpec.theme.spacing as unknown as Record<string, number | undefined>;
     sp.rowHeight = (sp.rowHeight ?? 32) * rowHeightScale;
     if (Math.abs(chromeScale - 1) > 1e-6) {
       // Vertical chrome contributors. headerGap / axisGap / footerGap /
@@ -4802,7 +4805,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // below and the group-header renderer both consult it.
   const bandIndexes = computeBandIndexes(
     displayRows,
-    theme.layout.banding,
+    theme.layout.banding ?? { mode: "none", level: null },
     spec.data.groups,
   );
 

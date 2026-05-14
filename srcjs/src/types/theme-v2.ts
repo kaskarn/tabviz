@@ -46,17 +46,19 @@ export interface TextRoleV2 {
 
 /**
  * Series slot bundle — one entry per pooled effect "slot" used by the
- * forest, bar, box, violin, lollipop marks. The resolver fills each
- * field from the slot's anchor via OKLCH.
+ * forest, bar, box, violin, lollipop marks. R's `derive_slot_bundle` +
+ * `fill_slot_bundle` ensure every color field is filled before
+ * serialization. `shape` stays nullable — null means "renderer picks
+ * a default from the 4-shape rotation."
  */
 export interface SlotBundleV2 {
-  fill: string | null;
-  stroke: string | null;
-  fillMuted: string | null;
-  strokeMuted: string | null;
-  fillEmphasis: string | null;
-  strokeEmphasis: string | null;
-  textFg: string | null;
+  fill: string;
+  stroke: string;
+  fillMuted: string;
+  strokeMuted: string;
+  fillEmphasis: string;
+  strokeEmphasis: string;
+  textFg: string;
   /** "square" | "circle" | "diamond" | "triangle" | null */
   shape: string | null;
 }
@@ -327,11 +329,13 @@ export interface AxisConfigV2 {
   markerMargin: boolean;
 }
 
-/** Banding wire shape — parsed and consumed by the row cluster. */
-export interface BandingV2 {
-  mode: string;
-  startsWithBand?: boolean | null;
-}
+/**
+ * Banding wire shape — the parsed result of R's `parse_banding(string)`.
+ * Mirrors `R/utils-serialize.R::serialize_banding`. Structurally
+ * identical to `BandingSpec` in `./index.ts`; re-exported here so the
+ * v2 theme types are self-contained.
+ */
+export type BandingV2 = import("./index").BandingSpec;
 
 export interface LayoutV2 {
   plotWidth: number | "auto";
