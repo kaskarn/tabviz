@@ -79,7 +79,7 @@ Per spec §4. The longest phase — estimated 7-8 weeks. Lands as small PRs acro
 | 10 | **C10** — Split widget shell decomposition | ✅ done (0c-PR5) |
 | 11 | **C1** — forestStore decomposition (~3 weeks; long pole) | 🟡 partial. Q8 spike extracted source-tagging slice (0c-PR0 / 23e18b4). Remaining ~10 slices **deferred to Phase 1.x** — the pattern is proven; the remaining slice extractions are mechanical but multi-week, and the createTabviz factory's instance-API shape will inform some slice boundaries. |
 | 12 | **C12-a** — View Source refactor + R-target via registry (~1 week) | ⏳ **deferred to Phase 1.5** per spec sequencing |
-| - | **C5** — Theme presets + JS resolver port (~1.5-2 weeks) | ⏳ **deferred to Phase 1.x**. R resolver is 682 lines of OKLCH/mirror-chain/cluster derivation across 7 pipeline steps; porting is real new functionality (per §0 exception), and the work is more valuable shipped alongside the createTheme JS factory in Phase 1. |
+| - | **C5** — v2 theme type alignment | 🟡 **started** (c2a7d34). Reframed: C5 isn't "port the 682-line R resolver" — R already resolves cascade-side, JS just needs to consume the v2 wire shape correctly. Step 1 landed: full v2 type tree in `src/types/theme-v2.ts`. Step 2 (replace v1 WebTheme + migrate consumers, expected to close ~212 tsc errors) is the substantive remaining work; estimated 2-3 iterations. |
 | - | **v2-theme test-fixture rewrite** (MFD-1, MFD-5 follow-up) | ⏳ deferred — tests are skipped with clear pointers; fixture migration can land alongside C1 when that happens. |
 
 Done in this iteration: 0c-PR1 + 0c-PR2 + 0c-PR3. Six items closed (C7, C8, C9, C11 + test-runner + Phase 0b D4).
