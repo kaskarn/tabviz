@@ -1,11 +1,29 @@
 {
-  "name": "tabviz-js",
-  "version": "0.0.1",
-  "private": true,
+  "name": "@tabviz/core",
+  "version": "0.1.0",
   "type": "module",
+  "description": "Interactive forest plots and rich tables — JavaScript runtime for the tabviz R package",
+  "homepage": "https://github.com/kaskarn/tabviz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaskarn/tabviz.git",
+    "directory": "srcjs"
+  },
+  "bugs": "https://github.com/kaskarn/tabviz/issues",
+  "license": "MIT",
+  "author": "Antoine Baldassari <baldassarian@gmail.com>",
+  "keywords": [
+    "forest-plot",
+    "meta-analysis",
+    "table",
+    "svelte",
+    "visualization",
+    "htmlwidgets"
+  ],
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "exports": {
     ".": {

@@ -4,18 +4,19 @@
 and rich interactive tables otherwise consumed via the
 [`tabviz` R package](https://github.com/kaskarn/tabviz).
 
-> **Status: pre-publication.** This source tree lives in the R package's
-> `srcjs/` directory and produces three artifacts vendored into `inst/`
-> for R consumers. The npm `@tabviz/core` package is targeted at v1.0;
-> see [`docs/dev/frontend-split-spec.md`](../docs/dev/frontend-split-spec.md)
-> for the program plan. Until publish, the surface and subpath shape
-> documented here are stable but the dist artifacts are reachable only
-> through the R package.
+> **Status: 0.1.0 — pre-1.0 release.** Stable subpath shape + wire
+> format; iterating on the imperative API surface (op-log → fluent JS
+> coverage in particular). See
+> [`docs/dev/frontend-split-spec.md`](../docs/dev/frontend-split-spec.md)
+> for the program plan and
+> [`docs/dev/versioning.md`](../docs/dev/versioning.md) for the
+> wire-format SemVer policy. The same source tree also produces three
+> IIFE bundles vendored into the R package's `inst/`.
 
 ## What this package will publish
 
-When `@tabviz/core` ships, it exposes five subpaths over a single
-versioned npm package — one repo, one version, one source of truth.
+`@tabviz/core` exposes five subpaths over a single versioned npm
+package — one repo, one version, one source of truth.
 
 | Subpath | What it exports | Who reaches for it |
 |---|---|---|
