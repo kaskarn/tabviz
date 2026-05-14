@@ -2983,7 +2983,11 @@
     user-select: none;
   }
   .header-cell.sortable:hover {
-    background: var(--tv-border, #f1f5f9);
+    /* Tint over base bg rather than swapping in the divider color —
+       JAMA's divider.subtle is pure black, which made the hover bg
+       unreadable against the unchanged dark text (GH #4). The 12%
+       mix mirrors .group-row:hover / .data-cell.editable:hover. */
+    background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-bg));
   }
 
   /* Primary (leftmost) column header uses the header border width */

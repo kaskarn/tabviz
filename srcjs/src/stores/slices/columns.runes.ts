@@ -109,6 +109,25 @@ describe("columns slice — edits", () => {
     expect(h.slice.allColumns.map((c) => c.id)).toEqual(["zz", "a", "b"]);
   });
 
+  // Regression for GH #7 — applyColumnEdits used to filter the original
+  // spec.columns by hiddenColumnIds but ignored userInsertedColumns; hiding
+  // a runtime-inserted column was a no-op in the rendered output.
+  test("hideColumn drops a user-inserted column (GH #7)", () => {
+    const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b")] });
+    h.slice.insertColumn(textCol("inserted"), "a");
+    expect(h.slice.allColumns.map((c) => c.id)).toEqual(["a", "inserted", "b"]);
+    h.slice.hideColumn("inserted");
+    expect(h.slice.allColumns.map((c) => c.id)).toEqual(["a", "b"]);
+  });
+
+  test("hideColumn drops a user-inserted column at __start__ (GH #7)", () => {
+    const h = buildColumnsHarness({ columns: [textCol("a")] });
+    h.slice.insertColumn(textCol("zz"), "__start__");
+    expect(h.slice.allColumns.map((c) => c.id)).toEqual(["zz", "a"]);
+    h.slice.hideColumn("zz");
+    expect(h.slice.allColumns.map((c) => c.id)).toEqual(["a"]);
+  });
+
   test("updateColumn replaces in place + records a thin patch", () => {
     const h = buildColumnsHarness({ columns: [textCol("a"), textCol("b")] });
     h.slice.updateColumn("a", { ...textCol("a"), header: "AA" });

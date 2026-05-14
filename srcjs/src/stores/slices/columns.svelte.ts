@@ -199,12 +199,17 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     const out: ColumnDef[] = [];
     if (isRoot) {
       for (const ins of userInsertedColumns) {
+        // User-inserted columns also honor hiddenColumnIds — without this
+        // check, `hideColumn(insertedId)` adds the id to the set but the
+        // inserted column still appears in the rendered output (GH #7).
+        if (hiddenColumnIds.has(ins.def.id)) continue;
         if (ins.afterId === "__start__") out.push(ins.def as ColumnDef);
       }
     }
     for (const def of swappedOrHidden) {
       out.push(def);
       for (const ins of userInsertedColumns) {
+        if (hiddenColumnIds.has(ins.def.id)) continue;
         if (ins.afterId === def.id) out.push(ins.def as ColumnDef);
       }
     }
