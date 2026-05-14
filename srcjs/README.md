@@ -140,11 +140,12 @@ gates this in CI.
 ```sh
 npm test               # bun + vitest
 npm run test:bun       # bun only — pure-TS tests
-npm run test:vitest    # vitest — Svelte-runes tests (.svelte.test.ts)
+npm run test:vitest    # vitest — Svelte-runes tests (.runes.ts)
 ```
 
 Bun runs the bulk of fast pure-TS tests. Vitest runs tests that need
-the Svelte 5 runes compiler (`.svelte.test.ts` files).
+the Svelte 5 runes compiler — those live under `*.runes.ts` so bun's
+default `*.{test,spec}.ts` glob skips them.
 
 ## Related
 
