@@ -1,5 +1,17 @@
 # tabviz (development)
 
+## Internal
+
+* **Frontend extracted to [`@tabviz/core`](https://www.npmjs.com/package/@tabviz/core) on npm.**
+  The Svelte 5 + D3 runtime that powers the R htmlwidget is now also
+  consumable directly as `@tabviz/core` (`createTabviz`,
+  `createSplitTabviz`, components, headless exporters, JSON Schema).
+  The R package's external API is unchanged; the same source tree
+  produces both the vendored `inst/htmlwidgets/*.js` bundles and the
+  npm artifact. See the [frontend split spec](https://github.com/kaskarn/tabviz/blob/main/docs/dev/frontend-split-spec.md)
+  for the design and [`docs/dev/versioning.md`](https://github.com/kaskarn/tabviz/blob/main/docs/dev/versioning.md)
+  for the wire-format SemVer policy that keeps the two sides in lockstep.
+
 ## UI changes
 
 * **Removed "Max Size" Width / Height dropdowns from the zoom &
