@@ -35,6 +35,7 @@ export default defineConfig({
       $stores: path.resolve(__dirname, "src/stores"),
       $types: path.resolve(__dirname, "src/types"),
       $spec: path.resolve(__dirname, "src/spec"),
+      $export: path.resolve(__dirname, "src/export"),
     },
     conditions: ["browser", "import", "module", "default"],
   },

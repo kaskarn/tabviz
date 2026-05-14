@@ -5,8 +5,8 @@
  * It exposes the generateSVG function globally.
  */
 
-import { generateSVG, computeNaturalDimensions } from "./lib/svg-generator";
-import type { WebSpec } from "./types";
+import { generateSVG, computeNaturalDimensions } from "./svg-generator";
+import type { WebSpec } from "$types";
 
 // Parse JSON string to WebSpec and generate SVG
 function generateSVGFromJSON(specJson: string, options?: { width?: number; height?: number }): string {

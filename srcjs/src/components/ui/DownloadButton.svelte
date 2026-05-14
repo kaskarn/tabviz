@@ -7,7 +7,7 @@
     tryShowSaveFilePicker,
     downloadsLikelyBlocked,
     generateFilename,
-  } from "$lib/export";
+  } from "$export";
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
   import ExportFallbackModal from "./ExportFallbackModal.svelte";

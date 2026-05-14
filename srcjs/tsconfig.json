@@ -21,7 +21,9 @@
       "$types": ["./src/types/index.ts"],
       "$types/*": ["./src/types/*"],
       "$spec": ["./src/spec/index.ts"],
-      "$spec/*": ["./src/spec/*"]
+      "$spec/*": ["./src/spec/*"],
+      "$export": ["./src/export/index.ts"],
+      "$export/*": ["./src/export/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.svelte"]

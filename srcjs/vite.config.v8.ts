@@ -10,7 +10,7 @@ import path from "path";
 export default defineConfig({
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/v8-entry.ts"),
+      entry: path.resolve(__dirname, "src/export/v8-entry.ts"),
       name: "tabvizV8",
       fileName: () => "svg-generator.js",
       formats: ["iife"],
@@ -32,6 +32,7 @@ export default defineConfig({
       $stores: path.resolve(__dirname, "src/stores"),
       $types: path.resolve(__dirname, "src/types"),
       $spec: path.resolve(__dirname, "src/spec"),
+      $export: path.resolve(__dirname, "src/export"),
     },
   },
 });

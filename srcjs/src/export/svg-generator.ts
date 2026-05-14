@@ -43,15 +43,15 @@ import type {
   AxisConfig,
   Annotation,
 } from "$types";
-import { niceDomain, DOMAIN_PADDING, getEffectValue, normalizeValue } from "./scale-utils";
-import { computeAxis, generateTicks, VIZ_MARGIN, type AxisComputation } from "./axis-utils";
-import { computeArrowDimensions, renderArrowPath } from "./arrow-utils";
-import { isVizType, resolveShowHeader } from "./column-types";
-import { resolveMarkerStyle } from "./marker-styling";
-import { computeBandIndexes } from "./banding";
-import { resolveSemanticBundle, semanticMarkOpacity } from "./semantic-styling";
-import { GLYPH_REGISTRY, resolveGlyph } from "./glyph-registry";
-import { activeHeaderVariant } from "./header-variant";
+import { niceDomain, DOMAIN_PADDING, getEffectValue, normalizeValue } from "$lib/scale-utils";
+import { computeAxis, generateTicks, VIZ_MARGIN, type AxisComputation } from "$lib/axis-utils";
+import { computeArrowDimensions, renderArrowPath } from "$lib/arrow-utils";
+import { isVizType, resolveShowHeader } from "$lib/column-types";
+import { resolveMarkerStyle } from "$lib/marker-styling";
+import { computeBandIndexes } from "$lib/banding";
+import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
+import { GLYPH_REGISTRY, resolveGlyph } from "$lib/glyph-registry";
+import { activeHeaderVariant } from "$lib/header-variant";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -69,7 +69,7 @@ import {
   getEffectYOffset,
   AXIS,
   BADGE_VARIANTS,
-} from "./rendering-constants";
+} from "$lib/rendering-constants";
 import {
   formatNumber,
   formatEvents,
@@ -77,8 +77,8 @@ import {
   formatPvalue,
   getColumnDisplayText,
   truncateString,
-} from "./formatters";
-import { estimateTextWidth, measureTextWidthCanvas, glyphNaturalWidth } from "./width-utils";
+} from "$lib/formatters";
+import { estimateTextWidth, measureTextWidthCanvas, glyphNaturalWidth } from "$lib/width-utils";
 
 /**
  * Measure text width - uses canvas when available (browser), falls back to estimation (V8/Node).
@@ -104,13 +104,13 @@ import {
   computeKDE,
   normalizeKDE,
   kdeToViolinPath,
-} from "./viz-utils";
+} from "$lib/viz-utils";
 
 import {
   parseFontSize,
   textRegionHeight,
   computeAxisLayout,
-} from "./typography-layout";
+} from "$lib/typography-layout";
 
 /**
  * Word-wrap text into lines that fit within `contentWidth`. Honours
