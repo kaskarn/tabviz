@@ -874,3 +874,399 @@ Reads spec, writes through measureAutoColumns to columnWidths. The
 last cross-slice dep some other slices still take via main-store
 closures (e.g. theme's clearAutoWidthsKeepingUserResizes /
 measureAutoColumns).
+
+### 0c-PR20: C1 slice 9 — columns
+
+The big one. ~330 lines of state + ops out of forestStore. Owns
+columnWidths, userResizedIds, userInsertedColumns, hiddenColumnIds,
+columnSpecOverrides, columnOrderOverrides — plus the auto-width
+measurement machinery (measureAutoColumns,
+clearAutoWidthsKeepingUserResizes) that several other slices used to
+reach into the parent for.
+
+The dep bag is the most complex so far: spec, history, drag (for
+column-header reorder commit), theme.zoom (auto-width measurement
+multiplies by zoom). That's the price of being the slice every other
+slice talks through for column-shaped concerns.
+
+The interesting part: this slice ends up *exposing* measureAutoColumns
+and clearAutoWidthsKeepingUserResizes as part of its public surface
+so theme can call `columns.measureAutoColumns()` on font/density
+swap. Before this PR those calls were main-store-local closures.
+Now they're cross-slice method calls — a small public-surface
+expansion for what was previously implicit. The wiring is the
+honest version of what was always happening.
+
+Gates green. vitest test suite ~150 across 11 files now.
+
+### 0c-PR21: C1 slice 10 — data
+
+~280 lines. Owns selectedRowIds, collapsedGroups, hoveredRowId,
+cellEdits, labelEdits, rowOrderOverrides, groupOrderOverrides,
+plus the display-time row resolution (displayRows derived array,
+the one downstream renders consume).
+
+Two interesting things in this slice:
+
+1. **displayRows is a *derived* that other slices read.** sort-filter
+   produces the sorted-filtered base, semantics paints visibility,
+   data resolves row-order overrides + collapse state into the final
+   tree. The cross-slice $derived chains we've been building all
+   converge here. The dep graph isn't quite a DAG — data reads from
+   sort-filter, semantics reads from data, sort-filter reads from
+   semantics (for the hidden-row predicate). Svelte 5 handles the
+   cycle correctly because each derived is value-driven, not
+   call-graph-ordered.
+
+2. **rowOrderOverrides is keyed by group.** When the user drags row
+   A3 to position 0 within group A, that override needs to persist
+   across collapse/expand cycles. The slice handles this by storing
+   `Record<groupId, rowId[]>` — the override is the rendered order
+   *within* the group, applied at displayRows time. Simpler than I
+   feared; the existing main-store implementation had it right.
+
+Gates green. vitest 175 / bun 161 / R 1489.
+
+### 0c-PR22: C1 slice 11 — layout-zoom — C1 closed
+
+The long pole. ~360 lines. Owns:
+
+  zoom + autoFit + maxWidth + maxHeight + showZoomControls
+  + targetAspect + targetAspectAnchor + targetAspectVersion
+  + plotWidthOverride + bandingOverride + bandingStartsWithBandOverride
+  + axisZooms (Record<columnId, AxisZoom>)
+  + the layout-derived state (containerWidth, containerHeight,
+    naturalAspect, currentAspect, displayWidth, displayHeight)
+  + plot zoom interactions (resetAxisZoom, panAxis, zoomAxis)
+
+This is the slice where the aspect-ladder lever-1A/1B/2C work lives.
+The math is intricate — naturalAspect comes from column-width
+contributions, currentAspect honors targetAspect with anchor
+constraints, displayWidth/Height resolve to autoFit container size
+or to maxWidth/maxHeight clamps. All of that is now in one slice
+file with its own vitest suite (28 specs covering aspect-pin
+behavior, anchor selection, clamp interactions, axis-zoom + axis-reset).
+
+C1 is closed. Eleven PRs in this branch of the program. forestStore
+went from a 4261-line single-file store to 850 lines of orchestration
++ 11 slice files averaging ~250 lines each. The Q8 spike's "method-
+only split via per-slice factory functions" idiom held up across
+every slice. No slice needed to break the pattern.
+
+The deferred Phase 1.x marker beside C1 in the status doc gets to
+come off. Not because we shipped it on the original schedule — we
+didn't; it landed in Phase 0c by virtue of the user's "let's not
+shy away from the engineering challenge" push — but because it's
+done.
+
+### Phase 0d + 0e: closing the docs
+
+Three pieces landed together:
+
+1. **`spec-fields-reference.md`** — table of every `WebSpec` field
+   marking which are general, which are forest-specific (axis,
+   marker, reference-line), which are viz-family. Plus TSDoc
+   `@kind forest` tags on the forest-only types in
+   `srcjs/src/types/index.ts` so editor hover-help carries the same
+   provenance.
+
+2. **`r-js-sync-points.md`** — the Phase 0e deliverable. Eight sync
+   points enumerated (S1 wire-format version, S2 Shiny event fields,
+   S3 proxy method names, S4 split-widget discriminator, S5 theme
+   preset names, S6 column type names, S7 wire field conventions,
+   S8 View Source target emitters). Each row names the R-side
+   location, the JS-side location, the mechanism (doc-test /
+   generate / manual), and the audit status. S1 and S2 are doc-tested
+   today; the rest documented for next-time.
+
+3. **`event-contract.md` + `versioning.md` + `source-tagging.md`**
+   already existed from Phase 0a/0d; this round added the index
+   linking them from the README.
+
+The shape of the deliverable matters: a single grep across the codebase
+finds every wire mirror. Future maintainers don't need to re-derive
+the mental model — they read the doc, find the row, follow the link.
+
+### Pre-publish reconciliation: MFD-2 closed, ts-nocheck audit
+
+Tail of paydown before publish. Five cleanups:
+
+**MFD-2 — split-widget type discriminator.** Was filed in 0a as
+"R emits `split_table`, TS declared `split_forest`, runtime never
+checks." Resolution: TS tightened back to a literal `"split_table"`,
+added `validateSplitPayloadType()` to `createSplitTabviz` that
+throws `TypeError` on mismatch (catches "handed a single-widget
+WebSpec by mistake" at the surface, not via a downstream null
+deref). Synced `r-js-sync-points.md`'s S4 row to ✅.
+
+**v1 theme fixtures retired.** Replaced `lib/theme-presets.ts`
+(580 lines of hand-authored v1-shape themes) with a 48-line shell
+that imports a single JSON file. The JSON was captured by running
+R's `serialize_theme()` on each preset — `cochrane`, `lancet`,
+`jama`, `dark` — and copying the output into `theme-presets-v2.json`.
+The file header carries the refresh ritual:
+
+    R -e 'library(tabviz); cat(jsonlite::toJSON(list(
+      cochrane = tabviz:::serialize_theme(web_theme_cochrane()),
+      lancet   = tabviz:::serialize_theme(web_theme_lancet()),
+      jama     = tabviz:::serialize_theme(web_theme_jama()),
+      dark     = tabviz:::serialize_theme(web_theme_dark())
+    ), auto_unbox=TRUE, pretty=TRUE, null="null"))'
+
+So future cascade changes regenerate with one R command and a copy.
+`themes/default.ts` (the other v1 fixture) turned out to be
+exported-but-unused — straight delete.
+
+**Test runner extension split.** `forestStore.reorder.svelte.test.ts`
+had been `describe.skip`'d under v1 fixtures. Rewrote it against
+`THEME_PRESETS.cochrane` (now a real v2 theme), un-skipped, and
+renamed to `forestStore.reorder.runes.ts` so bun's default glob
+(`*.{test,spec}.{js,ts}`) skips it — vitest picks it up via
+`src/**/*.runes.ts`. Convention: pure-TS tests use `.test.ts` (bun),
+runes-using tests use `.runes.ts` (vitest). No overlap, no
+double-runs.
+
+**swatches test rewritten.** Same v1→v2 fixture migration. Tests
+now assert against `THEME_PRESETS.cochrane` and friends — verify
+the 8-slot palette derives from `theme.inputs.primary`/etc., and
+that different presets produce different palettes. 4 tests passing
+under bun.
+
+**@sveltejs/vite-plugin-svelte 4 → 6.** Was causing `--legacy-peer-deps`
+in `check:lockfiles` because v4 declared `vite ^5` peer; we run
+vite 6. v6.2.4 declares `vite ^6.3 || ^7`, lines up. Dropped the
+`--legacy-peer-deps` flag. Visual battery 45/45 byte-identical
+after the bump — Svelte 5 compiler output is stable across the
+plugin's 4 → 6 jump for our usage.
+
+Zero @ts-nocheck markers remain in the codebase. tsc --noEmit clean.
+
+### The 7-item tidy pass before publish
+
+User invitation: "let's tidy up every discernible loose end before
+publishing and then merging the branch. Rock and roll time my immortal
+coding friend." Spent an iteration cataloging loose ends and putting
+the menu in front of the user via AskUserQuestion. Returned the
+following picks:
+
+  1. Hand-author 4 v2 preset themes (R-cascade-dumped JSON, above)
+  2. Bump @sveltejs/vite-plugin-svelte 4 → 6 (above)
+  3. Initial npm identity: @tabviz/core @ 0.1.0
+  4. Delete 3 untracked diagnostic scripts (puppeteer aspect probes;
+     dead weight from earlier investigations)
+  5. Audit splitForestStore.setSharedColumnWidths for the
+     hoisted-base column-mutation suspicion (verdict below)
+  6. Wire op-log → fluent JS in View Source
+  7. Resolve 0c-follow-up TODOs in ThemeControl / VizOptionsEditor
+
+**Audit of setSharedColumnWidths**: no bug. Walked it under both
+wire formats. In the hoisted-base case, all merged specs share the
+same `.columns` array reference (shallow spread); the N-iteration
+outer loop writes the same width N times to the same column objects.
+Idempotent and correct, even if wasteful. The legacy path (no base)
+has independent column objects per spec; no cross-contamination.
+The "original widths" snapshot captures R-stamped values intentionally
+(documented in the existing comment). Wrote a 12-line invariant
+block-comment so future readers don't have to re-derive this.
+
+**Op-log → fluent JS in View Source.** Added a `jsCall` field to
+`OpRecord`. Each emission site now renders both the R-call string
+(unchanged) and the JS equivalent. Mapping covers the typed
+TabvizInstance methods (`sortBy`, `applyFilter`, `clearFilter`,
+`setSemantic`, `setCellSemantic`, `setTheme`, `setAspectRatio`)
+directly. Ops without a typed instance method route through
+`instance.store.<method>(...)` as documented escape hatches
+(setColumnWidth, moveColumnItem, etc.). Two cases emit comment
+placeholders — `add_column` (would need to reparse the R colBuilder
+string to reconstruct a JS ColumnSpec literal) and
+`set_shared_column_widths` (split-widget only). The View Source
+modal's JS tab now appends the recorded ops after the
+`createTabviz(...)` preamble, producing a copy-pasteable session
+reproduction.
+
+**Three TODO → decision-record conversions.** ThemeControl's
+"split into 4 sibling components" follow-up, VizOptionsEditor's
+"shared CSS lift" follow-up, and ColumnEditorPopover's "heatmap /
+interval full options editors" follow-up — all three had been
+flagged in source comments as pending work. After audit: each is
+a deliberate punt with a good reason. Rewrote the comments as
+*decisions*: "audited 2026-05, keep monolithic because…" /
+"no other component uses these classes" / "single-field editors
+don't warrant their own components." Honest doc, no lingering
+"someone-please-do-this" smell.
+
+**Diagnostic-script delete.** `probe_layout.js`,
+`measure-narrow-aspect.js`, `compare-live-vs-download.js` —
+puppeteer scripts from the Lever 2C / Phase 4.6 aspect-ratio
+investigations. Their lessons are in production code now; the
+scripts are dead weight. Removed.
+
+Status doc + diary: all entries reconciled. Ready to publish.
+
+### npm publish — @tabviz/core@0.1.0
+
+Package identity: `@tabviz/core@0.1.0`, MIT, peer-deps on Svelte 5
+(marked optional because the `/export` and `/spec` subpaths work
+without it). Tarball: 78 files, 809 kB packed, 3.3 MB unpacked.
+
+Then the auth dance. The user said they'd set up `~/.npmrc` with a
+write token. First publish attempt: `npm error code EOTP` —
+operation requires a one-time password. Looking at the .npmrc:
+
+    npm set //registry.npmjs.org/:_authToken=npm_PT6k...
+
+That's the *command* you run to write the token, not the file's
+contents. The format wanted is:
+
+    //registry.npmjs.org/:_authToken=npm_PT6k...
+
+I flagged it to the user rather than touching their dotfile myself
+(modifying user dotfiles without permission is a no-no even when
+the fix is one line). User fixed; second publish attempt: ENEEDAUTH.
+Third try with `--otp=XXXXXX` from their authenticator app: 0.1.0
+landed.
+
+Then a brief moment of "is it actually live?" — my local
+`npm view @tabviz/core` came back 404. The user reported the
+package page worked for them. `npm cache clean --force` resolved it
+on my side; stale registry cache. (Filed mentally: when validating
+a fresh publish, always cache-bust first.)
+
+Install smoke against a clean dir: 10/10 named exports import
+cleanly with Svelte installed. The `/export` and `/spec` subpaths
+work *without* Svelte (verified separately) — the asymmetric
+peer-dep marking is honest.
+
+### 0.1.1 patch — README + tree-shaking + prepublish guard
+
+The 0.1.0 install smoke surfaced a real doc finding: the README
+oversold "framework-free." Reality is asymmetric: `/export` and
+`/spec` are framework-free, but `/` and `/svelte` need Svelte
+installed because `createTabviz` mounts Svelte components.
+The optional peer-dep marking is correct given this split, but the
+README claimed all subpaths worked framework-free. Doc fix — added
+an explicit Installation section flagging which subpaths need Svelte
+and which don't.
+
+Three other 0.1.1 additions while the version was open:
+
+  - `engines.node = ">=18"` — Svelte 5 + ESM-only build need Node 18+.
+    Without this, consumers on Node 16 hit cryptic module-resolution
+    errors instead of npm's helpful warning.
+  - `sideEffects: ["**/*.css"]` — default behavior treats every
+    file as potentially side-effecting, defeating tree-shaking.
+    Restricting to .css preserves the CSS-import contract while
+    letting consumer bundlers prune unused JS exports.
+  - `prepublishOnly` script chains build:npm → check:size →
+    check:lockfiles. Prevents accidentally shipping stale `dist/`.
+
+Plus a CHANGELOG.md (Keep-a-Changelog) shipping in the tarball.
+
+Audit pass before publish: tarball preview 103 files, 823 kB packed.
+Local-tarball install smoke: 11/11 imports. Consumer-side type
+smoke (`tsc --noEmit --strict --moduleResolution bundler`): clean.
+`prepublishOnly` ran the full gate chain; OTP supplied; 0.1.1
+landed. `npm view @tabviz/core version` now returns `0.1.1`.
+
+### The README rewrite, in two acts
+
+After the publish, the user wanted to rewrite the top-level README
+totally before merging. First draft positioned tabviz as the
+convergence of three slices (interactive table + inline viz +
+publication export), closing with: "It's a specialty tool — if you
+need a general-purpose datatable you'll reach for `reactable`; if
+you need a print-first table grammar, `gt` — but for forest plots,
+meta-analyses, regression-result tables…"
+
+User pushback: "Are we being self-deprecating here? tabviz allows
+native inline interactive plots for instance."
+
+Right. "Specialty tool" framed tabviz as narrower than its
+neighbors when actually it covers a *broader* surface. `reactable`
+does interactive tables but no inline plots; `gt` does static
+tables but no interactivity; `forestplot` does forest plots but no
+table integration. tabviz does all three simultaneously. The
+accurate framing: it spans the seam, not hides in a corner.
+
+Workshop time. Launched 3 parallel subagents to draft variants:
+
+  - **Architect** — opens with "One Svelte 5 + D3 runtime. Two
+    distributions. Identical pixels." Adds a "What makes this
+    interesting" section with 4 architectural bullets.
+  - **Researcher** — opens with a workflow vignette ("you're
+    writing up a meta-analysis…"). Defers positioning to the end.
+  - **Editor** — terse, declarative. Neighbors as a comparison
+    table, not prose. ~140 lines.
+
+Composite landed: Architect's opener + "What makes this
+interesting," Editor's Neighbors comparison table + grouped
+column-types table, with a "covers all three slices at once"
+closing sentence on the Neighbors section so positioning is
+explicit. 208 lines.
+
+User: "Seems about right." Committed.
+
+Then a hero-image swap. Old hero was the GLP-1 trials forest plot;
+new hero is the Hobbiton pantry-audit example from the LOTR
+gallery — 4 pictogram columns (jar / pie / mushroom + adventures
+badge), a bar column, a numeric column, and a forest plot, in
+`web_theme_hobbit()`. Better front-door for tabviz's distinctive
+surface than a clean meta-analysis forest plot was; shows more
+column types at a glance and the editorial theming. Image came
+from `tests/visual/output/lotr_hobbit.png` (gitignored), copied
+to `docs/images/hero-hobbit.png` (tracked). Click-link swapped
+from the gallery index to the LOTR page specifically.
+
+### Merge to main + push
+
+`split` branch was 88 commits ahead of `main` (which hadn't moved
+since `7f4192a` — the spec commit that opened the program).
+Fast-forward merge: `git merge --ff-only split`, no merge commit
+needed.
+
+Tagged the two publish commits with scoped tags
+(`@tabviz/core@0.1.0` on `303f9dc`, `@tabviz/core@0.1.1` on
+`ee01dda`) so they don't collide with the existing R-package
+`v0.X.Y` tag namespace.
+
+Pushed `main` and both tags. The work is live on
+`github.com/kaskarn/tabviz/main`. The user kept the `split` branch
+for reference rather than deleting it.
+
+### Post-merge: DESCRIPTION accuracy + hero swap
+
+User caught a question worth checking: is R install still seamless
+given the new dependency on the npm package?
+
+Audited. `.Rbuildignore` excludes `^srcjs/` — the R tarball ships
+only `inst/htmlwidgets/*.{js,css,yaml}` + `inst/js/svg-generator.js`,
+all pre-built. No Node/npm/bun runtime dep for end users.
+`pak::pak("kaskarn/tabviz")` works identically. The `@tabviz/core`
+relationship is "second distribution of the same source," not "new
+dependency."
+
+Three small DESCRIPTION fixes captured the new reality in prose:
+"15+ column types" → "17 column types" (stale since the pictogram
++ ring + heatmap + progress additions); "/SVG/PDF/PNG" →
+"/SVG/PDF/PNG/PPTx" (PPTx landed in v0.28.x but never got in the
+Description); and a closing sentence: "A companion JavaScript
+package <https://www.npmjs.com/package/@tabviz/core> provides the
+same runtime for direct use from web applications." Anyone reading
+DESCRIPTION on CRAN now sees the npm package exists.
+
+Pushed. Diary brought current.
+
+---
+
+## Closing the diary
+
+This file ends where the program ends — at the merge to main, the
+two npm tags, the README in its current shape, and DESCRIPTION
+reconciled with the reality of two distributions out of one source.
+
+The companion devblog post (`docs/dev/post-publish-devblog.md`)
+covers the meta retrospective for the back half of the program —
+Phase 1 through publish — paralleling `phase0-devblog.md` for the
+front half. Together: spec + diary + two devblogs + status doc +
+sync-points doc + versioning policy. The artifact stack the
+phase0 devblog argued was worth keeping.
