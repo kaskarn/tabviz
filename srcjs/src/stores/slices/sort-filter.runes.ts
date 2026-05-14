@@ -49,16 +49,16 @@ describe("sort-filter slice — sort actions", () => {
 describe("sort-filter slice — filter actions", () => {
   test("setColumnFilter sets filter, records, source-tags", () => {
     const h = buildSortFilterHarness();
-    h.slice.setColumnFilter("hr", { field: "hr", operator: "gt", value: 1 });
-    expect(h.slice.filters["hr"]).toEqual({ field: "hr", operator: "gt", value: 1 });
+    h.slice.setColumnFilter("hr", { field: "hr", kind: "numeric", operator: "gt", value: 1 });
+    expect(h.slice.filters["hr"]).toEqual({ field: "hr", kind: "numeric", operator: "gt", value: 1 });
     expect(h.opLog[0].kind).toBe("filter_rows");
     expect(h.sourceMarks).toContain("filters");
   });
 
   test("setColumnFilter(null) removes the field's filter", () => {
     const h = buildSortFilterHarness();
-    h.slice.setColumnFilter("a", { field: "a", operator: "eq", value: 1 });
-    h.slice.setColumnFilter("b", { field: "b", operator: "eq", value: 2 });
+    h.slice.setColumnFilter("a", { field: "a", kind: "numeric", operator: "eq", value: 1 });
+    h.slice.setColumnFilter("b", { field: "b", kind: "numeric", operator: "eq", value: 2 });
     h.slice.setColumnFilter("a", null);
     expect(h.slice.filters["a"]).toBeUndefined();
     expect(h.slice.filters["b"]).toBeDefined();
@@ -66,7 +66,7 @@ describe("sort-filter slice — filter actions", () => {
 
   test("clearAllFilters wipes all + records clear_filters when had filters", () => {
     const h = buildSortFilterHarness();
-    h.slice.setColumnFilter("hr", { field: "hr", operator: "eq", value: 1 });
+    h.slice.setColumnFilter("hr", { field: "hr", kind: "numeric", operator: "eq", value: 1 });
     h.opLog.length = 0;
     h.slice.clearAllFilters();
     expect(h.slice.filters).toEqual({});
@@ -82,8 +82,8 @@ describe("sort-filter slice — filter actions", () => {
   test("getColumnFilter returns set filter or null", () => {
     const h = buildSortFilterHarness();
     expect(h.slice.getColumnFilter("hr")).toBeNull();
-    h.slice.setColumnFilter("hr", { field: "hr", operator: "eq", value: 1 });
-    expect(h.slice.getColumnFilter("hr")).toEqual({ field: "hr", operator: "eq", value: 1 });
+    h.slice.setColumnFilter("hr", { field: "hr", kind: "numeric", operator: "eq", value: 1 });
+    expect(h.slice.getColumnFilter("hr")).toEqual({ field: "hr", kind: "numeric", operator: "eq", value: 1 });
   });
 });
 
@@ -157,7 +157,7 @@ describe("sort-filter slice — visibleRows $derived (cross-slice spike)", () =>
         makeRow("c", { x: 3 }),
       ],
     });
-    h.slice.setColumnFilter("x", { field: "x", operator: "gt", value: 1 });
+    h.slice.setColumnFilter("x", { field: "x", kind: "numeric", operator: "gt", value: 1 });
     expect(h.slice.visibleRows.map((r) => r.id)).toEqual(["b", "c"]);
   });
 
@@ -170,7 +170,7 @@ describe("sort-filter slice — visibleRows $derived (cross-slice spike)", () =>
       ],
       columns: [textCol("x")],
     });
-    h.slice.setColumnFilter("x", { field: "x", operator: "gte", value: 2 });
+    h.slice.setColumnFilter("x", { field: "x", kind: "numeric", operator: "gte", value: 2 });
     h.slice.sortBy("x", "asc");
     expect(h.slice.visibleRows.map((r) => r.id)).toEqual(["c", "a"]);
   });
@@ -214,7 +214,7 @@ describe("sort-filter slice — visibleRows $derived (cross-slice spike)", () =>
 describe("sort-filter slice — reset", () => {
   test("reset wipes sort, filters, and popover", () => {
     const h = buildSortFilterHarness();
-    h.slice.setColumnFilter("hr", { field: "hr", operator: "eq", value: 1 });
+    h.slice.setColumnFilter("hr", { field: "hr", kind: "numeric", operator: "eq", value: 1 });
     h.slice.sortBy("hr", "asc");
     h.slice.reset();
     expect(h.slice.filters).toEqual({});

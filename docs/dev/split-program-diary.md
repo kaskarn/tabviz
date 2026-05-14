@@ -642,3 +642,82 @@ spec.data.groups, displayRows (pagination — data slice future),
 rowOrderOverrides, banding state, plus cellEdits + allColumns for
 tooltipRow. Multiple cross-slice $derived edges; will be the second
 real stress test for the pattern.
+
+### 0c-PR17: C1 slice 5 — rows-groups
+
+Fifth slice and the largest one yet (~340 lines of slice + ~200 lines
+of test harness/spec). First slice whose own $derived
+(`fullDisplayRows`, ~120 lines) reads from another slice's $derived
+(`sortFilter.visibleRows`). The pattern axis (PR3) and sort-filter
+(PR4) validated continues to work cleanly — `deps.getVisibleRows()`
+inside the derived body tracks the upstream slice's reactive read,
+no ceremony.
+
+Slice owns:
+
+  - collapsedGroups        Set<groupId>
+  - rowOrderOverrides      per-scope row + group reorder
+  - hoveredRowId           hover pointer
+  - tooltipRowId           tooltip target
+  - tooltipPosition        tooltip anchor
+
+Plus 5 $derived (groupMap, groupDepthMap, fullDisplayRows,
+maxGroupDepth, tooltipRow) and 9 methods (toggleGroup,
+findRowGroupScope, siblingsForRow*, moveRowItem,
+moveRowGroupItem, clearRowReorder, setHovered, setTooltip).
+Internal helpers getRowDepth + isAncestorCollapsed migrate with
+the slice.
+
+Deferred to data slice: pagination derived (`paginatedRows`,
+`displayRows`, `currentPageRowIds`, totalPages, isPaginated).
+Reads `fullDisplayRows` from this slice but the pagination state
+belongs to the data slice. Local alias in main store keeps the
+chain wired:
+
+  const fullDisplayRows = $derived<DisplayRow[]>(rowsGroups.fullDisplayRows);
+  // … then below, paginatedRows reads fullDisplayRows + currentPageRowIds.
+
+Deferred to layout-zoom: `rowPaddedAfter` + `bandIndexes`. Both
+read `displayRows` (post-pagination) and banding state, neither
+clearly belongs to rows-groups. Stay in main for now.
+
+setSpec sequencing wrinkle: original code set `collapsedGroups`
+directly from `newSpec.data.groups.filter(g => g.collapsed)`. After
+extraction, this becomes:
+
+  rowsGroups.reset();
+  for (const g of newSpec.data.groups) {
+    if (g.collapsed) rowsGroups.toggleGroup(g.id, true);
+  }
+
+That fires one source-tag mark per default-collapsed group, which is
+slightly noisier than the pre-extraction setSpec but produces the
+same observable state. Acceptable; future C1-cleanup PR could add a
+`rowsGroups.seedCollapsed(ids)` if the noise matters.
+
+vitest spec: 19 tests. 3 on groupMap/groupDepthMap/maxGroupDepth.
+2 on collapse. **6 on fullDisplayRows** including the cross-slice
+visibleRows-mutation spike. 4 on row reorder methods. 3 on
+hover/tooltip (including the tooltipRow merge with cellEdits — a
+second cross-slice dep on the cells slice). 1 on reset.
+
+Test-harness wrinkle: `moveRowItem` reads `displayRows` via
+`siblingsForRowScope`. Pre-fix the harness left displayRows empty,
+causing siblingsForRowScope to return `[]`, fromIdx -1, silent
+no-op. Fix: harness auto-wraps `rows` as flat `DisplayRow[]` for
+the default displayRows reference. Real-store callers always have a
+non-empty displayRows once visible.
+
+Gates: tsc 0 errors, bun test 161 pass (baseline), vitest 88 pass
+total (6 files), R devtools::test() 1489/1489, visual battery 45/45.
+
+Five slices down, six to go. Main store has now shed ~1200 lines
+net of state + methods + derived blocks, plus the 225 lines of
+filter-sort-utils that moved to $lib.
+
+Next per the C1 plan: **semantics**. Owns styleEdits + paintTool +
+the paint-tool action methods. Already prepared by sort-filter (which
+reads styleEdits via deps) and cells (whose clearAllEdits inline-
+clears semantics state). Should be a straightforward extraction
+that finally lets `clearAllEdits()` in the main factory shrink to
+`cells.reset(); semantics.reset();`.

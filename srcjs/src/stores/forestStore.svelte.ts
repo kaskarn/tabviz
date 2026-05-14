@@ -45,6 +45,7 @@ import { createCellsSlice } from "$stores/slices/cells.svelte";
 import { createThemeSlice } from "$stores/slices/theme.svelte";
 import { createAxisSlice } from "$stores/slices/axis.svelte";
 import { createSortFilterSlice } from "$stores/slices/sort-filter.svelte";
+import { createRowsGroupsSlice } from "$stores/slices/rows-groups.svelte";
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
 
@@ -157,6 +158,21 @@ export function createForestStore() {
     markSource,
   });
 
+  // ── Rows + groups ────────────────────────────────────────────────────────
+  // Phase 0c-C1 PR5. Owns collapsedGroups, rowOrderOverrides, hover/tooltip
+  // pointers, and the big fullDisplayRows + tooltipRow + maxGroupDepth +
+  // groupMap + groupDepthMap derived blocks. Reads visibleRows from the
+  // sort-filter slice (first slice-to-slice $derived chain).
+  const rowsGroups = createRowsGroupsSlice({
+    getSpec: () => spec,
+    getAllColumns: () => allColumns,
+    getVisibleRows: () => sortFilter.visibleRows,
+    getDisplayRows: () => displayRows,
+    getCellEdits: () => cells.cellEdits,
+    appendOp: (record) => appendOp(record),
+    markSource,
+  });
+
   // Initial dimensions (from htmlwidgets/splitStore, used as fallback before ResizeObserver fires)
   let initialWidth = $state(800);
   let initialHeight = $state(400);
@@ -166,10 +182,10 @@ export function createForestStore() {
   // "selected" rows ARE the rows currently painted with the active token.
   // We compute the live set from styleEdits + paintTool via the
   // selectedRowIds getter below; no separate state to keep in sync.
-  let collapsedGroups = $state<Set<string>>(new Set());
+  // collapsedGroups + hoveredRowId + tooltipRowId + tooltipPosition +
+  // rowOrderOverrides live on the rows-groups slice (Phase 0c-C1 PR5).
   // sortConfig + filters + filterPopoverTarget live on the sort-filter
-  // slice (Phase 0c-C1 PR4). Read via `sortFilter.X`.
-  let hoveredRowId = $state<string | null>(null);
+  // slice (Phase 0c-C1 PR4). Read via `rowsGroups.X` / `sortFilter.X`.
 
   // Runtime banding override from the settings panel. Null = follow theme.
   let bandingOverride = $state<BandingSpec | null>(null);
@@ -192,8 +208,8 @@ export function createForestStore() {
   // `theme.X` accessors below; mutate via the slice methods exposed
   // on the public API.
 
-  // User-modified view state (session-only; feeds exportSpec for WYSIWYG)
-  let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
+  // User-modified view state (session-only; feeds exportSpec for WYSIWYG).
+  // rowOrderOverrides moved to rows-groups slice in Phase 0c-C1 PR5.
   let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
   // cellEdits / labelEdits / wrapLineCounts / editingTarget all live on
   // the cells slice (Phase 0c-C1 PR1). Read via `cells.cellEdits` etc.;
@@ -252,9 +268,7 @@ export function createForestStore() {
   // `filterPopoverTarget` moved to the sort-filter slice in 0c-C1 PR4.
   let dragState = $state<DragState | null>(null);
 
-  // Tooltip state
-  let tooltipRowId = $state<string | null>(null);
-  let tooltipPosition = $state<{ x: number; y: number } | null>(null);
+  // Tooltip state moved to rows-groups slice (Phase 0c-C1 PR5).
 
   // Column width state (for resize)
   let columnWidths = $state<Record<string, number>>({});
@@ -454,165 +468,17 @@ export function createForestStore() {
 
   // ============================================================================
 
-  // Derived: group lookup map
-  const groupMap = $derived.by((): Map<string, Group> => {
-    const map = new Map<string, Group>();
-    if (!spec) return map;
-    for (const group of spec.data.groups) {
-      map.set(group.id, group);
-    }
-    return map;
-  });
+  // Group lookup maps + fullDisplayRows + maxGroupDepth + tooltipRow live
+  // on the rows-groups slice (Phase 0c-C1 PR5). Local aliases keep the
+  // existing call sites in this file unchanged.
+  const groupMap = $derived(rowsGroups.groupMap);
+  const groupDepthMap = $derived(rowsGroups.groupDepthMap);
 
-  // Derived: group depth lookup map
-  const groupDepthMap = $derived.by((): Map<string, number> => {
-    const map = new Map<string, number>();
-    if (!spec) return map;
-    for (const group of spec.data.groups) {
-      map.set(group.id, group.depth);
-    }
-    return map;
-  });
-
-  // Function to get row depth based on group
-  // Data rows are one level deeper than their group header
-  function getRowDepth(groupId: string | null | undefined): number {
-    if (!groupId) return 0;
-    const groupDepth = groupDepthMap.get(groupId) ?? 0;
-    return groupDepth + 1;
-  }
-
-  // Helper: check if any ancestor group is collapsed (for cascading collapse)
-  function isAncestorCollapsed(groupId: string | null | undefined): boolean {
-    if (!groupId) return false;
-    let current: string | null | undefined = groupId;
-    while (current) {
-      const group = groupMap.get(current);
-      if (!group) break;
-      // Check parent (not self) for collapse
-      if (group.parentId && collapsedGroups.has(group.parentId)) {
-        return true;
-      }
-      current = group.parentId;
-    }
-    return false;
-  }
-
-  // Derived: full display rows (interleaves group headers with data rows)
-  // Groups rows by groupId, shows ancestor headers, outputs in hierarchical
-  // order. Pagination is applied as a separate filter step below
-  // (`paginatedRows` / `displayRows`); this derivation is the unfiltered
-  // source of truth.
-  const fullDisplayRows = $derived.by((): DisplayRow[] => {
-    if (!spec) return [];
-
-    const result: DisplayRow[] = [];
-
-    // 1. Group rows by groupId, then apply any per-group reorder override.
-    //    Row-reorder overrides take precedence over sort within their scope.
-    const rowsByGroup = new Map<string | null, Row[]>();
-    for (const row of visibleRows) {
-      const key = row.groupId ?? null;
-      if (!rowsByGroup.has(key)) rowsByGroup.set(key, []);
-      rowsByGroup.get(key)!.push(row);
-    }
-    for (const [key, bucket] of rowsByGroup) {
-      const scopeKey = key ?? "__root__";
-      const override = rowOrderOverrides.byGroup[scopeKey];
-      if (!override) continue;
-      const idx: Record<string, number> = {};
-      override.forEach((id, i) => (idx[id] = i));
-      bucket.sort((a, b) => {
-        const ai = idx[a.id] ?? Number.POSITIVE_INFINITY;
-        const bi = idx[b.id] ?? Number.POSITIVE_INFINITY;
-        return ai - bi;
-      });
-    }
-
-    // 2. Collect all groups that need headers (data groups + their ancestors)
-    const groupsWithHeaders = new Set<string>();
-    for (const groupId of rowsByGroup.keys()) {
-      if (!groupId) continue;
-      // Walk up ancestor chain to include parent groups
-      let current: string | null | undefined = groupId;
-      while (current) {
-        groupsWithHeaders.add(current);
-        current = groupMap.get(current)?.parentId;
-      }
-    }
-
-    // 3. Helper to get child groups of a parent (applying any reorder override)
-    function getChildGroups(parentId: string | null): Group[] {
-      const matches = spec!.data.groups
-        .filter(g => (g.parentId ?? null) === parentId && groupsWithHeaders.has(g.id));
-      const parentKey = parentId ?? "__root__";
-      const order = rowOrderOverrides.groupOrderByParent[parentKey];
-      if (!order) return matches;
-      const idx: Record<string, number> = {};
-      order.forEach((id, i) => (idx[id] = i));
-      return [...matches].sort((a, b) => {
-        const ai = idx[a.id] ?? Number.POSITIVE_INFINITY;
-        const bi = idx[b.id] ?? Number.POSITIVE_INFINITY;
-        return ai - bi;
-      });
-    }
-
-    // 3b. Helper to count all rows (direct + all descendants) for a group
-    function countAllDescendantRows(groupId: string): number {
-      // Direct rows in this group
-      let count = rowsByGroup.get(groupId)?.length ?? 0;
-      // Add rows from all child groups recursively
-      for (const childGroup of getChildGroups(groupId)) {
-        count += countAllDescendantRows(childGroup.id);
-      }
-      return count;
-    }
-
-    // 4. Recursive function to output a group and its descendants
-    function outputGroup(groupId: string | null) {
-      if (groupId) {
-        const group = groupMap.get(groupId);
-        if (!group) return;
-
-        // Skip if any ancestor is collapsed
-        if (isAncestorCollapsed(groupId)) return;
-
-        const isCollapsed = collapsedGroups.has(group.id);
-        // Count all descendant rows (direct + nested subgroups)
-        const rowCount = countAllDescendantRows(groupId);
-
-        result.push({
-          type: "group_header",
-          group: { ...group, collapsed: isCollapsed },
-          rowCount,
-          depth: group.depth,
-        });
-
-        // If collapsed, don't output children
-        if (isCollapsed) return;
-      }
-
-      // Output child groups (maintaining hierarchy)
-      for (const childGroup of getChildGroups(groupId)) {
-        outputGroup(childGroup.id);
-      }
-
-      // Output direct data rows for this group
-      const directRows = rowsByGroup.get(groupId) ?? [];
-      for (const row of directRows) {
-        result.push({
-          type: "data",
-          row,
-          depth: getRowDepth(row.groupId),
-        });
-      }
-    }
-
-    // Start from root (groups with no parent)
-    outputGroup(null);
-
-    return result;
-  });
+  // getRowDepth / isAncestorCollapsed helpers + the full fullDisplayRows
+  // derived live inside the rows-groups slice (Phase 0c-C1 PR5). One-line
+  // alias keeps consumers (paginatedRows, displayRows derived, etc.)
+  // pointed at the slice.
+  const fullDisplayRows = $derived<DisplayRow[]>(rowsGroups.fullDisplayRows);
 
   // Pagination derived. Pages come precomputed from R (`spec.paginate.pages`,
   // 0-based startIdx/endIdx into spec.data.rows) so the viewer never has to
@@ -698,10 +564,8 @@ export function createForestStore() {
     continuousMode = v;
   }
 
-  // Derived: maximum group depth (1-based; 0 when there are no groups).
-  const maxGroupDepth = $derived.by((): number => {
-    return computeMaxGroupDepth(spec?.data.groups);
-  });
+  // Maximum group depth moved to the rows-groups slice (Phase 0c-C1 PR5).
+  const maxGroupDepth = $derived(rowsGroups.maxGroupDepth);
 
   // Derived: the banding spec actually in effect. Runtime override (from the
   // settings panel) wins over whatever the theme declares. The theme value is
@@ -1246,10 +1110,13 @@ export function createForestStore() {
     // Create a new object reference to ensure derived values recompute properly
     // when switching between specs (e.g., in split forest navigation)
     spec = { ...newSpec };
-    // Initialize collapsed state from spec
-    collapsedGroups = new Set(
-      newSpec.data.groups.filter((g) => g.collapsed).map((g) => g.id)
-    );
+    // rows-groups slice owns collapsedGroups / rowOrderOverrides / hover /
+    // tooltip pointers. reset() wipes them; collapsed-by-default group ids
+    // are seeded from the new spec below.
+    rowsGroups.reset();
+    for (const g of newSpec.data.groups) {
+      if (g.collapsed) rowsGroups.toggleGroup(g.id, true);
+    }
     // A fresh spec supersedes any prior interactive column edits.
     clearColumnEdits();
     // Also reset every per-column-id map that would otherwise leak across
@@ -1266,10 +1133,8 @@ export function createForestStore() {
     // PREVIOUS spec — clear it so a split-by navigation (or any
     // setSpec swap) doesn't flash a tooltip pointing at a row that
     // no longer exists, or open a filter popover anchored to a
-    // missing column.
-    hoveredRowId = null;
-    tooltipRowId = null;
-    tooltipPosition = null;
+    // missing column.  hover / tooltip pointers cleared via
+    // rowsGroups.reset() above.
     // sort-filter slice owns sortConfig / filters / filterPopoverTarget;
     // closing the popover and clearing stale filters anchored to columns
     // in the previous spec matches both the prior setSpec behavior (which
@@ -1837,19 +1702,7 @@ export function createForestStore() {
     setCellSemantic(rowId, field, active, true);
   }
 
-  function toggleGroup(id: string, collapsed?: boolean) {
-    const newCollapsed = new Set(collapsedGroups);
-    const shouldCollapse = collapsed ?? !newCollapsed.has(id);
-
-    if (shouldCollapse) {
-      newCollapsed.add(id);
-    } else {
-      newCollapsed.delete(id);
-    }
-
-    collapsedGroups = newCollapsed;
-    markSource("collapsed_groups");
-  }
+  // toggleGroup lives on the rows-groups slice (Phase 0c-C1 PR5).
 
   // Settings panel visibility
   function openSettings() {
@@ -1971,88 +1824,9 @@ export function createForestStore() {
     markSource("column_order");
   }
 
-  // Find the group id of a row-group, given the group id itself.
-  // Returns parent id or "__root__".
-  function findRowGroupScope(groupId: string): string {
-    if (!spec) return "__root__";
-    const g = spec.data.groups.find((x) => x.id === groupId);
-    return g?.parentId ?? "__root__";
-  }
-
-  // Ordered sibling ids for a row-scope (row's groupId) in the current display.
-  function siblingsForRowScope(scopeKey: string): string[] {
-    if (!spec) return [];
-    const result: string[] = [];
-    for (const dr of displayRows) {
-      if (dr.type === "data") {
-        const gid = dr.row.groupId ?? "__root__";
-        if (gid === scopeKey) result.push(dr.row.id);
-      }
-    }
-    return result;
-  }
-
-  function siblingsForRowGroupScope(parentKey: string): string[] {
-    if (!spec) return [];
-    const seen = new Set<string>();
-    const result: string[] = [];
-    for (const dr of displayRows) {
-      if (dr.type === "group_header") {
-        const parent = dr.group.parentId ?? "__root__";
-        if (parent === parentKey && !seen.has(dr.group.id)) {
-          seen.add(dr.group.id);
-          result.push(dr.group.id);
-        }
-      }
-    }
-    return result;
-  }
-
-  function moveRowItem(rowId: string, newIndex: number) {
-    if (!spec) return;
-    const row = spec.data.rows.find((r) => r.id === rowId);
-    if (!row) return;
-    const scope = row.groupId ?? "__root__";
-    const currentOrder = rowOrderOverrides.byGroup[scope] ?? siblingsForRowScope(scope);
-    const order = currentOrder.includes(rowId) ? [...currentOrder] : [...siblingsForRowScope(scope)];
-    const fromIdx = order.indexOf(rowId);
-    if (fromIdx === -1) return;
-    order.splice(fromIdx, 1);
-    const targetIdx = newIndex > fromIdx ? newIndex - 1 : newIndex;
-    const clamped = Math.max(0, Math.min(order.length, targetIdx));
-    order.splice(clamped, 0, rowId);
-    rowOrderOverrides = {
-      ...rowOrderOverrides,
-      byGroup: { ...rowOrderOverrides.byGroup, [scope]: order },
-    };
-    appendOp(ops.moveRow(rowId, newIndex + 1));
-  }
-
-  function moveRowGroupItem(groupId: string, newIndex: number) {
-    if (!spec) return;
-    const parentKey = findRowGroupScope(groupId);
-    const existing = rowOrderOverrides.groupOrderByParent[parentKey] ?? siblingsForRowGroupScope(parentKey);
-    const order = [...existing];
-    const fromIdx = order.indexOf(groupId);
-    if (fromIdx === -1) return;
-    order.splice(fromIdx, 1);
-    const targetIdx = newIndex > fromIdx ? newIndex - 1 : newIndex;
-    const clamped = Math.max(0, Math.min(order.length, targetIdx));
-    order.splice(clamped, 0, groupId);
-    rowOrderOverrides = {
-      ...rowOrderOverrides,
-      groupOrderByParent: { ...rowOrderOverrides.groupOrderByParent, [parentKey]: order },
-    };
-  }
-
-  function clearRowReorder(groupId?: string) {
-    if (groupId) {
-      const { [groupId]: _omit, ...rest } = rowOrderOverrides.byGroup;
-      rowOrderOverrides = { ...rowOrderOverrides, byGroup: rest };
-    } else {
-      rowOrderOverrides = { byGroup: {}, groupOrderByParent: {} };
-    }
-  }
+  // Row-scope helpers (findRowGroupScope / siblingsForRow*) +
+  // moveRowItem / moveRowGroupItem / clearRowReorder live on the
+  // rows-groups slice (Phase 0c-C1 PR5).
 
   function clearColumnReorder() {
     columnOrderOverrides = { topLevel: null, byGroup: {} };
@@ -2332,15 +2106,7 @@ export function createForestStore() {
 
   // Filter-popover plumbing moved to the sort-filter slice (Phase 0c-C1 PR4).
 
-  function setHovered(id: string | null) {
-    hoveredRowId = id;
-    markSource("hover");
-  }
-
-  function setTooltip(rowId: string | null, position: { x: number; y: number } | null) {
-    tooltipRowId = rowId;
-    tooltipPosition = position;
-  }
+  // setHovered + setTooltip live on the rows-groups slice (Phase 0c-C1 PR5).
 
   function setColumnWidth(columnId: string, width: number) {
     const w = Math.max(40, width); // min 40px
@@ -2666,11 +2432,12 @@ export function createForestStore() {
     // paint applied via the active token (and any other tokens in
     // styleEdits). clearAllPaint() handles that.
     clearAllPaint();
-    collapsedGroups = new Set();
+    // rows-groups slice owns collapsedGroups / rowOrderOverrides /
+    // hover / tooltip; reset() clears all four.
+    rowsGroups.reset();
     sortFilter.reset();
 
     // ── Row & column reorder / inserts / hides / cell edits ──────────────
-    rowOrderOverrides = { byGroup: {}, groupOrderByParent: {} };
     columnOrderOverrides = { topLevel: null, byGroup: {} };
     userInsertedColumns = [];
     hiddenColumnIds = new Set();
@@ -2698,11 +2465,9 @@ export function createForestStore() {
     bandingStartsWithBandOverride = null;
 
     // ── Transient UI overlays ────────────────────────────────────────────
-    hoveredRowId = null;
-    tooltipRowId = null;
-    tooltipPosition = null;
+    // hover + tooltip cleared via rowsGroups.reset(); popover via
+    // sortFilter.reset() — both already called above.
     dragState = null;
-    // filterPopoverTarget cleared via sortFilter.reset() above.
 
     // ── Restore theme + watermark from the initial snapshot ──────────────
     // theme.resetThemeEdits restores both spec.theme and spec.watermark to
@@ -2718,19 +2483,8 @@ export function createForestStore() {
     measureAutoColumns();
   }
 
-  // Derived: tooltip row. Merges cell edits so the tooltip reflects the
-  // user's in-session changes (including the primary column, which doubles
-  // as the row label).
-  const tooltipRow = $derived.by((): Row | null => {
-    if (!tooltipRowId || !spec) return null;
-    const base = spec.data.rows.find((r) => r.id === tooltipRowId);
-    if (!base) return null;
-    const edited = cells.cellEdits.cells[base.id];
-    if (!edited) return base;
-    const primaryField = allColumns[0]?.field;
-    const newLabel = primaryField && edited[primaryField] != null ? String(edited[primaryField]) : base.label;
-    return { ...base, label: newLabel, metadata: { ...base.metadata, ...edited } };
-  });
+  // tooltipRow lives on the rows-groups slice (Phase 0c-C1 PR5).
+  const tooltipRow = $derived(rowsGroups.tooltipRow);
 
   // Derived: exportSpec — WYSIWYG spec reflecting the user's current view state.
   // Both the interactive renderer and the SVG/PNG export consume this (via different paths),
@@ -2770,7 +2524,7 @@ export function createForestStore() {
     //    parentId, using rowOrderOverrides.groupOrderByParent.
     const syncedGroups = spec.data.groups.map((g) => ({
       ...g,
-      collapsed: collapsedGroups.has(g.id) || g.collapsed,
+      collapsed: rowsGroups.collapsedGroups.has(g.id) || g.collapsed,
     }));
     const groupsOut: typeof syncedGroups = [];
     const byParent = new Map<string, typeof syncedGroups>();
@@ -2781,7 +2535,7 @@ export function createForestStore() {
     }
     // Sort each parent bucket by groupOrderByParent override
     for (const [parentKey, bucket] of byParent) {
-      const override = rowOrderOverrides.groupOrderByParent[parentKey];
+      const override = rowsGroups.rowOrderOverrides.groupOrderByParent[parentKey];
       if (!override) continue;
       const idx: Record<string, number> = {};
       override.forEach((id, i) => (idx[id] = i));
@@ -2879,13 +2633,13 @@ export function createForestStore() {
       }
       events.emit("selected", ids);
     });
-    $effect(() => { events.emit("hover", hoveredRowId); });
+    $effect(() => { events.emit("hover", rowsGroups.hoveredRowId); });
     $effect(() => { events.emit("sort", sortFilter.sortConfig as TabvizEvents["sort"]); });
     $effect(() => { events.emit("filters", sortFilter.filters); });
     $effect(() => { events.emit("rowStyles", styleEdits.rows); });
     $effect(() => { events.emit("cellStyles", styleEdits.cells); });
     $effect(() => { events.emit("paintTool", paintTool); });
-    $effect(() => { events.emit("collapsedGroups", Array.from(collapsedGroups)); });
+    $effect(() => { events.emit("collapsedGroups", Array.from(rowsGroups.collapsedGroups)); });
     $effect(() => { events.emit("hiddenColumns", Array.from(hiddenColumnIds)); });
     $effect(() => { events.emit("columnOrder", allColumns.map((c) => c.id)); });
     $effect(() => { events.emit("columnWidths", { ...columnWidths }); });
@@ -2924,7 +2678,7 @@ export function createForestStore() {
       void sortFilter.filters;
       void styleEdits;
       void paintTool;
-      void collapsedGroups;
+      void rowsGroups.collapsedGroups;
       void hiddenColumnIds;
       void allColumns;
       void columnWidths;
@@ -2976,10 +2730,10 @@ export function createForestStore() {
       return ids;
     },
     get collapsedGroups() {
-      return collapsedGroups;
+      return rowsGroups.collapsedGroups;
     },
     get hoveredRowId() {
-      return hoveredRowId;
+      return rowsGroups.hoveredRowId;
     },
     get allColumns() {
       return allColumns;
@@ -3073,7 +2827,7 @@ export function createForestStore() {
       return tooltipRow;
     },
     get tooltipPosition() {
-      return tooltipPosition;
+      return rowsGroups.tooltipPosition;
     },
     get columnWidths() {
       return columnWidths;
@@ -3113,7 +2867,7 @@ export function createForestStore() {
       return sortFilter.filters;
     },
     get rowOrderOverrides() {
-      return rowOrderOverrides;
+      return rowsGroups.rowOrderOverrides;
     },
     get columnOrderOverrides() {
       return columnOrderOverrides;
@@ -3348,7 +3102,7 @@ export function createForestStore() {
     setContinuousMode,
     setDimensions,
     setSelectedRows,
-    toggleGroup,
+    toggleGroup: rowsGroups.toggleGroup,
     openSettings,
     closeSettings,
     toggleSettings,
@@ -3377,17 +3131,18 @@ export function createForestStore() {
     // DnD
     findColumnScope,
     siblingsForColumnScope,
-    findRowGroupScope,
-    siblingsForRowScope,
-    siblingsForRowGroupScope,
+    // Row-scope DnD helpers + row reorder methods on the rows-groups slice.
+    findRowGroupScope: rowsGroups.findRowGroupScope,
+    siblingsForRowScope: rowsGroups.siblingsForRowScope,
+    siblingsForRowGroupScope: rowsGroups.siblingsForRowGroupScope,
     beginDrag,
     updateDrag,
     endDrag,
     cancelDrag,
     moveColumnItem,
-    moveRowItem,
-    moveRowGroupItem,
-    clearRowReorder,
+    moveRowItem: rowsGroups.moveRowItem,
+    moveRowGroupItem: rowsGroups.moveRowGroupItem,
+    clearRowReorder: rowsGroups.clearRowReorder,
     clearColumnReorder,
     // Interactive column edits
     insertColumn,
@@ -3428,8 +3183,8 @@ export function createForestStore() {
     // Filter popover — sort-filter slice passthrough.
     openFilterPopover: sortFilter.openFilterPopover,
     closeFilterPopover: sortFilter.closeFilterPopover,
-    setHovered,
-    setTooltip,
+    setHovered: rowsGroups.setHovered,
+    setTooltip: rowsGroups.setTooltip,
     setColumnWidth,
     previewColumnWidth,
     setPlotWidth,
