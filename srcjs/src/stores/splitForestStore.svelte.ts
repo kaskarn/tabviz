@@ -228,6 +228,19 @@ export function createSplitForestStore() {
     return result;
   }
 
+  // INVARIANT (hoisted-base wire format): when `p.base` was present, every
+  // entry in `payload.specs` was produced by `{ ...base, ...override }` — a
+  // shallow spread. `base.columns` is therefore the SAME array reference on
+  // every merged spec. The N-times outer loop below writes to the same
+  // column objects N times; the result is idempotent and correct, but the
+  // work is wasted for shared-base payloads. Detecting + skipping the
+  // duplicate writes would complicate the code; we keep the simple form.
+  //
+  // Legacy wire format (no `p.base`): each spec has independent columns;
+  // the per-spec iteration writes each column exactly once. No
+  // cross-contamination because the column objects aren't shared.
+  //
+  // Both paths are correct. Audited 2026-05-14.
   function setSharedColumnWidths(enabled: boolean) {
     if (!payload) return;
     sharedColumnWidths = enabled;
