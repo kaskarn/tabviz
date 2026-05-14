@@ -4,9 +4,6 @@
 # `web_theme()` is the constructor for hand-rolled themes built
 # from Tier 1 inputs. The set_* modifiers update inputs / variants /
 # spacing / arbitrary-path on an existing v2 theme and re-resolve.
-#
-# Naming carries the `_v2` suffix during the transition. PR 10 renames
-# `web_theme` -> `web_theme` and the v1 web_theme() goes away.
 
 
 # Internal: when an inputs arg sets a tier seed (or `accent` / `font_body`),
@@ -278,9 +275,7 @@ set_theme_field <- function(theme, path, value) {
 }
 
 
-# v2 set_spacing — kept distinct from v1 by class dispatch.
-# When the v1 path retires (PR 10) we rename this to `set_spacing` and
-# remove the v1 setter.
+# v2 set_spacing.
 #' Override one or more density-derived spacing tokens on a v2 theme.
 #'
 #' Setting any token leaves the rest at their density-preset values.

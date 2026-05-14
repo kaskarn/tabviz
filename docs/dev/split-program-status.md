@@ -55,8 +55,8 @@ Items found during execution that aren't in the original spec §2.5 but are wort
 | ID | Description | Severity | Target phase |
 |---|---|---|---|
 | MFD-1 | `swatches.test.ts` has 6 pre-existing failures — colors return as `#000000`/`#ffffff` instead of expected hex values. Likely v1-theme-shape test fixture vs v2-cascade-rework drift. | P2 (size/clarity) | **Partially addressed in 0c-PR2:** tests skipped with `describe.skip` + explanatory header. Fixture rewrite to v2 theme shape is the remaining work. |
-| MFD-2 | Split widget type discriminator mismatch: R emits `type = "split_table"`, TS declared `type: "split_forest"`, runtime never checked. Widened TS to `string` with comment pointing at G6. | P1 | Phase 0e (synchronization audit reconciles) |
-| MFD-3 | `themes-api.R` has a stale `_v2` transition comment referencing PR 10. The rename completed; the comment didn't. | P2 (doc) | Phase 0d |
+| MFD-2 | Split widget type discriminator mismatch: R emits `type = "split_table"`, TS declared `type: "split_forest"`, runtime never checked. | P1 | ✅ closed — TS tightened to literal `"split_table"` + runtime check in `createSplitTabviz` |
+| MFD-3 | `themes-api.R` has a stale `_v2` transition comment referencing PR 10. The rename completed; the comment didn't. | P2 (doc) | ✅ closed — stale comments removed |
 | MFD-4 | `tabviz()` requires `label` arg even for tiny test fixtures. Not a problem, but a small UX note. | P3 | Out of scope for the split program |
 | MFD-5 | `bun:test` doesn't execute Svelte 5 runes (`$state`, `$derived`). `forestStore.reorder.test.ts` has been silently failing since runes were adopted — its 4 failures fold into the 6-fail baseline. Any new tests that need to call `createForestStore()` from a `.svelte.ts` file will hit the same wall. Requires a different runner (vitest + svelte plugin) OR an in-process runes shim. | P2 | **Infrastructure addressed in 0c-PR2:** vitest + `@sveltejs/vite-plugin-svelte` now run `.svelte.test.ts` files. Test fixtures still need v2-theme migration (skipped for now). |
 
@@ -79,7 +79,7 @@ Per spec §4. The longest phase — estimated 7-8 weeks. Lands as small PRs acro
 | 10 | **C10** — Split widget shell decomposition | ✅ done (0c-PR5) |
 | 11 | **C1** — forestStore decomposition (~4-5 weeks; long pole) | ✅ **done** (12 of 12 slices). source (Q8) + cells + theme + axis + sort-filter + rows-groups + semantics + drag + history micro-slices + columns + data + **layout-zoom (0c-PR22)**. 197 vitest unit tests. Main store shed ~2700 lines net across the C1 arc. |
 | 12 | **C12-a** — View Source refactor + R-target via registry (~1 week) | ⏳ **deferred to Phase 1.5** per spec sequencing |
-| - | **C5** — v2 theme type alignment | ✅ **substantively done**. Step 1 (define v2 types) and step 2 (swap WebTheme → WebThemeV2, suppress v1 fixtures with @ts-nocheck, fix call sites). 280 tsc errors closed across the C5 arc. Remaining work: rewrite JS-side THEME_PRESETS (4 presets) in v2 shape OR rewire ThemeSwitcher to fetch from R-supplied themes (both have @ts-nocheck markers pointing here as the trigger). |
+| - | **C5** — v2 theme type alignment | ✅ **done**. v2 types in place, WebTheme = WebThemeV2, every call site migrated. JS-side THEME_PRESETS now reads from `srcjs/src/lib/theme-presets-v2.json` (captured from `serialize_theme(web_theme_X())` for cochrane/lancet/jama/dark); swatches.test rewritten against v2 cascade. Zero `@ts-nocheck` markers remain anywhere in `src/`. |
 | - | **v2-theme test-fixture rewrite** (MFD-1, MFD-5 follow-up) | ⏳ deferred — tests are skipped with clear pointers; fixture migration can land alongside C1 when that happens. |
 
 Done in this iteration: 0c-PR1 + 0c-PR2 + 0c-PR3. Six items closed (C7, C8, C9, C11 + test-runner + Phase 0b D4).

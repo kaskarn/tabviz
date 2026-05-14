@@ -37,12 +37,28 @@ export interface SplitTabvizInstance {
   readonly store: SplitForestStore;
 }
 
+/**
+ * Validate the wire discriminator. R-side `serialize_split_table` emits
+ * `type: "split_table"` (matches the function name `split_table()`);
+ * anything else means we've been handed the wrong payload shape and the
+ * runtime should refuse rather than silently render an empty pane.
+ */
+function validateSplitPayloadType(payload: { type?: unknown }): void {
+  if (payload.type !== "split_table") {
+    throw new TypeError(
+      `SplitForestPayload: expected type === "split_table" (R emits this from serialize_split_table()), ` +
+      `got ${JSON.stringify(payload.type)}. Are you handing this a single-table WebSpec?`,
+    );
+  }
+}
+
 export function createSplitTabviz(
   element: HTMLElement,
   payload: SplitForestPayload,
   options: SplitTabvizOptions = {},
 ): SplitTabvizInstance {
   validateSpecVersion(payload as { version?: unknown }, "SplitForestPayload");
+  validateSplitPayloadType(payload as { type?: unknown });
   const store = createSplitForestStore();
   store.setPayload(payload);
   const w = options.width ?? element.clientWidth;
@@ -57,6 +73,7 @@ export function createSplitTabviz(
   return {
     update(nextPayload) {
       validateSpecVersion(nextPayload as { version?: unknown }, "SplitForestPayload");
+      validateSplitPayloadType(nextPayload as { type?: unknown });
       store.setPayload(nextPayload);
     },
     selectPane(key) {

@@ -1132,12 +1132,13 @@ export type SplitSubviewOverride = Pick<WebSpec, "data" | "labels">;
 export interface SplitForestPayload {
   /** Wire-format version. See WebSpec.version for the policy. */
   version: string;
-  /** Discriminator. R currently emits `"split_table"`; the historical TS
-   *  literal was `"split_forest"`. The runtime never actually checked this
-   *  field, so the mismatch has been latent. Tracked under §2.5-G6 (sync
-   *  audit) for reconciliation in a future minor; widened to `string` until
-   *  resolved so neither side breaks. */
-  type: string;
+  /** Discriminator — R-side `serialize_split_table()` always emits
+   *  `"split_table"` (the R function that produces the data is
+   *  `split_table()` in `R/web_spec.R`). The TS type name
+   *  `SplitForestPayload` retains the forest-plot heritage for now
+   *  (renaming would touch every consumer); the wire value matches R.
+   *  Validated at runtime by `createSplitTabviz`. */
+  type: "split_table";
   splitVars: string[];
   navTree: NavTreeNode[];
   /**

@@ -67,16 +67,14 @@ Split-widget channel `tabviz-split-proxy`:
 
 | Field | Side | Where |
 |---|---|---|
-| `type = "split_table"` | R | `R/utils-serialize.R:844` (in the split serializer) |
-| TS literal `type: "split_forest"` (historical) → now `type: string` | JS | `srcjs/src/types/index.ts::SplitForestPayload` |
+| `type = "split_table"` | R | `R/utils-serialize.R:851` (in the split serializer) |
+| TS literal `type: "split_table"` | JS | `srcjs/src/types/index.ts::SplitForestPayload` |
 
-**Status:** historical drift. R emits `"split_table"`. The TS type previously declared `"split_forest"` (never enforced at runtime). 0a-PR1 widened the TS type to `string` with an inline comment pointing here.
+**Status:** ✅ reconciled. R emits `"split_table"` (matches the function name `split_table()` in `R/web_spec.R`); TS tightened from the temporary `string` widening back to a literal `"split_table"` matching R. `createSplitTabviz` now runtime-validates the discriminator and throws `TypeError` on mismatch (catches "handed a single-table WebSpec by mistake" at the surface, not via a downstream null deref).
 
-**Mechanism:** open. Two paths to reconciliation:
-- Rename R-side to `"split_forest"` and tighten TS back to a literal.
-- Or rename TS-side to `"split_table"` and tighten.
+**Type-name note.** The TS *type name* `SplitForestPayload` retains the forest-plot heritage; renaming would touch every consumer and the wire value (which is what actually crosses the boundary) is now consistent. Track a rename as a future cosmetic cleanup.
 
-Neither is urgent; the runtime ignores the field. Address before the v1.0 publish so the published JSON Schema isn't silently wrong.
+**Mechanism:** runtime check + TypeScript literal. Drift would fail at type-check time (R-side rename would need a TS-side rename + a compiler error from the literal).
 
 ---
 
@@ -158,7 +156,7 @@ When you find a new sync point (or want to upgrade an existing one from manual t
 | S1 — wire-format version | doc-test | ✅ wired (0a-PR1) |
 | S2 — Shiny event field list | doc-test | ✅ wired (0a-PR5) |
 | S3 — proxy method names | manual + indirect (R-side proxy tests) | 🟡 sufficient for now; doc-test would be cleaner |
-| S4 — split-widget type discriminator | (drift documented) | 🟡 reconcile before v1.0 publish |
+| S4 — split-widget type discriminator | TypeScript literal + runtime check in `createSplitTabviz` | ✅ wired |
 | S5 — theme preset names | generate at build time | ⏳ gated on C5 |
 | S6 — column type names | manual | 🟡 sufficient; doc-test possible |
 | S7 — wire field name conventions | single-point normalization (R/utils-serialize.R) | 🟡 sufficient; auto-generated mapping is a future enhancement |
