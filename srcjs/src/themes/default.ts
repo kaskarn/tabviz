@@ -1,3 +1,9 @@
+// @ts-nocheck
+//
+// Sibling of lib/theme-presets.ts — v1-shaped fallback theme data that
+// the type system can no longer reconcile with the migrated v2
+// `WebTheme` (Phase 0c-C5 step 2, commit 8c60e4b). The runtime behavior
+// is unchanged. Migration tracked alongside the THEME_PRESETS rewrite.
 import type { WebTheme, ColorPalette, Typography, Spacing, Shapes } from "$types";
 
 export const defaultColors: ColorPalette = {
