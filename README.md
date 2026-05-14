@@ -4,14 +4,41 @@
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![npm: @tabviz/core](https://img.shields.io/npm/v/@tabviz/core?label=%40tabviz%2Fcore&color=%23cb3837)](https://www.npmjs.com/package/@tabviz/core)
 
-**Interactive forest plots and rich data tables.** Built for
-meta-analysis, regression results, dashboards, and clinical reports —
-with the same Svelte 5 + D3 runtime powering both the R package and a
-standalone npm package.
+**Publication-quality forest plots and rich data tables — interactive
+in the browser, pixel-identical on export.** The R package and the
+[`@tabviz/core`](https://www.npmjs.com/package/@tabviz/core) npm
+package share a single Svelte 5 + D3 rendering engine, so the
+HR-with-confidence-interval that shows up in your Shiny dashboard is
+the same plot you'll paste into the manuscript.
 
 [![tabviz example](docs/images/hero-row-readme.png)](https://kaskarn.github.io/tabviz/gallery/)
 
 *Click for the interactive gallery.*
+
+## Where tabviz fits
+
+Most table packages are excellent at one of static publication-quality
+output (`gt`, `flextable`), general interactive data grids (`reactable`,
+`DT`), or static forest plots (`forestplot`, `forester`,
+`ggforestplot`) — but stitching them together for a clinical /
+meta-analysis workflow means juggling toolchains and losing fidelity
+between the live widget and the figure-of-record.
+
+tabviz is built specifically for that workflow: 17 column types
+(including pooled-effect forest, bar, boxplot, violin) compose into a
+single interactive widget that exports to SVG / PDF / PNG / PPTx
+*exactly* as it appears on screen — no screenshotting, no second
+toolchain. Native Shiny bindings + proxy verbs (`paint_row()`,
+`sort_rows()`, `filter_rows()`, …) keep updates incremental rather than
+re-rendering the whole table. And because the runtime ships as an npm
+package too, the same plot can drop into a non-R web app without
+rebuilding the design in another library.
+
+It's a specialty tool — if you need a general-purpose datatable you'll
+reach for `reactable`; if you need a print-first table grammar, `gt` —
+but for forest plots, meta-analyses, regression-result tables, and any
+"data-frame with embedded comparative visualization" report, it's
+built to be the most direct path from data frame to camera-ready figure.
 
 ## Two ways to use it
 
