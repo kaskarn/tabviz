@@ -35,6 +35,8 @@
     "build:v8": "vite build --config vite.config.v8.ts",
     "build:npm": "vite build --config vite.config.npm.ts && tsc -p tsconfig.npm.json && node scripts/rewrite-dts-aliases.mjs",
     "build:npm:types": "tsc -p tsconfig.npm.json && node scripts/rewrite-dts-aliases.mjs",
+    "check:size": "node scripts/bundle-size-gate.mjs",
+    "check:lockfiles": "npm install --package-lock-only --no-audit --no-fund --dry-run --legacy-peer-deps && bun install --frozen-lockfile --dry-run",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "bun test && vitest run",
     "test:bun": "bun test",
