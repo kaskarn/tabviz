@@ -492,3 +492,84 @@ $derived in one slice (axisComputation) reading a $derived from
 another slice (layout.forestWidth + columns.forestColumns).
 Validating that path before tackling the long-pole layout-zoom is
 the whole point of doing axis third.
+
+### 0c-PR15: C1 slice 3 — axis (cross-slice $derived spike)
+
+Third slice and the load-bearing one: this PR exercises the open
+question from the source-tagging spike (idiom doc §"Risks remaining"):
+do `$derived` chains compose across slice boundaries? If not, the
+idiom needs amendment before tackling layout-zoom (which reads from
+nearly every other slice).
+
+**Spike result: yes, reactivity propagates cleanly.**
+
+The slice owns `axisZooms` + `axisComputation` ($derived) +
+`xScale` ($derived) + four methods. The two $derived blocks read
+across slice boundaries via injected getter closures:
+
+  - `axisComputation` reads `forestColumns` (columns / main) and
+    `layout.forestWidth` (layout-zoom / main)
+  - `xScale` reads the same plus `axisComputation` (in-slice)
+
+The test exhibit (`axis.runes.ts`): a harness in
+`axis.test-harness.svelte.ts` (needs `.svelte.ts` extension so
+`$state` is legal — the runes preprocessor doesn't fire in plain
+`.ts` test files) wraps `forestColumns` and `forestWidth` in
+`$state`, instantiates the slice with closures pointing at those
+states, then mutates the states and re-reads the slice's `$derived`.
+The derived values change. Specifically: `xScale.range()` goes from
+`[12, 388]` to `[12, 788]` when `forestWidth` flips 400 → 800. That's
+exactly the spec-relevant edge — the forest column width that the
+aspect ladder mutates on slider drag.
+
+The pattern that worked: a forward-closure getter (`() => layout.forestWidth`)
+passed in via deps. The slice's `$derived` calls `deps.getLayoutForestWidth()`
+inside its body, Svelte 5 tracks the read through the function call,
+and the edge wires up correctly. No special ceremony required.
+
+Local design wrinkles worth recording:
+
+- **Local aliases in main store for backward compat.** The slice
+  owns the $derived; the main factory still wants to read
+  `axisComputation` / `xScale` by their old names (used by the
+  `layout` derived, `getExportDimensions`, etc.). Two one-liner
+  `$derived` aliases keep the existing call sites unchanged:
+  `const axisComputation = $derived(axis.axisComputation);` /
+  `const xScale = $derived(axis.xScale);`. Cheap aliasing
+  through a single layer of `$derived` indirection; reactivity
+  composes the same way it does inside the slice.
+- **Test brittleness.** `computeAxis` pads requested domain
+  overrides, so my first cut of "plotRegion narrows to [0.5, 1.5]
+  exactly" was too tight. Loosened to "before differs from after"
+  + monotonicity-of-direction. Catches the dep-edge break without
+  binding to computeAxis padding details.
+- **Module imports moved with the slice.** `computeAxis` and
+  `AxisComputation` aren't referenced in the main store anymore;
+  unused-import sweep dropped them from `forestStore.svelte.ts`'s
+  top. `scaleLinear` / `scaleLog` stay because `getExportDimensions`
+  builds tick scales inline.
+- **Type-correctness note.** `forestColumns` is
+  `{index, column: ColumnSpec}[]` — a flattened-leaf shape, not
+  generic `ColumnDef` (which includes ColumnGroup). The slice's
+  `ForestColumnEntry` type matches; lifting it to a shared type
+  later when columns ships would let the two stay aligned through
+  refactors.
+
+vitest spec: 10 tests. 5 cover the slice's own methods (setAxisZoom
+guards, reset, getEffectiveDomain). 2 cover `axisComputation`'s
+own derivation (finite plot region, override shifts the region).
+3 are the spike itself — cross-slice deps drive both `xScale.range`
+and `axisComputation.plotRegion` reactively. The last spike test
+flips `forestColumns` + `forestWidth` in alternation and confirms
+both edges are still tracked after multiple re-reads.
+
+Gates: tsc 0 errors, bun test 161 pass, vitest 48 pass total
+(reorder + cells + theme + axis), R `devtools::test()` 1489/1489,
+visual battery 45/45.
+
+Three slices down, six to go. The risk wall from the idiom doc is
+flat. Next per the C1 plan: **sort-filter** — a small slice with
+one big $derived (`visibleRows`) that reads from data, columns,
+AND semantics. semantics hasn't shipped yet, so sort-filter ships
+with semantics-state reads via forward closures (mirroring how
+axis reads forestColumns / forestWidth).

@@ -27,7 +27,7 @@ import {
   parseBandingString,
 } from "$lib/banding";
 import { niceDomain } from "$lib/scale-utils";
-import { computeAxis, type AxisComputation, VIZ_MARGIN } from "$lib/axis-utils";
+import { VIZ_MARGIN } from "$lib/axis-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
 import { getColumnDisplayText } from "$lib/formatters";
 import { glyphNaturalWidth } from "$lib/width-utils";
@@ -48,6 +48,7 @@ import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte";
 import { createCellsSlice } from "$stores/slices/cells.svelte";
 import { createThemeSlice } from "$stores/slices/theme.svelte";
+import { createAxisSlice } from "$stores/slices/axis.svelte";
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
 
@@ -130,6 +131,21 @@ export function createForestStore() {
     clearAutoWidthsKeepingUserResizes: () => clearAutoWidthsKeepingUserResizes(),
     measureAutoColumns: () => measureAutoColumns(),
     appendOp: (record) => appendOp(record),
+  });
+
+  // ── Axis (cross-slice $derived spike) ────────────────────────────────────
+  // Phase 0c-C1 PR3. Owns `axisZooms` and the global `axisComputation` +
+  // `xScale` $derived blocks. Reads `forestColumns` (columns / main) and
+  // `layout.forestWidth` (layout-zoom / main) via forward-closure getters.
+  // This is the first slice whose $derived chains cross slice boundaries —
+  // see slices/axis.svelte.ts for the open-question rationale. Visual
+  // battery + R tests confirm the reactivity edge propagates correctly
+  // through the dep-call sites.
+  const axis = createAxisSlice({
+    getSpec: () => spec,
+    getForestColumns: () => forestColumns,
+    getLayoutForestWidth: () => layout.forestWidth,
+    markSource,
   });
 
   // Initial dimensions (from htmlwidgets/splitStore, used as fallback before ResizeObserver fires)
@@ -254,9 +270,8 @@ export function createForestStore() {
   // emits `set_aspect_ratio(N)` (or `NULL` when cleared).
   let targetAspect = $state<number | null>(null);
 
-  // Per-column pan/zoom overrides keyed by column id. Only viz columns
-  // (forest, viz_bar, viz_boxplot, viz_violin) consult this map. Session-only.
-  let axisZooms = $state<Record<string, { domain: [number, number] }>>({});
+  // axisZooms lives on the axis slice (Phase 0c-C1 PR3). Read via
+  // `axis.axisZooms`; mutate via `axis.setAxisZoom` / `axis.resetAxisZoom`.
 
   // Zoom & sizing state
   let zoom = $state<number>(1.0);           // User's desired zoom (0.5-2.0)
@@ -323,109 +338,11 @@ export function createForestStore() {
     return rows;
   });
 
-  // Derived: axis computation (axis limits, plot region, ticks)
-  // Uses the new modular axis calculation from axis-utils.ts
-  // NOTE: This computes a global axis based on first forest column for backwards compat.
-  // In practice, each forest column may have its own axis (handled in ForestPlot.svelte)
-  const axisComputation = $derived.by((): AxisComputation => {
-    if (!spec) {
-      return {
-        axisLimits: [0, 1],
-        plotRegion: [0, 1],
-        ticks: [0, 0.5, 1],
-      };
-    }
-
-    // Check if we have any forest columns
-    const firstForest = forestColumns[0]?.column;
-    const hasForest = forestColumns.length > 0;
-
-    // Read forestWidth from `layout` so the aspect-ladder Stage-1
-    // forest-absorption result propagates here. Before this fix the
-    // function computed forestWidth independently from canvas defaults,
-    // so circles + CI lines kept the OLD forest range when the slider
-    // moved (a "squished into left half" artifact that resizing a
-    // column would shake loose). Layout is the single source of truth.
-    const forestWidth = hasForest ? layout.forestWidth : 0;
-
-    // Get scale and nullValue from first forest column options
-    const forestOptions = firstForest?.options?.forest;
-    const scale = forestOptions?.scale ?? "linear";
-    const nullValue = forestOptions?.nullValue ?? (scale === "log" ? 1 : 0);
-
-    // Get inline effects from first forest column (if any)
-    const effects = forestOptions?.effects ?? [];
-
-    // Get primary effect column names from forest options (for col_forest inline definition)
-    const pointCol = forestOptions?.point ?? null;
-    const lowerCol = forestOptions?.lower ?? null;
-    const upperCol = forestOptions?.upper ?? null;
-
-    // Merge forest column axis overrides into theme config
-    // This allows col_forest(axis_range=, axis_ticks=) to override theme defaults
-    const axisConfig = { ...spec.theme.axis };
-    if (forestOptions?.axisRange && Array.isArray(forestOptions.axisRange) && forestOptions.axisRange.length === 2) {
-      axisConfig.rangeMin = forestOptions.axisRange[0];
-      axisConfig.rangeMax = forestOptions.axisRange[1];
-    }
-    if (forestOptions?.axisTicks && Array.isArray(forestOptions.axisTicks)) {
-      axisConfig.tickValues = forestOptions.axisTicks;
-    }
-
-    // Honor first forest column's pan/zoom override for the global scale.
-    // Per-column viz components consult axisZooms directly for their own axes.
-    const firstForestId = firstForest?.id;
-    const domainOverride = firstForestId ? axisZooms[firstForestId]?.domain ?? null : null;
-
-    return computeAxis({
-      rows: spec.data.rows,
-      config: axisConfig,
-      scale,
-      nullValue,
-      forestWidth,
-      pointSize: spec.theme.plot.pointSize,
-      effects,
-      pointCol,
-      lowerCol,
-      upperCol,
-      domainOverride,
-    });
-  });
-
-  // Derived: x-scale (creates D3 scale from plot region)
-  // NOTE: This is a global scale for backwards compat. Each forest column may have its own scale.
-  const xScale = $derived.by(() => {
-    if (!spec) return scaleLinear().domain([0, 1]).range([0, 100]);
-
-    // Get scale type from first forest column
-    const firstForest = forestColumns[0]?.column;
-    const forestOptions = firstForest?.options?.forest;
-    const isLog = (forestOptions?.scale ?? "linear") === "log";
-    const { plotRegion } = axisComputation;
-
-    // Read forestWidth from `layout` so the aspect ladder's Stage 1
-    // (forest absorption) flows into xScale's range. Same fix as
-    // axisComputation above — keeps circles, CI lines, and axis ticks
-    // in sync with the current forest column width when the aspect
-    // slider moves.
-    const hasForest = forestColumns.length > 0;
-    const forestWidth = hasForest ? layout.forestWidth : 0;
-
-    // Add padding to range so edge labels don't get clipped
-    const rangeStart = VIZ_MARGIN;
-    const rangeEnd = Math.max(forestWidth - VIZ_MARGIN, rangeStart + 50);
-
-    if (isLog) {
-      // Ensure domain is positive for log scale
-      const safeDomain: [number, number] = [
-        Math.max(plotRegion[0], 0.01),
-        Math.max(plotRegion[1], 0.02),
-      ];
-      return scaleLog().domain(safeDomain).range([rangeStart, rangeEnd]);
-    }
-
-    return scaleLinear().domain(plotRegion).range([rangeStart, rangeEnd]);
-  });
+  // `axisComputation` and `xScale` $derived blocks live on the axis slice
+  // (Phase 0c-C1 PR3). Read here via `axis.axisComputation` / `axis.xScale`.
+  // Local aliases keep the existing call sites in this file unchanged.
+  const axisComputation = $derived(axis.axisComputation);
+  const xScale = $derived(axis.xScale);
 
   // Helper to flatten all columns into flat ColumnSpec array
   function flattenAllColumns(columns: ColumnDef[]): ColumnSpec[] {
@@ -1377,7 +1294,7 @@ export function createForestStore() {
     // `axisZooms` and `userResizedIds` had no reset path and could hand a
     // new spec a zoom / "user-resized" flag from the previous one when an
     // id happened to match.
-    axisZooms = {};
+    axis.reset();
     userResizedIds = new Set();
     // Cell + label edits + editingTarget + wrapLineCounts all reset
     // via the cells slice.
@@ -2313,7 +2230,7 @@ export function createForestStore() {
     for (const id of hiddenColumnIds) taken.add(id);
     for (const id of Object.keys(columnSpecOverrides)) taken.add(id);
     for (const id of Object.keys(columnWidths)) taken.add(id);
-    for (const id of Object.keys(axisZooms)) taken.add(id);
+    for (const id of Object.keys(axis.axisZooms)) taken.add(id);
     for (const id of userResizedIds) taken.add(id);
 
     return mintUniqueId(base, taken);
@@ -2680,32 +2597,7 @@ export function createForestStore() {
   }
 
   // -- Per-column axis pan/zoom ------------------------------------------------
-  // Writes replace the whole map object so Svelte's $state detects the change.
-  function setAxisZoom(columnId: string, domain: [number, number]) {
-    // Guard against degenerate / inverted domains that would break d3 scales.
-    if (!Number.isFinite(domain[0]) || !Number.isFinite(domain[1])) return;
-    if (domain[0] >= domain[1]) return;
-    axisZooms = { ...axisZooms, [columnId]: { domain: [domain[0], domain[1]] } };
-    markSource("axis_zooms");
-  }
-
-  function resetAxisZoom(columnId: string) {
-    if (!(columnId in axisZooms)) return;
-    const next = { ...axisZooms };
-    delete next[columnId];
-    axisZooms = next;
-    markSource("axis_zooms");
-  }
-
-  function getAxisZoom(columnId: string): { domain: [number, number] } | null {
-    return axisZooms[columnId] ?? null;
-  }
-
-  // Returns the effective domain for a column: user override if present,
-  // otherwise the supplied default.
-  function getEffectiveDomain(columnId: string, defaultDomain: [number, number]): [number, number] {
-    return axisZooms[columnId]?.domain ?? defaultDomain;
-  }
+  // Methods live on the axis slice (Phase 0c-C1 PR3); public-API passthrough below.
 
   /**
    * Deep clone a WebTheme. Uses JSON round-trip (not structuredClone) because
@@ -2961,7 +2853,7 @@ export function createForestStore() {
     autoFit = true;
     maxWidth = null;
     maxHeight = null;
-    axisZooms = {};
+    axis.reset();
 
     // ── Theme customizations (in-panel edits / banding overrides) ────────
     // theme.reset() wipes themeEdits + themeOverrides without touching the
@@ -3171,7 +3063,7 @@ export function createForestStore() {
     });
 
     // Tier 2 — forest/plot-specific overrides
-    $effect(() => { events.emit("axisZooms", axisZooms as unknown as TabvizEvents["axisZooms"]); });
+    $effect(() => { events.emit("axisZooms", axis.axisZooms as unknown as TabvizEvents["axisZooms"]); });
     $effect(() => {
       const mode = bandingOverride;
       const startsWithBand = bandingStartsWithBandOverride;
@@ -3208,7 +3100,7 @@ export function createForestStore() {
       void maxWidth;
       void maxHeight;
       void showZoomControls;
-      void axisZooms;
+      void axis.axisZooms;
       void bandingOverride;
       void bandingStartsWithBandOverride;
       void plotWidthOverride;
@@ -3408,14 +3300,14 @@ export function createForestStore() {
     },
     getColumnWidth,
     getPlotWidth,
-    // Per-column pan/zoom
+    // Per-column pan/zoom — owned by the axis slice.
     get axisZooms() {
-      return axisZooms;
+      return axis.axisZooms;
     },
-    setAxisZoom,
-    resetAxisZoom,
-    getAxisZoom,
-    getEffectiveDomain,
+    setAxisZoom: axis.setAxisZoom,
+    resetAxisZoom: axis.resetAxisZoom,
+    getAxisZoom: axis.getAxisZoom,
+    getEffectiveDomain: axis.getEffectiveDomain,
 
     /**
      * Get current dimensions for export.
@@ -3508,7 +3400,7 @@ export function createForestStore() {
 
         // Apply per-column pan/zoom override if present. Clip bounds track the
         // override so svg-generator's CI clipping + arrow logic matches view.
-        const override = axisZooms[col.id]?.domain;
+        const override = axis.axisZooms[col.id]?.domain;
         const fcDomain: [number, number] = override ?? domain;
         const fcClip: [number, number] = override ?? axisComputation.axisLimits;
         let fcTicks = axisComputation.ticks;
@@ -3538,7 +3430,7 @@ export function createForestStore() {
       const vizColumnsData: Array<{ columnId: string; xDomain: [number, number]; clipBounds: [number, number] }> = [];
       for (const vc of vizColumns) {
         if (vc.column.type === "forest") continue;
-        const override = axisZooms[vc.column.id]?.domain;
+        const override = axis.axisZooms[vc.column.id]?.domain;
         if (!override) continue;
         vizColumnsData.push({
           columnId: vc.column.id,

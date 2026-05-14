@@ -144,7 +144,7 @@ describe("theme slice — setThemeField + overrides", () => {
     theme.setThemeFieldDerived(["accent", "default"], "#000000");
     // Spec still carries the user override; derived didn't bash it.
     const spec = harness.spec as WebSpec;
-    expect((spec.theme.accent as Record<string, unknown>).default).toBe("#ff0000");
+    expect((spec.theme.accent as unknown as Record<string, unknown>).default).toBe("#ff0000");
   });
 
   test("clearOverride removes the path from the override set", () => {
