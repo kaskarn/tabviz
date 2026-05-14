@@ -199,9 +199,11 @@
 
 <style>
   /*
-    Mirrors the .effects-* and .effect-* styles that previously lived
-    in ColumnEditorPopover. Duplicated per the C3 pattern (per-component
-    style scoping); shared CSS lift is a Phase 0c follow-up.
+    Effect-row styles live local to this component per the Svelte 5
+    per-component scoping pattern adopted in C3. Originally inherited
+    from ColumnEditorPopover when the viz editors were inline; the lift
+    to a shared stylesheet was considered as a Phase 0c follow-up but
+    isn't needed — no other component now uses these classes.
   */
   .slot-row {
     display: grid;

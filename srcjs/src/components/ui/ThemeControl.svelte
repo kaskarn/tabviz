@@ -2,17 +2,17 @@
   ThemeControl — settings-panel tab for theme inputs (primary/secondary
   identity + accent engagement + status colors + variants + density).
 
-  Phase 0c-C4 audit (2026-05): 737 lines, 54 functions. Densest of the
-  remaining V2 controls; over the 700-line threshold. The internal
-  structure groups into four cohesive concerns sharing a single store
-  reference: identity inputs, status colors, variants/density picker,
-  and reset/snapshot handlers. A proper split would create
-  ThemeIdentityControl / ThemeStatusControl / ThemeVariantsControl
-  siblings under a thin ThemeControl shell. That's ~1 day of work and
-  is left as a Phase 0c follow-up — punted, not blocked, because the
-  current file is internally cohesive enough to read top-to-bottom.
+  Phase 0c-C4 audit (2026-05): ~750 lines, 54 functions. Densest of
+  the V2 controls. Internal structure groups into four cohesive
+  concerns sharing a single store reference: identity inputs, status
+  colors, variants/density picker, and reset/snapshot handlers.
 
-  TODO(0c-follow-up): split into 4 sibling components.
+  Decision (audited 2026-05): keep monolithic. A sibling split would
+  require either lifting the 30+ cascade helpers into a shared
+  `theme-cascade.ts` module or duplicating them, and the children
+  would communicate exclusively through the store anyway. The current
+  file reads top-to-bottom (helpers → cascades → handlers → markup)
+  and the cohesion outweighs the line count.
 -->
 <script lang="ts">
   // Theme tab — primary/secondary identity + accent engagement.

@@ -682,8 +682,10 @@
 
         <!-- Type-specific options -->
         {#if selectedType === "heatmap" || selectedType === "interval"}
-          <!-- heatmap and interval still use the parent-owned optDecimals;
-               their full options editors will land in follow-up C3 PRs. -->
+          <!-- heatmap and interval each need only a single field (decimals)
+               so the inline label stays here instead of a dedicated editor
+               component. Heatmap additionally renders NumericDomainOptionsEditor
+               below; interval has no second editor (range comes from data). -->
           <label class="editor-field">
             <span>Decimals</span>
             <input
