@@ -11,7 +11,7 @@
 
   let { store, open, onclose }: Props = $props();
 
-  type Tab = "table" | "theme" | "combined";
+  type Tab = "table" | "theme" | "combined" | "js";
   let activeTab = $state<Tab>("combined");
 
   // ---- Theme snapshot (re-uses the v0.19 path) -----------------------
@@ -96,10 +96,35 @@
     return `${themeLine}\n\n${tblLine}`;
   });
 
+  // ---- JS target (Phase 1.5) -----------------------------------------
+  //
+  // Embeds the current resolved WebSpec as JSON and shows a `createTabviz`
+  // invocation. v2 themes are resolved server-side, so the inlined spec
+  // already encodes the active appearance — no JS-side createTheme call
+  // needed at this stage. Op-log → fluent-JS translation (sortBy,
+  // applyFilter, etc.) is a v1.1 enhancement once createTabviz's
+  // imperative API surface stabilizes its UX.
+  const jsSource = $derived.by(() => {
+    if (!store.spec) return "// No spec loaded.";
+    const specJson = JSON.stringify(store.spec, null, 2);
+    return [
+      `import { createTabviz } from "@tabviz/core";`,
+      `import "@tabviz/core/style.css";`,
+      ``,
+      `const spec = ${specJson};`,
+      ``,
+      `const instance = createTabviz(`,
+      `  document.querySelector("#plot")!,`,
+      `  spec,`,
+      `);`,
+    ].join("\n");
+  });
+
   // ---- Active tab content --------------------------------------------
   const activeSource = $derived.by(() => {
     if (activeTab === "table") return tableSource;
     if (activeTab === "theme") return themeSource;
+    if (activeTab === "js") return jsSource;
     return combinedSource;
   });
 
@@ -144,7 +169,7 @@
         <header class="card-header">
           <div class="title-block">
             <h3>View source</h3>
-            <p class="sub">Paste this into R to reproduce the current widget.</p>
+            <p class="sub">{activeTab === "js" ? "Paste this into your TS/JS project to reproduce the current widget." : "Paste this into R to reproduce the current widget."}</p>
           </div>
           <button type="button" class="close" aria-label="Close" onclick={onclose}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -184,6 +209,16 @@
             onclick={() => (activeTab = "combined")}
           >
             Combined
+          </button>
+          <button
+            type="button"
+            class="tab"
+            class:active={activeTab === "js"}
+            role="tab"
+            aria-selected={activeTab === "js"}
+            onclick={() => (activeTab = "js")}
+          >
+            JS
           </button>
         </div>
 
