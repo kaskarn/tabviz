@@ -1,6 +1,6 @@
 {
   "name": "@tabviz/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Interactive forest plots and rich tables — JavaScript runtime for the tabviz R package",
   "homepage": "https://github.com/kaskarn/tabviz",
@@ -20,9 +20,16 @@
     "visualization",
     "htmlwidgets"
   ],
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "exports": {
@@ -47,6 +54,7 @@
   },
   "scripts": {
     "dev": "vite build --watch",
+    "prepublishOnly": "npm run build:npm && npm run check:size && npm run check:lockfiles",
     "build": "vite build && vite build --config vite.config.split.ts && vite build --config vite.config.v8.ts",
     "build:widget": "vite build",
     "build:split": "vite build --config vite.config.split.ts",
