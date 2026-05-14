@@ -8,7 +8,7 @@
 // inner store, which a future API revision can expose).
 
 import { mount, unmount, type Component } from "svelte";
-import SplitForestPlot from "$lib/SplitForestPlot.svelte";
+import SplitForestPlot from "$svelte/SplitForestPlot.svelte";
 import {
   createSplitForestStore,
   type SplitForestStore,

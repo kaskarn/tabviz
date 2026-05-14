@@ -34,6 +34,7 @@ export default defineConfig({
       $spec: path.resolve(__dirname, "src/spec"),
       $export: path.resolve(__dirname, "src/export"),
       $core: path.resolve(__dirname, "src/core"),
+      $svelte: path.resolve(__dirname, "src/svelte"),
     },
   },
 });

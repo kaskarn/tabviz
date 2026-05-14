@@ -24,7 +24,10 @@
       "$spec/*": ["./src/spec/*"],
       "$export": ["./src/export/index.ts"],
       "$export/*": ["./src/export/*"],
-      "$core/*": ["./src/core/*"]
+      "$core": ["./src/core/index.ts"],
+      "$core/*": ["./src/core/*"],
+      "$svelte": ["./src/svelte/index.ts"],
+      "$svelte/*": ["./src/svelte/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.svelte"]

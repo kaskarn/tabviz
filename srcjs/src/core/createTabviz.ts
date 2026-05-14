@@ -12,7 +12,7 @@
 // public-API shape in mind.
 
 import { mount, unmount, type Component } from "svelte";
-import ForestPlot from "$lib/ForestPlot.svelte";
+import ForestPlot from "$svelte/ForestPlot.svelte";
 import { createForestStore, type ForestStore } from "$stores/forestStore.svelte";
 import { validateSpecVersion } from "$spec";
 import type {
