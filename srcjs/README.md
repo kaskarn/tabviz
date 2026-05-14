@@ -153,3 +153,5 @@ the Svelte 5 runes compiler (`.svelte.test.ts` files).
 - [Wire-format versioning](../docs/dev/versioning.md) — SemVer policy
 - [Event contract](../docs/dev/event-contract.md) — typed event reference
 - [Source tagging](../docs/dev/source-tagging.md) — Shiny envelope contract
+- [Spec fields reference](../docs/dev/spec-fields-reference.md) — which `WebSpec` fields are general vs forest-specific vs viz-family
+- [R ↔ JS sync points](../docs/dev/r-js-sync-points.md) — every cross-side mirror and its sync mechanism

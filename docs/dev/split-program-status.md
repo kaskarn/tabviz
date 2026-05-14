@@ -16,11 +16,11 @@ A high-level dashboard for the program described in `docs/dev/frontend-split-spe
 | **Phase 0a — Structural debt** | ✅ **done** | All S1-S14 closed; S15 deferred to 0c-C12 per spec sequencing |
 | **Phase 0b — Dead code** | ✅ **done** | D1/D2/D5 were false positives (active code); D4 found 5 real orphans removed |
 | **Phase 0c — Size/clarity** | ✅ **done** (with documented Phase 1.x deferrals) | Closed: C3, C4, C6, C7, C8, C9, C10, C11 + test runner + ForestOverlays (C2 partial). Deferred to Phase 1.x with inline-justification per the stopping rule: remaining C2 (TableBody+PlotBody), C5 (theme resolver port), C1 (forestStore decomp), C12-a (View Source per spec sequencing). |
-| **Phase 0d — Documentation** | ⏳ next up | G1 JSON Schema final, G2 event contract doc, G5 forest-specific field reference, versioning policy doc, public-API README draft |
-| **Phase 0e — Sync audit** | ⏳ pending (parallel with 0d) | Already partly wired: TABVIZ_STATE_FIELDS sync test (0a-PR5). Remaining: tabviz-proxy method-name list, column type names, wire field conventions doc |
+| **Phase 0d — Documentation** | ✅ **done** | G1 JSON Schema (`srcjs/src/spec/v1.0.json`), G2 [event contract](event-contract.md), G3 [source-tagging envelope](source-tagging.md), G5 [spec fields reference](spec-fields-reference.md) + TSDoc `@kind forest` tags on forest-only types, [versioning policy](versioning.md), [public-API README](../../srcjs/README.md) draft. |
+| **Phase 0e — Sync audit** | ✅ **done** | [`r-js-sync-points.md`](r-js-sync-points.md) enumerates all 8 sync points (S1-S8) with mechanism + status. Doc-tests wired for S1 (wire-format version) + S2 (Shiny event fields). S3-S8 documented as manual / generate / deferred, each with an audit-status row. |
 | Phase 0c — Size/clarity | ⏳ pending | Longest phase; C1 forestStore decomposition is the long pole |
-| Phase 0d — Documentation | ⏳ pending | Mostly writing |
-| Phase 0e — Synchronization audit | ⏳ pending | Parallel with 0d |
+| Phase 0d — Documentation | ✅ done | All G1-G5 + versioning + README; see above |
+| Phase 0e — Synchronization audit | ✅ done | 8 sync points enumerated; S1+S2 doc-tested; rest documented |
 | **Phase 1 — Extract createTabviz / createSplitTabviz** | ✅ **done** | createTabviz (269 lines) + createSplitTabviz (74 lines) shipped as the public API. Htmlwidget bindings are now thin shells around the factories. Full visual battery (45 examples) clean. |
 | Phase 1.5 — View Source JS target | ✅ **v1 done** (1138917). Reframed: v2 themes are resolved server-side so the inlined WebSpec carries the resolved appearance — no JS-side createTheme needed. Op-log → fluent-JS translation is a v1.1 enhancement. |
 | **Phase 2 — Restructure source tree** | ✅ **done — all 5 subpaths in place** | PR1 htmlwidgets/, PR2 export/, PR3 core/, PR4 svelte/. Spec §3.10 subpath shape complete. Source structure now: `core/`, `svelte/`, `export/`, `spec/`, `htmlwidgets/`, with `core/index.ts` and `svelte/index.ts` aggregators establishing the named-export contracts. The `package.json` `exports` field is intentionally deferred to Phase 3 — it points at *built* artifacts, not source. |

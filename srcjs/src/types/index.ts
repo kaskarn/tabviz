@@ -91,6 +91,13 @@ export interface Group {
   depth: number;
 }
 
+/**
+ * Per-group summary diamond — only rendered when the spec has a forest
+ * column. See `docs/dev/spec-fields-reference.md` for the forest /
+ * general / chrome classification.
+ *
+ * @kind forest
+ */
 export interface GroupSummary {
   groupId: string;
   point: number;
@@ -99,6 +106,11 @@ export interface GroupSummary {
   metadata: Record<string, unknown>;
 }
 
+/**
+ * Whole-table summary diamond.
+ *
+ * @kind forest
+ */
 export interface OverallSummary {
   point: number;
   lower: number;
@@ -106,6 +118,14 @@ export interface OverallSummary {
   metadata: Record<string, unknown>;
 }
 
+/**
+ * Inline effect (point + interval) for forest + interval columns. The
+ * `pointCol` / `lowerCol` / `upperCol` triple is the forest-plot
+ * vocabulary; reusing this type outside a forest / interval context
+ * would carry misleading naming.
+ *
+ * @kind forest
+ */
 export interface EffectSpec {
   id: string;
   pointCol: string;
@@ -117,12 +137,24 @@ export interface EffectSpec {
   opacity?: number | null;
 }
 
+/**
+ * The data block of a {@link WebSpec}. `rows` + `groups` + `groupCol` are
+ * general; `summaries`, `overall`, and `weightCol` are forest-only — they
+ * encode meta-analytic summary diamonds and are ignored when no `forest`
+ * column is present.
+ *
+ * See `docs/dev/spec-fields-reference.md` for the field-by-field
+ * classification.
+ */
 export interface WebData {
   rows: Row[];
   groups: Group[];
+  /** @kind forest — per-group summary diamonds. */
   summaries: GroupSummary[];
+  /** @kind forest — whole-table summary diamond. */
   overall?: OverallSummary | null;
   groupCol?: string | null;
+  /** @kind forest — sample-size weight column for summary diamond width. */
   weightCol?: string | null;
 }
 
@@ -285,6 +317,11 @@ export interface RangeColumnOptions {
   showBar?: boolean;
 }
 
+/**
+ * Options for `type: "forest"` columns. Every field is forest-only.
+ *
+ * @kind forest
+ */
 export interface ForestColumnOptions {
   point?: string | null;       // Column name for point estimate (inline single effect)
   lower?: string | null;       // Column name for lower bound (inline single effect)
@@ -305,8 +342,16 @@ export interface ForestColumnOptions {
 // ============================================================================
 // Viz Column Types (focal visualization columns with axes)
 // ============================================================================
+//
+// The viz column family (viz_bar / viz_boxplot / viz_violin) shares the
+// axis machinery (`scale` / `axisRange` / `axisTicks` / `axisGridlines` /
+// `axisLabel` / `showAxis`) with `ForestColumnOptions`, but the two
+// families are independent — `@kind viz` means "applies when the column
+// type is one of viz_bar / viz_boxplot / viz_violin," not "applies when a
+// forest column is also present." Renderer dispatches on
+// `ColumnSpec.type`.
 
-/** Base interface for all viz column types */
+/** @kind viz — shared axis machinery for viz_bar / viz_boxplot / viz_violin. */
 export interface VizColumnOptionsBase {
   scale?: "linear" | "log";
   nullValue?: number;
@@ -776,6 +821,8 @@ export interface WebSpec {
   availableFields?: AvailableField[];
   theme: WebTheme;
   interaction: InteractionSpec;
+  /** @kind forest — `plotWidth` is the forest column's pixel width;
+   *  ignored when no forest column is present. */
   layout: LayoutSpec;
   labels?: PlotLabels;
   watermark?: string;
