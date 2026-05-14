@@ -9,8 +9,10 @@ Description: Create interactive tables with embedded visualizations including
     forest plots, sparklines, bar charts, and more. Ideal for meta-analysis,
     regression results, dashboards, and data reports. Rendered using modern web
     technologies (Svelte, D3.js) for R Markdown, Quarto, Shiny, and standalone
-    HTML. Features include collapsible groups, 15+ column types, conditional
-    styling, publication-ready themes, and static export to SVG/PDF/PNG.
+    HTML. Features include collapsible groups, 17 column types, conditional
+    styling, publication-ready themes, and static export to SVG/PDF/PNG/PPTx.
+    A companion JavaScript package <https://www.npmjs.com/package/@tabviz/core>
+    provides the same runtime for direct use from web applications.
 License: MIT + file LICENSE
 Depends: R (>= 4.1.0)
 Encoding: UTF-8
