@@ -98,6 +98,15 @@ The npm publishable artifacts (ESM bundles per subpath, separate
 `style.css`) are gated on Phase 3 of the split program — see
 [`docs/dev/frontend-split-spec.md`](../docs/dev/frontend-split-spec.md).
 
+### Toolchain
+
+The build artifact ships from **npm** (`npm ci` in CI, `package-lock.json`
+is canonical). Local development with `bun` is supported and tracked —
+`bun.lock` is checked in so `bun install` + `bun test` work fast, but
+the published artifact is built from `package-lock.json`. The two
+lockfiles must agree on resolved versions; CI will gate on this when
+Phase 3 publish wires up.
+
 ## Testing
 
 ```sh
