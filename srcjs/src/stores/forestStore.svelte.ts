@@ -6,11 +6,9 @@ import type {
   ColumnDef,
   RowOrderOverrides,
   DragState,
-  ComputedLayout,
   DisplayRow,
   GroupHeaderRow,
   DataRow,
-  ZoomState,
 } from "$types";
 import {
   computeBandIndexes,
@@ -18,18 +16,7 @@ import {
 } from "$lib/banding";
 import { niceDomain } from "$lib/scale-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
-import { LAYOUT, TEXT_MEASUREMENT } from "$lib/rendering-constants";
-import { computeAxisLayout, parseFontSize } from "$lib/typography-layout";
-
-/**
- * True if any top-level column in the spec is a ColumnGroup (which would
- * push the header strip to a 2-row layout). Used by the layout engine
- * to size the header band based on whether content requires depth=2.
- */
-function anyForestColumnGroups(columns: ColumnDef[] | undefined): boolean {
-  if (!columns) return false;
-  return columns.some(c => c.isGroup);
-}
+import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
 import { ops, type OpRecord } from "$lib/op-recorder";
 import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte";
 import { createCellsSlice } from "$stores/slices/cells.svelte";
@@ -46,6 +33,7 @@ import {
   mintUniqueId as _mintUniqueId,
 } from "$stores/slices/columns.svelte";
 import { createDataSlice } from "$stores/slices/data.svelte";
+import { createLayoutZoomSlice } from "$stores/slices/layout-zoom.svelte";
 
 // Re-exports preserved for the existing public surface (tests import these
 // from forestStore.svelte; the canonical home is now the columns slice).
@@ -143,7 +131,7 @@ export function createForestStore() {
   const axis = createAxisSlice({
     getSpec: () => spec,
     getForestColumns: () => columns.forestColumns,
-    getLayoutForestWidth: () => layout.forestWidth,
+    getLayoutForestWidth: () => layoutZoom.layout.forestWidth,
     markSource,
   });
 
@@ -205,6 +193,28 @@ export function createForestStore() {
     markSource,
   });
 
+  // ── Layout + zoom (the final slice) ──────────────────────────────────────
+  // Phase 0c-C1 PR11. Owns the entire "where does each pixel land on the
+  // canvas" story — the giant `layout` $derived (the lever ladder), the
+  // zoom / autoFit / max-dim state + actions, container + scalable
+  // dimensions, naturalContentWidth / fitScale / actualScale / isClamped,
+  // plot-width override, localStorage zoom persistence, and the initial
+  // dimension fallback. Reads heavily across the dep graph: spec (theme +
+  // data), columns (allColumns / forestColumns / columnWidths /
+  // userResizedIds), data (displayRows / targetAspect), cells
+  // (wrapLineCounts). All via forward-closure getters.
+  const layoutZoom = createLayoutZoomSlice({
+    getSpec:           () => spec,
+    getAllColumns:     () => columns.allColumns,
+    getForestColumns:  () => columns.forestColumns,
+    getColumnWidths:   () => columns.columnWidths,
+    getUserResizedIds: () => columns.userResizedIds,
+    getDisplayRows:    () => data.displayRows,
+    getTargetAspect:   () => data.targetAspect,
+    getWrapLineCounts: () => cells.wrapLineCounts,
+    markSource,
+  });
+
   // Aliases for the columns slice's derived blocks + state. Many
   // references throughout this file read these by their flat names;
   // keeping the aliases avoids a wholesale `columns.X` rewrite.
@@ -238,9 +248,8 @@ export function createForestStore() {
   const settingsOpen = $derived(data.settingsOpen);
   const targetAspect = $derived(data.targetAspect);
 
-  // Initial dimensions (from htmlwidgets/splitStore, used as fallback before ResizeObserver fires)
-  let initialWidth = $state(800);
-  let initialHeight = $state(400);
+  // initialWidth / initialHeight live on the layout-zoom slice (Phase 0c-C1
+  // PR11) along with every other canvas-sizing dimension.
 
   // Interaction state
   // Selection state. With the unified paint-as-selection model, the
@@ -275,32 +284,36 @@ export function createForestStore() {
 
   // Tooltip state moved to rows-groups slice (Phase 0c-C1 PR5).
 
-  // Plot width override (for resizing the forest plot area)
-  let plotWidthOverride = $state<number | null>(null);
-
-  // targetAspect lives on the data slice (Phase 0c-C1 PR10); alias below.
+  // plotWidthOverride / zoom / autoFit / maxWidth / maxHeight /
+  // showZoomControls + container + scalable dimensions +
+  // containerElementId + the effectiveWidth/Height derived all live on
+  // the layout-zoom slice (Phase 0c-C1 PR11). Aliases declared further
+  // below keep existing references in this file unchanged.
 
   // axisZooms lives on the axis slice (Phase 0c-C1 PR3). Read via
   // `axis.axisZooms`; mutate via `axis.setAxisZoom` / `axis.resetAxisZoom`.
 
-  // Zoom & sizing state
-  let zoom = $state<number>(1.0);           // User's desired zoom (0.5-2.0)
-  let autoFit = $state<boolean>(true);      // Shrink if content exceeds container
-  let maxWidth = $state<number | null>(null);   // Optional container max-width
-  let maxHeight = $state<number | null>(null);  // Optional container max-height
-  let showZoomControls = $state<boolean>(true);
-
-  // Container dimensions (set by ForestPlot component via ResizeObserver)
-  let containerWidth = $state<number>(0);
-  let containerHeight = $state<number>(0);
-  let scalableNaturalWidth = $state<number>(0);
-  let scalableNaturalHeight = $state<number>(0);
-  let containerElementId = $state<string | null>(null);
-
-  // Effective dimensions: prefer measured containerWidth, fall back to initial
-  // This unifies the two dimension systems - layout always uses the effective value
-  const effectiveWidth = $derived(containerWidth > 0 ? containerWidth : initialWidth);
-  const effectiveHeight = $derived(containerHeight > 0 ? containerHeight : initialHeight);
+  // Layout-zoom slice aliases — keep flat names so existing reads in this
+  // file stay unchanged.
+  const initialWidth = $derived(layoutZoom.initialWidth);
+  const initialHeight = $derived(layoutZoom.initialHeight);
+  const plotWidthOverride = $derived(layoutZoom.plotWidthOverride);
+  const zoom = $derived(layoutZoom.zoom);
+  const autoFit = $derived(layoutZoom.autoFit);
+  const maxWidth = $derived(layoutZoom.maxWidth);
+  const maxHeight = $derived(layoutZoom.maxHeight);
+  const showZoomControls = $derived(layoutZoom.showZoomControls);
+  const containerWidth = $derived(layoutZoom.containerWidth);
+  const containerHeight = $derived(layoutZoom.containerHeight);
+  const scalableNaturalWidth = $derived(layoutZoom.scalableNaturalWidth);
+  const scalableNaturalHeight = $derived(layoutZoom.scalableNaturalHeight);
+  const effectiveWidth = $derived(layoutZoom.effectiveWidth);
+  const effectiveHeight = $derived(layoutZoom.effectiveHeight);
+  const layout = $derived(layoutZoom.layout);
+  const naturalContentWidth = $derived(layoutZoom.naturalContentWidth);
+  const fitScale = $derived(layoutZoom.fitScale);
+  const actualScale = $derived(layoutZoom.actualScale);
+  const isClamped = $derived(layoutZoom.isClamped);
 
   // `visibleRows` $derived lives on the sort-filter slice (Phase 0c-C1 PR4).
   // Local alias keeps existing call sites (displayRows, etc.) unchanged.
@@ -380,485 +393,6 @@ export function createForestStore() {
     return out;
   });
 
-  // Derived: computed layout
-  const layout = $derived.by((): ComputedLayout => {
-    if (!spec) {
-      return {
-        totalWidth: effectiveWidth,
-        totalHeight: effectiveHeight,
-        tableWidth: 300,
-        forestWidth: 400,
-        headerHeight: 36,
-        rowHeight: 28,
-        plotHeight: 300,
-        axisHeight: 32,
-        nullValue: 0,
-        summaryYPosition: 0,
-        showOverallSummary: false,
-        rowPositions: [],
-        rowHeights: [],
-      };
-    }
-
-    // Natural rowHeight from the theme; the targetAspect lever ladder may
-    // scale it below to absorb the height delta when an aspect target is
-    // pinned. Width-side absorption happens via forestWidth further down.
-    const naturalRowHeight = spec.theme.spacing.rowHeight;
-    let rowHeight = naturalRowHeight;
-    // Header height auto-grows when the configured value can't fit the
-    // font's text region across the (possibly multi-tier) header. Several
-    // shipped theme presets default to 24-30 px, which leaves zero
-    // breathing room for default 14 px headers — and goes negative when
-    // column groups split the band into two 12-15 px sub-tracks. The min
-    // = (font height + 6 px breathing) × headerDepth ensures multi-tier
-    // headers never visually clip regardless of the theme.
-    const lineHeight = 1.5;
-    const headerFontSize = parseFontSize(spec.theme.text.body.size);
-    const headerScale = 1.05;
-    const minHeaderRowHeight = Math.ceil(headerFontSize * headerScale * lineHeight) + 6;
-    const headerDepthForLayout = anyForestColumnGroups(spec.columns) ? 2 : 1;
-    const headerHeight = Math.max(
-      spec.theme.spacing.headerHeight,
-      minHeaderRowHeight * headerDepthForLayout,
-    );
-    const axisGap = spec.theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP; // Gap between table and axis
-    // Axis region size derived from typography. Replaces the old
-    // `LAYOUT.AXIS_HEIGHT (32) + LAYOUT.AXIS_LABEL_HEIGHT (32) = 64`
-    // hardcoded total — that was conservative for the default font and
-    // over-reserved for everyone else. `someColumnHasAxisLabel` mirrors
-    // svg-generator's same check so both paths agree on whether the
-    // axis-label band is present.
-    const someColumnHasAxisLabel = forestColumns.some(
-      fc => !!fc.column.options?.forest?.axisLabel,
-    );
-    const axisGeom = computeAxisLayout(
-      { fontSizeSm: spec.theme.text.label.size, lineHeight: 1.5 },
-      someColumnHasAxisLabel,
-      spec.theme.plot.tickMarkLength,
-    );
-    const axisHeight = axisGap + axisGeom.axisRegionHeight;
-    const hasForest = forestColumns.length > 0;
-    // Use override if set, otherwise calculate default (25% of width, min 200px)
-    // Forest column width precedence (v0.25.0): runtime drag override
-    // > theme.layout.plotWidth (numeric) > auto (25% of width, min 200).
-    // Honouring the theme value lets the Layout settings field actually
-    // drive the live render — historically only SVG export read it.
-    const themePlotWidth = spec.theme.layout?.plotWidth;
-    let forestWidth = hasForest
-      ? (plotWidthOverride
-        ?? (typeof themePlotWidth === "number" ? themePlotWidth : Math.max(effectiveWidth * 0.25, 200)))
-      : 0;
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Aspect ladder — reshape the layout to hit a target aspect ratio
-    // ═══════════════════════════════════════════════════════════════════
-    //
-    // When `targetAspect` is pinned (via set_aspect_ratio() or the
-    // in-widget slider), reshape the layout to hit `width / height ==
-    // targetAspect`. Live-widget version mirrors the static-export math
-    // in svg-generator.ts's `generateSVGForAspectTarget`; both sides MUST
-    // stay in lock-step so the downloaded SVG matches the live view.
-    //
-    // Anchor model (anchor in {"width", "height", "auto"}):
-    //   - "width":  preserve natural width, grow / shrink height
-    //   - "height": preserve natural height, grow / shrink width — may
-    //              expand `layoutWidth` past the canvas (see layoutWidth
-    //              note below)
-    //   - "auto":   pick the dim that yields the smaller delta from
-    //              natural; falls through to "height" for wide targets
-    //              and "width" for tall ones.
-    //
-    // Three width stages (only fire when targetAspect changes width):
-    //   1. Forest absorption: when a forest column is present, it flexes
-    //      to absorb width delta up to FLEX_CAP × natural (= 2× by
-    //      default). Within the cap this is the only width change.
-    //   2. Non-forest column scale: when stage 1 saturates (delta exceeds
-    //      what flex can absorb), the residual width spreads across non-
-    //      flex columns via `aspectNonForestScale`. Floored at 0.25 so
-    //      narrow targets don't collapse columns to zero. Without this
-    //      stage, slider drags past forest's cap would be inert.
-    //   3. Layout overflow: when anchor="height" or "auto" wants a width
-    //      greater than the canvas, `layoutWidth` lifts past the canvas
-    //      cap (capped at 8× canvas for sanity). The container's existing
-    //      auto-fit / scroll machinery handles the visual fit; the wire
-    //      width matches the requested aspect exactly. anchor="width"
-    //      paths never trigger this stage.
-    //
-    // Height ladder (direction-aware): when height delta is nonzero,
-    //   - Taller targets: split delta into chrome share (CHROME_SHARE =
-    //     0.35, applied to header + axis via `chromeScale`) and row
-    //     share (applied to rowHeight). Padding stays unscaled to keep
-    //     horizontal layout stable.
-    //   - Shorter targets: shrink rowHeight first, floored at
-    //     MIN_ROW_HEIGHT for legibility. When the floor saturates, chrome
-    //     shrinks to absorb the residual (floored at 0.4 so axis labels
-    //     stay readable).
-    //
-    // Tabular (no-forest) tables also get height handling. Stage 1 is a
-    // no-op without a forest column, but stages 2-3 + the height ladder
-    // still run.
-    //
-    // The variables below carry stage outputs into the rest of the
-    // layout derivation; descriptive names track the algorithm above.
-
-    // Stage 2 output — non-forest column scale factor. Default 1 (no
-    // change). When stage 1 saturates, the residual width is spread
-    // across non-flex columns via this multiplier so the slider keeps
-    // producing visible change past the flex cap.
-    let aspectNonForestScale = 1;
-    let chromeScale = 1;
-    let aspectTargetWidth: number | null = null;
-    let aspectTargetHeight: number | null = null;
-    let layoutWidth = effectiveWidth;
-    if (targetAspect != null) {
-      const FLEX_CAP = 2;
-      const naturalForestWidth = forestWidth;
-      // Effective row-slot count for the height budget: data rows
-      // contribute 1 slot each (spacers are absorbed at half their
-      // weight but with rowHeight ≥ MIN_ROW_HEIGHT they round close
-      // enough), plus 1.5 slots for the overall-summary row when
-      // present (mirrors the `hasOverall ? rowHeight * 1.5 : 0`
-      // term in plotHeight below). Without this, the lever ladder
-      // budgets for `displayRows.length` slots but the renderer
-      // pours rowDelta into `length + 1.5` slots — overshooting
-      // totalHeight by `overall * 1.5 / length` of the requested
-      // height delta.
-      const hasOverallForBudget = !!spec.data.overall;
-      const effectiveRowSlots =
-        displayRows.length + (hasOverallForBudget ? 1.5 : 0);
-      const approxRowsHeight = effectiveRowSlots * naturalRowHeight;
-      const approxChromeHeight =
-        headerHeight + axisHeight + spec.theme.spacing.padding * 2;
-      const approxNaturalHeight = approxRowsHeight + approxChromeHeight;
-      const approxNaturalWidth = effectiveWidth;
-      const naturalAspect = approxNaturalWidth > 0 && approxNaturalHeight > 0
-        ? approxNaturalWidth / approxNaturalHeight
-        : 1;
-
-      // Resolve target dims from anchor. anchor="auto" picks "height"
-      // for wide targets (where preserving natural-h grows w) and "width"
-      // for tall targets (where preserving natural-w grows h). The
-      // layout-overflow stage (3) handles target_w > canvas when needed.
-      const rawAnchor = spec.targetAspectAnchor ?? "width";
-      const resolvedAnchor: "width" | "height" =
-        rawAnchor === "auto"
-          ? (targetAspect >= naturalAspect ? "height" : "width")
-          : rawAnchor;
-      let targetWidth: number;
-      let targetHeight: number;
-      if (resolvedAnchor === "height") {
-        // Anchor=height: preserve natural rowHeight by growing width.
-        // Stage 3 fires when targetWidth > canvas — `layoutWidth` lifts
-        // past the canvas cap so the grid renders at the requested width
-        // and the container's auto-fit / scroll handles the visual fit.
-        //
-        // Hard cap: layoutWidth never exceeds 8× canvas. The TARGET_
-        // ASPECT_MAX = 10 setter clamp keeps `targetAspect` finite, but
-        // even ratio = 10 on a tall spec could blow up rendered DOM size;
-        // 8× canvas is the practical visible / scrollable cap (auto-fit's
-        // min-zoom 0.7 means anything past ~1.4× already overflows).
-        const MAX_LAYOUT_WIDTH = approxNaturalWidth * 8;
-        targetHeight = approxNaturalHeight;
-        targetWidth = Math.min(approxNaturalHeight * targetAspect, MAX_LAYOUT_WIDTH);
-        if (targetWidth > approxNaturalWidth) {
-          layoutWidth = targetWidth;
-        }
-      } else {
-        // Anchor width: canvas dictates; height falls out of the ratio.
-        targetWidth = approxNaturalWidth;
-        targetHeight = targetWidth / targetAspect;
-      }
-      aspectTargetWidth = targetWidth;
-      aspectTargetHeight = targetHeight;
-
-      // ── Stage 1 — Forest absorption (cap-clamped flex). ──────────
-      // Forest column flexes to absorb width delta up to FLEX_CAP×
-      // natural. Within the cap, it's the only width stage that fires.
-      const widthDelta = targetWidth - approxNaturalWidth;
-      let widthAbsorbedByFlex = 0;
-      if (hasForest && Math.abs(widthDelta) > 0.5) {
-        const proposedFlex = naturalForestWidth + widthDelta;
-        const cappedFlex = Math.max(
-          naturalForestWidth / FLEX_CAP,
-          Math.min(naturalForestWidth * FLEX_CAP, proposedFlex),
-        );
-        forestWidth = Math.max(0, cappedFlex);
-        widthAbsorbedByFlex = cappedFlex - naturalForestWidth;
-      }
-
-      // ── Stage 2 — Non-forest column scale. ───────────────────────
-      // When stage 1 saturates and there's residual width to absorb,
-      // scale all non-flex columns proportionally. Without this stage,
-      // slider drags past forest's 2× cap would be inert.
-      //
-      // Denominator nuance: the actual sum of measured non-flex column
-      // widths, NOT `approxNaturalWidth - naturalForestWidth`. The
-      // latter folds in chrome (padding), which makes the scale factor
-      // too small — columns grow by less than the residual, leaving
-      // "ghost width" claimed by `layoutWidth` but never allocated to
-      // any rendered element. The downloaded SVG then has wrong w/h.
-      const widthResidual = widthDelta - widthAbsorbedByFlex;
-      if (Math.abs(widthResidual) > 0.5) {
-        let naturalNonForestSum = 0;
-        for (const c of allColumns) {
-          if (c.type === "forest") continue;
-          const w = columnWidths[c.id]
-            ?? (typeof c.width === "number" ? c.width : 0);
-          naturalNonForestSum += w;
-        }
-        if (naturalNonForestSum > 0) {
-          aspectNonForestScale = Math.max(
-            0.25,
-            (naturalNonForestSum + widthResidual) / naturalNonForestSum,
-          );
-        }
-      }
-
-      // ── Height ladder (direction-aware). ─────────────────────────
-      // Mirrors `generateSVGForAspectTarget` in svg-generator.ts so the
-      // live widget and downloaded SVG agree pixel-for-pixel.
-      //   - Taller targets: split heightDelta into chrome share
-      //     (CHROME_SHARE = 0.35) and row share. Chrome scaling is
-      //     applied via chromeScale to headerHeight + axisHeight below.
-      //   - Shorter targets: shrink rowHeight first, floored at
-      //     MIN_ROW_HEIGHT for legibility. When the floor saturates,
-      //     chrome shrinks to absorb residual (floored at 0.4 so axis
-      //     labels stay readable).
-      // Padding (spec.theme.spacing.padding) is intentionally NOT
-      // scaled — keeps horizontal layout stable. Tradeoff: a few px of
-      // slop vs the exact target, far smaller than the systematic ~30%
-      // shortfall this offsets.
-      const heightDelta = targetHeight - approxNaturalHeight;
-      const bodyFontSize = parseFontSize(spec.theme.text.body.size);
-      const MIN_ROW_HEIGHT = Math.max(14, Math.round(bodyFontSize * 1.4) + 4);
-      const naturalChromeHeight = approxChromeHeight;
-      const naturalPlotHeight = approxRowsHeight;
-      // chromeScale denominator is the *scalable* subset of natural
-      // chrome — `headerHeight + axisHeight`, NOT
-      // `naturalChromeHeight` (which also folds in `padding * 2`,
-      // intentionally unscaled to keep width stable). Using the
-      // full chrome as denominator under-delivered by
-      // `padding * 2 * chromeDelta / naturalChromeHeight` (a few %
-      // at extreme ratios). Mirrors the same fix in
-      // svg-generator.ts so live + static stay in lock-step.
-      const scalableChromeHeight = headerHeight + axisHeight;
-
-      if (heightDelta > 0 && naturalPlotHeight > 0) {
-        const CHROME_SHARE = 0.35;
-        const chromeDelta = heightDelta * CHROME_SHARE;
-        const rowDelta = heightDelta - chromeDelta;
-        if (scalableChromeHeight > 0)
-          chromeScale = (scalableChromeHeight + chromeDelta) / scalableChromeHeight;
-        rowHeight = naturalRowHeight + rowDelta / effectiveRowSlots;
-      } else if (heightDelta < 0 && naturalPlotHeight > 0) {
-        const targetPlotHeight = Math.max(0, targetHeight - naturalChromeHeight);
-        const proposedRowHeight =
-          (targetPlotHeight / naturalPlotHeight) * naturalRowHeight;
-        if (proposedRowHeight >= MIN_ROW_HEIGHT) {
-          rowHeight = proposedRowHeight;
-        } else {
-          rowHeight = MIN_ROW_HEIGHT;
-          const flooredPlotHeight = MIN_ROW_HEIGHT * effectiveRowSlots;
-          const residualHeight =
-            targetHeight - (naturalChromeHeight + flooredPlotHeight);
-          if (scalableChromeHeight > 0) {
-            chromeScale = Math.max(
-              0.4,
-              (scalableChromeHeight + residualHeight) / scalableChromeHeight,
-            );
-          }
-        }
-      }
-    }
-    // Apply chromeScale: scale chrome by the height ladder's output. The
-    // unscaled `headerHeight` / `axisHeight` declared above stay the
-    // natural baseline (used by stableNaturalChromeHeight below); the
-    // scaled values are what every consumer sees via `layout`.
-    const scaledHeaderHeight = headerHeight * chromeScale;
-    const scaledAxisHeight = axisHeight * chromeScale;
-
-    const tableWidth = layoutWidth - forestWidth;
-
-    const hasOverall = !!spec.data.overall;
-
-    // Calculate actual heights for each row. Group-header rows pick up the
-    // themed `rowGroupPadding` (symmetric top/bottom via `.grid-cell.group-row`
-    // CSS rule) so the overlay / axis Y positions land on the same row
-    // edges the DOM actually renders. Spacer rows stay half-height.
-    const rowGroupPadding = spec.theme.spacing.rowGroupPadding ?? 0;
-    const dataLineHeightPx = Math.ceil(parseFontSize(spec.theme.text.body.size) * lineHeight);
-    const rowHeights: number[] = [];
-    // rowGroupPadding (v0.24.1+) lives as bottom margin on the LAST
-    // data row of the previous top-level group, not as a top strip
-    // inside the new group_header. Cleaner styling: group_header tracks
-    // stay at rowHeight, and the heading's themed bg / borders don't
-    // bleed into the separator. The data row's track inflates; the cell
-    // uses padding-bottom to anchor content at the original visible
-    // band (rowGroupPadding of empty space sits below it).
-    for (let i = 0; i < displayRows.length; i++) {
-      const displayRow = displayRows[i];
-      let h: number;
-      if (displayRow.type === "data" && displayRow.row.style?.type === "spacer") {
-        h = rowHeight / 2;
-      } else if (displayRow.type === "group_header") {
-        h = rowHeight;
-      } else if (displayRow.type === "data") {
-        const lines = cells.wrapLineCounts[displayRow.row.id] ?? 1;
-        h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
-      } else {
-        h = rowHeight;
-      }
-      if (rowPaddedAfter[i]) h += rowGroupPadding;
-      rowHeights.push(h);
-    }
-
-    // Calculate cumulative Y positions for each row
-    const rowPositions: number[] = [];
-    let cumulativeY = 0;
-    for (const h of rowHeights) {
-      rowPositions.push(cumulativeY);
-      cumulativeY += h;
-    }
-
-    // Plot height: sum of all row heights + space for overall summary
-    const plotHeight = cumulativeY + (hasOverall ? rowHeight * 1.5 : 0);
-
-    // Get nullValue from first forest column options
-    const firstForest = forestColumns[0]?.column;
-    const forestOptions = firstForest?.options?.forest;
-    const scale = forestOptions?.scale ?? "linear";
-    const nullValue = forestOptions?.nullValue ?? (scale === "log" ? 1 : 0);
-
-    // Stable natural aspect — pre-mutation approximation. Used by the
-    // in-widget slider as the *fixed* baseline so the slider's value ↔
-    // ratio mapping doesn't drift as the aspect ladder reshapes the
-    // layout. naturalRowHeight, displayRows.length, and the chrome
-    // estimate are all pre-mutation values; effectiveWidth (canvas)
-    // doesn't depend on targetAspect.
-    const stableNaturalRowsHeight = displayRows.length * naturalRowHeight;
-    const stableNaturalChromeHeight =
-      headerHeight + axisHeight + spec.theme.spacing.padding * 2;
-    const stableNaturalHeight = stableNaturalRowsHeight + stableNaturalChromeHeight;
-    const stableNaturalAspect = stableNaturalHeight > 0
-      ? effectiveWidth / stableNaturalHeight
-      : 1;
-
-    return {
-      totalWidth: layoutWidth,
-      totalHeight: Math.max(effectiveHeight, plotHeight + scaledHeaderHeight + scaledAxisHeight + spec.theme.spacing.padding * 2),
-      tableWidth,
-      forestWidth,
-      // Stage 2 output — non-flex column scale factor. Multiply
-      // measured column widths by this in the renderer's
-      // gridTemplateColumns / getColWidth so wider aspect ratios stay
-      // monotonic past the flex cap. 1 by default = no change.
-      aspectNonForestScale,
-      // Height-ladder output — chrome scale factor. Already pre-applied
-      // to the headerHeight / axisHeight emitted below; exposed so the
-      // export path can sanity-check parity.
-      chromeScale,
-      // Exact aspect-target dimensions when targetAspect is pinned.
-      // getExportDimensions() routes through these so downloads honour
-      // the requested aspect exactly.
-      aspectTargetWidth,
-      aspectTargetHeight,
-      // Stable natural aspect — fixed reference point for the slider
-      // regardless of current targetAspect.
-      naturalAspect: stableNaturalAspect,
-      headerHeight: scaledHeaderHeight,
-      rowHeight,
-      plotHeight,
-      axisHeight: scaledAxisHeight,
-      // Font-derived axisRegion size — exposed so the export path
-      // can back out a spec axisGap value that recomputes to the
-      // live `axisHeight` (= axisGap + axisRegionHeight) after the
-      // renderer re-derives axisRegionHeight from the same theme.
-      axisRegionHeight: axisGeom.axisRegionHeight,
-      nullValue,
-      summaryYPosition: plotHeight - rowHeight,
-      showOverallSummary: hasOverall,
-      rowPositions,
-      rowHeights,
-    };
-  });
-
-  // Derived: natural content width (intrinsic width based on column specs and current layout)
-  // Used for fill mode scaling calculations and SVG export
-  // NOTE: This now uses layout.forestWidth for WYSIWYG export accuracy
-  const naturalContentWidth = $derived.by((): number => {
-    if (!spec) return 800;
-
-    const DEFAULT_COLUMN_WIDTH = 100;
-
-    // Calculate sum of all column widths (excluding forest columns
-    // which have separate width). Apply Stage-2 aspectNonForestScale
-    // to non-flex columns unless the user has manually resized — keeps
-    // this aggregate in sync with `gridTemplateColumns` and
-    // `getExportDimensions` so the SVG export's at-least-width path
-    // doesn't see a sub-content-width "natural" floor.
-    const aspectScale = layout.aspectNonForestScale ?? 1;
-    let totalColumnWidth = 0;
-    for (const col of allColumns) {
-      // Skip forest columns - they have their own width calculation
-      if (col.type === "forest") continue;
-      // Use computed width if available, otherwise spec width, otherwise default
-      const userResized = userResizedIds.has(col.id);
-      const base = (columnWidths[col.id]
-        ?? (typeof col.width === 'number' ? col.width : null)
-        ?? DEFAULT_COLUMN_WIDTH);
-      const scaled = (userResized || Math.abs(aspectScale - 1) < 1e-6)
-        ? base : base * aspectScale;
-      totalColumnWidth += scaled;
-    }
-
-    // Use layout.forestWidth for consistent WYSIWYG export
-    // This ensures SVG total width matches what user sees on screen
-    const forestWidth = layout.forestWidth;
-
-    // Add padding
-    const padding = spec.theme.spacing.padding * 2;
-
-    return totalColumnWidth + forestWidth + padding;
-  });
-
-  // Derived: fit scale — how much we'd need to shrink to fit the
-  // container width. Vertical overflow always scrolls naturally;
-  // applying heightFit when aspect was pinned (the prior behaviour)
-  // made the slider feel awful — the whole widget CSS-scaled smaller
-  // as the user dragged narrower, then snapped back when the slider
-  // was released. Width-only fit + vertical scroll is the symmetric,
-  // smooth model.
-  const fitScale = $derived.by((): number => {
-    if (containerWidth <= 0 || scalableNaturalWidth <= 0) return 1;
-    const contentWidth = scalableNaturalWidth * zoom;
-    return contentWidth > containerWidth
-      ? containerWidth / contentWidth
-      : 1;
-  });
-
-  // Derived: actual rendered scale = zoom × fitScale (when autoFit) or just zoom.
-  //
-  // When an aspect target is pinned AND auto-fit is on, drop the
-  // min-zoom floor so content seamlessly resizes to fit the canvas —
-  // that's the core promise of auto-fit. The user's "font size
-  // relative to width decreases" intent is met by content shrinking;
-  // shrinking below readability is the price of an aspect target the
-  // canvas can't honour at native size, and is a deliberate user
-  // choice. The hard floor of 0.05 prevents complete invisibility on
-  // pathological extremes.
-  //
-  // Without aspect pin, the original 0.5 floor stays — protects
-  // unintentional shrinkage under tight container constraints (e.g.
-  // mobile RStudio viewer).
-  const minZoomFloor = $derived(
-    targetAspect != null ? (autoFit ? 0.05 : 0.5) : 0.5
-  );
-  const actualScale = $derived(
-    autoFit ? Math.max(minZoomFloor, zoom * fitScale) : Math.max(minZoomFloor, Math.min(2.0, zoom))
-  );
-
-  // Derived: is auto-fit currently clamping the zoom?
-  const isClamped = $derived(autoFit && fitScale < 1);
 
   // Actions
   function setSpec(newSpec: WebSpec) {
@@ -942,11 +476,7 @@ export function createForestStore() {
     columns.measureAutoColumns();
   }
 
-  function setDimensions(w: number, h: number) {
-    // Set initial dimensions (used as fallback before ResizeObserver fires)
-    initialWidth = w;
-    initialHeight = h;
-  }
+  // setDimensions lives on the layout-zoom slice (Phase 0c-C1 PR11).
 
   // setSelectedRows + paintRowWithActiveToken + paintCellWithActiveToken
   // live on the semantics slice (Phase 0c-C1 PR6).
@@ -999,155 +529,12 @@ export function createForestStore() {
 
   // setHovered + setTooltip live on the rows-groups slice (Phase 0c-C1 PR5).
 
-  function setPlotWidth(newWidth: number | null) {
-    plotWidthOverride = newWidth === null ? null : Math.max(100, newWidth); // min 100px
-    markSource("plot_width");
-  }
-
-  function getPlotWidth(): number | null {
-    return plotWidthOverride;
-  }
-
-  // Aspect-ratio target + setTargetAspectAnchor + setWatermark family all
-  // live on the data slice (Phase 0c-C1 PR10). Public-API passthrough on
+  // setPlotWidth / getPlotWidth + the entire zoom action surface (setZoom /
+  // resetZoom / zoomIn / zoomOut / setAutoFit / fitToWidth / setMaxWidth /
+  // setMaxHeight / setShowZoomControls) + container/scalable setters +
+  // setContainerElementId + the localStorage persist/load helpers all live
+  // on the layout-zoom slice (Phase 0c-C1 PR11). Public-API passthrough on
   // the return block below.
-
-  // -- Per-column axis pan/zoom ------------------------------------------------
-  // Methods live on the axis slice (Phase 0c-C1 PR3); public-API passthrough below.
-
-  // Theme management methods moved to the theme slice (Phase 0c-C1 PR2).
-  // `clearAutoWidthsKeepingUserResizes` (called by the theme slice via dep)
-  // now lives on the columns slice (Phase 0c-C1 PR9).
-
-  // `setSemanticField` removed in Phase 0b (orphan; no callers). The
-  // setThemeField path covers the same edits via a generic path-based
-  // API.
-
-  // resetThemeEdits / captureThemeSnapshot / applyThemeSnapshot all live
-  // on the theme slice (Phase 0c-C1 PR2). Public-API passthrough below.
-
-  // ============================================================================
-  // Zoom & Auto-fit Controls
-  // ============================================================================
-
-  function setZoom(value: number) {
-    zoom = Math.max(0.5, Math.min(2.0, value));
-    persistZoomState();
-    markSource("zoom");
-  }
-
-  function resetZoom() {
-    zoom = 1.0;
-    persistZoomState();
-    markSource("zoom");
-  }
-
-  function zoomIn() {
-    setZoom(zoom * 1.1);
-  }
-
-  function zoomOut() {
-    setZoom(zoom / 1.1);
-  }
-
-  function setAutoFit(value: boolean) {
-    autoFit = value;
-    persistZoomState();
-    markSource("zoom");
-  }
-
-  function fitToWidth() {
-    if (!containerWidth || !scalableNaturalWidth) return;
-    // Set zoom so content width matches container width
-    // Note: containerWidth from ResizeObserver is already the content box (excludes padding)
-    zoom = Math.min(2.0, Math.max(0.5, containerWidth / scalableNaturalWidth));
-    persistZoomState();
-    markSource("zoom");
-  }
-
-  function setMaxWidth(value: number | null) {
-    maxWidth = value;
-    persistZoomState();
-    markSource("zoom");
-  }
-
-  function setMaxHeight(value: number | null) {
-    maxHeight = value;
-    persistZoomState();
-    markSource("zoom");
-  }
-
-  function setShowZoomControls(show: boolean) {
-    showZoomControls = show;
-    markSource("zoom");
-  }
-
-  // Container dimension setters (called by ForestPlot component)
-  function setContainerDimensions(w: number, h: number) {
-    containerWidth = w;
-    containerHeight = h;
-  }
-
-  function setScalableNaturalDimensions(w: number, h: number) {
-    scalableNaturalWidth = w;
-    scalableNaturalHeight = h;
-  }
-
-  function setContainerElementId(id: string | null) {
-    containerElementId = id;
-    // Load persisted state when container ID is set
-    if (id) {
-      loadZoomState();
-    }
-  }
-
-  // ============================================================================
-  // Zoom State Persistence (localStorage)
-  // ============================================================================
-
-  function getStorageKey(): string | null {
-    if (!containerElementId) return null;
-    return `tabviz_zoom_${containerElementId}`;
-  }
-
-  function persistZoomState() {
-    const key = getStorageKey();
-    if (!key) return;
-
-    try {
-      const state: ZoomState = {
-        zoom,
-        autoFit,
-        maxWidth,
-        maxHeight,
-        version: 2,  // New version for new schema
-      };
-      localStorage.setItem(key, JSON.stringify(state));
-    } catch {
-      // localStorage unavailable or full - silently ignore
-    }
-  }
-
-  function loadZoomState() {
-    const key = getStorageKey();
-    if (!key) return;
-
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const state = JSON.parse(stored) as ZoomState;
-        if (state.version === 2) {
-          zoom = state.zoom ?? 1.0;
-          autoFit = state.autoFit ?? true;
-          maxWidth = state.maxWidth ?? null;
-          maxHeight = state.maxHeight ?? null;
-        }
-        // Note: version 1 (old format) is silently ignored - users get fresh defaults
-      }
-    } catch {
-      // Invalid stored state - silently ignore
-    }
-  }
 
   /**
    * Reset all user-modified runtime state to the widget's initial defaults.
@@ -1190,11 +577,10 @@ export function createForestStore() {
     history.reset();
 
     // ── Widths / zoom / sizing ───────────────────────────────────────────
-    plotWidthOverride = null;
-    zoom = 1.0;
-    autoFit = true;
-    maxWidth = null;
-    maxHeight = null;
+    // Layout-zoom slice owns plotWidthOverride + zoom + autoFit + maxWidth +
+    // maxHeight; reset() restores all five to defaults. showZoomControls is
+    // a user preference and stays untouched.
+    layoutZoom.reset();
     axis.reset();
 
     // ── Theme customizations (in-panel edits / banding overrides) ────────
@@ -1616,7 +1002,7 @@ export function createForestStore() {
       return exportSpec;
     },
     getColumnWidth: columns.getColumnWidth,
-    getPlotWidth,
+    getPlotWidth: layoutZoom.getPlotWidth,
     // Per-column pan/zoom — owned by the axis slice.
     get axisZooms() {
       return axis.axisZooms;
@@ -1829,7 +1215,7 @@ export function createForestStore() {
     nextPage: data.nextPage,
     prevPage: data.prevPage,
     setContinuousMode: data.setContinuousMode,
-    setDimensions,
+    setDimensions: layoutZoom.setDimensions,
     setSelectedRows: semantics.setSelectedRows,
     toggleGroup: rowsGroups.toggleGroup,
     // Settings + banding overrides — data slice passthrough.
@@ -1919,7 +1305,7 @@ export function createForestStore() {
     setTooltip: rowsGroups.setTooltip,
     setColumnWidth: columns.setColumnWidth,
     previewColumnWidth: columns.previewColumnWidth,
-    setPlotWidth,
+    setPlotWidth: layoutZoom.setPlotWidth,
     // Aspect ratio — data slice passthrough.
     setTargetAspect: data.setTargetAspect,
     setTargetAspectAnchor: data.setTargetAspectAnchor,
@@ -1946,19 +1332,19 @@ export function createForestStore() {
     setThemeObject: theme.setThemeObject,
     captureThemeSnapshot: theme.captureThemeSnapshot,
     applyThemeSnapshot: theme.applyThemeSnapshot,
-    // Zoom & auto-fit actions
-    setZoom,
-    resetZoom,
-    zoomIn,
-    zoomOut,
-    setAutoFit,
-    fitToWidth,
-    setMaxWidth,
-    setMaxHeight,
-    setShowZoomControls,
-    setContainerDimensions,
-    setScalableNaturalDimensions,
-    setContainerElementId,
+    // Zoom & auto-fit actions — layout-zoom slice passthrough.
+    setZoom: layoutZoom.setZoom,
+    resetZoom: layoutZoom.resetZoom,
+    zoomIn: layoutZoom.zoomIn,
+    zoomOut: layoutZoom.zoomOut,
+    setAutoFit: layoutZoom.setAutoFit,
+    fitToWidth: layoutZoom.fitToWidth,
+    setMaxWidth: layoutZoom.setMaxWidth,
+    setMaxHeight: layoutZoom.setMaxHeight,
+    setShowZoomControls: layoutZoom.setShowZoomControls,
+    setContainerDimensions: layoutZoom.setContainerDimensions,
+    setScalableNaturalDimensions: layoutZoom.setScalableNaturalDimensions,
+    setContainerElementId: layoutZoom.setContainerElementId,
     resetState,
     // Op recorder. `clearOpLog` removed in Phase 0b (orphan; no callers).
     get opLog() { return history.opLog; },
