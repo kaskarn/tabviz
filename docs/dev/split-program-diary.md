@@ -429,3 +429,66 @@ vitest spec at `src/stores/slices/cells.runes.ts`: 17 unit tests covering each m
 Gates: tsc 0 errors, bun test 161 pass (no baseline change), vitest 21 pass (4 reorder + 17 cells), R `devtools::test()` 1489/1489, visual battery 45/45 (1 skip baseline).
 
 One slice down, eight to go. Next per the plan: theme — bounded state, dep injection (calls columns.measureAutoColumns), validates the slice→slice constructor-arg pattern before the cross-slice $derived spike (axis) at slice #3.
+
+### 0c-PR14: C1 slice 2 — theme
+
+Second slice. Picks up the entire theme management surface: state
+(`themeEdits`, `themeOverrides`, `baseThemeName`, `initialTheme`,
+`initialWatermark`) + ~14 methods (cloneTheme, setTheme, setThemeObject,
+previewThemeField, setThemeField, setThemeFieldDerived, isOverridden,
+clearOverride, resetThemeEdits, captureThemeSnapshot, applyThemeSnapshot,
+plus the new lifecycle helpers captureInitial / clearInitial / reset).
+
+This slice was the first real exercise of the slice-as-dependency
+constructor-arg pattern: `theme` takes `clearAutoWidthsKeepingUserResizes`
+and `measureAutoColumns` from the main factory via forward closures.
+Both still live in the main store pending the columns slice; theme just
+calls them at the same width-affecting-section moments setThemeField
+always did. No behavioral drift.
+
+Design choices worth recording:
+
+- **initialTheme + initialWatermark moved into the slice.** They're
+  reset targets for `resetThemeEdits` (the panel's Reset button), so
+  they're theme-lifecycle state. setSpec now calls `theme.captureInitial(newSpec)`
+  twice: once at the start of the spec swap, once after column-spec
+  coercion — both are idempotent captures of the post-coercion state.
+- **Watermark methods stayed in the main store.** They mutate `spec`
+  not theme state; they live in the same UI panel as theme controls
+  but logically belong to the (future) data slice. resetThemeEdits
+  in the theme slice still restores `initialWatermark` because that's
+  what users expect from a "Reset" button — handles it via the
+  injected setSpec.
+- **clearAutoWidthsKeepingUserResizes stays in main store.** It writes
+  `columnWidths` + reads `userResizedIds` — both columns-owned state.
+  Will migrate to the columns slice. For now, theme calls it via dep.
+- **WIDTH_AFFECTING_SECTIONS + SPACING_WIDTH_FIELDS moved with the
+  slice** as module-scope constants. Tiny, self-contained.
+- **hasThemeEdits getter moved into the slice** since it reads
+  themeEdits and initialWatermark. Calls `deps.getSpec()` to compare
+  current spec.watermark against the initial. Clean.
+
+The structuredClone fix from commit 511114e ($state.snapshot on the
+themeEdits proxy) moved with the slice and got a regression test in
+`theme.runes.ts` — `structuredClone(captureThemeSnapshot())` no longer
+throws. The split-widget navigation path is exercised end-to-end via
+the existing R test suite's split harness.
+
+vitest spec at `src/stores/slices/theme.runes.ts`: 17 tests covering
+captureInitial / clearInitial, setTheme + setThemeObject (op-log
+emission + measureAutoColumns side effect), setThemeField overrides,
+setThemeFieldDerived no-op-on-overridden semantics, clearOverride,
+hasThemeEdits (including watermark drift), snapshot persistence
+(including the structuredClone-safety regression), resetThemeEdits,
+and the reset path.
+
+Gates: tsc 0 errors, bun test 161 pass, vitest 38 pass total
+(3 files: reorder + cells + theme), R `devtools::test()` 1489/1489,
+visual battery 45/45.
+
+Two slices down, seven to go. Next per plan: **axis** — the
+cross-slice $derived spike target. Smallest slice that exercises a
+$derived in one slice (axisComputation) reading a $derived from
+another slice (layout.forestWidth + columns.forestColumns).
+Validating that path before tackling the long-pole layout-zoom is
+the whole point of doing axis third.

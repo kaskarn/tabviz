@@ -1,0 +1,350 @@
+// Theme slice — preset/object swaps, deep field edits, override tracking,
+// and split-widget snapshot persistence.
+//
+// Owns:
+//   - themeEdits        section -> field -> value map (for source-gen)
+//   - themeOverrides    Set<dotted-path> of user-overridden paths
+//   - baseThemeName     name of the active preset / custom theme
+//   - initialTheme      "clean" theme as of the last setSpec / theme swap
+//                       (used by resetThemeEdits — preserves any R-side
+//                       pre-customization that the bare preset would drop)
+//   - initialWatermark  initial watermark text (same reset semantics)
+//
+// Dependencies (injected):
+//   - getSpec / setSpec        — theme mutations write back through spec
+//   - clearAutoWidthsKeepingUserResizes / measureAutoColumns
+//                              — width-affecting edits invalidate cached
+//                                column auto-widths; stays as a closure
+//                                until columns slice ships
+//   - appendOp                 — push setTheme / setWatermark records
+//
+// Extracted from forestStore.svelte.ts in Phase 0c-C1 PR2. See
+// docs/dev/store-decomposition-idiom.md for the slice idiom.
+//
+// Watermark mutations (setWatermark / previewWatermark / colour / opacity)
+// are spec-level and stay in the main factory; they touch `spec` but not
+// theme state. `initialWatermark` lives here only because `resetThemeEdits`
+// restores it alongside the theme — once the data slice ships, the
+// initial-* capture migrates with `setSpec`.
+
+import type { WebSpec } from "$types";
+import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
+import { ops, type OpRecord } from "$lib/op-recorder";
+
+/** Sections whose edits change text metrics or cell geometry; changing any
+ *  field in these invalidates cached auto-widths. Banding/colors/axis are
+ *  paint-only and don't affect widths, so they stay out of this list. */
+const WIDTH_AFFECTING_SECTIONS = new Set(["typography", "spacing", "shapes"]);
+
+/** Within `spacing`, only x-axis padding fields actually change column
+ *  widths. rowHeight / headerHeight / footerGap / titleSubtitleGap /
+ *  headerGap / bottomMargin / axisGap / indentPerLevel are vertical or
+ *  geometry-only — remeasuring on those fires off needless work mid-
+ *  drag and was the source of the "row-resize transiently collapses
+ *  columns" symptom. */
+const SPACING_WIDTH_FIELDS = new Set([
+  "cellPaddingX",
+  "padding",
+  "containerPadding",
+  "columnGroupPadding",
+  "groupPadding",
+  "rowGroupPadding",
+]);
+
+function spacingFieldAffectsWidth(field: string | undefined): boolean {
+  return field == null ? true : SPACING_WIDTH_FIELDS.has(field);
+}
+
+export interface ThemeSnapshot {
+  theme: WebSpec["theme"];
+  themeEdits: Record<string, Record<string, unknown>>;
+  themeOverrides: string[];
+  baseThemeName: string;
+}
+
+export interface ThemeSliceDeps {
+  getSpec: () => WebSpec | null;
+  setSpec: (next: WebSpec) => void;
+  clearAutoWidthsKeepingUserResizes: () => void;
+  measureAutoColumns: () => void;
+  appendOp: (record: OpRecord) => void;
+}
+
+export interface ThemeSlice {
+  readonly themeEdits: Record<string, Record<string, unknown>>;
+  readonly themeOverrides: Set<string>;
+  readonly baseThemeName: string;
+  readonly initialTheme: WebSpec["theme"] | null;
+  readonly initialWatermark: string | undefined;
+  /** True iff at least one section in themeEdits has a non-empty edit
+   *  OR the watermark differs from its captured initial value. */
+  readonly hasThemeEdits: boolean;
+
+  /** Capture the "clean" theme + watermark at setSpec / setThemeObject /
+   *  setTheme time. Clears themeEdits/themeOverrides. Used both when a
+   *  new spec arrives and when a preset/object swap establishes a new
+   *  reset target. */
+  captureInitial: (spec: WebSpec) => void;
+  /** Clear initial-* and edit-tracking state. Called from `resetState()`
+   *  in the main factory so a full reset wipes the snapshot too. */
+  clearInitial: () => void;
+
+  cloneTheme: (t: WebSpec["theme"]) => WebSpec["theme"];
+  setTheme: (themeName: ThemeName) => void;
+  setThemeObject: (theme: WebSpec["theme"]) => void;
+  previewThemeField: (section: string, field: string, value: unknown) => void;
+  setThemeField: (...args: unknown[]) => void;
+  setThemeFieldDerived: (path: (string | number)[], value: unknown) => void;
+  isOverridden: (path: (string | number)[]) => boolean;
+  clearOverride: (path: (string | number)[]) => void;
+  resetThemeEdits: () => void;
+  captureThemeSnapshot: () => ThemeSnapshot | null;
+  applyThemeSnapshot: (snap: ThemeSnapshot) => void;
+  /** Lighter than `resetThemeEdits` — wipes the tracking maps without
+   *  touching spec. Used by `resetState()` to start fresh on the new
+   *  initial-theme block. */
+  reset: () => void;
+}
+
+export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
+  let themeEdits = $state<Record<string, Record<string, unknown>>>({});
+  let baseThemeName = $state<string>("default");
+  let themeOverrides = $state<Set<string>>(new Set());
+  let initialTheme = $state<WebSpec["theme"] | null>(null);
+  let initialWatermark = $state<string | undefined>(undefined);
+
+  function cloneTheme(t: WebSpec["theme"]): WebSpec["theme"] {
+    return JSON.parse(JSON.stringify(t));
+  }
+
+  function pathKey(path: (string | number)[]): string {
+    return path.map(String).join(".");
+  }
+
+  function writeThemePath(path: (string | number)[], value: unknown): void {
+    const spec = deps.getSpec();
+    if (!spec || !spec.theme || path.length === 0) return;
+    const updateAt = (obj: unknown, p: (string | number)[]): unknown => {
+      const key = p[0];
+      if (p.length === 1) {
+        if (Array.isArray(obj)) {
+          const next = [...obj];
+          next[key as number] = value;
+          return next;
+        }
+        return { ...(obj as Record<string, unknown>), [key as string]: value };
+      }
+      if (Array.isArray(obj)) {
+        const next = [...obj];
+        next[key as number] = updateAt(obj[key as number], p.slice(1));
+        return next;
+      }
+      const cur = (obj as Record<string, unknown>)?.[key as string];
+      return { ...(obj as Record<string, unknown>), [key as string]: updateAt(cur, p.slice(1)) };
+    };
+    deps.setSpec({ ...spec, theme: updateAt(spec.theme, path) as WebSpec["theme"] });
+  }
+
+  function captureInitial(spec: WebSpec): void {
+    initialTheme = cloneTheme(spec.theme);
+    initialWatermark = spec.watermark ?? "";
+    baseThemeName = spec.theme?.name ?? "default";
+    themeEdits = {};
+    themeOverrides = new Set();
+  }
+
+  function clearInitial(): void {
+    initialTheme = null;
+    initialWatermark = undefined;
+  }
+
+  function setTheme(themeName: ThemeName): void {
+    const spec = deps.getSpec();
+    const newTheme = THEME_PRESETS[themeName];
+    if (!spec || !newTheme) return;
+    // Deep-clone so subsequent in-panel edits don't mutate the shared preset
+    // object (THEME_PRESETS is a module-level singleton).
+    const cleanTheme = cloneTheme(newTheme);
+    deps.setSpec({ ...spec, theme: cleanTheme });
+    baseThemeName = themeName;
+    themeEdits = {};
+    // Refresh the reset target — a preset swap supersedes whatever was there.
+    initialTheme = cloneTheme(cleanTheme);
+    // Fonts / sizes / padding likely differ from the previous theme, so
+    // every auto-width measurement is stale. Invalidate and re-run, but
+    // preserve user-resized entries (measureAutoColumns skips those).
+    deps.clearAutoWidthsKeepingUserResizes();
+    deps.measureAutoColumns();
+    deps.appendOp(ops.setTheme(themeName));
+  }
+
+  // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
+  // without disturbing any interactive column/row edits. Callers used to go
+  // through setSpec({...spec, theme}) for this, which cleared the edits map.
+  function setThemeObject(theme: WebSpec["theme"]): void {
+    const spec = deps.getSpec();
+    if (!spec) return;
+    const cleanTheme = cloneTheme(theme);
+    deps.setSpec({ ...spec, theme: cleanTheme });
+    baseThemeName = theme?.name ?? "default";
+    themeEdits = {};
+    initialTheme = cloneTheme(cleanTheme);
+    deps.clearAutoWidthsKeepingUserResizes();
+    deps.measureAutoColumns();
+  }
+
+  /**
+   * Live-preview a single theme field during a drag without recording
+   * the edit or invalidating column widths. Mirrors the
+   * previewColumnWidth / setColumnWidth pattern.
+   */
+  function previewThemeField(section: string, field: string, value: unknown): void {
+    const spec = deps.getSpec();
+    if (!spec || !spec.theme) return;
+    const theme = spec.theme as unknown as Record<string, unknown>;
+    const current = theme[section];
+    if (!current || typeof current !== "object") return;
+    (current as Record<string, unknown>)[field] = value;
+  }
+
+  function setThemeField(...args: unknown[]): void {
+    const spec = deps.getSpec();
+    if (!spec || !spec.theme) return;
+    let path: (string | number)[];
+    let value: unknown;
+    if (args.length === 3 && typeof args[0] === "string" && typeof args[1] === "string") {
+      path = [args[0] as string, args[1] as string];
+      value = args[2];
+    } else if (args.length === 2 && Array.isArray(args[0])) {
+      path = args[0] as (string | number)[];
+      value = args[1];
+    } else {
+      return;
+    }
+    if (path.length === 0) return;
+
+    writeThemePath(path, value);
+
+    // Mark this path as a user-set override.
+    themeOverrides = new Set(themeOverrides);
+    themeOverrides.add(pathKey(path));
+
+    // Track for source-gen. Group by top-level path step.
+    const section = String(path[0]);
+    const nextEdits = { ...themeEdits };
+    if (path.length === 2 && typeof path[1] === "string") {
+      nextEdits[section] = { ...(nextEdits[section] ?? {}), [path[1] as string]: value };
+    } else {
+      // Deep edit — store under a nested-path key.
+      const subKey = path.slice(1).map(String).join(".");
+      nextEdits[section] = { ...(nextEdits[section] ?? {}), [subKey]: value };
+    }
+    themeEdits = nextEdits;
+
+    if (WIDTH_AFFECTING_SECTIONS.has(section)) {
+      const field = path.length >= 2 && typeof path[1] === "string"
+        ? (path[1] as string)
+        : undefined;
+      if (section !== "spacing" || spacingFieldAffectsWidth(field)) {
+        deps.clearAutoWidthsKeepingUserResizes();
+        deps.measureAutoColumns();
+      }
+    }
+  }
+
+  function setThemeFieldDerived(path: (string | number)[], value: unknown): void {
+    const spec = deps.getSpec();
+    if (!spec || !spec.theme || path.length === 0) return;
+    if (themeOverrides.has(pathKey(path))) return;
+    writeThemePath(path, value);
+  }
+
+  function isOverridden(path: (string | number)[]): boolean {
+    return themeOverrides.has(pathKey(path));
+  }
+
+  function clearOverride(path: (string | number)[]): void {
+    if (!themeOverrides.has(pathKey(path))) return;
+    const next = new Set(themeOverrides);
+    next.delete(pathKey(path));
+    themeOverrides = next;
+  }
+
+  function resetThemeEdits(): void {
+    const spec = deps.getSpec();
+    if (!spec) return;
+    let nextSpec = spec;
+    if (initialTheme) {
+      nextSpec = { ...nextSpec, theme: cloneTheme(initialTheme) };
+    }
+    if (initialWatermark !== undefined) {
+      nextSpec = { ...nextSpec, watermark: initialWatermark };
+    }
+    deps.setSpec(nextSpec);
+    themeEdits = {};
+  }
+
+  function captureThemeSnapshot(): ThemeSnapshot | null {
+    const spec = deps.getSpec();
+    if (!spec || !spec.theme) return null;
+    return {
+      theme: cloneTheme(spec.theme),
+      // `themeEdits` is a `$state` proxy; structuredClone can throw
+      // DataCloneError on the proxy itself (DOMException, even when
+      // contents are plain). `$state.snapshot()` is Svelte 5's
+      // canonical "unwrap to plain value" — produces a structured-
+      // cloneable copy that we own.
+      themeEdits: $state.snapshot(themeEdits) as Record<string, Record<string, unknown>>,
+      themeOverrides: Array.from(themeOverrides),
+      baseThemeName,
+    };
+  }
+
+  function applyThemeSnapshot(snap: ThemeSnapshot): void {
+    const spec = deps.getSpec();
+    if (!spec) return;
+    deps.setSpec({ ...spec, theme: cloneTheme(snap.theme) });
+    // snap.themeEdits was unwrapped via $state.snapshot at capture
+    // time, so it's already plain. structuredClone works here, but
+    // a shallow walk is enough — $state(...) re-proxies on assign.
+    themeEdits = JSON.parse(JSON.stringify(snap.themeEdits));
+    themeOverrides = new Set(snap.themeOverrides);
+    baseThemeName = snap.baseThemeName;
+    deps.clearAutoWidthsKeepingUserResizes();
+    deps.measureAutoColumns();
+  }
+
+  function reset(): void {
+    themeEdits = {};
+    themeOverrides = new Set();
+    baseThemeName = "default";
+    // initialTheme / initialWatermark stay — `resetState()` calls
+    // `clearInitial()` separately if it wants them gone. This keeps
+    // `resetThemeEdits()` (panel Reset button) safe to call repeatedly
+    // without losing the spec's reset target.
+  }
+
+  return {
+    get themeEdits() { return themeEdits; },
+    get themeOverrides() { return themeOverrides; },
+    get baseThemeName() { return baseThemeName; },
+    get initialTheme() { return initialTheme; },
+    get initialWatermark() { return initialWatermark; },
+    get hasThemeEdits() {
+      for (const key of Object.keys(themeEdits)) {
+        if (Object.keys(themeEdits[key] ?? {}).length > 0) return true;
+      }
+      const spec = deps.getSpec();
+      if (initialWatermark !== undefined && (spec?.watermark ?? "") !== initialWatermark) {
+        return true;
+      }
+      return false;
+    },
+
+    captureInitial, clearInitial,
+    cloneTheme, setTheme, setThemeObject, previewThemeField,
+    setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
+    resetThemeEdits, captureThemeSnapshot, applyThemeSnapshot,
+    reset,
+  };
+}

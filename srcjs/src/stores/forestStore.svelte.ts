@@ -47,6 +47,7 @@ import { resolveShowHeader } from "$lib/column-types";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
 import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte";
 import { createCellsSlice } from "$stores/slices/cells.svelte";
+import { createThemeSlice } from "$stores/slices/theme.svelte";
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
 
@@ -118,6 +119,19 @@ export function createForestStore() {
     markSource,
   });
 
+  // ── Theme management ────────────────────────────────────────────────────
+  // Phase 0c-C1 PR2. Owns `themeEdits`, `themeOverrides`, `baseThemeName`,
+  // `initialTheme`, `initialWatermark`. Calls `clearAutoWidthsKeepingUserResizes`
+  // + `measureAutoColumns` (still in main factory pending the columns slice)
+  // via forward-closure deps; same `setSpec`-mutates-spec pattern as cells.
+  const theme = createThemeSlice({
+    getSpec: () => spec,
+    setSpec: (next) => { spec = next; },
+    clearAutoWidthsKeepingUserResizes: () => clearAutoWidthsKeepingUserResizes(),
+    measureAutoColumns: () => measureAutoColumns(),
+    appendOp: (record) => appendOp(record),
+  });
+
   // Initial dimensions (from htmlwidgets/splitStore, used as fallback before ResizeObserver fires)
   let initialWidth = $state(800);
   let initialHeight = $state(400);
@@ -152,38 +166,10 @@ export function createForestStore() {
   let continuousMode = $state<boolean>(false);
 
   // ── Theme customizations ────────────────────────────────────────────────
-  // In-panel edits to the active theme, tracked per section. The live
-  // spec.theme is mutated in lockstep so the widget re-renders immediately;
-  // this map is the source of truth for "what did the user change" (used by
-  // the "View source" feature to emit an R `set_*()` chain).
-  //
-  // We also track the preset the chain starts from so resets can restore a
-  // clean baseline and the emitted R code knows which `web_theme_*()` to
-  // start with.
-  let themeEdits = $state<Record<string, Record<string, unknown>>>({});
-  let baseThemeName = $state<string>("default");
-
-  // Per-path override tracking: which theme paths has the user explicitly
-  // touched? Stored as joined-path strings (e.g. "row.base.bg",
-  // "series.0.fill"). Drives the "overridden" dot + reset icon on the
-  // Theme tab and tells the Brand multi-write which paths to leave alone.
-  // Distinct from `themeEdits` — that one groups by section for source-gen;
-  // this is a flat set used by panel UI logic.
-  let themeOverrides = $state<Set<string>>(new Set());
-
-  // Snapshot of the theme to restore to on resetState. Updated whenever a
-  // new "clean" theme becomes active (setSpec, setTheme preset swap,
-  // setThemeObject custom theme). This is NOT just `THEME_PRESETS[name]` —
-  // if R supplied a pre-customized theme (`web_theme_modern() |> set_spacing(...)`),
-  // those customizations live in `spec.theme` but not in the raw preset, and
-  // resetting to the raw preset would silently drop them. Stored as a deep
-  // clone so in-panel edits mutating `spec.theme` don't leak in here.
-  let initialTheme = $state<WebSpec["theme"] | null>(null);
-
-  // Snapshot of the incoming spec's watermark so reset can restore what the
-  // caller originally supplied (possibly empty / undefined). Undefined means
-  // "no spec has been set yet"; an empty string is a legitimate value.
-  let initialWatermark = $state<string | undefined>(undefined);
+  // themeEdits / themeOverrides / baseThemeName / initialTheme /
+  // initialWatermark live on the theme slice (Phase 0c-C1 PR2). Read via
+  // `theme.X` accessors below; mutate via the slice methods exposed
+  // on the public API.
 
   // User-modified view state (session-only; feeds exportSpec for WYSIWYG)
   let rowOrderOverrides = $state<RowOrderOverrides>({ byGroup: {}, groupOrderByParent: {} });
@@ -1414,11 +1400,12 @@ export function createForestStore() {
     // would point at unrelated rows). Continuous-mode toggle is preserved as
     // a viewing preference.
     currentPage = 1;
-    // Reset theme-edit tracking to the incoming theme's name; the settings
-    // panel's "View source" feature emits `web_theme_<baseThemeName>() |> ...`.
-    baseThemeName = newSpec.theme?.name ?? "default";
-    themeEdits = {};
-    themeOverrides = new Set();
+    // Theme reset target + baseThemeName + edit tracking: the theme slice
+    // owns initialTheme / initialWatermark too, so a single captureInitial
+    // call handles all five fields. Settings panel's "View source" feature
+    // emits `web_theme_<baseThemeName>() |> ...` off the same baseThemeName
+    // the slice records here.
+    theme.captureInitial(newSpec);
 
     // Seed the aspect-ratio target from the spec (set R-side by
     // `set_aspect_ratio()` or by the `target_aspect` field). null/undefined
@@ -1451,12 +1438,11 @@ export function createForestStore() {
       }
     }
 
-    // Snapshot the post-coercion theme as the reset target. See cloneTheme()
-    // for why this is a JSON round-trip rather than structuredClone.
-    initialTheme = cloneTheme(spec.theme);
-    // Snapshot the incoming watermark (may be undefined / empty) so reset
-    // restores whatever the R caller passed in, not a hardcoded default.
-    initialWatermark = spec.watermark ?? "";
+    // Snapshot the post-coercion theme as the reset target. captureInitial
+    // (called again to refresh after the coercion above) deep-clones via
+    // JSON round-trip — see theme slice's cloneTheme for why not
+    // structuredClone. baseThemeName + edit-tracking reset is idempotent.
+    theme.captureInitial(spec);
 
     // Measure auto-width columns
     measureAutoColumns();
@@ -2728,65 +2714,10 @@ export function createForestStore() {
    * are strictly JSON-safe (strings / numbers / booleans / nested objects /
    * nulls — no Maps, Sets, Dates, functions), so the round-trip is lossless.
    */
-  function cloneTheme(t: WebSpec["theme"]): WebSpec["theme"] {
-    return JSON.parse(JSON.stringify(t));
-  }
-
-  function setTheme(themeName: ThemeName) {
-    const newTheme = THEME_PRESETS[themeName];
-    if (!spec || !newTheme) return;
-    // Deep-clone so subsequent in-panel edits don't mutate the shared preset
-    // object (THEME_PRESETS is a module-level singleton).
-    const cleanTheme = cloneTheme(newTheme);
-    spec = { ...spec, theme: cleanTheme };
-    baseThemeName = themeName;
-    themeEdits = {};
-    // Refresh the reset target — a preset swap supersedes whatever was there.
-    initialTheme = cloneTheme(cleanTheme);
-    // Fonts / sizes / padding likely differ from the previous theme, so
-    // every auto-width measurement is stale. Invalidate and re-run, but
-    // preserve user-resized entries (measureAutoColumns skips those).
-    clearAutoWidthsKeepingUserResizes();
-    measureAutoColumns();
-    appendOp(ops.setTheme(themeName));
-  }
-
-  // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
-  // without disturbing any interactive column/row edits. Callers used to go
-  // through setSpec({...spec, theme}) for this, which cleared the edits map.
-  function setThemeObject(theme: WebSpec["theme"]) {
-    if (!spec) return;
-    const cleanTheme = cloneTheme(theme);
-    spec = { ...spec, theme: cleanTheme };
-    baseThemeName = theme?.name ?? "default";
-    themeEdits = {};
-    initialTheme = cloneTheme(cleanTheme);
-    clearAutoWidthsKeepingUserResizes();
-    measureAutoColumns();
-  }
-
-  /** Sections whose edits change text metrics or cell geometry; changing any
-   *  field in these invalidates cached auto-widths. Banding/colors/axis are
-   *  paint-only and don't affect widths, so they stay out of this list. */
-  const WIDTH_AFFECTING_SECTIONS = new Set(["typography", "spacing", "shapes"]);
-
-  /** Within `spacing`, only x-axis padding fields actually change column
-   *  widths. rowHeight / headerHeight / footerGap / titleSubtitleGap /
-   *  headerGap / bottomMargin / axisGap / indentPerLevel are vertical or
-   *  geometry-only — remeasuring on those fires off needless work mid-
-   *  drag and was the source of the "row-resize transiently collapses
-   *  columns" symptom. */
-  const SPACING_WIDTH_FIELDS = new Set([
-    "cellPaddingX",
-    "padding",
-    "containerPadding",
-    "columnGroupPadding",
-    "groupPadding",
-    "rowGroupPadding",
-  ]);
-  function spacingFieldAffectsWidth(field: string | undefined): boolean {
-    return field == null ? true : SPACING_WIDTH_FIELDS.has(field);
-  }
+  // Theme management methods moved to the theme slice (Phase 0c-C1 PR2).
+  // `clearAutoWidthsKeepingUserResizes` stays here for now — it touches
+  // columns-owned state (columnWidths + userResizedIds) and migrates to
+  // the columns slice in a later PR. The theme slice calls it via dep.
 
   /**
    * Drop cached auto-widths so measureAutoColumns can recompute them, but
@@ -2808,141 +2739,6 @@ export function createForestStore() {
       if (typeof w === "number") next[id] = w;
     }
     columnWidths = next;
-  }
-
-  /**
-   * Live-preview a single theme field during a drag without recording
-   * the edit or invalidating column widths. Mirrors the
-   * previewColumnWidth / setColumnWidth pattern: the resize handle
-   * pumps `previewThemeField()` per pointermove so the layout reflows
-   * without spamming the op log or remeasuring columns each frame, then
-   * commits once via `setThemeField()` on pointerup. Width-affecting
-   * sections (spacing, typography, shapes) only re-measure on commit.
-   */
-  function previewThemeField(section: string, field: string, value: unknown) {
-    if (!spec || !spec.theme) return;
-    const theme = spec.theme as unknown as Record<string, unknown>;
-    const current = theme[section];
-    if (!current || typeof current !== "object") return;
-    (current as Record<string, unknown>)[field] = value;
-  }
-
-  /** Apply a single in-panel theme edit. Mutates spec.theme so the widget
-   *  re-renders, and records the change so it can be exported as R code. */
-  /**
-   * Set a theme field at a deep path. Path is a list of strings (object
-   * keys) and/or numbers (list indices). Returns nothing; mutates spec
-   * with a fresh `theme` reference at every level so Svelte 5 fine-grained
-   * reactivity invalidates downstream `$derived` / `@const` reads.
-   *
-   * Backward-compat: the old (section, field, value) call form works too
-   * via overload — internally constructs a 2-step path.
-   */
-  // Internal: walk the theme tree and replace the leaf at `path` with
-  // `value`. Used by both setThemeField (records as user edit) and
-  // setThemeFieldDerived (does not). Both produce a fresh reference at
-  // every level so Svelte 5 fine-grained reactivity invalidates the
-  // downstream reads.
-  function writeThemePath(path: (string | number)[], value: unknown) {
-    if (!spec || !spec.theme || path.length === 0) return;
-    const updateAt = (obj: unknown, p: (string | number)[]): unknown => {
-      const key = p[0];
-      if (p.length === 1) {
-        if (Array.isArray(obj)) {
-          const next = [...obj];
-          next[key as number] = value;
-          return next;
-        }
-        return { ...(obj as Record<string, unknown>), [key as string]: value };
-      }
-      if (Array.isArray(obj)) {
-        const next = [...obj];
-        next[key as number] = updateAt(obj[key as number], p.slice(1));
-        return next;
-      }
-      const cur = (obj as Record<string, unknown>)?.[key as string];
-      return { ...(obj as Record<string, unknown>), [key as string]: updateAt(cur, p.slice(1)) };
-    };
-    spec = { ...spec, theme: updateAt(spec.theme, path) as WebSpec["theme"] };
-  }
-
-  function pathKey(path: (string | number)[]): string {
-    return path.map(String).join(".");
-  }
-
-  function setThemeField(...args: unknown[]) {
-    if (!spec || !spec.theme) return;
-    let path: (string | number)[];
-    let value: unknown;
-    if (args.length === 3 && typeof args[0] === "string" && typeof args[1] === "string") {
-      path = [args[0] as string, args[1] as string];
-      value = args[2];
-    } else if (args.length === 2 && Array.isArray(args[0])) {
-      path = args[0] as (string | number)[];
-      value = args[1];
-    } else {
-      return;
-    }
-    if (path.length === 0) return;
-
-    writeThemePath(path, value);
-
-    // Mark this path as a user-set override.
-    themeOverrides = new Set(themeOverrides);
-    themeOverrides.add(pathKey(path));
-
-    // Track for source-gen. Group by top-level path step.
-    const section = String(path[0]);
-    const nextEdits = { ...themeEdits };
-    if (path.length === 2 && typeof path[1] === "string") {
-      nextEdits[section] = { ...(nextEdits[section] ?? {}), [path[1] as string]: value };
-    } else {
-      // Deep edit — store under a nested-path key.
-      const subKey = path.slice(1).map(String).join(".");
-      nextEdits[section] = { ...(nextEdits[section] ?? {}), [subKey]: value };
-    }
-    themeEdits = nextEdits;
-
-    if (WIDTH_AFFECTING_SECTIONS.has(section)) {
-      // Within `spacing`, narrow the gate to only x-axis padding fields.
-      // rowHeight / headerHeight / titleSubtitleGap / headerGap /
-      // bottomMargin / axisGap / indentPerLevel are vertical-only and
-      // don't change column widths; remeasuring on those during a drag
-      // commit was the source of the "row-resize transiently collapses
-      // a column" artifact.
-      const field = path.length >= 2 && typeof path[1] === "string"
-        ? (path[1] as string)
-        : undefined;
-      if (section !== "spacing" || spacingFieldAffectsWidth(field)) {
-        clearAutoWidthsKeepingUserResizes();
-        measureAutoColumns();
-      }
-    }
-  }
-
-  /**
-   * Write a derived value at `path` without flagging it as a user-set
-   * override. Used by panel multi-write helpers (Brand mirrors to
-   * series[0].fill, brandDeep, header.bold.bg, …) so the downstream
-   * paths stay "auto" and a future Brand re-write can update them again.
-   * If you call this on a path that the user has explicitly set
-   * (isOverridden), it's a no-op — user overrides win.
-   */
-  function setThemeFieldDerived(path: (string | number)[], value: unknown) {
-    if (!spec || !spec.theme || path.length === 0) return;
-    if (themeOverrides.has(pathKey(path))) return;
-    writeThemePath(path, value);
-  }
-
-  function isOverridden(path: (string | number)[]): boolean {
-    return themeOverrides.has(pathKey(path));
-  }
-
-  function clearOverride(path: (string | number)[]) {
-    if (!themeOverrides.has(pathKey(path))) return;
-    const next = new Set(themeOverrides);
-    next.delete(pathKey(path));
-    themeOverrides = next;
   }
 
   // `setSemanticField` removed in Phase 0b (orphan; no callers). The
@@ -2990,74 +2786,8 @@ export function createForestStore() {
     spec = { ...spec, watermarkOpacity: clamped };
   }
 
-  /**
-   * Wipe all in-panel edits and restore the clean theme + watermark. Uses
-   * `initialTheme` (the snapshot of what the R caller supplied) rather than
-   * `THEME_PRESETS[baseThemeName]` — the latter would silently drop any
-   * pre-customization the caller baked into the theme via
-   * `web_theme_*() |> set_spacing(...)`. Also called from the Settings
-   * panel's Reset button, which is why this path needs to be as faithful
-   * as the full resetState().
-   */
-  function resetThemeEdits() {
-    if (!spec) return;
-    if (initialTheme) {
-      spec = { ...spec, theme: cloneTheme(initialTheme) };
-    }
-    if (initialWatermark !== undefined) {
-      spec = { ...spec, watermark: initialWatermark };
-    }
-    themeEdits = {};
-  }
-
-  /**
-   * Snapshot the full theme state for cross-spec persistence.
-   * Used by SplitForestStore so cascade edits, overrides, and edit-tracking
-   * survive subview navigation -- without this, every selectSpec() reset
-   * theme to the new spec's original.
-   */
-  function captureThemeSnapshot(): {
-    theme: WebSpec["theme"];
-    themeEdits: Record<string, Record<string, unknown>>;
-    themeOverrides: string[];
-    baseThemeName: string;
-  } | null {
-    if (!spec || !spec.theme) return null;
-    return {
-      theme: cloneTheme(spec.theme),
-      // `themeEdits` is a `$state` proxy; structuredClone can throw
-      // DataCloneError on the proxy itself (DOMException, even when
-      // contents are plain). `$state.snapshot()` is Svelte 5's
-      // canonical "unwrap to plain value" — produces a structured-
-      // cloneable copy that we own.
-      themeEdits: $state.snapshot(themeEdits) as Record<string, Record<string, unknown>>,
-      themeOverrides: Array.from(themeOverrides),
-      baseThemeName,
-    };
-  }
-
-  /**
-   * Reapply a snapshot to the current spec. Doesn't touch initialTheme --
-   * Reset still snaps back to the spec's R-side baseline, which is correct
-   * because subset specs all share the same base theme by construction.
-   */
-  function applyThemeSnapshot(snap: {
-    theme: WebSpec["theme"];
-    themeEdits: Record<string, Record<string, unknown>>;
-    themeOverrides: string[];
-    baseThemeName: string;
-  }) {
-    if (!spec) return;
-    spec = { ...spec, theme: cloneTheme(snap.theme) };
-    // snap.themeEdits was unwrapped via $state.snapshot at capture
-    // time, so it's already plain. structuredClone works here, but
-    // a shallow walk is enough — $state(...) re-proxies on assign.
-    themeEdits = JSON.parse(JSON.stringify(snap.themeEdits));
-    themeOverrides = new Set(snap.themeOverrides);
-    baseThemeName = snap.baseThemeName;
-    clearAutoWidthsKeepingUserResizes();
-    measureAutoColumns();
-  }
+  // resetThemeEdits / captureThemeSnapshot / applyThemeSnapshot all live
+  // on the theme slice (Phase 0c-C1 PR2). Public-API passthrough below.
 
   // ============================================================================
   // Zoom & Auto-fit Controls
@@ -3234,8 +2964,9 @@ export function createForestStore() {
     axisZooms = {};
 
     // ── Theme customizations (in-panel edits / banding overrides) ────────
-    themeEdits = {};
-    themeOverrides = new Set();
+    // theme.reset() wipes themeEdits + themeOverrides without touching the
+    // initial-* snapshot (so resetThemeEdits below still has its target).
+    theme.reset();
     bandingOverride = null;
     bandingStartsWithBandOverride = null;
 
@@ -3246,20 +2977,12 @@ export function createForestStore() {
     dragState = null;
     filterPopoverTarget = null;
 
-    // ── Restore theme from the initial snapshot ──────────────────────────
-    // initialTheme is the "clean" theme as of the last spec/preset/custom
-    // swap. This is NOT just THEME_PRESETS[baseThemeName]: if R supplied a
-    // pre-customized theme (`web_theme_modern() |> set_spacing(...)`), that
-    // customization lives on spec.theme but not on the raw preset, so
-    // resetting to the preset would silently drop it and change font size /
-    // vertical spacing. The snapshot preserves the caller-supplied shape.
-    if (spec && initialTheme) {
-      spec = { ...spec, theme: cloneTheme(initialTheme) };
-    }
-    // ── Restore the initial watermark ────────────────────────────────────
-    if (spec && initialWatermark !== undefined) {
-      spec = { ...spec, watermark: initialWatermark };
-    }
+    // ── Restore theme + watermark from the initial snapshot ──────────────
+    // theme.resetThemeEdits restores both spec.theme and spec.watermark to
+    // the caller-supplied values (NOT bare THEME_PRESETS[baseThemeName],
+    // which would silently drop any pre-customization the caller baked in
+    // via `web_theme_*() |> set_spacing(...)`).
+    theme.resetThemeEdits();
 
     // ── Re-measure auto-width columns ─────────────────────────────────────
     // Without this, columnWidths stays empty and the renderer falls through
@@ -3611,22 +3334,13 @@ export function createForestStore() {
       return settingsOpen;
     },
     get themeEdits() {
-      return themeEdits;
+      return theme.themeEdits;
     },
     get baseThemeName() {
-      return baseThemeName;
+      return theme.baseThemeName;
     },
     get hasThemeEdits() {
-      for (const key of Object.keys(themeEdits)) {
-        if (Object.keys(themeEdits[key] ?? {}).length > 0) return true;
-      }
-      // Watermark is a spec-level field (not a theme edit), but from the
-      // user's POV it lives alongside banding in the Basics tab — so the
-      // Reset button should notice changes to it and become active.
-      if (initialWatermark !== undefined && (spec?.watermark ?? "") !== initialWatermark) {
-        return true;
-      }
-      return false;
+      return theme.hasThemeEdits;
     },
     get tooltipRow() {
       return tooltipRow;
@@ -3913,16 +3627,17 @@ export function createForestStore() {
     toggleSettings,
     setBandingOverride,
     setBandingStartsWithBand,
-    setThemeField,
-    setThemeFieldDerived,
-    isOverridden,
-    clearOverride,
-    previewThemeField,
+    // Theme methods passthrough — own state lives on the theme slice.
+    setThemeField: theme.setThemeField,
+    setThemeFieldDerived: theme.setThemeFieldDerived,
+    isOverridden: theme.isOverridden,
+    clearOverride: theme.clearOverride,
+    previewThemeField: theme.previewThemeField,
     setWatermark,
     previewWatermark,
     setWatermarkColor,
     setWatermarkOpacity,
-    resetThemeEdits,
+    resetThemeEdits: theme.resetThemeEdits,
     sortBy,
     toggleSort,
     setColumnFilter,
@@ -4011,10 +3726,10 @@ export function createForestStore() {
         isClamped,
       };
     },
-    setTheme,
-    setThemeObject,
-    captureThemeSnapshot,
-    applyThemeSnapshot,
+    setTheme: theme.setTheme,
+    setThemeObject: theme.setThemeObject,
+    captureThemeSnapshot: theme.captureThemeSnapshot,
+    applyThemeSnapshot: theme.applyThemeSnapshot,
     // Zoom & auto-fit actions
     setZoom,
     resetZoom,
