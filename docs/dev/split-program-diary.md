@@ -721,3 +721,80 @@ reads styleEdits via deps) and cells (whose clearAllEdits inline-
 clears semantics state). Should be a straightforward extraction
 that finally lets `clearAllEdits()` in the main factory shrink to
 `cells.reset(); semantics.reset();`.
+
+### 0c-PR18: C1 slice 6 — semantics
+
+Sixth slice. The cells-extraction PR (PR1) had stub-promised that
+`clearAllEdits()` would shrink to `cells.reset(); semantics.reset();`
+when semantics shipped. That promise lands here:
+
+  function clearAllEdits() {
+    cells.reset();
+    semantics.clearAllPaint();
+  }
+
+Two lines. The sort-filter slice's `getStyleEdits` closure also
+switches from `() => styleEdits` (main store) to
+`() => semantics.styleEdits`, closing the last cross-slice dep
+that pointed into still-in-main state.
+
+Slice owns:
+
+  - styleEdits          row + cell → SemanticToken → boolean overrides
+  - paintTool           { token, scope } — never null; default accent/row
+  - paintHoverCellField cell-scope hover marker
+  - selectedRowIds      $derived: active token's painted-row set
+                        (the paint-as-selection contract)
+
+Plus 12 methods (setPaintTool, setPaintHoverCellField,
+paintRowWithActiveToken, paintCellWithActiveToken, setSelectedRows,
+setRowSemantic, setCellSemantic, clearSemantic, clearCellSemantic,
+getRowSemantic, getCellSemantic, clearAllPaint, hasPaintEdits) and
+the slice-level reset().
+
+The `ALL_SEMANTIC_TOKENS` module constant migrated with the slice;
+nothing else in forestStore consumed it. The `SemanticToken` /
+`SemanticFlags` types were inline in forestStore; the slice now
+re-exports `SemanticFlags` for the rare consumer (sort-filter's
+test harness imports it for the `StyleEditsMap` type). `SemanticToken`
+already lived in `$types`.
+
+Slice-ordering wrinkle worth recording: this PR reordered the slice
+construction. semantics has to be created BEFORE sort-filter, because
+sort-filter's `getStyleEdits` dep closure captures the `semantics`
+binding. JS closures resolve at call time, not at slice-construction
+time — but if anything reads `sortFilter.visibleRows` during the
+sliver of factory body between the two constructions, it would TDZ.
+The current factory body doesn't, but order-of-declaration matters
+for safety. Same lesson the cells / theme dep-chains taught earlier.
+
+Now exercised in production:
+
+  - rowsGroups.fullDisplayRows reads sortFilter.visibleRows
+  - sortFilter.visibleRows reads semantics.styleEdits
+  - axisComputation reads layout.forestWidth (main, layout-zoom future)
+  - axisComputation reads forestColumns (main, columns future)
+
+Two levels of slice-to-slice $derived chain (rowsGroups → sortFilter
+→ semantics), all forward-closure-getter-based, no ceremony. The
+pattern is fully proven.
+
+vitest spec: 19 tests. 2 on paintTool. 5 on row paint (including the
+baseline-collapse invariant and the toggle-vs-replace logic in
+paintRowWithActiveToken). 3 on cell paint. 3 on selectedRowIds
+(including active-token reactivity). 6 on clear/get/hasPaintEdits/reset.
+
+Gates: tsc 0 errors, bun test 161 pass (baseline), vitest 107 pass
+total (7 files), R devtools::test() 1489/1489, visual battery 45/45.
+
+Six slices down, five to go. Main store has now shed ~1500 lines
+net plus ~225 lines moved to $lib/filter-sort-utils.ts. The
+remaining slices are the larger ones — columns (~330 LOC including
+measureAutoColumns), data (setSpec god-function fan-out), and the
+long pole, layout-zoom (the 400-line `layout` $derived). Plus the
+two micro-slices (drag, history) the C1 plan called out.
+
+Next per plan: **drag micro-slice**. Tiny (~60 lines), bounded
+state + 4 actions (beginDrag / updateDrag / endDrag / cancelDrag),
+straddles columns and rows-groups. Extract as its own slice so
+both consumers depend on it cleanly when they ship.

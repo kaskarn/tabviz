@@ -46,6 +46,7 @@ import { createThemeSlice } from "$stores/slices/theme.svelte";
 import { createAxisSlice } from "$stores/slices/axis.svelte";
 import { createSortFilterSlice } from "$stores/slices/sort-filter.svelte";
 import { createRowsGroupsSlice } from "$stores/slices/rows-groups.svelte";
+import { createSemanticsSlice } from "$stores/slices/semantics.svelte";
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
 
@@ -150,10 +151,20 @@ export function createForestStore() {
   // `visibleRows` $derived. `visibleRows` reads `styleEdits` (semantics —
   // still in main) via forward closure, exercising the same cross-slice
   // $derived pattern axis validated.
+  // ── Semantics (paint tool + per-row / per-cell semantic overrides) ──────
+  // Phase 0c-C1 PR6. Constructed before sort-filter so its `styleEdits`
+  // getter is in scope for the dep closure (sort-filter's `visibleRows`
+  // $derived merges paint overrides BEFORE filter/sort).
+  const semantics = createSemanticsSlice({
+    getSpec: () => spec,
+    appendOp: (record) => appendOp(record),
+    markSource,
+  });
+
   const sortFilter = createSortFilterSlice({
     getSpec: () => spec,
     getAllColumns: () => allColumns,
-    getStyleEdits: () => styleEdits,
+    getStyleEdits: () => semantics.styleEdits,
     appendOp: (record) => appendOp(record),
     markSource,
   });
@@ -221,35 +232,9 @@ export function createForestStore() {
   // alongside `appendOp` per the C1 plan.)
   let opLog = $state<OpRecord[]>([]);
 
-  // Semantic-flag overrides, set via the paint tool. Structure mirrors
-  // cellEdits: per-row for row-scoped paint, per-cell for cell-scoped paint.
-  // Each entry only records the token whose value differs from the baseline
-  // spec style — missing tokens mean "inherit the R-supplied value".
-  // Five semantic tokens recognized: muted, bold, emphasis, accent, fill
-  // (precedence loud → quiet: fill > accent > emphasis > bold > muted).
-  type SemanticToken =
-    | "emphasis" | "muted" | "accent"
-    | "bold" | "fill";
-  type SemanticFlags = Partial<Record<SemanticToken, boolean>>;
-  let styleEdits = $state<{
-    rows: Record<string, SemanticFlags>;
-    cells: Record<string, Record<string, SemanticFlags>>;
-  }>({ rows: {}, cells: {} });
-
-  // Transient paint-tool state. When non-null the widget is in "paint mode":
-  // the cursor switches to a brush, row/cell pointerdown toggles the matching
-  // flag. Cleared on Escape, on Clear-paint, or by re-clicking the active
-  // token chip.
-  // Paint tool — ALWAYS set. Click-to-select unified with click-to-paint:
-  // every click on a paintable row/cell applies the active token. Default
-  // is `accent + row` so a fresh widget behaves visually like the
-  // historical click-to-select (selected-row tint = accent.muted), now
-  // implemented as token application instead of a separate selection
-  // concept. enableSelect=FALSE on the spec hides the toolbar picker and
-  // disables the click-to-paint path; the painter is otherwise always-on.
-  let paintTool = $state<{ token: SemanticToken; scope: "row" | "cell" }>(
-    { token: "accent", scope: "row" },
-  );
+  // styleEdits + paintTool + paintHoverCellField live on the semantics
+  // slice (Phase 0c-C1 PR6). Read via `semantics.X` accessors; mutate
+  // via the slice methods exposed on the public API.
 
   // User-added columns (runtime insertions via the interactive column editor).
   // `afterId` identifies the sibling column that the new column is inserted after
@@ -1638,69 +1623,8 @@ export function createForestStore() {
     initialHeight = h;
   }
 
-  // setSelectedRows: thin wrapper over the painter — "selecting" a row IS
-  // painting it with the currently-active token. The visible "selected"
-  // set is whatever rows have the active token painted on them (see
-  // selectedRowIds getter below). The R-side proxy `setSelectedRows`
-  // routes through this method. The single-row `selectRow` helper that
-  // used to live here was removed in Phase 0b (orphan; no callers).
-  function setSelectedRows(ids: string[]) {
-    // Replace = clear all rows currently painted with the active token,
-    // then paint the given list. Mirrors the historical
-    // setSelectedRows(['a','b','c']) semantics: those rows become "the
-    // selection." Other tokens on those rows are preserved.
-    const active = paintTool.token;
-    const target = new Set(ids);
-    // Clear active token from rows not in `ids`
-    for (const rowId of Object.keys(styleEdits.rows)) {
-      const flags = styleEdits.rows[rowId];
-      if (flags?.[active] && !target.has(rowId)) {
-        setRowSemantic(rowId, active, false);
-      }
-    }
-    // Paint active token onto rows in `ids` that aren't yet painted.
-    for (const rowId of ids) {
-      if (!styleEdits.rows[rowId]?.[active]) {
-        setRowSemantic(rowId, active, true);
-      }
-    }
-  }
-
-  // Click handler core: paint with replace-if-different / toggle-if-same.
-  // - Row already has the active token → unpaint (toggle off).
-  // - Row has a different token → clear the other, set the active.
-  // - Row has nothing → set the active.
-  // Cell scope routed through the same logic via paintCellWithActiveToken.
-  function paintRowWithActiveToken(rowId: string) {
-    const active = paintTool.token;
-    const flags = styleEdits.rows[rowId] ?? {};
-    if (flags[active]) {
-      // Toggle off
-      setRowSemantic(rowId, active, false);
-      return;
-    }
-    // Replace: clear any other token currently set, then apply active.
-    const allTokens: SemanticToken[] =
-      ["emphasis", "muted", "accent", "bold", "fill"];
-    for (const t of allTokens) {
-      if (t !== active && flags[t]) setRowSemantic(rowId, t, false);
-    }
-    setRowSemantic(rowId, active, true);
-  }
-  function paintCellWithActiveToken(rowId: string, field: string) {
-    const active = paintTool.token;
-    const flags = styleEdits.cells[rowId]?.[field] ?? {};
-    if (flags[active]) {
-      setCellSemantic(rowId, field, active, false);
-      return;
-    }
-    const allTokens: SemanticToken[] =
-      ["emphasis", "muted", "accent", "bold", "fill"];
-    for (const t of allTokens) {
-      if (t !== active && flags[t]) setCellSemantic(rowId, field, t, false);
-    }
-    setCellSemantic(rowId, field, active, true);
-  }
+  // setSelectedRows + paintRowWithActiveToken + paintCellWithActiveToken
+  // live on the semantics slice (Phase 0c-C1 PR6).
 
   // toggleGroup lives on the rows-groups slice (Phase 0c-C1 PR5).
 
@@ -1954,155 +1878,18 @@ export function createForestStore() {
   // Cell + label edit actions live on the `cells` slice (Phase 0c-C1 PR1).
   // Public API re-exports them via `cells.X` passthrough below.
   //
-  // `clearAllEdits()` stays in the main factory because it also resets
-  // semantics-owned state (`styleEdits`, `paintTool`). When the
-  // semantics slice ships it becomes `cells.reset(); semantics.reset();`.
+  // clearAllEdits + semantics methods all live on slices.
+  // clearAllEdits is now the one-line orchestrator the cells / semantics
+  // extraction always pointed at — the moment finally arrives.
   function clearAllEdits() {
     cells.reset();
-    styleEdits = { rows: {}, cells: {} };
-    paintTool = { token: "accent", scope: "row" };
+    semantics.clearAllPaint();
   }
 
-  // ── Paint tool ───────────────────────────────────────────────────────
-  //
-  // The paint tool is an authoring mode that lets the user stamp one of the
-  // three semantic flags (emphasis / muted / accent) onto rows or cells
-  // by clicking them. Behavior mirrors a toggle: clicking with `emphasis`
-  // active flips the row's emphasis flag. Painted state is merged into the
-  // display layer and exportSpec so save_plot() and the R session both see
-  // the edits. Re-selecting the active token chip or pressing Escape
-  // exits paint mode.
-
-  // The painter is always-on. setPaintTool just changes which token / scope
-  // future clicks will apply. Paint commits accumulate in styleEdits.
-  function setPaintTool(tool: { token: SemanticToken; scope: "row" | "cell" }) {
-    paintTool = tool;
-    // Clear any stale paint-hover marker so a token/scope switch doesn't
-    // leave the previous cell highlighted in preview.
-    paintHoverCellField = null;
-    markSource("paint_tool");
-  }
-
-  // Paint-mode hover state. Tracks "rowId:field" of the cell under the
-  // cursor while in cell-scope paint mode; null otherwise. Lives on the
-  // store rather than as a ForestPlot-local $state because Svelte 5's
-  // compiler doesn't propagate component-local $state into helper
-  // functions defined in the same script — accessing it via store.* is
-  // guaranteed to read through a working getter.
-  let paintHoverCellField = $state<string | null>(null);
-  function setPaintHoverCellField(value: string | null) {
-    paintHoverCellField = value;
-  }
-
-  /** Toggle or set a semantic flag on a row. Call from the paint pointerdown
-   *  handler on a row element, or programmatically from R-authored flows. */
-  function setRowSemantic(rowId: string, token: SemanticToken, on: boolean) {
-    const current = styleEdits.rows[rowId] ?? {};
-    const next: SemanticFlags = { ...current, [token]: on };
-    // Collapse back to "inherit" when the flag would match the spec default
-    // (keeps exportSpec free of no-op noise).
-    const specRow = spec?.data.rows.find((r) => r.id === rowId);
-    const baseline = !!specRow?.style?.[token];
-    if (on === baseline) {
-      delete next[token];
-    }
-    const rows = Object.keys(next).length
-      ? { ...styleEdits.rows, [rowId]: next }
-      : (() => { const { [rowId]: _r, ...rest } = styleEdits.rows; return rest; })();
-    styleEdits = { ...styleEdits, rows };
-    // Turning a token ON records the paint; turning OFF records clearing
-    // (paint_row(..., NULL)). The fluent R verb mirrors this toggle.
-    appendOp(ops.paintRow(rowId, on ? token : null));
-    markSource("row_styles");
-    // The active token's painted-row set IS "selection" under the current
-    // contract; mark _selected too so dashboards observing the shortcut
-    // see proxy/user provenance correctly.
-    if (token === paintTool.token) markSource("selected");
-  }
-
-  function setCellSemantic(
-    rowId: string,
-    field: string,
-    token: SemanticToken,
-    on: boolean,
-  ) {
-    const rowMap = styleEdits.cells[rowId] ?? {};
-    const currentCell = rowMap[field] ?? {};
-    const nextCell: SemanticFlags = { ...currentCell, [token]: on };
-    // Collapse identity edits the same way as row-scoped paint.
-    const specCell = spec?.data.rows.find((r) => r.id === rowId)?.cellStyles?.[field];
-    const baseline = !!specCell?.[token];
-    if (on === baseline) {
-      delete nextCell[token];
-    }
-    const nextRowMap = Object.keys(nextCell).length
-      ? { ...rowMap, [field]: nextCell }
-      : (() => { const { [field]: _f, ...rest } = rowMap; return rest; })();
-    const cells = Object.keys(nextRowMap).length
-      ? { ...styleEdits.cells, [rowId]: nextRowMap }
-      : (() => { const { [rowId]: _r, ...rest } = styleEdits.cells; return rest; })();
-    styleEdits = { ...styleEdits, cells };
-    appendOp(ops.paintCell(rowId, field, on ? token : null));
-    markSource("cell_styles");
-  }
-
-  // The full set of semantic tokens, kept in lockstep with the SemanticToken
-  // union in $types. Used by clearSemantic / clearCellSemantic to fan out a
-  // single "clear all" call into individual setRowSemantic / setCellSemantic
-  // calls. Spec §2.5-S5 introduced these helpers so the proxy dispatcher
-  // doesn't have to iterate this list manually anymore.
-  const ALL_SEMANTIC_TOKENS: ReadonlyArray<SemanticToken> = [
-    "bold", "emphasis", "muted", "accent", "fill",
-  ];
-
-  /**
-   * Clear every semantic token on `rowId`. Mirrors what R's
-   * `paint_row(proxy, row_id, NA_character_)` expresses: "remove all
-   * paint from this row." Implemented as a fan-out over the token set
-   * so each token-clear records its own op in the log (matches the
-   * pre-S5 behavior; users undoing a clear-all see token-by-token undo).
-   */
-  function clearSemantic(rowId: string) {
-    for (const token of ALL_SEMANTIC_TOKENS) {
-      setRowSemantic(rowId, token, false);
-    }
-  }
-
-  /**
-   * Clear every semantic token on a single cell. Mirrors the row-scoped
-   * version above, scoped to (rowId, field).
-   */
-  function clearCellSemantic(rowId: string, field: string) {
-    for (const token of ALL_SEMANTIC_TOKENS) {
-      setCellSemantic(rowId, field, token, false);
-    }
-  }
-
-  /** Resolved row semantic flags (spec baseline + paint overrides). */
-  function getRowSemantic(row: Row, token: SemanticToken): boolean {
-    const override = styleEdits.rows[row.id]?.[token];
-    if (override !== undefined) return override;
-    return !!row.style?.[token];
-  }
-
-  /** Resolved cell semantic flags (spec baseline + paint overrides). */
-  function getCellSemantic(row: Row, field: string, token: SemanticToken): boolean {
-    const override = styleEdits.cells[row.id]?.[field]?.[token];
-    if (override !== undefined) return override;
-    return !!row.cellStyles?.[field]?.[token];
-  }
-
-  function clearAllPaint() {
-    styleEdits = { rows: {}, cells: {} };
-    paintTool = { token: "accent", scope: "row" };
-  }
-
-  function hasPaintEdits(): boolean {
-    return (
-      Object.keys(styleEdits.rows).length > 0 ||
-      Object.keys(styleEdits.cells).length > 0
-    );
-  }
+  // Paint-tool actions, setPaintTool, setPaintHoverCellField,
+  // setRowSemantic / setCellSemantic, clearSemantic / clearCellSemantic,
+  // getRowSemantic / getCellSemantic, clearAllPaint, hasPaintEdits — all
+  // live on the semantics slice (Phase 0c-C1 PR6).
 
   // Filter-popover plumbing moved to the sort-filter slice (Phase 0c-C1 PR4).
 
@@ -2430,8 +2217,8 @@ export function createForestStore() {
     // ── User selection / collapse / sort / filter ────────────────────────
     // Selection IS painted-row state — clearing it means clearing all
     // paint applied via the active token (and any other tokens in
-    // styleEdits). clearAllPaint() handles that.
-    clearAllPaint();
+    // styleEdits). semantics.clearAllPaint() handles that.
+    semantics.clearAllPaint();
     // rows-groups slice owns collapsedGroups / rowOrderOverrides /
     // hover / tooltip; reset() clears all four.
     rowsGroups.reset();
@@ -2443,8 +2230,7 @@ export function createForestStore() {
     hiddenColumnIds = new Set();
     columnSpecOverrides = {};
     cells.reset();
-    styleEdits = { rows: {}, cells: {} };
-    paintTool = { token: "accent", scope: "row" };
+    semantics.reset();
     opLog = [];
 
     // ── Widths / zoom / sizing ───────────────────────────────────────────
@@ -2623,22 +2409,17 @@ export function createForestStore() {
   $effect.root(() => {
     // Tier 1 — core interaction
     $effect(() => {
-      // Inline reproduction of the `selectedRowIds` getter logic so the
-      // $effect tracks the underlying state without going through the
-      // public API.
-      const active = paintTool.token;
-      const ids: string[] = [];
-      for (const rowId of Object.keys(styleEdits.rows)) {
-        if (styleEdits.rows[rowId]?.[active]) ids.push(rowId);
-      }
-      events.emit("selected", ids);
+      // selectedRowIds is a $derived owned by the semantics slice; this
+      // $effect re-fires whenever its inputs change. Array.from() pulls
+      // out a stable per-tick array for the event payload.
+      events.emit("selected", Array.from(semantics.selectedRowIds));
     });
     $effect(() => { events.emit("hover", rowsGroups.hoveredRowId); });
     $effect(() => { events.emit("sort", sortFilter.sortConfig as TabvizEvents["sort"]); });
     $effect(() => { events.emit("filters", sortFilter.filters); });
-    $effect(() => { events.emit("rowStyles", styleEdits.rows); });
-    $effect(() => { events.emit("cellStyles", styleEdits.cells); });
-    $effect(() => { events.emit("paintTool", paintTool); });
+    $effect(() => { events.emit("rowStyles", semantics.styleEdits.rows); });
+    $effect(() => { events.emit("cellStyles", semantics.styleEdits.cells); });
+    $effect(() => { events.emit("paintTool", semantics.paintTool); });
     $effect(() => { events.emit("collapsedGroups", Array.from(rowsGroups.collapsedGroups)); });
     $effect(() => { events.emit("hiddenColumns", Array.from(hiddenColumnIds)); });
     $effect(() => { events.emit("columnOrder", allColumns.map((c) => c.id)); });
@@ -2676,8 +2457,8 @@ export function createForestStore() {
       // Read-only `void` references — no work, just dependency tracking.
       void sortFilter.sortConfig;
       void sortFilter.filters;
-      void styleEdits;
-      void paintTool;
+      void semantics.styleEdits;
+      void semantics.paintTool;
       void rowsGroups.collapsedGroups;
       void hiddenColumnIds;
       void allColumns;
@@ -2721,13 +2502,9 @@ export function createForestStore() {
       return layout;
     },
     get selectedRowIds() {
-      // Derived: rows currently painted with the active token.
-      const active = paintTool.token;
-      const ids = new Set<string>();
-      for (const rowId of Object.keys(styleEdits.rows)) {
-        if (styleEdits.rows[rowId]?.[active]) ids.add(rowId);
-      }
-      return ids;
+      // Derived on the semantics slice. The active token's painted-row set
+      // IS the selection (paint-as-selection model).
+      return semantics.selectedRowIds;
     },
     get collapsedGroups() {
       return rowsGroups.collapsedGroups;
@@ -3101,7 +2878,7 @@ export function createForestStore() {
     prevPage,
     setContinuousMode,
     setDimensions,
-    setSelectedRows,
+    setSelectedRows: semantics.setSelectedRows,
     toggleGroup: rowsGroups.toggleGroup,
     openSettings,
     closeSettings,
@@ -3163,22 +2940,22 @@ export function createForestStore() {
     setLabel: cells.setLabel,
     previewLabel: cells.previewLabel,
     getPlotLabel: cells.getPlotLabel,
-    // Paint tool
-    setPaintTool,
-    setPaintHoverCellField,
-    paintRowWithActiveToken,
-    paintCellWithActiveToken,
-    setRowSemantic,
-    setCellSemantic,
-    clearSemantic,
-    clearCellSemantic,
-    getRowSemantic,
-    getCellSemantic,
-    clearAllPaint,
-    get paintTool() { return paintTool; },
-    get paintHoverCellField() { return paintHoverCellField; },
-    get styleEdits() { return styleEdits; },
-    get hasPaintEdits() { return hasPaintEdits(); },
+    // Paint tool — owned by the semantics slice (Phase 0c-C1 PR6).
+    setPaintTool: semantics.setPaintTool,
+    setPaintHoverCellField: semantics.setPaintHoverCellField,
+    paintRowWithActiveToken: semantics.paintRowWithActiveToken,
+    paintCellWithActiveToken: semantics.paintCellWithActiveToken,
+    setRowSemantic: semantics.setRowSemantic,
+    setCellSemantic: semantics.setCellSemantic,
+    clearSemantic: semantics.clearSemantic,
+    clearCellSemantic: semantics.clearCellSemantic,
+    getRowSemantic: semantics.getRowSemantic,
+    getCellSemantic: semantics.getCellSemantic,
+    clearAllPaint: semantics.clearAllPaint,
+    get paintTool() { return semantics.paintTool; },
+    get paintHoverCellField() { return semantics.paintHoverCellField; },
+    get styleEdits() { return semantics.styleEdits; },
+    get hasPaintEdits() { return semantics.hasPaintEdits(); },
     clearAllEdits,
     // Filter popover — sort-filter slice passthrough.
     openFilterPopover: sortFilter.openFilterPopover,
