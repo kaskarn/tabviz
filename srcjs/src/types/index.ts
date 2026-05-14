@@ -681,36 +681,15 @@ export interface GroupHeaderStyles {
   indentPerLevel: number;
 }
 
-export interface WebTheme {
-  name: string;
-  colors: ColorPalette;
-  typography: Typography;
-  spacing: Spacing;
-  shapes: Shapes;
-  axis: AxisConfig;
-  layout: LayoutConfig;
-  groupHeaders: GroupHeaderStyles;
-  semantics: Semantics;
-  // Optional v2 wire-shape fields. The serializer in
-  // R/utils-serialize-resolved.R always emits these on resolved themes; the
-  // declarations here let the switcher and font preview code read them
-  // without `as`-casts.
-  inputs?: {
-    primary?: string;
-    primaryDeep?: string;
-    secondary?: string;
-    secondaryDeep?: string;
-    accent?: string;
-    accentDeep?: string;
-    fontBody?: string;
-    fontDisplay?: string;
-    fontMono?: string;
-    slotStyle?: "fill_with_darker_stroke" | "flat_fill" | "outlined";
-  };
-  surface?: { base: string; muted: string; raised: string };
-  content?: { primary: string; secondary: string; muted: string; inverse: string };
-  webFonts?: Array<{ family: string; url: string }>;
-}
+/**
+ * WebTheme is the v2 wire shape. R emits the cascaded result on every
+ * spec.theme. Renamed from the v1 `WebTheme` (colors/typography/...)
+ * in Phase 0c-C5 step 2. The v1 shape types (ColorPalette, Typography,
+ * Spacing v1, Shapes, GroupHeaderStyles, Semantics v1) remain defined
+ * above for the JS-side `theme-presets.ts` static-fallback path, which
+ * migrates to v2 incrementally.
+ */
+export type WebTheme = import("./theme-v2").WebThemeV2;
 
 // ============================================================================
 // Interaction Types

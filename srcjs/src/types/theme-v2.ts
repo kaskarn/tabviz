@@ -26,15 +26,22 @@
 // Atom types
 // ────────────────────────────────────────────────────────────────────
 
-/** A single typographic role bundle (title, body, label, tick, etc.). */
+/**
+ * A single typographic role bundle (title, body, label, tick, etc.).
+ *
+ * R's `resolve_theme()` fills every TextRole field before serialization
+ * (see `resolve_text` + `compose_text` in `R/utils-theme-resolve.R`).
+ * The serializer's `na_to_null` is defensive but unreachable on resolved
+ * themes — the JS consumer can treat every field as guaranteed.
+ */
 export interface TextRoleV2 {
-  family: string | null;
-  size: string | null;
-  weight: number | null;
+  family: string;
+  size: string;
+  weight: number;
   /** "tabular" | "proportional" — figure-style for `font-feature-settings 'tnum'`. */
-  figures: string | null;
-  fg: string | null;
-  italic: boolean | null;
+  figures: string;
+  fg: string;
+  italic: boolean;
 }
 
 /**
