@@ -36,7 +36,7 @@
     "build:npm": "vite build --config vite.config.npm.ts && tsc -p tsconfig.npm.json && node scripts/rewrite-dts-aliases.mjs && node scripts/dist-smoke.mjs",
     "build:npm:types": "tsc -p tsconfig.npm.json && node scripts/rewrite-dts-aliases.mjs",
     "check:size": "node scripts/bundle-size-gate.mjs",
-    "check:lockfiles": "npm install --package-lock-only --no-audit --no-fund --dry-run --legacy-peer-deps && bun install --frozen-lockfile --dry-run",
+    "check:lockfiles": "npm install --package-lock-only --no-audit --no-fund --dry-run && bun install --frozen-lockfile --dry-run",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "bun test && vitest run",
     "test:bun": "bun test",
@@ -54,7 +54,7 @@
     }
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@tailwindcss/vite": "^4.0.0",
     "@types/d3-array": "^3.2.0",
     "@types/d3-format": "^3.0.0",

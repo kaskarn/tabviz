@@ -131,8 +131,8 @@ The build artifact ships from **npm** (`npm ci` in CI, `package-lock.json`
 is canonical). Local development with `bun` is supported and tracked —
 `bun.lock` is checked in so `bun install` + `bun test` work fast, but
 the published artifact is built from `package-lock.json`. The two
-lockfiles must agree on resolved versions; CI will gate on this when
-Phase 3 publish wires up.
+lockfiles must agree on resolved versions; `npm run check:lockfiles`
+gates this in CI.
 
 ## Testing
 
