@@ -12,9 +12,12 @@ Vite build. The HR-with-confidence-interval you scroll through in
 Shiny is the same plot — same layout solver, same axis math, same
 glyph geometry — that lands in the manuscript SVG.
 
-[![tabviz example](docs/images/hero-row-readme.png)](https://kaskarn.github.io/tabviz/gallery/)
+[![tabviz example: Hobbiton pantry audit](docs/images/hero-hobbit.png)](https://kaskarn.github.io/tabviz/gallery/lotr.html)
 
-*Click for the interactive gallery.*
+*Hobbiton's pantry & meal audit, rendered as an interactive widget and
+exported byte-identically to PNG. Click for the LOTR gallery —
+custom themes (`web_theme_hobbit()`, `_elvish()`, `_dwarven()`) and
+bespoke pictogram glyphs.*
 
 ## What makes this interesting
 
