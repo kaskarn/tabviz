@@ -3,9 +3,9 @@
 // `$types` (it's part of the JS → R wire contract); this is the
 // runtime constructor.
 //
-// Will relocate to the htmlwidgets adapter subpath (src/htmlwidgets/glue.ts)
-// as part of the Phase 2 source-tree restructure. Lives in $lib for now
-// so both index.svelte.ts and index-split.svelte.ts can share it.
+// Lives in $lib so both htmlwidgets adapters and the eventual `core/`
+// factories can share it. Used by htmlwidgets/{index,index-split}.svelte.ts
+// to wrap every outbound `Shiny.setInputValue` payload.
 //
 // See docs/dev/source-tagging.md for the contract.
 

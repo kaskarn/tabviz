@@ -8,8 +8,8 @@ import {
   registerCustomMessageHandler,
   registerWidget,
   setShinyInput,
-} from "./htmlwidgets-glue";
-import "./styles.css";
+} from "./glue";
+import "../styles.css";
 
 // Store registry for Shiny proxy support
 const storeRegistry = new Map<string, SplitForestStore>();
@@ -78,7 +78,7 @@ registerWidget(binding);
 
 // Shiny proxy message handler.
 //
-// Dispatch table mirrors the single-widget shape from index.svelte.ts
+// Dispatch table mirrors the single-widget shape from ./index.svelte.ts
 // (typed normalizer per method; handlers receive typed args). Currently
 // the split widget exposes only `selectPlot`; future methods (re-pane,
 // reorder panes, etc.) land here as siblings.
@@ -100,5 +100,3 @@ registerCustomMessageHandler("tabviz-split-proxy", (raw: unknown) => {
   handler(store, msg.args);
 });
 
-// Export for potential npm package use
-export { SplitForestPlot, createSplitForestStore };

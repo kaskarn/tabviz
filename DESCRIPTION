@@ -36,6 +36,7 @@ Collate:
     'themes-api.R'
     'utils-serialize-resolved.R'
     'paginate.R'
+    'wire-version.R'
     'utils-serialize.R'
     'modifiers.R'
     'web_spec.R'

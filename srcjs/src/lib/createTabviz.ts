@@ -1,7 +1,7 @@
 // createTabviz — public factory for the single-widget tabviz instance.
 //
 // This is the eventual `@tabviz/core`'s primary user-facing surface.
-// The htmlwidgets adapter (`srcjs/src/index.svelte.ts`) consumes it
+// The htmlwidgets adapter (`srcjs/src/htmlwidgets/index.svelte.ts`) consumes it
 // internally; web-app consumers will consume it directly once the
 // package ships.
 //

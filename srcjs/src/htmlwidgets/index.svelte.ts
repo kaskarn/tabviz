@@ -11,8 +11,8 @@ import {
   registerCustomMessageHandler,
   registerWidget,
   setShinyInput,
-} from "./htmlwidgets-glue";
-import "./styles.css";
+} from "./glue";
+import "../styles.css";
 
 // Development hook: expose export helpers under window.__tabvizExports
 exposeDevHook("__tabvizExports", { exportToSVG, exportToPNG });
@@ -30,7 +30,7 @@ exposeDevHook("__tabvizStoreRegistry", storeRegistry);
 // Adding a new method:
 //   1. Add an interface + normalize entry in $spec/proxy-args.ts
 //   2. Add a handler below that calls the normalizer and dispatches
-//   3. Add a behavior test in srcjs/src/index.proxy.test.ts
+//   3. Add a behavior test in srcjs/src/htmlwidgets/index.proxy.test.ts
 export const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unknown>) => void> = {
   updateData: (store, raw) => {
     const a = normalize.updateData(raw);
@@ -309,6 +309,3 @@ registerCustomMessageHandler("tabviz-proxy", (raw: unknown) => {
   }
 });
 
-// Export for potential npm package use
-export { ForestPlot, createForestStore };
-export type * from "$types";

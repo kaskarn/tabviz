@@ -16,7 +16,7 @@
 //   3. Add the snake_case name to SHINY_EVENT_FIELDS (and to R-side
 //      TABVIZ_STATE_FIELDS, kept in sync by the doc-test)
 //   4. Fire the event from the store (forestStore.svelte.ts)
-//   5. Subscribe in the Shiny adapter (index.svelte.ts setupShinyBindings)
+//   5. Subscribe in the Shiny adapter (htmlwidgets/index.svelte.ts setupShinyBindings)
 
 import type {
   CellEdits,

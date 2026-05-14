@@ -10,7 +10,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/index.svelte.ts"),
+      entry: path.resolve(__dirname, "src/htmlwidgets/index.svelte.ts"),
       name: "tabviz",
       fileName: () => "tabviz.js",
       formats: ["iife"],

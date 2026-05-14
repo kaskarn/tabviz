@@ -811,7 +811,7 @@ export interface WebSpec {
    *  columns) and applied once on widget mount. The R-side serializer
    *  (`R/utils-serialize.R::serialize_initial_state`) writes this; the
    *  htmlwidgets binding consumes it in
-   *  `srcjs/src/index.svelte.ts::renderValue` to seed the store. */
+   *  `srcjs/src/htmlwidgets/index.svelte.ts::renderValue` to seed the store. */
   initialState?: {
     sort?: { column: string; direction: "asc" | "desc" | "none" };
     filters?: Array<{ field: string; operator: string; value: unknown }>;
@@ -1182,7 +1182,7 @@ declare global {
     };
     /** Dev hook: exposes the export helpers for puppeteer / playwright
      *  integration tests. Lives behind the `expose-dev-hook` mechanism in
-     *  $lib/htmlwidgets-glue; tests should treat presence as best-effort
+     *  $htmlwidgets/glue; tests should treat presence as best-effort
      *  (production builds may strip this in a future minor). */
     __tabvizExports?: {
       exportToSVG: (...args: unknown[]) => unknown;

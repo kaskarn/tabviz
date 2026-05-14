@@ -1,11 +1,9 @@
-// htmlwidgets-glue: the ONLY module in the codebase that touches
+// htmlwidgets/glue: the ONLY module in the codebase that touches
 // `window.HTMLWidgets`, `window.Shiny`, or `window.__tabviz*`. Every other
 // entry/component/store goes through these helpers.
 //
-// Refactored as part of spec §2.5-S10 + Phase 0a-PR3. Will relocate to
-// `src/htmlwidgets/glue.ts` during the Phase 2 source-tree restructure
-// (spec §3.10). The helpers' shapes are stable across that move; only
-// the import paths change.
+// Refactored under spec §2.5-S10 + Phase 0a-PR3; relocated to
+// `src/htmlwidgets/glue.ts` in Phase 2-PR1 (spec §3.10).
 //
 // See docs/dev/source-tagging.md for the envelope contract these helpers
 // honor when forwarding to Shiny.

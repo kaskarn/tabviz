@@ -93,9 +93,9 @@ Both read from `TABVIZ_STATE_FIELDS` — a hardcoded list of the field names the
 | Site | Direction | What it does |
 |---|---|---|
 | `srcjs/src/lib/shiny-envelope.ts::shinyEnvelope()` | Construction | The only place envelopes are created (or should be) |
-| `srcjs/src/index.svelte.ts::setupShinyBindings::emit()` | Construction | Wraps per-field emissions for the single widget |
-| `srcjs/src/index.svelte.ts` debounced `_state` block | Construction | The aggregate bundle |
-| `srcjs/src/index-split.svelte.ts::setupShinyBindings` | Construction | The split widget's `active_plot` and `selected` |
+| `srcjs/src/htmlwidgets/index.svelte.ts::setupShinyBindings::emit()` | Construction | Wraps per-field emissions for the single widget |
+| `srcjs/src/htmlwidgets/index.svelte.ts` debounced `_state` block | Construction | The aggregate bundle |
+| `srcjs/src/htmlwidgets/index-split.svelte.ts::setupShinyBindings` | Construction | The split widget's `active_plot` and `selected` |
 | `R/shiny.R::tabviz_state` | Consumption | Returns unwrapped values |
 | `R/shiny.R::tabviz_state_envelope` | Consumption | Returns full envelopes for feedback-loop filtering |
 

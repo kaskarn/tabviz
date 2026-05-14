@@ -51,7 +51,7 @@ For each, we pick a sync mechanism: **generate**, **doc-test**, or **manual** (t
 | Field | Side | Where |
 |---|---|---|
 | R proxy verbs | R | `R/modifiers.R`, `R/shiny.R` (via `invoke_proxy_method(... proxy_method = "name")` calls) |
-| `proxyMethods` keys + `normalize` keys | JS | `srcjs/src/index.svelte.ts` (proxyMethods) + `srcjs/src/spec/proxy-args.ts` (normalize) |
+| `proxyMethods` keys + `normalize` keys | JS | `srcjs/src/htmlwidgets/index.svelte.ts` (proxyMethods) + `srcjs/src/spec/proxy-args.ts` (normalize) |
 
 Known method names (single-widget channel `tabviz-proxy`):
 `updateData`, `toggleGroup`, `applyFilter`, `clearFilter`, `sortBy`, `addColumn`, `hideColumn`, `moveColumn`, `setColumnWidth`, `updateColumn`, `selectRows`, `moveRow`, `setCell`, `setRowLabel`, `clearEdits`, `setRowSemantic`, `setCellSemantic`, `setTheme`, `setZoom`, `setAspectRatio`.

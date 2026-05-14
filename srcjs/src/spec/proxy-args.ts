@@ -3,7 +3,7 @@
 // Each interface here is the typed shape that `normalize.<method>(raw)`
 // produces from the raw `Record<string, unknown>` R sends over the
 // Shiny custom message channel. Per-method handlers in
-// `srcjs/src/index.svelte.ts::proxyMethods` consume these typed shapes
+// `srcjs/src/htmlwidgets/index.svelte.ts::proxyMethods` consume these typed shapes
 // and dispatch to the store; coercion and validation live HERE, not in
 // the handlers.
 //

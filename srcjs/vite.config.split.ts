@@ -12,7 +12,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: path.resolve(__dirname, "src/index-split.svelte.ts"),
+      entry: path.resolve(__dirname, "src/htmlwidgets/index-split.svelte.ts"),
       name: "tabviz_split",
       fileName: () => "tabviz_split.js",
       formats: ["iife"],
