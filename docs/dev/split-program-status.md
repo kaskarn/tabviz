@@ -2,7 +2,7 @@
 
 A high-level dashboard for the program described in `docs/dev/frontend-split-spec.md`. Mid-flight narrative + discoveries live in `docs/dev/split-program-diary.md`; design rationale lives in the spec; this file is the bird's-eye view.
 
-**Updated:** 2026-05-13
+**Updated:** 2026-05-12
 
 ---
 
@@ -22,8 +22,8 @@ A high-level dashboard for the program described in `docs/dev/frontend-split-spe
 | Phase 0d — Documentation | ⏳ pending | Mostly writing |
 | Phase 0e — Synchronization audit | ⏳ pending | Parallel with 0d |
 | **Phase 1 — Extract createTabviz / createSplitTabviz** | ✅ **done** | createTabviz (269 lines) + createSplitTabviz (74 lines) shipped as the public API. Htmlwidget bindings are now thin shells around the factories. Full visual battery (45 examples) clean. |
-| Phase 1.5 — View Source JS target | ⏳ pending | Gated on Phase 1 |
-| Phase 2 — Restructure source tree | ⏳ pending | File moves |
+| Phase 1.5 — View Source JS target | ⏳ pending (gated on C5 createTheme — deferred to Phase 1.x) | Spec §3.11 / Phase 0c-C12-b. Needs createTheme factory which is gated on the JS resolver port (C5). |
+| **Phase 2 — Restructure source tree** | 🟡 **partial — 3 of 5 subpaths in place** | PR1 htmlwidgets/, PR2 export/, PR3 core/. Remaining: svelte/ (largest move — ForestPlot + SplitForestPlot + overlays + stores tree) and finishing $lib decomposition. The package.json `exports` field comes alongside the svelte/ move. |
 | Phase 3 — Publish | ⏳ pending | npm + CI gates |
 
 ## Phase 0a — completed items
