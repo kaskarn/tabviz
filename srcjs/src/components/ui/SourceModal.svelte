@@ -98,16 +98,25 @@
 
   // ---- JS target (Phase 1.5) -----------------------------------------
   //
-  // Embeds the current resolved WebSpec as JSON and shows a `createTabviz`
-  // invocation. v2 themes are resolved server-side, so the inlined spec
-  // already encodes the active appearance — no JS-side createTheme call
-  // needed at this stage. Op-log → fluent-JS translation (sortBy,
-  // applyFilter, etc.) is a v1.1 enhancement once createTabviz's
-  // imperative API surface stabilizes its UX.
+  // Embeds the current resolved WebSpec as JSON, then replays the
+  // recorded op-log as fluent TabvizInstance calls. v2 themes are
+  // resolved server-side so the inlined spec already encodes the
+  // active appearance — no JS-side createTheme call needed.
+  //
+  // Each OpRecord carries a `jsCall` field rendered by `op-recorder.ts`
+  // alongside its R sibling. Ops that aren't on TabvizInstance yet
+  // route through `instance.store.<method>(...)` as a documented
+  // escape hatch.
+  const jsOpsBody = $derived.by(() => {
+    const log = store.opLog;
+    if (log.length === 0) return "";
+    return log.map((r) => r.jsCall).join("\n");
+  });
+
   const jsSource = $derived.by(() => {
     if (!store.spec) return "// No spec loaded.";
     const specJson = JSON.stringify(store.spec, null, 2);
-    return [
+    const preamble = [
       `import { createTabviz } from "@tabviz/core";`,
       `import "@tabviz/core/style.css";`,
       ``,
@@ -118,6 +127,7 @@
       `  spec,`,
       `);`,
     ].join("\n");
+    return jsOpsBody ? `${preamble}\n\n${jsOpsBody}` : preamble;
   });
 
   // ---- Active tab content --------------------------------------------

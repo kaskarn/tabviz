@@ -13,8 +13,16 @@
  */
 
 export interface OpRecord {
-  /** The one-call fluent string, e.g. `resize_column("drug", 160)`. */
+  /** The one-call fluent R string, e.g. `resize_column("drug", 160)`. */
   rCall: string;
+  /**
+   * Equivalent JS statement against a `TabvizInstance`, e.g.
+   * `instance.sortBy({ column: "estimate", direction: "asc" })`. Used by
+   * the "View source" JS tab. Some ops aren't exposed on TabvizInstance
+   * yet and emit a `instance.store.<method>(...)` escape hatch instead —
+   * documented in `jsCallForOp` below.
+   */
+  jsCall: string;
   /** Identifier for the category of op — useful for filtering + tests. */
   kind:
     | "resize_column"
@@ -40,6 +48,35 @@ export interface OpRecord {
     | "clear_filters";
   /** Monotonic timestamp (ms since epoch) — purely for debugging + ordering stability. */
   ts: number;
+}
+
+// ------------------------------------------------------------------
+// JS-literal formatters — render arg values as JS source for the
+// "View source" JS tab.
+// ------------------------------------------------------------------
+
+/** Render any JS value as a JS source literal. */
+export function jsLiteral(v: unknown): string {
+  if (v === null || v === undefined) return "null";
+  if (typeof v === "boolean") return v ? "true" : "false";
+  if (typeof v === "number") {
+    if (!Number.isFinite(v)) return v > 0 ? "Infinity" : v < 0 ? "-Infinity" : "NaN";
+    return String(v);
+  }
+  if (typeof v === "string") return JSON.stringify(v);
+  // Objects / arrays: JSON-stringify. Good enough for cell values; the
+  // user can hand-edit if they need a richer literal.
+  return JSON.stringify(v);
+}
+
+/** Render a JS object literal from { key: value, ... }, dropping undefined. */
+export function jsObject(entries: Record<string, unknown>): string {
+  const parts: string[] = [];
+  for (const [k, v] of Object.entries(entries)) {
+    if (v === undefined) continue;
+    parts.push(`${k}: ${jsLiteral(v)}`);
+  }
+  return `{ ${parts.join(", ")} }`;
 }
 
 // ------------------------------------------------------------------
@@ -103,28 +140,39 @@ export const ops = {
   resizeColumn: (id: string, w: number): OpRecord => ({
     kind: "resize_column",
     rCall: rCall("resize_column", [rPositional(id), rPositional(Math.round(w))]),
+    // TabvizInstance doesn't expose setColumnWidth yet; use the store
+    // escape hatch documented on TabvizInstance.store.
+    jsCall: `instance.store.setColumnWidth(${jsLiteral(id)}, ${Math.round(w)});`,
     ts: now(),
   }),
 
   moveColumn: (id: string, to: number | string): OpRecord => ({
     kind: "move_column",
     rCall: rCall("move_column", [rPositional(id), rNamed("to", to)]),
+    jsCall: typeof to === "number"
+      ? `instance.store.moveColumnItem(${jsLiteral(id)}, ${to});`
+      : `instance.store.moveColumnItem(${jsLiteral(id)}, /* before: */ ${jsLiteral(to)});`,
     ts: now(),
   }),
 
   addColumn: (colBuilder: string, after?: string | null): OpRecord => ({
     kind: "add_column",
-    // colBuilder is a pre-rendered col_*() / viz_*() call (see below).
     rCall: rCall(
       "add_column",
       [colBuilder, after ? rNamed("after", after) : null],
     ),
+    // colBuilder is an R-call string; we emit a comment placeholder
+    // for the JS side since reconstructing a ColumnSpec literal would
+    // require parsing the R call. The user typically follows up with
+    // an update_column / col_* in their own code.
+    jsCall: `// add_column: ${colBuilder}${after ? ` (after ${after})` : ""}`,
     ts: now(),
   }),
 
   removeColumn: (id: string): OpRecord => ({
     kind: "remove_column",
     rCall: rCall("remove_column", [rPositional(id)]),
+    jsCall: `instance.store.hideColumn(${jsLiteral(id)});`,
     ts: now(),
   }),
 
@@ -133,6 +181,7 @@ export const ops = {
     return {
       kind: "update_column",
       rCall: rCall("update_column", [rPositional(id), ...namedArgs]),
+      jsCall: `instance.store.updateColumnPatch(${jsLiteral(id)}, ${jsObject(patch)});`,
       ts: now(),
     };
   },
@@ -140,18 +189,21 @@ export const ops = {
   moveRow: (id: string, to: number): OpRecord => ({
     kind: "move_row",
     rCall: rCall("move_row", [rPositional(id), rNamed("to", to)]),
+    jsCall: `instance.store.moveRowItem(${jsLiteral(id)}, ${to});`,
     ts: now(),
   }),
 
   setCell: (rowId: string, field: string, value: unknown): OpRecord => ({
     kind: "set_cell",
     rCall: rCall("set_cell", [rPositional(rowId), rPositional(field), rPositional(value)]),
+    jsCall: `instance.store.setCellValue(${jsLiteral(rowId)}, ${jsLiteral(field)}, ${jsLiteral(value)});`,
     ts: now(),
   }),
 
   setRowLabel: (rowId: string, label: string): OpRecord => ({
     kind: "set_row_label",
     rCall: rCall("set_row_label", [rPositional(rowId), rPositional(label)]),
+    jsCall: `instance.store.setRowLabel(${jsLiteral(rowId)}, ${jsLiteral(label)});`,
     ts: now(),
   }),
 
@@ -161,18 +213,23 @@ export const ops = {
   ): OpRecord => ({
     kind: `set_${slot}` as OpRecord["kind"],
     rCall: rCall(`set_${slot}`, [text == null ? "NULL" : rPositional(text)]),
+    // No instance API; the labels live on spec.labels. Update via the
+    // store's labelEdits state.
+    jsCall: `instance.store.setLabelEdit(${jsLiteral(slot)}, ${text == null ? "null" : jsLiteral(text)});`,
     ts: now(),
   }),
 
   setWatermark: (text: string | null): OpRecord => ({
     kind: "set_watermark",
     rCall: rCall("set_watermark", [text == null ? "NULL" : rPositional(text)]),
+    jsCall: `instance.store.setWatermark(${text == null ? "null" : jsLiteral(text)});`,
     ts: now(),
   }),
 
   paintRow: (rowId: string, token: string | null): OpRecord => ({
     kind: "paint_row",
     rCall: rCall("paint_row", [rPositional(rowId), token == null ? "NULL" : rPositional(token)]),
+    jsCall: `instance.setSemantic(${jsObject({ rowId, token })});`,
     ts: now(),
   }),
 
@@ -183,12 +240,14 @@ export const ops = {
       rPositional(field),
       token == null ? "NULL" : rPositional(token),
     ]),
+    jsCall: `instance.setCellSemantic(${jsObject({ rowId, field, token })});`,
     ts: now(),
   }),
 
   setTheme: (name: string): OpRecord => ({
     kind: "set_theme",
     rCall: rCall("set_theme", [rPositional(name)]),
+    jsCall: `instance.setTheme(${jsLiteral(name)});`,
     ts: now(),
   }),
 
@@ -200,18 +259,25 @@ export const ops = {
    * from the emitted call to keep it terse.
    */
   setAspectRatio: (ratio: number | null,
-                   anchor?: "width" | "height" | "auto"): OpRecord => ({
-    kind: "set_aspect_ratio",
-    rCall: rCall("set_aspect_ratio", [
-      ratio == null ? "NULL" : rPositional(Math.round(ratio * 1000) / 1000),
-      anchor && anchor !== "width" ? rNamed("anchor", anchor) : null,
-    ]),
-    ts: now(),
-  }),
+                   anchor?: "width" | "height" | "auto"): OpRecord => {
+    const r = ratio == null ? null : Math.round(ratio * 1000) / 1000;
+    return {
+      kind: "set_aspect_ratio",
+      rCall: rCall("set_aspect_ratio", [
+        r == null ? "NULL" : rPositional(r),
+        anchor && anchor !== "width" ? rNamed("anchor", anchor) : null,
+      ]),
+      jsCall: `instance.setAspectRatio(${jsObject({ ratio: r, anchor: anchor === "width" ? undefined : anchor })});`,
+      ts: now(),
+    };
+  },
 
   setSharedColumnWidths: (enabled: boolean): OpRecord => ({
     kind: "set_shared_column_widths",
     rCall: rCall("set_shared_column_widths", [enabled ? "TRUE" : "FALSE"]),
+    // SplitTabvizInstance API; createTabviz's single-pane variant
+    // doesn't expose it but the underlying split-store does.
+    jsCall: `// set_shared_column_widths(${enabled}) — split-widget only`,
     ts: now(),
   }),
 
@@ -222,6 +288,7 @@ export const ops = {
   sortRows: (field: string, direction: "asc" | "desc"): OpRecord => ({
     kind: "sort_rows",
     rCall: rCall("sort_rows", [rPositional(field), rNamed("direction", direction)]),
+    jsCall: `instance.sortBy(${jsObject({ column: field, direction })});`,
     ts: now(),
   }),
 
@@ -237,12 +304,14 @@ export const ops = {
       rNamed("operator", operator),
       rNamed("value", value),
     ]),
+    jsCall: `instance.applyFilter({ field: ${jsLiteral(field)}, filter: ${jsObject({ operator, value })} });`,
     ts: now(),
   }),
 
   clearFilters: (): OpRecord => ({
     kind: "clear_filters",
     rCall: "clear_filters()",
+    jsCall: "instance.clearFilter();",
     ts: now(),
   }),
 };
