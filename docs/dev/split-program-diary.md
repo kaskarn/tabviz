@@ -798,3 +798,79 @@ Next per plan: **drag micro-slice**. Tiny (~60 lines), bounded
 state + 4 actions (beginDrag / updateDrag / endDrag / cancelDrag),
 straddles columns and rows-groups. Extract as its own slice so
 both consumers depend on it cleanly when they ship.
+
+### 0c-PR19: C1 slices 7 + 8 — drag + history micro-slices
+
+Two micro-slices bundled into one PR — both small, both with no
+cross-slice deps, both prerequisite for cleaner extraction of the
+larger remaining slices (columns + data + layout-zoom).
+
+**drag** (~75 lines):
+  - State: dragState (DragState | null)
+  - Actions: beginDrag, updateDrag, endDrag, cancelDrag, reset
+  - No deps (commit callback passed at endDrag call site).
+  - Pulled out because dragState straddles columns (column-header
+    reorder) and rows-groups (row + group reorder). Extracting now
+    means both consumers depend on `drag.*` rather than reaching
+    for a shared main-store closure.
+
+**history** (~65 lines):
+  - State: opLog (OpRecord[])
+  - Actions: appendOp (dedupe + coalesce), reset
+  - No deps. Constructed FIRST among all slices so every mutation
+    slice can take `history.appendOp` as a constructor arg without
+    forward-closure tricks.
+
+Coalesce contract preserved verbatim — drop byte-for-byte duplicates
+of the previous record, coalesce consecutive `set_aspect_ratio` runs
+to the latest value (the aspect-slider drag bug from commit 8b39868
+that motivated the rule). Test suite pins both.
+
+One coding-style note: my first cut of `history.svelte.ts` had
+
+  const COALESCE_KINDS: ReadonlySet<OpRecord["kind"]> = new Set([...]);
+
+at module top. That's the exact pattern saved as
+`feedback_minifier_type_set.md` — Vite minifier emits a binding
+collision with the ESM contextual `as` keyword and the runtime
+throws `ReferenceError: as is not defined`. Rewrote as an inline
+equality check (`record.kind === "set_aspect_ratio"`). The
+production code in commit 8b39868 already used the inline form for
+the same reason; the slice extraction temporarily re-introduced the
+broken pattern and the memory caught it before the bundle was
+built. Saved feedback memory paid off in <5 minutes.
+
+Main store wiring after this PR:
+
+  - Removed: opLog state + 22-line appendOp helper + ~30 lines of
+    dragState + 4 inline drag methods.
+  - Added: 2 slice instantiation lines (drag + history) + one
+    `const appendOp = history.appendOp;` alias (kept so existing
+    inline call sites in the file stay unchanged).
+
+`history` is constructed BEFORE `cells` / `theme` / etc. (alphabetical
+ordering broken intentionally — dep graph ordering matters now).
+Every slice that takes `appendOp` as a dep can now point at
+`history.appendOp` directly; the existing `(record) => appendOp(record)`
+closure pattern in dep bags continues to work via the alias.
+
+vitest specs: 10 tests for drag (threshold activation, commit-on-target,
+cancel paths, reset), 7 for history (dedupe, coalesce-vs-cross-kind,
+non-coalesce-kinds, reset). Both small but complete coverage of the
+public surface.
+
+Gates: tsc 0 errors, bun test 161 pass (baseline), vitest 124 pass
+total (9 files), R devtools::test() 1489/1489, visual battery 45/45.
+
+Eight slices done (6 main + 2 micro + Q8 source). Three to go: the
+heavy lifters — **columns**, **data**, and the long pole
+**layout-zoom**.
+
+Next per plan: **columns** (~330 LOC). Owns columnWidths +
+userResizedIds + userInsertedColumns + hiddenColumnIds +
+columnSpecOverrides + columnOrderOverrides + the column ops
+(insertColumn / hideColumn / updateColumn / measureAutoColumns).
+Reads spec, writes through measureAutoColumns to columnWidths. The
+last cross-slice dep some other slices still take via main-store
+closures (e.g. theme's clearAutoWidthsKeepingUserResizes /
+measureAutoColumns).

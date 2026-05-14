@@ -47,6 +47,8 @@ import { createAxisSlice } from "$stores/slices/axis.svelte";
 import { createSortFilterSlice } from "$stores/slices/sort-filter.svelte";
 import { createRowsGroupsSlice } from "$stores/slices/rows-groups.svelte";
 import { createSemanticsSlice } from "$stores/slices/semantics.svelte";
+import { createDragSlice } from "$stores/slices/drag.svelte";
+import { createHistorySlice } from "$stores/slices/history.svelte";
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
 
@@ -104,6 +106,11 @@ export function createForestStore() {
   const markSource = source.markSource;
   const withSource = source.withSource;
 
+  // ── History (op log + appendOp + coalesce) ──────────────────────────────
+  // Phase 0c-C1 PR8 (micro-slice). Constructed early so every mutation slice
+  // can take `history.appendOp` as a dep without forward-closure tricks.
+  const history = createHistorySlice();
+
   // ── Cell + label edits ──────────────────────────────────────────────────
   // Phase 0c-C1 PR1. Owns `cellEdits`, `labelEdits`, `wrapLineCounts`, and
   // `editingTarget`. Reads `allColumns` + `spec` via closure deps (forward
@@ -160,6 +167,13 @@ export function createForestStore() {
     appendOp: (record) => appendOp(record),
     markSource,
   });
+
+  // ── Drag micro-slice ────────────────────────────────────────────────────
+  // Phase 0c-C1 PR7. Tiny — bounded drag state + 4 actions, no deps.
+  // Columns drag (column-header reorder) and rows-groups drag (row /
+  // group reorder) both call into this slice; extracting it as its own
+  // module gives the two consumers a single source of truth.
+  const drag = createDragSlice();
 
   const sortFilter = createSortFilterSlice({
     getSpec: () => spec,
@@ -227,10 +241,9 @@ export function createForestStore() {
   // mutate via the slice methods exposed below on the public API. The
   // slice is constructed below `spec` declaration so its dependency
   // closures can resolve everything they need at call time.
-  // Append-only log of recorded fluent-R operations (see contract above).
-  // (Stays in main factory for now; will migrate to a `history` micro-slice
-  // alongside `appendOp` per the C1 plan.)
-  let opLog = $state<OpRecord[]>([]);
+  // opLog + appendOp now live on the history micro-slice (Phase 0c-C1 PR8).
+  // Local alias so existing call sites keep working.
+  const appendOp = history.appendOp;
 
   // styleEdits + paintTool + paintHoverCellField live on the semantics
   // slice (Phase 0c-C1 PR6). Read via `semantics.X` accessors; mutate
@@ -251,7 +264,7 @@ export function createForestStore() {
   // Transient UI state for DnD / edit / filter overlays.
   // `editingTarget` moved to the cells slice in 0c-C1 PR1.
   // `filterPopoverTarget` moved to the sort-filter slice in 0c-C1 PR4.
-  let dragState = $state<DragState | null>(null);
+  // `dragState` moved to the drag micro-slice in 0c-C1 PR7.
 
   // Tooltip state moved to rows-groups slice (Phase 0c-C1 PR5).
 
@@ -1125,10 +1138,10 @@ export function createForestStore() {
     // in the previous spec matches both the prior setSpec behavior (which
     // explicitly cleared `filterPopoverTarget`) and the resetState pattern.
     sortFilter.reset();
-    dragState = null;
+    drag.reset();
     // Reset the op log too — a new spec is a new "session" as far as
     // recording fluent R calls is concerned.
-    opLog = [];
+    history.reset();
     // Pagination resets to page 1 with each spec swap (split-by navigation
     // flows through setSpec, and "the same page index across different data"
     // would point at unrelated rows). Continuous-mode toggle is preserved as
@@ -1691,34 +1704,8 @@ export function createForestStore() {
     return group ? group.columns : [];
   }
 
-  function beginDrag(partial: Omit<DragState, "threshold" | "active" | "indicatorIndex" | "currentX" | "currentY">) {
-    dragState = {
-      ...partial,
-      currentX: partial.startX,
-      currentY: partial.startY,
-      threshold: 4,
-      active: false,
-      indicatorIndex: null,
-    };
-  }
-
-  function updateDrag(clientX: number, clientY: number, indicatorIndex: number | null) {
-    if (!dragState) return;
-    const dx = clientX - dragState.startX;
-    const dy = clientY - dragState.startY;
-    const active = dragState.active || Math.hypot(dx, dy) > dragState.threshold;
-    dragState = { ...dragState, currentX: clientX, currentY: clientY, active, indicatorIndex };
-  }
-
-  function endDrag(commit: (state: DragState) => void) {
-    if (!dragState) return;
-    if (dragState.active && dragState.indicatorIndex != null) commit(dragState);
-    dragState = null;
-  }
-
-  function cancelDrag() {
-    dragState = null;
-  }
+  // beginDrag / updateDrag / endDrag / cancelDrag live on the drag
+  // micro-slice (Phase 0c-C1 PR7).
 
   // Move a column (leaf or group) to `newIndex` within its scope.
   // For leaves, scope = parent column-group id or "__root__"; for groups, scope = "__root__".
@@ -2231,7 +2218,7 @@ export function createForestStore() {
     columnSpecOverrides = {};
     cells.reset();
     semantics.reset();
-    opLog = [];
+    history.reset();
 
     // ── Widths / zoom / sizing ───────────────────────────────────────────
     columnWidths = {};
@@ -2252,8 +2239,8 @@ export function createForestStore() {
 
     // ── Transient UI overlays ────────────────────────────────────────────
     // hover + tooltip cleared via rowsGroups.reset(); popover via
-    // sortFilter.reset() — both already called above.
-    dragState = null;
+    // sortFilter.reset(); drag via drag.reset() — all already called above.
+    drag.reset();
 
     // ── Restore theme + watermark from the initial snapshot ──────────────
     // theme.resetThemeEdits restores both spec.theme and spec.watermark to
@@ -2653,7 +2640,7 @@ export function createForestStore() {
       return cells.cellEdits;
     },
     get dragState() {
-      return dragState;
+      return drag.dragState;
     },
     get editingTarget() {
       return cells.editingTarget;
@@ -2912,10 +2899,11 @@ export function createForestStore() {
     findRowGroupScope: rowsGroups.findRowGroupScope,
     siblingsForRowScope: rowsGroups.siblingsForRowScope,
     siblingsForRowGroupScope: rowsGroups.siblingsForRowGroupScope,
-    beginDrag,
-    updateDrag,
-    endDrag,
-    cancelDrag,
+    // Drag micro-slice passthrough.
+    beginDrag: drag.beginDrag,
+    updateDrag: drag.updateDrag,
+    endDrag: drag.endDrag,
+    cancelDrag: drag.cancelDrag,
     moveColumnItem,
     moveRowItem: rowsGroups.moveRowItem,
     moveRowGroupItem: rowsGroups.moveRowGroupItem,
@@ -3005,7 +2993,7 @@ export function createForestStore() {
     setContainerElementId,
     resetState,
     // Op recorder. `clearOpLog` removed in Phase 0b (orphan; no callers).
-    get opLog() { return opLog; },
+    get opLog() { return history.opLog; },
     // Plot-level label overrides (title/subtitle/caption/footnote)
     get labelEdits() { return cells.labelEdits; },
     // Forest-plot width override (null = follow auto layout)
@@ -3028,33 +3016,8 @@ export function createForestStore() {
     recordOp: (r: OpRecord) => appendOp(r),
   };
 
-  /**
-   * Append an op to the log unless it's a byte-for-byte duplicate of the
-   * most recent entry. Filters out the common accidental doubles (drag-end
-   * firing twice, double-clicks, value-didn't-actually-change cases) while
-   * still recording every distinct action — genuine backtracking like
-   * resize A → resize B → resize A stays in the log.
-   *
-   * Coalescing: for kinds where each emission is a slider-tick update
-   * (only the latest value matters; intermediate values are noise),
-   * a consecutive run of the same kind is collapsed to its last value.
-   * Used by the aspect-ratio slider, whose `oninput` fires per pixel
-   * of drag — without coalescing the View-source panel showed a
-   * dozen `set_aspect_ratio(0.961)` / `set_aspect_ratio(0.975)` / …
-   * lines for one drag. Coalescing across kinds is NOT done — once
-   * a different action interrupts the chain, the slider segment is
-   * sealed and the next slider-tick starts a fresh entry.
-   */
-  function appendOp(record: OpRecord): void {
-    const prev = opLog[opLog.length - 1];
-    if (prev && prev.rCall === record.rCall) return;
-    const isCoalesceKind = record.kind === "set_aspect_ratio";
-    if (prev && isCoalesceKind && prev.kind === record.kind) {
-      opLog = [...opLog.slice(0, -1), record];
-      return;
-    }
-    opLog = [...opLog, record];
-  }
+  // appendOp lives on the history micro-slice (Phase 0c-C1 PR8). The
+  // dedupe + coalesce rules + the kind allowlist all moved with it.
 }
 
 export type ForestStore = ReturnType<typeof createForestStore>;
