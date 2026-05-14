@@ -23,8 +23,8 @@ A high-level dashboard for the program described in `docs/dev/frontend-split-spe
 | Phase 0e — Synchronization audit | ⏳ pending | Parallel with 0d |
 | **Phase 1 — Extract createTabviz / createSplitTabviz** | ✅ **done** | createTabviz (269 lines) + createSplitTabviz (74 lines) shipped as the public API. Htmlwidget bindings are now thin shells around the factories. Full visual battery (45 examples) clean. |
 | Phase 1.5 — View Source JS target | ⏳ pending (gated on C5 createTheme — deferred to Phase 1.x) | Spec §3.11 / Phase 0c-C12-b. Needs createTheme factory which is gated on the JS resolver port (C5). |
-| **Phase 2 — Restructure source tree** | 🟡 **partial — 3 of 5 subpaths in place** | PR1 htmlwidgets/, PR2 export/, PR3 core/. Remaining: svelte/ (largest move — ForestPlot + SplitForestPlot + overlays + stores tree) and finishing $lib decomposition. The package.json `exports` field comes alongside the svelte/ move. |
-| Phase 3 — Publish | ⏳ pending | npm + CI gates |
+| **Phase 2 — Restructure source tree** | ✅ **done — all 5 subpaths in place** | PR1 htmlwidgets/, PR2 export/, PR3 core/, PR4 svelte/. Spec §3.10 subpath shape complete. Source structure now: `core/`, `svelte/`, `export/`, `spec/`, `htmlwidgets/`, with `core/index.ts` and `svelte/index.ts` aggregators establishing the named-export contracts. The `package.json` `exports` field is intentionally deferred to Phase 3 — it points at *built* artifacts, not source. |
+| Phase 3 — Publish | ⏳ next up | npm + CI gates. Pre-publish: `tsc --noEmit` clean, JSON Schema regression test, CSS deliverable, V8 bundle-size CI gate, toolchain canonicalization (bun.lock vs package-lock.json), README. |
 
 ## Phase 0a — completed items
 
