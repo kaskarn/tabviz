@@ -12,6 +12,7 @@
 srcjs/node_modules/
 srcjs/.bun/
 srcjs/bun.lockb
+srcjs/dist/
 inst/scripts/node_modules/
 inst/scripts/package-lock.json
 inst/scripts/package.json

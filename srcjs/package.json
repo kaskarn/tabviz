@@ -3,12 +3,37 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./svelte": {
+      "import": "./dist/svelte.mjs",
+      "types": "./dist/svelte.d.mts"
+    },
+    "./export": {
+      "import": "./dist/export.mjs",
+      "types": "./dist/export.d.mts"
+    },
+    "./spec": {
+      "import": "./dist/spec.mjs",
+      "types": "./dist/spec.d.mts"
+    },
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build && vite build --config vite.config.split.ts && vite build --config vite.config.v8.ts",
     "build:widget": "vite build",
     "build:split": "vite build --config vite.config.split.ts",
     "build:v8": "vite build --config vite.config.v8.ts",
+    "build:npm": "vite build --config vite.config.npm.ts",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "bun test && vitest run",
     "test:bun": "bun test",
@@ -16,6 +41,14 @@
     "lint": "eslint src --ext .ts,.svelte",
     "format": "prettier --write 'src/**/*.{ts,svelte,css}'",
     "screenshot": "node scripts/screenshot.js"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "svelte": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
