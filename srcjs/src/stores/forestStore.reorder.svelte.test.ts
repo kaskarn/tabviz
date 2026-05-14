@@ -1,3 +1,5 @@
+// @ts-nocheck
+//
 // NOTE: These tests were silently failing under bun:test for months
 // (Svelte 5 runes don't execute outside the compiler). Vitest can now
 // run them, but the `minimalTheme()` fixture below uses the v1 theme

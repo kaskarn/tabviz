@@ -98,7 +98,7 @@ export function createVizOptionsSlice(): VizOptionsSlice {
     hydrateFromSpec(ex): void {
       const o = ex.options ?? {};
       if (ex.type === "viz_bar") {
-        const effs = (o.bar?.effects ?? []) as Array<Record<string, unknown>>;
+        const effs = (o.vizBar?.effects ?? []) as unknown as Array<Record<string, unknown>>;
         effects = effs.map((e) => ({
           value: (e.value as string) ?? "",
           label: (e.label as string) ?? "",
@@ -106,7 +106,7 @@ export function createVizOptionsSlice(): VizOptionsSlice {
           opacity: e.opacity != null ? String(e.opacity) : "",
         }));
       } else if (ex.type === "viz_boxplot") {
-        const effs = (o.boxplot?.effects ?? []) as Array<Record<string, unknown>>;
+        const effs = (o.vizBoxplot?.effects ?? []) as Array<Record<string, unknown>>;
         const first = effs[0] ?? {};
         boxplotMode = first.data ? "array" : "stats";
         effects = effs.map((e) => ({
@@ -122,7 +122,7 @@ export function createVizOptionsSlice(): VizOptionsSlice {
           opacity: e.opacity != null ? String(e.opacity) : "",
         }));
       } else if (ex.type === "viz_violin") {
-        const effs = (o.violin?.effects ?? []) as Array<Record<string, unknown>>;
+        const effs = (o.vizViolin?.effects ?? []) as unknown as Array<Record<string, unknown>>;
         effects = effs.map((e) => ({
           data: (e.data as string) ?? "",
           label: (e.label as string) ?? "",
