@@ -1,66 +1,22 @@
-// @ts-nocheck
+// Row-reorder integration tests.
 //
-// NOTE: These tests were silently failing under bun:test for months
-// (Svelte 5 runes don't execute outside the compiler). Vitest can now
-// run them, but the `minimalTheme()` fixture below uses the v1 theme
-// shape (colors.*, typography.*, spacing.*) — the store has migrated
-// to the v2 cascade shape (theme.text.body.family, theme.row.*, etc.)
-// so spec.theme.text is undefined when ingested. Tests fail with
-// "Cannot read properties of undefined (reading 'body')".
+// History: these were silently failing under bun:test for months
+// (Svelte 5 runes don't execute outside the compiler), then re-enabled
+// under vitest in 0c-PR2. At that point the fixture used the v1 theme
+// shape which the store had already migrated away from — describe.skip
+// preserved CI visibility while the cascade rework finished.
 //
-// MFD-5 follow-up: rewrite minimalTheme() against the v2 schema (see
-// R/classes-theme.R::WebTheme for the source-of-truth shape). Until
-// then, every test in this file is skipped at the describe level so
-// vitest passes overall and the file is visible in CI.
+// Now that THEME_PRESETS carries real v2 themes (lib/theme-presets.ts),
+// the fixture uses cochrane directly. No fixture drift, no @ts-nocheck.
 
 import { expect, test, describe } from "vitest";
 import { createForestStore } from "./forestStore.svelte";
-import type { WebSpec, WebTheme } from "../types";
-
-function minimalTheme(): WebTheme {
-  return {
-    name: "test",
-    colors: {
-      background: "#fff", foreground: "#000", primary: "#2563eb",
-      secondary: "#64748b", accent: "#8b5cf6", muted: "#94a3b8",
-      border: "#e2e8f0", rowBg: "#fff", altBg: "#f8fafc",
-      interval: "#2563eb",
-      intervalLine: "#64748b", summaryFill: "#000", summaryBorder: "#000",
-    },
-    typography: {
-      fontFamily: "system-ui", fontSizeSm: "11px", fontSizeBase: "13px",
-      fontSizeLg: "16px", fontWeightNormal: 400, fontWeightMedium: 500,
-      fontWeightBold: 600, lineHeight: 1.4, headerFontScale: 1.05,
-    },
-    spacing: {
-      rowHeight: 28, headerHeight: 36,
-      padding: 12, containerPadding: 0, cellPaddingX: 10,
-      cellPaddingY: 4, axisGap: 12, groupPadding: 8,
-    },
-    shapes: { pointSize: 8, summaryHeight: 10, lineWidth: 1.5, borderRadius: 4 },
-    axis: {
-      rangeMin: null, rangeMax: null, tickCount: null, tickValues: null,
-      gridlines: false, gridlineStyle: "solid", ciClipFactor: 2.0,
-      includeNull: true, symmetric: null, nullTick: true, markerMargin: true,
-    },
-    layout: {
-      plotWidth: "auto",
-      containerBorder: true, containerBorderRadius: 8, banding: true,
-    },
-    groupHeaders: {
-      level1FontSize: "14px", level1FontWeight: 700, level1Italic: false,
-      level1Background: null, level1BorderBottom: true,
-      level2FontSize: "13px", level2FontWeight: 600, level2Italic: false,
-      level2Background: null, level2BorderBottom: true,
-      level3FontSize: "12px", level3FontWeight: 500, level3Italic: false,
-      level3Background: null, level3BorderBottom: false,
-      indentPerLevel: 12,
-    },
-  };
-}
+import { THEME_PRESETS } from "$lib/theme-presets";
+import type { WebSpec } from "$types";
 
 function buildSpec(): WebSpec {
   return {
+    version: "1.0",
     data: {
       rows: [
         { id: "a1", label: "A1", groupId: "A", metadata: { hr: 0.8, lo: 0.6, hi: 1.0 } },
@@ -81,7 +37,7 @@ function buildSpec(): WebSpec {
         options: { forest: { point: "hr", lower: "lo", upper: "hi",
           scale: "linear", nullValue: 1, axisLabel: "HR", showAxis: true } } },
     ],
-    theme: minimalTheme(),
+    theme: THEME_PRESETS.cochrane,
     interaction: {
       showFilters: false, showLegend: true, enableSort: true,
       enableCollapse: true, enableSelect: true, enableHover: true,
@@ -93,7 +49,7 @@ function buildSpec(): WebSpec {
   };
 }
 
-describe.skip("row reorder flows into exportSpec (skipped pending v2 theme fixture — see file header)", () => {
+describe("row reorder flows into exportSpec", () => {
   test("initial exportSpec preserves source row order", () => {
     const store = createForestStore();
     store.setSpec(buildSpec());

@@ -31,9 +31,10 @@ export default defineConfig({
     conditions: ["browser", "import", "module", "default"],
   },
   test: {
-    // Default test pattern only picks up .svelte.test.ts so we don't double-run
-    // the bun:test files that work fine under their own runner.
-    include: ["src/**/*.svelte.test.ts"],
+    // Vitest owns `*.runes.ts` files (use the Svelte compiler).
+    // Bun's default test glob is `*.{test,spec}.{js,ts}`, so the
+    // `.runes.ts` extension routes cleanly to vitest with no overlap.
+    include: ["src/**/*.runes.ts"],
     environment: "jsdom",
     globals: false,
   },

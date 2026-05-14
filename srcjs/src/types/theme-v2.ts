@@ -270,8 +270,8 @@ export interface RowClusterV2 {
   accent: RowSemanticV2;
   bold: RowSemanticV2;
   fill: RowSemanticV2;
-  /** Banding mode — "none" | "row" | "group" | "group-N" (N: positive int). */
-  banding: string;
+  /** Parsed banding spec — R's `serialize_banding` emits `{mode, level}`. */
+  banding: BandingV2;
   selectedEdgeWidth: number;
   borderWidth: number;
 }
