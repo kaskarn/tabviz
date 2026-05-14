@@ -573,3 +573,72 @@ one big $derived (`visibleRows`) that reads from data, columns,
 AND semantics. semantics hasn't shipped yet, so sort-filter ships
 with semantics-state reads via forward closures (mirroring how
 axis reads forestColumns / forestWidth).
+
+### 0c-PR16: C1 slice 4 — sort-filter
+
+Fourth slice, and the first that exercised the cross-slice $derived
+pattern at a meaningful scale: `visibleRows` reads from spec (data),
+allColumns (columns), AND styleEdits (semantics — not yet extracted),
+then applies filter + sort. The axis spike validated the pattern with
+two scalar deps; sort-filter stresses it with three sources and an
+object-map dep (`styleEdits`).
+
+**It just works.** The reactivity test (`styleEdits.rows merge into
+row.style BEFORE filter/sort`) shows that mutating `styleEdits` in
+the test harness immediately propagates through the slice's
+`visibleRows` derivation. No ceremony.
+
+Slice owns:
+  - sortConfig          { column, direction } | null
+  - filters             Record<field, ColumnFilter>
+  - filterPopoverTarget anchor for per-header popover
+  - visibleRows         $derived Row[] post merge + filter + sort
+
+Plus 10 methods (sortBy, toggleSort, setColumnFilter, clearAllFilters,
+getColumnFilter, detectColumnKind, getColumnValues,
+getColumnNumericRange, openFilterPopover, closeFilterPopover) + reset.
+
+Notable side-quest: the module-level filter/sort helpers
+(`applyFilters`, `matchColumnFilter`, `readField`, `findColumnByKey`,
+`applySortWithinGroups`, `sortValueFor`, `median`, `compareForSort`,
+`applySort`) were originally module-scope in `forestStore.svelte.ts`.
+They're all pure — no $state, no spec access — and only consumed by
+the slice. Moved them to `$lib/filter-sort-utils.ts` (~225 lines) so
+the slice can import cleanly. forestStore shed an additional ~218
+lines of helper code; visibleRows derived shed ~45 lines that now
+live in the slice. Net: ~580 line reduction in main store from this
+PR. The lib file is reusable for paginate-by / export-time
+reordering later.
+
+Subtle behavior change: setSpec used to clear `filterPopoverTarget`
+only; it now calls `sortFilter.reset()` which also clears
+`sortConfig` and `filters`. This matches the spirit of "fresh spec =
+fresh state" and aligns with resetState's behavior. A pre-extraction
+quirk where stale sort/filter pointers could survive a setSpec swap
+across columns that no longer existed is now fixed by construction.
+
+Local alias in main store: `const visibleRows = $derived(sortFilter.visibleRows);`
+preserves existing call sites (displayRows, etc.). Same single-layer
+$derived indirection pattern as axisComputation / xScale.
+
+vitest spec: 21 tests. 4 on sort actions (sortBy / toggleSort cycle).
+5 on filter actions (set / clear / get). 4 on column-kind detection
+(detectColumnKind, getColumnNumericRange, getColumnValues). **6 on
+visibleRows** including the cross-slice mutation tests
+(styleEdits.rows / .cells merge, data-source mutation propagation,
+sort+filter composition). 1 on reset. 1 spike-style test on
+deps.getStyleEdits() reactivity.
+
+Gates: tsc 0 errors, bun test 161 pass (baseline), vitest 69 pass
+total (5 files: reorder + cells + theme + axis + sort-filter),
+R devtools::test() 1489/1489, visual battery 45/45.
+
+Four slices down (plus source spike), six to go. Main store is
+shrinking visibly — main file lost about 750 lines net across these
+four extractions. Next per plan: **rows-groups** — `fullDisplayRows`
+$derived (~110 lines) is the second-largest in the codebase after
+`layout`. Reads from visibleRows (now in sort-filter slice — chain!),
+spec.data.groups, displayRows (pagination — data slice future),
+rowOrderOverrides, banding state, plus cellEdits + allColumns for
+tooltipRow. Multiple cross-slice $derived edges; will be the second
+real stress test for the pattern.

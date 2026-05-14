@@ -6,11 +6,6 @@ import type {
   ColumnSpec,
   ColumnDef,
   ColumnGroup,
-  SortConfig,
-  FiltersState,
-  ColumnFilter,
-  ColumnKind,
-  FilterOperator,
   RowOrderOverrides,
   ColumnOrderOverrides,
   DragState,
@@ -49,6 +44,7 @@ import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte"
 import { createCellsSlice } from "$stores/slices/cells.svelte";
 import { createThemeSlice } from "$stores/slices/theme.svelte";
 import { createAxisSlice } from "$stores/slices/axis.svelte";
+import { createSortFilterSlice } from "$stores/slices/sort-filter.svelte";
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
 
@@ -148,6 +144,19 @@ export function createForestStore() {
     markSource,
   });
 
+  // ── Sort + filter ────────────────────────────────────────────────────────
+  // Phase 0c-C1 PR4. Owns sortConfig, filters, filterPopoverTarget, and the
+  // `visibleRows` $derived. `visibleRows` reads `styleEdits` (semantics —
+  // still in main) via forward closure, exercising the same cross-slice
+  // $derived pattern axis validated.
+  const sortFilter = createSortFilterSlice({
+    getSpec: () => spec,
+    getAllColumns: () => allColumns,
+    getStyleEdits: () => styleEdits,
+    appendOp: (record) => appendOp(record),
+    markSource,
+  });
+
   // Initial dimensions (from htmlwidgets/splitStore, used as fallback before ResizeObserver fires)
   let initialWidth = $state(800);
   let initialHeight = $state(400);
@@ -158,12 +167,8 @@ export function createForestStore() {
   // We compute the live set from styleEdits + paintTool via the
   // selectedRowIds getter below; no separate state to keep in sync.
   let collapsedGroups = $state<Set<string>>(new Set());
-  let sortConfig = $state<SortConfig | null>(null);
-  // Legacy single-field filterConfig state removed in Phase 0a-PR7
-  // (spec S4 + D3). The multi-column `filters` map below is the
-  // only filter surface; setColumnFilter is the only setter; the
-  // applyFilter rendering path in visibleRows is gone.
-  let filters = $state<FiltersState>({});
+  // sortConfig + filters + filterPopoverTarget live on the sort-filter
+  // slice (Phase 0c-C1 PR4). Read via `sortFilter.X`.
   let hoveredRowId = $state<string | null>(null);
 
   // Runtime banding override from the settings panel. Null = follow theme.
@@ -244,8 +249,8 @@ export function createForestStore() {
 
   // Transient UI state for DnD / edit / filter overlays.
   // `editingTarget` moved to the cells slice in 0c-C1 PR1.
+  // `filterPopoverTarget` moved to the sort-filter slice in 0c-C1 PR4.
   let dragState = $state<DragState | null>(null);
-  let filterPopoverTarget = $state<{ field: string; header: string; anchorX: number; anchorY: number } | null>(null);
 
   // Tooltip state
   let tooltipRowId = $state<string | null>(null);
@@ -292,51 +297,9 @@ export function createForestStore() {
   const effectiveWidth = $derived(containerWidth > 0 ? containerWidth : initialWidth);
   const effectiveHeight = $derived(containerHeight > 0 ? containerHeight : initialHeight);
 
-  // Derived: visible rows (all rows after filter/sort, but NOT collapsed filtering)
-  // Collapsed filtering is handled by displayRows for proper group header display
-  const visibleRows = $derived.by(() => {
-    if (!spec) return [];
-
-    // Apply any paint-tool overrides to each row BEFORE filter/sort so the
-    // merged style/cellStyles follow the row through the pipeline. Edits are
-    // sparse (only rows the user touched), so non-painted rows pass through
-    // unchanged and avoid the spread cost.
-    let rows: Row[] = spec.data.rows.map((r) => {
-      const rowOv = styleEdits.rows[r.id];
-      const cellOv = styleEdits.cells[r.id];
-      if (!rowOv && !cellOv) return r;
-      const mergedStyle = rowOv ? { ...(r.style ?? {}), ...rowOv } : r.style;
-      let mergedCells = r.cellStyles;
-      if (cellOv) {
-        mergedCells = { ...(r.cellStyles ?? {}) };
-        for (const [field, flags] of Object.entries(cellOv)) {
-          mergedCells[field] = { ...(mergedCells[field] ?? {}), ...flags };
-        }
-      }
-      return { ...r, style: mergedStyle, cellStyles: mergedCells };
-    });
-
-    // Multi-column filter state (per-header popovers). Post-Phase-0a-PR7
-    // this is the only filter path; the legacy single-filter rendering
-    // step was removed.
-    if (Object.keys(filters).length > 0) {
-      rows = applyFilters(rows, filters);
-    }
-
-    // Apply sort within group boundaries so grouped tables don't lose structure
-    if (sortConfig) {
-      // Resolve the ColumnSpec for the sort key — multi-field column types
-      // (forest / interval / events / viz_boxplot / viz_violin) need
-      // type-aware value extraction. Lookup matches by id first, then field,
-      // so the column-header click can pass either.
-      const sortCol = spec?.columns
-        ? findColumnByKey(spec.columns, sortConfig.column)
-        : undefined;
-      rows = applySortWithinGroups(rows, sortConfig, sortCol);
-    }
-
-    return rows;
-  });
+  // `visibleRows` $derived lives on the sort-filter slice (Phase 0c-C1 PR4).
+  // Local alias keeps existing call sites (displayRows, etc.) unchanged.
+  const visibleRows = $derived(sortFilter.visibleRows);
 
   // `axisComputation` and `xScale` $derived blocks live on the axis slice
   // (Phase 0c-C1 PR3). Read here via `axis.axisComputation` / `axis.xScale`.
@@ -1307,7 +1270,11 @@ export function createForestStore() {
     hoveredRowId = null;
     tooltipRowId = null;
     tooltipPosition = null;
-    filterPopoverTarget = null;
+    // sort-filter slice owns sortConfig / filters / filterPopoverTarget;
+    // closing the popover and clearing stale filters anchored to columns
+    // in the previous spec matches both the prior setSpec behavior (which
+    // explicitly cleared `filterPopoverTarget`) and the resetState pattern.
+    sortFilter.reset();
     dragState = null;
     // Reset the op log too — a new spec is a new "session" as far as
     // recording fluent R calls is concerned.
@@ -1920,124 +1887,8 @@ export function createForestStore() {
     markSource("banding");
   }
 
-  function sortBy(column: string, direction: "asc" | "desc" | "none") {
-    sortConfig = direction === "none" ? null : { column, direction };
-    if (direction !== "none") {
-      appendOp(ops.sortRows(column, direction));
-    }
-    markSource("sort");
-  }
-
-  // Cycle sort state for a column: none → asc → desc → none
-  function toggleSort(column: string) {
-    if (!sortConfig || sortConfig.column !== column) {
-      sortConfig = { column, direction: "asc" };
-      appendOp(ops.sortRows(column, "asc"));
-    } else if (sortConfig.direction === "asc") {
-      sortConfig = { column, direction: "desc" };
-      appendOp(ops.sortRows(column, "desc"));
-    } else {
-      sortConfig = null;
-      // Cycling back to "no sort" is the natural inverse of `sort_rows(...)`.
-      // Emit `clear_filters()`-style reset via a dedicated verb? For now we
-      // omit — the recorder's append-only model already contains the prior
-      // sort, and there's no `sort_rows(..., direction = "none")` form in
-      // the R API yet. Author can clear by re-clicking or by editing.
-    }
-    markSource("sort");
-  }
-
-  // Legacy `setFilter(filter: FilterConfig | null)` removed in
-  // Phase 0a-PR7 (spec S4 + D3). All filtering now flows through
-  // setColumnFilter below.
-
-  // Multi-column filter API (per-header popovers)
-  function setColumnFilter(field: string, filter: ColumnFilter | null) {
-    if (filter === null) {
-      const { [field]: _removed, ...rest } = filters;
-      filters = rest;
-      // A per-column clear is a no-op when the column wasn't filtered to
-      // begin with; the recorder treats it as "remove this one filter"
-      // which the R side expresses as `filter_rows(col, op = "none", …)`.
-      // For now we record nothing on clear — the "View source" panel
-      // already reflects the absence.
-    } else {
-      filters = { ...filters, [field]: filter };
-      appendOp(ops.setFilter(field, filter.operator, filter.value));
-    }
-    markSource("filters");
-  }
-
-  function clearAllFilters() {
-    const hadFilters = Object.keys(filters).length > 0;
-    filters = {};
-    if (hadFilters) appendOp(ops.clearFilters());
-    markSource("filters");
-  }
-
-  function getColumnFilter(field: string): ColumnFilter | null {
-    return filters[field] ?? null;
-  }
-
-  // Detect filter UI kind for a column: numeric range / categorical checklist / text contains.
-  function detectColumnKind(field: string): ColumnKind {
-    if (!spec) return "text";
-    const col = allColumns.find((c) => c.field === field);
-    const numericTypes: ColumnSpec["type"][] = [
-      "numeric", "bar", "pvalue", "heatmap", "progress", "range",
-    ];
-    if (col && numericTypes.includes(col.type)) return "numeric";
-
-    // Sample non-null values
-    const sample: unknown[] = [];
-    for (const row of spec.data.rows) {
-      const v = readField(row, field);
-      if (v !== undefined && v !== null) sample.push(v);
-      if (sample.length >= 200) break;
-    }
-    if (sample.length === 0) return "text";
-    const allNum = sample.every((v) => typeof v === "number");
-    if (allNum) return "numeric";
-
-    const distinct = new Set(sample.map((v) => String(v)));
-    const rowsN = spec.data.rows.length || sample.length;
-    const maxCat = Math.max(20, Math.floor(rowsN / 5));
-    if (distinct.size <= maxCat) return "categorical";
-    return "text";
-  }
-
-  function getColumnValues(field: string): unknown[] {
-    if (!spec) return [];
-    const seen = new Set<string>();
-    const out: unknown[] = [];
-    for (const row of spec.data.rows) {
-      const v = readField(row, field);
-      if (v === undefined || v === null || v === "") continue;
-      const key = String(v);
-      if (!seen.has(key)) { seen.add(key); out.push(v); }
-    }
-    out.sort((a, b) => {
-      if (typeof a === "number" && typeof b === "number") return a - b;
-      return String(a).localeCompare(String(b));
-    });
-    return out;
-  }
-
-  function getColumnNumericRange(field: string): [number, number] | null {
-    if (!spec) return null;
-    let lo = Infinity;
-    let hi = -Infinity;
-    let any = false;
-    for (const row of spec.data.rows) {
-      const v = readField(row, field);
-      if (typeof v === "number" && Number.isFinite(v)) {
-        if (v < lo) lo = v;
-        if (v > hi) hi = v;
-        any = true;
-      }
-    }
-    return any ? [lo, hi] : null;
-  }
+  // Sort + filter methods live on the sort-filter slice (Phase 0c-C1 PR4).
+  // Public-API passthrough below.
 
   // =========================================================================
   // DnD scope helpers and actions
@@ -2479,22 +2330,7 @@ export function createForestStore() {
     );
   }
 
-  // Filter-popover plumbing (rendered at widget root so it's not clipped or
-  // transform-scaled by the interactive content's zoom wrapper).
-  function openFilterPopover(field: string, header: string, triggerEl: HTMLElement | null) {
-    if (!triggerEl) return;
-    const r = triggerEl.getBoundingClientRect();
-    filterPopoverTarget = {
-      field,
-      header,
-      anchorX: r.left,
-      anchorY: r.bottom,
-    };
-  }
-
-  function closeFilterPopover() {
-    filterPopoverTarget = null;
-  }
+  // Filter-popover plumbing moved to the sort-filter slice (Phase 0c-C1 PR4).
 
   function setHovered(id: string | null) {
     hoveredRowId = id;
@@ -2831,8 +2667,7 @@ export function createForestStore() {
     // styleEdits). clearAllPaint() handles that.
     clearAllPaint();
     collapsedGroups = new Set();
-    sortConfig = null;
-    filters = {};
+    sortFilter.reset();
 
     // ── Row & column reorder / inserts / hides / cell edits ──────────────
     rowOrderOverrides = { byGroup: {}, groupOrderByParent: {} };
@@ -2867,7 +2702,7 @@ export function createForestStore() {
     tooltipRowId = null;
     tooltipPosition = null;
     dragState = null;
-    filterPopoverTarget = null;
+    // filterPopoverTarget cleared via sortFilter.reset() above.
 
     // ── Restore theme + watermark from the initial snapshot ──────────────
     // theme.resetThemeEdits restores both spec.theme and spec.watermark to
@@ -3045,8 +2880,8 @@ export function createForestStore() {
       events.emit("selected", ids);
     });
     $effect(() => { events.emit("hover", hoveredRowId); });
-    $effect(() => { events.emit("sort", sortConfig as TabvizEvents["sort"]); });
-    $effect(() => { events.emit("filters", filters); });
+    $effect(() => { events.emit("sort", sortFilter.sortConfig as TabvizEvents["sort"]); });
+    $effect(() => { events.emit("filters", sortFilter.filters); });
     $effect(() => { events.emit("rowStyles", styleEdits.rows); });
     $effect(() => { events.emit("cellStyles", styleEdits.cells); });
     $effect(() => { events.emit("paintTool", paintTool); });
@@ -3085,8 +2920,8 @@ export function createForestStore() {
     $effect(() => {
       // Touch every dimension so the effect re-fires when any changes.
       // Read-only `void` references — no work, just dependency tracking.
-      void sortConfig;
-      void filters;
+      void sortFilter.sortConfig;
+      void sortFilter.filters;
       void styleEdits;
       void paintTool;
       void collapsedGroups;
@@ -3272,10 +3107,10 @@ export function createForestStore() {
       return scalableNaturalHeight;
     },
     get sortConfig() {
-      return sortConfig;
+      return sortFilter.sortConfig;
     },
     get filters() {
-      return filters;
+      return sortFilter.filters;
     },
     get rowOrderOverrides() {
       return rowOrderOverrides;
@@ -3293,7 +3128,7 @@ export function createForestStore() {
       return cells.editingTarget;
     },
     get filterPopoverTarget() {
-      return filterPopoverTarget;
+      return sortFilter.filterPopoverTarget;
     },
     get exportSpec() {
       return exportSpec;
@@ -3530,14 +3365,15 @@ export function createForestStore() {
     setWatermarkColor,
     setWatermarkOpacity,
     resetThemeEdits: theme.resetThemeEdits,
-    sortBy,
-    toggleSort,
-    setColumnFilter,
-    clearAllFilters,
-    getColumnFilter,
-    detectColumnKind,
-    getColumnValues,
-    getColumnNumericRange,
+    // Sort + filter — sort-filter slice passthrough.
+    sortBy: sortFilter.sortBy,
+    toggleSort: sortFilter.toggleSort,
+    setColumnFilter: sortFilter.setColumnFilter,
+    clearAllFilters: sortFilter.clearAllFilters,
+    getColumnFilter: sortFilter.getColumnFilter,
+    detectColumnKind: sortFilter.detectColumnKind,
+    getColumnValues: sortFilter.getColumnValues,
+    getColumnNumericRange: sortFilter.getColumnNumericRange,
     // DnD
     findColumnScope,
     siblingsForColumnScope,
@@ -3589,9 +3425,9 @@ export function createForestStore() {
     get styleEdits() { return styleEdits; },
     get hasPaintEdits() { return hasPaintEdits(); },
     clearAllEdits,
-    // Filter popover
-    openFilterPopover,
-    closeFilterPopover,
+    // Filter popover — sort-filter slice passthrough.
+    openFilterPopover: sortFilter.openFilterPopover,
+    closeFilterPopover: sortFilter.closeFilterPopover,
     setHovered,
     setTooltip,
     setColumnWidth,
@@ -3691,221 +3527,3 @@ export function createForestStore() {
 
 export type ForestStore = ReturnType<typeof createForestStore>;
 
-// Apply all column filters (AND across columns).
-function applyFilters(rows: Row[], state: FiltersState): Row[] {
-  const filterList = Object.values(state);
-  if (filterList.length === 0) return rows;
-  return rows.filter((row) => filterList.every((f) => matchColumnFilter(row, f)));
-}
-
-function readField(row: Row, field: string): unknown {
-  return row.metadata[field] ?? (row as unknown as Record<string, unknown>)[field];
-}
-
-function matchColumnFilter(row: Row, f: ColumnFilter): boolean {
-  const value = readField(row, f.field);
-  switch (f.operator) {
-    case "contains":
-      if (value == null) return false;
-      return String(value).toLowerCase().includes(String(f.value ?? "").toLowerCase());
-    case "eq":
-      return value === f.value;
-    case "neq":
-      return value !== f.value;
-    case "gt":
-      return typeof value === "number" && typeof f.value === "number" && value > f.value;
-    case "lt":
-      return typeof value === "number" && typeof f.value === "number" && value < f.value;
-    case "gte":
-      return typeof value === "number" && typeof f.value === "number" && value >= f.value;
-    case "lte":
-      return typeof value === "number" && typeof f.value === "number" && value <= f.value;
-    case "between": {
-      if (typeof value !== "number") return false;
-      const range = f.value as [number | null, number | null] | null | undefined;
-      if (!range) return true;
-      const [lo, hi] = range;
-      if (lo != null && value < lo) return false;
-      if (hi != null && value > hi) return false;
-      return true;
-    }
-    case "in": {
-      const arr = f.value as unknown[] | null | undefined;
-      if (!arr || arr.length === 0) return true;
-      return arr.includes(value);
-    }
-    case "empty":
-      return value == null || value === "";
-    case "notEmpty":
-      return !(value == null || value === "");
-    default:
-      return true;
-  }
-}
-
-// Legacy `applyFilter(rows, config: FilterConfig)` removed in
-// Phase 0a-PR7 (spec S4 + D3). Multi-column filtering now flows
-// exclusively through `applyFilters` above.
-
-/**
- * Walk `spec.columns` (including ColumnGroup descendants) and return the
- * first ColumnSpec whose `id` or `field` matches `key`. Used by the sort
- * path to resolve the clicked column back to its type + options, which
- * drives value extraction for multi-field column types.
- */
-function findColumnByKey(
-  defs: (ColumnSpec | ColumnGroup)[],
-  key: string,
-): ColumnSpec | undefined {
-  for (const d of defs) {
-    if ("isGroup" in d && (d as unknown as ColumnGroup).isGroup) {
-      const grp = d as unknown as ColumnGroup;
-      const hit = findColumnByKey(grp.columns as unknown as (ColumnSpec | ColumnGroup)[], key);
-      if (hit) return hit;
-      continue;
-    }
-    const spec = d as ColumnSpec;
-    if (spec.id === key || spec.field === key) return spec;
-  }
-  return undefined;
-}
-
-// Numeric median of a possibly-sparse array. Used as the sort key for
-// boxplot / violin columns where the "value" is a distribution rather than
-// a single scalar. Ignores NaN / non-finite entries.
-function median(xs: readonly number[]): number | undefined {
-  const clean = xs.filter((v) => typeof v === "number" && Number.isFinite(v)).slice().sort((a, b) => a - b);
-  if (clean.length === 0) return undefined;
-  const mid = Math.floor(clean.length / 2);
-  return clean.length % 2 === 0 ? (clean[mid - 1] + clean[mid]) / 2 : clean[mid];
-}
-
-/**
- * Extract the scalar value used to sort a row by a given column. Handles
- * the multi-field column types whose `.field` is synthetic and doesn't
- * index `row.metadata` directly:
- *
- *   - `forest`: first declared point field (inline `point` or the first
- *     effect's `pointCol`).
- *   - `interval`: `options.interval.point`.
- *   - `custom` with events options: the `eventsField`.
- *   - `viz_bar`: first effect's `value`.
- *   - `viz_boxplot`: first effect's `median` (stats mode) or the median
- *     of its `data` array (array mode).
- *   - `viz_violin`: median of the first effect's `data` array.
- *
- * Falls back to `row.metadata[col.field]` for the scalar column types.
- * Returning `undefined` lets `compareForSort` push the row to the end.
- */
-function sortValueFor(col: ColumnSpec | undefined, row: Row, key: string): unknown {
-  const meta = row.metadata as Record<string, unknown>;
-  const bare = () => meta[key] ?? (row as unknown as Record<string, unknown>)[key];
-  if (!col) return bare();
-
-  const opts = col.options as Record<string, unknown> | undefined;
-  const forestOpts = (opts?.forest ?? null) as {
-    point?: string;
-    effects?: Array<{ pointCol?: string }>;
-  } | null;
-  const intervalOpts = (opts?.interval ?? null) as { point?: string } | null;
-  const eventsOpts = (opts?.events ?? null) as { eventsField?: string } | null;
-  const barEffects = (opts?.vizBar as { effects?: Array<{ value?: string }> } | undefined)?.effects;
-  const boxEffects = (opts?.vizBoxplot as {
-    effects?: Array<{ median?: string | null; data?: string | null }>;
-  } | undefined)?.effects;
-  const violinEffects = (opts?.vizViolin as {
-    effects?: Array<{ data?: string }>;
-  } | undefined)?.effects;
-
-  switch (col.type) {
-    case "forest": {
-      const f = forestOpts?.point ?? forestOpts?.effects?.[0]?.pointCol;
-      return f ? meta[f] : bare();
-    }
-    case "interval": {
-      const f = intervalOpts?.point;
-      return f ? meta[f] : bare();
-    }
-    case "custom": {
-      const f = eventsOpts?.eventsField;
-      return f ? meta[f] : bare();
-    }
-    case "viz_bar": {
-      const f = barEffects?.[0]?.value;
-      return f ? meta[f] : bare();
-    }
-    case "viz_boxplot": {
-      const eff = boxEffects?.[0];
-      if (!eff) return bare();
-      if (eff.median) return meta[eff.median];
-      if (eff.data) {
-        const arr = meta[eff.data];
-        if (Array.isArray(arr)) return median(arr as number[]);
-      }
-      return undefined;
-    }
-    case "viz_violin": {
-      const f = violinEffects?.[0]?.data;
-      if (!f) return bare();
-      const arr = meta[f];
-      if (Array.isArray(arr)) return median(arr as number[]);
-      return undefined;
-    }
-    default:
-      return bare();
-  }
-}
-
-function compareForSort(aVal: unknown, bVal: unknown, desc: boolean): number {
-  // Push undefined to the end regardless of direction.
-  const aMissing = aVal == null || (typeof aVal === "number" && !Number.isFinite(aVal));
-  const bMissing = bVal == null || (typeof bVal === "number" && !Number.isFinite(bVal));
-  if (aMissing && bMissing) return 0;
-  if (aMissing) return 1;
-  if (bMissing) return -1;
-  let comparison = 0;
-  if (typeof aVal === "number" && typeof bVal === "number") comparison = aVal - bVal;
-  else if (typeof aVal === "string" && typeof bVal === "string") comparison = aVal.localeCompare(bVal);
-  return desc ? -comparison : comparison;
-}
-
-function applySort(rows: Row[], config: SortConfig, col: ColumnSpec | undefined): Row[] {
-  const sorted = [...rows];
-  const { column, direction } = config;
-  sorted.sort((a, b) =>
-    compareForSort(
-      sortValueFor(col, a, column),
-      sortValueFor(col, b, column),
-      direction === "desc",
-    ),
-  );
-  return sorted;
-}
-
-// Sort rows within each group bucket so grouping structure is preserved.
-// Rows with the same groupId stay contiguous and retain their relative group order.
-function applySortWithinGroups(rows: Row[], config: SortConfig, col: ColumnSpec | undefined): Row[] {
-  const buckets = new Map<string, { positions: number[]; rows: Row[] }>();
-  const bucketOrder: string[] = [];
-  rows.forEach((row, idx) => {
-    const key = row.groupId ?? "__root__";
-    let bucket = buckets.get(key);
-    if (!bucket) {
-      bucket = { positions: [], rows: [] };
-      buckets.set(key, bucket);
-      bucketOrder.push(key);
-    }
-    bucket.positions.push(idx);
-    bucket.rows.push(row);
-  });
-
-  const result: Row[] = new Array(rows.length);
-  for (const key of bucketOrder) {
-    const { positions, rows: bucketRows } = buckets.get(key)!;
-    const sortedBucket = applySort(bucketRows, config, col);
-    positions.forEach((pos, i) => {
-      result[pos] = sortedBucket[i];
-    });
-  }
-  return result;
-}
