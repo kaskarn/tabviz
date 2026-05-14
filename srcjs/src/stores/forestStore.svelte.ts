@@ -2979,7 +2979,7 @@ export function createForestStore() {
       const cur = (obj as Record<string, unknown>)?.[key as string];
       return { ...(obj as Record<string, unknown>), [key as string]: updateAt(cur, p.slice(1)) };
     };
-    spec = { ...spec, theme: updateAt(spec.theme, path) as Spec["theme"] };
+    spec = { ...spec, theme: updateAt(spec.theme, path) as WebSpec["theme"] };
   }
 
   function pathKey(path: (string | number)[]): string {

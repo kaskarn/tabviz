@@ -1,11 +1,11 @@
 import { describe, test, expect, mock } from "bun:test";
 import { createEventEmitter } from "./events.ts";
 
-interface TestEvents {
+type TestEvents = {
   ping: string;
   count: number;
   done: undefined;
-}
+};
 
 describe("createEventEmitter", () => {
   test("delivers typed payloads to subscribers", () => {

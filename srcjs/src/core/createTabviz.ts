@@ -23,11 +23,11 @@ import type {
   ZoomState,
   SortConfig,
 } from "$types";
+import type { TabvizEvents } from "$spec/events";
 import type {
-  TabvizEvents,
   EventListener,
   Unsubscribe,
-} from "$spec/events";
+} from "$stores/slices/events";
 
 /** Options accepted by `createTabviz` at construction time. */
 export interface TabvizOptions {

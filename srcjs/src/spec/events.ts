@@ -40,7 +40,7 @@ export interface PaintTool {
  * Payload-per-event map. Used as the generic argument to
  * `createEventEmitter<TabvizEvents>()`.
  */
-export interface TabvizEvents {
+export type TabvizEvents = {
   // Tier 1 — core interaction
   selected: string[];
   hover: string | null;
