@@ -1,6 +1,6 @@
 import type { SplitForestPayload, HTMLWidgetsBinding, WidgetInstance } from "$types";
 import type { SplitForestStore } from "$stores/splitForestStore.svelte";
-import { createSplitTabviz, type SplitTabvizInstance } from "$lib/createSplitTabviz";
+import { createSplitTabviz, type SplitTabvizInstance } from "$core/createSplitTabviz";
 import { shinyEnvelope } from "$lib/shiny-envelope";
 import { normalize } from "$spec/proxy-args.ts";
 import {

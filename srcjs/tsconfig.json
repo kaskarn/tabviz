@@ -23,7 +23,8 @@
       "$spec": ["./src/spec/index.ts"],
       "$spec/*": ["./src/spec/*"],
       "$export": ["./src/export/index.ts"],
-      "$export/*": ["./src/export/*"]
+      "$export/*": ["./src/export/*"],
+      "$core/*": ["./src/core/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.svelte"]

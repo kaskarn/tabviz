@@ -33,6 +33,7 @@ export default defineConfig({
       $types: path.resolve(__dirname, "src/types"),
       $spec: path.resolve(__dirname, "src/spec"),
       $export: path.resolve(__dirname, "src/export"),
+      $core: path.resolve(__dirname, "src/core"),
     },
   },
 });

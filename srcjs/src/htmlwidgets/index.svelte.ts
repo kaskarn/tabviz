@@ -1,6 +1,6 @@
 import type { WebSpec, HTMLWidgetsBinding, WidgetInstance } from "$types";
 import type { ForestStore } from "$stores/forestStore.svelte";
-import { createTabviz, type TabvizInstance } from "$lib/createTabviz";
+import { createTabviz, type TabvizInstance } from "$core/createTabviz";
 import { exportToSVG, exportToPNG } from "$export";
 import { shinyEnvelope } from "$lib/shiny-envelope";
 import { normalize } from "$spec/proxy-args.ts";
