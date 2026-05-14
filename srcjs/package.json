@@ -9,20 +9,20 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.mts"
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/index.mjs"
     },
     "./svelte": {
-      "import": "./dist/svelte.mjs",
-      "types": "./dist/svelte.d.mts"
+      "types": "./dist/svelte/index.d.ts",
+      "import": "./dist/svelte.mjs"
     },
     "./export": {
-      "import": "./dist/export.mjs",
-      "types": "./dist/export.d.mts"
+      "types": "./dist/export/index.d.ts",
+      "import": "./dist/export.mjs"
     },
     "./spec": {
-      "import": "./dist/spec.mjs",
-      "types": "./dist/spec.d.mts"
+      "types": "./dist/spec/index.d.ts",
+      "import": "./dist/spec.mjs"
     },
     "./style.css": "./dist/style.css",
     "./package.json": "./package.json"
@@ -33,7 +33,8 @@
     "build:widget": "vite build",
     "build:split": "vite build --config vite.config.split.ts",
     "build:v8": "vite build --config vite.config.v8.ts",
-    "build:npm": "vite build --config vite.config.npm.ts",
+    "build:npm": "vite build --config vite.config.npm.ts && tsc -p tsconfig.npm.json",
+    "build:npm:types": "tsc -p tsconfig.npm.json",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "bun test && vitest run",
     "test:bun": "bun test",

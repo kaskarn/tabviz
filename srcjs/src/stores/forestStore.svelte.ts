@@ -48,9 +48,9 @@ function anyForestColumnGroups(columns: ColumnDef[] | undefined): boolean {
 }
 import { resolveShowHeader } from "$lib/column-types";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
-import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte.ts";
-import { createEventEmitter, type EventEmitter } from "$stores/slices/events.ts";
-import type { TabvizEvents } from "$spec/events.ts";
+import { createSourceSlice, type SourceTag } from "$stores/slices/source.svelte";
+import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
+import type { TabvizEvents } from "$spec/events";
 
 /**
  * Set of ids the frontend store reserves for its own use — a user column

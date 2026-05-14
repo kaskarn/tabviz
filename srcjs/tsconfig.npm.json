@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "./dist",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "allowImportingTsExtensions": false,
+    "verbatimModuleSyntax": false
+  },
+  "include": [
+    "src/core/index.ts",
+    "src/svelte/index.ts",
+    "src/export/index.ts",
+    "src/spec/index.ts",
+    "src/types/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.svelte.ts"
+  ]
+}
