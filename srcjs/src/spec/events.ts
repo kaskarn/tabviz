@@ -54,7 +54,7 @@ export type TabvizEvents = {
   columnOrder: string[];
   columnWidths: Record<string, number>;
   cellEdits: CellEdits;
-  labelEdits: Record<string, string>;
+  labelEdits: Record<string, string | null | undefined>;
   zoom: ZoomState;
   // Tier 2 — forest/plot-specific overrides
   axisZooms: Record<string, { min: number; max: number } | null>;

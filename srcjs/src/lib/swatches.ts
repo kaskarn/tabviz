@@ -18,13 +18,13 @@ export function resolveSwatches(theme: WebTheme | null | undefined): string[] {
   if (!theme) return [];
   // 8-color quick palette derived from v2 inputs + chrome roles.
   return [
-    theme.inputs?.brand ?? "#000000",
-    theme.accent?.default ?? "#000000",
-    theme.content?.secondary ?? "#000000",
-    theme.content?.muted ?? "#000000",
-    theme.content?.primary ?? "#000000",
-    theme.divider?.subtle ?? "#000000",
-    theme.surface?.base ?? "#ffffff",
-    theme.row?.base?.bg ?? "#ffffff",
+    theme.inputs.primary,
+    theme.accent.default,
+    theme.content.secondary,
+    theme.content.muted,
+    theme.content.primary,
+    theme.divider.subtle,
+    theme.surface.base,
+    theme.row.base.bg ?? "#ffffff",
   ].slice(0, FALLBACK_LENGTH);
 }

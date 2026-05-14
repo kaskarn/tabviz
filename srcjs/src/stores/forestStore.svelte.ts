@@ -2937,7 +2937,7 @@ export function createForestStore() {
    */
   function previewThemeField(section: string, field: string, value: unknown) {
     if (!spec || !spec.theme) return;
-    const theme = spec.theme as Record<string, unknown>;
+    const theme = spec.theme as unknown as Record<string, unknown>;
     const current = theme[section];
     if (!current || typeof current !== "object") return;
     (current as Record<string, unknown>)[field] = value;

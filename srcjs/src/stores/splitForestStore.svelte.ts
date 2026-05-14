@@ -1,4 +1,4 @@
-import type { SplitForestPayload, NavTreeNode, WebSpec, WebTheme } from "$types";
+import type { SplitForestPayload, NavTreeNode, WebSpec, WebTheme, ColumnDef, ColumnSpec } from "$types";
 import { createForestStore, type ForestStore } from "./forestStore.svelte";
 import { type ThemeName } from "$lib/theme-presets";
 import { ops } from "$lib/op-recorder";
@@ -20,6 +20,25 @@ const VIZ_COLUMN_TYPES = new Set([
  * numbers consistent with what `tabviz(shared_column_widths = TRUE)` produces.
  * Not meant to be pixel-perfect — tight enough for slide alignment.
  */
+/**
+ * Flatten a `WebSpec.columns` array into its leaf `ColumnSpec` entries —
+ * descends into `ColumnGroup` children. The split-widget code paths that
+ * compute shared widths or snapshot original widths operate per-leaf, so
+ * groups are transparent here.
+ */
+function leafColumns(cols: ColumnDef[] | undefined): ColumnSpec[] {
+  if (!cols) return [];
+  const out: ColumnSpec[] = [];
+  for (const c of cols) {
+    if ("isGroup" in c && c.isGroup) {
+      out.push(...leafColumns(c.columns));
+    } else {
+      out.push(c as ColumnSpec);
+    }
+  }
+  return out;
+}
+
 function estimateColumnWidth(header: string | undefined, values: unknown[]): number {
   let maxChars = (header ?? "").length;
   for (const v of values) {
@@ -33,9 +52,19 @@ function estimateColumnWidth(header: string | undefined, values: unknown[]): num
  * Store for managing split forest navigation and display state.
  * Wraps multiple ForestStore instances, one for each split.
  */
+/**
+ * Internal payload shape after `setPayload` reconstitutes any
+ * hoisted-base wire format. Once stored, every spec under `payload.specs`
+ * is a fully-merged WebSpec — the union with SplitSubviewOverride lives
+ * only on the wire-format side (SplitForestPayload).
+ */
+type MergedSplitPayload = Omit<SplitForestPayload, "specs"> & {
+  specs: Record<string, WebSpec>;
+};
+
 export function createSplitForestStore() {
   // Core state
-  let payload = $state<SplitForestPayload | null>(null);
+  let payload = $state<MergedSplitPayload | null>(null);
   let activeKey = $state<string | null>(null);
   // Provenance of the most-recent activeKey change. Read by the Shiny binding
   // when emitting input$<id>_active_plot so dashboards can disambiguate their
@@ -127,9 +156,11 @@ export function createSplitForestStore() {
       for (const [key, override] of Object.entries(p.specs)) {
         merged[key] = { ...base, ...(override as Partial<WebSpec>) } as WebSpec;
       }
-      p = { ...p, specs: merged };
+      payload = { ...p, specs: merged };
+    } else {
+      // No hoisted base — wire specs are already full WebSpecs.
+      payload = p as MergedSplitPayload;
     }
-    payload = p;
     // Snapshot original per-spec column widths. When the R arg
     // `shared_column_widths = TRUE` was passed, the widths stamped by the
     // server are captured here as the "baseline" — toggling off after
@@ -137,9 +168,9 @@ export function createSplitForestStore() {
     // toggle-on/off operations from a user-modified state do the right
     // thing.
     originalWidths = new Map();
-    for (const [key, spec] of Object.entries(p.specs)) {
+    for (const [key, spec] of Object.entries(payload.specs)) {
       const colMap = new Map<string, number | "auto" | undefined>();
-      for (const col of (spec as WebSpec).columns ?? []) {
+      for (const col of leafColumns(spec.columns)) {
         colMap.set(col.id, col.width ?? undefined);
       }
       originalWidths.set(key, colMap);
@@ -164,12 +195,12 @@ export function createSplitForestStore() {
     if (specs.length === 0) return result;
 
     // Use the first spec's column list as the canonical order.
-    for (const col of specs[0].columns ?? []) {
+    for (const col of leafColumns(specs[0].columns)) {
       if (VIZ_COLUMN_TYPES.has(col.type)) continue;
       // If any spec has an explicit numeric width, respect the max of those.
       let explicitMax: number | null = null;
       for (const s of specs) {
-        const match = s.columns?.find(c => c.id === col.id);
+        const match = leafColumns(s.columns).find(c => c.id === col.id);
         if (match && typeof match.width === "number") {
           explicitMax = explicitMax == null ? match.width : Math.max(explicitMax, match.width);
         }
@@ -179,7 +210,7 @@ export function createSplitForestStore() {
       let contentMax = 0;
       const header = col.header ?? undefined;
       for (const s of specs) {
-        const match = s.columns?.find(c => c.id === col.id);
+        const match = leafColumns(s.columns).find(c => c.id === col.id);
         const field = match?.field;
         const values: unknown[] = [];
         if (field && Array.isArray(s.data)) {
@@ -204,7 +235,7 @@ export function createSplitForestStore() {
     if (enabled) {
       const widths = computeSharedWidths();
       for (const spec of Object.values(payload.specs)) {
-        for (const col of spec.columns ?? []) {
+        for (const col of leafColumns(spec.columns)) {
           const w = widths.get(col.id);
           if (w != null) col.width = w;
         }
@@ -213,7 +244,7 @@ export function createSplitForestStore() {
       for (const [key, spec] of Object.entries(payload.specs)) {
         const orig = originalWidths.get(key);
         if (!orig) continue;
-        for (const col of spec.columns ?? []) {
+        for (const col of leafColumns(spec.columns)) {
           col.width = orig.get(col.id);
         }
       }

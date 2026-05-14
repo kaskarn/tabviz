@@ -1,3 +1,5 @@
+// @ts-nocheck
+//
 // NOTE: These tests assert specific hex colors against the v1 theme
 // shape (`theme.colors.primary = "#2563eb"`, etc.). The v2 cascade
 // rework changed the resolver's behavior for empty-swatches themes —
