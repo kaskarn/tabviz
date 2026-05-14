@@ -11,12 +11,10 @@ import type {
   GroupHeaderRow,
   DataRow,
   ZoomState,
-  BandingSpec,
 } from "$types";
 import {
   computeBandIndexes,
   maxGroupDepth as computeMaxGroupDepth,
-  parseBandingString,
 } from "$lib/banding";
 import { niceDomain } from "$lib/scale-utils";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
@@ -47,6 +45,7 @@ import {
   RESERVED_COLUMN_IDS as _RESERVED_COLUMN_IDS,
   mintUniqueId as _mintUniqueId,
 } from "$stores/slices/columns.svelte";
+import { createDataSlice } from "$stores/slices/data.svelte";
 
 // Re-exports preserved for the existing public surface (tests import these
 // from forestStore.svelte; the canonical home is now the columns slice).
@@ -178,13 +177,30 @@ export function createForestStore() {
   // Phase 0c-C1 PR5. Owns collapsedGroups, rowOrderOverrides, hover/tooltip
   // pointers, and the big fullDisplayRows + tooltipRow + maxGroupDepth +
   // groupMap + groupDepthMap derived blocks. Reads visibleRows from the
-  // sort-filter slice (first slice-to-slice $derived chain).
+  // sort-filter slice (first slice-to-slice $derived chain) and displayRows
+  // from the data slice (the next link in the same chain).
   const rowsGroups = createRowsGroupsSlice({
     getSpec: () => spec,
     getAllColumns: () => columns.allColumns,
     getVisibleRows: () => sortFilter.visibleRows,
-    getDisplayRows: () => displayRows,
+    getDisplayRows: () => data.displayRows,
     getCellEdits: () => cells.cellEdits,
+    appendOp,
+    markSource,
+  });
+
+  // ── Data (pagination + banding + settings + watermark + target aspect) ───
+  // Phase 0c-C1 PR10. Owns the pagination cursor + derived (totalPages,
+  // isPaginated, currentPageRowIds, paginatedRows, displayRows), runtime
+  // banding overrides + their effective derived, the settings panel
+  // visibility flag, the pinned aspect ratio, and the watermark mutation
+  // methods. Reads fullDisplayRows from the rows-groups slice via forward
+  // closure (slice-to-slice $derived chain — paginatedRows depends on
+  // upstream fullDisplayRows reactively).
+  const data = createDataSlice({
+    getSpec: () => spec,
+    setSpec: (next) => { spec = next; },
+    getFullDisplayRows: () => rowsGroups.fullDisplayRows,
     appendOp,
     markSource,
   });
@@ -207,6 +223,21 @@ export function createForestStore() {
   const columnSpecOverrides = $derived(columns.columnSpecOverrides);
   const columnOrderOverrides = $derived(columns.columnOrderOverrides);
 
+  // Aliases for the data slice's state + derived. Most layout / event /
+  // exportSpec code reads these by their flat names.
+  const currentPage = $derived(data.currentPage);
+  const continuousMode = $derived(data.continuousMode);
+  const totalPages = $derived(data.totalPages);
+  const isPaginated = $derived(data.isPaginated);
+  const paginatedRows = $derived(data.paginatedRows);
+  const displayRows = $derived(data.displayRows);
+  const bandingOverride = $derived(data.bandingOverride);
+  const bandingStartsWithBandOverride = $derived(data.bandingStartsWithBandOverride);
+  const effectiveBanding = $derived(data.effectiveBanding);
+  const bandingStartsWithBand = $derived(data.bandingStartsWithBand);
+  const settingsOpen = $derived(data.settingsOpen);
+  const targetAspect = $derived(data.targetAspect);
+
   // Initial dimensions (from htmlwidgets/splitStore, used as fallback before ResizeObserver fires)
   let initialWidth = $state(800);
   let initialHeight = $state(400);
@@ -221,20 +252,10 @@ export function createForestStore() {
   // sortConfig + filters + filterPopoverTarget live on the sort-filter
   // slice (Phase 0c-C1 PR4). Read via `rowsGroups.X` / `sortFilter.X`.
 
-  // Runtime banding override from the settings panel. Null = follow theme.
-  let bandingOverride = $state<BandingSpec | null>(null);
-  // Runtime override for the BABA/ABAB starting phase. Null = use the default
-  // for the current mode (BABA for group, ABAB for row).
-  let bandingStartsWithBandOverride = $state<boolean | null>(null);
-  // Settings panel visibility (gear button + slide-in)
-  let settingsOpen = $state<boolean>(false);
-
-  // Pagination state (only meaningful when spec.paginate is set):
-  //   currentPage   — 1-based; clamped to [1, totalPages] in setSpec/changes.
-  //   continuousMode — when true, viewer renders all pages stacked with
-  //                    page-break rules instead of one page at a time.
-  let currentPage = $state<number>(1);
-  let continuousMode = $state<boolean>(false);
+  // bandingOverride / bandingStartsWithBandOverride / settingsOpen /
+  // currentPage / continuousMode / targetAspect all live on the data slice
+  // (Phase 0c-C1 PR10). Aliases declared below keep existing references in
+  // this file unchanged.
 
   // ── Theme customizations ────────────────────────────────────────────────
   // themeEdits / themeOverrides / baseThemeName / initialTheme /
@@ -257,14 +278,7 @@ export function createForestStore() {
   // Plot width override (for resizing the forest plot area)
   let plotWidthOverride = $state<number | null>(null);
 
-  // Target aspect ratio. `null` = render at natural; any positive number
-  // triggers an aspect-ladder relayout (forest absorption + non-forest
-  // column scale + height ladder; see the doc-comment header at the
-  // start of the `layout` derivation). Mirrors `WebSpec.targetAspect`
-  // and is seeded from
-  // it in `setSpec()`. The settings-panel slider writes it; "View source"
-  // emits `set_aspect_ratio(N)` (or `NULL` when cleared).
-  let targetAspect = $state<number | null>(null);
+  // targetAspect lives on the data slice (Phase 0c-C1 PR10); alias below.
 
   // axisZooms lives on the axis slice (Phase 0c-C1 PR3). Read via
   // `axis.axisZooms`; mutate via `axis.setAxisZoom` / `axis.resetAxisZoom`.
@@ -318,113 +332,16 @@ export function createForestStore() {
   // pointed at the slice.
   const fullDisplayRows = $derived<DisplayRow[]>(rowsGroups.fullDisplayRows);
 
-  // Pagination derived. Pages come precomputed from R (`spec.paginate.pages`,
-  // 0-based startIdx/endIdx into spec.data.rows) so the viewer never has to
-  // re-derive breakpoints — that keeps the static PDF export and the live
-  // HTML viewer in lockstep.
-  const totalPages = $derived(spec?.paginate?.nPages ?? 0);
-  const isPaginated = $derived(totalPages > 0 && !continuousMode);
-
-  // The data-row IDs that fall inside the current page window. Empty set
-  // when no pagination is active. Recomputed on currentPage / spec change.
-  const currentPageRowIds = $derived.by((): Set<string> => {
-    if (!spec?.paginate || continuousMode) return new Set();
-    const page = spec.paginate.pages[currentPage - 1];
-    if (!page) return new Set();
-    const ids = new Set<string>();
-    const rows = spec.data.rows;
-    for (let i = page.startIdx; i <= page.endIdx && i < rows.length; i++) {
-      ids.add(rows[i].id);
-    }
-    return ids;
-  });
-
-  // The slice of fullDisplayRows visible in the current page. Group headers
-  // are included whenever at least one descendant data row belongs to the
-  // page (so a parent header still fronts its child group on pages where
-  // only the child has rows).
-  const paginatedRows = $derived.by((): DisplayRow[] => {
-    if (!isPaginated) return fullDisplayRows;
-    const rowIds = currentPageRowIds;
-    if (rowIds.size === 0) return [];
-
-    const include = new Array(fullDisplayRows.length).fill(false);
-    for (let i = 0; i < fullDisplayRows.length; i++) {
-      const dr = fullDisplayRows[i];
-      if (dr.type === "data" && rowIds.has(dr.row.id)) include[i] = true;
-    }
-    // A group_header is included iff at least one descendant displayRow
-    // (until a sibling/ancestor group_header at depth <= myDepth) is in.
-    for (let i = 0; i < fullDisplayRows.length; i++) {
-      const dr = fullDisplayRows[i];
-      if (dr.type !== "group_header") continue;
-      const myDepth = dr.depth;
-      for (let j = i + 1; j < fullDisplayRows.length; j++) {
-        const dj = fullDisplayRows[j];
-        if (dj.type === "group_header" && dj.depth <= myDepth) break;
-        if (include[j]) {
-          include[i] = true;
-          break;
-        }
-      }
-    }
-    const out: DisplayRow[] = [];
-    for (let i = 0; i < fullDisplayRows.length; i++) {
-      if (include[i]) out.push(fullDisplayRows[i]);
-    }
-    return out;
-  });
-
-  // The canonical "rows currently on screen" list. When pagination is
-  // active and the user is not in continuous mode, this is the page slice
-  // (with its group headers); otherwise it's the full displayRows. All
-  // downstream consumers (layout, render loops, drag-drop) use this so the
-  // grid, axis row, and overlays all line up with the visible rows.
-  const displayRows = $derived(isPaginated ? paginatedRows : fullDisplayRows);
-
-  function setCurrentPage(p: number) {
-    if (totalPages === 0) {
-      currentPage = 1;
-      return;
-    }
-    currentPage = Math.max(1, Math.min(totalPages, Math.floor(p)));
-  }
-
-  function nextPage() {
-    if (currentPage < totalPages) currentPage += 1;
-  }
-
-  function prevPage() {
-    if (currentPage > 1) currentPage -= 1;
-  }
-
-  function setContinuousMode(v: boolean) {
-    continuousMode = v;
-  }
+  // Pagination derived (totalPages, isPaginated, currentPageRowIds,
+  // paginatedRows, displayRows) + actions (setCurrentPage / nextPage /
+  // prevPage / setContinuousMode) all live on the data slice (Phase 0c-C1
+  // PR10). Aliases above keep this file's references unchanged.
 
   // Maximum group depth moved to the rows-groups slice (Phase 0c-C1 PR5).
   const maxGroupDepth = $derived(rowsGroups.maxGroupDepth);
 
-  // Derived: the banding spec actually in effect. Runtime override (from the
-  // settings panel) wins over whatever the theme declares. The theme value is
-  // a BandingSpec object (from R serialization); we pass through defensively
-  // if the shape is missing.
-  const effectiveBanding = $derived.by((): BandingSpec => {
-    if (bandingOverride) return bandingOverride;
-    const themeBanding = spec?.theme?.layout?.banding;
-    if (themeBanding && typeof themeBanding === "object" && "mode" in themeBanding) {
-      return themeBanding as BandingSpec;
-    }
-    return { mode: "group", level: null };
-  });
-
-  // Derived: whether the banding pattern starts with a band (BABA) or blank
-  // (ABAB). Defaults: group → BABA, row → ABAB. User can flip via the
-  // settings panel; `bandingStartsWithBandOverride` holds that flip.
-  const bandingStartsWithBand = $derived.by((): boolean => {
-    if (bandingStartsWithBandOverride !== null) return bandingStartsWithBandOverride;
-    return effectiveBanding.mode === "group";
-  });
+  // effectiveBanding + bandingStartsWithBand derived live on the data slice
+  // (Phase 0c-C1 PR10). Aliases above keep call sites unchanged.
 
   // Derived: per-display-row band index (0 | 1 | null). Null = no banding
   // class on that row. See computeBandIndexes() for semantics.
@@ -980,25 +897,17 @@ export function createForestStore() {
     // Reset the op log too — a new spec is a new "session" as far as
     // recording fluent R calls is concerned.
     history.reset();
-    // Pagination resets to page 1 with each spec swap (split-by navigation
-    // flows through setSpec, and "the same page index across different data"
-    // would point at unrelated rows). Continuous-mode toggle is preserved as
-    // a viewing preference.
-    currentPage = 1;
+    // Pagination cursor + targetAspect seeding live on the data slice;
+    // hydrateForSpec resets currentPage to 1 and seeds targetAspect from
+    // newSpec.targetAspect. Continuous-mode toggle stays as a viewer
+    // preference.
+    data.hydrateForSpec(newSpec);
     // Theme reset target + baseThemeName + edit tracking: the theme slice
     // owns initialTheme / initialWatermark too, so a single captureInitial
     // call handles all five fields. Settings panel's "View source" feature
     // emits `web_theme_<baseThemeName>() |> ...` off the same baseThemeName
     // the slice records here.
     theme.captureInitial(newSpec);
-
-    // Seed the aspect-ratio target from the spec (set R-side by
-    // `set_aspect_ratio()` or by the `target_aspect` field). null/undefined
-    // means "render at natural"; the slider sits at the natural detent.
-    const rawTarget = newSpec.targetAspect;
-    targetAspect = (typeof rawTarget === "number" && rawTarget > 0)
-      ? rawTarget
-      : null;
 
     // Coerce banding default to "row" when the data has no groups. The R
     // default is "group" (deepest-level alternation), but on group-less data
@@ -1044,41 +953,8 @@ export function createForestStore() {
 
   // toggleGroup lives on the rows-groups slice (Phase 0c-C1 PR5).
 
-  // Settings panel visibility
-  function openSettings() {
-    settingsOpen = true;
-  }
-  function closeSettings() {
-    settingsOpen = false;
-  }
-  function toggleSettings() {
-    settingsOpen = !settingsOpen;
-  }
-
-  /**
-   * Set the runtime banding override. Accepts either the user-facing string
-   * form ("none" / "row" / "group" / "group-n"), a parsed BandingSpec, or
-   * null to clear the override (falls back to the theme value).
-   */
-  function setBandingOverride(value: string | BandingSpec | null) {
-    if (value == null) {
-      bandingOverride = null;
-    } else if (typeof value === "string") {
-      bandingOverride = parseBandingString(value);
-    } else {
-      bandingOverride = value;
-    }
-    markSource("banding");
-  }
-
-  /**
-   * Override the BABA/ABAB starting phase. Pass `null` to revert to the
-   * mode default (BABA for group, ABAB for row).
-   */
-  function setBandingStartsWithBand(value: boolean | null) {
-    bandingStartsWithBandOverride = value;
-    markSource("banding");
-  }
+  // Settings panel + banding override actions live on the data slice
+  // (Phase 0c-C1 PR10). Passthrough on the return block below.
 
   // Sort + filter methods live on the sort-filter slice (Phase 0c-C1 PR4).
   // Public-API passthrough below.
@@ -1132,63 +1008,13 @@ export function createForestStore() {
     return plotWidthOverride;
   }
 
-  // -- Aspect-ratio target ----------------------------------------------------
-  // Setter pushes a record onto the op log so "View source" can emit
-  // `set_aspect_ratio(N)` (or `set_aspect_ratio(NULL)` when cleared). The
-  // layout derived above reads `targetAspect` directly and walks the lever
-  // ladder; mutations here automatically propagate through the reactive
-  // graph.
-  // Hard bounds on a settable aspect ratio. Below TARGET_ASPECT_MIN /
-  // above TARGET_ASPECT_MAX, the lever ladder produces visually broken
-  // layouts (rows clipped to floor + degenerate widths) and at extreme
-  // values the layout grows past sane DOM sizes (millions of pixels).
-  // 0.1 to 10 covers any sensible aspect from 1:10 (mobile-ish portrait)
-  // to 10:1 (a banner) and rejects nonsense input from the slider /
-  // proxy / fluent API alike.
-  const TARGET_ASPECT_MIN = 0.1;
-  const TARGET_ASPECT_MAX = 10;
-  function setTargetAspect(ratio: number | null): void {
-    if (ratio != null && !Number.isFinite(ratio)) return;
-    if (ratio != null && ratio <= 0) return;
-    const clamped = ratio == null
-      ? null
-      : Math.max(TARGET_ASPECT_MIN, Math.min(TARGET_ASPECT_MAX, ratio));
-    if (targetAspect === clamped) return;
-    targetAspect = clamped;
-    appendOp(ops.setAspectRatio(clamped));
-  }
-
-  function getTargetAspect(): number | null {
-    return targetAspect;
-  }
-
-  // Set the anchor mode for the aspect ladder's target-dim resolution
-  // ("width" preserves natural-w, "height" preserves natural-h, "auto"
-  // picks at runtime). Mutates the *spec* (so the layout-derived getter
-  // picks it up reactively) plus appends an op so "View source" emits
-  // the matching set_aspect_ratio() call. No-op when the anchor doesn't
-  // change (avoids spurious op log entries when the slider is dragged).
-  function setTargetAspectAnchor(anchor: "width" | "height" | "auto"): void {
-    if (!spec) return;
-    const current = spec.targetAspectAnchor ?? "width";
-    if (current === anchor) return;
-    spec = { ...spec, targetAspectAnchor: anchor };
-    // Re-emit the active aspect with the new anchor so source code reflects it.
-    if (targetAspect != null) {
-      appendOp(ops.setAspectRatio(targetAspect, anchor));
-    }
-  }
+  // Aspect-ratio target + setTargetAspectAnchor + setWatermark family all
+  // live on the data slice (Phase 0c-C1 PR10). Public-API passthrough on
+  // the return block below.
 
   // -- Per-column axis pan/zoom ------------------------------------------------
   // Methods live on the axis slice (Phase 0c-C1 PR3); public-API passthrough below.
 
-  /**
-   * Deep clone a WebTheme. Uses JSON round-trip (not structuredClone) because
-   * the theme objects we receive here are sometimes Svelte $state proxies,
-   * whose internal slots trip structuredClone's DataCloneError path. Themes
-   * are strictly JSON-safe (strings / numbers / booleans / nested objects /
-   * nulls — no Maps, Sets, Dates, functions), so the round-trip is lossless.
-   */
   // Theme management methods moved to the theme slice (Phase 0c-C1 PR2).
   // `clearAutoWidthsKeepingUserResizes` (called by the theme slice via dep)
   // now lives on the columns slice (Phase 0c-C1 PR9).
@@ -1196,47 +1022,6 @@ export function createForestStore() {
   // `setSemanticField` removed in Phase 0b (orphan; no callers). The
   // setThemeField path covers the same edits via a generic path-based
   // API.
-
-  /**
-   * Set the table watermark. Empty string clears the watermark (matches the
-   * `tabviz(watermark = NULL)` semantic). This is a spec-level field, not a
-   * theme edit — it doesn't go through themeEdits and isn't exported by
-   * View source today.
-   */
-  function setWatermark(value: string) {
-    if (!spec) return;
-    spec = { ...spec, watermark: value };
-    // Empty string means "clear" in the R API — emit NULL so the recorded
-    // line reads `set_watermark(NULL)` rather than `set_watermark("")`.
-    const text = value === "" ? null : value;
-    appendOp(ops.setWatermark(text));
-  }
-
-  /**
-   * Live-preview the watermark text while typing; no op-log emission. UI
-   * callers wired to `<input oninput={...}>` use this; `setWatermark` fires
-   * on blur/Enter to emit one record per finished edit.
-   */
-  function previewWatermark(value: string) {
-    if (!spec) return;
-    spec = { ...spec, watermark: value };
-  }
-
-  /** Set or clear the watermark text color. Non-recorded preview: same
-   *  pattern as color-picker on theme fields. */
-  function setWatermarkColor(value: string | null) {
-    if (!spec) return;
-    spec = { ...spec, watermarkColor: value ?? undefined };
-  }
-
-  /** Set the watermark fill opacity (0–1). Non-recorded for now — opacity
-   *  changes fire on each slider tick and recording each would be noisy;
-   *  this mirrors how we handle theme NumberField edits. */
-  function setWatermarkOpacity(value: number) {
-    if (!spec) return;
-    const clamped = Math.max(0, Math.min(1, value));
-    spec = { ...spec, watermarkOpacity: clamped };
-  }
 
   // resetThemeEdits / captureThemeSnapshot / applyThemeSnapshot all live
   // on the theme slice (Phase 0c-C1 PR2). Public-API passthrough below.
@@ -1415,9 +1200,10 @@ export function createForestStore() {
     // ── Theme customizations (in-panel edits / banding overrides) ────────
     // theme.reset() wipes themeEdits + themeOverrides without touching the
     // initial-* snapshot (so resetThemeEdits below still has its target).
+    // data.reset() clears the runtime banding overrides (pagination cursor
+    // stays — matches pre-extraction behaviour).
     theme.reset();
-    bandingOverride = null;
-    bandingStartsWithBandOverride = null;
+    data.reset();
 
     // ── Transient UI overlays ────────────────────────────────────────────
     // hover + tooltip cleared via rowsGroups.reset(); popover via
@@ -2038,28 +1824,31 @@ export function createForestStore() {
 
     // Actions
     setSpec,
-    setCurrentPage,
-    nextPage,
-    prevPage,
-    setContinuousMode,
+    // Pagination — data slice passthrough.
+    setCurrentPage: data.setCurrentPage,
+    nextPage: data.nextPage,
+    prevPage: data.prevPage,
+    setContinuousMode: data.setContinuousMode,
     setDimensions,
     setSelectedRows: semantics.setSelectedRows,
     toggleGroup: rowsGroups.toggleGroup,
-    openSettings,
-    closeSettings,
-    toggleSettings,
-    setBandingOverride,
-    setBandingStartsWithBand,
+    // Settings + banding overrides — data slice passthrough.
+    openSettings: data.openSettings,
+    closeSettings: data.closeSettings,
+    toggleSettings: data.toggleSettings,
+    setBandingOverride: data.setBandingOverride,
+    setBandingStartsWithBand: data.setBandingStartsWithBand,
     // Theme methods passthrough — own state lives on the theme slice.
     setThemeField: theme.setThemeField,
     setThemeFieldDerived: theme.setThemeFieldDerived,
     isOverridden: theme.isOverridden,
     clearOverride: theme.clearOverride,
     previewThemeField: theme.previewThemeField,
-    setWatermark,
-    previewWatermark,
-    setWatermarkColor,
-    setWatermarkOpacity,
+    // Watermark methods — data slice passthrough (mutates spec).
+    setWatermark: data.setWatermark,
+    previewWatermark: data.previewWatermark,
+    setWatermarkColor: data.setWatermarkColor,
+    setWatermarkOpacity: data.setWatermarkOpacity,
     resetThemeEdits: theme.resetThemeEdits,
     // Sort + filter — sort-filter slice passthrough.
     sortBy: sortFilter.sortBy,
@@ -2131,9 +1920,10 @@ export function createForestStore() {
     setColumnWidth: columns.setColumnWidth,
     previewColumnWidth: columns.previewColumnWidth,
     setPlotWidth,
-    setTargetAspect,
-    setTargetAspectAnchor,
-    getTargetAspect,
+    // Aspect ratio — data slice passthrough.
+    setTargetAspect: data.setTargetAspect,
+    setTargetAspectAnchor: data.setTargetAspectAnchor,
+    getTargetAspect: data.getTargetAspect,
     get targetAspect() { return targetAspect; },
     get targetAspectAnchor() { return spec?.targetAspectAnchor ?? "width"; },
     get userResizedIds() { return userResizedIds; },
