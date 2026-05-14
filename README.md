@@ -4,54 +4,74 @@
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![npm: @tabviz/core](https://img.shields.io/npm/v/@tabviz/core?label=%40tabviz%2Fcore&color=%23cb3837)](https://www.npmjs.com/package/@tabviz/core)
 
-**Publication-quality forest plots and rich data tables — interactive
-in the browser, pixel-identical on export.** The R package and the
-[`@tabviz/core`](https://www.npmjs.com/package/@tabviz/core) npm
-package share a single Svelte 5 + D3 rendering engine, so the
-HR-with-confidence-interval that shows up in your Shiny dashboard is
-the same plot you'll paste into the manuscript.
+**One Svelte 5 + D3 runtime. Two distributions. Identical pixels.**
+tabviz is an interactive table-and-forest-plot engine that ships as
+both an R htmlwidget and the [`@tabviz/core`](https://www.npmjs.com/package/@tabviz/core)
+npm package, built from the same `srcjs/` source tree in the same
+Vite build. The HR-with-confidence-interval you scroll through in
+Shiny is the same plot — same layout solver, same axis math, same
+glyph geometry — that lands in the manuscript SVG.
 
 [![tabviz example](docs/images/hero-row-readme.png)](https://kaskarn.github.io/tabviz/gallery/)
 
 *Click for the interactive gallery.*
 
-## Where tabviz fits
+## What makes this interesting
 
-Most table packages are excellent at one of static publication-quality
-output (`gt`, `flextable`), general interactive data grids (`reactable`,
-`DT`), or static forest plots (`forestplot`, `forester`,
-`ggforestplot`) — but stitching them together for a clinical /
-meta-analysis workflow means juggling toolchains and losing fidelity
-between the live widget and the figure-of-record.
+**A shared runtime, not a parallel port.** The R package and the npm
+package are two delivery vehicles for one codebase. Both consume the
+same `WebSpec` wire format. Both render through the same Svelte 5
+component tree. No "R version" and "JS version" drift — one runtime,
+two ways to hand it data.
 
-tabviz is built specifically for that workflow: 17 column types
-(including pooled-effect forest, bar, boxplot, violin) compose into a
-single interactive widget that exports to SVG / PDF / PNG / PPTx
-*exactly* as it appears on screen — no screenshotting, no second
-toolchain. Native Shiny bindings + proxy verbs (`paint_row()`,
-`sort_rows()`, `filter_rows()`, …) keep updates incremental rather than
-re-rendering the whole table. And because the runtime ships as an npm
-package too, the same plot can drop into a non-R web app without
-rebuilding the design in another library.
+**SemVer on the wire, not just the API.** Every `WebSpec` carries a
+version field that R and JS both validate on every render. Breaking
+changes to the spec bump major; additive fields bump minor; the
+validator tells you when an old spec hits a new runtime instead of
+silently rendering wrong. See
+[`docs/dev/versioning.md`](docs/dev/versioning.md).
 
-It's a specialty tool — if you need a general-purpose datatable you'll
-reach for `reactable`; if you need a print-first table grammar, `gt` —
-but for forest plots, meta-analyses, regression-result tables, and any
-"data-frame with embedded comparative visualization" report, it's
-built to be the most direct path from data frame to camera-ready figure.
+**WYSIWYG static export, byte-identically.** The SVG / PDF / PNG /
+PPTx outputs aren't screenshots and aren't a parallel rendering
+path. They come out of the same Svelte component tree, executed in a
+headless V8 context and rasterized with rsvg. If a number formatter
+matches a cell on screen, it matches in the PDF.
 
-## Two ways to use it
+**Typed Shiny proxy verbs.** `paint_row()`, `sort_rows()`,
+`filter_rows()`, `set_theme()`, `set_zoom()`, `set_aspect_ratio()`
+are partial updates over a typed event bus — sort a 2000-row table
+without re-laying-out the axes; recolor a selected row without
+recomputing column widths.
 
-| | R package | npm package |
-|---|---|---|
-| Install | `pak::pak("kaskarn/tabviz")` | `npm install @tabviz/core svelte` |
-| Build a plot | `tabviz(data, columns = list(...))` | `createTabviz(el, spec)` |
-| Best for | R Markdown, Quarto, Shiny, standalone HTML | Web apps, dashboards, non-R toolchains |
-| Static export | `save_plot()` → SVG / PDF / PNG | `exportToSVG()` / `exportToPNG()` |
+## Where it fits among the neighbors
 
-Both consume the same wire-format `WebSpec` shape and render
-identically — see [`docs/dev/versioning.md`](docs/dev/versioning.md)
-for the contract.
+The R table ecosystem is rich; the existing packages are excellent at
+what they do.
+
+| Package | Excels at |
+|---|---|
+| `gt`, `flextable` | Static print-grade table grammars |
+| `reactable`, `DT` | General-purpose interactive datatables |
+| `forestplot`, `forester`, `ggforestplot` | Static forest plots |
+| **tabviz** | Interactive tables + inline comparative viz + WYSIWYG publication export, in one runtime |
+
+Different shapes of the same problem space. tabviz sits across all
+three slices at once. Reach for it when the table *is* the figure —
+meta-analyses, regression-result panels, subgroup comparisons, any
+report where embedded plots and the surrounding columns travel
+together from data frame to manuscript or dashboard.
+
+## Install
+
+```r
+# R
+pak::pak("kaskarn/tabviz")
+```
+
+```bash
+# JS — svelte is a peer dependency
+npm install @tabviz/core svelte
+```
 
 ## Quick start (R)
 
@@ -92,6 +112,9 @@ tabviz(
 )
 ```
 
+Hand the same data frame to `save_plot()` and the SVG that lands in
+your manuscript is identical to what's on screen.
+
 ## Quick start (JS)
 
 ```ts
@@ -107,62 +130,78 @@ instance.on("selected", (rowIds) => console.log("selection:", rowIds));
 instance.sortBy({ column: "hr", direction: "asc" });
 ```
 
-The `WebSpec` shape that `spec` is typed against ships in
-`@tabviz/core/spec` (with JSON Schema). Most consumers build it once
-on the server (R-side `tabviz()` does this) and pass it through. The
-npm package's [README](srcjs/README.md) covers the five subpath
-exports, peer-deps, and consumption patterns.
+`spec` is typed against the `WebSpec` shape exported from
+`@tabviz/core/spec`, with a JSON Schema alongside. Typical pattern:
+build the spec server-side (R's `tabviz()` does exactly this) and
+pass it through. The npm package exposes five subpath exports — `.`,
+`/svelte`, `/export`, `/spec`, `/style.css` — see the
+[package README](srcjs/README.md) for peer-dep details.
 
-## Highlights
+## Columns
 
-- **17 column types** — `col_text`, `col_numeric`, `col_interval`,
-  `col_bar`, `col_pvalue`, `col_sparkline`, `col_badge`, `col_stars`,
-  `col_icon`, `col_img`, `col_reference`, `col_range`, `col_heatmap`,
-  `col_progress`, `col_pictogram`, `col_ring`, `col_events`, plus
-  `col_group` for nested headers.
-- **Focal visualizations** — `viz_forest`, `viz_bar`, `viz_boxplot`,
-  `viz_violin` for comparative displays with shared axes.
-- **4 publication themes** — Cochrane (default), Lancet, JAMA, Dark —
-  all on a 3-tier OKLCH-derived cascade. Full customization via
-  `set_colors()`, `set_axis()`, `set_spacing()`, …
-- **Row + marker styling from data** — `row_type`, `row_bold`,
-  `row_badge`, `row_indent`, `marker_color`, `marker_shape`,
-  `marker_size`. Conditional formatting without leaving the data frame.
-- **Split tables** — `split_by = c("region", "country")` builds a
-  hierarchical sidebar navigation with shared-axis option.
-- **WYSIWYG static export** — SVG / PDF / PNG / PPTx match the
-  rendered widget exactly (no screenshots, vector-precise).
-- **Native Shiny integration** — `tabvizOutput()` + `renderTabviz()`,
-  plus the proxy verbs (`paint_row()`, `sort_rows()`, `set_theme()`,
-  `filter_rows()`, …) for partial updates without full re-renders.
+Seventeen column types compose into any layout. `col_group(...)`
+nests headers.
+
+| Family | Functions |
+|---|---|
+| Text & numeric | `col_text`, `col_numeric`, `col_n`, `col_events`, `col_pvalue`, `col_reference` |
+| Intervals & ranges | `col_interval`, `col_range` |
+| Inline viz | `col_bar`, `col_sparkline`, `col_heatmap`, `col_progress`, `col_ring`, `col_pictogram` |
+| Marks | `col_badge`, `col_stars`, `col_icon`, `col_img` |
+| Comparative (shared axis) | `viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin` |
+
+`viz_*` columns share a common axis across rows and accept
+pooled-effect annotations, reference lines (`refline()`), and null
+markers.
 
 ## Themes
 
 ```r
 tabviz(data, ..., theme = web_theme_lancet())
 
-# Customize any theme
 web_theme_jama() |>
   set_colors(primary = "#0066cc") |>
   set_axis(gridlines = TRUE) |>
   set_spacing(row_height = 28)
 ```
 
-| Theme | Style |
-|-------|-------|
+| Theme | Identity |
+|---|---|
 | `web_theme_cochrane()` | Package default. Cochrane teal, Inter, comfortable density |
-| `web_theme_lancet()` | Lancet navy + warm cream, Georgia serif, comfortable density |
+| `web_theme_lancet()` | Lancet navy + warm cream, Georgia serif |
 | `web_theme_jama()` | All-black-and-white JAMA, ultra-compact, Arial |
-| `web_theme_dark()` | Catppuccin-inspired dark canvas, pastel marker palette |
+| `web_theme_dark()` | Catppuccin-derived dark canvas, pastel markers |
+
+All four ride the same 3-tier OKLCH-derived cascade with an
+orthogonal accent slot, so semantic markers (selected, hover,
+callout) stay legible across the palette. Customize via
+`set_colors()`, `set_axis()`, `set_spacing()`, `set_typography()`.
+
+## More capabilities
+
+- **Row + marker styling from data columns.** `row_type`, `row_bold`,
+  `row_badge`, `row_indent`, `marker_color`, `marker_shape`,
+  `marker_size`. Conditional formatting stays in the data frame.
+- **Semantic painting.** Mark a row as `accent`, `muted`, `emphasis`,
+  `bold`, or `fill` to call attention — drive it from data or push
+  via the `paint_row()` proxy verb.
+- **Split tables.** `split_by = c("region", "country")` builds a
+  hierarchical sidebar with optional shared-axis alignment across
+  panels.
+- **Shiny integration.** `tabvizOutput()` + `renderTabviz()`, plus the
+  proxy verbs above for partial updates without full re-renders.
+- **Cross-runtime drop-in.** Same plot embeds into a non-R web app
+  via `@tabviz/core` without rebuilding the spec or restyling the
+  output.
 
 ## Documentation
 
-- **[Quick Start](https://kaskarn.github.io/tabviz/guide/quick-start.html)** — get a plot rendering in 5 minutes
+- **[Quick Start](https://kaskarn.github.io/tabviz/guide/quick-start.html)** — a plot rendering in 5 minutes
 - **[Gallery](https://kaskarn.github.io/tabviz/gallery/)** — 20+ examples with code
-- **[Cookbook](https://kaskarn.github.io/tabviz/guide/recipes.html)** — common patterns
+- **[Cookbook](https://kaskarn.github.io/tabviz/guide/recipes.html)** — patterns for meta-analyses, regression tables, subgroup splits, Shiny dashboards
 - **[Function reference](https://kaskarn.github.io/tabviz/reference/)** — full R API
 - **[npm package README](srcjs/README.md)** — JS / TS consumption
-- **Architecture & design** — [frontend split spec](docs/dev/frontend-split-spec.md), [wire-format versioning](docs/dev/versioning.md), [event contract](docs/dev/event-contract.md), [spec fields reference](docs/dev/spec-fields-reference.md), [R ↔ JS sync points](docs/dev/r-js-sync-points.md)
+- **Architecture & design** — [frontend split spec](docs/dev/frontend-split-spec.md) · [wire-format versioning](docs/dev/versioning.md) · [event contract](docs/dev/event-contract.md) · [spec fields reference](docs/dev/spec-fields-reference.md) · [R ↔ JS sync points](docs/dev/r-js-sync-points.md)
 
 ## License
 
