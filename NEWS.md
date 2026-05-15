@@ -1,3 +1,34 @@
+# tabviz 0.31.1
+
+## Bug fixes
+
+* **`col_pictogram(half_glyphs = TRUE)` no longer paints a gray box
+  over the partial star.** The half-glyph state was rendering as a
+  fully-filled glyph with a translucent gray `<rect>` over the right
+  half — its appearance depended on whatever the cell background was,
+  producing a visible artifact on the alt-row striping and on any
+  non-white theme. Replaced with a `<clipPath>`-based technique
+  (empty outline underneath, left-half-clipped filled path on top)
+  that's background-color independent and viewBox-aware. Fix
+  mirrored in both the live widget and the static SVG / PDF /
+  PNG / PPTx export.
+
+## Breaking changes
+
+* **`col_*(width = N)` is now a hard pin.** Previously, if the column
+  header text was estimated wider than `N`, both the live widget and
+  the static export silently auto-grew the column to fit the header —
+  treating `width = N` as a floor rather than a pin. That broke
+  WYSIWYG (live and export rendered at different widths) and made it
+  impossible to author a deliberately-narrow column with a long header
+  (the header would expand the column out from under the author).
+  The new contract: `width = N` means exactly N pixels; headers that
+  don't fit clip via `text-overflow: ellipsis` (or wrap to multiple
+  lines, when `wrap = TRUE` is set on the column). `width = "auto"` /
+  `NULL` / `NA` continue to auto-measure from data + header as before.
+  Migration: if you were relying on auto-grow, drop the explicit
+  width (back to `"auto"`) or set `wrap = TRUE` on the column.
+
 # tabviz 0.31.0
 
 ## Bug fixes
