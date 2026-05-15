@@ -1,4 +1,4 @@
-# tabviz (development)
+# tabviz 0.31.0
 
 ## Bug fixes
 
