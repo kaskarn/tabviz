@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>save_plot() – tabviz</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-acf12a64177840b8d86f2d4f01b2e9fb.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-4b8a7f5c1e62d8a664f10c100b883a22.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">tabviz</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/index.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-concepts" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Concepts</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-concepts">    
+        <li>
+    <a class="dropdown-item" href="../concepts/index.html">
+ <span class="dropdown-text">Architecture Overview</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/data-flow.html">
+ <span class="dropdown-text">Data Flow</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/styling-cascade.html">
+ <span class="dropdown-text">Styling Cascade</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../concepts/theming-manifesto.html">
+ <span class="dropdown-text">Theming Manifesto</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../cheatsheet.html"> 
+<span class="menu-text">Cheatsheet</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gallery" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Gallery</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-gallery">    
+        <li>
+    <a class="dropdown-item" href="../gallery/index.html">
+ <span class="dropdown-text">Gallery Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/meta-analysis.html">
+ <span class="dropdown-text">Long Meta-Analysis</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/dashboards.html">
+ <span class="dropdown-text">Domain Dashboards</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/brand-design.html">
+ <span class="dropdown-text">Compose Your Own Brand</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/viz-glyphs.html">
+ <span class="dropdown-text">Pictograms &amp; Rings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/clinical.html">
+ <span class="dropdown-text">Clinical Examples</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/interactive.html">
+ <span class="dropdown-text">Interactivity Tour</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../gallery/showcases.html">
+ <span class="dropdown-text">Feature Showcases</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../gallery/lotr.html">
+ <span class="dropdown-text">LOTR (Easter Egg)</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-reference" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Reference</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-reference">    
+        <li>
+    <a class="dropdown-item" href="../reference/index.html">
+ <span class="dropdown-text">Overview</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/tabviz.html">
+ <span class="dropdown-text">tabviz()</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/forest_plot.html">
+ <span class="dropdown-text">forest_plot()</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/columns.html">
+ <span class="dropdown-text">Columns</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/styling.html">
+ <span class="dropdown-text">Styling Functions</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/data-ops.html">
+ <span class="dropdown-text">Data Operations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/themes.html">
+ <span class="dropdown-text">Themes</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/annotations.html">
+ <span class="dropdown-text">Annotations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/interaction.html">
+ <span class="dropdown-text">Interaction Settings</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/shiny.html">
+ <span class="dropdown-text">Shiny</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../reference/export.html">
+ <span class="dropdown-text">Export</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="../reference/troubleshooting.html">
+ <span class="dropdown-text">Troubleshooting</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-deep-dives" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Deep Dives</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-deep-dives">    
+        <li>
+    <a class="dropdown-item" href="../deep-dives/architecture.html">
+ <span class="dropdown-text">S7 Architecture</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../deep-dives/performance.html">
+ <span class="dropdown-text">Performance Tips</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/kaskarn/tabviz"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#save_plot" id="toc-save_plot" class="nav-link active" data-scroll-target="#save_plot"><code>save_plot()</code></a>
+  <ul class="collapse">
+  <li><a href="#sizing-modes" id="toc-sizing-modes" class="nav-link" data-scroll-target="#sizing-modes">Sizing modes</a></li>
+  <li><a href="#dependencies" id="toc-dependencies" class="nav-link" data-scroll-target="#dependencies">Dependencies</a></li>
+  <li><a href="#resolution-guide-for-png" id="toc-resolution-guide-for-png" class="nav-link" data-scroll-target="#resolution-guide-for-png">Resolution guide for PNG</a></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
+  </ul></li>
+  <li><a href="#set_aspect_ratio" id="toc-set_aspect_ratio" class="nav-link" data-scroll-target="#set_aspect_ratio"><code>set_aspect_ratio()</code></a></li>
+  <li><a href="#tabviz_natural_dimensions" id="toc-tabviz_natural_dimensions" class="nav-link" data-scroll-target="#tabviz_natural_dimensions"><code>tabviz_natural_dimensions()</code></a></li>
+  <li><a href="#save_split_table" id="toc-save_split_table" class="nav-link" data-scroll-target="#save_split_table"><code>save_split_table()</code></a>
+  <ul class="collapse">
+  <li><a href="#output-directory-structure" id="toc-output-directory-structure" class="nav-link" data-scroll-target="#output-directory-structure">Output directory structure</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  </ul></li>
+  <li><a href="#related" id="toc-related" class="nav-link" data-scroll-target="#related">Related</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">save_plot()</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Export a tabviz widget, <code>WebSpec</code>, or <code>SplitForest</code> to a static SVG, PDF, or PNG.</p>
+<p>The pipeline runs entirely in R: the spec is serialized to JSON, the bundled JavaScript SVG generator (<code>inst/js/svg-generator.js</code>) is run via <code>V8</code>, and PDF/PNG outputs are produced from that SVG via <code>rsvg</code>.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Aspect-ratio first">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Aspect-ratio first
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>As of v0.30, <code>save_plot()</code> is <strong>aspect-ratio first</strong>: the output’s <em>shape</em> is derived from the spec’s natural dimensions, and <code>width</code> / <code>height</code> / <code>ratio</code> are display / aspect levers — not size forcers. Three modes:</p>
+<ul>
+<li><strong>Natural</strong> — no <code>width</code> / <code>height</code> / <code>ratio</code>. Renders at the spec’s natural dimensions.</li>
+<li><strong>Display-scaled</strong> — exactly one of <code>width</code> / <code>height</code>. Same content, just scaled (SVG <code>viewBox</code> keeps coordinates intact). Aspect ratio preserved.</li>
+<li><strong>Aspect-changed</strong> — both <code>width</code> and <code>height</code>, or <code>ratio</code>. Triggers a relayout via the lever ladder. Flex-eligible columns (<code>flex = TRUE</code>, the default for <code>viz_*</code> / forest columns) absorb the width delta; row heights scale to absorb the height delta. Calculated, never SVG-stretched.</li>
+</ul>
+</div>
+</div>
+<hr>
+<section id="save_plot" class="level2">
+<h2 class="anchored" data-anchor-id="save_plot"><code>save_plot()</code></h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(x, file,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">width =</span> <span class="cn">NULL</span>, <span class="at">height =</span> <span class="cn">NULL</span>, <span class="at">ratio =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">flex =</span> <span class="cn">TRUE</span>, <span class="at">scale =</span> <span class="dv">2</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">which =</span> <span class="cn">NULL</span>, <span class="at">paginate =</span> <span class="cn">NULL</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>          ...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>x</code></td>
+<td><code>WebSpec</code> / htmlwidget / <code>SplitForest</code></td>
+<td>required</td>
+<td>The plot to export. <code>SplitForest</code> is dispatched to <code>save_split_table()</code> unless <code>which</code> is set.</td>
+</tr>
+<tr class="even">
+<td><code>file</code></td>
+<td><code>character(1)</code></td>
+<td>required</td>
+<td>Output file path (or directory for <code>SplitForest</code> without <code>which</code>). Extension determines format: <code>.svg</code>, <code>.pdf</code>, or <code>.png</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>width</code></td>
+<td><code>numeric(1)</code> / <code>NULL</code></td>
+<td><code>NULL</code></td>
+<td>Display width in pixels. <code>NULL</code> preserves natural. With <code>height</code> or <code>ratio</code>, triggers Mode 3 relayout.</td>
+</tr>
+<tr class="even">
+<td><code>height</code></td>
+<td><code>numeric(1)</code> / <code>NULL</code></td>
+<td><code>NULL</code></td>
+<td>Display height in pixels. <code>NULL</code> preserves natural. With <code>width</code> or <code>ratio</code>, triggers Mode 3 relayout.</td>
+</tr>
+<tr class="odd">
+<td><code>ratio</code></td>
+<td><code>numeric(1)</code> / <code>NULL</code></td>
+<td><code>NULL</code></td>
+<td>Target aspect ratio (<code>width / height</code>). When set with one of <code>width</code> / <code>height</code>, the other is computed. When set alone, target width = natural width and target height = natural width / ratio. Falls back to the spec’s <code>target_aspect</code> (set via <a href="#set_aspect_ratio"><code>set_aspect_ratio()</code></a>) when <code>NULL</code>. Mutually exclusive with passing both <code>width</code> and <code>height</code>.</td>
+</tr>
+<tr class="even">
+<td><code>flex</code></td>
+<td><code>logical</code> / <code>numeric(1)</code></td>
+<td><code>TRUE</code></td>
+<td>Lever-ladder cap for flex-column absorption. <code>TRUE</code> = cap of 2 (each flex column may grow / shrink within <code>[0.5×, 2×]</code> of natural). <code>FALSE</code> = disable flex absorption (cap of 1; aspect change goes entirely through row-height + non-flex column scaling). A numeric <code>N &gt;= 1</code> sets a custom cap (e.g.&nbsp;<code>1.5</code> is conservative; <code>Inf</code> removes the cap).</td>
+</tr>
+<tr class="odd">
+<td><code>scale</code></td>
+<td><code>numeric(1)</code></td>
+<td><code>2</code></td>
+<td>Raster fidelity multiplier for PNG output (2 = retina). <strong>PNG-only</strong>: passing <code>scale</code> to a <code>.svg</code> or <code>.pdf</code> save warns.</td>
+</tr>
+<tr class="even">
+<td><code>which</code></td>
+<td>string / integer / <code>NULL</code></td>
+<td><code>NULL</code></td>
+<td>For <code>SplitForest</code> only. <code>NULL</code> (default) writes every subview into a directory; pass a key string (<code>"Male__Young"</code>) or 1-based integer index to extract a single subview to <code>file</code> and demote the path to a single-file write.</td>
+</tr>
+<tr class="odd">
+<td><code>paginate</code></td>
+<td><code>PaginateSpec</code> / shortcut / <code>NULL</code></td>
+<td><code>NULL</code></td>
+<td>Override the spec’s pagination at the call site. Accepts <code>NULL</code> (off), <code>TRUE</code>, a positive integer, or a <code>PaginateSpec</code> from <a href="../reference/columns.html#paginate"><code>paginate_spec()</code></a>. When set on a <code>.pdf</code> save, emits a multi-page PDF; on a <code>.png</code> / <code>.svg</code> save, warns and flattens (use <code>paginate = NULL</code> to silence). See <a href="../guide/export.html#pagination">Pagination in the Export guide</a>.</td>
+</tr>
+<tr class="even">
+<td><code>...</code></td>
+<td>—</td>
+<td>—</td>
+<td>Reserved for future format-specific options.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> the output <code>file</code> path, invisibly. For paginated PDF output without <code>qpdf</code>, returns the character vector of numbered-series paths.</p>
+<section id="sizing-modes" class="level3">
+<h3 class="anchored" data-anchor-id="sizing-modes">Sizing modes</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>width</code></th>
+<th><code>height</code></th>
+<th><code>ratio</code></th>
+<th>Mode</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td><strong>Natural</strong></td>
+<td>Render at the spec’s natural dimensions.</td>
+</tr>
+<tr class="even">
+<td>set</td>
+<td>—</td>
+<td>—</td>
+<td><strong>Display-scaled</strong></td>
+<td>Render at natural; SVG root width = requested. Height computed from natural aspect.</td>
+</tr>
+<tr class="odd">
+<td>—</td>
+<td>set</td>
+<td>—</td>
+<td><strong>Display-scaled</strong></td>
+<td>Render at natural; SVG root height = requested. Width computed from natural aspect.</td>
+</tr>
+<tr class="even">
+<td>set</td>
+<td>set</td>
+<td>—</td>
+<td><strong>Aspect-changed</strong></td>
+<td>Relayout: target aspect = <code>width / height</code>. Flex columns absorb width delta (capped at <code>flex</code>); row heights scale for height delta.</td>
+</tr>
+<tr class="odd">
+<td>set</td>
+<td>—</td>
+<td>set</td>
+<td><strong>Aspect-changed</strong></td>
+<td>Target height = <code>width / ratio</code>.</td>
+</tr>
+<tr class="even">
+<td>—</td>
+<td>set</td>
+<td>set</td>
+<td><strong>Aspect-changed</strong></td>
+<td>Target width = <code>height * ratio</code>.</td>
+</tr>
+<tr class="odd">
+<td>—</td>
+<td>—</td>
+<td>set</td>
+<td><strong>Aspect-changed</strong></td>
+<td>Target width = natural; target height = natural width / ratio.</td>
+</tr>
+<tr class="even">
+<td>set</td>
+<td>set</td>
+<td>set</td>
+<td><strong>Error</strong></td>
+<td>Over-specified — pick at most two.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>flex</code> argument controls what happens <strong>only in Aspect-changed mode</strong>: it caps how far each flex-eligible column may stretch before the layout falls back to scaling non-flex columns and row heights. Default-natural and display-scaled renders are unaffected by <code>flex</code>.</p>
+</section>
+<section id="dependencies" class="level3">
+<h3 class="anchored" data-anchor-id="dependencies">Dependencies</h3>
+<ul>
+<li><strong>SVG</strong>: <code>V8</code> (always required for the generator).</li>
+<li><strong>PDF / PNG</strong>: also requires the <code>rsvg</code> package.</li>
+<li><strong>Multi-page PDF (paginated)</strong>: also requires the <code>qpdf</code> package, used to merge per-page PDFs into one. If <code>qpdf</code> is not installed, <code>save_plot()</code> falls back to writing a numbered series (<code>out_p01.pdf</code>, <code>out_p02.pdf</code>, …) and emits a warning.</li>
+</ul>
+<p>There is no headless-browser dependency.</p>
+</section>
+<section id="resolution-guide-for-png" class="level3">
+<h3 class="anchored" data-anchor-id="resolution-guide-for-png">Resolution guide for PNG</h3>
+<p><code>scale</code> is a raster-fidelity multiplier — it grows the PNG’s pixel count without changing the layout’s logical size. Vector formats (SVG / PDF) ignore <code>scale</code>; pass <code>width</code> to make a vector output denser instead.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><code>scale</code></th>
+<th>Effective DPI</th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>~72</td>
+<td>Quick preview</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>~144</td>
+<td>Standard web / screen (default)</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>~216</td>
+<td>Print quality</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>~288</td>
+<td>High-resolution print</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level3">
+<h3 class="anchored" data-anchor-id="examples">Examples</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>, <span class="at">label =</span> <span class="st">"study"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>)                          <span class="co"># natural</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>, <span class="at">width =</span> <span class="dv">1200</span>)            <span class="co"># display-scaled</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>, <span class="at">ratio =</span> <span class="dv">2</span>)               <span class="co"># 2:1 wide</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>, <span class="at">width =</span> <span class="dv">1200</span>, <span class="at">height =</span> <span class="dv">600</span>)  <span class="co"># explicit aspect</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>, <span class="at">ratio =</span> <span class="dv">2</span>, <span class="at">flex =</span> <span class="cn">FALSE</span>)     <span class="co"># no flex absorption</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.png"</span>, <span class="at">width =</span> <span class="dv">1200</span>, <span class="at">scale =</span> <span class="dv">3</span>)     <span class="co"># 3600 px PNG</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Long table — multi-page PDF (requires qpdf in Suggests)</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.pdf"</span>, <span class="at">paginate =</span> <span class="fu">paginate_letter</span>())</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Force a denser pagination on this render only</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/dense.pdf"</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>          <span class="at">paginate =</span> <span class="fu">paginate_spec</span>(<span class="at">rows =</span> <span class="dv">50</span>))</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Flatten a paginated spec for a single-image PNG without warning</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/single.png"</span>, <span class="at">paginate =</span> <span class="cn">NULL</span>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co"># SplitForest — extract one subview to a single file</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(split_p, <span class="st">"figures/male.svg"</span>, <span class="at">which =</span> <span class="st">"Male"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+</section>
+<section id="set_aspect_ratio" class="level2">
+<h2 class="anchored" data-anchor-id="set_aspect_ratio"><code>set_aspect_ratio()</code></h2>
+<p>Pin an aspect ratio on the spec itself, so every render — <code>save_plot()</code>, the htmlwidget, the interactive aspect slider — picks it up by default. Backed by two <code>WebSpec</code> fields:</p>
+<ul>
+<li><code>target_aspect</code> — the numeric ratio (<code>width / height</code>), or <code>NA_real_</code> for natural.</li>
+<li><code>target_aspect_anchor</code> — <code>"width"</code> / <code>"height"</code> / <code>"auto"</code>, controls how target dims fall out of <code>ratio</code>.</li>
+</ul>
+<p><code>save_plot(..., ratio = X, anchor = ...)</code> overrides the spec-level values for one render only.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set_aspect_ratio</span>(x, ratio, <span class="at">anchor =</span> <span class="fu">c</span>(<span class="st">"width"</span>, <span class="st">"height"</span>, <span class="st">"auto"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>x</code></td>
+<td><code>WebSpec</code> / htmlwidget / <code>tabviz_proxy</code></td>
+<td>The spec or live widget to modify.</td>
+</tr>
+<tr class="even">
+<td><code>ratio</code></td>
+<td><code>numeric(1)</code> / <code>NULL</code></td>
+<td>Target aspect ratio (<code>width / height</code>). <code>NULL</code> clears the target — equivalent to “render at natural aspect”.</td>
+</tr>
+<tr class="odd">
+<td><code>anchor</code></td>
+<td>choice</td>
+<td>Resolution rule when only <code>ratio</code> is given. <code>"width"</code> <em>(default)</em>: target width = natural width, target height = natural width / ratio. <code>"height"</code>: anchors height instead — wide ratios grow output width rather than shrinking row height. <code>"auto"</code>: picks based on whether the requested ratio is wider or taller than the spec’s natural aspect — readability-first; recommended.</td>
+</tr>
+</tbody>
+</table>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 2:1 wide, with row height preserved (output grows wider)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>spec <span class="sc">|&gt;</span> <span class="fu">set_aspect_ratio</span>(<span class="dv">2</span>, <span class="at">anchor =</span> <span class="st">"auto"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The in-widget aspect-ratio slider (in the toolbar’s zoom dropdown) drives the same fields live; its “Readable rows” toggle flips the anchor between <code>"width"</code> and <code>"auto"</code>. See <a href="../guide/interactivity.html#aspect-ratio-slider">Interactivity</a> for the full surface.</p>
+<hr>
+</section>
+<section id="tabviz_natural_dimensions" class="level2">
+<h2 class="anchored" data-anchor-id="tabviz_natural_dimensions"><code>tabviz_natural_dimensions()</code></h2>
+<p>Compute a spec’s natural width / height / aspect without rendering — useful for sizing Quarto / RMarkdown chunks.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz_natural_dimensions</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Returns a named list with three numeric scalars: <code>width</code>, <code>height</code>, <code>aspect</code> (= <code>width / height</code>). Accepts a <code>WebSpec</code> or an htmlwidget produced by <code>tabviz()</code> / <code>forest_plot()</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="st">"hr"</span>, <span class="st">"lo"</span>, <span class="st">"hi"</span>)))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>dims <span class="ot">&lt;-</span> <span class="fu">tabviz_natural_dimensions</span>(spec)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 8</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: !expr 8 / dims$aspect</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+</section>
+<section id="save_split_table" class="level2">
+<h2 class="anchored" data-anchor-id="save_split_table"><code>save_split_table()</code></h2>
+<p>Export every sub-plot in a <code>SplitForest</code> to a directory tree mirroring the split hierarchy. Each subview’s aspect contract is independent — <code>width</code> / <code>height</code> / <code>ratio</code> / <code>flex</code> apply per-subview.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save_split_table</span>(x, path,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">format =</span> <span class="fu">c</span>(<span class="st">"svg"</span>, <span class="st">"pdf"</span>, <span class="st">"png"</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">width =</span> <span class="cn">NULL</span>, <span class="at">height =</span> <span class="cn">NULL</span>, <span class="at">ratio =</span> <span class="cn">NULL</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">flex =</span> <span class="cn">TRUE</span>, <span class="at">scale =</span> <span class="dv">2</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">paginate =</span> <span class="cn">NULL</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                 ...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>x</code></td>
+<td><code>SplitForest</code> / htmlwidget</td>
+<td>required</td>
+<td>A split-forest container or a widget produced with <code>split_by</code>.</td>
+</tr>
+<tr class="even">
+<td><code>path</code></td>
+<td><code>character(1)</code></td>
+<td>required</td>
+<td>Output directory; created if it doesn’t exist.</td>
+</tr>
+<tr class="odd">
+<td><code>format</code></td>
+<td>choice</td>
+<td><code>"svg"</code></td>
+<td><code>"svg"</code>, <code>"pdf"</code>, or <code>"png"</code>.</td>
+</tr>
+<tr class="even">
+<td><code>width</code> / <code>height</code> / <code>ratio</code> / <code>flex</code> / <code>scale</code></td>
+<td>—</td>
+<td>as in <code>save_plot()</code></td>
+<td>Forwarded to <code>save_plot()</code> for each sub-plot.</td>
+</tr>
+<tr class="odd">
+<td><code>paginate</code></td>
+<td><code>PaginateSpec</code> / shortcut / <code>NULL</code></td>
+<td><code>NULL</code></td>
+<td>Override the per-spec pagination at the call site. Cascades into every subview. With <code>format = "pdf"</code>, each split leaf becomes one combined multi-page PDF (e.g.&nbsp;<code>path/Male.pdf</code> containing all of Male’s pages).</td>
+</tr>
+<tr class="even">
+<td><code>...</code></td>
+<td>—</td>
+<td>—</td>
+<td>Reserved for future format-specific options.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> a character vector of exported file paths, invisibly.</p>
+<section id="output-directory-structure" class="level3">
+<h3 class="anchored" data-anchor-id="output-directory-structure">Output directory structure</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Split</th>
+<th>Files</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>split_by = "region"</code></td>
+<td><code>path/North.svg</code>, <code>path/South.svg</code>, …</td>
+</tr>
+<tr class="even">
+<td><code>split_by = c("region", "age")</code></td>
+<td><code>path/North/North_Young.svg</code>, <code>path/North/North_Old.svg</code>, …</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="example" class="level3">
+<h3 class="anchored" data-anchor-id="example">Example</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>data <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tabviz</span>(<span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">split_table</span>(<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"sex"</span>, <span class="st">"age_group"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">save_split_table</span>(<span class="st">"output/plots"</span>, <span class="at">format =</span> <span class="st">"svg"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>save_plot()</code> itself accepts a <code>SplitForest</code> and dispatches to <code>save_split_table()</code> automatically — pass either a directory path or a path with an extension to choose the format.</p>
+</section>
+</section>
+<section id="related" class="level2">
+<h2 class="anchored" data-anchor-id="related">Related</h2>
+<ul>
+<li><a href="../reference/export.html">Export overview</a> — picking a format</li>
+<li><a href="../reference/split_table.html"><code>split_table()</code></a> — produce the <code>SplitForest</code> accepted here</li>
+<li><a href="../reference/themes.html">Themes</a> — print-oriented presets (<code>web_theme_jama()</code>, <code>web_theme_lancet()</code>, <code>web_theme_cochrane()</code>)</li>
+<li><a href="../reference/interaction.html#web_interaction_publication"><code>web_interaction_publication()</code></a> — quiet UI before exporting screenshots</li>
+</ul>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "save_plot()"</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tabviz)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>Export a tabviz widget, <span class="in">`WebSpec`</span>, or <span class="in">`SplitForest`</span> to a static SVG, PDF, or PNG.</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>The pipeline runs entirely in R: the spec is serialized to JSON, the bundled JavaScript SVG generator (<span class="in">`inst/js/svg-generator.js`</span>) is run via <span class="in">`V8`</span>, and PDF/PNG outputs are produced from that SVG via <span class="in">`rsvg`</span>.</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>::: {.callout-note title="Aspect-ratio first"}</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>As of v0.30, <span class="in">`save_plot()`</span> is **aspect-ratio first**: the output's *shape* is derived from the spec's natural dimensions, and <span class="in">`width`</span> / <span class="in">`height`</span> / <span class="in">`ratio`</span> are display / aspect levers — not size forcers. Three modes:</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Natural** — no <span class="in">`width`</span> / <span class="in">`height`</span> / <span class="in">`ratio`</span>. Renders at the spec's natural dimensions.</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Display-scaled** — exactly one of <span class="in">`width`</span> / <span class="in">`height`</span>. Same content, just scaled (SVG <span class="in">`viewBox`</span> keeps coordinates intact). Aspect ratio preserved.</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Aspect-changed** — both <span class="in">`width`</span> and <span class="in">`height`</span>, or <span class="in">`ratio`</span>. Triggers a relayout via the lever ladder. Flex-eligible columns (<span class="in">`flex = TRUE`</span>, the default for <span class="in">`viz_*`</span> / forest columns) absorb the width delta; row heights scale to absorb the height delta. Calculated, never SVG-stretched.</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="fu">## `save_plot()` {#save_plot}</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(x, file,</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>          <span class="at">width =</span> <span class="cn">NULL</span>, <span class="at">height =</span> <span class="cn">NULL</span>, <span class="at">ratio =</span> <span class="cn">NULL</span>,</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>          <span class="at">flex =</span> <span class="cn">TRUE</span>, <span class="at">scale =</span> <span class="dv">2</span>,</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>          <span class="at">which =</span> <span class="cn">NULL</span>, <span class="at">paginate =</span> <span class="cn">NULL</span>,</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>          ...)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`x`</span> <span class="pp">|</span> <span class="in">`WebSpec`</span> / htmlwidget / <span class="in">`SplitForest`</span> <span class="pp">|</span> required <span class="pp">|</span> The plot to export. <span class="in">`SplitForest`</span> is dispatched to <span class="in">`save_split_table()`</span> unless <span class="in">`which`</span> is set. <span class="pp">|</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`file`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> required <span class="pp">|</span> Output file path (or directory for <span class="in">`SplitForest`</span> without <span class="in">`which`</span>). Extension determines format: <span class="in">`.svg`</span>, <span class="in">`.pdf`</span>, or <span class="in">`.png`</span>. <span class="pp">|</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`width`</span> <span class="pp">|</span> <span class="in">`numeric(1)`</span> / <span class="in">`NULL`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Display width in pixels. <span class="in">`NULL`</span> preserves natural. With <span class="in">`height`</span> or <span class="in">`ratio`</span>, triggers Mode 3 relayout. <span class="pp">|</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`height`</span> <span class="pp">|</span> <span class="in">`numeric(1)`</span> / <span class="in">`NULL`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Display height in pixels. <span class="in">`NULL`</span> preserves natural. With <span class="in">`width`</span> or <span class="in">`ratio`</span>, triggers Mode 3 relayout. <span class="pp">|</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`ratio`</span> <span class="pp">|</span> <span class="in">`numeric(1)`</span> / <span class="in">`NULL`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Target aspect ratio (<span class="in">`width / height`</span>). When set with one of <span class="in">`width`</span> / <span class="in">`height`</span>, the other is computed. When set alone, target width = natural width and target height = natural width / ratio. Falls back to the spec's <span class="in">`target_aspect`</span> (set via <span class="co">[</span><span class="ot">`set_aspect_ratio()`</span><span class="co">](#set_aspect_ratio)</span>) when <span class="in">`NULL`</span>. Mutually exclusive with passing both <span class="in">`width`</span> and <span class="in">`height`</span>. <span class="pp">|</span></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`flex`</span> <span class="pp">|</span> <span class="in">`logical`</span> / <span class="in">`numeric(1)`</span> <span class="pp">|</span> <span class="in">`TRUE`</span> <span class="pp">|</span> Lever-ladder cap for flex-column absorption. <span class="in">`TRUE`</span> = cap of 2 (each flex column may grow / shrink within <span class="in">`[0.5×, 2×]`</span> of natural). <span class="in">`FALSE`</span> = disable flex absorption (cap of 1; aspect change goes entirely through row-height + non-flex column scaling). A numeric <span class="in">`N &gt;= 1`</span> sets a custom cap (e.g. <span class="in">`1.5`</span> is conservative; <span class="in">`Inf`</span> removes the cap). <span class="pp">|</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`scale`</span> <span class="pp">|</span> <span class="in">`numeric(1)`</span> <span class="pp">|</span> <span class="in">`2`</span> <span class="pp">|</span> Raster fidelity multiplier for PNG output (2 = retina). **PNG-only**: passing <span class="in">`scale`</span> to a <span class="in">`.svg`</span> or <span class="in">`.pdf`</span> save warns. <span class="pp">|</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`which`</span> <span class="pp">|</span> string / integer / <span class="in">`NULL`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> For <span class="in">`SplitForest`</span> only. <span class="in">`NULL`</span> (default) writes every subview into a directory; pass a key string (<span class="in">`"Male__Young"`</span>) or 1-based integer index to extract a single subview to <span class="in">`file`</span> and demote the path to a single-file write. <span class="pp">|</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`paginate`</span> <span class="pp">|</span> <span class="in">`PaginateSpec`</span> / shortcut / <span class="in">`NULL`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Override the spec's pagination at the call site. Accepts <span class="in">`NULL`</span> (off), <span class="in">`TRUE`</span>, a positive integer, or a <span class="in">`PaginateSpec`</span> from <span class="co">[</span><span class="ot">`paginate_spec()`</span><span class="co">](columns.qmd#paginate)</span>. When set on a <span class="in">`.pdf`</span> save, emits a multi-page PDF; on a <span class="in">`.png`</span> / <span class="in">`.svg`</span> save, warns and flattens (use <span class="in">`paginate = NULL`</span> to silence). See <span class="co">[</span><span class="ot">Pagination in the Export guide</span><span class="co">](../guide/export.qmd#pagination)</span>. <span class="pp">|</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`...`</span> <span class="pp">|</span> — <span class="pp">|</span> — <span class="pp">|</span> Reserved for future format-specific options. <span class="pp">|</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>**Returns:** the output <span class="in">`file`</span> path, invisibly. For paginated PDF output without <span class="in">`qpdf`</span>, returns the character vector of numbered-series paths.</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="fu">### Sizing modes</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`width`</span> <span class="pp">|</span> <span class="in">`height`</span> <span class="pp">|</span> <span class="in">`ratio`</span> <span class="pp">|</span> Mode <span class="pp">|</span> Behavior <span class="pp">|</span></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|---|</span></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> — <span class="pp">|</span> — <span class="pp">|</span> — <span class="pp">|</span> **Natural** <span class="pp">|</span> Render at the spec's natural dimensions. <span class="pp">|</span></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> set <span class="pp">|</span> — <span class="pp">|</span> — <span class="pp">|</span> **Display-scaled** <span class="pp">|</span> Render at natural; SVG root width = requested. Height computed from natural aspect. <span class="pp">|</span></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> — <span class="pp">|</span> set <span class="pp">|</span> — <span class="pp">|</span> **Display-scaled** <span class="pp">|</span> Render at natural; SVG root height = requested. Width computed from natural aspect. <span class="pp">|</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> set <span class="pp">|</span> set <span class="pp">|</span> — <span class="pp">|</span> **Aspect-changed** <span class="pp">|</span> Relayout: target aspect = <span class="in">`width / height`</span>. Flex columns absorb width delta (capped at <span class="in">`flex`</span>); row heights scale for height delta. <span class="pp">|</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> set <span class="pp">|</span> — <span class="pp">|</span> set <span class="pp">|</span> **Aspect-changed** <span class="pp">|</span> Target height = <span class="in">`width / ratio`</span>. <span class="pp">|</span></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> — <span class="pp">|</span> set <span class="pp">|</span> set <span class="pp">|</span> **Aspect-changed** <span class="pp">|</span> Target width = <span class="in">`height * ratio`</span>. <span class="pp">|</span></span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> — <span class="pp">|</span> — <span class="pp">|</span> set <span class="pp">|</span> **Aspect-changed** <span class="pp">|</span> Target width = natural; target height = natural width / ratio. <span class="pp">|</span></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> set <span class="pp">|</span> set <span class="pp">|</span> set <span class="pp">|</span> **Error** <span class="pp">|</span> Over-specified — pick at most two. <span class="pp">|</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>The <span class="in">`flex`</span> argument controls what happens **only in Aspect-changed mode**: it caps how far each flex-eligible column may stretch before the layout falls back to scaling non-flex columns and row heights. Default-natural and display-scaled renders are unaffected by <span class="in">`flex`</span>.</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a><span class="fu">### Dependencies</span></span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**SVG**: <span class="in">`V8`</span> (always required for the generator).</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**PDF / PNG**: also requires the <span class="in">`rsvg`</span> package.</span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Multi-page PDF (paginated)**: also requires the <span class="in">`qpdf`</span> package, used to merge per-page PDFs into one. If <span class="in">`qpdf`</span> is not installed, <span class="in">`save_plot()`</span> falls back to writing a numbered series (<span class="in">`out_p01.pdf`</span>, <span class="in">`out_p02.pdf`</span>, …) and emits a warning.</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>There is no headless-browser dependency.</span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a><span class="fu">### Resolution guide for PNG</span></span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a><span class="in">`scale`</span> is a raster-fidelity multiplier — it grows the PNG's pixel count without changing the layout's logical size. Vector formats (SVG / PDF) ignore <span class="in">`scale`</span>; pass <span class="in">`width`</span> to make a vector output denser instead.</span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`scale`</span> <span class="pp">|</span> Effective DPI <span class="pp">|</span> Use case <span class="pp">|</span></span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 1 <span class="pp">|</span> ~72 <span class="pp">|</span> Quick preview <span class="pp">|</span></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 2 <span class="pp">|</span> ~144 <span class="pp">|</span> Standard web / screen (default) <span class="pp">|</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 3 <span class="pp">|</span> ~216 <span class="pp">|</span> Print quality <span class="pp">|</span></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> 4 <span class="pp">|</span> ~288 <span class="pp">|</span> High-resolution print <span class="pp">|</span></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a><span class="fu">### Examples</span></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">forest_plot</span>(data, <span class="at">point =</span> <span class="st">"hr"</span>, <span class="at">lower =</span> <span class="st">"lo"</span>, <span class="at">upper =</span> <span class="st">"hi"</span>, <span class="at">label =</span> <span class="st">"study"</span>)</span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>)                          <span class="co"># natural</span></span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>, <span class="at">width =</span> <span class="dv">1200</span>)            <span class="co"># display-scaled</span></span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>, <span class="at">ratio =</span> <span class="dv">2</span>)               <span class="co"># 2:1 wide</span></span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>, <span class="at">width =</span> <span class="dv">1200</span>, <span class="at">height =</span> <span class="dv">600</span>)  <span class="co"># explicit aspect</span></span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.svg"</span>, <span class="at">ratio =</span> <span class="dv">2</span>, <span class="at">flex =</span> <span class="cn">FALSE</span>)     <span class="co"># no flex absorption</span></span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.png"</span>, <span class="at">width =</span> <span class="dv">1200</span>, <span class="at">scale =</span> <span class="dv">3</span>)     <span class="co"># 3600 px PNG</span></span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a><span class="co"># Long table — multi-page PDF (requires qpdf in Suggests)</span></span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/forest.pdf"</span>, <span class="at">paginate =</span> <span class="fu">paginate_letter</span>())</span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a><span class="co"># Force a denser pagination on this render only</span></span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/dense.pdf"</span>,</span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a>          <span class="at">paginate =</span> <span class="fu">paginate_spec</span>(<span class="at">rows =</span> <span class="dv">50</span>))</span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a><span class="co"># Flatten a paginated spec for a single-image PNG without warning</span></span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(p, <span class="st">"figures/single.png"</span>, <span class="at">paginate =</span> <span class="cn">NULL</span>)</span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a><span class="co"># SplitForest — extract one subview to a single file</span></span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a><span class="fu">save_plot</span>(split_p, <span class="st">"figures/male.svg"</span>, <span class="at">which =</span> <span class="st">"Male"</span>)</span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a><span class="fu">## `set_aspect_ratio()` {#set_aspect_ratio}</span></span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>Pin an aspect ratio on the spec itself, so every render — <span class="in">`save_plot()`</span>, the htmlwidget, the interactive aspect slider — picks it up by default. Backed by two <span class="in">`WebSpec`</span> fields:</span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`target_aspect`</span> — the numeric ratio (<span class="in">`width / height`</span>), or <span class="in">`NA_real_`</span> for natural.</span>
+<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span><span class="in">`target_aspect_anchor`</span> — <span class="in">`"width"`</span> / <span class="in">`"height"`</span> / <span class="in">`"auto"`</span>, controls how target dims fall out of <span class="in">`ratio`</span>.</span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a><span class="in">`save_plot(..., ratio = X, anchor = ...)`</span> overrides the spec-level values for one render only.</span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a><span class="fu">set_aspect_ratio</span>(x, ratio, <span class="at">anchor =</span> <span class="fu">c</span>(<span class="st">"width"</span>, <span class="st">"height"</span>, <span class="st">"auto"</span>))</span>
+<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|</span></span>
+<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`x`</span> <span class="pp">|</span> <span class="in">`WebSpec`</span> / htmlwidget / <span class="in">`tabviz_proxy`</span> <span class="pp">|</span> The spec or live widget to modify. <span class="pp">|</span></span>
+<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`ratio`</span> <span class="pp">|</span> <span class="in">`numeric(1)`</span> / <span class="in">`NULL`</span> <span class="pp">|</span> Target aspect ratio (<span class="in">`width / height`</span>). <span class="in">`NULL`</span> clears the target — equivalent to "render at natural aspect". <span class="pp">|</span></span>
+<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`anchor`</span> <span class="pp">|</span> choice <span class="pp">|</span> Resolution rule when only <span class="in">`ratio`</span> is given. <span class="in">`"width"`</span> *(default)*: target width = natural width, target height = natural width / ratio. <span class="in">`"height"`</span>: anchors height instead — wide ratios grow output width rather than shrinking row height. <span class="in">`"auto"`</span>: picks based on whether the requested ratio is wider or taller than the spec's natural aspect — readability-first; recommended. <span class="pp">|</span></span>
+<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a><span class="co"># 2:1 wide, with row height preserved (output grows wider)</span></span>
+<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a>spec <span class="sc">|&gt;</span> <span class="fu">set_aspect_ratio</span>(<span class="dv">2</span>, <span class="at">anchor =</span> <span class="st">"auto"</span>)</span>
+<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a>The in-widget aspect-ratio slider (in the toolbar's zoom dropdown) drives the same fields live; its "Readable rows" toggle flips the anchor between <span class="in">`"width"`</span> and <span class="in">`"auto"`</span>. See <span class="co">[</span><span class="ot">Interactivity</span><span class="co">](../guide/interactivity.qmd#aspect-ratio-slider)</span> for the full surface.</span>
+<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a><span class="fu">## `tabviz_natural_dimensions()` {#tabviz_natural_dimensions}</span></span>
+<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a>Compute a spec's natural width / height / aspect without rendering — useful for sizing Quarto / RMarkdown chunks.</span>
+<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a><span class="fu">tabviz_natural_dimensions</span>(x)</span>
+<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a>Returns a named list with three numeric scalars: <span class="in">`width`</span>, <span class="in">`height`</span>, <span class="in">`aspect`</span> (= <span class="in">`width / height`</span>). Accepts a <span class="in">`WebSpec`</span> or an htmlwidget produced by <span class="in">`tabviz()`</span> / <span class="in">`forest_plot()`</span>.</span>
+<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">tabviz</span>(data, <span class="at">label =</span> <span class="st">"study"</span>, <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="st">"hr"</span>, <span class="st">"lo"</span>, <span class="st">"hi"</span>)))</span>
+<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a>dims <span class="ot">&lt;-</span> <span class="fu">tabviz_natural_dimensions</span>(spec)</span>
+<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 8</span></span>
+<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: !expr 8 / dims$aspect</span></span>
+<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a><span class="fu">## `save_split_table()` {#save_split_table}</span></span>
+<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a>Export every sub-plot in a <span class="in">`SplitForest`</span> to a directory tree mirroring the split hierarchy. Each subview's aspect contract is independent — <span class="in">`width`</span> / <span class="in">`height`</span> / <span class="in">`ratio`</span> / <span class="in">`flex`</span> apply per-subview.</span>
+<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a><span class="fu">save_split_table</span>(x, path,</span>
+<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>                 <span class="at">format =</span> <span class="fu">c</span>(<span class="st">"svg"</span>, <span class="st">"pdf"</span>, <span class="st">"png"</span>),</span>
+<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a>                 <span class="at">width =</span> <span class="cn">NULL</span>, <span class="at">height =</span> <span class="cn">NULL</span>, <span class="at">ratio =</span> <span class="cn">NULL</span>,</span>
+<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a>                 <span class="at">flex =</span> <span class="cn">TRUE</span>, <span class="at">scale =</span> <span class="dv">2</span>,</span>
+<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a>                 <span class="at">paginate =</span> <span class="cn">NULL</span>,</span>
+<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a>                 ...)</span>
+<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Argument <span class="pp">|</span> Type <span class="pp">|</span> Default <span class="pp">|</span> Description <span class="pp">|</span></span>
+<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|</span></span>
+<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`x`</span> <span class="pp">|</span> <span class="in">`SplitForest`</span> / htmlwidget <span class="pp">|</span> required <span class="pp">|</span> A split-forest container or a widget produced with <span class="in">`split_by`</span>. <span class="pp">|</span></span>
+<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`path`</span> <span class="pp">|</span> <span class="in">`character(1)`</span> <span class="pp">|</span> required <span class="pp">|</span> Output directory; created if it doesn't exist. <span class="pp">|</span></span>
+<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`format`</span> <span class="pp">|</span> choice <span class="pp">|</span> <span class="in">`"svg"`</span> <span class="pp">|</span> <span class="in">`"svg"`</span>, <span class="in">`"pdf"`</span>, or <span class="in">`"png"`</span>. <span class="pp">|</span></span>
+<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`width`</span> / <span class="in">`height`</span> / <span class="in">`ratio`</span> / <span class="in">`flex`</span> / <span class="in">`scale`</span> <span class="pp">|</span> — <span class="pp">|</span> as in <span class="in">`save_plot()`</span> <span class="pp">|</span> Forwarded to <span class="in">`save_plot()`</span> for each sub-plot. <span class="pp">|</span></span>
+<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`paginate`</span> <span class="pp">|</span> <span class="in">`PaginateSpec`</span> / shortcut / <span class="in">`NULL`</span> <span class="pp">|</span> <span class="in">`NULL`</span> <span class="pp">|</span> Override the per-spec pagination at the call site. Cascades into every subview. With <span class="in">`format = "pdf"`</span>, each split leaf becomes one combined multi-page PDF (e.g. <span class="in">`path/Male.pdf`</span> containing all of Male's pages). <span class="pp">|</span></span>
+<span id="cb9-182"><a href="#cb9-182" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`...`</span> <span class="pp">|</span> — <span class="pp">|</span> — <span class="pp">|</span> Reserved for future format-specific options. <span class="pp">|</span></span>
+<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a>**Returns:** a character vector of exported file paths, invisibly.</span>
+<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a><span class="fu">### Output directory structure</span></span>
+<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Split <span class="pp">|</span> Files <span class="pp">|</span></span>
+<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`split_by = "region"`</span> <span class="pp">|</span> <span class="in">`path/North.svg`</span>, <span class="in">`path/South.svg`</span>, … <span class="pp">|</span></span>
+<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`split_by = c("region", "age")`</span> <span class="pp">|</span> <span class="in">`path/North/North_Young.svg`</span>, <span class="in">`path/North/North_Old.svg`</span>, … <span class="pp">|</span></span>
+<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a><span class="fu">### Example</span></span>
+<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb9-196"><a href="#cb9-196" aria-hidden="true" tabindex="-1"></a>data <span class="sc">|&gt;</span></span>
+<span id="cb9-197"><a href="#cb9-197" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tabviz</span>(<span class="at">label =</span> <span class="st">"study"</span>,</span>
+<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a>         <span class="at">columns =</span> <span class="fu">list</span>(<span class="fu">viz_forest</span>(<span class="at">point =</span> <span class="st">"or"</span>, <span class="at">lower =</span> <span class="st">"lower"</span>, <span class="at">upper =</span> <span class="st">"upper"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a>  <span class="fu">split_table</span>(<span class="at">by =</span> <span class="fu">c</span>(<span class="st">"sex"</span>, <span class="st">"age_group"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a>  <span class="fu">save_split_table</span>(<span class="st">"output/plots"</span>, <span class="at">format =</span> <span class="st">"svg"</span>)</span>
+<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-203"><a href="#cb9-203" aria-hidden="true" tabindex="-1"></a><span class="in">`save_plot()`</span> itself accepts a <span class="in">`SplitForest`</span> and dispatches to <span class="in">`save_split_table()`</span> automatically — pass either a directory path or a path with an extension to choose the format.</span>
+<span id="cb9-204"><a href="#cb9-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a><span class="fu">## Related</span></span>
+<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Export overview</span><span class="co">](export.qmd)</span> — picking a format</span>
+<span id="cb9-208"><a href="#cb9-208" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">`split_table()`</span><span class="co">](split_table.qmd)</span> — produce the <span class="in">`SplitForest`</span> accepted here</span>
+<span id="cb9-209"><a href="#cb9-209" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Themes</span><span class="co">](themes.qmd)</span> — print-oriented presets (<span class="in">`web_theme_jama()`</span>, <span class="in">`web_theme_lancet()`</span>, <span class="in">`web_theme_cochrane()`</span>)</span>
+<span id="cb9-210"><a href="#cb9-210" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">`web_interaction_publication()`</span><span class="co">](interaction.qmd#web_interaction_publication)</span> — quiet UI before exporting screenshots</span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
