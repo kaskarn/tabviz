@@ -4,6 +4,20 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.1.3 — 2026-05-14
+
+### Fixed
+- **Dropdown popovers now clamp to the viewport** ([GH #5](https://github.com/kaskarn/tabviz/issues/5)).
+  `autoPosition` (the Svelte action driving the download / theme-switcher /
+  export-fallback popovers) gained a second-pass safety net: after the
+  first-pass placement applies, it re-measures the dropdown's actual rendered
+  rect and clamps any edge that overflows the viewport inward by 8px. Catches
+  the cases the first-pass math can miss — late-loading webfonts shifting the
+  dropdown's intrinsic width, containing-block leaks from a transformed
+  ancestor, container CSS that constrains width differently than measured.
+  The clamp math is extracted as a pure function (`computeViewportClamp`) with
+  9 unit tests covering all edge directions.
+
 ## 0.1.2 — 2026-05-14
 
 ### Fixed

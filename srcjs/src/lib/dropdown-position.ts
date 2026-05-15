@@ -115,6 +115,54 @@ export function calculateDropdownPosition(
 }
 
 /**
+ * Compute a viewport-clamp adjustment for an already-positioned rect.
+ * Returns the style overrides needed to keep the rect inside the
+ * viewport by `padding` on each side; empty object if the rect is
+ * already in-bounds.
+ *
+ * Pure function — extracted so the second-pass safety net in
+ * `autoPosition` is unit-testable without a DOM (GH #5).
+ *
+ * Style overrides use the same axis-pair contract as
+ * `calculateDropdownPosition`: setting `left` clears `right` on that
+ * axis (and vice versa); same for top/bottom.
+ */
+export interface ClampOverride {
+  top?: number | "";
+  bottom?: number | "";
+  left?: number | "";
+  right?: number | "";
+}
+
+export function computeViewportClamp(
+  rect: { left: number; right: number; top: number; bottom: number; width: number; height: number },
+  viewport: { width: number; height: number },
+  padding: number = 8,
+): ClampOverride {
+  const out: ClampOverride = {};
+
+  // Horizontal axis.
+  if (rect.right > viewport.width - padding) {
+    out.right = "";
+    out.left = Math.max(padding, viewport.width - rect.width - padding);
+  } else if (rect.left < padding) {
+    out.left = "";
+    out.right = Math.max(padding, viewport.width - rect.width - padding);
+  }
+
+  // Vertical axis.
+  if (rect.bottom > viewport.height - padding) {
+    out.bottom = "";
+    out.top = Math.max(padding, viewport.height - rect.height - padding);
+  } else if (rect.top < padding) {
+    out.top = "";
+    out.bottom = Math.max(padding, viewport.height - rect.height - padding);
+  }
+
+  return out;
+}
+
+/**
  * Svelte action for auto-positioning dropdowns using fixed positioning.
  * Repositions on scroll/resize so the popover tracks its trigger.
  *
@@ -135,6 +183,35 @@ export function autoPosition(
   node: HTMLElement,
   params: { triggerEl: HTMLElement | null; gap?: number; align?: 'start' | 'end' }
 ) {
+
+  /**
+   * Clamp the dropdown's final on-screen rect inside the viewport.
+   * Runs after the first-pass placement applies — re-measures the actual
+   * rendered rect and nudges left/right/top/bottom inward if any edge
+   * pokes past viewport - padding.
+   *
+   * The first-pass math (`calculateDropdownPosition`) handles the common
+   * cases (trigger near right edge → flip to left-align, etc.), but it
+   * relies on the pre-position `dropdownRect` measurement and on the
+   * assumption that the ancestor chain is containing-block-free. In a
+   * few edge cases — fullscreen-modal containing block leaking through
+   * to a `position: fixed` descendant, late-loading webfonts shifting
+   * the dropdown's intrinsic width, container CSS forcing a narrower
+   * width than measured — the dropdown can still overflow. This clamp
+   * is the safety net that makes the popover ALWAYS visible regardless
+   * of which path failed (GH #5).
+   */
+  function clampToViewport(): void {
+    const rect = node.getBoundingClientRect();
+    const override = computeViewportClamp(
+      rect,
+      { width: window.innerWidth, height: window.innerHeight },
+    );
+    if (override.top !== undefined) node.style.top = override.top === "" ? "" : `${override.top}px`;
+    if (override.bottom !== undefined) node.style.bottom = override.bottom === "" ? "" : `${override.bottom}px`;
+    if (override.left !== undefined) node.style.left = override.left === "" ? "" : `${override.left}px`;
+    if (override.right !== undefined) node.style.right = override.right === "" ? "" : `${override.right}px`;
+  }
 
   function applyPosition() {
     if (!params.triggerEl) return;
@@ -168,6 +245,10 @@ export function autoPosition(
       node.style.maxHeight = '';
       node.style.overflowY = '';
     }
+
+    // Second-pass clamp. Schedule via rAF so the browser has applied the
+    // first-pass styles before we re-measure the rendered rect.
+    requestAnimationFrame(clampToViewport);
   }
 
   // rAF-batch reposition requests so scroll/resize bursts are cheap.
