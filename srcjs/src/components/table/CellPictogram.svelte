@@ -1,6 +1,20 @@
+<script lang="ts" module>
+  // Module-scoped counter for unique clip-path ids across the page. The
+  // half-fill glyph (`slot.state === "half"`) uses a <clipPath> by id;
+  // without a per-instance id, multiple half-glyph cells on the same page
+  // would emit duplicate ids (HTML invalid, and some renderers — notably
+  // headless V8 + rsvg in our static-export path — resolve url(#id) to
+  // the FIRST match anywhere in the document, causing visual drift).
+  let halfClipSeq = 0;
+</script>
+
 <script lang="ts">
   import type { CellStyle, PictogramColumnOptions } from "$types";
   import { resolveGlyph, type ResolvedGlyph } from "$lib/glyph-registry";
+
+  // One id per component instance (plain `let` runs once at mount; not
+  // reactive, no $state — the id is stable across re-renders).
+  const halfClipBase = `pic-half-${++halfClipSeq}`;
 
   interface Props {
     value: number | string | undefined | null;
@@ -144,9 +158,23 @@
             {#if slot.state === "full"}
               <path d={resolvedGlyph.def.path} fill={filledColor} stroke="none" />
             {:else if slot.state === "half"}
-              <!-- half: render as full underneath, then mask right half with empty -->
-              <path d={resolvedGlyph.def.path} fill={filledColor} stroke="none" />
-              <rect x="12" y="0" width="12" height="24" fill={emptyColor} opacity="0.7" />
+              <!-- half: empty outline underneath, then a left-half-clipped
+                   filled path on top. The clipPath id is per-instance
+                   (`halfClipBase`) + per-slot so multiple half-glyphs in
+                   the same row don't collide and multiple rows on the
+                   page don't share an id. viewBox-aware: parse
+                   `${minX} ${minY} ${width} ${height}` and clip to the
+                   left HALF of the viewBox so this works for any glyph
+                   viewBox (not just "0 0 24 24"). -->
+              {@const vb = resolvedGlyph.def.viewBox.split(/\s+/).map(Number)}
+              {@const clipId = `${halfClipBase}-${i}`}
+              <defs>
+                <clipPath id={clipId}>
+                  <rect x={vb[0]} y={vb[1]} width={vb[2] / 2} height={vb[3]} />
+                </clipPath>
+              </defs>
+              <path d={resolvedGlyph.def.path} fill="none" stroke={emptyColor} stroke-width="1.5" />
+              <path d={resolvedGlyph.def.path} fill={filledColor} stroke="none" clip-path="url(#{clipId})" />
             {:else}
               <path d={resolvedGlyph.def.path} fill="none" stroke={emptyColor} stroke-width="1.5" />
             {/if}

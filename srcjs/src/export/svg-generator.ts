@@ -3585,10 +3585,31 @@ function renderUnifiedTableRow(
                   `<path d="${def.path}" fill="${filledColor}" stroke="none"/></svg>`
                 );
               } else if (slot.state === "half") {
+                // Half-fill: empty outline underneath, then a left-half-clipped
+                // filled path on top. Mirrors CellPictogram.svelte. The
+                // previous translucent-rect-overlay approach blended with the
+                // cell background, producing the GH-reported artifact on
+                // non-white themes; this approach is bg-independent.
+                //
+                // viewBox-aware clip: parse the viewBox and clip to the left
+                // half so the technique works for any glyph viewBox (not just
+                // `0 0 24 24`). The clipPath id includes the row index, the
+                // slot index, and a path-hash to keep it unique across rows
+                // and glyphs in the same SVG document.
+                const vb = def.viewBox.split(/\s+/).map(Number);
+                const halfW = vb[2] / 2;
+                // clipId scoped to (row.id, column.id, slot-index, path-hash)
+                // so multiple half-glyph cells in the same SVG don't collide
+                // on the document-wide id namespace.
+                const pathHash = (def.path.length * 31) >>> 0;
+                const safeRow = String(row.id).replace(/[^A-Za-z0-9_-]/g, "_");
+                const clipId = `pic-half-${safeRow}-${col.id}-${i}-${pathHash}`;
                 lines.push(
                   `<svg x="${sx}" y="${sy}" width="${glyphPx}" height="${glyphPx}" viewBox="${def.viewBox}">` +
-                  `<path d="${def.path}" fill="${filledColor}" stroke="none"/>` +
-                  `<rect x="12" y="0" width="12" height="24" fill="${emptyColor}" opacity="0.7"/></svg>`
+                  `<defs><clipPath id="${clipId}"><rect x="${vb[0]}" y="${vb[1]}" width="${halfW}" height="${vb[3]}"/></clipPath></defs>` +
+                  `<path d="${def.path}" fill="none" stroke="${emptyColor}" stroke-width="1.5"/>` +
+                  `<path d="${def.path}" fill="${filledColor}" stroke="none" clip-path="url(#${clipId})"/>` +
+                  `</svg>`
                 );
               } else {
                 lines.push(

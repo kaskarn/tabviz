@@ -4,6 +4,23 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.1.4 — 2026-05-15
+
+### Fixed
+- **Half-fill glyph (`col_pictogram(half_glyphs = TRUE)`) rendered as a full
+  star with a translucent gray rectangle over the right half — visibly
+  artifacted on any non-white theme background.** Both the live widget
+  (`CellPictogram.svelte`) and the SVG export (`export/svg-generator.ts`)
+  were doing the same `<rect>`-with-opacity overlay trick, whose
+  appearance depended on the cell background color underneath. Replaced
+  with a `<clipPath>`-based approach: empty outline rendered underneath,
+  filled path on top clipped to the left half of the viewBox. The result
+  is bg-color independent, viewBox-aware (works for any glyph viewBox,
+  not just `0 0 24 24`), and produces a proper "half star" silhouette.
+  `<clipPath>` ids are scoped per component instance (live) and per
+  `(row.id, column.id, slot, path-hash)` (SVG export) to keep the
+  document-wide id namespace clean.
+
 ## 0.1.3 — 2026-05-14
 
 ### Fixed
