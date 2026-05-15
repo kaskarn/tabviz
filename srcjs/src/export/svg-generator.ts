@@ -326,24 +326,16 @@ function calculateSvgAutoWidths(
       continue;
     }
 
-    // Fixed-width columns keep their width, but if the header is explicitly
-    // shown and wouldn't fit, grow the column to match (keeps SVG export in
-    // sync with the web view's header-fit measurement).
+    // Explicit numeric width is a hard pin — respect the author's intent.
+    // Earlier behaviour silently auto-grew the column past `col.width` when
+    // the header text wouldn't fit at that size, treating `width = N` as a
+    // floor rather than a pin (GH #6). That broke WYSIWYG between the spec
+    // and the SVG export, and made it impossible to author a deliberately
+    // narrow column with a long header. The new contract: `width = N`
+    // means exactly N pixels; headers that don't fit clip (or wrap, if
+    // `wrap = TRUE` is set on the column). `width = "auto"` / `NULL` /
+    // `NA` continue to fall through to the measurement loop below.
     if (col.width !== "auto" && col.width !== null && col.width !== undefined) {
-      if (
-        typeof col.width === "number" &&
-        col.header &&
-        resolveShowHeader(col.showHeader, col.header)
-      ) {
-        const pad = isVizType(col.type) ? VIZ_MARGIN * 2 : cellPadding;
-        const headerWidth = Math.ceil(
-          estimateTextWidth(col.header, headerFontSize, headerWeight) +
-            pad + TEXT_MEASUREMENT.RENDERING_BUFFER,
-        );
-        if (headerWidth > col.width) {
-          widths.set(col.id, Math.min(AUTO_WIDTH.MAX, headerWidth));
-        }
-      }
       continue;
     }
 

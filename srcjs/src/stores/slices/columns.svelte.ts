@@ -537,19 +537,15 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
     function measureLeafColumn(col: ColumnSpec) {
       if (userResizedIds.has(col.id)) return;
 
+      // Explicit numeric width is a hard pin (GH #6). The old behaviour
+      // silently auto-grew the column past `col.width` when the header
+      // wouldn't fit at that size, treating it as a floor rather than a
+      // pin. That meant authors couldn't ship a deliberately-narrow
+      // column with a long header (the header would expand the column
+      // out from under them), AND the live widget would render at one
+      // width while `save_plot()` rendered at another. Kept in lockstep
+      // with `calculateSvgAutoWidths` in svg-generator.ts.
       if (typeof col.width === "number") {
-        if (resolveShowHeader(col.showHeader, col.header) && col.header) {
-          ctx!.font = headerFont;
-          const isViz = col.type === "forest" || col.type === "viz_bar" ||
-                        col.type === "viz_boxplot" || col.type === "viz_violin";
-          const pad = isViz ? VIZ_MARGIN * 2 : cellPadding;
-          const headerWidth = Math.ceil(
-            ctx!.measureText(col.header).width + pad + TEXT_MEASUREMENT.RENDERING_BUFFER,
-          );
-          if (headerWidth > col.width) {
-            target[col.id] = Math.min(AUTO_WIDTH.MAX, headerWidth);
-          }
-        }
         return;
       }
 

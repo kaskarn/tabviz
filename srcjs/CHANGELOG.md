@@ -4,6 +4,25 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.1.5 — 2026-05-15
+
+### Fixed
+- **Explicit `col_text(..., width = N)` is now a hard pin.** Previously, if
+  the column header text was estimated wider than `N`, both
+  `calculateSvgAutoWidths` (SVG export) and `measureLeafColumn`
+  (live widget store) silently auto-grew the column to fit the header —
+  treating `width = N` as a floor rather than a pin. That broke WYSIWYG
+  between the spec and the export, and made it impossible to author a
+  deliberately-narrow column with a long header (the header would push
+  the column out from under the author). The new contract: `width = N`
+  means exactly N pixels; headers that don't fit clip via the existing
+  `text-overflow: ellipsis` CSS (or wrap, when `wrap = TRUE` is set).
+  `width = "auto"` / `NULL` / `NA` continue to auto-measure. Partial
+  context for [GH #6](https://github.com/kaskarn/tabviz/issues/6) —
+  the remaining "downloaded plot layout differs" symptom needs the
+  reporter's clarification on which export path (`save_plot()` vs the
+  in-widget Download button), tracked separately on the issue.
+
 ## 0.1.4 — 2026-05-15
 
 ### Fixed
