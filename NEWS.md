@@ -1,5 +1,41 @@
 # tabviz (development)
 
+## Bug fixes
+
+* **`col_pictogram(half_glyphs = TRUE)` no longer paints a gray box
+  over the partial star.** The half-glyph state was rendering as a
+  fully-filled glyph with a translucent gray `<rect>` over the right
+  half — its appearance depended on whatever the cell background was,
+  producing a visible artifact on the alt-row striping and on any
+  non-white theme. Replaced with a `<clipPath>`-based technique
+  (empty outline underneath, left-half-clipped filled path on top)
+  that's background-color independent and viewBox-aware.
+  Fix mirrored in both the live widget and the static SVG / PDF /
+  PNG / PPTx export.
+
+* **Dropdown popovers now clamp to the viewport.** The download,
+  theme-switcher, export-fallback, and view-source popovers gained a
+  second-pass safety net: after the first-pass placement applies, the
+  Svelte action re-measures the rendered rect and clamps any edge
+  that pokes past viewport-padding inward by 8px. Catches the cases
+  the first-pass math can miss (late-loading webfonts, containing-
+  block leaks from a transformed ancestor, post-mount size shifts).
+
+* **JAMA theme: column-header hover state is readable.** The hover
+  background was using `theme$divider$subtle`, which JAMA pins to
+  `#000000` (all-black-and-white identity). Result: hovering over a
+  sortable header turned the bg black against unchanged dark text —
+  invisible. Replaced with the `color-mix(in srgb, var(--tv-accent)
+  12%, var(--tv-bg))` accent-tint pattern used elsewhere; contrast-
+  safe across all four themes.
+
+* **Hiding a runtime-added column actually hides it.** `hideColumn`
+  (via the column-visibility UI or the `hide_column()` proxy verb)
+  was a no-op for columns that had been inserted at runtime via the
+  "Add column" UI. The renderer's column-edit pipeline filtered the
+  original spec columns by `hiddenColumnIds` but pushed user-inserted
+  columns unconditionally.
+
 ## Internal
 
 * **Frontend extracted to [`@tabviz/core`](https://www.npmjs.com/package/@tabviz/core) on npm.**
