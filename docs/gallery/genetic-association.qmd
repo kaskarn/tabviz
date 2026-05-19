@@ -1,6 +1,6 @@
 ---
 title: "Genetic Association (R + TS)"
-description: "The same forest plot, two ways — using tabviz from R and from TypeScript"
+description: "The same forest plot, two ways — both rendered live, from R and from TypeScript"
 ---
 
 ```{r}
@@ -10,7 +10,7 @@ library(tabviz)
 
 When `tabviz` was just an R package, "the JS code" meant "the bundled htmlwidget runtime" — opaque to consumers, only useful as a black box behind the R API. As of 0.2.0, the JS side is a first-class authoring target: the same `tabviz()` / `col_*()` / `viz_*()` / `theme_*()` API mirrored in TypeScript, available from npm as [`@tabviz/core`](https://www.npmjs.com/package/@tabviz/core).
 
-This page walks through one example two ways: an R chunk that renders the live widget below, and a TypeScript snippet that produces the same plot from a web app.
+This page renders the same forest plot **twice on the same page** — once via R, once via TypeScript loaded over the wire from [esm.sh](https://esm.sh). The pixels should match.
 
 ## Data: genetic associations with cardiovascular events
 
@@ -35,6 +35,9 @@ snps <- data.frame(
   p_value     = c(3.2e-5,     1.4e-9,      4.7e-3,      0.018,      0.014,
                   2.6e-4,     0.067,       7.3e-3,      1.1e-5,      2.1e-5)
 )
+
+# Expose the data to the OJS runtime below.
+ojs_define(snps_in = snps)
 ```
 
 ## R: `tabviz(...)` rendering the live widget
@@ -65,12 +68,72 @@ tabviz(
 )
 ```
 
-## TypeScript: the same plot via `@tabviz/core`
+## TypeScript via `@tabviz/core`, rendered in the browser
 
-The TypeScript side mirrors the R API one-to-one. `tabviz()` returns a `WebSpec` (the wire-format payload); `createTabviz(node, spec)` mounts it into the DOM. The code below produces the same plot as the R chunk above — same theme, same columns, same forest scale.
+Below is the same plot built from the TypeScript-mirror of the R API and mounted by `createTabviz` — executed live in this page (no R involved). The package is loaded from esm.sh; Svelte's optional peer dep is resolved transitively.
 
-::: {.callout-tip collapse="false"}
-## Same plot, TypeScript way
+```{ojs}
+//| echo: false
+core = import("https://esm.sh/@tabviz/core@0.2.1")
+htl = import("https://esm.sh/htl@0.3.1")
+
+// Quarto exposes `snps_in` as a column-oriented table; transpose to rows.
+rows = transpose(snps_in)
+
+styleHref = "https://esm.sh/@tabviz/core@0.2.1/dist/style.css"
+// Inject the @tabviz/core stylesheet once per page.
+_styleInjected = {
+  if (!document.querySelector(`link[href="${styleHref}"]`)) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = styleHref;
+    document.head.appendChild(link);
+  }
+  return true;
+}
+
+tsWidget = {
+  const { tabviz, createTabviz,
+          colText, colNumeric, colInterval, colN, colPvalue,
+          vizForest } = await core;
+  _styleInjected;
+
+  const spec = tabviz({
+    data: rows,
+    label: "snp",
+    labelHeader: "SNP",
+    theme: "lancet",
+    columns: [
+      colText({ field: "gene", header: "Gene" }),
+      colNumeric({ field: "maf", header: "MAF", decimals: 2 }),
+      colInterval({
+        point: "effect", lower: "lower", upper: "upper",
+        header: "Effect (95% CI)",
+      }),
+      colN({ field: "n_studies", header: "Studies" }),
+      colPvalue({ field: "p_value" }),
+      vizForest({
+        point: "effect", lower: "lower", upper: "upper",
+        axisLabel: "Effect estimate",
+        scale: "linear",
+        nullValue: 0,
+      }),
+    ],
+    title: "Genetic associations with cardiovascular events",
+    caption: "Effect = log odds ratio per allele; CI = 95%.",
+  });
+
+  const host = document.createElement("div");
+  host.style.minHeight = "320px";
+  createTabviz(host, spec);
+  return host;
+}
+```
+
+The source of that `ojs` block, in plain TypeScript:
+
+::: {.callout-note collapse="true"}
+## The TypeScript snippet (for use in a Vite/Next.js project)
 
 ```ts
 import {
@@ -114,8 +177,6 @@ const spec = tabviz({
 
 const instance = createTabviz(document.querySelector("#plot")!, spec);
 ```
-
-The TS snippet is shown for reference, not executed. Drop it into a Vite or Next.js project that depends on `@tabviz/core@^0.2.0` and the rendered output is byte-identical to the R chunk above.
 :::
 
 ## What's the same, what's different?
@@ -126,4 +187,4 @@ The argument names, defaults, and shape of the returned spec are identical:
 - R: snake_case kwargs ↔ TS: camelCase keys
 - R: `theme = web_theme_lancet()` ↔ TS: `theme: "lancet"` (or `theme: themeLancet()`)
 
-R is positional-friendly (`col_*` helpers take `field` as the first positional arg); TS is purely named-argument because it's a single object literal. Beyond that, the helpers are mechanical 1:1 translations — change one to fit the other by remembering snake-case ↔ camelCase and keyword-vs-positional. The parity test suite in `tests/parity/` pins this contract.
+R is positional-friendly (`col_*` helpers take `field` as the first positional arg); TS is purely named-argument because it's a single object literal. Beyond that, the helpers are mechanical 1:1 translations — change one to fit the other by remembering snake-case ↔ camelCase and keyword-vs-positional.
