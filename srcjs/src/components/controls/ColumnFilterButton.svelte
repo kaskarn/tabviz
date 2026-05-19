@@ -59,12 +59,12 @@
     opacity: 0.75;
     pointer-events: auto;
   }
-  .filter-btn:hover { opacity: 1; background: var(--tv-border, #f1f5f9); }
+  .filter-btn:hover { opacity: 1; background: var(--tv-hover-bg, #f1f5f9); }
   /* Active filter: stay fully visible at rest */
   .filter-btn.active {
     opacity: 1;
     pointer-events: auto;
     color: var(--tv-accent, #2563eb);
   }
-  .filter-btn.open { background: var(--tv-border, #f1f5f9); opacity: 1; }
+  .filter-btn.open { background: var(--tv-hover-bg, #f1f5f9); opacity: 1; }
 </style>

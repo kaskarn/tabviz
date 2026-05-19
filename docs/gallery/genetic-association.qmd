@@ -37,8 +37,17 @@ snps <- data.frame(
                   2.6e-4,     0.067,       7.3e-3,      1.1e-5,      2.1e-5)
 )
 
-# Expose the data to the OJS runtime below.
-ojs_define(snps_in = snps)
+# Expose the data + the Svelte version @tabviz/core was compiled against
+# to the OJS runtime below, so the esm.sh import can lockstep-pin and
+# avoid the "validate_each_keys is not a function" peer-resolution drift.
+# Read the *locked* version from package-lock.json — devDeps in
+# package.json is a range spec (e.g. "^5.0.0") which esm.sh would resolve
+# to whatever 5.x is current.
+svelte_version <- jsonlite::fromJSON(
+  here::here("..", "srcjs", "package-lock.json")
+)$packages[["node_modules/svelte"]]$version
+
+ojs_define(snps_in = snps, svelte_version = svelte_version)
 ```
 
 ## R: `tabviz(...)` rendering the live widget
@@ -75,11 +84,13 @@ Below is the same plot built from the TypeScript-mirror of the R API and mounted
 
 ```{ojs}
 //| echo: false
-// Pin Svelte to the version @tabviz/core@0.2.1 was compiled against —
-// esm.sh's default resolution of the optional peer picks the latest 5.x,
-// which can differ in internal helpers (`validate_each_keys` etc.) and
-// throws at mount. Lockstep version pin is the simplest workaround.
-core = import("https://esm.sh/@tabviz/core@0.2.1?deps=svelte@5.46.1")
+// Pin Svelte to the version @tabviz/core was compiled against — esm.sh's
+// default resolution of the optional peer picks the latest 5.x, which can
+// differ in internal helpers (`validate_each_keys` etc.) and throws at
+// mount. The version comes from R via ojs_define(svelte_version = ...)
+// reading srcjs/package.json's devDeps, so a Svelte bump there
+// auto-propagates here on the next quarto render.
+core = import(`https://esm.sh/@tabviz/core@0.2.1?deps=svelte@${svelte_version}`)
 
 // Quarto exposes `snps_in` as a column-oriented table; transpose to rows.
 rows = transpose(snps_in)

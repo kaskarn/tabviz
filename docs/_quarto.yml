@@ -46,6 +46,8 @@ website:
           - text: "---"
           - text: "Genetic Association (R + TS)"
             href: gallery/genetic-association.qmd
+          - text: "Bilingual Dashboard (R + TS)"
+            href: gallery/bilingual-dashboard.qmd
           - text: "---"
           - text: "LOTR (Easter Egg)"
             href: gallery/lotr.qmd

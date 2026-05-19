@@ -319,5 +319,5 @@
   }
   .edit-popover-footer .primary { background: var(--tv-accent, #2563eb); border: 1px solid var(--tv-accent, #2563eb); color: #fff; }
   .edit-popover-footer .secondary { background: transparent; border: 1px solid var(--tv-border, #e2e8f0); color: var(--tv-fg, #1a1a1a); }
-  .edit-popover-footer .secondary:hover { background: var(--tv-border, #f1f5f9); }
+  .edit-popover-footer .secondary:hover { background: var(--tv-hover-bg, #f1f5f9); }
 </style>

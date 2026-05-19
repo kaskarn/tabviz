@@ -1385,6 +1385,14 @@
       --tv-text-muted: ${theme.content.secondary};
       --tv-muted: ${theme.content.muted};
       --tv-border: ${theme.divider.subtle};
+      /* Hover/popover backgrounds — contrast-safe across every theme.
+         CONVENTION: never use bare --tv-border, --tv-accent, or
+         --tv-primary-deep as a hover background (themes that pin those
+         tokens dark — JAMA's accent=#000000 and divider.subtle=#000000,
+         dark theme's primary_deep=#2E5290 — produce illegible dark-on-dark
+         hover surfaces). Always use --tv-hover-bg or an inline
+         color-mix(--tv-accent N%, --tv-bg) at 6-14% strength. */
+      --tv-hover-bg: color-mix(in srgb, var(--tv-accent) 8%, var(--tv-bg));
       /* Strong rules — header bottom, group row bottom, axis line, tick marks,
          summary-row top. v2 R resolver computes these but the frontend
          previously read --tv-border (the subtle one) for everything,

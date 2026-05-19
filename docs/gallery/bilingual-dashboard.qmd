@@ -1,0 +1,176 @@
+---
+title: "Bilingual Dashboard (R + TS)"
+description: "A KPI dashboard with bars, sparklines, badges, and rings — rendered live from both R and TypeScript"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+The [Genetic Association example](genetic-association.qmd) showcased the bilingual API on a forest plot. This page proves the same R ↔ TypeScript parity for the *visual* column family: `col_bar` / `col_sparkline` / `col_badge` / `col_ring` / `col_stars`. The R chunk renders the live widget; the OJS chunk loads `@tabviz/core` from esm.sh and mounts the equivalent TS-built spec — both shown on the same page.
+
+## Data: regional sales KPIs
+
+```{r}
+#| cache: false
+set.seed(2026)
+
+regions <- c("North", "South", "East", "West", "Central")
+revenue <- c(2400000, 1900000, 3200000, 1650000, 2750000)
+growth  <- c(0.12, -0.04, 0.18, 0.03, 0.09)
+
+# Per-region 12-month revenue sparkline (slight growth ± monthly noise).
+sales_trend <- lapply(seq_along(regions), function(i) {
+  base <- revenue[i] / 12
+  trend <- seq(0, growth[i], length.out = 12)
+  jitter <- rnorm(12, sd = 0.08)
+  round(base * (1 + trend + jitter))
+})
+
+kpi <- data.frame(
+  region        = regions,
+  revenue       = revenue,
+  growth        = growth,
+  health        = c("green", "amber", "green", "red", "green"),
+  satisfaction  = c(4.5, 3.2, 4.8, 2.9, 4.1),
+  pipeline_pct  = c(0.78, 0.45, 0.92, 0.38, 0.71)
+)
+kpi$trend <- I(sales_trend)
+
+# Expose to OJS (plus the locked Svelte version, same pattern as the
+# genetic-association page — lockstep esm.sh peer pin).
+svelte_version <- jsonlite::fromJSON(
+  here::here("..", "srcjs", "package-lock.json")
+)$packages[["node_modules/svelte"]]$version
+
+ojs_define(kpi_in = kpi, svelte_version = svelte_version)
+```
+
+## R: `tabviz(...)` rendering the live widget
+
+```{r}
+#| fig-width: 11
+#| fig-height: 4
+tabviz(
+  kpi,
+  label = "region",
+  label_header = "Region",
+  theme = web_theme_cochrane(),
+  columns = list(
+    col_currency("revenue", header = "Revenue", symbol = "$", decimals = 0,
+                 thousands_sep = ",", abbreviate = TRUE),
+    col_bar("growth", header = "YoY growth", scale = "linear"),
+    col_sparkline("trend", header = "12-month trend", type = "area"),
+    col_badge("health", header = "Health"),
+    col_stars("satisfaction", header = "CSAT", max_stars = 5),
+    col_ring("pipeline_pct", header = "Pipeline", min_value = 0, max_value = 1)
+  ),
+  title = "Regional sales KPIs",
+  caption = "Quarter-end snapshot. Revenue abbreviated; sparkline shows last 12 months."
+)
+```
+
+## TypeScript via `@tabviz/core`, rendered in the browser
+
+```{ojs}
+//| echo: false
+core = import(`https://esm.sh/@tabviz/core@0.2.1?deps=svelte@${svelte_version}`)
+
+// Transpose the column-oriented kpi data + ensure trend is a per-row array.
+kpi_rows = {
+  const cols = transpose(kpi_in);
+  // `trend` arrived as a flat numeric vector concatenated across rows;
+  // restore the per-row 12-month structure.
+  return cols.map((row, i) => ({
+    ...row,
+    trend: kpi_in.trend.slice(i * 12, (i + 1) * 12),
+  }));
+}
+
+styleHref = "https://esm.sh/@tabviz/core@0.2.1/dist/style.css"
+_styleInjected = {
+  if (!document.querySelector(`link[href="${styleHref}"]`)) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = styleHref;
+    document.head.appendChild(link);
+  }
+  return true;
+}
+
+tsWidget = {
+  const { tabviz, createTabviz,
+          colCurrency, colBar, colSparkline, colBadge, colStars, colRing } = await core;
+  _styleInjected;
+
+  const spec = tabviz({
+    data: kpi_rows,
+    label: "region",
+    labelHeader: "Region",
+    theme: "cochrane",
+    columns: [
+      colCurrency({ field: "revenue", header: "Revenue", symbol: "$",
+                    decimals: 0, thousandsSep: ",", abbreviate: true }),
+      colBar({ field: "growth", header: "YoY growth", scale: "linear" }),
+      colSparkline({ field: "trend", header: "12-month trend", type: "area" }),
+      colBadge({ field: "health", header: "Health" }),
+      colStars({ field: "satisfaction", header: "CSAT", maxStars: 5 }),
+      colRing({ field: "pipeline_pct", header: "Pipeline", minValue: 0, maxValue: 1 }),
+    ],
+    title: "Regional sales KPIs",
+    caption: "Quarter-end snapshot. Revenue abbreviated; sparkline shows last 12 months.",
+  });
+
+  const host = document.createElement("div");
+  host.style.minHeight = "240px";
+  createTabviz(host, spec);
+  return host;
+}
+```
+
+::: {.callout-note collapse="true"}
+## The pure-TypeScript snippet (for a Vite / Next.js project)
+
+```ts
+import {
+  tabviz, createTabviz,
+  colCurrency, colBar, colSparkline, colBadge, colStars, colRing,
+} from "@tabviz/core";
+import "@tabviz/core/style.css";
+
+declare const kpiData: Array<{
+  region: string;
+  revenue: number;
+  growth: number;
+  trend: number[];          // 12-month sparkline series
+  health: "green" | "amber" | "red";
+  satisfaction: number;     // 0-5 stars
+  pipeline_pct: number;     // 0-1
+}>;
+
+const spec = tabviz({
+  data: kpiData,
+  label: "region",
+  labelHeader: "Region",
+  theme: "cochrane",
+  columns: [
+    colCurrency({ field: "revenue", header: "Revenue", symbol: "$",
+                  decimals: 0, thousandsSep: ",", abbreviate: true }),
+    colBar({ field: "growth", header: "YoY growth", scale: "linear" }),
+    colSparkline({ field: "trend", header: "12-month trend", type: "area" }),
+    colBadge({ field: "health", header: "Health" }),
+    colStars({ field: "satisfaction", header: "CSAT", maxStars: 5 }),
+    colRing({ field: "pipeline_pct", header: "Pipeline",
+              minValue: 0, maxValue: 1 }),
+  ],
+  title: "Regional sales KPIs",
+});
+
+createTabviz(document.querySelector("#plot")!, spec);
+```
+:::
+
+## What's the same, what's different?
+
+Same as the [genetic-association page](genetic-association.qmd) — argument names + defaults map snake_case ↔ camelCase, positional R args become named TS args, and `theme = web_theme_cochrane()` becomes `theme: "cochrane"`. The visual column family (bars, sparklines, badges, rings, stars) has the same mechanical translation as the forest-plot family.

@@ -360,9 +360,32 @@ web_col <- function(
 col_text <- function(field, header = NULL, width = NULL, max_chars = NULL,
                      na_text = NULL, ...) {
   checkmate::assert_integerish(max_chars, lower = 1, len = 1, null.ok = TRUE)
-  opts <- if (is.null(max_chars)) list() else list(text = list(maxChars = max_chars))
-  web_col(field, header, type = "text", width = width, options = opts,
-          na_text = na_text, ...)
+  # Delegate wire-shape computation (id default, header default, options
+  # bundle) to the TS authoring builder via V8. Single source of truth for
+  # the derived shape; R-side just adds the S7 wrapper + R-only style /
+  # formatter args via web_col. Phase 2 pilot — see `R/v8-bridge.R` and
+  # `docs/dev/r-ts-parity-notes.md`.
+  ts_args <- list(field = field)
+  if (!is.null(header))    ts_args$header   <- header
+  if (!is.null(width))     ts_args$width    <- width
+  if (!is.null(max_chars)) ts_args$maxChars <- max_chars
+  shape <- ts_call("colText", ts_args)
+
+  # Build web_col args from TS-computed defaults; caller-supplied `...`
+  # values override (e.g. `tabviz()` pins `id = "label"` on the label
+  # column). `do.call` lets ... params shadow our defaults cleanly.
+  args <- list(
+    field   = shape$field,
+    header  = shape$header,
+    type    = "text",
+    id      = shape$id,
+    width   = if (identical(shape$width, "auto")) NULL else shape$width,
+    options = shape$options %||% list(),
+    na_text = na_text
+  )
+  extra <- list(...)
+  args[names(extra)] <- extra
+  do.call(web_col, args)
 }
 
 #' Column helper: Row-identifier (label) column

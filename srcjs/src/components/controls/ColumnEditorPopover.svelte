@@ -1004,7 +1004,7 @@
     color: var(--tv-fg, #1a1a1a);
   }
   .editor-footer .secondary:hover {
-    background: var(--tv-border, #f1f5f9);
+    background: var(--tv-hover-bg, #f1f5f9);
   }
 
   /* ─ Compact slot rows ──────────────────────────────────────────── */

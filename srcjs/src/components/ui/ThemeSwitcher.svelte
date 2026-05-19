@@ -313,7 +313,7 @@
   }
 
   .theme-btn:hover {
-    background: var(--tv-border, #e2e8f0);
+    background: var(--tv-hover-bg, #e2e8f0);
     color: var(--tv-fg, #1a1a1a);
   }
 
@@ -374,7 +374,7 @@
   }
 
   .dropdown-item:hover {
-    background: var(--tv-border, #f1f5f9);
+    background: var(--tv-hover-bg, #f1f5f9);
   }
 
   .dropdown-item.active {

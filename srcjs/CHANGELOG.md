@@ -4,6 +4,71 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.2.2 — 2026-05-19
+
+### Added — Spec modifiers
+
+Static-spec fluent modifiers landed at `srcjs/src/authoring/modifiers.ts`,
+mirroring R's `set_*` family: `setTitle`, `setSubtitle`, `setCaption`,
+`setFootnote`, `setTheme`, `setZoom`, `addColumn`, `removeColumn`,
+`updateColumn`. All pure, immutable, composable.
+
+```ts
+const spec = setFootnote(setTheme(tabviz({...}), "lancet"), "Source: …");
+```
+
+Runtime control of a mounted widget still uses the instance methods
+returned by `createTabviz` (e.g. `instance.setTheme(...)`).
+
+### Fixed — Column-builder parity drifts caught by the new R↔TS parity test
+
+The `tests/testthat/test-parity-columns.R` harness (added R-side, paired
+with the V8-via-Imports promotion) caught three drifts that landed as
+TS-side fixes:
+
+- **`colStars` now emits a `pictogram`-typed column** (`glyph = "star"`)
+  to match R's `col_stars()`, which is itself a thin wrapper over
+  `col_pictogram(glyph = "star")`. The "stars" column type the TS
+  builder previously emitted was never produced by R-rendered widgets
+  and effectively dead at the renderer.
+- **`colInterval` uses the synthetic `_interval_<point>` field name**
+  so multiple interval columns sharing the same point estimate get
+  distinct ids. Mirrors R's `col_interval` + `default_column_id`
+  synthetic-prefix convention.
+- **`colSparkline` defaults `header` to `"Trend"`** (literal), matching
+  R `col_sparkline(header = "Trend")`. Was falling through to the
+  field name.
+
+### Changed — `colCurrency` argument rename
+
+`colCurrency({ currency: "$" })` → `colCurrency({ symbol: "$" })` to
+match R's `col_currency(symbol = "$")`. Also added `position?: "prefix"
+| "suffix"` argument (R has it; TS was missing). Pre-0.2.2 callers
+should update; this is a breaking rename in the 0.2.x line, but the
+previous arg name had been a parity bug — the alignment is the right
+direction.
+
+### Added — Live OJS rendering of the bilingual gallery + hover legibility fix
+
+The two bilingual gallery pages (`docs/gallery/genetic-association.qmd`
+and `docs/gallery/bilingual-dashboard.qmd`) now render the TypeScript
+side *live* via Quarto's OJS engine — `@tabviz/core` loads from esm.sh
+at page-load with Svelte's peer dep version pinned from
+`srcjs/package-lock.json` (auto-bumped on each `quarto render`). Same
+plot, both runtimes, one page.
+
+CSS audit + migration: 13 hover/active sites that used bare identity
+tokens (`var(--tv-border)`, `var(--tv-accent)`, etc.) as backgrounds
+moved to a new contrast-safe `--tv-hover-bg` variable
+(`color-mix(--tv-accent 8%, --tv-bg)`). Closes black-on-black hovers
+in JAMA and dark themes across toolbar buttons, popovers, and the
+theme switcher dropdown.
+
+### Bumped
+
+- Bundle size budget +0.5 KB IIFE / negligible gzipped to absorb the
+  modifiers + V8 entry's authoring dispatcher.
+
 ## 0.2.1 — 2026-05-19
 
 ### Changed — TS is now canonical for `theme-presets-v2.json`

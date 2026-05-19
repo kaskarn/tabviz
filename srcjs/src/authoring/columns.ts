@@ -214,17 +214,24 @@ export function colN({
 export interface ColCurrencyArgs extends CommonColumnArgs {
   field: string;
   decimals?: number;
-  currency?: string;
+  /** Currency symbol. Defaults to "$" — mirrors R `col_currency(symbol = "$")`. */
+  symbol?: string;
   thousandsSep?: string | false;
   abbreviate?: boolean | number;
+  /** Symbol placement. Defaults to "prefix" — mirrors R `col_currency(position = "prefix")`. */
+  position?: "prefix" | "suffix";
   naText?: string | null;
 }
 
 export function colCurrency({
-  field, decimals = 2, currency = "$", thousandsSep = ",", abbreviate = false, naText, ...common
+  field, decimals = 2, symbol = "$", thousandsSep = ",", abbreviate = false,
+  position = "prefix", naText, ...common
 }: ColCurrencyArgs): ColumnSpec {
   return colNumeric({
-    field, decimals, thousandsSep, abbreviate, prefix: currency, naText, ...common,
+    field, decimals, thousandsSep, abbreviate,
+    prefix: position === "prefix" ? symbol : undefined,
+    suffix: position === "suffix" ? symbol : undefined,
+    naText, ...common,
   });
 }
 
@@ -263,7 +270,16 @@ export function colInterval({
     impreciseThreshold,
   };
   const options = { interval, ...(naText != null ? { naText } : {}) };
-  return baseColumn(point, "interval", options, common);
+  // Synthetic field name (`_interval_<point>`) so multiple interval columns
+  // sharing the same point estimate get distinct fields/ids. Mirrors R's
+  // `col_interval` and `default_column_id`'s synthetic-prefix strip.
+  // R default header is "95% CI"; mirror unless the caller overrides.
+  return baseColumn(
+    `_interval_${point}`,
+    "interval",
+    options,
+    { header: "95% CI", ...common },
+  );
 }
 
 export interface ColPvalueArgs extends CommonColumnArgs {
@@ -375,7 +391,9 @@ export function colSparkline({
 }: ColSparklineArgs): ColumnSpec {
   const sparkline: SparklineColumnOptions = { type, height, color };
   const options = { sparkline, ...(naText != null ? { naText } : {}) };
-  return baseColumn(field, "sparkline", options, common);
+  // R col_sparkline defaults header to "Trend" (literal, not field-derived);
+  // mirror for parity.
+  return baseColumn(field, "sparkline", options, { header: "Trend", ...common });
 }
 
 export interface ColHeatmapArgs extends CommonColumnArgs {
@@ -466,13 +484,29 @@ export interface ColStarsArgs extends CommonColumnArgs {
   naText?: string | null;
 }
 
+/**
+ * Stars column. Implemented as a `pictogram` column with `glyph = "star"`
+ * for byte-equal wire parity with R-side `col_stars()` (which is itself a
+ * thin wrapper over `col_pictogram(glyph = "star")`). The renderer
+ * special-cases the star glyph regardless of whether the type label is
+ * `"stars"` or `"pictogram"`.
+ */
 export function colStars({
   field, maxStars = 5, color, emptyColor, halfStars = false, domain = null,
   size = "base", naText, ...common
 }: ColStarsArgs): ColumnSpec {
-  const stars: StarsColumnOptions = { maxStars, color, emptyColor, halfStars, domain, size };
-  const options = { stars, ...(naText != null ? { naText } : {}) };
-  return baseColumn(field, "stars", options, common);
+  return colPictogram({
+    field,
+    glyph: "star",
+    maxGlyphs: maxStars,
+    halfGlyphs: halfStars,
+    domain,
+    color: color ?? null,
+    emptyColor: emptyColor ?? null,
+    size,
+    naText,
+    ...common,
+  });
 }
 
 export interface ColPictogramArgs extends CommonColumnArgs {

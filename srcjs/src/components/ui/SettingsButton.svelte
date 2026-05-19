@@ -41,7 +41,7 @@
   }
 
   .settings-btn:hover {
-    background: var(--tv-border, #e2e8f0);
+    background: var(--tv-hover-bg, #e2e8f0);
     color: var(--tv-fg, #1a1a1a);
   }
 

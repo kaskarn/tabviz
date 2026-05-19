@@ -1,3 +1,62 @@
+# tabviz 0.32.0
+
+## Breaking-ish: V8 promoted from Suggests to Imports
+
+`V8` (the JavaScript engine R package) was previously optional; certain
+code paths (SVG export, dimension computation, paginated PDF) required
+it but `col_*()` construction worked without. As of 0.32.0 V8 is a hard
+runtime dep — `library(tabviz)` will refuse to load if it isn't
+installed. The vast majority of `tabviz` users had V8 installed already
+(it ships pre-installed on Posit Connect, Posit Workbench, and most CRAN
+package-manager profiles); fresh installs from CRAN pick it up
+automatically. Pre-existing installations that explicitly excluded V8
+will need to add it.
+
+Why: the new R↔TS column-parity test harness + the `col_text()`
+delegation pilot (see below) both require V8 at runtime. Promoting V8
+to Imports removes the "V8-when-available" parallel-stack pattern from
+the codebase; one source of truth, one runtime.
+
+## Added: R↔TS column parity test harness
+
+`tests/testthat/test-parity-columns.R` exercises each R `col_*()`
+helper alongside its TypeScript-mirror `colX(...)` builder (via V8 +
+the new `inst/js/svg-generator.js` global `callBuilder(name, args)`)
+and asserts wire-shape equality on key fields. Catches drift the
+moment either side diverges. First-run found three real divergences
+in the TS-side authoring builders, all fixed in `@tabviz/core@0.2.2`
+(`colStars` type discriminator, `colInterval` synthetic field name,
+`colSparkline` default header).
+
+## Added: R→TS delegation pilot — `col_text()` via V8
+
+`R/v8-bridge.R` introduces a singleton V8 context (lazy-init,
+package-scope) plus a `ts_call(builder_name, args)` helper that
+dispatches into the bundled JS authoring builders. `col_text()` is the
+first helper to actually delegate construction: argument validation
+stays R-side (`checkmate`), wire-shape computation (id default, header
+default, options bundle) routes through `ts_call("colText", ...)`, and
+the result wraps into an S7 `ColumnSpec` via `web_col()` for R-side
+style mappings and the formatter slot.
+
+The other 21 column helpers stay R-only for now; the parity test
+catches drift. Phase 2 delegation can come incrementally when there's
+concrete value.
+
+## Vendored JS bundle
+
+* Bundles `@tabviz/core@0.2.2`, which includes:
+  - Spec modifiers (`setTitle`, `setSubtitle`, `setCaption`,
+    `setFootnote`, `setTheme`, `setZoom`, `addColumn`, `removeColumn`,
+    `updateColumn`) on the authoring side.
+  - Three column-builder parity fixes (`colStars` → pictogram type,
+    `colInterval` synthetic field, `colSparkline` default header).
+  - `colCurrency`'s `currency` argument renamed to `symbol` to match
+    R's `col_currency(symbol = ...)`.
+  - A new `--tv-hover-bg` CSS variable + 13 component migrations that
+    fix the JAMA / dark-theme "black-on-black hover" class of
+    legibility bugs.
+
 # tabviz 0.31.2
 
 ## Internal refactor (no API change)

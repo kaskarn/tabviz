@@ -42,6 +42,14 @@ export type {
   ReflineArgs,
 } from "./viz";
 
+// Spec modifiers
+export {
+  setTitle, setSubtitle, setCaption, setFootnote,
+  setTheme, setZoom,
+  addColumn, removeColumn, updateColumn,
+} from "./modifiers";
+export type { SetZoomArgs } from "./modifiers";
+
 // Theme API (re-exported from lib/ for convenience — same surface, one import path)
 export {
   themeCochrane, themeLancet, themeJama, themeDark,

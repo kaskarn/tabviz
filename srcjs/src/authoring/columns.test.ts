@@ -115,9 +115,11 @@ describe("colBadge / colIcon / colStars / colPictogram / colRing", () => {
     const c = colBadge({ field: "status" });
     expect(c.options?.badge?.shape).toBe("pill");
   });
-  test("colStars default maxStars 5", () => {
+  test("colStars produces a pictogram-typed column with glyph=star (matches R col_stars)", () => {
     const c = colStars({ field: "rating" });
-    expect(c.options?.stars?.maxStars).toBe(5);
+    expect(c.type).toBe("pictogram");
+    expect(c.options?.pictogram?.glyph).toBe("star");
+    expect(c.options?.pictogram?.maxGlyphs).toBe(5);
   });
   test("colPictogram default glyph person", () => {
     const c = colPictogram({ field: "count" });

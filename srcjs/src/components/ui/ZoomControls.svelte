@@ -303,7 +303,7 @@
   }
 
   .zoom-trigger-btn:hover {
-    background: var(--tv-border, #e2e8f0);
+    background: var(--tv-hover-bg, #e2e8f0);
     color: var(--tv-fg, #1a1a1a);
   }
 
@@ -346,7 +346,7 @@
   }
 
   .zoom-btn:hover {
-    background: var(--tv-border, #e2e8f0);
+    background: var(--tv-hover-bg, #e2e8f0);
     color: var(--tv-fg, #1a1a1a);
   }
 
@@ -356,7 +356,7 @@
     margin: 0 4px;
     -webkit-appearance: none;
     appearance: none;
-    background: var(--tv-border, #e2e8f0);
+    background: var(--tv-hover-bg, #e2e8f0);
     border-radius: 2px;
     cursor: pointer;
   }
@@ -400,7 +400,7 @@
     height: 4px;
     -webkit-appearance: none;
     appearance: none;
-    background: var(--tv-border, #e2e8f0);
+    background: var(--tv-hover-bg, #e2e8f0);
     border-radius: 2px;
     cursor: pointer;
   }
@@ -471,7 +471,7 @@
   }
 
   .action-btn:hover {
-    background: var(--tv-border, #f1f5f9);
+    background: var(--tv-hover-bg, #f1f5f9);
   }
 
   .action-btn svg {
@@ -489,7 +489,7 @@
   }
 
   .checkbox-row:hover {
-    background: var(--tv-border, #f1f5f9);
+    background: var(--tv-hover-bg, #f1f5f9);
   }
 
   .checkbox-row input {
@@ -506,7 +506,7 @@
   .divider {
     height: 1px;
     margin: 8px 0;
-    background: var(--tv-border, #e2e8f0);
+    background: var(--tv-hover-bg, #e2e8f0);
   }
 
   .section-label {

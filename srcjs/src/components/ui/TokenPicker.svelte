@@ -158,7 +158,7 @@
     transition: background-color 0.15s ease, color 0.15s ease;
   }
   .trigger:hover {
-    background: var(--tv-border, #e2e8f0);
+    background: var(--tv-hover-bg, #e2e8f0);
     color: var(--tv-fg, #1a1a1a);
   }
   .trigger:focus-visible {

@@ -146,7 +146,7 @@
   }
   .ctx-item:hover,
   .ctx-item:focus-visible {
-    background: var(--tv-border, #f1f5f9);
+    background: var(--tv-hover-bg, #f1f5f9);
     outline: none;
   }
   .ctx-item.destructive {

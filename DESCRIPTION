@@ -1,6 +1,6 @@
 Package: tabviz
 Title: Interactive Tables with Embedded Visualizations
-Version: 0.31.2
+Version: 0.32.0
 Authors@R:
     person("Antoine", "Baldassari", , "baldassarian@gmail.com", role = c("aut", "cre"))
 Author: Antoine Baldassari [aut, cre]
@@ -12,7 +12,7 @@ Description: Create interactive tables with embedded visualizations including
     HTML. Features include collapsible groups, 17 column types, conditional
     styling, publication-ready themes, and static export to SVG/PDF/PNG/PPTx.
     A companion JavaScript package <https://www.npmjs.com/package/@tabviz/core>
-    provides the same runtime for direct use from web applications.
+    provides the same runtime and authoring API for direct use from web applications.
 License: MIT + file LICENSE
 Depends: R (>= 4.1.0)
 Encoding: UTF-8
@@ -26,6 +26,7 @@ Collate:
     'classes-theme.R'
     'classes-annotations.R'
     'glyph-registry.R'
+    'v8-bridge.R'
     'classes-components.R'
     'update-check.R'
     'utils-nse.R'
@@ -62,13 +63,13 @@ Imports:
     cli (>= 3.6.0),
     checkmate (>= 2.0.0),
     farver (>= 2.1.0),
+    V8 (>= 4.0.0),
     tools
 Suggests:
     shiny (>= 1.8.0),
     data.table,
     broom,
     testthat (>= 3.0.0),
-    V8 (>= 4.0.0),
     rsvg (>= 2.0.0),
     qpdf (>= 1.3.0),
     processx (>= 3.8.0),

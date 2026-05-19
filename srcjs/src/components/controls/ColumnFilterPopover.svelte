@@ -241,7 +241,7 @@
   .text-btn:hover { text-decoration: underline; }
   .filter-cat-list { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
   .filter-cat-item { display: flex; align-items: center; gap: 6px; padding: 3px 2px; border-radius: 3px; cursor: pointer; font-weight: normal; font-size: 12px; }
-  .filter-cat-item:hover { background: var(--tv-border, #f1f5f9); }
+  .filter-cat-item:hover { background: var(--tv-hover-bg, #f1f5f9); }
   .filter-footer { display: flex; justify-content: flex-end; gap: 6px; border-top: 1px solid var(--tv-border, #e2e8f0); padding-top: 8px; }
   .filter-footer button {
     padding: 5px 12px; font-size: 12px; border-radius: 4px; cursor: pointer; font-family: inherit;
@@ -253,5 +253,5 @@
   .filter-footer .secondary {
     background: transparent; border: 1px solid var(--tv-border, #e2e8f0); color: var(--tv-fg, #1a1a1a);
   }
-  .filter-footer .secondary:hover { background: var(--tv-border, #f1f5f9); }
+  .filter-footer .secondary:hover { background: var(--tv-hover-bg, #f1f5f9); }
 </style>
