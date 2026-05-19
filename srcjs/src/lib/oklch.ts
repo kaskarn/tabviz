@@ -35,8 +35,10 @@ function hexToRgb(hex: string): RGB {
 }
 function rgbToHex({ r, g, b }: RGB): string {
   const clamp = (x: number) => Math.max(0, Math.min(255, Math.round(x * 255)));
+  // Uppercase to match R's `farver::encode_colour` output — required for
+  // byte-equal parity with R-resolved theme snapshots.
   return "#" + [clamp(r), clamp(g), clamp(b)]
-    .map((c) => c.toString(16).padStart(2, "0"))
+    .map((c) => c.toString(16).padStart(2, "0").toUpperCase())
     .join("");
 }
 
@@ -162,4 +164,43 @@ export function oklchMix(a: string, b: string, t: number): string {
 export function oklchChroma(hex: string, by: number): string {
   const lch = hexToOklch(hex);
   return oklchToHex({ ...lch, C: Math.max(0, lch.C + by) });
+}
+
+/**
+ * WCAG 2.1 relative luminance of a hex color.
+ */
+function relativeLuminance(hex: string): number {
+  const { r, g, b } = hexToRgb(hex);
+  const lin = (c: number) =>
+    c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+/**
+ * WCAG 2.1 contrast ratio between two hex colors. Mirrors `contrast_ratio` in R.
+ */
+export function contrastRatio(fg: string, bg: string): number {
+  const l1 = relativeLuminance(fg);
+  const l2 = relativeLuminance(bg);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
+/**
+ * Walk `fg`'s OKLCH lightness toward black or white (depending on whether
+ * `bg` is light or dark) until contrast against `bg` meets `target`.
+ * Default 4.5 matches WCAG AA for body text. Mirrors `ensure_contrast` in R.
+ */
+export function ensureContrast(fg: string, bg: string, target = 4.5): string {
+  if (contrastRatio(fg, bg) >= target) return fg;
+  const bgL = hexToOklch(bg).L;
+  const lch = hexToOklch(fg);
+  const direction = bgL > 0.5 ? -1 : 1;
+  for (let step = 0.02; step <= 1; step += 0.02) {
+    const candidate = oklchToHex({
+      ...lch,
+      L: Math.max(0, Math.min(1, lch.L + direction * step)),
+    });
+    if (contrastRatio(candidate, bg) >= target) return candidate;
+  }
+  return oklchToHex({ ...lch, L: direction < 0 ? 0 : 1 });
 }

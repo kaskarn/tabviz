@@ -4,6 +4,90 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.2.0 — 2026-05-18
+
+### Added — Authoring API
+
+The JS side is now a first-class authoring target, not just a runtime that
+consumes R-emitted specs. Every R helper has a TypeScript mirror exported
+from the main entry:
+
+```ts
+import { tabviz, colText, colInterval, vizForest, themeLancet } from "@tabviz/core";
+
+const spec = tabviz({
+  data: rows, label: "study", theme: "lancet",
+  columns: [
+    colInterval({ point: "hr", lower: "lcl", upper: "ucl" }),
+    vizForest({ point: "hr", lower: "lcl", upper: "ucl", scale: "log" }),
+  ],
+});
+```
+
+Surface:
+
+- **`tabviz(args)`** — top-level WebSpec constructor; mirrors `R::tabviz()`.
+- **Column builders** — `colText`, `colLabel`, `colNumeric`, `colN`,
+  `colCurrency`, `colPercent`, `colInterval`, `colPvalue`, `colRange`,
+  `colEvents`, `colBar`, `colSparkline`, `colHeatmap`, `colProgress`,
+  `colBadge`, `colIcon`, `colStars`, `colPictogram`, `colRing`, `colImg`,
+  `colReference`, `colGroup`. 1:1 with R's `col_*()` helpers; argument
+  names + defaults match.
+- **Viz builders** — `vizForest`, `vizBar`, `vizBoxplot`, `vizViolin`;
+  effect helpers `effectForest`, `effectBar`, `effectBoxplot`,
+  `effectViolin`. Annotation helper `refline()`.
+- **Theme API** — preset constructors (`themeCochrane`, `themeLancet`,
+  `themeJama`, `themeDark`, `themeDwarven`, `themeElvish`, `themeHobbit`);
+  custom-theme constructor `webTheme()`; modifiers `setInputs`,
+  `setVariants`, `setSpacing`, `setThemeField`; name-string resolver
+  `resolveThemeRef()`.
+
+### Added — Cascade resolver ported to JS (C5)
+
+`R/utils-theme-resolve.R` is now mirrored by `srcjs/src/lib/theme-resolve.ts`:
+the full 3-tier OKLCH cascade (Tier 1 inputs → Tier 2 chrome/data/text →
+Tier 3 component clusters), the contrast validator, and density-preset
+spacing all work JS-side. Means `theme: { extend: "lancet", overrides: {
+inputs: { primary: "#..." } } }` re-derives every Tier 2/3 leaf from the
+new Tier 1, no R round-trip required.
+
+Parity with R-resolved snapshots is tested per-preset (`theme-resolve.test.ts`);
+chrome (surface/content/divider) matches byte-exactly. Series slot bundles
+and accent muted/tint variants are within OKLab precision (~1-25 channels
+of drift near gamut boundaries; see [`docs/dev/r-ts-parity-notes.md`](https://github.com/kaskarn/tabviz/blob/main/docs/dev/r-ts-parity-notes.md)
+for the known gap and Phase 2 mitigation path).
+
+### Added — LOTR preset themes in TS
+
+`themeDwarven`, `themeElvish`, `themeHobbit` — the easter-egg editorial
+themes. Available via `tabviz({ theme: "dwarven" })` and the in-widget
+theme switcher. Pre-release; may move to a separate package before CRAN.
+
+### Changed — View Source JS tab
+
+Was: dump the resolved WebSpec as a 200+ line JSON literal. Now: emit a
+compact builder-style snippet using the new authoring API:
+
+```ts
+const spec = tabviz({
+  data: tabvizData,                          // ← placeholder, not inlined
+  theme: "lancet",                            // ← name-string when preset matches
+  columns: [
+    colInterval({ point: "hr", lower: "lcl", upper: "ucl" }),
+    vizForest({ point: "hr", lower: "lcl", upper: "ucl", scale: "log" }),
+  ],
+});
+```
+
+Pure function (`srcjs/src/lib/source-emit.ts`); same op-log replay below
+the spec block.
+
+### Bumped
+
+- Bundle size budget: tabviz.js / tabviz_split.js bumped to absorb the
+  authoring layer (+21 KB IIFE / +6 KB gzipped). Main npm entry
+  (`dist/index.mjs`): 5.32 KB gzipped, +1.3 KB over 0.1.5.
+
 ## 0.1.5 — 2026-05-15
 
 ### Fixed

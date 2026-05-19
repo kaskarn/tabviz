@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ForestStore } from "$stores/forestStore.svelte";
   import { generateThemeSource } from "$lib/theme-source";
+  import { emitJsSource } from "$lib/source-emit";
   import Portal from "$lib/Portal.svelte";
 
   interface Props {
@@ -96,38 +97,22 @@
     return `${themeLine}\n\n${tblLine}`;
   });
 
-  // ---- JS target (Phase 1.5) -----------------------------------------
+  // ---- JS target (0.2.0 builder emitter) -----------------------------
   //
-  // Embeds the current resolved WebSpec as JSON, then replays the
-  // recorded op-log as fluent TabvizInstance calls. v2 themes are
-  // resolved server-side so the inlined spec already encodes the
-  // active appearance — no JS-side createTheme call needed.
+  // Composes a compact builder-style TS snippet using the @tabviz/core
+  // authoring API (`tabviz`, `colText`, `vizForest`, `themeLancet`, etc.)
+  // and replays the recorded op-log on the resulting instance.
   //
-  // Each OpRecord carries a `jsCall` field rendered by `op-recorder.ts`
-  // alongside its R sibling. Ops that aren't on TabvizInstance yet
-  // route through `instance.store.<method>(...)` as a documented
-  // escape hatch.
-  const jsOpsBody = $derived.by(() => {
-    const log = store.opLog;
-    if (log.length === 0) return "";
-    return log.map((r) => r.jsCall).join("\n");
-  });
-
+  // Replaces the previous "dump the resolved WebSpec as JSON" emitter.
+  // The new emitter (a) hides the data array behind a `tabvizData`
+  // placeholder, (b) emits `theme: "lancet"` when the resolved theme
+  // matches a preset, (c) drops args at their builder defaults, and
+  // (d) uses function builders matching R's `col_*` / `viz_*` shape.
+  //
+  // Pure function — see `srcjs/src/lib/source-emit.ts`.
   const jsSource = $derived.by(() => {
     if (!store.spec) return "// No spec loaded.";
-    const specJson = JSON.stringify(store.spec, null, 2);
-    const preamble = [
-      `import { createTabviz } from "@tabviz/core";`,
-      `import "@tabviz/core/style.css";`,
-      ``,
-      `const spec = ${specJson};`,
-      ``,
-      `const instance = createTabviz(`,
-      `  document.querySelector("#plot")!,`,
-      `  spec,`,
-      `);`,
-    ].join("\n");
-    return jsOpsBody ? `${preamble}\n\n${jsOpsBody}` : preamble;
+    return emitJsSource({ spec: store.spec, opLog: store.opLog });
   });
 
   // ---- Active tab content --------------------------------------------

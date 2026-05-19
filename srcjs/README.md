@@ -1,17 +1,42 @@
 # @tabviz/core
 
-**JavaScript runtime for tabviz** — the publication-quality forest plots
-and rich interactive tables otherwise consumed via the
+**JavaScript runtime + authoring API for tabviz** — the publication-quality
+forest plots and rich interactive tables otherwise consumed via the
 [`tabviz` R package](https://github.com/kaskarn/tabviz).
 
-> **Status: 0.1.0 — pre-1.0 release.** Stable subpath shape + wire
-> format; iterating on the imperative API surface (op-log → fluent JS
-> coverage in particular). See
-> [`docs/dev/frontend-split-spec.md`](../docs/dev/frontend-split-spec.md)
-> for the program plan and
-> [`docs/dev/versioning.md`](../docs/dev/versioning.md) for the
-> wire-format SemVer policy. The same source tree also produces three
-> IIFE bundles vendored into the R package's `inst/`.
+> **Status: 0.2.0 — pre-1.0.** Authoring API (function builders mirroring
+> R's `tabviz()` / `col_*()` / `viz_*()` / `theme_*()`) landed; wire format
+> stable at v1.0; subpath shape stable. See
+> [`docs/dev/r-ts-parity-notes.md`](https://github.com/kaskarn/tabviz/blob/main/docs/dev/r-ts-parity-notes.md)
+> for per-helper R↔TS parity status and known gaps.
+
+## Quick start — build a spec, mount it
+
+```ts
+import {
+  tabviz, createTabviz,
+  colText, colInterval, vizForest,
+} from "@tabviz/core";
+import "@tabviz/core/style.css";
+
+const spec = tabviz({
+  data: rows,
+  label: "study",
+  theme: "lancet",
+  columns: [
+    colText({ field: "study", header: "Study" }),
+    colInterval({ point: "hr", lower: "lcl", upper: "ucl" }),
+    vizForest({ point: "hr", lower: "lcl", upper: "ucl", scale: "log" }),
+  ],
+  title: "Hazard ratios across studies",
+});
+
+const instance = createTabviz(document.querySelector("#plot")!, spec);
+```
+
+`tabviz()` returns a `WebSpec` (the wire-format payload). `createTabviz`
+mounts it. Every R helper has a TS mirror — argument names + defaults
+match; snake_case in R → camelCase in TS.
 
 ## What this package will publish
 

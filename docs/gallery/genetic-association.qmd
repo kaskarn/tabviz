@@ -1,0 +1,129 @@
+---
+title: "Genetic Association (R + TS)"
+description: "The same forest plot, two ways — using tabviz from R and from TypeScript"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+When `tabviz` was just an R package, "the JS code" meant "the bundled htmlwidget runtime" — opaque to consumers, only useful as a black box behind the R API. As of 0.2.0, the JS side is a first-class authoring target: the same `tabviz()` / `col_*()` / `viz_*()` / `theme_*()` API mirrored in TypeScript, available from npm as [`@tabviz/core`](https://www.npmjs.com/package/@tabviz/core).
+
+This page walks through one example two ways: an R chunk that renders the live widget below, and a TypeScript snippet that produces the same plot from a web app.
+
+## Data: genetic associations with cardiovascular events
+
+A small GWAS-style result table — SNP-level effect estimates from a polygenic-risk-score study. Rows are SNPs; columns carry the locus name, allele frequency, effect size + CI, sample size, and a p-value. A forest plot on the right shows the effect estimates aligned with the table.
+
+```{r}
+snps <- data.frame(
+  snp         = c("rs7412",   "rs429358",  "rs2230806", "rs5174",   "rs1801133",
+                  "rs5882",   "rs7041",    "rs662",     "rs6025",   "rs1799963"),
+  gene        = c("APOE",     "APOE",      "ABCA1",     "LRP1",     "MTHFR",
+                  "CETP",     "GC",        "PON1",      "F5",       "F2"),
+  maf         = c(0.07,       0.14,        0.22,        0.41,       0.30,
+                  0.35,       0.40,        0.31,        0.04,       0.02),
+  effect      = c(-0.18,      0.28,        -0.11,       0.07,       0.09,
+                  -0.13,      0.05,        0.10,        0.34,       0.41),
+  lower       = c(-0.27,      0.19,        -0.18,       0.02,       0.02,
+                  -0.20,     -0.01,       0.03,        0.18,        0.21),
+  upper       = c(-0.09,      0.37,        -0.04,       0.12,       0.16,
+                  -0.06,      0.11,       0.17,        0.50,        0.61),
+  n_studies   = c(34,         38,          12,          9,          21,
+                  17,         8,           14,          22,          11),
+  p_value     = c(3.2e-5,     1.4e-9,      4.7e-3,      0.018,      0.014,
+                  2.6e-4,     0.067,       7.3e-3,      1.1e-5,      2.1e-5)
+)
+```
+
+## R: `tabviz(...)` rendering the live widget
+
+```{r}
+#| fig-width: 11
+#| fig-height: 5
+tabviz(
+  snps,
+  label = "snp",
+  label_header = "SNP",
+  theme = web_theme_lancet(),
+  columns = list(
+    col_text("gene", header = "Gene"),
+    col_numeric("maf", header = "MAF", decimals = 2),
+    col_interval("effect", "lower", "upper", header = "Effect (95% CI)"),
+    col_n("n_studies", header = "Studies"),
+    col_pvalue("p_value"),
+    viz_forest(
+      point = "effect", lower = "lower", upper = "upper",
+      axis_label = "Effect estimate",
+      scale = "linear",
+      null_value = 0
+    )
+  ),
+  title = "Genetic associations with cardiovascular events",
+  caption = "Effect = log odds ratio per allele; CI = 95%."
+)
+```
+
+## TypeScript: the same plot via `@tabviz/core`
+
+The TypeScript side mirrors the R API one-to-one. `tabviz()` returns a `WebSpec` (the wire-format payload); `createTabviz(node, spec)` mounts it into the DOM. The code below produces the same plot as the R chunk above — same theme, same columns, same forest scale.
+
+::: {.callout-tip collapse="false"}
+## Same plot, TypeScript way
+
+```ts
+import {
+  tabviz, createTabviz,
+  colText, colNumeric, colInterval, colN, colPvalue,
+  vizForest,
+} from "@tabviz/core";
+import "@tabviz/core/style.css";
+
+// `snpsData` is your row array — same shape as the R `snps` data.frame.
+declare const snpsData: Array<{
+  snp: string; gene: string; maf: number;
+  effect: number; lower: number; upper: number;
+  n_studies: number; p_value: number;
+}>;
+
+const spec = tabviz({
+  data: snpsData,
+  label: "snp",
+  labelHeader: "SNP",
+  theme: "lancet",
+  columns: [
+    colText({ field: "gene", header: "Gene" }),
+    colNumeric({ field: "maf", header: "MAF", decimals: 2 }),
+    colInterval({
+      point: "effect", lower: "lower", upper: "upper",
+      header: "Effect (95% CI)",
+    }),
+    colN({ field: "n_studies", header: "Studies" }),
+    colPvalue({ field: "p_value" }),
+    vizForest({
+      point: "effect", lower: "lower", upper: "upper",
+      axisLabel: "Effect estimate",
+      scale: "linear",
+      nullValue: 0,
+    }),
+  ],
+  title: "Genetic associations with cardiovascular events",
+  caption: "Effect = log odds ratio per allele; CI = 95%.",
+});
+
+const instance = createTabviz(document.querySelector("#plot")!, spec);
+```
+
+The TS snippet is shown for reference, not executed. Drop it into a Vite or Next.js project that depends on `@tabviz/core@^0.2.0` and the rendered output is byte-identical to the R chunk above.
+:::
+
+## What's the same, what's different?
+
+The argument names, defaults, and shape of the returned spec are identical:
+
+- R: `col_interval("effect", "lower", "upper")` ↔ TS: `colInterval({ point: "effect", lower: "lower", upper: "upper" })`
+- R: snake_case kwargs ↔ TS: camelCase keys
+- R: `theme = web_theme_lancet()` ↔ TS: `theme: "lancet"` (or `theme: themeLancet()`)
+
+R is positional-friendly (`col_*` helpers take `field` as the first positional arg); TS is purely named-argument because it's a single object literal. Beyond that, the helpers are mechanical 1:1 translations — change one to fit the other by remembering snake-case ↔ camelCase and keyword-vs-positional. The parity test suite in `tests/parity/` pins this contract.

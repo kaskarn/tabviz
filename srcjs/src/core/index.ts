@@ -2,10 +2,11 @@
 // that npm consumers reach for under the main `@tabviz/core` entry.
 // Per spec §3.3:
 //
-//   import { createTabviz, createSplitTabviz } from "@tabviz/core";
+//   import { createTabviz, createSplitTabviz, tabviz, colText, themeLancet } from "@tabviz/core";
 //
-// `createTheme` (the JS theme-resolver port, spec §0c-C5) is deferred
-// to Phase 1.x; once it lands it joins this surface.
+// Runtime factories: mount a pre-built WebSpec into a DOM node.
+// Authoring API (added 0.2.0): build a WebSpec programmatically. See
+// `srcjs/src/authoring/` and `docs/dev/r-ts-parity-notes.md`.
 
 export { createTabviz } from "./createTabviz";
 export { createSplitTabviz } from "./createSplitTabviz";
@@ -26,3 +27,6 @@ export type {
   ZoomState,
   SortConfig,
 } from "$types";
+
+// Authoring API — function builders mirroring R's tabviz()/col_*()/viz_*()/theme*().
+export * from "../authoring";
