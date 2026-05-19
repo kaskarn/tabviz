@@ -5,7 +5,7 @@
 \alias{tabviz-package}
 \title{tabviz: Interactive Tables with Embedded Visualizations}
 \description{
-Create interactive tables with embedded visualizations including forest plots, sparklines, bar charts, and more. Ideal for meta-analysis, regression results, dashboards, and data reports. Rendered using modern web technologies (Svelte, D3.js) for R Markdown, Quarto, Shiny, and standalone HTML. Features include collapsible groups, 15+ column types, conditional styling, publication-ready themes, and static export to SVG/PDF/PNG.
+Create interactive tables with embedded visualizations including forest plots, sparklines, bar charts, and more. Ideal for meta-analysis, regression results, dashboards, and data reports. Rendered using modern web technologies (Svelte, D3.js) for R Markdown, Quarto, Shiny, and standalone HTML. Features include collapsible groups, 17 column types, conditional styling, publication-ready themes, and static export to SVG/PDF/PNG/PPTx. A companion JavaScript package \url{https://www.npmjs.com/package/@tabviz/core} provides the same runtime and authoring API for direct use from web applications.
 }
 \seealso{
 Useful links:

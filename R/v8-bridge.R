@@ -61,3 +61,43 @@ ts_call <- function(name, args) {
   result_json <- ctx$call("callBuilder", name, args_json)
   jsonlite::fromJSON(result_json, simplifyVector = FALSE)
 }
+
+#' Delegate a `col_*` helper to its TS mirror, then wrap in S7 via web_col.
+#'
+#' Shared boilerplate for R column helpers that delegate construction to
+#' TS via `ts_call(builder_name, ts_args)`. Computes the wire shape JS-side,
+#' then wraps in an R-side `ColumnSpec` via `web_col(...)` so R-only
+#' concerns (style mappings, formatter slot, S7 validators) keep working.
+#'
+#' Caller-supplied `extra_args` (the `...` from the wrapping `col_*()`)
+#' shadow the TS-computed defaults — e.g. when `tabviz()` internally
+#' pins `id = "label"` on the row-label column, the explicit id overrides
+#' the TS-computed default.
+#'
+#' @param builder_name TS builder symbol (e.g. `"colText"`).
+#' @param ts_args Named list passed to `ts_call`.
+#' @param type Column type string for `web_col()`'s explicit `type=` arg.
+#'   The TS shape's `type` field is authoritative; this arg lets the caller
+#'   pin a type when the TS shape might compute differently (rare).
+#' @param na_text NA replacement text; threaded through to `web_col`.
+#' @param extra_args The caller's `...` as a list.
+#' @return A `ColumnSpec` S7 object.
+#' @noRd
+delegate_to_web_col <- function(builder_name, ts_args, type = NULL, na_text = NULL, extra_args = list()) {
+  shape <- ts_call(builder_name, ts_args)
+  args <- list(
+    field   = shape$field,
+    header  = shape$header,
+    type    = type %||% shape$type,
+    id      = shape$id,
+    width   = if (identical(shape$width, "auto")) NULL else shape$width,
+    options = shape$options %||% list(),
+    na_text = na_text
+  )
+  args[names(extra_args)] <- extra_args
+  do.call(web_col, args)
+}
+
+# Local null-coalesce. Identical to rlang's %||% but inlined here so the
+# v8-bridge has zero dependencies beyond V8 + jsonlite.
+`%||%` <- function(x, y) if (is.null(x)) y else x
