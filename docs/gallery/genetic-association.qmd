@@ -17,6 +17,7 @@ This page renders the same forest plot **twice on the same page** — once via R
 A small GWAS-style result table — SNP-level effect estimates from a polygenic-risk-score study. Rows are SNPs; columns carry the locus name, allele frequency, effect size + CI, sample size, and a p-value. A forest plot on the right shows the effect estimates aligned with the table.
 
 ```{r}
+#| cache: false
 snps <- data.frame(
   snp         = c("rs7412",   "rs429358",  "rs2230806", "rs5174",   "rs1801133",
                   "rs5882",   "rs7041",    "rs662",     "rs6025",   "rs1799963"),
