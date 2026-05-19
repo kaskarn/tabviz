@@ -69,17 +69,29 @@ DENSITY_PRESETS <- list(
 )
 
 
-# Generic helper: fill NA-valued properties of an S7 object from a named
-# list of defaults. `is.na` works for character, numeric, and logical NA.
-fill_na <- function(obj, defaults) {
-  for (p in names(defaults)) {
+# Generic helper: fill NA-valued properties of an S7 object from a source
+# that's either a named list (defaults) or another S7 object (composition).
+# `is.na` works for character, numeric, and logical NA scalars.
+#
+# Iteration: list source iterates over `names(source)`; S7 source iterates
+# over `prop_names(obj)`. The S7-source form replaces the (deleted)
+# `compose_text(over, under)` helper, which was a structural duplicate.
+fill_na <- function(obj, source) {
+  src_is_s7 <- inherits(source, "S7_object")
+  props <- if (src_is_s7) S7::prop_names(obj) else names(source)
+  for (p in props) {
     current <- S7::prop(obj, p)
     if (length(current) == 1L && is.na(current)) {
-      S7::prop(obj, p) <- defaults[[p]]
+      S7::prop(obj, p) <- if (src_is_s7) S7::prop(source, p) else source[[p]]
     }
   }
   obj
 }
+
+# Compose: prefer `over`'s non-NA fields, fall back to `under`. Thin alias
+# over `fill_na(over, under)` — kept as a named function so callsite reads
+# "compose a TextRole" rather than "fill_na with an S7 source".
+compose_text <- function(over, under) fill_na(over, under)
 
 
 # Mirror Tier 1 NA fields through the identity chain and to engagement.
@@ -328,18 +340,6 @@ resolve_spacing <- function(variants, existing) {
 }
 
 
-# Compose a TextRole, preferring `over`'s non-NA fields and falling back to
-# `under`. Used to inherit role typography while letting clusters override.
-compose_text <- function(over, under) {
-  for (p in S7::prop_names(over)) {
-    cur <- S7::prop(over, p)
-    if (length(cur) == 1L && is.na(cur)) {
-      S7::prop(over, p) <- S7::prop(under, p)
-    }
-  }
-  over
-}
-
 # Override TextRole fields from a named list (skipping NULL/missing).
 override_text <- function(role, ...) {
   args <- list(...)
@@ -580,8 +580,10 @@ resolve_components <- function(theme) {
   # Pre-fill BEFORE compose_text so this value blocks the text-role
   # default (which would otherwise inherit the role's content color)
   # while other NA fields still flow through from the role.
-  secondary_deep <- if (is.na(theme@inputs@secondary_deep)) theme@inputs@primary_deep else theme@inputs@secondary_deep
-  axis_tick_label_fg <- oklch_mix(content@muted, secondary_deep, 0.10)
+  # `secondary_deep` is guaranteed non-NA here — `resolve_inputs_mirrors`
+  # (Step 1 of `resolve_theme`) fills it from `primary_deep` for mono
+  # themes or auto-derives from `secondary` for two-color themes.
+  axis_tick_label_fg <- oklch_mix(content@muted, theme@inputs@secondary_deep, 0.10)
   if (is.na(ps@axis_label@fg)) ps@axis_label@fg <- axis_tick_label_fg
   if (is.na(ps@tick_label@fg)) ps@tick_label@fg <- axis_tick_label_fg
   ps@axis_label <- compose_text(ps@axis_label, text@label)

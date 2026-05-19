@@ -9,18 +9,30 @@
       "firstColumnStyle": "default"
     },
     "inputs": {
-      "neutral": ["#FFFFFF", "#FFFFFF", "#F2F4F7", "#5B6470", "#1F2937"],
+      "neutral": [
+        "#FFFFFF",
+        "#FFFFFF",
+        "#F2F4F7",
+        "#5B6470",
+        "#1F2937"
+      ],
       "primary": "#0099CC",
-      "primaryDeep": "#006B9C",
+      "primaryDeep": "#006A8E",
       "secondary": "#0099CC",
-      "secondaryDeep": "#006B9C",
+      "secondaryDeep": "#006A8E",
       "accent": "#C8553D",
       "accentDeep": "#95240B",
       "statusPositive": "#3F7D3F",
       "statusNegative": "#B33A3A",
       "statusWarning": "#C68A2E",
       "statusInfo": "#C8553D",
-      "seriesAnchors": ["#0099CC", "#C8553D", "#5C8A3F", "#7E5A99", "#D49A3A"],
+      "seriesAnchors": [
+        "#0099CC",
+        "#C8553D",
+        "#5C8A3F",
+        "#7E5A99",
+        "#D49A3A"
+      ],
       "fontBody": "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
       "fontDisplay": "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
       "fontMono": null,
@@ -43,14 +55,11 @@
       "plotWidth": "auto",
       "containerBorder": false,
       "containerBorderRadius": 8,
-      "banding": {
-        "mode": "group",
-        "level": null
-      }
+      "banding": null
     },
     "surface": {
       "base": "#FFFFFF",
-      "muted": "#E9EFF3",
+      "muted": "#E8EFF2",
       "raised": "#FFFFFF"
     },
     "content": {
@@ -60,8 +69,8 @@
       "inverse": "#FFFFFF"
     },
     "divider": {
-      "subtle": "#B1BEC8",
-      "strong": "#596473"
+      "subtle": "#B0BEC6",
+      "strong": "#596472"
     },
     "accent": {
       "default": "#C8553D",
@@ -81,11 +90,11 @@
     "series": [
       {
         "fill": "#0099CC",
-        "stroke": "#007AAC",
-        "fillMuted": "#B8DCEE",
-        "strokeMuted": "#99BCCD",
-        "fillEmphasis": "#008ACF",
-        "strokeEmphasis": "#005C8C",
+        "stroke": "#0079A2",
+        "fillMuted": "#B9DCEE",
+        "strokeMuted": "#9ABCCD",
+        "fillEmphasis": "#0089B7",
+        "strokeEmphasis": "#005B7B",
         "textFg": "#1F2937",
         "shape": null
       },
@@ -95,7 +104,7 @@
         "fillMuted": "#F1C4BA",
         "strokeMuted": "#D0A49B",
         "fillEmphasis": "#C72F0B",
-        "strokeEmphasis": "#841000",
+        "strokeEmphasis": "#811800",
         "textFg": "#1F2937",
         "shape": null
       },
@@ -104,8 +113,8 @@
         "stroke": "#406C20",
         "fillMuted": "#C4D5BB",
         "strokeMuted": "#A4B59C",
-        "fillEmphasis": "#417F00",
-        "strokeEmphasis": "#244F00",
+        "fillEmphasis": "#427F00",
+        "strokeEmphasis": "#264F00",
         "textFg": "#1F2937",
         "shape": null
       },
@@ -114,7 +123,7 @@
         "stroke": "#613E7A",
         "fillMuted": "#D0C3DB",
         "strokeMuted": "#B0A3BB",
-        "fillEmphasis": "#75429A",
+        "fillEmphasis": "#76429A",
         "strokeEmphasis": "#45225D",
         "textFg": "#1F2937",
         "shape": null
@@ -122,10 +131,10 @@
       {
         "fill": "#D49A3A",
         "stroke": "#B37B08",
-        "fillMuted": "#F1DCBE",
-        "strokeMuted": "#D0BC9E",
-        "fillEmphasis": "#D18400",
-        "strokeEmphasis": "#945D00",
+        "fillMuted": "#F1DCBF",
+        "strokeMuted": "#D0BC9F",
+        "fillEmphasis": "#C88800",
+        "strokeEmphasis": "#8E6000",
         "textFg": "#1F2937",
         "shape": null
       }
@@ -136,7 +145,7 @@
         "size": "1.25rem",
         "weight": 600,
         "figures": "proportional",
-        "fg": "#006B9C",
+        "fg": "#006A8E",
         "italic": false
       },
       "subtitle": {
@@ -144,7 +153,7 @@
         "size": "1rem",
         "weight": 400,
         "figures": "proportional",
-        "fg": "#4E667F",
+        "fg": "#4E657B",
         "italic": false
       },
       "body": {
@@ -168,7 +177,7 @@
         "size": "0.75rem",
         "weight": 400,
         "figures": "tabular",
-        "fg": "#53657A",
+        "fg": "#536578",
         "italic": false
       },
       "tick": {
@@ -176,7 +185,7 @@
         "size": "0.75rem",
         "weight": 400,
         "figures": "tabular",
-        "fg": "#717F90",
+        "fg": "#717E8F",
         "italic": false
       },
       "footnote": {
@@ -184,7 +193,7 @@
         "size": "0.75rem",
         "weight": 400,
         "figures": "proportional",
-        "fg": "#6A7C92",
+        "fg": "#6A7C90",
         "italic": false
       },
       "caption": {
@@ -192,7 +201,7 @@
         "size": "0.75rem",
         "weight": 400,
         "figures": "proportional",
-        "fg": "#4E667F",
+        "fg": "#4E657B",
         "italic": true
       }
     },
@@ -219,7 +228,7 @@
         "size": "1.25rem",
         "weight": 600,
         "figures": "proportional",
-        "fg": "#006B9C",
+        "fg": "#006A8E",
         "italic": false
       },
       "subtitle": {
@@ -227,7 +236,7 @@
         "size": "1rem",
         "weight": 400,
         "figures": "proportional",
-        "fg": "#4E667F",
+        "fg": "#4E657B",
         "italic": false
       },
       "caption": {
@@ -235,7 +244,7 @@
         "size": "0.75rem",
         "weight": 400,
         "figures": "proportional",
-        "fg": "#4E667F",
+        "fg": "#4E657B",
         "italic": true
       },
       "footnote": {
@@ -243,7 +252,7 @@
         "size": "0.75rem",
         "weight": 400,
         "figures": "proportional",
-        "fg": "#6A7C92",
+        "fg": "#6A7C90",
         "italic": false
       }
     },
@@ -251,17 +260,17 @@
       "light": {
         "bg": "#FFFFFF",
         "fg": "#1F2937",
-        "rule": "#596473"
+        "rule": "#596472"
       },
       "tint": {
-        "bg": "#E3EDF3",
+        "bg": "#E3ECF1",
         "fg": "#1F2937",
-        "rule": "#596473"
+        "rule": "#596472"
       },
       "bold": {
-        "bg": "#006B9C",
+        "bg": "#006A8E",
         "fg": "#FFFFFF",
-        "rule": "#A4C3D8"
+        "rule": "#A4C2D2"
       },
       "text": {
         "family": "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
@@ -276,17 +285,17 @@
       "light": {
         "bg": "#FFFFFF",
         "fg": "#1F2937",
-        "rule": "#596473"
+        "rule": "#596472"
       },
       "tint": {
-        "bg": "#E3EDF3",
+        "bg": "#E3ECF1",
         "fg": "#1F2937",
-        "rule": "#596473"
+        "rule": "#596472"
       },
       "bold": {
-        "bg": "#006B9C",
+        "bg": "#006A8E",
         "fg": "#FFFFFF",
-        "rule": "#A4C3D8"
+        "rule": "#A4C2D2"
       },
       "text": {
         "family": "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
@@ -299,9 +308,9 @@
     },
     "rowGroup": {
       "L1": {
-        "bg": "#DAE7F0",
+        "bg": "#DAE6ED",
         "fg": "#1F2937",
-        "rule": "#596473",
+        "rule": "#596472",
         "text": {
           "family": "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
           "size": "0.875rem",
@@ -313,9 +322,9 @@
         "borderBottom": false
       },
       "L2": {
-        "bg": "#DAE7F0",
+        "bg": "#DAE6ED",
         "fg": "#5B6470",
-        "rule": "#B1BEC8",
+        "rule": "#B0BEC6",
         "text": {
           "family": "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
           "size": "0.875rem",
@@ -327,7 +336,7 @@
         "borderBottom": false
       },
       "L3": {
-        "bg": "#DAE7F0",
+        "bg": "#DAE6ED",
         "fg": "#5B6470",
         "rule": null,
         "text": {
@@ -348,7 +357,7 @@
         "fg": "#1F2937"
       },
       "alt": {
-        "bg": "#F4F7F9",
+        "bg": "#F3F7F8",
         "fg": "#1F2937"
       },
       "hover": {
@@ -414,7 +423,7 @@
     "cell": {
       "bg": null,
       "fg": "#1F2937",
-      "border": "#B1BEC8",
+      "border": "#B0BEC6",
       "text": {
         "family": "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
         "size": "0.875rem",
@@ -432,24 +441,24 @@
         "weight": null
       },
       "bold": {
-        "bg": "#E9EFF3",
+        "bg": "#E8EFF2",
         "fg": "#1F2937",
-        "rule": "#B1BEC8",
+        "rule": "#B0BEC6",
         "weight": 600
       }
     },
     "plot": {
       "bg": null,
-      "axisLine": "#596473",
-      "tickMark": "#596473",
-      "gridline": "#B1BEC8",
-      "reference": "#596473",
+      "axisLine": "#596472",
+      "tickMark": "#596472",
+      "gridline": "#B0BEC6",
+      "reference": "#596472",
       "axisLabel": {
         "family": "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
         "size": "0.75rem",
         "weight": 400,
         "figures": "tabular",
-        "fg": "#717F90",
+        "fg": "#717E8F",
         "italic": false
       },
       "tickLabel": {
@@ -457,7 +466,7 @@
         "size": "0.75rem",
         "weight": 400,
         "figures": "tabular",
-        "fg": "#717F90",
+        "fg": "#717E8F",
         "italic": false
       },
       "tickMarkLength": 4,
@@ -507,18 +516,30 @@
       "firstColumnStyle": "default"
     },
     "inputs": {
-      "neutral": ["#FDFCFB", "#FDFCFB", "#F8F7F5", "#3D5A80", "#1E3A5F"],
+      "neutral": [
+        "#FDFCFB",
+        "#FDFCFB",
+        "#F8F7F5",
+        "#3D5A80",
+        "#1E3A5F"
+      ],
       "primary": "#00407A",
       "primaryDeep": "#002D54",
       "secondary": "#00407A",
       "secondaryDeep": "#002D54",
       "accent": "#A6792A",
-      "accentDeep": "#784D00",
+      "accentDeep": "#744F00",
       "statusPositive": "#3F7D3F",
       "statusNegative": "#B33A3A",
       "statusWarning": "#C68A2E",
       "statusInfo": "#A6792A",
-      "seriesAnchors": ["#00468B", "#ED0000", "#42B540", "#0099B4", "#925E9F"],
+      "seriesAnchors": [
+        "#00468B",
+        "#ED0000",
+        "#42B540",
+        "#0099B4",
+        "#925E9F"
+      ],
       "fontBody": "Georgia, 'Times New Roman', serif",
       "fontDisplay": "Georgia, 'Times New Roman', serif",
       "fontMono": null,
@@ -541,10 +562,7 @@
       "plotWidth": "auto",
       "containerBorder": false,
       "containerBorderRadius": 8,
-      "banding": {
-        "mode": "group",
-        "level": null
-      }
+      "banding": null
     },
     "surface": {
       "base": "#FDFCFB",
@@ -579,21 +597,21 @@
     "series": [
       {
         "fill": "#00468B",
-        "stroke": "#00296C",
+        "stroke": "#002D5D",
         "fillMuted": "#A5BBD7",
         "strokeMuted": "#869CB7",
-        "fillEmphasis": "#00328F",
-        "strokeEmphasis": "#000A4E",
+        "fillEmphasis": "#003973",
+        "strokeEmphasis": "#001532",
         "textFg": "#1E3A5F",
         "shape": null
       },
       {
         "fill": "#ED0000",
-        "stroke": "#C80000",
-        "fillMuted": "#FFBAAE",
-        "strokeMuted": "#DD9A8F",
-        "fillEmphasis": "#E90000",
-        "strokeEmphasis": "#A30000",
+        "stroke": "#B90000",
+        "fillMuted": "#FFBBB0",
+        "strokeMuted": "#DD9B91",
+        "fillEmphasis": "#D30000",
+        "strokeEmphasis": "#880000",
         "textFg": "#1E3A5F",
         "shape": null
       },
@@ -602,18 +620,18 @@
         "stroke": "#159519",
         "fillMuted": "#C0E5BD",
         "strokeMuted": "#A0C49E",
-        "fillEmphasis": "#00A900",
-        "strokeEmphasis": "#007600",
+        "fillEmphasis": "#00A80F",
+        "strokeEmphasis": "#007407",
         "textFg": "#1E3A5F",
         "shape": null
       },
       {
         "fill": "#0099B4",
-        "stroke": "#007A95",
+        "stroke": "#00798E",
         "fillMuted": "#B6DAE4",
-        "strokeMuted": "#97BAC4",
-        "fillEmphasis": "#008EB3",
-        "strokeEmphasis": "#005D76",
+        "strokeMuted": "#97BAC3",
+        "fillEmphasis": "#0089A1",
+        "strokeEmphasis": "#005A6A",
         "textFg": "#1E3A5F",
         "shape": null
       },
@@ -880,7 +898,7 @@
         "fg": "#A6792A",
         "border": null,
         "markerFill": "#A6792A",
-        "markerStroke": "#784D00",
+        "markerStroke": "#744F00",
         "fontWeight": 600,
         "fontStyle": null
       },
@@ -1005,7 +1023,13 @@
       "firstColumnStyle": "default"
     },
     "inputs": {
-      "neutral": ["#FFFFFF", "#FFFFFF", "#F9FAFB", "#555555", "#000000"],
+      "neutral": [
+        "#FFFFFF",
+        "#FFFFFF",
+        "#F9FAFB",
+        "#555555",
+        "#000000"
+      ],
       "primary": "#000000",
       "primaryDeep": "#000000",
       "secondary": "#000000",
@@ -1016,7 +1040,13 @@
       "statusNegative": "#B33A3A",
       "statusWarning": "#C68A2E",
       "statusInfo": "#000000",
-      "seriesAnchors": ["#1A1A1A", "#4A4A4A", "#7A7A7A", "#9A9A9A", "#BABABA"],
+      "seriesAnchors": [
+        "#1A1A1A",
+        "#4A4A4A",
+        "#7A7A7A",
+        "#9A9A9A",
+        "#BABABA"
+      ],
       "fontBody": "Arial, Helvetica, sans-serif",
       "fontDisplay": "Arial, Helvetica, sans-serif",
       "fontMono": null,
@@ -1039,10 +1069,7 @@
       "plotWidth": "auto",
       "containerBorder": false,
       "containerBorderRadius": 8,
-      "banding": {
-        "mode": "group",
-        "level": null
-      }
+      "banding": null
     },
     "surface": {
       "base": "#FFFFFF",
@@ -1080,7 +1107,7 @@
         "stroke": "#050505",
         "fillMuted": "#A6A6A6",
         "strokeMuted": "#888888",
-        "fillEmphasis": "#0A0D20",
+        "fillEmphasis": "#150E00",
         "strokeEmphasis": "#000000",
         "textFg": "#000000",
         "shape": null
@@ -1090,7 +1117,7 @@
         "stroke": "#303030",
         "fillMuted": "#BBBBBB",
         "strokeMuted": "#9C9C9C",
-        "fillEmphasis": "#363C52",
+        "fillEmphasis": "#453C24",
         "strokeEmphasis": "#181818",
         "textFg": "#000000",
         "shape": null
@@ -1100,7 +1127,7 @@
         "stroke": "#5D5D5D",
         "fillMuted": "#CECECE",
         "strokeMuted": "#AEAEAE",
-        "fillEmphasis": "#646A83",
+        "fillEmphasis": "#746A51",
         "strokeEmphasis": "#424242",
         "textFg": "#000000",
         "shape": null
@@ -1110,7 +1137,7 @@
         "stroke": "#7C7C7C",
         "fillMuted": "#DBDBDB",
         "strokeMuted": "#BBBBBB",
-        "fillEmphasis": "#838AA4",
+        "fillEmphasis": "#958B70",
         "strokeEmphasis": "#5F5F5F",
         "textFg": "#000000",
         "shape": null
@@ -1120,7 +1147,7 @@
         "stroke": "#9B9B9B",
         "fillMuted": "#E6E6E6",
         "strokeMuted": "#C5C5C5",
-        "fillEmphasis": "#A2A9C4",
+        "fillEmphasis": "#B4AA8E",
         "strokeEmphasis": "#7D7D7D",
         "textFg": "#000000",
         "shape": null
@@ -1503,7 +1530,13 @@
       "firstColumnStyle": "default"
     },
     "inputs": {
-      "neutral": ["#1E1E2E", "#1E1E2E", "#232334", "#6C7086", "#CDD6F4"],
+      "neutral": [
+        "#1E1E2E",
+        "#1E1E2E",
+        "#232334",
+        "#6C7086",
+        "#CDD6F4"
+      ],
       "primary": "#89B4FA",
       "primaryDeep": "#2E5290",
       "secondary": "#89B4FA",
@@ -1514,7 +1547,13 @@
       "statusNegative": "#B33A3A",
       "statusWarning": "#C68A2E",
       "statusInfo": "#F5C2E7",
-      "seriesAnchors": ["#89B4FA", "#A6E3A1", "#FAB387", "#F38BA8", "#CBA6F7"],
+      "seriesAnchors": [
+        "#89B4FA",
+        "#A6E3A1",
+        "#FAB387",
+        "#F38BA8",
+        "#CBA6F7"
+      ],
       "fontBody": "system-ui, -apple-system, 'Segoe UI', sans-serif",
       "fontDisplay": "system-ui, -apple-system, 'Segoe UI', sans-serif",
       "fontMono": null,
@@ -1537,10 +1576,7 @@
       "plotWidth": "auto",
       "containerBorder": false,
       "containerBorderRadius": 8,
-      "banding": {
-        "mode": "group",
-        "level": null
-      }
+      "banding": null
     },
     "surface": {
       "base": "#1E1E2E",
@@ -1578,7 +1614,7 @@
         "stroke": "#6B94D8",
         "fillMuted": "#454C6F",
         "strokeMuted": "#2B3152",
-        "fillEmphasis": "#69A2FF",
+        "fillEmphasis": "#6BA3FF",
         "strokeEmphasis": "#4E76B7",
         "textFg": "#CDD6F4",
         "shape": null
@@ -1952,6 +1988,1554 @@
         "weight": 400,
         "figures": "tabular",
         "fg": "#8188A3",
+        "italic": false
+      },
+      "tickMarkLength": 4,
+      "lineWidth": 1.5,
+      "pointSize": 6
+    },
+    "marks": {
+      "forest": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "summary": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "bar": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "box": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "violin": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "lollipop": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      }
+    }
+  },
+  "dwarven": {
+    "schemaVersion": 2,
+    "name": "dwarven",
+    "webFonts": [
+      {
+        "family": "UnifrakturMaguntia",
+        "url": "https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap"
+      },
+      {
+        "family": "EB Garamond",
+        "url": "https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600;700&display=swap"
+      }
+    ],
+    "variants": {
+      "density": "comfortable",
+      "headerStyle": "light",
+      "firstColumnStyle": "default"
+    },
+    "inputs": {
+      "neutral": [
+        "#1F1610",
+        "#1F1610",
+        "#2A1F17",
+        "#988372",
+        "#E8D9B5"
+      ],
+      "primary": "#7A4E22",
+      "primaryDeep": "#4A2D14",
+      "secondary": "#D4A955",
+      "secondaryDeep": "#8A6628",
+      "accent": "#E0673A",
+      "accentDeep": "#B04A20",
+      "statusPositive": "#8FA34A",
+      "statusNegative": "#C84638",
+      "statusWarning": "#E5B842",
+      "statusInfo": "#E0673A",
+      "seriesAnchors": [
+        "#D4A955",
+        "#A8A8A0",
+        "#B86C42",
+        "#7A4E22",
+        "#5C7AA0"
+      ],
+      "fontBody": "'EB Garamond', Georgia, 'Times New Roman', serif",
+      "fontDisplay": "'UnifrakturMaguntia', 'EB Garamond', Georgia, serif",
+      "fontMono": null,
+      "slotStyle": "fill_with_darker_stroke"
+    },
+    "axis": {
+      "rangeMin": null,
+      "rangeMax": null,
+      "tickCount": null,
+      "tickValues": null,
+      "gridlines": false,
+      "gridlineStyle": "dotted",
+      "ciClipFactor": 2,
+      "includeNull": true,
+      "symmetric": null,
+      "nullTick": true,
+      "markerMargin": true
+    },
+    "layout": {
+      "plotWidth": "auto",
+      "containerBorder": false,
+      "containerBorderRadius": 8,
+      "banding": null
+    },
+    "surface": {
+      "base": "#1F1610",
+      "muted": "#2E2118",
+      "raised": "#1F1610"
+    },
+    "content": {
+      "primary": "#E8D9B5",
+      "secondary": "#988372",
+      "muted": "#B7A190",
+      "inverse": "#E8D9B5"
+    },
+    "divider": {
+      "subtle": "#3A2A1A",
+      "strong": "#5A4232"
+    },
+    "accent": {
+      "default": "#E0673A",
+      "muted": "#341F17",
+      "tintSubtle": "#301D16",
+      "tintMedium": "#4A291D"
+    },
+    "status": {
+      "positive": "#8FA34A",
+      "negative": "#C84638",
+      "warning": "#E5B842",
+      "info": "#E0673A"
+    },
+    "semantic": {
+      "fill": "#42251B"
+    },
+    "series": [
+      {
+        "fill": "#D4A955",
+        "stroke": "#B48A33",
+        "fillMuted": "#564526",
+        "strokeMuted": "#3B2B0B",
+        "fillEmphasis": "#CE9600",
+        "strokeEmphasis": "#946C03",
+        "textFg": "#E8D9B5",
+        "shape": null
+      },
+      {
+        "fill": "#A8A8A0",
+        "stroke": "#898982",
+        "fillMuted": "#4C433D",
+        "strokeMuted": "#322924",
+        "fillEmphasis": "#9C9B76",
+        "strokeEmphasis": "#6C6C65",
+        "textFg": "#E8D9B5",
+        "shape": null
+      },
+      {
+        "fill": "#B86C42",
+        "stroke": "#974F23",
+        "fillMuted": "#503222",
+        "strokeMuted": "#351909",
+        "fillEmphasis": "#B75100",
+        "strokeEmphasis": "#773300",
+        "textFg": "#E8D9B5",
+        "shape": null
+      },
+      {
+        "fill": "#7A4E22",
+        "stroke": "#5C3300",
+        "fillMuted": "#3C2917",
+        "strokeMuted": "#221102",
+        "fillEmphasis": "#6F3E00",
+        "strokeEmphasis": "#391D00",
+        "textFg": "#E8D9B5",
+        "shape": null
+      },
+      {
+        "fill": "#5C7AA0",
+        "stroke": "#405D81",
+        "fillMuted": "#2A3849",
+        "strokeMuted": "#121F2F",
+        "fillEmphasis": "#3B6AA7",
+        "strokeEmphasis": "#264164",
+        "textFg": "#E8D9B5",
+        "shape": null
+      }
+    ],
+    "text": {
+      "title": {
+        "family": "'UnifrakturMaguntia', 'EB Garamond', Georgia, serif",
+        "size": "1.25rem",
+        "weight": 600,
+        "figures": "proportional",
+        "fg": "#E8D9B5",
+        "italic": false
+      },
+      "subtitle": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "1rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#C9A87C",
+        "italic": false
+      },
+      "body": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#E8D9B5",
+        "italic": false
+      },
+      "cell": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#E8D9B5",
+        "italic": false
+      },
+      "label": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#967D65",
+        "italic": false
+      },
+      "tick": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#B39B86",
+        "italic": false
+      },
+      "footnote": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#AF947D",
+        "italic": false
+      },
+      "caption": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#957A5E",
+        "italic": true
+      }
+    },
+    "spacing": {
+      "rowHeight": 24,
+      "headerHeight": 32,
+      "padding": 12,
+      "containerPadding": 0,
+      "axisGap": 12,
+      "columnGroupPadding": 8,
+      "rowGroupPadding": 0,
+      "cellPaddingX": 10,
+      "cellPaddingY": 0,
+      "groupPadding": 8,
+      "footerGap": 8,
+      "titleSubtitleGap": 13,
+      "headerGap": 12,
+      "bottomMargin": 16,
+      "indentPerLevel": 16
+    },
+    "annotation": {
+      "title": {
+        "family": "'UnifrakturMaguntia', 'EB Garamond', Georgia, serif",
+        "size": "1.25rem",
+        "weight": 600,
+        "figures": "proportional",
+        "fg": "#E8D9B5",
+        "italic": false
+      },
+      "subtitle": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "1rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#C9A87C",
+        "italic": false
+      },
+      "caption": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#957A5E",
+        "italic": true
+      },
+      "footnote": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#AF947D",
+        "italic": false
+      }
+    },
+    "header": {
+      "light": {
+        "bg": "#1F1610",
+        "fg": "#E8D9B5",
+        "rule": "#5A4232"
+      },
+      "tint": {
+        "bg": "#241910",
+        "fg": "#E8D9B5",
+        "rule": "#5A4232"
+      },
+      "bold": {
+        "bg": "#4A2D14",
+        "fg": "#E8D9B5",
+        "rule": "#A6906F"
+      },
+      "text": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 600,
+        "figures": "tabular",
+        "fg": "#E8D9B5",
+        "italic": false
+      }
+    },
+    "columnGroup": {
+      "light": {
+        "bg": "#1F1610",
+        "fg": "#E8D9B5",
+        "rule": "#5A4232"
+      },
+      "tint": {
+        "bg": "#292012",
+        "fg": "#E8D9B5",
+        "rule": "#5A4232"
+      },
+      "bold": {
+        "bg": "#8A6628",
+        "fg": "#E8D9B5",
+        "rule": "#C1AA7D"
+      },
+      "text": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 500,
+        "figures": "tabular",
+        "fg": "#E8D9B5",
+        "italic": false
+      }
+    },
+    "rowGroup": {
+      "L1": {
+        "bg": "#2C2313",
+        "fg": "#E8D9B5",
+        "rule": "#5A4232",
+        "text": {
+          "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+          "size": "0.875rem",
+          "weight": 600,
+          "figures": "tabular",
+          "fg": "#E8D9B5",
+          "italic": false
+        },
+        "borderBottom": false
+      },
+      "L2": {
+        "bg": "#2C2313",
+        "fg": "#988372",
+        "rule": "#3A2A1A",
+        "text": {
+          "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+          "size": "0.875rem",
+          "weight": 500,
+          "figures": "tabular",
+          "fg": "#E8D9B5",
+          "italic": false
+        },
+        "borderBottom": false
+      },
+      "L3": {
+        "bg": "#2C2313",
+        "fg": "#988372",
+        "rule": null,
+        "text": {
+          "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+          "size": "0.875rem",
+          "weight": 400,
+          "figures": "tabular",
+          "fg": "#E8D9B5",
+          "italic": false
+        },
+        "borderBottom": false
+      },
+      "indentPerLevel": 16
+    },
+    "row": {
+      "base": {
+        "bg": "#1F1610",
+        "fg": "#E8D9B5"
+      },
+      "alt": {
+        "bg": "#261B14",
+        "fg": "#E8D9B5"
+      },
+      "hover": {
+        "bg": "#341F17",
+        "fg": "#E8D9B5"
+      },
+      "selected": {
+        "bg": "#341F17",
+        "fg": "#E8D9B5"
+      },
+      "emphasis": {
+        "bg": null,
+        "fg": "#E8D9B5",
+        "border": null,
+        "markerFill": "#E8D9B5",
+        "markerStroke": "#E8D9B5",
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "muted": {
+        "bg": null,
+        "fg": "#B7A190",
+        "border": null,
+        "markerFill": "#B7A190",
+        "markerStroke": "#988372",
+        "fontWeight": null,
+        "fontStyle": null
+      },
+      "accent": {
+        "bg": null,
+        "fg": "#E0673A",
+        "border": null,
+        "markerFill": "#E0673A",
+        "markerStroke": "#B04A20",
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "bold": {
+        "bg": null,
+        "fg": null,
+        "border": null,
+        "markerFill": null,
+        "markerStroke": null,
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "fill": {
+        "bg": "#42251B",
+        "fg": null,
+        "border": null,
+        "markerFill": null,
+        "markerStroke": null,
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "banding": {
+        "mode": "group",
+        "level": null
+      },
+      "selectedEdgeWidth": 2,
+      "borderWidth": 1
+    },
+    "cell": {
+      "bg": null,
+      "fg": "#E8D9B5",
+      "border": "#3A2A1A",
+      "text": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#E8D9B5",
+        "italic": false
+      }
+    },
+    "firstColumn": {
+      "plain": {
+        "bg": null,
+        "fg": null,
+        "rule": null,
+        "weight": null
+      },
+      "bold": {
+        "bg": "#2E2118",
+        "fg": "#E8D9B5",
+        "rule": "#3A2A1A",
+        "weight": 600
+      }
+    },
+    "plot": {
+      "bg": null,
+      "axisLine": "#5A4232",
+      "tickMark": "#5A4232",
+      "gridline": "#3A2A1A",
+      "reference": "#5A4232",
+      "axisLabel": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#B39B86",
+        "italic": false
+      },
+      "tickLabel": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#B39B86",
+        "italic": false
+      },
+      "tickMarkLength": 4,
+      "lineWidth": 1.5,
+      "pointSize": 6
+    },
+    "marks": {
+      "forest": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "summary": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "bar": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "box": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "violin": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "lollipop": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      }
+    }
+  },
+  "elvish": {
+    "schemaVersion": 2,
+    "name": "elvish",
+    "webFonts": [
+      {
+        "family": "Cinzel",
+        "url": "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "url": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;700&display=swap"
+      }
+    ],
+    "variants": {
+      "density": "comfortable",
+      "headerStyle": "light",
+      "firstColumnStyle": "default"
+    },
+    "inputs": {
+      "neutral": [
+        "#0E1730",
+        "#0E1730",
+        "#172242",
+        "#8090A8",
+        "#EDEFF5"
+      ],
+      "primary": "#1F3A5F",
+      "primaryDeep": "#0F1F38",
+      "secondary": "#B8C2D6",
+      "secondaryDeep": "#7A88A0",
+      "accent": "#D4B26E",
+      "accentDeep": "#B89148",
+      "statusPositive": "#8AC18A",
+      "statusNegative": "#D67373",
+      "statusWarning": "#E5C375",
+      "statusInfo": "#D4B26E",
+      "seriesAnchors": [
+        "#D4B26E",
+        "#B8C2D6",
+        "#8AC18A",
+        "#A78BBF",
+        "#E5A89A"
+      ],
+      "fontBody": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+      "fontDisplay": "'Cinzel', 'Cormorant Garamond', Georgia, serif",
+      "fontMono": null,
+      "slotStyle": "fill_with_darker_stroke"
+    },
+    "axis": {
+      "rangeMin": null,
+      "rangeMax": null,
+      "tickCount": null,
+      "tickValues": null,
+      "gridlines": false,
+      "gridlineStyle": "dotted",
+      "ciClipFactor": 2,
+      "includeNull": true,
+      "symmetric": null,
+      "nullTick": true,
+      "markerMargin": true
+    },
+    "layout": {
+      "plotWidth": "auto",
+      "containerBorder": false,
+      "containerBorderRadius": 8,
+      "banding": null
+    },
+    "surface": {
+      "base": "#0E1730",
+      "muted": "#1A2646",
+      "raised": "#0E1730"
+    },
+    "content": {
+      "primary": "#EDEFF5",
+      "secondary": "#8090A8",
+      "muted": "#9EAFC8",
+      "inverse": "#EDEFF5"
+    },
+    "divider": {
+      "subtle": "#1F2D52",
+      "strong": "#3D4F75"
+    },
+    "accent": {
+      "default": "#D4B26E",
+      "muted": "#282443",
+      "tintSubtle": "#232140",
+      "tintMedium": "#463253"
+    },
+    "status": {
+      "positive": "#8AC18A",
+      "negative": "#D67373",
+      "warning": "#E5C375",
+      "info": "#D4B26E"
+    },
+    "semantic": {
+      "fill": "#3A2C4D"
+    },
+    "series": [
+      {
+        "fill": "#D4B26E",
+        "stroke": "#B4934F",
+        "fillMuted": "#5E3D5C",
+        "strokeMuted": "#422341",
+        "fillEmphasis": "#D09E2F",
+        "strokeEmphasis": "#957530",
+        "textFg": "#EDEFF5",
+        "shape": null
+      },
+      {
+        "fill": "#B8C2D6",
+        "stroke": "#99A3B6",
+        "fillMuted": "#424D66",
+        "strokeMuted": "#28334A",
+        "fillEmphasis": "#9BB2E0",
+        "strokeEmphasis": "#7B8497",
+        "textFg": "#EDEFF5",
+        "shape": null
+      },
+      {
+        "fill": "#8AC18A",
+        "stroke": "#6CA16C",
+        "fillMuted": "#145063",
+        "strokeMuted": "#003444",
+        "fillEmphasis": "#67B769",
+        "strokeEmphasis": "#4E834F",
+        "textFg": "#EDEFF5",
+        "shape": null
+      },
+      {
+        "fill": "#A78BBF",
+        "stroke": "#886D9F",
+        "fillMuted": "#3C3D61",
+        "strokeMuted": "#232345",
+        "fillEmphasis": "#9F74C1",
+        "strokeEmphasis": "#6B5181",
+        "textFg": "#EDEFF5",
+        "shape": null
+      },
+      {
+        "fill": "#E5A89A",
+        "stroke": "#C4897C",
+        "fillMuted": "#564263",
+        "strokeMuted": "#3B2847",
+        "fillEmphasis": "#E88D7A",
+        "strokeEmphasis": "#A46B5F",
+        "textFg": "#EDEFF5",
+        "shape": null
+      }
+    ],
+    "text": {
+      "title": {
+        "family": "'Cinzel', 'Cormorant Garamond', Georgia, serif",
+        "size": "1.25rem",
+        "weight": 600,
+        "figures": "proportional",
+        "fg": "#F0CB8A",
+        "italic": false
+      },
+      "subtitle": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "1rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#C8D4E8",
+        "italic": false
+      },
+      "body": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#EDEFF5",
+        "italic": false
+      },
+      "cell": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#EDEFF5",
+        "italic": false
+      },
+      "label": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#7F8EA6",
+        "italic": false
+      },
+      "tick": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#9AABC4",
+        "italic": false
+      },
+      "footnote": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#97A7C0",
+        "italic": false
+      },
+      "caption": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#7E8EA6",
+        "italic": true
+      }
+    },
+    "spacing": {
+      "rowHeight": 24,
+      "headerHeight": 32,
+      "padding": 12,
+      "containerPadding": 0,
+      "axisGap": 12,
+      "columnGroupPadding": 8,
+      "rowGroupPadding": 0,
+      "cellPaddingX": 10,
+      "cellPaddingY": 0,
+      "groupPadding": 8,
+      "footerGap": 8,
+      "titleSubtitleGap": 13,
+      "headerGap": 12,
+      "bottomMargin": 16,
+      "indentPerLevel": 16
+    },
+    "annotation": {
+      "title": {
+        "family": "'Cinzel', 'Cormorant Garamond', Georgia, serif",
+        "size": "1.25rem",
+        "weight": 600,
+        "figures": "proportional",
+        "fg": "#F0CB8A",
+        "italic": false
+      },
+      "subtitle": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "1rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#C8D4E8",
+        "italic": false
+      },
+      "caption": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#7E8EA6",
+        "italic": true
+      },
+      "footnote": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#97A7C0",
+        "italic": false
+      }
+    },
+    "header": {
+      "light": {
+        "bg": "#0E1730",
+        "fg": "#EDEFF5",
+        "rule": "#3D4F75"
+      },
+      "tint": {
+        "bg": "#0E1831",
+        "fg": "#EDEFF5",
+        "rule": "#3D4F75"
+      },
+      "bold": {
+        "bg": "#0F1F38",
+        "fg": "#EDEFF5",
+        "rule": "#8B95A5"
+      },
+      "text": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 600,
+        "figures": "tabular",
+        "fg": "#EDEFF5",
+        "italic": false
+      }
+    },
+    "columnGroup": {
+      "light": {
+        "bg": "#0E1730",
+        "fg": "#EDEFF5",
+        "rule": "#3D4F75"
+      },
+      "tint": {
+        "bg": "#19233C",
+        "fg": "#EDEFF5",
+        "rule": "#3D4F75"
+      },
+      "bold": {
+        "bg": "#7A88A0",
+        "fg": "#EDEFF5",
+        "rule": "#BDC5D2"
+      },
+      "text": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 500,
+        "figures": "tabular",
+        "fg": "#EDEFF5",
+        "italic": false
+      }
+    },
+    "rowGroup": {
+      "L1": {
+        "bg": "#1D2741",
+        "fg": "#EDEFF5",
+        "rule": "#3D4F75",
+        "text": {
+          "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+          "size": "0.875rem",
+          "weight": 600,
+          "figures": "tabular",
+          "fg": "#EDEFF5",
+          "italic": false
+        },
+        "borderBottom": false
+      },
+      "L2": {
+        "bg": "#1D2741",
+        "fg": "#8090A8",
+        "rule": "#1F2D52",
+        "text": {
+          "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+          "size": "0.875rem",
+          "weight": 500,
+          "figures": "tabular",
+          "fg": "#EDEFF5",
+          "italic": false
+        },
+        "borderBottom": false
+      },
+      "L3": {
+        "bg": "#1D2741",
+        "fg": "#8090A8",
+        "rule": null,
+        "text": {
+          "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+          "size": "0.875rem",
+          "weight": 400,
+          "figures": "tabular",
+          "fg": "#EDEFF5",
+          "italic": false
+        },
+        "borderBottom": false
+      },
+      "indentPerLevel": 16
+    },
+    "row": {
+      "base": {
+        "bg": "#0E1730",
+        "fg": "#EDEFF5"
+      },
+      "alt": {
+        "bg": "#141E3B",
+        "fg": "#EDEFF5"
+      },
+      "hover": {
+        "bg": "#282443",
+        "fg": "#EDEFF5"
+      },
+      "selected": {
+        "bg": "#282443",
+        "fg": "#EDEFF5"
+      },
+      "emphasis": {
+        "bg": null,
+        "fg": "#EDEFF5",
+        "border": null,
+        "markerFill": "#EDEFF5",
+        "markerStroke": "#EDEFF5",
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "muted": {
+        "bg": null,
+        "fg": "#9EAFC8",
+        "border": null,
+        "markerFill": "#9EAFC8",
+        "markerStroke": "#8090A8",
+        "fontWeight": null,
+        "fontStyle": null
+      },
+      "accent": {
+        "bg": null,
+        "fg": "#D4B26E",
+        "border": null,
+        "markerFill": "#D4B26E",
+        "markerStroke": "#B89148",
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "bold": {
+        "bg": null,
+        "fg": null,
+        "border": null,
+        "markerFill": null,
+        "markerStroke": null,
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "fill": {
+        "bg": "#3A2C4D",
+        "fg": null,
+        "border": null,
+        "markerFill": null,
+        "markerStroke": null,
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "banding": {
+        "mode": "group",
+        "level": null
+      },
+      "selectedEdgeWidth": 2,
+      "borderWidth": 1
+    },
+    "cell": {
+      "bg": null,
+      "fg": "#EDEFF5",
+      "border": "#1F2D52",
+      "text": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#EDEFF5",
+        "italic": false
+      }
+    },
+    "firstColumn": {
+      "plain": {
+        "bg": null,
+        "fg": null,
+        "rule": null,
+        "weight": null
+      },
+      "bold": {
+        "bg": "#1A2646",
+        "fg": "#EDEFF5",
+        "rule": "#1F2D52",
+        "weight": 600
+      }
+    },
+    "plot": {
+      "bg": null,
+      "axisLine": "#3D4F75",
+      "tickMark": "#3D4F75",
+      "gridline": "#1F2D52",
+      "reference": "#3D4F75",
+      "axisLabel": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#9AABC4",
+        "italic": false
+      },
+      "tickLabel": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#9AABC4",
+        "italic": false
+      },
+      "tickMarkLength": 4,
+      "lineWidth": 1.5,
+      "pointSize": 6
+    },
+    "marks": {
+      "forest": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "summary": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "bar": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "box": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "violin": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      },
+      "lollipop": {
+        "body": "fill",
+        "outline": "stroke",
+        "line": "stroke"
+      }
+    }
+  },
+  "hobbit": {
+    "schemaVersion": 2,
+    "name": "hobbit",
+    "webFonts": [
+      {
+        "family": "IM Fell English",
+        "url": "https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap"
+      },
+      {
+        "family": "IM Fell English SC",
+        "url": "https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap"
+      }
+    ],
+    "variants": {
+      "density": "comfortable",
+      "headerStyle": "light",
+      "firstColumnStyle": "default"
+    },
+    "inputs": {
+      "neutral": [
+        "#FBF3DF",
+        "#FBF3DF",
+        "#F2E5C5",
+        "#8A7456",
+        "#3A2C20"
+      ],
+      "primary": "#A6633E",
+      "primaryDeep": "#7A4527",
+      "secondary": "#6B8E3D",
+      "secondaryDeep": "#4A6628",
+      "accent": "#D97757",
+      "accentDeep": "#B85A3D",
+      "statusPositive": "#6B8E3D",
+      "statusNegative": "#B33B2E",
+      "statusWarning": "#D4A24A",
+      "statusInfo": "#D97757",
+      "seriesAnchors": [
+        "#D97757",
+        "#6B8E3D",
+        "#D4A24A",
+        "#8B5E83",
+        "#B86A48"
+      ],
+      "fontBody": "'IM Fell English', Georgia, 'Times New Roman', serif",
+      "fontDisplay": "'IM Fell English SC', 'IM Fell English', Georgia, serif",
+      "fontMono": null,
+      "slotStyle": "fill_with_darker_stroke"
+    },
+    "axis": {
+      "rangeMin": null,
+      "rangeMax": null,
+      "tickCount": null,
+      "tickValues": null,
+      "gridlines": false,
+      "gridlineStyle": "dotted",
+      "ciClipFactor": 2,
+      "includeNull": true,
+      "symmetric": null,
+      "nullTick": true,
+      "markerMargin": true
+    },
+    "layout": {
+      "plotWidth": "auto",
+      "containerBorder": false,
+      "containerBorderRadius": 8,
+      "banding": null
+    },
+    "surface": {
+      "base": "#FBF3DF",
+      "muted": "#ECDFBE",
+      "raised": "#FBF3DF"
+    },
+    "content": {
+      "primary": "#3A2C20",
+      "secondary": "#8A7456",
+      "muted": "#A99273",
+      "inverse": "#FBF3DF"
+    },
+    "divider": {
+      "subtle": "#E2D2A8",
+      "strong": "#A6633E"
+    },
+    "accent": {
+      "default": "#D97757",
+      "muted": "#F5E6CA",
+      "tintSubtle": "#F6E8CE",
+      "tintMedium": "#F0D7B5"
+    },
+    "status": {
+      "positive": "#6B8E3D",
+      "negative": "#B33B2E",
+      "warning": "#D4A24A",
+      "info": "#D97757"
+    },
+    "semantic": {
+      "fill": "#F2DDBD"
+    },
+    "series": [
+      {
+        "fill": "#D97757",
+        "stroke": "#B75939",
+        "fillMuted": "#EDCCA5",
+        "strokeMuted": "#CCAC86",
+        "fillEmphasis": "#D9592C",
+        "strokeEmphasis": "#963B1A",
+        "textFg": "#3A2C20",
+        "shape": null
+      },
+      {
+        "fill": "#6B8E3D",
+        "stroke": "#4F701C",
+        "fillMuted": "#D1CCA0",
+        "strokeMuted": "#B1AC81",
+        "fillEmphasis": "#578100",
+        "strokeEmphasis": "#365200",
+        "textFg": "#3A2C20",
+        "shape": null
+      },
+      {
+        "fill": "#D4A24A",
+        "stroke": "#B48326",
+        "fillMuted": "#ECD8AD",
+        "strokeMuted": "#CBB88E",
+        "fillEmphasis": "#CB8F00",
+        "strokeEmphasis": "#926600",
+        "textFg": "#3A2C20",
+        "shape": null
+      },
+      {
+        "fill": "#8B5E83",
+        "stroke": "#6D4266",
+        "fillMuted": "#DDBBAA",
+        "strokeMuted": "#BD9C8B",
+        "fillEmphasis": "#88457D",
+        "strokeEmphasis": "#50284A",
+        "textFg": "#3A2C20",
+        "shape": null
+      },
+      {
+        "fill": "#B86A48",
+        "stroke": "#974D2B",
+        "fillMuted": "#E1C5A2",
+        "strokeMuted": "#C0A583",
+        "fillEmphasis": "#B84E15",
+        "strokeEmphasis": "#783009",
+        "textFg": "#3A2C20",
+        "shape": null
+      }
+    ],
+    "text": {
+      "title": {
+        "family": "'IM Fell English SC', 'IM Fell English', Georgia, serif",
+        "size": "1.25rem",
+        "weight": 600,
+        "figures": "proportional",
+        "fg": "#7A4527",
+        "italic": false
+      },
+      "subtitle": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "1rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#7D6E42",
+        "italic": false
+      },
+      "body": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#3A2C20",
+        "italic": false
+      },
+      "cell": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#3A2C20",
+        "italic": false
+      },
+      "label": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#827049",
+        "italic": false
+      },
+      "tick": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#A28D69",
+        "italic": false
+      },
+      "footnote": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#9A8860",
+        "italic": false
+      },
+      "caption": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#7D6E42",
+        "italic": true
+      }
+    },
+    "spacing": {
+      "rowHeight": 24,
+      "headerHeight": 32,
+      "padding": 12,
+      "containerPadding": 0,
+      "axisGap": 12,
+      "columnGroupPadding": 8,
+      "rowGroupPadding": 0,
+      "cellPaddingX": 10,
+      "cellPaddingY": 0,
+      "groupPadding": 8,
+      "footerGap": 8,
+      "titleSubtitleGap": 13,
+      "headerGap": 12,
+      "bottomMargin": 16,
+      "indentPerLevel": 16
+    },
+    "annotation": {
+      "title": {
+        "family": "'IM Fell English SC', 'IM Fell English', Georgia, serif",
+        "size": "1.25rem",
+        "weight": 600,
+        "figures": "proportional",
+        "fg": "#7A4527",
+        "italic": false
+      },
+      "subtitle": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "1rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#7D6E42",
+        "italic": false
+      },
+      "caption": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#7D6E42",
+        "italic": true
+      },
+      "footnote": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "proportional",
+        "fg": "#9A8860",
+        "italic": false
+      }
+    },
+    "header": {
+      "light": {
+        "bg": "#FBF3DF",
+        "fg": "#3A2C20",
+        "rule": "#A6633E"
+      },
+      "tint": {
+        "bg": "#EADEC6",
+        "fg": "#3A2C20",
+        "rule": "#A6633E"
+      },
+      "bold": {
+        "bg": "#7A4527",
+        "fg": "#FBF3DF",
+        "rule": "#C5AC8E"
+      },
+      "text": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 600,
+        "figures": "tabular",
+        "fg": "#3A2C20",
+        "italic": false
+      }
+    },
+    "columnGroup": {
+      "light": {
+        "bg": "#FBF3DF",
+        "fg": "#3A2C20",
+        "rule": "#A6633E"
+      },
+      "tint": {
+        "bg": "#E8E0C6",
+        "fg": "#3A2C20",
+        "rule": "#A6633E"
+      },
+      "bold": {
+        "bg": "#4A6628",
+        "fg": "#FBF3DF",
+        "rule": "#B8B68E"
+      },
+      "text": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 500,
+        "figures": "tabular",
+        "fg": "#3A2C20",
+        "italic": false
+      }
+    },
+    "rowGroup": {
+      "L1": {
+        "bg": "#E1DABE",
+        "fg": "#3A2C20",
+        "rule": "#A6633E",
+        "text": {
+          "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+          "size": "0.875rem",
+          "weight": 600,
+          "figures": "tabular",
+          "fg": "#3A2C20",
+          "italic": false
+        },
+        "borderBottom": false
+      },
+      "L2": {
+        "bg": "#E1DABE",
+        "fg": "#8A7456",
+        "rule": "#E2D2A8",
+        "text": {
+          "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+          "size": "0.875rem",
+          "weight": 500,
+          "figures": "tabular",
+          "fg": "#3A2C20",
+          "italic": false
+        },
+        "borderBottom": false
+      },
+      "L3": {
+        "bg": "#E1DABE",
+        "fg": "#8A7456",
+        "rule": null,
+        "text": {
+          "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+          "size": "0.875rem",
+          "weight": 400,
+          "figures": "tabular",
+          "fg": "#3A2C20",
+          "italic": false
+        },
+        "borderBottom": false
+      },
+      "indentPerLevel": 16
+    },
+    "row": {
+      "base": {
+        "bg": "#FBF3DF",
+        "fg": "#3A2C20"
+      },
+      "alt": {
+        "bg": "#F3E9CE",
+        "fg": "#3A2C20"
+      },
+      "hover": {
+        "bg": "#F5E6CA",
+        "fg": "#3A2C20"
+      },
+      "selected": {
+        "bg": "#F5E6CA",
+        "fg": "#3A2C20"
+      },
+      "emphasis": {
+        "bg": null,
+        "fg": "#3A2C20",
+        "border": null,
+        "markerFill": "#3A2C20",
+        "markerStroke": "#3A2C20",
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "muted": {
+        "bg": null,
+        "fg": "#A99273",
+        "border": null,
+        "markerFill": "#A99273",
+        "markerStroke": "#8A7456",
+        "fontWeight": null,
+        "fontStyle": null
+      },
+      "accent": {
+        "bg": null,
+        "fg": "#D97757",
+        "border": null,
+        "markerFill": "#D97757",
+        "markerStroke": "#B85A3D",
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "bold": {
+        "bg": null,
+        "fg": null,
+        "border": null,
+        "markerFill": null,
+        "markerStroke": null,
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "fill": {
+        "bg": "#F2DDBD",
+        "fg": null,
+        "border": null,
+        "markerFill": null,
+        "markerStroke": null,
+        "fontWeight": 600,
+        "fontStyle": null
+      },
+      "banding": {
+        "mode": "group",
+        "level": null
+      },
+      "selectedEdgeWidth": 2,
+      "borderWidth": 1
+    },
+    "cell": {
+      "bg": null,
+      "fg": "#3A2C20",
+      "border": "#E2D2A8",
+      "text": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#3A2C20",
+        "italic": false
+      }
+    },
+    "firstColumn": {
+      "plain": {
+        "bg": null,
+        "fg": null,
+        "rule": null,
+        "weight": null
+      },
+      "bold": {
+        "bg": "#ECDFBE",
+        "fg": "#3A2C20",
+        "rule": "#E2D2A8",
+        "weight": 600
+      }
+    },
+    "plot": {
+      "bg": null,
+      "axisLine": "#A6633E",
+      "tickMark": "#A6633E",
+      "gridline": "#E2D2A8",
+      "reference": "#A6633E",
+      "axisLabel": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#A28D69",
+        "italic": false
+      },
+      "tickLabel": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.75rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#A28D69",
         "italic": false
       },
       "tickMarkLength": 4,

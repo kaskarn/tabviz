@@ -1,0 +1,41 @@
+/**
+ * Regenerate `src/lib/theme-presets-v2.json` from the TS cascade resolver.
+ *
+ * Run after any change to `src/lib/theme-resolve.ts`, `src/lib/oklch.ts`,
+ * `src/lib/theme-presets-inputs.ts`, or `src/lib/theme-validate.ts` that
+ * affects resolved output. Output JSON is the runtime preset table; the
+ * resolver tests in `theme-resolve.test.ts` use this same file as the
+ * drift-detection baseline.
+ *
+ * Usage: `bun run scripts/regenerate-theme-presets.ts`
+ *
+ * Why TS-canonical (not R-canonical): TS is the published runtime
+ * (`@tabviz/core`). Making TS authoritative for snapshots aligns the
+ * npm consumer experience with the JS theme-switcher path. The R-side
+ * resolver continues to run server-side for R-rendered widgets; the
+ * snapshot is the JS-only reference. Sub-perceptual divergence (~1-25
+ * channels near gamut boundaries) between the two implementations no
+ * longer matters because each is canonical in its own runtime.
+ */
+
+import { writeFileSync } from "fs";
+import { resolve } from "path";
+import {
+  COCHRANE_DRAFT, LANCET_DRAFT, JAMA_DRAFT, DARK_DRAFT,
+  DWARVEN_DRAFT, ELVISH_DRAFT, HOBBIT_DRAFT,
+} from "../src/lib/theme-presets-inputs";
+import { resolveTheme } from "../src/lib/theme-resolve";
+
+const presets = {
+  cochrane: resolveTheme(COCHRANE_DRAFT),
+  lancet:   resolveTheme(LANCET_DRAFT),
+  jama:     resolveTheme(JAMA_DRAFT),
+  dark:     resolveTheme(DARK_DRAFT),
+  dwarven:  resolveTheme(DWARVEN_DRAFT),
+  elvish:   resolveTheme(ELVISH_DRAFT),
+  hobbit:   resolveTheme(HOBBIT_DRAFT),
+};
+
+const outPath = resolve(__dirname, "..", "src", "lib", "theme-presets-v2.json");
+writeFileSync(outPath, JSON.stringify(presets, null, 2) + "\n");
+console.log(`✓ Wrote ${Object.keys(presets).length} TS-resolved presets to ${outPath}`);

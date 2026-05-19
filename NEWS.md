@@ -1,3 +1,28 @@
+# tabviz 0.31.2
+
+## Internal refactor (no API change)
+
+* **Deduped legacy v1 input-migration check** between `web_theme()` and
+  `set_inputs()`. Both functions used to hand-roll the same
+  `brand`/`tertiary` deprecation `cli_abort` block; now they share a
+  single `check_legacy_inputs(args, arg_hint)` helper.
+* **Unified `fill_na()` and `compose_text()`** in `R/utils-theme-resolve.R`
+  behind a single `fill_na(obj, source)` that dispatches on whether
+  `source` is a named list (defaults) or an S7 object (composition).
+  `compose_text()` is kept as a thin alias for callsite readability.
+* **Dropped an unreachable defensive guard** at the old line 583 of
+  `R/utils-theme-resolve.R`. `resolve_components` ran after
+  `resolve_inputs_mirrors`, so the `secondary_deep` re-mirror inside it
+  was unreachable; full test suite verifies no regression.
+
+## Vendored JS bundle
+
+* Bundles `@tabviz/core@0.2.1`, which makes the TS cascade resolver
+  canonical for the in-widget theme-switcher snapshots. R-rendered
+  widgets continue to use R-resolved themes server-side; the change is
+  only observable when JS-side users click a theme name in the
+  switcher dropdown. Visual tests still 45/45 (1 skipped).
+
 # tabviz 0.31.1
 
 ## Bug fixes

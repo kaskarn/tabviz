@@ -32,59 +32,68 @@ Status legend:
 | `R/themes-api.R::set_spacing`     | thin-wrapper          | TS mirror at `theme-api.ts::setSpacing`. |
 | `R/themes-api.R::set_theme_field` | phase-2-candidate     | TS mirror at `theme-api.ts::setThemeField`. R uses recursive `set_at` walking via S7 prop accessors + integer indexing; TS uses `structuredClone` + dot-path. Same semantics, idiomatic differences. |
 
-## OKLab precision gap (Phase 2 work item)
+## OKLab precision gap — RESOLVED via canonization (post-0.2.0)
 
-The most load-bearing parity gap is the color math itself. R's `farver` and
-TS's hand-rolled OKLab transform produce OKLCH triples that differ by:
+R's `farver` and TS's hand-rolled OKLab transform produce OKLCH triples
+that differ by ~5e-6 L / ~6e-5 C / ~0.03° H. These compound through
+gamut-bisection clamping into 1-25 channels of drift on chroma-related
+derivations near saturation boundaries.
 
-- L: ~5e-6
-- C: ~6e-5
-- H: ~0.03°
+**Resolution (option C from the original phase-2 list)**: TS is now
+canonical for `srcjs/src/lib/theme-presets-v2.json`. The snapshot is
+regenerated from the TS cascade resolver via
+`scripts/regenerate-theme-presets.ts`, and the parity test in
+`theme-resolve.test.ts` is now byte-exact drift detection (snapshot vs
+resolver output, same source).
 
-These are negligible in isolation but compound through:
+Why this works:
+- The npm runtime path is fully TS-resolved → TS-snapshotted → consistent.
+- The R-rendered widget path is fully R-resolved → R-serialized → wire
+  → JS renders the resolved values verbatim (no snapshot lookup).
+- The JS-side theme switcher uses the TS-canonical snapshot. R-rendered
+  widgets switch from "R-cochrane" (initial wire) to "TS-lancet"
+  (snapshot) when the user clicks lancet — the difference is
+  sub-perceptual (<25 channels per pixel), within OKLab precision.
 
-1. Round-tripping (hex → oklch → modify → hex → oklch ...). Each round-trip
-   loses a few bits of precision via the bisection-based gamut clamp.
-2. Chroma operations near the gamut boundary. Increasing C on an already
-   saturated color triggers bisection; tiny coefficient differences flip
-   the clamp result by 5-25 channels.
+Each runtime is now canonical in its own context; the divergence between
+them no longer matters because no consumer compares them side-by-side
+at byte level.
 
-Visual impact: imperceptible (the differences are sub-perceptual on screen).
-Wire impact: snapshot comparisons fail byte-equality for chrome/series
-derivations that use `oklch_chroma` or `oklch_mix` near gamut boundaries.
+To refresh the snapshot after any change to `oklch.ts`,
+`theme-resolve.ts`, `theme-validate.ts`, or `theme-presets-inputs.ts`
+that affects resolved output:
 
-**Workaround in 0.2.0**: tolerance-based parity test in
-`srcjs/src/lib/theme-resolve.test.ts` (per-channel delta ≤ 25). Documented
-in the snapshot refresh command comment in `theme-presets.ts`.
+```sh
+cd srcjs && bun run scripts/regenerate-theme-presets.ts
+```
 
-**Phase 2 options** (in increasing impact):
-- (a) Profile farver against Ottosson's reference to find the coefficient
-  delta; tune TS to match. Cheapest if the delta is just a different
-  cube-root or gamma-decode threshold.
-- (b) Use a different OKLab impl (e.g., `culori`'s) that matches farver.
-  Adds a dep; possibly slower.
-- (c) Regenerate the JSON snapshot from TS instead of R. Makes TS canonical;
-  R-side tests verify R serializes within tolerance of the snapshot. Cleanest
-  long-term direction, since Phase 2 makes TS canonical anyway via V8
-  delegation.
+Drift detection runs in CI via `theme-resolve.test.ts` — accidental
+output changes fail the build until the snapshot is regenerated
+intentionally.
 
-## R-side opportunistic simplifications spotted (not done in Phase 1)
+## R-side opportunistic simplifications — DONE (post-0.2.0)
 
-These are flagged for the Phase 1 author to fold in opportunistically per
-the plan's section E. None are blockers; all are pure code-quality wins.
+All 3 simplifications flagged during the TS port landed in the same
+post-0.2.0 round as the OKLab canonization. R tests still green; visual
+tests still 45/45.
 
-1. **Dedupe legacy-input migration** (`R/themes-api.R` 84-100 + 158-173) —
-   the `brand`/`tertiary` deprecation check is character-for-character
-   identical between `web_theme()` and `set_inputs()`. Single helper.
-2. **Unify `fill_na` + `compose_text`** (`R/utils-theme-resolve.R` 74-82 +
-   333-341) — same null-fallback iteration over `S7::prop_names`. The R
-   shape isn't 1:1 (one takes a list of defaults, the other takes a TextRole
-   object), but they could share a generic core.
-3. **Drop defensive secondary_deep re-mirror** (`R/utils-theme-resolve.R`
-   line 583) — `resolve_inputs_mirrors` already guarantees `secondary_deep`
-   is non-NA after the mirror chain. The local fallback inside
-   `resolve_components` should be unreachable; verify with a `stopifnot`
-   first, then remove.
+1. ✅ **Deduped legacy-input migration** — extracted `check_legacy_inputs(args, arg_hint)`
+   helper in `R/themes-api.R`. Both `web_theme()` and `set_inputs()` now
+   call it with their respective context-tailored migration hint. Saved
+   ~18 lines.
+2. ✅ **Unified `fill_na` + `compose_text`** — `fill_na(obj, source)` in
+   `R/utils-theme-resolve.R` now dispatches on `inherits(source, "S7_object")`:
+   list sources iterate `names(source)`, S7 sources iterate
+   `S7::prop_names(obj)`. `compose_text(over, under)` is kept as a thin
+   alias so callsite readability is preserved.
+3. ✅ **Dropped defensive `secondary_deep` re-mirror** — line 583 of the
+   old resolver had a fallback `is.na(secondary_deep) ? primary_deep : secondary_deep`
+   guard. Since `resolve_components` runs after `resolve_inputs_mirrors`,
+   the guard was unreachable. Replaced with direct `theme@inputs@secondary_deep`
+   access; full R test suite verifies no regression. Note: `resolve_text`
+   keeps its similar-looking defensive guard intentionally — it supports
+   test paths that call the function directly with raw inputs, bypassing
+   the resolve_theme pipeline.
 
 ## Column constructors
 

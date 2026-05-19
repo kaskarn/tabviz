@@ -26,6 +26,31 @@ apply_inputs_resets <- function(args) {
 }
 
 
+# Internal: reject legacy v1 input field names with a structured migration
+# message. Called from `web_theme()` and `set_inputs()` — same migration
+# check, two callsites. Pass the `arg_hint` cli string the user should
+# adopt at THIS callsite (the migration phrasing differs slightly between
+# `web_theme(inputs = list(...))` and `set_inputs(primary = ...)`).
+check_legacy_inputs <- function(args, arg_hint) {
+  legacy <- intersect(names(args), c("brand", "brand_deep"))
+  if (length(legacy) > 0L) {
+    cli::cli_abort(c(
+      "{.field {legacy}} renamed to {.field primary} / {.field primary_deep} in the theme rework.",
+      "i" = arg_hint,
+      "i" = "Identity is a 2-tier mirror chain: {.field primary} / {.field secondary}, plus orthogonal {.field accent}."
+    ))
+  }
+  removed <- intersect(names(args), c("tertiary", "tertiary_deep"))
+  if (length(removed) > 0L) {
+    cli::cli_abort(c(
+      "{.field {removed}} was removed in the 2026-04-29 cascade rework.",
+      "i" = "Chrome texture (banding, dividers, gridlines) now reads from {.field secondary_deep}.",
+      "i" = "If you previously pinned tertiary, fold its color into {.field secondary} or drop the pin to mirror primary."
+    ))
+  }
+  invisible(NULL)
+}
+
 # Internal: copy non-NULL named args into a target object's properties.
 apply_named_props <- function(target, args) {
   prop_names <- S7::prop_names(target)
@@ -82,22 +107,10 @@ web_theme <- function(
   }
 
   if (!is.null(inputs)) {
-    legacy <- intersect(names(inputs), c("brand", "brand_deep"))
-    if (length(legacy) > 0L) {
-      cli::cli_abort(c(
-        "{.field {legacy}} renamed to {.field primary} / {.field primary_deep} in the theme rework.",
-        "i" = "Update {.code inputs = list(...)} to use {.field primary} and {.field primary_deep}.",
-        "i" = "Identity is a 2-tier mirror chain: {.field primary} / {.field secondary}, plus orthogonal {.field accent}."
-      ))
-    }
-    removed <- intersect(names(inputs), c("tertiary", "tertiary_deep"))
-    if (length(removed) > 0L) {
-      cli::cli_abort(c(
-        "{.field {removed}} was removed in the 2026-04-29 cascade rework.",
-        "i" = "Chrome texture (banding, dividers, gridlines) now reads from {.field secondary_deep}.",
-        "i" = "If you previously pinned tertiary, fold its color into {.field secondary} or drop the pin to mirror primary."
-      ))
-    }
+    check_legacy_inputs(
+      inputs,
+      arg_hint = "Update {.code inputs = list(...)} to use {.field primary} and {.field primary_deep}."
+    )
     inputs <- apply_inputs_resets(inputs)
   }
 
@@ -155,22 +168,10 @@ set_inputs <- function(theme, ...) {
     cli::cli_abort("{.arg theme} must be a {.cls WebTheme}.")
   }
   args <- list(...)
-  legacy <- intersect(names(args), c("brand", "brand_deep"))
-  if (length(legacy) > 0L) {
-    cli::cli_abort(c(
-      "{.field {legacy}} renamed to {.field primary} / {.field primary_deep} in the theme rework.",
-      "i" = "Pass {.code primary = ...} / {.code primary_deep = ...} instead.",
-      "i" = "Identity is a 2-tier mirror chain: {.field primary} / {.field secondary}, plus orthogonal {.field accent}."
-    ))
-  }
-  removed <- intersect(names(args), c("tertiary", "tertiary_deep"))
-  if (length(removed) > 0L) {
-    cli::cli_abort(c(
-      "{.field {removed}} was removed in the 2026-04-29 cascade rework.",
-      "i" = "Chrome texture (banding, dividers, gridlines) now reads from {.field secondary_deep}.",
-      "i" = "If you previously pinned tertiary, fold its color into {.field secondary} or drop the pin to mirror primary."
-    ))
-  }
+  check_legacy_inputs(
+    args,
+    arg_hint = "Pass {.code primary = ...} / {.code primary_deep = ...} instead."
+  )
   args <- apply_inputs_resets(args)
   theme@inputs <- apply_named_props(theme@inputs, args)
   # Series anchors changed -> rebuild slot bundles so every fill reflects

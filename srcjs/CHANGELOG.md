@@ -4,6 +4,50 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.2.1 — 2026-05-19
+
+### Changed — TS is now canonical for `theme-presets-v2.json`
+
+The R-resolved snapshot baseline shipped in 0.2.0 had ~1-25 channels of
+per-pixel drift against the TS resolver near gamut boundaries (different
+OKLab coefficient precision between `farver` and the hand-rolled Ottosson
+implementation). The post-0.2.0 round inverts the parity: TS resolves the
+7 preset Tier 1 inputs and writes `theme-presets-v2.json`, so the snapshot
+matches the runtime resolver byte-exactly. The R-side resolver continues
+to run server-side for R-rendered widgets; each runtime is canonical in
+its own context.
+
+Refresh command (run after any change to `oklch.ts`, `theme-resolve.ts`,
+`theme-validate.ts`, or `theme-presets-inputs.ts`):
+
+```sh
+cd srcjs && bun run scripts/regenerate-theme-presets.ts
+```
+
+`theme-resolve.test.ts` is now byte-exact drift detection.
+
+### Changed — R-side opportunistic streamlining
+
+(R-package internal refactor; no observable behavior change. Listed here
+since the regenerated JS bundle ships with this patch.)
+
+- Deduped legacy-input migration check into `check_legacy_inputs(args, arg_hint)` —
+  both `web_theme()` and `set_inputs()` previously hand-coded the same
+  `brand`/`tertiary` deprecation `cli_abort` block.
+- Unified `fill_na()` and `compose_text()` in `R/utils-theme-resolve.R` —
+  same null-fallback iteration; `fill_na()` now dispatches on
+  `inherits(source, "S7_object")` to handle both list-source and
+  S7-source forms.
+- Dropped unreachable defensive guard at line 583 of the old resolver
+  (`secondary_deep` re-mirror inside `resolve_components`) —
+  `resolve_inputs_mirrors` already guarantees the prop is non-NA before
+  that code path runs.
+
+### Bumped
+
+- Bundle size budget: +16 KB / +5 KB gzipped to absorb the 3 LOTR preset
+  snapshots that joined the JSON file (were resolved-at-load in 0.2.0).
+
 ## 0.2.0 — 2026-05-18
 
 ### Added — Authoring API
