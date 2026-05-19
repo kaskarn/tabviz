@@ -44,7 +44,7 @@ snps <- data.frame(
 # package.json is a range spec (e.g. "^5.0.0") which esm.sh would resolve
 # to whatever 5.x is current.
 svelte_version <- jsonlite::fromJSON(
-  here::here("..", "srcjs", "package-lock.json")
+  "../../srcjs/package-lock.json"
 )$packages[["node_modules/svelte"]]$version
 
 ojs_define(snps_in = snps, svelte_version = svelte_version)

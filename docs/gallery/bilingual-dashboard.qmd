@@ -41,7 +41,7 @@ kpi$trend <- I(sales_trend)
 # Expose to OJS (plus the locked Svelte version, same pattern as the
 # genetic-association page — lockstep esm.sh peer pin).
 svelte_version <- jsonlite::fromJSON(
-  here::here("..", "srcjs", "package-lock.json")
+  "../../srcjs/package-lock.json"
 )$packages[["node_modules/svelte"]]$version
 
 ojs_define(kpi_in = kpi, svelte_version = svelte_version)
