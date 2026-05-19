@@ -75,8 +75,11 @@ Below is the same plot built from the TypeScript-mirror of the R API and mounted
 
 ```{ojs}
 //| echo: false
-core = import("https://esm.sh/@tabviz/core@0.2.1")
-htl = import("https://esm.sh/htl@0.3.1")
+// Pin Svelte to the version @tabviz/core@0.2.1 was compiled against —
+// esm.sh's default resolution of the optional peer picks the latest 5.x,
+// which can differ in internal helpers (`validate_each_keys` etc.) and
+// throws at mount. Lockstep version pin is the simplest workaround.
+core = import("https://esm.sh/@tabviz/core@0.2.1?deps=svelte@5.46.1")
 
 // Quarto exposes `snps_in` as a column-oriented table; transpose to rows.
 rows = transpose(snps_in)
