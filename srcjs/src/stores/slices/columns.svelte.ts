@@ -221,7 +221,14 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
   const effectiveColumnDefs = $derived.by((): ColumnDef[] => {
     const spec = deps.getSpec();
     if (!spec) return [];
-    const merged = applyColumnEdits(spec.columns, true);
+    // Materialize the effective column list, prepending the wire-level
+    // `labelColumn` slot when present. Legacy fallback: if `labelColumn`
+    // is missing and `columns[0]?.id === "label"` (older R/TS wires
+    // pre-0.34.2), we leave the inline column where it is — no need to
+    // shuffle it. Both shapes produce identical rendering.
+    const labelCol = spec.labelColumn ?? null;
+    const baseColumns = labelCol ? [labelCol, ...spec.columns] : spec.columns;
+    const merged = applyColumnEdits(baseColumns, true);
     const topOrdered = applyColumnOrder(merged, columnOrderOverrides.topLevel);
     return topOrdered.map((def) => {
       if (def.isGroup) {

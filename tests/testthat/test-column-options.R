@@ -102,10 +102,11 @@ test_that("new column options round-trip through web_spec", {
       col_bar("w", scale = "log")
     )
   )
-  # Label column is auto-prepended; user columns follow.
-  expect_equal(spec@columns[[2]]@options$text$maxChars, 8)
-  expect_equal(spec@columns[[3]]@options$pictogram$domain, c(0, 100))
-  expect_equal(spec@columns[[4]]@options$bar$scale, "log")
+  # Post-0.34.2: label column lives on spec@label_column; user columns
+  # stay in spec@columns in their declared order.
+  expect_equal(spec@columns[[1]]@options$text$maxChars, 8)
+  expect_equal(spec@columns[[2]]@options$pictogram$domain, c(0, 100))
+  expect_equal(spec@columns[[3]]@options$bar$scale, "log")
 })
 
 test_that("web_col(formatter=) replaces values and forces type to text", {
@@ -115,8 +116,8 @@ test_that("web_col(formatter=) replaces values and forces type to text", {
     data = data, label = "label",
     columns = list(web_col("val", formatter = fmt))
   )
-  # The user column lands at index 2 (label auto-prepended at 1)
-  expect_equal(spec@columns[[2]]@type, "text")
+  # Post-0.34.2: the user column lands at index 1 (label on label_column slot)
+  expect_equal(spec@columns[[1]]@type, "text")
   payload <- tabviz:::serialize_spec(spec)
   vals <- vapply(payload$data$rows, function(r) r$metadata$val, character(1))
   expect_equal(vals, c("123%", "568%"))

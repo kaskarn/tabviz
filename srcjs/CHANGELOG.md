@@ -4,6 +4,26 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.3.4 — 2026-04-29
+
+### Changed — label column hoisted to its own wire slot
+
+`WebSpec.labelColumn?: ColumnDef | null` is now a top-level field on
+the wire shape, replacing the magic `columns[0].id === "label"`
+convention. `tabviz()` populates it from `label:` / `labelHeader:`;
+the store materializes the effective column list as
+`[labelColumn, ...columns]` at render time. Legacy wires with an
+inline `id: "label"` column continue to work via a one-line fallback
+in the columns store. `emitJsSource()` round-trips the slot through
+the `label:` sugar where possible, falling back to inline emission
+for customized label columns (custom width/align).
+
+### Fixed — `escapeXml` tolerates null input
+
+Removed a hard throw on `escapeXml(null)` so optional string fields
+on the serialized labelColumn (`headerAlign` etc.) don't crash the
+SVG export pipeline.
+
 ## 0.3.3 — 2026-05-20
 
 ### Fixed — `tabviz()` now auto-inserts a label column

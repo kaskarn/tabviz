@@ -73,6 +73,6 @@ test_that("col_ring round-trips through web_spec", {
     data = data, label = "label",
     columns = list(col_ring("risk", thresholds = c(0.33, 0.66)))
   )
-  expect_equal(spec@columns[[2]]@type, "ring")
-  expect_equal(unclass(spec@columns[[2]]@options$ring$thresholds), c(0.33, 0.66))
+  expect_equal(spec@columns[[1]]@type, "ring")
+  expect_equal(unclass(spec@columns[[1]]@options$ring$thresholds), c(0.33, 0.66))
 })

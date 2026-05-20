@@ -1,3 +1,29 @@
+# tabviz 0.34.2
+
+## Label column — wire-level slot
+
+The row-label column moves off the magic `id === "label"` sentinel and
+onto a dedicated `WebSpec@label_column` slot. `tabviz(label = ...)`
+now builds a `ColumnSpec` there instead of prepending it to `columns`;
+the renderer materializes the effective list as
+`[label_column, ...columns]` at use sites.
+
+Authoring API is unchanged — `label = "study"` / `label_header = "..."`
+work as before. Legacy wires that put the label inline at `columns[0]`
+with `id = "label"` still render correctly via a one-line fallback in
+the store.
+
+Internals affected:
+
+* `WebSpec@label_column` slot on the R class; serializes to
+  `wire.labelColumn`.
+* `move_row()` and `serialize_data()` honor the new slot when locating
+  the row-identifier field; both fall back to `columns[0]` if absent.
+* `emitJsSource()` surfaces the slot via `label:` / `labelHeader:`
+  sugar in the "View Source" output.
+* Tests that positionally asserted `spec@columns[[1]]@id == "label"`
+  updated to assert `spec@label_column@id` instead.
+
 # tabviz 0.34.1
 
 ## Bilingual gallery — fixes for the OJS-rendered widget

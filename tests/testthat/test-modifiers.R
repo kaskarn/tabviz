@@ -206,7 +206,9 @@ test_that("add_column with after = field inserts after that column", {
   spec <- make_spec()
   updated <- add_column(spec, col_text("lower", "Lo"), after = "hr")
   fields <- vapply(updated@columns, function(c) c@field, character(1))
-  expect_equal(fields, c("study", "hr", "lower", "notes"))
+  # Post-0.34.2: label column lives on `spec@label_column`; `spec@columns`
+  # holds only user-supplied columns.
+  expect_equal(fields, c("hr", "lower", "notes"))
 })
 
 test_that("remove_column drops the named column", {
@@ -222,9 +224,12 @@ test_that("remove_column errors on unknown field", {
 
 test_that("move_column reorders top-level columns", {
   spec <- make_spec()
+  # Move "notes" to index 2 within the user-columns list (label_column
+  # is no longer counted here). Initial user columns are `c("hr", ..., "notes")`;
+  # moving "notes" to position 2 yields `c("hr", "notes", ...)`.
   updated <- move_column(spec, "notes", to = 2L)
   fields <- vapply(updated@columns, function(c) c@field, character(1))
-  expect_equal(fields[1:3], c("study", "notes", "hr"))
+  expect_equal(fields[1:2], c("hr", "notes"))
 })
 
 test_that("resize_column sets @width", {

@@ -377,13 +377,32 @@ export interface EmitJsSourceArgs {
 }
 
 export function emitJsSource({ spec, opLog, dataVarName = "tabvizData" }: EmitJsSourceArgs): string {
-  const columns = spec.columns.map(emitColumn).join(",\n    ");
+  // labelColumn lives on its own wire slot (since 0.34.2). For the emitted
+  // snippet we surface it via the `label:` / `labelHeader:` sugar when it's a
+  // plain text column with no custom width/align, and fall back to prepending
+  // it into `columns` for anything customized.
+  const labelCol = spec.labelColumn ?? null;
+  const labelSugar =
+    labelCol &&
+    labelCol.type === "text" &&
+    labelCol.id === "label" &&
+    (labelCol.width == null || labelCol.width === "auto") &&
+    (labelCol.align == null || labelCol.align === "left");
+
+  const visibleColumns = labelCol && !labelSugar ? [labelCol, ...spec.columns] : spec.columns;
+  const columns = visibleColumns.map(emitColumn).join(",\n    ");
   const themeRef = emitTheme(spec.theme);
 
   const tabvizArgs: string[] = [
     `  data: ${dataVarName},`,
-    `  columns: [\n    ${columns},\n  ],`,
   ];
+  if (labelSugar && labelCol) {
+    tabvizArgs.push(`  label: ${JSON.stringify(labelCol.field)},`);
+    if (labelCol.header && labelCol.header !== labelCol.field) {
+      tabvizArgs.push(`  labelHeader: ${JSON.stringify(labelCol.header)},`);
+    }
+  }
+  tabvizArgs.push(`  columns: [\n    ${columns},\n  ],`);
   // Omit `theme:` when it resolves to the package default ("bmj").
   // Authors who want explicit theme provenance can still pass it; the
   // emitter just doesn't pad the snippet with the default.

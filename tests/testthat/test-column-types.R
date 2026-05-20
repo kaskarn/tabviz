@@ -108,13 +108,14 @@ test_that("new column types work inside web_spec", {
   )
 
   expect_true(inherits(spec, "tabviz::WebSpec"))
-  # A primary "label" column is prepended automatically; user columns follow.
-  expect_equal(length(spec@columns), 5)
-  expect_equal(spec@columns[[1]]@type, "text")  # auto-prepended label
-  expect_equal(spec@columns[[2]]@type, "heatmap")
-  expect_equal(spec@columns[[3]]@type, "progress")
-  expect_equal(spec@columns[[4]]@type, "numeric")
-  expect_equal(spec@columns[[5]]@type, "text")
+  # Post-0.34.2: label column lives on `spec@label_column`; `spec@columns`
+  # holds only the user-supplied columns in declared order.
+  expect_equal(length(spec@columns), 4)
+  expect_equal(spec@label_column@type, "text")  # row-label column slot
+  expect_equal(spec@columns[[1]]@type, "heatmap")
+  expect_equal(spec@columns[[2]]@type, "progress")
+  expect_equal(spec@columns[[3]]@type, "numeric")
+  expect_equal(spec@columns[[4]]@type, "text")
 })
 
 test_that("date formatting happens during serialization", {

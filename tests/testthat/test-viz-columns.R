@@ -116,8 +116,8 @@ test_that("viz_violin / viz_boxplot effects serialize as `opacity` in JSON", {
   spec <- web_spec(data = data, label = "label",
                    columns = list(viz_violin(e_v), viz_boxplot(e_b)))
   payload <- tabviz:::serialize_spec(spec)
-  vio_eff <- payload$columns[[2]]$options$vizViolin$effects[[1]]
-  box_eff <- payload$columns[[3]]$options$vizBoxplot$effects[[1]]
+  vio_eff <- payload$columns[[1]]$options$vizViolin$effects[[1]]
+  box_eff <- payload$columns[[2]]$options$vizBoxplot$effects[[1]]
   expect_equal(vio_eff$opacity, 0.4)
   expect_equal(box_eff$opacity, 0.6)
   expect_null(vio_eff$fillOpacity)
@@ -135,9 +135,9 @@ test_that("viz_bar / viz_boxplot / viz_violin accept annotations and serialize t
     )
   )
   payload <- tabviz:::serialize_spec(spec)
-  bar_anns <- payload$columns[[2]]$options$vizBar$annotations
-  box_anns <- payload$columns[[3]]$options$vizBoxplot$annotations
-  vio_anns <- payload$columns[[4]]$options$vizViolin$annotations
+  bar_anns <- payload$columns[[1]]$options$vizBar$annotations
+  box_anns <- payload$columns[[2]]$options$vizBoxplot$annotations
+  vio_anns <- payload$columns[[3]]$options$vizViolin$annotations
   expect_length(bar_anns, 1)
   expect_equal(bar_anns[[1]]$type, "reference_line")
   expect_equal(bar_anns[[1]]$x, 15)
@@ -153,7 +153,7 @@ test_that("viz_bar(null_value=) prepends a synthetic refline to annotations", {
     columns = list(viz_bar(effect_bar("x"), null_value = 0))
   )
   payload <- tabviz:::serialize_spec(spec)
-  anns <- payload$columns[[2]]$options$vizBar$annotations
+  anns <- payload$columns[[1]]$options$vizBar$annotations
   expect_length(anns, 1)
   expect_equal(anns[[1]]$type, "reference_line")
   expect_equal(anns[[1]]$x, 0)
@@ -168,7 +168,7 @@ test_that("null_value + annotations stack: null refline first, then user annotat
                            annotations = list(refline(25, label = "target"))))
   )
   payload <- tabviz:::serialize_spec(spec)
-  anns <- payload$columns[[2]]$options$vizBar$annotations
+  anns <- payload$columns[[1]]$options$vizBar$annotations
   expect_length(anns, 2)
   expect_equal(anns[[1]]$x, 0)        # synthetic null line first
   expect_equal(anns[[2]]$x, 25)       # user refline second
@@ -300,6 +300,6 @@ test_that("viz columns integrate with web_spec", {
   )
 
   expect_true(inherits(spec, "tabviz::WebSpec"))
-  # Label column is auto-prepended, so length is user_columns + 1
-  expect_equal(length(spec@columns), 4)
+  # Post-0.34.2: label column on `spec@label_column`; user columns alone here.
+  expect_equal(length(spec@columns), 3)
 })

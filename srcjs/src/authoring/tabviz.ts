@@ -137,23 +137,32 @@ export function tabviz(args: TabvizArgs): WebSpec {
 
   const theme = resolveThemeRef(args.theme ?? "bmj");
 
-  // Auto-insert a label column at the start when `label` is set — mirrors
-  // R `tabviz()`'s `label_column <- col_text(...)` + `c(list(label_column),
-  // columns)` prepend. Without this, the bilingual page renders without
-  // a leftmost-identifier column even though `args.label` is supplied.
-  // Caller-supplied `args.columns` may already contain an id="label"
-  // column (R puts one there); if so, skip the auto-insert.
-  const hasLabelCol = args.columns.some((c) => c.id === "label");
-  const labelColumns: ColumnDef[] =
-    args.label != null && !hasLabelCol
-      ? [colText({ field: args.label, header: args.labelHeader ?? args.label, id: "label" })]
-      : [];
-  const columns = [...labelColumns, ...args.columns];
+  // Build the row-label column as a top-level `labelColumn` slot when
+  // `label` is set, rather than prepending to `columns`. Gives the
+  // renderer's "primary column" hook a named wire field instead of
+  // relying on positional + id="label" sentinel detection. Caller-
+  // supplied `args.columns` with an `id === "label"` column is treated
+  // as an explicit author choice; we honor it as the labelColumn
+  // (extracted out of `columns`) so the wire is canonical either way.
+  const inlineLabelIdx = args.columns.findIndex((c) => c.id === "label");
+  let labelColumn: ColumnDef | null = null;
+  let columns = args.columns;
+  if (inlineLabelIdx >= 0) {
+    labelColumn = args.columns[inlineLabelIdx];
+    columns = args.columns.filter((_, i) => i !== inlineLabelIdx);
+  } else if (args.label != null) {
+    labelColumn = colText({
+      field: args.label,
+      header: args.labelHeader ?? args.label,
+      id: "label",
+    });
+  }
 
   const spec: WebSpec = {
     version: CURRENT_VERSION,
     data,
     columns,
+    labelColumn,
     extraColumns: args.extraColumns,
     theme: theme as unknown as WebSpec["theme"],
     interaction,

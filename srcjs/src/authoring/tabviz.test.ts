@@ -54,12 +54,13 @@ describe("tabviz top-level constructor", () => {
       ],
       title: "Genetic associations with CVD",
     });
-    // Label column is auto-inserted at index 0 when `label` is set, so
-    // forest is at index 3 (label + interval + numeric + forest).
-    expect(spec.columns.length).toBe(4);
-    expect(spec.columns[0].id).toBe("label");
+    // Label column lives on `spec.labelColumn` (wire-level slot), not
+    // prepended to `columns`. User-supplied columns stay in their
+    // declared order.
+    expect(spec.columns.length).toBe(3);
+    expect(spec.labelColumn?.id).toBe("label");
     expect(spec.labels?.title).toBe("Genetic associations with CVD");
-    const forestCol = spec.columns[3];
+    const forestCol = spec.columns[2];
     if (forestCol.isGroup) throw new Error("expected leaf column");
     expect(forestCol.type).toBe("forest");
     expect(forestCol.options?.forest?.scale).toBe("log");

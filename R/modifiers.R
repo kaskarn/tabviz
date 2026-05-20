@@ -824,13 +824,19 @@ move_row <- function(x, row_id, to) {
 
   transform <- function(spec) {
     data <- spec@data
-    # Use the leftmost visible ColumnSpec's field as the id column if
-    # available; otherwise fall back to rownames.
+    # Use the row-label column's field as the id column when set; else
+    # the leftmost visible ColumnSpec; else rownames. The `label_column`
+    # slot (post-0.34.2) is canonical for row identity.
     id_field <- NULL
-    for (col in spec@columns) {
-      if (S7_inherits(col, ColumnSpec)) { id_field <- col@field; break }
-      if (S7_inherits(col, ColumnGroup) && length(col@columns) > 0) {
-        id_field <- col@columns[[1]]@field; break
+    if (!is.null(spec@label_column) && S7_inherits(spec@label_column, ColumnSpec)) {
+      id_field <- spec@label_column@field
+    }
+    if (is.null(id_field)) {
+      for (col in spec@columns) {
+        if (S7_inherits(col, ColumnSpec)) { id_field <- col@field; break }
+        if (S7_inherits(col, ColumnGroup) && length(col@columns) > 0) {
+          id_field <- col@columns[[1]]@field; break
+        }
       }
     }
     if (is.null(id_field) || !id_field %in% names(data)) {

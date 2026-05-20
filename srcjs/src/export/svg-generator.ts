@@ -1189,7 +1189,8 @@ function getTextPositionPadded(
 }
 
 /** Escape XML special characters */
-function escapeXml(text: string): string {
+function escapeXml(text: string | null | undefined): string {
+  if (text == null) return "";
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -4255,11 +4256,27 @@ function getForestColumnSettings(spec: WebSpec): ForestColumnSettings {
  * Returns logical px (matching what `generateSVG()` would emit at default
  * options).
  */
+/**
+ * Materialize the effective column list: prepend `labelColumn` to
+ * `columns` when set. Non-destructive (returns a new spec object).
+ * Lets the rest of the export pipeline read `spec.columns` uniformly
+ * without per-callsite labelColumn awareness.
+ */
+function normalizeLabelColumn(spec: WebSpec): WebSpec {
+  if (!spec.labelColumn) return spec;
+  return {
+    ...spec,
+    columns: [spec.labelColumn, ...spec.columns],
+    labelColumn: null,
+  };
+}
+
 export function computeNaturalDimensions(spec: WebSpec): {
   width: number;
   height: number;
   aspect: number;
 } {
+  spec = normalizeLabelColumn(spec);
   validateSpec(spec);
   const layout = computeLayout(spec, {});
   return {
@@ -4633,6 +4650,9 @@ function generateSVGForAspectTarget(
  *    - Single forest area between left/right tables
  */
 export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string {
+  // Normalize the labelColumn slot into the columns array so all
+  // downstream layout / drawing reads from a single uniform shape.
+  spec = normalizeLabelColumn(spec);
   // Validate input
   validateSpec(spec);
 

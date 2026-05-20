@@ -20,6 +20,11 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     version = WIRE_FORMAT_VERSION,
     data = serialize_data(spec, include_forest),
     columns = lapply(spec@columns, serialize_column),
+    # `labelColumn` carries the row-label column as a named wire slot
+    # (separate from `columns`). The renderer prepends it to the column
+    # list when present, giving the "primary column" treatment a clear
+    # named hook instead of relying on `columns[0]?.id === "label"`.
+    labelColumn = if (is.null(spec@label_column)) NULL else serialize_column(spec@label_column),
     extraColumns = lapply(spec@extra_columns, serialize_column),
     availableFields = serialize_available_fields(spec),
     theme = serialize_theme(theme),
@@ -189,23 +194,29 @@ serialize_data <- function(spec, include_forest = TRUE) {
     }
   }
 
-  # Resolve the "label" field from the first ColumnSpec in columns (the
-  # row-identifier column). The frontend still uses `row.label` for tooltips
-  # and accessibility text, so we compute it from whichever column is leftmost.
+  # Resolve the "label" field for `row.label`. As of 0.34.2 the row-label
+  # column lives on `spec@label_column`; legacy wires kept it as the first
+  # entry of `spec@columns`. Honor the dedicated slot first, then fall back
+  # to the leftmost ColumnSpec in `columns`.
   primary_field <- NA_character_
-  for (col in spec@columns) {
-    if (S7_inherits(col, ColumnSpec)) {
-      primary_field <- col@field
-      break
-    }
-    if (S7_inherits(col, ColumnGroup) && length(col@columns) > 0) {
-      for (child in col@columns) {
-        if (S7_inherits(child, ColumnSpec)) {
-          primary_field <- child@field
-          break
-        }
+  if (!is.null(spec@label_column) && S7_inherits(spec@label_column, ColumnSpec)) {
+    primary_field <- spec@label_column@field
+  }
+  if (is.na(primary_field)) {
+    for (col in spec@columns) {
+      if (S7_inherits(col, ColumnSpec)) {
+        primary_field <- col@field
+        break
       }
-      if (!is.na(primary_field)) break
+      if (S7_inherits(col, ColumnGroup) && length(col@columns) > 0) {
+        for (child in col@columns) {
+          if (S7_inherits(child, ColumnSpec)) {
+            primary_field <- child@field
+            break
+          }
+        }
+        if (!is.na(primary_field)) break
+      }
     }
   }
 

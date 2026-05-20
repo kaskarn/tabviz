@@ -18,8 +18,9 @@ test_that("col_text default id is `text_<field>`", {
     columns = list(col_text("drug")),
     .spec_only = TRUE
   )
-  # Index 1 is the internal label column (id = "label").
-  expect_equal(spec@columns[[2]]@id, "text_drug")
+  # Post-0.34.2: label column lives on spec@label_column; user column at columns[[1]].
+  expect_equal(spec@label_column@id, "label")
+  expect_equal(spec@columns[[1]]@id, "text_drug")
 })
 
 test_that("col_numeric / col_bar on same field get distinct ids", {
@@ -41,7 +42,8 @@ test_that("label column keeps its special id `label`", {
     columns = list(col_numeric("x")),
     .spec_only = TRUE
   )
-  expect_equal(spec@columns[[1]]@id, "label")
+  # Post-0.34.2: the label column lives on the top-level `label_column` slot.
+  expect_equal(spec@label_column@id, "label")
 })
 
 test_that("viz_forest default id strips the synthetic `_forest_` prefix", {

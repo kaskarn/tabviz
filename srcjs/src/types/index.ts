@@ -817,6 +817,21 @@ export interface WebSpec {
   version: string;
   data: WebData;
   columns: ColumnDef[];
+  /**
+   * Row-label column. Carries the leftmost "primary" column (sticky-left,
+   * drag-handle host, row-tooltip target) as a named wire slot, separate
+   * from `columns`. When set, the store materializes the effective list
+   * as `[labelColumn, ...columns]`. When unset, the store falls back to
+   * looking for a column with `id === "label"` at `columns[0]` for
+   * backward-compat with wires emitted by older R / TS constructors.
+   * `null` / undefined = no label column (the leftmost user column
+   * gets primary treatment).
+   *
+   * R-side: `WebSpec@label_column`. TS-side: `tabviz({ label, ... })`
+   * sets this field. The id is conventionally `"label"` to keep op-log
+   * / cell-edit routing stable.
+   */
+  labelColumn?: ColumnDef | null;
   extraColumns?: ColumnDef[];
   availableFields?: AvailableField[];
   theme: WebTheme;

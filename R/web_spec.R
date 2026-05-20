@@ -478,19 +478,18 @@ tabviz <- function(
     })
   }
 
-  # Prepend the label/row-identifier column. The leftmost column is the
-  # row-identifier ("primary") column in the frontend; making it a regular
-  # ColumnSpec removes all special-casing. Pin its id to `"label"` rather
-  # than letting the default scheme produce `"text___row_number__"` — this
-  # column is unique by construction and readable is worth the one-line
-  # special case.
+  # Build the row-label column. As of 0.34.2 this is a top-level
+  # `WebSpec@label_column` slot rather than a prepended entry in
+  # `columns` — clearer wire semantics for the "primary column" hook
+  # the renderer needs. The id is still pinned to `"label"` for
+  # backward-compat with op-log entries, cell-edit routing, and any
+  # consumer that grew a dependency on the sentinel.
   label_column <- col_text(
     field = label_field,
     header = label_header_resolved,
     width = NULL,
     id = "label"
   )
-  columns <- c(list(label_column), columns)
 
   # Process extra_columns (hidden-but-available pre-configured specs)
   if (is.null(extra_columns)) {
@@ -585,6 +584,7 @@ tabviz <- function(
     group_col = group_col,
     group_cols = group_cols,
     columns = columns,
+    label_column = label_column,
     extra_columns = extra_columns,
     available_exclude = available_exclude,
     groups = resolved_groups,

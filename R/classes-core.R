@@ -263,6 +263,13 @@ WebSpec <- new_class(
     group_col = new_property(class_character, default = NA_character_),
     group_cols = new_property(class_character, default = character(0)),
     columns = new_property(class_list, default = list()),
+    # Row-label column. When `tabviz(label = ...)` is supplied, the
+    # constructor builds a ColumnSpec here instead of prepending to
+    # `columns`. The store materializes the effective column list as
+    # `[label_column, ...columns]` if `label_column` is set, otherwise
+    # falls back to looking for a column with id="label" at columns[0]
+    # for backward-compat with older wires. NULL = no label column.
+    label_column = new_property(class_any, default = NULL),
     extra_columns = new_property(class_list, default = list()),
     available_exclude = new_property(class_character, default = character(0)),
     groups = new_property(class_list, default = list()),
