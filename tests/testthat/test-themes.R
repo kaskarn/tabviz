@@ -45,7 +45,8 @@ for (preset_name in names(preset_constructors)) {
 test_that("package_themes returns a 2-level categorized list", {
   pkg <- package_themes()
   expect_setequal(names(pkg), c("journals", "design", "lotr"))
-  expect_setequal(names(pkg$journals), c("cochrane", "lancet", "jama", "dark"))
+  expect_setequal(names(pkg$journals), c("cochrane", "lancet", "jama",
+                                           "nejm", "nature", "bmj", "dark"))
   expect_setequal(names(pkg$design), c(
     "bauhaus", "swiss", "tufte", "newsprint",
     "solarized", "solarized_dark", "tonal", "tonal_dark"

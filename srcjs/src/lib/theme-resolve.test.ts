@@ -3,6 +3,7 @@ import { resolveTheme } from "./theme-resolve";
 import presetsJson from "./theme-presets-v2.json";
 import {
   COCHRANE_DRAFT, LANCET_DRAFT, JAMA_DRAFT, DARK_DRAFT,
+  NEJM_DRAFT, NATURE_DRAFT, BMJ_DRAFT,
   BAUHAUS_DRAFT, SWISS_DRAFT, TUFTE_DRAFT, NEWSPRINT_DRAFT,
   SOLARIZED_DRAFT, SOLARIZED_DARK_DRAFT, TONAL_DRAFT, TONAL_DARK_DRAFT,
   DWARVEN_DRAFT, ELVISH_DRAFT, HOBBIT_DRAFT,
@@ -43,6 +44,9 @@ describe("resolveTheme — drift detection vs canonical snapshot", () => {
     ["cochrane",       COCHRANE_DRAFT],
     ["lancet",         LANCET_DRAFT],
     ["jama",           JAMA_DRAFT],
+    ["nejm",           NEJM_DRAFT],
+    ["nature",         NATURE_DRAFT],
+    ["bmj",            BMJ_DRAFT],
     ["dark",           DARK_DRAFT],
     ["bauhaus",        BAUHAUS_DRAFT],
     ["swiss",          SWISS_DRAFT],

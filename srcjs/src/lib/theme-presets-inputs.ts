@@ -20,6 +20,12 @@
 
 import type { ResolveDraft } from "./theme-resolve";
 
+// Internal: shorthand for a Google-Fonts webfont entry.
+const GF = (family: string, params: string) => ({
+  family,
+  url: `https://fonts.googleapis.com/css2?family=${params}&display=swap`,
+});
+
 // ────────────────────────────────────────────────────────────────────
 // Journal presets — mirror R/themes.R
 // ────────────────────────────────────────────────────────────────────
@@ -69,6 +75,57 @@ export const JAMA_DRAFT: ResolveDraft = {
   },
 };
 
+export const NEJM_DRAFT: ResolveDraft = {
+  name: "nejm",
+  webFonts: [
+    GF("Source Serif Pro", "Source+Serif+Pro:wght@400;600;700"),
+  ],
+  inputs: {
+    neutral: ["#FFFFFF", "#FFFFFF", "#F8F6F2", "#5A6470", "#1F2A3A"],
+    primary: "#1F3D5F",
+    primaryDeep: "#0F2640",
+    accent: "#A52E2E",
+    seriesAnchors: ["#1F3D5F", "#A52E2E", "#5F7A3F", "#7A5D8C", "#B88D3F"],
+    fontBody: "'Source Serif Pro', Georgia, 'Times New Roman', serif",
+    fontDisplay: "'Source Serif Pro', Georgia, 'Times New Roman', serif",
+  },
+  variants: { density: "comfortable" },
+  overrides: {
+    row: { banding: "none" },
+  },
+};
+
+export const NATURE_DRAFT: ResolveDraft = {
+  name: "nature",
+  webFonts: [
+    GF("PT Serif", "PT+Serif:wght@400;700"),
+  ],
+  inputs: {
+    neutral: ["#FFFFFF", "#FFFFFF", "#F5F2EE", "#5C5550", "#1A1A1A"],
+    primary: "#E64626",
+    primaryDeep: "#A8311A",
+    secondary: "#2C2C2C",
+    accent: "#3B7FA9",
+    seriesAnchors: ["#E64626", "#3B7FA9", "#5C8A3F", "#B88D3F", "#7A5D8C"],
+    fontBody: "'PT Serif', Georgia, 'Times New Roman', serif",
+    fontDisplay: "system-ui, -apple-system, 'Segoe UI', sans-serif",
+  },
+  variants: { density: "comfortable" },
+};
+
+export const BMJ_DRAFT: ResolveDraft = {
+  name: "bmj",
+  inputs: {
+    neutral: ["#FFFFFF", "#FFFFFF", "#F4F6F8", "#5A6470", "#1F2937"],
+    primary: "#2A6F97",
+    secondary: "#7A7570",
+    accent: "#E07A5F",
+    seriesAnchors: ["#2A6F97", "#E07A5F", "#5C8A3F", "#B88D3F", "#7A5D8C"],
+    fontBody: "system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif",
+  },
+  variants: { density: "comfortable" },
+};
+
 export const DARK_DRAFT: ResolveDraft = {
   name: "dark",
   inputs: {
@@ -89,11 +146,6 @@ export const DARK_DRAFT: ResolveDraft = {
 // ────────────────────────────────────────────────────────────────────
 // LOTR easter-egg presets — mirror R/themes-lotr.R
 // ────────────────────────────────────────────────────────────────────
-
-const GF = (family: string, params: string) => ({
-  family,
-  url: `https://fonts.googleapis.com/css2?family=${params}&display=swap`,
-});
 
 export const DWARVEN_DRAFT: ResolveDraft = {
   name: "dwarven",
@@ -344,6 +396,9 @@ export const PRESET_DRAFTS = {
   cochrane:       COCHRANE_DRAFT,
   lancet:         LANCET_DRAFT,
   jama:           JAMA_DRAFT,
+  nejm:           NEJM_DRAFT,
+  nature:         NATURE_DRAFT,
+  bmj:            BMJ_DRAFT,
   dark:           DARK_DRAFT,
   bauhaus:        BAUHAUS_DRAFT,
   swiss:          SWISS_DRAFT,

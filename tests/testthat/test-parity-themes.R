@@ -88,7 +88,7 @@
 }
 
 THEMES <- c(
-  "cochrane", "lancet", "jama", "dark",
+  "cochrane", "lancet", "jama", "nejm", "nature", "bmj", "dark",
   "bauhaus", "swiss", "tufte", "newsprint",
   "solarized", "solarized_dark", "tonal", "tonal_dark",
   "dwarven", "elvish", "hobbit"

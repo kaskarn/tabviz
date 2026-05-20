@@ -4,6 +4,33 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.3.1 — 2026-05-19
+
+### Added — three more journal themes
+
+* **`themeNejm`** — New England Journal of Medicine interpretation:
+  deep navy primary (slightly darker than Lancet), muted crimson
+  accent, Source Serif Pro. Distinct sibling to Lancet (old-gold
+  accent + Georgia) and JAMA (pure mono).
+* **`themeNature`** — Nature journal interpretation: deep red brand
+  primary, charcoal secondary, sky-blue accent, PT Serif body with
+  system-sans display. Modern editorial register.
+* **`themeBmj`** — BMJ Group interpretation: cooler-than-Cochrane teal
+  primary, warm-gray secondary, orange accent, modern sans throughout.
+
+Each lands in the `journals` category of `package_themes()` and is
+exercised by the existing R↔TS parity + roster-sync tests.
+
+### Fixed — `colCurrency(abbreviate: true)` was dropping the prefix/suffix
+
+`formatNumber` previously short-circuited the abbreviate branch with an
+early `return abbreviateNumber(value)`, skipping the
+prefix/suffix-application step. Result: `colCurrency({ symbol: "$",
+abbreviate: true })` rendered `"75.5K"` instead of `"$75.5K"`. Restructured
+the function so abbreviate, digits, and decimals all flow into a uniform
+prefix/suffix step. Regression tests in
+`srcjs/src/lib/formatters.test.ts`.
+
 ## 0.3.0 — 2026-05-19
 
 ### Added — `design` theme category (8 new presets)

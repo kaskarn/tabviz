@@ -153,6 +153,111 @@ web_theme_dark <- function() {
 }
 
 
+#' NEJM theme (v2)
+#'
+#' New England Journal of Medicine interpretation: deep navy primary
+#' (slightly darker than Lancet, to keep the two siblings visually
+#' distinct), muted crimson accent for emphasis, Source Serif Pro body
+#' and display. Comfortable density; no alt-row banding — classic
+#' medical-journal page feel.
+#'
+#' Distinct from Lancet: NEJM uses a darker navy with crimson accents
+#' (vs Lancet's old-gold), and Source Serif Pro instead of Georgia.
+#'
+#' Loads `Source Serif Pro` from Google Fonts via the WebTheme `web_fonts` slot.
+#'
+#' @return A [WebTheme].
+#' @export
+web_theme_nejm <- function() {
+  resolve_theme(WebTheme(
+    name = "nejm",
+    web_fonts = list(
+      web_font(
+        "Source Serif Pro",
+        "https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@400;600;700&display=swap"
+      )
+    ),
+    inputs = ThemeInputs(
+      neutral = c("#FFFFFF", "#FFFFFF", "#F8F6F2", "#5A6470", "#1F2A3A"),
+      primary      = "#1F3D5F",
+      primary_deep = "#0F2640",
+      accent       = "#A52E2E",
+      series_anchors = c("#1F3D5F", "#A52E2E", "#5F7A3F", "#7A5D8C", "#B88D3F"),
+      font_body    = "'Source Serif Pro', Georgia, 'Times New Roman', serif",
+      font_display = "'Source Serif Pro', Georgia, 'Times New Roman', serif"
+    ),
+    variants = ThemeVariants(density = "comfortable"),
+    row = RowCluster(banding = "none")
+  ))
+}
+
+#' Nature theme (v2)
+#'
+#' Nature journal interpretation: deep red primary (the journal's
+#' instantly-recognizable brand color), charcoal secondary, sky-blue
+#' accent for emphasis. PT Serif body with system-sans display —
+#' modern editorial register rather than classical-medical.
+#'
+#' Distinct from JAMA/Lancet/NEJM: bold red identity instead of
+#' navy/black, serif body but sans display (vs all-serif Lancet/NEJM),
+#' chromatic accent (sky-blue) instead of muted complements.
+#'
+#' Loads `PT Serif` from Google Fonts via the WebTheme `web_fonts` slot.
+#'
+#' @return A [WebTheme].
+#' @export
+web_theme_nature <- function() {
+  resolve_theme(WebTheme(
+    name = "nature",
+    web_fonts = list(
+      web_font(
+        "PT Serif",
+        "https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap"
+      )
+    ),
+    inputs = ThemeInputs(
+      neutral = c("#FFFFFF", "#FFFFFF", "#F5F2EE", "#5C5550", "#1A1A1A"),
+      primary      = "#E64626",
+      primary_deep = "#A8311A",
+      secondary    = "#2C2C2C",
+      accent       = "#3B7FA9",
+      series_anchors = c("#E64626", "#3B7FA9", "#5C8A3F", "#B88D3F", "#7A5D8C"),
+      font_body    = "'PT Serif', Georgia, 'Times New Roman', serif",
+      font_display = "system-ui, -apple-system, 'Segoe UI', sans-serif"
+    ),
+    variants = ThemeVariants(density = "comfortable")
+  ))
+}
+
+#' BMJ theme (v2)
+#'
+#' BMJ Group interpretation: teal primary in a different register than
+#' Cochrane's brighter cyan-teal — cooler, more contemporary, oriented
+#' toward modern medical communication. Warm-gray secondary, orange
+#' accent for emphasis. Modern sans-serif typography throughout.
+#'
+#' Distinct from Cochrane: cooler teal with more depth (vs Cochrane's
+#' brighter heritage cyan), warm-gray secondary instead of mirroring,
+#' orange complement instead of coral.
+#'
+#' @return A [WebTheme].
+#' @export
+web_theme_bmj <- function() {
+  resolve_theme(WebTheme(
+    name = "bmj",
+    inputs = ThemeInputs(
+      neutral = c("#FFFFFF", "#FFFFFF", "#F4F6F8", "#5A6470", "#1F2937"),
+      primary      = "#2A6F97",
+      secondary    = "#7A7570",
+      accent       = "#E07A5F",
+      series_anchors = c("#2A6F97", "#E07A5F", "#5C8A3F", "#B88D3F", "#7A5D8C"),
+      font_body = "system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif"
+    ),
+    variants = ThemeVariants(density = "comfortable")
+  ))
+}
+
+
 #' All v2 preset themes
 #'
 #' Returns a 2-level named list of v2 theme presets, organized into
@@ -175,6 +280,9 @@ package_themes <- function() {
       cochrane = web_theme_cochrane(),
       lancet   = web_theme_lancet(),
       jama     = web_theme_jama(),
+      nejm     = web_theme_nejm(),
+      nature   = web_theme_nature(),
+      bmj      = web_theme_bmj(),
       dark     = web_theme_dark()
     ),
     design = list(

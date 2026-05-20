@@ -1,3 +1,28 @@
+# tabviz 0.33.1
+
+## Added: three more journal themes
+
+* `web_theme_nejm()` — New England Journal of Medicine interpretation:
+  deep navy primary, muted crimson accent, Source Serif Pro. Distinct
+  sibling to Lancet (old-gold accent + Georgia).
+* `web_theme_nature()` — Nature journal interpretation: deep red brand
+  primary, charcoal secondary, sky-blue accent, PT Serif body with
+  system-sans display.
+* `web_theme_bmj()` — BMJ Group interpretation: cooler-than-Cochrane
+  teal primary, warm-gray secondary, orange accent, modern sans
+  throughout.
+
+All three land in the `journals` category of `package_themes()` and
+ship with R + TS + gallery example + canonical snapshot + parity-test
+coverage.
+
+## Fixed: `col_currency(abbreviate = TRUE)` was dropping the symbol prefix
+
+`@tabviz/core`'s `formatNumber` short-circuited the abbreviate branch
+before applying prefix/suffix, so `col_currency(abbreviate = TRUE)`
+rendered "75.5K" instead of "$75.5K". Fixed in the vendored bundle;
+regression tests in `srcjs/src/lib/formatters.test.ts`.
+
 # tabviz 0.33.0
 
 ## Added: `design` theme category (8 new presets)

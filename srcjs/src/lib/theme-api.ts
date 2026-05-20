@@ -14,6 +14,7 @@
 import { resolveTheme, type ResolveDraft, type ResolveOptions, type ThemeOverrides } from "./theme-resolve";
 import {
   COCHRANE_DRAFT, LANCET_DRAFT, JAMA_DRAFT, DARK_DRAFT,
+  NEJM_DRAFT, NATURE_DRAFT, BMJ_DRAFT,
   DWARVEN_DRAFT, ELVISH_DRAFT, HOBBIT_DRAFT,
   BAUHAUS_DRAFT, SWISS_DRAFT, TUFTE_DRAFT, NEWSPRINT_DRAFT,
   SOLARIZED_DRAFT, SOLARIZED_DARK_DRAFT, TONAL_DRAFT, TONAL_DARK_DRAFT,
@@ -31,6 +32,9 @@ import type {
 export const themeCochrane      = (): WebThemeV2 => resolveTheme(COCHRANE_DRAFT);
 export const themeLancet        = (): WebThemeV2 => resolveTheme(LANCET_DRAFT);
 export const themeJama          = (): WebThemeV2 => resolveTheme(JAMA_DRAFT);
+export const themeNejm          = (): WebThemeV2 => resolveTheme(NEJM_DRAFT);
+export const themeNature        = (): WebThemeV2 => resolveTheme(NATURE_DRAFT);
+export const themeBmj           = (): WebThemeV2 => resolveTheme(BMJ_DRAFT);
 export const themeDark          = (): WebThemeV2 => resolveTheme(DARK_DRAFT);
 export const themeBauhaus       = (): WebThemeV2 => resolveTheme(BAUHAUS_DRAFT);
 export const themeSwiss         = (): WebThemeV2 => resolveTheme(SWISS_DRAFT);

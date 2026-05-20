@@ -104,40 +104,36 @@ export function formatNumber(value: number | undefined | null, options?: ColumnO
     return symbol ? `${formatted}%` : formatted;
   }
 
-  // Handle abbreviation for large numbers
+  // Compute the numeric body (no prefix/suffix yet) so prefix/suffix
+  // application is uniform across all three formatting paths:
+  // abbreviate, digits, and decimals+thousands_sep. Fixes the
+  // `col_currency(abbreviate = TRUE)` case where the abbreviated
+  // branch used to early-return, dropping the `$` prefix.
   const abbreviate = options?.numeric?.abbreviate;
-  if (abbreviate && Math.abs(value) >= 1000) {
-    return abbreviateNumber(value);
-  }
-
-  // Use significant figures if digits specified
   const digits = options?.numeric?.digits;
-  if (digits !== undefined && digits !== null) {
-    const formatted = value.toPrecision(digits);
-    const thousandsSep = options?.numeric?.thousandsSep;
-    if (thousandsSep && typeof thousandsSep === "string") {
-      return addThousandsSep(formatted, thousandsSep);
-    }
-    return formatted;
-  }
-
-  // Numeric formatting with decimals and thousands separator
   const decimals = options?.numeric?.decimals;
   const thousandsSep = options?.numeric?.thousandsSep;
   let formatted: string;
 
-  if (decimals !== undefined) {
-    formatted = value.toFixed(decimals);
-  } else if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
-    // Default behavior: integers show no decimals, others show 2
-    formatted = Math.round(value).toString();
+  if (abbreviate && Math.abs(value) >= 1000) {
+    formatted = abbreviateNumber(value);
+  } else if (digits !== undefined && digits !== null) {
+    formatted = value.toPrecision(digits);
+    if (thousandsSep && typeof thousandsSep === "string") {
+      formatted = addThousandsSep(formatted, thousandsSep);
+    }
   } else {
-    formatted = value.toFixed(2);
-  }
-
-  // Apply thousands separator if specified
-  if (thousandsSep && typeof thousandsSep === "string") {
-    formatted = addThousandsSep(formatted, thousandsSep);
+    if (decimals !== undefined) {
+      formatted = value.toFixed(decimals);
+    } else if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
+      // Default behavior: integers show no decimals, others show 2
+      formatted = Math.round(value).toString();
+    } else {
+      formatted = value.toFixed(2);
+    }
+    if (thousandsSep && typeof thousandsSep === "string") {
+      formatted = addThousandsSep(formatted, thousandsSep);
+    }
   }
 
   // Apply prefix/suffix (e.g., for currency: "$100" or "100EUR")

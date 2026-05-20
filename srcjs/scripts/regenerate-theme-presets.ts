@@ -22,6 +22,7 @@ import { writeFileSync } from "fs";
 import { resolve } from "path";
 import {
   COCHRANE_DRAFT, LANCET_DRAFT, JAMA_DRAFT, DARK_DRAFT,
+  NEJM_DRAFT, NATURE_DRAFT, BMJ_DRAFT,
   BAUHAUS_DRAFT, SWISS_DRAFT, TUFTE_DRAFT, NEWSPRINT_DRAFT,
   SOLARIZED_DRAFT, SOLARIZED_DARK_DRAFT, TONAL_DRAFT, TONAL_DARK_DRAFT,
   DWARVEN_DRAFT, ELVISH_DRAFT, HOBBIT_DRAFT,
@@ -32,6 +33,9 @@ const presets = {
   cochrane:       resolveTheme(COCHRANE_DRAFT),
   lancet:         resolveTheme(LANCET_DRAFT),
   jama:           resolveTheme(JAMA_DRAFT),
+  nejm:           resolveTheme(NEJM_DRAFT),
+  nature:         resolveTheme(NATURE_DRAFT),
+  bmj:            resolveTheme(BMJ_DRAFT),
   dark:           resolveTheme(DARK_DRAFT),
   bauhaus:        resolveTheme(BAUHAUS_DRAFT),
   swiss:          resolveTheme(SWISS_DRAFT),
