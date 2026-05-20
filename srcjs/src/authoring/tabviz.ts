@@ -16,6 +16,7 @@ import type {
 } from "../types";
 import { CURRENT_VERSION } from "../spec";
 import { resolveThemeRef, type ThemeRef } from "../lib/theme-api";
+import { colText } from "./columns";
 
 export interface TabvizArgs {
   /** Row data — array of plain objects keyed by field name. */
@@ -136,10 +137,23 @@ export function tabviz(args: TabvizArgs): WebSpec {
 
   const theme = resolveThemeRef(args.theme ?? "bmj");
 
+  // Auto-insert a label column at the start when `label` is set — mirrors
+  // R `tabviz()`'s `label_column <- col_text(...)` + `c(list(label_column),
+  // columns)` prepend. Without this, the bilingual page renders without
+  // a leftmost-identifier column even though `args.label` is supplied.
+  // Caller-supplied `args.columns` may already contain an id="label"
+  // column (R puts one there); if so, skip the auto-insert.
+  const hasLabelCol = args.columns.some((c) => c.id === "label");
+  const labelColumns: ColumnDef[] =
+    args.label != null && !hasLabelCol
+      ? [colText({ field: args.label, header: args.labelHeader ?? args.label, id: "label" })]
+      : [];
+  const columns = [...labelColumns, ...args.columns];
+
   const spec: WebSpec = {
     version: CURRENT_VERSION,
     data,
-    columns: args.columns,
+    columns,
     extraColumns: args.extraColumns,
     theme: theme as unknown as WebSpec["theme"],
     interaction,

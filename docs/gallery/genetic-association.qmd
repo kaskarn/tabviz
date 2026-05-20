@@ -47,7 +47,16 @@ svelte_version <- jsonlite::fromJSON(
   "../../srcjs/package-lock.json"
 )$packages[["node_modules/svelte"]]$version
 
-ojs_define(snps_in = snps, svelte_version = svelte_version)
+# Read the @tabviz/core version from srcjs/package.json so esm.sh
+# imports stay in lockstep with whatever's published. Future version
+# bumps auto-propagate to the docs on the next quarto render.
+tabviz_core_version <- jsonlite::fromJSON(
+  "../../srcjs/package.json"
+)$version
+
+ojs_define(snps_in = snps,
+           svelte_version = svelte_version,
+           tabviz_core_version = tabviz_core_version)
 ```
 
 ## R: `tabviz(...)` rendering the live widget
@@ -90,12 +99,12 @@ Below is the same plot built from the TypeScript-mirror of the R API and mounted
 // mount. The version comes from R via ojs_define(svelte_version = ...)
 // reading srcjs/package.json's devDeps, so a Svelte bump there
 // auto-propagates here on the next quarto render.
-core = import(`https://esm.sh/@tabviz/core@0.2.1?deps=svelte@${svelte_version}`)
+core = import(`https://esm.sh/@tabviz/core@${tabviz_core_version}?deps=svelte@${svelte_version}`)
 
 // Quarto exposes `snps_in` as a column-oriented table; transpose to rows.
 rows = transpose(snps_in)
 
-styleHref = "https://esm.sh/@tabviz/core@0.2.1/dist/style.css"
+styleHref = `https://esm.sh/@tabviz/core@${tabviz_core_version}/dist/style.css`
 // Inject the @tabviz/core stylesheet once per page.
 _styleInjected = {
   if (!document.querySelector(`link[href="${styleHref}"]`)) {

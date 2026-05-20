@@ -54,9 +54,12 @@ describe("tabviz top-level constructor", () => {
       ],
       title: "Genetic associations with CVD",
     });
-    expect(spec.columns.length).toBe(3);
+    // Label column is auto-inserted at index 0 when `label` is set, so
+    // forest is at index 3 (label + interval + numeric + forest).
+    expect(spec.columns.length).toBe(4);
+    expect(spec.columns[0].id).toBe("label");
     expect(spec.labels?.title).toBe("Genetic associations with CVD");
-    const forestCol = spec.columns[2];
+    const forestCol = spec.columns[3];
     if (forestCol.isGroup) throw new Error("expected leaf column");
     expect(forestCol.type).toBe("forest");
     expect(forestCol.options?.forest?.scale).toBe("log");

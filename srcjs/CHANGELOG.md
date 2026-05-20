@@ -4,6 +4,26 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.3.3 — 2026-05-20
+
+### Fixed — `tabviz()` now auto-inserts a label column
+
+When `label: "region"` is set, the TS-side `tabviz()` now prepends a
+`colText({ field: label, header: labelHeader ?? label, id: "label" })`
+to `columns` — mirroring R's `tabviz()` behavior. Without this, the
+bilingual gallery's OJS-rendered widget was missing its leftmost
+identifier column. Caller-supplied columns with `id === "label"` are
+preserved (no double-insert).
+
+### Settings panel — removed half-baked "First column" toggle, moved Container to Spacing
+
+The "First column: Default / Bold" toggle in the Layout tab was
+half-baked (the rendering path doesn't fully honor the bold variant
+yet); pulled until the renderer side catches up. The "Container"
+section (border + radius) moved from the Layout tab to the Spacing
+tab, where it sits below the existing token sections — better fit
+with the other margin/padding controls.
+
 ## 0.3.2 — 2026-05-19
 
 ### Changed — BMJ is now the default theme

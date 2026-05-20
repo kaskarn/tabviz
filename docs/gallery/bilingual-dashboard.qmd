@@ -38,13 +38,18 @@ kpi <- data.frame(
 )
 kpi$trend <- I(sales_trend)
 
-# Expose to OJS (plus the locked Svelte version, same pattern as the
-# genetic-association page — lockstep esm.sh peer pin).
+# Expose to OJS (plus the locked Svelte version + @tabviz/core version,
+# same pattern as the genetic-association page).
 svelte_version <- jsonlite::fromJSON(
   "../../srcjs/package-lock.json"
 )$packages[["node_modules/svelte"]]$version
+tabviz_core_version <- jsonlite::fromJSON(
+  "../../srcjs/package.json"
+)$version
 
-ojs_define(kpi_in = kpi, svelte_version = svelte_version)
+ojs_define(kpi_in = kpi,
+           svelte_version = svelte_version,
+           tabviz_core_version = tabviz_core_version)
 ```
 
 ## R: `tabviz(...)` rendering the live widget
@@ -75,20 +80,23 @@ tabviz(
 
 ```{ojs}
 //| echo: false
-core = import(`https://esm.sh/@tabviz/core@0.2.1?deps=svelte@${svelte_version}`)
+core = import(`https://esm.sh/@tabviz/core@${tabviz_core_version}?deps=svelte@${svelte_version}`)
 
 // Transpose the column-oriented kpi data + ensure trend is a per-row array.
 kpi_rows = {
   const cols = transpose(kpi_in);
-  // `trend` arrived as a flat numeric vector concatenated across rows;
-  // restore the per-row 12-month structure.
+  // `kpi.trend` was set R-side via `kpi$trend <- I(sales_trend)` — a
+  // list-column with one 12-element numeric vector per row. Quarto's
+  // `ojs_define()` + jsonlite serializes that as a nested array, so
+  // `kpi_in.trend[i]` is already the per-row series; no flat slicing
+  // needed.
   return cols.map((row, i) => ({
     ...row,
-    trend: kpi_in.trend.slice(i * 12, (i + 1) * 12),
+    trend: kpi_in.trend[i],
   }));
 }
 
-styleHref = "https://esm.sh/@tabviz/core@0.2.1/dist/style.css"
+styleHref = `https://esm.sh/@tabviz/core@${tabviz_core_version}/dist/style.css`
 _styleInjected = {
   if (!document.querySelector(`link[href="${styleHref}"]`)) {
     const link = document.createElement("link");

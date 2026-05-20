@@ -177,33 +177,6 @@
     />
   </SettingsSection>
 
-  <SettingsSection title="First column" description="Bold gives the first column an Excel-style row-label treatment.">
-    <SegmentedField
-      label=""
-      value={variants.firstColumnStyle}
-      options={[
-        { value: "default", label: "Default" },
-        { value: "bold",    label: "Bold" },
-      ]}
-      onchange={(v) => setVariant("firstColumnStyle", v)}
-    />
-  </SettingsSection>
-{/if}
-
-{#if layout}
-  <SettingsSection title="Container" description="Outer container styling.">
-    <BooleanField
-      label="Border"
-      value={layout.containerBorder}
-      onchange={(v) => setLayout("containerBorder", v)}
-    />
-    <NumberField
-      label="Border radius"
-      value={layout.containerBorderRadius ?? 8}
-      min={0} max={32} step={1}
-      onchange={(v) => setLayout("containerBorderRadius", v)}
-    />
-  </SettingsSection>
 {/if}
 
 <BandingControl {store} />

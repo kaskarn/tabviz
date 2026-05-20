@@ -1,3 +1,34 @@
+# tabviz 0.34.1
+
+## Bilingual gallery — fixes for the OJS-rendered widget
+
+* **Auto-pin `@tabviz/core` version in the OJS import**. The bilingual
+  pages were importing `@tabviz/core@0.2.1` hard-coded; they now read
+  the current version from `srcjs/package.json` and inject it via
+  `ojs_define()` (same pattern as the Svelte version pin). Future
+  bumps auto-propagate on the next `quarto render`.
+* **Label column auto-inserts TS-side**. The `bilingual-dashboard`
+  page was missing its leftmost identifier column because the
+  TS-side `tabviz()` constructor didn't replicate R's prepend
+  behavior. Now it does.
+* **Sparkline rendering on every row**. The dashboard's OJS chunk
+  was flat-slicing the nested-array list-column instead of
+  per-row indexing; fixed to use `kpi_in.trend[i]` directly.
+
+## Settings panel — half-baked "First column" toggle removed
+
+The Layout tab's "First column: Default / Bold" toggle was a stub for
+a render path that's not fully wired yet. Pulled until the renderer
+side catches up so the panel doesn't ship a control that doesn't fully
+respond. Will return when the bold-first-column treatment lands
+end-to-end.
+
+## Settings panel — Container section moved from Layout to Spacing
+
+The Container border + border-radius controls moved from the Layout
+tab to the Spacing tab, where they sit alongside the other margin /
+padding token sliders.
+
 # tabviz 0.34.0
 
 ## Changed: BMJ is now the default theme
