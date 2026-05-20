@@ -10,14 +10,14 @@ const SAMPLE_DATA = [
 ];
 
 describe("tabviz top-level constructor", () => {
-  test("returns a WebSpec with version + cochrane theme by default", () => {
+  test("returns a WebSpec with version + bmj theme by default", () => {
     const spec = tabviz({
       data: SAMPLE_DATA,
       label: "study",
       columns: [colNumeric({ field: "hr" })],
     });
     expect(spec.version).toBe("1.0");
-    expect(spec.theme.name).toBe("cochrane");
+    expect(spec.theme.name).toBe("bmj");
     expect(spec.data.rows.length).toBe(3);
     expect(spec.data.rows[0].label).toBe("A");
   });

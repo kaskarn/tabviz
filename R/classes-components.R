@@ -387,14 +387,14 @@ col_text <- function(field, header = NULL, width = NULL, max_chars = NULL,
 col_label <- function(field, header = NULL, width = NULL, max_chars = NULL,
                       na_text = NULL, ...) {
   checkmate::assert_integerish(max_chars, lower = 1, len = 1, null.ok = TRUE)
-  if (is.null(header)) {
-    header <- gsub("_", " ", field)
-    header <- gsub("([a-z])([A-Z])", "\\1 \\2", header)
-    header <- tools::toTitleCase(header)
-  }
-  opts <- if (is.null(max_chars)) list() else list(text = list(maxChars = max_chars))
-  web_col(field, header, type = "text", width = width, options = opts,
-          na_text = na_text, ...)
+  # TS-side `colLabel` prettifies the default header (snake_case →
+  # Title Case) when none is supplied, so we only pass `header` when the
+  # caller explicitly set it.
+  ts_args <- list(field = field)
+  if (!is.null(header))    ts_args$header   <- header
+  if (!is.null(width))     ts_args$width    <- width
+  if (!is.null(max_chars)) ts_args$maxChars <- max_chars
+  delegate_to_web_col("colLabel", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 #' Column helper: Numeric column
@@ -555,28 +555,20 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
       details = "Pass the column names explicitly, e.g. col_interval(\"hr\", \"lower\", \"upper\"). The implicit auto-detect from a sibling viz_forest() column will be removed."
     )
   }
-  opts <- list(
-    interval = list(
-      decimals = if (is.null(digits)) decimals else NULL,
-      digits = digits,
-      thousandsSep = thousands_sep,
-      abbreviate = abbreviate,
-      separator = separator,
-      point = point,
-      lower = lower,
-      upper = upper,
-      impreciseThreshold = imprecise_threshold
-    )
+  # TS-side `colInterval` constructs the synthetic `_interval_<point>`
+  # field name and packs the options bundle; delegate.
+  ts_args <- list(
+    point = point, lower = lower, upper = upper,
+    decimals = decimals,
+    thousandsSep = thousands_sep,
+    abbreviate = abbreviate,
+    separator = separator
   )
-  # Create unique synthetic field name when overrides are specified
-  # This allows multiple col_interval columns with different field sources
-  if (!is.null(point)) {
-    synthetic_field <- paste0("_interval_", point)
-  } else {
-    synthetic_field <- "_interval"
-  }
-  web_col(synthetic_field, header, type = "interval", width = width, options = opts,
-          na_text = na_text, ...)
+  if (!identical(header, "95% CI"))     ts_args$header             <- header
+  if (!is.null(width))                  ts_args$width              <- width
+  if (!is.null(digits))                 ts_args$digits             <- digits
+  if (!is.null(imprecise_threshold))    ts_args$impreciseThreshold <- imprecise_threshold
+  delegate_to_web_col("colInterval", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 #' Column helper: P-value
@@ -638,18 +630,14 @@ col_pvalue <- function(
     field <- "pvalue"
   }
   format <- match.arg(format)
-  opts <- list(
-    pvalue = list(
-      stars = stars,
-      thresholds = thresholds,
-      format = format,
-      digits = digits,
-      expThreshold = exp_threshold,
-      abbrevThreshold = abbrev_threshold
-    )
+  ts_args <- list(
+    field = field, stars = stars, thresholds = thresholds,
+    format = format, digits = digits, expThreshold = exp_threshold
   )
-  web_col(field, header, type = "pvalue", width = width, options = opts,
-          na_text = na_text, ...)
+  if (!identical(header, "P-value")) ts_args$header          <- header
+  if (!is.null(width))               ts_args$width           <- width
+  if (!is.null(abbrev_threshold))    ts_args$abbrevThreshold <- abbrev_threshold
+  delegate_to_web_col("colPvalue", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 #' Column helper: Bar/weight column
@@ -729,15 +717,11 @@ col_sparkline <- function(
     field <- "trend"
   }
   type <- match.arg(type)
-  opts <- list(
-    sparkline = list(
-      type = type,
-      height = height,
-      color = color
-    )
-  )
-  web_col(field, header, type = "sparkline", width = width, options = opts,
-          na_text = na_text, ...)
+  ts_args <- list(field = field, type = type, height = height)
+  if (!identical(header, "Trend")) ts_args$header <- header
+  if (!is.null(width))             ts_args$width  <- width
+  if (!is.null(color))             ts_args$color  <- color
+  delegate_to_web_col("colSparkline", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 #' Column helper: Percentage column
@@ -787,16 +771,12 @@ col_percent <- function(
     cli_abort("Cannot specify both {.arg decimals} and {.arg digits}. Use one or the other.")
   }
 
-  opts <- list(
-    percent = list(
-      decimals = if (is.null(digits)) decimals else NULL,
-      digits = digits,
-      multiply = multiply,
-      symbol = symbol
-    )
-  )
-  web_col(field, header, type = "numeric", width = width, options = opts,
-          na_text = na_text, ...)
+  ts_args <- list(field = field, decimals = decimals,
+                  multiply = multiply, symbol = symbol)
+  if (!is.null(header)) ts_args$header <- header
+  if (!is.null(width))  ts_args$width  <- width
+  if (!is.null(digits)) ts_args$digits <- digits
+  delegate_to_web_col("colPercent", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 #' Column helper: Events column
@@ -854,20 +834,13 @@ col_events <- function(
     lifecycle::deprecate_warn("0.9.0", "col_events(n_field)", "col_events(n)")
     if (missing(n)) n <- n_field
   }
-  opts <- list(
-    events = list(
-      eventsField = events,
-      nField = n,
-      separator = separator,
-      showPct = show_pct,
-      thousandsSep = thousands_sep,
-      abbreviate = abbreviate
-    )
+  ts_args <- list(
+    events = events, n = n, separator = separator,
+    showPct = show_pct, thousandsSep = thousands_sep, abbreviate = abbreviate
   )
-  if (!is.null(na_text)) opts$naText <- na_text
-  # Use a synthetic field that signals this is an events column
-  synthetic_field <- paste0("_events_", events, "_", n)
-  web_col(synthetic_field, header, type = "custom", width = width, options = opts, ...)
+  if (!identical(header, "Events")) ts_args$header <- header
+  if (!is.null(width))              ts_args$width  <- width
+  delegate_to_web_col("colEvents", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 # ============================================================================
@@ -917,15 +890,17 @@ col_icon <- function(
     na_text = NULL,
     ...) {
   size <- match.arg(size)
-  opts <- list(
-    icon = list(
-      mapping = as.list(mapping),
-      size = size,
-      color = color
-    )
-  )
-  web_col(field, header, type = "icon", width = width, align = "center",
-          options = opts, na_text = na_text, ...)
+  ts_args <- list(field = field, size = size)
+  if (!is.null(header))  ts_args$header  <- header
+  if (!is.null(width))   ts_args$width   <- width
+  if (!is.null(mapping)) ts_args$mapping <- as.list(mapping)
+  if (!is.null(color))   ts_args$color   <- color
+  # `align = "center"` is an icon-column default that R was applying
+  # explicitly; let the TS builder set it via its own default, OR pin
+  # via `extra_args` so user-overridden alignment via `...` still wins.
+  extra <- list(...)
+  if (!"align" %in% names(extra)) extra$align <- "center"
+  delegate_to_web_col("colIcon", ts_args, na_text = na_text, extra_args = extra)
 }
 
 #' Column helper: Status badges
@@ -1046,18 +1021,28 @@ col_badge <- function(
     as.list(colors)  # mapping path — preserved behavior
   }
 
-  opts <- list(
-    badge = list(
-      variants = as.list(variants),
-      colors = badge_colors,
-      size = size,
-      shape = shape,
-      outline = outline,
-      thresholds = if (is.null(thresholds)) NULL else I(as.numeric(thresholds))
-    )
-  )
-  web_col(field, header, type = "badge", width = width, align = "center",
-          options = opts, na_text = na_text, ...)
+  ts_args <- list(field = field, size = size, shape = shape, outline = outline)
+  if (!is.null(header))    ts_args$header   <- header
+  if (!is.null(width))     ts_args$width    <- width
+  if (!is.null(variants))  ts_args$variants <- as.list(variants)
+  # Threshold-mode colors (unnamed vector) must stay an array; I() guards
+  # against auto-unbox flattening on length-1 cases. Named-mode colors
+  # are already a list and serialize as a JSON object.
+  if (!is.null(badge_colors)) {
+    ts_args$colors <- if (is.list(badge_colors)) badge_colors else I(unclass(badge_colors))
+  }
+  if (!is.null(thresholds))   ts_args$thresholds <- I(as.numeric(thresholds))
+  extra <- list(...)
+  if (!"align" %in% names(extra)) extra$align <- "center"
+  col <- delegate_to_web_col("colBadge", ts_args, na_text = na_text, extra_args = extra)
+  # Re-mark array-shape fields on the resolved ColumnSpec (see note in
+  # col_ring): V8 round-trip strips AsIs, so length-1 `thresholds` or
+  # `colors` would auto-unbox to scalars on the outgoing wire.
+  if (!is.null(thresholds)) col@options$badge$thresholds <- I(as.numeric(thresholds))
+  if (!is.null(badge_colors) && !is.list(badge_colors)) {
+    col@options$badge$colors <- I(unclass(badge_colors))
+  }
+  col
 }
 
 #' Column helper: Pictogram
@@ -1210,24 +1195,22 @@ col_pictogram <- function(
   }
 
   domain_vec <- if (is.null(min_value)) NULL else c(min_value, max_value)
-  opts <- list(
-    pictogram = list(
-      glyph = glyph_payload,
-      glyphField = glyph_field,
-      maxGlyphs = max_glyphs,
-      halfGlyphs = half_glyphs,
-      domain = domain_vec,
-      color = color,
-      emptyColor = empty_color,
-      size = size,
-      layout = layout,
-      valueLabel = value_label,
-      labelFormat = label_format,
-      labelDecimals = label_decimals
-    )
+  ts_args <- list(
+    field = field, glyph = glyph_payload,
+    halfGlyphs = half_glyphs, size = size, layout = layout,
+    valueLabel = value_label, labelDecimals = label_decimals
   )
-  web_col(field, header, type = "pictogram", width = width, align = "center",
-          options = opts, na_text = na_text, ...)
+  if (!is.null(header))      ts_args$header      <- header
+  if (!is.null(width))       ts_args$width       <- width
+  if (!is.null(glyph_field)) ts_args$glyphField  <- glyph_field
+  if (!is.null(max_glyphs))  ts_args$maxGlyphs   <- max_glyphs
+  if (!is.null(domain_vec))  ts_args$domain      <- domain_vec
+  if (!is.null(color))       ts_args$color       <- color
+  if (!is.null(empty_color)) ts_args$emptyColor  <- empty_color
+  if (!is.null(label_format)) ts_args$labelFormat <- label_format
+  extra <- list(...)
+  if (!"align" %in% names(extra)) extra$align <- "center"
+  delegate_to_web_col("colPictogram", ts_args, na_text = na_text, extra_args = extra)
 }
 
 #' Column helper: Ring (donut) gauge
@@ -1334,24 +1317,32 @@ col_ring <- function(
     )
   }
 
-  opts <- list(
-    ring = list(
-      minValue = min_value,
-      maxValue = max_value,
-      # I() forces jsonlite to serialize as an array even when length 1.
-      # The TS side always reads `color` as `string | string[]` and
-      # `thresholds` as `number[]`; auto-unboxing would break both.
-      color = if (is.null(color)) NULL else I(color),
-      thresholds = if (is.null(thresholds)) NULL else I(as.numeric(thresholds)),
-      trackColor = track_color,
-      size = size,
-      showLabel = show_label,
-      labelFormat = label_format,
-      labelDecimals = label_decimals
-    )
+  ts_args <- list(
+    field = field, minValue = min_value, maxValue = max_value,
+    size = size, showLabel = show_label,
+    labelFormat = label_format, labelDecimals = label_decimals
   )
-  web_col(field, header, type = "ring", width = width, align = "center",
-          options = opts, na_text = na_text, ...)
+  if (!is.null(header))     ts_args$header     <- header
+  if (!is.null(width))      ts_args$width      <- width
+  # I() prevents jsonlite's auto_unbox from collapsing length-1 vectors
+  # to scalars — the TS-side expects `color: string | string[]` and
+  # `thresholds: number[]`, so a bare 0.5 (vs [0.5]) crashes the
+  # renderer's iteration with "is not iterable".
+  if (!is.null(color))      ts_args$color      <- I(color)
+  if (!is.null(thresholds)) ts_args$thresholds <- I(as.numeric(thresholds))
+  if (!is.null(track_color)) ts_args$trackColor <- track_color
+  extra <- list(...)
+  if (!"align" %in% names(extra)) extra$align <- "center"
+  col <- delegate_to_web_col("colRing", ts_args, na_text = na_text, extra_args = extra)
+  # Re-mark the array-shape fields on the resolved ColumnSpec: the V8
+  # round-trip strips the AsIs class, so downstream serialization
+  # (`web_spec()` → `jsonlite::toJSON(auto_unbox = TRUE)`) would
+  # collapse a length-1 `thresholds` back to a scalar and crash the
+  # renderer's iteration. Re-applying I() preserves array semantics on
+  # the outgoing wire.
+  if (!is.null(thresholds)) col@options$ring$thresholds <- I(as.numeric(thresholds))
+  if (!is.null(color))      col@options$ring$color      <- I(color)
+  col
 }
 
 #' Column helper: Star rating
@@ -1493,16 +1484,14 @@ col_img <- function(
     na_text = NULL,
     ...) {
   shape <- match.arg(shape)
-  opts <- list(
-    img = list(
-      height = height,
-      maxWidth = max_width,
-      fallback = fallback,
-      shape = shape
-    )
-  )
-  web_col(field, header, type = "img", width = width, align = "center",
-          options = opts, na_text = na_text, ...)
+  ts_args <- list(field = field, shape = shape, fallback = fallback)
+  if (!is.null(header))    ts_args$header   <- header
+  if (!is.null(width))     ts_args$width    <- width
+  if (!is.null(height))    ts_args$height   <- height
+  if (!is.null(max_width)) ts_args$maxWidth <- max_width
+  extra <- list(...)
+  if (!"align" %in% names(extra)) extra$align <- "center"
+  delegate_to_web_col("colImg", ts_args, na_text = na_text, extra_args = extra)
 }
 
 #' Column helper: Reference/citation display
@@ -1549,15 +1538,11 @@ col_reference <- function(
     lifecycle::deprecate_warn("0.9.0", "col_reference(icon)", "col_reference(show_icon)")
     show_icon <- icon
   }
-  opts <- list(
-    reference = list(
-      hrefField = href_field,
-      maxChars = max_chars,
-      showIcon = show_icon
-    )
-  )
-  web_col(field, header, type = "reference", width = width, options = opts,
-          na_text = na_text, ...)
+  ts_args <- list(field = field, maxChars = max_chars, showIcon = show_icon)
+  if (!identical(header, "Reference")) ts_args$header    <- header
+  if (!is.null(width))                 ts_args$width     <- width
+  if (!is.null(href_field))            ts_args$hrefField <- href_field
+  delegate_to_web_col("colReference", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 #' Column helper: Range display
@@ -1629,23 +1614,15 @@ col_range <- function(
     lifecycle::deprecate_warn("0.9.0", "col_range(max_field)", "col_range(high)")
     if (missing(high)) high <- max_field
   }
-  opts <- list(
-    range = list(
-      minField = low,
-      maxField = high,
-      separator = separator,
-      decimals = if (is.null(digits)) decimals else NULL,
-      digits = digits,
-      thousandsSep = thousands_sep,
-      abbreviate = abbreviate,
-      showBar = show_bar
-    )
+  ts_args <- list(
+    low = low, high = high, separator = separator,
+    thousandsSep = thousands_sep, abbreviate = abbreviate, showBar = show_bar
   )
-  if (!is.null(na_text)) opts$naText <- na_text
-  # Use a synthetic field that signals this is a range column
-  synthetic_field <- paste0("_range_", low, "_", high)
-  web_col(synthetic_field, header, type = "range", width = width,
-          align = "right", options = opts, ...)
+  if (!identical(header, "Range"))                 ts_args$header   <- header
+  if (!is.null(width))                             ts_args$width    <- width
+  if (is.null(digits) && !is.null(decimals))       ts_args$decimals <- decimals
+  if (!is.null(digits))                            ts_args$digits   <- digits
+  delegate_to_web_col("colRange", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 # ============================================================================
@@ -1698,13 +1675,13 @@ col_heatmap <- function(field, header = NULL, width = NULL,
   checkmate::assert_number(max_value, null.ok = TRUE)
   checkmate::assert_number(decimals, lower = 0, upper = 10)
   checkmate::assert_flag(show_value)
-  opts <- list(
-    heatmap = list(palette = palette, minValue = min_value,
-                   maxValue = max_value, decimals = decimals,
-                   showValue = show_value, scale = scale)
-  )
-  web_col(field, header, type = "heatmap", width = width, options = opts,
-          na_text = na_text, ...)
+  ts_args <- list(field = field, palette = as.list(palette),
+                  decimals = decimals, showValue = show_value, scale = scale)
+  if (!is.null(header))    ts_args$header   <- header
+  if (!is.null(width))     ts_args$width    <- width
+  if (!is.null(min_value)) ts_args$minValue <- min_value
+  if (!is.null(max_value)) ts_args$maxValue <- max_value
+  delegate_to_web_col("colHeatmap", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 #' Column helper: Progress bar
@@ -1743,12 +1720,12 @@ col_progress <- function(field, header = NULL, width = NULL,
   checkmate::assert_number(max_value, lower = 0)
   checkmate::assert_string(color, null.ok = TRUE)
   checkmate::assert_flag(show_label)
-  opts <- list(
-    progress = list(maxValue = max_value, color = color,
-                    showLabel = show_label, scale = scale)
-  )
-  web_col(field, header, type = "progress", width = width, options = opts,
-          na_text = na_text, ...)
+  ts_args <- list(field = field, maxValue = max_value,
+                  showLabel = show_label, scale = scale)
+  if (!is.null(header)) ts_args$header <- header
+  if (!is.null(width))  ts_args$width  <- width
+  if (!is.null(color))  ts_args$color  <- color
+  delegate_to_web_col("colProgress", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 #' Column helper: Currency formatting
@@ -1809,17 +1786,16 @@ col_currency <- function(field, header = NULL, width = NULL,
     checkmate::assert_string(thousands_sep)
   }
   checkmate::assert_flag(abbreviate)
-  opts <- list(
-    numeric = list(decimals = if (is.null(digits)) decimals else NULL,
-                   digits = digits,
-                   thousandsSep = thousands_sep,
-                   abbreviate = abbreviate,
-                   prefix = if (position == "prefix") symbol else NULL,
-                   suffix = if (position == "suffix") symbol else NULL)
+  ts_args <- list(
+    field = field, symbol = symbol, decimals = decimals,
+    thousandsSep = thousands_sep, abbreviate = abbreviate, position = position
   )
-  if (!is.null(na_text)) opts$naText <- na_text
-  web_col(field, header, type = "numeric", width = width, align = "right",
-          options = opts, ...)
+  if (!is.null(header)) ts_args$header <- header
+  if (!is.null(width))  ts_args$width  <- width
+  if (!is.null(digits)) ts_args$digits <- digits
+  extra <- list(...)
+  if (!"align" %in% names(extra)) extra$align <- "right"
+  delegate_to_web_col("colCurrency", ts_args, na_text = na_text, extra_args = extra)
 }
 
 #' Column helper: Date formatting

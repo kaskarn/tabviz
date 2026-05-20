@@ -9,7 +9,7 @@ web_theme(
   inputs = NULL,
   variants = NULL,
   web_fonts = NULL,
-  base_theme = web_theme_cochrane(),
+  base_theme = web_theme_bmj(),
   .validate = TRUE
 )
 }

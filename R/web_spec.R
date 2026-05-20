@@ -206,7 +206,7 @@ tabviz <- function(
     marker_opacity = NULL,
     marker_size = NULL,
     weight = NULL,
-    theme = web_theme_cochrane(),
+    theme = web_theme_bmj(),
     interaction = NULL,
     initial_sort = NULL,
     initial_filters = NULL,

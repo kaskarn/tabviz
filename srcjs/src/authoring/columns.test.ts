@@ -147,10 +147,12 @@ describe("colImg / colReference / colPercent / colRange / colEvents", () => {
     expect(c.options?.percent?.decimals).toBe(1);
     expect(c.options?.percent?.multiply).toBe(true);
   });
-  test("colRange packs minField/maxField", () => {
-    const c = colRange({ field: "spread", minField: "min", maxField: "max" });
-    expect(c.options?.range?.minField).toBe("min");
-    expect(c.options?.range?.maxField).toBe("max");
+  test("colRange uses synthetic field + low/high args (matches R col_range)", () => {
+    const c = colRange({ low: "lower", high: "upper" });
+    expect(c.field).toBe("_range_lower_upper");
+    expect(c.header).toBe("Range");
+    expect(c.options?.range?.minField).toBe("lower");
+    expect(c.options?.range?.maxField).toBe("upper");
   });
   test("colEvents header Events + packs events/n fields", () => {
     const c = colEvents({ events: "e", n: "n" });

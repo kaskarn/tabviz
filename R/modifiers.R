@@ -325,15 +325,26 @@ set_theme <- function(x, theme) {
     cochrane = web_theme_cochrane,
     lancet   = web_theme_lancet,
     jama     = web_theme_jama,
+    nejm     = web_theme_nejm,
+    nature   = web_theme_nature,
+    bmj      = web_theme_bmj,
     dark     = web_theme_dark,
+    # Design presets (R/themes-design.R)
+    bauhaus        = web_theme_bauhaus,
+    swiss          = web_theme_swiss,
+    tufte          = web_theme_tufte,
+    newsprint      = web_theme_newsprint,
+    solarized      = web_theme_solarized,
+    solarized_dark = web_theme_solarized_dark,
+    tonal          = web_theme_tonal,
+    tonal_dark     = web_theme_tonal_dark,
     # LOTR presets (R/themes-lotr.R) — illustrative, non-journal
     dwarven  = web_theme_dwarven,
     elvish   = web_theme_elvish,
     hobbit   = web_theme_hobbit,
-    # "default" is no longer a constructor; the package default is
-    # Cochrane. Keep "default" routing here as a non-breaking alias for
-    # set_theme("default") call sites in the wild.
-    default  = web_theme_cochrane
+    # `set_theme("default")` is a non-breaking alias for the package's
+    # current default theme (BMJ — modern editorial register).
+    default  = web_theme_bmj
   )
 
   resolved <- if (is.character(theme) && length(theme) == 1) {

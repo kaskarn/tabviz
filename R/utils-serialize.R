@@ -7,7 +7,7 @@
 #' @return A nested list suitable for jsonlite::toJSON
 #' @keywords internal
 serialize_spec <- function(spec, include_forest = TRUE) {
-  theme <- spec@theme %||% web_theme_cochrane()
+  theme <- spec@theme %||% web_theme_bmj()
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli_abort("{.arg theme} must be a {.cls WebTheme} object.")
   }
@@ -816,7 +816,7 @@ serialize_split_table <- function(split_table, include_forest = TRUE) {
   first_key <- names(split_table@specs)[[1]]
   base_spec <- split_table@specs[[first_key]]
 
-  theme <- base_spec@theme %||% web_theme_cochrane()
+  theme <- base_spec@theme %||% web_theme_bmj()
   if (!inherits(theme, "tabviz::WebTheme")) {
     cli_abort("{.arg theme} must be a {.cls WebTheme} object.")
   }

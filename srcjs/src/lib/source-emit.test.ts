@@ -9,13 +9,13 @@ const DATA = [
 ];
 
 describe("emitJsSource — compact builder output", () => {
-  test("default cochrane theme is omitted (just name resolves)", () => {
+  test("default bmj theme is omitted (just name resolves)", () => {
     const spec = tabviz({
       data: DATA, label: "study",
       columns: [colText({ field: "study" })],
     });
     const src = emitJsSource({ spec });
-    expect(src).not.toContain("theme:"); // cochrane is default
+    expect(src).not.toContain("theme:"); // bmj is default
     expect(src).toContain("tabviz({");
     expect(src).toContain("data: tabvizData");
     expect(src).toContain("colText");

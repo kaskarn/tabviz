@@ -59,7 +59,17 @@ ts_call <- function(name, args) {
   ctx <- tabviz_v8()
   args_json <- jsonlite::toJSON(args, auto_unbox = TRUE, null = "null", na = "null")
   result_json <- ctx$call("callBuilder", name, args_json)
-  jsonlite::fromJSON(result_json, simplifyVector = FALSE)
+  # Simplify primitive arrays back to vectors so options fields like
+  # `thresholds`, `palette`, `seriesAnchors` round-trip as `c(0.33, 0.66)`
+  # not `list(0.33, 0.66)`. Keep nested objects as lists
+  # (simplifyDataFrame = FALSE) so cluster shapes don't collapse into
+  # data frames.
+  jsonlite::fromJSON(
+    result_json,
+    simplifyVector = TRUE,
+    simplifyDataFrame = FALSE,
+    simplifyMatrix = FALSE
+  )
 }
 
 #' Delegate a `col_*` helper to its TS mirror, then wrap in S7 via web_col.

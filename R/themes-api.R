@@ -96,7 +96,7 @@ web_theme <- function(
     inputs = NULL,
     variants = NULL,
     web_fonts = NULL,
-    base_theme = web_theme_cochrane(),
+    base_theme = web_theme_bmj(),
     .validate = TRUE) {
   checkmate::assert_string(name)
   checkmate::assert_list(inputs, names = "named", null.ok = TRUE)

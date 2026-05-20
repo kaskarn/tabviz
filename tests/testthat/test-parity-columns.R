@@ -115,6 +115,100 @@ test_that("colBadge: shape=pill default", {
   testthat::expect_equal(shape$options$badge$shape, "pill")
 })
 
+test_that("colPercent: defaults map through", {
+  shape <- ts_call("colPercent", list(field = "rate"))
+  r_col <- col_percent("rate")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$options$percent$decimals, 1)
+  testthat::expect_equal(shape$options$percent$multiply, TRUE)
+  testthat::expect_equal(shape$options$percent$symbol, TRUE)
+})
+
+test_that("colCurrency: symbol prefix + abbreviate", {
+  shape <- ts_call("colCurrency", list(field = "cost", symbol = "$", abbreviate = TRUE))
+  r_col <- col_currency("cost", abbreviate = TRUE)
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$options$numeric$prefix, "$")
+  testthat::expect_equal(shape$options$numeric$abbreviate, TRUE)
+})
+
+test_that("colRange: synthetic field + low/high", {
+  shape <- ts_call("colRange", list(low = "lo", high = "hi"))
+  r_col <- col_range(low = "lo", high = "hi")
+  testthat::expect_equal(r_col@field, shape$field)
+  testthat::expect_equal(r_col@type, shape$type)
+  testthat::expect_equal(shape$field, "_range_lo_hi")
+  testthat::expect_equal(shape$options$range$minField, "lo")
+  testthat::expect_equal(shape$options$range$maxField, "hi")
+})
+
+test_that("colEvents: synthetic field + events/n", {
+  shape <- ts_call("colEvents", list(events = "e", n = "n"))
+  r_col <- col_events(events = "e", n = "n")
+  testthat::expect_equal(r_col@field, shape$field)
+  testthat::expect_equal(r_col@type, shape$type)
+  testthat::expect_equal(shape$field, "_events_e_n")
+})
+
+test_that("colHeatmap: palette + decimals", {
+  shape <- ts_call("colHeatmap", list(field = "h", palette = list("#fff", "#000")))
+  r_col <- col_heatmap("h")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$options$heatmap$decimals, 2)
+})
+
+test_that("colProgress: defaults", {
+  shape <- ts_call("colProgress", list(field = "p"))
+  r_col <- col_progress("p")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$options$progress$maxValue, 100)
+})
+
+test_that("colImg: defaults", {
+  shape <- ts_call("colImg", list(field = "logo"))
+  r_col <- col_img("logo")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$options$img$shape, "square")
+})
+
+test_that("colReference: default header", {
+  shape <- ts_call("colReference", list(field = "url"))
+  r_col <- col_reference("url")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$header, "Reference")
+})
+
+test_that("colPictogram: glyph default + count mode", {
+  shape <- ts_call("colPictogram", list(field = "count", glyph = "person"))
+  r_col <- col_pictogram("count", glyph = "person")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$options$pictogram$glyph, "person")
+})
+
+test_that("colRing: min/max defaults + percent label", {
+  shape <- ts_call("colRing", list(field = "pct"))
+  r_col <- col_ring("pct")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$options$ring$minValue, 0)
+  testthat::expect_equal(shape$options$ring$maxValue, 1)
+  testthat::expect_equal(shape$options$ring$labelFormat, "percent")
+})
+
+test_that("colIcon: center alignment default", {
+  shape <- ts_call("colIcon", list(field = "status"))
+  r_col <- col_icon("status")
+  testthat::expect_equal(r_col@field, shape$field)
+  testthat::expect_equal(r_col@type, shape$type)
+  testthat::expect_equal(shape$options$icon$size, "base")
+})
+
+test_that("colLabel: prettifies snake_case header", {
+  shape <- ts_call("colLabel", list(field = "patient_id"))
+  r_col <- col_label("patient_id")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$header, "Patient Id")
+})
+
 test_that("V8 bundle exposes callBuilder + the SVG export functions", {
   ctx <- tabviz_v8()
   testthat::expect_true(ctx$eval("typeof callBuilder") == "function")

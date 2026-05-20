@@ -309,9 +309,10 @@ export function colPvalue({
 }
 
 export interface ColRangeArgs extends CommonColumnArgs {
-  field: string;
-  minField: string;
-  maxField: string;
+  /** Field name for the lower bound. Mirrors R `col_range(low = ...)`. */
+  low: string;
+  /** Field name for the upper bound. Mirrors R `col_range(high = ...)`. */
+  high: string;
   separator?: string;
   decimals?: number | null;
   digits?: number;
@@ -322,15 +323,25 @@ export interface ColRangeArgs extends CommonColumnArgs {
 }
 
 export function colRange({
-  field, minField, maxField, separator = "–",
+  low, high, separator = " - ",
   decimals = null, digits, thousandsSep = false, abbreviate = false, showBar = false,
   naText, ...common
 }: ColRangeArgs): ColumnSpec {
   const range: RangeColumnOptions = {
-    minField, maxField, separator, decimals, digits, thousandsSep, abbreviate, showBar,
+    minField: low, maxField: high, separator, decimals, digits,
+    thousandsSep, abbreviate, showBar,
   };
   const options = { range, ...(naText != null ? { naText } : {}) };
-  return baseColumn(field, "range", options, common);
+  // Synthetic field name `_range_<low>_<high>` mirrors R's `col_range()`
+  // — keeps multiple range columns distinguishable when sharing one
+  // bound across different pairings.
+  // Default header is "Range" (matches R default).
+  return baseColumn(
+    `_range_${low}_${high}`,
+    "range",
+    options,
+    { header: "Range", align: "right", ...common },
+  );
 }
 
 export interface ColEventsArgs extends CommonColumnArgs {
@@ -351,7 +362,10 @@ export function colEvents({
     eventsField: events, nField: n, separator, showPct, thousandsSep, abbreviate,
   };
   const options = { events: eventsOpt, ...(naText != null ? { naText } : {}) };
-  return baseColumn(events, "custom", options, {
+  // Synthetic field name `_events_<events>_<n>` for parity with R's
+  // `col_events()` — keeps multiple events columns distinguishable when
+  // sharing the same `events` field across different denominators.
+  return baseColumn(`_events_${events}_${n}`, "custom", options, {
     header: common.header ?? "Events",
     ...common,
   });
@@ -601,7 +615,9 @@ export function colReference({
 }: ColReferenceArgs): ColumnSpec {
   const reference: ReferenceColumnOptions = { hrefField, maxChars, showIcon };
   const options = { reference, ...(naText != null ? { naText } : {}) };
-  return baseColumn(field, "reference", options, common);
+  // R `col_reference()` defaults header to "Reference" (not field-derived);
+  // mirror for parity.
+  return baseColumn(field, "reference", options, { header: "Reference", ...common });
 }
 
 export interface ColPercentArgs extends CommonColumnArgs {
@@ -624,7 +640,10 @@ export function colPercent({
     digits, multiply, symbol,
   };
   const options = { percent, ...(naText != null ? { naText } : {}) };
-  return baseColumn(field, "custom", options, common);
+  // Wire type is "numeric" (renderer dispatches `numeric` and `percent`
+  // through the same `formatNumber` path; both R `col_percent()` and the
+  // renderer expect "numeric" here for parity).
+  return baseColumn(field, "numeric", options, common);
 }
 
 // ────────────────────────────────────────────────────────────────────

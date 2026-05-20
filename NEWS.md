@@ -1,3 +1,43 @@
+# tabviz 0.34.0
+
+## Changed: BMJ is now the default theme
+
+`tabviz()` and `forest_plot()` without an explicit `theme = ...`
+argument now resolve to `web_theme_bmj()` (previously
+`web_theme_cochrane()`). `set_theme("default")` also routes to BMJ.
+
+Existing call sites that explicitly pass `theme = web_theme_cochrane()`
+are unaffected — only the default for the omitted argument changes.
+
+## Changed: 17 more R column helpers now delegate to TS via V8
+
+Joining `col_text`, `col_numeric`, `col_n`, `col_bar` (already
+delegated in 0.32.0):
+
+* `col_label` · `col_interval` · `col_pvalue` · `col_sparkline`
+* `col_percent` · `col_events` · `col_icon` · `col_badge`
+* `col_pictogram` · `col_ring` · `col_stars` (via pictogram)
+* `col_img` · `col_reference` · `col_range`
+* `col_heatmap` · `col_progress` · `col_currency`
+
+Each now computes its wire shape via the bundled JS authoring builder
+(through V8), then wraps in an S7 `ColumnSpec` via `web_col()` for R-only
+concerns (style mappings, formatter slot, S7 validators). Behavior is
+unchanged for callers; the delegation eliminates the parallel R-side
+wire construction code.
+
+Only `col_date` and the `viz_*` family remain hand-rolled R-side
+(`viz_*` has complex annotation serialization deferred to a follow-up).
+
+## Vendored JS bundle
+
+* Bundles `@tabviz/core@0.3.2` with the small column-builder
+  alignments needed for byte-identical R↔TS wire shape:
+  `colRange` args renamed (`{ field, minField, maxField }` →
+  `{ low, high }`), `colEvents` synthetic field name,
+  `colReference` "Reference" default header, `colPercent` type
+  `"custom"` → `"numeric"`.
+
 # tabviz 0.33.1
 
 ## Added: three more journal themes

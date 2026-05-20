@@ -127,8 +127,8 @@ test_that("set_theme on WebSpec accepts every shipped preset by name", {
                  info = sprintf("set_theme(spec, %s)", shQuote(nm)))
   }
 
-  # `default` is a non-breaking alias for cochrane.
-  expect_equal(set_theme(spec, "default")@theme@name, "cochrane")
+  # `default` aliases the package's current default theme (bmj).
+  expect_equal(set_theme(spec, "default")@theme@name, "bmj")
 })
 
 test_that("set_theme errors on unknown name with the valid set listed", {

@@ -4,6 +4,60 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.3.2 — 2026-05-19
+
+### Changed — BMJ is now the default theme
+
+`tabviz({ ... })` without an explicit `theme:` now resolves to `themeBmj()`
+(previously `themeCochrane`). Same change R-side; `set_theme("default")`
+also routes to BMJ. The View Source emitter's preset-name folding
+updates to omit `theme: "bmj"` when it matches the new default.
+
+### Changed — Column-helper alignment with R for parity-via-delegation
+
+Several TS builders now match R's wire shape exactly so R-side
+delegation (post-`R/v8-bridge.R`) produces byte-identical output:
+
+* **`colRange`** — args renamed from `{ field, minField, maxField }` to
+  `{ low, high }`; default header is `"Range"`; field is computed as
+  `_range_<low>_<high>` (synthetic, matches R's `default_column_id`).
+* **`colEvents`** — field is computed as `_events_<events>_<n>` (was
+  the bare `events` field name).
+* **`colReference`** — default header is `"Reference"` (was the field
+  name).
+* **`colPercent`** — wire `type` is `"numeric"` (was `"custom"`); the
+  renderer dispatches both through `formatNumber` so the change is
+  internally consistent.
+
+### R-side: 17 column helpers now delegate to TS via V8
+
+`col_label`, `col_interval`, `col_pvalue`, `col_sparkline`, `col_percent`,
+`col_events`, `col_icon`, `col_badge`, `col_pictogram`, `col_ring`,
+`col_stars` (via pictogram), `col_img`, `col_reference`, `col_range`,
+`col_heatmap`, `col_progress`, `col_currency` — all now compute wire
+shape via `ts_call("colX", ts_args)` and wrap in S7 via `web_col()`.
+Joins the earlier delegations of `col_text`, `col_numeric`, `col_n`,
+`col_bar` for a 21-helper delegated set. Only `col_date` and the
+`viz_*` family remain hand-rolled R-side (viz_* has complex annotation
+serialization deferred to a separate round).
+
+Behavior unchanged for callers; new parity tests in
+`tests/testthat/test-parity-columns.R` pin the contract.
+
+### `ts_call`: simplifyVector now true for primitive arrays
+
+V8 round-trip parsing now uses `jsonlite::fromJSON(simplifyVector =
+TRUE, simplifyDataFrame = FALSE, simplifyMatrix = FALSE)` so options
+fields like `palette`, `thresholds`, `seriesAnchors` come back as R
+vectors (the shape R-side tests expect) instead of lists. Nested
+objects still parse as lists (so cluster shapes don't collapse to
+data frames).
+
+`col_ring` and `col_badge` additionally re-mark their threshold/colors
+fields with `I()` after delegation — V8 round-trip strips the AsIs
+class, and a length-1 `thresholds` would otherwise auto-unbox to a
+scalar in the outgoing wire and crash the renderer's iteration.
+
 ## 0.3.1 — 2026-05-19
 
 ### Added — three more journal themes

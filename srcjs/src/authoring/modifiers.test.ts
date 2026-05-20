@@ -41,7 +41,7 @@ describe("setTheme", () => {
   test("input spec is not mutated", () => {
     const spec = baseSpec();
     setTheme(spec, "lancet");
-    expect(spec.theme.name).toBe("cochrane");
+    expect(spec.theme.name).toBe("bmj");
   });
 });
 

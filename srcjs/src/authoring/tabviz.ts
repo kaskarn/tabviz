@@ -6,7 +6,8 @@
  *  - `data`: array of row objects (each row's fields are read by column builders)
  *  - `columns`: array of `ColumnDef` from `colText` / `vizForest` / `colGroup` etc.
  *  - `theme`: a name string (`"lancet"`), a `{ extend, overrides }` object, or
- *    a pre-resolved `WebThemeV2`. Defaults to `"cochrane"`.
+ *    a pre-resolved `WebThemeV2`. Defaults to `"bmj"` — the package's
+ *    current default theme (modern editorial register).
  *  - Other top-level args mirror the R `tabviz()` signature.
  */
 
@@ -68,7 +69,7 @@ export interface TabvizArgs {
 
 /**
  * Build a WebSpec from authoring-side arguments. Defaults match R's
- * `tabviz()`: cochrane theme, all interactions enabled, no labels, no
+ * `tabviz()`: bmj theme (default), all interactions enabled, no labels, no
  * initial state.
  */
 export function tabviz(args: TabvizArgs): WebSpec {
@@ -133,7 +134,7 @@ export function tabviz(args: TabvizArgs): WebSpec {
     footnote: args.footnote ?? null,
   };
 
-  const theme = resolveThemeRef(args.theme ?? "cochrane");
+  const theme = resolveThemeRef(args.theme ?? "bmj");
 
   const spec: WebSpec = {
     version: CURRENT_VERSION,
