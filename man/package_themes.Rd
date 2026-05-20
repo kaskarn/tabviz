@@ -20,8 +20,8 @@ Categories:
 \itemize{
 \item \code{journals} — clinical / publication identities (Cochrane, Lancet,
 JAMA, Dark).
+\item \code{design} — design-movement interpretations (Bauhaus, Swiss, Tufte,
+Newsprint, Solarized × {light, dark}, Tonal × {light, dark}).
 \item \code{lotr} — easter-egg editorial themes (Dwarven, Elvish, Hobbit).
-These are pre-release demos and may be removed before CRAN
-submission; the source will be republished on the package blog.
 }
 }

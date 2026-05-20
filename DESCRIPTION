@@ -1,6 +1,6 @@
 Package: tabviz
 Title: Interactive Tables with Embedded Visualizations
-Version: 0.32.0
+Version: 0.33.0
 Authors@R:
     person("Antoine", "Baldassari", , "baldassarian@gmail.com", role = c("aut", "cre"))
 Author: Antoine Baldassari [aut, cre]
@@ -36,6 +36,7 @@ Collate:
     'inspect-resolved.R'
     'themes.R'
     'themes-lotr.R'
+    'themes-design.R'
     'themes-api.R'
     'utils-serialize-resolved.R'
     'paginate.R'

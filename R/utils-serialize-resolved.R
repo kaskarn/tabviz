@@ -143,6 +143,10 @@ serialize_theme <- function(theme) {
     schemaVersion = 2L,
     name = theme@name,
     webFonts = web_fonts_block,
+    # Light/dark sibling — NA → null on the wire so the JS-side
+    # `lightDarkPair: string | null` consumer can distinguish "not set"
+    # from "set to ''".
+    lightDarkPair = if (is.na(theme@light_dark_pair)) NULL else theme@light_dark_pair,
 
     variants = list(
       density          = theme@variants@density,

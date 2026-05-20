@@ -365,6 +365,13 @@ export interface WebThemeV2 {
   schemaVersion: 2;
   name: string;
   webFonts: WebFontV2[];
+  /**
+   * Name of the sibling theme that flips this theme's light/dark mode,
+   * or `null` if the theme stands alone. Wire-only convention — the
+   * in-widget switcher's `prefers-color-scheme` auto-mode reads this
+   * but doesn't auto-switch yet (deferred).
+   */
+  lightDarkPair: string | null;
   variants: ThemeVariantsV2;
   inputs: ThemeInputsV2;
   axis: AxisConfigV2;

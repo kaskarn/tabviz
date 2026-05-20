@@ -787,6 +787,12 @@ WebTheme <- new_class(
     # Note: rsvg/PNG export does not fetch webfonts -- the system stack
     # falls back. For high-fidelity export, install the font locally.
     web_fonts = new_property(class_list, default = list()),
+    # Optional: name of the sibling theme that flips this theme's
+    # light/dark mode. `NA_character_` means the theme stands alone.
+    # Populated by paired presets (e.g. solarized ↔ solarized_dark).
+    # Wire-only convention this round — the in-widget switcher's
+    # `prefers-color-scheme` auto-mode is deferred to a follow-up.
+    light_dark_pair = new_property(class_character, default = NA_character_),
     inputs   = new_property(ThemeInputs,    default = ThemeInputs()),
     variants = new_property(ThemeVariants,  default = ThemeVariants()),
 

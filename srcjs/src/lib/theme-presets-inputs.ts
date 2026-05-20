@@ -186,14 +186,176 @@ export const HOBBIT_DRAFT: ResolveDraft = {
   },
 };
 
+// ────────────────────────────────────────────────────────────────────
+// Design-movement presets — mirror R/themes-design.R
+// ────────────────────────────────────────────────────────────────────
+
+export const BAUHAUS_DRAFT: ResolveDraft = {
+  name: "bauhaus",
+  webFonts: [
+    GF("Jost", "Jost:wght@400;500;700"),
+  ],
+  inputs: {
+    neutral: ["#FFFFFF", "#FFFFFF", "#F4F4F4", "#4A4A4A", "#111111"],
+    primary: "#D32023",
+    secondary: "#2057A8",
+    accent: "#FFCB05",
+    seriesAnchors: ["#D32023", "#2057A8", "#FFCB05", "#111111", "#7A7A7A"],
+    fontBody: "'Jost', 'Futura', 'Helvetica Neue', sans-serif",
+    fontDisplay: "'Jost', 'Futura', 'Helvetica Neue', sans-serif",
+  },
+  variants: { density: "comfortable" },
+  overrides: {
+    spacing: { padding: 10, cellPaddingX: 12 },
+  },
+};
+
+export const SWISS_DRAFT: ResolveDraft = {
+  name: "swiss",
+  inputs: {
+    neutral: ["#FFFFFF", "#FFFFFF", "#FAFAFA", "#666666", "#111111"],
+    primary: "#111111",
+    secondary: "#7A7A7A",
+    accent: "#E2001A",
+    seriesAnchors: ["#111111", "#666666", "#A0A0A0", "#E2001A", "#7A7A7A"],
+    fontBody: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+  },
+  variants: { density: "comfortable" },
+  overrides: {
+    row: { banding: "none" },
+  },
+};
+
+export const TUFTE_DRAFT: ResolveDraft = {
+  name: "tufte",
+  webFonts: [
+    GF("Crimson Pro", "Crimson+Pro:wght@400;600;700"),
+  ],
+  inputs: {
+    neutral: ["#FBF9F2", "#FBF9F2", "#F2EDDF", "#807060", "#1F1F1F"],
+    primary: "#1F1F1F",
+    secondary: "#A89A82",
+    accent: "#C09B7C",
+    seriesAnchors: ["#1F1F1F", "#A89A82", "#5A6B7A", "#7A5D4A", "#C09B7C"],
+    fontBody: "'Crimson Pro', Georgia, 'Times New Roman', serif",
+    fontDisplay: "'Crimson Pro', Georgia, 'Times New Roman', serif",
+  },
+  variants: { density: "comfortable" },
+  overrides: {
+    divider: { subtle: "#E3DBC8", strong: "#C9BFA8" },
+    row: { banding: "none" },
+  },
+};
+
+export const NEWSPRINT_DRAFT: ResolveDraft = {
+  name: "newsprint",
+  webFonts: [
+    GF(
+      "Roboto Serif",
+      "Roboto+Serif:wght@400;500;700&family=Roboto+Serif:opsz,wdth,wght@8..144,75,400;8..144,75,700",
+    ),
+  ],
+  inputs: {
+    neutral: ["#FBFAF7", "#FBFAF7", "#EFEDE6", "#5A5550", "#1A1A1A"],
+    primary: "#1A1A1A",
+    secondary: "#000000",
+    accent: "#B81A1A",
+    seriesAnchors: ["#1A1A1A", "#8B5A2B", "#3E5C76", "#4A6B3F", "#7A6B5D"],
+    fontBody: "'Roboto Serif', Georgia, 'Times New Roman', serif",
+    fontDisplay: "'Roboto Serif', Georgia, 'Times New Roman', serif",
+  },
+  variants: { density: "comfortable" },
+  overrides: {
+    row: { banding: "none" },
+  },
+};
+
+export const SOLARIZED_DRAFT: ResolveDraft = {
+  name: "solarized",
+  lightDarkPair: "solarized_dark",
+  inputs: {
+    neutral: ["#FDF6E3", "#FDF6E3", "#EEE8D5", "#657B83", "#586E75"],
+    primary: "#B58900",
+    secondary: "#CB4B16",
+    accent: "#D33682",
+    seriesAnchors: ["#B58900", "#CB4B16", "#268BD2", "#859900", "#6C71C4"],
+    fontBody: "system-ui, -apple-system, 'Segoe UI', sans-serif",
+  },
+  variants: { density: "comfortable" },
+};
+
+export const SOLARIZED_DARK_DRAFT: ResolveDraft = {
+  name: "solarized_dark",
+  lightDarkPair: "solarized",
+  inputs: {
+    neutral: ["#002B36", "#002B36", "#073642", "#586E75", "#93A1A1"],
+    primary: "#B58900",
+    primaryDeep: "#073642",
+    secondary: "#CB4B16",
+    accent: "#D33682",
+    seriesAnchors: ["#B58900", "#CB4B16", "#268BD2", "#859900", "#6C71C4"],
+    fontBody: "system-ui, -apple-system, 'Segoe UI', sans-serif",
+  },
+  variants: { density: "comfortable" },
+  overrides: {
+    content: { inverse: "#FDF6E3" },
+    // Title fg defaults to primary_deep (base02 = canvas-color); pin
+    // to base1 (light slate) so titles are visible on the dark canvas.
+    text: {
+      title:    { fg: "#93A1A1" },
+      subtitle: { fg: "#839496" },
+    },
+    divider: { subtle: "#073642", strong: "#586E75" },
+  },
+};
+
+export const TONAL_DRAFT: ResolveDraft = {
+  name: "tonal",
+  lightDarkPair: "tonal_dark",
+  inputs: {
+    neutral: ["#FFFFFF", "#FFFFFF", "#F5F2F8", "#5F5868", "#1C1B1F"],
+    primary: "#6750A4",
+    accent: "#7D5260",
+    seriesAnchors: ["#6750A4", "#7D5260", "#625B71", "#79747E", "#B69DF8"],
+    fontBody: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+  },
+  variants: { density: "comfortable" },
+};
+
+export const TONAL_DARK_DRAFT: ResolveDraft = {
+  name: "tonal_dark",
+  lightDarkPair: "tonal",
+  inputs: {
+    neutral: ["#1C1B1F", "#1C1B1F", "#2B2930", "#938F99", "#E6E1E5"],
+    primary: "#D0BCFF",
+    primaryDeep: "#4F378B",
+    accent: "#EFB8C8",
+    seriesAnchors: ["#D0BCFF", "#EFB8C8", "#CCC2DC", "#B69DF8", "#79747E"],
+    fontBody: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+  },
+  variants: { density: "comfortable" },
+  overrides: {
+    content: { inverse: "#E6E1E5" },
+    divider: { subtle: "#36343B", strong: "#49454F" },
+  },
+};
+
 export const PRESET_DRAFTS = {
-  cochrane: COCHRANE_DRAFT,
-  lancet:   LANCET_DRAFT,
-  jama:     JAMA_DRAFT,
-  dark:     DARK_DRAFT,
-  dwarven:  DWARVEN_DRAFT,
-  elvish:   ELVISH_DRAFT,
-  hobbit:   HOBBIT_DRAFT,
+  cochrane:       COCHRANE_DRAFT,
+  lancet:         LANCET_DRAFT,
+  jama:           JAMA_DRAFT,
+  dark:           DARK_DRAFT,
+  bauhaus:        BAUHAUS_DRAFT,
+  swiss:          SWISS_DRAFT,
+  tufte:          TUFTE_DRAFT,
+  newsprint:      NEWSPRINT_DRAFT,
+  solarized:      SOLARIZED_DRAFT,
+  solarized_dark: SOLARIZED_DARK_DRAFT,
+  tonal:          TONAL_DRAFT,
+  tonal_dark:     TONAL_DARK_DRAFT,
+  dwarven:        DWARVEN_DRAFT,
+  elvish:         ELVISH_DRAFT,
+  hobbit:         HOBBIT_DRAFT,
 } as const;
 
 export type PresetName = keyof typeof PRESET_DRAFTS;

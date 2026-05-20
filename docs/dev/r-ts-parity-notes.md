@@ -71,6 +71,36 @@ Drift detection runs in CI via `theme-resolve.test.ts` — accidental
 output changes fail the build until the snapshot is regenerated
 intentionally.
 
+## Theme drift safeguards (0.33.0 / 0.3.0 round)
+
+The 0.33.0 theme expansion added 8 new presets — the `design` category
+of `package_themes()` (Bauhaus, Swiss, Tufte, Newsprint, Solarized ×
+{light, dark}, Tonal × {light, dark}). To keep R↔TS skew from creeping
+in as the roster grows, three complementary mechanisms run in CI:
+
+1. **Roster sync** (`tests/testthat/test-theme-roster-sync.R`) —
+   asserts every R `web_theme_X()` has a matching `themeX` symbol in
+   the V8 bundle (reachable via `tabviz_v8()$call("callBuilder", "themeX", "{}")`).
+   Either side adding or dropping a theme without the other fails.
+2. **Resolved-wire-shape parity** (`tests/testthat/test-parity-themes.R`) —
+   for each theme: `serialize_theme(web_theme_X())` (R) vs
+   `callBuilder("themeX", "{}")` (TS), compared with structural-equal
+   on shape and `hex_close(tol = 50)` on derived hex. Skips `series`
+   (chroma-boost-near-gamut compounds OKLab drift to 25-100 channels
+   on near-grayscale palettes; JS-side byte-exact snapshot is the
+   parity oracle for that) and `layout.banding` (R wire legacy
+   duplicates `row.banding`; renderer reads `row.banding` only).
+3. **Byte-exact snapshot drift detection** on TS side
+   (`srcjs/src/lib/theme-resolve.test.ts`) — already in place since
+   0.2.1's canonization; auto-extends to new themes via the iterator
+   pattern.
+
+Adding a new theme: write the R `web_theme_X()` constructor, write the
+TS `XXX_DRAFT` + `themeX()` mirror, run `bun run scripts/regenerate-theme-presets.ts`
+to refresh the snapshot, add `"x"` to `EXPECTED_THEME_NAMES` in the
+roster-sync test and to the `THEMES` vector in the parity-themes test.
+All three tests green = roster locked.
+
 ## R-side opportunistic simplifications — DONE (post-0.2.0)
 
 All 3 simplifications flagged during the TS port landed in the same

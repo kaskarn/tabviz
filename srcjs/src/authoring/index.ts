@@ -53,6 +53,8 @@ export type { SetZoomArgs } from "./modifiers";
 // Theme API (re-exported from lib/ for convenience — same surface, one import path)
 export {
   themeCochrane, themeLancet, themeJama, themeDark,
+  themeBauhaus, themeSwiss, themeTufte, themeNewsprint,
+  themeSolarized, themeSolarizedDark, themeTonal, themeTonalDark,
   themeDwarven, themeElvish, themeHobbit,
   webTheme, setInputs, setVariants, setSpacing, setThemeField,
   resolveThemeRef, resolveTheme,

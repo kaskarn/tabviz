@@ -15,6 +15,8 @@ import { resolveTheme, type ResolveDraft, type ResolveOptions, type ThemeOverrid
 import {
   COCHRANE_DRAFT, LANCET_DRAFT, JAMA_DRAFT, DARK_DRAFT,
   DWARVEN_DRAFT, ELVISH_DRAFT, HOBBIT_DRAFT,
+  BAUHAUS_DRAFT, SWISS_DRAFT, TUFTE_DRAFT, NEWSPRINT_DRAFT,
+  SOLARIZED_DRAFT, SOLARIZED_DARK_DRAFT, TONAL_DRAFT, TONAL_DARK_DRAFT,
   PRESET_DRAFTS, type PresetName,
 } from "./theme-presets-inputs";
 import type {
@@ -26,13 +28,21 @@ import type {
 // Preset constructors
 // ────────────────────────────────────────────────────────────────────
 
-export const themeCochrane = (): WebThemeV2 => resolveTheme(COCHRANE_DRAFT);
-export const themeLancet   = (): WebThemeV2 => resolveTheme(LANCET_DRAFT);
-export const themeJama     = (): WebThemeV2 => resolveTheme(JAMA_DRAFT);
-export const themeDark     = (): WebThemeV2 => resolveTheme(DARK_DRAFT);
-export const themeDwarven  = (): WebThemeV2 => resolveTheme(DWARVEN_DRAFT);
-export const themeElvish   = (): WebThemeV2 => resolveTheme(ELVISH_DRAFT);
-export const themeHobbit   = (): WebThemeV2 => resolveTheme(HOBBIT_DRAFT);
+export const themeCochrane      = (): WebThemeV2 => resolveTheme(COCHRANE_DRAFT);
+export const themeLancet        = (): WebThemeV2 => resolveTheme(LANCET_DRAFT);
+export const themeJama          = (): WebThemeV2 => resolveTheme(JAMA_DRAFT);
+export const themeDark          = (): WebThemeV2 => resolveTheme(DARK_DRAFT);
+export const themeBauhaus       = (): WebThemeV2 => resolveTheme(BAUHAUS_DRAFT);
+export const themeSwiss         = (): WebThemeV2 => resolveTheme(SWISS_DRAFT);
+export const themeTufte         = (): WebThemeV2 => resolveTheme(TUFTE_DRAFT);
+export const themeNewsprint     = (): WebThemeV2 => resolveTheme(NEWSPRINT_DRAFT);
+export const themeSolarized     = (): WebThemeV2 => resolveTheme(SOLARIZED_DRAFT);
+export const themeSolarizedDark = (): WebThemeV2 => resolveTheme(SOLARIZED_DARK_DRAFT);
+export const themeTonal         = (): WebThemeV2 => resolveTheme(TONAL_DRAFT);
+export const themeTonalDark     = (): WebThemeV2 => resolveTheme(TONAL_DARK_DRAFT);
+export const themeDwarven       = (): WebThemeV2 => resolveTheme(DWARVEN_DRAFT);
+export const themeElvish        = (): WebThemeV2 => resolveTheme(ELVISH_DRAFT);
+export const themeHobbit        = (): WebThemeV2 => resolveTheme(HOBBIT_DRAFT);
 
 // ────────────────────────────────────────────────────────────────────
 // webTheme: custom theme constructor (mirrors R::web_theme)

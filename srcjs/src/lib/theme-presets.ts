@@ -22,14 +22,25 @@
 import type { WebTheme } from "$types";
 import presetsJson from "./theme-presets-v2.json";
 
-// Preset names. Journal presets first (clinical/publication), then LOTR
-// (editorial easter-egg). The LOTR group is pre-release and may move to
-// a separate package before CRAN submission.
+// Preset names, grouped by category in declaration order. Categories
+// mirror R's `package_themes()` 2-level list shape:
+//   * journals: clinical / publication identities
+//   * design:   design-movement interpretations (light + dark pairs
+//               for solarized & tonal via WebThemeV2.lightDarkPair)
+//   * lotr:     editorial easter-egg themes
 export const THEME_NAMES = [
   "cochrane",
   "lancet",
   "jama",
   "dark",
+  "bauhaus",
+  "swiss",
+  "tufte",
+  "newsprint",
+  "solarized",
+  "solarized_dark",
+  "tonal",
+  "tonal_dark",
   "dwarven",
   "elvish",
   "hobbit",
@@ -41,11 +52,19 @@ export const THEME_PRESETS = presetsJson as Record<ThemeName, WebTheme>;
 
 // Human-readable theme labels for the in-widget switcher UI.
 export const THEME_LABELS: Record<ThemeName, string> = {
-  cochrane: "Cochrane",
-  lancet:   "Lancet",
-  jama:     "JAMA",
-  dark:     "Dark",
-  dwarven:  "Dwarven",
-  elvish:   "Elvish",
-  hobbit:   "Hobbit",
+  cochrane:       "Cochrane",
+  lancet:         "Lancet",
+  jama:           "JAMA",
+  dark:           "Dark",
+  bauhaus:        "Bauhaus",
+  swiss:          "Swiss",
+  tufte:          "Tufte",
+  newsprint:      "Newsprint",
+  solarized:      "Solarized",
+  solarized_dark: "Solarized Dark",
+  tonal:          "Tonal",
+  tonal_dark:     "Tonal Dark",
+  dwarven:        "Dwarven",
+  elvish:         "Elvish",
+  hobbit:         "Hobbit",
 };

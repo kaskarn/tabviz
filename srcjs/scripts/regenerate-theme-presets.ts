@@ -22,18 +22,28 @@ import { writeFileSync } from "fs";
 import { resolve } from "path";
 import {
   COCHRANE_DRAFT, LANCET_DRAFT, JAMA_DRAFT, DARK_DRAFT,
+  BAUHAUS_DRAFT, SWISS_DRAFT, TUFTE_DRAFT, NEWSPRINT_DRAFT,
+  SOLARIZED_DRAFT, SOLARIZED_DARK_DRAFT, TONAL_DRAFT, TONAL_DARK_DRAFT,
   DWARVEN_DRAFT, ELVISH_DRAFT, HOBBIT_DRAFT,
 } from "../src/lib/theme-presets-inputs";
 import { resolveTheme } from "../src/lib/theme-resolve";
 
 const presets = {
-  cochrane: resolveTheme(COCHRANE_DRAFT),
-  lancet:   resolveTheme(LANCET_DRAFT),
-  jama:     resolveTheme(JAMA_DRAFT),
-  dark:     resolveTheme(DARK_DRAFT),
-  dwarven:  resolveTheme(DWARVEN_DRAFT),
-  elvish:   resolveTheme(ELVISH_DRAFT),
-  hobbit:   resolveTheme(HOBBIT_DRAFT),
+  cochrane:       resolveTheme(COCHRANE_DRAFT),
+  lancet:         resolveTheme(LANCET_DRAFT),
+  jama:           resolveTheme(JAMA_DRAFT),
+  dark:           resolveTheme(DARK_DRAFT),
+  bauhaus:        resolveTheme(BAUHAUS_DRAFT),
+  swiss:          resolveTheme(SWISS_DRAFT),
+  tufte:          resolveTheme(TUFTE_DRAFT),
+  newsprint:      resolveTheme(NEWSPRINT_DRAFT),
+  solarized:      resolveTheme(SOLARIZED_DRAFT),
+  solarized_dark: resolveTheme(SOLARIZED_DARK_DRAFT),
+  tonal:          resolveTheme(TONAL_DRAFT),
+  tonal_dark:     resolveTheme(TONAL_DARK_DRAFT),
+  dwarven:        resolveTheme(DWARVEN_DRAFT),
+  elvish:         resolveTheme(ELVISH_DRAFT),
+  hobbit:         resolveTheme(HOBBIT_DRAFT),
 };
 
 const outPath = resolve(__dirname, "..", "src", "lib", "theme-presets-v2.json");

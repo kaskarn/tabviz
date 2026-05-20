@@ -3,6 +3,8 @@ import { resolveTheme } from "./theme-resolve";
 import presetsJson from "./theme-presets-v2.json";
 import {
   COCHRANE_DRAFT, LANCET_DRAFT, JAMA_DRAFT, DARK_DRAFT,
+  BAUHAUS_DRAFT, SWISS_DRAFT, TUFTE_DRAFT, NEWSPRINT_DRAFT,
+  SOLARIZED_DRAFT, SOLARIZED_DARK_DRAFT, TONAL_DRAFT, TONAL_DARK_DRAFT,
   DWARVEN_DRAFT, ELVISH_DRAFT, HOBBIT_DRAFT,
 } from "./theme-presets-inputs";
 import type { WebThemeV2 } from "../types/theme-v2";
@@ -38,13 +40,21 @@ describe("resolveTheme — drift detection vs canonical snapshot", () => {
   // output will fail these tests until the snapshot is intentionally
   // regenerated. That's the contract — preset output is stable wire-format.
   const cases: Array<[string, typeof COCHRANE_DRAFT]> = [
-    ["cochrane", COCHRANE_DRAFT],
-    ["lancet",   LANCET_DRAFT],
-    ["jama",     JAMA_DRAFT],
-    ["dark",     DARK_DRAFT],
-    ["dwarven",  DWARVEN_DRAFT],
-    ["elvish",   ELVISH_DRAFT],
-    ["hobbit",   HOBBIT_DRAFT],
+    ["cochrane",       COCHRANE_DRAFT],
+    ["lancet",         LANCET_DRAFT],
+    ["jama",           JAMA_DRAFT],
+    ["dark",           DARK_DRAFT],
+    ["bauhaus",        BAUHAUS_DRAFT],
+    ["swiss",          SWISS_DRAFT],
+    ["tufte",          TUFTE_DRAFT],
+    ["newsprint",      NEWSPRINT_DRAFT],
+    ["solarized",      SOLARIZED_DRAFT],
+    ["solarized_dark", SOLARIZED_DARK_DRAFT],
+    ["tonal",          TONAL_DRAFT],
+    ["tonal_dark",     TONAL_DARK_DRAFT],
+    ["dwarven",        DWARVEN_DRAFT],
+    ["elvish",         ELVISH_DRAFT],
+    ["hobbit",         HOBBIT_DRAFT],
   ];
 
   for (const [name, draft] of cases) {

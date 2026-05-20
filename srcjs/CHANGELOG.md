@@ -4,6 +4,56 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.3.0 — 2026-05-19
+
+### Added — `design` theme category (8 new presets)
+
+A third category in `package_themes()` alongside `journals` and `lotr`,
+covering design-movement interpretations:
+
+- **`themeBauhaus`** — red primary + blue secondary + yellow accent;
+  Jost (Futura-substitute) typography. Exercises the two-tier identity
+  cascade rather than mirroring; chrome texture picks up the blue tier.
+- **`themeSwiss`** — near-black primary + mid-gray secondary + Swiss red
+  accent; Helvetica system stack; no alt-row banding.
+- **`themeTufte`** — sparse data-ink-only chrome; near-black primary +
+  warm cream secondary; Crimson Pro serif.
+- **`themeNewsprint`** — broadsheet B&W + red headline accent;
+  Roboto Serif Condensed.
+- **`themeSolarized` + `themeSolarizedDark`** — Ethan Schoonover's
+  Solarized palette in light and dark variants. Paired via the new
+  `lightDarkPair` field.
+- **`themeTonal` + `themeTonalDark`** — Material You-style
+  tonal-palette-from-seed; demonstrates the cascade's
+  tonal-palette-generation behavior natively (no custom logic). Paired
+  via `lightDarkPair`.
+
+### Added — `WebThemeV2.lightDarkPair` field
+
+New top-level wire field on `WebThemeV2`. Names a sibling theme that
+flips the light/dark mode of the current theme; `null` for themes that
+stand alone. Wire-only convention this round — the in-widget switcher's
+`prefers-color-scheme` auto-mode is deferred to a follow-up.
+
+### Drift safeguards
+
+The R package side adds two new test files (`test-theme-roster-sync.R`
++ `test-parity-themes.R`) that exercise every preset across both
+runtimes via V8. Combined with the existing JS-side byte-exact snapshot
+test (`theme-resolve.test.ts`), the round-trip drift detection is now
+threefold:
+
+1. R↔TS roster sync (either side adds/drops a theme without the other → fail)
+2. R↔TS resolved-wire-shape comparison within OKLab tolerance
+3. JS-side byte-exact snapshot vs current resolver output
+
+See `docs/dev/r-ts-parity-notes.md` for the workflow.
+
+### Bumped
+
+- Bundle size budget: +14 KB IIFE / +4 KB gzipped to absorb the 8 new
+  resolved-theme snapshots (each ~1.5 KB).
+
 ## 0.2.2 — 2026-05-19
 
 ### Added — Spec modifiers

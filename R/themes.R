@@ -163,9 +163,9 @@ web_theme_dark <- function() {
 #' Categories:
 #' * `journals` — clinical / publication identities (Cochrane, Lancet,
 #'   JAMA, Dark).
+#' * `design` — design-movement interpretations (Bauhaus, Swiss, Tufte,
+#'   Newsprint, Solarized × {light, dark}, Tonal × {light, dark}).
 #' * `lotr` — easter-egg editorial themes (Dwarven, Elvish, Hobbit).
-#'   These are pre-release demos and may be removed before CRAN
-#'   submission; the source will be republished on the package blog.
 #'
 #' @return A 2-level named list of [WebTheme] objects.
 #' @export
@@ -176,6 +176,16 @@ package_themes <- function() {
       lancet   = web_theme_lancet(),
       jama     = web_theme_jama(),
       dark     = web_theme_dark()
+    ),
+    design = list(
+      bauhaus        = web_theme_bauhaus(),
+      swiss          = web_theme_swiss(),
+      tufte          = web_theme_tufte(),
+      newsprint      = web_theme_newsprint(),
+      solarized      = web_theme_solarized(),
+      solarized_dark = web_theme_solarized_dark(),
+      tonal          = web_theme_tonal(),
+      tonal_dark     = web_theme_tonal_dark()
     ),
     lotr = list(
       dwarven = web_theme_dwarven(),

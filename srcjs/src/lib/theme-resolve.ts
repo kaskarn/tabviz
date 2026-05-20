@@ -135,6 +135,8 @@ export interface ResolveDraft {
   inputs: ThemeInputsDraft;
   variants?: Partial<ThemeVariantsV2>;
   webFonts?: WebFontV2[];
+  /** Name of the light/dark sibling theme, or null/undefined to stand alone. */
+  lightDarkPair?: string | null;
   axis?: Partial<AxisConfigV2>;
   layout?: Partial<LayoutV2>;
   overrides?: ThemeOverrides;
@@ -816,6 +818,7 @@ export function resolveTheme(draft: ResolveDraft, options: ResolveOptions = {}):
     schemaVersion: 2,
     name: draft.name ?? "custom",
     webFonts: draft.webFonts ?? [],
+    lightDarkPair: draft.lightDarkPair ?? null,
     variants,
     inputs,
     axis: { ...AXIS_DEFAULTS, ...(draft.axis ?? {}) },

@@ -1,3 +1,57 @@
+# tabviz 0.33.0
+
+## Added: `design` theme category (8 new presets)
+
+A third entry in `package_themes()` alongside `journals` and `lotr`,
+covering design-movement interpretations:
+
+* `web_theme_bauhaus()` — red primary + blue secondary + yellow accent;
+  Jost (Futura-substitute) typography. Exercises the two-tier identity
+  cascade rather than mirroring; chrome texture picks up the blue tier.
+* `web_theme_swiss()` — near-black primary + mid-gray secondary + Swiss
+  red accent; Helvetica system stack; no alt-row banding.
+* `web_theme_tufte()` — sparse data-ink-only chrome; near-black primary
+  + warm cream secondary; Crimson Pro serif.
+* `web_theme_newsprint()` — broadsheet B&W + red headline accent;
+  Roboto Serif Condensed.
+* `web_theme_solarized()` + `web_theme_solarized_dark()` — Ethan
+  Schoonover's Solarized palette in light and dark variants, paired via
+  the new `light_dark_pair` field on `WebTheme`.
+* `web_theme_tonal()` + `web_theme_tonal_dark()` — Material You-style
+  tonal-palette-from-seed; demonstrates the cascade's
+  tonal-palette-generation behavior natively, paired via
+  `light_dark_pair`.
+
+## Added: `WebTheme$light_dark_pair` slot
+
+New top-level slot on `WebTheme`. Names a sibling theme that flips the
+light/dark mode of the current theme; `NA_character_` for themes that
+stand alone. Wire-only convention this round — the runtime switcher's
+`prefers-color-scheme` auto-mode is deferred to a follow-up.
+
+## Added: R↔TS theme drift safeguards
+
+Two new test files added under `tests/testthat/`:
+
+* `test-theme-roster-sync.R` — asserts every R `web_theme_X()`
+  constructor has a matching TS-side `themeX` builder reachable through
+  V8's `callBuilder`. Either side adding or dropping a theme without
+  the other fails CI immediately.
+* `test-parity-themes.R` — for each preset, serializes the R-resolved
+  theme and compares against the TS-resolved equivalent (via
+  V8 + `callBuilder`). Structural fields compare byte-exact; derived
+  hex within OKLab tolerance (per-channel ≤ 50). Catches drift in
+  either resolver before it ships.
+
+Combined with the existing JS-side byte-exact snapshot test
+(`theme-resolve.test.ts`), the package now has threefold theme drift
+detection across the R↔TS boundary.
+
+## Vendored JS bundle
+
+* Bundles `@tabviz/core@0.3.0`, which includes the 8 new design themes
+  + the `lightDarkPair` field on `WebThemeV2`.
+
 # tabviz 0.32.0
 
 ## Breaking-ish: V8 promoted from Suggests to Imports
