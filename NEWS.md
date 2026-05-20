@@ -1,3 +1,16 @@
+# tabviz 0.34.3
+
+## Fixes
+
+* **Header sort works in R widgets again.** When no `group` was set,
+  `serialize_data()` emitted `groupId = NULL` for every row, and
+  htmlwidgets' `toJSON` materialized that as `{}` rather than `null`.
+  The TS sort path buckets rows by `row.groupId ?? "__root__"`, so each
+  `{}` got its own Map key (object identity) — every row landed in a
+  bucket of one and sort became a no-op. Now `groupId` is omitted from
+  the wire when there's no grouping; JS sees `undefined`, all rows pool
+  into the `"__root__"` bucket, and sort behaves as expected.
+
 # tabviz 0.34.2
 
 ## Label column — wire-level slot

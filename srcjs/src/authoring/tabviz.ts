@@ -13,6 +13,7 @@
 
 import type {
   WebSpec, WebData, Row, ColumnDef, InteractionSpec, LayoutSpec, PlotLabels,
+  AvailableField, FieldCategory,
 } from "../types";
 import { CURRENT_VERSION } from "../spec";
 import { resolveThemeRef, type ThemeRef } from "../lib/theme-api";
@@ -158,12 +159,27 @@ export function tabviz(args: TabvizArgs): WebSpec {
     });
   }
 
+  // Available-fields manifest — drives the in-widget column editor's
+  // "field" dropdown and the slot/category compatibility checks for
+  // insert/configure. Mirrors `R::serialize_available_fields()`: one
+  // entry per data column (no `available_exclude` analogue here yet —
+  // TS callers can post-filter the manifest if they need to hide a
+  // helper field). Without this, the pure-TS render's column editor
+  // shows an empty dropdown and refuses to recognize any data columns.
+  const sampleRow = args.data[0] ?? {};
+  const availableFields: AvailableField[] = Object.keys(sampleRow).map((field) => ({
+    field,
+    label: field,
+    category: inferFieldCategory(args.data, field),
+  }));
+
   const spec: WebSpec = {
     version: CURRENT_VERSION,
     data,
     columns,
     labelColumn,
     extraColumns: args.extraColumns,
+    availableFields,
     theme: theme as unknown as WebSpec["theme"],
     interaction,
     layout,
@@ -184,4 +200,35 @@ export function tabviz(args: TabvizArgs): WebSpec {
   }
 
   return spec;
+}
+
+// Mirror of `R::infer_field_category()` — scans the data column to pick
+// the most specific category that fits, falling back to "other". Used by
+// the column editor's slot-compatibility checks; keep in sync with the
+// R-side categorizer.
+function inferFieldCategory(rows: Record<string, unknown>[], field: string): FieldCategory {
+  let sawNumber = false;
+  let sawString = false;
+  let sawBoolean = false;
+  let sawDate = false;
+  let sawArrayOfNumbers = false;
+  let sawAny = false;
+  for (const row of rows) {
+    const v = row[field];
+    if (v == null) continue;
+    sawAny = true;
+    if (typeof v === "boolean") sawBoolean = true;
+    else if (typeof v === "number") sawNumber = true;
+    else if (v instanceof Date) sawDate = true;
+    else if (Array.isArray(v)) {
+      if (v.every((x) => typeof x === "number")) sawArrayOfNumbers = true;
+    } else if (typeof v === "string") sawString = true;
+  }
+  if (!sawAny) return "other";
+  if (sawArrayOfNumbers) return "array-numeric";
+  if (sawDate) return "date";
+  if (sawNumber && !sawString) return "numeric";
+  if (sawBoolean && !sawString && !sawNumber) return "logical";
+  if (sawString) return "string";
+  return "other";
 }

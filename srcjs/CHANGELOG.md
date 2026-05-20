@@ -4,6 +4,18 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.3.5 — 2026-05-20
+
+### Fixed — column editor recognized no fields under pure-TS `tabviz()`
+
+The R-side `tabviz()` emits an `availableFields` manifest derived from
+the data frame; the TS-side `tabviz()` didn't. With no manifest, the
+in-widget column editor's "field" dropdown was empty and slot-category
+checks rejected every field. `tabviz()` now mirrors
+`R::serialize_available_fields()`, scanning `args.data[0]` keys and
+inferring a `FieldCategory` (`numeric` / `string` / `date` /
+`array-numeric` / `logical` / `other`) from the values across rows.
+
 ## 0.3.4 — 2026-04-29
 
 ### Changed — label column hoisted to its own wire slot

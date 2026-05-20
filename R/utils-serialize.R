@@ -271,12 +271,22 @@ serialize_data <- function(spec, include_forest = TRUE) {
     # Build per-cell styles from column styleMapping
     cell_styles <- build_cell_styles(row, spec@columns)
 
+    # Omit `groupId` entirely when there's no grouping — htmlwidgets'
+    # `toJSON` serializes a NULL list element as `{}` (empty object)
+    # rather than JSON `null`, and the TS `applySortWithinGroups`
+    # buckets rows by `row.groupId ?? "__root__"`, treating each `{}`
+    # as a distinct Map key (object identity). That puts every row in
+    # its own bucket of one, so toggling header sort produces no
+    # visible row reorder. Dropping the field yields a true `undefined`
+    # JS-side, which coalesces to `"__root__"` and pools all rows.
     result <- list(
       id = paste0("row_", i),
       label = label,
-      groupId = group_id,
       metadata = metadata
     )
+    if (!is.null(group_id)) {
+      result$groupId <- group_id
+    }
 
     # Only include style if any style properties are set
     if (!is.null(style)) {
