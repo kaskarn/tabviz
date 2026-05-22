@@ -316,6 +316,25 @@ export interface SchemaBehaviors {
   ) => number;
 
   /**
+   * Natural pixel width of the column's visual content (not text).
+   * Distinct from `estimateWidth` — operates at the column granularity
+   * over ALL rows because glyph layouts depend on the data extent:
+   * pictogram in count-mode scans rows for max value to size the track;
+   * stars / icon / ring are data-independent but stay here for
+   * uniformity. Returned width is the natural minimum the column needs
+   * to render its glyphs without clipping; callers `Math.max` it with
+   * their text/header-derived width budget.
+   *
+   * Returning 0 (or omitting the behavior) means "no glyph budget";
+   * callers fall through to text-only measurement.
+   */
+  naturalWidth?: (
+    column: ColumnSpec,
+    rows: ReadonlyArray<{ metadata: Record<string, unknown> }>,
+    parents: ParentBehaviors<NonNullable<SchemaBehaviors["naturalWidth"]>>,
+  ) => number;
+
+  /**
    * Emit the JS builder call that would reproduce this column spec.
    * Today lives in `source-emit.ts` with a switch over column types.
    * Returns e.g. `colInterval({ point: "hr", lower: "lcl", ... })`.

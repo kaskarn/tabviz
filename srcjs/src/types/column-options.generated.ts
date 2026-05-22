@@ -421,6 +421,39 @@ export interface SparklineBucketOptions {
   type?: "line" | "bar" | "area" | null;
 }
 
+export interface StarsBucketOptions {
+  /** Border — Column divider weight — theme decides exact value */
+  borderClass?: undefined;
+  /** Filled color — Theme accent by default */
+  color?: string | null;
+  /** Input range — Remap [min, max] → [0, maxGlyphs] */
+  domain?: unknown;
+  /** Empty color — Theme muted by default */
+  emptyColor?: string | null;
+  /** Glyph — Registry key (person, leaf, star, …) */
+  glyph?: string | null;
+  /** Glyph field — Per-row glyph selection */
+  glyphField?: string | null;
+  /** Half-step glyphs */
+  halfGlyphs?: boolean;
+  /** Label decimals */
+  labelDecimals?: number | null;
+  /** Label format */
+  labelFormat?: "integer" | "decimal" | null;
+  /** Layout */
+  layout?: "row" | "stack" | null;
+  /** Max glyphs — Rating-mode cap; null = use raw value as count */
+  maxGlyphs?: number | null;
+  /** Density — Cell padding — theme decides exact values */
+  paddingClass?: undefined;
+  /** Glyph size */
+  size?: "sm" | "base" | "lg" | null;
+  /** Token — Semantic role — theme decides colors/weights */
+  token?: undefined;
+  /** Value label */
+  valueLabel?: false | true | "leading" | "trailing" | null;
+}
+
 export interface TextBucketOptions {
   /** Border — Column divider weight — theme decides exact value */
   borderClass?: undefined;
