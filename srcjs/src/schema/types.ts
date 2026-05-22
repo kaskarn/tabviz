@@ -89,6 +89,24 @@ export interface LayerSpec {
   options: OptionSpec[];
   /** Initial open/closed state for the accordion. Default: true. */
   defaultOpen?: boolean;
+  /**
+   * Layer keys this layer inherits from. The resolver walks `inherits`
+   * transitively when computing a column type's effective layers, so
+   * a column only needs to list its distinctive leaf layers.
+   *
+   * Single-string and array forms both supported — most layers have a
+   * single parent (numeric ⟵ text ⟵ base), but the array form leaves
+   * room for diamonds if they show up later.
+   *
+   * Example: `PERCENT_LAYER.inherits = "numeric"`,
+   * `NUMERIC_LAYER.inherits = "text"`,
+   * `TEXT_LAYER.inherits = "base"` — declaring `PERCENT_LAYER` on a
+   * column type pulls in [BASE, TEXT, NUMERIC] automatically. Layers
+   * with no parent (e.g. `SORTABLE_LAYER`, `BASE_LAYER`) omit the
+   * field — they're orthogonal capabilities, not part of an
+   * inheritance chain.
+   */
+  inherits?: string | string[];
 }
 
 /** Full schema for one column type. */

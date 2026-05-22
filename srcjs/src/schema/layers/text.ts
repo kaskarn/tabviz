@@ -14,6 +14,7 @@ export const TEXT_LAYER: LayerSpec = {
   key: "text",
   label: "Text",
   defaultOpen: false,
+  inherits: "base",
   options: [
     {
       key: "wrap",

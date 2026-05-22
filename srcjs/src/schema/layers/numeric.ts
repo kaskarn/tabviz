@@ -8,6 +8,7 @@ export const NUMERIC_LAYER: LayerSpec = {
   key: "numeric",
   label: "Numeric formatting",
   defaultOpen: true,
+  inherits: "text",
   options: [
     {
       key: "decimals",

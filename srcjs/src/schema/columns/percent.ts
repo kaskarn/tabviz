@@ -4,10 +4,8 @@
 // bucket which is what triggers the percent code path.
 
 import type { ColumnTypeSpec } from "../types";
-import { BASE_LAYER } from "../layers/base";
-import { TEXT_LAYER } from "../layers/text";
-import { NUMERIC_LAYER } from "../layers/numeric";
 import { PERCENT_LAYER } from "../layers/percent";
+import { SORTABLE_LAYER } from "../layers/sortable";
 
 export const PERCENT_COLUMN: ColumnTypeSpec = {
   // Note: column.type on the wire is "numeric"; the wire bucket is
@@ -16,7 +14,8 @@ export const PERCENT_COLUMN: ColumnTypeSpec = {
   label: "Percent",
   category: "numeric",
   bucket: "percent",
-  layers: [BASE_LAYER, TEXT_LAYER, NUMERIC_LAYER, PERCENT_LAYER],
+  // PERCENT inherits NUMERIC inherits TEXT inherits BASE.
+  layers: [PERCENT_LAYER, SORTABLE_LAYER],
   layerOverrides: {
     // Percent defaults to 1 decimal place (where numeric defaults to 2).
     numeric: { decimals: 1, thousandsSep: false, abbreviate: false },

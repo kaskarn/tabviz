@@ -6,6 +6,7 @@ export const PERCENT_LAYER: LayerSpec = {
   key: "percent",
   label: "Percent",
   defaultOpen: true,
+  inherits: "numeric",
   options: [
     {
       key: "multiply",

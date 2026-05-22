@@ -21,22 +21,23 @@
 import { writeFileSync } from "fs";
 import { resolve } from "path";
 import { COLUMN_REGISTRY } from "../src/schema/columns";
-import type { OptionSpec, LayerSpec, ColumnTypeSpec } from "../src/schema/types";
+import { resolveLayers } from "../src/schema/resolve";
+import type { OptionSpec, ColumnTypeSpec } from "../src/schema/types";
 
 // ────────────────────────────────────────────────────────────────────
 // Effective-defaults resolution
 // ────────────────────────────────────────────────────────────────────
 
 /**
- * Walk the layers in order; layer-N options' defaults are inherited
- * unless overridden by a later layer's option with the same key OR by
- * `layerOverrides`.
+ * Walk the resolved layers (BASE → leaf); later-layer options shadow
+ * earlier ones with the same key. `layerOverrides` lets a column type
+ * adjust a default contributed by an ancestor (e.g. percent overriding
+ * numeric's `decimals=2` to `decimals=1`).
  */
 function effectiveOptions(col: ColumnTypeSpec): Map<string, OptionSpec> {
   const out = new Map<string, OptionSpec>();
-  for (const layer of col.layers) {
+  for (const layer of resolveLayers(col)) {
     for (const opt of layer.options) {
-      // Clone so layerOverrides apply without mutating the layer spec.
       const clone: OptionSpec = { ...opt };
       const override = col.layerOverrides?.[layer.key]?.[opt.key];
       if (override !== undefined) {

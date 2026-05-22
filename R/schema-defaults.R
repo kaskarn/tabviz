@@ -20,7 +20,8 @@ schema_defaults <- list(
     thousands_sep = FALSE,
     abbreviate = FALSE,
     multiply = TRUE,
-    symbol = TRUE
+    symbol = TRUE,
+    sortable = TRUE
   ),
   text = list(
     align = "left",
