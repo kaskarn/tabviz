@@ -142,150 +142,19 @@ split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE
   has_explicit_max <- !is.null(base_axis@range_max) && !is.na(base_axis@range_max)
   has_explicit_ticks <- !is.null(base_axis@tick_values) && length(base_axis@tick_values) > 0
 
+  # Compute shared products by delegating to the TS authoring builders via
+  # the V8 bridge. Keeps the union-data computation in one place (TS) per
+  # the TS-first vision: R produces what a JS author would produce, no
+  # privileged R-side computation. See `srcjs/src/lib/split-shared.ts` for
+  # the algorithms (ported line-by-line from the prior in-R logic).
   axis_range <- c(NA_real_, NA_real_)
   if (effective_shared_axis) {
-    # Only calculate from data if user didn't set explicit values
     if (!has_explicit_min || !has_explicit_max) {
-
-      # Collect effect values from forest column and effects list
-      all_lower <- c()
-      all_upper <- c()
-      all_point <- c()
-
-      # Get values from forest column's point/lower/upper if defined
-      if (!is.null(forest_col) && !is.null(forest_col@options$forest)) {
-        fc_opts <- forest_col@options$forest
-
-        # Single effect mode: point/lower/upper columns
-        if (!is.null(fc_opts$point)) {
-          for (s in specs) {
-            all_point <- c(all_point, s@data[[fc_opts$point]])
-          }
-        }
-        if (!is.null(fc_opts$lower)) {
-          for (s in specs) {
-            all_lower <- c(all_lower, s@data[[fc_opts$lower]])
-          }
-        }
-        if (!is.null(fc_opts$upper)) {
-          for (s in specs) {
-            all_upper <- c(all_upper, s@data[[fc_opts$upper]])
-          }
-        }
-
-        # Multi-effect mode: effects list in forest column options
-        if (!is.null(fc_opts$effects) && is.list(fc_opts$effects)) {
-          for (effect in fc_opts$effects) {
-            for (s in specs) {
-              if (!is.null(effect$pointCol) && effect$pointCol %in% names(s@data)) {
-                all_point <- c(all_point, s@data[[effect$pointCol]])
-              }
-              if (!is.null(effect$lowerCol) && effect$lowerCol %in% names(s@data)) {
-                all_lower <- c(all_lower, s@data[[effect$lowerCol]])
-              }
-              if (!is.null(effect$upperCol) && effect$upperCol %in% names(s@data)) {
-                all_upper <- c(all_upper, s@data[[effect$upperCol]])
-              }
-            }
-          }
-        }
-      }
-
-      # Get clip factor and scale from forest column or theme
-      ci_clip_factor <- base_axis@ci_clip_factor %||% 3.0
-      is_log <- if (!is.null(forest_col) && !is.null(forest_col@options$forest$scale)) {
-        forest_col@options$forest$scale == "log"
-      } else {
-        FALSE
-      }
-      null_value <- if (!is.null(forest_col) && !is.null(forest_col@options$forest$nullValue)) {
-        forest_col@options$forest$nullValue
-      } else if (is_log) {
-        1
-      } else {
-        0
-      }
-
-      # Filter out non-positive values for log scale (they can't be displayed)
-      if (is_log) {
-        all_point <- all_point[!is.na(all_point) & all_point > 0]
-        all_lower <- all_lower[!is.na(all_lower) & all_lower > 0]
-        all_upper <- all_upper[!is.na(all_upper) & all_upper > 0]
-      } else {
-        # Linear: drop NAs so the post-filter empty-data check below
-        # sees the right state. min(c(NA, null_value), na.rm = TRUE)
-        # would have masked the all-NA condition.
-        all_point <- all_point[!is.na(all_point)]
-        all_lower <- all_lower[!is.na(all_lower)]
-        all_upper <- all_upper[!is.na(all_upper)]
-      }
-
-      # Guard: when every effect column is all-NA, we have no data to
-      # anchor a domain on. Synthesize a sensible default range around
-      # `null_value` (linear: ±1, log: ÷2 / ×2) so downstream
-      # `nice_domain()` doesn't get a degenerate input.
-      if (length(all_point) == 0L && length(all_lower) == 0L && length(all_upper) == 0L) {
-        if (is_log) {
-          all_point <- c(null_value / 2, null_value * 2)
-        } else {
-          all_point <- c(null_value - 1, null_value + 1)
-        }
-      }
-
-      # Compute raw estimate range (point estimates + null value)
-      raw_min_est <- min(c(all_point, null_value), na.rm = TRUE)
-      raw_max_est <- max(c(all_point, null_value), na.rm = TRUE)
-
-      # Handle zero-span case: create reasonable spread
-      # For log scale: multiplicative spread (divide/multiply by 2)
-      # For linear scale: additive spread (max of 1 or 10% of value)
-      if (raw_max_est - raw_min_est == 0) {
-        if (is_log) {
-          # Multiplicative: keeps values positive for log scale
-          raw_min_est <- raw_min_est / 2
-          raw_max_est <- raw_max_est * 2
-        } else {
-          spread <- max(1, abs(raw_min_est) * 0.1)
-          raw_min_est <- raw_min_est - spread
-          raw_max_est <- raw_max_est + spread
-        }
-      }
-
-      # Snap estimate range to nice numbers BEFORE calculating clip boundaries
-      # This ensures clip boundaries align with the nice-rounded axis limits
-      nice_range <- nice_domain(c(raw_min_est, raw_max_est), is_log)
-      min_est <- nice_range[1]
-      max_est <- nice_range[2]
-
-      # Compute clip boundaries based on scale type
-      # For log scale: ci_clip_factor is a direct ratio multiplier
-      # For linear scale: ci_clip_factor is a span multiplier
-      if (is_log) {
-        lower_clip_bound <- min_est / ci_clip_factor
-        upper_clip_bound <- max_est * ci_clip_factor
-      } else {
-        span <- max_est - min_est
-        lower_clip_bound <- min_est - span * ci_clip_factor
-        upper_clip_bound <- max_est + span * ci_clip_factor
-      }
-
-      # Check if any CIs are clipped
-      has_clipped_lower <- any(!is.na(all_lower) & all_lower < lower_clip_bound)
-      has_clipped_upper <- any(!is.na(all_upper) & all_upper > upper_clip_bound)
-
-      # Include CI bounds that are within clip boundaries
-      valid_lower <- all_lower[!is.na(all_lower) & all_lower >= lower_clip_bound]
-      valid_upper <- all_upper[!is.na(all_upper) & all_upper <= upper_clip_bound]
-
-      # Extend axis to clip boundary if any CIs are clipped (for arrow visibility)
-      data_range <- c(
-        min(c(valid_lower, min_est, if (has_clipped_lower) lower_clip_bound), na.rm = TRUE),
-        max(c(valid_upper, max_est, if (has_clipped_upper) upper_clip_bound), na.rm = TRUE)
-      )
-
-      # Final snap to nice numbers (matches JS axis-utils.ts line 272)
-      data_range <- nice_domain(data_range, is_log)
-
+      # jsonlite serializes named lists as JSON objects; the TS function expects
+# `subsets` to be an array. Drop names via `unname()` before lapply.
+ts_input <- list(subsets = lapply(unname(specs), .subset_payload_for_shared))
+      ts_result <- ts_call("computeSharedAxis", ts_input)
+      data_range <- c(ts_result$rangeMin, ts_result$rangeMax)
       axis_range <- c(
         if (has_explicit_min) base_axis@range_min else data_range[1],
         if (has_explicit_max) base_axis@range_max else data_range[2]
@@ -305,35 +174,21 @@ split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE
     }
   }
 
-  # Shared column widths: stamp a fixed width onto every "auto" column so
-  # sub-plots line up when stacked (PowerPoint / slides). We approximate
-  # width server-side from the combined data — frontend auto-measurement
-  # can't see across split boundaries.
+  # Shared column widths: stamp a single width onto every "auto" column so
+  # subsets line up visually when stacked. Computation lives in TS too.
   if (shared_column_widths) {
+    # jsonlite serializes named lists as JSON objects; the TS function expects
+# `subsets` to be an array. Drop names via `unname()` before lapply.
+ts_input <- list(subsets = lapply(unname(specs), .subset_payload_for_shared))
+    ts_result <- ts_call("computeSharedWidths", ts_input)
+    widths <- ts_result$widths %||% list()
+
     for (col_idx in seq_along(base_spec@columns)) {
       col <- base_spec@columns[[col_idx]]
-      # Skip columns with explicit width already set.
-      if (is.numeric(col@width) && !is.na(col@width)) next
-      # Content-based columns only; viz columns auto-size from the plot.
-      if (col@type %in% c("viz_bar", "viz_boxplot", "viz_violin", "forest")) next
-      field <- col@field
-      if (is.null(field) || is.na(field) || !(field %in% names(data))) next
-
-      # Max character length in the field, plus header. Multiply by an
-      # ~8px glyph width and add a small cell-padding buffer — a rough
-      # estimate, but enough for visual alignment. Precise pixel values
-      # come from frontend measurement; this just prevents divergence
-      # between sub-plots.
-      vals <- as.character(data[[field]])
-      max_chars <- max(
-        nchar(vals, type = "width"),
-        nchar(col@header %||% "", type = "width"),
-        na.rm = TRUE
-      )
-      est_width <- max(40, min(480, as.integer(max_chars * 8 + 24)))
-
+      w <- widths[[col@id]]
+      if (is.null(w) || !is.numeric(w)) next
       for (s_key in names(specs)) {
-        specs[[s_key]]@columns[[col_idx]]@width <- est_width
+        specs[[s_key]]@columns[[col_idx]]@width <- as.integer(w)
       }
     }
   }
@@ -355,6 +210,46 @@ split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE
 #'
 #' Internal function to create a new WebSpec with subset data while
 #' inheriting configuration from the base spec.
+#'
+# Build the minimal payload `srcjs/src/lib/split-shared.ts` expects from each
+# subset: row-major data (metadata per row + optional style.type),
+# narrow column descriptors, and the axis config slice. Skips heavy
+# fields the shared-product computations don't read (groups, summaries,
+# interaction, full theme tree). Only invoked once per `split_table()`
+# call so per-row `as.list()` is fine at typical scales.
+.subset_payload_for_shared <- function(spec) {
+  df <- spec@data
+  cols <- spec@columns
+  rows_list <- if (nrow(df) > 0L) {
+    lapply(seq_len(nrow(df)), function(i) {
+      list(metadata = as.list(df[i, , drop = FALSE]))
+    })
+  } else {
+    list()
+  }
+  col_payload <- lapply(cols, function(c) {
+    list(
+      id      = c@id,
+      type    = c@type,
+      field   = if (length(c@field) > 0 && !is.na(c@field)) c@field else NULL,
+      header  = if (length(c@header) > 0 && !is.na(c@header)) c@header else NULL,
+      width   = if (identical(c@width, "auto")) "auto" else c@width,
+      options = c@options
+    )
+  })
+  list(
+    data = list(rows = rows_list),
+    columns = col_payload,
+    theme = list(axis = list(
+      ciClipFactor = if (!is.null(spec@theme@axis@ci_clip_factor)) spec@theme@axis@ci_clip_factor else 3.0
+    ))
+  )
+}
+
+#' Create a subset WebSpec for one split combination
+#'
+#' Filters the data, adjusts groups, and creates a new WebSpec with
+#' the filtered data while preserving the original spec configuration.
 #'
 #' @param base_spec The original WebSpec
 #' @param subset_data The filtered data.frame

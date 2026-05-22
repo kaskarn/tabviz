@@ -65,6 +65,17 @@ export {
 // exporting, or matching surrounding chrome to the tabviz palette.
 export { getThemeCSS, buildThemeCSS, buildWidgetCSS } from "../lib/theme-css";
 export type { WidgetCSSContext } from "../lib/theme-css";
+
+// Shared-product computation for split_by widgets. R delegates here via
+// the v8 bridge (`ts_call("computeSharedAxis"|"computeSharedWidths", ...)`);
+// JS authors building SplitForest payloads can call these directly to
+// pre-stamp shared widths / axis range before serializing.
+export { computeSharedAxis, computeSharedWidths } from "../lib/split-shared";
+export type {
+  SubsetSpec,
+  SharedAxisArgs, SharedAxisResult,
+  SharedWidthsArgs, SharedWidthsResult,
+} from "../lib/split-shared";
 export type {
   WebThemeArgs, ThemeRef,
   ResolveDraft, ResolveOptions, ThemeOverrides,
