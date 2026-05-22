@@ -1,7 +1,9 @@
-// `base` layer — truly column-agnostic options. Inherited by every
-// column type. Header label + visibility, justification, width,
-// sortability, wrap. These live on the top-level ColumnSpec (not in
-// `column.options`), so all options use `at: "fixed"`.
+// `base` layer — truly column-agnostic. Every column type, including
+// viz columns, has these. Header label + visibility + width are
+// universal; align positions cell content within the column (text,
+// sparkline placement, bar start); headerAlign is here because the
+// header itself is always text. All options live on top-level
+// ColumnSpec, so `at: "fixed"`.
 
 import type { LayerSpec } from "../types";
 
@@ -28,9 +30,10 @@ export const BASE_LAYER: LayerSpec = {
     },
     {
       key: "align",
-      label: "Cell align",
+      label: "Content align",
       control: "segmented",
       default: "left",
+      hint: "Where cell content sits horizontally — text, sparklines, bars",
       segments: [
         { value: "left", label: "Left" },
         { value: "center", label: "Center" },
@@ -43,7 +46,7 @@ export const BASE_LAYER: LayerSpec = {
       label: "Header align",
       control: "segmented",
       default: null,
-      hint: "Inherit from cell align if unset",
+      hint: "Inherit from content align if unset",
       segments: [
         { value: "left", label: "Left" },
         { value: "center", label: "Center" },
@@ -57,21 +60,6 @@ export const BASE_LAYER: LayerSpec = {
       control: "number",
       default: "auto",
       hint: 'Pixels; blank or "auto" for content-driven',
-      at: "fixed",
-    },
-    {
-      key: "wrap",
-      label: "Wrap",
-      control: "toggle",
-      default: false,
-      hint: "Allow multi-line cells",
-      at: "fixed",
-    },
-    {
-      key: "sortable",
-      label: "Sortable",
-      control: "toggle",
-      default: true,
       at: "fixed",
     },
   ],

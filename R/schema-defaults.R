@@ -7,16 +7,15 @@ schema_defaults <- list(
     align = "left",
     width = "auto",
     wrap = FALSE,
-    sortable = TRUE,
     decimals = 2,
     thousands_sep = FALSE,
-    abbreviate = FALSE
+    abbreviate = FALSE,
+    sortable = TRUE
   ),
   percent = list(
     align = "left",
     width = "auto",
     wrap = FALSE,
-    sortable = TRUE,
     decimals = 1,
     thousands_sep = FALSE,
     abbreviate = FALSE,

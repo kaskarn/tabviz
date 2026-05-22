@@ -1,11 +1,12 @@
 // `text` layer — cell-text rendering options. Inherited by every
 // column type that renders text in any form: text, label, numeric,
 // percent, currency, n, pvalue, interval, range, events, date,
-// reference, bar/ring/heatmap value labels.
+// reference, and value labels on bar/ring/heatmap/pictogram.
 //
-// Pure-visual columns that never paint text (sparkline, viz_bar,
-// viz_boxplot, viz_violin, img) can opt out by omitting this layer
-// from their `layers` list.
+// Pure-visual columns that never paint cell text (sparkline,
+// viz_bar, viz_boxplot, viz_violin, img) opt out by omitting this
+// layer from their `layers` list — they still get BASE_LAYER for
+// the header text, just not these cell-text knobs.
 
 import type { LayerSpec } from "../types";
 
@@ -14,6 +15,14 @@ export const TEXT_LAYER: LayerSpec = {
   label: "Text",
   defaultOpen: false,
   options: [
+    {
+      key: "wrap",
+      label: "Wrap",
+      control: "toggle",
+      default: false,
+      hint: "Allow multi-line cells",
+      at: "fixed",
+    },
     {
       key: "naText",
       label: "Missing value",
