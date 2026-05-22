@@ -152,9 +152,9 @@ sort, width, source-emit, etc. are still hand-written, dispatching on
 - `lib/filter-sort-utils.ts::sortValueFor`
 - `lib/width-utils.ts::estimateColumnWidth`
 - `lib/source-emit.ts::emitTypeSpecificArgs`
-- `svelte/ForestPlot.svelte` (cell renderers, mid-file)
+- `svelte/TabvizPlot.svelte` (cell renderers, mid-file)
 - `export/svg-generator.ts` (parallel cell render paths)
-- `stores/forestStore.svelte.ts`, `stores/slices/layout-zoom.svelte.ts`
+- `stores/tabvizStore.svelte.ts`, `stores/slices/layout-zoom.svelte.ts`
 - `components/controls/ColumnEditorPopover.svelte` (being replaced)
 
 **Phase 7 cuts these over to schema dispatch.** Today is the contract;

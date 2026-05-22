@@ -15,7 +15,7 @@
 //   2. Add the camelCase → snake_case mapping in EVENT_TO_SHINY_FIELD
 //   3. Add the snake_case name to SHINY_EVENT_FIELDS (and to R-side
 //      TABVIZ_STATE_FIELDS, kept in sync by the doc-test)
-//   4. Fire the event from the store (forestStore.svelte.ts)
+//   4. Fire the event from the store (tabvizStore.svelte.ts)
 //   5. Subscribe in the Shiny adapter (htmlwidgets/index.svelte.ts setupShinyBindings)
 
 import type {

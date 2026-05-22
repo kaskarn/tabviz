@@ -15,13 +15,13 @@
   //    nil. Niche enough not to warrant a top-level slider.
   // Both stay on the SpacingTokens spec so authors can override via
   // set_spacing() in R.
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import NumberField from "./NumberField.svelte";
   import BooleanField from "./BooleanField.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
   let { store }: Props = $props();
 

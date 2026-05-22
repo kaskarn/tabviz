@@ -6,7 +6,7 @@
     value: number | undefined | null;
     options?: ProgressColumnOptions;
     naText?: string;
-    /** Per-row/cell color override, computed by ForestPlot from the
+    /** Per-row/cell color override, computed by TabvizPlot from the
      * active semantic bundle's markerFill. Lets accent / muted / emphasis
      * paint retint the progress bar to match the forest-marker treatment.
      * `null` falls through to the brand default. */

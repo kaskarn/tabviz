@@ -53,7 +53,7 @@
   }
 
   /* Semantic styling — reads from per-token bundle vars emitted by
-     ForestPlot.svelte (cssVars), so editing `theme.semantics.*.fg/bg` in the
+     TabvizPlot.svelte (cssVars), so editing `theme.semantics.*.fg/bg` in the
      Settings panel immediately updates every painted cell. Each var
      cascades from the corresponding palette slot when the bundle entry is
      null, preserving pre-v0.20.1 visuals. */

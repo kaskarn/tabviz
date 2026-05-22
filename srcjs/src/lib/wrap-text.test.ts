@@ -1,7 +1,7 @@
 import { expect, test, describe } from "bun:test";
 
 // Pure-function test: replicate the wrap-line-count logic used by both
-// forestStore (live widget) and svg-generator (SVG export). If those two
+// tabvizStore (live widget) and svg-generator (SVG export). If those two
 // drift, this test pins what the contract is — wrap = N caps at N+1 lines.
 //
 // Companion contract (GH #3): both paths split on `\r?\n` so author-supplied

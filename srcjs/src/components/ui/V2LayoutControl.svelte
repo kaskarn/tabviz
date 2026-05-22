@@ -5,7 +5,7 @@
   // Density is variant-dispatched in R but the resolved spacing tokens
   // are what the renderer actually reads, so the density picker writes
   // the full SpacingTokens preset client-side too.
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import BooleanField from "./BooleanField.svelte";
@@ -14,7 +14,7 @@
   import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
   let { store }: Props = $props();
 

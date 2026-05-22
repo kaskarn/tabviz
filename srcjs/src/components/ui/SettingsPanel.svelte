@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import BasicsControl from "./BasicsControl.svelte";
   import ThemeControl from "./ThemeControl.svelte";
   import V2LayoutControl from "./V2LayoutControl.svelte";
@@ -15,7 +15,7 @@
   import ConfirmDialog from "./ConfirmDialog.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
 
   let { store }: Props = $props();

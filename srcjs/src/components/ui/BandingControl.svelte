@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { BandingMode } from "$types";
   import { bandingSpecToString } from "$lib/banding";
   import SettingsSection from "./SettingsSection.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
 
   let { store }: Props = $props();

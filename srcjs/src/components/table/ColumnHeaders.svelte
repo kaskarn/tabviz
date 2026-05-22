@@ -1,12 +1,12 @@
 <script lang="ts">
   import type { ColumnDef, ColumnSpec, ColumnGroup } from "$types";
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
 
   interface Props {
     columnDefs: ColumnDef[];
     showLabel?: boolean;
     labelHeader?: string;
-    store?: ForestStore;
+    store?: TabvizStore;
     enableResize?: boolean;
   }
 

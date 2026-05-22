@@ -9,12 +9,12 @@
   // the 4-token grid and Row/Cell scope toggle. Trigger shows a paint
   // icon overlaid with the active token's swatch so users can read the
   // current state without expanding.
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
   let { store }: Props = $props();
 

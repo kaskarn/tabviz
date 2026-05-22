@@ -6,14 +6,14 @@
   // expandable color-bundle (fill, stroke, muted, emphasis, text_fg).
   // Shape rides on the SlotBundle now (theme.series[i].shape) — null
   // falls through to the renderer's default 4-shape rotation.
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
   import SegmentedField from "./SegmentedField.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
   let { store }: Props = $props();
 

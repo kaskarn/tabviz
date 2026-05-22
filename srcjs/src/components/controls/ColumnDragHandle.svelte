@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { DragKind } from "$types";
   import { hitTestColumnGaps } from "$lib/dnd-utils";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
     kind: Extract<DragKind, "column" | "column_group">;
     id: string;
     /** HTML root of the forest widget — used to query sibling header cells. */

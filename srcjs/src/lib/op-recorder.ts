@@ -2,11 +2,11 @@
  * Op recorder — incremental, append-only log of user-visible structural
  * operations rendered as fluent R API calls.
  *
- * Paired with `forestStore.opLog` and surfaced in the "View source" panel.
+ * Paired with `tabvizStore.opLog` and surfaced in the "View source" panel.
  * Theme-side edits are NOT logged here — they're rendered as a live
  * snapshot via `generateThemeSource()` in `theme-source.ts`.
  *
- * Recording contract (see the comment block atop `forestStore.svelte.ts`):
+ * Recording contract (see the comment block atop `tabvizStore.svelte.ts`):
  *   every store mutation that changes user-visible non-theme state must
  *   push exactly one record via `recordOp()`. Do not collapse or
  *   deduplicate — backtracking is part of the log.

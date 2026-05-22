@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { SplitForestStore } from "$stores/splitForestStore.svelte";
+  import type { SplitTabvizStore } from "$stores/splitTabvizStore.svelte";
   import type { NavTreeNode } from "$types";
 
   interface Props {
-    store: SplitForestStore;
+    store: SplitTabvizStore;
   }
 
   let { store }: Props = $props();

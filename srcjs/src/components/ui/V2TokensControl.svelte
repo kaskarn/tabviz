@@ -9,7 +9,7 @@
   // Each field on each bundle is override-aware via the existing
   // setThemeFieldDerived / isOverridden plumbing; reset reverts to the
   // resolved default.
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
@@ -17,7 +17,7 @@
   import { oklchMix } from "$lib/oklch";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
   let { store }: Props = $props();
 

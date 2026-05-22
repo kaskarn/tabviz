@@ -1,6 +1,6 @@
 /**
  * Shared formatting functions for forest plot column rendering.
- * Used by both web (ForestPlot.svelte) and SVG (svg-generator.ts) renderers.
+ * Used by both web (TabvizPlot.svelte) and SVG (svg-generator.ts) renderers.
  *
  * Formatters are pure functions of (value, options). They're called per-cell
  * at render time, so each one is wrapped in a memoization layer keyed by the

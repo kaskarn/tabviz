@@ -47,14 +47,14 @@
   // When primary changes and secondary is mirroring (not pinned), secondary
   // is also rewritten via setDerived, then secondary's cascade runs.
 
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
   import FontFamilyPicker from "./FontFamilyPicker.svelte";
   import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
   let { store }: Props = $props();
 

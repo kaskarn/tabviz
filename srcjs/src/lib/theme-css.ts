@@ -86,7 +86,7 @@ export function buildThemeCSS(theme: WebThemeV2): string {
 export const getThemeCSS = buildThemeCSS;
 
 /**
- * Build the complete widget CSS used by the running ForestPlot — theme
+ * Build the complete widget CSS used by the running TabvizPlot — theme
  * tokens plus widget-instance vars (max-width/height, header/axis
  * dimensions, zoom).
  */

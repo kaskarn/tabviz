@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { mintUniqueId, RESERVED_COLUMN_IDS } from "./forestStore.svelte";
+import { mintUniqueId, RESERVED_COLUMN_IDS } from "./tabvizStore.svelte";
 
 // Unit tests for the column-id uniqueness helper extracted from
 // `mintUniqueColumnId`. See the audit in v0.20.2 for the full set of

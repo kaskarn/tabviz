@@ -1,5 +1,5 @@
 <!--
-  ForestOverlays — popovers + drop indicator + tooltip + column-editing
+  TabvizOverlays — popovers + drop indicator + tooltip + column-editing
   popup chain. Phase 0c-C2 first piece.
 
   Owns the local state for the three popover chains (right-click context
@@ -8,13 +8,13 @@
   parent's column-header click handlers to call via bind:this.
 
   Receives:
-    - store: the ForestStore
+    - store: the TabvizStore
     - containerRef: parent's outermost div (drop-indicator computes
       positions relative to this)
 -->
 <script lang="ts">
   import type { ColumnSpec } from "$types";
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import Tooltip from "$components/ui/Tooltip.svelte";
   import DropIndicator from "$components/controls/DropIndicator.svelte";
   import EditableCell from "$components/controls/EditableCell.svelte";
@@ -25,7 +25,7 @@
   import { getVisualTypeDef, resolveShowHeader } from "$lib/column-types";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
     containerRef: HTMLDivElement | undefined;
   }
   let { store, containerRef }: Props = $props();

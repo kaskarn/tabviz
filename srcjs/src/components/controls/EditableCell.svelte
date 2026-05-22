@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { EditTarget, EditValue } from "$types";
   import { tick } from "svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
     target: EditTarget;
     /** Container the widget is mounted in; used to anchor the inline overlay. */
     root: HTMLElement | null;

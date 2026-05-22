@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import WatermarkControl from "./WatermarkControl.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import TextField from "./TextField.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
 
   let { store }: Props = $props();

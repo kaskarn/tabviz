@@ -18,7 +18,7 @@
 //                                until columns slice ships
 //   - appendOp                 — push setTheme / setWatermark records
 //
-// Extracted from forestStore.svelte.ts in Phase 0c-C1 PR2. See
+// Extracted from tabvizStore.svelte.ts in Phase 0c-C1 PR2. See
 // docs/dev/store-decomposition-idiom.md for the slice idiom.
 //
 // Watermark mutations (setWatermark / previewWatermark / colour / opacity)

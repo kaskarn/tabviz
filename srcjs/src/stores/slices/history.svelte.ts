@@ -6,7 +6,7 @@
 // Owns:
 //   - opLog              OpRecord[] — append-only history of ops
 //
-// Coalesce contract (preserved verbatim from forestStore):
+// Coalesce contract (preserved verbatim from tabvizStore):
 //
 //   1. Exact byte-for-byte duplicates of the most recent entry are
 //      dropped silently. Catches drag-end firing twice, double-clicks,

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { WebTheme } from "$types";
   import { THEME_NAMES, THEME_LABELS, type ThemeName } from "$lib/theme-presets";
   import { autoPosition } from "$lib/dropdown-position";
@@ -17,7 +17,7 @@
   type ThemesInput = FlatThemes | CategorizedThemes;
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
     availableThemes?: ThemesInput | null;  // undefined = all built-ins, null = hidden
     /**
      * Notification fired when the user picks a theme. Receives the theme key
@@ -133,7 +133,7 @@
 
   // Eager-load every available theme's web fonts so previews don't flash
   // bare fallbacks on first dropdown open. Same dedup pattern as the per-
-  // theme injector in ForestPlot.svelte (key by URL, append <link> once).
+  // theme injector in TabvizPlot.svelte (key by URL, append <link> once).
   $effect(() => {
     if (typeof document === "undefined" || !availableThemes) return;
     const themes: WebTheme[] = categorized

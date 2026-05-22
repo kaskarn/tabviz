@@ -1,11 +1,11 @@
 <!--
-  ForestPlot — top-level renderer for a single (non-split) tabviz widget.
+  TabvizPlot — top-level renderer for a single (non-split) tabviz widget.
 
   Phase 0c-C2 audit (2026-05): originally 3526 lines. After
-  ForestOverlays extraction (Phase 0c-PR12) the parent is 3329 lines.
+  TabvizOverlays extraction (Phase 0c-PR12) the parent is 3329 lines.
 
   The original spec proposed splitting into ForestHeader / ForestTableBody
-  / ForestPlotBody / ForestControls / ForestOverlays + a thin orchestrator
+  / TabvizPlotBody / ForestControls / TabvizOverlays + a thin orchestrator
   (<500 lines). Implementation reality required revising that plan:
 
   - **ForestHeader, ForestControls** dropped: the title/subtitle region
@@ -13,10 +13,10 @@
     (PlotHeader / ControlToolbar / SettingsPanel). Wrapping them adds
     files without reducing complexity.
 
-  - **ForestOverlays** done: the popover-chain glue + drop indicator +
+  - **TabvizOverlays** done: the popover-chain glue + drop indicator +
     tooltip lifted out clean (Phase 0c-PR12).
 
-  - **ForestTableBody + ForestPlotBody** deferred with justification:
+  - **ForestTableBody + TabvizPlotBody** deferred with justification:
     both live inside the same CSS Grid container (`.tabviz-main`) and
     share grid-row / grid-column placements. Extracting them as siblings
     would either (a) require both components to render at the top level
@@ -40,7 +40,7 @@
 -->
 <script lang="ts">
   import { tick } from "svelte";
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ThemeName } from "$lib/theme-presets";
   import type { WebTheme, ColumnSpec, ColumnDef, ColumnOptions, Row, DisplayRow, GroupHeaderRow, DataRow, CellStyle, Annotation, SemanticBundle } from "$types";
   import RowInterval from "$components/forest/RowInterval.svelte";
@@ -51,7 +51,7 @@
   import PlotFooter from "$components/forest/PlotFooter.svelte";
   import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
-  import ForestOverlays from "./ForestOverlays.svelte";
+  import TabvizOverlays from "./TabvizOverlays.svelte";
   import CellBar from "$components/table/CellBar.svelte";
   import CellPvalue from "$components/table/CellPvalue.svelte";
   import CellSparkline from "$components/table/CellSparkline.svelte";
@@ -71,7 +71,7 @@
   import SortIndicator from "$components/controls/SortIndicator.svelte";
   import ColumnFilterButton from "$components/controls/ColumnFilterButton.svelte";
   // ColumnFilterPopover, HeaderContextMenu, ColumnTypeMenu, ColumnEditorPopover
-  // moved into ForestOverlays (Phase 0c-C2). Tooltip + DropIndicator + EditableCell
+  // moved into TabvizOverlays (Phase 0c-C2). Tooltip + DropIndicator + EditableCell
   // also moved there.
   import ColumnDragHandle from "$components/controls/ColumnDragHandle.svelte";
   import { isVizType, resolveShowHeader } from "$lib/column-types";
@@ -103,7 +103,7 @@
   } from "$lib/formatters";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
     onThemeChange?: (themeName: ThemeName) => void;
   }
 
@@ -206,15 +206,15 @@
 
   // Interactive column-editor state: right-click menu → type menu → editor popover.
   // headerContextMenu, columnTypeMenuTarget, columnEditorTarget moved into
-  // ForestOverlays (Phase 0c-C2). The parent's column-header click handlers
+  // TabvizOverlays (Phase 0c-C2). The parent's column-header click handlers
   // call overlays.openHeaderContextMenu(...) via the bind:this ref below.
-  type ForestOverlaysRef = {
+  type TabvizOverlaysRef = {
     openHeaderContextMenu: (column: ColumnSpec, e: MouseEvent) => void;
   };
-  let overlays = $state<ForestOverlaysRef | null>(null);
+  let overlays = $state<TabvizOverlaysRef | null>(null);
   // typeMenuMemory + openHeaderContextMenu + handleContextMenuAction +
   // handleTypePick + handleRequestChangeType + handleEditorCommit all
-  // moved into ForestOverlays (Phase 0c-C2). Column-header click handlers
+  // moved into TabvizOverlays (Phase 0c-C2). Column-header click handlers
   // now call `overlays?.openHeaderContextMenu(column, e)` via the
   // bind:this ref above.
 
@@ -790,7 +790,7 @@
     return indices;
   }
 
-  // computeColumnBand + computeRowBand moved into ForestOverlays
+  // computeColumnBand + computeRowBand moved into TabvizOverlays
   // (Phase 0c-C2). They're used only by the drop-indicator render.
 
   // Compute CSS grid template columns: columns in order (primary column first).
@@ -2486,8 +2486,8 @@
 
     <!-- Tooltip + DropIndicator + EditableCell + ColumnFilterPopover +
          HeaderContextMenu + ColumnTypeMenu + ColumnEditorPopover. All
-         encapsulated by ForestOverlays as of Phase 0c-C2. -->
-    <ForestOverlays bind:this={overlays} {store} {containerRef} />
+         encapsulated by TabvizOverlays as of Phase 0c-C2. -->
+    <TabvizOverlays bind:this={overlays} {store} {containerRef} />
   {:else}
     <div class="tabviz-empty">No data</div>
   {/if}
@@ -2992,7 +2992,7 @@
   }
 
   /* Text wrapping mode — pre-line preserves \n and lets long text wrap.
-     Grid-template-rows owns the row height (forestStore measures wrapped
+     Grid-template-rows owns the row height (tabvizStore measures wrapped
      line counts and grows the track), so we just opt out of nowrap /
      ellipsis here. align-items: center keeps text vertically centered
      within the grown track. */

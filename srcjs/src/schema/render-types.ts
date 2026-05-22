@@ -7,7 +7,7 @@
 // axis space, legends, or zoom/pan handlers.
 //
 // Implementation: Phase 7. The types here are the contract — handwritten
-// renderer code today still lives in `ForestPlot.svelte` +
+// renderer code today still lives in `TabvizPlot.svelte` +
 // `svg-generator.ts`; Phase 7 extracts those into pure functions that
 // match these signatures.
 
@@ -250,10 +250,10 @@ export interface SchemaLifecycle {
 //   width-utils.ts         — estimateColumnWidth() branches
 //   source-emit.ts         — emitTypeSpecificArgs() switch
 //   svg-generator.ts       — cell-render branches per type
-//   ForestPlot.svelte      — cell-render + layout branches
+//   TabvizPlot.svelte      — cell-render + layout branches
 //   ColumnEditorPopover    — editor-UI branches (replaced by SchemaForm)
 //   layout-zoom.svelte.ts  — layout-mode dispatch
-//   forestStore.svelte.ts  — store-side type checks
+//   tabvizStore.svelte.ts  — store-side type checks
 //
 // Each is a candidate for moving onto the schema as a named behavior.
 // The schema becomes the central registry of all type-dispatched

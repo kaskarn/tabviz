@@ -1,7 +1,7 @@
 <script lang="ts">
   // v2 Text & Annotations tab.
   // 8 text role bundles + L1/L2/L3 row-group accordion sections.
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
@@ -9,7 +9,7 @@
   import TextField from "./TextField.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
   let { store }: Props = $props();
 

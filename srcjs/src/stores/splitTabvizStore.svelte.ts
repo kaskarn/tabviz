@@ -1,5 +1,5 @@
 import type { SplitForestPayload, NavTreeNode, WebSpec, WebTheme, ColumnDef, ColumnSpec } from "$types";
-import { createForestStore, type ForestStore } from "./forestStore.svelte";
+import { createTabvizStore, type TabvizStore } from "./tabvizStore.svelte";
 import { type ThemeName } from "$lib/theme-presets";
 import { ops } from "$lib/op-recorder";
 
@@ -50,7 +50,7 @@ function estimateColumnWidth(header: string | undefined, values: unknown[]): num
 
 /**
  * Store for managing split forest navigation and display state.
- * Wraps multiple ForestStore instances, one for each split.
+ * Wraps multiple TabvizStore instances, one for each split.
  */
 /**
  * Internal payload shape after `setPayload` reconstitutes any
@@ -62,7 +62,7 @@ type MergedSplitPayload = Omit<SplitForestPayload, "specs"> & {
   specs: Record<string, WebSpec>;
 };
 
-export function createSplitForestStore() {
+export function createSplitTabvizStore() {
   // Core state
   let payload = $state<MergedSplitPayload | null>(null);
   let activeKey = $state<string | null>(null);
@@ -92,7 +92,7 @@ export function createSplitForestStore() {
   // subview tier so they persist across selectSpec() calls -- without this,
   // editing theme on subview B and switching to A wipes B's edits because
   // setSpec() resets themeEdits/themeOverrides.
-  type ThemeSnapshot = ReturnType<NonNullable<ReturnType<typeof createForestStore>["captureThemeSnapshot"]>>;
+  type ThemeSnapshot = ReturnType<NonNullable<ReturnType<typeof createTabvizStore>["captureThemeSnapshot"]>>;
   let themeSnapshot = $state<ThemeSnapshot | null>(null);
 
   // Container dimensions
@@ -105,7 +105,7 @@ export function createSplitForestStore() {
 
   // Create a single store for the active spec
   // We reuse this store and update its spec when navigation changes
-  const activeStore = createForestStore();
+  const activeStore = createTabvizStore();
 
   // Derived: filtered nav tree (for search)
   const filteredNavTree = $derived.by((): NavTreeNode[] => {
@@ -147,7 +147,7 @@ export function createSplitForestStore() {
     // Hoisted-base wire format: R serializes shared blocks (theme, columns,
     // interaction, ...) once at the payload root; per-subview entries carry
     // only data + labels. Reconstitute full WebSpecs here so everything
-    // downstream (column-width snapshot, store activation, ForestPlot mount)
+    // downstream (column-width snapshot, store activation, TabvizPlot mount)
     // sees the familiar shape. Older payloads carry full specs and skip
     // this step; both formats work.
     if (p.base) {
@@ -443,7 +443,7 @@ export function createSplitForestStore() {
   };
 }
 
-export type SplitForestStore = ReturnType<typeof createSplitForestStore>;
+export type SplitTabvizStore = ReturnType<typeof createSplitTabvizStore>;
 
 // ============================================================================
 // Helper functions

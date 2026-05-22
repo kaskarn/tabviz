@@ -19,7 +19,7 @@
 //                             observers learn whether the change is
 //                             user- or proxy-originated
 //
-// Extracted from forestStore.svelte.ts in Phase 0c-C1 PR1 (first
+// Extracted from tabvizStore.svelte.ts in Phase 0c-C1 PR1 (first
 // slice after the source-tagging spike). See
 // docs/dev/store-decomposition-idiom.md for the slice idiom.
 //

@@ -1,5 +1,5 @@
 import type { WebSpec, HTMLWidgetsBinding, WidgetInstance } from "$types";
-import type { ForestStore } from "$stores/forestStore.svelte";
+import type { TabvizStore } from "$stores/tabvizStore.svelte";
 import { createTabviz, type TabvizInstance } from "$core/createTabviz";
 import { exportToSVG, exportToPNG } from "$export";
 import { shinyEnvelope } from "$lib/shiny-envelope";
@@ -19,7 +19,7 @@ exposeDevHook("__tabvizExports", { exportToSVG, exportToPNG });
 
 // Store registry for Shiny proxy support. Also exposed as a dev hook
 // (`window.__tabvizStoreRegistry`) for puppeteer / playwright introspection.
-const storeRegistry = new Map<string, ForestStore>();
+const storeRegistry = new Map<string, TabvizStore>();
 exposeDevHook("__tabvizStoreRegistry", storeRegistry);
 
 // Proxy method handlers. Keys match the method names sent from R's
@@ -31,7 +31,7 @@ exposeDevHook("__tabvizStoreRegistry", storeRegistry);
 //   1. Add an interface + normalize entry in $spec/proxy-args.ts
 //   2. Add a handler below that calls the normalizer and dispatches
 //   3. Add a behavior test in srcjs/src/htmlwidgets/index.proxy.test.ts
-export const proxyMethods: Record<string, (store: ForestStore, args: Record<string, unknown>) => void> = {
+export const proxyMethods: Record<string, (store: TabvizStore, args: Record<string, unknown>) => void> = {
   updateData: (store, raw) => {
     const a = normalize.updateData(raw);
     if (!a) return;
@@ -113,7 +113,7 @@ export const proxyMethods: Record<string, (store: ForestStore, args: Record<stri
   setCell: (store, raw) => {
     const a = normalize.setCell(raw);
     if (!a) return;
-    store.setCellValue(a.rowId, a.field, a.value as Parameters<ForestStore["setCellValue"]>[2]);
+    store.setCellValue(a.rowId, a.field, a.value as Parameters<TabvizStore["setCellValue"]>[2]);
   },
   setRowLabel: (store, raw) => {
     const a = normalize.setRowLabel(raw);
@@ -190,7 +190,7 @@ const binding: HTMLWidgetsBinding = {
         const x = raw as WebSpec;
         if (instance === null) {
           // First mount: factory validates the spec version, ingests the
-          // spec + initial state, applies zoom fields, mounts ForestPlot.
+          // spec + initial state, applies zoom fields, mounts TabvizPlot.
           instance = createTabviz(el, x, { width, height });
           // Register the store reference for proxy + Shiny adapters.
           if (el.id) storeRegistry.set(el.id, instance.store);
@@ -218,7 +218,7 @@ const binding: HTMLWidgetsBinding = {
 // ones — the store's withSource() wrapper around proxy dispatch (below) makes
 // markSource() capture the right tag synchronously inside each setter, before
 // $effect runs. See docs/dev/source-tagging.md for the contract.
-function setupShinyBindings(widgetId: string, store: ForestStore) {
+function setupShinyBindings(widgetId: string, store: TabvizStore) {
   const emit = (field: string, value: unknown) => {
     setShinyInput(
       `${widgetId}_${field}`,
@@ -227,7 +227,7 @@ function setupShinyBindings(widgetId: string, store: ForestStore) {
   };
 
   // Per-dimension subscriptions — the store fires typed events from its
-  // reactive $effect blocks (see forestStore::eventEmitter), we map each
+  // reactive $effect blocks (see tabvizStore::eventEmitter), we map each
   // to its snake_case Shiny field name via EVENT_TO_SHINY_FIELD and forward.
   // Replaces the prior $effect.root(() => $effect(...) x18) block; same
   // wire behavior, narrower contract.

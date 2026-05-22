@@ -1,12 +1,12 @@
 <script lang="ts">
-  import type { SplitForestStore } from "$stores/splitForestStore.svelte";
+  import type { SplitTabvizStore } from "$stores/splitTabvizStore.svelte";
   import type { ThemeName } from "$lib/theme-presets";
   import type { WebTheme } from "$types";
-  import ForestPlot from "./ForestPlot.svelte";
+  import TabvizPlot from "./TabvizPlot.svelte";
   import SplitSidebar from "$components/split/SplitSidebar.svelte";
 
   interface Props {
-    store: SplitForestStore;
+    store: SplitTabvizStore;
   }
 
   let { store }: Props = $props();
@@ -17,7 +17,7 @@
   const sidebarWidth = $derived(store.sidebarWidth);
 
   // Surface the active theme's primary identity color at the split-container
-  // level so chrome surfaces outside the ForestPlot (sidebar, search, nav
+  // level so chrome surfaces outside the TabvizPlot (sidebar, search, nav
   // nodes) can tint with identity instead of falling through to bright-blue
   // hardcoded fallbacks.
   const primaryVar = $derived.by(() => {
@@ -71,7 +71,7 @@
     <div class="split-forest-main">
       {#if activeStore.spec}
         {#key activeKey}
-          <ForestPlot store={activeStore} onThemeChange={handleThemeChange} />
+          <TabvizPlot store={activeStore} onThemeChange={handleThemeChange} />
         {/key}
       {:else}
         <div class="split-forest-empty">

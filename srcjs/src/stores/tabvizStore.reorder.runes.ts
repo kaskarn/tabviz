@@ -10,7 +10,7 @@
 // the fixture uses cochrane directly. No fixture drift, no @ts-nocheck.
 
 import { expect, test, describe } from "vitest";
-import { createForestStore } from "./forestStore.svelte";
+import { createTabvizStore } from "./tabvizStore.svelte";
 import { THEME_PRESETS } from "$lib/theme-presets";
 import type { WebSpec } from "$types";
 
@@ -51,14 +51,14 @@ function buildSpec(): WebSpec {
 
 describe("row reorder flows into exportSpec", () => {
   test("initial exportSpec preserves source row order", () => {
-    const store = createForestStore();
+    const store = createTabvizStore();
     store.setSpec(buildSpec());
     const ids = (store.exportSpec?.data.rows ?? []).map((r) => r.id);
     expect(ids).toEqual(["a1", "a2", "a3", "b1", "b2"]);
   });
 
   test("moving A3 to front of group A shows up in exportSpec", () => {
-    const store = createForestStore();
+    const store = createTabvizStore();
     store.setSpec(buildSpec());
     // drag a3 from index 2 to index 0 within group A
     store.moveRowItem("a3", 0);
@@ -67,14 +67,14 @@ describe("row reorder flows into exportSpec", () => {
   });
 
   test("rowOrderOverrides is set after moveRowItem", () => {
-    const store = createForestStore();
+    const store = createTabvizStore();
     store.setSpec(buildSpec());
     store.moveRowItem("a3", 0);
     expect(store.rowOrderOverrides.byGroup["A"]).toEqual(["a3", "a1", "a2"]);
   });
 
   test("displayRows data-row sequence reflects reorder", () => {
-    const store = createForestStore();
+    const store = createTabvizStore();
     store.setSpec(buildSpec());
     store.moveRowItem("a3", 0);
     const dataIds = store.displayRows

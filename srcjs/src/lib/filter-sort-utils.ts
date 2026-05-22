@@ -1,4 +1,4 @@
-// Pure filter + sort helpers, extracted from forestStore.svelte.ts during
+// Pure filter + sort helpers, extracted from tabvizStore.svelte.ts during
 // Phase 0c-C1 PR4 (sort-filter slice). No runes, no store access — just
 // row-level operations consumed by `visibleRows` and the column-filter UI.
 //

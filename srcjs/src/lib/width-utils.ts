@@ -2,7 +2,7 @@
  * Width calculation utilities for column auto-sizing.
  *
  * This module provides shared utilities for calculating column widths in forest plots.
- * It is used by both the web view (forestStore.svelte.ts) and SVG generator (svg-generator.ts)
+ * It is used by both the web view (tabvizStore.svelte.ts) and SVG generator (svg-generator.ts)
  * to ensure visual consistency between renderers.
  *
  * === KEY FUNCTIONS ===
@@ -27,7 +27,7 @@
  *
  * === USAGE ===
  *
- * The forestStore uses canvas measurement when available (more accurate),
+ * The tabvizStore uses canvas measurement when available (more accurate),
  * while the SVG generator uses estimateTextWidth() since it runs in a
  * DOM-free environment (R's V8 engine).
  *

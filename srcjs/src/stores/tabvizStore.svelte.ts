@@ -36,7 +36,7 @@ import { createDataSlice } from "$stores/slices/data.svelte";
 import { createLayoutZoomSlice } from "$stores/slices/layout-zoom.svelte";
 
 // Re-exports preserved for the existing public surface (tests import these
-// from forestStore.svelte; the canonical home is now the columns slice).
+// from tabvizStore.svelte; the canonical home is now the columns slice).
 export const RESERVED_COLUMN_IDS = _RESERVED_COLUMN_IDS;
 export const mintUniqueId = _mintUniqueId;
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
@@ -59,7 +59,7 @@ import type { TabvizEvents } from "$spec/events";
 // ====================================================================
 
 // Svelte 5 runes-based store
-export function createForestStore() {
+export function createTabvizStore() {
   // Core state. `$state.raw` skips the deep-proxy wrap — `spec` is always
   // replaced wholesale via `setSpec({ ...prev, ...patch })` (see audit notes
   // in CLAUDE.md; every write site is REPLACE, never in-place). The render
@@ -1044,7 +1044,7 @@ export function createForestStore() {
       // user manually resized; non-forest columns multiply their
       // measured width by `layout.aspectNonForestScale` (Stage 2 output)
       // unless user-resized. Mirrors
-      // `gridTemplateColumns` and `effectiveVizWidth()` in ForestPlot.
+      // `gridTemplateColumns` and `effectiveVizWidth()` in TabvizPlot.
       const aspectScale = layout.aspectNonForestScale ?? 1;
 
       // The primary column is the leftmost entry in allColumns — no separate label slot.
@@ -1378,5 +1378,5 @@ export function createForestStore() {
   // dedupe + coalesce rules + the kind allowlist all moved with it.
 }
 
-export type ForestStore = ReturnType<typeof createForestStore>;
+export type TabvizStore = ReturnType<typeof createTabvizStore>;
 

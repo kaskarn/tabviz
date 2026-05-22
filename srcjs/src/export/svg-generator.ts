@@ -289,7 +289,7 @@ function calculateSvgAutoWidths(
   const fontSize = parseFontSize(spec.theme.text.body.size);
   // Header cells: use the explicit theme.header.text.size when it's been
   // pinned distinct from body.size; otherwise apply the historical 5%
-  // scale-up (matches the .header-cell CSS calc-fallback in ForestPlot).
+  // scale-up (matches the .header-cell CSS calc-fallback in TabvizPlot).
   const headerExplicit = spec.theme.header?.text?.size;
   const bodySizeStr = spec.theme.text.body.size;
   const headerFontSize = (headerExplicit && headerExplicit !== bodySizeStr)
@@ -377,7 +377,7 @@ function calculateSvgAutoWidths(
   // ========================================================================
   // PHASE 2: Check column groups and expand children if needed
   // ========================================================================
-  // This matches the web view's doMeasurement() logic in forestStore.svelte.ts
+  // This matches the web view's doMeasurement() logic in tabvizStore.svelte.ts
   // Column group headers also use scaled font size (they inherit .header-cell)
   expandColumnGroupWidths(spec.columns, widths, headerFontSize, headerWeight, groupPadding, TEXT_MEASUREMENT.RENDERING_BUFFER);
 
@@ -386,7 +386,7 @@ function calculateSvgAutoWidths(
 
 /**
  * Process column groups recursively and expand children if group header needs more space.
- * This matches the web view's processColumn() logic in forestStore.svelte.ts.
+ * This matches the web view's processColumn() logic in tabvizStore.svelte.ts.
  *
  * @param columnDefs - Top-level column definitions (may include groups)
  * @param widths - Map to store computed widths (modified in place)
@@ -558,7 +558,7 @@ function calculateSvgLabelWidth(spec: WebSpec, primaryHeader: string | null | un
   // Group headers in the label column include multiple elements:
   // [indent][chevron][gap][label][gap][count][internal-padding]
   // See GROUP_HEADER constants in rendering-constants.ts
-  // This must match the web view measurement in forestStore.svelte.ts
+  // This must match the web view measurement in tabvizStore.svelte.ts
   // ========================================================================
   const showGroupCounts = !!spec.interaction?.showGroupCounts;
   for (const group of groups) {
@@ -640,7 +640,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // .header-cell uses 0 vertical padding now (cellPaddingY deprecated in
   // v0.21.x), so the header track height = headerHeight/depth exactly.
   // Auto-grow when the theme value is smaller than what the current font
-  // (× headerFontScale × line-height) needs — matches forestStore.layout.
+  // (× headerFontScale × line-height) needs — matches tabvizStore.layout.
   const headerDepth = hasGroups ? 2 : 1;
   const headerLineHeight = 1.5;
   const headerScale = 1.05;
@@ -649,7 +649,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   const effectiveHeaderHeight = Math.max(theme.spacing.headerHeight, minHeaderRow * headerDepth);
   const actualRowHeight = effectiveHeaderHeight / headerDepth;
   // If no leaf column's header renders AND no column groups exist, the whole
-  // header band collapses — mirrors ForestPlot.svelte's anyHeaderVisible.
+  // header band collapses — mirrors TabvizPlot.svelte's anyHeaderVisible.
   const allLeafCols = flattenAllColumns(columns);
   const anyHeaderVisible = hasGroups ||
     allLeafCols.some(c => resolveShowHeader(c.showHeader, c.header));
@@ -723,7 +723,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   }
 
   // Wrap line counts: per-row max number of lines across wrap-enabled
-  // columns. Mirrors forestStore's measurement so SVG export grows the
+  // columns. Mirrors tabvizStore's measurement so SVG export grows the
   // same row tracks the live widget grows. Uses estimateTextWidth (the
   // same heuristic auto-width uses) so widths are self-consistent here.
   const wrapEnabledCols = allColumns.filter(c => {
@@ -769,7 +769,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   // rowPaddedAfter[i]: data row i directly precedes a top-level
   // group_header. Walk forward once to mark each affected data row;
   // its track will be inflated by rowGroupPadding (cell content stays
-  // anchored at the original visible-band Y). Mirrors forestStore.
+  // anchored at the original visible-band Y). Mirrors tabvizStore.
   const rowPaddedAfter: boolean[] = new Array(displayRows.length).fill(false);
   for (let i = 0; i < displayRows.length; i++) {
     const dr = displayRows[i];
@@ -939,7 +939,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     // Header → first row gap. Live widget applies it as `padding-bottom`
     // on the header element via `--tv-header-gap` (PlotHeader.svelte:130);
     // SVG has no header element so we fold the gap into mainY. Default 12
-    // matches the live CSS-var fallback in ForestPlot.svelte.
+    // matches the live CSS-var fallback in TabvizPlot.svelte.
     mainY: headerTextHeight + padding + (theme.spacing.headerGap ?? 12),
     // Footer Y: Match web view's layout (axisHeight + 8px footer padding-top)
     // Footer Y: axis region + themed footer gap (spacing.footer_gap).
@@ -2209,7 +2209,7 @@ function renderDiamond(
 
 /**
  * Render reference-line annotations for a viz column.
- * Mirrors the inline rendering in ForestPlot.svelte for non-forest viz overlays.
+ * Mirrors the inline rendering in TabvizPlot.svelte for non-forest viz overlays.
  * `forest_annotation()` (CustomAnnotation) is forest-specific and skipped here.
  */
 function renderVizAnnotations(
@@ -3910,7 +3910,7 @@ function renderUnifiedTableRow(
 
       // Semantic bundle resolved from row/cell flags — single source of truth
       // for fg / fontWeight / fontStyle when a semantic class applies. Mirrors
-      // the interactive path (ForestPlot.svelte .data-cell.row-has-semantic).
+      // the interactive path (TabvizPlot.svelte .data-cell.row-has-semantic).
       const cellSemBundle =
         resolveSemanticBundle(cellStyle, theme) ??
         resolveSemanticBundle(rowStyle, theme);
@@ -4315,7 +4315,7 @@ export function computeNaturalDimensions(spec: WebSpec): {
  *     met, the remainder is silently approximate — Phase 7B's
  *     diagnostic will surface this in a follow-up.
  *
- * Live widget mirror: `forestStore.svelte.ts`'s layout-derived getter
+ * Live widget mirror: `tabvizStore.svelte.ts`'s layout-derived getter
  * runs the same ladder so slider drag and `save_plot()` agree on
  * shape.
  */
@@ -4884,7 +4884,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
         }
       }
       // Semantic bundle border (drawn as a bottom-edge line). Mirrors the
-      // interactive path (ForestPlot.svelte applies `border-bottom: 1px solid
+      // interactive path (TabvizPlot.svelte applies `border-bottom: 1px solid
       // ${bundle.border}` via CSS var). Drawn after the bg so it sits on top.
       if (semBundle?.border) {
         parts.push(`<line x1="${padding}" x2="${padding + layout.totalWidth - padding * 2}"

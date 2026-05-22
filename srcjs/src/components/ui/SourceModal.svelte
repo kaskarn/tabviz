@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import { generateThemeSource } from "$lib/theme-source";
   import { emitJsSource } from "$lib/source-emit";
   import Portal from "$lib/Portal.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
     open: boolean;
     onclose: () => void;
   }

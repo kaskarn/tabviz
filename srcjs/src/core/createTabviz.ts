@@ -5,15 +5,15 @@
 // internally; web-app consumers will consume it directly once the
 // package ships.
 //
-// The instance is a thin facade over the Svelte 5 ForestStore — the
+// The instance is a thin facade over the Svelte 5 TabvizStore — the
 // typed event emitter (spec §2.5-S3, Phase 0a-PR5), the typed proxy
 // dispatch (S1/S7/S11/S12, Phase 0a-PR4), and the ShinyEnvelope wire
 // contract (S2, Phase 0a-PR2) were all designed in Phase 0a with this
 // public-API shape in mind.
 
 import { mount, unmount, type Component } from "svelte";
-import ForestPlot from "$svelte/ForestPlot.svelte";
-import { createForestStore, type ForestStore } from "$stores/forestStore.svelte";
+import TabvizPlot from "$svelte/TabvizPlot.svelte";
+import { createTabvizStore, type TabvizStore } from "$stores/tabvizStore.svelte";
 import { validateSpecVersion } from "$spec";
 import type {
   WebSpec,
@@ -103,12 +103,12 @@ export interface TabvizInstance {
    * API yet) and for advanced consumers. Not part of the stable public
    * surface — prefer the typed methods above when they exist.
    */
-  readonly store: ForestStore;
+  readonly store: TabvizStore;
 }
 
 /**
  * Construct a tabviz instance into a host element. Validates the wire
- * version, creates the underlying store, mounts the ForestPlot Svelte
+ * version, creates the underlying store, mounts the TabvizPlot Svelte
  * component, and returns a typed facade for downstream consumers.
  */
 /**
@@ -138,7 +138,7 @@ export function createTabviz(
 ): TabvizInstance {
   validateSpecVersion(spec as { version?: unknown }, "WebSpec");
   const x = spec as WebSpecWithInitialState;
-  const store = createForestStore();
+  const store = createTabvizStore();
   store.setSpec(spec);
   const w = options.width ?? element.clientWidth;
   const h = options.height ?? element.clientHeight;
@@ -172,14 +172,14 @@ export function createTabviz(
     }
   }
 
-  const component = mount(ForestPlot as unknown as Component, {
+  const component = mount(TabvizPlot as unknown as Component, {
     target: element,
     props: { store },
   });
 
   // ALL_SEMANTIC_TOKENS — duplicated here from the store for the
   // null-token clear-all path. Kept in lockstep with the same constant
-  // in forestStore.svelte.ts; a future R↔JS doc-test (G6) could enforce.
+  // in tabvizStore.svelte.ts; a future R↔JS doc-test (G6) could enforce.
   const ALL_SEMANTIC_TOKENS: ReadonlyArray<SemanticToken> = [
     "bold", "emphasis", "muted", "accent", "fill",
   ];
@@ -217,7 +217,7 @@ export function createTabviz(
     },
     setTheme(themeOrName) {
       if (typeof themeOrName === "string") {
-        store.setTheme(themeOrName as Parameters<ForestStore["setTheme"]>[0]);
+        store.setTheme(themeOrName as Parameters<TabvizStore["setTheme"]>[0]);
       }
       // else: full WebTheme object — store.setThemeObject is the wiring
       // target, but the runtime-side application is gated on the
@@ -260,7 +260,7 @@ export function createTabviz(
 // they need from one place once the package is published.
 export type {
   WebSpec,
-  ForestStore,
+  TabvizStore,
   TabvizEvents,
   SortConfig,
   ColumnFilter,
