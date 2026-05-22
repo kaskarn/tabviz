@@ -48,9 +48,37 @@ export const TEXT_SCHEMA: ColumnSchema = {
       hint: "Truncate with trailing ellipsis when over",
       min: 1,
     },
-    // Reserved for future text-styling additions (bold/italic/color).
-    // Today those live as per-cell style mappings (`row_color_col`,
-    // styleMapping); when we lift them to per-column toggles they go
-    // here so every text-rendering column inherits the surface.
+
+    // ── Styling overrides ─────────────────────────────────────────────
+    // Font class — same "stay inside the cascade" pattern as BASE.token.
+    // The theme defines what each class resolves to (font family, weight,
+    // numeric variants); the column just picks which class to use. Raw
+    // font-family override would be the escape hatch — added later if
+    // there's demand, but the cascade-first surface is the primary one.
+    //
+    // Numeric columns inherit this from TEXT — a numeric column might
+    // want "mono" or "number" defaults via optionOverrides without
+    // touching the cascade.
+    {
+      key: "fontClass",
+      label: "Font class",
+      control: "value-or-field",
+      valueControl: "segmented",
+      segments: [
+        { value: "base",    label: "Base" },
+        { value: "display", label: "Display" },
+        { value: "number",  label: "Number" },
+        { value: "mono",    label: "Mono" },
+      ],
+      kind: "styling",
+      default: null,
+      hint: "Theme decides which family / weight / numeric variant",
+      accepts: ["string"],
+    },
+
+    // Reserved for future text-styling escape hatches (raw color /
+    // weight / italic) — lifted from styleMapping in Phase 3, with the
+    // same value-or-field control. Token + font-class above stay the
+    // primary surface; these come below in the editor.
   ],
 };
