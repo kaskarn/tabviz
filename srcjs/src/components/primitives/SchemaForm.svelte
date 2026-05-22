@@ -33,6 +33,8 @@
   import SliderValue from "./SliderValue.svelte";
   import ColorChip from "./ColorChip.svelte";
   import FieldSelect from "./FieldSelect.svelte";
+  import MappedValue from "./MappedValue.svelte";
+  import type { MappedState } from "./mapped-value";
 
   interface Props {
     schema: ColumnSchema;
@@ -148,6 +150,15 @@
                 bind:value={state[opt.key] as string | null}
                 {available}
                 accepts={opt.accepts}
+              />
+            {:else if opt.control === "value-or-field"}
+              <MappedValue
+                id={`opt-${opt.key}`}
+                bind:value={state[opt.key] as MappedState<never>}
+                valueControl={opt.valueControl ?? "text"}
+                {available}
+                accepts={opt.accepts}
+                {swatches}
               />
             {:else}
               <!-- text, select, custom — TextInput is a sensible fallback -->

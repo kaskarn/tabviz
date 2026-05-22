@@ -12,6 +12,11 @@ export { default as SliderValue } from "./SliderValue.svelte";
 export { default as ColorChip } from "./ColorChip.svelte";
 export { default as FieldSelect } from "./FieldSelect.svelte";
 
+// Composite control for styling overrides — static value OR field
+// reference, with a mode picker.
+export { default as MappedValue } from "./MappedValue.svelte";
+export type { MappedState } from "./mapped-value";
+
 // Composite: full schema-driven editor body. Walks the schema's
 // inheritance chain and stacks one accordion section per ancestor.
 export { default as SchemaForm } from "./SchemaForm.svelte";

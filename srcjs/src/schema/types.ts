@@ -38,6 +38,7 @@ export type ControlKind =
   | "color"
   | "select"
   | "field"
+  | "value-or-field"   // static value (typed sub-control) OR field-reference
   | "custom";
 
 /**
@@ -91,8 +92,15 @@ export interface OptionSpec<T = unknown> {
   /** For `control: "slider"` or `"number"` ranges. */
   range?: [number, number];
   step?: number;
-  /** For `control: "field"` — which `FieldCategory[]` values are accepted. */
+  /** For `control: "field"` or `"value-or-field"` — accepted FieldCategory[]. */
   accepts?: FieldCategory[];
+  /**
+   * For `control: "value-or-field"` — the sub-control used to enter
+   * the static value when the user picks the "static" mode. E.g. for
+   * a `bold` option this would be `"toggle"`; for `color` it would
+   * be `"color"`.
+   */
+  valueControl?: ControlKind;
   /** For `control: "custom"` — name of a registered custom component. */
   customComponent?: string;
 

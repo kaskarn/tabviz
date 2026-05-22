@@ -73,5 +73,30 @@ export const BASE_SCHEMA: ColumnSchema = {
       hint: "Click header to sort. Multi-effect viz sorts by the first series.",
       at: "fixed",
     },
+
+    // ── Styling overrides ─────────────────────────────────────────────
+    // Phase 2.5 proof of concept: `italic` as the first schema-driven
+    // styling option with the new "value-or-field" control. Italic is
+    // genuinely binary — a cleaner demo of the toggle sub-control than
+    // bold-which-should-really-be-`weight` (multi-value: normal /
+    // medium / semibold / bold) and will be lifted with a segmented
+    // sub-control in Phase 3.
+    //
+    // Wire-shape flattening (where exactly italic / weight / color /
+    // etc. land on the wire) is decided in Phase 3 when we lift the
+    // full styleMapping surface into schemas. Today `italic` lives at
+    // `column.styleMapping.italic` (field-reference only); the
+    // unified schema lets the user pick "static true", "mapped to a
+    // data column", or "default (theme decides)".
+    {
+      key: "italic",
+      label: "Italic",
+      control: "value-or-field",
+      valueControl: "toggle",
+      kind: "styling",
+      default: null,
+      hint: "Static / mapped to a data column / default",
+      accepts: ["logical", "string", "numeric", "integer"],
+    },
   ],
 };
