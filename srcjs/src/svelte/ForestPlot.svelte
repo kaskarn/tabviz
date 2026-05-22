@@ -1550,7 +1550,7 @@
         style:grid-template-columns={gridTemplateColumns}
         style:grid-template-rows={gridTemplateRows}
       >
-        {#if spec?.watermark}
+        {#if spec?.watermark && theme}
           <Watermark
             text={spec.watermark}
             color={spec.watermarkColor}
@@ -2910,9 +2910,10 @@
      the grid's default `align-self: stretch`. Setting `height` here would
      fight the track height and reintroduce the layout-engine vs DOM
      disagreement that pre-v0.21.x intermittent misalignments came from. */
-  .data-cell {
-    /* (intentionally empty — kept as a hook for v0.22+ semantic styling) */
-  }
+  /* `.data-cell` had a placeholder ruleset here for "extend in v0.22+
+     semantic styling"; empty rulesets warn under svelte-check and offer
+     no override surface vs. just writing the selector when needed. The
+     hook lives in the `.grid-cell.data-cell` selector elsewhere. */
 
   /* Primary (leftmost) column cell — row identifier, drag surface.
      The first-column variant (theme.variants.firstColumnStyle = "bold")

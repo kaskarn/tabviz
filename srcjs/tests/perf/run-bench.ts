@@ -12,12 +12,10 @@
 import { FIXTURES, type Fixture } from "./fixtures";
 import { estimateTextWidth } from "../../src/lib/width-utils";
 import {
-  measureString,
-  registerFontMetrics,
-  _resetFontMetricsRegistry,
-  measureFontMetricsFromCanvas,
+  rankTopK,
+  measureExact,
+  DEFAULT_TOP_K,
   type FontKey,
-  type FontMetrics,
 } from "../../src/lib/width-measure";
 import { resolveTheme } from "../../src/lib/theme-resolve";
 import { COCHRANE_DRAFT } from "../../src/lib/theme-presets-inputs";
@@ -117,26 +115,10 @@ const FONT_DATA: FontKey = { family: "Inter, system-ui, sans-serif", weight: 400
 const FONT_HEADER: FontKey = { family: "Inter, system-ui, sans-serif", weight: 600 };
 const FONT_SIZE = 14;
 
-/** Synthetic per-character widths matching the estimator's tuning, so the
- *  registered-mode path measures the same algorithmic shape (sum-per-char)
- *  as a real bundled table would. Values are em-units. */
-function fakeBundledMetrics(): FontMetrics {
-  // Use the estimator's class widths to seed values; this is what a build-
-  // time bundled table would look like for a font we'd shipped.
-  const map = new Map<string, number>();
-  const set = (s: string, em: number) => { for (const c of s) map.set(c, em); };
-  set("ilI1.,;:|!()[]{}' -", 0.35);
-  set("×−", 0.4);
-  set("mwMW@%", 0.85);
-  set("0123456789", 0.6);
-  set("ABCDEFGHJKLNOPQRSTUVXYZ", 0.68);
-  set("abcdefghjklnopqrstuvxyz", 0.55);
-  set("⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻", 0.15);
-  return { charWidths: map, fallbackCharWidth: 0.55 };
-}
-
-/** Total-width sum over header + all displayable cells. Stand-in for the
- *  inner loop of `doMeasurement.measureLeafColumn`. */
+/** Stand-in for the OLD `doMeasurement.measureLeafColumn` inner loop:
+ *  sum every cell's estimated width. Lets us hold the baseline visible
+ *  even after the refactor — useful for comparing against the rank+top-K
+ *  approach at the same scales. */
 function totalWidthEstimator(fx: Fixture): number {
   let total = 0;
   for (const col of fx.columns) {
@@ -149,13 +131,34 @@ function totalWidthEstimator(fx: Fixture): number {
   return total;
 }
 
-function totalWidthMeasureString(fx: Fixture): number {
+/** The CURRENT measurement strategy: per column, rank every cell by
+ *  estimator, exact-measure the top-K, take the max. The exact pass
+ *  returns the estimator value in V8 (no Canvas), so this scenario also
+ *  reflects what V8 export does — `maxColumnEstimator` below isolates
+ *  the rank-only cost for direct comparison. */
+function maxColumnRankTopK(fx: Fixture): number {
   let total = 0;
   for (const col of fx.columns) {
-    if (col.header) total += measureString(col.header, FONT_HEADER, FONT_SIZE);
+    // Header pool (1 string).
+    if (col.header) {
+      const winners = rankTopK([col.header], FONT_SIZE, FONT_HEADER.weight, 1);
+      for (const t of winners) {
+        const w = measureExact(t, FONT_HEADER, FONT_SIZE)
+          ?? estimateTextWidth(t, FONT_SIZE, FONT_HEADER.weight);
+        if (w > total) total = w;
+      }
+    }
+    // Cell pool.
+    const candidates: string[] = [];
     for (const row of fx.rows) {
       const text = getColumnDisplayText(row, col);
-      if (text) total += measureString(text, FONT_DATA, FONT_SIZE);
+      if (text) candidates.push(text);
+    }
+    const winners = rankTopK(candidates, FONT_SIZE, FONT_DATA.weight, DEFAULT_TOP_K);
+    for (const t of winners) {
+      const w = measureExact(t, FONT_DATA, FONT_SIZE)
+        ?? estimateTextWidth(t, FONT_SIZE, FONT_DATA.weight);
+      if (w > total) total = w;
     }
   }
   return total;
@@ -183,16 +186,15 @@ function main(): void {
   };
 
   // ── Width measurement ──────────────────────────────────────────────────
+  // `measure.estimator` is the OLD "estimator over every cell" baseline.
+  // `measure.rankTopK` is the CURRENT strategy (rank arithmetic + exact top-K).
+  // In Bun (no Canvas), the exact pass falls back to the estimator — so the
+  // rankTopK scenario is dominated by the rank pass + ~30 estimator calls
+  // for the top-K. In a real browser the top-K calls are Canvas-exact at
+  // the same cost.
   for (const [name, fx] of Object.entries(single)) {
-    _resetFontMetricsRegistry();
     results.push(bench("measure.estimator", name, () => totalWidthEstimator(fx)));
-    _resetFontMetricsRegistry();
-    results.push(bench("measure.measureString", name, () => totalWidthMeasureString(fx)));
-    // After bundled registration — exercises the lookup path.
-    _resetFontMetricsRegistry();
-    registerFontMetrics(FONT_DATA, fakeBundledMetrics());
-    registerFontMetrics(FONT_HEADER, fakeBundledMetrics());
-    results.push(bench("measure.measureString*", name, () => totalWidthMeasureString(fx)));
+    results.push(bench("measure.rankTopK",  name, () => maxColumnRankTopK(fx)));
   }
 
   // ── Theme cascade + CSS emit ──────────────────────────────────────────
@@ -206,12 +208,9 @@ function main(): void {
 
   // ── Split-by composites ───────────────────────────────────────────────
   for (const [name, subsets] of Object.entries(split)) {
-    _resetFontMetricsRegistry();
-    registerFontMetrics(FONT_DATA, fakeBundledMetrics());
-    registerFontMetrics(FONT_HEADER, fakeBundledMetrics());
     results.push(bench("split.measure", name, () => {
       let t = 0;
-      for (const fx of subsets) t += totalWidthMeasureString(fx);
+      for (const fx of subsets) t += maxColumnRankTopK(fx);
       return t;
     }));
     results.push(bench("split.themeBuild", name, () => {
@@ -222,16 +221,6 @@ function main(): void {
       for (const _ of subsets) s += buildThemeCSS(resolved).length;
       return s;
     }));
-  }
-
-  // ── (Diagnostic) Canvas warm-up — runs only when Canvas exists. ───────
-  // In Bun/Node this returns null and the bench is a no-op. Kept so the
-  // same script reports something when run in a Canvas-capable environment.
-  const m = measureFontMetricsFromCanvas(FONT_DATA);
-  if (m) {
-    results.push(bench("canvas.warmFont", "-", () => {
-      measureFontMetricsFromCanvas(FONT_DATA);
-    }, 3));
   }
 
   printTable(results);

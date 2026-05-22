@@ -381,7 +381,14 @@ export function emitJsSource({ spec, opLog, dataVarName = "tabvizData" }: EmitJs
   // snippet we surface it via the `label:` / `labelHeader:` sugar when it's a
   // plain text column with no custom width/align, and fall back to prepending
   // it into `columns` for anything customized.
-  const labelCol = spec.labelColumn ?? null;
+  // labelColumn is typed as ColumnDef (ColumnSpec | ColumnGroup) on the
+  // wire, but the runtime contract is "always a leaf ColumnSpec or null"
+  // — labelColumn is constructed by `tabviz()` from the `label` arg and
+  // is never a group. Narrow here so the sugar conditions can read the
+  // ColumnSpec fields without union complaints.
+  const labelCol = (spec.labelColumn ?? null) as
+    | (ColumnSpec & { type?: string })
+    | null;
   const labelSugar =
     labelCol &&
     labelCol.type === "text" &&

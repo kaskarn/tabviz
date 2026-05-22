@@ -1,0 +1,22 @@
+scenario               fixture       iters   median        mean          stddev      
+─────────────────────  ────────────  ──────  ────────────  ────────────  ────────────
+measure.estimator      small_mixed        5      0.210 ms      0.206 ms      0.024 ms
+measure.rankTopK       small_mixed        5      0.164 ms      0.166 ms      0.010 ms
+measure.estimator      medium_mixed       5       2.55 ms       2.53 ms      0.071 ms
+measure.rankTopK       medium_mixed       5       2.47 ms       2.47 ms      0.015 ms
+measure.estimator      large_mixed        5       11.9 ms       11.9 ms      0.071 ms
+measure.rankTopK       large_mixed        5       11.9 ms       12.1 ms      0.336 ms
+measure.estimator      xl_mixed           5       46.3 ms       46.9 ms       1.20 ms
+measure.rankTopK       xl_mixed           5       45.9 ms       45.8 ms      0.273 ms
+theme.resolve          -                  5      0.147 ms      0.155 ms      0.019 ms
+theme.cssBuild         -                  3      0.000 ms      0.000 ms      0.000 ms
+theme.cssBuild.cached  -                  5      0.000 ms      0.000 ms      0.000 ms
+split.measure          split_small        5       1.91 ms       1.92 ms      0.029 ms
+split.themeBuild       split_small        5      0.002 ms      0.002 ms      0.000 ms
+split.measure          split_medium       5       9.58 ms       9.67 ms      0.334 ms
+split.themeBuild       split_medium       5      0.005 ms      0.005 ms      0.002 ms
+split.measure          split_large        5       9.00 ms       9.02 ms      0.072 ms
+split.themeBuild       split_large        5      0.000 ms      0.000 ms      0.000 ms
+
+Total sampled time: 710 ms (17 scenarios)
+

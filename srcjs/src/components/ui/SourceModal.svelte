@@ -112,7 +112,9 @@
   // Pure function — see `srcjs/src/lib/source-emit.ts`.
   const jsSource = $derived.by(() => {
     if (!store.spec) return "// No spec loaded.";
-    return emitJsSource({ spec: store.spec, opLog: store.opLog });
+    // emitJsSource takes a mutable Array — the readonly OpLog from the
+    // store needs a shallow copy.
+    return emitJsSource({ spec: store.spec, opLog: [...store.opLog] });
   });
 
   // ---- Active tab content --------------------------------------------

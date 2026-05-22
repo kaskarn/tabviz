@@ -84,7 +84,18 @@ const WHEEL_FACTOR_PER_PIXEL = 1 / 300; // ~ 1.2× per 60px of wheel delta
 // suppressed.
 const CLICK_DRAG_THRESHOLD_PX = 3;
 
-export function zoomable(node: HTMLElement, initial: ZoomableParams) {
+// The action is applied to both <div> and <svg> hosts. We type the node
+// parameter as `Element` plus the bits we touch — addEventListener event
+// overloads on `Element` are weaker than on `HTMLElement`, so we keep the
+// narrower-typed alias for the listener-attaching parts via casts below.
+type ZoomableNode = HTMLElement;
+export function zoomable(node: HTMLElement | SVGElement, initial: ZoomableParams) {
+  // Internal alias — Element-level methods (style, getBoundingClientRect,
+  // pointer/wheel/click event listeners) are present on both HTMLElement
+  // and SVGElement, but TypeScript's addEventListener overloads differ
+  // between them; we route through HTMLElement's set since the listener
+  // payload contracts are identical at runtime.
+  const target = node as ZoomableNode;
   let params = initial;
   let dragStartClientX = 0;
   let dragStartClientY = 0;
@@ -187,24 +198,24 @@ export function zoomable(node: HTMLElement, initial: ZoomableParams) {
     params.onReset();
   }
 
-  node.addEventListener("wheel", onWheel, { passive: false });
-  node.addEventListener("pointerdown", onPointerDown);
-  node.addEventListener("pointermove", onPointerMove);
-  node.addEventListener("pointerup", endDrag);
-  node.addEventListener("pointercancel", endDrag);
-  node.addEventListener("dblclick", onDblClick);
+  target.addEventListener("wheel", onWheel, { passive: false });
+  target.addEventListener("pointerdown", onPointerDown);
+  target.addEventListener("pointermove", onPointerMove);
+  target.addEventListener("pointerup", endDrag);
+  target.addEventListener("pointercancel", endDrag);
+  target.addEventListener("dblclick", onDblClick);
 
   return {
     update(next: ZoomableParams) {
       params = next;
     },
     destroy() {
-      node.removeEventListener("wheel", onWheel);
-      node.removeEventListener("pointerdown", onPointerDown);
-      node.removeEventListener("pointermove", onPointerMove);
-      node.removeEventListener("pointerup", endDrag);
-      node.removeEventListener("pointercancel", endDrag);
-      node.removeEventListener("dblclick", onDblClick);
+      target.removeEventListener("wheel", onWheel);
+      target.removeEventListener("pointerdown", onPointerDown);
+      target.removeEventListener("pointermove", onPointerMove);
+      target.removeEventListener("pointerup", endDrag);
+      target.removeEventListener("pointercancel", endDrag);
+      target.removeEventListener("dblclick", onDblClick);
     },
   };
 }

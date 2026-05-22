@@ -15,7 +15,11 @@
   interface Props {
     store: ForestStore;
     enableExport?: boolean;
-    enableThemes?: Record<string, WebTheme> | null;  // Available themes (null = disabled)
+    // Available themes. Mirrors `ThemesInput` in ThemeSwitcher — accepts
+    // either a flat `Record<string, WebTheme>` or a categorized
+    // `Record<string, Record<string, WebTheme>>`. `null` disables the
+    // switcher; `undefined` shows the built-in preset list.
+    enableThemes?: Record<string, WebTheme> | Record<string, Record<string, WebTheme>> | null;
     enableZoomControls?: boolean;
     enableReset?: boolean;
     enablePaint?: boolean;

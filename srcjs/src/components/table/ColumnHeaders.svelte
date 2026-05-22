@@ -293,9 +293,10 @@
     border-bottom: 1px solid var(--tv-border);
   }
 
-  .column-row {
-    /* No bottom border on column row - parent has it */
-  }
+  /* `.column-row` had an empty ruleset noting "no bottom border on column
+     row — parent has it". Since the parent already provides the border
+     and this selector has nothing of its own to set, leaving the rule
+     out is the correct outcome. svelte-check warns on empty rulesets. */
 
   .group-header {
     justify-content: center;

@@ -86,7 +86,7 @@
         ?? 0;
       return inherited;
     }
-    return (spacing?.[field] ?? 0) as number;
+    return ((spacing as Record<string, unknown> | undefined)?.[field] ?? 0) as number;
   }
 
   function set(field: string, value: number) {

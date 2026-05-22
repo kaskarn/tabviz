@@ -1,226 +1,167 @@
 /**
  * Unified text-width measurement.
  *
- * The widget needs to measure text widths in three runtime contexts that
- * historically used three different code paths:
+ * Two primitives serve every measurement need in the codebase:
  *
- *   1. Browser interactive  — per-cell `ctx.measureText()` calls in
- *      `columns.svelte.ts:doMeasurement`.
- *   2. Browser util         — `width-utils.ts:measureTextWidthCanvas`
- *      (creates a new canvas per call).
- *   3. V8 SVG export        — `width-utils.ts:estimateTextWidth`
- *      character-class arithmetic (no DOM).
+ *   - `estimateTextWidth` (re-exported from `width-utils.ts`): pure-JS
+ *     character-class arithmetic. Cheap, no DOM. Used as a *cheap ranker*
+ *     to pick which strings to measure exactly.
  *
- * This module unifies them behind a single API. The lookup is source-agnostic:
- * once a font's character widths are registered (from bundled tables, browser
- * Canvas warm-up, or R systemfonts injection), every call returns the
- * registered value. Unknown fonts transparently fall back to the
- * character-class estimator in `width-utils.ts` — no caller-side branching.
+ *   - `measureExact(text, font, fontSize)`: Canvas `ctx.measureText` when a
+ *     DOM is available; otherwise returns null. Callers that need a
+ *     guaranteed-non-null fall back to the estimator.
  *
- * Widths are stored in **em units** (proportion of `fontSize`), normalized
- * at registration time, multiplied by the requested size at lookup. One
- * cache entry per (family, weight, italic); size lives at lookup time.
+ * The high-level pattern used by `measureAutoColumns` (the load-bearing
+ * call site) is **rank then exact**: score every cell with `estimateTextWidth`,
+ * pick the top-K widest by estimate, exact-measure those K. For a 5k × 10
+ * fixture that's ~30 `ctx.measureText` calls instead of ~50 000, with
+ * pixel-exact accuracy preserved.
  *
- * The registry is module-level and persists across renders; entries are not
- * evicted because the set of fonts in active use is small and stable.
+ * For V8 SVG export with custom fonts, R can call `systemfonts::shape_string`
+ * on the K rank-winners per column and inject those widths into the spec
+ * payload; the renderer reads them directly and bypasses `measureExact`.
+ * Out of scope for this module; see the `R/save_plot.R` injection contract.
  */
 
 import { estimateTextWidth } from "./width-utils";
+
+// Re-export so callers have one import for "the measurement utilities."
+export { estimateTextWidth };
 
 // ─────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────
 
 /**
- * Identity of a font *style* (not a font instance). Size is intentionally
- * absent — widths in em units scale linearly, so one entry serves all sizes.
+ * Identity of a font *style*. Family + weight + italic; size is passed
+ * separately at measurement time (the V8 estimator scales linearly with
+ * `fontSize` and Canvas `ctx.measureText` does too).
  */
 export interface FontKey {
-  /** CSS font-family stack, exactly as it appears in the resolved theme. */
   family: string;
-  /** Numeric weight (400, 500, 600, 700). */
   weight: number;
-  /** Italic vs. roman. Defaults to false. */
   italic?: boolean;
 }
 
-/**
- * Per-character width data for one font style. Widths are em-normalized:
- * the raw measured pixel width divided by the measurement font size.
- * Multiply by the lookup-time `fontSize` to get a pixel width.
- */
-export interface FontMetrics {
-  charWidths: Map<string, number>;
-  /** Width to use for any character not in `charWidths`. Em units. */
-  fallbackCharWidth: number;
-}
-
 // ─────────────────────────────────────────────────────────────────────────
-// Registry
+// Exact measurement (browser only)
 // ─────────────────────────────────────────────────────────────────────────
 
-const _registry: Map<string, FontMetrics> = new Map();
+// One Canvas + context per (this) module — reused across calls so we don't
+// re-create the rendering surface on every measurement.
+let _ctx: CanvasRenderingContext2D | null | undefined;
 
-function fontKeyString(font: FontKey): string {
-  return `${font.family}|${font.weight}|${font.italic ? "i" : "r"}`;
-}
-
-/**
- * Register per-character widths for a font style. Sources include bundled
- * tables (Phase 2.4), browser Canvas warm-up (Phase 2.3), and R-side
- * `systemfonts` injection at V8 startup (Phase 2.5). Calling this overwrites
- * any prior entry for the same key — useful when a more-accurate source
- * (e.g. Canvas after font-load) replaces a coarser one (estimator default).
- */
-export function registerFontMetrics(font: FontKey, metrics: FontMetrics): void {
-  _registry.set(fontKeyString(font), metrics);
-}
-
-/** Returns true iff a metrics table is registered for this font style. */
-export function hasFontMetrics(font: FontKey): boolean {
-  return _registry.has(fontKeyString(font));
-}
-
-/** Diagnostic: list keys currently registered. */
-export function listRegisteredFonts(): string[] {
-  return Array.from(_registry.keys());
-}
-
-/** Test/dev helper: clear all registered metrics. Not for production. */
-export function _resetFontMetricsRegistry(): void {
-  _registry.clear();
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Measurement
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Width of a single character in pixels at the given font size.
- *
- * If a metrics table is registered for the font style, returns the lookup
- * value (in em units) multiplied by `fontSize`. Otherwise falls back to the
- * character-class estimator in `width-utils.ts`. The fallback path matches
- * the historical V8 / SVG-export behavior exactly.
- */
-export function getCharWidth(char: string, font: FontKey, fontSize: number): number {
-  const m = _registry.get(fontKeyString(font));
-  if (m) {
-    const em = m.charWidths.get(char) ?? m.fallbackCharWidth;
-    return em * fontSize;
+function getCtx(): CanvasRenderingContext2D | null {
+  if (_ctx !== undefined) return _ctx;
+  if (typeof document === "undefined") {
+    _ctx = null;
+    return null;
   }
-  // No registered metrics — fall through to the legacy estimator. Note that
-  // `estimateTextWidth` handles a single character correctly (loops over it).
-  return estimateTextWidth(char, fontSize, font.weight);
-}
-
-/**
- * Width of a full string in pixels at the given font size.
- *
- * When a metrics table is registered, this iterates characters and sums their
- * widths arithmetically — no DOM, no Canvas. When unregistered, falls back
- * to `estimateTextWidth` which is the historical V8 / SVG path.
- *
- * Callers in performance-sensitive loops (e.g. `measureAutoColumns`) should
- * prefer this over creating a Canvas per cell.
- */
-export function measureString(text: string, font: FontKey, fontSize: number): number {
-  if (!text) return 0;
-  const m = _registry.get(fontKeyString(font));
-  if (m) {
-    let total = 0;
-    for (const c of text) {
-      total += (m.charWidths.get(c) ?? m.fallbackCharWidth) * fontSize;
-    }
-    return total;
-  }
-  // Unknown font — single estimator call avoids the per-char registry probe.
-  return estimateTextWidth(text, fontSize, font.weight);
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Browser-side warm-up
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Standard character set to measure when warming a font from Canvas. Covers
- * ASCII letters, digits, common punctuation, and the math/typographic glyphs
- * the formatters can emit (×, −, …, ⁰–⁹ superscripts).
- *
- * Other characters fall back to `fallbackCharWidth` (set to the average of
- * the warm set), which the estimator already shows to be acceptable for
- * column-width approximation.
- */
-const WARM_CHARSET =
-  // Lowercase
-  "abcdefghijklmnopqrstuvwxyz" +
-  // Uppercase
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-  // Digits
-  "0123456789" +
-  // Common punctuation and whitespace
-  " .,;:!?'\"`()[]{}<>-_+=*/\\|@#$%^&~" +
-  // Math/typographic glyphs the formatters emit
-  "×−–—… ";
-
-/**
- * Build a `FontMetrics` table by measuring `WARM_CHARSET` against a Canvas
- * context. Returns null when no Canvas is available (V8 environment).
- *
- * The caller should typically register the result with `registerFontMetrics`.
- * This function does NOT register automatically so test harnesses can
- * inspect output before installing it.
- *
- * `measureFontSizePx` controls the size used for the underlying Canvas
- * measurement; 100 gives sub-pixel precision when dividing back to em
- * units. Pure precision optimization — the returned em values are
- * size-independent.
- */
-export function measureFontMetricsFromCanvas(
-  font: FontKey,
-  measureFontSizePx = 100
-): FontMetrics | null {
-  if (typeof document === "undefined") return null;
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
+  _ctx = canvas.getContext("2d");
+  return _ctx;
+}
 
+function fontShorthand(font: FontKey, fontSize: number): string {
   const italicPrefix = font.italic ? "italic " : "";
-  ctx.font = `${italicPrefix}${font.weight} ${measureFontSizePx}px ${font.family}`;
-
-  const charWidths = new Map<string, number>();
-  let sum = 0;
-  let count = 0;
-  for (const c of WARM_CHARSET) {
-    const em = ctx.measureText(c).width / measureFontSizePx;
-    charWidths.set(c, em);
-    sum += em;
-    count += 1;
-  }
-  const fallbackCharWidth = count > 0 ? sum / count : 0.55;
-  return { charWidths, fallbackCharWidth };
+  return `${italicPrefix}${font.weight} ${fontSize}px ${font.family}`;
 }
 
 /**
- * Lazy Canvas warm-up: when the requested font has loaded, measure it and
- * register the result. Idempotent — subsequent calls are no-ops if the font
- * is already registered (call `_resetFontMetricsRegistry` to force).
- *
- * Returns a promise that resolves once the measurement is registered (or
- * immediately if no Canvas is available — V8 path).
+ * Canvas-exact width of `text` at the given font and size. Returns `null`
+ * in non-browser environments (e.g. V8 SVG export); callers should fall
+ * back to `estimateTextWidth` (or to R-injected widths).
  */
-export async function warmFontFromCanvas(font: FontKey): Promise<void> {
-  if (typeof document === "undefined" || !document.fonts) return;
-  if (hasFontMetrics(font)) return;
+export function measureExact(
+  text: string,
+  font: FontKey,
+  fontSize: number
+): number | null {
+  const ctx = getCtx();
+  if (!ctx) return null;
+  ctx.font = fontShorthand(font, fontSize);
+  return ctx.measureText(text).width;
+}
 
-  const italicPrefix = font.italic ? "italic " : "";
-  const probe = `${italicPrefix}${font.weight} 16px ${font.family}`;
-  try {
-    await document.fonts.load(probe);
-  } catch {
-    // `document.fonts.load` throws on malformed font specifiers; just
-    // continue with whatever's loaded (system fallback) and measure that.
+// ─────────────────────────────────────────────────────────────────────────
+// Rank + exact-top-K
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * K for the rank+top-K selector. The character-class estimator can mis-rank
+ * neighbors (a string of narrow `iii` vs a shorter string of wide `MMM`),
+ * so we exact-measure several candidates and take the max. K=3 is a balance
+ * between safety and Canvas-call count; raise if you observe column-width
+ * drift after a string-set change.
+ */
+export const DEFAULT_TOP_K = 3;
+
+/**
+ * Pick the top-K widest strings from `candidates` by `estimateTextWidth`
+ * score. Linear scan, no allocations for the rejected entries. Returns
+ * fewer than K when fewer candidates are supplied.
+ */
+export function rankTopK(
+  candidates: readonly string[],
+  fontSize: number,
+  weight: number,
+  k: number = DEFAULT_TOP_K
+): string[] {
+  if (k <= 0) return [];
+  if (candidates.length <= k) return candidates.slice();
+  const top: { text: string; score: number }[] = [];
+  for (const text of candidates) {
+    if (!text) continue;
+    const score = estimateTextWidth(text, fontSize, weight);
+    if (top.length < k) {
+      top.push({ text, score });
+      // Keep smallest at index 0 for quick replace.
+      top.sort((a, b) => a.score - b.score);
+      continue;
+    }
+    if (score > top[0].score) {
+      top[0] = { text, score };
+      top.sort((a, b) => a.score - b.score);
+    }
   }
-  const metrics = measureFontMetricsFromCanvas(font);
-  if (metrics) registerFontMetrics(font, metrics);
+  return top.map((t) => t.text);
+}
+
+/**
+ * Maximum exact pixel width over a set of candidate strings, using the
+ * rank+exact-top-K strategy.
+ *
+ *   - Rank every candidate by `estimateTextWidth` (arithmetic, no DOM).
+ *   - Exact-measure the top-K via Canvas.
+ *   - Return the largest exact width.
+ *
+ * When Canvas isn't available (V8), falls through to the estimator's
+ * value for the top-1 — the rank is what matters, and the estimator is
+ * what V8 export currently uses anyway.
+ */
+export function measureMaxWidth(
+  candidates: readonly string[],
+  font: FontKey,
+  fontSize: number,
+  k: number = DEFAULT_TOP_K
+): number {
+  if (candidates.length === 0) return 0;
+  const winners = rankTopK(candidates, fontSize, font.weight, k);
+  const ctx = getCtx();
+  let max = 0;
+  if (ctx) {
+    ctx.font = fontShorthand(font, fontSize);
+    for (const text of winners) {
+      const w = ctx.measureText(text).width;
+      if (w > max) max = w;
+    }
+    return max;
+  }
+  // V8 / no-DOM: estimator is the source of truth; the top-1 by estimate
+  // is by definition the max under that metric.
+  for (const text of winners) {
+    const w = estimateTextWidth(text, fontSize, font.weight);
+    if (w > max) max = w;
+  }
+  return max;
 }

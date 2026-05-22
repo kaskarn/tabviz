@@ -103,8 +103,11 @@
             { kind: "leaf", key: "progress", label: "Fill bar", type: "progress" },
             { kind: "leaf", key: "sparkline", label: "Sparkline", type: "sparkline" },
             { kind: "leaf", key: "heatmap", label: "Heatmap", type: "heatmap" },
-            { kind: "leaf", key: "heatmap_diverging", label: "Diverging heatmap", type: "heatmap", seedOptions: { heatmap: { palette: "diverging" } } },
-            { kind: "leaf", key: "heatmap_sequential", label: "Sequential heatmap", type: "heatmap", seedOptions: { heatmap: { palette: "sequential" } } },
+            // The `palette: "diverging" | "sequential"` shorthand is sugar
+            // interpreted at column-construction time; the strict
+            // HeatmapColumnOptions type expects `string[]` so we cast.
+            { kind: "leaf", key: "heatmap_diverging", label: "Diverging heatmap", type: "heatmap", seedOptions: { heatmap: { palette: "diverging" } } as unknown as ColumnSpec["options"] },
+            { kind: "leaf", key: "heatmap_sequential", label: "Sequential heatmap", type: "heatmap", seedOptions: { heatmap: { palette: "sequential" } } as unknown as ColumnSpec["options"] },
             { kind: "leaf", key: "stars", label: "Stars", type: "stars" },
             { kind: "leaf", key: "pictogram", label: "Pictogram", type: "pictogram" },
             { kind: "leaf", key: "ring", label: "Ring", type: "ring" },
@@ -114,7 +117,9 @@
           label: "Complex",
           items: [
             { kind: "leaf", key: "forest", label: "Forest plot", type: "forest" },
-            { kind: "leaf", key: "forest_log", label: "Forest plot (log)", type: "forest", seedOptions: { forest: { scale: "log", nullValue: 1 } } },
+            // Partial ForestColumnOptions — the missing fields (axisLabel,
+            // showAxis) get their defaults at column construction.
+            { kind: "leaf", key: "forest_log", label: "Forest plot (log)", type: "forest", seedOptions: { forest: { scale: "log", nullValue: 1 } } as ColumnSpec["options"] },
           ],
         },
       ],

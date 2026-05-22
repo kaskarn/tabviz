@@ -46,14 +46,23 @@ fixtures across runs to keep variance low. Reported as median of N samples.
 
 | Scenario                  | What it stands in for                                  |
 |---------------------------|--------------------------------------------------------|
-| `measure.estimator`       | V8 path (`estimateTextWidth`) over all cells          |
-| `measure.measureString`   | New unified API in unregistered mode (estimator)      |
-| `measure.measureString*`  | Same API after `registerFontMetrics` (lookup)         |
-| `theme.resolve`           | Cold theme cascade (`resolveTheme(draft)`)            |
-| `theme.cssBuild`          | First call to `buildThemeCSS(theme)`                  |
+| `measure.estimator`       | OLD baseline: `estimateTextWidth` over every cell      |
+| `measure.rankTopK`        | CURRENT: rank cells by estimator, exact-measure top-K  |
+| `theme.resolve`           | Cold theme cascade (`resolveTheme(draft)`)             |
+| `theme.cssBuild`          | First call to `buildThemeCSS(theme)`                   |
 | `theme.cssBuild.cached`   | Repeat call (should be near-zero)                      |
-| `split.measure`           | `measure.measureString` × N subsets                   |
-| `split.themeBuild`        | `buildThemeCSS` shared across N subsets               |
+| `split.measure`           | `measure.rankTopK` × N subsets                         |
+| `split.themeBuild`        | `buildThemeCSS` shared across N subsets                |
+
+### Note on Bun vs browser
+
+In Bun (or Node without a Canvas polyfill) `measureExact` returns `null` and
+the rank+top-K scenario falls back to the estimator for the K winners. The
+bench therefore measures the *rank pass* cost only; it does not reflect the
+real-browser improvement, where the exact pass replaces tens of thousands of
+`ctx.measureText` calls with ~30 per measurement pass. To measure the browser
+delta, run the widget under a real browser harness — synthetic Node bench
+cannot capture the Canvas savings.
 
 ## Interpretation
 

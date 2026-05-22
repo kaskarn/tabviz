@@ -381,7 +381,8 @@
     white-space: nowrap;
   }
 
-  .children-wrapper {
-    /* Contains nested section header + list */
-  }
+  /* `.children-wrapper` had an empty ruleset reserved for "nested
+     section header + list" styling; empty rulesets warn under
+     svelte-check and offer nothing to override. Re-add the selector
+     here if a real style is needed. */
 </style>

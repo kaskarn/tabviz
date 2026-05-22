@@ -225,7 +225,7 @@
 
 <!-- Editable cell overlay -->
 {#if store.editingTarget}
-  <EditableCell {store} target={store.editingTarget} root={containerRef} />
+  <EditableCell {store} target={store.editingTarget} root={containerRef ?? null} />
 {/if}
 
 <!-- Column filter popover (rendered at root so it escapes the scaled wrapper) -->

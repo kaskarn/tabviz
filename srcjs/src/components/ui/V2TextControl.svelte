@@ -25,10 +25,21 @@
   let expandedText = $state<Record<string, boolean>>({});
   let expandedLevel = $state<Record<string, boolean>>({ L1: true });
 
+  // Tier keys for the row-group cluster, typed as the literal union so the
+  // `rg[level]` indexing in the template is well-typed.
+  const RG_LEVELS: readonly ("L1" | "L2" | "L3")[] = ["L1", "L2", "L3"] as const;
+
+  // Shape of an individual text role on the wire — every theme.text.* role
+  // and theme.header.text uses this shape.
+  type TextRoleFields = {
+    family?: string; size?: string; weight?: number;
+    italic?: boolean; fg?: string;
+  };
+
   // Reads either theme.text[role] or, for "header", theme.header.text.
-  function readRole(role: string) {
-    if (role === "header") return headerText;
-    return text?.[role];
+  function readRole(role: string): TextRoleFields | undefined {
+    if (role === "header") return headerText as TextRoleFields | undefined;
+    return (text as Record<string, TextRoleFields | undefined> | undefined)?.[role];
   }
 
   function setTextRole(role: string, field: string, value: unknown) {
@@ -60,10 +71,10 @@
     "body", "header", "cell", "label", "tick"
   ];
 
-  function summary(role: { family: string; size: string; weight: number; italic: boolean | null }) {
+  function summary(role: { family?: string; size?: string; weight?: number; italic?: boolean | null }) {
     const family = role.family?.split(",")[0] ?? "—";
     const italic = role.italic ? " italic" : "";
-    return `${family} / ${role.size} / ${role.weight}${italic}`;
+    return `${family} / ${role.size ?? "—"} / ${role.weight ?? "—"}${italic}`;
   }
 </script>
 
@@ -114,7 +125,7 @@
 
 {#if rg}
   <SettingsSection title="Row group hierarchy" description="L1 outermost (boldest); L2/L3 progressively lighter.">
-    {#each ["L1", "L2", "L3"] as level (level)}
+    {#each RG_LEVELS as level (level)}
       <div class="role">
         <button class="role-toggle" onclick={() => (expandedLevel = { ...expandedLevel, [level]: !expandedLevel[level] })}>
           <span>{expandedLevel[level] ? "▾" : "▸"} Level {level.slice(1)}</span>

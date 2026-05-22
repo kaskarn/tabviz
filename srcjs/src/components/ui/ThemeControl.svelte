@@ -444,7 +444,7 @@
     const next = anchors.slice();
     next.push(theme?.accent?.default ?? "#888888");
     setPath(["inputs", "seriesAnchors"], next);
-    const series = (theme?.series ?? []) as Array<Record<string, string>>;
+    const series = (theme?.series ?? []) as unknown as Array<Record<string, string>>;
     setPath(["series", series.length, "fill"], next[next.length - 1]);
     setPath(["series", series.length, "stroke"], next[next.length - 1]);
   }

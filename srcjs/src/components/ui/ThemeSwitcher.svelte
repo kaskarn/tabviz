@@ -113,7 +113,7 @@
     accent: string; background: string; foreground: string;
   } {
     const t = lookupTheme(name);
-    const inputs = t?.inputs ?? {};
+    const inputs = (t?.inputs ?? {}) as { primary?: string; secondary?: string; accent?: string };
     const primary    = inputs.primary    ?? t?.surface?.base    ?? "#cbd5e1";
     const secondary  = inputs.secondary  ?? primary;
     const accent     = inputs.accent     ?? "#94a3b8";

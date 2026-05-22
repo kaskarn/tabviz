@@ -83,7 +83,7 @@
           {#each slotFields as sf (sf.field)}
             <ColorField
               label={sf.label}
-              value={slot[sf.field] ?? ""}
+              value={(slot as unknown as Record<string, string>)[sf.field] ?? ""}
               onchange={(v) => setSlot(i, sf.field, v)}
             />
           {/each}

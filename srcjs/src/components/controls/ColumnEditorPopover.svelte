@@ -470,12 +470,15 @@
       }
       case "viz_boxplot": {
         const built = vizEditor?.build() as { type: string; effects: unknown[] } | undefined;
-        if (built) options.boxplot = built as NonNullable<NonNullable<ColumnSpec["options"]>["boxplot"]>;
+        // Wire key is `vizBoxplot` (matches ColumnOptions); historically
+        // this slot was named `boxplot` and the spec mismatch silently
+        // dropped settings — corrected during 2026-05 svelte-check sweep.
+        if (built) options.vizBoxplot = built as NonNullable<NonNullable<ColumnSpec["options"]>["vizBoxplot"]>;
         break;
       }
       case "viz_violin": {
         const built = vizEditor?.build() as { type: string; effects: unknown[] } | undefined;
-        if (built) options.violin = built as NonNullable<NonNullable<ColumnSpec["options"]>["violin"]>;
+        if (built) options.vizViolin = built as NonNullable<NonNullable<ColumnSpec["options"]>["vizViolin"]>;
         break;
       }
     }
