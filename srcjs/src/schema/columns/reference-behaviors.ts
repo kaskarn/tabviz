@@ -11,6 +11,7 @@
 // producer column id so removing the column auto-removes them.
 
 import type { ColumnSpec } from "../../types";
+import type { SchemaBehaviors } from "../render-types";
 import { registerBehaviors } from "../extend";
 import { derivedId, type FootnoteEntry, type BankContribution } from "../banks";
 
@@ -22,7 +23,13 @@ interface SpecLike {
   data?: { rows?: RowLike[] };
 }
 
-registerBehaviors("reference", {
+/** Re-register reference behaviors. Idempotent — safe to call after
+ *  `__resetRuntimeRegistries()` to restore built-in wiring. */
+export function registerReferenceBehaviors(): void {
+  registerBehaviors("reference", REFERENCE_BEHAVIORS);
+}
+
+const REFERENCE_BEHAVIORS: SchemaBehaviors = {
   contributeBanks: (column: ColumnSpec, spec): BankContribution => {
     const rows = ((spec as SpecLike).data?.rows ?? []) as RowLike[];
     const referenceOpts = (column.options as { reference?: { hrefField?: string } } | undefined)
@@ -45,4 +52,7 @@ registerBehaviors("reference", {
     }
     return { footnotes };
   },
-});
+};
+
+// Side-effect: register on first import (back-compat).
+registerReferenceBehaviors();

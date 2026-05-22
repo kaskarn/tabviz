@@ -10,6 +10,7 @@ import {
   registerBehaviors,
   __resetRuntimeRegistries,
 } from "./extend";
+import { bootBuiltinBehaviors } from "./init";
 import type { ColumnSpec } from "../types";
 
 const fakeColumn = (
@@ -29,7 +30,10 @@ const fakeColumn = (
     options,
   }) as ColumnSpec;
 
-beforeEach(() => __resetRuntimeRegistries());
+beforeEach(() => {
+  __resetRuntimeRegistries();
+  bootBuiltinBehaviors();
+});
 
 describe("computeEffectiveBanks — author-supplied entries", () => {
   test("user-authored footnotes pass through unchanged", () => {

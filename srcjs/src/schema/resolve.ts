@@ -14,6 +14,7 @@
 
 import type { ColumnSchema } from "./types";
 import { SCHEMA_REGISTRY } from "./columns";
+import { getSchema } from "./extend";
 
 /** Normalize `inherits` to a string[] (handles single-string form). */
 function parents(schema: ColumnSchema): string[] {
@@ -29,16 +30,18 @@ function parents(schema: ColumnSchema): string[] {
  * For abstract schemas this is mostly internal use; for concrete
  * schemas it's what the editor and codegen iterate to compute the
  * effective option list.
+ *
+ * Reads schemas via `getSchema()` so user-registered schemas (added
+ * at runtime via `registerSchema`) are resolved alongside built-ins.
  */
 export function resolveSchema(schema: ColumnSchema): ColumnSchema[] {
-  // Collect everything reachable from this schema upward.
   const reachable = new Map<string, ColumnSchema>();
   const visit = (key: string, stack: string[]): void => {
     if (reachable.has(key)) return;
     if (stack.includes(key)) {
       throw new Error(`Schema inheritance cycle: ${[...stack, key].join(" -> ")}`);
     }
-    const s = SCHEMA_REGISTRY[key];
+    const s = getSchema(key);
     if (!s) throw new Error(`Unknown schema "${key}" referenced from ${schema.key}`);
     for (const dep of parents(s)) visit(dep, [...stack, key]);
     reachable.set(key, s);

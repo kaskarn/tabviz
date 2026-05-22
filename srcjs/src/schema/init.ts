@@ -13,6 +13,21 @@
 // Schemas — re-exported so consumers can keep one import.
 export * from "./columns";
 
-// Behavior side-effect registrations.
-import "./columns/reference-behaviors";
-import "./columns/viz-behaviors";
+// Behavior registrations. Each module side-effect-registers on first
+// import AND exports an idempotent re-register function for tests
+// that call `__resetRuntimeRegistries()` between cases.
+import { registerReferenceBehaviors } from "./columns/reference-behaviors";
+import { registerVizBehaviors }       from "./columns/viz-behaviors";
+import { registerSortBehaviors }      from "./columns/sort-behaviors";
+
+/**
+ * Re-register every built-in schema behavior. Idempotent. Call this
+ * from `beforeEach` in test files that wipe runtime registries via
+ * `__resetRuntimeRegistries()` and still need built-in behaviors
+ * (sortKey, contributeBanks, …) available.
+ */
+export function bootBuiltinBehaviors(): void {
+  registerReferenceBehaviors();
+  registerVizBehaviors();
+  registerSortBehaviors();
+}

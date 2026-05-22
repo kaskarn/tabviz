@@ -11,6 +11,9 @@
 import { generateSVG, computeNaturalDimensions } from "./svg-generator";
 import type { WebSpec } from "$types";
 import * as authoring from "../authoring";
+// Side-effect: register built-in schema behaviors before SVG export
+// queries dispatchers (sortKey, etc.).
+import "../schema/init";
 
 // Parse JSON string to WebSpec and generate SVG
 function generateSVGFromJSON(specJson: string, options?: { width?: number; height?: number }): string {

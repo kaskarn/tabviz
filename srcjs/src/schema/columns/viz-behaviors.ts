@@ -76,9 +76,9 @@ function makeLegend(
   };
 }
 
-// ────────────────────────────────────────────────────────────────────
-// viz_forest
-// ────────────────────────────────────────────────────────────────────
+/** Re-register viz behaviors. Idempotent — safe to call after
+ *  `__resetRuntimeRegistries()` to restore built-in wiring. */
+export function registerVizBehaviors(): void {
 
 registerBehaviors("viz_forest", {
   contributeBanks: (column: ColumnSpec): BankContribution => {
@@ -133,3 +133,8 @@ registerBehaviors("viz_violin", {
     return out;
   },
 });
+
+}  // end registerVizBehaviors
+
+// Side-effect: register on first import (back-compat).
+registerVizBehaviors();

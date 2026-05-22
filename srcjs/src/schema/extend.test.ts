@@ -13,8 +13,12 @@ import {
   allSchemaKeys,
   __resetRuntimeRegistries,
 } from "./extend";
+import { bootBuiltinBehaviors } from "./init";
 
-beforeEach(() => __resetRuntimeRegistries());
+beforeEach(() => {
+  __resetRuntimeRegistries();
+  bootBuiltinBehaviors();
+});
 
 describe("defineSchema", () => {
   test("returns the spec unchanged (typed identity)", () => {

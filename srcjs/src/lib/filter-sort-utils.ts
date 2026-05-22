@@ -14,6 +14,7 @@ import type {
   FiltersState,
   SortConfig,
 } from "$types";
+import { dispatchForColumn } from "../schema/dispatch";
 
 /** Apply all column filters AND-style across columns. Filters with no
  *  predicate matches (e.g. empty "in" array) pass everything. */
@@ -94,90 +95,26 @@ export function findColumnByKey(
   return undefined;
 }
 
-// Numeric median of a possibly-sparse array. Used as the sort key for
-// boxplot / violin columns where the "value" is a distribution rather than
-// a single scalar. Ignores NaN / non-finite entries.
-function median(xs: readonly number[]): number | undefined {
-  const clean = xs.filter((v) => typeof v === "number" && Number.isFinite(v)).slice().sort((a, b) => a - b);
-  if (clean.length === 0) return undefined;
-  const mid = Math.floor(clean.length / 2);
-  return clean.length % 2 === 0 ? (clean[mid - 1] + clean[mid]) / 2 : clean[mid];
-}
-
 /**
- * Extract the scalar value used to sort a row by a given column. Handles
- * the multi-field column types whose `.field` is synthetic and doesn't
- * index `row.metadata` directly:
+ * Extract the scalar value used to sort a row by a given column.
  *
- *   - `forest`: first declared point field (inline `point` or the first
- *     effect's `pointCol`).
- *   - `interval`: `options.interval.point`.
- *   - `custom` with events options: the `eventsField`.
- *   - `viz_bar`: first effect's `value`.
- *   - `viz_boxplot`: first effect's `median` (stats mode) or the median
- *     of its `data` array (array mode).
- *   - `viz_violin`: median of the first effect's `data` array.
- *
- * Falls back to `row.metadata[col.field]` for the scalar column types.
- * Returning `undefined` lets `compareForSort` push the row to the end.
+ * Schema dispatch is consulted first via `SchemaBehaviors.sortKey` —
+ * multi-field column types (interval, viz_*, events) register their
+ * own sort-key logic in `schema/columns/sort-behaviors.ts`. When no
+ * schema in the inheritance chain defines `sortKey`, we fall back to
+ * a bare `meta[col.field]` lookup, which serves every scalar type
+ * (text, numeric, percent, …) and the no-column case.
  */
 function sortValueFor(col: ColumnSpec | undefined, row: Row, key: string): unknown {
   const meta = row.metadata as Record<string, unknown>;
-  const bare = () => meta[key] ?? (row as unknown as Record<string, unknown>)[key];
-  if (!col) return bare();
+  const bare = meta[key] ?? (row as unknown as Record<string, unknown>)[key];
+  if (!col) return bare;
 
-  const opts = col.options as Record<string, unknown> | undefined;
-  const forestOpts = (opts?.forest ?? null) as {
-    point?: string;
-    effects?: Array<{ pointCol?: string }>;
-  } | null;
-  const intervalOpts = (opts?.interval ?? null) as { point?: string } | null;
-  const eventsOpts = (opts?.events ?? null) as { eventsField?: string } | null;
-  const barEffects = (opts?.vizBar as { effects?: Array<{ value?: string }> } | undefined)?.effects;
-  const boxEffects = (opts?.vizBoxplot as {
-    effects?: Array<{ median?: string | null; data?: string | null }>;
-  } | undefined)?.effects;
-  const violinEffects = (opts?.vizViolin as {
-    effects?: Array<{ data?: string }>;
-  } | undefined)?.effects;
-
-  switch (col.type) {
-    case "forest": {
-      const f = forestOpts?.point ?? forestOpts?.effects?.[0]?.pointCol;
-      return f ? meta[f] : bare();
-    }
-    case "interval": {
-      const f = intervalOpts?.point;
-      return f ? meta[f] : bare();
-    }
-    case "custom": {
-      const f = eventsOpts?.eventsField;
-      return f ? meta[f] : bare();
-    }
-    case "viz_bar": {
-      const f = barEffects?.[0]?.value;
-      return f ? meta[f] : bare();
-    }
-    case "viz_boxplot": {
-      const eff = boxEffects?.[0];
-      if (!eff) return bare();
-      if (eff.median) return meta[eff.median];
-      if (eff.data) {
-        const arr = meta[eff.data];
-        if (Array.isArray(arr)) return median(arr as number[]);
-      }
-      return undefined;
-    }
-    case "viz_violin": {
-      const f = violinEffects?.[0]?.data;
-      if (!f) return bare();
-      const arr = meta[f];
-      if (Array.isArray(arr)) return median(arr as number[]);
-      return undefined;
-    }
-    default:
-      return bare();
+  const sortKey = dispatchForColumn(col, "sortKey");
+  if (sortKey) {
+    return sortKey(meta[col.field], col.options, { row: meta });
   }
+  return bare;
 }
 
 function compareForSort(aVal: unknown, bVal: unknown, desc: boolean): number {

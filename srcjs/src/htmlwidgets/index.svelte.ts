@@ -13,6 +13,9 @@ import {
   setShinyInput,
 } from "./glue";
 import "../styles.css";
+// Side-effect: register built-in schema behaviors (bank contribs, sortKey, …)
+// before any widget mounts.
+import "../schema/init";
 
 // Development hook: expose export helpers under window.__tabvizExports
 exposeDevHook("__tabvizExports", { exportToSVG, exportToPNG });
