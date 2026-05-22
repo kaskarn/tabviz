@@ -8,8 +8,6 @@ export interface NumericBucketOptions {
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
   digits?: number | null;
-  /** Italic — Static / mapped to a data column / default */
-  italic?: undefined;
   /** Max chars — Truncate with trailing ellipsis when over */
   maxChars?: number | null;
   /** Prefix — Prepended literal (e.g. "$") */
@@ -18,6 +16,8 @@ export interface NumericBucketOptions {
   suffix?: string | null;
   /** Thousands sep */
   thousandsSep?: string | false;
+  /** Token — Semantic role — theme decides colors/weights */
+  token?: undefined;
 }
 
 export interface PercentBucketOptions {
@@ -27,8 +27,6 @@ export interface PercentBucketOptions {
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
   digits?: number | null;
-  /** Italic — Static / mapped to a data column / default */
-  italic?: undefined;
   /** Max chars — Truncate with trailing ellipsis when over */
   maxChars?: number | null;
   /** Multiply ×100 — Off if the source field is already a percentage */
@@ -41,11 +39,13 @@ export interface PercentBucketOptions {
   symbol?: boolean;
   /** Thousands sep */
   thousandsSep?: string | false;
+  /** Token — Semantic role — theme decides colors/weights */
+  token?: undefined;
 }
 
 export interface TextBucketOptions {
-  /** Italic — Static / mapped to a data column / default */
-  italic?: undefined;
   /** Max chars — Truncate with trailing ellipsis when over */
   maxChars?: number | null;
+  /** Token — Semantic role — theme decides colors/weights */
+  token?: undefined;
 }

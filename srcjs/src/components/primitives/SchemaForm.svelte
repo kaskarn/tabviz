@@ -156,6 +156,7 @@
                 id={`opt-${opt.key}`}
                 bind:value={state[opt.key] as MappedState<never>}
                 valueControl={opt.valueControl ?? "text"}
+                segments={(opt.segments ?? []) as never}
                 {available}
                 accepts={opt.accepts}
                 {swatches}

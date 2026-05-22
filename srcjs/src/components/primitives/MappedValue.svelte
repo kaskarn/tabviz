@@ -32,6 +32,8 @@
     available: AvailableField[];
     accepts?: FieldCategory[];
     swatches?: string[];
+    /** For valueControl="segmented" or "select" — the enum values. */
+    segments?: { value: T; label: string }[];
     id?: string;
   }
 
@@ -41,6 +43,7 @@
     available,
     accepts,
     swatches,
+    segments,
     id,
   }: Props = $props();
 
@@ -95,6 +98,8 @@
         <NumberInput {id} bind:value={staticVal as number | null} />
       {:else if valueControl === "integer"}
         <NumberInput {id} integer bind:value={staticVal as number | null} />
+      {:else if valueControl === "segmented" && segments}
+        <Segmented bind:value={staticVal as never} segments={segments as never} ariaLabel="Static value" />
       {:else}
         <TextInput {id} bind:value={staticVal as string | null} />
       {/if}

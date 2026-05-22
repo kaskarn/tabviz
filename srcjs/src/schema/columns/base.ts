@@ -75,28 +75,33 @@ export const BASE_SCHEMA: ColumnSchema = {
     },
 
     // ── Styling overrides ─────────────────────────────────────────────
-    // Phase 2.5 proof of concept: `italic` as the first schema-driven
-    // styling option with the new "value-or-field" control. Italic is
-    // genuinely binary — a cleaner demo of the toggle sub-control than
-    // bold-which-should-really-be-`weight` (multi-value: normal /
-    // medium / semibold / bold) and will be lifted with a segmented
-    // sub-control in Phase 3.
+    // Phase 2.5 proof of concept: `token` as the first schema-driven
+    // styling option. Token is the primary styling primitive in
+    // tabviz — semantic roles ("emphasis", "muted", "accent",
+    // "fill", "bold") that the theme cascade resolves to actual
+    // colors/weights. Promoting it in the editor (over raw color /
+    // weight / italic overrides) keeps users inside the cascade by
+    // default; raw overrides remain available as escape hatches.
     //
-    // Wire-shape flattening (where exactly italic / weight / color /
-    // etc. land on the wire) is decided in Phase 3 when we lift the
-    // full styleMapping surface into schemas. Today `italic` lives at
-    // `column.styleMapping.italic` (field-reference only); the
-    // unified schema lets the user pick "static true", "mapped to a
-    // data column", or "default (theme decides)".
+    // Wire-shape flattening for styling options is decided in Phase 3
+    // when we lift the full styleMapping surface. The schema
+    // declares the option; runtime wiring waits.
     {
-      key: "italic",
-      label: "Italic",
+      key: "token",
+      label: "Token",
       control: "value-or-field",
-      valueControl: "toggle",
+      valueControl: "segmented",
+      segments: [
+        { value: "emphasis", label: "Emphasis" },
+        { value: "muted", label: "Muted" },
+        { value: "accent", label: "Accent" },
+        { value: "fill", label: "Fill" },
+        { value: "bold", label: "Bold" },
+      ],
       kind: "styling",
       default: null,
-      hint: "Static / mapped to a data column / default",
-      accepts: ["logical", "string", "numeric", "integer"],
+      hint: "Semantic role — theme decides colors/weights",
+      accepts: ["string"],
     },
   ],
 };
