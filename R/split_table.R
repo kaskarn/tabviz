@@ -150,9 +150,14 @@ split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE
   axis_range <- c(NA_real_, NA_real_)
   if (effective_shared_axis) {
     if (!has_explicit_min || !has_explicit_max) {
-      # jsonlite serializes named lists as JSON objects; the TS function expects
-# `subsets` to be an array. Drop names via `unname()` before lapply.
-ts_input <- list(subsets = lapply(unname(specs), .subset_payload_for_shared))
+      # jsonlite serializes named lists as JSON objects; TS expects an
+      # array, so drop names via `unname()`. Filter to only the effect
+      # fields the TS consumer reads — cuts wire payload by ~10x at
+      # typical fixture widths.
+      axis_fields <- .fields_needed_for_axis(forest_col)
+      ts_input <- list(
+        subsets = lapply(unname(specs), .subset_payload_for_shared, fields = axis_fields)
+      )
       ts_result <- ts_call("computeSharedAxis", ts_input)
       data_range <- c(ts_result$rangeMin, ts_result$rangeMax)
       axis_range <- c(
@@ -177,9 +182,12 @@ ts_input <- list(subsets = lapply(unname(specs), .subset_payload_for_shared))
   # Shared column widths: stamp a single width onto every "auto" column so
   # subsets line up visually when stacked. Computation lives in TS too.
   if (shared_column_widths) {
-    # jsonlite serializes named lists as JSON objects; the TS function expects
-# `subsets` to be an array. Drop names via `unname()` before lapply.
-ts_input <- list(subsets = lapply(unname(specs), .subset_payload_for_shared))
+    # Filter the wire payload to only the auto-width column fields the
+    # TS consumer reads.
+    width_fields <- .fields_needed_for_widths(base_spec@columns)
+    ts_input <- list(
+      subsets = lapply(unname(specs), .subset_payload_for_shared, fields = width_fields)
+    )
     ts_result <- ts_call("computeSharedWidths", ts_input)
     widths <- ts_result$widths %||% list()
 
@@ -212,14 +220,19 @@ ts_input <- list(subsets = lapply(unname(specs), .subset_payload_for_shared))
 #' inheriting configuration from the base spec.
 #'
 # Build the minimal payload `srcjs/src/lib/split-shared.ts` expects from each
-# subset. Data is sent **column-major** (one vector per field via
-# `as.list(data.frame)`), matching R's native representation — building
-# per-row metadata objects via `lapply(seq_len(nrow), df[i, ])` made the
-# 50k-row case run for 22 seconds where the column-major shape runs in
-# hundreds of ms. The TS consumer iterates positionally; row-major and
-# column-major produce identical answers.
-.subset_payload_for_shared <- function(spec) {
+# subset. Data is sent **column-major** (one vector per field) and is
+# further narrowed via `fields` to only the columns the consumer reads —
+# computeSharedAxis only touches effect fields (point/lower/upper);
+# computeSharedWidths only touches auto-width column fields. At a 5k-row
+# 10-col fixture this cuts wire bytes ~10x and keeps the V8 round-trip
+# overhead sub-perceptible. NULL `fields` ships everything (used by
+# callers that prefer to filter TS-side or are scale-bounded).
+.subset_payload_for_shared <- function(spec, fields = NULL) {
   df <- spec@data
+  data_cols <- as.list(df)
+  if (!is.null(fields)) {
+    data_cols <- data_cols[intersect(names(data_cols), fields)]
+  }
   col_payload <- lapply(spec@columns, function(c) {
     list(
       id      = c@id,
@@ -231,14 +244,41 @@ ts_input <- list(subsets = lapply(unname(specs), .subset_payload_for_shared))
     )
   })
   list(
-    # Column-major: `{[fieldName]: vector}`. `as.list(df)` is O(#cols)
-    # in R, irrespective of row count — fast even at 50k rows.
-    data = list(columns = as.list(df)),
+    data = list(columns = data_cols),
     columns = col_payload,
     theme = list(axis = list(
       ciClipFactor = if (!is.null(spec@theme@axis@ci_clip_factor)) spec@theme@axis@ci_clip_factor else 3.0
     ))
   )
+}
+
+# Fields read by computeSharedAxis from each subset: the forest column's
+# point/lower/upper, plus any multi-effect pointCol/lowerCol/upperCol.
+.fields_needed_for_axis <- function(forest_col) {
+  if (is.null(forest_col) || is.null(forest_col@options$forest)) return(character(0))
+  o <- forest_col@options$forest
+  fields <- c(o$point, o$lower, o$upper)
+  if (!is.null(o$effects) && is.list(o$effects)) {
+    for (eff in o$effects) {
+      fields <- c(fields, eff$pointCol, eff$lowerCol, eff$upperCol)
+    }
+  }
+  unique(fields[!is.null(fields) & !is.na(fields) & nzchar(fields)])
+}
+
+# Fields read by computeSharedWidths from each subset: every auto-width
+# column's `field` (skipping viz/forest types, which auto-size from the
+# plot rather than text content).
+.fields_needed_for_widths <- function(cols) {
+  skip <- c("viz_bar", "viz_boxplot", "viz_violin", "forest")
+  fields <- character(0)
+  for (c in cols) {
+    if (c@type %in% skip) next
+    if (is.numeric(c@width) && !is.na(c@width)) next
+    if (length(c@field) == 0 || is.na(c@field) || !nzchar(c@field)) next
+    fields <- c(fields, c@field)
+  }
+  unique(fields)
 }
 
 #' Create a subset WebSpec for one split combination
