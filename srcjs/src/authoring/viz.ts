@@ -370,12 +370,10 @@ function prependNullRefline(
       type: "reference_line",
       id: `refline_${nullValue}`,
       x: nullValue,
-      label: null,
       style: "dashed",
-      color: null,
       width: 1,
       opacity: 0.6,
-    } as Annotation);
+    });
   }
   return list.length ? list : null;
 }
