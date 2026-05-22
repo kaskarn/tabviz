@@ -2,8 +2,13 @@ import { describe, test, expect } from "bun:test";
 import { computeSharedAxis, computeSharedWidths, type SubsetSpec } from "./split-shared";
 
 function makeSubset(rows: Array<Record<string, unknown>>, overrides?: Partial<SubsetSpec>): SubsetSpec {
+  // Pivot row-major test fixtures into the column-major wire shape.
+  const fields = new Set<string>();
+  for (const r of rows) for (const k of Object.keys(r)) fields.add(k);
+  const columns: Record<string, unknown[]> = {};
+  for (const f of fields) columns[f] = rows.map((r) => r[f] ?? null);
   return {
-    data: { rows: rows.map((md) => ({ metadata: md })) },
+    data: { columns },
     columns: [
       { id: "label",    type: "text",    field: "label",  header: "Study", width: "auto" },
       { id: "n",        type: "numeric", field: "n",      header: "N",     width: "auto" },

@@ -212,22 +212,15 @@ ts_input <- list(subsets = lapply(unname(specs), .subset_payload_for_shared))
 #' inheriting configuration from the base spec.
 #'
 # Build the minimal payload `srcjs/src/lib/split-shared.ts` expects from each
-# subset: row-major data (metadata per row + optional style.type),
-# narrow column descriptors, and the axis config slice. Skips heavy
-# fields the shared-product computations don't read (groups, summaries,
-# interaction, full theme tree). Only invoked once per `split_table()`
-# call so per-row `as.list()` is fine at typical scales.
+# subset. Data is sent **column-major** (one vector per field via
+# `as.list(data.frame)`), matching R's native representation — building
+# per-row metadata objects via `lapply(seq_len(nrow), df[i, ])` made the
+# 50k-row case run for 22 seconds where the column-major shape runs in
+# hundreds of ms. The TS consumer iterates positionally; row-major and
+# column-major produce identical answers.
 .subset_payload_for_shared <- function(spec) {
   df <- spec@data
-  cols <- spec@columns
-  rows_list <- if (nrow(df) > 0L) {
-    lapply(seq_len(nrow(df)), function(i) {
-      list(metadata = as.list(df[i, , drop = FALSE]))
-    })
-  } else {
-    list()
-  }
-  col_payload <- lapply(cols, function(c) {
+  col_payload <- lapply(spec@columns, function(c) {
     list(
       id      = c@id,
       type    = c@type,
@@ -238,7 +231,9 @@ ts_input <- list(subsets = lapply(unname(specs), .subset_payload_for_shared))
     )
   })
   list(
-    data = list(rows = rows_list),
+    # Column-major: `{[fieldName]: vector}`. `as.list(df)` is O(#cols)
+    # in R, irrespective of row count — fast even at 50k rows.
+    data = list(columns = as.list(df)),
     columns = col_payload,
     theme = list(axis = list(
       ciClipFactor = if (!is.null(spec@theme@axis@ci_clip_factor)) spec@theme@axis@ci_clip_factor else 3.0

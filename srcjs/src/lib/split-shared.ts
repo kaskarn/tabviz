@@ -29,15 +29,30 @@ import { estimateTextWidth } from "./width-utils";
 
 /**
  * Minimum spec shape the shared-product computers consume from each subset.
- * Intentionally narrow: anything richer (full WebSpec) is accepted via
- * structural compatibility, but only these fields are read.
+ *
+ * Data is in **column-major** form (one array per field). This shape mirrors
+ * R's native representation (`as.list(data.frame)`), which lets the R wrapper
+ * pass subsets through `ts_call` without an expensive per-row pivot. The
+ * row-major equivalent (one object per row) was tried first and turned out
+ * to scale catastrophically at 50k+ rows due to R's per-row list construction
+ * — the column-major form is the wire shape.
+ *
+ * Row metadata is read positionally: `data.columns[fieldName][i]` is the
+ * value of `fieldName` for the i-th row.
+ *
+ * Optional `rowStyleTypes` carries each row's `style.type` for filtering
+ * header/spacer rows; nullable, defaults to "no style metadata" so all rows
+ * are treated as data rows.
  */
 export interface SubsetSpec {
   data: {
-    rows: Array<{
-      metadata: Record<string, unknown>;
-      style?: { type?: string } | null;
-    }>;
+    /** Column-major data: `{[fieldName]: vector}`. All vectors have the
+     *  same length (the row count). Values are the raw cell values (no
+     *  formatting applied yet). */
+    columns: Record<string, unknown[]>;
+    /** Optional parallel array of row-style type tags ("header" / "spacer"
+     *  / null). Used to skip non-data rows in width measurement. */
+    rowStyleTypes?: Array<string | null> | null;
   };
   columns: Array<{
     id: string;
@@ -136,18 +151,24 @@ export function computeSharedAxis(args: SharedAxisArgs): SharedAxisResult {
     fieldU?: string,
   ): void => {
     for (const s of subsets) {
-      for (const row of s.data.rows) {
-        const md = row.metadata;
-        if (fieldP && md[fieldP] != null) {
-          const v = Number(md[fieldP]);
+      const cols = s.data.columns;
+      // Column-major: pull each effect vector once, iterate positionally.
+      // Much cheaper than building rows of metadata objects.
+      const pCol = fieldP ? cols[fieldP] : undefined;
+      const lCol = fieldL ? cols[fieldL] : undefined;
+      const uCol = fieldU ? cols[fieldU] : undefined;
+      const n = pCol?.length ?? lCol?.length ?? uCol?.length ?? 0;
+      for (let i = 0; i < n; i++) {
+        if (pCol) {
+          const v = Number(pCol[i]);
           if (Number.isFinite(v)) allPoint.push(v);
         }
-        if (fieldL && md[fieldL] != null) {
-          const v = Number(md[fieldL]);
+        if (lCol) {
+          const v = Number(lCol[i]);
           if (Number.isFinite(v)) allLower.push(v);
         }
-        if (fieldU && md[fieldU] != null) {
-          const v = Number(md[fieldU]);
+        if (uCol) {
+          const v = Number(uCol[i]);
           if (Number.isFinite(v)) allUpper.push(v);
         }
       }
@@ -276,15 +297,21 @@ export function computeSharedWidths(args: SharedWidthsArgs): SharedWidthsResult 
     if (!col.field) continue;
 
     // Pool: every cell's stringified value for this column across all subsets,
-    // plus the header.
+    // plus the header. Column-major iteration: pull the field's vector
+    // once, skip header/spacer rows positionally via the parallel
+    // rowStyleTypes array.
     const candidates: string[] = [];
     if (col.header) candidates.push(col.header);
     for (const s of subsets) {
       const sameCol = s.columns.find((c) => c.id === col.id);
       if (!sameCol || !sameCol.field) continue;
-      for (const row of s.data.rows) {
-        if (row.style?.type === "header" || row.style?.type === "spacer") continue;
-        const v = row.metadata[sameCol.field];
+      const vec = s.data.columns[sameCol.field];
+      if (!vec) continue;
+      const styleTypes = s.data.rowStyleTypes ?? null;
+      for (let i = 0; i < vec.length; i++) {
+        const st = styleTypes ? styleTypes[i] : null;
+        if (st === "header" || st === "spacer") continue;
+        const v = vec[i];
         if (v == null) continue;
         candidates.push(String(v));
       }
