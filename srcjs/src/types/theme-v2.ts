@@ -398,4 +398,17 @@ export interface WebThemeV2 {
   firstColumn: FirstColumnClusterV2;
   plot: PlotScaffoldV2;
   marks: MarksRecipesV2;
+  /**
+   * Tag-driven node finalization rules. Renderers tag RenderNodes
+   * with semantic labels (`"interval-range"`, `"footnote-marker"`,
+   * etc.); themes declare what each tag looks like via this table.
+   *
+   * Optional — themes without nodeRules just let renderer-emitted
+   * trees through unchanged. Phase 7 finalizes every cell + chrome
+   * RenderNode tree via `applyTheme(tree, theme.nodeRules)`.
+   *
+   * See `$schema/theme-finalize` for the rule shape + the apply
+   * pass.
+   */
+  nodeRules?: import("../schema/theme-finalize").NodeRules;
 }

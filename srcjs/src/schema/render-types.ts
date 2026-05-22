@@ -40,6 +40,13 @@ export interface RenderText {
   kind: "text";
   value: string;
   style?: TextStyle;
+  /**
+   * Semantic structural tags for theme finalization. Each tag is a
+   * flat string; themes apply rules in `WebTheme.nodeRules` to nodes
+   * whose tag list contains a matching key. Renderers should prefer
+   * tags over inline `style` overrides — tags are theme-controllable.
+   */
+  tags?: string[];
 }
 
 export interface RenderGroup {
@@ -49,6 +56,8 @@ export interface RenderGroup {
   gap?: number;
   align?: "start" | "center" | "end" | "baseline";
   style?: GroupStyle;
+  /** Semantic structural tags for theme finalization. */
+  tags?: string[];
 }
 
 export interface RenderSvg {
@@ -379,6 +388,34 @@ export interface SchemaBehaviors {
     column: ColumnSpec,
     spec: { columns: ColumnSpec[]; data?: unknown },
   ) => BankContribution | null | void;
+
+  /**
+   * Pure value → string transform applied by THIS schema's
+   * formatting rules. Distinct from `render()` — does NOT produce a
+   * RenderNode; just the display string. Reusable by descendants
+   * and by composed columns.
+   *
+   *   NUMERIC.formatValue(0.85234, { decimals: 2 }) → "0.85"
+   *   TEXT.formatValue("abc def", { maxChars: 5 }) → "abc d…"
+   *
+   * Typical renderer pattern:
+   *
+   *   registerRenderer("percent", (val, opts, ctx, parents) => {
+   *     const scaled = (opts.percent?.multiply !== false ? val * 100 : val);
+   *     const fmt    = parents.numeric.formatValue(scaled, opts, ctx);
+   *     const suff   = opts.percent?.symbol !== false ? fmt + "%" : fmt;
+   *     return parents.text.render(suff, opts, ctx);
+   *   });
+   *
+   * If undefined on a schema, the resolver walks ancestors via
+   * `parents` to find a matching ancestor's formatValue.
+   */
+  formatValue?: (
+    value: unknown,
+    options: ColumnSpec["options"],
+    ctx: BehaviorContext,
+    parents: ParentBehaviors<NonNullable<SchemaBehaviors["formatValue"]>>,
+  ) => string;
 }
 
 // ────────────────────────────────────────────────────────────────────
