@@ -7,22 +7,19 @@ import { NUMERIC_SCHEMA } from "./columns/numeric";
 import { PERCENT_SCHEMA } from "./columns/percent";
 
 describe("resolveSchema", () => {
-  test("text resolves to [base, sortable, text]", () => {
-    // Multi-inheritance: text inherits [base, sortable] simultaneously.
-    // Resolver emits ancestors before the leaf; sibling order follows
-    // the declaration order in `inherits`.
+  test("text resolves to [base, text]", () => {
     const keys = resolveSchema(TEXT_SCHEMA).map((s) => s.key);
-    expect(keys).toEqual(["base", "sortable", "text"]);
+    expect(keys).toEqual(["base", "text"]);
   });
 
-  test("numeric resolves to [base, sortable, text, numeric]", () => {
+  test("numeric resolves to [base, text, numeric]", () => {
     const keys = resolveSchema(NUMERIC_SCHEMA).map((s) => s.key);
-    expect(keys).toEqual(["base", "sortable", "text", "numeric"]);
+    expect(keys).toEqual(["base", "text", "numeric"]);
   });
 
-  test("percent resolves to [base, sortable, text, numeric, percent]", () => {
+  test("percent resolves to [base, text, numeric, percent]", () => {
     const keys = resolveSchema(PERCENT_SCHEMA).map((s) => s.key);
-    expect(keys).toEqual(["base", "sortable", "text", "numeric", "percent"]);
+    expect(keys).toEqual(["base", "text", "numeric", "percent"]);
   });
 
   test("ancestor appears before descendant (topological)", () => {
@@ -30,7 +27,6 @@ describe("resolveSchema", () => {
     expect(keys.indexOf("base")).toBeLessThan(keys.indexOf("text"));
     expect(keys.indexOf("text")).toBeLessThan(keys.indexOf("numeric"));
     expect(keys.indexOf("numeric")).toBeLessThan(keys.indexOf("percent"));
-    expect(keys.indexOf("sortable")).toBeLessThan(keys.indexOf("text"));
   });
 
   test("each schema appears exactly once", () => {

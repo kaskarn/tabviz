@@ -1,7 +1,7 @@
 // `text` — concrete column schema for cell-text rendering.
-// Inherits BASE (layout/header knobs) and SORTABLE (lexicographic
-// sort on text values). Adds wrap/naText/maxChars — knobs only
-// relevant when a column actually paints text in cells.
+// Inherits BASE (which already carries sortable=true; lexicographic
+// sort on text values is meaningful). Adds wrap/naText/maxChars —
+// knobs only relevant when a column actually paints text in cells.
 //
 // Pure-visual columns (sparkline, viz_*) inherit only BASE and skip
 // TEXT — they get the universal layout knobs but not the
@@ -13,7 +13,7 @@ export const TEXT_SCHEMA: ColumnSchema = {
   key: "text",
   label: "Text",
   defaultOpen: false,
-  inherits: ["base", "sortable"],
+  inherits: "base",
   type: "text",
   bucket: "text",
   category: "text",
