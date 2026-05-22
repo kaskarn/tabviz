@@ -79,6 +79,35 @@ export interface DateBucketOptions {
   token?: undefined;
 }
 
+export interface ForestBucketOptions {
+  /** Annotations — Reference lines, callouts */
+  annotations?: unknown;
+  /** Gridlines */
+  axisGridlines?: boolean;
+  /** Axis label — Shown below the axis */
+  axisLabel?: string | null;
+  /** Axis range — Auto from data when null */
+  axisRange?: unknown;
+  /** Axis ticks — Auto-computed when null */
+  axisTicks?: unknown;
+  /** Border — Column divider weight — theme decides exact value */
+  borderClass?: undefined;
+  /** Effects — Multiple overlaid effects; use slots above for a single effect */
+  effects?: unknown;
+  /** Null value — Reference line; 0 for linear, 1 for log default */
+  nullValue?: number | "auto" | null;
+  /** Density — Cell padding — theme decides exact values */
+  paddingClass?: undefined;
+  /** Scale */
+  scale?: "linear" | "log" | null;
+  /** Shared axis — Across split-view columns */
+  sharedAxis?: boolean;
+  /** Show axis */
+  showAxis?: boolean;
+  /** Token — Semantic role — theme decides colors/weights */
+  token?: undefined;
+}
+
 export interface HeatmapBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
@@ -401,6 +430,113 @@ export interface TextBucketOptions {
   maxChars?: number | null;
   /** Density — Cell padding — theme decides exact values */
   paddingClass?: undefined;
+  /** Token — Semantic role — theme decides colors/weights */
+  token?: undefined;
+}
+
+export interface VizBarBucketOptions {
+  /** Annotations — Reference lines, callouts */
+  annotations?: unknown;
+  /** Gridlines */
+  axisGridlines?: boolean;
+  /** Axis label — Shown below the axis */
+  axisLabel?: string | null;
+  /** Axis range — Auto from data when null */
+  axisRange?: unknown;
+  /** Axis ticks — Auto-computed when null */
+  axisTicks?: unknown;
+  /** Bar gap */
+  barGap?: number | null;
+  /** Bar width */
+  barWidth?: number | null;
+  /** Border — Column divider weight — theme decides exact value */
+  borderClass?: undefined;
+  /** Effects — One or more value series */
+  effects?: unknown;
+  /** Null value — Reference line; 0 for linear, 1 for log default */
+  nullValue?: number | "auto" | null;
+  /** Orientation */
+  orientation?: "horizontal" | "vertical" | null;
+  /** Density — Cell padding — theme decides exact values */
+  paddingClass?: undefined;
+  /** Scale */
+  scale?: "linear" | "log" | null;
+  /** Shared axis — Across split-view columns */
+  sharedAxis?: boolean;
+  /** Show axis */
+  showAxis?: boolean;
+  /** Token — Semantic role — theme decides colors/weights */
+  token?: undefined;
+}
+
+export interface VizBoxplotBucketOptions {
+  /** Annotations — Reference lines, callouts */
+  annotations?: unknown;
+  /** Gridlines */
+  axisGridlines?: boolean;
+  /** Axis label — Shown below the axis */
+  axisLabel?: string | null;
+  /** Axis range — Auto from data when null */
+  axisRange?: unknown;
+  /** Axis ticks — Auto-computed when null */
+  axisTicks?: unknown;
+  /** Border — Column divider weight — theme decides exact value */
+  borderClass?: undefined;
+  /** Box width */
+  boxWidth?: number | null;
+  /** Effects — Raw arrays or quantile fields */
+  effects?: unknown;
+  /** Null value — Reference line; 0 for linear, 1 for log default */
+  nullValue?: number | "auto" | null;
+  /** Density — Cell padding — theme decides exact values */
+  paddingClass?: undefined;
+  /** Scale */
+  scale?: "linear" | "log" | null;
+  /** Shared axis — Across split-view columns */
+  sharedAxis?: boolean;
+  /** Show axis */
+  showAxis?: boolean;
+  /** Show outliers */
+  showOutliers?: boolean;
+  /** Token — Semantic role — theme decides colors/weights */
+  token?: undefined;
+  /** Whiskers */
+  whiskerType?: "iqr" | "minmax" | null;
+}
+
+export interface VizViolinBucketOptions {
+  /** Annotations — Reference lines, callouts */
+  annotations?: unknown;
+  /** Gridlines */
+  axisGridlines?: boolean;
+  /** Axis label — Shown below the axis */
+  axisLabel?: string | null;
+  /** Axis range — Auto from data when null */
+  axisRange?: unknown;
+  /** Axis ticks — Auto-computed when null */
+  axisTicks?: unknown;
+  /** Bandwidth — KDE bandwidth; Silverman default when null */
+  bandwidth?: number | "auto" | null;
+  /** Border — Column divider weight — theme decides exact value */
+  borderClass?: undefined;
+  /** Effects — One or more array-valued series */
+  effects?: unknown;
+  /** Max width */
+  maxWidth?: number | null;
+  /** Null value — Reference line; 0 for linear, 1 for log default */
+  nullValue?: number | "auto" | null;
+  /** Density — Cell padding — theme decides exact values */
+  paddingClass?: undefined;
+  /** Scale */
+  scale?: "linear" | "log" | null;
+  /** Shared axis — Across split-view columns */
+  sharedAxis?: boolean;
+  /** Show axis */
+  showAxis?: boolean;
+  /** Show median */
+  showMedian?: boolean;
+  /** Show quartiles */
+  showQuartiles?: boolean;
   /** Token — Semantic role — theme decides colors/weights */
   token?: undefined;
 }

@@ -198,5 +198,49 @@ schema_defaults <- list(
     width = "auto",
     sortable = TRUE,
     wrap = FALSE
+  ),
+  viz_bar = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    scale = "linear",
+    axis_gridlines = FALSE,
+    show_axis = TRUE,
+    shared_axis = FALSE,
+    effects = c(),
+    orientation = "horizontal"
+  ),
+  viz_boxplot = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    scale = "linear",
+    axis_gridlines = FALSE,
+    show_axis = TRUE,
+    shared_axis = FALSE,
+    effects = c(),
+    show_outliers = TRUE,
+    whisker_type = "iqr"
+  ),
+  viz_forest = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    scale = "linear",
+    axis_gridlines = FALSE,
+    show_axis = TRUE,
+    shared_axis = FALSE
+  ),
+  viz_violin = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    scale = "linear",
+    axis_gridlines = FALSE,
+    show_axis = TRUE,
+    shared_axis = FALSE,
+    effects = c(),
+    show_median = TRUE,
+    show_quartiles = FALSE
   )
 )

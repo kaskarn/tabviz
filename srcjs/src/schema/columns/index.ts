@@ -25,6 +25,11 @@ import { BADGE_SCHEMA } from "./badge";
 import { ICON_SCHEMA } from "./icon";
 import { IMG_SCHEMA } from "./img";
 import { REFERENCE_SCHEMA } from "./reference";
+import { VIZ_SCHEMA } from "./viz";
+import { VIZ_FOREST_SCHEMA } from "./viz_forest";
+import { VIZ_BAR_SCHEMA } from "./viz_bar";
+import { VIZ_BOXPLOT_SCHEMA } from "./viz_boxplot";
+import { VIZ_VIOLIN_SCHEMA } from "./viz_violin";
 
 // NOTE: built-in behavior registrations (reference-behaviors.ts etc.)
 // are NOT auto-imported here to avoid the circular dependency
@@ -57,10 +62,15 @@ export const SCHEMA_REGISTRY: SchemaRegistry = {
   pictogram: PICTOGRAM_SCHEMA,
   stars:     STARS_SCHEMA,
   ring:      RING_SCHEMA,
-  badge:     BADGE_SCHEMA,
-  icon:      ICON_SCHEMA,
-  img:       IMG_SCHEMA,
-  reference: REFERENCE_SCHEMA,
+  badge:       BADGE_SCHEMA,
+  icon:        ICON_SCHEMA,
+  img:         IMG_SCHEMA,
+  reference:   REFERENCE_SCHEMA,
+  viz:         VIZ_SCHEMA,
+  viz_forest:  VIZ_FOREST_SCHEMA,
+  viz_bar:     VIZ_BAR_SCHEMA,
+  viz_boxplot: VIZ_BOXPLOT_SCHEMA,
+  viz_violin:  VIZ_VIOLIN_SCHEMA,
 };
 
 export {
@@ -71,4 +81,6 @@ export {
   BAR_SCHEMA, PROGRESS_SCHEMA, HEATMAP_SCHEMA, SPARKLINE_SCHEMA,
   PICTOGRAM_SCHEMA, STARS_SCHEMA, RING_SCHEMA,
   BADGE_SCHEMA, ICON_SCHEMA, IMG_SCHEMA, REFERENCE_SCHEMA,
+  VIZ_SCHEMA, VIZ_FOREST_SCHEMA, VIZ_BAR_SCHEMA,
+  VIZ_BOXPLOT_SCHEMA, VIZ_VIOLIN_SCHEMA,
 };

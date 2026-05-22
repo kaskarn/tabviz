@@ -15,3 +15,4 @@ export * from "./columns";
 
 // Behavior side-effect registrations.
 import "./columns/reference-behaviors";
+import "./columns/viz-behaviors";
