@@ -4,6 +4,8 @@
 export interface NumericBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
+  /** Border — Column divider weight — theme decides exact value */
+  borderClass?: undefined;
   /** Decimals — Decimal places. Leave blank for auto. */
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
@@ -12,6 +14,8 @@ export interface NumericBucketOptions {
   fontClass?: undefined;
   /** Max chars — Truncate with trailing ellipsis when over */
   maxChars?: number | null;
+  /** Density — Cell padding — theme decides exact values */
+  paddingClass?: undefined;
   /** Prefix — Prepended literal (e.g. "$") */
   prefix?: string | null;
   /** Suffix — Appended literal (e.g. "%") */
@@ -25,6 +29,8 @@ export interface NumericBucketOptions {
 export interface PercentBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
+  /** Border — Column divider weight — theme decides exact value */
+  borderClass?: undefined;
   /** Decimals — Decimal places. Leave blank for auto. */
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
@@ -35,6 +41,8 @@ export interface PercentBucketOptions {
   maxChars?: number | null;
   /** Multiply ×100 — Off if the source field is already a percentage */
   multiply?: boolean;
+  /** Density — Cell padding — theme decides exact values */
+  paddingClass?: undefined;
   /** Prefix — Prepended literal (e.g. "$") */
   prefix?: string | null;
   /** Suffix — Appended literal (e.g. "%") */
@@ -48,10 +56,14 @@ export interface PercentBucketOptions {
 }
 
 export interface TextBucketOptions {
+  /** Border — Column divider weight — theme decides exact value */
+  borderClass?: undefined;
   /** Font class — Theme decides which family / weight / numeric variant */
   fontClass?: undefined;
   /** Max chars — Truncate with trailing ellipsis when over */
   maxChars?: number | null;
+  /** Density — Cell padding — theme decides exact values */
+  paddingClass?: undefined;
   /** Token — Semantic role — theme decides colors/weights */
   token?: undefined;
 }
