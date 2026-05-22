@@ -68,6 +68,7 @@ Imports:
     tools
 Suggests:
     shiny (>= 1.8.0),
+    systemfonts (>= 1.0.0),
     data.table,
     broom,
     testthat (>= 3.0.0),

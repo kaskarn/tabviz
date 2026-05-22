@@ -255,6 +255,13 @@ save_plot <- function(x, file,
     spec@paginate <- NULL
   }
 
+  # Phase 2.5: pixel-exact auto-widths via systemfonts. V8 SVG export
+  # would otherwise use the character-class estimator (a few px off on
+  # non-Inter fonts). systemfonts measures the actual installed font;
+  # stamped widths are honored as numeric pins by V8's measureAutoColumns.
+  # No-op when systemfonts isn't installed.
+  spec <- .inject_systemfonts_widths(spec)
+
   spec_json <- jsonlite::toJSON(
     serialize_spec(spec),
     auto_unbox = TRUE,
@@ -352,6 +359,142 @@ save_plot <- function(x, file,
 # `flex` arg semantics: TRUE -> 2 (default cap), FALSE -> 1 (no flex),
 # numeric N >= 1 -> N. Values < 1 are user error (would invert the cap).
 #' @noRd
+# Parse a CSS font-family stack into a single family systemfonts can use.
+# Strips quotes, takes the first family, replaces underscore variants.
+# Returns NULL when no family is available (caller should fall back).
+.first_font_family <- function(family) {
+  if (is.null(family) || length(family) == 0L || is.na(family[1]) || !nzchar(family[1])) {
+    return(NULL)
+  }
+  parts <- strsplit(family[1], ",", fixed = TRUE)[[1]]
+  first <- trimws(parts[1])
+  # Strip surrounding quotes.
+  first <- gsub('^["\']|["\']$', "", first)
+  if (!nzchar(first)) NULL else first
+}
+
+# Parse a CSS size string ("14px", "0.875rem", "12pt") into pixels.
+# Returns 14 as a sane fallback when unrecognized.
+.font_size_px <- function(size_str) {
+  if (is.null(size_str) || length(size_str) == 0L || is.na(size_str[1])) return(14)
+  s <- tolower(trimws(size_str[1]))
+  m <- regmatches(s, regexec("^([0-9.]+)\\s*(px|rem|em|pt)?$", s))[[1]]
+  if (length(m) < 2L) return(14)
+  val <- as.numeric(m[2])
+  if (is.na(val)) return(14)
+  unit <- if (length(m) >= 3L && nzchar(m[3])) m[3] else "px"
+  switch(unit,
+    px  = val,
+    pt  = val * (96 / 72),    # 1pt = 1/72 inch; 1in = 96px (CSS)
+    rem = val * 16,           # html root at 16px
+    em  = val * 16,           # treat same as rem at top level
+    val
+  )
+}
+
+# Inject pixel-exact column widths for auto-width text/numeric columns,
+# measured via systemfonts::shape_string against the theme's body font.
+# Mutates `spec@columns` in place and returns the spec. Skips when
+# systemfonts isn't installed (the caller falls back to the V8 estimator,
+# which is the pre-Phase-2.5 behavior). Skips viz/forest column types
+# (auto-sized from plot geometry, not text content).
+#
+# This is the SVG-export pixel-parity step (Phase 2.5): the live
+# browser widget uses Canvas exact-measure for auto-widths, V8 uses the
+# character-class estimator (~few-px drift on non-Inter fonts). With this
+# injection R measures with systemfonts (pixel-exact for any installed
+# font) and stamps numeric widths, so V8 honors the pin and skips
+# measurement entirely.
+.inject_systemfonts_widths <- function(spec) {
+  if (!requireNamespace("systemfonts", quietly = TRUE)) return(spec)
+  if (is.null(spec@theme)) return(spec)
+
+  family_raw <- tryCatch(spec@theme@text@body@family, error = function(e) NULL)
+  size_raw   <- tryCatch(spec@theme@text@body@size,   error = function(e) NULL)
+  family <- .first_font_family(family_raw)
+  size_px <- .font_size_px(size_raw)
+  if (is.null(family)) return(spec)
+
+  cell_padding_x <- tryCatch({
+    v <- spec@theme@spacing@cell_padding_x
+    if (length(v) == 0L || is.na(v)) 10 else v
+  }, error = function(e) 10)
+  # Match TS measureAutoColumns: text width + cellPaddingX*2 + rendering buffer.
+  cell_padding <- as.numeric(cell_padding_x) * 2
+  rendering_buffer <- 8  # TEXT_MEASUREMENT.RENDERING_BUFFER (TS constant)
+  auto_min <- 40         # AUTO_WIDTH.MIN
+  auto_max <- 480        # AUTO_WIDTH.MAX
+  skip_types <- c("viz_bar", "viz_boxplot", "viz_violin", "forest")
+
+  df <- spec@data
+  field_names <- names(df)
+
+  # Header / body font keys. TS `measureAutoColumns` measures the header
+  # bold at 1.05x the body size (matching the rendered header chrome),
+  # and cells at regular weight + base size. Mirror that here so the
+  # stamped width covers the worst case across both rendering contexts.
+  header_size_px <- size_px * 1.05
+
+  # systemfonts uses point sizes + a DPI param. CSS pixels are defined at
+  # 96 DPI (1 CSS px = 1/96 in); points are at 72 DPI. With `res = 96` the
+  # output width comes back in CSS pixel units, matching what the live
+  # widget's Canvas measureText would return. `weight = "bold"` is the
+  # current spelling — `bold = TRUE` is deprecated upstream.
+  shape_max <- function(vals, bold, sz) {
+    if (length(vals) == 0L) return(NA_real_)
+    widths <- tryCatch(
+      systemfonts::shape_string(
+        vals,
+        family = family,
+        size   = sz,
+        weight = if (isTRUE(bold)) "bold" else "normal",
+        res    = 96
+      )$metrics$width,
+      error = function(e) NULL
+    )
+    if (is.null(widths) || length(widths) == 0L) return(NA_real_)
+    m <- suppressWarnings(max(widths, na.rm = TRUE))
+    if (!is.finite(m)) NA_real_ else m
+  }
+
+  measure_one <- function(col) {
+    if (is.numeric(col@width) && !is.na(col@width)) return(NULL)
+    if (col@type %in% skip_types) return(NULL)
+    field <- col@field
+    if (length(field) == 0L || is.na(field) || !nzchar(field)) return(NULL)
+    if (!(field %in% field_names)) return(NULL)
+
+    # Header: bold, slightly larger size.
+    header_w <- if (length(col@header) > 0L && !is.na(col@header) && nzchar(col@header)) {
+      shape_max(col@header, bold = TRUE, sz = header_size_px)
+    } else NA_real_
+    # Cells: regular weight, base size.
+    vals <- as.character(df[[field]])
+    vals <- vals[!is.na(vals) & nzchar(vals)]
+    cell_w <- shape_max(vals, bold = FALSE, sz = size_px)
+
+    max_text <- suppressWarnings(max(c(header_w, cell_w), na.rm = TRUE))
+    if (!is.finite(max_text)) return(NULL)
+
+    computed <- ceiling(max_text + cell_padding + rendering_buffer)
+    as.integer(min(auto_max, max(auto_min, computed)))
+  }
+
+  # Body columns.
+  for (idx in seq_along(spec@columns)) {
+    w <- measure_one(spec@columns[[idx]])
+    if (!is.null(w)) spec@columns[[idx]]@width <- w
+  }
+  # Label column lives on its own slot (0.34.2+); apply the same measurement
+  # so the leftmost column tracks the rest in shared exports.
+  if (!is.null(spec@label_column)) {
+    w <- measure_one(spec@label_column)
+    if (!is.null(w)) spec@label_column@width <- w
+  }
+
+  spec
+}
+
 resolve_flex_cap <- function(flex) {
   if (isTRUE(flex)) return(2)
   if (isFALSE(flex)) return(1)
