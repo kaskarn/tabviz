@@ -27,6 +27,7 @@ Collate:
     'classes-annotations.R'
     'glyph-registry.R'
     'v8-bridge.R'
+    'schema-defaults.R'
     'classes-components.R'
     'update-check.R'
     'utils-nse.R'
