@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>tabviz browser bench fixture</title>
+  <style>
+    body { margin: 0; padding: 16px; font-family: -apple-system, system-ui, sans-serif; }
+    #widget { width: 1200px; height: 800px; }
+  </style>
+  <!-- Minimal HTMLWidgets shim. Real htmlwidgets.js does more (initialState,
+       sizing, Shiny bindings, postRenderHandlers); for bench purposes we
+       only need: (a) a registry the tabviz bundle can call .widget() against
+       on load, (b) a way to retrieve the registered binding so we can mount
+       a fixture spec from page.evaluate. -->
+  <script>
+    window.HTMLWidgets = {
+      _widgets: [],
+      widget(binding) { this._widgets.push(binding); },
+      find(name) {
+        return this._widgets.find(function (w) { return w.name === name; });
+      },
+      // tabviz's bundle calls staticRender on DOMContentLoaded if it exists.
+      // We never want auto-render — the harness drives mount/timing manually.
+      staticRender() { /* no-op */ },
+    };
+    // Shiny-binding feature detection used by the widget; explicitly off.
+    window.Shiny = undefined;
+  </script>
+</head>
+<body>
+  <!-- Container for the widget. The harness instantiates the binding's
+       factory against this element and calls renderValue(spec). -->
+  <div id="widget"
+       class="html-widget html-widget-output"
+       style="width:1200px;height:800px;"></div>
+  <!-- Bundle is injected by the Puppeteer harness via page.addScriptTag({ path }). -->
+</body>
+</html>

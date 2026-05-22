@@ -1,0 +1,66 @@
+{
+  "bundle": "/Users/antoine/dev/r/forest/inst/htmlwidgets/tabviz.js",
+  "iters": 3,
+  "timestamp": "2026-05-22T06:08:01.639Z",
+  "results": [
+    {
+      "scenario": "renderValue",
+      "fixture": "small_mixed",
+      "rows": 100,
+      "columns": 5,
+      "stats": {
+        "iterations": 3,
+        "medianMs": 66.19999998807907,
+        "meanMs": 58.566666642824806,
+        "stddev": 12.974419293019123,
+        "minMs": 40.299999952316284,
+        "maxMs": 69.19999998807907
+      }
+    },
+    {
+      "scenario": "renderValue",
+      "fixture": "medium_mixed",
+      "rows": 1000,
+      "columns": 10,
+      "stats": {
+        "iterations": 3,
+        "medianMs": 1247.0999999642372,
+        "meanMs": 1209.0999999841054,
+        "stddev": 96.01878288547988,
+        "minMs": 1077.199999988079,
+        "maxMs": 1303
+      }
+    },
+    {
+      "scenario": "renderValue",
+      "fixture": "large_mixed",
+      "rows": 5000,
+      "columns": 10,
+      "stats": "timeout"
+    },
+    {
+      "scenario": "split.renderAll",
+      "fixture": "split_small",
+      "rows": 100,
+      "columns": 8,
+      "subsets": 10,
+      "stats": "timeout"
+    },
+    {
+      "scenario": "split.renderAll",
+      "fixture": "split_medium",
+      "rows": 100,
+      "columns": 8,
+      "subsets": 50,
+      "stats": "timeout"
+    },
+    {
+      "scenario": "split.renderAll",
+      "fixture": "split_large",
+      "rows": 1000,
+      "columns": 8,
+      "subsets": 5,
+      "stats": "timeout"
+    }
+  ]
+}
