@@ -6,27 +6,27 @@ schema_defaults <- list(
   numeric = list(
     align = "left",
     width = "auto",
+    sortable = TRUE,
     wrap = FALSE,
     decimals = 2,
     thousands_sep = FALSE,
-    abbreviate = FALSE,
-    sortable = TRUE
+    abbreviate = FALSE
   ),
   percent = list(
     align = "left",
     width = "auto",
+    sortable = TRUE,
     wrap = FALSE,
     decimals = 1,
     thousands_sep = FALSE,
     abbreviate = FALSE,
     multiply = TRUE,
-    symbol = TRUE,
-    sortable = TRUE
+    symbol = TRUE
   ),
   text = list(
     align = "left",
     width = "auto",
-    wrap = FALSE,
-    sortable = TRUE
+    sortable = TRUE,
+    wrap = FALSE
   )
 )

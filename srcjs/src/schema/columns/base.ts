@@ -1,15 +1,14 @@
-// `base` layer — truly column-agnostic. Every column type, including
-// viz columns, has these. Header label + visibility + width are
-// universal; align positions cell content within the column (text,
-// sparkline placement, bar start); headerAlign is here because the
-// header itself is always text. All options live on top-level
-// ColumnSpec, so `at: "fixed"`.
+// `base` — abstract column schema. Every column type, including viz,
+// inherits these structural knobs. Header label + visibility + width +
+// content position are universal. All options live on the top-level
+// ColumnSpec (not in `column.options`), so `at: "fixed"`.
 
-import type { LayerSpec } from "../types";
+import type { ColumnSchema } from "../types";
 
-export const BASE_LAYER: LayerSpec = {
+export const BASE_SCHEMA: ColumnSchema = {
   key: "base",
   label: "Base",
+  abstract: true,
   defaultOpen: false,
   options: [
     {

@@ -1,42 +1,46 @@
-// Tests for the layer inheritance resolver.
+// Tests for the schema inheritance resolver.
 
 import { describe, test, expect } from "bun:test";
-import { resolveLayers } from "./resolve";
-import { TEXT_COLUMN } from "./columns/text";
-import { NUMERIC_COLUMN } from "./columns/numeric";
-import { PERCENT_COLUMN } from "./columns/percent";
+import { resolveSchema } from "./resolve";
+import { TEXT_SCHEMA } from "./columns/text";
+import { NUMERIC_SCHEMA } from "./columns/numeric";
+import { PERCENT_SCHEMA } from "./columns/percent";
 
-describe("resolveLayers", () => {
-  test("text composes [base, text, sortable]", () => {
-    const keys = resolveLayers(TEXT_COLUMN).map((l) => l.key);
-    expect(keys).toEqual(["base", "text", "sortable"]);
+describe("resolveSchema", () => {
+  test("text resolves to [base, sortable, text]", () => {
+    // Multi-inheritance: text inherits [base, sortable] simultaneously.
+    // Resolver emits ancestors before the leaf; sibling order follows
+    // the declaration order in `inherits`.
+    const keys = resolveSchema(TEXT_SCHEMA).map((s) => s.key);
+    expect(keys).toEqual(["base", "sortable", "text"]);
   });
 
-  test("numeric composes [base, text, numeric, sortable]", () => {
-    const keys = resolveLayers(NUMERIC_COLUMN).map((l) => l.key);
-    expect(keys).toEqual(["base", "text", "numeric", "sortable"]);
+  test("numeric resolves to [base, sortable, text, numeric]", () => {
+    const keys = resolveSchema(NUMERIC_SCHEMA).map((s) => s.key);
+    expect(keys).toEqual(["base", "sortable", "text", "numeric"]);
   });
 
-  test("percent composes [base, text, numeric, percent, sortable]", () => {
-    const keys = resolveLayers(PERCENT_COLUMN).map((l) => l.key);
-    expect(keys).toEqual(["base", "text", "numeric", "percent", "sortable"]);
+  test("percent resolves to [base, sortable, text, numeric, percent]", () => {
+    const keys = resolveSchema(PERCENT_SCHEMA).map((s) => s.key);
+    expect(keys).toEqual(["base", "sortable", "text", "numeric", "percent"]);
   });
 
   test("ancestor appears before descendant (topological)", () => {
-    const keys = resolveLayers(PERCENT_COLUMN).map((l) => l.key);
+    const keys = resolveSchema(PERCENT_SCHEMA).map((s) => s.key);
     expect(keys.indexOf("base")).toBeLessThan(keys.indexOf("text"));
     expect(keys.indexOf("text")).toBeLessThan(keys.indexOf("numeric"));
     expect(keys.indexOf("numeric")).toBeLessThan(keys.indexOf("percent"));
+    expect(keys.indexOf("sortable")).toBeLessThan(keys.indexOf("text"));
   });
 
-  test("each layer appears exactly once even when declared transitively", () => {
-    const keys = resolveLayers(PERCENT_COLUMN).map((l) => l.key);
+  test("each schema appears exactly once", () => {
+    const keys = resolveSchema(PERCENT_SCHEMA).map((s) => s.key);
     const counts = keys.reduce<Record<string, number>>((acc, k) => {
       acc[k] = (acc[k] ?? 0) + 1;
       return acc;
     }, {});
     for (const [k, n] of Object.entries(counts)) {
-      expect(n, `layer ${k} appeared ${n} times`).toBe(1);
+      expect(n, `schema ${k} appeared ${n} times`).toBe(1);
     }
   });
 });

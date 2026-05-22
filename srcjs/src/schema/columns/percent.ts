@@ -1,26 +1,40 @@
-// `percent` column — percentage display.
-// Wire `type` is "numeric" (the renderer dispatches percent/numeric
-// through the same formatNumber path); options live in the `percent`
-// bucket which is what triggers the percent code path.
+// `percent` — concrete column schema for percentage display.
+// Inherits NUMERIC (NUMERIC → TEXT → BASE + SORTABLE all transit).
+//
+// Wire note: `column.type` is "numeric" (the renderer dispatches
+// percent and numeric through the same formatNumber path); options
+// live in the `percent` bucket, which triggers the percent code path.
 
-import type { ColumnTypeSpec } from "../types";
-import { PERCENT_LAYER } from "../layers/percent";
-import { SORTABLE_LAYER } from "../layers/sortable";
+import type { ColumnSchema } from "../types";
 
-export const PERCENT_COLUMN: ColumnTypeSpec = {
-  // Note: column.type on the wire is "numeric"; the wire bucket is
-  // "percent". Both R `col_percent()` and the renderer agree on this.
-  type: "numeric",
+export const PERCENT_SCHEMA: ColumnSchema = {
+  key: "percent",
   label: "Percent",
-  category: "numeric",
+  defaultOpen: true,
+  inherits: "numeric",
+  type: "numeric",
   bucket: "percent",
-  // PERCENT inherits NUMERIC inherits TEXT inherits BASE.
-  layers: [PERCENT_LAYER, SORTABLE_LAYER],
-  layerOverrides: {
-    // Percent defaults to 1 decimal place (where numeric defaults to 2).
-    numeric: { decimals: 1, thousandsSep: false, abbreviate: false },
-  },
+  category: "numeric",
   slots: [
     { key: "field", label: "Value", accepts: ["numeric", "integer"], required: true },
+  ],
+  optionOverrides: {
+    // Percent defaults to 1 decimal place (numeric defaults to 2).
+    decimals: 1,
+  },
+  options: [
+    {
+      key: "multiply",
+      label: "Multiply ×100",
+      control: "toggle",
+      default: true,
+      hint: "Off if the source field is already a percentage",
+    },
+    {
+      key: "symbol",
+      label: 'Show "%"',
+      control: "toggle",
+      default: true,
+    },
   ],
 };

@@ -1,71 +1,65 @@
-// Layer-inheritance resolver.
+// Schema-inheritance resolver.
 //
-// A column type's `layers` list is *declarations*: the distinctive
-// layers the type wants. The resolver walks each layer's `inherits`
-// chain transitively and returns the full ordered set, topologically
-// sorted (BASE first, leaf-most last). The editor reverses to render
-// the accordion specific-first per the design.
+// A column schema's `inherits` declares its parent(s) — single key or
+// array. The resolver walks the DAG transitively and topo-sorts the
+// reachable schemas so ancestors come before descendants.
 //
-// Cycles fail loud — inheritance is acyclic by definition.
+// Multi-inheritance is real and load-bearing here. TEXT inherits both
+// BASE (layout) and SORTABLE (capability). A future RING column will
+// inherit both PICTOGRAM (the SVG glyph) and PERCENT (the text label
+// next to the ring). The resolver is a DAG walk — no parent-pointer
+// trees that would force these into a single chain.
+//
+// Cycles fail loud.
 
-import type { ColumnTypeSpec, LayerSpec } from "./types";
-import { BASE_LAYER } from "./layers/base";
-import { TEXT_LAYER } from "./layers/text";
-import { NUMERIC_LAYER } from "./layers/numeric";
-import { PERCENT_LAYER } from "./layers/percent";
-import { SORTABLE_LAYER } from "./layers/sortable";
-
-/** Layer key → layer object. Add new layers here. */
-const LAYER_REGISTRY: Record<string, LayerSpec> = {
-  base: BASE_LAYER,
-  text: TEXT_LAYER,
-  numeric: NUMERIC_LAYER,
-  percent: PERCENT_LAYER,
-  sortable: SORTABLE_LAYER,
-};
+import type { ColumnSchema } from "./types";
+import { SCHEMA_REGISTRY } from "./columns";
 
 /** Normalize `inherits` to a string[] (handles single-string form). */
-function parents(layer: LayerSpec): string[] {
-  const i = layer.inherits;
+function parents(schema: ColumnSchema): string[] {
+  const i = schema.inherits;
   if (i == null) return [];
   return typeof i === "string" ? [i] : i;
 }
 
 /**
- * Resolve a column type's effective layers: walk `inherits`
- * transitively and topo-sort. Result is in order BASE → leaf.
+ * Resolve a schema's effective ancestry: itself + every reachable
+ * ancestor, topo-sorted (BASE-most first, leaf-most last).
+ *
+ * For abstract schemas this is mostly internal use; for concrete
+ * schemas it's what the editor and codegen iterate to compute the
+ * effective option list.
  */
-export function resolveLayers(col: ColumnTypeSpec): LayerSpec[] {
-  // Collect every layer reachable from the column's declared layers.
-  const reachable = new Map<string, LayerSpec>();
+export function resolveSchema(schema: ColumnSchema): ColumnSchema[] {
+  // Collect everything reachable from this schema upward.
+  const reachable = new Map<string, ColumnSchema>();
   const visit = (key: string, stack: string[]): void => {
     if (reachable.has(key)) return;
     if (stack.includes(key)) {
-      throw new Error(`Layer inheritance cycle: ${[...stack, key].join(" -> ")}`);
+      throw new Error(`Schema inheritance cycle: ${[...stack, key].join(" -> ")}`);
     }
-    const layer = LAYER_REGISTRY[key];
-    if (!layer) throw new Error(`Unknown layer "${key}" referenced from ${col.type}`);
-    for (const dep of parents(layer)) visit(dep, [...stack, key]);
-    reachable.set(key, layer);
+    const s = SCHEMA_REGISTRY[key];
+    if (!s) throw new Error(`Unknown schema "${key}" referenced from ${schema.key}`);
+    for (const dep of parents(s)) visit(dep, [...stack, key]);
+    reachable.set(key, s);
   };
-  for (const declared of col.layers) visit(declared.key, []);
+  visit(schema.key, []);
 
-  // Topological sort: emit a node only after its ancestors.
-  const result: LayerSpec[] = [];
+  // Topological sort: emit a node only after its ancestors. For ties
+  // (e.g. multi-inheritance siblings BASE + SORTABLE both reachable
+  // from TEXT), emit in declaration order from the inherits list.
+  const result: ColumnSchema[] = [];
   const emitted = new Set<string>();
   const emit = (key: string): void => {
     if (emitted.has(key)) return;
-    const layer = reachable.get(key)!;
-    for (const dep of parents(layer)) emit(dep);
-    result.push(layer);
+    const s = reachable.get(key)!;
+    for (const dep of parents(s)) emit(dep);
+    result.push(s);
     emitted.add(key);
   };
-  // Stable order: emit in the order declared on the column type so
-  // that for ties (e.g. SORTABLE alongside a leaf layer), the user
-  // gets the order they wrote.
-  for (const declared of col.layers) emit(declared.key);
+  emit(schema.key);
 
   return result;
 }
 
-export { LAYER_REGISTRY };
+export { SCHEMA_REGISTRY };

@@ -1,22 +1,28 @@
-// Column registry — single source of truth for column-type metadata.
-//
-// Add new types here; the editor and codegen pick them up automatically.
+// Column-schema registry — single source of truth for column-type
+// metadata. Add new schemas (concrete or abstract) here; the editor
+// and codegen pick them up automatically.
 
-import type { ColumnRegistry } from "../types";
-import { TEXT_COLUMN } from "./text";
-import { NUMERIC_COLUMN } from "./numeric";
-import { PERCENT_COLUMN } from "./percent";
+import type { SchemaRegistry } from "../types";
+import { BASE_SCHEMA } from "./base";
+import { SORTABLE_SCHEMA } from "./sortable";
+import { TEXT_SCHEMA } from "./text";
+import { NUMERIC_SCHEMA } from "./numeric";
+import { PERCENT_SCHEMA } from "./percent";
 
 /**
- * Keys are the *editor-side* column-type identifiers (matching the labels
- * shown in the type-picker), NOT necessarily the wire `column.type`. The
- * percent entry's `.type` is "numeric"; the registry key is "percent" so
- * the editor's preset menu can distinguish them.
+ * Schemas can be abstract (BASE, SORTABLE — no `type`/`bucket`) or
+ * concrete (TEXT, NUMERIC, PERCENT). The keys here match each
+ * schema's `key` field — used as the inheritance handle.
  */
-export const COLUMN_REGISTRY: ColumnRegistry = {
-  text: TEXT_COLUMN,
-  numeric: NUMERIC_COLUMN,
-  percent: PERCENT_COLUMN,
+export const SCHEMA_REGISTRY: SchemaRegistry = {
+  base:     BASE_SCHEMA,
+  sortable: SORTABLE_SCHEMA,
+  text:     TEXT_SCHEMA,
+  numeric:  NUMERIC_SCHEMA,
+  percent:  PERCENT_SCHEMA,
 };
 
-export { TEXT_COLUMN, NUMERIC_COLUMN, PERCENT_COLUMN };
+export {
+  BASE_SCHEMA, SORTABLE_SCHEMA,
+  TEXT_SCHEMA, NUMERIC_SCHEMA, PERCENT_SCHEMA,
+};

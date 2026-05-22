@@ -1,15 +1,26 @@
 // Column schema — single source of truth for column-type metadata.
 //
-// Each ColumnTypeSpec declares: which layers contribute its options,
-// where on the wire each option lives, and what control the editor
-// uses to surface it. The editor reads this registry to build its
-// accordion sections; the codegen script reads it to emit
-// `column-options.generated.ts` and `R/schema-defaults.R`.
+// **One concept**: a ColumnSchema. Some schemas are *abstract*
+// (structural, no rendering — e.g. BASE has header/align/width but
+// isn't a column type users can pick). Some are *concrete* — they
+// declare a wire `type`/`bucket`/`slots` and appear in the column
+// picker. Both kinds compose options via `inherits` (single or
+// multi-inheritance).
 //
-// See plan: /Users/antoine/.claude/plans/encapsulated-snacking-leaf.md
+// Examples of the structure:
+//   BASE     abstract — header/align/width/headerAlign/showHeader
+//   SORTABLE abstract — sortable
+//   TEXT     concrete, inherits [BASE, SORTABLE] — adds wrap/naText/maxChars
+//   NUMERIC  concrete, inherits TEXT             — adds decimals/digits/...
+//   PERCENT  concrete, inherits NUMERIC          — adds multiply/symbol
+//   SPARKLINE concrete, inherits BASE            — adds height/type/color
+//                                                  (no SORTABLE — array-valued)
 //
-// "Layer" is a column-schema vocabulary term distinct from the
-// theme-resolution Tier / Cluster / Slot / Token in CLAUDE.md.
+// The codegen + editor walk the inherits chain to produce the
+// effective option set; the wire shape stays flat per the bucket.
+//
+// "Schema" is this column-spec vocabulary; distinct from theme
+// Tier/Cluster/Slot/Token in CLAUDE.md.
 
 import type { ColumnType, FieldCategory, SlotSpec, ColumnSpec } from "../types";
 
@@ -34,7 +45,7 @@ export type ControlKind =
  * `column.options[<bucket>][<key>]`. `"top"` puts it at
  * `column.options[<key>]` (for legacy fields like `naText`). `"fixed"`
  * puts it as a top-level ColumnSpec property (for `width`, `align`,
- * `header`, etc. — used by the base layer).
+ * `header`, etc.).
  */
 export type WireAt = "bucket" | "top" | "fixed";
 
@@ -79,65 +90,60 @@ export interface OptionSpec<T = unknown> {
   consumedBy?: string[];
 }
 
-/** A named, reusable bundle of options. */
-export interface LayerSpec {
-  /** Identifier — used in section state persistence + codegen. */
+/**
+ * A column schema — declares an editor accordion section's worth of
+ * options + the wire-shape metadata (if concrete).
+ *
+ * - **Abstract** schemas (`abstract: true`): structural only. They
+ *   contribute options to descendants but can't be instantiated as a
+ *   column type. Examples: BASE, SORTABLE. They don't have `bucket`
+ *   or `type` or `slots`.
+ *
+ * - **Concrete** schemas: have `bucket`, `type`, `slots`. Appear in
+ *   the column-picker. Examples: TEXT, NUMERIC, PERCENT.
+ *
+ * Inheritance is via `inherits` — a single parent key or an array of
+ * parent keys (multi-inheritance). The resolver walks the DAG and
+ * topo-sorts to produce the effective option list.
+ */
+export interface ColumnSchema {
+  /** Identifier — used for inheritance, section state, codegen. */
   key: string;
-  /** Accordion title in the editor. */
+  /** Editor label (accordion title + picker entry for concrete schemas). */
   label: string;
-  /** Options contributed by this layer. */
-  options: OptionSpec[];
+  /** True if this schema is structural only and can't be a column type. */
+  abstract?: boolean;
   /** Initial open/closed state for the accordion. Default: true. */
   defaultOpen?: boolean;
   /**
-   * Layer keys this layer inherits from. The resolver walks `inherits`
-   * transitively when computing a column type's effective layers, so
-   * a column only needs to list its distinctive leaf layers.
-   *
-   * Single-string and array forms both supported — most layers have a
-   * single parent (numeric ⟵ text ⟵ base), but the array form leaves
-   * room for diamonds if they show up later.
-   *
-   * Example: `PERCENT_LAYER.inherits = "numeric"`,
-   * `NUMERIC_LAYER.inherits = "text"`,
-   * `TEXT_LAYER.inherits = "base"` — declaring `PERCENT_LAYER` on a
-   * column type pulls in [BASE, TEXT, NUMERIC] automatically. Layers
-   * with no parent (e.g. `SORTABLE_LAYER`, `BASE_LAYER`) omit the
-   * field — they're orthogonal capabilities, not part of an
-   * inheritance chain.
+   * Parent schema key(s). Multi-inheritance is intentional — TEXT
+   * inherits both BASE (layout) and SORTABLE (capability). The
+   * resolver topo-sorts via the DAG.
    */
   inherits?: string | string[];
-}
+  /** Options this schema contributes. */
+  options: OptionSpec[];
 
-/** Full schema for one column type. */
-export interface ColumnTypeSpec {
+  // ── Concrete-only fields (omit on abstract schemas) ────────────────
+
   /** Wire `column.type` value. */
-  type: ColumnType;
-  /** Editor label (presentation only). */
-  label: string;
-  /** Coarse grouping for the column-type menu. */
-  category: "text" | "numeric" | "visual" | "glyph" | "viz";
+  type?: ColumnType;
   /**
    * Bucket on `column.options` where this type's options live (for
-   * options whose `at` is `"bucket"`). For percent columns the bucket
-   * is `"percent"` even though the wire `type` is `"numeric"` —
+   * options whose `at` is `"bucket"`). For percent the bucket is
+   * `"percent"` even though the wire `type` is `"numeric"` —
    * historical, preserved.
    */
-  bucket: string;
-  /**
-   * Layers contributing options, root → leaf order. Listing order is
-   * **inheritance order for the editor only**; wire shape is flat
-   * inside the column's bucket. Lists, not trees — diamonds work
-   * (the viz-axis layer is shared by 4 unrelated viz types).
-   */
-  layers: LayerSpec[];
+  bucket?: string;
+  /** Coarse grouping for the column-type menu. */
+  category?: "text" | "numeric" | "visual" | "glyph" | "viz";
   /** Field slots — point/lower/upper, value, etc. Existing slot system. */
-  slots: SlotSpec[];
-  /** Per-column-type defaults that override layer defaults. */
-  layerOverrides?: Record<string, Record<string, unknown>>;
+  slots?: SlotSpec[];
+  /** Per-schema option default overrides (e.g. percent overrides numeric's decimals=2 to 1). */
+  optionOverrides?: Record<string, unknown>;
   /** Fixed (non-tweakable) column-spec values (e.g. `sortable: false` for viz). */
   fixed?: Partial<ColumnSpec>;
 }
 
 /** The registry — populated by `columns/index.ts`. */
-export type ColumnRegistry = Record<string, ColumnTypeSpec>;
+export type SchemaRegistry = Record<string, ColumnSchema>;

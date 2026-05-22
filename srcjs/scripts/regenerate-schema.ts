@@ -1,12 +1,12 @@
 /**
  * Regenerate column-schema artifacts from `src/schema/columns/index.ts`.
  *
- * Reads the COLUMN_REGISTRY and emits:
+ * Reads the SCHEMA_REGISTRY and emits:
  *   - `src/types/column-options.generated.ts` — flat per-bucket TS
  *     interfaces (`TextBucketOptions`, `NumericBucketOptions`,
  *     `PercentBucketOptions`, …).
  *   - `../R/schema-defaults.R` — one R list of effective defaults per
- *     registry key; read by R `col_*` helpers.
+ *     concrete schema; read by R `col_*` helpers.
  *
  * Usage: `bun run scripts/regenerate-schema.ts`
  *
@@ -20,33 +20,49 @@
 
 import { writeFileSync } from "fs";
 import { resolve } from "path";
-import { COLUMN_REGISTRY } from "../src/schema/columns";
-import { resolveLayers } from "../src/schema/resolve";
-import type { OptionSpec, ColumnTypeSpec } from "../src/schema/types";
+import { SCHEMA_REGISTRY } from "../src/schema/columns";
+import { resolveSchema } from "../src/schema/resolve";
+import type { OptionSpec, ColumnSchema } from "../src/schema/types";
 
 // ────────────────────────────────────────────────────────────────────
-// Effective-defaults resolution
+// Effective-options resolution
 // ────────────────────────────────────────────────────────────────────
 
 /**
- * Walk the resolved layers (BASE → leaf); later-layer options shadow
- * earlier ones with the same key. `layerOverrides` lets a column type
- * adjust a default contributed by an ancestor (e.g. percent overriding
+ * Walk the resolved schema ancestry (BASE → leaf); later schemas'
+ * options shadow earlier ones with the same key. `optionOverrides`
+ * lets a schema adjust an inherited default (e.g. percent overriding
  * numeric's `decimals=2` to `decimals=1`).
+ *
+ * Override resolution: an option's default is replaced by *any*
+ * descendant's `optionOverrides[key]` if present. Most-specific
+ * descendant wins on conflict (handled by iterating BASE → leaf and
+ * letting later assignments overwrite).
  */
-function effectiveOptions(col: ColumnTypeSpec): Map<string, OptionSpec> {
+function effectiveOptions(schema: ColumnSchema): Map<string, OptionSpec> {
+  const chain = resolveSchema(schema);
+  // First pass: collect option specs in inheritance order.
   const out = new Map<string, OptionSpec>();
-  for (const layer of resolveLayers(col)) {
-    for (const opt of layer.options) {
-      const clone: OptionSpec = { ...opt };
-      const override = col.layerOverrides?.[layer.key]?.[opt.key];
-      if (override !== undefined) {
-        clone.default = override as never;
-      }
-      out.set(opt.key, clone);
+  for (const s of chain) {
+    for (const opt of s.options) {
+      out.set(opt.key, { ...opt });
+    }
+  }
+  // Second pass: apply optionOverrides from each schema in the chain;
+  // later schemas (more specific) win.
+  for (const s of chain) {
+    if (!s.optionOverrides) continue;
+    for (const [k, v] of Object.entries(s.optionOverrides)) {
+      const cur = out.get(k);
+      if (cur) out.set(k, { ...cur, default: v as never });
     }
   }
   return out;
+}
+
+/** Only concrete schemas (those with a bucket) get emitted. */
+function concreteSchemas(): ColumnSchema[] {
+  return Object.values(SCHEMA_REGISTRY).filter((s) => !s.abstract && s.bucket);
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -55,19 +71,18 @@ function effectiveOptions(col: ColumnTypeSpec): Map<string, OptionSpec> {
 
 /**
  * For each bucket, collect the union of bucket-targeted options across
- * all columns using that bucket. Yields one interface per bucket.
+ * all concrete schemas using that bucket. Yields one interface per
+ * bucket.
  */
 function emitBucketInterfaces(): string {
   const byBucket = new Map<string, Map<string, OptionSpec>>();
-  for (const col of Object.values(COLUMN_REGISTRY)) {
-    const bucket = col.bucket;
+  for (const col of concreteSchemas()) {
+    const bucket = col.bucket!;
     if (!byBucket.has(bucket)) byBucket.set(bucket, new Map());
     const bag = byBucket.get(bucket)!;
     for (const opt of effectiveOptions(col).values()) {
       const at = opt.at ?? "bucket";
       if (at !== "bucket") continue;
-      // If two columns disagree on an option's type, the last writer
-      // wins — flag during code review.
       bag.set(opt.key, opt);
     }
   }
@@ -99,7 +114,6 @@ function bucketInterfaceName(bucket: string): string {
 function optionTsType(opt: OptionSpec): string {
   switch (opt.control) {
     case "toggle":
-      // thousandsSep: wire type is `string | false`; editor toggle picks.
       if (opt.key === "thousandsSep") return "string | false";
       return "boolean";
     case "number":
@@ -136,15 +150,13 @@ function emitRDefaults(): string {
   lines.push("schema_defaults <- list(");
 
   const entries: string[] = [];
-  for (const [key, col] of [...Object.entries(COLUMN_REGISTRY)].sort()) {
+  for (const col of concreteSchemas().sort((a, b) => a.key.localeCompare(b.key))) {
     const optsList: string[] = [];
     for (const opt of effectiveOptions(col).values()) {
-      // R lists use NULL for null/undefined defaults. Skip null defaults
-      // entirely — they're indistinguishable from absent in R.
       if (opt.default === null || opt.default === undefined) continue;
       optsList.push(`    ${rArgName(opt.key)} = ${rLiteral(opt.default)}`);
     }
-    entries.push(`  ${key} = list(\n${optsList.join(",\n")}\n  )`);
+    entries.push(`  ${col.key} = list(\n${optsList.join(",\n")}\n  )`);
   }
 
   lines.push(entries.join(",\n"));
@@ -154,7 +166,6 @@ function emitRDefaults(): string {
   return lines.join("\n");
 }
 
-/** Convert camelCase option key to R snake_case argument name. */
 function rArgName(camel: string): string {
   return camel.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
 }
@@ -180,7 +191,7 @@ const rOut  = resolve(here, "../../R/schema-defaults.R");
 writeFileSync(tsOut, emitBucketInterfaces());
 writeFileSync(rOut, emitRDefaults());
 
+const buckets = new Set(concreteSchemas().map((s) => s.bucket));
 console.log(`✓ ${tsOut}`);
 console.log(`✓ ${rOut}`);
-console.log(`  ${Object.keys(COLUMN_REGISTRY).length} column types, ` +
-            `${new Set(Object.values(COLUMN_REGISTRY).map(c => c.bucket)).size} buckets`);
+console.log(`  ${concreteSchemas().length} concrete schemas, ${buckets.size} buckets`);
