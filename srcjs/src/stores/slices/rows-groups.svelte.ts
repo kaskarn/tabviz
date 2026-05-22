@@ -100,11 +100,14 @@ export interface RowsGroupsSlice {
 export function createRowsGroupsSlice(
   deps: RowsGroupsSliceDeps,
 ): RowsGroupsSlice {
-  let collapsedGroups = $state<Set<string>>(new Set());
-  let rowOrderOverrides = $state<RowOrderOverrides>({
+  // REPLACE-only state (per audit): use `$state.raw` to skip proxy wrap.
+  let collapsedGroups = $state.raw<Set<string>>(new Set());
+  let rowOrderOverrides = $state.raw<RowOrderOverrides>({
     byGroup: {},
     groupOrderByParent: {},
   });
+  // Primitives — `$state.raw` is equivalent to `$state` for primitives, so
+  // these keep the simpler form.
   let hoveredRowId = $state<string | null>(null);
   let tooltipRowId = $state<string | null>(null);
   let tooltipPosition = $state<{ x: number; y: number } | null>(null);

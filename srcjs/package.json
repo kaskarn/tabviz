@@ -67,6 +67,7 @@
     "test": "bun test && vitest run",
     "test:bun": "bun test",
     "test:vitest": "vitest run",
+    "bench": "bun run tests/perf/run-bench.ts",
     "lint": "eslint src --ext .ts,.svelte",
     "format": "prettier --write 'src/**/*.{ts,svelte,css}'",
     "screenshot": "node scripts/screenshot.js"

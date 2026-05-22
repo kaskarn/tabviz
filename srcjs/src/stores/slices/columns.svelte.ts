@@ -139,12 +139,20 @@ export interface ColumnsSlice {
 }
 
 export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
+  // `columnWidths` stays as `$state` (not `.raw`): `doMeasurement()` writes
+  // entries in-place via `target[col.id] = w` (lines 584, 604, 710) and
+  // `setColumnWidth` / `previewColumnWidth` also mutate keys directly
+  // (lines 428, 445). Converting would require refactoring those writers
+  // to spread-and-reassign; deferred until Phase 5 (see audit notes).
   let columnWidths = $state<Record<string, number>>({});
-  let userResizedIds = $state<Set<string>>(new Set());
-  let userInsertedColumns = $state<InsertedColumn[]>([]);
-  let hiddenColumnIds = $state<Set<string>>(new Set());
-  let columnSpecOverrides = $state<Record<string, ColumnSpec>>({});
-  let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
+  // Remaining slice state is REPLACE-only (per audit). `$state.raw` skips
+  // the deep-proxy wrap; the runtime read paths (Set.has, [k] lookup) work
+  // identically without it.
+  let userResizedIds = $state.raw<Set<string>>(new Set());
+  let userInsertedColumns = $state.raw<InsertedColumn[]>([]);
+  let hiddenColumnIds = $state.raw<Set<string>>(new Set());
+  let columnSpecOverrides = $state.raw<Record<string, ColumnSpec>>({});
+  let columnOrderOverrides = $state.raw<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
 
   // ── Helpers ────────────────────────────────────────────────────────────
 

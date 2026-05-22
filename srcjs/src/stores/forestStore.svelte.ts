@@ -60,8 +60,12 @@ import type { TabvizEvents } from "$spec/events";
 
 // Svelte 5 runes-based store
 export function createForestStore() {
-  // Core state
-  let spec = $state<WebSpec | null>(null);
+  // Core state. `$state.raw` skips the deep-proxy wrap — `spec` is always
+  // replaced wholesale via `setSpec({ ...prev, ...patch })` (see audit notes
+  // in CLAUDE.md; every write site is REPLACE, never in-place). The render
+  // hot path reads `spec.data.rows[i].metadata[field]` thousands of times
+  // per render; without `.raw`, every property access is a proxy trap.
+  let spec = $state.raw<WebSpec | null>(null);
 
   // ── Source tagging for outbound Shiny events ────────────────────────────
   // Extracted to $stores/slices/source.svelte.ts as the Q8 spike (idiom (c),

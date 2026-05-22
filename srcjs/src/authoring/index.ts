@@ -60,6 +60,11 @@ export {
   webTheme, setInputs, setVariants, setSpacing, setThemeField,
   resolveThemeRef, resolveTheme,
 } from "../lib/theme-api";
+
+// Resolved theme → portable CSS custom properties. Useful for inspecting,
+// exporting, or matching surrounding chrome to the tabviz palette.
+export { getThemeCSS, buildThemeCSS, buildWidgetCSS } from "../lib/theme-css";
+export type { WidgetCSSContext } from "../lib/theme-css";
 export type {
   WebThemeArgs, ThemeRef,
   ResolveDraft, ResolveOptions, ThemeOverrides,

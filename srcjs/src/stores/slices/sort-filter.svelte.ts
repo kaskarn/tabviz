@@ -81,8 +81,9 @@ export interface SortFilterSlice {
 }
 
 export function createSortFilterSlice(deps: SortFilterSliceDeps): SortFilterSlice {
-  let sortConfig = $state<SortConfig | null>(null);
-  let filters = $state<FiltersState>({});
+  // REPLACE-only state (per audit): use `$state.raw` to skip proxy wrap.
+  let sortConfig = $state.raw<SortConfig | null>(null);
+  let filters = $state.raw<FiltersState>({});
   let filterPopoverTarget = $state<
     { field: string; header: string; anchorX: number; anchorY: number } | null
   >(null);

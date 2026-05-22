@@ -295,3 +295,37 @@ set_spacing <- function(theme, ...) {
   theme@spacing <- apply_named_props(theme@spacing, args)
   resolve_theme(theme)
 }
+
+#' Emit a resolved theme as CSS custom properties.
+#'
+#' Returns the portable `--tv-*` CSS custom-property block the widget applies
+#' to its root container. Useful for inspection, exporting a theme to
+#' surrounding chrome (e.g. a Quarto report that wants matching colors), or
+#' building tooling around theme drafts.
+#'
+#' Delegates to the TS `getThemeCSS()` (`@tabviz/core`) via V8 so R and JS
+#' produce byte-identical output by construction — no parallel CSS emission.
+#' R↔TS parity is guarded by `tests/testthat/test-parity-themes.R`.
+#'
+#' @param theme A [WebTheme] (resolved or unresolved; re-resolved at call
+#'   time if needed), or a [WebSpec] whose theme is used.
+#' @return A character(1) string of `--tv-*: value;` declarations.
+#' @export
+#' @examples
+#' \dontrun{
+#'   css <- tabviz_theme_css(web_theme_cochrane())
+#'   cat(css)
+#' }
+tabviz_theme_css <- function(theme) {
+  if (inherits(theme, "tabviz::WebSpec")) {
+    theme <- theme@theme
+    if (is.null(theme)) {
+      cli::cli_abort("{.arg theme} is a {.cls WebSpec} but has no attached theme.")
+    }
+  }
+  if (!inherits(theme, "tabviz::WebTheme")) {
+    cli::cli_abort("{.arg theme} must be a {.cls WebTheme} or {.cls WebSpec}.")
+  }
+  wire <- serialize_theme(theme)
+  ts_call("getThemeCSS", wire)
+}

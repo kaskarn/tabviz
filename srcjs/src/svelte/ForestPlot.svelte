@@ -91,12 +91,8 @@
   import { computeBoxplotStats } from "$lib/viz-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { zoomable } from "$lib/zoom-interactions";
-  import { activeHeaderVariant } from "$lib/header-variant";
-  import {
-    TEXT_MEASUREMENT,
-    BADGE_VARIANTS,
-    generateCSSVariables,
-  } from "$lib/rendering-constants";
+  import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
+  import { buildWidgetCSS } from "$lib/theme-css";
   import {
     formatNumber,
     formatEvents,
@@ -1358,177 +1354,27 @@
   }
 
   // CSS variable style string (includes shared rendering constants for consistency)
-  const cssVars = $derived.by(() => {
-    if (!theme) return '';
-    // Pick the active header / first-column variant per theme.variants.
-    const headerVariant = activeHeaderVariant(theme);
-    const firstColBold = theme.variants?.firstColumnStyle === 'bold';
-    const firstColVariant = firstColBold ? theme.firstColumn?.bold : theme.firstColumn?.plain;
-    const firstColBg     = firstColVariant?.bg     ?? "transparent";
-    const firstColFg     = firstColVariant?.fg     ?? "inherit";
-    const firstColWeight = firstColVariant?.weight ?? "inherit";
-    const firstColRule   = firstColVariant?.rule   ?? "transparent";
-    return `
-      --tv-max-width: ${maxWidth ? `${maxWidth}px` : 'none'};
-      --tv-max-height: ${maxHeight ? `${maxHeight}px` : 'none'};
-      --tv-bg: ${theme.surface.base};
-      --tv-fg: ${theme.content.primary};
-      /* Identity tiers (2-tier mirror chain: secondary→primary). */
-      --tv-primary:        ${(theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
-      --tv-primary-deep:   ${(theme.inputs as { primaryDeep?: string } | undefined)?.primaryDeep ?? (theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
-      --tv-secondary:      ${(theme.inputs as { secondary?: string } | undefined)?.secondary ?? (theme.inputs as { primary?: string } | undefined)?.primary ?? theme.accent.default};
-      --tv-secondary-deep: ${(theme.inputs as { secondaryDeep?: string } | undefined)?.secondaryDeep ?? (theme.inputs as { primaryDeep?: string } | undefined)?.primaryDeep ?? theme.accent.default};
-      /* Engagement (orthogonal to identity). */
-      --tv-accent: ${theme.accent.default};
-      /* Text-muted (was --tv-secondary in pre-rework code; renamed to free
-         up --tv-secondary for identity). */
-      --tv-text-muted: ${theme.content.secondary};
-      --tv-muted: ${theme.content.muted};
-      --tv-border: ${theme.divider.subtle};
-      /* Hover/popover backgrounds — contrast-safe across every theme.
-         CONVENTION: never use bare --tv-border, --tv-accent, or
-         --tv-primary-deep as a hover background (themes that pin those
-         tokens dark — JAMA's accent=#000000 and divider.subtle=#000000,
-         dark theme's primary_deep=#2E5290 — produce illegible dark-on-dark
-         hover surfaces). Always use --tv-hover-bg or an inline
-         color-mix(--tv-accent N%, --tv-bg) at 6-14% strength. */
-      --tv-hover-bg: color-mix(in srgb, var(--tv-accent) 8%, var(--tv-bg));
-      /* Strong rules — header bottom, group row bottom, axis line, tick marks,
-         summary-row top. v2 R resolver computes these but the frontend
-         previously read --tv-border (the subtle one) for everything,
-         silently flattening strong → subtle. */
-      --tv-divider-strong:    ${theme.divider.strong};
-      --tv-header-rule:       ${headerVariant.rule ?? theme.divider.strong};
-      --tv-row-group-rule:    ${theme.rowGroup?.L1?.rule ?? theme.divider.strong};
-      --tv-axis-line:         ${theme.plot?.axisLine ?? theme.divider.strong};
-      --tv-axis-tick:         ${theme.plot?.tickMark ?? theme.divider.strong};
-      /* primary_deep-derived identity colors. Title fg defaults to
-         primary_deep on the R side; the panel can override per-field.
-         Fallback chain ends at content tones so themes that bypass the
-         resolver still degrade gracefully. */
-      --tv-text-title-fg:     ${theme.text.title?.fg     ?? theme.content.primary};
-      --tv-axis-label-fg:     ${theme.plot?.axisLabel?.fg ?? theme.content.muted};
-      --tv-axis-tick-fg:      ${theme.plot?.tickLabel?.fg ?? theme.content.muted};
-      --tv-row-bg: ${theme.row.base.bg};
-      --tv-alt-bg: ${theme.row.alt.bg};
-      --tv-header-bg: ${headerVariant.bg};
-      --tv-cell-fg: ${theme.cell.fg ?? theme.content.primary};
-      --tv-header-fg: ${headerVariant.fg};
-      --tv-interval-line: ${theme.series?.[0]?.stroke ?? theme.accent.default};
-      --tv-summary-fill: ${theme.series?.[0]?.fill ?? theme.accent.default};
-      --tv-summary-border: ${theme.series?.[0]?.stroke ?? theme.accent.default};
-      --tv-semantic-emphasis-fg: ${theme.row.emphasis?.fg ?? theme.content.primary};
-      --tv-semantic-muted-fg:    ${theme.row.muted?.fg    ?? theme.content.muted};
-      --tv-semantic-accent-fg:   ${theme.row.accent?.fg   ?? theme.accent.default};
-      --tv-semantic-emphasis-bg: ${theme.row.emphasis?.bg ?? "transparent"};
-      --tv-semantic-muted-bg:    ${theme.row.muted?.bg    ?? "transparent"};
-      --tv-semantic-accent-bg:   ${theme.row.accent?.bg   ?? "transparent"};
-      /* Status colors. --tv-status-* are the semantic names any column
-         type can reference (col_ring thresholds, col_pictogram fills,
-         col_badge scales). --tv-badge-* are the historical badge-variant
-         names; they alias to --tv-status-* so a single edit on the theme
-         flows through both surfaces. */
-      --tv-status-positive: ${theme.status?.positive ?? BADGE_VARIANTS.success};
-      --tv-status-warning:  ${theme.status?.warning  ?? BADGE_VARIANTS.warning};
-      --tv-status-negative: ${theme.status?.negative ?? BADGE_VARIANTS.error};
-      --tv-status-info:     ${theme.status?.info     ?? BADGE_VARIANTS.info};
-      --tv-badge-success: var(--tv-status-positive);
-      --tv-badge-warning: var(--tv-status-warning);
-      --tv-badge-error:   var(--tv-status-negative);
-      --tv-badge-info:    var(--tv-status-info);
-      --tv-badge-muted:   ${theme.content.muted};
-      --tv-font-family: ${theme.text.body.family};
-      --tv-text-title-family: ${theme.text.title?.family ?? theme.text.body.family};
-      --tv-font-size-sm: ${theme.text.label.size};
-      --tv-font-size-base: ${theme.text.body.size};
-      --tv-font-size-lg: ${theme.text.subtitle.size};
-      --tv-font-weight-normal: 400;
-      --tv-font-weight-medium: 500;
-      --tv-font-weight-bold: 600;
-      --tv-line-height: 1.5;
-      --tv-header-font-scale: 1.05;
-      /* Per-text-role weight + italic + size, read by PlotHeader / PlotFooter
-         and any cell that wants role-aware typography. Editing any
-         theme.text.{role}.{weight,italic,size} from the panel propagates
-         here and re-renders. */
-      --tv-text-title-weight: ${theme.text.title.weight ?? 600};
-      --tv-text-title-italic: ${theme.text.title.italic ? "italic" : "normal"};
-      --tv-text-title-size: ${theme.text.title.size ?? "1.25rem"};
-      --tv-text-subtitle-weight: ${theme.text.subtitle.weight ?? 400};
-      --tv-text-subtitle-italic: ${theme.text.subtitle.italic ? "italic" : "normal"};
-      --tv-text-subtitle-size: ${theme.text.subtitle.size ?? "1rem"};
-      --tv-text-caption-weight: ${theme.text.caption.weight ?? 400};
-      --tv-text-caption-italic: ${theme.text.caption.italic ? "italic" : "normal"};
-      --tv-text-caption-size: ${theme.text.caption.size ?? "0.75rem"};
-      --tv-text-footnote-weight: ${theme.text.footnote.weight ?? 400};
-      --tv-text-footnote-italic: ${theme.text.footnote.italic ? "italic" : "normal"};
-      --tv-text-footnote-size: ${theme.text.footnote.size ?? "0.75rem"};
-      --tv-text-cell-weight: ${theme.text.cell.weight ?? 400};
-      --tv-text-cell-italic: ${theme.text.cell.italic ? "italic" : "normal"};
-      --tv-text-header-weight: ${theme.header.text.weight ?? 600};
-      --tv-text-header-italic: ${theme.header.text.italic ? "italic" : "normal"};
-      --tv-text-header-family: ${theme.header.text?.family ?? theme.text.body.family};
-      /*
-       * Header text size. theme.header.text.size composes from
-       * theme.text.body.size at resolve time, so when nothing has been
-       * pinned the two are equal — fall back to the historical
-       * body.size times the --tv-header-font-scale (1.05) so the
-       * default look (5% bigger than body) is preserved. Once a user
-       * pins a distinct size via the panel or set_theme_field, the
-       * explicit value wins.
-       */
-      --tv-text-header-size: ${
-        theme.header.text?.size && theme.header.text.size !== theme.text.body.size
-          ? theme.header.text.size
-          : `calc(${theme.text.body.size} * 1.05)`
-      };
-      --tv-text-column-group-weight: ${theme.column_group?.text?.weight ?? 600};
-      --tv-text-tick-weight: ${theme.text.tick.weight ?? 400};
-      --tv-text-tick-italic: ${theme.text.tick.italic ? "italic" : "normal"};
-      --tv-text-tick-family: ${theme.text.tick?.family ?? theme.text.body.family};
-      --tv-text-label-weight: ${theme.text.label.weight ?? 400};
-      --tv-text-label-italic: ${theme.text.label.italic ? "italic" : "normal"};
-      --tv-text-label-family: ${theme.text.label?.family ?? theme.text.body.family};
-      /* First-column variant — applied to .primary-cell. */
-      --tv-first-col-bg: ${firstColBg};
-      --tv-first-col-fg: ${firstColFg};
-      --tv-first-col-weight: ${firstColWeight};
-      --tv-first-col-rule: ${firstColRule};
-      --tv-row-height: ${theme.spacing.rowHeight}px;
-      --tv-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
-      --tv-header-height: ${anyHeaderVisible ? layout.headerHeight : 0}px;
-      --tv-header-row-height: ${anyHeaderVisible ? layout.headerHeight / headerDepth : 0}px;
-      --tv-header-depth: ${effectiveHeaderDepth};
-      --tv-padding: ${theme.spacing.padding}px;
-      --tv-container-padding: ${theme.spacing.containerPadding}px;
-      --tv-cell-padding-x: ${theme.spacing.cellPaddingX}px;
-      /* --tv-cell-padding-y deprecated v0.21.x -- kept emitting at 0 so
-         any downstream consumer that still references the var doesn't
-         break, but .grid-cell no longer applies it (rows are flex-
-         centered + grid-template-rows pinned, so vertical cell padding
-         could only clip content). */
-      --tv-cell-padding-y: 0px;
-      --tv-viz-margin: ${VIZ_MARGIN}px;
-      --tv-axis-gap: ${theme.spacing.axisGap ?? TEXT_MEASUREMENT.DEFAULT_AXIS_GAP}px;
-      --tv-axis-height: ${layout.axisHeight}px;
-      --tv-group-padding: ${theme.spacing.columnGroupPadding ?? 8}px;
-      --tv-footer-gap: ${theme.spacing.footerGap ?? 8}px;
-      --tv-bottom-margin: ${theme.spacing.bottomMargin ?? 16}px;
-      --tv-title-subtitle-gap: ${theme.spacing.titleSubtitleGap ?? 13}px;
-      --tv-header-gap: ${theme.spacing.headerGap ?? 12}px;
-      --tv-plot-width: ${layout.forestWidth}px;
-      --tv-point-size: ${theme.plot.pointSize}px;
-      --tv-line-width: ${theme.plot.lineWidth}px;
-      --tv-row-border-width: ${theme.row.borderWidth ?? 1}px;
-      --tv-header-border-width: 2px;
-      --tv-group-border-width: 1px;
-      --tv-container-border: ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : 'none'};
-      --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
-      ${generateCSSVariables()}
-      --tv-actual-scale: ${actualScale};
-      --tv-zoom: ${zoom};
-    `.trim();
-  });
+  // Build the widget CSS variables. The portable theme-only portion is
+  // produced by `buildThemeCSS()` in $lib/theme-css and cached by theme
+  // identity; this `$derived` therefore only re-runs the cheap widget-
+  // instance composition when layout/zoom changes while the theme is stable.
+  // To inspect or export the resolved theme as CSS, call `getThemeCSS(theme)`
+  // from `$lib/theme-css`.
+  const cssVars = $derived(
+    buildWidgetCSS(theme ?? null, {
+      maxWidth: maxWidth ?? null,
+      maxHeight: maxHeight ?? null,
+      anyHeaderVisible,
+      headerHeight: layout.headerHeight,
+      headerDepth,
+      effectiveHeaderDepth,
+      axisHeight: layout.axisHeight,
+      forestWidth: layout.forestWidth,
+      actualScale,
+      zoom,
+    })
+  );
+
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -2836,6 +2682,15 @@
     /* Note: overflow is set in auto-fit/non-auto-fit specific rules below */
     display: flex;
     flex-direction: column;
+    /* Isolate the widget's layout/style/paint from the surrounding page so
+       interactions inside the widget don't trigger page-wide reflows, and
+       vice versa. `content-visibility: auto` lets the browser skip rendering
+       work when the widget is scrolled off-screen (e.g. embedded in a long
+       Quarto report). `contain-intrinsic-size` provides a size hint that
+       prevents layout-shift on first paint. */
+    contain: layout style paint;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
   }
 
   /* Paint-tool hover affordance. Under the always-on painter (v0.26+)
@@ -2946,6 +2801,10 @@
     overflow: auto;
     flex: 1;
     min-height: 0;
+    /* Isolate the giant grid's layout/paint from the toolbar / overlays
+       siblings. `paint` is safe alongside overflow:auto (overflow already
+       clips). */
+    contain: layout style paint;
   }
 
   /* Top border frames column headers (symmetric with header bottom border) */

@@ -107,10 +107,14 @@ export interface ThemeSlice {
 }
 
 export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
-  let themeEdits = $state<Record<string, Record<string, unknown>>>({});
+  // REPLACE-only state (per audit): use `$state.raw` to skip proxy wrap.
+  // The `$state.snapshot(themeEdits)` call later in this file (for
+  // structuredClone safety during split-widget snapshot persistence)
+  // continues to work — `$state.snapshot` is a no-op on raw signals.
+  let themeEdits = $state.raw<Record<string, Record<string, unknown>>>({});
   let baseThemeName = $state<string>("default");
-  let themeOverrides = $state<Set<string>>(new Set());
-  let initialTheme = $state<WebSpec["theme"] | null>(null);
+  let themeOverrides = $state.raw<Set<string>>(new Set());
+  let initialTheme = $state.raw<WebSpec["theme"] | null>(null);
   let initialWatermark = $state<string | undefined>(undefined);
 
   function cloneTheme(t: WebSpec["theme"]): WebSpec["theme"] {
