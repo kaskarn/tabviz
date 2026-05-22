@@ -1,0 +1,369 @@
+// Renderer + composition types for the schema system.
+//
+// These types describe the **extension API** for schemas: how cell
+// formatters compose along the inheritance chain, how render output
+// is shaped so browser + SVG-export can consume it uniformly, and how
+// schemas declare lifecycle hooks for cross-cutting concerns like
+// axis space, legends, or zoom/pan handlers.
+//
+// Implementation: Phase 7. The types here are the contract — handwritten
+// renderer code today still lives in `ForestPlot.svelte` +
+// `svg-generator.ts`; Phase 7 extracts those into pure functions that
+// match these signatures.
+
+import type { ColumnSchema } from "./types";
+import type { ColumnSpec } from "../types";
+
+// ────────────────────────────────────────────────────────────────────
+// Render description tree
+// ────────────────────────────────────────────────────────────────────
+//
+// Formatters return RenderNodes (JSON-like trees). Two consumers:
+//
+//  - Browser path: a Svelte component walks the tree and mounts DOM
+//    via the right element per `kind`.
+//  - SVG-export path: `svg-generator.ts` walks the tree and emits SVG
+//    markup directly.
+//
+// Single source of truth for "what does this cell look like"; browser
+// vs export divergence is a serialization detail.
+
+export type RenderNode =
+  | RenderText
+  | RenderGroup
+  | RenderSvg
+  | RenderSpacer
+  | RenderImage;
+
+export interface RenderText {
+  kind: "text";
+  value: string;
+  style?: TextStyle;
+}
+
+export interface RenderGroup {
+  kind: "group";
+  children: RenderNode[];
+  layout?: "row" | "column" | "stack";
+  gap?: number;
+  align?: "start" | "center" | "end" | "baseline";
+  style?: GroupStyle;
+}
+
+export interface RenderSvg {
+  kind: "svg";
+  markup: string;
+  width: number;
+  height: number;
+  /** Optional viewBox; defaults to `0 0 width height`. */
+  viewBox?: string;
+}
+
+export interface RenderSpacer {
+  kind: "spacer";
+  /** Pixels of horizontal space (or vertical when in column layout). */
+  size: number;
+}
+
+export interface RenderImage {
+  kind: "image";
+  src: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+}
+
+/** Theme-relative or literal text styling. */
+export interface TextStyle {
+  /** Theme font role (mirrors TEXT.fontClass) or raw family. */
+  font?: "base" | "display" | "number" | "mono" | string;
+  /** "major" / "minor" map to theme cell font sizes; numbers are px. */
+  size?: "major" | "base" | "minor" | number;
+  weight?: "normal" | "medium" | "semibold" | "bold" | number;
+  italic?: boolean;
+  /** Theme content role (mirrors row tokens) or raw color. */
+  color?: "primary" | "secondary" | "muted" | "accent" | string;
+}
+
+export interface GroupStyle {
+  /** Theme background role or hex. */
+  bg?: "base" | "muted" | "accent" | string;
+  padding?: number;
+  borderRadius?: number;
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Cell formatter (renderer)
+// ────────────────────────────────────────────────────────────────────
+
+/** Per-cell rendering context. */
+export interface RenderContext {
+  /** Width budget for this cell in pixels. */
+  cellWidth: number;
+  /** Row height in pixels. */
+  rowHeight: number;
+  /** Effective row data (full record) — for renderers that need
+   *  cross-field values (e.g. interval reading point/lower/upper). */
+  row: Record<string, unknown>;
+  /** Render target — informs e.g. font-fallback strategy. */
+  target: "browser" | "svg";
+}
+
+/**
+ * Parent renderers, keyed by schema key. A child's formatter can call
+ * `parents.pictogram(val, opts, ctx)` to delegate to a specific
+ * ancestor without re-implementing it. The proxy returns the same
+ * RenderNode that the parent would have returned.
+ */
+export type ParentRenderers = {
+  [key: string]: CellFormatter;
+};
+
+/**
+ * Cell formatter signature. Returns a RenderNode tree; both browser
+ * and SVG-export consume this same shape.
+ *
+ * The `parents` proxy is keyed by schema key, accepting the same
+ * (value, opts, ctx) the child receives. Composition utilities like
+ * `compose()` are imported from `./compose` (Phase 7).
+ */
+export type CellFormatter = (
+  value: unknown,
+  options: ColumnSpec["options"],
+  ctx: RenderContext,
+  parents: ParentRenderers,
+) => RenderNode;
+
+// ────────────────────────────────────────────────────────────────────
+// compose() — layout combinator for child output composition
+// ────────────────────────────────────────────────────────────────────
+//
+// The leaf concrete schema's formatter typically calls 1-N parent
+// formatters and combines the resulting RenderNodes. compose() is the
+// data-table-friendly templating helper:
+//
+//   compose(a, b, c)                         → "a b c"
+//   compose(a, b, c, { sep: ", " })          → "a, b, c"
+//   compose(a, b, c, { bracketStart: 2 })    → "a (b, c)"
+//   compose(a, b, { sep: " ± ", minor: 2 })  → "a ± b" with b in
+//                                                minor (small, muted)
+//
+// `minor: N` means nodes from index N onwards are restyled as
+// secondary (smaller, muted color). `bracketStart: N` wraps nodes
+// from index N onwards in parentheses with the joining separator
+// inside. Both can combine.
+//
+// Implementation: in `./compose.ts` (Phase 7). This is just the type.
+
+export interface ComposeOptions {
+  /** Separator between siblings (default " "). */
+  sep?: string;
+  /**
+   * 1-based index at which to start wrapping nodes in parens.
+   *   compose(a, b, c, { bracketStart: 2 }) -> a (b, c)
+   *   compose(a, b, c, { bracketStart: 1 }) -> (a, b, c)
+   *   undefined = no brackets
+   */
+  bracketStart?: number;
+  /**
+   * 1-based index at which nodes become "minor" (small, muted).
+   *   compose(point, sd, { minor: 2, sep: " ± " })
+   *     -> "point ± sd" with sd in smaller secondary-color text
+   *   undefined = no minor styling
+   */
+  minor?: number;
+  /** Override layout direction (defaults to "row"). */
+  layout?: "row" | "column";
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Lifecycle hooks
+// ────────────────────────────────────────────────────────────────────
+//
+// Two granularities, two concerns:
+//
+//  - **Widget-level** hooks fire on first appearance of any column
+//    matching a schema (or its descendants) and last removal. Used
+//    for shared resources: axis space allocation, legend rendering,
+//    shared zoom state.
+//
+//  - **Column-level** hooks fire per column instance, on create and
+//    destroy. Used for per-column resources: event handlers, custom
+//    DOM nodes, per-instance zoom/pan state.
+//
+// Both hooks return an optional cleanup function (mirrors React
+// `useEffect`); when present, it's called on destroy / removal.
+
+export interface WidgetContext {
+  /** Root element (browser) or output stream (SVG export). */
+  root: HTMLElement | SvgStream;
+  /** Active columns in the widget. */
+  columns: ColumnSpec[];
+  /** Mutation channel — `widget.update(spec)` re-renders. */
+  update: (next: ColumnSpec[]) => void;
+}
+
+/** Stub — typed in Phase 7 alongside the SVG-export consumer. */
+export interface SvgStream {
+  write: (markup: string) => void;
+}
+
+export type Cleanup = () => void;
+
+export interface SchemaLifecycle {
+  /**
+   * Fires once when the first column matching this schema (or any
+   * descendant) appears in the widget. Use for shared resources:
+   * allocateAxisSpace, buildLegend, etc.
+   */
+  onFirstPresent?: (widget: WidgetContext) => Cleanup | void;
+
+  /**
+   * Fires when the last matching column is removed. If
+   * `onFirstPresent` returned a cleanup, it's called automatically;
+   * this hook is for additional teardown.
+   */
+  onLastRemoved?: (widget: WidgetContext) => void;
+
+  /**
+   * Fires per column instance on create. Use for per-column
+   * resources: zoom/pan event handlers, per-instance state.
+   */
+  onColumnCreate?: (column: ColumnSpec, widget: WidgetContext) => Cleanup | void;
+
+  /**
+   * Fires per column instance on destroy. The `onColumnCreate`
+   * cleanup runs automatically; this hook is for additional teardown.
+   */
+  onColumnDestroy?: (column: ColumnSpec, widget: WidgetContext) => void;
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Schema behaviors — type-dispatched logic that belongs on the schema
+// ────────────────────────────────────────────────────────────────────
+//
+// A grep across `srcjs/src/` finds at least 8 sites where per-column
+// logic dispatches on `col.type`:
+//
+//   filter-sort-utils.ts   — sortValueFor() switch per type
+//   width-utils.ts         — estimateColumnWidth() branches
+//   source-emit.ts         — emitTypeSpecificArgs() switch
+//   svg-generator.ts       — cell-render branches per type
+//   ForestPlot.svelte      — cell-render + layout branches
+//   ColumnEditorPopover    — editor-UI branches (replaced by SchemaForm)
+//   layout-zoom.svelte.ts  — layout-mode dispatch
+//   forestStore.svelte.ts  — store-side type checks
+//
+// Each is a candidate for moving onto the schema as a named behavior.
+// The schema becomes the central registry of all type-dispatched
+// logic, with inheritance: a child schema's behavior overrides its
+// parent's, OR delegates back via the `parents` proxy (same pattern
+// as renderers / compose).
+//
+// Phase 7 implements the dispatcher + the migrations; Phase 3 (this
+// commit) just locks in the contract.
+
+/** Comparable scalar (or `null` for "missing"). */
+export type SortableValue = string | number | boolean | null;
+
+export interface BehaviorContext {
+  /** Full row data, in case extraction needs cross-field reads. */
+  row: Record<string, unknown>;
+}
+
+/** Parents proxy for behaviors — same pattern as renderers. */
+export type ParentBehaviors<T> = {
+  [key: string]: T;
+};
+
+/** Behaviors are functions keyed by behavior name on each schema. */
+export interface SchemaBehaviors {
+  /**
+   * Extract a sortable scalar from a row for sort comparisons. Today
+   * lives in `filter-sort-utils.ts::sortValueFor` as a switch on
+   * `col.type`. INTERVAL returns the point estimate; VIZ_FOREST
+   * returns the first effect's point; PICTOGRAM returns the rating
+   * value; etc. Falls back to the parent's sortKey when undefined.
+   */
+  sortKey?: (
+    value: unknown,
+    options: ColumnSpec["options"],
+    ctx: BehaviorContext,
+    parents: ParentBehaviors<NonNullable<SchemaBehaviors["sortKey"]>>,
+  ) => SortableValue;
+
+  /**
+   * Estimate the column's content width in pixels without DOM
+   * measurement. Today lives in `width-utils.ts` with per-type
+   * branches. Numeric columns measure formatted text; PICTOGRAM
+   * computes glyph-count * glyph-size; RING is fixed-width; etc.
+   */
+  estimateWidth?: (
+    value: unknown,
+    options: ColumnSpec["options"],
+    ctx: BehaviorContext & { fontSize: number; fontFamily: string },
+    parents: ParentBehaviors<NonNullable<SchemaBehaviors["estimateWidth"]>>,
+  ) => number;
+
+  /**
+   * Emit the JS builder call that would reproduce this column spec.
+   * Today lives in `source-emit.ts` with a switch over column types.
+   * Returns e.g. `colInterval({ point: "hr", lower: "lcl", ... })`.
+   * The Phase 7 implementation walks the schema's options, compares
+   * against defaults via `optionOverrides`, and emits only the
+   * differing args — same compression as today.
+   */
+  emitSource?: (
+    spec: ColumnSpec,
+    parents: ParentBehaviors<NonNullable<SchemaBehaviors["emitSource"]>>,
+  ) => string;
+
+  /**
+   * Stringify a cell's value for global search / fuzzy-find. Default:
+   * the formatter output rendered to plain text. Override when the
+   * search key should diverge (e.g. interval columns: searching "0.85"
+   * should match the point estimate, not the formatted "(0.72, 0.99)").
+   */
+  searchKey?: (
+    value: unknown,
+    options: ColumnSpec["options"],
+    ctx: BehaviorContext,
+    parents: ParentBehaviors<NonNullable<SchemaBehaviors["searchKey"]>>,
+  ) => string;
+
+  /**
+   * Hover-tooltip text. Default: the formatted cell text. Override
+   * when richer context is useful (e.g. forest: show point, lower,
+   * upper as three labeled lines on hover).
+   */
+  tooltipText?: (
+    value: unknown,
+    options: ColumnSpec["options"],
+    ctx: BehaviorContext,
+    parents: ParentBehaviors<NonNullable<SchemaBehaviors["tooltipText"]>>,
+  ) => string | null;
+
+  /**
+   * Combine multiple row values into a single summary for grouped
+   * rows. Numeric: mean/sum/median (configurable). Text: first /
+   * concat. Sparkline: concat arrays. Default: undefined (no
+   * aggregation; group summary cells are empty for that column).
+   */
+  aggregate?: (
+    values: unknown[],
+    options: ColumnSpec["options"],
+    parents: ParentBehaviors<NonNullable<SchemaBehaviors["aggregate"]>>,
+  ) => unknown;
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Registry shapes (used by extend.ts)
+// ────────────────────────────────────────────────────────────────────
+
+/** Bundle a schema with its renderer, lifecycle, and behaviors. */
+export interface RegisterSpec {
+  schema: ColumnSchema;
+  renderer?: CellFormatter;
+  lifecycle?: SchemaLifecycle;
+  behaviors?: SchemaBehaviors;
+}
