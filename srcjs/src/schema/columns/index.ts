@@ -18,6 +18,13 @@ import { BAR_SCHEMA } from "./bar";
 import { PROGRESS_SCHEMA } from "./progress";
 import { HEATMAP_SCHEMA } from "./heatmap";
 import { SPARKLINE_SCHEMA } from "./sparkline";
+import { PICTOGRAM_SCHEMA } from "./pictogram";
+import { STARS_SCHEMA } from "./stars";
+import { RING_SCHEMA } from "./ring";
+import { BADGE_SCHEMA } from "./badge";
+import { ICON_SCHEMA } from "./icon";
+import { IMG_SCHEMA } from "./img";
+import { REFERENCE_SCHEMA } from "./reference";
 
 /**
  * Schemas are abstract (structural/ontological, not in the picker —
@@ -41,6 +48,13 @@ export const SCHEMA_REGISTRY: SchemaRegistry = {
   progress:  PROGRESS_SCHEMA,
   heatmap:   HEATMAP_SCHEMA,
   sparkline: SPARKLINE_SCHEMA,
+  pictogram: PICTOGRAM_SCHEMA,
+  stars:     STARS_SCHEMA,
+  ring:      RING_SCHEMA,
+  badge:     BADGE_SCHEMA,
+  icon:      ICON_SCHEMA,
+  img:       IMG_SCHEMA,
+  reference: REFERENCE_SCHEMA,
 };
 
 export {
@@ -49,4 +63,6 @@ export {
   NUMERIC_SCHEMA, N_SCHEMA, CURRENCY_SCHEMA, PERCENT_SCHEMA,
   PVALUE_SCHEMA, INTERVAL_SCHEMA, RANGE_SCHEMA, EVENTS_SCHEMA,
   BAR_SCHEMA, PROGRESS_SCHEMA, HEATMAP_SCHEMA, SPARKLINE_SCHEMA,
+  PICTOGRAM_SCHEMA, STARS_SCHEMA, RING_SCHEMA,
+  BADGE_SCHEMA, ICON_SCHEMA, IMG_SCHEMA, REFERENCE_SCHEMA,
 };

@@ -3,6 +3,14 @@
 # default argument values. Source of truth: srcjs/src/schema/.
 
 schema_defaults <- list(
+  badge = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    size = "base",
+    shape = "pill",
+    outline = FALSE
+  ),
   bar = list(
     align = "left",
     width = "auto",
@@ -51,6 +59,19 @@ schema_defaults <- list(
     show_value = TRUE,
     scale = "linear"
   ),
+  icon = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    size = "base"
+  ),
+  img = list(
+    align = "left",
+    width = "auto",
+    sortable = FALSE,
+    fallback = "[img]",
+    shape = "square"
+  ),
   interval = list(
     header = "95% CI",
     align = "left",
@@ -92,6 +113,17 @@ schema_defaults <- list(
     multiply = TRUE,
     symbol = TRUE
   ),
+  pictogram = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    glyph = "person",
+    half_glyphs = FALSE,
+    size = "base",
+    layout = "row",
+    value_label = FALSE,
+    label_decimals = 1
+  ),
   progress = list(
     align = "left",
     width = "auto",
@@ -122,12 +154,44 @@ schema_defaults <- list(
     separator = " - ",
     show_bar = FALSE
   ),
+  reference = list(
+    header = "Reference",
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    wrap = FALSE,
+    max_chars = 30,
+    show_icon = TRUE
+  ),
+  ring = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    min_value = 0,
+    max_value = 1,
+    size = "base",
+    show_label = TRUE,
+    label_format = "percent",
+    label_decimals = 0
+  ),
   sparkline = list(
     align = "left",
     width = "auto",
     sortable = FALSE,
     type = "line",
     height = 20
+  ),
+  stars = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    glyph = "star",
+    max_glyphs = 5,
+    half_glyphs = FALSE,
+    size = "base",
+    layout = "row",
+    value_label = FALSE,
+    label_decimals = 1
   ),
   text = list(
     align = "left",
