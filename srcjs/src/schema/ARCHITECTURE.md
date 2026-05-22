@@ -233,10 +233,23 @@ Wire shape:
 column.styleMapping.bold = { kind: "condition", name: "significant" }
 ```
 
-Schema-contributed conditions: a pvalue column auto-emits a
-`significant_<col_id>` condition with its Bonferroni-corrected
-threshold; ordinal levels auto-emit `is_<level>` / `above_<level>`
-conditions; etc. Authors inherit these without writing them.
+Schema-contributed conditions are an **available capability**, not
+a default behavior. The `contributeConditions` hook on a schema can
+emit conditions when its column is present — but *whether a given
+schema should auto-emit is a per-schema UX decision* and not always
+advisable:
+
+- A pvalue column COULD auto-emit `significant_<col_id>`, but with
+  multiple pvalue columns (adjusted vs unadjusted; multi-trial)
+  this becomes a cluttered bank with non-obvious naming and
+  potentially conflicting thresholds. Better: leave significance
+  authoring explicit.
+- Ordinal columns are a better fit — the `levels[]` definition
+  naturally yields a fixed `is_<level>` / `above_<level>` set with
+  no naming ambiguity.
+
+The mechanism lands in Phase 4.5; concrete auto-emit behaviors get
+added schema by schema as the UX of each becomes clear.
 
 ### 7. Categorical / Ordinal
 
@@ -510,8 +523,9 @@ What happens, in order:
 
 ### Bank dispatcher
 - Walks columns; `viz_forest.contributeBanks` adds an `axes[0]` entry.
-- `pvalue.contributeConditions` adds a derived `pvalue:p:significant`
-  condition (auto-Bonferroni at the column's threshold).
+- (Schema-side `contributeConditions` is available; whether pvalue
+  auto-emits a significance condition is left to the author since
+  multi-pvalue cases create naming ambiguity.)
 - Numbers footnotes: methods → index 1.
 - Final `effectiveBanks` returned for downstream consumers.
 
