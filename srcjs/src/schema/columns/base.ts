@@ -73,6 +73,16 @@ export const BASE_SCHEMA: ColumnSchema = {
       hint: "Click header to sort. Multi-effect viz sorts by the first series.",
       at: "fixed",
     },
+    {
+      key: "naText",
+      label: "Missing value",
+      control: "text",
+      default: null,
+      hint: "Shown when the cell is NA / null",
+      // Legacy wire path: `column.options.naText` (top-level, not in
+      // any bucket). 13+ reader sites in the renderer + SVG exporter.
+      at: "top",
+    },
 
     // ── Styling overrides ─────────────────────────────────────────────
     // Phase 2.5 proof of concept: `token` as the first schema-driven

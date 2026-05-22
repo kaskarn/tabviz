@@ -3,6 +3,75 @@
 # default argument values. Source of truth: srcjs/src/schema/.
 
 schema_defaults <- list(
+  bar = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    scale = "linear",
+    show_label = TRUE
+  ),
+  currency = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    wrap = FALSE,
+    decimals = 2,
+    thousands_sep = ",",
+    abbreviate = FALSE,
+    symbol = "$",
+    position = "prefix"
+  ),
+  date = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    format = "%Y-%m-%d"
+  ),
+  events = list(
+    header = "Events",
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    wrap = FALSE,
+    decimals = 2,
+    thousands_sep = ",",
+    abbreviate = FALSE,
+    separator = "/",
+    show_pct = FALSE
+  ),
+  heatmap = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    wrap = FALSE,
+    decimals = 2,
+    thousands_sep = FALSE,
+    abbreviate = FALSE,
+    palette = c("#f7fbff", "#08306b"),
+    show_value = TRUE,
+    scale = "linear"
+  ),
+  interval = list(
+    header = "95% CI",
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    wrap = FALSE,
+    decimals = 2,
+    thousands_sep = FALSE,
+    abbreviate = FALSE,
+    separator = " "
+  ),
+  n = list(
+    header = "N",
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    wrap = FALSE,
+    decimals = 0,
+    thousands_sep = ",",
+    abbreviate = FALSE
+  ),
   numeric = list(
     align = "left",
     width = "auto",
@@ -22,6 +91,43 @@ schema_defaults <- list(
     abbreviate = FALSE,
     multiply = TRUE,
     symbol = TRUE
+  ),
+  progress = list(
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    max_value = 100,
+    scale = "linear",
+    show_label = TRUE
+  ),
+  pvalue = list(
+    header = "P-value",
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    stars = FALSE,
+    format = "auto",
+    digits = 2,
+    exp_threshold = 0.001,
+    thresholds = c(0.05, 0.01, 0.001)
+  ),
+  range = list(
+    header = "Range",
+    align = "left",
+    width = "auto",
+    sortable = TRUE,
+    wrap = FALSE,
+    thousands_sep = FALSE,
+    abbreviate = FALSE,
+    separator = " - ",
+    show_bar = FALSE
+  ),
+  sparkline = list(
+    align = "left",
+    width = "auto",
+    sortable = FALSE,
+    type = "line",
+    height = 20
   ),
   text = list(
     align = "left",

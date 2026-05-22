@@ -30,17 +30,6 @@ export const TEXT_SCHEMA: ColumnSchema = {
       at: "fixed",
     },
     {
-      key: "naText",
-      label: "Missing value",
-      control: "text",
-      default: null,
-      hint: "Shown when the cell is NA / null",
-      // Legacy wire path: `column.options.naText` (top-level, not
-      // in any bucket). 13+ reader sites in the renderer + SVG
-      // exporter.
-      at: "top",
-    },
-    {
       key: "maxChars",
       label: "Max chars",
       control: "integer",
