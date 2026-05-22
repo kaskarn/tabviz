@@ -15,6 +15,28 @@ export const BADGE_SCHEMA: ColumnSchema = {
   slots: [
     { key: "field", label: "Value", accepts: ["string", "numeric", "integer"], required: true },
   ],
+  variants: [
+    {
+      id: "pill",
+      label: "Pill",
+      description: 'Rounded rectangle with filled background (default)',
+    },
+    {
+      id: "outline",
+      label: "Outline",
+      description: 'Transparent fill with colored border',
+    },
+    {
+      id: "square",
+      label: "Square",
+      description: 'Sharp corners, filled',
+    },
+    {
+      id: "minimal",
+      label: "Minimal",
+      description: 'Just colored text — no background, no border',
+    },
+  ],
   options: [
     {
       key: "variants",

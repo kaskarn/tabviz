@@ -24,6 +24,28 @@ export const INTERVAL_SCHEMA: ColumnSchema = {
   optionOverrides: {
     header: "95% CI",
   },
+  variants: [
+    {
+      id: "traditional",
+      label: "Traditional",
+      description: '"0.85 (0.72, 0.99)" — bounds in parens after the point',
+    },
+    {
+      id: "bracket_muted",
+      label: "Bracket, muted bounds",
+      description: '"0.85 [0.72–0.99]" — bounds in brackets, secondary text',
+    },
+    {
+      id: "plus_minus",
+      label: "Plus–minus",
+      description: '"0.85 ± 0.14" — half-width as ± offset (symmetric bounds)',
+    },
+    {
+      id: "stacked",
+      label: "Stacked",
+      description: '"0.85 / (0.72, 0.99)" — point on first line, bounds smaller below',
+    },
+  ],
   options: [
     {
       key: "separator",

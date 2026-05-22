@@ -170,6 +170,46 @@ export interface ColumnSchema {
   optionOverrides?: Record<string, unknown>;
   /** Fixed (non-tweakable) column-spec values (e.g. `sortable: false` for viz). */
   fixed?: Partial<ColumnSpec>;
+  /**
+   * Curated rendering recipes for this schema. Each variant is a
+   * named branch in the schema's renderer; picked at edit time via
+   * a `variant` option (set automatically when `variants` is
+   * non-empty). First entry is the default.
+   *
+   *   INTERVAL_SCHEMA.variants = [
+   *     { id: "traditional",   label: "Traditional",
+   *       description: "0.85 (0.72, 0.99) — bounds in parens" },
+   *     { id: "bracket_muted", label: "Bracket, muted bounds",
+   *       description: "0.85 [0.72–0.99] — bounds in brackets, secondary" },
+   *     // ...
+   *   ];
+   */
+  variants?: VariantSpec[];
+  /**
+   * Hide these inherited option keys from the editor. The wire shape
+   * still accepts them (back-compat); they just don't appear in the
+   * picker for this concrete schema. E.g. NUMERIC inherits TEXT but
+   * `maxChars` makes no sense for a formatted number — list it here.
+   */
+  suppressedOptions?: string[];
+  /**
+   * Declare option keys that are mutually exclusive. The editor
+   * renders them as a single switch (only one is "set" at a time);
+   * R-side validators can also reference this to throw on conflict.
+   *
+   *   NUMERIC_SCHEMA.mutuallyExclusive = [["decimals", "digits"]];
+   */
+  mutuallyExclusive?: string[][];
+}
+
+/** Curated rendering recipe declared on a schema. */
+export interface VariantSpec {
+  /** Stable identifier; lands on `column.options.<bucket>.variant`. */
+  id: string;
+  /** Display label in the editor. */
+  label: string;
+  /** One-line description; shown as hint when this variant is hovered/selected. */
+  description?: string;
 }
 
 /** The registry — populated by `columns/index.ts`. */

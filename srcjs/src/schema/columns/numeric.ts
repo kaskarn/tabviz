@@ -15,6 +15,11 @@ export const NUMERIC_SCHEMA: ColumnSchema = {
   slots: [
     { key: "field", label: "Value", accepts: ["numeric", "integer"], required: true },
   ],
+  // maxChars (truncation) inherited from TEXT doesn't apply to
+  // formatted numbers; hide from the editor. Wire shape still
+  // accepts it for back-compat with hand-built specs.
+  suppressedOptions: ["maxChars"],
+  mutuallyExclusive: [["decimals", "digits"]],
   options: [
     {
       key: "decimals",

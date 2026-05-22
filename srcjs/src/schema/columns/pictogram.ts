@@ -16,6 +16,23 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
   slots: [
     { key: "field", label: "Value", accepts: ["numeric", "integer"], required: true },
   ],
+  variants: [
+    {
+      id: "row",
+      label: "Row",
+      description: 'Glyphs laid out left-to-right (default)',
+    },
+    {
+      id: "stack",
+      label: "Stack",
+      description: 'Glyphs stacked top-to-bottom',
+    },
+    {
+      id: "row_value_trail",
+      label: "Row + value",
+      description: 'Glyphs with numeric value trailing',
+    },
+  ],
   options: [
     {
       key: "glyph",

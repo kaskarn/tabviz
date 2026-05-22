@@ -4,6 +4,8 @@
 
 import type { SchemaRegistry } from "../types";
 import { BASE_SCHEMA } from "./base";
+import { CATEGORICAL_SCHEMA } from "./categorical";
+import { ORDINAL_SCHEMA } from "./ordinal";
 import { TEXT_SCHEMA } from "./text";
 import { DATE_SCHEMA } from "./date";
 import { NUMERIC_SCHEMA } from "./numeric";
@@ -44,8 +46,10 @@ import { VIZ_VIOLIN_SCHEMA } from "./viz_violin";
  * the inheritance handle.
  */
 export const SCHEMA_REGISTRY: SchemaRegistry = {
-  base:     BASE_SCHEMA,
-  text:     TEXT_SCHEMA,
+  base:        BASE_SCHEMA,
+  categorical: CATEGORICAL_SCHEMA,
+  ordinal:     ORDINAL_SCHEMA,
+  text:        TEXT_SCHEMA,
   date:     DATE_SCHEMA,
   numeric:  NUMERIC_SCHEMA,
   n:        N_SCHEMA,
@@ -74,7 +78,7 @@ export const SCHEMA_REGISTRY: SchemaRegistry = {
 };
 
 export {
-  BASE_SCHEMA,
+  BASE_SCHEMA, CATEGORICAL_SCHEMA, ORDINAL_SCHEMA,
   TEXT_SCHEMA, DATE_SCHEMA,
   NUMERIC_SCHEMA, N_SCHEMA, CURRENCY_SCHEMA, PERCENT_SCHEMA,
   PVALUE_SCHEMA, INTERVAL_SCHEMA, RANGE_SCHEMA, EVENTS_SCHEMA,
