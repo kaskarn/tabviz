@@ -6,7 +6,7 @@
 \usage{
 viz_forest(
   header = NULL,
-  show_header = TRUE,
+  show_header = NULL,
   header_align = "center",
   width = NULL,
   point = NULL,
