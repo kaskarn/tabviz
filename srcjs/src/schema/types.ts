@@ -49,6 +49,23 @@ export type ControlKind =
  */
 export type WireAt = "bucket" | "top" | "fixed";
 
+/**
+ * Option category — affects editor grouping/visual treatment but not
+ * wire shape.
+ *
+ * - `"core"` (default): the option controls *what* the column does —
+ *   data slots, format precision, behavioral toggles, layout. Lives
+ *   in the main accordion flow.
+ * - `"styling"`: pure visual override — bold/italic/color/bg/token/
+ *   stroke/fill. The editor groups these separately (own sub-section
+ *   per layer, or a dedicated "Styling" panel) so authors can edit
+ *   appearance without scrolling through formatting knobs.
+ *
+ * Distinction is purely presentational. Both kinds use the same
+ * OptionSpec shape and the same primitives.
+ */
+export type OptionKind = "core" | "styling";
+
 /** Generic option metadata; control-specific extras live in optional fields. */
 export interface OptionSpec<T = unknown> {
   /** Key used both on the wire and in the editor state map. */
@@ -59,6 +76,8 @@ export interface OptionSpec<T = unknown> {
   control: ControlKind;
   /** Default value. `null` means "no value set"; `undefined` for never-set. */
   default: T | null;
+  /** "core" (default) vs "styling" — affects editor grouping only. */
+  kind?: OptionKind;
   /** Inline hint shown next to / under the field. */
   hint?: string;
   /** Wire destination override; defaults to `"bucket"`. */
