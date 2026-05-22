@@ -337,15 +337,19 @@ export interface SchemaBehaviors {
   /**
    * Emit the JS builder call that would reproduce this column spec.
    * Today lives in `source-emit.ts` with a switch over column types.
-   * Returns e.g. `colInterval({ point: "hr", lower: "lcl", ... })`.
-   * The Phase 7 implementation walks the schema's options, compares
-   * against defaults via `optionOverrides`, and emits only the
-   * differing args — same compression as today.
+   * Returns `{ name, typeArgs }` — the builder function name (e.g.
+   * `"colInterval"`) and the type-specific args. The caller in
+   * `source-emit.ts::emitColumn` merges in common args (token,
+   * paddingClass, …) and assembles the final string.
+   *
+   * Schemas describe their own defaults in `optionOverrides` already;
+   * `emitSource` strips those via `dropDefaults` so emitted source
+   * shows only what diverged from the schema baseline.
    */
   emitSource?: (
     spec: ColumnSpec,
     parents: ParentBehaviors<NonNullable<SchemaBehaviors["emitSource"]>>,
-  ) => string;
+  ) => { name: string; typeArgs: Record<string, unknown> };
 
   /**
    * Stringify a cell's value for global search / fuzzy-find. Default:

@@ -24,6 +24,12 @@
 import type { WebSpec, ColumnDef, ColumnSpec, ColumnGroup } from "../types";
 import type { WebThemeV2 } from "../types/theme-v2";
 import { THEME_PRESETS, THEME_NAMES, type ThemeName } from "./theme-presets";
+import { dispatchForColumn } from "../schema/dispatch";
+// Side-effect: register built-in `emitSource` behaviors so the
+// dispatcher above finds them. Without this import the schema
+// registry is silent on emit and the fallback `colText` would fire
+// for every column.
+import "../schema/columns/emit-behaviors";
 
 // ────────────────────────────────────────────────────────────────────
 // Literal rendering
@@ -92,35 +98,6 @@ function emitCommon(col: ColumnSpec): Record<string, unknown> {
   return out;
 }
 
-/** Drop entries that match the defaults table. */
-function dropDefaults(args: Record<string, unknown>, defaults: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(args)) {
-    if (v === undefined) continue;
-    if (k in defaults && deepEqual(v, defaults[k])) continue;
-    out[k] = v;
-  }
-  return out;
-}
-
-function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  if (typeof a !== typeof b) return false;
-  if (typeof a !== "object") return false;
-  if (Array.isArray(a) !== Array.isArray(b)) return false;
-  if (Array.isArray(a)) {
-    if (a.length !== (b as unknown[]).length) return false;
-    return a.every((v, i) => deepEqual(v, (b as unknown[])[i]));
-  }
-  const ak = Object.keys(a as Record<string, unknown>);
-  const bk = Object.keys(b as Record<string, unknown>);
-  if (ak.length !== bk.length) return false;
-  return ak.every((k) =>
-    deepEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),
-  );
-}
-
 // ────────────────────────────────────────────────────────────────────
 // Column → builder call mapping
 // ────────────────────────────────────────────────────────────────────
@@ -139,203 +116,17 @@ function emitColumnGroup(g: ColumnGroup): string {
   return `colGroup({\n  header: ${JSON.stringify(g.header)},\n  children: [\n    ${children},\n  ],\n})`;
 }
 
+/**
+ * Map a ColumnSpec to its builder-call shape via schema dispatch.
+ * Each concrete schema registers `emitSource` in
+ * `schema/columns/emit-behaviors.ts`. Falls back to `colText` for
+ * any column whose schema doesn't define one (a graceful default
+ * for unknown / mis-typed columns).
+ */
 function emitTypeSpecificArgs(col: ColumnSpec): { name: string; typeArgs: Record<string, unknown> } {
-  const o = col.options ?? {};
-
-  switch (col.type) {
-    case "text":
-      return {
-        name: "colText",
-        typeArgs: dropDefaults(
-          { field: col.field, maxChars: o.text?.maxChars },
-          { maxChars: undefined },
-        ),
-      };
-    case "numeric":
-      return {
-        name: o.numeric?.prefix === "$" ? "colCurrency" : "colNumeric",
-        typeArgs: dropDefaults(
-          {
-            field: col.field,
-            decimals: o.numeric?.decimals,
-            digits: o.numeric?.digits,
-            thousandsSep: o.numeric?.thousandsSep,
-            abbreviate: o.numeric?.abbreviate,
-            prefix: o.numeric?.prefix === "$" ? undefined : o.numeric?.prefix,
-            suffix: o.numeric?.suffix,
-          },
-          { decimals: 2, thousandsSep: false, abbreviate: false, digits: undefined },
-        ),
-      };
-    case "interval":
-      return {
-        name: "colInterval",
-        typeArgs: dropDefaults(
-          {
-            point: o.interval?.point ?? col.field,
-            lower: o.interval?.lower,
-            upper: o.interval?.upper,
-            decimals: o.interval?.decimals,
-            digits: o.interval?.digits,
-            thousandsSep: o.interval?.thousandsSep,
-            abbreviate: o.interval?.abbreviate,
-            separator: o.interval?.separator,
-            impreciseThreshold: o.interval?.impreciseThreshold,
-          },
-          { decimals: 2, thousandsSep: false, abbreviate: false, separator: " ", impreciseThreshold: undefined },
-        ),
-      };
-    case "pvalue":
-      return {
-        name: "colPvalue",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.pvalue },
-          { stars: false, thresholds: [0.05, 0.01, 0.001], format: "auto", digits: 2, expThreshold: 0.001, abbrevThreshold: null },
-        ),
-      };
-    case "bar":
-      return {
-        name: "colBar",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.bar },
-          { maxValue: null, showLabel: true, color: null, scale: "linear" },
-        ),
-      };
-    case "sparkline":
-      return {
-        name: "colSparkline",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.sparkline },
-          { type: "line", height: 20, color: null },
-        ),
-      };
-    case "heatmap":
-      return {
-        name: "colHeatmap",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.heatmap },
-          { minValue: null, maxValue: null, decimals: 2, showValue: true, scale: "linear" },
-        ),
-      };
-    case "progress":
-      return {
-        name: "colProgress",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.progress },
-          { maxValue: 100, color: null, showLabel: true, scale: "linear" },
-        ),
-      };
-    case "badge":
-      return {
-        name: "colBadge",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.badge },
-          { size: "base", shape: "pill", outline: false },
-        ),
-      };
-    case "icon":
-      return {
-        name: "colIcon",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.icon },
-          { size: "base" },
-        ),
-      };
-    case "stars":
-      return {
-        name: "colStars",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.stars },
-          { maxStars: 5, halfStars: false, domain: null, size: "base" },
-        ),
-      };
-    case "pictogram":
-      return {
-        name: "colPictogram",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.pictogram },
-          { glyph: "person", glyphField: null, maxGlyphs: null, domain: null,
-            halfGlyphs: false, color: null, emptyColor: null, size: "base",
-            layout: "row", valueLabel: false, labelFormat: null, labelDecimals: 0 },
-        ),
-      };
-    case "ring":
-      return {
-        name: "colRing",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.ring },
-          { minValue: 0, maxValue: 1, color: null, thresholds: null,
-            trackColor: null, size: "base", showLabel: true,
-            labelFormat: "percent", labelDecimals: 0 },
-        ),
-      };
-    case "img":
-      return {
-        name: "colImg",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.img },
-          { height: 40, shape: "square" },
-        ),
-      };
-    case "reference":
-      return {
-        name: "colReference",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.reference },
-          { maxChars: 30, showIcon: true },
-        ),
-      };
-    case "range":
-      return {
-        name: "colRange",
-        typeArgs: dropDefaults(
-          { field: col.field, ...o.range },
-          { separator: "–", decimals: null, thousandsSep: false, abbreviate: false, showBar: false },
-        ),
-      };
-    case "forest":
-      return {
-        name: "vizForest",
-        typeArgs: dropDefaults(
-          { ...o.forest },
-          { scale: "linear", axisLabel: "Effect", axisRange: null, axisTicks: null,
-            axisGridlines: false, showAxis: true, annotations: null, sharedAxis: null,
-            // nullValue's default is scale-dependent — handled by builder
-            nullValue: undefined },
-        ),
-      };
-    case "viz_bar":
-      return { name: "vizBar", typeArgs: { effects: o.vizBar?.effects ?? [] } };
-    case "viz_boxplot":
-      return { name: "vizBoxplot", typeArgs: { effects: o.vizBoxplot?.effects ?? [] } };
-    case "viz_violin":
-      return { name: "vizViolin", typeArgs: { effects: o.vizViolin?.effects ?? [] } };
-    case "custom":
-      // Could be a percent column (look for `percent` options key) or events column.
-      if (o.percent) {
-        return {
-          name: "colPercent",
-          typeArgs: dropDefaults(
-            { field: col.field, ...o.percent },
-            { decimals: 1, multiply: true, symbol: true },
-          ),
-        };
-      }
-      if (o.events) {
-        return {
-          name: "colEvents",
-          typeArgs: dropDefaults(
-            { events: o.events.eventsField, n: o.events.nField,
-              separator: o.events.separator, showPct: o.events.showPct,
-              thousandsSep: o.events.thousandsSep, abbreviate: o.events.abbreviate },
-            { separator: "/", showPct: false, thousandsSep: ",", abbreviate: false },
-          ),
-        };
-      }
-      return { name: "colText", typeArgs: { field: col.field } };
-    default:
-      return { name: "colText", typeArgs: { field: col.field } };
-  }
+  const fn = dispatchForColumn(col, "emitSource");
+  if (fn) return fn(col);
+  return { name: "colText", typeArgs: { field: col.field } };
 }
 
 // ────────────────────────────────────────────────────────────────────
