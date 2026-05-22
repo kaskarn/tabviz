@@ -81,33 +81,58 @@ export interface LegendEntry extends BankEntry {
   attachedTo?: string[];
 }
 
+/**
+ * Named, pre-computed row predicate. Evaluated once at spec-build
+ * (in R or TS) over the whole-table view; the renderer NEVER
+ * re-evaluates. Filters / sorts in the widget operate on row indices
+ * — they don't change condition values.
+ *
+ * Today: boolean only. The `kind` discriminator leaves room for
+ * numeric / string / categorical conditions later.
+ */
+export interface ConditionEntry extends BankEntry {
+  /** Display label (defaults to id). */
+  label?: string;
+  /** Discriminator — only "boolean" today. */
+  kind: "boolean";
+  /** Per-row values; aligned to data.rows order. */
+  values: boolean[];
+  /** Original rule for display + round-trip; renderer never reads. */
+  ruleText?: string;
+  /** UI grouping ("statistical" / "geometric" / ...). */
+  category?: string;
+}
+
 // ────────────────────────────────────────────────────────────────────
 // Bank container
 // ────────────────────────────────────────────────────────────────────
 
 /** Bank container on WebSpec — author-able + serialized. */
 export interface WidgetBanks {
-  footnotes?: FootnoteEntry[];
-  axes?:      AxisEntry[];
-  legends?:   LegendEntry[];
+  footnotes?:  FootnoteEntry[];
+  axes?:       AxisEntry[];
+  legends?:    LegendEntry[];
+  conditions?: ConditionEntry[];
   /** Escape hatch for plugin-introduced bank kinds. */
-  custom?:    Record<string, BankEntry[]>;
+  custom?:     Record<string, BankEntry[]>;
 }
 
 /** Resolved banks after merging authored + derived entries. */
 export interface EffectiveBanks {
-  footnotes: FootnoteEntry[];
-  axes:      AxisEntry[];
-  legends:   LegendEntry[];
-  custom:    Record<string, BankEntry[]>;
+  footnotes:  FootnoteEntry[];
+  axes:       AxisEntry[];
+  legends:    LegendEntry[];
+  conditions: ConditionEntry[];
+  custom:     Record<string, BankEntry[]>;
 }
 
 /** What a schema's behavior contributes when its column is present. */
 export interface BankContribution {
-  footnotes?: FootnoteEntry[];
-  axes?:      AxisEntry[];
-  legends?:   LegendEntry[];
-  custom?:    Record<string, BankEntry[]>;
+  footnotes?:  FootnoteEntry[];
+  axes?:       AxisEntry[];
+  legends?:    LegendEntry[];
+  conditions?: ConditionEntry[];
+  custom?:     Record<string, BankEntry[]>;
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -136,10 +161,11 @@ interface SpecLike {
  */
 export function computeEffectiveBanks(spec: SpecLike): EffectiveBanks {
   const out: EffectiveBanks = {
-    footnotes: [...(spec.banks?.footnotes ?? [])],
-    axes:      [...(spec.banks?.axes ?? [])],
-    legends:   [...(spec.banks?.legends ?? [])],
-    custom:    { ...(spec.banks?.custom ?? {}) },
+    footnotes:  [...(spec.banks?.footnotes ?? [])],
+    axes:       [...(spec.banks?.axes ?? [])],
+    legends:    [...(spec.banks?.legends ?? [])],
+    conditions: [...(spec.banks?.conditions ?? [])],
+    custom:     { ...(spec.banks?.custom ?? {}) },
   };
 
   for (const col of walkColumns(spec.columns)) {
@@ -155,9 +181,10 @@ export function computeEffectiveBanks(spec: SpecLike): EffectiveBanks {
       const contrib = contributeBanks(col, spec as never);
       if (!contrib) continue;
 
-      if (contrib.footnotes) out.footnotes.push(...stampProducer(contrib.footnotes, col.id));
-      if (contrib.axes)      out.axes.push(...stampProducer(contrib.axes, col.id));
-      if (contrib.legends)   out.legends.push(...stampProducer(contrib.legends, col.id));
+      if (contrib.footnotes)  out.footnotes.push(...stampProducer(contrib.footnotes,  col.id));
+      if (contrib.axes)       out.axes.push(...stampProducer(contrib.axes,            col.id));
+      if (contrib.legends)    out.legends.push(...stampProducer(contrib.legends,      col.id));
+      if (contrib.conditions) out.conditions.push(...stampProducer(contrib.conditions, col.id));
       if (contrib.custom) {
         for (const [k, entries] of Object.entries(contrib.custom)) {
           out.custom[k] = [...(out.custom[k] ?? []), ...stampProducer(entries, col.id)];
@@ -170,6 +197,18 @@ export function computeEffectiveBanks(spec: SpecLike): EffectiveBanks {
   out.footnotes = out.footnotes.map((f, i) => ({ ...f, index: i + 1 }));
 
   return out;
+}
+
+/**
+ * Look up a condition by id from effective banks. Returns null when
+ * not found — callers (renderers) treat as "value not set" / theme
+ * default.
+ */
+export function findCondition(
+  banks: EffectiveBanks,
+  name: string,
+): ConditionEntry | null {
+  return banks.conditions.find((c) => c.id === name || c.label === name) ?? null;
 }
 
 /**

@@ -53,18 +53,30 @@ export interface CellStyle {
   tooltip?: string | null;
 }
 
-// Maps style properties to column names containing values
+/**
+ * Style-mapping values per ColumnSpec. Each entry can be:
+ *   - a bare string (legacy field-reference; back-compat with today's
+ *     `bold = "highlight_col"` shape)
+ *   - a tagged union from `$schema/styling::StyleMappingValue`
+ *     (`{ kind: "theme" | "static" | "field" | "condition", ... }`)
+ *     — the canonical shape that supports condition references and
+ *     explicit static / theme modes.
+ *
+ * Renderers call `normalizeStyle(value)` from `$schema/styling` at
+ * the read site; downstream code switches on `kind` without
+ * re-handling the legacy string form.
+ */
 export interface StyleMapping {
-  bold?: string;
-  italic?: string;
-  color?: string;
-  bg?: string;
-  badge?: string;
-  icon?: string;
+  bold?:     import("../schema/styling").StyleOverride<boolean>;
+  italic?:   import("../schema/styling").StyleOverride<boolean>;
+  color?:    import("../schema/styling").StyleOverride<string>;
+  bg?:       import("../schema/styling").StyleOverride<string>;
+  badge?:    import("../schema/styling").StyleOverride<string>;
+  icon?:     import("../schema/styling").StyleOverride<string>;
   // Semantic styling mappings
-  emphasis?: string;
-  muted?: string;
-  accent?: string;
+  emphasis?: import("../schema/styling").StyleOverride<boolean>;
+  muted?:    import("../schema/styling").StyleOverride<boolean>;
+  accent?:   import("../schema/styling").StyleOverride<boolean>;
 }
 
 export interface Row {

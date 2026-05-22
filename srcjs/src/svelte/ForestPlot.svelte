@@ -2625,24 +2625,37 @@
       const style: CellStyle = {};
       const meta = row.metadata;
 
-      if (column.styleMapping.bold && meta[column.styleMapping.bold]) {
-        style.bold = Boolean(meta[column.styleMapping.bold]);
-      }
-      if (column.styleMapping.italic && meta[column.styleMapping.italic]) {
-        style.italic = Boolean(meta[column.styleMapping.italic]);
-      }
-      if (column.styleMapping.color && meta[column.styleMapping.color]) {
-        style.color = String(meta[column.styleMapping.color]);
-      }
-      if (column.styleMapping.bg && meta[column.styleMapping.bg]) {
-        style.bg = String(meta[column.styleMapping.bg]);
-      }
-      if (column.styleMapping.badge && meta[column.styleMapping.badge]) {
-        style.badge = String(meta[column.styleMapping.badge]);
-      }
-      if (column.styleMapping.icon && meta[column.styleMapping.icon]) {
-        style.icon = String(meta[column.styleMapping.icon]);
-      }
+      // Resolve a StyleOverride to the data-field name it references.
+      // Returns undefined for non-field-reference shapes (static /
+      // condition / theme — Phase 7 wires those through the schema
+      // dispatcher). Today's behavior preserved: bare-string reads
+      // and `{kind: "field", field}` reads are equivalent.
+      const fieldOf = (v: unknown): string | undefined => {
+        if (v == null) return undefined;
+        if (typeof v === "string") return v;
+        if (typeof v === "object" && "kind" in (v as object) && (v as { kind: string }).kind === "field") {
+          return (v as { kind: "field"; field: string }).field;
+        }
+        return undefined;
+      };
+
+      const boldF = fieldOf(column.styleMapping.bold);
+      if (boldF && meta[boldF]) style.bold = Boolean(meta[boldF]);
+
+      const italicF = fieldOf(column.styleMapping.italic);
+      if (italicF && meta[italicF]) style.italic = Boolean(meta[italicF]);
+
+      const colorF = fieldOf(column.styleMapping.color);
+      if (colorF && meta[colorF]) style.color = String(meta[colorF]);
+
+      const bgF = fieldOf(column.styleMapping.bg);
+      if (bgF && meta[bgF]) style.bg = String(meta[bgF]);
+
+      const badgeF = fieldOf(column.styleMapping.badge);
+      if (badgeF && meta[badgeF]) style.badge = String(meta[badgeF]);
+
+      const iconF = fieldOf(column.styleMapping.icon);
+      if (iconF && meta[iconF]) style.icon = String(meta[iconF]);
 
       if (Object.keys(style).length > 0) return style;
     }
