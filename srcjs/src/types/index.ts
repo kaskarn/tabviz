@@ -858,6 +858,15 @@ export interface WebSpec {
     filters?: Array<{ field: string; operator: string; value: unknown }>;
     hiddenColumns?: string[];
   };
+  /**
+   * Widget-level banks — footnotes, axes, legends. User-authored
+   * entries here flow through the wire; schema behaviors contribute
+   * additional entries at runtime via `computeEffectiveBanks(spec)`.
+   * Derived entries are tagged with `producer: column.id` for
+   * auto-cleanup on column removal. See `$schema/banks.ts` for the
+   * entry shapes + dispatcher.
+   */
+  banks?: import("../schema/banks").WidgetBanks;
   /** Target aspect ratio (`width / height`) for static export and the
    *  widget's interactive control. `null` / undefined means render at
    *  natural; a positive number triggers Mode-3 relayout via the lever

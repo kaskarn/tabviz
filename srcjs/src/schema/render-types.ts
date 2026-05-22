@@ -13,6 +13,7 @@
 
 import type { ColumnSchema } from "./types";
 import type { ColumnSpec } from "../types";
+import type { BankContribution } from "./banks";
 
 // ────────────────────────────────────────────────────────────────────
 // Render description tree
@@ -354,6 +355,30 @@ export interface SchemaBehaviors {
     options: ColumnSpec["options"],
     parents: ParentBehaviors<NonNullable<SchemaBehaviors["aggregate"]>>,
   ) => unknown;
+
+  /**
+   * Contribute widget-bank entries (footnotes / axes / legends /
+   * custom) when this column is present. Pure; idempotent; called
+   * by `computeEffectiveBanks(spec)`. Returned entries are stamped
+   * with `producer: column.id` automatically; cleanup on column
+   * removal is automatic (entries simply don't get re-emitted next
+   * dispatch pass).
+   *
+   * Example — reference column populates footnote bank:
+   *   contributeBanks: (column, spec) => ({
+   *     footnotes: spec.data.rows.map((row, i) => ({
+   *       id: derivedId(column.id, row.id),
+   *       text: String(row.metadata[column.field]),
+   *       href: column.options?.reference?.hrefField
+   *         ? String(row.metadata[column.options.reference.hrefField])
+   *         : undefined,
+   *     })),
+   *   })
+   */
+  contributeBanks?: (
+    column: ColumnSpec,
+    spec: { columns: ColumnSpec[]; data?: unknown },
+  ) => BankContribution | null | void;
 }
 
 // ────────────────────────────────────────────────────────────────────

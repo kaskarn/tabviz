@@ -26,6 +26,12 @@ import { ICON_SCHEMA } from "./icon";
 import { IMG_SCHEMA } from "./img";
 import { REFERENCE_SCHEMA } from "./reference";
 
+// NOTE: built-in behavior registrations (reference-behaviors.ts etc.)
+// are NOT auto-imported here to avoid the circular dependency
+// `extend.ts → columns/index.ts → behaviors → extend.ts`. Consumers
+// that need behaviors at runtime should import `src/schema/init.ts`
+// (which bundles schemas + behaviors).
+
 /**
  * Schemas are abstract (structural/ontological, not in the picker —
  * BASE, future VIZ / SVG) or concrete (user-facing — TEXT, NUMERIC,

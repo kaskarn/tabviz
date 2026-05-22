@@ -15,6 +15,9 @@ import type {
   WebSpec, WebData, Row, ColumnDef, InteractionSpec, LayoutSpec, PlotLabels,
   AvailableField, FieldCategory,
 } from "../types";
+import type {
+  WidgetBanks, FootnoteEntry, AxisEntry, LegendEntry, BankEntry,
+} from "../schema/banks";
 import { CURRENT_VERSION } from "../spec";
 import { resolveThemeRef, type ThemeRef } from "../lib/theme-api";
 import { colText } from "./columns";
@@ -80,6 +83,13 @@ export interface TabvizArgs {
   initialHiddenColumns?: string[];
   /** Original-call deparse, for the "View source" baseline line. Optional. */
   originalCall?: string;
+  // Widget banks (footnotes, axes, legends, custom). User-authored
+  // entries flow through the wire; schema behaviors contribute
+  // additional entries at runtime via computeEffectiveBanks(spec).
+  footnotes?: FootnoteEntry[];
+  axes?: AxisEntry[];
+  legends?: LegendEntry[];
+  customBanks?: Record<string, BankEntry[]>;
 }
 
 /**
@@ -234,6 +244,17 @@ export function tabviz(args: TabvizArgs): WebSpec {
       hiddenColumns: args.initialHiddenColumns,
     };
   }
+
+  // Widget banks — user-authored entries flow through; schema
+  // behaviors contribute additional entries at runtime.
+  const banks: WidgetBanks = {};
+  if (args.footnotes?.length)   banks.footnotes = args.footnotes;
+  if (args.axes?.length)        banks.axes      = args.axes;
+  if (args.legends?.length)     banks.legends   = args.legends;
+  if (args.customBanks && Object.keys(args.customBanks).length > 0) {
+    banks.custom = args.customBanks;
+  }
+  if (Object.keys(banks).length > 0) spec.banks = banks;
 
   return spec;
 }
