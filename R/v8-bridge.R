@@ -104,6 +104,16 @@ delegate_to_web_col <- function(builder_name, ts_args, type = NULL, na_text = NU
     options = shape$options %||% list(),
     na_text = na_text
   )
+  # Forward fields the TS shape sets that web_col would otherwise default
+  # differently. Keeps type-specific defaults (e.g. forest's
+  # `sortable = false`, viz_*'s `flex = true`, header-align overrides)
+  # owned by the TS builder rather than re-encoded R-side per builder.
+  if (!is.null(shape$align))       args$align        <- shape$align
+  if (!is.null(shape$headerAlign)) args$header_align <- shape$headerAlign
+  if (!is.null(shape$showHeader))  args$show_header  <- shape$showHeader
+  if (!is.null(shape$wrap))        args$wrap         <- as.logical(shape$wrap)
+  if (!is.null(shape$sortable))    args$sortable     <- shape$sortable
+  if (!is.null(shape$flex))        args$flex         <- shape$flex
   args[names(extra_args)] <- extra_args
   do.call(web_col, args)
 }

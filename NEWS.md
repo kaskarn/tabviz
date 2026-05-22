@@ -1,3 +1,45 @@
+# tabviz 0.35.0
+
+## R↔TS delegation pass — viz_*, col_date, tabviz() asymmetries
+
+Closes the second drift surface from the 0.34 round. Every R-side
+constructor that has a TS counterpart now delegates the shape
+construction to TS via `R/v8-bridge.R::delegate_to_web_col`, with R
+keeping the rich `cli_abort` validators that the TS path can't reproduce
+on its own.
+
+### Delegated to TS
+
+* **`col_date`** — was R-native; now delegates to `colDate` (newly
+  added to the TS authoring surface).
+* **`viz_forest`, `viz_bar`, `viz_boxplot`, `viz_violin`** — previously
+  built the wire shape R-side; now R does argument validation +
+  effect serialization and delegates to `vizForest` / `vizBar` /
+  `vizBoxplot` / `vizViolin` for the column construction.
+
+### Authoring-path symmetry
+
+The TS-side `tabviz()` constructor now mirrors three R behaviors that
+had drifted:
+
+* **Synthetic row-number label** when `label` is not provided — both
+  paths now inject a `__row_number__` "#" column.
+* **Label-header prettification** — `label = "study_name"` resolves to
+  header `"Study Name"` on both paths (was R-only).
+* **Positional row ids** — `row_<1-based>` always, even when the data
+  has an `id` field (TS used to prefer `row.id`).
+
+### Internals
+
+* `delegate_to_web_col` forwards `align`, `header_align`, `show_header`,
+  `wrap`, `sortable`, `flex` from the TS shape so type-specific defaults
+  (e.g. forest's `sortable = FALSE`) live in one place.
+* `web_col` no longer collapses empty-string headers via `%||%` —
+  preserves the viz_forest "empty + hidden" idiom across paths.
+* Per-helper viz parsing extracted into `parse_viz_args` and
+  `viz_ts_args` (R-side internal) so the three viz_* helpers can't
+  drift among themselves.
+
 # tabviz 0.34.3
 
 ## Fixes

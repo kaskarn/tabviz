@@ -209,6 +209,72 @@ test_that("colLabel: prettifies snake_case header", {
   testthat::expect_equal(shape$header, "Patient Id")
 })
 
+test_that("colDate: format option threads through options.date.format", {
+  shape <- ts_call("colDate", list(field = "dob", format = "%b %d, %Y"))
+  r_col <- col_date("dob", format = "%b %d, %Y")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$type, "text")
+  testthat::expect_equal(shape$options$date$format, "%b %d, %Y")
+})
+
+test_that("vizForest: single-effect synthetic field + sortable=FALSE", {
+  shape <- ts_call("vizForest", list(point = "hr", lower = "lcl", upper = "ucl"))
+  r_col <- viz_forest(point = "hr", lower = "lcl", upper = "ucl")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$field, "_forest_hr")
+  testthat::expect_equal(shape$id, "forest_hr")
+  testthat::expect_equal(shape$sortable, FALSE)
+  testthat::expect_equal(shape$options$forest$point, "hr")
+  testthat::expect_equal(shape$options$forest$nullValue, 0)
+})
+
+test_that("vizForest: log scale defaults nullValue=1", {
+  shape <- ts_call("vizForest", list(point = "hr", lower = "lcl", upper = "ucl", scale = "log"))
+  r_col <- viz_forest(point = "hr", lower = "lcl", upper = "ucl", scale = "log")
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$options$forest$nullValue, 1)
+})
+
+test_that("vizBar: synthetic field + header fallback to effect label", {
+  shape <- ts_call("vizBar", list(
+    effects = list(list(value = "score", label = "Score"))
+  ))
+  r_col <- viz_bar(effect_bar("score", label = "Score"))
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$field, "_viz_bar_score")
+  testthat::expect_equal(shape$header, "Score")
+  testthat::expect_equal(shape$sortable, FALSE)
+})
+
+test_that("vizBoxplot: synthetic field uses data field when present", {
+  shape <- ts_call("vizBoxplot", list(
+    effects = list(list(data = "vals"))
+  ))
+  r_col <- viz_boxplot(effect_boxplot(data = "vals"))
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$field, "_viz_boxplot_vals")
+})
+
+test_that("vizViolin: synthetic field uses data field", {
+  shape <- ts_call("vizViolin", list(
+    effects = list(list(data = "v"))
+  ))
+  r_col <- viz_violin(effect_violin(data = "v"))
+  compare_shape(r_col, shape)
+  testthat::expect_equal(shape$field, "_viz_violin_v")
+})
+
+test_that("vizBar: null_value prepends a synthetic refline annotation", {
+  shape <- ts_call("vizBar", list(
+    effects = list(list(value = "x")),
+    nullValue = 0
+  ))
+  r_col <- viz_bar(effect_bar("x"), null_value = 0)
+  testthat::expect_equal(length(shape$options$vizBar$annotations), 1)
+  testthat::expect_equal(shape$options$vizBar$annotations[[1]]$x, 0)
+  testthat::expect_equal(length(r_col@options$vizBar$annotations), 1)
+})
+
 test_that("V8 bundle exposes callBuilder + the SVG export functions", {
   ctx <- tabviz_v8()
   testthat::expect_true(ctx$eval("typeof callBuilder") == "function")

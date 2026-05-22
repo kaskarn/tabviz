@@ -170,11 +170,35 @@ export function vizForest({
   showAxis = true,
   annotations,
   sharedAxis = null,
-  ...common
+  headerAlign = "center",
+  sortable = false,
+  ...rest
 }: VizForestArgs): ColumnSpec {
-  if (!point && !effects) {
-    throw new Error("vizForest: must specify `point`/`lower`/`upper` or `effects`");
+  const hasInline = point != null && lower != null && upper != null;
+  const hasEffects = effects != null && effects.length > 0;
+  if (hasInline && hasEffects) {
+    throw new Error(
+      "vizForest: cannot specify both inline `point`/`lower`/`upper` and `effects`",
+    );
   }
+  if (!hasInline && !hasEffects) {
+    throw new Error(
+      "vizForest: provide `point`/`lower`/`upper` or `effects: [...]`",
+    );
+  }
+  if (scale === "log") {
+    const nv = nullValue ?? 1;
+    if (!(nv > 0)) {
+      throw new Error(`vizForest: nullValue must be positive on log scale; got ${nv}`);
+    }
+    if (axisRange && axisRange[0] <= 0) {
+      throw new Error(`vizForest: axisRange lower bound must be positive on log scale; got ${axisRange[0]}`);
+    }
+  }
+  if (axisRange && !(axisRange[0] < axisRange[1])) {
+    throw new Error(`vizForest: axisRange must be strictly increasing; got [${axisRange[0]}, ${axisRange[1]}]`);
+  }
+
   const forest: ForestColumnOptions = {
     point: point ?? null,
     lower: lower ?? null,
@@ -190,9 +214,35 @@ export function vizForest({
     annotations: annotations ?? null,
     sharedAxis,
   };
-  // Field is the point column when single-effect, or a synthetic id when multi-effect.
-  const field = point ?? `_forest_${effects?.[0]?.id ?? "multi"}`;
-  return baseColumn(field, "forest", { forest }, common);
+
+  // Synthetic field — mirrors R::viz_forest. The wire `field` is always
+  // `_forest_<point-col>` (single-effect) or `_forest_<first-effect.point>`
+  // (multi-effect); the original point column lives in `options.forest.point`
+  // for the renderer.
+  const pointCol = hasInline ? point! : effects![0].pointCol;
+  const field = `_forest_${pointCol}`;
+
+  // Header fallback — single multi-effect with a `label` resolves to that
+  // label; otherwise empty. Empty fallback also suppresses `showHeader` so
+  // the column doesn't reserve a blank strip above the axis.
+  let resolvedHeader = rest.header;
+  let resolvedShowHeader = rest.showHeader;
+  if (resolvedHeader == null) {
+    if (hasEffects && effects!.length === 1 && effects![0].label) {
+      resolvedHeader = effects![0].label;
+    } else {
+      resolvedHeader = "";
+      if (resolvedShowHeader == null) resolvedShowHeader = false;
+    }
+  }
+
+  return baseColumn(field, "forest", { forest }, {
+    ...rest,
+    header: resolvedHeader,
+    showHeader: resolvedShowHeader,
+    headerAlign,
+    sortable,
+  });
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -220,19 +270,25 @@ export interface VizBarArgs extends VizColumnCommon {
 export function vizBar({
   effects,
   scale = "linear", nullValue, axisRange = null, axisTicks = null,
-  axisGridlines = false, axisLabel = "", showAxis = true, annotations,
+  axisGridlines = false, axisLabel = "Value", showAxis = true, annotations,
   barWidth, barGap, orientation = "horizontal",
-  ...common
+  headerAlign = "center", sortable = false,
+  ...rest
 }: VizBarArgs): ColumnSpec {
+  if (!effects?.length) throw new Error("vizBar: requires at least one effect");
   const opts: VizBarColumnOptions = {
     type: "bar",
     effects,
     scale, nullValue, axisRange, axisTicks, axisGridlines, axisLabel, showAxis,
-    annotations: annotations ?? null,
+    annotations: prependNullRefline(annotations, nullValue),
     barWidth, barGap, orientation,
   };
-  const field = `_viz_bar_${effects[0]?.value ?? "x"}`;
-  return baseColumn(field, "viz_bar", { vizBar: opts }, common);
+  const first = effects[0];
+  const field = `_viz_bar_${first.value ?? "x"}`;
+  const header = rest.header ?? (first.label || first.value || "");
+  return baseColumn(field, "viz_bar", { vizBar: opts }, {
+    ...rest, header, headerAlign, sortable,
+  });
 }
 
 export interface VizBoxplotArgs extends VizColumnCommon {
@@ -245,19 +301,26 @@ export interface VizBoxplotArgs extends VizColumnCommon {
 export function vizBoxplot({
   effects,
   scale = "linear", nullValue, axisRange = null, axisTicks = null,
-  axisGridlines = false, axisLabel = "", showAxis = true, annotations,
+  axisGridlines = false, axisLabel = "Value", showAxis = true, annotations,
   showOutliers = true, whiskerType = "iqr", boxWidth,
-  ...common
+  headerAlign = "center", sortable = false,
+  ...rest
 }: VizBoxplotArgs): ColumnSpec {
+  if (!effects?.length) throw new Error("vizBoxplot: requires at least one effect");
   const opts: VizBoxplotColumnOptions = {
     type: "boxplot",
     effects,
     scale, nullValue, axisRange, axisTicks, axisGridlines, axisLabel, showAxis,
-    annotations: annotations ?? null,
+    annotations: prependNullRefline(annotations, nullValue),
     showOutliers, whiskerType, boxWidth,
   };
-  const field = `_viz_boxplot_${effects[0]?.data ?? effects[0]?.median ?? "x"}`;
-  return baseColumn(field, "viz_boxplot", { vizBoxplot: opts }, common);
+  const first = effects[0];
+  const fieldRoot = first.data ?? first.median ?? "x";
+  const field = `_viz_boxplot_${fieldRoot}`;
+  const header = rest.header ?? (first.label || fieldRoot || "");
+  return baseColumn(field, "viz_boxplot", { vizBoxplot: opts }, {
+    ...rest, header, headerAlign, sortable,
+  });
 }
 
 export interface VizViolinArgs extends VizColumnCommon {
@@ -271,17 +334,48 @@ export interface VizViolinArgs extends VizColumnCommon {
 export function vizViolin({
   effects,
   scale = "linear", nullValue, axisRange = null, axisTicks = null,
-  axisGridlines = false, axisLabel = "", showAxis = true, annotations,
+  axisGridlines = false, axisLabel = "Value", showAxis = true, annotations,
   bandwidth = null, showMedian = true, showQuartiles = false, maxWidth,
-  ...common
+  headerAlign = "center", sortable = false,
+  ...rest
 }: VizViolinArgs): ColumnSpec {
+  if (!effects?.length) throw new Error("vizViolin: requires at least one effect");
   const opts: VizViolinColumnOptions = {
     type: "violin",
     effects,
     scale, nullValue, axisRange, axisTicks, axisGridlines, axisLabel, showAxis,
-    annotations: annotations ?? null,
+    annotations: prependNullRefline(annotations, nullValue),
     bandwidth, showMedian, showQuartiles, maxWidth,
   };
-  const field = `_viz_violin_${effects[0]?.data ?? "x"}`;
-  return baseColumn(field, "viz_violin", { vizViolin: opts }, common);
+  const first = effects[0];
+  const field = `_viz_violin_${first.data ?? "x"}`;
+  const header = rest.header ?? (first.label || first.data || "");
+  return baseColumn(field, "viz_violin", { vizViolin: opts }, {
+    ...rest, header, headerAlign, sortable,
+  });
+}
+
+/**
+ * Mirror of R's `prepare_viz_annotations`: when `nullValue` is provided,
+ * prepend a synthetic dashed reference line so viz_bar/boxplot/violin gain
+ * an implicit "zero line" without the caller needing to thread a refline.
+ */
+function prependNullRefline(
+  annotations: Annotation[] | undefined,
+  nullValue: number | undefined,
+): Annotation[] | null {
+  const list = annotations ? [...annotations] : [];
+  if (nullValue != null) {
+    list.unshift({
+      type: "reference_line",
+      id: `refline_${nullValue}`,
+      x: nullValue,
+      label: null,
+      style: "dashed",
+      color: null,
+      width: 1,
+      opacity: 0.6,
+    } as Annotation);
+  }
+  return list.length ? list : null;
 }

@@ -269,8 +269,12 @@ web_col <- function(
     flex
   }
 
-  # Default header to field name
-  header <- header %||% field
+  # Default header to field name. Use `is.null` directly (not `%||%`) because
+  # `utils-embed-fonts.R` overloads `%||%` to also coalesce empty strings —
+  # but viz_forest's "empty-header + show_header=FALSE" idiom passes `""`
+  # intentionally as a signal that the header strip should be reserved-but-
+  # hidden. Preserving the empty string lets that pass through unchanged.
+  if (is.null(header)) header <- field
 
   # Default alignment is left
   if (is.null(align)) {
@@ -1825,9 +1829,10 @@ col_currency <- function(field, header = NULL, width = NULL,
 col_date <- function(field, header = NULL, width = NULL,
                      format = "%Y-%m-%d", na_text = NULL, ...) {
   checkmate::assert_string(format)
-  opts <- list(date = list(format = format))
-  web_col(field, header, type = "text", width = width, options = opts,
-          na_text = na_text, ...)
+  ts_args <- list(field = field, format = format)
+  if (!is.null(header)) ts_args$header <- header
+  if (!is.null(width)) ts_args$width <- width
+  delegate_to_web_col("colDate", ts_args, na_text = na_text, extra_args = list(...))
 }
 
 # ============================================================================
@@ -1898,7 +1903,7 @@ col_date <- function(field, header = NULL, width = NULL,
 #' )
 viz_forest <- function(
     header = NULL,
-    show_header = TRUE,
+    show_header = NULL,
     header_align = "center",
     width = NULL,
     point = NULL,
@@ -1915,16 +1920,16 @@ viz_forest <- function(
     annotations = NULL,
     shared_axis = NULL,
     ...) {
-  checkmate::assert_flag(show_header)
-  checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
-
   scale <- match.arg(scale)
 
-  # Validate: must have either (point, lower, upper) OR effects list, not both
-
-  has_inline <- !is.null(point) && !is.null(lower) && !is.null(upper)
+  # R-side pre-validation gives cli_abort-quality errors. The TS builder
+  # validates the same conditions but its `throw new Error(...)` strings
+  # propagate as plain JS messages, which lose the rich formatting users
+  # expect from R. After validation we delegate the shape construction to
+  # `vizForest` (TS) so the synthetic field naming, header fallback, and
+  # default null_value live in exactly one place.
+  has_inline  <- !is.null(point) && !is.null(lower) && !is.null(upper)
   has_effects <- !is.null(effects) && length(effects) > 0
-
   if (has_inline && has_effects) {
     cli_abort(c(
       "Cannot specify both inline columns and effects list",
@@ -1932,7 +1937,6 @@ viz_forest <- function(
       "i" = "or {.arg effects} for multiple overlaid effects (not both)."
     ))
   }
-
   if (!has_inline && !has_effects) {
     cli_abort(c(
       "Forest column requires effect specification",
@@ -1940,8 +1944,6 @@ viz_forest <- function(
       "i" = "or {.arg effects} = list(effect_forest(...), ...) for multiple effects."
     ))
   }
-
-  # Validate effects list contains EffectSpec objects
   if (has_effects) {
     for (i in seq_along(effects)) {
       if (!S7_inherits(effects[[i]], EffectSpec)) {
@@ -1952,30 +1954,18 @@ viz_forest <- function(
       }
     }
   }
-
-  # Default null_value based on scale.
-  if (is.null(null_value)) {
-    null_value <- if (scale == "log") 1 else 0
-  } else {
-    # `assert_number(..., finite = TRUE)` doesn't reject NA — guard
-    # explicitly. NA would serialize as `null` and the renderer would
-    # produce a degenerate / missing reference line.
+  if (!is.null(null_value)) {
     if (is.na(null_value)) {
       cli_abort(c(
         "{.arg null_value} cannot be NA.",
         "i" = "Pass a finite numeric (e.g. 1 for log scale, 0 for linear), or NULL to use the scale-appropriate default."
       ))
     }
-    checkmate::assert_number(null_value, finite = TRUE,
-                             .var.name = "null_value")
+    checkmate::assert_number(null_value, finite = TRUE, .var.name = "null_value")
     if (scale == "log" && null_value <= 0) {
       cli_abort("{.arg null_value} must be positive on a log scale; got {.val {null_value}}.")
     }
   }
-
-  # Validate axis_range when supplied: length-2, finite, monotonic.
-  # Without this, `c(0, 0)` or `c(NA, 1)` slips through to the renderer
-  # and produces a degenerate d3 scale.
   if (!is.null(axis_range)) {
     checkmate::assert_numeric(axis_range, len = 2L, any.missing = FALSE,
                               finite = TRUE, .var.name = "axis_range")
@@ -1990,93 +1980,49 @@ viz_forest <- function(
     }
   }
 
-  # Serialize effects inline in the forest options
-  serialized_effects <- NULL
+  # Pre-serialize effects into the wire shape `vizForest` (TS) expects.
+  # EffectSpec is an S7 class with R-style snake_case props; the TS side
+  # types `effects: EffectSpec[]` against the wire shape (camelCase + null
+  # for missing). Convert here so the V8 call sees JSON-compatible objects.
+  ts_effects <- NULL
   if (has_effects) {
-    serialized_effects <- lapply(effects, function(e) {
+    ts_effects <- lapply(effects, function(e) {
       list(
-        id = e@id,
+        id      = e@id,
         pointCol = e@point_col,
         lowerCol = e@lower_col,
         upperCol = e@upper_col,
-        label = if (is.na(e@label)) NULL else e@label,
-        color = if (is.na(e@color)) NULL else e@color,
-        shape = if (is.na(e@shape)) NULL else e@shape,
+        label   = if (is.na(e@label))   NULL else e@label,
+        color   = if (is.na(e@color))   NULL else e@color,
+        shape   = if (is.na(e@shape))   NULL else e@shape,
         opacity = if (is.na(e@opacity)) NULL else e@opacity
       )
     })
   }
-
-  # Serialize annotations if provided
-  serialized_annotations <- NULL
+  ts_annotations <- NULL
   if (!is.null(annotations) && length(annotations) > 0) {
-    serialized_annotations <- lapply(annotations, serialize_annotation)
+    ts_annotations <- lapply(annotations, serialize_annotation)
   }
 
-  # Build forest options, only including width when explicitly set
-  # (NULL width would become JSON null, which JavaScript's ?? operator won't replace)
-  forest_opts <- list(
-    point = point,
-    lower = lower,
-    upper = upper,
-    effects = serialized_effects,
-    scale = scale,
-    nullValue = null_value,
-    axisLabel = axis_label,
-    axisRange = axis_range,
-    axisTicks = axis_ticks,
-    axisGridlines = axis_gridlines,
-    showAxis = show_axis,
-    annotations = serialized_annotations,
-    sharedAxis = shared_axis
-  )
-  if (!is.null(width)) {
-    forest_opts$width <- as.numeric(width)
-  }
+  ts_args <- list(scale = scale)
+  if (!is.null(point))          ts_args$point         <- point
+  if (!is.null(lower))          ts_args$lower         <- lower
+  if (!is.null(upper))          ts_args$upper         <- upper
+  if (!is.null(ts_effects))     ts_args$effects       <- ts_effects
+  if (!is.null(null_value))     ts_args$nullValue     <- null_value
+  if (!is.null(axis_label))     ts_args$axisLabel     <- axis_label
+  if (!is.null(axis_range))     ts_args$axisRange     <- axis_range
+  if (!is.null(axis_ticks))     ts_args$axisTicks     <- axis_ticks
+  if (!isFALSE(axis_gridlines)) ts_args$axisGridlines <- axis_gridlines
+  if (!isTRUE(show_axis))       ts_args$showAxis      <- show_axis
+  if (!is.null(ts_annotations)) ts_args$annotations   <- ts_annotations
+  if (!is.null(shared_axis))    ts_args$sharedAxis    <- shared_axis
+  if (!is.null(header))         ts_args$header        <- header
+  if (!is.null(show_header))    ts_args$showHeader    <- show_header
+  if (!is.null(header_align))   ts_args$headerAlign   <- header_align
+  if (!is.null(width))          ts_args$width         <- as.numeric(width)
 
-  opts <- list(forest = forest_opts)
-
-  # Use a synthetic field for the forest column
-  synthetic_field <- if (has_effects) {
-    # Use first effect's point column for field name
-    paste0("_forest_", effects[[1]]@point_col)
-  } else {
-    paste0("_forest_", point)
-  }
-
-  # Default header to the effect label; never the raw point column name,
-  # since "hr" / "or" / "rr" are internal identifiers, not presentable labels.
-  # When no meaningful fallback exists, leave the header empty and force
-  # show_header off so the column doesn't reserve a blank header strip.
-  forest_fallback <- if (has_effects) {
-    if (length(effects) > 1) {
-      ""
-    } else {
-      lbl <- effects[[1]]@label
-      if (!is.na(lbl) && nzchar(lbl)) lbl else ""
-    }
-  } else {
-    ""
-  }
-  resolved_header <- if (is.null(header)) forest_fallback else as.character(header)
-  # If the fallback produced an empty header (user didn't name the column and
-  # no effect label was available), suppress the header — an empty cell with
-  # show_header = TRUE would just reserve an unused strip above the axis.
-  if (is.null(header) && !nzchar(resolved_header)) {
-    show_header <- FALSE
-  }
-
-  web_col(
-    synthetic_field,
-    header = resolved_header,
-    show_header = show_header,
-    header_align = header_align,
-    type = "forest",
-    width = width,
-    sortable = FALSE,  # Forest columns are not sortable by default
-    options = opts,
-    ...
-  )
+  delegate_to_web_col("vizForest", ts_args, extra_args = list(...))
 }
 
 # ============================================================================
@@ -2764,78 +2710,22 @@ viz_bar <- function(
     show_axis = TRUE,
     null_value = NULL,
     annotations = NULL) {
-
-  checkmate::assert_flag(show_header)
-  checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
   scale <- match.arg(scale)
-
-  # Separate positional effect_bar() items from named styling args forwarded via `...`
-  all_args <- list(...)
-  arg_names <- names(all_args) %||% rep("", length(all_args))
-  is_named <- nzchar(arg_names)
-  effects <- all_args[!is_named]
-  passthrough <- all_args[is_named]
-
-  # Validate effects
-  if (length(effects) == 0) {
-    cli_abort("viz_bar requires at least one effect_bar()")
-  }
-
-  for (i in seq_along(effects)) {
-    if (!S7_inherits(effects[[i]], VizBarEffect)) {
-      cli_abort(c(
-        "All positional arguments to viz_bar must be {.fn effect_bar} objects",
-        "i" = "Argument {i} is not a VizBarEffect"
-      ))
-    }
-  }
-
-  # Serialize effects
-  serialized_effects <- lapply(effects, function(e) {
+  parsed <- parse_viz_args(list(...), "viz_bar", VizBarEffect, "effect_bar")
+  ts_effects <- lapply(parsed$effects, function(e) {
     list(
-      value = e@value,
-      label = if (is.na(e@label)) NULL else e@label,
-      color = if (is.na(e@color)) NULL else e@color,
+      value   = e@value,
+      label   = if (is.na(e@label))   NULL else e@label,
+      color   = if (is.na(e@color))   NULL else e@color,
       opacity = if (is.na(e@opacity)) NULL else e@opacity
     )
   })
-
-  serialized_annotations <- prepare_viz_annotations(annotations, null_value)
-
-  opts <- list(
-    vizBar = list(
-      type = "bar",
-      effects = serialized_effects,
-      scale = scale,
-      axisRange = axis_range,
-      axisTicks = axis_ticks,
-      axisGridlines = axis_gridlines,
-      axisLabel = axis_label,
-      showAxis = show_axis,
-      annotations = serialized_annotations
-    )
+  ts_args <- viz_ts_args(
+    scale, axis_range, axis_ticks, axis_gridlines, axis_label, show_axis,
+    null_value, annotations, header, show_header, header_align, width
   )
-
-  # Synthetic field name
-  synthetic_field <- paste0("_viz_bar_", effects[[1]]@value)
-
-  first_label <- effects[[1]]@label
-  viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else effects[[1]]@value
-  resolved_header <- if (is.null(header)) viz_fallback else as.character(header)
-
-  do.call(web_col, c(
-    list(
-      synthetic_field,
-      header = resolved_header,
-      show_header = show_header,
-      header_align = header_align,
-      type = "viz_bar",
-      width = width,
-      sortable = FALSE,
-      options = opts
-    ),
-    passthrough
-  ))
+  ts_args$effects <- ts_effects
+  delegate_to_web_col("vizBar", ts_args, extra_args = parsed$passthrough)
 }
 
 #' Visualization column: Box plot
@@ -2919,93 +2809,31 @@ viz_boxplot <- function(
     show_axis = TRUE,
     null_value = NULL,
     annotations = NULL) {
-
-  checkmate::assert_flag(show_header)
-  checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
   scale <- match.arg(scale)
   whisker_type <- match.arg(whisker_type)
-
-  # Separate positional effect_boxplot() items from named styling args via `...`
-  all_args <- list(...)
-  arg_names <- names(all_args) %||% rep("", length(all_args))
-  is_named <- nzchar(arg_names)
-  effects <- all_args[!is_named]
-  passthrough <- all_args[is_named]
-
-  # Validate effects
-  if (length(effects) == 0) {
-    cli_abort("viz_boxplot requires at least one effect_boxplot()")
-  }
-
-  for (i in seq_along(effects)) {
-    if (!S7_inherits(effects[[i]], VizBoxplotEffect)) {
-      cli_abort(c(
-        "All positional arguments to viz_boxplot must be {.fn effect_boxplot} objects",
-        "i" = "Argument {i} is not a VizBoxplotEffect"
-      ))
-    }
-  }
-
-  # Serialize effects
-  serialized_effects <- lapply(effects, function(e) {
+  parsed <- parse_viz_args(list(...), "viz_boxplot", VizBoxplotEffect, "effect_boxplot")
+  ts_effects <- lapply(parsed$effects, function(e) {
     list(
-      data = if (is.na(e@data)) NULL else e@data,
-      min = if (is.na(e@min)) NULL else e@min,
-      q1 = if (is.na(e@q1)) NULL else e@q1,
-      median = if (is.na(e@median)) NULL else e@median,
-      q3 = if (is.na(e@q3)) NULL else e@q3,
-      max = if (is.na(e@max)) NULL else e@max,
+      data     = if (is.na(e@data))     NULL else e@data,
+      min      = if (is.na(e@min))      NULL else e@min,
+      q1       = if (is.na(e@q1))       NULL else e@q1,
+      median   = if (is.na(e@median))   NULL else e@median,
+      q3       = if (is.na(e@q3))       NULL else e@q3,
+      max      = if (is.na(e@max))      NULL else e@max,
       outliers = if (is.na(e@outliers)) NULL else e@outliers,
-      label = if (is.na(e@label)) NULL else e@label,
-      color = if (is.na(e@color)) NULL else e@color,
-      opacity = e@opacity
+      label    = if (is.na(e@label))    NULL else e@label,
+      color    = if (is.na(e@color))    NULL else e@color,
+      opacity  = e@opacity
     )
   })
-
-  serialized_annotations <- prepare_viz_annotations(annotations, null_value)
-
-  opts <- list(
-    vizBoxplot = list(
-      type = "boxplot",
-      effects = serialized_effects,
-      scale = scale,
-      axisRange = axis_range,
-      axisTicks = axis_ticks,
-      axisGridlines = axis_gridlines,
-      showOutliers = show_outliers,
-      whiskerType = whisker_type,
-      axisLabel = axis_label,
-      showAxis = show_axis,
-      annotations = serialized_annotations
-    )
+  ts_args <- viz_ts_args(
+    scale, axis_range, axis_ticks, axis_gridlines, axis_label, show_axis,
+    null_value, annotations, header, show_header, header_align, width
   )
-
-  # Synthetic field name
-  first_effect <- effects[[1]]
-  first_field <- if (!is.na(first_effect@data)) {
-    first_effect@data
-  } else {
-    first_effect@median
-  }
-  synthetic_field <- paste0("_viz_boxplot_", first_field)
-
-  first_label <- first_effect@label
-  viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else first_field
-  resolved_header <- if (is.null(header)) viz_fallback else as.character(header)
-
-  do.call(web_col, c(
-    list(
-      synthetic_field,
-      header = resolved_header,
-      show_header = show_header,
-      header_align = header_align,
-      type = "viz_boxplot",
-      width = width,
-      sortable = FALSE,
-      options = opts
-    ),
-    passthrough
-  ))
+  ts_args$effects     <- ts_effects
+  ts_args$showOutliers <- show_outliers
+  ts_args$whiskerType  <- whisker_type
+  delegate_to_web_col("vizBoxplot", ts_args, extra_args = parsed$passthrough)
 }
 
 #' Visualization column: Violin plot
@@ -3087,79 +2915,89 @@ viz_violin <- function(
     show_axis = TRUE,
     null_value = NULL,
     annotations = NULL) {
-
-  checkmate::assert_flag(show_header)
-  checkmate::assert_choice(header_align, c("left", "center", "right"), null.ok = TRUE)
   scale <- match.arg(scale)
-
-  # Separate positional effect_violin() items from named styling args via `...`
-  all_args <- list(...)
-  arg_names <- names(all_args) %||% rep("", length(all_args))
-  is_named <- nzchar(arg_names)
-  effects <- all_args[!is_named]
-  passthrough <- all_args[is_named]
-
-  # Validate effects
-  if (length(effects) == 0) {
-    cli_abort("viz_violin requires at least one effect_violin()")
-  }
-
-  for (i in seq_along(effects)) {
-    if (!S7_inherits(effects[[i]], VizViolinEffect)) {
-      cli_abort(c(
-        "All positional arguments to viz_violin must be {.fn effect_violin} objects",
-        "i" = "Argument {i} is not a VizViolinEffect"
-      ))
-    }
-  }
-
-  # Serialize effects
-  serialized_effects <- lapply(effects, function(e) {
+  parsed <- parse_viz_args(list(...), "viz_violin", VizViolinEffect, "effect_violin")
+  ts_effects <- lapply(parsed$effects, function(e) {
     list(
-      data = e@data,
-      label = if (is.na(e@label)) NULL else e@label,
-      color = if (is.na(e@color)) NULL else e@color,
+      data    = e@data,
+      label   = if (is.na(e@label)) NULL else e@label,
+      color   = if (is.na(e@color)) NULL else e@color,
       opacity = e@opacity
     )
   })
-
-  serialized_annotations <- prepare_viz_annotations(annotations, null_value)
-
-  opts <- list(
-    vizViolin = list(
-      type = "violin",
-      effects = serialized_effects,
-      scale = scale,
-      axisRange = axis_range,
-      axisTicks = axis_ticks,
-      axisGridlines = axis_gridlines,
-      bandwidth = bandwidth,
-      showMedian = show_median,
-      showQuartiles = show_quartiles,
-      axisLabel = axis_label,
-      showAxis = show_axis,
-      annotations = serialized_annotations
-    )
+  ts_args <- viz_ts_args(
+    scale, axis_range, axis_ticks, axis_gridlines, axis_label, show_axis,
+    null_value, annotations, header, show_header, header_align, width
   )
+  ts_args$effects       <- ts_effects
+  if (!is.null(bandwidth))     ts_args$bandwidth     <- bandwidth
+  if (!isTRUE(show_median))    ts_args$showMedian    <- show_median
+  if (!isFALSE(show_quartiles)) ts_args$showQuartiles <- show_quartiles
+  delegate_to_web_col("vizViolin", ts_args, extra_args = parsed$passthrough)
+}
 
-  # Synthetic field name
-  synthetic_field <- paste0("_viz_violin_", effects[[1]]@data)
+# Internal: split the `...` of a viz_* helper into positional effects and
+# named passthrough args, validate the effects are the expected S7 class,
+# and produce a clean two-list result. Shared between viz_bar / viz_boxplot
+# / viz_violin so the parsing rules don't drift among them.
+#' @keywords internal
+parse_viz_args <- function(dots, helper_name, effect_class, effect_helper) {
+  arg_names <- names(dots) %||% rep("", length(dots))
+  is_named <- nzchar(arg_names)
+  effects     <- dots[!is_named]
+  passthrough <- dots[is_named]
+  if (length(effects) == 0) {
+    cli_abort("{.fn {helper_name}} requires at least one {.fn {effect_helper}} object.")
+  }
+  for (i in seq_along(effects)) {
+    if (!S7_inherits(effects[[i]], effect_class)) {
+      cli_abort(c(
+        "All positional arguments to {.fn {helper_name}} must be {.fn {effect_helper}} objects.",
+        "i" = "Argument {i} is {.cls {class(effects[[i]])[[1]]}}"
+      ))
+    }
+  }
+  list(effects = effects, passthrough = passthrough)
+}
 
-  first_label <- effects[[1]]@label
-  viz_fallback <- if (!is.na(first_label) && nzchar(first_label)) first_label else effects[[1]]@data
-  resolved_header <- if (is.null(header)) viz_fallback else as.character(header)
-
-  do.call(web_col, c(
-    list(
-      synthetic_field,
-      header = resolved_header,
-      show_header = show_header,
-      header_align = header_align,
-      type = "viz_violin",
-      width = width,
-      sortable = FALSE,
-      options = opts
-    ),
-    passthrough
-  ))
+# Internal: assemble the shared viz_* ts_args. Annotations are serialized
+# but the synthetic null-refline is NOT prepended R-side — the TS
+# `prependNullRefline` handles it from `nullValue`, so pure-TS callers see
+# the same wire shape as R callers.
+#' @keywords internal
+viz_ts_args <- function(scale, axis_range, axis_ticks, axis_gridlines,
+                        axis_label, show_axis, null_value, annotations,
+                        header, show_header, header_align, width) {
+  if (!is.null(null_value)) {
+    checkmate::assert_number(null_value, finite = TRUE)
+  }
+  if (!is.null(annotations) && !is.list(annotations)) {
+    cli_abort("{.arg annotations} must be a list of annotation objects (e.g. {.fn refline}).")
+  }
+  ts_annotations <- NULL
+  if (!is.null(annotations) && length(annotations) > 0) {
+    for (i in seq_along(annotations)) {
+      a <- annotations[[i]]
+      if (!(S7_inherits(a, ReferenceLine) || S7_inherits(a, CustomAnnotation))) {
+        cli_abort(c(
+          "All elements of {.arg annotations} must be {.fn refline} or {.fn forest_annotation} objects.",
+          "i" = "Element {i} is {.cls {class(a)[[1]]}}"
+        ))
+      }
+    }
+    ts_annotations <- lapply(annotations, serialize_annotation)
+  }
+  args <- list(scale = scale)
+  if (!is.null(axis_range))     args$axisRange     <- axis_range
+  if (!is.null(axis_ticks))     args$axisTicks     <- axis_ticks
+  if (!isFALSE(axis_gridlines)) args$axisGridlines <- axis_gridlines
+  if (!identical(axis_label, "Value")) args$axisLabel <- axis_label
+  if (!isTRUE(show_axis))       args$showAxis      <- show_axis
+  if (!is.null(null_value))     args$nullValue     <- null_value
+  if (!is.null(ts_annotations)) args$annotations   <- ts_annotations
+  if (!is.null(header))         args$header        <- header
+  if (!isTRUE(show_header))     args$showHeader    <- show_header
+  if (!identical(header_align, "center")) args$headerAlign <- header_align
+  if (!is.null(width))          args$width         <- as.numeric(width)
+  args
 }

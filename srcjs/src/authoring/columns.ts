@@ -153,6 +153,24 @@ export function colLabel({ field, maxChars, naText, ...common }: ColTextArgs): C
   return colText({ field, maxChars, naText, ...common, header });
 }
 
+export interface ColDateArgs extends CommonColumnArgs {
+  field: string;
+  /** strftime-style format string. Default `"%Y-%m-%d"`. */
+  format?: string;
+  naText?: string | null;
+}
+
+/**
+ * Date column. Mirrors `R::col_date()`. The renderer reformats
+ * `Date`/`POSIXct` values using `options.date.format`; pre-formatted
+ * strings pass through unchanged.
+ */
+export function colDate({ field, format = "%Y-%m-%d", naText, ...common }: ColDateArgs): ColumnSpec {
+  const options: Record<string, unknown> = { date: { format } };
+  if (naText != null) options.naText = naText;
+  return baseColumn(field, "text", options, common);
+}
+
 function prettifyFieldName(field: string): string {
   return field
     .replace(/_/g, " ")

@@ -12,7 +12,7 @@ export type { TabvizArgs } from "./tabviz";
 
 // Column builders
 export {
-  colText, colLabel,
+  colText, colLabel, colDate,
   colNumeric, colN, colCurrency, colPercent,
   colInterval, colPvalue, colRange, colEvents,
   colBar, colSparkline, colHeatmap, colProgress,
@@ -22,7 +22,7 @@ export {
 } from "./columns";
 export type {
   CommonColumnArgs,
-  ColTextArgs, ColNumericArgs, ColNArgs, ColCurrencyArgs,
+  ColTextArgs, ColDateArgs, ColNumericArgs, ColNArgs, ColCurrencyArgs,
   ColIntervalArgs, ColPvalueArgs, ColRangeArgs, ColEventsArgs,
   ColBarArgs, ColSparklineArgs, ColHeatmapArgs, ColProgressArgs,
   ColBadgeArgs, ColIconArgs, ColStarsArgs, ColPictogramArgs, ColRingArgs,

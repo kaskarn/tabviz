@@ -4,6 +4,38 @@ This file follows [Keep a Changelog](https://keepachangelog.com).
 Wire-format versioning policy lives in
 [`docs/dev/versioning.md`](../docs/dev/versioning.md).
 
+## 0.4.0 — 2026-05-21
+
+### Changed — TS authoring surface now mirrors R defaults across the board
+
+The R-side `viz_*` constructors and `col_date` now delegate shape
+construction to the TS authoring API (`vizForest`, `vizBar`,
+`vizBoxplot`, `vizViolin`, `colDate`). To make this work, the TS
+builders absorbed the defaults that previously only lived R-side:
+
+* `vizForest` now uses the `_forest_<point>` synthetic field, defaults
+  `sortable: false` and `headerAlign: "center"`, falls back to the
+  effect label for the header when one is present, and validates the
+  same conditions R does (mutually exclusive `point/lower/upper` vs
+  `effects`, finite/monotonic `axisRange`, positive `nullValue` and
+  lower bound on log scale).
+* `vizBar` / `vizBoxplot` / `vizViolin` mirror their R counterparts —
+  synthetic field naming, header fallback to effect label, default
+  `sortable: false`, default `headerAlign: "center"`, and a synthetic
+  dashed refline prepended when `nullValue` is supplied.
+* `colDate` joins the TS surface (`type: "text"` with `options.date`).
+
+The pure-TS `tabviz()` constructor also picks up three R behaviors:
+
+* Synthesizes a `__row_number__` "#" column when no `label` is given.
+* Prettifies the default label header (`label: "study_name"` →
+  `"Study Name"`).
+* Uses positional `row_<1-based>` row ids (was: preferred `row.id`).
+
+### Added
+
+* `colDate({ field, format, ... })` — date column with strftime format.
+
 ## 0.3.5 — 2026-05-20
 
 ### Fixed — column editor recognized no fields under pure-TS `tabviz()`

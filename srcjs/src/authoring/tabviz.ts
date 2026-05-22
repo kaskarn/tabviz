@@ -19,6 +19,19 @@ import { CURRENT_VERSION } from "../spec";
 import { resolveThemeRef, type ThemeRef } from "../lib/theme-api";
 import { colText } from "./columns";
 
+/**
+ * Mirror of `R::tabviz()`'s label-header default — when `labelHeader` is
+ * not supplied, the label field is prettified the same way: replace
+ * underscores with spaces, split camelCase, and Title-Case the result.
+ * So `label: "study_name"` produces header `"Study Name"`, matching R.
+ */
+function prettifyLabelHeader(field: string): string {
+  return field
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export interface TabvizArgs {
   /** Row data — array of plain objects keyed by field name. */
   data: Record<string, unknown>[];
@@ -75,11 +88,14 @@ export interface TabvizArgs {
  * initial state.
  */
 export function tabviz(args: TabvizArgs): WebSpec {
+  // Mirror of R's row-id convention: positional `row_<1-based-index>`. The
+  // earlier TS path preferred `row[label]` / `row.id`, but that made R↔TS
+  // wire shapes diverge for callers who happened to have an `id` field in
+  // their data. R always uses positional ids; TS now does too.
   const rows: Row[] = args.data.map((row, i) => {
-    const id = String(row[args.label ?? "id"] ?? `row_${i}`);
-    const labelVal = args.label != null ? String(row[args.label] ?? "") : id;
+    const labelVal = args.label != null ? String(row[args.label] ?? "") : String(i + 1);
     return {
-      id,
+      id: `row_${i + 1}`,
       label: labelVal,
       groupId: args.group != null ? String(row[args.group] ?? "") : null,
       metadata: { ...row },
@@ -148,14 +164,34 @@ export function tabviz(args: TabvizArgs): WebSpec {
   const inlineLabelIdx = args.columns.findIndex((c) => c.id === "label");
   let labelColumn: ColumnDef | null = null;
   let columns = args.columns;
+  let synthesizedRowNumberField: string | null = null;
   if (inlineLabelIdx >= 0) {
     labelColumn = args.columns[inlineLabelIdx];
     columns = args.columns.filter((_, i) => i !== inlineLabelIdx);
   } else if (args.label != null) {
     labelColumn = colText({
       field: args.label,
-      header: args.labelHeader ?? args.label,
+      header: args.labelHeader ?? prettifyLabelHeader(args.label),
       id: "label",
+    });
+  } else {
+    // Mirror of R::tabviz: when no `label` is supplied, synthesize a
+    // row-number column ("#") so the widget always has a row-identifier
+    // surface. The field is added to each row's metadata below.
+    synthesizedRowNumberField = "__row_number__";
+    labelColumn = colText({
+      field: synthesizedRowNumberField,
+      header: "#",
+      id: "label",
+    });
+  }
+  if (synthesizedRowNumberField) {
+    rows.forEach((r, i) => {
+      r.metadata[synthesizedRowNumberField!] = String(i + 1);
+      // The row's `label` was set to "" above (no `args.label`); replace
+      // it with the synthetic row number so `row.label` matches what the
+      // label column will render.
+      r.label = String(i + 1);
     });
   }
 
