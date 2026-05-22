@@ -34,7 +34,7 @@ export type ControlKind =
  * `column.options[<bucket>][<key>]`. `"top"` puts it at
  * `column.options[<key>]` (for legacy fields like `naText`). `"fixed"`
  * puts it as a top-level ColumnSpec property (for `width`, `align`,
- * `header`, etc. — used by the layout-header layer).
+ * `header`, etc. — used by the base layer).
  */
 export type WireAt = "bucket" | "top" | "fixed";
 

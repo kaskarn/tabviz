@@ -1,6 +1,11 @@
-// `text` layer — free-form-text rendering options.
-// Used by `text`, `label`, `reference`, `date` columns. NOT by numeric
-// (truncation doesn't apply to formatted numbers).
+// `text` layer — cell-text rendering options. Inherited by every
+// column type that renders text in any form: text, label, numeric,
+// percent, currency, n, pvalue, interval, range, events, date,
+// reference, bar/ring/heatmap value labels.
+//
+// Pure-visual columns that never paint text (sparkline, viz_bar,
+// viz_boxplot, viz_violin, img) can opt out by omitting this layer
+// from their `layers` list.
 
 import type { LayerSpec } from "../types";
 
@@ -10,6 +15,16 @@ export const TEXT_LAYER: LayerSpec = {
   defaultOpen: false,
   options: [
     {
+      key: "naText",
+      label: "Missing value",
+      control: "text",
+      default: null,
+      hint: "Shown when the cell is NA / null",
+      // Legacy wire path: `column.options.naText` (top-level, not in
+      // any bucket). 13+ reader sites in the renderer + SVG exporter.
+      at: "top",
+    },
+    {
       key: "maxChars",
       label: "Max chars",
       control: "integer",
@@ -17,5 +32,9 @@ export const TEXT_LAYER: LayerSpec = {
       hint: "Truncate with trailing ellipsis when over",
       min: 1,
     },
+    // Reserved for future text-styling additions (bold/italic/color).
+    // Today those live as per-cell style mappings (`row_color_col`,
+    // styleMapping); when we lift them to per-column toggles they go
+    // here so every text-rendering column inherits the surface.
   ],
 };

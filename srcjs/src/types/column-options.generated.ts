@@ -8,6 +8,8 @@ export interface NumericBucketOptions {
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
   digits?: number | null;
+  /** Max chars — Truncate with trailing ellipsis when over */
+  maxChars?: number | null;
   /** Prefix — Prepended literal (e.g. "$") */
   prefix?: string | null;
   /** Suffix — Appended literal (e.g. "%") */
@@ -23,6 +25,8 @@ export interface PercentBucketOptions {
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
   digits?: number | null;
+  /** Max chars — Truncate with trailing ellipsis when over */
+  maxChars?: number | null;
   /** Multiply ×100 — Off if the source field is already a percentage */
   multiply?: boolean;
   /** Prefix — Prepended literal (e.g. "$") */

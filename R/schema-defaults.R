@@ -4,28 +4,28 @@
 
 schema_defaults <- list(
   numeric = list(
+    align = "left",
+    width = "auto",
+    wrap = FALSE,
+    sortable = TRUE,
     decimals = 2,
     thousands_sep = FALSE,
-    abbreviate = FALSE,
-    width = "auto",
-    align = "left",
-    wrap = FALSE,
-    sortable = TRUE
+    abbreviate = FALSE
   ),
   percent = list(
+    align = "left",
+    width = "auto",
+    wrap = FALSE,
+    sortable = TRUE,
     decimals = 1,
     thousands_sep = FALSE,
     abbreviate = FALSE,
     multiply = TRUE,
-    symbol = TRUE,
-    width = "auto",
-    align = "left",
-    wrap = FALSE,
-    sortable = TRUE
+    symbol = TRUE
   ),
   text = list(
-    width = "auto",
     align = "left",
+    width = "auto",
     wrap = FALSE,
     sortable = TRUE
   )
