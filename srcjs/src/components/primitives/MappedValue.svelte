@@ -78,15 +78,19 @@
 </script>
 
 <div class="mapped-value">
+  <!-- Mode picker: "Theme" is the cascade-controlled default (no
+       override; theme decides). "Static" pins a literal value. "Mapped"
+       binds to a data field. Clicking "Theme" at any time reverts the
+       option to cascade control — explicit "revert" affordance. -->
   <Segmented
     value={mode}
     onchange={setMode}
     segments={[
-      { value: "off", label: "Default" },
+      { value: "off", label: "Theme" },
       { value: "static", label: "Static" },
       { value: "field", label: "Mapped" },
     ]}
-    ariaLabel="Override mode"
+    ariaLabel="Override mode — Theme = revert to cascade default"
   />
   {#if mode === "static"}
     <div class="sub-ctl">
