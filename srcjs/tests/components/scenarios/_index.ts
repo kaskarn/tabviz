@@ -17,6 +17,7 @@ import V2PickerScenario   from "./v2/Picker.scenario.svelte";
 import V2ModeScenario     from "./v2/Mode.scenario.svelte";
 import V2SwatchScenario   from "./v2/Swatch.scenario.svelte";
 import V2SectionsScenario from "./v2/Sections.scenario.svelte";
+import V2ColumnEditorScenario from "./v2/ColumnEditor.scenario.svelte";
 
 export const SCENARIOS: ScenarioMeta[] = [
   {
@@ -86,6 +87,12 @@ export const SCENARIOS: ScenarioMeta[] = [
     description: "v2 Sections + Accordion — composed into a popover mock of the new column editor.",
     group: "v2 primitives",
     component: V2SectionsScenario,
+  },
+  {
+    name: "v2-editor",
+    description: "Flagship — schema-driven ColumnEditorV2 mounted with numeric / interval / text columns side-by-side.",
+    group: "v2 editor",
+    component: V2ColumnEditorScenario,
   },
 ];
 
