@@ -21,17 +21,20 @@ export const PICTOGRAM_SCHEMA: ColumnSchema = {
     {
       id: "row",
       label: "Row",
-      description: 'Glyphs laid out left-to-right (default)',
+      description: "Glyphs laid out left-to-right",
+      preview: "★★★☆☆",
     },
     {
       id: "stack",
       label: "Stack",
-      description: 'Glyphs stacked top-to-bottom',
+      description: "Glyphs stacked top-to-bottom",
+      preview: "★\n★\n★",
     },
     {
       id: "row_value_trail",
       label: "Row + value",
-      description: 'Glyphs with numeric value trailing',
+      description: "Glyphs with numeric value trailing",
+      preview: "★★★ 3",
     },
   ],
   options: [

@@ -29,6 +29,7 @@
     modes?: MappedMode[];
     disabled?: boolean;
     ariaLabel?: string;
+    onchange?: (next: MappedMode) => void;
   }
 
   let {
@@ -36,6 +37,7 @@
     modes = ["theme", "static", "field", "condition"],
     disabled = false,
     ariaLabel = "value mode",
+    onchange,
   }: Props = $props();
 
   const SEGMENT: Record<MappedMode, PillSegment<MappedMode>> = {
@@ -56,6 +58,7 @@
     iconOnly
     {ariaLabel}
     {disabled}
+    onchange={(v) => onchange?.(v as MappedMode)}
   />
 </div>
 

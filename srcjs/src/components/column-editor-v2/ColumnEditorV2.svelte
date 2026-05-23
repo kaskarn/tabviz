@@ -53,7 +53,9 @@
   import Picker from "../primitives/v2/Picker.svelte";
   import Swatch from "../primitives/v2/Swatch.svelte";
   import Mode   from "../primitives/v2/Mode.svelte";
-  import type { PickerItem, ThemeSwatch } from "../primitives/v2/types";
+  import VariantPicker from "../primitives/v2/VariantPicker.svelte";
+  import ColumnPreview from "../primitives/v2/ColumnPreview.svelte";
+  import type { PickerItem, ThemeSwatch, MappedMode } from "../primitives/v2/types";
 
   interface Props {
     /** Schema for the column being edited. */
@@ -170,6 +172,67 @@
     commit(opt, opt.default);
   }
 
+  // ── Variants — recipe selector ──────────────────────────────────
+  // Variants land at column.options[bucket].variant. We surface the
+  // selector at the top of the leaf-most accordion's body (the schema
+  // that owns the variants). If the same key is inherited up the
+  // chain, the deepest-declaring layer wins.
+  function variantOwner(): ColumnSchema | null {
+    for (const layer of cascade) {
+      if (layer.variants && layer.variants.length > 0) return layer;
+    }
+    return null;
+  }
+  function readVariant(layer: ColumnSchema): string | null {
+    if (!layer.bucket) return null;
+    const opts = (column.options ?? {}) as Record<string, Record<string, unknown>>;
+    const b = opts[layer.bucket] ?? {};
+    return (b.variant as string | undefined) ?? null;
+  }
+  function writeVariant(layer: ColumnSchema, id: string) {
+    if (!layer.bucket) return;
+    const next: Record<string, unknown> = { ...(column as Record<string, unknown>) };
+    next.options = { ...((column as Record<string, unknown>).options ?? {}) as Record<string, unknown> };
+    const b = { ...(((next.options as Record<string, unknown>)[layer.bucket] ?? {}) as Record<string, unknown>) };
+    b.variant = id;
+    (next.options as Record<string, unknown>)[layer.bucket] = b;
+    column = next as Partial<ColumnSpec>;
+    oncommit?.(next as Partial<ColumnSpec>);
+  }
+
+  // ── MappedValue (value-or-field) — local mode state per option ──
+  // The wire format for these styling options is a tagged union; for
+  // now we track the mode in-editor and write a simple shape (theme:
+  // null/omit, static: literal, field: string field-ref). Conditions
+  // are bound to a known condition name from banks (deferred).
+  const mappedModes: Record<string, MappedMode> = $state({});
+  function detectMode(v: unknown): MappedMode {
+    if (v === null || v === undefined) return "theme";
+    if (typeof v === "object" && v && "kind" in v) {
+      const k = (v as { kind: string }).kind;
+      if (k === "static" || k === "field" || k === "condition" || k === "theme") return k;
+    }
+    return "static";
+  }
+  function readMapped(opt: OptionSpec): unknown {
+    return readValue(opt);
+  }
+  function writeMappedMode(opt: OptionSpec, m: MappedMode) {
+    mappedModes[opt.key] = m;
+    // Reset value to a sensible empty when mode changes; caller can
+    // then fill in via the follow-up control.
+    if (m === "theme") commit(opt, null);
+    else if (m === "static") commit(opt, opt.default ?? null);
+    else if (m === "field") commit(opt, { kind: "field", field: null });
+    else if (m === "condition") commit(opt, { kind: "condition", name: null });
+  }
+  function writeMappedStatic(opt: OptionSpec, v: unknown) {
+    commit(opt, v);
+  }
+  function writeMappedField(opt: OptionSpec, field: string | null) {
+    commit(opt, field == null ? null : { kind: "field", field });
+  }
+
   // ── Slot pickers ────────────────────────────────────────────────
   function slotItems(accepts: AvailableField["category"][]): PickerItem<string>[] {
     return available
@@ -226,6 +289,9 @@
   </header>
 
   <div class="body">
+    <!-- ── Live preview ──────────────────────────────────────────── -->
+    <ColumnPreview {schema} {column} />
+
     <!-- ── DATA — slot pickers ──────────────────────────────────── -->
     {#if schema.slots && schema.slots.length > 0}
       <Section glyph="section.data" title="Data">
@@ -326,14 +392,26 @@
     <!-- ── Schema cascade — leaf-first ──────────────────────────── -->
     {#each cascade as layer, idx (layer.key)}
       {@const opts = optionsFor(layer.key)}
-      {#if opts.length > 0}
+      {@const isLeaf = layer === schema}
+      {@const hasVariants = isLeaf && layer.variants && layer.variants.length > 0}
+      {#if opts.length > 0 || hasVariants}
         {@const layerGlyph = schemaGlyph(layer, SCHEMA_REGISTRY)}
         <Accordion
-          title={layer === schema ? `${layer.label} options` : `${layer.label} options`}
+          title={`${layer.label} options`}
           glyph={layerGlyph}
           open={idx === 0}
           count={pinCount(layer.key)}
         >
+          {#if hasVariants}
+            <div class="variant-wrap">
+              <div class="variant-flag">variants</div>
+              <VariantPicker
+                value={readVariant(layer)}
+                variants={layer.variants!}
+                onchange={(id) => writeVariant(layer, id)}
+              />
+            </div>
+          {/if}
           {#each opts as opt (opt.key)}
             {@const cur = readValue(opt)}
             {@const pinned = isPinned(opt)}
@@ -390,11 +468,61 @@
                   ariaLabel={opt.label}
                 />
               {:else if opt.control === "value-or-field"}
-                <!-- Composite: Mode pill + follow-up control. Bind the
-                     mode locally; commit on Mode + follow change. -->
+                <!-- Composite: Mode pill + follow-up control. Mode is
+                     detected from the current value's shape on first
+                     render and tracked locally afterward. -->
+                {@const mappedCur = readMapped(opt)}
+                {@const m = mappedModes[opt.key] ?? detectMode(mappedCur)}
                 <span class="mapped">
-                  <Mode value="static" />
-                  <span class="mapped-follow">…</span>
+                  <Mode
+                    value={m}
+                    onchange={(next) => writeMappedMode(opt, next as MappedMode)}
+                  />
+                  {#if m === "static"}
+                    {#if opt.valueControl === "color"}
+                      <Swatch
+                        value={(mappedCur as string | null) ?? null}
+                        {swatches}
+                      />
+                    {:else if opt.valueControl === "toggle"}
+                      <Pill
+                        value={(mappedCur as boolean) ?? false}
+                        segments={[
+                          { value: false, label: "off" },
+                          { value: true,  label: "on" },
+                        ]}
+                        ariaLabel={opt.label}
+                        onchange={(v) => writeMappedStatic(opt, v)}
+                      />
+                    {:else if opt.valueControl === "number" || opt.valueControl === "integer"}
+                      <Knob
+                        value={(mappedCur as number) ?? null}
+                        min={opt.min}
+                        max={opt.max}
+                        step={opt.step ?? (opt.valueControl === "integer" ? 1 : undefined)}
+                        integer={opt.valueControl === "integer"}
+                      />
+                    {:else}
+                      <input
+                        class="text-input"
+                        type="text"
+                        value={String(mappedCur ?? "")}
+                        oninput={(e) => writeMappedStatic(opt, (e.target as HTMLInputElement).value || null)}
+                      />
+                    {/if}
+                  {:else if m === "field"}
+                    <Picker
+                      value={(mappedCur as { kind: string; field?: string } | null)?.field ?? null}
+                      items={slotItems(opt.accepts ?? [])}
+                      placeholder="Pick a field…"
+                      ariaLabel={opt.label}
+                      onchange={(v) => writeMappedField(opt, v)}
+                    />
+                  {:else if m === "condition"}
+                    <span class="mapped-follow">(condition picker — TBD)</span>
+                  {:else}
+                    <span class="mapped-follow">inherits theme</span>
+                  {/if}
                 </span>
               {:else}
                 <!-- Fallback: text input -->
@@ -511,10 +639,29 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    flex: 1;
+    min-width: 0;
   }
   .mapped-follow {
     color: var(--v2-ink-3, #8a8478);
     font-style: italic;
     font-size: var(--v2-text-small, 10.5px);
+  }
+
+  /* ── Variant picker block ─────────────────────────────────── */
+  .variant-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 0 8px;
+    border-bottom: 1px solid var(--v2-rule-soft, #e6e0d1);
+    margin-bottom: 6px;
+  }
+  .variant-flag {
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: var(--v2-track-flag, 0.14em);
+    color: var(--v2-ink-3, #8a8478);
   }
 </style>

@@ -20,22 +20,26 @@ export const BADGE_SCHEMA: ColumnSchema = {
     {
       id: "pill",
       label: "Pill",
-      description: 'Rounded rectangle with filled background (default)',
+      description: "Rounded rectangle with filled background",
+      preview: "🟢 active",
     },
     {
       id: "outline",
       label: "Outline",
-      description: 'Transparent fill with colored border',
+      description: "Transparent fill with colored border",
+      preview: "⬡ active",
     },
     {
       id: "square",
       label: "Square",
-      description: 'Sharp corners, filled',
+      description: "Sharp corners, filled",
+      preview: "▪ active",
     },
     {
       id: "minimal",
       label: "Minimal",
-      description: 'Just colored text — no background, no border',
+      description: "Just colored text — no background",
+      preview: "active",
     },
   ],
   options: [

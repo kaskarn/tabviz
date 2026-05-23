@@ -21,5 +21,7 @@ export { default as Accordion } from "./Accordion.svelte";
 export { default as Picker }    from "./Picker.svelte";
 export { default as Mode }      from "./Mode.svelte";
 export { default as Swatch }    from "./Swatch.svelte";
+export { default as VariantPicker } from "./VariantPicker.svelte";
+export { default as ColumnPreview } from "./ColumnPreview.svelte";
 
 export type { PillSegment, PickerItem, MappedMode, ThemeSwatch } from "./types";

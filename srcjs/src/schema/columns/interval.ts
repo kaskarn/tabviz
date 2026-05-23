@@ -29,22 +29,26 @@ export const INTERVAL_SCHEMA: ColumnSchema = {
     {
       id: "traditional",
       label: "Traditional",
-      description: '"0.85 (0.72, 0.99)" — bounds in parens after the point',
+      description: "Bounds in parens after the point",
+      preview: "0.85 (0.72, 0.99)",
     },
     {
       id: "bracket_muted",
-      label: "Bracket, muted bounds",
-      description: '"0.85 [0.72–0.99]" — bounds in brackets, secondary text',
+      label: "Bracket, muted",
+      description: "Bounds in brackets, secondary text",
+      preview: "0.85 [0.72–0.99]",
     },
     {
       id: "plus_minus",
       label: "Plus–minus",
-      description: '"0.85 ± 0.14" — half-width as ± offset (symmetric bounds)',
+      description: "Half-width as ± (symmetric bounds)",
+      preview: "0.85 ± 0.14",
     },
     {
       id: "stacked",
       label: "Stacked",
-      description: '"0.85 / (0.72, 0.99)" — point on first line, bounds smaller below',
+      description: "Point on first line, bounds below",
+      preview: "0.85\n(0.72, 0.99)",
     },
   ],
   options: [

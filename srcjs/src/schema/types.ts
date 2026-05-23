@@ -219,6 +219,17 @@ export interface VariantSpec {
   label: string;
   /** One-line description; shown as hint when this variant is hovered/selected. */
   description?: string;
+  /**
+   * Preview snippet shown on the variant card in the editor — a
+   * small fixed sample (text or HTML-ish) demonstrating the visual
+   * recipe. Pure presentation hint; not part of the wire format.
+   *
+   *   INTERVAL.traditional.preview   = '0.85 (0.72, 0.99)'
+   *   INTERVAL.bracket_muted.preview = '0.85 [0.72–0.99]'
+   *
+   * If absent, the card shows the label only.
+   */
+  preview?: string;
 }
 
 /** The registry — populated by `columns/index.ts`. */

@@ -36,6 +36,8 @@
     maxMenuHeight?: number;
     /** Width of the trigger; menu inherits unless wider needed. */
     width?: number;
+    /** Called when a new item is committed (selected from the menu). */
+    onchange?: (next: T | null) => void;
   }
 
   let {
@@ -48,6 +50,7 @@
     searchable,
     maxMenuHeight = 240,
     width,
+    onchange,
   }: Props = $props();
 
   let open = $state(false);
@@ -103,6 +106,7 @@
   function commit(item: PickerItem<T>) {
     if (item.disabled) return;
     value = item.value;
+    onchange?.(item.value);
     closeMenu();
   }
 

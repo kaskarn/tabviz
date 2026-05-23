@@ -18,6 +18,7 @@ import V2ModeScenario     from "./v2/Mode.scenario.svelte";
 import V2SwatchScenario   from "./v2/Swatch.scenario.svelte";
 import V2SectionsScenario from "./v2/Sections.scenario.svelte";
 import V2ColumnEditorScenario from "./v2/ColumnEditor.scenario.svelte";
+import V2VariantPreviewScenario from "./v2/VariantPreview.scenario.svelte";
 
 export const SCENARIOS: ScenarioMeta[] = [
   {
@@ -93,6 +94,12 @@ export const SCENARIOS: ScenarioMeta[] = [
     description: "Flagship — schema-driven ColumnEditorV2 mounted with numeric / interval / text columns side-by-side.",
     group: "v2 editor",
     component: V2ColumnEditorScenario,
+  },
+  {
+    name: "v2-variant",
+    description: "VariantPicker + ColumnPreview isolated — interval / badge / pictogram variant cards, plus preview chips.",
+    group: "v2 editor",
+    component: V2VariantPreviewScenario,
   },
 ];
 
