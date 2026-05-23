@@ -1,6 +1,6 @@
 {
-  "_note": "Bumped 2026-05-23 for Step 7 v2-editor rollout carry. Bundle hosts both legacy ColumnEditorPopover and v2 ColumnEditorV2 + primitives during the flag-gated rollout window. Step 8 deletes the legacy editor and should restore prior budget.",
-  "inst/htmlwidgets/tabviz.js": 770000,
-  "inst/htmlwidgets/tabviz_split.js": 770000,
+  "_note": "Set 2026-05-23 after Step 8 cutover deleted legacy ColumnEditorPopover + per-type OptionsEditor files. Budget reflects the v2-only world: schema-driven editor (Pill/Knob/Field/Section/Accordion/Picker/Mode/Swatch/VariantPicker/ColumnPreview + ColumnEditorV2). Net +18 KB vs pre-Phase-7 because v2 is a richer surface than the editor it replaced.",
+  "inst/htmlwidgets/tabviz.js": 775000,
+  "inst/htmlwidgets/tabviz_split.js": 783000,
   "inst/js/svg-generator.js": 171570
 }

@@ -20,9 +20,31 @@
   legacy editor.
 -->
 <script lang="ts" module>
-  // Re-export EditorTarget so callers can import from either editor
-  // without changing types.
-  export type { EditorTarget } from "../controls/ColumnEditorPopover.svelte";
+  import type { ColumnSpec as _ColumnSpec, ColumnType as _ColumnType } from "$types";
+
+  /** The popover's open-state descriptor.
+   *
+   *  Two modes:
+   *    - `"insert"` — opening a fresh column at a given anchor; the
+   *      ColumnTypeMenu chose `type` (and optionally `seedOptions`).
+   *    - `"configure"` — editing an existing column; the popover
+   *      hydrates from `existing` and re-emits a ColumnSpec on commit.
+   */
+  export interface EditorTarget {
+    mode: "insert" | "configure";
+    anchorX: number;
+    anchorY: number;
+    /** For "insert": column id to insert after ("__start__" for first). */
+    afterId?: string;
+    /** For "configure": the existing column spec being edited. */
+    existing?: _ColumnSpec;
+    /** Pre-selected visual type from ColumnTypeMenu. */
+    type?: _ColumnType;
+    /** Human label for the chosen preset (shown in the header). */
+    presetLabel?: string;
+    /** Options bundle pre-seeded from the preset. */
+    seedOptions?: _ColumnSpec["options"];
+  }
 </script>
 
 <script lang="ts">
@@ -37,7 +59,8 @@
   import ColumnEditorV2 from "./ColumnEditorV2.svelte";
   import { schemaForColumnType } from "./schema-for-type";
   import type { ColumnSchema } from "../../schema/types";
-  import type { EditorTarget } from "../controls/ColumnEditorPopover.svelte";
+  // EditorTarget is declared in the `<script module>` block above and
+  // is in scope here.
 
   interface Props {
     target: EditorTarget | null;
