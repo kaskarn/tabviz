@@ -34,7 +34,8 @@ export type RenderNode =
   | RenderGroup
   | RenderSvg
   | RenderSpacer
-  | RenderImage;
+  | RenderImage
+  | RenderComponent;
 
 export interface RenderText {
   kind: "text";
@@ -83,6 +84,32 @@ export interface RenderImage {
   height?: number;
 }
 
+/**
+ * Browser-only escape hatch: mount a named Svelte component with the
+ * given props. The renderer registry's `dom` slot uses this for
+ * visual cells (pictogram, ring, sparkline, …) where a Svelte
+ * component is the natural target — preserving scoped CSS, reactive
+ * props, and transitions that a raw markup string can't.
+ *
+ * The SVG-export consumer (`render-svg.ts`) MUST NOT receive
+ * RenderComponent nodes from its renderer chain; the schema's
+ * `svg` slot is expected to produce `RenderSvg` instead. If a
+ * component node leaks through, the serializer emits empty markup
+ * with zero dimensions and an inline diagnostic comment.
+ */
+export interface RenderComponent {
+  kind: "component";
+  /** Name registered in the COMPONENT_REGISTRY (see RenderTree.svelte). */
+  name: string;
+  /** Props passed to the component. */
+  props: Record<string, unknown>;
+  /** Optional natural width hint — informs the cell auto-width path
+   *  when DOM measurement isn't available. */
+  width?: number;
+  /** Optional natural height hint. */
+  height?: number;
+}
+
 /** Theme-relative or literal text styling. */
 export interface TextStyle {
   /** Theme font role (mirrors TEXT.fontClass) or raw family. */
@@ -124,9 +151,17 @@ export interface RenderContext {
  * `parents.pictogram(val, opts, ctx)` to delegate to a specific
  * ancestor without re-implementing it. The proxy returns the same
  * RenderNode that the parent would have returned.
+ *
+ * The proxy entries take 3 args (no trailing `parents`) — the
+ * dispatcher injects each ancestor's own `parents` automatically, so
+ * callers compose by passing only (value, options, ctx).
  */
 export type ParentRenderers = {
-  [key: string]: CellFormatter;
+  [key: string]: (
+    value: unknown,
+    options: ColumnSpec["options"],
+    ctx: RenderContext,
+  ) => RenderNode;
 };
 
 /**
@@ -445,10 +480,38 @@ export interface SchemaBehaviors {
 // Registry shapes (used by extend.ts)
 // ────────────────────────────────────────────────────────────────────
 
+/**
+ * Per-schema renderer pair — one for each runtime. Both produce
+ * `RenderNode` trees; each is free to populate the tree with
+ * primitives natural to its target runtime.
+ *
+ * - `dom` (browser path): typically returns a text-composition tree
+ *   OR a `RenderComponent` node that mounts a Svelte cell component.
+ *   Consumed by `<RenderTree>`.
+ *
+ * - `svg` (V8 / export path): typically returns the same
+ *   text-composition tree as `dom` (theme `nodeRules` overlay both
+ *   identically), OR a `RenderSvg` node carrying SVG markup that
+ *   `svg-generator.ts` would have produced. Consumed by
+ *   `renderNodeToSvg`.
+ *
+ * Text-composition schemas typically share one implementation by
+ * pointing both slots at the same function. Visual schemas have
+ * naturally divergent implementations (component vs markup).
+ */
+export interface SchemaRenderers {
+  dom?: CellFormatter;
+  svg?: CellFormatter;
+}
+
 /** Bundle a schema with its renderer, lifecycle, and behaviors. */
 export interface RegisterSpec {
   schema: ColumnSchema;
+  /** Single-renderer shorthand — fills the `dom` slot. Use `renderers`
+   *  for the full pair. */
   renderer?: CellFormatter;
+  /** Per-runtime renderer pair. */
+  renderers?: SchemaRenderers;
   lifecycle?: SchemaLifecycle;
   behaviors?: SchemaBehaviors;
 }

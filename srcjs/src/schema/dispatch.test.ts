@@ -137,3 +137,96 @@ describe("dispatchForColumn", () => {
     expect(dispatchForColumn(col, "sortKey")).toBeUndefined();
   });
 });
+
+describe("dispatchRenderer + renderCell", () => {
+  test("dispatchRenderer returns undefined when no schema in chain has one", async () => {
+    const { dispatchRenderer } = await import("./dispatch");
+    // No built-in schemas register a renderer yet (Phase 7e ongoing)
+    expect(dispatchRenderer("text")).toBeUndefined();
+  });
+
+  test("renderer composes with parents via injected proxy", async () => {
+    const { dispatchRenderer } = await import("./dispatch");
+    const { registerRenderer } = await import("./extend");
+
+    const root = uniq("r_root"), leaf = uniq("r_leaf");
+    registerSchema(defineSchema({ key: root, label: "R Root", abstract: true, bucket: root, options: [] }));
+    registerSchema(defineSchema({ key: leaf, label: "R Leaf", inherits: root, type: leaf as never, options: [] }));
+
+    registerRenderer(root, (v) => ({ kind: "text", value: `[root ${String(v)}]` }));
+    registerRenderer(leaf, (v, _o, _c, parents) => {
+      const inner = parents[root](v, _o, _c) as { value: string };
+      return { kind: "text", value: `<leaf ${inner.value}>` };
+    });
+
+    const fn = dispatchRenderer(leaf)!;
+    const out = fn("x", {}, { cellWidth: 100, rowHeight: 20, row: {}, target: "browser" });
+    expect((out as { value: string }).value).toBe("<leaf [root x]>");
+  });
+
+  test("renderCell returns null when no renderer is registered", async () => {
+    const { renderCell } = await import("./dispatch");
+    const col = {
+      id: "t", header: "T", field: "v", type: "text",
+      align: "left", sortable: false, isGroup: false, width: "auto", options: {},
+    } as unknown as ColumnSpec;
+    const out = renderCell(col, "hello", {
+      cellWidth: 80, rowHeight: 20, row: { v: "hello" }, target: "browser",
+    });
+    expect(out).toBeNull();
+  });
+
+  test("dispatchRenderer separates dom and svg slots", async () => {
+    const { dispatchRenderer } = await import("./dispatch");
+    const { registerRenderers } = await import("./extend");
+
+    const key = uniq("ds_split");
+    registerSchema(defineSchema({ key, label: "DS", type: key as never, options: [] }));
+    registerRenderers(key, {
+      dom: () => ({ kind: "text", value: "DOM" }),
+      svg: () => ({ kind: "text", value: "SVG" }),
+    });
+
+    const domFn = dispatchRenderer(key, "dom")!;
+    const svgFn = dispatchRenderer(key, "svg")!;
+    const ctx = { cellWidth: 80, rowHeight: 20, row: {}, target: "browser" as const };
+    expect((domFn(null, {}, ctx) as { value: string }).value).toBe("DOM");
+    expect((svgFn(null, {}, ctx) as { value: string }).value).toBe("SVG");
+  });
+
+  test("dispatchRenderer falls back per target independently", async () => {
+    const { dispatchRenderer } = await import("./dispatch");
+    const { registerRenderers } = await import("./extend");
+
+    const key = uniq("ds_one_slot");
+    registerSchema(defineSchema({ key, label: "DS1", type: key as never, options: [] }));
+    registerRenderers(key, { dom: () => ({ kind: "text", value: "only-dom" }) });
+
+    expect(dispatchRenderer(key, "dom")).toBeTypeOf("function");
+    expect(dispatchRenderer(key, "svg")).toBeUndefined();
+  });
+
+  test("renderCell applies nodeRules when provided", async () => {
+    const { renderCell } = await import("./dispatch");
+    const { registerRenderer } = await import("./extend");
+
+    const key = uniq("rc_text");
+    registerSchema(defineSchema({ key, label: "RC", type: key as never, options: [] }));
+    registerRenderer(key, (v) => ({
+      kind: "text", value: String(v), tags: ["primary-cell"],
+    }));
+
+    const col = {
+      id: key, header: key, field: "v", type: key,
+      align: "left", sortable: false, isGroup: false, width: "auto", options: {},
+    } as unknown as ColumnSpec;
+    const out = renderCell(
+      col, "hi",
+      { cellWidth: 80, rowHeight: 20, row: { v: "hi" }, target: "browser" },
+      { "primary-cell": { text: { weight: "bold" } } },
+    );
+    expect(out).not.toBeNull();
+    const text = out as unknown as { kind: string; style?: { weight?: string } };
+    expect(text.style?.weight).toBe("bold");
+  });
+});

@@ -17,9 +17,16 @@
 
 import type { ColumnSpec } from "../types";
 import type { ColumnSchema } from "./types";
-import type { SchemaBehaviors } from "./render-types";
-import { getSchema, getBehaviors, allSchemaKeys } from "./extend";
+import type {
+  SchemaBehaviors,
+  CellFormatter,
+  RenderContext,
+  RenderNode,
+  ParentRenderers,
+} from "./render-types";
+import { getSchema, getBehaviors, getRenderer, allSchemaKeys, type RenderTarget } from "./extend";
 import { resolveSchema } from "./resolve";
+import { applyTheme, type NodeRules } from "./theme-finalize";
 
 // ────────────────────────────────────────────────────────────────────
 // Schema lookup from a ColumnSpec
@@ -120,4 +127,93 @@ export function dispatchForColumn<K extends keyof SchemaBehaviors>(
   const schema = findSchemaForColumn(col);
   if (!schema) return undefined;
   return dispatch(schema.key, behaviorName);
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Renderer dispatcher
+// ────────────────────────────────────────────────────────────────────
+//
+// CellFormatters live in their own registry (extend.ts `renderers`)
+// separate from SchemaBehaviors — they predate the behaviors slot
+// and have the same `(value, opts, ctx, parents) → RenderNode`
+// shape used by the original render contract. The dispatcher pattern
+// is identical to `dispatch()` above: walk the inheritance chain
+// leaf → root, pick the most-specific definition, inject a parents
+// proxy of all strictly older ancestors that also defined a renderer.
+
+/**
+ * Returns the CellFormatter for a schema's renderer on the given
+ * runtime target (`"dom"` for browser, `"svg"` for V8/export). Walks
+ * the inheritance chain leaf → root, picks the most-specific
+ * registered renderer for that target, injects a `parents` proxy
+ * of all strictly older ancestors that ALSO registered a renderer
+ * on the same target.
+ *
+ * Returns `undefined` when no schema in the chain registered one —
+ * caller falls back to its legacy per-type cell path.
+ */
+export function dispatchRenderer(
+  schemaKey: string,
+  target: RenderTarget = "dom",
+): ((value: unknown, options: ColumnSpec["options"], ctx: RenderContext) => RenderNode) | undefined {
+  const schema = getSchema(schemaKey);
+  if (!schema) return undefined;
+  const chain = resolveSchema(schema);
+
+  let leafIdx = -1;
+  for (let i = chain.length - 1; i >= 0; i--) {
+    if (getRenderer(chain[i].key, target) != null) {
+      leafIdx = i;
+      break;
+    }
+  }
+  if (leafIdx === -1) return undefined;
+
+  // Returns a 3-arg (value, options, ctx) callable. The 4-arg
+  // `CellFormatter` shape lives inside `raw`; we wrap with the
+  // ancestor's own `parents` to expose the no-parents-arg surface.
+  type BoundRenderer = ParentRenderers[string];
+  const buildAt = (idx: number): BoundRenderer => {
+    const raw = getRenderer(chain[idx].key, target);
+    if (!raw) {
+      throw new Error(
+        `dispatchRenderer: chain[${idx}] (${chain[idx].key}) lost its renderer between lookup and build`,
+      );
+    }
+    const parents: ParentRenderers = {};
+    for (let i = 0; i < idx; i++) {
+      if (getRenderer(chain[i].key, target) != null) {
+        parents[chain[i].key] = buildAt(i);
+      }
+    }
+    return (value, options, ctx) => raw(value, options, ctx, parents);
+  };
+
+  return buildAt(leafIdx);
+}
+
+/**
+ * High-level entry point: resolve a column's renderer, call it,
+ * and apply theme finalization (`applyTheme`) so tagged nodes get
+ * their NodeRules overlays / wrap / hidden / transforms.
+ *
+ * Returns `null` when no schema in the column's chain registered a
+ * renderer — caller (TabvizPlot / svg-generator) should fall back
+ * to its legacy cell path. As schemas get migrated in Phase 7e,
+ * this null return becomes rarer until the legacy paths can be
+ * deleted entirely.
+ */
+export function renderCell(
+  col: ColumnSpec,
+  value: unknown,
+  ctx: RenderContext,
+  nodeRules?: NodeRules,
+  target: RenderTarget = "dom",
+): RenderNode | null {
+  const schema = findSchemaForColumn(col);
+  if (!schema) return null;
+  const fn = dispatchRenderer(schema.key, target);
+  if (!fn) return null;
+  const tree = fn(value, col.options, ctx);
+  return nodeRules ? applyTheme(tree, nodeRules) : tree;
 }

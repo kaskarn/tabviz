@@ -30,9 +30,13 @@ import type {
   CellFormatter,
   SchemaLifecycle,
   SchemaBehaviors,
+  SchemaRenderers,
   RegisterSpec,
 } from "./render-types";
 import { SCHEMA_REGISTRY } from "./columns";
+
+/** Which runtime a renderer targets. */
+export type RenderTarget = "dom" | "svg";
 
 // ────────────────────────────────────────────────────────────────────
 // defineSchema — typed identity helper
@@ -59,10 +63,13 @@ export function defineSchema(spec: ColumnSchema): ColumnSchema {
 const userSchemas: Record<string, ColumnSchema> = {};
 
 /**
- * Renderer functions keyed by schema key. Phase 7 wires the renderer
- * pipeline to look up via this map.
+ * Renderer functions keyed by (target, schema key). The dispatcher
+ * (`dispatchRenderer`) reads from this map.
  */
-const renderers: Record<string, CellFormatter> = {};
+const renderers: Record<RenderTarget, Record<string, CellFormatter>> = {
+  dom: {},
+  svg: {},
+};
 
 /**
  * Lifecycle hooks keyed by schema key. Phase 7 wires the widget host
@@ -97,15 +104,27 @@ export function registerSchema(schema: ColumnSchema): void {
 }
 
 /**
- * Attach a cell formatter to a registered schema (built-in or user).
- * Replacing a built-in renderer is allowed and intended — themes /
- * plugins may want to override default rendering.
+ * Attach the DOM (browser) cell formatter to a registered schema.
+ * Shorthand for `registerRenderers(key, { dom: fn })`. Replacing
+ * a built-in renderer is allowed and intended — themes / plugins
+ * may want to override default rendering.
  */
 export function registerRenderer(key: string, fn: CellFormatter): void {
+  registerRenderers(key, { dom: fn });
+}
+
+/**
+ * Attach the DOM and/or SVG cell formatters to a registered schema.
+ * Pass one or both slots. Subsequent calls merge into the existing
+ * registration, so libraries can register a DOM renderer first and
+ * an SVG renderer later (or vice versa).
+ */
+export function registerRenderers(key: string, fns: SchemaRenderers): void {
   if (!(key in SCHEMA_REGISTRY) && !(key in userSchemas)) {
-    throw new Error(`registerRenderer: no schema "${key}" registered`);
+    throw new Error(`registerRenderers: no schema "${key}" registered`);
   }
-  renderers[key] = fn;
+  if (fns.dom) renderers.dom[key] = fns.dom;
+  if (fns.svg) renderers.svg[key] = fns.svg;
 }
 
 /**
@@ -138,6 +157,7 @@ export function registerBehaviors(key: string, fns: SchemaBehaviors): void {
 export function registerColumnType(spec: RegisterSpec): void {
   registerSchema(spec.schema);
   if (spec.renderer)  registerRenderer(spec.schema.key, spec.renderer);
+  if (spec.renderers) registerRenderers(spec.schema.key, spec.renderers);
   if (spec.lifecycle) registerLifecycle(spec.schema.key, spec.lifecycle);
   if (spec.behaviors) registerBehaviors(spec.schema.key, spec.behaviors);
 }
@@ -151,8 +171,16 @@ export function getSchema(key: string): ColumnSchema | undefined {
   return SCHEMA_REGISTRY[key] ?? userSchemas[key];
 }
 
-export function getRenderer(key: string): CellFormatter | undefined {
-  return renderers[key];
+/**
+ * Look up a registered renderer. `target` defaults to `"dom"` for
+ * back-compat with the original single-renderer API; `"svg"` is the
+ * V8/export path.
+ */
+export function getRenderer(
+  key: string,
+  target: RenderTarget = "dom",
+): CellFormatter | undefined {
+  return renderers[target][key];
 }
 
 export function getLifecycle(key: string): SchemaLifecycle | undefined {
@@ -173,8 +201,9 @@ export function allSchemaKeys(): string[] {
 
 // Test-only — clears user-registered state between tests.
 export function __resetRuntimeRegistries(): void {
-  for (const k of Object.keys(userSchemas)) delete userSchemas[k];
-  for (const k of Object.keys(renderers))   delete renderers[k];
-  for (const k of Object.keys(lifecycles))  delete lifecycles[k];
-  for (const k of Object.keys(behaviors))   delete behaviors[k];
+  for (const k of Object.keys(userSchemas))    delete userSchemas[k];
+  for (const k of Object.keys(renderers.dom))  delete renderers.dom[k];
+  for (const k of Object.keys(renderers.svg))  delete renderers.svg[k];
+  for (const k of Object.keys(lifecycles))     delete lifecycles[k];
+  for (const k of Object.keys(behaviors))      delete behaviors[k];
 }
