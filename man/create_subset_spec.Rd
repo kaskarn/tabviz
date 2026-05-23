@@ -2,7 +2,7 @@
 % Please edit documentation in R/split_table.R
 \name{create_subset_spec}
 \alias{create_subset_spec}
-\title{Create a subset WebSpec from a base spec}
+\title{Create a subset WebSpec for one split combination}
 \usage{
 create_subset_spec(base_spec, subset_data, label)
 }
@@ -17,7 +17,7 @@ create_subset_spec(base_spec, subset_data, label)
 A new WebSpec object
 }
 \description{
-Internal function to create a new WebSpec with subset data while
-inheriting configuration from the base spec.
+Filters the data, adjusts groups, and creates a new WebSpec with
+the filtered data while preserving the original spec configuration.
 }
 \keyword{internal}

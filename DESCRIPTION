@@ -54,6 +54,7 @@ Collate:
     'regenerate_examples.R'
     'screenshot.R'
     'visual_tests.R'
+    'render_browser_visual_tests.R'
     'data.R'
     'zzz.R'
 Imports:

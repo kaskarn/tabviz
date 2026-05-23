@@ -20,6 +20,9 @@ inst/scripts/package.json
 # Test artifacts
 tests/testthat/_snaps/
 examples_output/
+tests/visual/output/
+srcjs/tests/visual-browser/fixtures/
+srcjs/tests/visual-browser/output/
 
 # IDE
 .vscode/
