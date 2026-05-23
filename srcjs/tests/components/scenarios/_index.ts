@@ -19,6 +19,7 @@ import V2SwatchScenario   from "./v2/Swatch.scenario.svelte";
 import V2SectionsScenario from "./v2/Sections.scenario.svelte";
 import V2ColumnEditorScenario from "./v2/ColumnEditor.scenario.svelte";
 import V2VariantPreviewScenario from "./v2/VariantPreview.scenario.svelte";
+import V2SchemaSweepScenario from "./v2/SchemaSweep.scenario.svelte";
 
 export const SCENARIOS: ScenarioMeta[] = [
   {
@@ -100,6 +101,12 @@ export const SCENARIOS: ScenarioMeta[] = [
     description: "VariantPicker + ColumnPreview isolated — interval / badge / pictogram variant cards, plus preview chips.",
     group: "v2 editor",
     component: V2VariantPreviewScenario,
+  },
+  {
+    name: "v2-schema-sweep",
+    description: "Visual regression contact sheet — ColumnEditorV2 mounted against every concrete schema (3-up grid).",
+    group: "v2 editor",
+    component: V2SchemaSweepScenario,
   },
 ];
 

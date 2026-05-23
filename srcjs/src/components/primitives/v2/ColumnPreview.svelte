@@ -48,8 +48,13 @@
     forest:    ["—●—"],
   };
 
+  // Key fixture lookup off schema.key first (most specific), then
+  // bucket (for ancestors that share a bucket — e.g. currency inherits
+  // numeric's bucket but has its own visual signature), then type.
   const bucket = $derived(schema.bucket ?? schema.key);
-  const fixture = $derived(FIXTURES[bucket] ?? FIXTURES[schema.type ?? ""] ?? ["…"]);
+  const fixture = $derived(
+    FIXTURES[schema.key] ?? FIXTURES[bucket] ?? FIXTURES[schema.type ?? ""] ?? ["…"],
+  );
 
   // Apply numeric.decimals to the sample if it's a numeric column.
   const samples = $derived.by(() => {
