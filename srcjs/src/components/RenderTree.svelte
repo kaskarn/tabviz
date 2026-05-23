@@ -115,7 +115,12 @@
 {/if}
 
 <style>
-  .layout-row    { display: inline-flex; flex-direction: row;    align-items: baseline; }
+  /* `layout-row` uses inline display so adjacent text fragments
+     concatenate naturally — flex collapses internal whitespace,
+     which mangles text composition (interval bounds, value+unit,
+     etc.). column / stack are inline-flex because they need
+     explicit stacking. */
+  .layout-row    { display: inline; }
   .layout-column { display: inline-flex; flex-direction: column; align-items: flex-start; }
   .layout-stack  { display: inline-flex; flex-direction: column; align-items: flex-start; }
 

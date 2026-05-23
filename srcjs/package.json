@@ -24,7 +24,12 @@
     "node": ">=18"
   },
   "sideEffects": [
-    "**/*.css"
+    "**/*.css",
+    "**/schema/init.ts",
+    "**/schema/init-dom.ts",
+    "**/schema/columns/*-behaviors.ts",
+    "**/schema/columns/*-renderer.ts",
+    "**/schema/columns/*-renderers.ts"
   ],
   "files": [
     "dist",

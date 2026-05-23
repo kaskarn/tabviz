@@ -1460,6 +1460,7 @@
             </CellContent>
           {/if}
         {:else if column.type === "bar"}
+          <!-- Not yet migrated: needs maxValue aggregated over visibleRows. -->
           <CellBar
             value={metadata[column.field] as number}
             maxValue={getMaxValueForColumn(visibleRows, column)}
@@ -1467,80 +1468,8 @@
             naText={column.options?.naText}
             colorOverride={effectiveVizColor(row, column)}
           />
-        {:else if column.type === "pvalue"}
-          <CellPvalue
-            value={metadata[column.field] as number}
-            options={column.options?.pvalue}
-            naText={column.options?.naText}
-            {cellStyle}
-          />
-        {:else if column.type === "sparkline"}
-          <CellSparkline
-            data={metadata[column.field] as number[]}
-            options={column.options?.sparkline}
-            naText={column.options?.naText}
-            colorOverride={effectiveVizColor(row, column)}
-          />
-        {:else if column.type === "icon"}
-          <CellIcon
-            value={metadata[column.field]}
-            options={column.options?.icon}
-            naText={column.options?.naText}
-          />
-        {:else if column.type === "badge"}
-          <CellBadge
-            value={metadata[column.field]}
-            options={column.options?.badge}
-            naText={column.options?.naText}
-            {cellStyle}
-            colorOverride={effectiveVizColor(rowArg, column)}
-          />
-        {:else if column.type === "stars"}
-          <CellStars
-            value={metadata[column.field] as number}
-            options={column.options?.stars}
-            naText={column.options?.naText}
-          />
-        {:else if column.type === "pictogram"}
-          <CellPictogram
-            value={metadata[column.field] as number}
-            options={column.options?.pictogram}
-            naText={column.options?.naText}
-            {cellStyle}
-            colorOverride={effectiveVizColor(rowArg, column)}
-            glyphSelector={column.options?.pictogram?.glyphField
-              ? metadata[column.options.pictogram.glyphField] as string
-              : null}
-          />
-        {:else if column.type === "ring"}
-          <CellRing
-            value={metadata[column.field] as number}
-            options={column.options?.ring}
-            naText={column.options?.naText}
-            {cellStyle}
-            colorOverride={effectiveVizColor(rowArg, column)}
-          />
-        {:else if column.type === "img"}
-          <CellImg
-            value={metadata[column.field] as string}
-            options={column.options?.img}
-            naText={column.options?.naText}
-          />
-        {:else if column.type === "reference"}
-          <CellReference
-            value={metadata[column.field] as string}
-            metadata={metadata}
-            options={column.options?.reference}
-            naText={column.options?.naText}
-          />
-        {:else if column.type === "range"}
-          <CellRange
-            value={metadata[column.field]}
-            metadata={metadata}
-            options={column.options?.range}
-            naText={column.options?.naText}
-          />
         {:else if column.type === "heatmap"}
+          <!-- Not yet migrated: needs min/maxValue aggregated over visibleRows. -->
           <CellHeatmap
             value={metadata[column.field] as number}
             options={column.options?.heatmap}
@@ -1549,29 +1478,13 @@
             naText={column.options?.naText}
             {theme}
           />
-        {:else if column.type === "progress"}
-          <CellProgress
-            value={metadata[column.field] as number}
-            options={column.options?.progress}
-            naText={column.options?.naText}
-            colorOverride={effectiveVizColor(row, column)}
-          />
-        {:else if column.type === "numeric"}
-          <CellContent value={formatNumber(metadata[column.field] as number, column.options)} {cellStyle} />
-        {:else if column.type === "custom" && column.options?.events}
-          <CellContent value={formatEvents(row, column.options)} {cellStyle} />
-        {:else if column.type === "interval"}
-          <CellContent value={formatInterval(
-            column.options?.interval?.point ? metadata[column.options.interval.point] as number : undefined,
-            column.options?.interval?.lower ? metadata[column.options.interval.lower] as number : undefined,
-            column.options?.interval?.upper ? metadata[column.options.interval.upper] as number : undefined,
-            column.options
-          )} {cellStyle} />
         {:else}
+          <!-- Final fallback: an unknown column.type (e.g. user-registered
+               schema without a renderer, or a wire-shape mismatch).
+               Stringify the field value and show it; preserves the
+               legacy "default to text" behavior. -->
           {@const rawText = String(metadata[column.field] ?? "")}
-          {@const maxChars = column.type === "text" ? column.options?.text?.maxChars : null}
-          {@const displayText = maxChars ? truncateString(rawText, maxChars) : rawText}
-          <CellContent value={displayText} title={rawText} {cellStyle} />
+          <CellContent value={rawText} title={rawText} {cellStyle} />
         {/if}
       {/snippet}
 
