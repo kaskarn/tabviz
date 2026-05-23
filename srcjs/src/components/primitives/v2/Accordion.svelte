@@ -24,6 +24,10 @@
     open?: boolean;
     /** Mute when all options are at default. */
     dim?: boolean;
+    /** Free-form snippet rendered in the header's right slot. Use this
+     *  for per-item summaries (color chip, font signature, token preview)
+     *  when count isn't the right shape. */
+    summary?: Snippet;
     children?: Snippet;
   }
 
@@ -34,6 +38,7 @@
     count,
     open = $bindable(true),
     dim,
+    summary,
     children,
   }: Props = $props();
 </script>
@@ -53,7 +58,9 @@
       </h3>
       {#if hint}<span class="head-hint">{hint}</span>{/if}
     </div>
-    {#if count != null && count > 0}
+    {#if summary}
+      <span class="head-summary">{@render summary()}</span>
+    {:else if count != null && count > 0}
       <span class="head-count" title="{count} overridden">
         <span class="count-dot"></span>
         {count}
@@ -159,6 +166,19 @@
     font-size: var(--v2-text-small, 10.5px);
     color: var(--v2-ink-2, #4a463c);
     font-variant-numeric: tabular-nums;
+  }
+  .head-summary {
+    grid-column: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
+    font-size: var(--v2-text-small, 10.5px);
+    color: var(--v2-ink-3, #8a8478);
+    overflow: hidden;
+    max-width: 50%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
   .count-dot {
     width: 5px;

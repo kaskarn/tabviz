@@ -8,6 +8,7 @@
   import BooleanField from "./BooleanField.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import Field from "$components/primitives/v2/Field.svelte";
+  import Accordion from "$components/primitives/v2/Accordion.svelte";
   import FontFamily from "$components/primitives/v2/FontFamily.svelte";
 
   // Font size on the wire is a CSS length string ("0.875rem"); the
@@ -98,145 +99,115 @@
     "body", "header", "cell", "label", "tick"
   ];
 
-  function summary(role: { family?: string; size?: string; weight?: number; italic?: boolean | null }) {
-    const family = role.family?.split(",")[0] ?? "—";
+  function summary_text(role: { family?: string; size?: string; weight?: number; italic?: boolean | null }) {
+    const family = role.family?.split(",")[0]?.replace(/['"]/g, "") ?? "—";
     const italic = role.italic ? " italic" : "";
     return `${family} / ${role.size ?? "—"} / ${role.weight ?? "—"}${italic}`;
   }
 </script>
 
 <SettingsSection title="Text roles" description="Per-role typography. Title and subtitle use the display family; body / header / cell / label / tick / footnote use the body family. Header bundle is the column-header band — composed from body + bold weight by default.">
-  {#each roles as role (role)}
-    {@const roleData = readRole(role)}
-    {#if roleData}
-      <div class="role">
-        <button class="role-toggle" onclick={() => (expandedText = { ...expandedText, [role]: !expandedText[role] })}>
-          <span>{expandedText[role] ? "▾" : "▸"} {role.charAt(0).toUpperCase() + role.slice(1)}</span>
-          <span class="role-summary">{summary(roleData)}</span>
-        </button>
-        {#if expandedText[role]}
-          <div class="role-fields" data-tv-v2>
-            <Field label="Family">
-              <FontFamily
-                value={roleData.family ?? null}
-                onchange={(v) => setTextRole(role, "family", v)}
-              />
-            </Field>
-            <NumberField
-              label="Size"
-              value={sizeToPx(roleData.size)}
-              min={8} max={48} step={1}
-              unit="px"
-              onchange={(v) => setTextRole(role, "size", pxToSize(v))}
+  <div data-tv-v2>
+    {#each roles as role (role)}
+      {@const roleData = readRole(role)}
+      {#if roleData}
+        <Accordion
+          title={role.charAt(0).toUpperCase() + role.slice(1)}
+          open={expandedText[role] ?? false}
+        >
+          {#snippet summary()}
+            <span class="role-sig">{summary_text(roleData)}</span>
+          {/snippet}
+          <Field label="Family">
+            <FontFamily
+              value={roleData.family ?? null}
+              onchange={(v) => setTextRole(role, "family", v)}
             />
-            <SegmentedField
-              label="Weight"
-              value={roleData.weight ?? 400}
-              options={WEIGHT_OPTIONS}
-              onchange={(v) => setTextRole(role, "weight", v)}
-            />
-            <BooleanField
-              label="Italic"
-              value={!!roleData.italic}
-              onchange={(v) => setTextRole(role, "italic", v)}
-            />
-            <ColorField
-              label="Color"
-              value={roleData.fg ?? "#000000"}
-              onchange={(v) => setTextRole(role, "fg", v)}
-            />
-          </div>
-        {/if}
-      </div>
-    {/if}
-  {/each}
+          </Field>
+          <NumberField
+            label="Size"
+            value={sizeToPx(roleData.size)}
+            min={8} max={48} step={1}
+            unit="px"
+            onchange={(v) => setTextRole(role, "size", pxToSize(v))}
+          />
+          <SegmentedField
+            label="Weight"
+            value={roleData.weight ?? 400}
+            options={WEIGHT_OPTIONS}
+            onchange={(v) => setTextRole(role, "weight", v)}
+          />
+          <BooleanField
+            label="Italic"
+            value={!!roleData.italic}
+            onchange={(v) => setTextRole(role, "italic", v)}
+          />
+          <ColorField
+            label="Color"
+            value={roleData.fg ?? "#000000"}
+            onchange={(v) => setTextRole(role, "fg", v)}
+          />
+        </Accordion>
+      {/if}
+    {/each}
+  </div>
 </SettingsSection>
 
 {#if rg}
   <SettingsSection title="Row group hierarchy" description="L1 outermost (boldest); L2/L3 progressively lighter.">
+    <div data-tv-v2>
     {#each RG_LEVELS as level (level)}
-      <div class="role">
-        <button class="role-toggle" onclick={() => (expandedLevel = { ...expandedLevel, [level]: !expandedLevel[level] })}>
-          <span>{expandedLevel[level] ? "▾" : "▸"} Level {level.slice(1)}</span>
-          <span class="role-summary">{rg[level]?.text ? summary(rg[level].text) : ""}</span>
-        </button>
-        {#if expandedLevel[level]}
-          <div class="role-fields">
-            <ColorField
-              label="Background"
-              value={rg[level].bg ?? "transparent"}
-              onchange={(v) => setRowGroupTier(level, "bg", v)}
-            />
-            <ColorField
-              label="Foreground"
-              value={rg[level].fg ?? "#000000"}
-              onchange={(v) => setRowGroupTier(level, "fg", v)}
-            />
-            <ColorField
-              label="Rule"
-              value={rg[level].rule ?? "transparent"}
-              onchange={(v) => setRowGroupTier(level, "rule", v)}
-            />
-            <SegmentedField
-              label="Weight"
-              value={rg[level].text?.weight ?? 500}
-              options={WEIGHT_OPTIONS}
-              onchange={(v) => setRowGroupTierText(level, "weight", v)}
-            />
-            <BooleanField
-              label="Italic"
-              value={!!rg[level].text?.italic}
-              onchange={(v) => setRowGroupTierText(level, "italic", v)}
-            />
-            <BooleanField
-              label="Bottom border"
-              value={!!rg[level].borderBottom}
-              onchange={(v) => setRowGroupTier(level, "borderBottom", v)}
-            />
-          </div>
-        {/if}
-      </div>
+      <Accordion
+        title={`Level ${level.slice(1)}`}
+        open={expandedLevel[level] ?? (level === "L1")}
+      >
+        {#snippet summary()}
+          <span class="role-sig">{rg[level]?.text ? summary_text(rg[level].text) : ""}</span>
+        {/snippet}
+        <ColorField
+          label="Background"
+          value={rg[level].bg ?? "transparent"}
+          onchange={(v) => setRowGroupTier(level, "bg", v)}
+        />
+        <ColorField
+          label="Foreground"
+          value={rg[level].fg ?? "#000000"}
+          onchange={(v) => setRowGroupTier(level, "fg", v)}
+        />
+        <ColorField
+          label="Rule"
+          value={rg[level].rule ?? "transparent"}
+          onchange={(v) => setRowGroupTier(level, "rule", v)}
+        />
+        <SegmentedField
+          label="Weight"
+          value={rg[level].text?.weight ?? 500}
+          options={WEIGHT_OPTIONS}
+          onchange={(v) => setRowGroupTierText(level, "weight", v)}
+        />
+        <BooleanField
+          label="Italic"
+          value={!!rg[level].text?.italic}
+          onchange={(v) => setRowGroupTierText(level, "italic", v)}
+        />
+        <BooleanField
+          label="Bottom border"
+          value={!!rg[level].borderBottom}
+          onchange={(v) => setRowGroupTier(level, "borderBottom", v)}
+        />
+      </Accordion>
     {/each}
+    </div>
   </SettingsSection>
 {/if}
 
 <style>
-  .role {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px dashed var(--tv-border);
-  }
-  .role-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.35rem 0.5rem;
-    background: transparent;
-    border: none;
-    color: var(--tv-fg);
-    cursor: pointer;
-    font-size: 0.85rem;
-    width: 100%;
-    text-align: left;
-  }
-  .role-toggle:hover {
-    background: var(--tv-alt-bg);
-  }
-  .role-summary {
-    font-size: 0.75rem;
-    color: var(--tv-text-muted);
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    max-width: 60%;
-  }
-  .role-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 0.25rem 0 0.5rem 1rem;
+  /* Bespoke .role / .role-toggle / .role-fields are gone — Accordion
+     owns the collapsible row. The signature chip rendered into the
+     summary snippet uses .role-sig (a thin mono one-liner). */
+  :global([data-tv-v2]) .role-sig {
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: var(--v2-text-small, 10.5px);
+    color: var(--v2-ink-3, #8a8478);
   }
 </style>
