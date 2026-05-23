@@ -13,6 +13,8 @@ import GlyphsScenario     from "./Glyphs.scenario.svelte";
 import V2PillScenario     from "./v2/Pill.scenario.svelte";
 import V2KnobScenario     from "./v2/Knob.scenario.svelte";
 import V2FieldScenario    from "./v2/Field.scenario.svelte";
+import V2PickerScenario   from "./v2/Picker.scenario.svelte";
+import V2ModeScenario     from "./v2/Mode.scenario.svelte";
 import V2SectionsScenario from "./v2/Sections.scenario.svelte";
 
 export const SCENARIOS: ScenarioMeta[] = [
@@ -59,6 +61,18 @@ export const SCENARIOS: ScenarioMeta[] = [
     description: "v2 Field — labeled row with override-dot gutter + reset affordance.",
     group: "v2 primitives",
     component: V2FieldScenario,
+  },
+  {
+    name: "v2-picker",
+    description: "v2 Picker — glyph-led dropdown. Column-type, data-field, long+searchable.",
+    group: "v2 primitives",
+    component: V2PickerScenario,
+  },
+  {
+    name: "v2-mode",
+    description: "v2 Mode — four-way MappedValue pill (theme / static / field / condition) + follow-up control pattern.",
+    group: "v2 primitives",
+    component: V2ModeScenario,
   },
   {
     name: "v2-sections",

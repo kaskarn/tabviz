@@ -18,5 +18,7 @@ export { default as Knob }      from "./Knob.svelte";
 export { default as Field }     from "./Field.svelte";
 export { default as Section }   from "./Section.svelte";
 export { default as Accordion } from "./Accordion.svelte";
+export { default as Picker }    from "./Picker.svelte";
+export { default as Mode }      from "./Mode.svelte";
 
-export type { PillSegment } from "./types";
+export type { PillSegment, PickerItem, MappedMode } from "./types";

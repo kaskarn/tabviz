@@ -11,3 +11,18 @@ export interface PillSegment<U> {
   glyph?: GlyphToken;
   title?: string;
 }
+
+/** The four orthogonal authoring modes a styling option can be in. */
+export type MappedMode = "theme" | "static" | "field" | "condition";
+
+/** One row in a Picker dropdown menu. */
+export interface PickerItem<U> {
+  value: U;
+  label: string;
+  glyph?: GlyphToken;
+  /** Faint suffix shown after the label (e.g. type hint). */
+  secondary?: string;
+  /** Group bucket label — items sharing a group appear together. */
+  group?: string;
+  disabled?: boolean;
+}
