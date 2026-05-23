@@ -7,6 +7,7 @@ import type { ScenarioMeta } from "../harness-store.svelte";
 import ToggleScenario     from "./Toggle.scenario.svelte";
 import SegmentedScenario  from "./Segmented.scenario.svelte";
 import FieldRowScenario   from "./FieldRow.scenario.svelte";
+import GlyphsScenario     from "./Glyphs.scenario.svelte";
 
 export const SCENARIOS: ScenarioMeta[] = [
   {
@@ -26,6 +27,12 @@ export const SCENARIOS: ScenarioMeta[] = [
     description: "Layout row — label/control grid that anchors every editor row.",
     group: "Layout",
     component: FieldRowScenario,
+  },
+  {
+    name: "glyphs",
+    description: "Contact sheet of the UI glyph vocabulary — visual audit.",
+    group: "Vocabulary",
+    component: GlyphsScenario,
   },
 ];
 

@@ -60,7 +60,7 @@ function serveDir(dir) {
 const argv = process.argv.slice(2);
 const scenario = argv[0];
 if (!scenario || scenario.startsWith("--")) {
-  process.stderr.write("usage: drive.mjs <scenario> [--screenshot path] [--interact selector] [--headed]\n");
+  process.stderr.write("usage: drive.mjs <scenario> [--screenshot path] [--fullpage] [--interact selector] [--headed]\n");
   process.exit(2);
 }
 
@@ -73,6 +73,8 @@ const HARNESS_HTML = path.join(DIST, "harness.html");
 const screenshot   = opt("screenshot");
 const interactSel  = opt("interact");
 const headed       = flag("headed");
+const fullPage     = flag("fullpage");
+const viewport     = opt("viewport", "1400x900"); // WxH
 
 if (!existsSync(HARNESS_HTML)) {
   process.stderr.write(`drive: harness build not found at ${HARNESS_HTML}\n`);
@@ -88,7 +90,12 @@ const browser = await puppeteer.launch({
 
 try {
   const page = await browser.newPage();
-  await page.setViewport({ width: 1400, height: 900, deviceScaleFactor: 2 });
+  const [vw, vh] = viewport.split("x").map((n) => parseInt(n, 10));
+  if (!Number.isFinite(vw) || !Number.isFinite(vh)) {
+    process.stderr.write(`drive: invalid --viewport "${viewport}" — expected WxH (e.g. 1400x900)\n`);
+    process.exit(2);
+  }
+  await page.setViewport({ width: vw, height: vh, deviceScaleFactor: 2 });
   await page.goto(`${serverUrl}/harness.html#${scenario}`, { waitUntil: "networkidle0", timeout: 15000 });
 
   // The harness initializes its global on mount; wait for it.
@@ -117,7 +124,9 @@ try {
   if (screenshot) {
     const dir = path.dirname(screenshot);
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-    await page.screenshot({ path: screenshot, type: "png" });
+    // Full-page screenshot — the harness stage scrolls; we want the
+    // whole content surface for visual review, not just the fold.
+    await page.screenshot({ path: screenshot, type: "png", fullPage: fullPage });
   }
 
   process.stdout.write(JSON.stringify(result, null, 2) + "\n");
