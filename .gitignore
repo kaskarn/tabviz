@@ -23,6 +23,7 @@ examples_output/
 tests/visual/output/
 srcjs/tests/visual-browser/fixtures/
 srcjs/tests/visual-browser/output/
+srcjs/tests/components/dist/
 
 # IDE
 .vscode/
