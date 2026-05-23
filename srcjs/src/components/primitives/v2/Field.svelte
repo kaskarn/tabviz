@@ -71,21 +71,29 @@
 </div>
 
 <style>
+  /* Two-row layout when hint is present:
+       Row 1: [gutter] [label] [control]              ← single line
+       Row 2: [_____ ] [_____] [hint .....]           ← spans rest, italic, muted
+     Single-row when no hint. Hint never shares the control row, so
+     wide pills/sliders can't collide with hint text. */
   .field {
     display: grid;
     grid-template-columns: 8px minmax(72px, max-content) 1fr;
-    grid-template-rows: var(--v2-row-h, 24px) auto;
+    grid-template-rows: var(--v2-row-h, 24px);
     align-items: center;
     column-gap: var(--v2-gap-mid, 8px);
     row-gap: 0;
   }
   .field.has-hint {
-    grid-template-columns: 8px minmax(72px, max-content) 1fr auto;
+    /* Add a second row for the hint. The hint cell starts at the
+       label column so it visually aligns under the control. */
+    grid-template-rows: var(--v2-row-h, 24px) auto;
+    padding-bottom: 2px;
   }
   .field.tight {
-    /* When the control wants its native width (e.g. a Pill), let the
-       hint slide closer instead of flex-stretching the control. */
-    grid-template-columns: 8px minmax(72px, max-content) max-content;
+    /* When the control wants its native width (Pill, Toggle), let it
+       sit at its intrinsic width and free up the rest of the row. */
+    grid-template-columns: 8px minmax(72px, max-content) max-content 1fr;
   }
 
   /* ── Gutter (override dot / reset button) ───────────────── */
@@ -151,12 +159,19 @@
     min-width: 0;
   }
 
-  /* ── Hint ────────────────────────────────────────────────── */
+  /* ── Hint ──────────────────────────────────────────────────
+     Lives on row 2, starts at the label column (col 2) and spans to
+     end of the grid so long hints wrap rather than overflow. */
   .hint {
+    grid-column: 2 / -1;
+    grid-row: 2;
     font-size: var(--v2-text-small, 10.5px);
     color: var(--v2-ink-3, #8a8478);
     font-style: italic;
-    line-height: 1.2;
-    white-space: nowrap;
+    line-height: 1.3;
+    padding-top: 2px;
+    /* Wrap rather than overflow — hints can be long; the wrap point
+       is the natural width of the label+control row. */
+    overflow-wrap: break-word;
   }
 </style>
