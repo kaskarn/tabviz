@@ -7,7 +7,7 @@
   import V2MarksControl from "./V2MarksControl.svelte";
   import V2TextControl from "./V2TextControl.svelte";
   import V2TokensControl from "./V2TokensControl.svelte";
-  import TabSelect from "./TabSelect.svelte";
+  // TabSelect removed Phase B — replaced by TabBar (horizontal row).
   // Axis settings are per-column now (via the column configure popover on
   // viz_forest / viz_bar / viz_boxplot / viz_violin). The theme Axis tab
   // was removed in v0.18 — R's set_axis() still exists for users who want
@@ -18,6 +18,8 @@
   // here ensures the stylesheet ships with the widget bundle even when
   // ColumnEditorV2Popover hasn't been lazy-loaded yet.
   import "$components/primitives/v2/tokens.css";
+  import TabBar from "$components/primitives/v2/TabBar.svelte";
+  import type { TabEntry } from "$components/primitives/v2/types";
 
   interface Props {
     store: TabvizStore;
@@ -34,14 +36,14 @@
    * object structure (banding → colors → typography → spacing → shapes →
    * axis → layout) so the panel reads like the package's mental model.
    */
-  const tabs: { id: string; label: string; kind?: "normal" | "advanced" }[] = [
-    { id: "layout",   label: "Layout" },
-    { id: "theme",    label: "Theme" },
-    { id: "labels",   label: "Labels" },
-    { id: "spacing",  label: "Spacing", kind: "advanced" },
-    { id: "viz",      label: "Viz",     kind: "advanced" },
-    { id: "text",     label: "Text",    kind: "advanced" },
-    { id: "tokens",   label: "Tokens",  kind: "advanced" },
+  const tabs: TabEntry<string>[] = [
+    { value: "layout",   label: "Layout",  glyph: "section.layout"  },
+    { value: "theme",    label: "Theme",   glyph: "section.style"   },
+    { value: "labels",   label: "Labels",  glyph: "section.header"  },
+    { value: "spacing",  label: "Spacing", glyph: "density.comfortable" },
+    { value: "viz",      label: "Viz",     glyph: "type.viz"        },
+    { value: "text",     label: "Text",    glyph: "type.text"       },
+    { value: "tokens",   label: "Tokens",  glyph: "section.options" },
   ];
   let activeTabId = $state<string>("layout");
 
@@ -167,17 +169,6 @@
         </button>
       </div>
 
-      <span class="bar-divider" aria-hidden="true"></span>
-
-      <div class="tab-select-wrap">
-        <TabSelect
-          options={tabs}
-          value={activeTabId}
-          onchange={(id) => (activeTabId = id)}
-          ariaLabel="Settings section"
-        />
-      </div>
-
       <!--
         Explicit close button. Keeping it visible even though backdrop /
         Esc / re-clicking the toolbar gear all dismiss the panel —
@@ -197,33 +188,43 @@
       </button>
     </div>
 
+    <!-- Tab strip — replaces the dropdown TabSelect that used to live in
+         the .panel-bar. Horizontal segmented row, glyph-led, one click
+         per tab instead of click-open-pick. -->
+    <TabBar
+      bind:value={activeTabId}
+      {tabs}
+      ariaLabel="Settings section"
+      compact
+    />
+
     <div class="panel-body-wrap">
       <div
         class="panel-body"
         bind:this={bodyEl}
         onscroll={updateScrollHint}
       >
-        {#each tabs as tab (tab.id)}
-        {#if activeTabId === tab.id}
+        {#each tabs as tab (tab.value)}
+        {#if activeTabId === tab.value}
           <div
             class="tab-panel"
             role="tabpanel"
-            id="settings-panel-{tab.id}"
-            aria-labelledby="settings-tab-{tab.id}"
+            id="settings-panel-{tab.value}"
+            aria-labelledby="settings-tab-{tab.value}"
           >
-            {#if tab.id === "labels"}
+            {#if tab.value === "labels"}
               <BasicsControl {store} />
-            {:else if tab.id === "theme"}
+            {:else if tab.value === "theme"}
               <ThemeControl {store} />
-            {:else if tab.id === "layout"}
+            {:else if tab.value === "layout"}
               <V2LayoutControl {store} />
-            {:else if tab.id === "spacing"}
+            {:else if tab.value === "spacing"}
               <V2SpacingControl {store} />
-            {:else if tab.id === "viz"}
+            {:else if tab.value === "viz"}
               <V2MarksControl {store} />
-            {:else if tab.id === "text"}
+            {:else if tab.value === "text"}
               <V2TextControl {store} />
-            {:else if tab.id === "tokens"}
+            {:else if tab.value === "tokens"}
               <V2TokensControl {store} />
             {/if}
           </div>
@@ -339,25 +340,11 @@
     cursor: not-allowed;
   }
 
-  .bar-divider {
-    flex-shrink: 0;
-    width: 1px;
-    height: 20px;
-    background: color-mix(in srgb, var(--tv-border, #e2e8f0) 70%, transparent);
-    margin: 0 4px;
-  }
 
   /**
-   * Tab selector. Wraps TabSelect — a small themed dropdown that replaces
-   * the native <select> we used briefly in v0.15 (feedback: looked too
-   * plain against the rest of the widget).
+   * (Former .tab-select-wrap removed when the inline TabSelect dropdown
+   * was replaced by the dedicated TabBar row below the panel-bar.)
    */
-  .tab-select-wrap {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-  }
 
   /**
    * Wrap the scrollable body in a positioned container so the bottom-fade
