@@ -22,6 +22,7 @@
   import HeaderContextMenu, { type ContextMenuTarget } from "$components/controls/HeaderContextMenu.svelte";
   import ColumnTypeMenu, { type TypeMenuTarget, type TypePick } from "$components/controls/ColumnTypeMenu.svelte";
   import ColumnEditorPopover, { type EditorTarget } from "$components/controls/ColumnEditorPopover.svelte";
+  import type { Component } from "svelte";
   import { getVisualTypeDef, resolveShowHeader } from "$lib/column-types";
 
   interface Props {
@@ -34,6 +35,34 @@
   const theme = $derived(spec?.theme);
   const tooltipRow = $derived(store.tooltipRow);
   const tooltipPosition = $derived(store.tooltipPosition);
+
+  // ── v2 editor opt-in flag ─────────────────────────────────────
+  // When `window.__tabvizEditorV2` is truthy the new schema-driven
+  // ColumnEditorV2Popover renders in place of the legacy popover.
+  // Lazy-loaded so flag-off users don't pay the bundle cost.
+  function readV2Flag(): boolean {
+    if (typeof window === "undefined") return false;
+    return !!(window as unknown as { __tabvizEditorV2?: unknown }).__tabvizEditorV2;
+  }
+  let useV2 = $state(readV2Flag());
+  let V2Popover = $state<Component<{
+    target: EditorTarget | null;
+    available: typeof store.availableFields;
+    onCommit: (s: ColumnSpec, m: "insert" | "configure", a?: string) => void;
+    onClose: () => void;
+    onRequestChangeType?: () => void;
+  }> | null>(null);
+  // Re-read flag and lazy-load on each open of the editor — toggle in
+  // DevTools picks up at the next interaction without page reload.
+  $effect(() => {
+    if (!columnEditorTarget) return;
+    useV2 = readV2Flag();
+    if (useV2 && !V2Popover) {
+      import("$components/column-editor-v2/ColumnEditorV2Popover.svelte").then((m) => {
+        V2Popover = m.default as never;
+      });
+    }
+  });
 
   let headerContextMenu = $state<ContextMenuTarget | null>(null);
   let columnTypeMenuTarget = $state<TypeMenuTarget | null>(null);
@@ -243,10 +272,20 @@
   onPick={handleTypePick}
   onClose={() => { columnTypeMenuTarget = null; typeMenuMemory = null; }}
 />
-<ColumnEditorPopover
-  target={columnEditorTarget}
-  available={store.availableFields}
-  onCommit={handleEditorCommit}
-  onClose={() => { columnEditorTarget = null; typeMenuMemory = null; }}
-  onRequestChangeType={handleRequestChangeType}
-/>
+{#if useV2 && V2Popover}
+  <V2Popover
+    target={columnEditorTarget}
+    available={store.availableFields}
+    onCommit={handleEditorCommit}
+    onClose={() => { columnEditorTarget = null; typeMenuMemory = null; }}
+    onRequestChangeType={handleRequestChangeType}
+  />
+{:else}
+  <ColumnEditorPopover
+    target={columnEditorTarget}
+    available={store.availableFields}
+    onCommit={handleEditorCommit}
+    onClose={() => { columnEditorTarget = null; typeMenuMemory = null; }}
+    onRequestChangeType={handleRequestChangeType}
+  />
+{/if}

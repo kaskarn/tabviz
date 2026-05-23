@@ -1,5 +1,6 @@
 {
-  "inst/htmlwidgets/tabviz.js": 756900,
-  "inst/htmlwidgets/tabviz_split.js": 764150,
+  "_note": "Bumped 2026-05-23 for Step 7 v2-editor rollout carry. Bundle hosts both legacy ColumnEditorPopover and v2 ColumnEditorV2 + primitives during the flag-gated rollout window. Step 8 deletes the legacy editor and should restore prior budget.",
+  "inst/htmlwidgets/tabviz.js": 770000,
+  "inst/htmlwidgets/tabviz_split.js": 770000,
   "inst/js/svg-generator.js": 171570
 }

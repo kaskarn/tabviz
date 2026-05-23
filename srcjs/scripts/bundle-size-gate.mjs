@@ -37,6 +37,10 @@ const rows = [];
 let failures = 0;
 
 for (const [relPath, budgetBytes] of Object.entries(budget)) {
+  // Underscore-prefixed keys are reserved for metadata (e.g. `_note`
+  // explaining why the budget was bumped). Skip them so they don't
+  // get statted as bundle paths.
+  if (relPath.startsWith("_")) continue;
   const full = path.resolve(REPO_ROOT, relPath);
   let actual = null;
   try {

@@ -544,6 +544,14 @@
 <style>
   .editor {
     width: 400px;
+    /* Cap height so the popover stays within the viewport when used
+       as an anchored popover. The header stays pinned; the body
+       scrolls. Hosts that want unbounded height (e.g. the harness
+       scenario for visual audit) can override --tv-editor-max-h. */
+    max-height: var(--tv-editor-max-h, min(640px, calc(100vh - 24px)));
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     background: var(--v2-paper, #faf7f0);
     border-radius: var(--v2-r-large, 6px);
     box-shadow:
@@ -610,6 +618,11 @@
     padding: 0 14px 12px;
     display: flex;
     flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+    /* Header stays pinned; body takes the remaining height of the
+       editor's max-height cap. */
+    flex: 1 1 auto;
   }
 
   /* ── Inline controls ─────────────────────────────────────── */
