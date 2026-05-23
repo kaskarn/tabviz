@@ -7,6 +7,7 @@ import puppeteer from "puppeteer";
 import http from "node:http";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { auditScript } from "./audit-layout.mjs";
 
 const widget = process.argv[2];
 const outPath = process.argv[3] ?? "/tmp/settings-panel.png";
@@ -57,6 +58,13 @@ try {
   await new Promise((r) => setTimeout(r, 300));
   await page.screenshot({ path: outPath, type: "png" });
   process.stdout.write(`screenshot: ${outPath}\n`);
+  const audit = await page.evaluate(auditScript);
+  const total = audit.offViewport.length + audit.clipped.length + audit.overlaps.length;
+  if (total > 0) {
+    process.stdout.write(`audit (${tab}): ` + JSON.stringify(audit) + "\n");
+  } else {
+    process.stdout.write(`audit (${tab}): clean\n`);
+  }
 } finally {
   await browser.close();
   server.close();

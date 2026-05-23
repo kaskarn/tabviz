@@ -32,6 +32,7 @@
 <script lang="ts">
   import type { AvailableField } from "$types";
   import { isTypeSatisfiable, getVisualTypeDef } from "$lib/column-types";
+  import { portal } from "$lib/portal";
   import { tick } from "svelte";
 
   interface Props {
@@ -430,6 +431,7 @@
     role="menu"
     aria-label="Insert column type"
     onkeydown={handleKeydown}
+    use:portal
     tabindex="-1"
   >
     <div class="menu-title">

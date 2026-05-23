@@ -19,6 +19,7 @@
 </script>
 
 <script lang="ts">
+  import { portal } from "$lib/portal";
   type Action = ContextMenuAction;
 
   interface Props {
@@ -83,6 +84,7 @@
     style:top="{resolvedTop}px"
     role="menu"
     aria-label="Column actions: {target.columnHeader}"
+    use:portal
   >
     <div class="ctx-title" title={target.columnHeader}>{target.columnHeader}</div>
     {#if target.canConfigure}

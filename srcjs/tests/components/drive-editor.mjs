@@ -22,6 +22,7 @@ import puppeteer from "puppeteer";
 import http from "node:http";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { auditScript } from "./audit-layout.mjs";
 
 const argv = process.argv.slice(2);
 const widget = argv[0];
@@ -129,6 +130,15 @@ try {
     // Capture full viewport with the popover.
     await page.screenshot({ path: `${outPrefix}-${suffix}.png`, type: "png" });
     process.stdout.write(`screenshot: ${outPrefix}-${suffix}.png\n`);
+    // Run layout audit and emit any findings. Off-viewport / clipped
+    // text / sibling overlaps are leading indicators during a redesign.
+    const audit = await page.evaluate(auditScript);
+    const total = audit.offViewport.length + audit.clipped.length + audit.overlaps.length;
+    if (total > 0) {
+      process.stdout.write(`audit (${suffix}): ` + JSON.stringify(audit) + "\n");
+    } else {
+      process.stdout.write(`audit (${suffix}): clean\n`);
+    }
   }
 
   await capture("normal");
