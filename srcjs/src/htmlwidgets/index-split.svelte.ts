@@ -10,8 +10,8 @@ import {
   setShinyInput,
 } from "./glue";
 import "../styles.css";
-// Side-effect: register built-in schema behaviors.
-import "../schema/init";
+// Side-effect: register built-in schema behaviors + DOM cell renderers.
+import "../schema/init-dom";
 
 // Store registry for Shiny proxy support
 const storeRegistry = new Map<string, SplitTabvizStore>();

@@ -22,6 +22,11 @@ import { registerSortBehaviors }      from "./columns/sort-behaviors";
 import { registerWidthBehaviors }     from "./columns/width-behaviors";
 import { registerEmitBehaviors }      from "./columns/emit-behaviors";
 import { registerIntervalRenderer }   from "./columns/interval-renderer";
+// DOM cell renderers live in `./init-dom` — they import Svelte
+// components and must NOT be pulled into the V8 bundle. Browser
+// entries import `init-dom` (which side-effect-imports this file too)
+// so they pick up everything; V8 imports `init` directly and stays
+// Svelte-free.
 
 /**
  * Re-register every built-in schema behavior. Idempotent. Call this

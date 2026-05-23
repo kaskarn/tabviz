@@ -13,9 +13,11 @@ import {
   setShinyInput,
 } from "./glue";
 import "../styles.css";
-// Side-effect: register built-in schema behaviors (bank contribs, sortKey, …)
-// before any widget mounts.
-import "../schema/init";
+// Side-effect: register built-in schema behaviors + DOM cell
+// renderers before any widget mounts. `init-dom` includes the
+// Svelte-importing renderers; `init` (which it loads first) covers
+// behaviors + text-composition renderers.
+import "../schema/init-dom";
 
 // Development hook: expose export helpers under window.__tabvizExports
 exposeDevHook("__tabvizExports", { exportToSVG, exportToPNG });
