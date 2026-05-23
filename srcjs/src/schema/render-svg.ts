@@ -52,16 +52,27 @@ const DEFAULT_RESOLVER: StyleResolver = {
 };
 
 function resolveStyle(s: TextStyle | undefined, r: StyleResolver): {
-  fontSize: number;
+  /** Pixel size used for layout (width estimation). Always defined.
+   *  When the node didn't explicitly set a size, `sizeAttr` is
+   *  undefined so the rendered `<text>` doesn't emit `font-size` and
+   *  inherits from the outer `<g>`. */
+  layoutPx: number;
+  sizeAttr?: number;
   fontFamily?: string;
   fontWeight?: string | number;
   fontStyle?: "italic";
   fill?: string;
 } {
-  const fontSize = s?.size != null
+  const resolvedSize = s?.size != null
     ? (r.size ?? DEFAULT_RESOLVER.size!)(s.size)
-    : 12;
-  const out: ReturnType<typeof resolveStyle> = { fontSize };
+    : undefined;
+  // Layout falls back to "base" via the resolver so width measurement
+  // matches the inherited cell font-size. Explicit size still wins.
+  const layoutPx = resolvedSize ?? (r.size ?? DEFAULT_RESOLVER.size!)("base");
+  const out: ReturnType<typeof resolveStyle> = {
+    layoutPx,
+    ...(resolvedSize != null ? { sizeAttr: resolvedSize } : {}),
+  };
   if (s?.font != null)   out.fontFamily = (r.font   ?? DEFAULT_RESOLVER.font!)(s.font);
   if (s?.weight != null) out.fontWeight = (r.weight ?? DEFAULT_RESOLVER.weight!)(s.weight);
   if (s?.italic)         out.fontStyle  = "italic";
@@ -105,16 +116,21 @@ function renderInner(node: RenderNode, r: StyleResolver): RenderToSvgResult {
 function renderText(node: RenderText, r: StyleResolver): RenderToSvgResult {
   const s = resolveStyle(node.style, r);
   const attrs: string[] = [];
-  attrs.push(`font-size="${s.fontSize}"`);
-  if (s.fontFamily) attrs.push(`font-family="${escapeAttr(s.fontFamily)}"`);
-  if (s.fontWeight) attrs.push(`font-weight="${s.fontWeight}"`);
-  if (s.fontStyle)  attrs.push(`font-style="${s.fontStyle}"`);
-  if (s.fill)       attrs.push(`fill="${escapeAttr(s.fill)}"`);
+  // Only emit attrs the caller explicitly set; everything else
+  // inherits from the outer `<g>` (which carries the cell's
+  // theme/cellStyle defaults).
+  if (s.sizeAttr != null) attrs.push(`font-size="${s.sizeAttr}"`);
+  if (s.fontFamily)       attrs.push(`font-family="${escapeAttr(s.fontFamily)}"`);
+  if (s.fontWeight)       attrs.push(`font-weight="${s.fontWeight}"`);
+  if (s.fontStyle)        attrs.push(`font-style="${s.fontStyle}"`);
+  if (s.fill)             attrs.push(`fill="${escapeAttr(s.fill)}"`);
   attrs.push(`dominant-baseline="hanging"`);
 
-  const width  = estimateTextWidth(node.value, s.fontSize);
-  const height = s.fontSize * 1.2;
-  const markup = `<text ${attrs.join(" ")}>${escapeText(node.value)}</text>`;
+  const width  = estimateTextWidth(node.value, s.layoutPx);
+  const height = s.layoutPx * 1.2;
+  const markup = attrs.length === 1
+    ? `<text ${attrs[0]}>${escapeText(node.value)}</text>`
+    : `<text ${attrs.join(" ")}>${escapeText(node.value)}</text>`;
   return { markup, width, height };
 }
 

@@ -140,6 +140,10 @@ export interface ResolveDraft {
   axis?: Partial<AxisConfigV2>;
   layout?: Partial<LayoutV2>;
   overrides?: ThemeOverrides;
+  /** Per-tag overlays applied to RenderNode trees during cell render
+   *  finalization. See `WebThemeV2.nodeRules`. Themes can extend or
+   *  override the default rules (e.g. `interval-range` → muted) here. */
+  nodeRules?: import("../schema/theme-finalize").NodeRules;
 }
 
 export interface ResolveOptions {
@@ -827,6 +831,12 @@ export function resolveTheme(draft: ResolveDraft, options: ResolveOptions = {}):
     series,
     text: textRoles,
     spacing,
+    // nodeRules: themes can opt in via draft.nodeRules; otherwise
+    // `applyTheme()` falls back to DEFAULT_NODE_RULES from
+    // schema/theme-finalize.ts. Keep the field present (even if
+    // undefined) for wire stability with snapshots that explicitly
+    // override.
+    nodeRules: draft.nodeRules,
     annotation,
     header,
     columnGroup,

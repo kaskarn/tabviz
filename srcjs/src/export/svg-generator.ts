@@ -52,6 +52,9 @@ import { computeBandIndexes } from "$lib/banding";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
 import { GLYPH_REGISTRY, resolveGlyph } from "$lib/glyph-registry";
 import { activeHeaderVariant } from "$lib/header-variant";
+import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
+import { renderCell as schemaRenderCell } from "../schema/dispatch";
+import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -1586,6 +1589,60 @@ function renderGroupHeader(
   }
 
   return lines.join("\n");
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Theme-aware StyleResolver for the schema's RenderNode → SVG path.
+//
+// Schema cell renderers emit `RenderNode` trees with theme-relative
+// style tokens (font: "base" | "display" | …, size: "major" |
+// "minor", color: "primary" | "muted" | "accent", …). `renderNodeToSvg`
+// expects literal CSS / px values; this factory closes over the
+// active theme to resolve tokens to literals.
+//
+// `cellStyle` (per-row bold / italic / color overrides) is applied
+// at the outer `<g>` wrapper around each cell, so the resolver only
+// has to handle theme tokens — text nodes that omit `style` inherit
+// the outer `<g>`'s `fill` / `font-weight` / `font-style` naturally.
+//
+// Future Phase 7e+ work: per-cell semantic bundle resolution
+// (emphasis / accent / muted from row flags) should also flow into
+// here. Today the SVG-export path's legacy text branch handles that
+// via resolveSemanticBundle — the schema-dispatched path will need
+// the same logic as more cells migrate.
+function makeThemeResolver(theme: WebTheme): StyleResolver {
+  const fontFamily: Record<string, string> = {
+    base:    theme.text.body.family,
+    display: theme.text.title.family,
+    number:  theme.text.body.family,  // theme-controlled tabular handled via figures
+    mono:    "ui-monospace, SFMono-Regular, monospace",
+  };
+  const fontSize: Record<string, number> = {
+    major: parseFontSizeUtil(theme.text.body.size  ?? "1rem"),
+    base:  parseFontSizeUtil(theme.text.cell.size  ?? "0.875rem"),
+    minor: parseFontSizeUtil(theme.text.label.size ?? "0.75rem"),
+  };
+  const color: Record<string, string> = {
+    primary:   theme.content.primary,
+    secondary: theme.content.secondary,
+    muted:     theme.content.muted,
+    accent:    theme.accent.default,
+  };
+  const bg: Record<string, string> = {
+    base:   "transparent",
+    muted:  theme.divider.subtle,
+    accent: theme.accent.tintSubtle,
+  };
+  const weight: Record<string, number> = {
+    normal: 400, medium: 500, semibold: 600, bold: 700,
+  };
+  return {
+    font:   (v) => fontFamily[v as string] ?? String(v),
+    size:   (v) => typeof v === "number" ? v : (fontSize[v as string] ?? 12),
+    color:  (v) => color[v as string] ?? String(v),
+    bg:     (v) => bg[v as string] ?? String(v),
+    weight: (v) => typeof v === "number" ? v : (weight[v as string] ?? v),
+  };
 }
 
 /** Compute max values for bar columns from all rows */
@@ -3202,6 +3259,71 @@ function renderUnifiedTableRow(
 
     const value = getCellValue(row, col);
     const { textX, anchor } = getTextPosition(currentX, width, col.align);
+
+    // ────────────────────────────────────────────────────────────────
+    // Schema dispatch (Phase 7e.4b). Cells whose schema registers an
+    // `svg` renderer produce a RenderNode tree, run through
+    // `applyTheme(tree, nodeRules)` for tag overlays, then serialize
+    // to SVG markup. Visual cells (bar, sparkline, …) keep their
+    // inline branches below because they're not text composition;
+    // they don't register an svg renderer so the dispatch returns
+    // null and we fall through.
+    {
+      const cellSch = row.cellStyles?.[col.field];
+      const rowSch  = row.style;
+      const tree = schemaRenderCell(
+        col,
+        row.metadata[col.field],
+        {
+          cellWidth:  width,
+          rowHeight,
+          row:        row.metadata,
+          target:     "svg",
+          cellStyle:  cellSch ?? rowSch,
+          naText:     col.options?.naText ?? null,
+        },
+        theme.nodeRules,
+        "svg",
+      );
+      if (tree) {
+        const resolver = makeThemeResolver(theme);
+        // Apply the same cellStyle precedence the legacy text branch
+        // does (bold / italic / color → semantic bundle → theme
+        // default). Wrap the tree's markup in a <g> with these
+        // attrs; text nodes that don't carry their own fill / weight
+        // inherit from this <g>.
+        const cellStyle = cellSch ?? rowSch ?? undefined;
+        const cellSemBundle =
+          resolveSemanticBundle(cellSch, theme) ??
+          resolveSemanticBundle(rowSch,  theme);
+        let cellFontWeight = 400;
+        if (cellStyle?.bold) cellFontWeight = 600;
+        else if (cellSemBundle?.fontWeight != null) cellFontWeight = cellSemBundle.fontWeight;
+        let cellFontStyle = "normal";
+        if (cellStyle?.italic) cellFontStyle = "italic";
+        else if (cellSemBundle?.fontStyle != null) cellFontStyle = cellSemBundle.fontStyle;
+        let cellColor: string = (theme.cell.fg ?? theme.content.primary);
+        if (cellStyle?.color)         cellColor = cellStyle.color;
+        else if (cellSemBundle?.fg)   cellColor = cellSemBundle.fg;
+
+        const out = renderNodeToSvg(tree, resolver);
+        const originX = anchor === "end" ? textX - out.width
+                      : anchor === "middle" ? textX - out.width / 2
+                      : textX;
+        // Vertical anchor: text dominant-baseline is "central" in
+        // the legacy branch (text emits at textY); for the tree
+        // path, renderNodeToSvg places content with `0,0` at the
+        // top-left, so shift up so the visual center aligns with
+        // textY (rough approximation: subtract half the tree height).
+        const originY = textY - out.height / 2;
+        lines.push(
+          `<g font-family="${theme.text.body.family}" font-size="${fontSize}px" ` +
+          `font-weight="${cellFontWeight}" font-style="${cellFontStyle}" fill="${cellColor}" ` +
+          `transform="translate(${originX} ${originY})">${out.markup}</g>`,
+        );
+        continue;
+      }
+    }
 
     if (col.type === "bar" && typeof row.metadata[col.field] === "number") {
       // Render bar — geometry mirrors CellBar.svelte:

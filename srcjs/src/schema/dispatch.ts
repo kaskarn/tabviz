@@ -215,5 +215,57 @@ export function renderCell(
   const fn = dispatchRenderer(schema.key, target);
   if (!fn) return null;
   const tree = fn(value, col.options, ctx);
-  return nodeRules ? applyTheme(tree, nodeRules) : tree;
+  // Always run applyTheme so DEFAULT_NODE_RULES (interval-range, etc.)
+  // apply even when the active theme doesn't set its own rules. Pass
+  // `nodeRules` so theme overrides merge on top.
+  return applyTheme(tree, nodeRules);
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Text extraction
+// ────────────────────────────────────────────────────────────────────
+//
+// SVG-export and width-measurement paths want the plain-text value of
+// a cell, not a RenderNode tree. `extractText(node)` walks the tree
+// and concatenates every `RenderText.value` it finds, in
+// document-order. Groups stitch children together; other node kinds
+// (svg, image, spacer, component) contribute nothing.
+//
+// Use case: svg-generator.ts's `getCellValue` historically had a
+// switch over `col.type` that returned the formatted string per
+// type. That switch duplicates the schema's renderer dispatch.
+// Replace it with: dispatchRenderer for the svg target → extract
+// text. The single-text-node trees that `text` / `numeric` / `events`
+// / `pvalue` schemas produce flatten back to the same strings the
+// legacy switch returned; multi-fragment trees (interval) get
+// concatenated naturally ("0.85" + " " + "(0.72, 0.99)").
+
+export function extractText(node: RenderNode | null): string {
+  if (!node) return "";
+  switch (node.kind) {
+    case "text":      return node.value;
+    case "group":     return node.children.map(extractText).join("");
+    case "spacer":    return "";
+    case "svg":       return "";
+    case "image":     return node.alt ?? "";
+    case "component": return "";
+  }
+}
+
+/**
+ * Convenience: dispatch a column's renderer (svg target by default)
+ * and extract the plain text. Returns `null` if no schema renderer
+ * is registered — callers fall back to their legacy formatter.
+ */
+export function getCellText(
+  col: ColumnSpec,
+  value: unknown,
+  ctx: RenderContext,
+  target: RenderTarget = "svg",
+): string | null {
+  const schema = findSchemaForColumn(col);
+  if (!schema) return null;
+  const fn = dispatchRenderer(schema.key, target);
+  if (!fn) return null;
+  return extractText(fn(value, col.options, ctx));
 }

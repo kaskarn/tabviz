@@ -52,6 +52,26 @@ export interface NodeRule {
 
 export type NodeRules = Record<string, NodeRule>;
 
+/**
+ * Built-in NodeRule defaults. Themes layer their own on top via
+ * `WebTheme.nodeRules`; the merge happens in `applyTheme()` below.
+ *
+ * Single source of truth for both runtimes — the browser DOM
+ * mounter (`RenderTree.svelte` via `renderCell()`) and the
+ * V8/SVG-export path (`svg-generator.ts` via `renderCell(..., "svg")`)
+ * both pull from here.
+ *
+ * Keep this list TIGHT. Tags are a structural commitment; adding
+ * a default rule for a tag commits every theme to that look unless
+ * they override it. Prefer empty/explicit-only defaults.
+ */
+export const DEFAULT_NODE_RULES: NodeRules = {
+  // Interval bounds — the `(0.72, 0.99)` part of `0.85 (0.72, 0.99)` —
+  // dim to minor size + muted color so the point estimate stays
+  // visually dominant. Themes can override per their own style.
+  "interval-range": { text: { size: "minor", color: "muted" } },
+};
+
 // ────────────────────────────────────────────────────────────────────
 // applyTheme
 // ────────────────────────────────────────────────────────────────────
@@ -73,13 +93,17 @@ const EMPTY_GROUP: RenderGroup = { kind: "group", children: [] };
  * any wrap at the parent level sees finalized child structure.
  */
 export function applyTheme(node: RenderNode, rules: NodeRules | undefined): RenderNode {
-  if (!rules) return node;
+  // Merge built-in defaults with theme overlays. Theme rules take
+  // precedence per-tag (last write wins), so a theme that explicitly
+  // sets `interval-range: {...}` replaces the default but doesn't
+  // clobber other defaults.
+  const effective: NodeRules = { ...DEFAULT_NODE_RULES, ...(rules ?? {}) };
   // Only text and group nodes carry tags; svg/spacer/image pass through.
   const tags: string[] = (node.kind === "text" || node.kind === "group")
     ? (node.tags ?? [])
     : [];
   const matched: NodeRule[] = tags
-    .map((t) => rules[t])
+    .map((t) => effective[t])
     .filter((r): r is NodeRule => r != null);
 
   // Hidden short-circuit
@@ -88,7 +112,7 @@ export function applyTheme(node: RenderNode, rules: NodeRules | undefined): Rend
   // Recursively finalize children first (for groups)
   let working: RenderNode =
     node.kind === "group"
-      ? { ...node, children: node.children.map((c) => applyTheme(c, rules)) }
+      ? { ...node, children: node.children.map((c) => applyTheme(c, effective)) }
       : node;
 
   // Apply style overlays
