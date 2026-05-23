@@ -13,6 +13,11 @@
   // was removed in v0.18 — R's set_axis() still exists for users who want
   // a cross-cutting default, but the interactive surface is column-scoped.
   import ConfirmDialog from "./ConfirmDialog.svelte";
+  // v2 design tokens — the Field/Pill/Knob/Swatch primitives the
+  // re-skinned *Field wrappers use cascade off [data-tv-v2]. Importing
+  // here ensures the stylesheet ships with the widget bundle even when
+  // ColumnEditorV2Popover hasn't been lazy-loaded yet.
+  import "$components/primitives/v2/tokens.css";
 
   interface Props {
     store: TabvizStore;
@@ -130,6 +135,7 @@
   <div
     bind:this={panelRef}
     class="settings-panel"
+    data-tv-v2
     role="dialog"
     aria-modal="true"
     aria-label="Display settings"

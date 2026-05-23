@@ -1,24 +1,18 @@
+<!--
+  TextField — settings-panel single-line text row. v2-skinned: Field
+  wraps a raw input styled like the v2 chip. Caller API unchanged.
+  Two events: oninput (every keystroke, for live preview) + onchange
+  (blur/Enter, for one op-log entry per edit session).
+-->
 <script lang="ts">
+  import Field from "$components/primitives/v2/Field.svelte";
+
   interface Props {
-    /** Visible label for the field. */
     label: string;
-    /** Optional secondary hint shown under the label. */
     hint?: string;
-    /** Current value. */
     value: string;
-    /** Placeholder shown when the input is empty. */
     placeholder?: string;
-    /**
-     * Live preview on each keystroke. Prefer this for visual updates that
-     * shouldn't be recorded in the op-log (e.g., watermark / title edits
-     * while the user is still typing).
-     */
     oninput?: (value: string) => void;
-    /**
-     * Fires on blur OR Enter — commit the finished edit. This is the one
-     * whose side effects should record an op (so one keypress session
-     * produces one log entry).
-     */
     onchange?: (value: string) => void;
   }
 
@@ -27,66 +21,52 @@
   function handleInput(e: Event) {
     oninput?.((e.target as HTMLInputElement).value);
   }
-
-  function handleBlurOrChange(e: Event) {
+  function commit(e: Event) {
     onchange?.((e.target as HTMLInputElement).value);
   }
-
   function handleKeydown(e: KeyboardEvent) {
-    if (e.key === "Enter") {
-      onchange?.((e.target as HTMLInputElement).value);
-    }
+    if (e.key === "Enter") onchange?.((e.target as HTMLInputElement).value);
   }
 </script>
 
-<div class="text-field" title={hint}>
-  <span class="label">{label}</span>
-  <input
-    class="text"
-    type="text"
-    {value}
-    {placeholder}
-    oninput={handleInput}
-    onchange={handleBlurOrChange}
-    onblur={handleBlurOrChange}
-    onkeydown={handleKeydown}
-    spellcheck="false"
-    aria-label={label}
-  />
+<div class="tf-row" data-tv-v2>
+  <Field {label} {hint}>
+    <input
+      class="tf-input"
+      type="text"
+      {value}
+      {placeholder}
+      oninput={handleInput}
+      onchange={commit}
+      onblur={commit}
+      onkeydown={handleKeydown}
+      spellcheck="false"
+      aria-label={label}
+    />
+  </Field>
 </div>
 
 <style>
-  .text-field {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 8px;
-    padding: 2px 0;
-  }
-
-  .label {
-    font-size: 0.75rem;
-    color: var(--tv-fg, #1a1a1a);
-    font-weight: 500;
-    line-height: 1.2;
+  .tf-row { display: contents; }
+  .tf-input {
+    flex: 1;
     min-width: 0;
-  }
-
-  .text {
-    width: 140px;
-    padding: 3px 6px;
-    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-border, #e2e8f0));
-    border-radius: 4px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.7rem;
-    background: var(--tv-bg, #ffffff);
-    color: var(--tv-fg, #1a1a1a);
+    height: var(--v2-control-h, 22px);
+    padding: 0 8px;
+    border: 0;
+    border-radius: var(--v2-r-soft, 3px);
+    background: var(--v2-paper-edge, #fff);
+    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: var(--v2-text-body, 11.5px);
+    color: var(--v2-ink, #15140e);
     outline: none;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease, ease);
   }
-
-  .text:focus {
-    border-color: var(--tv-accent, #2563eb);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tv-accent, #2563eb) 15%, transparent);
+  .tf-input:hover  { box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c); }
+  .tf-input:focus  { box-shadow: inset 0 0 0 1px var(--v2-rule-strong, #15140e); }
+  .tf-input::placeholder {
+    color: var(--v2-ink-3, #8a8478);
+    font-style: italic;
   }
 </style>
