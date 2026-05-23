@@ -6,7 +6,34 @@
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
   import BooleanField from "./BooleanField.svelte";
-  import TextField from "./TextField.svelte";
+  import SegmentedField from "./SegmentedField.svelte";
+  import Field from "$components/primitives/v2/Field.svelte";
+  import FontFamily from "$components/primitives/v2/FontFamily.svelte";
+
+  // Font size on the wire is a CSS length string ("0.875rem"); the
+  // slider works in px. Convert between forms with a generous default
+  // so users can still hand-edit unusual values (clamp would lose them).
+  function sizeToPx(s: string | undefined): number {
+    if (!s) return 14;
+    const m = /^([\d.]+)\s*(px|rem|em|pt)?$/.exec(s.trim());
+    if (!m) return 14;
+    const n = parseFloat(m[1]);
+    const unit = m[2] ?? "px";
+    if (unit === "rem" || unit === "em") return Math.round(n * 16);
+    if (unit === "pt") return Math.round(n * 1.333);
+    return Math.round(n);
+  }
+  function pxToSize(px: number): string {
+    return `${px}px`;
+  }
+
+  // Curated font weight options matching CSS / rgc-design.
+  const WEIGHT_OPTIONS = [
+    { value: 400, label: "Reg" },
+    { value: 500, label: "Med" },
+    { value: 600, label: "Semi" },
+    { value: 700, label: "Bold" },
+  ];
 
   interface Props {
     store: TabvizStore;
@@ -88,22 +115,24 @@
           <span class="role-summary">{summary(roleData)}</span>
         </button>
         {#if expandedText[role]}
-          <div class="role-fields">
-            <TextField
-              label="Family"
-              value={roleData.family ?? ""}
-              onchange={(v) => setTextRole(role, "family", v)}
-            />
-            <TextField
-              label="Size"
-              hint="CSS length, e.g. 0.875rem or 14px"
-              value={roleData.size ?? ""}
-              onchange={(v) => setTextRole(role, "size", v)}
-            />
+          <div class="role-fields" data-tv-v2>
+            <Field label="Family">
+              <FontFamily
+                value={roleData.family ?? null}
+                onchange={(v) => setTextRole(role, "family", v)}
+              />
+            </Field>
             <NumberField
+              label="Size"
+              value={sizeToPx(roleData.size)}
+              min={8} max={48} step={1}
+              unit="px"
+              onchange={(v) => setTextRole(role, "size", pxToSize(v))}
+            />
+            <SegmentedField
               label="Weight"
               value={roleData.weight ?? 400}
-              min={100} max={900} step={100}
+              options={WEIGHT_OPTIONS}
               onchange={(v) => setTextRole(role, "weight", v)}
             />
             <BooleanField
@@ -148,10 +177,10 @@
               value={rg[level].rule ?? "transparent"}
               onchange={(v) => setRowGroupTier(level, "rule", v)}
             />
-            <NumberField
-              label="Font weight"
+            <SegmentedField
+              label="Weight"
               value={rg[level].text?.weight ?? 500}
-              min={100} max={900} step={100}
+              options={WEIGHT_OPTIONS}
               onchange={(v) => setRowGroupTierText(level, "weight", v)}
             />
             <BooleanField

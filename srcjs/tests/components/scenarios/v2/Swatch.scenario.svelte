@@ -17,7 +17,6 @@
     { color: "#69806b", token: "moss" },
   ];
 
-  const recents = ["#c44a2f", "#264653", "#e9c46a"];
 
   let primary: string | null   = $state("#b53a1f");
   let secondary: string | null = $state(null);
@@ -40,8 +39,8 @@
 <div class="sheet">
   <div class="row">
     <span class="flag">primary</span>
-    <Swatch bind:value={primary} swatches={themeSwatches} {recents} />
-    <span class="note">theme palette + recents</span>
+    <Swatch bind:value={primary} swatches={themeSwatches} />
+    <span class="note">theme palette (inline)</span>
   </div>
 
   <div class="row">
