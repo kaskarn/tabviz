@@ -93,6 +93,8 @@
   import { zoomable } from "$lib/zoom-interactions";
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
   import { buildWidgetCSS } from "$lib/theme-css";
+  import { renderCell as schemaRenderCell } from "../schema/dispatch";
+  import RenderTree from "../components/RenderTree.svelte";
   import {
     formatNumber,
     formatEvents,
@@ -1428,7 +1430,36 @@
         {@const editedFields = store.cellEdits.cells[rowArg.id]}
         {@const metadata = editedFields ? { ...rowArg.metadata, ...editedFields } : rowArg.metadata}
         {@const row = editedFields ? { ...rowArg, metadata } : rowArg}
-        {#if column.type === "bar"}
+        {@const schemaTree = schemaRenderCell(
+          column,
+          metadata[column.field],
+          {
+            cellWidth: 0,
+            rowHeight: 0,
+            row: metadata,
+            target: "browser",
+            cellStyle,
+            colorOverride: effectiveVizColor(row, column),
+            naText: column.options?.naText ?? null,
+          },
+          theme?.nodeRules,
+          "dom",
+        )}
+        {#if schemaTree}
+          {#if schemaTree.kind === "component"}
+            <!-- Visual cell: RenderComponent owns the cell shape;
+                 cellStyle is forwarded into the component's own
+                 props. No CellContent wrapper. -->
+            <RenderTree node={schemaTree} />
+          {:else}
+            <!-- Text-composition cell: wrap in CellContent so
+                 cellStyle (bold/italic/muted/accent/color/bg/icon/
+                 badge/tooltip) applies the same as legacy cells. -->
+            <CellContent {cellStyle}>
+              <RenderTree node={schemaTree} />
+            </CellContent>
+          {/if}
+        {:else if column.type === "bar"}
           <CellBar
             value={metadata[column.field] as number}
             maxValue={getMaxValueForColumn(visibleRows, column)}

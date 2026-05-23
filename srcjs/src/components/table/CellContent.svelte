@@ -1,13 +1,21 @@
 <script lang="ts">
   import type { CellStyle } from "$types";
+  import type { Snippet } from "svelte";
 
   interface Props {
-    value: unknown;
+    /** Value to render as the cell's text content. Ignored when
+     *  `children` is provided — the snippet owns the content. */
+    value?: unknown;
+    /** Snippet child for cell renderers that produce structured
+     *  output (e.g. `<RenderTree>` mounting a schema-driven tree).
+     *  When set, replaces the default `<span>{value}</span>` shape.
+     *  The cellStyle classes still apply to the outer span. */
+    children?: Snippet;
     cellStyle?: CellStyle;
     title?: string;
   }
 
-  let { value, cellStyle, title }: Props = $props();
+  let { value, children, cellStyle, title }: Props = $props();
 
   const hasBadge = $derived(!!cellStyle?.badge);
   const hasIcon = $derived(!!cellStyle?.icon);
@@ -33,7 +41,11 @@
   title={cellStyle?.tooltip ?? title ?? String(value ?? "")}
 >
   {#if hasIcon}<span class="cell-icon">{cellStyle?.icon}</span>{/if}
-  <span class="cell-value">{value ?? ""}</span>
+  {#if children}
+    {@render children()}
+  {:else}
+    <span class="cell-value">{value ?? ""}</span>
+  {/if}
   {#if hasBadge}<span class="cell-badge">{cellStyle?.badge}</span>{/if}
 </span>
 

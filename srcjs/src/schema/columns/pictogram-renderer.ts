@@ -37,10 +37,9 @@ const pictogramDomRenderer: CellFormatter = (value, options, ctx) => {
     props: {
       value: value as number | string | null | undefined,
       options: (opts?.pictogram ?? {}),
-      // `naText`, `cellStyle`, `colorOverride` are passed by the
-      // TabvizPlot caller through `ctx` extensions when 7e.4 wires
-      // the consumer. For now these stay undefined; the component
-      // already handles that gracefully.
+      naText: ctx?.naText ?? undefined,
+      cellStyle: ctx?.cellStyle,
+      colorOverride: ctx?.colorOverride ?? null,
       glyphSelector,
     },
   };

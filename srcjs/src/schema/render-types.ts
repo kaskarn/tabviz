@@ -144,6 +144,31 @@ export interface RenderContext {
   row: Record<string, unknown>;
   /** Render target — informs e.g. font-fallback strategy. */
   target: "browser" | "svg";
+  /** Resolved per-cell style (semantic tokens + color/bg/badge/icon
+   *  overrides). Visual cells consult this for muted/emphasis/accent
+   *  state and per-cell color overrides. Optional — text-composition
+   *  cells typically ignore it and let nodeRules + tags handle it. */
+  cellStyle?: {
+    bold?: boolean;
+    italic?: boolean;
+    color?: string | null;
+    bg?: string | null;
+    badge?: string | null;
+    icon?: string | null;
+    emphasis?: boolean;
+    muted?: boolean;
+    accent?: boolean;
+    fill?: boolean;
+    tooltip?: string | null;
+  };
+  /** Effective per-cell color override (row/cell semantic markerFill
+   *  resolved by the caller — slots in below explicit column color
+   *  but above theme default for visual cells). */
+  colorOverride?: string | null;
+  /** Per-cell NA text override; falls back to the column's own
+   *  `naText` option when undefined. Carried in ctx so renderers
+   *  don't repeat the `column.options?.naText` access. */
+  naText?: string | null;
 }
 
 /**
