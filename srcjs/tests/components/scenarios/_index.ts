@@ -9,6 +9,12 @@ import SegmentedScenario  from "./Segmented.scenario.svelte";
 import FieldRowScenario   from "./FieldRow.scenario.svelte";
 import GlyphsScenario     from "./Glyphs.scenario.svelte";
 
+// v2 primitives — the new ink-on-cream editorial set.
+import V2PillScenario     from "./v2/Pill.scenario.svelte";
+import V2KnobScenario     from "./v2/Knob.scenario.svelte";
+import V2FieldScenario    from "./v2/Field.scenario.svelte";
+import V2SectionsScenario from "./v2/Sections.scenario.svelte";
+
 export const SCENARIOS: ScenarioMeta[] = [
   {
     name: "toggle",
@@ -33,6 +39,32 @@ export const SCENARIOS: ScenarioMeta[] = [
     description: "Contact sheet of the UI glyph vocabulary — visual audit.",
     group: "Vocabulary",
     component: GlyphsScenario,
+  },
+
+  // ── v2 primitives — preview the new editor surface ───────────────
+  {
+    name: "v2-pill",
+    description: "v2 Pill — boolean + segmented + glyph + icon-only in one primitive.",
+    group: "v2 primitives",
+    component: V2PillScenario,
+  },
+  {
+    name: "v2-knob",
+    description: "v2 Knob — number + slider unified. Plain / scrub / track modes, drag-to-adjust.",
+    group: "v2 primitives",
+    component: V2KnobScenario,
+  },
+  {
+    name: "v2-field",
+    description: "v2 Field — labeled row with override-dot gutter + reset affordance.",
+    group: "v2 primitives",
+    component: V2FieldScenario,
+  },
+  {
+    name: "v2-sections",
+    description: "v2 Sections + Accordion — composed into a popover mock of the new column editor.",
+    group: "v2 primitives",
+    component: V2SectionsScenario,
   },
 ];
 

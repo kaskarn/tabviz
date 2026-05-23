@@ -28,6 +28,10 @@
   import { harnessState, harnessLog, reset, wireGlobal } from "./harness-store.svelte";
   import { groupedScenarios, findScenario, SCENARIOS } from "./scenarios/_index";
 
+  // Load v2 design tokens so any v2 primitive mounted in the stage
+  // picks up the cascade (the stage frame has data-tv-v2 below).
+  import "../../src/components/primitives/v2/tokens.css";
+
   let activeName: string = $state("");
 
   function syncFromHash() {
@@ -89,7 +93,7 @@
         <span class="stage-name">{active.name}</span>
         <span class="stage-desc">{active.description}</span>
       </header>
-      <div class="stage-frame">
+      <div class="stage-frame" data-tv-v2>
         {#key activeName}
           <active.component />
         {/key}
