@@ -21,6 +21,7 @@ import { registerVizBehaviors }       from "./columns/viz-behaviors";
 import { registerSortBehaviors }      from "./columns/sort-behaviors";
 import { registerWidthBehaviors }     from "./columns/width-behaviors";
 import { registerEmitBehaviors }      from "./columns/emit-behaviors";
+import { registerIntervalRenderer }   from "./columns/interval-renderer";
 
 /**
  * Re-register every built-in schema behavior. Idempotent. Call this
@@ -34,4 +35,5 @@ export function bootBuiltinBehaviors(): void {
   registerSortBehaviors();
   registerWidthBehaviors();
   registerEmitBehaviors();
+  registerIntervalRenderer();
 }
