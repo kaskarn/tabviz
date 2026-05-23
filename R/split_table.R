@@ -233,7 +233,7 @@ split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE
   if (!is.null(fields)) {
     data_cols <- data_cols[intersect(names(data_cols), fields)]
   }
-  col_payload <- lapply(spec@columns, function(c) {
+  col_payload <- lapply(.flatten_column_specs(spec@columns), function(c) {
     list(
       id      = c@id,
       type    = c@type,
@@ -272,13 +272,29 @@ split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE
 .fields_needed_for_widths <- function(cols) {
   skip <- c("viz_bar", "viz_boxplot", "viz_violin", "forest")
   fields <- character(0)
-  for (c in cols) {
+  for (c in .flatten_column_specs(cols)) {
     if (c@type %in% skip) next
     if (is.numeric(c@width) && !is.na(c@width)) next
     if (length(c@field) == 0 || is.na(c@field) || !nzchar(c@field)) next
     fields <- c(fields, c@field)
   }
   unique(fields)
+}
+
+# Flatten a column list: replace each ColumnGroup with its inner
+# columns, recursively. The shared-axis / shared-widths payloads only
+# need ColumnSpec instances; groups are presentational wrappers with no
+# @type / @field / @width to forward.
+.flatten_column_specs <- function(cols) {
+  out <- list()
+  for (c in cols) {
+    if (S7_inherits(c, ColumnGroup)) {
+      out <- c(out, .flatten_column_specs(c@columns))
+    } else {
+      out <- c(out, list(c))
+    }
+  }
+  out
 }
 
 #' Create a subset WebSpec for one split combination
