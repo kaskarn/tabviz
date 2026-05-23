@@ -13,6 +13,7 @@ import type { ColumnSchema } from "../types";
 export const VIZ_SCHEMA: ColumnSchema = {
   key: "viz",
   label: "Viz",
+  glyph: "type.viz",
   abstract: true,
   defaultOpen: true,
   inherits: "base",

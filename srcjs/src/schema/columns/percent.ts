@@ -10,6 +10,7 @@ import type { ColumnSchema } from "../types";
 export const PERCENT_SCHEMA: ColumnSchema = {
   key: "percent",
   label: "Percent",
+  glyph: "type.percent",
   defaultOpen: true,
   inherits: "numeric",
   type: "numeric",

@@ -7,6 +7,7 @@ import type { ColumnSchema } from "../types";
 export const RANGE_SCHEMA: ColumnSchema = {
   key: "range",
   label: "Range",
+  glyph: "type.range",
   defaultOpen: true,
   inherits: "numeric",
   type: "range",

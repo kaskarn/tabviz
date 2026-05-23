@@ -9,6 +9,7 @@ import type { ColumnSchema } from "../types";
 export const VIZ_FOREST_SCHEMA: ColumnSchema = {
   key: "viz_forest",
   label: "Forest",
+  glyph: "type.forest",
   defaultOpen: true,
   inherits: "viz",
   type: "forest",

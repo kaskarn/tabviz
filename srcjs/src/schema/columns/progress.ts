@@ -8,6 +8,7 @@ import type { ColumnSchema } from "../types";
 export const PROGRESS_SCHEMA: ColumnSchema = {
   key: "progress",
   label: "Progress",
+  glyph: "type.progress",
   defaultOpen: true,
   inherits: "base",
   type: "progress",

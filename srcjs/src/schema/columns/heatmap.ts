@@ -8,6 +8,7 @@ import type { ColumnSchema } from "../types";
 export const HEATMAP_SCHEMA: ColumnSchema = {
   key: "heatmap",
   label: "Heatmap",
+  glyph: "type.heatmap",
   defaultOpen: true,
   inherits: "numeric",
   type: "heatmap",

@@ -8,6 +8,7 @@ import type { ColumnSchema } from "../types";
 export const EVENTS_SCHEMA: ColumnSchema = {
   key: "events",
   label: "Events",
+  glyph: "type.events",
   defaultOpen: true,
   inherits: "numeric",
   type: "custom",

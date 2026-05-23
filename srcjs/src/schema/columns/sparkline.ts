@@ -9,6 +9,7 @@ import type { ColumnSchema } from "../types";
 export const SPARKLINE_SCHEMA: ColumnSchema = {
   key: "sparkline",
   label: "Sparkline",
+  glyph: "type.sparkline",
   defaultOpen: true,
   inherits: "base",
   type: "sparkline",

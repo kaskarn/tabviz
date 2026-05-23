@@ -8,6 +8,7 @@ import type { ColumnSchema } from "../types";
 export const PICTOGRAM_SCHEMA: ColumnSchema = {
   key: "pictogram",
   label: "Pictogram",
+  glyph: "type.pictogram",
   defaultOpen: true,
   inherits: "base",
   type: "pictogram",

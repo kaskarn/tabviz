@@ -23,6 +23,7 @@
 // Tier/Cluster/Slot/Token in CLAUDE.md.
 
 import type { ColumnType, FieldCategory, SlotSpec, ColumnSpec } from "../types";
+import type { GlyphToken } from "../lib/ui-glyphs";
 
 /**
  * UI control kinds the editor knows how to render. Each maps to one
@@ -138,6 +139,14 @@ export interface ColumnSchema {
   key: string;
   /** Editor label (accordion title + picker entry for concrete schemas). */
   label: string;
+  /**
+   * UI glyph token for this column type. Shown in the column-type
+   * picker, the editor popover header, the column-header badge in
+   * the table chrome. References the central vocabulary in
+   * `src/lib/ui-glyphs.ts`. Optional on abstract schemas (they don't
+   * appear in the picker); should be set on every concrete schema.
+   */
+  glyph?: GlyphToken;
   /** True if this schema is structural only and can't be a column type. */
   abstract?: boolean;
   /** Initial open/closed state for the accordion. Default: true. */

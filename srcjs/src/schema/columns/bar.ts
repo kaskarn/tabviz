@@ -8,6 +8,7 @@ import type { ColumnSchema } from "../types";
 export const BAR_SCHEMA: ColumnSchema = {
   key: "bar",
   label: "Bar",
+  glyph: "type.bar",
   defaultOpen: true,
   inherits: "base",
   type: "bar",

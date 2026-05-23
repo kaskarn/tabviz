@@ -7,6 +7,7 @@ import type { ColumnSchema } from "../types";
 export const NUMERIC_SCHEMA: ColumnSchema = {
   key: "numeric",
   label: "Numeric formatting",
+  glyph: "type.numeric",
   defaultOpen: true,
   inherits: "text",
   type: "numeric",

@@ -9,6 +9,7 @@ import type { ColumnSchema } from "../types";
 export const INTERVAL_SCHEMA: ColumnSchema = {
   key: "interval",
   label: "Interval",
+  glyph: "type.interval",
   defaultOpen: true,
   inherits: "numeric",
   type: "interval",

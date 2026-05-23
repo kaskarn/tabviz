@@ -8,6 +8,7 @@ import type { ColumnSchema } from "../types";
 export const REFERENCE_SCHEMA: ColumnSchema = {
   key: "reference",
   label: "Reference",
+  glyph: "type.reference",
   defaultOpen: true,
   inherits: "text",
   type: "reference",

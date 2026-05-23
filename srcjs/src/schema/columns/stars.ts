@@ -14,6 +14,7 @@ import type { ColumnSchema } from "../types";
 export const STARS_SCHEMA: ColumnSchema = {
   key: "stars",
   label: "Stars",
+  glyph: "type.stars",
   defaultOpen: true,
   inherits: "pictogram",
   type: "stars",

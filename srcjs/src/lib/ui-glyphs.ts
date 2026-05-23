@@ -33,6 +33,15 @@ export const GLYPHS = {
   "type.icon":       "◇",
   "type.img":        "▦",
   "type.viz":        "◈",            // abstract VIZ parent
+  "type.date":       "⏱",
+  "type.n":          "N",
+  "type.currency":   "$",
+  "type.range":      "↔",
+  "type.progress":   "▰",
+  "type.heatmap":    "▩",
+  "type.reference":  "│",            // abstract reference parent
+  "type.boxplot":    "▭",
+  "type.violin":     "≀",
 
   // Field-type badges (data-column origin shown next to picker rows).
   "field.string":    "abc",

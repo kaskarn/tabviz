@@ -6,6 +6,7 @@ import type { ColumnSchema } from "../types";
 export const VIZ_BAR_SCHEMA: ColumnSchema = {
   key: "viz_bar",
   label: "Viz: bars",
+  glyph: "type.bar",
   defaultOpen: true,
   inherits: "viz",
   type: "viz_bar",

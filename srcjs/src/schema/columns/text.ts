@@ -12,6 +12,7 @@ import type { ColumnSchema } from "../types";
 export const TEXT_SCHEMA: ColumnSchema = {
   key: "text",
   label: "Text",
+  glyph: "type.text",
   defaultOpen: false,
   inherits: "base",
   type: "text",

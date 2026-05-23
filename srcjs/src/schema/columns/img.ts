@@ -7,6 +7,7 @@ import type { ColumnSchema } from "../types";
 export const IMG_SCHEMA: ColumnSchema = {
   key: "img",
   label: "Image",
+  glyph: "type.img",
   defaultOpen: true,
   inherits: "base",
   type: "img",

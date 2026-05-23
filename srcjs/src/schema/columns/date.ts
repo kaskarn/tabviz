@@ -9,6 +9,7 @@ import type { ColumnSchema } from "../types";
 export const DATE_SCHEMA: ColumnSchema = {
   key: "date",
   label: "Date",
+  glyph: "type.date",
   defaultOpen: true,
   inherits: "base",
   type: "text",

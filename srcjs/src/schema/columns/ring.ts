@@ -9,6 +9,7 @@ import type { ColumnSchema } from "../types";
 export const RING_SCHEMA: ColumnSchema = {
   key: "ring",
   label: "Ring",
+  glyph: "type.ring",
   defaultOpen: true,
   inherits: "base",
   type: "ring",

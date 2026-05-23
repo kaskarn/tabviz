@@ -7,6 +7,7 @@ import type { ColumnSchema } from "../types";
 export const ICON_SCHEMA: ColumnSchema = {
   key: "icon",
   label: "Icon",
+  glyph: "type.icon",
   defaultOpen: true,
   inherits: "base",
   type: "icon",

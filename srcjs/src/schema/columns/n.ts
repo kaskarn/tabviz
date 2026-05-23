@@ -8,6 +8,7 @@ import type { ColumnSchema } from "../types";
 export const N_SCHEMA: ColumnSchema = {
   key: "n",
   label: "N (count)",
+  glyph: "type.n",
   defaultOpen: true,
   inherits: "numeric",
   type: "numeric",

@@ -7,6 +7,7 @@ import type { ColumnSchema } from "../types";
 export const BADGE_SCHEMA: ColumnSchema = {
   key: "badge",
   label: "Badge",
+  glyph: "type.badge",
   defaultOpen: true,
   inherits: "base",
   type: "badge",

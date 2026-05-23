@@ -10,6 +10,7 @@ import type { ColumnSchema } from "../types";
 export const CURRENCY_SCHEMA: ColumnSchema = {
   key: "currency",
   label: "Currency",
+  glyph: "type.currency",
   defaultOpen: true,
   inherits: "numeric",
   type: "numeric",

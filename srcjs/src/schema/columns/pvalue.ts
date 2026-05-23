@@ -7,6 +7,7 @@ import type { ColumnSchema } from "../types";
 export const PVALUE_SCHEMA: ColumnSchema = {
   key: "pvalue",
   label: "P-value",
+  glyph: "type.pvalue",
   defaultOpen: true,
   inherits: "base",
   type: "pvalue",
