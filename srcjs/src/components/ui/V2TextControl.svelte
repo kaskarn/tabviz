@@ -28,8 +28,12 @@
     return `${px}px`;
   }
 
-  // Curated font weight options matching CSS / rgc-design.
+  // 5-step weight ladder covering the visually distinct range. 100/200
+  // and 800/900 land identical to 300/700 in most body fonts, so they
+  // just clutter the picker. Authors needing an extreme can set the
+  // wire via R / theme code.
   const WEIGHT_OPTIONS = [
+    { value: 300, label: "Light" },
     { value: 400, label: "Reg" },
     { value: 500, label: "Med" },
     { value: 600, label: "Semi" },

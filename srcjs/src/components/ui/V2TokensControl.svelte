@@ -14,7 +14,21 @@
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
   import BooleanField from "./BooleanField.svelte";
+  import SegmentedField from "./SegmentedField.svelte";
+  import Accordion from "$components/primitives/v2/Accordion.svelte";
   import { oklchMix } from "$lib/oklch";
+
+  // 5-step weight ladder covering the visually distinct range. We
+  // skip 100/200/800/900 — they look identical to 300/700 in most
+  // body fonts, so they'd just clutter the picker. Authors who need
+  // an extreme can still set the wire via R / theme code.
+  const WEIGHT_OPTIONS = [
+    { value: 300, label: "Light" },
+    { value: 400, label: "Reg" },
+    { value: 500, label: "Med" },
+    { value: 600, label: "Semi" },
+    { value: 700, label: "Bold" },
+  ];
 
   interface Props {
     store: TabvizStore;
@@ -94,94 +108,59 @@
   <SettingsSection
     title="Token bundles"
     description="Each token is a RowSemantic preset (bg / fg / border / marker fill / weight / italic). The painter UI applies one to a row or cell at a time; data columns (row_*_col) flip the same flags from R.">
-    {#each TOKENS as t (t.id)}
-      <div class="token">
-        <button class="token-toggle" onclick={() => toggle(t.id)}>
-          <span class="token-name">{expanded[t.id] ? "▾" : "▸"} {t.label}</span>
-          <span class="token-desc">{t.description}</span>
-        </button>
-        {#if expanded[t.id]}
-          <div class="token-fields">
-            <ColorField
-              label="Background"
-              value={(tokenField(t.id, "bg") as string | undefined) ?? ""}
-              onchange={(v) => setToken(t.id, "bg", v)}
-            />
-            <ColorField
-              label="Foreground"
-              value={(tokenField(t.id, "fg") as string | undefined) ?? ""}
-              onchange={(v) => setToken(t.id, "fg", v)}
-            />
-            <ColorField
-              label="Border"
-              value={(tokenField(t.id, "border") as string | undefined) ?? ""}
-              onchange={(v) => setToken(t.id, "border", v)}
-            />
-            <ColorField
-              label="Marker fill"
-              value={(tokenField(t.id, "markerFill") as string | undefined) ?? ""}
-              onchange={(v) => setToken(t.id, "markerFill", v)}
-            />
-            <NumberField
-              label="Font weight"
-              value={(tokenField(t.id, "fontWeight") as number | undefined) ?? 400}
-              min={100} max={900} step={100}
-              onchange={(v) => setToken(t.id, "fontWeight", v)}
-            />
-            <BooleanField
-              label="Italic"
-              value={tokenField(t.id, "fontStyle") === "italic"}
-              onchange={(v) => setToken(t.id, "fontStyle", v ? "italic" : "normal")}
-            />
-          </div>
-        {/if}
-      </div>
-    {/each}
+    <div data-tv-v2>
+      {#each TOKENS as t (t.id)}
+        <Accordion
+          title={t.label}
+          open={expanded[t.id] ?? false}
+        >
+          {#snippet summary()}
+            <span class="token-desc">{t.description}</span>
+          {/snippet}
+          <ColorField
+            label="Background"
+            value={(tokenField(t.id, "bg") as string | undefined) ?? ""}
+            onchange={(v) => setToken(t.id, "bg", v)}
+          />
+          <ColorField
+            label="Foreground"
+            value={(tokenField(t.id, "fg") as string | undefined) ?? ""}
+            onchange={(v) => setToken(t.id, "fg", v)}
+          />
+          <ColorField
+            label="Border"
+            value={(tokenField(t.id, "border") as string | undefined) ?? ""}
+            onchange={(v) => setToken(t.id, "border", v)}
+          />
+          <ColorField
+            label="Marker fill"
+            value={(tokenField(t.id, "markerFill") as string | undefined) ?? ""}
+            onchange={(v) => setToken(t.id, "markerFill", v)}
+          />
+          <SegmentedField
+            label="Weight"
+            value={(tokenField(t.id, "fontWeight") as number | undefined) ?? 400}
+            options={WEIGHT_OPTIONS}
+            onchange={(v) => setToken(t.id, "fontWeight", v)}
+          />
+          <BooleanField
+            label="Italic"
+            value={tokenField(t.id, "fontStyle") === "italic"}
+            onchange={(v) => setToken(t.id, "fontStyle", v ? "italic" : "normal")}
+          />
+        </Accordion>
+      {/each}
+    </div>
   </SettingsSection>
 {/if}
 
 <style>
-  .token {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px dashed var(--tv-border);
-  }
-  .token-toggle {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.35rem 0.5rem;
-    background: transparent;
-    border: none;
-    color: var(--tv-fg);
-    cursor: pointer;
-    font-size: 0.85rem;
-    width: 100%;
-    text-align: left;
-  }
-  .token-toggle:hover {
-    background: var(--tv-alt-bg);
-  }
-  .token-name {
-    font-weight: 600;
-    flex-shrink: 0;
-  }
-  .token-desc {
-    font-size: 0.75rem;
-    color: var(--tv-text-muted);
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    flex: 1;
-    text-align: right;
-  }
-  .token-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 0.25rem 0 0.5rem 1rem;
+  /* Bespoke .token toggle gone — Accordion + summary snippet handle
+     the collapsible row. Description chip rendered in the summary
+     slot uses a small muted serif. */
+  :global([data-tv-v2]) .token-desc {
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
+    font-size: var(--v2-text-small, 10.5px);
+    color: var(--v2-ink-3, #8a8478);
   }
 </style>

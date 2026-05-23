@@ -11,6 +11,7 @@
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
   import SegmentedField from "./SegmentedField.svelte";
+  import Accordion from "$components/primitives/v2/Accordion.svelte";
 
   interface Props {
     store: TabvizStore;
@@ -64,33 +65,31 @@
 </script>
 
 <SettingsSection title="Series" description="Per-effect slot bundles. Pick a shape and the anchor color (Fill) for the simple case; expand for the full color bundle.">
-  {#each series as slot, i (i)}
-    <div class="slot">
-      <button class="slot-toggle" onclick={() => toggle(i)}>
-        <span>{expanded[i] ? "▾" : "▸"} Series {i + 1}</span>
-        <span class="anchor-swatch" style:background={slot.fill}></span>
-      </button>
-      <div class="slot-shape">
+  <div data-tv-v2>
+    {#each series as slot, i (i)}
+      <Accordion
+        title={`Series ${i + 1}`}
+        open={expanded[i] ?? false}
+      >
+        {#snippet summary()}
+          <span class="anchor-swatch" style:background={slot.fill}></span>
+        {/snippet}
         <SegmentedField
           label="Shape"
           value={shapeValue(slot)}
           options={SHAPE_OPTIONS}
           onchange={(v) => setShape(i, v)}
         />
-      </div>
-      {#if expanded[i]}
-        <div class="slot-fields">
-          {#each slotFields as sf (sf.field)}
-            <ColorField
-              label={sf.label}
-              value={(slot as unknown as Record<string, string>)[sf.field] ?? ""}
-              onchange={(v) => setSlot(i, sf.field, v)}
-            />
-          {/each}
-        </div>
-      {/if}
-    </div>
-  {/each}
+        {#each slotFields as sf (sf.field)}
+          <ColorField
+            label={sf.label}
+            value={(slot as unknown as Record<string, string>)[sf.field] ?? ""}
+            onchange={(v) => setSlot(i, sf.field, v)}
+          />
+        {/each}
+      </Accordion>
+    {/each}
+  </div>
 </SettingsSection>
 
 {#if plot}
@@ -102,42 +101,13 @@
 {/if}
 
 <style>
-  .slot {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px dashed var(--tv-border);
-  }
-  .slot-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.35rem 0.5rem;
-    background: transparent;
-    border: none;
-    color: var(--tv-fg);
-    cursor: pointer;
-    font-size: 0.85rem;
-    width: 100%;
-  }
-  .slot-toggle:hover {
-    background: var(--tv-alt-bg);
-  }
-  .anchor-swatch {
+  /* Bespoke .slot toggle gone — Accordion + summary snippet own the
+     collapsible row. Only the anchor-color chip styling remains. */
+  :global([data-tv-v2]) .anchor-swatch {
     display: inline-block;
-    width: 1.2rem;
-    height: 1.2rem;
-    border: 1px solid var(--tv-border);
+    width: 14px;
+    height: 14px;
+    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
     border-radius: 3px;
-  }
-  .slot-shape {
-    padding: 0 0.5rem 0.25rem 1rem;
-  }
-  .slot-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 0.25rem 0 0.5rem 1rem;
   }
 </style>
