@@ -15,6 +15,14 @@ export interface PillSegment<U> {
 /** The four orthogonal authoring modes a styling option can be in. */
 export type MappedMode = "theme" | "static" | "field" | "condition";
 
+/** Theme-anchored swatch shown in a Swatch palette. */
+export interface ThemeSwatch {
+  /** Hex color, e.g. "#b53a1f". */
+  color: string;
+  /** Token name shown as tooltip — e.g. "accent", "primary". */
+  token: string;
+}
+
 /** One row in a Picker dropdown menu. */
 export interface PickerItem<U> {
   value: U;

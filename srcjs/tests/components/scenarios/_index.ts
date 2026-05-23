@@ -15,6 +15,7 @@ import V2KnobScenario     from "./v2/Knob.scenario.svelte";
 import V2FieldScenario    from "./v2/Field.scenario.svelte";
 import V2PickerScenario   from "./v2/Picker.scenario.svelte";
 import V2ModeScenario     from "./v2/Mode.scenario.svelte";
+import V2SwatchScenario   from "./v2/Swatch.scenario.svelte";
 import V2SectionsScenario from "./v2/Sections.scenario.svelte";
 
 export const SCENARIOS: ScenarioMeta[] = [
@@ -73,6 +74,12 @@ export const SCENARIOS: ScenarioMeta[] = [
     description: "v2 Mode — four-way MappedValue pill (theme / static / field / condition) + follow-up control pattern.",
     group: "v2 primitives",
     component: V2ModeScenario,
+  },
+  {
+    name: "v2-swatch",
+    description: "v2 Swatch — color input with theme palette + recents + native picker.",
+    group: "v2 primitives",
+    component: V2SwatchScenario,
   },
   {
     name: "v2-sections",
