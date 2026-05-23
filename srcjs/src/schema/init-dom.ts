@@ -12,7 +12,8 @@ import "./init";
 
 // DOM cell renderers — each pulls a Svelte component into the
 // browser bundle. Add new ones here as they migrate (Phase 7e.5).
-import { registerPictogramRenderer } from "./columns/pictogram-renderer";
+import { registerPictogramRenderer }    from "./columns/pictogram-renderer";
+import { registerVisualCellRenderers }  from "./columns/visual-cell-renderers";
 
 /**
  * Re-register every browser-only renderer. Idempotent. Tests that
@@ -22,4 +23,5 @@ import { registerPictogramRenderer } from "./columns/pictogram-renderer";
  */
 export function bootDomRenderers(): void {
   registerPictogramRenderer();
+  registerVisualCellRenderers();
 }

@@ -141,8 +141,11 @@ describe("dispatchForColumn", () => {
 describe("dispatchRenderer + renderCell", () => {
   test("dispatchRenderer returns undefined when no schema in chain has one", async () => {
     const { dispatchRenderer } = await import("./dispatch");
-    // No built-in schemas register a renderer yet (Phase 7e ongoing)
-    expect(dispatchRenderer("text")).toBeUndefined();
+    // Use a synthetic schema with no registered renderer (built-ins
+    // now register renderers as of Phase 7e.5).
+    const key = uniq("dr_empty");
+    registerSchema(defineSchema({ key, label: "Empty", type: key as never, options: [] }));
+    expect(dispatchRenderer(key)).toBeUndefined();
   });
 
   test("renderer composes with parents via injected proxy", async () => {
@@ -166,8 +169,11 @@ describe("dispatchRenderer + renderCell", () => {
 
   test("renderCell returns null when no renderer is registered", async () => {
     const { renderCell } = await import("./dispatch");
+    // Use a synthetic column type that no schema renders.
+    const key = uniq("rc_empty");
+    registerSchema(defineSchema({ key, label: "Empty", type: key as never, options: [] }));
     const col = {
-      id: "t", header: "T", field: "v", type: "text",
+      id: "t", header: "T", field: "v", type: key,
       align: "left", sortable: false, isGroup: false, width: "auto", options: {},
     } as unknown as ColumnSpec;
     const out = renderCell(col, "hello", {

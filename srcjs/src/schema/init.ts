@@ -22,6 +22,7 @@ import { registerSortBehaviors }      from "./columns/sort-behaviors";
 import { registerWidthBehaviors }     from "./columns/width-behaviors";
 import { registerEmitBehaviors }      from "./columns/emit-behaviors";
 import { registerIntervalRenderer }   from "./columns/interval-renderer";
+import { registerTextCompositionRenderers } from "./columns/text-composition-renderers";
 // DOM cell renderers live in `./init-dom` — they import Svelte
 // components and must NOT be pulled into the V8 bundle. Browser
 // entries import `init-dom` (which side-effect-imports this file too)
@@ -41,4 +42,5 @@ export function bootBuiltinBehaviors(): void {
   registerWidthBehaviors();
   registerEmitBehaviors();
   registerIntervalRenderer();
+  registerTextCompositionRenderers();
 }
