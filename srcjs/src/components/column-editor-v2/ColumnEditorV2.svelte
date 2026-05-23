@@ -251,21 +251,55 @@
         secondary: f.category,
       }));
   }
-  function readSlot(slotKey: string): string | null {
+  // Slot ↔ wire mapping is per-schema. Most slots land in one of three
+  // canonical locations; we probe them in priority order and remember
+  // which one matched (for the symmetric write):
+  //   1. column[slotKey]                       — text/numeric primary "field"
+  //   2. column.options[bucket][slotKey]       — interval point/lower/upper
+  //   3. column.options[bucket][slotKey + "Field"] — events eventsField/nField
+  //
+  // A future revision should put the wire-key on the SlotSpec itself;
+  // until then this heuristic covers every concrete schema in tree.
+  type SlotLoc = { kind: "top"; key: string }
+               | { kind: "bucket"; bucket: string; key: string };
+
+  function locateSlot(slotKey: string): SlotLoc {
     const c = column as Record<string, unknown>;
-    return ((c[`${slotKey}Col`] as string | undefined) ?? (c[slotKey] as string | undefined) ?? null);
+    const opts = (c.options ?? {}) as Record<string, Record<string, unknown>>;
+    const b = BUCKET ? opts[BUCKET] : undefined;
+    if (typeof c[slotKey] === "string") return { kind: "top", key: slotKey };
+    if (BUCKET && b && typeof b[slotKey] === "string") {
+      return { kind: "bucket", bucket: BUCKET, key: slotKey };
+    }
+    if (BUCKET && b && typeof b[`${slotKey}Field`] === "string") {
+      return { kind: "bucket", bucket: BUCKET, key: `${slotKey}Field` };
+    }
+    // No existing value — default to bucket-scoped slot when we have a
+    // bucket; otherwise top-level so the most common case (col_text
+    // `field`) still works for fresh columns.
+    if (BUCKET) return { kind: "bucket", bucket: BUCKET, key: slotKey };
+    return { kind: "top", key: slotKey };
+  }
+
+  function readSlot(slotKey: string): string | null {
+    const loc = locateSlot(slotKey);
+    const c = column as Record<string, unknown>;
+    if (loc.kind === "top") return (c[loc.key] as string | undefined) ?? null;
+    const b = ((c.options ?? {}) as Record<string, Record<string, unknown>>)[loc.bucket];
+    return (b?.[loc.key] as string | undefined) ?? null;
   }
   function writeSlot(slotKey: string, fieldName: string | null) {
-    // Most slots are exposed as `<slotKey>Col` in wire (e.g. `pointCol`,
-    // `lowerCol`); the canonical primary slot is sometimes just `field`.
-    // We mirror whichever key is present in the existing column; default
-    // to `<slotKey>Col` for new columns.
-    const wireKey =
-      slotKey in (column as Record<string, unknown>)
-        ? slotKey
-        : `${slotKey}Col`;
+    const loc = locateSlot(slotKey);
     const next = { ...(column as Record<string, unknown>) };
-    next[wireKey] = fieldName ?? undefined;
+    if (loc.kind === "top") {
+      next[loc.key] = fieldName ?? undefined;
+    } else {
+      const allOpts = { ...((next.options ?? {}) as Record<string, unknown>) };
+      const bucket = { ...((allOpts[loc.bucket] ?? {}) as Record<string, unknown>) };
+      bucket[loc.key] = fieldName ?? undefined;
+      allOpts[loc.bucket] = bucket;
+      next.options = allOpts as ColumnSpec["options"];
+    }
     column = next as Partial<ColumnSpec>;
     oncommit?.(next as Partial<ColumnSpec>);
   }

@@ -77,12 +77,26 @@
     target ? (schemaForColumnType((target.existing?.type ?? target.type ?? "text"))) : null,
   );
 
-  // Local mutable draft. Reseeded whenever target changes.
+  // Synchronously seed the draft from target on every change.
+  // Using $effect.pre fires BEFORE the child renders, so the first
+  // pass of readSlot sees the hydrated values. $effect (post-render)
+  // would leave the editor showing placeholders until the next tick.
   let draft: Partial<ColumnSpec> = $state({});
-  $effect(() => {
-    if (!target) { draft = {}; return; }
+  let lastTargetKey = "";
+  $effect.pre(() => {
+    if (!target) { draft = {}; lastTargetKey = ""; return; }
+    // Cheap identity check: only re-seed when target's identifying
+    // fields change. Otherwise an in-flight `draft` edit (which the
+    // child may have written via bind:column) gets clobbered.
+    const key = `${target.mode}|${target.existing?.id ?? ""}|${target.type ?? ""}|${target.anchorX}|${target.anchorY}`;
+    if (key === lastTargetKey) return;
+    lastTargetKey = key;
     if (target.mode === "configure" && target.existing) {
-      draft = structuredClone(target.existing as unknown as Record<string, unknown>) as Partial<ColumnSpec>;
+      // $state.snapshot unwraps Svelte's reactive proxy so we get a
+      // plain object the draft can own and mutate independently of
+      // the live column in the store. structuredClone alone trips on
+      // the proxy with DataCloneError.
+      draft = $state.snapshot(target.existing) as Partial<ColumnSpec>;
     } else {
       // Insert mode: seed a minimal column with the picked type + preset options.
       draft = {
