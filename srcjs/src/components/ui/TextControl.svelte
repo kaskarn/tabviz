@@ -10,6 +10,7 @@
   import Field from "$components/primitives/v2/Field.svelte";
   import Accordion from "$components/primitives/v2/Accordion.svelte";
   import FontFamily from "$components/primitives/v2/FontFamily.svelte";
+  import { INK_SWATCHES, PAPER_SWATCHES, NEUTRAL_SWATCHES, colors } from "./swatch-palettes";
 
   // Font size on the wire is a CSS length string ("0.875rem"); the
   // slider works in px. Convert between forms with a generous default
@@ -150,6 +151,7 @@
             label="Color"
             value={roleData.fg ?? "#000000"}
             onchange={(v) => setTextRole(role, "fg", v)}
+            swatches={colors(INK_SWATCHES)}
           />
         </Accordion>
       {/if}
@@ -172,16 +174,19 @@
           label="Background"
           value={rg[level].bg ?? "transparent"}
           onchange={(v) => setRowGroupTier(level, "bg", v)}
+          swatches={colors(PAPER_SWATCHES)}
         />
         <ColorField
           label="Foreground"
           value={rg[level].fg ?? "#000000"}
           onchange={(v) => setRowGroupTier(level, "fg", v)}
+          swatches={colors(INK_SWATCHES)}
         />
         <ColorField
           label="Rule"
           value={rg[level].rule ?? "transparent"}
           onchange={(v) => setRowGroupTier(level, "rule", v)}
+          swatches={colors(NEUTRAL_SWATCHES)}
         />
         <SegmentedField
           label="Weight"

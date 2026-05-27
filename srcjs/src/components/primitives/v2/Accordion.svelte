@@ -28,8 +28,14 @@
      *  for per-item summaries (color chip, font signature, token preview)
      *  when count isn't the right shape. */
     summary?: Snippet;
+    /** Fires on user-toggle (click on header). Parents enforcing
+     *  single-open accordion semantics own the truth and pass `open`
+     *  back; without this they can't detect a peer toggle. */
+    onchange?: (next: boolean) => void;
     children?: Snippet;
   }
+
+  import Tooltip from "./Tooltip.svelte";
 
   let {
     title,
@@ -39,8 +45,15 @@
     open = $bindable(true),
     dim,
     summary,
+    onchange,
     children,
   }: Props = $props();
+
+  function toggle() {
+    const next = !open;
+    open = next;
+    onchange?.(next);
+  }
 </script>
 
 <section class="acc" class:open class:dim>
@@ -48,15 +61,24 @@
     type="button"
     class="head"
     aria-expanded={open}
-    onclick={() => (open = !open)}
+    onclick={toggle}
   >
     <span class="caret" aria-hidden="true">{open ? "▾" : "▸"}</span>
     <div class="head-text">
       <h3 class="head-title">
         {#if glyph}<span class="head-glyph" aria-hidden="true">{glyphChar(glyph)}</span>{/if}
         {title}
+        {#if hint}
+          <!-- Nested-button-in-button is invalid HTML (the head is a
+               <button>), so we keep a <span> trigger here. The Tooltip
+               primitive doesn't need an interactive trigger — it
+               listens on pointerenter/leave and focusin/focusout, all
+               of which work on spans. -->
+          <Tooltip text={hint}>
+            <span class="info" aria-label={hint}>?</span>
+          </Tooltip>
+        {/if}
       </h3>
-      {#if hint}<span class="head-hint">{hint}</span>{/if}
     </div>
     {#if summary}
       <span class="head-summary">{@render summary()}</span>
@@ -78,10 +100,14 @@
   .acc {
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid var(--v2-rule-soft, #e6e0d1);
+    /* Stronger divider — the user's audit flagged "lack of contrast
+       in group headings"; bumping from --v2-rule-soft (#e6e0d1) to
+       --v2-rule (#d6d0c1) helps separate each section bar from the
+       field rows below it without going full inky-bold. */
+    border-bottom: 1px solid var(--v2-rule, #d6d0c1);
   }
   .acc:last-of-type { border-bottom: 0; }
-  .acc.dim .head-title { color: var(--v2-ink-3, #8a8478); }
+  .acc.dim .head-title { color: var(--v2-ink-2, #4a463c); }
 
   .head {
     appearance: none;
@@ -118,16 +144,21 @@
   .head-text {
     grid-column: 2;
     display: inline-flex;
-    align-items: baseline;
-    gap: 10px;
+    /* center, not baseline — Tooltip's ? chip lined up below the title
+       baseline awkwardly; centering aligns title + chip cleanly. */
+    align-items: center;
+    gap: 6px;
     min-width: 0;
     overflow: hidden;
   }
   .head-title {
     margin: 0;
     font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: var(--v2-text-micro, 9.5px);
-    font-weight: 600;
+    /* Bumped from text-micro (9.5px) to a hair larger + heavier weight
+       so the section bar carries enough optical weight to distinguish
+       it from individual Field labels (~11.5px sans). */
+    font-size: 10.5px;
+    font-weight: 700;
     letter-spacing: var(--v2-track-flag, 0.14em);
     text-transform: uppercase;
     color: var(--v2-ink, #15140e);
@@ -144,18 +175,30 @@
     line-height: 1;
     letter-spacing: 0;
   }
-  .head-hint {
-    font-family: var(--v2-font-sans, system-ui, sans-serif);
-    font-size: var(--v2-text-small, 10.5px);
+  /* Info-circle tooltip for the accordion hint. Same shape as Field /
+     Section variants — uniform `?` affordance. */
+  .info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
     color: var(--v2-ink-3, #8a8478);
-    font-style: italic;
-    text-transform: none;
-    letter-spacing: 0;
-    line-height: 1.4;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
+    font-family: var(--v2-font-sans, system-ui);
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: help;
+    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
+    transition: color var(--v2-dur-snap, 80ms) var(--v2-ease),
+                box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
+  }
+  .info:hover,
+  .info:focus-visible {
+    color: var(--v2-ink, #15140e);
+    box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c);
+    outline: none;
   }
   .head-count {
     grid-column: 3;

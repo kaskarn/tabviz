@@ -2,11 +2,11 @@
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import BasicsControl from "./BasicsControl.svelte";
   import ThemeControl from "./ThemeControl.svelte";
-  import V2LayoutControl from "./V2LayoutControl.svelte";
-  import V2SpacingControl from "./V2SpacingControl.svelte";
-  import V2MarksControl from "./V2MarksControl.svelte";
-  import V2TextControl from "./V2TextControl.svelte";
-  import V2TokensControl from "./V2TokensControl.svelte";
+  import LayoutControl from "./LayoutControl.svelte";
+  import SpacingControl from "./SpacingControl.svelte";
+  import MarksControl from "./MarksControl.svelte";
+  import TextControl from "./TextControl.svelte";
+  import TokensControl from "./TokensControl.svelte";
   // TabSelect removed Phase B — replaced by TabBar (horizontal row).
   // Axis settings are per-column now (via the column configure popover on
   // viz_forest / viz_bar / viz_boxplot / viz_violin). The theme Axis tab
@@ -18,8 +18,8 @@
   // here ensures the stylesheet ships with the widget bundle even when
   // ColumnEditorV2Popover hasn't been lazy-loaded yet.
   import "$components/primitives/v2/tokens.css";
-  import TabBar from "$components/primitives/v2/TabBar.svelte";
-  import type { TabEntry } from "$components/primitives/v2/types";
+  import TabSelect, { type TabOption } from "./TabSelect.svelte";
+  import WatermarkControl from "./WatermarkControl.svelte";
 
   interface Props {
     store: TabvizStore;
@@ -36,14 +36,17 @@
    * object structure (banding → colors → typography → spacing → shapes →
    * axis → layout) so the panel reads like the package's mental model.
    */
-  const tabs: TabEntry<string>[] = [
-    { value: "layout",   label: "Layout",  glyph: "section.layout"  },
-    { value: "theme",    label: "Theme",   glyph: "section.style"   },
-    { value: "labels",   label: "Labels",  glyph: "section.header"  },
-    { value: "spacing",  label: "Spacing", glyph: "density.comfortable" },
-    { value: "viz",      label: "Viz",     glyph: "type.viz"        },
-    { value: "text",     label: "Text",    glyph: "type.text"       },
-    { value: "tokens",   label: "Tokens",  glyph: "section.options" },
+  // Tab order: Layout (now includes Labels + Watermark — content used
+  // to live in its own tab but those concerns belong together for the
+  // viewer composing the plot), then Theme, then a divider for the
+  // detail surfaces.
+  const tabs: TabOption[] = [
+    { id: "layout",   label: "Layout",  glyph: "section.layout",       description: "Labels, density, banding, watermark" },
+    { id: "theme",    label: "Theme",   glyph: "section.style",        description: "Identity colors, fonts, cascade" },
+    { id: "spacing",  label: "Spacing", glyph: "density.comfortable",  description: "Row heights, gaps, padding",       kind: "advanced" },
+    { id: "viz",      label: "Viz",     glyph: "type.viz",             description: "Series shapes, mark sizes",        kind: "advanced" },
+    { id: "text",     label: "Text",    glyph: "type.text",            description: "Per-role typography",              kind: "advanced" },
+    { id: "tokens",   label: "Tokens",  glyph: "section.options",      description: "Semantic row/cell tokens",         kind: "advanced" },
   ];
   let activeTabId = $state<string>("layout");
 
@@ -188,15 +191,19 @@
       </button>
     </div>
 
-    <!-- Tab strip — replaces the dropdown TabSelect that used to live in
-         the .panel-bar. Horizontal segmented row, glyph-led, one click
-         per tab instead of click-open-pick. -->
-    <TabBar
-      bind:value={activeTabId}
-      {tabs}
-      ariaLabel="Settings section"
-      compact
-    />
+    <!-- Section selector — restyled v2 dropdown. Glyph + label + per-
+         option description in the popover; compact ink chip in the bar.
+         Reverted from the TabBar glyph-only row because seven abstract
+         icons side-by-side don't read at a glance — legibility beats
+         density on a low-frequency surface. -->
+    <div class="tab-bar">
+      <TabSelect
+        options={tabs}
+        value={activeTabId}
+        onchange={(id) => (activeTabId = id)}
+        ariaLabel="Settings section"
+      />
+    </div>
 
     <div class="panel-body-wrap">
       <div
@@ -204,28 +211,33 @@
         bind:this={bodyEl}
         onscroll={updateScrollHint}
       >
-        {#each tabs as tab (tab.value)}
-        {#if activeTabId === tab.value}
+        {#each tabs as tab (tab.id)}
+        {#if activeTabId === tab.id}
           <div
             class="tab-panel"
             role="tabpanel"
-            id="settings-panel-{tab.value}"
-            aria-labelledby="settings-tab-{tab.value}"
+            id="settings-panel-{tab.id}"
+            aria-labelledby="settings-tab-{tab.id}"
           >
-            {#if tab.value === "labels"}
-              <BasicsControl {store} />
-            {:else if tab.value === "theme"}
+            {#if tab.id === "theme"}
               <ThemeControl {store} />
-            {:else if tab.value === "layout"}
-              <V2LayoutControl {store} />
-            {:else if tab.value === "spacing"}
-              <V2SpacingControl {store} />
-            {:else if tab.value === "viz"}
-              <V2MarksControl {store} />
-            {:else if tab.value === "text"}
-              <V2TextControl {store} />
-            {:else if tab.value === "tokens"}
-              <V2TokensControl {store} />
+            {:else if tab.id === "layout"}
+              <!-- Labels → Layout (density/header/slot/banding) →
+                   Watermark, in that order. The old standalone Labels
+                   tab was folded in here so viewers can compose the
+                   plot (text labels, banding, watermark) without
+                   tab-hopping. -->
+              <BasicsControl {store} />
+              <LayoutControl {store} />
+              <WatermarkControl {store} />
+            {:else if tab.id === "spacing"}
+              <SpacingControl {store} />
+            {:else if tab.id === "viz"}
+              <MarksControl {store} />
+            {:else if tab.id === "text"}
+              <TextControl {store} />
+            {:else if tab.id === "tokens"}
+              <TokensControl {store} />
             {/if}
           </div>
         {/if}
@@ -388,5 +400,14 @@
 
   .tab-panel {
     display: block;
+  }
+
+  /* Section selector chip in the panel bar — sits flush in the panel
+     body with mild side-padding so the v2 chip's own ink-rule border
+     reads clearly without crowding the body header. */
+  .tab-bar {
+    display: flex;
+    padding: 6px 8px 4px;
+    border-bottom: 1px solid var(--v2-rule, #d6d0c1);
   }
 </style>

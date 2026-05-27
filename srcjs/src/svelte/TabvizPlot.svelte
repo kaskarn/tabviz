@@ -385,10 +385,11 @@
   const rowLayout = $derived.by(() => {
     const heights = layout.rowHeights;
     const positions = layout.rowPositions;
+    const markerCenters = layout.rowMarkerCenters;
     const totalHeight = positions.length > 0
       ? positions[positions.length - 1] + heights[heights.length - 1]
       : 0;
-    return { positions, heights, totalHeight };
+    return { positions, heights, markerCenters, totalHeight };
   });
 
   // Total height of rows area for SVG sizing
@@ -1944,7 +1945,7 @@
                   {#if displayRow.type === "data" && pointCol && (displayRow.row.label === customAnn.rowId || displayRow.row.id === customAnn.rowId)}
                     {@const ptVal = displayRow.row.metadata[pointCol]}
                     {#if typeof ptVal === "number" && !Number.isNaN(ptVal)}
-                      {@const annRowY = (rowLayout.positions[ri] ?? ri * layout.rowHeight) + (rowLayout.heights[ri] ?? layout.rowHeight) / 2}
+                      {@const annRowY = rowLayout.markerCenters?.[ri] ?? ((rowLayout.positions[ri] ?? ri * layout.rowHeight) + (rowLayout.heights[ri] ?? layout.rowHeight) / 2)}
                       {@const markerX = colScale(ptVal)}
                       {@const offset = customAnn.position === "before" ? -14 : customAnn.position === "after" ? 14 : 0}
                       {@const annX = markerX + offset}
@@ -1969,10 +1970,11 @@
               {#if displayRow.type === "data"}
                 {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
                 {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+                {@const markerY = rowLayout.markerCenters?.[i] ?? rowY + rowH / 2}
                 {@const vizCellStyle = getCellStyle(displayRow.row, fc.column)}
                 <RowInterval
                   row={displayRow.row}
-                  yPosition={rowY + rowH / 2}
+                  yPosition={markerY}
                   xScale={colScale}
                   layout={{...layout, forestWidth: forestWidth}}
                   {theme}
@@ -2094,9 +2096,10 @@
                 {#if displayRow.type === "data"}
                   {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
                   {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+                  {@const markerY = rowLayout.markerCenters?.[i] ?? rowY + rowH / 2}
                   <VizBar
                     row={displayRow.row}
-                    yPosition={rowY + rowH / 2}
+                    yPosition={markerY}
                     rowHeight={rowH}
                     width={vizWidth}
                     options={vizOpts}
@@ -2182,9 +2185,10 @@
                 {#if displayRow.type === "data"}
                   {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
                   {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+                  {@const markerY = rowLayout.markerCenters?.[i] ?? rowY + rowH / 2}
                   <VizBoxplot
                     row={displayRow.row}
-                    yPosition={rowY + rowH / 2}
+                    yPosition={markerY}
                     rowHeight={rowH}
                     width={vizWidth}
                     options={vizOpts}
@@ -2270,9 +2274,10 @@
                 {#if displayRow.type === "data"}
                   {@const rowY = rowLayout.positions[i] ?? i * layout.rowHeight}
                   {@const rowH = rowLayout.heights[i] ?? layout.rowHeight}
+                  {@const markerY = rowLayout.markerCenters?.[i] ?? rowY + rowH / 2}
                   <VizViolin
                     row={displayRow.row}
-                    yPosition={rowY + rowH / 2}
+                    yPosition={markerY}
                     rowHeight={rowH}
                     width={vizWidth}
                     options={vizOpts}

@@ -76,22 +76,56 @@ const intervalRenderer: CellFormatter = (_value, options, ctx) => {
     return text("—");
   }
 
-  // Bounds group, tagged for theme restyling via `interval-range`.
+  // Variant dispatch — declared in INTERVAL_SCHEMA.variants; this is
+  // the only place that consumes the value. Wire: `options.interval.variant`.
+  const variant = (i?.variant as string | undefined) ?? "traditional";
+
+  if (variant === "plus_minus") {
+    // Half-width; if bounds aren't symmetric, fall back to half-range.
+    const halfWidth = (upper - lower) / 2;
+    const symPart = tag(
+      { kind: "group", layout: "row",
+        children: [text("± "), text(fmt(halfWidth))] },
+      "interval-range",
+    ) as RenderGroup;
+    return {
+      kind: "group", layout: "row",
+      children: [text(fmt(point)), text(sep), symPart],
+    } as RenderNode;
+  }
+
+  // `bracket_muted` swaps the parens for square brackets and the comma
+  // for an en-dash; theming controls the muted-ness via the tag overlay.
+  const useBrackets = variant === "bracket_muted";
+  const openB  = useBrackets ? "[" : "(";
+  const closeB = useBrackets ? "]" : ")";
+  const inner  = useBrackets ? "–" : ", ";
+
   const bounds: RenderGroup = tag(
     {
       kind: "group",
       layout: "row",
       children: [
-        text("("),
+        text(openB),
         text(fmt(lower)),
-        text(", "),
+        text(inner),
         text(fmt(upper)),
-        text(")"),
+        text(closeB),
       ],
     },
     "interval-range",
   ) as RenderGroup;
 
+  // `stacked` puts the point on one line and the bounds on the next.
+  if (variant === "stacked") {
+    return {
+      kind: "group",
+      layout: "column",
+      children: [text(fmt(point)), bounds],
+    } as RenderNode;
+  }
+
+  // Default ("traditional") layout: point sep bounds, inline row.
   return {
     kind: "group",
     layout: "row",

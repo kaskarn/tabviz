@@ -16,6 +16,11 @@ const TYPE_TO_SCHEMA_KEY: Partial<Record<ColumnType, string>> = {
   viz_bar:     "viz_bar",
   viz_boxplot: "viz_boxplot",
   viz_violin:  "viz_violin",
+  // Events lives at `type: "custom"` on the wire (legacy bucket reuse).
+  // Without this alias the editor's `schemaForColumnType("custom")`
+  // returns null and the popover silently refuses to render — "add
+  // Events column" appears to do nothing.
+  custom:      "events",
 };
 
 export function schemaForColumnType(type: ColumnType): ColumnSchema | null {

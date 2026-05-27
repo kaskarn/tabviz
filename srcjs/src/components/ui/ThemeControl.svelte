@@ -28,6 +28,10 @@
   import type { FontEntry } from "$components/primitives/v2/FontFamily.svelte";
   import { oklchDarken } from "$lib/oklch";
   import * as C from "./theme-cascade";
+  import {
+    PAPER_SWATCHES, INK_SWATCHES, ACCENT_SWATCHES,
+    NEUTRAL_SWATCHES, STATUS_SWATCHES, SERIES_SWATCHES, colors,
+  } from "./swatch-palettes";
 
   interface Props { store: TabvizStore; }
   let { store }: Props = $props();
@@ -52,51 +56,6 @@
     label: p.hint ? `${p.name} — ${p.hint}` : p.name,
   }));
 
-  // Curated role-specific palettes — rgc-design idiom. Each ColorField
-  // gets a small inline swatch row of plausible picks for its role.
-  // Authors can still type any hex; the swatches are the one-click
-  // shortcut. Lifted from rgc-design's controls.jsx with light tweaks.
-  const PAPER_SWATCHES = [
-    { color: "#ffffff", token: "pure white" },
-    { color: "#fafaf7", token: "cream" },
-    { color: "#f4efe6", token: "newsprint" },
-    { color: "#fbe4d6", token: "warm" },
-    { color: "#e5efef", token: "cool" },
-    { color: "#0e1014", token: "dark" },
-    { color: "#efe6cf", token: "parchment" },
-  ];
-  const INK_SWATCHES = [
-    { color: "#0a0a0a", token: "near-black" },
-    { color: "#1a1714", token: "warm ink" },
-    { color: "#15212e", token: "navy ink" },
-    { color: "#231312", token: "burgundy ink" },
-    { color: "#e7e9ee", token: "paper (inverse)" },
-  ];
-  const ACCENT_SWATCHES = [
-    { color: "#8a2a1f", token: "oxblood" },
-    { color: "#d83a1f", token: "vermilion" },
-    { color: "#2a6f97", token: "teal" },
-    { color: "#243a8a", token: "ultramarine" },
-    { color: "#7ee787", token: "spring green" },
-    { color: "#ff4a1c", token: "bright" },
-    { color: "#b3392b", token: "brick" },
-  ];
-  const NEUTRAL_SWATCHES = [
-    { color: "#15140e", token: "ink" },
-    { color: "#4a463c", token: "soft ink" },
-    { color: "#8a8478", token: "muted" },
-    { color: "#d6d0c1", token: "hairline" },
-    { color: "#e6e0d1", token: "soft rule" },
-    { color: "#faf7f0", token: "paper" },
-  ];
-  const STATUS_SWATCHES = [
-    { color: "#3F7D3F", token: "positive" },
-    { color: "#B33A3A", token: "negative" },
-    { color: "#C68A2E", token: "warning" },
-    { color: "#2C4F7C", token: "info" },
-    { color: "#5B6C7E", token: "muted" },
-  ];
-
   // Header-variant-aware overridden gate for the bg field — only the
   // bold variant is pin-derived; light/tint don't have a default to
   // reset to in this UI.
@@ -120,18 +79,18 @@
       <Field label="Primary" hint="Title, bold header, series[0]">
         <ColorField label="" value={(inputs?.primary as string | undefined) ?? theme.accent?.default ?? "#0891B2"}
           onchange={(v) => C.applyPrimary(ctx, v)}
-          swatches={ACCENT_SWATCHES.map(s => s.color)} />
+          swatches={colors(ACCENT_SWATCHES)} />
       </Field>
       <Field label="Secondary" hint="Structure + chrome texture" pinned={ctx.isOver(["inputs", "secondary"])}
         onreset={() => C.resetSecondary(ctx)}>
         <ColorField label="" value={(inputs?.secondary as string | undefined) ?? C.currentPrimary(ctx)}
           onchange={(v) => C.applySecondary(ctx, v)}
-          swatches={NEUTRAL_SWATCHES.map(s => s.color)} />
+          swatches={colors(NEUTRAL_SWATCHES)} />
       </Field>
       <Field label="Accent" hint="Hover, selected, semantic callouts">
         <ColorField label="" value={(inputs?.accent as string | undefined) ?? theme.accent?.default ?? "#8B5CF6"}
           onchange={(v) => C.applyAccent(ctx, v)}
-          swatches={ACCENT_SWATCHES.map(s => s.color)} />
+          swatches={colors(ACCENT_SWATCHES)} />
       </Field>
     </Section>
 
@@ -176,38 +135,38 @@
         onreset={() => C.resetPrimaryDeep(ctx)}>
         <ColorField label="" value={(inputs?.primaryDeep as string | undefined) ?? oklchDarken(C.currentPrimary(ctx), 0.15)}
           onchange={(v) => C.applyPrimaryDeep(ctx, v)}
-          swatches={ACCENT_SWATCHES.map(s => s.color)} />
+          swatches={colors(ACCENT_SWATCHES)} />
       </Field>
       <Field label="Secondary (deep)" pinned={ctx.isOver(["inputs", "secondaryDeep"])}
         onreset={() => C.resetSecondaryDeep(ctx)}>
         <ColorField label="" value={(inputs?.secondaryDeep as string | undefined) ?? C.currentSecondaryDeep(ctx)}
           onchange={(v) => C.applySecondaryDeep(ctx, v)}
-          swatches={NEUTRAL_SWATCHES.map(s => s.color)} />
+          swatches={colors(NEUTRAL_SWATCHES)} />
       </Field>
     </Accordion>
 
     <Accordion title="Text colors" hint="Body / secondary / muted / inverse" open={false}>
       <Field label="Foreground"><ColorField label="" value={theme.cell?.fg ?? theme.content?.primary ?? "#000000"}
         onchange={(v) => C.setForeground(ctx, v)}
-        swatches={INK_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(INK_SWATCHES)} /></Field>
       <Field label="Secondary"><ColorField label="" value={theme.content?.secondary ?? "#444444"}
         onchange={(v) => ctx.setPath(["content","secondary"], v)}
-        swatches={INK_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(INK_SWATCHES)} /></Field>
       <Field label="Muted"><ColorField label="" value={theme.content?.muted ?? "#888888"}
         onchange={(v) => ctx.setPath(["content","muted"], v)}
-        swatches={NEUTRAL_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(NEUTRAL_SWATCHES)} /></Field>
       <Field label="Inverse" hint="Text on bold-mode bands"><ColorField label=""
         value={theme.content?.inverse ?? "#ffffff"} onchange={(v) => C.setInverseContent(ctx, v)}
-        swatches={PAPER_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(PAPER_SWATCHES)} /></Field>
     </Accordion>
 
     <Accordion title="Surfaces" hint="Row backgrounds + banding partner" open={false}>
       <Field label="Background"><ColorField label="" value={theme.row?.base?.bg ?? theme.surface?.base ?? "#ffffff"}
         onchange={(v) => C.setBackground(ctx, v)}
-        swatches={PAPER_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(PAPER_SWATCHES)} /></Field>
       <Field label="Banding partner"><ColorField label="" value={theme.row?.alt?.bg ?? theme.surface?.muted ?? "#f8fafc"}
         onchange={(v) => C.setBandingPartner(ctx, v)}
-        swatches={PAPER_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(PAPER_SWATCHES)} /></Field>
     </Accordion>
 
     <Accordion title="Selection & accents" open={false}>
@@ -216,11 +175,13 @@
           ctx.setPath(["accent", "muted"], v);
           ctx.setPath(["row", "hover", "bg"], v);
           ctx.setPath(["row", "selected", "bg"], v);
-        }} /></Field>
+        }}
+        swatches={colors(ACCENT_SWATCHES)} /></Field>
       <Field label="L1 group bar" pinned={ctx.isOver(["rowGroup", "L1", "bg"])}
         onreset={() => C.resetL1Bg(ctx)}>
         <ColorField label="" value={(theme.rowGroup?.L1?.bg as string | undefined) ?? "#e1e5ea"}
-          onchange={(v) => ctx.setPath(["rowGroup", "L1", "bg"], v)} />
+          onchange={(v) => ctx.setPath(["rowGroup", "L1", "bg"], v)}
+          swatches={colors(PAPER_SWATCHES)} />
       </Field>
     </Accordion>
 
@@ -232,27 +193,29 @@
           onchange={(v) => {
             ctx.setPath(["divider", "subtle"], v);
             ctx.setPath(["cell", "border"], v);
-          }} />
+          }}
+          swatches={colors(NEUTRAL_SWATCHES)} />
       </Field>
       <Field label="Strong" hint="Header rule, group rules, axis line">
         <ColorField label="" value={theme.divider?.strong ?? "#94a3b8"}
-          onchange={(v) => C.setStrongDivider(ctx, v)} />
+          onchange={(v) => C.setStrongDivider(ctx, v)}
+          swatches={colors(NEUTRAL_SWATCHES)} />
       </Field>
     </Accordion>
 
     <Accordion title="Status" hint="Semantic indicators" open={false}>
       <Field label="Positive"><ColorField label="" value={theme.status?.positive ?? "#3F7D3F"}
         onchange={(v) => ctx.setPath(["status","positive"], v)}
-        swatches={STATUS_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(STATUS_SWATCHES)} /></Field>
       <Field label="Negative"><ColorField label="" value={theme.status?.negative ?? "#B33A3A"}
         onchange={(v) => ctx.setPath(["status","negative"], v)}
-        swatches={STATUS_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(STATUS_SWATCHES)} /></Field>
       <Field label="Warning"><ColorField label="" value={theme.status?.warning ?? "#C68A2E"}
         onchange={(v) => ctx.setPath(["status","warning"], v)}
-        swatches={STATUS_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(STATUS_SWATCHES)} /></Field>
       <Field label="Info"><ColorField label="" value={theme.status?.info ?? theme.accent?.default ?? "#2C4F7C"}
         onchange={(v) => ctx.setPath(["status","info"], v)}
-        swatches={STATUS_SWATCHES.map(s => s.color)} /></Field>
+        swatches={colors(STATUS_SWATCHES)} /></Field>
     </Accordion>
 
     <!-- ── Components (T3 bindings; collapsed) ────────────────────── -->
@@ -262,12 +225,14 @@
       <Field label="Background" pinned={headerBgOverridden()} onreset={headerBgReset}>
         <ColorField label=""
           value={(theme.header as { light?: { bg?: string }; tint?: { bg?: string }; bold?: { bg?: string } } | undefined)?.[C.activeHeaderVariant(ctx)]?.bg ?? "#f8fafc"}
-          onchange={(v) => C.setHeaderBg(ctx, v)} />
+          onchange={(v) => C.setHeaderBg(ctx, v)}
+          swatches={colors(PAPER_SWATCHES)} />
       </Field>
       <Field label="Text">
         <ColorField label=""
           value={(theme.header as { light?: { fg?: string }; tint?: { fg?: string }; bold?: { fg?: string } } | undefined)?.[C.activeHeaderVariant(ctx)]?.fg ?? "#000000"}
-          onchange={(v) => C.setHeaderFg(ctx, v)} />
+          onchange={(v) => C.setHeaderFg(ctx, v)}
+          swatches={colors(INK_SWATCHES)} />
       </Field>
     </Accordion>
 
@@ -275,15 +240,18 @@
       <Field label="Title" pinned={ctx.isOver(["text", "title", "fg"])}
         onreset={() => C.resetTitleFg(ctx)}>
         <ColorField label="" value={(theme.text?.title?.fg as string | undefined) ?? C.currentPrimaryDeep(ctx)}
-          onchange={(v) => ctx.setPath(["text", "title", "fg"], v)} />
+          onchange={(v) => ctx.setPath(["text", "title", "fg"], v)}
+          swatches={colors(INK_SWATCHES)} />
       </Field>
       <Field label="Axis label">
         <ColorField label="" value={(theme.plot?.axisLabel?.fg as string | undefined) ?? theme.content?.muted ?? "#1A1A1A"}
-          onchange={(v) => ctx.setPath(["plot", "axisLabel", "fg"], v)} />
+          onchange={(v) => ctx.setPath(["plot", "axisLabel", "fg"], v)}
+          swatches={colors(INK_SWATCHES)} />
       </Field>
       <Field label="Axis tick">
         <ColorField label="" value={(theme.plot?.tickLabel?.fg as string | undefined) ?? theme.content?.muted ?? "#1A1A1A"}
-          onchange={(v) => ctx.setPath(["plot", "tickLabel", "fg"], v)} />
+          onchange={(v) => ctx.setPath(["plot", "tickLabel", "fg"], v)}
+          swatches={colors(INK_SWATCHES)} />
       </Field>
     </Accordion>
 
@@ -296,7 +264,8 @@
             onreset={i === 0 ? () => C.resetSeriesPrimary(ctx) : undefined}
           >
             <ColorField label="" value={slot?.fill ?? "#888888"}
-              onchange={(v) => C.setSeriesFill(ctx, i, v)} />
+              onchange={(v) => C.setSeriesFill(ctx, i, v)}
+              swatches={colors(SERIES_SWATCHES)} />
             {#if theme.series.length > 1}
               <button
                 type="button"

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { portal } from "$lib/portal";
+
   interface Props {
     orientation: "vertical" | "horizontal";
     x?: number;           // viewport coord for vertical line (line X)
@@ -9,12 +11,19 @@
   let { orientation, x = 0, y = 0, start = 0, end = 0 }: Props = $props();
 </script>
 
+<!--
+  Portaled to document.body so position:fixed resolves against the
+  viewport, not the contain-scoped .tabviz-container. Coords here are
+  viewport-relative (from pointer events), so they must match the
+  document-body coordinate system.
+-->
 {#if orientation === "vertical"}
   <div
     class="drop-indicator vertical"
     style:left="{x - 1}px"
     style:top="{start}px"
     style:height="{Math.max(0, end - start)}px"
+    use:portal
   ></div>
 {:else}
   <div
@@ -22,6 +31,7 @@
     style:top="{y - 1}px"
     style:left="{start}px"
     style:width="{Math.max(0, end - start)}px"
+    use:portal
   ></div>
 {/if}
 

@@ -12,6 +12,7 @@
   import NumberField from "./NumberField.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import Accordion from "$components/primitives/v2/Accordion.svelte";
+  import { SERIES_SWATCHES, colors } from "./swatch-palettes";
 
   interface Props {
     store: TabvizStore;
@@ -85,6 +86,7 @@
             label={sf.label}
             value={(slot as unknown as Record<string, string>)[sf.field] ?? ""}
             onchange={(v) => setSlot(i, sf.field, v)}
+            swatches={colors(SERIES_SWATCHES)}
           />
         {/each}
       </Accordion>

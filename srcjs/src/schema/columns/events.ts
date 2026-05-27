@@ -15,9 +15,15 @@ export const EVENTS_SCHEMA: ColumnSchema = {
   bucket: "custom",
   category: "numeric",
   slots: [
+    // Wire shape uses *Field suffix (EventsColumnOptions.eventsField /
+    // nField in types/index.ts:207). Slot keys here stay short for the
+    // UI labels; `wireKey` tells writeSlot/locateSlot where to actually
+    // read+write on options.custom.
     { key: "events", label: "Events", accepts: ["numeric", "integer"], required: true,
+      wireKey: "eventsField",
       autoPair: { suffixes: ["_events", "_e", "_x"] } },
     { key: "n",      label: "N",      accepts: ["numeric", "integer"], required: true,
+      wireKey: "nField",
       autoPair: { suffixes: ["_n", "_total"] } },
   ],
   optionOverrides: {

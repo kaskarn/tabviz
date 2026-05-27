@@ -19,6 +19,7 @@
   available choices without disclosure.
 -->
 <script lang="ts">
+  import { untrack } from "svelte";
   import type { ThemeSwatch } from "./types";
 
   interface Props {
@@ -30,6 +31,9 @@
     placeholder?: string;
     disabled?: boolean;
     id?: string;
+    /** Fires whenever value changes — palette pick, native picker, hex
+     *  commit. Parents that don't use `bind:value` MUST pass this. */
+    onchange?: (next: string | null) => void;
   }
 
   let {
@@ -39,12 +43,30 @@
     placeholder = "#…",
     disabled = false,
     id,
+    onchange,
   }: Props = $props();
 
+  // Set value AND fire onchange. Called only from user-action mutation
+  // points (hex commit, palette pick, native picker). A $effect that
+  // watches `value` would also fire when the parent reassigns it,
+  // causing onchange→commit→prop-update loops at call sites that don't
+  // use `bind:` (most do not). Pill primitive uses the same pattern.
+  function emit(next: string | null) {
+    if (next === value) return;
+    value = next;
+    onchange?.(next);
+  }
+
+  // Local in-flight hex while the user is typing. Sync FROM value but
+  // not back — without untrack, raw is also a dep of the effect, so
+  // typing fires the effect, sees raw !== String(value), and clobbers
+  // the keystroke. Same bug pattern as Knob; same fix.
   let raw = $state(value ?? "");
   $effect(() => {
     const next = value ?? "";
-    if (next !== raw) raw = next;
+    untrack(() => {
+      if (next !== raw) raw = next;
+    });
   });
 
   function isValidHex(s: string): boolean {
@@ -52,12 +74,12 @@
   }
   function commit() {
     const t = raw.trim();
-    if (t === "") { value = null; return; }
-    if (isValidHex(t)) value = t.startsWith("#") ? t : `#${t}`;
+    if (t === "") { emit(null); return; }
+    if (isValidHex(t)) emit(t.startsWith("#") ? t : `#${t}`);
     else raw = value ?? "";
   }
   function pick(c: string | null) {
-    value = c;
+    emit(c);
     raw = c ?? "";
   }
   function onKey(e: KeyboardEvent) {
@@ -182,9 +204,10 @@
   /* ── Hex ─────────────────────────────────────────────── */
   .hex {
     flex: 0 1 auto;
-    width: 80px;
+    width: 64px;
+    min-width: 0;
     height: var(--v2-control-h, 22px);
-    padding: 0 7px;
+    padding: 0 6px;
     border: 0;
     border-radius: var(--v2-r-soft, 3px);
     background: var(--v2-paper-edge, #fff);
@@ -202,30 +225,35 @@
     font-style: italic;
   }
 
-  /* ── Inline palette ───────────────────────────────────── */
+  /* ── Inline palette ─────────────────────────────────────
+     Always-horizontal, never wraps. Swatches are sized so a
+     7-color row fits in the editor's narrowest control column.
+     Active state uses a thin ink ring without a paper offset
+     so it doesn't bump neighbors out of alignment. */
   .palette {
     display: inline-flex;
-    gap: 3px;
-    flex-wrap: wrap;
+    gap: 2px;
+    flex-wrap: nowrap;
     align-items: center;
+    min-width: 0;
   }
   .sw {
     appearance: none;
     border: 0;
     padding: 0;
-    width: 14px;
-    height: 14px;
+    width: 11px;
+    height: 11px;
+    flex: none;
     border-radius: 2px;
     box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
     cursor: pointer;
     transition: transform var(--v2-dur-snap, 80ms) var(--v2-ease);
   }
-  .sw:hover { transform: scale(1.15); }
+  .sw:hover { transform: scale(1.2); }
   .sw.active {
     box-shadow:
       inset 0 0 0 1px var(--v2-rule, #d6d0c1),
-      0 0 0 2px var(--v2-paper, #faf7f0),
-      0 0 0 3px var(--v2-ink, #15140e);
+      0 0 0 1.5px var(--v2-ink, #15140e);
   }
   .sw:focus-visible {
     outline: 1px solid var(--v2-focus-ring, #15140e);
@@ -234,8 +262,8 @@
   .unset-sw {
     background-image: repeating-linear-gradient(
       45deg,
-      var(--v2-paper-edge, #fff) 0 3px,
-      var(--v2-paper-2, #f3efe5) 3px 6px
+      var(--v2-paper-edge, #fff) 0 2.5px,
+      var(--v2-paper-2, #f3efe5) 2.5px 5px
     );
   }
 </style>

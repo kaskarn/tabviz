@@ -75,68 +75,70 @@
   const header = $derived(column.header ?? schema.label);
 </script>
 
+<!--
+  Compact preview chip — single inline strip with the header label on
+  the left and a comma-separated sample row on the right. Replaces the
+  prior multi-row mini-table (4 samples × ~18px + chrome ≈ 140px tall)
+  which dominated the popover at the cost of the actual editor knobs
+  below it. Authors mostly glance at the preview for "is the format
+  right" — one or two examples carries that signal at a tenth the
+  vertical footprint.
+-->
 <div class="preview" style:--cp-align={align === "left" ? "flex-start" : align === "right" ? "flex-end" : "center"}>
-  <div class="preview-h">
-    <span class="preview-flag">preview</span>
-  </div>
-  <div class="table">
-    <div class="head-cell">{header}</div>
-    {#each samples as v (v)}
-      <div class="data-cell">{v}</div>
+  <span class="head-cell">{header}</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span class="samples">
+    {#each samples.slice(0, 2) as v, i (v + "_" + i)}
+      {#if i > 0}<span class="comma">,&nbsp;</span>{/if}<span class="data-cell">{v}</span>
     {/each}
-  </div>
+  </span>
 </div>
 
 <style>
   .preview {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 10px 12px;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
     background: var(--v2-paper-2, #f3efe5);
     border-radius: var(--v2-r-soft, 3px);
-    margin-bottom: 6px;
+    box-shadow: inset 0 0 0 1px var(--v2-rule-soft, #e6e0d1);
+    margin-bottom: 4px;
+    min-height: 22px;
+    overflow: hidden;
     --cp-align: flex-start;
   }
-  .preview-h {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-  .preview-flag {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: 9.5px;
-    text-transform: uppercase;
-    letter-spacing: var(--v2-track-flag, 0.14em);
-    color: var(--v2-ink-3, #8a8478);
-  }
-  .table {
-    display: flex;
-    flex-direction: column;
-    background: var(--v2-paper-edge, #fff);
-    border-radius: var(--v2-r-soft, 3px);
-    box-shadow: inset 0 0 0 1px var(--v2-rule-soft, #e6e0d1);
-    padding: 6px 10px;
-  }
   .head-cell {
-    display: flex;
-    justify-content: var(--cp-align);
+    flex: none;
     font-family: var(--v2-font-sans, system-ui);
     font-size: var(--v2-text-body, 11.5px);
     font-weight: 600;
     color: var(--v2-ink, #15140e);
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--v2-rule-soft, #e6e0d1);
-    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 50%;
+  }
+  .sep {
+    flex: none;
+    color: var(--v2-ink-3, #8a8478);
+    font-size: var(--v2-text-small, 10.5px);
+  }
+  .samples {
+    flex: 1;
+    min-width: 0;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: var(--cp-align);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
   .data-cell {
-    display: flex;
-    justify-content: var(--cp-align);
     font-family: var(--v2-font-mono, ui-monospace, monospace);
     font-size: var(--v2-text-body, 11.5px);
-    color: var(--v2-ink, #15140e);
-    padding: 2px 0;
+    color: var(--v2-ink-2, #4a463c);
     font-variant-numeric: tabular-nums;
-    white-space: pre-line;
   }
+  .comma { color: var(--v2-ink-3, #8a8478); }
 </style>

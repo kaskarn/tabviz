@@ -56,6 +56,32 @@
   let startY = 0;
   let startValue = 0;
   let lastValue = 0;
+  let activePointerId: number | null = null;
+  let activeEl: HTMLElement | null = null;
+
+  // Belt-and-braces drag teardown. setPointerCapture covers the common
+  // path (cursor wanders out of the strip during drag), but several
+  // edge cases drop the pointerup that would normally end the gesture:
+  //   - User releases over a child element with its own onpointerdown
+  //     that calls stopPropagation (CSS-target shadowing).
+  //   - Window loses focus (alt-tab during drag).
+  //   - pointercancel fires instead of pointerup (touch interruption,
+  //     stylus lift in some browsers).
+  //   - User scrolls or right-clicks during the drag (browsers may
+  //     synthesize cancel rather than up).
+  // Without cleanup, `dragging` stays true forever and the ns-resize
+  // cursor "sticks" to the page. We attach window-level fallbacks
+  // while dragging so any of these paths still settles the gesture.
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    if (activeEl && activePointerId != null) {
+      try { activeEl.releasePointerCapture(activePointerId); } catch {}
+    }
+    activeEl = null;
+    activePointerId = null;
+    oncommit(lastValue);
+  }
 
   function handlePointerDown(e: PointerEvent) {
     if (e.button !== 0) return;
@@ -63,7 +89,9 @@
     startY = e.clientY;
     startValue = value;
     lastValue = value;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    activeEl = e.currentTarget as HTMLElement;
+    activePointerId = e.pointerId;
+    activeEl.setPointerCapture(e.pointerId);
     e.preventDefault();
     e.stopPropagation();
   }
@@ -78,12 +106,27 @@
     }
   }
 
-  function handlePointerUp(e: PointerEvent) {
-    if (!dragging) return;
-    dragging = false;
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    oncommit(lastValue);
+  function handlePointerUp(_e: PointerEvent) { endDrag(); }
+  function handlePointerCancel(_e: PointerEvent) { endDrag(); }
+  // Window-level fallbacks: only attached while dragging.
+  function onWindowPointerUp(_e: PointerEvent) { endDrag(); }
+  function onWindowBlur() { endDrag(); }
+  function onWindowKey(e: KeyboardEvent) {
+    if (e.key === "Escape") endDrag();
   }
+  $effect(() => {
+    if (!dragging) return;
+    window.addEventListener("pointerup", onWindowPointerUp, true);
+    window.addEventListener("pointercancel", onWindowPointerUp, true);
+    window.addEventListener("blur", onWindowBlur);
+    window.addEventListener("keydown", onWindowKey);
+    return () => {
+      window.removeEventListener("pointerup", onWindowPointerUp, true);
+      window.removeEventListener("pointercancel", onWindowPointerUp, true);
+      window.removeEventListener("blur", onWindowBlur);
+      window.removeEventListener("keydown", onWindowKey);
+    };
+  });
 
   function clamp(n: number, lo: number, hi: number): number {
     return Math.max(lo, Math.min(hi, n));
@@ -105,6 +148,7 @@
   onpointerdown={handlePointerDown}
   onpointermove={handlePointerMove}
   onpointerup={handlePointerUp}
+  onpointercancel={handlePointerCancel}
 ></div>
 
 <style>

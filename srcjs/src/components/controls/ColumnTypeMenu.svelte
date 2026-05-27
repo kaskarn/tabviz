@@ -532,6 +532,12 @@
 
   {#if !isSearching && activeSubmenu && submenuLeft != null && submenuTop != null}
     {@const subLeaves = submenuLeaves(activeSubmenu)}
+    <!--
+      Portal the submenu out of .tabviz-container so its `position: fixed`
+      resolves against the viewport, not the contain-scoped widget root.
+      Without this the submenu lands offset by the widget's distance from
+      the page origin and reads as "missing" to the user.
+    -->
     <div
       class="type-submenu"
       class:flip-left={submenuFlipLeft}
@@ -539,6 +545,7 @@
       style:left="{submenuLeft}px"
       style:top="{submenuTop}px"
       role="menu"
+      use:portal
       onpointerenter={cancelCloseSubmenu}
       onpointerleave={scheduleCloseSubmenu}
     >

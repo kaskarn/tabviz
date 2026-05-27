@@ -20,6 +20,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { glyph as glyphChar, type GlyphToken } from "$lib/ui-glyphs";
+  import Tooltip from "./Tooltip.svelte";
 
   interface Props {
     title: string;
@@ -43,7 +44,9 @@
     <div class="head-text">
       <h3 class="head-title">{title}</h3>
       {#if hint}
-        <span class="head-hint">{hint}</span>
+        <Tooltip text={hint}>
+          <button type="button" class="info" aria-label={hint}>?</button>
+        </Tooltip>
       {/if}
     </div>
     {#if count != null && count > 0}
@@ -87,8 +90,11 @@
   .head-text {
     grid-column: 2;
     display: inline-flex;
-    align-items: baseline;
-    gap: 10px;
+    /* center, not baseline — the info-circle (12px round chip) baselines
+       awkwardly with the 9.5px uppercase title (chip floats above the
+       title's text). Center-aligning lines them up cleanly. */
+    align-items: center;
+    gap: 6px;
     min-width: 0;
     overflow: hidden;
   }
@@ -103,18 +109,29 @@
     line-height: 1.4;
     flex: none;
   }
-  .head-hint {
-    font-family: var(--v2-font-sans, system-ui, sans-serif);
-    font-size: var(--v2-text-small, 10.5px);
+  /* Info-circle tooltip for the section hint. Same shape as Field's. */
+  .info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
     color: var(--v2-ink-3, #8a8478);
-    font-style: italic;
-    text-transform: none;
-    letter-spacing: 0;
-    line-height: 1.4;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
+    font-family: var(--v2-font-sans, system-ui);
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: help;
+    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
+    transition: color var(--v2-dur-snap, 80ms) var(--v2-ease),
+                box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
+  }
+  .info:hover,
+  .info:focus-visible {
+    color: var(--v2-ink, #15140e);
+    box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c);
+    outline: none;
   }
   .head-count {
     grid-column: 3;

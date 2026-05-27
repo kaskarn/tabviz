@@ -116,9 +116,14 @@
   let popoverEl: HTMLDivElement | undefined = $state();
   let resolvedLeft = $state(0);
   let resolvedTop = $state(0);
+  // Once the user grabs the header, their drag wins over the anchor-
+  // based auto-position. Without this, every reposition() call (after
+  // resize, etc.) would yank the popover back to the anchor.
+  let userMoved = $state(false);
 
   function reposition() {
     if (!target || !popoverEl) return;
+    if (userMoved) return;  // honor the drag; only clamp on viewport changes
     const rect = popoverEl.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -141,9 +146,55 @@
 
   $effect(() => {
     if (!target) return;
+    userMoved = false;  // re-anchor on new open
     // Defer until the popover has measurable dimensions.
     requestAnimationFrame(reposition);
   });
+
+  // ── Drag-to-move ───────────────────────────────────────────
+  // Press on the header bar to drag the popover. Uses pointer capture
+  // so the drag survives the cursor leaving the header / widget area
+  // (the same "stuck-drag" pattern that plagued row-resize). Live
+  // preview during the move; positions clamped to viewport on release.
+  let dragOffX = 0;
+  let dragOffY = 0;
+  let dragging = $state(false);
+  function startDrag(e: PointerEvent) {
+    if (!popoverEl) return;
+    // Ignore drags initiated on interactive descendants (buttons,
+    // inputs, icons) — they own their own click behavior. Only the
+    // bare header area should grab the drag.
+    const t = e.target as HTMLElement;
+    if (t.closest("button, input, [role='button'], a")) return;
+    e.preventDefault();
+    const rect = popoverEl.getBoundingClientRect();
+    dragOffX = e.clientX - rect.left;
+    dragOffY = e.clientY - rect.top;
+    dragging = true;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }
+  function onDrag(e: PointerEvent) {
+    if (!dragging) return;
+    const pad = 4;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const w = popoverEl?.offsetWidth ?? 0;
+    const h = popoverEl?.offsetHeight ?? 0;
+    let left = e.clientX - dragOffX;
+    let top  = e.clientY - dragOffY;
+    if (left < pad) left = pad;
+    if (top  < pad) top  = pad;
+    if (left + w > vw - pad) left = vw - pad - w;
+    if (top  + h > vh - pad) top  = vh - pad - h;
+    resolvedLeft = left;
+    resolvedTop  = top;
+    userMoved = true;
+  }
+  function endDrag(e: PointerEvent) {
+    if (!dragging) return;
+    dragging = false;
+    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+  }
 
   // ── Dismiss handlers ─────────────────────────────────────────
   function onKey(e: KeyboardEvent) {
@@ -199,12 +250,22 @@
 </script>
 
 {#if target && schema}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="v2-popover-shell"
+    class:dragging
     data-tv-v2
     bind:this={popoverEl}
     style:left="{resolvedLeft}px"
     style:top="{resolvedTop}px"
+    onpointerdown={(e) => {
+      // Only initiate drag from the editor's header strip — leaves
+      // buttons + inputs in the rest of the popover untouched.
+      if ((e.target as HTMLElement).closest("header.head")) startDrag(e);
+    }}
+    onpointermove={onDrag}
+    onpointerup={endDrag}
+    onpointercancel={endDrag}
     use:portal
   >
     <ColumnEditorV2
@@ -237,6 +298,31 @@
     display: flex;
     flex-direction: column;
     isolation: isolate;
+    /* Scroll-trap: when the popover's scrollable body reaches its
+       top/bottom edge, wheel events should NOT bubble out and scroll
+       the host page. `overscroll-behavior: contain` is the standard
+       knob for that. Caps height so the body can actually scroll
+       when the column has many options. */
+    max-height: calc(100vh - 16px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+  /* Apply scroll-trap to the scrollable child too — the popover
+     itself doesn't scroll (overflow:hidden); the editor body inside
+     does. Both layers contain so neither chains. */
+  .v2-popover-shell :global(.body) {
+    overscroll-behavior: contain;
+  }
+
+  .v2-popover-shell.dragging {
+    cursor: grabbing;
+    user-select: none;
+  }
+  .v2-popover-shell :global(header.head) {
+    cursor: grab;
+  }
+  .v2-popover-shell.dragging :global(header.head) {
+    cursor: grabbing;
   }
 
   .v2-popover-foot {

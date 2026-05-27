@@ -17,6 +17,7 @@
   import SegmentedField from "./SegmentedField.svelte";
   import Accordion from "$components/primitives/v2/Accordion.svelte";
   import { oklchMix } from "$lib/oklch";
+  import { PAPER_SWATCHES, INK_SWATCHES, NEUTRAL_SWATCHES, ACCENT_SWATCHES, colors } from "./swatch-palettes";
 
   // 5-step weight ladder covering the visually distinct range. We
   // skip 100/200/800/900 — they look identical to 300/700 in most
@@ -102,6 +103,7 @@
       onchange={setSemanticFill}
       overridden={isOver(["semantic", "fill"])}
       onreset={resetSemanticFill}
+      swatches={colors(PAPER_SWATCHES)}
     />
   </SettingsSection>
 
@@ -121,21 +123,25 @@
             label="Background"
             value={(tokenField(t.id, "bg") as string | undefined) ?? ""}
             onchange={(v) => setToken(t.id, "bg", v)}
+            swatches={colors(PAPER_SWATCHES)}
           />
           <ColorField
             label="Foreground"
             value={(tokenField(t.id, "fg") as string | undefined) ?? ""}
             onchange={(v) => setToken(t.id, "fg", v)}
+            swatches={colors(INK_SWATCHES)}
           />
           <ColorField
             label="Border"
             value={(tokenField(t.id, "border") as string | undefined) ?? ""}
             onchange={(v) => setToken(t.id, "border", v)}
+            swatches={colors(NEUTRAL_SWATCHES)}
           />
           <ColorField
             label="Marker fill"
             value={(tokenField(t.id, "markerFill") as string | undefined) ?? ""}
             onchange={(v) => setToken(t.id, "markerFill", v)}
+            swatches={colors(ACCENT_SWATCHES)}
           />
           <SegmentedField
             label="Weight"

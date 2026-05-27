@@ -217,6 +217,11 @@ export interface PrecomputedLayout {
   // Row layout
   rowHeights: number[];
   rowPositions: number[];
+  /** Per-row marker-center Y (relative to rowsHeight origin). Differs
+   *  from `rowPositions[i] + rowHeights[i] / 2` only for "padded-after"
+   *  rows: their track is inflated by rowGroupPadding, but the marker
+   *  centers on the data portion of the band, not the padded total. */
+  rowMarkerCenters: number[];
   totalRowsHeight: number;
   /** True at index i when displayRows[i] is the LAST data row of a
    *  top-level group followed immediately by another top-level
@@ -622,6 +627,7 @@ interface InternalLayout extends ComputedLayout {
   rowsHeight: number;               // Height of display rows only (excludes overall summary)
   autoWidths: Map<string, number>;  // Add auto-widths to layout
   labelWidth: number;               // Calculated label column width
+  rowMarkerCenters: number[];       // Per-row marker-center Y (skips trailing rowGroupPadding)
   rowPaddedAfter: boolean[];        // Per-row flag: gets bottom row-group padding
 }
 
@@ -788,6 +794,13 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
   let rowsHeight = 0;
   const rowPositions: number[] = [];
   const rowHeights: number[] = [];
+  // Per-row marker-center Y. For "padded-after" rows the track height
+  // grows by rowGroupPadding (trailing empty space before the group
+  // header), but the marker itself must keep centering on the *data*
+  // portion of the track — otherwise forest dots / bars / boxes /
+  // violins drift downward as the user bumps rowGroupPadding up.
+  // Mirrors layout-zoom.svelte.ts's rowMarkerCenters.
+  const rowMarkerCenters: number[] = [];
   for (let i = 0; i < displayRows.length; i++) {
     const dr = displayRows[i];
     const isSpacerRow = dr.type === "data" && dr.row.style?.type === "spacer";
@@ -798,9 +811,11 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
       const lines = wrapLineCounts[dr.row.id] ?? 1;
       h = lines > 1 ? Math.max(rowHeight, dataLineHeightPx * lines + 6) : rowHeight;
     } else h = rowHeight;
+    const trailingPad = rowPaddedAfter[i] ? rowGroupPadding : 0;
     if (rowPaddedAfter[i]) h += rowGroupPadding;
     rowPositions.push(rowsHeight);
     rowHeights.push(h);
+    rowMarkerCenters.push(rowsHeight + (h - trailingPad) / 2);
     rowsHeight += h;
   }
   // plotHeight includes overall summary area (for total height calculations)
@@ -963,6 +978,7 @@ function computeLayout(spec: WebSpec, options: ExportOptions, nullValue: number 
     labelWidth,
     rowPositions,
     rowHeights,
+    rowMarkerCenters,
     rowPaddedAfter,
   };
 }
@@ -4951,7 +4967,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   const displayRows = buildDisplayRows(spec);
 
   // Row positions and heights are pre-computed in the layout pass
-  const { rowPositions, rowHeights } = layout;
+  const { rowPositions, rowHeights, rowMarkerCenters } = layout;
 
   const plotY = layout.mainY + layout.headerHeight;
 
@@ -5166,7 +5182,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
             if (!(r.label === ann.rowId || r.id === ann.rowId)) return;
             const ptVal = r.metadata[pointCol];
             if (typeof ptVal !== "number" || Number.isNaN(ptVal)) return;
-            const annY = plotY + rowPositions[i] + rowHeights[i] / 2;
+            const annY = plotY + (rowMarkerCenters[i] ?? rowPositions[i] + rowHeights[i] / 2);
             const markerX = forestX + xScale(ptVal);
             const offset = ann.position === "before" ? -14 : ann.position === "after" ? 14 : 0;
             const aX = markerX + offset;
@@ -5194,7 +5210,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
     // Row intervals
     displayRows.forEach((displayRow, i) => {
       if (displayRow.type === "data") {
-        const yPos = plotY + rowPositions[i] + rowHeights[i] / 2;
+        const yPos = plotY + (rowMarkerCenters[i] ?? rowPositions[i] + rowHeights[i] / 2);
         parts.push(renderInterval(
           displayRow.row,
           yPos,
@@ -5269,7 +5285,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render bars for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
-          const yPos = plotY + rowPositions[i] + rowHeights[i] / 2;
+          const yPos = plotY + (rowMarkerCenters[i] ?? rowPositions[i] + rowHeights[i] / 2);
           const rowH = rowHeights[i];
           parts.push(renderVizBar(
             displayRow.row,
@@ -5304,7 +5320,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render boxplots for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
-          const yPos = plotY + rowPositions[i] + rowHeights[i] / 2;
+          const yPos = plotY + (rowMarkerCenters[i] ?? rowPositions[i] + rowHeights[i] / 2);
           const rowH = rowHeights[i];
           parts.push(renderVizBoxplot(
             displayRow.row,
@@ -5339,7 +5355,7 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       // Render violins for each data row
       displayRows.forEach((displayRow, i) => {
         if (displayRow.type === "data") {
-          const yPos = plotY + rowPositions[i] + rowHeights[i] / 2;
+          const yPos = plotY + (rowMarkerCenters[i] ?? rowPositions[i] + rowHeights[i] / 2);
           const rowH = rowHeights[i];
           parts.push(renderVizViolin(
             displayRow.row,

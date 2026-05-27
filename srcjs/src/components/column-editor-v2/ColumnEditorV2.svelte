@@ -83,8 +83,28 @@
   }: Props = $props();
 
   // ── Resolved schema cascade ─────────────────────────────────────
-  // resolveSchema returns BASE-first → leaf-last; we render leaf-first.
-  const cascade = $derived(resolveSchema(schema).slice().reverse());
+  // resolveSchema returns BASE-first → leaf-last; we render in that
+  // order. Base sits immediately after the Data section (most general
+  // options first — header text, align, width, sortable — since they
+  // apply uniformly to every column type and most authors edit them).
+  // Type-specific accordions land below, ending at the leaf schema.
+  const cascade = $derived(resolveSchema(schema));
+
+  // Single-open accordion: only one cascade section is expanded at a
+  // time. Initial open is the LEAF (cascade[last]) so insert flows land
+  // on the type-specific knobs without an extra click. Users can swap
+  // to Base via one click — but if they wanted Base by default they'd
+  // also have been one click away under the multi-open behavior.
+  let openAccordionKey = $state<string | null>(null);
+  $effect(() => {
+    // Initialize once the cascade resolves; don't override user toggles.
+    if (openAccordionKey === null && cascade.length > 0) {
+      openAccordionKey = cascade[cascade.length - 1].key;
+    }
+  });
+  function toggleAccordion(key: string, next: boolean) {
+    openAccordionKey = next ? key : null;
+  }
 
   // Effective option list with optionOverrides applied — keyed by
   // option.key; tracks which cascade layer the option originated in.
@@ -267,17 +287,28 @@
     const c = column as Record<string, unknown>;
     const opts = (c.options ?? {}) as Record<string, Record<string, unknown>>;
     const b = BUCKET ? opts[BUCKET] : undefined;
+    // Schema-declared wire key wins for fresh columns (no existing
+    // value to introspect). Events: slot `events` → wireKey
+    // `eventsField` → write to options.custom.eventsField. Without this,
+    // `add events column` writes options.custom.events (wrong key) and
+    // the renderer reads undefined.
+    const slotDef = schema.slots?.find((s) => s.key === slotKey);
+    const wire = slotDef?.wireKey ?? slotKey;
+
     if (typeof c[slotKey] === "string") return { kind: "top", key: slotKey };
-    if (BUCKET && b && typeof b[slotKey] === "string") {
+    if (BUCKET && b && typeof b[wire] === "string") {
+      return { kind: "bucket", bucket: BUCKET, key: wire };
+    }
+    // Back-compat: existing wire shapes that wrote the bare slot key
+    // (legacy serializers, hand-written specs) — still locate them so
+    // they show up in the editor and round-trip cleanly.
+    if (BUCKET && b && typeof b[slotKey] === "string" && slotKey !== wire) {
       return { kind: "bucket", bucket: BUCKET, key: slotKey };
     }
-    if (BUCKET && b && typeof b[`${slotKey}Field`] === "string") {
-      return { kind: "bucket", bucket: BUCKET, key: `${slotKey}Field` };
-    }
-    // No existing value — default to bucket-scoped slot when we have a
-    // bucket; otherwise top-level so the most common case (col_text
-    // `field`) still works for fresh columns.
-    if (BUCKET) return { kind: "bucket", bucket: BUCKET, key: slotKey };
+    // No existing value — default to bucket-scoped slot using the wire
+    // key (or fall back to top-level for slot-less buckets so the most
+    // common case — col_text `field` — still works on fresh columns).
+    if (BUCKET) return { kind: "bucket", bucket: BUCKET, key: wire };
     return { kind: "top", key: slotKey };
   }
 
@@ -344,86 +375,20 @@
               items={items}
               placeholder={slot.required ? "Pick a field…" : "—"}
               ariaLabel={slot.label}
+              onchange={(v) => writeSlot(slot.key, v)}
             />
           </Field>
         {/each}
       </Section>
     {/if}
 
-    <!-- ── HEADER & LAYOUT ─────────────────────────────────────── -->
-    <Section glyph="section.header" title="Header & Layout">
-      <!-- Header text -->
-      <Field
-        label="Header"
-        pinned={(column.header ?? null) !== null && column.header !== undefined && column.header !== schema.label}
-        onreset={() => { column = { ...column, header: undefined }; oncommit?.({ ...column, header: undefined }); }}
-      >
-        <input
-          class="text-input"
-          type="text"
-          value={column.header ?? ""}
-          placeholder={schema.label}
-          oninput={(e) => {
-            const v = (e.target as HTMLInputElement).value || undefined;
-            column = { ...column, header: v };
-            oncommit?.({ ...column, header: v });
-          }}
-        />
-      </Field>
-
-      <!-- Align -->
-      <Field
-        label="Align"
-        glyph="align.center"
-        tight
-        pinned={!!column.align}
-        onreset={() => { const { align: _drop, ...rest } = column; column = rest; oncommit?.(rest); }}
-      >
-        <Pill
-          value={column.align ?? "left"}
-          segments={[
-            { value: "left",   glyph: "align.left",   title: "Left" },
-            { value: "center", glyph: "align.center", title: "Center" },
-            { value: "right",  glyph: "align.right",  title: "Right" },
-          ]}
-          ariaLabel="Align"
-          onchange={(v) => { column = { ...column, align: v as "left" | "center" | "right" }; oncommit?.(column); }}
-        />
-      </Field>
-
-      <!-- Width -->
-      <Field
-        label="Width"
-        pinned={(column.width ?? null) !== null}
-        onreset={() => { const { width: _drop, ...rest } = column; column = rest; oncommit?.(rest); }}
-      >
-        <Knob
-          value={(column.width as number) ?? null}
-          min={40}
-          max={400}
-          step={4}
-          track
-          suffix="px"
-        />
-      </Field>
-
-      <!-- Sortable -->
-      {#if schema.fixed?.sortable === undefined}
-        <Field label="Sortable" glyph="sort.unsorted" tight>
-          <Pill
-            value={column.sortable ?? true}
-            segments={[
-              { value: false, label: "off" },
-              { value: true,  label: "on" },
-            ]}
-            ariaLabel="Sortable"
-            onchange={(v) => { column = { ...column, sortable: v as boolean }; oncommit?.(column); }}
-          />
-        </Field>
-      {/if}
-    </Section>
-
-    <!-- ── Schema cascade — leaf-first ──────────────────────────── -->
+    <!-- ── Schema cascade — base-first, leaf-last ──────────────────
+         Base (header text, align, width, sortable) sits right after
+         Data — covered the use-cases the legacy "Header & Layout"
+         Section duplicated. Cascade is rendered base→leaf so the
+         general options precede the specialized ones, and a true
+         single-open accordion enforces "one section visible at a time"
+         to limit vertical sprawl. -->
     {#each cascade as layer, idx (layer.key)}
       {@const opts = optionsFor(layer.key)}
       {@const isLeaf = layer === schema}
@@ -433,7 +398,8 @@
         <Accordion
           title={`${layer.label} options`}
           glyph={layerGlyph}
-          open={idx === 0}
+          open={openAccordionKey === layer.key}
+          onchange={(next) => toggleAccordion(layer.key, next)}
           count={pinCount(layer.key)}
         >
           {#if hasVariants}
@@ -480,6 +446,7 @@
                   step={opt.step ?? (opt.control === "integer" ? 1 : undefined)}
                   integer={opt.control === "integer"}
                   track={opt.min != null && opt.max != null}
+                  onchange={(v) => commit(opt, v)}
                 />
               {:else if opt.control === "slider"}
                 <Knob
@@ -488,11 +455,13 @@
                   max={opt.max ?? 100}
                   step={opt.step ?? 1}
                   track
+                  onchange={(v) => commit(opt, v)}
                 />
               {:else if opt.control === "color"}
                 <Swatch
                   value={(cur as string | null) ?? (opt.default as string | null)}
                   {swatches}
+                  onchange={(v) => commit(opt, v)}
                 />
               {:else if opt.control === "field"}
                 <Picker
@@ -500,6 +469,7 @@
                   items={slotItems(opt.accepts ?? [])}
                   placeholder="Pick a field…"
                   ariaLabel={opt.label}
+                  onchange={(v) => commit(opt, v)}
                 />
               {:else if opt.control === "value-or-field"}
                 <!-- Composite: Mode pill + follow-up control. Mode is
@@ -517,6 +487,7 @@
                       <Swatch
                         value={(mappedCur as string | null) ?? null}
                         {swatches}
+                        onchange={(v) => writeMappedStatic(opt, v)}
                       />
                     {:else if opt.valueControl === "toggle"}
                       <Pill
@@ -535,6 +506,7 @@
                         max={opt.max}
                         step={opt.step ?? (opt.valueControl === "integer" ? 1 : undefined)}
                         integer={opt.valueControl === "integer"}
+                        onchange={(v) => writeMappedStatic(opt, v)}
                       />
                     {:else}
                       <input
@@ -559,7 +531,9 @@
                   {/if}
                 </span>
               {:else}
-                <!-- Fallback: text input -->
+                <!-- Fallback: text input. Used by Base 'header' option
+                     among others. Empty string commits as null so the
+                     pinned-override gutter clears correctly. -->
                 <input
                   class="text-input"
                   type="text"

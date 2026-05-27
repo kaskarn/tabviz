@@ -137,23 +137,33 @@
   }
 </script>
 
+<!--
+  Layout tab: density / header style / slot style live as Field rows
+  (label-on-left, control-on-right) under a single "Layout" section.
+  Each used to be a full SettingsSection with its own title +
+  description paragraph; the per-knob redundancy was visual noise.
+  Now the SettingsSection acts as the section header and each knob
+  is a Field with a hint tooltip carrying the explanation.
+-->
 {#if variants}
-  <SettingsSection title="Density" description="Picks a spacing preset. The Spacing tab can override individual tokens on top.">
+  <SettingsSection
+    title="Layout"
+    description="Three structural choices applied site-wide. Spacing tab can override individual tokens on top of the density preset."
+  >
     <SegmentedField
-      label=""
+      label="Density"
+      hint="Spacing preset — Compact / Comfortable / Spacious."
       value={variants.density}
       options={[
         { value: "compact",     label: "Compact" },
-        { value: "comfortable", label: "Comfortable" },
-        { value: "spacious",    label: "Spacious" },
+        { value: "comfortable", label: "Comfy"   },
+        { value: "spacious",    label: "Roomy"   },
       ]}
       onchange={changeDensity}
     />
-  </SettingsSection>
-
-  <SettingsSection title="Header style" description="Light = bare surface band; tint = subtle primary-tinted band; bold = full primary_deep band with inverse text. Tint and bold also drive a stronger row-group bar.">
     <SegmentedField
-      label=""
+      label="Header"
+      hint="Light = bare surface band; tint = subtle primary-tinted band; bold = full primary_deep band with inverse text. Tint and bold also drive a stronger row-group bar."
       value={variants.headerStyle}
       options={[
         { value: "light", label: "Light" },
@@ -162,21 +172,18 @@
       ]}
       onchange={changeHeaderStyle}
     />
-  </SettingsSection>
-
-  <SettingsSection title="Slot style" description="How every series mark pairs fill and stroke. Fill + stroke is the publication default; flat reads as a single tone; outlined makes the stroke carry the anchor identity with a near-surface fill.">
     <SegmentedField
-      label=""
+      label="Slot"
+      hint="Series fill/stroke pairing. Fill + stroke is the publication default; flat reads as a single tone; outlined makes the stroke carry the anchor identity with a near-surface fill."
       value={(inputs?.slotStyle as ("fill_with_darker_stroke" | "flat_fill" | "outlined" | undefined)) ?? "fill_with_darker_stroke"}
       options={[
-        { value: "fill_with_darker_stroke", label: "Fill + stroke" },
-        { value: "flat_fill",               label: "Flat" },
-        { value: "outlined",                label: "Outlined" },
+        { value: "fill_with_darker_stroke", label: "F+S"   },
+        { value: "flat_fill",               label: "Flat"  },
+        { value: "outlined",                label: "Lined" },
       ]}
       onchange={changeSlotStyle}
     />
   </SettingsSection>
-
 {/if}
 
 <BandingControl {store} />

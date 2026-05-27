@@ -124,13 +124,21 @@ function renderText(node: RenderText, r: StyleResolver): RenderToSvgResult {
   if (s.fontWeight)       attrs.push(`font-weight="${s.fontWeight}"`);
   if (s.fontStyle)        attrs.push(`font-style="${s.fontStyle}"`);
   if (s.fill)             attrs.push(`fill="${escapeAttr(s.fill)}"`);
-  attrs.push(`dominant-baseline="hanging"`);
+
+  // Layout convention: a text node occupies the box (0,0)→(width,height)
+  // in its own coordinate frame. With `dominant-baseline="central"` and
+  // y set to height/2, the text VISUALLY centers within that box, the
+  // way HTML/flex-align-items:center renders body text. The previous
+  // `hanging` baseline anchored the TOP of the text at y=0, so callers
+  // that tried to vertically center by shifting `-height/2` ended up
+  // ~0.25×fontSize too high — visible as "text top-justified" in
+  // exported SVGs, especially in inflated rows (rowGroupPadding).
+  const height = s.layoutPx * 1.2;
+  attrs.unshift(`y="${(height / 2).toFixed(2)}"`);
+  attrs.push(`dominant-baseline="central"`);
 
   const width  = estimateTextWidth(node.value, s.layoutPx);
-  const height = s.layoutPx * 1.2;
-  const markup = attrs.length === 1
-    ? `<text ${attrs[0]}>${escapeText(node.value)}</text>`
-    : `<text ${attrs.join(" ")}>${escapeText(node.value)}</text>`;
+  const markup = `<text ${attrs.join(" ")}>${escapeText(node.value)}</text>`;
   return { markup, width, height };
 }
 

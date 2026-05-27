@@ -194,6 +194,10 @@ export interface IntervalColumnOptions {
   lower?: string;     // Override field for lower bound
   upper?: string;     // Override field for upper bound
   impreciseThreshold?: number | null;  // When upper/lower ratio > threshold, show "—"
+  /** Display variant — declared in INTERVAL_SCHEMA.variants and consumed
+   *  by interval-renderer.ts. One of "traditional" | "bracket_muted" |
+   *  "plus_minus" | "stacked". Defaults to "traditional". */
+  variant?: "traditional" | "bracket_muted" | "plus_minus" | "stacked";
 }
 
 export interface PercentColumnOptions {
@@ -923,6 +927,13 @@ export interface SlotSpec {
   required: boolean;
   // Optional naming patterns to use when auto-pairing siblings off the primary slot
   autoPair?: { suffixes: string[] };
+  /** Wire-shape override. When the wire key for this slot differs from
+   *  the human-readable `key` (e.g. Events: slot `events` writes to
+   *  `options.custom.eventsField`), set `wireKey` to the actual on-wire
+   *  property name. Without this, the column editor reads/writes the
+   *  slot's `key` directly, which produces a wire-shape mismatch and a
+   *  silently-broken column. */
+  wireKey?: string;
 }
 
 export type VisualCategory = "text" | "numeric" | "interval" | "viz" | "icon";
@@ -1012,6 +1023,11 @@ export interface ComputedLayout {
   rowPositions: number[];
   // Heights for each row (spacers are half-height)
   rowHeights: number[];
+  /** Per-row marker-center Y. Differs from rowPositions[i] + rowHeights[i]/2
+   *  only when row i is "padded-after" (last data row before a top-level
+   *  group_header): the track is inflated by rowGroupPadding but the marker
+   *  centers on the data portion, not the padded total. */
+  rowMarkerCenters: number[];
 }
 
 // ============================================================================

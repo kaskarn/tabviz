@@ -48,12 +48,18 @@ try {
   if (!gear) throw new Error("settings button not found");
   await page.mouse.click(gear.x, gear.y);
   await new Promise((r) => setTimeout(r, 400));
-  // Switch to the requested tab.
-  await page.evaluate((t) => {
-    const btn = [...document.querySelectorAll("button")].find(
-      (b) => b.textContent?.trim().toLowerCase() === t.toLowerCase(),
-    );
-    btn?.click();
+  // Switch to the requested tab. The settings panel now uses a
+  // TabSelect dropdown: click the trigger (haspopup=listbox), then
+  // click the listbox option whose text starts with the wanted label.
+  await page.evaluate(async (t) => {
+    const want = t.toLowerCase();
+    const trigger = document.querySelector('button[aria-haspopup="listbox"]');
+    if (!trigger) return;
+    trigger.click();
+    await new Promise((r) => setTimeout(r, 80));
+    const options = [...document.querySelectorAll('[role="option"]')];
+    const opt = options.find((o) => (o.textContent ?? "").trim().toLowerCase().startsWith(want));
+    opt?.click();
   }, tab);
   await new Promise((r) => setTimeout(r, 300));
   await page.screenshot({ path: outPath, type: "png" });

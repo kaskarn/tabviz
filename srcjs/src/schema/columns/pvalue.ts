@@ -9,6 +9,12 @@ export const PVALUE_SCHEMA: ColumnSchema = {
   label: "P-value",
   glyph: "type.pvalue",
   defaultOpen: true,
+  // NOTE (2026-05-26): P-value semantically IS a numeric type, so
+  // inheriting from `numeric` to surface decimals/thousandsSep/
+  // abbreviate would be the principled move. Holding off until the
+  // p-value renderer is taught to honor those options — without that
+  // the inherited options would appear in the editor but be visually
+  // dead. See task #151 for the audit follow-up.
   inherits: "base",
   type: "pvalue",
   bucket: "pvalue",

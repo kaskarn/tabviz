@@ -199,16 +199,16 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
 
   /**
    * Live-preview a single theme field during a drag without recording
-   * the edit or invalidating column widths. Mirrors the
-   * previewColumnWidth / setColumnWidth pattern.
+   * the edit or invalidating column widths.
+   *
+   * Must reassign the spec (via writeThemePath) rather than mutating in
+   * place — `spec` is held as `$state.raw`, so deep mutations are
+   * invisible to reactivity and the UI wouldn't repaint until commit.
+   * `setColumnWidth`'s preview works on direct mutation because
+   * `columnWidths` is a regular (deep-proxied) `$state`, not raw.
    */
   function previewThemeField(section: string, field: string, value: unknown): void {
-    const spec = deps.getSpec();
-    if (!spec || !spec.theme) return;
-    const theme = spec.theme as unknown as Record<string, unknown>;
-    const current = theme[section];
-    if (!current || typeof current !== "object") return;
-    (current as Record<string, unknown>)[field] = value;
+    writeThemePath([section, field], value);
   }
 
   function setThemeField(...args: unknown[]): void {

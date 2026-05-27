@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import WatermarkControl from "./WatermarkControl.svelte";
   import SettingsSection from "./SettingsSection.svelte";
   import TextField from "./TextField.svelte";
 
@@ -20,9 +19,11 @@
 </script>
 
 <!--
-  Labels tab: plot-level annotation text + watermark.
-  Banding moved to the Layout tab in C2 (banding is a structural choice,
-  not an annotation).
+  Labels section: plot-level annotation text. Watermark moved out so
+  SettingsPanel can compose Labels → Layout → Watermark on the merged
+  "Layout" tab (the dedicated Labels tab was removed since they
+  belonged together — title/caption sit at the same conceptual layer
+  as density/banding for a viewer composing the plot).
 -->
 <SettingsSection
   title="Labels"
@@ -57,4 +58,3 @@
     onchange={(v) => store.setLabel("footnote", v)}
   />
 </SettingsSection>
-<WatermarkControl {store} />

@@ -101,13 +101,7 @@
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">SUSTAIN-6</text>
-<text class="cell-text" dominant-baseline="central" x="282" y="104"
-          font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
-          font-size="14px"
-          font-weight="400"
-          font-style="normal"
-          text-anchor="start"
-          fill="#CDD6F4">0.74 (0.58, 0.95)</text>
+<g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#CDD6F4" transform="translate(282 95.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.74</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">(</text></g><g transform="translate(4.199999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">0.58</text></g><g transform="translate(29.999999999999996 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">, </text></g><g transform="translate(38.39999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">0.95</text></g><g transform="translate(64.19999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">)</text></g></g></g></g></g>
 <line x1="12" x2="411"
           y1="116" y2="116"
           stroke="#313244" stroke-width="1"/>
@@ -117,13 +111,7 @@
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">PIONEER 6</text>
-<text class="cell-text" dominant-baseline="central" x="282" y="128"
-          font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
-          font-size="14px"
-          font-weight="400"
-          font-style="normal"
-          text-anchor="start"
-          fill="#CDD6F4">0.79 (0.57, 1.11)</text>
+<g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#CDD6F4" transform="translate(282 119.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.79</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">(</text></g><g transform="translate(4.199999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">0.57</text></g><g transform="translate(29.999999999999996 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">, </text></g><g transform="translate(38.39999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">1.11</text></g><g transform="translate(55.19999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">)</text></g></g></g></g></g>
 <line x1="12" x2="411"
           y1="140" y2="140"
           stroke="#313244" stroke-width="1"/>
@@ -133,13 +121,7 @@
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">LEADER</text>
-<text class="cell-text" dominant-baseline="central" x="282" y="152"
-          font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
-          font-size="14px"
-          font-weight="400"
-          font-style="normal"
-          text-anchor="start"
-          fill="#CDD6F4">0.87 (0.78, 0.97)</text>
+<g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#CDD6F4" transform="translate(282 143.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.87</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">(</text></g><g transform="translate(4.199999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">0.78</text></g><g transform="translate(29.999999999999996 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">, </text></g><g transform="translate(38.39999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">0.97</text></g><g transform="translate(64.19999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">)</text></g></g></g></g></g>
 <line x1="12" x2="411"
           y1="164" y2="164"
           stroke="#313244" stroke-width="1"/>
@@ -149,13 +131,7 @@
     font-weight="400"
     font-style="normal"
     fill="#CDD6F4">REWIND</text>
-<text class="cell-text" dominant-baseline="central" x="282" y="176"
-          font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
-          font-size="14px"
-          font-weight="400"
-          font-style="normal"
-          text-anchor="start"
-          fill="#CDD6F4">0.88 (0.79, 0.99)</text>
+<g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14px" font-weight="400" font-style="normal" fill="#CDD6F4" transform="translate(282 167.6)"><g><g transform="translate(0 0)"><text y="8.40" dominant-baseline="central">0.88</text></g><g transform="translate(30.1 0)"><text y="8.40" dominant-baseline="central"> </text></g><g transform="translate(35 0)"><g><g transform="translate(0 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">(</text></g><g transform="translate(4.199999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">0.79</text></g><g transform="translate(29.999999999999996 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">, </text></g><g transform="translate(38.39999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">0.99</text></g><g transform="translate(64.19999999999999 0)"><text y="7.20" font-size="12" fill="#898EA5" dominant-baseline="central">)</text></g></g></g></g></g>
 <line x1="12" x2="411"
           y1="188" y2="188"
           stroke="#313244" stroke-width="1"/>

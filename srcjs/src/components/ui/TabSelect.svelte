@@ -1,24 +1,38 @@
 <!--
-  TabSelect — a small button-and-popover tab selector. Replaces the native
-  <select> in SettingsPanel so the tab chooser matches the widget's visual
-  language (themed surfaces, hover states, no OS dropdown chrome). The
-  listbox is portaled to document.body to escape ancestor clipping.
--->
-<script lang="ts">
-  import Portal from "$lib/Portal.svelte";
+  TabSelect — settings-panel section selector. Editorial-aesthetic
+  dropdown that matches the v2 surface idiom (ink-on-cream, square
+  corners, mono labels, glyph badges). One legibility-first click each
+  way — open dropdown / pick section — replacing the prior glyph-only
+  TabBar which felt cryptic at 7 abstract icons.
 
-  interface TabOption {
+  The listbox portals to document.body to escape any contain:layout /
+  transform on the widget container; coords come from the trigger's
+  getBoundingClientRect at open time.
+-->
+<script lang="ts" module>
+  import type { GlyphToken } from "$lib/ui-glyphs";
+
+  export interface TabOption {
     id: string;
     label: string;
+    /** Glyph token rendered before the label in trigger and listbox. */
+    glyph?: GlyphToken;
+    /** Optional second-line description rendered under the label in the
+     *  listbox only (kept off the trigger so it stays compact). */
+    description?: string;
     /**
-     * "advanced" tabs render with a softened color and a thin divider
-     * appears before the first advanced entry — implicit visual hierarchy
-     * for terminal detail surfaces (Spacing / Marks / Text) so they don't
-     * compete with the casual primary tabs (Basics / Theme / Layout).
+     * "advanced" tabs render with a softened ink and a thin divider
+     * appears before the first advanced entry — implicit visual
+     * hierarchy for terminal detail surfaces (Tokens / Marks) so they
+     * don't compete with the primary tabs (Labels / Theme / Layout).
      */
     kind?: "normal" | "advanced";
   }
-  export type { TabOption };
+</script>
+
+<script lang="ts">
+  import Portal from "$lib/Portal.svelte";
+  import { glyph as glyphChar } from "$lib/ui-glyphs";
 
   interface Props {
     options: TabOption[];
@@ -105,14 +119,18 @@
   type="button"
   class="tab-trigger"
   class:open
+  data-tv-v2
   aria-haspopup="listbox"
   aria-expanded={open}
   aria-label={ariaLabel}
   onclick={toggle}
 >
-  <span class="tab-trigger-label">{selected?.label ?? ""}</span>
-  <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <polyline points="6 9 12 15 18 9" />
+  {#if selected?.glyph}
+    <span class="trig-glyph" aria-hidden="true">{glyphChar(selected.glyph)}</span>
+  {/if}
+  <span class="trig-label">{selected?.label ?? ""}</span>
+  <svg class="chev" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+    <path d="M2 3.5 L5 6.5 L8 3.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
   </svg>
 </button>
 
@@ -121,6 +139,7 @@
     <div
       bind:this={popoverEl}
       class="tab-popover"
+      data-tv-v2
       role="listbox"
       tabindex="-1"
       style={popoverStyle}
@@ -137,119 +156,163 @@
           class:active={opt.id === value}
           class:advanced={opt.kind === "advanced"}
           onclick={() => pick(opt.id)}
-        >{opt.label}</button>
+        >
+          {#if opt.glyph}
+            <span class="opt-glyph" aria-hidden="true">{glyphChar(opt.glyph)}</span>
+          {/if}
+          <span class="opt-text">
+            <span class="opt-label">{opt.label}</span>
+            {#if opt.description}
+              <span class="opt-desc">{opt.description}</span>
+            {/if}
+          </span>
+        </button>
       {/each}
     </div>
   </Portal>
 {/if}
 
 <style>
+  /* ── Trigger (the visible chip in the panel bar) ─────────── */
   .tab-trigger {
     display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 6px;
+    gap: var(--v2-gap-small, 6px);
     flex: 1;
     min-width: 0;
-    padding: 4px 8px;
-    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 20%, transparent);
-    border-radius: 6px;
-    background: var(--tv-bg, #ffffff);
-    color: var(--tv-fg, #1a1a1a);
-    font-size: 0.8125rem;
-    font-weight: 500;
+    height: 26px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: var(--v2-r-soft, 3px);
+    background: var(--v2-paper-edge, #ffffff);
+    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
+    color: var(--v2-ink, #15140e);
+    font: inherit;
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: var(--v2-text-body, 11.5px);
+    text-align: left;
     cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
   }
-
-  .tab-trigger:hover,
-  .tab-trigger:focus-visible,
-  .tab-trigger.open {
-    border-color: var(--tv-accent, #2563eb);
+  .tab-trigger:hover {
+    box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c);
+  }
+  .tab-trigger.open,
+  .tab-trigger:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--v2-rule-strong, #15140e);
     outline: none;
   }
 
-  .tab-trigger-label {
+  .trig-glyph {
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: 12px;
+    color: var(--v2-ink-3, #8a8478);
+    width: 14px;
+    text-align: center;
+    line-height: 1;
+    flex: none;
+  }
+
+  .trig-label {
     flex: 1;
     min-width: 0;
-    text-align: left;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .chev {
-    flex-shrink: 0;
-    color: var(--tv-text-muted, #64748b);
-    transition: transform 0.18s ease;
+    flex: none;
+    color: var(--v2-ink-3, #8a8478);
+    transition: transform 0.18s var(--v2-ease);
   }
+  .tab-trigger.open .chev { transform: rotate(180deg); }
 
-  .tab-trigger.open .chev {
-    transform: rotate(180deg);
-  }
-
+  /* ── Popover (the listbox) ───────────────────────────────── */
   .tab-popover {
     position: fixed;
     z-index: 10070;
-    min-width: 140px;
-    max-height: 320px;
+    min-width: 200px;
+    max-height: 340px;
     overflow-y: auto;
-    padding: 4px;
-    background: var(--tv-bg, #ffffff);
-    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 18%, var(--tv-border, #e2e8f0));
-    border-radius: 8px;
+    padding: 3px;
+    background: var(--v2-paper, #faf7f0);
+    border: 0;
+    border-radius: var(--v2-r-soft, 3px);
     box-shadow:
-      0 12px 32px -8px color-mix(in srgb, #0f172a 25%, transparent),
-      0 2px 6px -2px color-mix(in srgb, var(--tv-accent, #2563eb) 20%, transparent);
-    animation: pop-in 0.14s ease-out;
+      inset 0 0 0 1px var(--v2-rule, #d6d0c1),
+      0 8px 24px -4px rgba(15, 23, 42, 0.16);
+    animation: pop-in 0.12s var(--v2-ease, ease-out);
   }
 
   @keyframes pop-in {
-    from { transform: translateY(-4px); opacity: 0; }
+    from { transform: translateY(-2px); opacity: 0; }
     to   { transform: translateY(0);    opacity: 1; }
   }
 
+  /* ── Option row ──────────────────────────────────────────── */
   .tab-option {
-    display: block;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--v2-gap-small, 6px);
     width: 100%;
-    padding: 6px 10px;
-    border: none;
-    border-radius: 4px;
+    padding: 5px 8px;
+    border: 0;
+    border-radius: var(--v2-r-soft, 3px);
     background: transparent;
-    color: var(--tv-fg, #1a1a1a);
-    font-size: 0.8125rem;
-    font-weight: 500;
+    color: var(--v2-ink, #15140e);
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
+    font-size: var(--v2-text-body, 11.5px);
     text-align: left;
     cursor: pointer;
-    transition: background-color 0.1s ease, color 0.1s ease;
+    transition: background var(--v2-dur-snap, 80ms) var(--v2-ease);
   }
-
-  .tab-option + .tab-option {
-    margin-top: 1px;
-  }
-
-  .tab-option:hover:not(.active) {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
-  }
-
+  .tab-option:hover:not(.active) { background: var(--v2-paper-2, #f3efe5); }
   .tab-option.active {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-bg, #ffffff));
-    color: var(--tv-accent, #2563eb);
+    background: var(--v2-ink, #15140e);
+    color: var(--v2-paper, #faf7f0);
   }
-
-  .tab-option.advanced {
-    color: var(--tv-text-muted, #64748b);
-    font-weight: 400;
-  }
-
-  .tab-divider {
-    margin: 4px 6px;
-    height: 1px;
-    background: color-mix(in srgb, var(--tv-fg, #1a1a1a) 10%, transparent);
-  }
-
+  .tab-option.advanced { color: var(--v2-ink-3, #8a8478); }
+  .tab-option.advanced.active { color: var(--v2-paper, #faf7f0); }
   .tab-option:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--tv-accent, #2563eb) 50%, transparent);
-    outline-offset: -2px;
+    outline: 1px solid var(--v2-focus-ring, #15140e);
+    outline-offset: -1px;
+  }
+
+  .opt-glyph {
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: 12px;
+    width: 14px;
+    text-align: center;
+    line-height: 1.25;
+    flex: none;
+    color: var(--v2-ink-3, #8a8478);
+  }
+  .tab-option.active .opt-glyph { color: inherit; opacity: 0.85; }
+
+  .opt-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    flex: 1;
+  }
+  .opt-label {
+    font-weight: 500;
+    line-height: 1.15;
+  }
+  .opt-desc {
+    font-size: var(--v2-text-small, 10.5px);
+    color: var(--v2-ink-3, #8a8478);
+    line-height: 1.25;
+    font-style: italic;
+  }
+  .tab-option.active .opt-desc { color: inherit; opacity: 0.8; font-style: italic; }
+
+  /* ── Divider above first 'advanced' entry ────────────────── */
+  .tab-divider {
+    margin: 3px 4px;
+    height: 1px;
+    background: var(--v2-rule, #d6d0c1);
   }
 </style>

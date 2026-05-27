@@ -25,6 +25,8 @@
   value is the parent's job if it matters.
 -->
 <script lang="ts">
+  import { untrack } from "svelte";
+
   interface Props {
     value?: number | null;
     /** Optional range — enables scrub / track modes. */
@@ -44,6 +46,10 @@
     id?: string;
     /** Explicit chip width in px. Default 56 (plain/scrub), 64 (track). */
     width?: number;
+    /** Fires whenever the committed value changes — drag end, type+blur,
+     *  Enter, or palette pick. Parents that don't use `bind:value` MUST
+     *  pass this; otherwise the chip looks live but the change is lost. */
+    onchange?: (next: number | null) => void;
   }
 
   let {
@@ -59,7 +65,20 @@
     disabled = false,
     id,
     width,
+    onchange,
   }: Props = $props();
+
+  // Helper — set value AND fire onchange. Called only from user-action
+  // mutation sites (text commit, scrub, +/- buttons, slider drag).
+  // Doing it via a $effect-watcher instead would also fire when the
+  // parent reassigns `value`, causing onchange→commit→prop-update
+  // feedback loops at call sites that don't `bind:` (which is most of
+  // them now). The Pill primitive uses this same explicit pattern.
+  function emit(next: number | null) {
+    if (next === value) return;
+    value = next;
+    onchange?.(next);
+  }
 
   const hasRange = $derived(min != null && max != null);
   const mode = $derived<"plain" | "scrub" | "track">(
@@ -68,17 +87,24 @@
   const chipWidth = $derived(width ?? (mode === "track" ? 56 : 56));
 
   // Local raw value for in-flight typing (committed on blur/Enter).
+  // CRITICAL: the sync effect must NOT track `raw`. If it does, the
+  // user-typed character immediately tracks the effect again, the
+  // String(value)!==raw check fires, and raw gets clobbered back to
+  // the prop value — typing appears to silently no-op. `untrack` reads
+  // raw without registering a dependency, breaking the loop.
   let raw = $state(value == null ? "" : String(value));
   $effect(() => {
     const next = value == null ? "" : String(value);
-    if (next !== raw) raw = next;
+    untrack(() => {
+      if (next !== raw) raw = next;
+    });
   });
 
   function commit(s: string) {
-    if (s === "") { value = null; return; }
+    if (s === "") { emit(null); return; }
     const n = integer ? parseInt(s, 10) : Number(s);
     if (!Number.isFinite(n)) return;
-    value = clamp(n);
+    emit(clamp(n));
   }
   function clamp(n: number): number {
     if (min != null && n < min) n = min;
@@ -116,7 +142,7 @@
     // 200px sweep == full range. Holding shift slows to ×0.1.
     const scale = e.shiftKey ? 2000 : 200;
     const next = dragStartV + (dx / scale) * span;
-    value = snapToStep(clamp(next));
+    emit(snapToStep(clamp(next)));
   }
   function onPointerUp(e: PointerEvent) {
     dragging = false;
@@ -129,7 +155,7 @@
     const cur = value ?? min ?? 0;
     const delta = (e.deltaY < 0 ? 1 : -1) * step * (e.shiftKey ? 10 : 1);
     e.preventDefault();
-    value = snapToStep(clamp(cur + delta));
+    emit(snapToStep(clamp(cur + delta)));
   }
 
   function onKey(e: KeyboardEvent) {
