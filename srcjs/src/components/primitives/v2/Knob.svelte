@@ -230,7 +230,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--v2-gap-small, 6px);
-    height: var(--v2-control-h, 24px);
+    height: var(--v2-control-h, 22px);
     position: relative;
   }
   .knob.disabled { opacity: 0.4; pointer-events: none; }
@@ -251,7 +251,7 @@
     padding: 0;
     background: var(--v2-paper-2, #f3efe5);
     box-shadow: inset 0 0 0 1px var(--v2-rule-soft, #e6e0d1);
-    border-radius: var(--v2-r-pill, 12px);
+    border-radius: var(--v2-r-pill, 11px);
     height: 6px;
     flex: 1;
     position: relative;
@@ -275,7 +275,7 @@
   .chip {
     display: inline-flex;
     align-items: center;
-    height: var(--v2-control-h, 24px);
+    height: var(--v2-control-h, 22px);
     padding: 0 7px;
     border-radius: var(--v2-r-soft, 3px);
     background: var(--v2-paper-edge, #ffffff);

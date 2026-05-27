@@ -153,19 +153,35 @@
 {#if variants}
   <Section
     title="Layout"
+    glyph="section.layout"
     hint="Three structural choices applied site-wide. Spacing tab can override individual tokens on top of the density preset."
   >
-    <SegmentedField
-      label="Density"
-      hint="Spacing preset — Compact / Comfortable / Spacious."
-      value={variants.density}
-      options={[
-        { value: "compact",     label: "Compact" },
-        { value: "comfortable", label: "Comfy"   },
-        { value: "spacious",    label: "Roomy"   },
-      ]}
-      onchange={changeDensity}
-    />
+    <!-- Density preview: three tiny mock-row stacks at the proportional
+         row heights (compact 8 / comfy 11 / roomy 14). Active option's
+         frame thickens. Diagrammatic — eliminates having to imagine
+         what "Comfy" means before clicking. -->
+    <div class="density-preview" aria-hidden="true">
+      {#each [
+        { value: "compact",     label: "Compact", h: 4 },
+        { value: "comfortable", label: "Comfy",   h: 5 },
+        { value: "spacious",    label: "Roomy",   h: 7 },
+      ] as opt}
+        <button
+          type="button"
+          class="density-card"
+          class:active={variants.density === opt.value}
+          onclick={() => changeDensity(opt.value)}
+          aria-label={`Set density to ${opt.label}`}
+        >
+          <svg viewBox="0 0 30 22" width="30" height="22">
+            <rect x="2" y="2"            width="26" height={opt.h} fill="var(--v2-paper-2, #f3efe5)"/>
+            <rect x="2" y={4 + opt.h}    width="26" height={opt.h} fill="var(--v2-paper-2, #f3efe5)"/>
+            <rect x="2" y={6 + 2*opt.h}  width="26" height={opt.h} fill="var(--v2-paper-2, #f3efe5)"/>
+          </svg>
+          <span class="density-label">{opt.label}</span>
+        </button>
+      {/each}
+    </div>
     <SegmentedField
       label="Header"
       hint="Light = bare surface band; tint = subtle primary-tinted band; bold = full primary_deep band with inverse text. Tint and bold also drive a stronger row-group bar."
@@ -194,8 +210,41 @@
 {#if borders}
   <Section
     title="Borders"
-    hint="Layout × type model. Layout picks which dividers paint (horizontal rows, vertical columns, grid = both, none); the three types control thickness, single/double, and color."
+    glyph="section.borders"
+    hint="Layout × type model. Layout picks where dividers paint; the three types control thickness, single/double, and color."
   >
+    <!-- Diagram preview: a tiny table mockup with major/minor/table
+         labels annotated. Self-documenting — eliminates the need to
+         explain in prose what each divider type does. -->
+    <div class="borders-diagram" aria-hidden="true">
+      <svg viewBox="0 0 160 70" width="100%" preserveAspectRatio="xMidYMid meet">
+        <!-- Table edge (outer rect) -->
+        <rect x="6" y="6" width="148" height="58" fill="none"
+              stroke={borders.table.color} stroke-width="1.4"/>
+        <!-- Header bottom — MAJOR -->
+        <line x1="6" y1="22" x2="154" y2="22"
+              stroke={borders.major.color}
+              stroke-width={borders.major.style === "double" ? "0.8" : "1.4"}/>
+        {#if borders.major.style === "double"}
+          <line x1="6" y1="24" x2="154" y2="24" stroke={borders.major.color} stroke-width="0.8"/>
+        {/if}
+        <!-- Row dividers — MINOR (only when layout includes horizontal) -->
+        {#if borders.layout === "horizontal" || borders.layout === "grid"}
+          <line x1="6" y1="36" x2="154" y2="36" stroke={borders.minor.color} stroke-width="0.7"/>
+          <line x1="6" y1="50" x2="154" y2="50" stroke={borders.minor.color} stroke-width="0.7"/>
+        {/if}
+        <!-- Column dividers — MINOR (only when layout includes vertical) -->
+        {#if borders.layout === "vertical" || borders.layout === "grid"}
+          <line x1="60" y1="6" x2="60" y2="64" stroke={borders.minor.color} stroke-width="0.7"/>
+          <line x1="108" y1="6" x2="108" y2="64" stroke={borders.minor.color} stroke-width="0.7"/>
+        {/if}
+        <!-- Annotation labels — each sits on the row where its line
+             paints so the eye traces label → diagram naturally. -->
+        <text x="158" y="9"  class="anno" text-anchor="start">table</text>
+        <text x="158" y="25" class="anno" text-anchor="start">major</text>
+        <text x="158" y="39" class="anno" text-anchor="start">minor</text>
+      </svg>
+    </div>
     <SegmentedField
       label="Layout"
       hint="Where dividers paint. Default is horizontal (row dividers only); grid adds column dividers; vertical removes row dividers; none disables all."
@@ -282,3 +331,62 @@
 {/if}
 
 <BandingControl {store} />
+
+<style>
+  /* Density preview row — three mock-row stacks. Click selects. */
+  .density-preview {
+    display: flex;
+    gap: 6px;
+    padding: 4px 8px 8px 28px;
+  }
+  .density-card {
+    appearance: none;
+    border: 0;
+    padding: 4px 6px 5px;
+    background: var(--v2-paper-edge, #fff);
+    border-radius: var(--v2-r-soft, 3px);
+    box-shadow: inset 0 0 0 1px var(--v2-rule-soft, #e6e0d1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transition:
+      box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease),
+      transform var(--v2-dur-snap, 80ms) var(--v2-ease);
+  }
+  .density-card:hover {
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
+  }
+  .density-card.active {
+    box-shadow: inset 0 0 0 1.5px var(--v2-ink, #15140e);
+  }
+  .density-label {
+    font-family: var(--v2-font-sans, system-ui);
+    font-size: 9.5px;
+    color: var(--v2-ink-2, #4a463c);
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    letter-spacing: 0.1em;
+    line-height: 1;
+  }
+  .density-card.active .density-label { color: var(--v2-ink, #15140e); }
+
+  /* Borders section diagram — a small annotated table mockup that
+     visualizes which divider goes where. Updates live as the user
+     edits borders.layout / borders.{major,minor,table}.{color,style}. */
+  .borders-diagram {
+    margin: 4px 8px 6px 28px;
+    padding: 8px 56px 8px 8px;
+    background: var(--v2-paper-edge, #ffffff);
+    border-radius: var(--v2-r-soft, 3px);
+    box-shadow: inset 0 0 0 1px var(--v2-rule-soft, #e6e0d1);
+  }
+  .borders-diagram :global(text.anno) {
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: 7px;
+    fill: var(--v2-ink-3, #8a8478);
+    letter-spacing: 0.08em;
+  }
+</style>

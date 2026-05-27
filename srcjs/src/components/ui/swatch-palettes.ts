@@ -37,7 +37,6 @@ export const ACCENT_SWATCHES: PaletteSwatch[] = [
   { color: "#2a6f97", token: "teal" },
   { color: "#243a8a", token: "ultramarine" },
   { color: "#7ee787", token: "spring green" },
-  { color: "#ff4a1c", token: "bright" },
   { color: "#b3392b", token: "brick" },
 ];
 

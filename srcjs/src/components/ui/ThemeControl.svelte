@@ -73,8 +73,8 @@
     <!-- ── Identity (T1 keystone) ─────────────────────────────────── -->
     <Section
       title="Identity"
-      glyph="section.style"
-      hint="Primary + secondary mirror chain; accent is orthogonal. Everything else cascades from these."
+      glyph="section.identity"
+      hint="Primary + secondary form the mirror chain. Everything chrome inherits from these."
     >
       <Field label="Primary" hint="Title, bold header, series[0]">
         <ColorField label="" value={(inputs?.primary as string | undefined) ?? theme.accent?.default ?? "#0891B2"}
@@ -87,6 +87,14 @@
           onchange={(v) => C.applySecondary(ctx, v)}
           swatches={colors(NEUTRAL_SWATCHES)} />
       </Field>
+    </Section>
+
+    <!-- ── Engagement (orthogonal axis: hover / selected / semantic) ── -->
+    <Section
+      title="Engagement"
+      glyph="section.engagement"
+      hint="Accent owns hover, selected, callouts — orthogonal to identity."
+    >
       <Field label="Accent" hint="Hover, selected, semantic callouts">
         <ColorField label="" value={(inputs?.accent as string | undefined) ?? theme.accent?.default ?? "#8B5CF6"}
           onchange={(v) => C.applyAccent(ctx, v)}
@@ -94,57 +102,71 @@
       </Field>
     </Section>
 
-    <!-- ── Fonts ──────────────────────────────────────────────────── -->
-    <Section title="Fonts" glyph="type.text" hint="Body for cells/headers/labels; display for plot titles.">
-      <Field label="Body">
-        <FontFamily
-          value={theme.text?.body?.family ?? (inputs?.fontBody as string | undefined) ?? null}
-          roster={fontRoster}
-          onchange={(v) => {
-            ctx.setPath(["inputs", "fontBody"], v);
-            for (const role of ["body", "cell", "label", "tick", "footnote", "caption", "subtitle"]) {
-              ctx.setPath(["text", role, "family"], v);
-            }
-          }}
-        />
-      </Field>
-      <Field label="Display">
-        <FontFamily
-          value={theme.text?.title?.family ?? (inputs?.fontDisplay as string | undefined) ?? null}
-          roster={fontRoster}
-          onchange={(v) => {
-            ctx.setPath(["inputs", "fontDisplay"], v);
-            ctx.setPath(["text", "title", "family"], v);
-          }}
-        />
-      </Field>
-      <Field label="Numeric" hint="Optional family for numeric-category cells (numeric, percent, currency, p-value, interval, events). Defaults to Body.">
-        <FontFamily
-          value={theme.text?.numeric?.family ?? null}
-          roster={fontRoster}
-          onchange={(v) => ctx.setPath(["text", "numeric", "family"], v)}
-        />
-      </Field>
-      <Field label="Mono">
-        <FontFamily
-          value={(inputs?.fontMono as string | undefined) ?? null}
-          roster={fontRoster}
-          onchange={(v) => ctx.setPath(["inputs", "fontMono"], v)}
-        />
-      </Field>
+    <!-- ── Typography (families as specimens) ───────────────────────
+         A 2×2 grid where each cell IS the specimen — clicking the
+         dropdown swaps the family and the "Aa 123" sample updates
+         live. Beats four stacked dropdown rows: the user sees the
+         font choice as itself, not as a name. -->
+    <Section title="Typography" glyph="section.text" hint="Body for cells, display for titles, numeric for figures, mono for code.">
+      <div class="font-grid">
+        <div class="specimen-card">
+          <div class="specimen-label">Body</div>
+          <div class="specimen-sample" style:font-family={theme.text?.body?.family ?? "system-ui"}>Aa 123</div>
+          <FontFamily
+            value={theme.text?.body?.family ?? (inputs?.fontBody as string | undefined) ?? null}
+            roster={fontRoster}
+            onchange={(v) => {
+              ctx.setPath(["inputs", "fontBody"], v);
+              for (const role of ["body", "cell", "label", "tick", "footnote", "caption", "subtitle"]) {
+                ctx.setPath(["text", role, "family"], v);
+              }
+            }}
+          />
+        </div>
+        <div class="specimen-card">
+          <div class="specimen-label">Display</div>
+          <div class="specimen-sample" style:font-family={theme.text?.title?.family ?? "serif"}>Aa 123</div>
+          <FontFamily
+            value={theme.text?.title?.family ?? (inputs?.fontDisplay as string | undefined) ?? null}
+            roster={fontRoster}
+            onchange={(v) => {
+              ctx.setPath(["inputs", "fontDisplay"], v);
+              ctx.setPath(["text", "title", "family"], v);
+            }}
+          />
+        </div>
+        <div class="specimen-card">
+          <div class="specimen-label">Numeric</div>
+          <div class="specimen-sample" style:font-family={theme.text?.numeric?.family ?? theme.text?.body?.family ?? "system-ui"}>Aa 123</div>
+          <FontFamily
+            value={theme.text?.numeric?.family ?? null}
+            roster={fontRoster}
+            onchange={(v) => ctx.setPath(["text", "numeric", "family"], v)}
+          />
+        </div>
+        <div class="specimen-card">
+          <div class="specimen-label">Mono</div>
+          <div class="specimen-sample" style:font-family={(inputs?.fontMono as string | undefined) ?? "ui-monospace"}>Aa 123</div>
+          <FontFamily
+            value={(inputs?.fontMono as string | undefined) ?? null}
+            roster={fontRoster}
+            onchange={(v) => ctx.setPath(["inputs", "fontMono"], v)}
+          />
+        </div>
+      </div>
     </Section>
 
     <!-- ── Roles (T2 derived; collapsed) ──────────────────────────── -->
     <div class="zone-divider">Roles · derived semantic tokens</div>
 
-    <Accordion title="Deep companions" hint="oklch_darken(seed, 0.15)" open={false}>
-      <Field label="Primary (deep)" pinned={ctx.isOver(["inputs", "primaryDeep"])}
+    <Accordion title="Deep variants" hint="Darkened shadows of Primary + Secondary. Used for title fg, axis line, bold-mode bands." open={false}>
+      <Field label="↳ Primary" pinned={ctx.isOver(["inputs", "primaryDeep"])}
         onreset={() => C.resetPrimaryDeep(ctx)}>
         <ColorField label="" value={(inputs?.primaryDeep as string | undefined) ?? oklchDarken(C.currentPrimary(ctx), 0.15)}
           onchange={(v) => C.applyPrimaryDeep(ctx, v)}
           swatches={colors(ACCENT_SWATCHES)} />
       </Field>
-      <Field label="Secondary (deep)" pinned={ctx.isOver(["inputs", "secondaryDeep"])}
+      <Field label="↳ Secondary" pinned={ctx.isOver(["inputs", "secondaryDeep"])}
         onreset={() => C.resetSecondaryDeep(ctx)}>
         <ColorField label="" value={(inputs?.secondaryDeep as string | undefined) ?? C.currentSecondaryDeep(ctx)}
           onchange={(v) => C.applySecondaryDeep(ctx, v)}
@@ -300,17 +322,72 @@
   /* Zone divider — single thin label between top-level groupings.
      Replaces the bespoke .zone-* / .zone-header / .zone-description
      stack with one tracked-uppercase row. */
+  /* Zone divider — a quiet meta-label between groupings of accordions.
+     Designed to be LESS LOUD than Section titles (which announce
+     content); this is just punctuation. Italic serif, centered, em-dash
+     flanked, no rule. Reads like a chapter-break ornament in a journal. */
   .zone-divider {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-family: var(--v2-font-serif, "EB Garamond", "Palatino", Georgia, serif);
+    font-style: italic;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--v2-ink-3, #8a8478);
+    text-align: center;
+    padding: 18px 0 4px;
+    line-height: 1;
+    user-select: none;
+  }
+  .zone-divider::before { content: "— "; }
+  .zone-divider::after  { content: " —"; }
+
+  /* Typography specimen grid — 2×2 grid of family cards. Each card
+     shows the live "Aa 123" sample rendered in the family + a small
+     picker below. Indented to match the section's hanging title. */
+  /* Typography specimen grid — 2×2 of font sample cards. minmax(0,1fr)
+     is the critical bit: without it the 1fr tracks size to max-content
+     (the giant Aa sample) and overflow happens silently. With it the
+     cards size to the available column and the sample clips/scales
+     instead. */
+  .font-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--v2-gap-small, 6px);
+    padding: 4px 0 4px 28px;
+  }
+  .specimen-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 8px;
+    min-width: 0;
+    background: var(--v2-paper-edge, #ffffff);
+    border: 1px solid var(--v2-rule-soft, #e6e0d1);
+    border-radius: var(--v2-r-hair, 2px);
+    transition: border-color var(--v2-dur-snap, 80ms) var(--v2-ease);
+  }
+  .specimen-card:hover {
+    border-color: var(--v2-rule, #d6d0c1);
+  }
+  .specimen-label {
+    font-family: var(--v2-font-sans, system-ui);
     font-size: var(--v2-text-micro, 9.5px);
-    text-transform: uppercase;
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
     letter-spacing: var(--v2-track-flag, 0.14em);
     color: var(--v2-ink-3, #8a8478);
-    padding: 14px 0 6px;
-    /* Use the primary rule for top-level zone breaks; --v2-rule-soft
-       is reserved for sub-item separators inside dense rows. */
-    border-top: 1px solid var(--v2-rule, #d6d0c1);
-    margin-top: 8px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .specimen-sample {
+    font-size: 20px;
+    line-height: 1.0;
+    color: var(--v2-ink, #15140e);
+    padding: 2px 0 4px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Series add/remove — small chrome buttons. */

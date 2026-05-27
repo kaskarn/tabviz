@@ -1,8 +1,8 @@
 <!--
-  TextField — settings-panel single-line text row. v2-skinned: Field
-  wraps a raw input styled like the v2 chip. Caller API unchanged.
-  Two events: oninput (every keystroke, for live preview) + onchange
-  (blur/Enter, for one op-log entry per edit session).
+  TextField — settings-panel text row. v2-skinned: Field wraps either
+  an <input> (single-line) or a <textarea> (multi-line auto-grow,
+  when `lines > 1`). Two events: oninput (every keystroke, for live
+  preview) + onchange (blur/Enter, for one op-log entry per edit).
 -->
 <script lang="ts">
   import Field from "$components/primitives/v2/Field.svelte";
@@ -14,35 +14,70 @@
     placeholder?: string;
     oninput?: (value: string) => void;
     onchange?: (value: string) => void;
+    /**
+     * Multi-line mode: renders a `<textarea>` with `rows=lines` as the
+     * minimum visible height; the field auto-grows to fit content up
+     * to a generous cap. Default 1 = single-line `<input>`.
+     */
+    lines?: number;
   }
 
-  let { label, hint, value, placeholder, oninput, onchange }: Props = $props();
+  let { label, hint, value, placeholder, oninput, onchange, lines = 1 }: Props = $props();
 
   function handleInput(e: Event) {
-    oninput?.((e.target as HTMLInputElement).value);
+    const el = e.target as HTMLInputElement | HTMLTextAreaElement;
+    autoGrow(el);
+    oninput?.(el.value);
   }
   function commit(e: Event) {
-    onchange?.((e.target as HTMLInputElement).value);
+    onchange?.((e.target as HTMLInputElement | HTMLTextAreaElement).value);
   }
   function handleKeydown(e: KeyboardEvent) {
-    if (e.key === "Enter") onchange?.((e.target as HTMLInputElement).value);
+    // For single-line, Enter commits. For multi-line, Enter inserts a
+    // newline (default) and Cmd+Enter commits.
+    if (lines === 1 && e.key === "Enter") {
+      onchange?.((e.target as HTMLInputElement).value);
+    } else if (lines > 1 && e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      onchange?.((e.target as HTMLTextAreaElement).value);
+    }
+  }
+  function autoGrow(el: HTMLInputElement | HTMLTextAreaElement) {
+    if (el.tagName !== "TEXTAREA") return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
   }
 </script>
 
 <div class="tf-row" data-tv-v2>
   <Field {label} {hint}>
-    <input
-      class="tf-input"
-      type="text"
-      {value}
-      {placeholder}
-      oninput={handleInput}
-      onchange={commit}
-      onblur={commit}
-      onkeydown={handleKeydown}
-      spellcheck="false"
-      aria-label={label}
-    />
+    {#if lines > 1}
+      <textarea
+        class="tf-input tf-textarea"
+        rows={lines}
+        {value}
+        {placeholder}
+        oninput={handleInput}
+        onchange={commit}
+        onblur={commit}
+        onkeydown={handleKeydown}
+        spellcheck="false"
+        aria-label={label}
+      ></textarea>
+    {:else}
+      <input
+        class="tf-input"
+        type="text"
+        {value}
+        {placeholder}
+        oninput={handleInput}
+        onchange={commit}
+        onblur={commit}
+        onkeydown={handleKeydown}
+        spellcheck="false"
+        aria-label={label}
+      />
+    {/if}
   </Field>
 </div>
 
@@ -68,5 +103,17 @@
   .tf-input::placeholder {
     color: var(--v2-ink-3, #8a8478);
     font-style: italic;
+  }
+  /* Multi-line variant: auto-grow height set inline via the
+     autoGrow() handler. Min-height covers the rows= attribute when
+     empty; line-height keeps editorial spacing. */
+  .tf-textarea {
+    height: auto;
+    min-height: var(--v2-control-h, 22px);
+    padding: 4px 8px;
+    line-height: 1.35;
+    resize: none;
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
+    overflow-y: hidden;
   }
 </style>

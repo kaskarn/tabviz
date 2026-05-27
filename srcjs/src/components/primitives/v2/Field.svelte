@@ -73,7 +73,7 @@
     <span class="label-text" title={label}>{label}</span>
     {#if hint}
       <Tooltip text={hint}>
-        <span class="info" aria-label={hint}>?</span>
+        <span class="info" aria-label={hint}>i</span>
       </Tooltip>
     {/if}
   </label>
@@ -95,7 +95,10 @@
   .field {
     display: grid;
     grid-template-columns: 8px 100px 1fr;
-    grid-template-rows: var(--v2-row-h, 24px);
+    /* minmax so most single-line controls stay pinned to the row-h
+       baseline, but controls that compose a card (Swatch's 2-row
+       chip+hex / palette layout) can grow vertically. */
+    grid-template-rows: minmax(var(--v2-row-h, 22px), auto);
     align-items: center;
     column-gap: var(--v2-gap-mid, 8px);
     row-gap: 0;
@@ -123,26 +126,41 @@
     outline: 1px solid var(--v2-focus-ring, #15140e);
     outline-offset: -1px;
   }
+  /* Override mark — a small ink-stamped square with a soft halo. When
+     unset it's truly absent (opacity 0 + scaled-down) and animates
+     in/out with a 180ms ease for the hello/goodbye feel. */
   .dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
+    width: 4px;
+    height: 4px;
     background: transparent;
-    transition: background var(--v2-dur-snap, 80ms) var(--v2-ease);
+    opacity: 0;
+    transform: scale(0.5);
+    transition:
+      opacity 180ms var(--v2-ease, ease-out),
+      transform 180ms var(--v2-ease, ease-out),
+      background-color var(--v2-dur-snap, 80ms) var(--v2-ease),
+      box-shadow 180ms var(--v2-ease, ease-out);
   }
   .dot.on {
+    opacity: 1;
+    transform: scale(1);
     background: var(--v2-hot, #b53a1f);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--v2-hot, #b53a1f) 22%, transparent);
   }
   .gutter:hover .dot.on {
-    /* On hover, the dot becomes a tiny X-mark — reset affordance.
-       We do this with a pseudo overlay so the dot itself stays put. */
     background: var(--v2-ink, #15140e);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--v2-ink, #15140e) 22%, transparent);
   }
 
-  /* ── Label ───────────────────────────────────────────────── */
+  /* ── Label ───────────────────────────────────────────────
+     Right-justified to the gutter so the label baseline and the
+     control baseline meet at a clean vertical spine. Hint mark
+     trails the label inline; the whole label group sits at the
+     right edge of the 100px column. */
   .label {
     display: inline-flex;
     align-items: center;
+    justify-content: flex-end;
     gap: var(--v2-gap-small, 6px);
     font-size: var(--v2-text-body, 11.5px);
     color: var(--v2-ink-2, #4a463c);
@@ -175,32 +193,26 @@
     min-width: 0;
   }
 
-  /* ── Info-circle (replaces inline hint) ────────────────────
-     Small `?` chip after the label. The native title attribute
-     surfaces the hint on hover; styling is intentionally muted so
-     the `?` reads as auxiliary, not a clickable control. */
+  /* ── Editorial info mark ────────────────────────────────
+     A serif italic "i" — no chip, no outline. Reads like a
+     footnote marker in a journal article. Hover brings it to
+     full ink. Pure typographic affordance. */
   .info {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: transparent;
+    display: inline-block;
     color: var(--v2-ink-3, #8a8478);
-    font-family: var(--v2-font-sans, system-ui);
-    font-size: 9px;
-    font-weight: 600;
+    font-family: var(--v2-font-serif, "EB Garamond", "Palatino", "Georgia", serif);
+    font-style: italic;
+    font-size: 12px;
+    font-weight: 400;
     line-height: 1;
     cursor: help;
-    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
-    transition: color var(--v2-dur-snap, 80ms) var(--v2-ease),
-                box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
+    transition: color var(--v2-dur-snap, 80ms) var(--v2-ease);
+    user-select: none;
+    margin-left: 2px;
   }
   .info:hover,
   .info:focus-visible {
     color: var(--v2-ink, #15140e);
-    box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c);
     outline: none;
   }
 </style>

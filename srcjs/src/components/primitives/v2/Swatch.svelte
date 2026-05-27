@@ -102,37 +102,49 @@
   const hasPalette = $derived(swatches.length > 0);
 </script>
 
-<span class="swatch" class:disabled>
-  <!-- Chip — clicking opens the OS-native picker via the overlaid input. -->
-  <span class="chip" class:unset={!displayed} style:background={displayed ?? "transparent"} aria-hidden="true">
+<!--
+  Two-row editorial layout:
+    Row 1 — chip + hex, sitting at the row baseline.
+    Row 2 — palette strip beneath, left-aligned with the chip so the
+            active swatch reads as a "tab beneath" the chip.
+
+  Always two rows when a palette is provided. The previous one-row
+  chip|hex|palette layout did not fit the panel reliably; this
+  intentional 2-row shape is taller but predictable and reads like a
+  composed unit rather than a wrap accident.
+-->
+<div class="swatch" class:disabled class:has-palette={hasPalette}>
+  <div class="primary-row">
+    <!-- Chip — clicking opens the OS-native picker via the overlaid input. -->
+    <span class="chip" class:unset={!displayed} style:background={displayed ?? "transparent"} aria-hidden="true">
+      <input
+        type="color"
+        class="native"
+        value={normalizeForNative(value)}
+        onchange={onNative}
+        {disabled}
+        tabindex="-1"
+        aria-label="Open native color picker"
+      />
+    </span>
+
+    <!-- Hex input — canonical source of truth. -->
     <input
-      type="color"
-      class="native"
-      value={normalizeForNative(value)}
-      onchange={onNative}
+      type="text"
+      class="hex"
+      bind:value={raw}
+      onblur={commit}
+      onkeydown={onKey}
+      {placeholder}
       {disabled}
-      tabindex="-1"
-      aria-label="Open native color picker"
+      {id}
+      spellcheck="false"
+      aria-label="Hex color value"
     />
-  </span>
+  </div>
 
-  <!-- Hex input — canonical source of truth. -->
-  <input
-    type="text"
-    class="hex"
-    bind:value={raw}
-    onblur={commit}
-    onkeydown={onKey}
-    {placeholder}
-    {disabled}
-    {id}
-    spellcheck="false"
-    aria-label="Hex color value"
-  />
-
-  <!-- Inline palette swatches when provided. -->
   {#if hasPalette}
-    <span class="palette">
+    <div class="palette-row">
       {#each swatches as s (s.token)}
         <button
           type="button"
@@ -156,33 +168,66 @@
           {disabled}
         ></button>
       {/if}
-    </span>
+    </div>
   {/if}
-</span>
+</div>
 
 <style>
+  /* Two-row card. Row 1 carries chip + hex at control-h; row 2 carries
+     the palette strip. The card claims its column's full width so the
+     primary row left-aligns at the same x as every other Field control,
+     and the palette strip below shares that same leading edge. */
   .swatch {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--v2-gap-small, 6px);
+    display: grid;
+    /* minmax(0, 1fr) prevents the grid track from being inflated by
+       the palette row's intrinsic content width — without it, the
+       1fr column sizes to max-content of either row, which lets the
+       palette overflow the panel even when the parent has a finite
+       width. */
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: min-content;
+    row-gap: 4px;
     flex: 1;
     min-width: 0;
-    height: var(--v2-control-h, 24px);
+    align-self: center;
+    /* Defense in depth: if a future caller pushes a longer-than-
+       expected palette through, clip it instead of bleeding outside
+       the panel. The wrap below also helps. */
+    overflow: hidden;
   }
   .swatch.disabled { opacity: 0.4; pointer-events: none; }
 
-  /* ── Chip ────────────────────────────────────────────── */
+  .primary-row {
+    display: flex;
+    align-items: center;
+    gap: var(--v2-gap-small, 6px);
+    height: var(--v2-control-h, 22px);
+  }
+
+  /* ── Chip ────────────────────────────────────────────────
+     Larger (22px) than the original 18px — at this size the
+     chip reads as a sample swatch rather than an icon, which
+     matches the editorial color-stamp aesthetic. */
   .chip {
     position: relative;
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     border-radius: var(--v2-r-soft, 3px);
-    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
+    box-shadow:
+      inset 0 0 0 1px var(--v2-rule, #d6d0c1),
+      0 1px 0 var(--v2-paper-2, #f3efe5);
     flex: none;
     cursor: pointer;
-    transition: box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
+    transition:
+      box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease),
+      transform var(--v2-dur-snap, 80ms) var(--v2-ease);
   }
-  .chip:hover { box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c); }
+  .chip:hover {
+    box-shadow:
+      inset 0 0 0 1px var(--v2-ink-2, #4a463c),
+      0 1px 0 var(--v2-paper-2, #f3efe5);
+  }
+  .chip:active { transform: scale(0.96); }
   .chip.unset {
     background-image: repeating-linear-gradient(
       45deg,
@@ -201,20 +246,26 @@
     padding: 0;
   }
 
-  /* ── Hex ─────────────────────────────────────────────── */
+  /* ── Hex ─────────────────────────────────────────────────
+     Grows to fill the rest of the primary row. Mono + tabular
+     numerics + tiny letter-spacing so hex codes typeset like a
+     caption. Right-aligned text so the trailing characters stay
+     visible if the user narrows the panel. */
   .hex {
-    flex: 0 1 auto;
-    width: 64px;
-    min-width: 0;
-    height: var(--v2-control-h, 24px);
-    padding: 0 6px;
+    flex: 1 1 auto;
+    min-width: 56px;
+    height: var(--v2-control-h, 22px);
+    padding: 0 8px;
     border: 0;
     border-radius: var(--v2-r-soft, 3px);
     background: var(--v2-paper-edge, #fff);
     box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
     font-family: var(--v2-font-mono, ui-monospace, monospace);
     font-size: var(--v2-text-body, 11.5px);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
     color: var(--v2-ink, #15140e);
+    text-align: right;
     outline: none;
     transition: box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
   }
@@ -225,35 +276,40 @@
     font-style: italic;
   }
 
-  /* ── Inline palette ─────────────────────────────────────
-     Always-horizontal, never wraps. Swatches are sized so a
-     7-color row fits in the editor's narrowest control column.
-     Active state uses a thin ink ring without a paper offset
-     so it doesn't bump neighbors out of alignment. */
-  .palette {
-    display: inline-flex;
-    gap: 2px;
-    flex-wrap: nowrap;
+  /* ── Palette strip ───────────────────────────────────────
+     Always on its own row, sitting under chip+hex. Left-aligned
+     so the leftmost swatch shares an x-baseline with the chip
+     above it. Flex-wrap lets the strip break to additional rows
+     in pathologically narrow panels (rather than clip). */
+  .palette-row {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    min-width: 0;
+    gap: 3px;
+    /* Subtle indent so the palette reads as a follower, not a
+       sibling, of the primary row. The ~28px matches chip+gap. */
+    padding-left: 28px;
   }
   .sw {
     appearance: none;
     border: 0;
     padding: 0;
-    width: 11px;
-    height: 11px;
+    width: 12px;
+    height: 12px;
     flex: none;
     border-radius: 2px;
     box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
     cursor: pointer;
-    transition: transform var(--v2-dur-snap, 80ms) var(--v2-ease);
+    transition:
+      transform var(--v2-dur-snap, 80ms) var(--v2-ease),
+      box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
   }
-  .sw:hover { transform: scale(1.2); }
+  .sw:hover { transform: translateY(-1px); }
   .sw.active {
     box-shadow:
-      inset 0 0 0 1px var(--v2-rule, #d6d0c1),
+      inset 0 0 0 1px var(--v2-paper-edge, #fff),
       0 0 0 1.5px var(--v2-ink, #15140e);
+    transform: translateY(-1px);
   }
   .sw:focus-visible {
     outline: 1px solid var(--v2-focus-ring, #15140e);

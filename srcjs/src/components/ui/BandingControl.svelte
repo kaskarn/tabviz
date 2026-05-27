@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { BandingMode } from "$types";
-  import { bandingSpecToString } from "$lib/banding";
   import Section from "$components/primitives/v2/Section.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import NumberField from "./NumberField.svelte";
@@ -15,7 +14,6 @@
   const banding = $derived(store.effectiveBanding);
   const depth = $derived(store.maxGroupDepth);
   const hasGroups = $derived(depth > 0);
-  const currentString = $derived(bandingSpecToString(banding));
   const effectiveLevel = $derived(banding.level ?? depth);
   const startsWithBand = $derived(store.bandingStartsWithBand);
 
@@ -52,6 +50,7 @@
 -->
 <Section
   title="Row banding"
+  glyph="section.banding"
   hint="Zebra backgrounds. Group mode paints whole groups as single bands so header + members read as one unit."
 >
   <SegmentedField
@@ -83,36 +82,14 @@
 
   {#if banding.mode !== "none"}
     <SegmentedField
-      label="Phase"
-      value={startsWithBand ? "baba" : "abab"}
+      label="Start"
+      hint="Does the first row sit on the band or the plain surface?"
+      value={startsWithBand ? "band" : "plain"}
       options={[
-        { value: "abab", label: "ABAB" },
-        { value: "baba", label: "BABA" },
+        { value: "plain", label: "Plain" },
+        { value: "band",  label: "Band"  },
       ]}
-      onchange={(v) => setPhase(v === "baba")}
+      onchange={(v) => setPhase(v === "band")}
     />
   {/if}
-
-  <div class="meta">
-    <span>Active:</span>
-    <code>{currentString}</code>
-  </div>
 </Section>
-
-<style>
-  .meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-3, #8a8478);
-    padding-top: 4px;
-  }
-  .meta code {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    background: var(--v2-paper-2, #f3efe5);
-    padding: 1px 6px;
-    border-radius: var(--v2-r-soft, 3px);
-    color: var(--v2-ink, #15140e);
-  }
-</style>

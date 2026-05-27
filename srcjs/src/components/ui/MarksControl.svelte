@@ -65,7 +65,7 @@
   ];
 </script>
 
- <Section title="Series" hint="Per-effect slot bundles. Pick a shape and the anchor color (Fill) for the simple case; expand for the full color bundle.">
+ <Section title="Series" glyph="section.marks" hint="Per-effect slot bundles. Pick a shape and the anchor color (Fill) for the simple case; expand for the full color bundle.">
   <div data-tv-v2>
     {#each series as slot, i (i)}
       <Accordion
@@ -73,7 +73,23 @@
         open={expanded[i] ?? false}
       >
         {#snippet summary()}
-          <span class="anchor-swatch" style:background={slot.fill}></span>
+          <span class="anchor-swatch"
+                style:background={slot.fill}
+                style:width="14px"
+                style:height="14px"
+                style:display="inline-block"
+                style:border-radius="3px"
+                style:box-shadow="inset 0 0 0 1px var(--v2-rule, #d6d0c1)">
+          </span>
+          {#if slot.shape}
+            <span class="shape-mark" style:color={slot.stroke ?? slot.fill}>
+              {slot.shape === "circle" ? "●"
+                : slot.shape === "square" ? "■"
+                : slot.shape === "diamond" ? "◆"
+                : slot.shape === "triangle" ? "▲"
+                : ""}
+            </span>
+          {/if}
         {/snippet}
         <SegmentedField
           label="Shape"
@@ -95,7 +111,7 @@
 </Section>
 
 {#if plot}
-   <Section title="Marks" hint="Plot mark sizes.">
+   <Section title="Marks" glyph="section.marks" hint="Plot mark sizes.">
     <NumberField label="Point size"      value={plot.pointSize}      min={2}  max={20} step={1}   onchange={(v) => setPlot("pointSize", v)} />
     <NumberField label="Line width"      value={plot.lineWidth}      min={0.5} max={5} step={0.25} onchange={(v) => setPlot("lineWidth", v)} />
     <NumberField label="Tick mark length" value={plot.tickMarkLength} min={0}  max={12} step={1}  onchange={(v) => setPlot("tickMarkLength", v)} />
@@ -103,13 +119,13 @@
 {/if}
 
 <style>
-  /* Bespoke .slot toggle gone — Accordion + summary snippet own the
-     collapsible row. Only the anchor-color chip styling remains. */
-  :global([data-tv-v2]) .anchor-swatch {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
-    border-radius: 3px;
+  /* Anchor-swatch styling is inlined on the element (see summary
+     snippet) — that's the only way to defeat Svelte's scope hashing
+     across the Accordion snippet boundary, which kept the old
+     `:global([data-tv-v2]) .anchor-swatch` rule from binding. */
+  .shape-mark {
+    font-size: 11px;
+    line-height: 1;
+    color: var(--v2-ink-2, #4a463c);
   }
 </style>

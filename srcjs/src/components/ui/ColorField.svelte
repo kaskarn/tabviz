@@ -37,20 +37,36 @@
   });
 </script>
 
-<div class="cf-row" data-tv-v2>
-  <Field
-    {label}
-    {hint}
-    pinned={overridden}
-    onreset={overridden && onreset ? onreset : undefined}
-  >
-    <Swatch
-      bind:value={local}
-      swatches={themeSwatches}
-      allowUnset={false}
-    />
-  </Field>
-</div>
+<!--
+  When the caller passes label="", we are being used as a bare control
+  inside another Field's slot — wrapping in our own Field would reserve
+  a second 100px label gutter and squeeze the Swatch into a sliver. Skip
+  the Field wrapper and render the Swatch bare. The pinned/onreset state
+  is only meaningful on the labeled form; bare callers handle that on
+  their outer Field.
+-->
+{#if label === ""}
+  <Swatch
+    bind:value={local}
+    swatches={themeSwatches}
+    allowUnset={false}
+  />
+{:else}
+  <div class="cf-row" data-tv-v2>
+    <Field
+      {label}
+      {hint}
+      pinned={overridden}
+      onreset={overridden && onreset ? onreset : undefined}
+    >
+      <Swatch
+        bind:value={local}
+        swatches={themeSwatches}
+        allowUnset={false}
+      />
+    </Field>
+  </div>
+{/if}
 
 <style>
   .cf-row { display: contents; }

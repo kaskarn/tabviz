@@ -29,16 +29,18 @@
     return `${px}px`;
   }
 
-  // 5-step weight ladder covering the visually distinct range. 100/200
-  // and 800/900 land identical to 300/700 in most body fonts, so they
-  // just clutter the picker. Authors needing an extreme can set the
-  // wire via R / theme code.
+  // 5-step weight ladder. Numerical labels (3-7 = hundreds of the
+  // CSS weight) instead of "Light Reg Med Semi Bold" — compactness
+  // matters because the pill sits next to a label column; verbose
+  // names crammed five into a row read as a wall of letters.
+  // The numerals also typeset like specimen weights in a journal's
+  // typography table, which fits the editorial voice.
   const WEIGHT_OPTIONS = [
-    { value: 300, label: "Light" },
-    { value: 400, label: "Reg" },
-    { value: 500, label: "Med" },
-    { value: 600, label: "Semi" },
-    { value: 700, label: "Bold" },
+    { value: 300, label: "3" },
+    { value: 400, label: "4" },
+    { value: 500, label: "5" },
+    { value: 600, label: "6" },
+    { value: 700, label: "7" },
   ];
 
   interface Props {

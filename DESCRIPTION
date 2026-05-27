@@ -40,6 +40,7 @@ Collate:
     'themes-design.R'
     'themes-api.R'
     'utils-serialize-resolved.R'
+    'conditions.R'
     'paginate.R'
     'wire-version.R'
     'utils-serialize.R'

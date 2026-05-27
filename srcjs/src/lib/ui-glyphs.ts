@@ -90,13 +90,26 @@ export const GLYPHS = {
   "action.dragger":  "⋮⋮",
   "action.more":     "⋯",
 
-  // Section / accordion heading flags (compact mode indicator).
-  "section.data":    "▤",
-  "section.header":  "Ⓗ",
-  "section.layout":  "▦",
-  "section.style":   "✦",
-  "section.options": "◌",
-  "section.advanced":"⚙",
+  // Section / accordion heading flags. Curated alphabet — each top-
+  // level region gets a unique sigil so the panel reads as a keyed map,
+  // not a sprinkling of sparkles.
+  "section.data":      "▤",
+  "section.header":    "Ⓗ",
+  "section.layout":    "▦",
+  "section.style":     "✦",
+  "section.options":   "◌",
+  "section.advanced":  "⚙",
+  // Phase 13 — per-section identity glyphs:
+  "section.identity":  "◐",     // half-disc; the keystone duality (primary/secondary)
+  "section.engagement":"❍",     // ring; engagement / hover / selected
+  "section.tokens":    "※",     // reference mark; semantic tokens
+  "section.text":      "❡",     // pilcrow; typographic
+  "section.borders":   "╎",     // box-drawing; the geometry of dividers
+  "section.marks":     "⬡",     // hex; series marks
+  "section.density":   "≡",     // tri-bar; stacked rhythm
+  "section.banding":   "▥",     // hatched; alternating fill
+  "section.deep":      "◑",     // half-disc reverse; mirror of identity
+  "section.watermark": "⌬",     // benzene; subtle backdrop
 
   // MappedValue mode selector (theme / static / field / condition).
   "mode.theme":      "◍",

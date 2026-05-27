@@ -46,6 +46,10 @@
   /* ── Type ──────────────────────────────────────────────────── */
   --v2-font-sans: "Inter", "IBM Plex Sans", "Helvetica Neue", system-ui, sans-serif;
   --v2-font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  /* Serif is reserved for editorial flourish: hint marks, panel title
+     dingbat, section dividers. One typeface, used sparingly. */
+  --v2-font-serif: "EB Garamond", "Palatino Linotype", "Palatino", "Georgia", serif;
+  --v2-font-display: "Cinzel", "Trajan Pro", "EB Garamond", "Palatino Linotype", "Georgia", serif;
 
   --v2-text-micro:   9.5px;   /* tracked uppercase section flags */
   --v2-text-small:   10.5px;  /* hints, override-count chips */
@@ -67,16 +71,16 @@
   --v2-gap-loose:    18px;
   --v2-gap-vast:     28px;
 
-  --v2-row-h:        24px;   /* default field row content height */
-  --v2-row-h-fat:    32px;   /* fat row — for inputs that need breathing */
-  --v2-control-h:    24px;   /* native control height — pinned to row-h so
-                                 labels and controls share a baseline. Was
-                                 22px; the 2px drift bothered every Field. */
+  --v2-row-h:        22px;   /* default field row content height — Linear-
+                                density editorial precision. Compounds across
+                                every panel row; 24→22 reads tighter. */
+  --v2-row-h-fat:    30px;   /* fat row — for inputs that need breathing */
+  --v2-control-h:    22px;   /* native control height — pinned to row-h. */
 
   /* ── Radii ──────────────────────────────────────────────────── */
   --v2-r-hair:       2px;
   --v2-r-soft:       3px;
-  --v2-r-pill:       12px;   /* exactly half --v2-control-h for proper pill */
+  --v2-r-pill:       11px;   /* exactly half --v2-control-h for proper pill */
   --v2-r-large:      6px;
 
   /* ── Motion ─────────────────────────────────────────────────── */

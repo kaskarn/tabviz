@@ -75,7 +75,7 @@
                listens on pointerenter/leave and focusin/focusout, all
                of which work on spans. -->
           <Tooltip text={hint}>
-            <span class="info" aria-label={hint}>?</span>
+            <span class="info" aria-label={hint}>i</span>
           </Tooltip>
         {/if}
       </h3>
@@ -130,11 +130,13 @@
     outline-offset: 2px;
   }
 
+  /* Caret — bumped so it reads as a control, not a bullet. ink-2
+     instead of ink-3 so it gets visible weight. */
   .caret {
     grid-column: 1;
     align-self: center;
-    font-size: 10px;
-    color: var(--v2-ink-3, #8a8478);
+    font-size: 12px;
+    color: var(--v2-ink-2, #4a463c);
     line-height: 1;
     transition: color var(--v2-dur-snap, 80ms) var(--v2-ease);
     width: 14px;
@@ -151,18 +153,18 @@
     min-width: 0;
     overflow: hidden;
   }
+  /* Accordion title — sans, sentence-case, mid weight. Differentiates
+     from Section's small-caps title: Section is masthead, Accordion is
+     index entry. Without this distinction the two tiers compete. */
   .head-title {
     margin: 0;
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    /* Bumped from text-micro (9.5px) to a hair larger + heavier weight
-       so the section bar carries enough optical weight to distinguish
-       it from individual Field labels (~11.5px sans). */
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: var(--v2-track-flag, 0.14em);
-    text-transform: uppercase;
+    font-family: var(--v2-font-sans, system-ui);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
     color: var(--v2-ink, #15140e);
-    line-height: 1.4;
+    line-height: 1.2;
     display: inline-flex;
     align-items: baseline;
     gap: 5px;
@@ -175,29 +177,22 @@
     line-height: 1;
     letter-spacing: 0;
   }
-  /* Info-circle tooltip for the accordion hint. Same shape as Field /
-     Section variants — uniform `?` affordance. */
+  /* Editorial info mark — italic serif "i", matches Field + Section. */
   .info {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+    display: inline-block;
     color: var(--v2-ink-3, #8a8478);
-    font-family: var(--v2-font-sans, system-ui);
-    font-size: 9px;
-    font-weight: 600;
+    font-family: var(--v2-font-serif, "EB Garamond", "Palatino", Georgia, serif);
+    font-style: italic;
+    font-size: 12px;
+    font-weight: 400;
     line-height: 1;
     cursor: help;
-    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
-    transition: color var(--v2-dur-snap, 80ms) var(--v2-ease),
-                box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
+    transition: color var(--v2-dur-snap, 80ms) var(--v2-ease);
+    user-select: none;
   }
   .info:hover,
   .info:focus-visible {
     color: var(--v2-ink, #15140e);
-    box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c);
     outline: none;
   }
   .head-count {
@@ -215,14 +210,17 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    /* min-width: fit-content lets the auto grid track expand to the
+       summary's intrinsic width even when the title (1fr column 2) is
+       trying to consume all available space. Without this, narrow
+       panels collapse the summary column to 0px and chip previews
+       disappear. */
+    min-width: fit-content;
     font-family: var(--v2-font-sans, system-ui, sans-serif);
     font-size: var(--v2-text-small, 10.5px);
     color: var(--v2-ink-3, #8a8478);
     overflow: hidden;
-    /* Was max-width: 50% — clipped color chips and longer summaries
-       on narrow panels. The 200px reserve covers caret + title + glyph;
-       summary uses the rest. */
-    max-width: calc(100% - 200px);
+    max-width: calc(100% - 100px);
     white-space: nowrap;
     text-overflow: ellipsis;
   }

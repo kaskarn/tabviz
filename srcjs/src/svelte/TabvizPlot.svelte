@@ -2683,12 +2683,18 @@
     contain: layout style paint;
   }
 
-  /* Top border frames column headers (symmetric with header bottom border) */
+  /* Header top border — symmetric with the header bottom; both bind
+     to theme.borders.major. */
   .tabviz-main {
-    border-top: 2px solid var(--tv-header-rule, var(--tv-border));
+    border-top-width: var(--tv-header-border-width, 2px);
+    border-top-style: solid;
+    border-top-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
   }
 
-  /* Base grid cell styles */
+  /* Base grid cell styles. Row + column dividers both obey
+     theme.borders.layout via the --tv-border-{row,col}-style tokens
+     (`solid` or `none` depending on layout). Colors come from
+     theme.borders.minor. */
   .grid-cell {
     padding: 0 var(--tv-cell-padding-x);
     font-variant-numeric: tabular-nums;
@@ -2697,13 +2703,12 @@
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
-    /* Phase 11: row dividers obey theme.borders.layout. --tv-border-row-style
-       is "solid" when layout ∈ {horizontal, grid} and "none" otherwise; the
-       cell paints at --tv-border-minor-color (with var(--tv-border) fallback
-       for unresolved themes). */
     border-bottom-width: var(--tv-row-border-width, 1px);
     border-bottom-style: var(--tv-border-row-style, solid);
     border-bottom-color: var(--tv-border-minor-color, var(--tv-border));
+    border-right-width: var(--tv-row-border-width, 1px);
+    border-right-style: var(--tv-border-col-style, none);
+    border-right-color: var(--tv-border-minor-color, var(--tv-border));
     color: var(--tv-cell-fg, var(--tv-fg));
     /* Row background: `--tv-row-bg` (theme.row.base.bg) with fallback to
        the container bg. Separate from `--tv-bg` so users can tint rows
@@ -2721,7 +2726,9 @@
     font-weight: var(--tv-text-header-weight, var(--tv-font-weight-bold, 600));
     font-style: var(--tv-text-header-italic, normal);
     font-size: var(--tv-text-header-size, calc(var(--tv-font-size-base, 0.875rem) * var(--tv-header-font-scale, 1.05)));
-    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-header-rule, var(--tv-border));
+    border-bottom-width: var(--tv-header-border-width, 2px);
+    border-bottom-style: solid;
+    border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
     background: var(--tv-header-bg, var(--tv-row-bg, var(--tv-bg)));
     color: var(--tv-header-fg, var(--tv-cell-fg, var(--tv-fg)));
     position: relative;
@@ -2739,28 +2746,39 @@
     background: color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-bg));
   }
 
-  /* Primary (leftmost) column header uses the header border width */
+  /* Primary (leftmost) column header — MAJOR bottom (same as leaf headers). */
   .primary-header {
-    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-header-rule, var(--tv-border));
+    border-bottom-width: var(--tv-header-border-width, 2px);
+    border-bottom-style: solid;
+    border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
   }
 
-  /* Column group header styling */
+  /* Column group header — bottom is MINOR (the bar above the leaf
+     header row), since the major break belongs to the leaf-header
+     bottom one row down. */
   .column-group-header {
     justify-content: center;
     font-weight: var(--tv-font-weight-bold, 600);
     text-align: center;
     padding-left: var(--tv-group-padding, 8px);
     padding-right: var(--tv-group-padding, 8px);
+    border-bottom-width: var(--tv-row-border-width, 1px);
+    border-bottom-style: solid;
+    border-bottom-color: var(--tv-border-minor-color, var(--tv-border));
   }
 
-  /* Last row of headers uses the header border width */
+  /* Leaf header row — MAJOR bottom. */
   .header-cell:not(.column-group-header):not(.primary-header):not(.plot-header) {
-    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-header-rule, var(--tv-border));
+    border-bottom-width: var(--tv-header-border-width, 2px);
+    border-bottom-style: solid;
+    border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
   }
 
-  /* Plot header also uses the header border width */
+  /* Plot header — MAJOR bottom. */
   .plot-header {
-    border-bottom: var(--tv-header-border-width, 2px) solid var(--tv-header-rule, var(--tv-border));
+    border-bottom-width: var(--tv-header-border-width, 2px);
+    border-bottom-style: solid;
+    border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
   }
 
   .header-text {

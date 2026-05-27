@@ -20,6 +20,7 @@ import V2SectionsScenario from "./v2/Sections.scenario.svelte";
 import V2ColumnEditorScenario from "./v2/ColumnEditor.scenario.svelte";
 import V2VariantPreviewScenario from "./v2/VariantPreview.scenario.svelte";
 import V2SchemaSweepScenario from "./v2/SchemaSweep.scenario.svelte";
+import V2SettingsScaffoldScenario from "./v2/SettingsScaffold.scenario.svelte";
 
 export const SCENARIOS: ScenarioMeta[] = [
   {
@@ -107,6 +108,12 @@ export const SCENARIOS: ScenarioMeta[] = [
     description: "Visual regression contact sheet — ColumnEditorV2 mounted against every concrete schema (3-up grid).",
     group: "v2 editor",
     component: V2SchemaSweepScenario,
+  },
+  {
+    name: "v2-settings-scaffold",
+    description: "Settings panel design scaffold — each tab rendered against a real store, no widget behind. Pick a menu from the right rail.",
+    group: "v2 settings",
+    component: V2SettingsScaffoldScenario,
   },
 ];
 

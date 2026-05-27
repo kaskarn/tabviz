@@ -278,7 +278,14 @@
     bottom: 0;
     width: clamp(320px, 40%, 440px);
     z-index: 10011;
-    background: var(--tv-bg, #ffffff);
+    /* Layered paper background: warm cream base + barely-visible paper
+       grain (SVG noise) so the panel reads as a real surface, not flat
+       digital chrome. The radial gradient adds a subtle vignette so the
+       eye centers on the active content. */
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, 0.5) 0%, transparent 65%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.08  0 0 0 0 0.07  0 0 0 0 0.05  0 0 0 0.045 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+      var(--tv-bg, #faf7f0);
     border-left: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     box-shadow:
       -24px 0 48px -12px color-mix(in srgb, var(--tv-fg, #0f172a) 12%, transparent),
@@ -313,11 +320,16 @@
 
   .bar-title {
     flex-shrink: 0;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--tv-text-muted, #64748b);
+    /* Display font for one moment — the panel's signature. Cinzel /
+       EB Garamond / serif fallback. Real small caps via font-feature-
+       settings so the proportions are correct vs CSS uppercase. */
+    font-family: var(--v2-font-display, "EB Garamond", "Palatino", Georgia, serif);
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    letter-spacing: 0.14em;
+    color: var(--v2-ink, #15140e);
   }
 
   .bar-actions {

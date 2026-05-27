@@ -27,12 +27,17 @@
 -->
 <Section
   title="Labels"
+  glyph="section.text"
   hint="Title, subtitle, caption, and footnote — also editable by double-clicking on the widget."
 >
+  <!-- Titles use auto-grow textareas (lines=2) so authored strings
+       longer than one row stay visible. Cmd/Ctrl+Enter commits;
+       plain Enter inserts a newline. -->
   <TextField
     label="Title"
     placeholder="(none)"
     value={title}
+    lines={2}
     oninput={(v) => store.previewLabel("title", v)}
     onchange={(v) => store.setLabel("title", v)}
   />
@@ -40,6 +45,7 @@
     label="Subtitle"
     placeholder="(none)"
     value={subtitle}
+    lines={2}
     oninput={(v) => store.previewLabel("subtitle", v)}
     onchange={(v) => store.setLabel("subtitle", v)}
   />
@@ -47,6 +53,7 @@
     label="Caption"
     placeholder="(none)"
     value={caption}
+    lines={3}
     oninput={(v) => store.previewLabel("caption", v)}
     onchange={(v) => store.setLabel("caption", v)}
   />
@@ -54,6 +61,7 @@
     label="Footnote"
     placeholder="(none)"
     value={footnote}
+    lines={3}
     oninput={(v) => store.previewLabel("footnote", v)}
     onchange={(v) => store.setLabel("footnote", v)}
   />

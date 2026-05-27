@@ -21,6 +21,7 @@
 
 <Section
   title="Watermark"
+  glyph="section.watermark"
   hint="Diagonal text rendered behind the rows region — typically a status label like DRAFT or CONFIDENTIAL. Leave empty for no watermark."
 >
   <TextField

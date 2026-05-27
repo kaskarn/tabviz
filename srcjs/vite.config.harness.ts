@@ -42,6 +42,8 @@ export default defineConfig({
       $export:     path.resolve(__dirname, "src/export"),
       $core:       path.resolve(__dirname, "src/core"),
       $svelte:     path.resolve(__dirname, "src/svelte"),
+      $authoring:  path.resolve(__dirname, "src/authoring"),
+      $schema:     path.resolve(__dirname, "src/schema"),
     },
     conditions: ["browser", "import", "module", "default"],
   },

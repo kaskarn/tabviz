@@ -95,6 +95,7 @@
 {#if theme}
   <Section
     title="Token color"
+    glyph="section.tokens"
     hint="The Tier-2 fill input feeds the fill bundle background. Defaults derive from accent at resolve time; pin a value here to lock it.">
     <ColorField
       label="Fill"
@@ -109,6 +110,7 @@
 
   <Section
     title="Token bundles"
+    glyph="section.tokens"
     hint="Each token is a RowSemantic preset (bg / fg / border / marker fill / weight / italic). The painter UI applies one to a row or cell at a time; data columns (row_*_col) flip the same flags from R.">
     <div data-tv-v2>
       {#each TOKENS as t (t.id)}
@@ -117,7 +119,16 @@
           open={expanded[t.id] ?? false}
         >
           {#snippet summary()}
-            <span class="token-desc">{t.description}</span>
+            <!-- Token preview chip — a small (bg / fg) tile that shows
+                 what the token actually looks like when applied. Reads
+                 as a paint-tube label on the closed accordion row. -->
+            <span class="token-chip"
+                  style:background={(tokenField(t.id, "bg") as string | undefined) ?? "transparent"}
+                  style:color={(tokenField(t.id, "fg") as string | undefined) ?? "currentColor"}
+                  style:font-style={tokenField(t.id, "fontStyle") === "italic" ? "italic" : "normal"}
+                  style:font-weight={(tokenField(t.id, "fontWeight") as number | undefined) ?? 400}>
+              Aa
+            </span>
           {/snippet}
           <ColorField
             label="Background"
@@ -161,12 +172,22 @@
 {/if}
 
 <style>
-  /* Bespoke .token toggle gone — Accordion + summary snippet handle
-     the collapsible row. Description chip rendered in the summary
-     slot uses a small muted serif. */
-  :global([data-tv-v2]) .token-desc {
+  /* Token preview chip — bg/fg pair rendered as a paint-tube label.
+     Inlined styles (in the snippet) carry bg/fg/weight/italic from the
+     actual token; the class adds shape + framing only. */
+  :global([data-tv-v2]) .token-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 16px;
+    border-radius: var(--v2-r-hair, 2px);
+    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
     font-family: var(--v2-font-sans, system-ui, sans-serif);
-    font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-3, #8a8478);
+    font-size: 10px;
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    line-height: 1;
+    letter-spacing: 0.04em;
   }
 </style>
