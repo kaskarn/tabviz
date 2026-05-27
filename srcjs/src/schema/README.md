@@ -2,9 +2,10 @@
 
 Single source of truth for column-type metadata + extension surface.
 
-The runtime, editor, codegen, R defaults, future plugin API — all read
-from here. Built up across Phases 1-3; the renderer/behavior pipeline
-plugs in during Phase 7.
+The runtime, editor, codegen, R defaults, and public plugin API
+(`@tabviz/core/extend`) all read from here. The renderer + behavior
+dispatchers in `dispatch.ts` are live; remaining migration work is
+tracked in the "Migration status" section below.
 
 ## Mental model
 
@@ -143,22 +144,38 @@ compose(ringSvg, percentText, { sep: "" })
 `compose` is pure; never mutates inputs; applies bracketing and minor-
 styling as a final pass on the assembled children.
 
-## Migration notes
+## Migration status
 
-The schemas already exist for ~14 concrete column types. The renderers,
-sort, width, source-emit, etc. are still hand-written, dispatching on
-`column.type` via switch statements in:
+The schema-driven dispatchers (`dispatch.ts`, `banks.ts`,
+`theme-finalize.ts`) are live. Most type-dispatched switches have moved
+onto schema behaviors; the remaining gaps are the focus of the active
+schema sprint.
 
-- `lib/filter-sort-utils.ts::sortValueFor`
-- `lib/width-utils.ts::estimateColumnWidth`
-- `lib/source-emit.ts::emitTypeSpecificArgs`
-- `svelte/TabvizPlot.svelte` (cell renderers, mid-file)
-- `export/svg-generator.ts` (parallel cell render paths)
-- `stores/tabvizStore.svelte.ts`, `stores/slices/layout-zoom.svelte.ts`
-- `components/controls/ColumnEditorPopover.svelte` (being replaced)
+**Ported to schema dispatch:**
 
-**Phase 7 cuts these over to schema dispatch.** Today is the contract;
-tomorrow is the migration. The cost is real — much of the rendering
-pipeline gets rewritten — but the win is real too: every type-dispatched
-behavior lives next to the schema that owns it, and adding a new type
-becomes one self-contained PR.
+- `lib/filter-sort-utils.ts` — calls `dispatchForColumn(col, "sortKey")`
+- `lib/width-utils.ts` — calls `dispatchForColumn(col, "naturalWidth")`
+- `lib/source-emit.ts` — calls `dispatchForColumn(col, "emitSource")`
+- `components/column-editor-v2/` — drives the editor accordion off the
+  cascade-resolved schema, no per-type switch
+- Cell rendering for text / numeric / events / interval (DOM + SVG) and
+  11 DOM-only visual cells (pvalue, badge, icon, stars, sparkline, ring,
+  img, progress, reference, range, pictogram) — `schemaRenderCell` in
+  `dispatch.ts`, registered via `register*` in `columns/*-renderer*.ts`
+
+**Still owns per-type code (sprint targets):**
+
+- `export/svg-generator.ts` — `getCellValue()` switch for the 11 visual
+  cells that haven't registered an `svg` renderer; per-type drawing
+  branches for bar/sparkline/ring/pictogram/viz_*
+- `svelte/TabvizPlot.svelte` — fallback to `<CellBar>` / `<CellHeatmap>`
+  for bar/heatmap (needs aggregate context); inline drawing for
+  `viz_bar` / `viz_boxplot` / `viz_violin`; inline mount checks for axis
+  / legend (Phase 7 lifecycle migration)
+- Behavior slots declared in `SchemaBehaviors` with zero registrations:
+  `formatValue`, `aggregate`, `contributeConditions`, `searchKey`,
+  `tooltipText`, `estimateWidth` (Phase 6 closes these out)
+
+The drift gate at `columns/drift.test.ts` tracks per-option `consumedBy`
+coverage; the grandfather count is the running scoreboard for the
+sprint's annotation work (Phase 6).

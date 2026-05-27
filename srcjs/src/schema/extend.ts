@@ -1,29 +1,37 @@
-// Public extension API for tabviz schemas.
+// Public extension API for tabviz schemas — runtime registries.
 //
 // Third-party packages — or in-tree code — use these helpers to add
-// new column types, register renderers, and attach lifecycle hooks.
-// Standard plugin pattern: import the helpers, call them at module
-// load time (typically from the package's entry file), and tabviz
-// picks them up.
+// new column types, register renderers, attach lifecycle hooks, and
+// register type-dispatched behaviors. Standard plugin pattern: import
+// the helpers, call them at module load time (typically from the
+// package's entry file), and tabviz picks them up.
 //
-//   import { defineSchema, registerSchema, registerRenderer }
+// The public surface is re-exported from `@tabviz/core/extend` (see
+// `src/extend/index.ts`). The renderer + behavior dispatchers in
+// `dispatch.ts` walk the inheritance chain and read from the registries
+// here; lifecycle invocation lands in Phase 7 of the schema sprint.
+//
+//   import { defineSchema, registerColumnType, compose, tag, text }
 //     from "@tabviz/core/extend";
 //
 //   const FANCY_RING = defineSchema({
 //     key: "fancy_ring",
+//     label: "Fancy Ring",
 //     inherits: "ring",
 //     options: [{ key: "innerRadius", control: "number", default: 0.5 }],
 //   });
-//   registerSchema(FANCY_RING);
-//   registerRenderer("fancy_ring", (val, opts, ctx, parents) => {
-//     const baseRing = parents.ring(val, opts, ctx);
-//     return addInnerCutout(baseRing, opts.innerRadius);
-//   });
 //
-// Phase 3 ships defineSchema + register* skeletons; the renderer +
-// lifecycle pipelines wire up in Phase 7. Until then, the registry
-// stores entries but rendering still flows through the old
-// hand-written code paths.
+//   registerColumnType({
+//     schema: FANCY_RING,
+//     renderer: (val, opts, ctx, parents) => {
+//       const ringSvg = parents.ring(val, opts, ctx);
+//       return compose(
+//         tag(ringSvg, ["fancy-ring-glyph"]),
+//         tag(text(String(val)), ["fancy-ring-label", "minor"]),
+//         { sep: "" },
+//       );
+//     },
+//   });
 
 import type { ColumnSchema } from "./types";
 import type {
@@ -72,15 +80,16 @@ const renderers: Record<RenderTarget, Record<string, CellFormatter>> = {
 };
 
 /**
- * Lifecycle hooks keyed by schema key. Phase 7 wires the widget host
- * to invoke these on column add/remove and widget mount/unmount.
+ * Lifecycle hooks keyed by schema key. The widget host invokes these
+ * on column add/remove and widget mount/unmount (wiring lands in
+ * Phase 7 of the schema sprint; the registry itself is live).
  */
 const lifecycles: Record<string, SchemaLifecycle> = {};
 
 /**
  * Behavior functions (sortKey / estimateWidth / emitSource / …) keyed
- * by schema key. Phase 7 wires the dispatcher to walk the schema
- * inheritance chain, looking up behaviors with parent-proxy support.
+ * by schema key. The dispatcher in `dispatch.ts` walks the schema
+ * inheritance chain and resolves behaviors with parent-proxy support.
  */
 const behaviors: Record<string, SchemaBehaviors> = {};
 

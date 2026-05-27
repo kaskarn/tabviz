@@ -54,6 +54,10 @@
       "types": "./dist/spec/index.d.ts",
       "import": "./dist/spec.mjs"
     },
+    "./extend": {
+      "types": "./dist/extend/index.d.ts",
+      "import": "./dist/extend.mjs"
+    },
     "./style.css": "./dist/style.css",
     "./package.json": "./package.json"
   },

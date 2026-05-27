@@ -82,7 +82,11 @@ export function compose(...args: (RenderNode | ComposeOptions)[]): RenderGroup {
 // Internals
 // ────────────────────────────────────────────────────────────────────
 
-function text(value: string): RenderText {
+/**
+ * Render-node text primitive. Exported so third-party renderers can
+ * build trees without re-deriving the literal-object shape.
+ */
+export function text(value: string): RenderText {
   return { kind: "text", value };
 }
 

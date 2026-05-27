@@ -16,6 +16,7 @@
     "src/svelte/index.ts",
     "src/export/index.ts",
     "src/spec/index.ts",
+    "src/extend/index.ts",
     "src/types/**/*.ts"
   ],
   "exclude": [

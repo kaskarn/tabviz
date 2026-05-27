@@ -6,10 +6,13 @@
 // schemas declare lifecycle hooks for cross-cutting concerns like
 // axis space, legends, or zoom/pan handlers.
 //
-// Implementation: Phase 7. The types here are the contract — handwritten
-// renderer code today still lives in `TabvizPlot.svelte` +
-// `svg-generator.ts`; Phase 7 extracts those into pure functions that
-// match these signatures.
+// Implementation status: the dispatcher (`dispatch.ts`), parent-proxy
+// composition, and tag/nodeRule finalization (`theme-finalize.ts`) are
+// live. Renderers exist for text/numeric/events/interval (DOM + SVG)
+// and 11 DOM-only visual cells. The SVG-side coverage gap for visual
+// cells, the bar/heatmap aggregate path, lifecycle invocation, and the
+// remaining behavior slots (formatValue/aggregate/etc.) land in the
+// active schema sprint (Phases 4-7).
 
 import type { ColumnSchema } from "./types";
 import type { ColumnSpec } from "../types";
@@ -194,8 +197,8 @@ export type ParentRenderers = {
  * and SVG-export consume this same shape.
  *
  * The `parents` proxy is keyed by schema key, accepting the same
- * (value, opts, ctx) the child receives. Composition utilities like
- * `compose()` are imported from `./compose` (Phase 7).
+ * (value, opts, ctx) the child receives. Composition utilities live
+ * in `./compose` (`compose`, `text`) and `./theme-finalize` (`tag`).
  */
 export type CellFormatter = (
   value: unknown,
@@ -223,7 +226,7 @@ export type CellFormatter = (
 // from index N onwards in parentheses with the joining separator
 // inside. Both can combine.
 //
-// Implementation: in `./compose.ts` (Phase 7). This is just the type.
+// Implementation lives in `./compose.ts`; this is just the type.
 
 export interface ComposeOptions {
   /** Separator between siblings (default " "). */
@@ -312,26 +315,25 @@ export interface SchemaLifecycle {
 // Schema behaviors — type-dispatched logic that belongs on the schema
 // ────────────────────────────────────────────────────────────────────
 //
-// A grep across `srcjs/src/` finds at least 8 sites where per-column
-// logic dispatches on `col.type`:
+// Historical context: per-column logic used to dispatch on `col.type`
+// via switch statements scattered across:
 //
-//   filter-sort-utils.ts   — sortValueFor() switch per type
-//   width-utils.ts         — estimateColumnWidth() branches
-//   source-emit.ts         — emitTypeSpecificArgs() switch
-//   svg-generator.ts       — cell-render branches per type
-//   TabvizPlot.svelte      — cell-render + layout branches
-//   ColumnEditorPopover    — editor-UI branches (replaced by SchemaForm)
-//   layout-zoom.svelte.ts  — layout-mode dispatch
-//   tabvizStore.svelte.ts  — store-side type checks
+//   filter-sort-utils.ts   — sortValueFor()      → ported (`sortKey` behavior)
+//   width-utils.ts         — estimateColumnWidth → ported (`naturalWidth` behavior)
+//   source-emit.ts         — emitTypeSpecificArgs → ported (`emitSource` behavior)
+//   ColumnEditorPopover    — editor-UI branches  → replaced by SchemaForm
+//   TabvizPlot.svelte      — cell-render + layout → renderer dispatch (partial)
+//   svg-generator.ts       — cell-render branches → renderer dispatch (partial)
+//   layout-zoom.svelte.ts  — layout-mode dispatch → in progress
+//   tabvizStore.svelte.ts  — store-side type checks → in progress
 //
-// Each is a candidate for moving onto the schema as a named behavior.
-// The schema becomes the central registry of all type-dispatched
-// logic, with inheritance: a child schema's behavior overrides its
-// parent's, OR delegates back via the `parents` proxy (same pattern
-// as renderers / compose).
-//
-// Phase 7 implements the dispatcher + the migrations; Phase 3 (this
-// commit) just locks in the contract.
+// The schema is the central registry of all type-dispatched logic,
+// with inheritance: a child schema's behavior overrides its parent's,
+// OR delegates back via the `parents` proxy (same pattern as renderers
+// / compose). The remaining behavior slots below (formatValue, aggregate,
+// searchKey, tooltipText, estimateWidth, contributeConditions) are
+// declared here but unregistered; the active schema sprint wires the
+// consumer side for each (Phase 6).
 
 /** Comparable scalar (or `null` for "missing"). */
 export type SortableValue = string | number | boolean | null;
