@@ -95,9 +95,9 @@
   .pill {
     display: inline-flex;
     align-items: stretch;
-    height: var(--v2-control-h, 22px);
+    height: var(--v2-control-h, 24px);
     background: var(--v2-paper-2, #f3efe5);
-    border-radius: var(--v2-r-pill, 11px);
+    border-radius: var(--v2-r-pill, 12px);
     padding: 1px;
     gap: 1px;
     user-select: none;
@@ -113,7 +113,7 @@
     background: transparent;
     padding: 0 10px;
     min-width: 24px;
-    border-radius: calc(var(--v2-r-pill, 11px) - 1px);
+    border-radius: calc(var(--v2-r-pill, 12px) - 1px);
     display: inline-flex;
     align-items: center;
     justify-content: center;

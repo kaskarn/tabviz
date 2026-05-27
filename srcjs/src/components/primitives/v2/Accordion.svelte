@@ -219,7 +219,10 @@
     font-size: var(--v2-text-small, 10.5px);
     color: var(--v2-ink-3, #8a8478);
     overflow: hidden;
-    max-width: 50%;
+    /* Was max-width: 50% — clipped color chips and longer summaries
+       on narrow panels. The 200px reserve covers caret + title + glyph;
+       summary uses the rest. */
+    max-width: calc(100% - 200px);
     white-space: nowrap;
     text-overflow: ellipsis;
   }
@@ -245,6 +248,9 @@
     gap: var(--v2-gap-hair, 2px);
   }
   .acc.open .body {
-    padding: 2px 0 var(--v2-gap-mid, 8px);
+    /* Match Section's 6px-top body padding so collapsed vs static
+       sections share rhythm. Bottom keeps a slightly larger 8px gap
+       to give the closing divider some air before the next head. */
+    padding: var(--v2-gap-small, 6px) 0 var(--v2-gap-mid, 8px);
   }
 </style>

@@ -67,7 +67,10 @@
     {#if glyph}
       <span class="label-glyph" aria-hidden="true">{glyphChar(glyph)}</span>
     {/if}
-    <span class="label-text">{label}</span>
+    <!-- title= surfaces the full label on hover when ellipsis truncates
+         the visible text. No CSS-only overflow detection; rely on the
+         browser to do the right thing (it always shows the title). -->
+    <span class="label-text" title={label}>{label}</span>
     {#if hint}
       <Tooltip text={hint}>
         <span class="info" aria-label={hint}>?</span>

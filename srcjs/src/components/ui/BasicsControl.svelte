@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import SettingsSection from "./SettingsSection.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
   import TextField from "./TextField.svelte";
 
   interface Props {
@@ -25,9 +25,9 @@
   belonged together — title/caption sit at the same conceptual layer
   as density/banding for a viewer composing the plot).
 -->
-<SettingsSection
+<Section
   title="Labels"
-  description="Title, subtitle, caption, and footnote — also editable by double-clicking on the widget."
+  hint="Title, subtitle, caption, and footnote — also editable by double-clicking on the widget."
 >
   <TextField
     label="Title"
@@ -57,4 +57,4 @@
     oninput={(v) => store.previewLabel("footnote", v)}
     onchange={(v) => store.setLabel("footnote", v)}
   />
-</SettingsSection>
+</Section>

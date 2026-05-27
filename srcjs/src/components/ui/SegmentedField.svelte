@@ -22,7 +22,11 @@
 </script>
 
 <div class="sf-row" data-tv-v2>
-  <Field {label} {hint} tight>
+  <!-- `tight` previously sized the column to max-content so the Pill
+       sat at its intrinsic width. That made Color rows (Swatch
+       stretches) and Pill rows (intrinsic) misaligned. Field default
+       lets the Pill fill its column, matching the Swatch behavior. -->
+  <Field {label} {hint}>
     <Pill
       {value}
       {segments}

@@ -167,7 +167,7 @@
     gap: var(--v2-gap-small, 6px);
     flex: 1;
     min-width: 0;
-    height: var(--v2-control-h, 22px);
+    height: var(--v2-control-h, 24px);
   }
   .swatch.disabled { opacity: 0.4; pointer-events: none; }
 
@@ -206,7 +206,7 @@
     flex: 0 1 auto;
     width: 64px;
     min-width: 0;
-    height: var(--v2-control-h, 22px);
+    height: var(--v2-control-h, 24px);
     padding: 0 6px;
     border: 0;
     border-radius: var(--v2-r-soft, 3px);

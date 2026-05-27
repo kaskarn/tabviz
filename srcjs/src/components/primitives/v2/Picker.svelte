@@ -259,7 +259,7 @@
   .trigger {
     appearance: none;
     width: 100%;
-    height: var(--v2-control-h, 22px);
+    height: var(--v2-control-h, 24px);
     padding: 0 6px 0 8px;
     background: var(--v2-paper-edge, #fff);
     box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);

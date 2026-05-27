@@ -370,7 +370,10 @@
 
   .panel-body {
     height: 100%;
-    padding: 2px 12px 12px;
+    /* Top padding lives on the first v2 Section's head (12px); adding
+       it here pushes the first section down for no reason. Zero top
+       lets the section's own padding own the rhythm. */
+    padding: 0 12px 12px;
     overflow-y: auto;
   }
 

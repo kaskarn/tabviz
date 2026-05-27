@@ -300,7 +300,9 @@
     letter-spacing: var(--v2-track-flag, 0.14em);
     color: var(--v2-ink-3, #8a8478);
     padding: 14px 0 6px;
-    border-top: 1px solid var(--v2-rule-soft, #e6e0d1);
+    /* Use the primary rule for top-level zone breaks; --v2-rule-soft
+       is reserved for sub-item separators inside dense rows. */
+    border-top: 1px solid var(--v2-rule, #d6d0c1);
     margin-top: 8px;
   }
 

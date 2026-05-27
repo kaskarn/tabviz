@@ -6,7 +6,7 @@
   // are what the renderer actually reads, so the density picker writes
   // the full SpacingTokens preset client-side too.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import SettingsSection from "./SettingsSection.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import BooleanField from "./BooleanField.svelte";
   import NumberField from "./NumberField.svelte";
@@ -140,15 +140,15 @@
 <!--
   Layout tab: density / header style / slot style live as Field rows
   (label-on-left, control-on-right) under a single "Layout" section.
-  Each used to be a full SettingsSection with its own title +
-  description paragraph; the per-knob redundancy was visual noise.
-  Now the SettingsSection acts as the section header and each knob
-  is a Field with a hint tooltip carrying the explanation.
+  Each used to be a full section with its own title + description
+  paragraph; the per-knob redundancy was visual noise. Now the
+  Section acts as the section header and each knob is a Field with a
+  hint tooltip carrying the explanation.
 -->
 {#if variants}
-  <SettingsSection
+  <Section
     title="Layout"
-    description="Three structural choices applied site-wide. Spacing tab can override individual tokens on top of the density preset."
+    hint="Three structural choices applied site-wide. Spacing tab can override individual tokens on top of the density preset."
   >
     <SegmentedField
       label="Density"
@@ -183,7 +183,7 @@
       ]}
       onchange={changeSlotStyle}
     />
-  </SettingsSection>
+  </Section>
 {/if}
 
 <BandingControl {store} />

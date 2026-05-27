@@ -16,7 +16,7 @@
   // Both stay on the SpacingTokens spec so authors can override via
   // set_spacing() in R.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import SettingsSection from "./SettingsSection.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
   import NumberField from "./NumberField.svelte";
   import BooleanField from "./BooleanField.svelte";
 
@@ -157,7 +157,7 @@
     </div>
   {/if}
   {#each sections as section (section.title)}
-    <SettingsSection title={section.title} description={section.description}>
+     <Section title={section.title} hint={section.description}>
       {#each section.tokens as t (t.field)}
         {@const isAspectDriven = aspectActive && ASPECT_DRIVEN_FIELDS.has(t.field)}
         <NumberField
@@ -167,12 +167,12 @@
           onchange={(v) => set(t.field, v)}
         />
       {/each}
-    </SettingsSection>
+    </Section>
   {/each}
 {/if}
 
 {#if layout}
-  <SettingsSection title="Container" description="Outer container styling.">
+   <Section title="Container" hint="Outer container styling.">
     <BooleanField
       label="Border"
       value={layout.containerBorder}
@@ -184,7 +184,7 @@
       min={0} max={32} step={1}
       onchange={(v) => setLayout("containerBorderRadius", v)}
     />
-  </SettingsSection>
+  </Section>
 {/if}
 
 <style>

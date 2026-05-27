@@ -2,7 +2,7 @@
   // v2 Text & Annotations tab.
   // 8 text role bundles + L1/L2/L3 row-group accordion sections.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import SettingsSection from "./SettingsSection.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
   import BooleanField from "./BooleanField.svelte";
@@ -111,7 +111,7 @@
   }
 </script>
 
-<SettingsSection title="Text roles" description="Per-role typography. Title and subtitle use the display family; body / header / cell / label / tick / footnote use the body family. Header bundle is the column-header band — composed from body + bold weight by default.">
+ <Section title="Text roles" hint="Per-role typography. Title and subtitle use the display family; body / header / cell / label / tick / footnote use the body family. Header bundle is the column-header band — composed from body + bold weight by default.">
   <div data-tv-v2>
     {#each roles as role (role)}
       {@const roleData = readRole(role)}
@@ -157,10 +157,10 @@
       {/if}
     {/each}
   </div>
-</SettingsSection>
+</Section>
 
 {#if rg}
-  <SettingsSection title="Row group hierarchy" description="L1 outermost (boldest); L2/L3 progressively lighter.">
+   <Section title="Row group hierarchy" hint="L1 outermost (boldest); L2/L3 progressively lighter.">
     <div data-tv-v2>
     {#each RG_LEVELS as level (level)}
       <Accordion
@@ -207,7 +207,7 @@
       </Accordion>
     {/each}
     </div>
-  </SettingsSection>
+  </Section>
 {/if}
 
 <style>

@@ -69,12 +69,14 @@
 
   --v2-row-h:        24px;   /* default field row content height */
   --v2-row-h-fat:    32px;   /* fat row — for inputs that need breathing */
-  --v2-control-h:    22px;   /* native control height (pill, knob input) */
+  --v2-control-h:    24px;   /* native control height — pinned to row-h so
+                                 labels and controls share a baseline. Was
+                                 22px; the 2px drift bothered every Field. */
 
   /* ── Radii ──────────────────────────────────────────────────── */
   --v2-r-hair:       2px;
   --v2-r-soft:       3px;
-  --v2-r-pill:       11px;   /* exactly half --v2-control-h for proper pill */
+  --v2-r-pill:       12px;   /* exactly half --v2-control-h for proper pill */
   --v2-r-large:      6px;
 
   /* ── Motion ─────────────────────────────────────────────────── */

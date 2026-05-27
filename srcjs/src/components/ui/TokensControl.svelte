@@ -10,7 +10,7 @@
   // setThemeFieldDerived / isOverridden plumbing; reset reverts to the
   // resolved default.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import SettingsSection from "./SettingsSection.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
   import BooleanField from "./BooleanField.svelte";
@@ -93,9 +93,9 @@
 </script>
 
 {#if theme}
-  <SettingsSection
+  <Section
     title="Token color"
-    description="The Tier-2 fill input feeds the fill bundle background. Defaults derive from accent at resolve time; pin a value here to lock it.">
+    hint="The Tier-2 fill input feeds the fill bundle background. Defaults derive from accent at resolve time; pin a value here to lock it.">
     <ColorField
       label="Fill"
       hint="Pastel row-fill tone"
@@ -105,11 +105,11 @@
       onreset={resetSemanticFill}
       swatches={colors(PAPER_SWATCHES)}
     />
-  </SettingsSection>
+  </Section>
 
-  <SettingsSection
+  <Section
     title="Token bundles"
-    description="Each token is a RowSemantic preset (bg / fg / border / marker fill / weight / italic). The painter UI applies one to a row or cell at a time; data columns (row_*_col) flip the same flags from R.">
+    hint="Each token is a RowSemantic preset (bg / fg / border / marker fill / weight / italic). The painter UI applies one to a row or cell at a time; data columns (row_*_col) flip the same flags from R.">
     <div data-tv-v2>
       {#each TOKENS as t (t.id)}
         <Accordion
@@ -157,7 +157,7 @@
         </Accordion>
       {/each}
     </div>
-  </SettingsSection>
+  </Section>
 {/if}
 
 <style>

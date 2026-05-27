@@ -69,7 +69,7 @@
     -webkit-appearance: none;
     flex: 1;
     min-width: 0;
-    height: var(--v2-control-h, 22px);
+    height: var(--v2-control-h, 24px);
     padding: 0 22px 0 8px;
     border: 0;
     border-radius: var(--v2-r-soft, 3px);

@@ -7,7 +7,7 @@
   // Shape rides on the SlotBundle now (theme.series[i].shape) — null
   // falls through to the renderer's default 4-shape rotation.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
-  import SettingsSection from "./SettingsSection.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
   import SegmentedField from "./SegmentedField.svelte";
@@ -65,7 +65,7 @@
   ];
 </script>
 
-<SettingsSection title="Series" description="Per-effect slot bundles. Pick a shape and the anchor color (Fill) for the simple case; expand for the full color bundle.">
+ <Section title="Series" hint="Per-effect slot bundles. Pick a shape and the anchor color (Fill) for the simple case; expand for the full color bundle.">
   <div data-tv-v2>
     {#each series as slot, i (i)}
       <Accordion
@@ -92,14 +92,14 @@
       </Accordion>
     {/each}
   </div>
-</SettingsSection>
+</Section>
 
 {#if plot}
-  <SettingsSection title="Marks" description="Plot mark sizes.">
+   <Section title="Marks" hint="Plot mark sizes.">
     <NumberField label="Point size"      value={plot.pointSize}      min={2}  max={20} step={1}   onchange={(v) => setPlot("pointSize", v)} />
     <NumberField label="Line width"      value={plot.lineWidth}      min={0.5} max={5} step={0.25} onchange={(v) => setPlot("lineWidth", v)} />
     <NumberField label="Tick mark length" value={plot.tickMarkLength} min={0}  max={12} step={1}  onchange={(v) => setPlot("tickMarkLength", v)} />
-  </SettingsSection>
+  </Section>
 {/if}
 
 <style>

@@ -2,7 +2,7 @@
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { BandingMode } from "$types";
   import { bandingSpecToString } from "$lib/banding";
-  import SettingsSection from "./SettingsSection.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import NumberField from "./NumberField.svelte";
 
@@ -50,9 +50,9 @@
   as a different design language; v2 inherits the editorial ink-on-
   cream palette and stays compact at 22 px row heights.
 -->
-<SettingsSection
+<Section
   title="Row banding"
-  description="Zebra backgrounds. Group mode paints whole groups as single bands so header + members read as one unit."
+  hint="Zebra backgrounds. Group mode paints whole groups as single bands so header + members read as one unit."
 >
   <SegmentedField
     label="Mode"
@@ -97,7 +97,7 @@
     <span>Active:</span>
     <code>{currentString}</code>
   </div>
-</SettingsSection>
+</Section>
 
 <style>
   .meta {
