@@ -8,19 +8,25 @@
 // cell-component registry and instantiates it with its existing
 // prop surface. Zero rewrite of any component.
 //
-// `svg` slot is NOT registered for any of these — svg-generator
-// still owns SVG export. Phase 7e.4b will wire the svg slot for
-// schemas where it makes sense (or fold an extracted markup
-// generator into a future commit per schema).
+// `svg` renderers are registered per cell as schema-sprint Phase 4
+// closes the SVG coverage gap. Phase 4a covers cells whose entire
+// SVG output is text (pvalue, reference, range, img) — they emit
+// RenderText trees identical to what svg-generator's `getCellValue`
+// produces. Once Phase 4b lands the visual cells (badge, icon, stars,
+// ring, pictogram, progress, sparkline) and Phase 4c handles
+// bar/heatmap aggregate context, the legacy per-type drawing
+// branches in svg-generator.ts can be deleted.
 //
 // `bar` and `heatmap` are deliberately omitted — they need a
 // per-column aggregate (max value across visible rows) that doesn't
 // fit the per-cell ctx shape. They stay on the legacy TabvizPlot
-// branches until a column-level lifecycle hook lands.
+// branches until Phase 4c lands the aggregate behavior + bank entry.
 
-import type { RenderComponent, CellFormatter } from "../render-types";
+import type { RenderComponent, RenderText, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { registerCellComponent } from "../../components/render-component-registry";
+import { formatPvalue, truncateString } from "../../lib/formatters";
+import type { ColumnOptions } from "../../types";
 
 import CellPvalue    from "../../components/table/CellPvalue.svelte";
 import CellBadge     from "../../components/table/CellBadge.svelte";
@@ -41,6 +47,11 @@ function component(
   props: Record<string, unknown>,
 ): RenderComponent {
   return { kind: "component", name, props };
+}
+
+// Helper: bare RenderText for the SVG-side text-only renderers.
+function text(value: string): RenderText {
+  return { kind: "text", value };
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -146,6 +157,63 @@ const rangeRenderer: CellFormatter = (value, options, ctx) => {
   });
 };
 
+// ────────────────────────────────────────────────────────────────────
+// SVG-side renderers (Phase 4a)
+// ────────────────────────────────────────────────────────────────────
+//
+// These produce RenderText trees mirroring `svg-generator.ts::getCellValue`
+// for the cells whose SVG output IS just text. The dispatch in
+// svg-generator's render loop catches these and `continue`s past the
+// legacy per-type fallback branches. Phase 4b/c/d migrates the rest.
+
+const pvalueSvgRenderer: CellFormatter = (value, options, ctx) => {
+  const v = value as number | null | undefined;
+  if (typeof v !== "number") return text(ctx?.naText ?? "");
+  return text(formatPvalue(v, options as ColumnOptions));
+};
+
+const referenceSvgRenderer: CellFormatter = (value, options, ctx) => {
+  if (value === undefined || value === null) return text("");
+  const opts = options as AnyOpts;
+  const refOpts = opts?.reference as { maxChars?: number } | undefined;
+  const maxChars = refOpts?.maxChars ?? 30;
+  const str = String(value);
+  return text(truncateString(str, maxChars));
+  void ctx;
+};
+
+const rangeSvgRenderer: CellFormatter = (_value, options, ctx) => {
+  const opts = options as AnyOpts;
+  const rangeOpts = opts?.range as
+    | { minField: string; maxField: string; separator?: string; decimals?: number | null }
+    | undefined;
+  if (!rangeOpts) return text("");
+  const meta = (ctx?.row ?? {}) as Record<string, unknown>;
+  const minVal = meta[rangeOpts.minField];
+  const maxVal = meta[rangeOpts.maxField];
+  const sep = rangeOpts.separator ?? " – ";
+  const decimals = rangeOpts.decimals;
+  const fmt = (v: unknown): string => {
+    if (typeof v !== "number") return "";
+    if (decimals === null || decimals === undefined) {
+      return Number.isInteger(v) ? String(v) : v.toFixed(1);
+    }
+    return v.toFixed(decimals);
+  };
+  if (minVal === null && maxVal === null) return text("");
+  if (minVal === null) return text(fmt(maxVal));
+  if (maxVal === null) return text(fmt(minVal));
+  return text(`${fmt(minVal)}${sep}${fmt(maxVal)}`);
+};
+
+const imgSvgRenderer: CellFormatter = (_value, options, _ctx) => {
+  // Images cannot embed in static SVG export — emit the fallback
+  // placeholder text the legacy path produces.
+  const opts = options as AnyOpts;
+  const imgOpts = opts?.img as { fallback?: string } | undefined;
+  return text(imgOpts?.fallback ?? "[IMG]");
+};
+
 /** Idempotent re-register helper for tests after registry reset. */
 export function registerVisualCellRenderers(): void {
   // Register components in the mounter's registry.
@@ -160,17 +228,20 @@ export function registerVisualCellRenderers(): void {
   registerCellComponent("CellReference", CellReference as never);
   registerCellComponent("CellRange",     CellRange     as never);
 
-  // Dispatch wiring.
-  registerRenderers("pvalue",    { dom: pvalueRenderer });
+  // Dispatch wiring. DOM renderers mount Svelte components; SVG
+  // renderers emit RenderText for the text-only cells (Phase 4a).
+  // Phase 4b/c/d add SVG renderers for the visual + aggregate +
+  // viz-subtype cells.
+  registerRenderers("pvalue",    { dom: pvalueRenderer,    svg: pvalueSvgRenderer });
   registerRenderers("badge",     { dom: badgeRenderer });
   registerRenderers("icon",      { dom: iconRenderer });
   registerRenderers("stars",     { dom: starsRenderer });
   registerRenderers("sparkline", { dom: sparklineRenderer });
   registerRenderers("ring",      { dom: ringRenderer });
-  registerRenderers("img",       { dom: imgRenderer });
+  registerRenderers("img",       { dom: imgRenderer,       svg: imgSvgRenderer });
   registerRenderers("progress",  { dom: progressRenderer });
-  registerRenderers("reference", { dom: referenceRenderer });
-  registerRenderers("range",     { dom: rangeRenderer });
+  registerRenderers("reference", { dom: referenceRenderer, svg: referenceSvgRenderer });
+  registerRenderers("range",     { dom: rangeRenderer,     svg: rangeSvgRenderer });
 }
 
 // Side-effect: register on first import.
