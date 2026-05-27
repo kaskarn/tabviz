@@ -147,35 +147,83 @@ styling as a final pass on the assembled children.
 ## Migration status
 
 The schema-driven dispatchers (`dispatch.ts`, `banks.ts`,
-`theme-finalize.ts`) are live. Most type-dispatched switches have moved
-onto schema behaviors; the remaining gaps are the focus of the active
-schema sprint.
+`theme-finalize.ts`, `lifecycle-dispatch.ts`, `variant-compile.ts`)
+are all live. The schema sprint moved every concrete cell type onto
+schema renderers and shipped the consumer side of conditions /
+styleMapping / lifecycle / aggregate / formatValue. The pipeline is
+single-source-of-truth.
 
-**Ported to schema dispatch:**
+**Dispatchers (live):**
 
-- `lib/filter-sort-utils.ts` — calls `dispatchForColumn(col, "sortKey")`
-- `lib/width-utils.ts` — calls `dispatchForColumn(col, "naturalWidth")`
-- `lib/source-emit.ts` — calls `dispatchForColumn(col, "emitSource")`
-- `components/column-editor-v2/` — drives the editor accordion off the
-  cascade-resolved schema, no per-type switch
-- Cell rendering for text / numeric / events / interval (DOM + SVG) and
-  11 DOM-only visual cells (pvalue, badge, icon, stars, sparkline, ring,
-  img, progress, reference, range, pictogram) — `schemaRenderCell` in
-  `dispatch.ts`, registered via `register*` in `columns/*-renderer*.ts`
+- `dispatchForColumn(col, "sortKey" | "naturalWidth" | "emitSource" |
+  "aggregate" | "formatValue" | "contributeBanks")` — value-transform
+  behaviors registered per schema.
+- `schemaRenderCell(col, value, ctx, nodeRules, target)` — produces
+  RenderNode trees for cells; both browser DOM and V8 export consume
+  the same tree.
+- `computeEffectiveBanks(spec)` — merges author-supplied bank entries
+  with schema-contributed entries; populates `banks.conditions` /
+  `banks.footnotes` / `banks.axes` / `banks.legends`.
+- `dispatchLifecycle(state, columns, widget)` — fires
+  `onFirstPresent` / `onLastRemoved` / `onColumnCreate` /
+  `onColumnDestroy` based on column-set diffs.
+- `compileVariants(spec)` — expands `column.options.<bucket>.variant`
+  into primitive options at ingest so renderers branch on options,
+  not variant strings.
 
-**Still owns per-type code (sprint targets):**
+**Renderer coverage:**
 
-- `export/svg-generator.ts` — `getCellValue()` switch for the 11 visual
-  cells that haven't registered an `svg` renderer; per-type drawing
-  branches for bar/sparkline/ring/pictogram/viz_*
-- `svelte/TabvizPlot.svelte` — fallback to `<CellBar>` / `<CellHeatmap>`
-  for bar/heatmap (needs aggregate context); inline drawing for
-  `viz_bar` / `viz_boxplot` / `viz_violin`; inline mount checks for axis
-  / legend (Phase 7 lifecycle migration)
-- Behavior slots declared in `SchemaBehaviors` with zero registrations:
-  `formatValue`, `aggregate`, `contributeConditions`, `searchKey`,
-  `tooltipText`, `estimateWidth` (Phase 6 closes these out)
+- Text-composition cells (text, numeric, events, interval) and
+  every visual cell (pvalue, badge, icon, stars, sparkline, ring,
+  img, progress, reference, range, pictogram, bar, heatmap) have
+  both `dom` and `svg` renderers registered. The legacy
+  `getCellValue()` switch and per-type drawing branches in
+  `svg-generator.ts` were deleted in Phase 4z.
+- `viz_bar` / `viz_boxplot` / `viz_violin` are SVG plot overlays
+  (not table cells) — they intentionally stay outside the cell-
+  renderer dispatch, but their domain math is shared between
+  browser + export via `lib/viz-domain-utils.ts` (Phase 4d).
 
-The drift gate at `columns/drift.test.ts` tracks per-option `consumedBy`
-coverage; the grandfather count is the running scoreboard for the
-sprint's annotation work (Phase 6).
+**Behaviors:**
+
+- `sortKey`: 6 schemas (interval / events / viz_*).
+- `naturalWidth`: 4 glyph schemas.
+- `emitSource`: every concrete schema.
+- `contributeBanks`: 5 (reference for footnotes + 4 viz for axes /
+  legends).
+- `aggregate`: numeric (mean/median/min/max/sum/count).
+- `formatValue`: numeric / percent / pvalue.
+- `contributeConditions`, `searchKey`, `tooltipText`,
+  `estimateWidth`: declared optional; opt-in per schema as concrete
+  use cases land.
+
+**Drift gate:**
+
+`columns/drift.test.ts` tracks per-option `consumedBy` annotations.
+The grandfather list shrank from 459 entries to ~125 in Phase 6 as
+inherited BASE/TEXT/NUMERIC/PVALUE options got annotated at the
+parent definitions. The list can only shrink; new options must
+annotate explicitly.
+
+**Worked example end-to-end:**
+
+```r
+tabviz(
+  data       = trials,
+  conditions = list(condition("sig", ~ p < 0.05 / nrow(trials))),
+  columns    = list(
+    col_text("study", bold = cond("sig")),
+    col_interval("hr", "lo", "hi", variant = "bracket_muted"),
+    col_pvalue("p")
+  )
+)
+```
+
+The "study" cell renders bold for significant rows; the boolean
+stays correctly aligned under sort / filter (Phase 1 keystone). The
+interval column shows brackets / muted bounds (Phase 3 variant
+compile). Both runtimes — browser via `schemaRenderCell` and V8
+export via the same dispatch — produce equivalent output.
+
+See `inst/examples/gallery_99_schema_showcase.R` for a fictional-
+dataset showcase that exercises every wired feature in one spec.
