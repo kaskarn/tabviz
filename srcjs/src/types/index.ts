@@ -198,6 +198,10 @@ export interface IntervalColumnOptions {
    *  by interval-renderer.ts. One of "traditional" | "bracket_muted" |
    *  "plus_minus" | "stacked". Defaults to "traditional". */
   variant?: "traditional" | "bracket_muted" | "plus_minus" | "stacked";
+  /** Compile-pass output (schema/variant-compile.ts). Renderers read
+   *  primitive recipe fields from here instead of branching on `variant`
+   *  directly. Populated at spec ingest; do not author by hand. */
+  __resolved?: Record<string, unknown>;
 }
 
 export interface PercentColumnOptions {

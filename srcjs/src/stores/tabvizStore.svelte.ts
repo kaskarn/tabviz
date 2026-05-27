@@ -41,6 +41,7 @@ export const RESERVED_COLUMN_IDS = _RESERVED_COLUMN_IDS;
 export const mintUniqueId = _mintUniqueId;
 import { createEventEmitter, type EventEmitter } from "$stores/slices/events";
 import type { TabvizEvents } from "$spec/events";
+import { compileVariants } from "../schema/variant-compile";
 
 // ====================================================================
 // Op recorder contract
@@ -402,9 +403,14 @@ export function createTabvizStore() {
 
   // Actions
   function setSpec(newSpec: WebSpec) {
+    // Variant compile pass — populates options.<bucket>.__resolved on
+    // every variant-bearing column so renderers read primitive options
+    // instead of branching on the variant id (schema-sprint Phase 3).
+    // Pure + idempotent; safe to run on every setSpec.
+    const compiledSpec = compileVariants(newSpec);
     // Create a new object reference to ensure derived values recompute properly
     // when switching between specs (e.g., in split forest navigation)
-    spec = { ...newSpec };
+    spec = { ...compiledSpec };
     // rows-groups slice owns collapsedGroups / rowOrderOverrides / hover /
     // tooltip pointers. reset() wipes them; collapsed-by-default group ids
     // are seeded from the new spec below.

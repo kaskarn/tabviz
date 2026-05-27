@@ -55,6 +55,7 @@ import { activeHeaderVariant } from "$lib/header-variant";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
+import { compileVariants } from "../schema/variant-compile";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -4791,6 +4792,12 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Normalize the labelColumn slot into the columns array so all
   // downstream layout / drawing reads from a single uniform shape.
   spec = normalizeLabelColumn(spec);
+  // Variant compile pass — populates options.<bucket>.__resolved on
+  // variant-bearing columns so renderers read primitives instead of
+  // branching on the variant id. The browser path runs this inside
+  // setSpec; the SVG export path mirrors here so V8 stays equivalent.
+  // Pure + idempotent.
+  spec = compileVariants(spec);
   // Validate input
   validateSpec(spec);
 

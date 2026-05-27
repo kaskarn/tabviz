@@ -1,11 +1,11 @@
 // Cell renderer for the `interval` schema.
 //
-// Phase 7e text-composition exemplar: produces a tagged RenderNode
-// tree, identical for browser + SVG export. Theme `nodeRules` can
-// restyle the bounds via the `interval-range` tag without the
-// renderer knowing anything about colors or sizes.
+// Text-composition exemplar: produces a tagged RenderNode tree,
+// identical for browser + SVG export. Theme `nodeRules` can restyle
+// the bounds via the `interval-range` tag without the renderer
+// knowing anything about colors or sizes.
 //
-// Output shape:
+// Output shape (traditional variant):
 //
 //     group{ children: [
 //       text "0.85",                         // point estimate
@@ -15,24 +15,57 @@
 //       },
 //     ]}
 //
+// Variants are NOT a runtime channel. The renderer reads only primitive
+// recipe fields from `options.interval.__resolved` (populated at spec
+// ingest by `compileVariants`). The wire `variant` id is preserved for
+// the editor segmented control; the renderer never branches on it
+// directly. See schema-sprint Phase 3 / variant-compile.ts.
+//
 // Edge cases preserved verbatim from the legacy `formatInterval`:
 // - Missing point → `naText`
 // - Missing bounds → just the point
 // - Imprecise threshold tripped → "—"
-//
-// Multi-field reads: the dispatcher passes `value = meta[col.field]`,
-// but interval needs point/lower/upper from three separate fields.
-// We read those via `ctx.row`, which the caller (TabvizPlot /
-// svg-generator) populates with `row.metadata`.
 
 import type { ColumnOptions } from "../../types";
 import type { RenderNode, RenderText, RenderGroup, CellFormatter } from "../render-types";
 import { registerRenderers } from "../extend";
 import { formatNumber } from "../../lib/formatters";
 import { tag } from "../theme-finalize";
+import { resolveVariant } from "../variant-compile";
+import { INTERVAL_SCHEMA } from "./interval";
 
 function text(value: string): RenderText {
   return { kind: "text", value };
+}
+
+interface IntervalRecipe {
+  boundsLayout: "row" | "column";
+  boundsContent: "range" | "half_width";
+  boundsDelimiter: readonly [string, string];
+  boundsSeparator: string;
+  boundsPrefix: string;
+}
+
+function recipeFor(opts: ColumnOptions["interval"] | undefined): IntervalRecipe {
+  // Prefer the pre-compiled __resolved shape (compileVariants ingest pass);
+  // fall back to looking up the variant id directly so test fixtures and
+  // ad-hoc render paths that bypass setSpec still work correctly.
+  const fromResolved = opts?.__resolved as Partial<IntervalRecipe> | undefined;
+  if (fromResolved && "boundsLayout" in fromResolved) {
+    return fromResolved as IntervalRecipe;
+  }
+  const variantId = opts?.variant as string | undefined;
+  const fallback = resolveVariant(INTERVAL_SCHEMA, variantId);
+  if (fallback) return fallback as unknown as IntervalRecipe;
+  // No variants declared on the schema (defensive): keep the traditional
+  // layout as the absolute last-resort default.
+  return {
+    boundsLayout: "row",
+    boundsContent: "range",
+    boundsDelimiter: ["(", ")"],
+    boundsSeparator: ", ",
+    boundsPrefix: "",
+  };
 }
 
 const intervalRenderer: CellFormatter = (_value, options, ctx) => {
@@ -76,60 +109,33 @@ const intervalRenderer: CellFormatter = (_value, options, ctx) => {
     return text("—");
   }
 
-  // Variant dispatch — declared in INTERVAL_SCHEMA.variants; this is
-  // the only place that consumes the value. Wire: `options.interval.variant`.
-  const variant = (i?.variant as string | undefined) ?? "traditional";
+  const recipe = recipeFor(i);
 
-  if (variant === "plus_minus") {
-    // Half-width; if bounds aren't symmetric, fall back to half-range.
-    const halfWidth = (upper - lower) / 2;
-    const symPart = tag(
-      { kind: "group", layout: "row",
-        children: [text("± "), text(fmt(halfWidth))] },
-      "interval-range",
-    ) as RenderGroup;
-    return {
-      kind: "group", layout: "row",
-      children: [text(fmt(point)), text(sep), symPart],
-    } as RenderNode;
+  // Bounds content: either the full range (lower, upper) joined by the
+  // recipe's separator, or the half-width derived from the bounds.
+  const boundsChildren: RenderNode[] = [];
+  if (recipe.boundsDelimiter[0]) boundsChildren.push(text(recipe.boundsDelimiter[0]));
+  if (recipe.boundsPrefix)       boundsChildren.push(text(recipe.boundsPrefix));
+  if (recipe.boundsContent === "half_width") {
+    boundsChildren.push(text(fmt((upper - lower) / 2)));
+  } else {
+    boundsChildren.push(text(fmt(lower)));
+    if (recipe.boundsSeparator) boundsChildren.push(text(recipe.boundsSeparator));
+    boundsChildren.push(text(fmt(upper)));
   }
-
-  // `bracket_muted` swaps the parens for square brackets and the comma
-  // for an en-dash; theming controls the muted-ness via the tag overlay.
-  const useBrackets = variant === "bracket_muted";
-  const openB  = useBrackets ? "[" : "(";
-  const closeB = useBrackets ? "]" : ")";
-  const inner  = useBrackets ? "–" : ", ";
+  if (recipe.boundsDelimiter[1]) boundsChildren.push(text(recipe.boundsDelimiter[1]));
 
   const bounds: RenderGroup = tag(
-    {
-      kind: "group",
-      layout: "row",
-      children: [
-        text(openB),
-        text(fmt(lower)),
-        text(inner),
-        text(fmt(upper)),
-        text(closeB),
-      ],
-    },
+    { kind: "group", layout: "row", children: boundsChildren },
     "interval-range",
   ) as RenderGroup;
 
-  // `stacked` puts the point on one line and the bounds on the next.
-  if (variant === "stacked") {
-    return {
-      kind: "group",
-      layout: "column",
-      children: [text(fmt(point)), bounds],
-    } as RenderNode;
-  }
-
-  // Default ("traditional") layout: point sep bounds, inline row.
   return {
     kind: "group",
-    layout: "row",
-    children: [text(fmt(point)), text(sep), bounds],
+    layout: recipe.boundsLayout,
+    children: recipe.boundsLayout === "column"
+      ? [text(fmt(point)), bounds]
+      : [text(fmt(point)), text(sep), bounds],
   } as RenderNode;
 };
 

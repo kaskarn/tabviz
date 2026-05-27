@@ -230,6 +230,23 @@ export interface VariantSpec {
    * If absent, the card shows the label only.
    */
   preview?: string;
+  /**
+   * Bucket-scoped primitive options this variant compiles to. The
+   * ingest-time `compileVariants` pass copies these onto
+   * `column.options.<bucket>.__resolved`; renderers read only from
+   * `__resolved` and never branch on `variant` directly. The variant
+   * id stays on the wire so the editor segmented control round-trips
+   * (authoring intent preserved); the renderer reads primitives so
+   * theme nodeRules can target structural tags without competing with
+   * a second-channel dispatch (schema-sprint Phase 3).
+   *
+   *   INTERVAL.traditional.resolved   = { boundsLayout: "row", … }
+   *   INTERVAL.bracket_muted.resolved = { boundsDelimiter: ["[", "]"], … }
+   *
+   * Shape is schema-specific; each schema's renderer documents what
+   * it expects to find here.
+   */
+  resolved?: Record<string, unknown>;
 }
 
 /** The registry — populated by `columns/index.ts`. */
