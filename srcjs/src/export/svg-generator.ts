@@ -50,7 +50,7 @@ import { isVizType, resolveShowHeader } from "$lib/column-types";
 import { resolveMarkerStyle } from "$lib/marker-styling";
 import { computeBandIndexes } from "$lib/banding";
 import { resolveSemanticBundle, semanticMarkOpacity } from "$lib/semantic-styling";
-import { GLYPH_REGISTRY, resolveGlyph } from "$lib/glyph-registry";
+import { GLYPH_REGISTRY } from "$lib/glyph-registry";
 import { activeHeaderVariant } from "$lib/header-variant";
 import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
@@ -72,23 +72,14 @@ import {
   EFFECT,
   getEffectYOffset,
   AXIS,
-  BADGE_VARIANTS,
 } from "$lib/rendering-constants";
 import {
   formatNumber,
-  formatEvents,
-  formatInterval,
-  formatPvalue,
   getColumnDisplayText,
   truncateString,
 } from "$lib/formatters";
 import { estimateTextWidth, measureTextWidth, glyphNaturalWidth } from "$lib/width-utils";
 import { escapeXml } from "$lib/svg-text-utils";
-import {
-  computeSparklinePoints as computeSparklinePointsShared,
-  catmullRomPath as catmullRomPathShared,
-  type SparklinePoint as SparklinePointShared,
-} from "$lib/sparkline-utils";
 
 import {
   computeBoxplotStats,
@@ -1250,7 +1241,9 @@ function truncateText(
   return text.slice(0, left) + ellipsis;
 }
 
-// Note: formatNumber, formatEvents, formatInterval, formatPvalue are imported from ./formatters
+// Note: formatNumber + axis-tick helpers are imported from ./formatters.
+// formatEvents / formatInterval / formatPvalue moved to per-schema
+// renderers under src/schema/columns/*-renderer.ts (Phase 4a-c).
 
 /** Format tick value for axis */
 function formatTick(value: number): string {
@@ -1642,24 +1635,6 @@ function makeThemeResolver(theme: WebTheme): StyleResolver {
   };
 }
 
-/** Compute max values for bar columns from all rows */
-function computeBarMaxValues(rows: Row[], columns: ColumnSpec[]): Map<string, number> {
-  const maxValues = new Map<string, number>();
-  for (const col of columns) {
-    if (col.type === "bar") {
-      let max = 0;
-      for (const row of rows) {
-        const val = row.metadata[col.field];
-        if (typeof val === "number" && val > max) {
-          max = val;
-        }
-      }
-      maxValues.set(col.field, max > 0 ? max : 1); // Avoid division by zero
-    }
-  }
-  return maxValues;
-}
-
 /**
  * Per-column { min, max } over the spec's row set, keyed by column id.
  * Consumed by the schema dispatch (ctx.columnSummary) so bar / heatmap
@@ -1690,128 +1665,15 @@ function computeColumnSummaries(
   return out;
 }
 
+/**
+ * Cell-text fallback used by the SVG-export catch-all branch. The
+ * schema dispatch in the render loop produces SVG markup for every
+ * concrete schema currently in the registry (Phase 4a-c); this helper
+ * fires only for un-registered schemas (e.g. third-party additions
+ * without an svg renderer) or wire-shape edge cases. Keep it minimal:
+ * stringify the field value with a single text-type truncation.
+ */
 function getCellValue(row: Row, col: ColumnSpec): string {
-  if (col.type === "interval") {
-    // Support optional field overrides from column options
-    const point = col.options?.interval?.point
-      ? row.metadata[col.options.interval.point] as number
-      : row.point;
-    const lower = col.options?.interval?.lower
-      ? row.metadata[col.options.interval.lower] as number
-      : row.lower;
-    const upper = col.options?.interval?.upper
-      ? row.metadata[col.options.interval.upper] as number
-      : row.upper;
-    return formatInterval(point, lower, upper, col.options);
-  }
-  if (col.type === "numeric") {
-    const val = row.metadata[col.field];
-    return typeof val === "number" ? formatNumber(val, col.options) : (col.options?.naText ?? "");
-  }
-  if (col.type === "custom" && col.options?.events) {
-    return formatEvents(row, col.options);
-  }
-  if (col.type === "pvalue") {
-    const val = row.metadata[col.field];
-    if (typeof val !== "number") return col.options?.naText ?? "";
-    return formatPvalue(val, col.options);
-  }
-  // New column type fallbacks for SVG export
-  if (col.type === "icon") {
-    const val = row.metadata[col.field];
-    if (val === undefined || val === null) return "";
-    const strVal = String(val);
-    const mapping = col.options?.icon?.mapping;
-    if (mapping && strVal in mapping) return mapping[strVal];
-    return strVal;
-  }
-  if (col.type === "badge") {
-    const val = row.metadata[col.field];
-    return val !== undefined && val !== null ? String(val) : "";
-  }
-  if (col.type === "stars") {
-    const val = row.metadata[col.field];
-    if (typeof val !== "number") return "";
-    const maxStars = Math.max(1, Math.min(20, col.options?.stars?.maxStars ?? 5));
-    const domain = col.options?.stars?.domain;
-    let raw = val;
-    if (domain && Number.isFinite(domain[0]) && Number.isFinite(domain[1]) && domain[1] > domain[0]) {
-      const clamped = Math.max(domain[0], Math.min(domain[1], raw));
-      raw = ((clamped - domain[0]) / (domain[1] - domain[0])) * maxStars;
-    }
-    const rating = Math.max(0, Math.min(maxStars, raw));
-    const filled = Math.floor(rating);
-    const empty = maxStars - filled;
-    return "★".repeat(filled) + "☆".repeat(empty);
-  }
-  if (col.type === "ring") {
-    // Donut + optional label. Use "MM" as a wide stand-in for the donut
-    // diameter (~24px ≈ 2 chars at body font), plus the label text.
-    const val = row.metadata[col.field];
-    if (typeof val !== "number" || !Number.isFinite(val)) return "";
-    const opts = col.options?.ring;
-    const showLabel = opts?.showLabel ?? true;
-    const labelFormat = opts?.labelFormat ?? "percent";
-    const labelDecimals = opts?.labelDecimals ?? 0;
-    const min = opts?.minValue ?? 0;
-    const max = opts?.maxValue ?? 1;
-    const f = max > min ? (val - min) / (max - min) : 0;
-    const lbl = !showLabel ? "" :
-      labelFormat === "percent" ? (f * 100).toFixed(labelDecimals) + "%" :
-      labelFormat === "integer" ? String(Math.round(val)) :
-      val.toFixed(labelDecimals);
-    return "MM" + (lbl ? " " + lbl : "");
-  }
-  if (col.type === "pictogram") {
-    // Width-estimation placeholder. Rating mode caps at max_glyphs;
-    // count mode uses round(value). The actual draw happens in the
-    // rendering branch below. We use "MM" per glyph (~14-16px wide at
-    // body font-size) to approximate the rendered glyph+gap width since
-    // unicode "●" measures much narrower than a 14px square SVG glyph.
-    const val = row.metadata[col.field];
-    if (typeof val !== "number" || !Number.isFinite(val)) return "";
-    const maxG = col.options?.pictogram?.maxGlyphs ?? null;
-    const layout = col.options?.pictogram?.layout ?? "row";
-    const labelOn = !!col.options?.pictogram?.valueLabel;
-    if (layout === "stack") return labelOn ? "MM " + val.toFixed(0) : "MM";
-    const n = maxG ?? Math.min(Math.max(0, Math.round(val)), 20);
-    const glyphs = "MM".repeat(n);
-    return labelOn ? glyphs + "  " + val.toFixed(1) : glyphs;
-  }
-  if (col.type === "img") {
-    // Images can't render in SVG text - show fallback
-    const fallback = col.options?.img?.fallback ?? "[IMG]";
-    return fallback;
-  }
-  if (col.type === "reference") {
-    const val = row.metadata[col.field];
-    if (val === undefined || val === null) return "";
-    const str = String(val);
-    const maxChars = col.options?.reference?.maxChars ?? 30;
-    if (str.length <= maxChars) return str;
-    return str.substring(0, maxChars) + "...";
-  }
-  if (col.type === "range") {
-    const opts = col.options?.range;
-    if (!opts) return "";
-    const minVal = row.metadata[opts.minField];
-    const maxVal = row.metadata[opts.maxField];
-    const sep = opts.separator ?? " – ";
-    const decimals = opts.decimals;
-
-    const formatVal = (v: unknown): string => {
-      if (typeof v !== "number") return "";
-      if (decimals === null || decimals === undefined) {
-        return Number.isInteger(v) ? String(v) : v.toFixed(1);
-      }
-      return v.toFixed(decimals);
-    };
-
-    if (minVal === null && maxVal === null) return "";
-    if (minVal === null) return formatVal(maxVal);
-    if (maxVal === null) return formatVal(minVal);
-    return `${formatVal(minVal)}${sep}${formatVal(maxVal)}`;
-  }
   const val = row.metadata[col.field];
   const str = val !== undefined && val !== null ? String(val) : (col.options?.naText ?? "");
   if (col.type === "text") {
@@ -1819,14 +1681,6 @@ function getCellValue(row: Row, col: ColumnSpec): string {
   }
   return str;
 }
-
-// SparklinePoint, computeSparklinePoints and catmullRomPath moved to
-// $lib/sparkline-utils.ts so the schema sparkline renderer can share
-// them. Local aliases keep the legacy in-loop drawing branch working
-// until it's deleted in Phase 4z.
-type SparklinePoint = SparklinePointShared;
-const computeSparklinePoints = computeSparklinePointsShared;
-const catmullRomPath = catmullRomPathShared;
 
 function renderInterval(
   row: Row,
@@ -3113,7 +2967,6 @@ function renderUnifiedTableRow(
   theme: WebTheme,
   labelWidth: number,
   depth: number,
-  barMaxValues: Map<string, number>,
   autoWidths: Map<string, number>,
   getColWidth: (col: ColumnSpec) => number,
   columnPositions: number[],
@@ -3259,776 +3112,71 @@ function renderUnifiedTableRow(
       }
     }
 
-    if (col.type === "bar" && typeof row.metadata[col.field] === "number") {
-      // Render bar — geometry mirrors CellBar.svelte:
-      //   [track 8px-tall pill at divider.subtle][gap 6][label min-width 32]
-      // Fill rect rendered at full opacity (NOT 0.7 — matches CSS contract).
-      // Bar height fixed at BAR.HEIGHT, decoupled from theme.plot.pointSize
-      // (which is forest-marker geometry, not bar styling).
-      const barValue = row.metadata[col.field] as number;
-      const computedMax = barMaxValues.get(col.field);
-      const maxValue = col.options?.bar?.maxValue ?? computedMax ?? 100;
-      const barScale = col.options?.bar?.scale ?? "linear";
-      const showLabel = col.options?.bar?.showLabel ?? true;
-      // Per-cell + per-row semantic paint cascade (parity with the live
-      // CellBar component): cell-paint markerFill > row-paint markerFill
-      // > primary. Tokens without markerFill (bold, fill) fall through.
-      const barCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
-      const barRowBundle = resolveSemanticBundle(row.style, theme);
-      const barColor = col.options?.bar?.color
-        ?? barCellBundle?.markerFill
-        ?? barRowBundle?.markerFill
-        ?? (theme.inputs as { primary?: string } | undefined)?.primary
-        ?? theme.accent.default;
-      const trackColor = theme.divider.subtle ?? "#e2e8f0";
-      const barHeight = BAR.HEIGHT;
-      const labelFontSize = fontSize * BAR.LABEL_SCALE;
-      const labelReserved = showLabel ? BAR.GAP + BAR.LABEL_MIN_WIDTH : 0;
-      const barAreaWidth = Math.max(0, width - SPACING.TEXT_PADDING * 2 - labelReserved);
-      const barFillWidth = normalizeValue(barValue, 0, maxValue, barScale) * barAreaWidth;
-      const barX = currentX + SPACING.TEXT_PADDING;
-      const barY = y + rowHeight / 2 - barHeight / 2;
+    // Catch-all text fallback. Schema renderers cover every concrete
+    // type currently in the registry (Phase 4a-c); this path fires only
+    // for un-registered schemas (e.g. third-party additions without an
+    // svg renderer) and computes its text via the trimmed `getCellValue`
+    // below. Uses cellStyle / rowStyle precedence to mirror the live
+    // .data-cell semantic styling.
+    const cellStyle = row.cellStyles?.[col.field];
+    const rowStyle = row.style;
 
-      // Respect row styling for bar value text
-      const rowStyle = row.style;
-      const barFontWeight = (rowStyle?.bold || rowStyle?.emphasis)
-        ? 600
-        : 400;
+    const cellSemBundle =
+      resolveSemanticBundle(cellStyle, theme) ??
+      resolveSemanticBundle(rowStyle, theme);
 
-      // Track (background pill) — rendered first so the fill paints over it.
-      lines.push(`<rect x="${barX}" y="${barY}"
-        width="${barAreaWidth}" height="${barHeight}"
-        fill="${trackColor}" rx="${BAR.RADIUS}"/>`);
-      // Fill (no opacity — full saturation matches CellBar's rgba CSS).
-      lines.push(`<rect x="${barX}" y="${barY}"
-        width="${Math.max(0, barFillWidth)}" height="${barHeight}"
-        fill="${barColor}" rx="${BAR.RADIUS}"/>`);
-      if (showLabel) {
-        // Match CellBar.svelte's formattedValue() rounding.
-        const labelText = barValue >= 100
-          ? barValue.toFixed(0)
-          : barValue >= 10
-            ? barValue.toFixed(1)
-            : barValue.toFixed(2);
-        lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
-          font-family="${theme.text.body.family}"
-          font-size="${labelFontSize}px"
-          font-weight="${barFontWeight}"
-          text-anchor="end"
-          fill="${theme.content.primary}">${labelText}</text>`);
-      }
-    } else if (col.type === "sparkline" && Array.isArray(row.metadata[col.field])) {
-      // Render sparkline — variant + smoothing + end-dot match CellSparkline.svelte.
-      const raw = row.metadata[col.field] as number[] | number[][];
-      const data: number[] = Array.isArray(raw[0]) ? (raw[0] as number[]) : (raw as number[]);
-      const sparkType = col.options?.sparkline?.type ?? "line";
-      const sparkHeight = col.options?.sparkline?.height ?? 16;
-      const sparkCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
-      const sparkRowBundle = resolveSemanticBundle(row.style, theme);
-      const sparkColor = col.options?.sparkline?.color
-        ?? sparkCellBundle?.markerFill
-        ?? sparkRowBundle?.markerFill
-        ?? (theme.inputs as { primary?: string } | undefined)?.primary
-        ?? theme.accent.default;
-      const sparkPadX = SPACING.TEXT_PADDING;
-      const sparkX = currentX + sparkPadX;
-      const sparkY = y + rowHeight / 2 - sparkHeight / 2;
-      const sparkW = Math.max(0, width - sparkPadX * 2);
-      const points = computeSparklinePoints(data, sparkX, sparkY, sparkW, sparkHeight);
+    let cellFontWeight = 400;
+    if (cellStyle?.bold || rowStyle?.bold) {
+      cellFontWeight = 600;
+    } else if (cellSemBundle?.fontWeight != null) {
+      cellFontWeight = cellSemBundle.fontWeight;
+    }
 
-      if (points.length === 0) {
-        // Nothing to draw
-      } else if (sparkType === "bar") {
-        // Per-point rect from the value down to the bottom of the chart area.
-        // Mirrors CellSparkline.svelte:88-97 (bar type).
-        const innerH = Math.max(0, sparkHeight - SPARKLINE.PADDING * 2);
-        const baselineY = sparkY + SPARKLINE.PADDING + innerH;
-        const barW = points.length > 1
-          ? Math.max(1, (sparkW - SPARKLINE.PADDING * 2) / points.length - 1)
-          : Math.max(1, sparkW * 0.5);
-        for (const [px, py] of points) {
-          const h = Math.max(0, baselineY - py);
-          lines.push(`<rect x="${(px - barW / 2).toFixed(2)}" y="${py.toFixed(2)}"
-            width="${barW.toFixed(2)}" height="${h.toFixed(2)}"
-            fill="${sparkColor}" opacity="${SPARKLINE.BAR_OPACITY}"/>`);
-        }
-      } else if (sparkType === "area") {
-        // Filled area below the curve + stroked curve on top.
-        const linePathD = catmullRomPath(points);
-        const innerH = Math.max(0, sparkHeight - SPARKLINE.PADDING * 2);
-        const baselineY = sparkY + SPARKLINE.PADDING + innerH;
-        // Close the area by returning along the baseline.
-        const last = points[points.length - 1];
-        const first = points[0];
-        const areaPathD = `${linePathD}L${last[0].toFixed(2)},${baselineY.toFixed(2)}L${first[0].toFixed(2)},${baselineY.toFixed(2)}Z`;
-        lines.push(`<path d="${areaPathD}" fill="${sparkColor}" opacity="${SPARKLINE.AREA_OPACITY}"/>`);
-        lines.push(`<path d="${linePathD}" fill="none" stroke="${sparkColor}" stroke-width="${SPARKLINE.STROKE_WIDTH}"/>`);
-      } else {
-        // Default: line + end dot.
-        const pathD = catmullRomPath(points);
-        lines.push(`<path d="${pathD}" fill="none" stroke="${sparkColor}" stroke-width="${SPARKLINE.STROKE_WIDTH}"/>`);
-        const last = points[points.length - 1];
-        lines.push(`<circle cx="${last[0].toFixed(2)}" cy="${last[1].toFixed(2)}" r="${SPARKLINE.DOT_RADIUS}" fill="${sparkColor}"/>`);
-      }
-    } else if (col.type === "badge") {
-      // Render badge cell. Now supports shape (pill/circle/square),
-      // outline mode, and threshold-driven color scale (numeric values).
-      const badgeValue = row.metadata[col.field];
-      if (badgeValue !== undefined && badgeValue !== null) {
-        const badgeText = String(badgeValue);
-        const badgeFontSize = fontSize * BADGE.FONT_SCALE;
-        const badgeHeight = badgeFontSize + BADGE.PADDING * 2;
+    let cellFontStyle = "normal";
+    if (cellStyle?.italic || rowStyle?.italic) {
+      cellFontStyle = "italic";
+    } else if (cellSemBundle?.fontStyle != null) {
+      cellFontStyle = cellSemBundle.fontStyle;
+    }
 
-        const opts = col.options?.badge;
-        const variants = opts?.variants;
-        const customColors = opts?.colors;
-        const thresholds = opts?.thresholds;
-        const shape = opts?.shape ?? "pill";
-        const outline = opts?.outline ?? false;
-        // Glyph default = identity secondary (with primary fallback in mono
-        // themes). Accent is reserved for layered emphasis only.
-        const glyphDefault = (theme.inputs as { secondary?: string; primary?: string } | undefined)?.secondary
-          ?? (theme.inputs as { primary?: string } | undefined)?.primary
-          ?? theme.accent.default;
-        // Row/cell semantic markerFill (accent/emphasis/muted). Slots in
-        // below explicit column-level intent (thresholds/colors/variants)
-        // but above theme default — same precedence as col_bar.
-        const badgeCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
-        const badgeRowBundle = resolveSemanticBundle(row.style, theme);
-        const badgeOverride = badgeCellBundle?.markerFill ?? badgeRowBundle?.markerFill ?? null;
-        let badgeColor: string = badgeOverride ?? glyphDefault;
+    let cellColor = (theme.cell.fg ?? theme.content.primary);
+    if (cellStyle?.color) {
+      cellColor = cellStyle.color;
+    } else if (rowStyle?.color) {
+      cellColor = rowStyle.color;
+    } else if (cellSemBundle?.fg != null) {
+      cellColor = cellSemBundle.fg;
+    }
 
-        // Threshold path (numeric value bucketed into colors[]).
-        if (Array.isArray(thresholds) && thresholds.length > 0 && typeof badgeValue === "number") {
-          const stops: string[] = (() => {
-            if (Array.isArray(customColors) && customColors.length === thresholds.length + 1) {
-              return customColors;
-            }
-            if (thresholds.length === 1) return [glyphDefault, theme.status?.negative ?? glyphDefault];
-            if (thresholds.length === 2) return [
-              theme.status?.positive ?? glyphDefault,
-              theme.status?.warning ?? glyphDefault,
-              theme.status?.negative ?? glyphDefault,
-            ];
-            return [glyphDefault];
-          })();
-          let idx = 0;
-          for (const t of thresholds) { if (badgeValue >= t) idx++; else break; }
-          badgeColor = stops[Math.min(idx, stops.length - 1)] ?? glyphDefault;
-        } else if (customColors && !Array.isArray(customColors) && badgeText in customColors) {
-          badgeColor = (customColors as Record<string, string>)[badgeText];
-        } else if (variants && badgeText in variants) {
-          const variant = variants[badgeText] as keyof typeof BADGE_VARIANTS | "default" | "muted";
-          // The "default" variant means "use the engagement color" (= accent).
-          // Status variants pull from theme.status.*. Muted from content.muted.
-          const variantColors: Record<string, string> = {
-            default: theme.accent.default,
-            ...BADGE_VARIANTS,
-            muted: theme.content.muted,
-          };
-          badgeColor = variantColors[variant] ?? glyphDefault;
-        }
-
-        const badgeTextWidth = measureTextWidth(badgeText, badgeFontSize, theme.text.body.family, 600);
-        // Circle and square shapes are 1:1 aspect — use badgeHeight as
-        // the controlling dimension so a "1" and a "12" render the same
-        // diameter (matches the editorial-badge mockups).
-        const aspectShape = shape === "circle" || shape === "square";
-        const badgeWidth = aspectShape
-          ? Math.max(badgeHeight, badgeTextWidth + BADGE.PADDING)
-          : badgeTextWidth + BADGE.PADDING * 2;
-        const radius = shape === "square" ? 3
-                     : shape === "circle" ? badgeHeight / 2
-                     : badgeHeight / 2;  // pill
-        const badgeX = col.align === "right"
-          ? currentX + width - SPACING.TEXT_PADDING - badgeWidth
-          : col.align === "center"
-            ? currentX + (width - badgeWidth) / 2
-            : currentX + SPACING.TEXT_PADDING;
-        const badgeY = y + (rowHeight - badgeHeight) / 2;
-
-        if (outline) {
-          lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
-            rx="${radius}" fill="none" stroke="${badgeColor}" stroke-width="1.5"/>`);
-        } else {
-          lines.push(`<rect x="${badgeX}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}"
-            rx="${radius}" fill="${badgeColor}" opacity="0.15"/>`);
-        }
-        lines.push(`<text class="cell-text" dominant-baseline="central" x="${badgeX + badgeWidth / 2}" y="${badgeY + badgeHeight / 2}"
-          text-anchor="middle"
-          font-family="${theme.text.body.family}"
-          font-size="${badgeFontSize}px"
-          font-weight="${600}"
-          fill="${badgeColor}">${escapeXml(badgeText)}</text>`);
-      }
-    } else if (col.type === "stars") {
-      // Render star rating
-      const val = row.metadata[col.field];
-      if (typeof val === "number") {
-        const maxStars = Math.max(1, Math.min(20, col.options?.stars?.maxStars ?? 5));
-        const starColor = col.options?.stars?.color ?? "#f59e0b";
-        const emptyColor = col.options?.stars?.emptyColor ?? "#d1d5db";
-        const domain = col.options?.stars?.domain;
-        let raw = val;
-        if (domain && Number.isFinite(domain[0]) && Number.isFinite(domain[1]) && domain[1] > domain[0]) {
-          const clamped = Math.max(domain[0], Math.min(domain[1], raw));
-          raw = ((clamped - domain[0]) / (domain[1] - domain[0])) * maxStars;
-        }
-        const rating = Math.max(0, Math.min(maxStars, raw));
-        const filled = Math.floor(rating);
-        const hasHalf = col.options?.stars?.halfStars && (rating - filled) >= 0.5;
-
-        const starSize = 12;
-        const starGap = 2;
-        const totalStarsWidth = maxStars * starSize + (maxStars - 1) * starGap;
-        let starX = col.align === "right"
-          ? currentX + width - SPACING.TEXT_PADDING - totalStarsWidth
-          : col.align === "center"
-            ? currentX + (width - totalStarsWidth) / 2
-            : currentX + SPACING.TEXT_PADDING;
-        const starY = y + (rowHeight - starSize) / 2;
-
-        const starPath = (cx: number, cy: number, size: number) => {
-          const r = size / 2;
-          const innerR = r * 0.4;
-          let d = "";
-          for (let j = 0; j < 5; j++) {
-            const outerAngle = (j * 72 - 90) * Math.PI / 180;
-            const innerAngle = ((j * 72 + 36) - 90) * Math.PI / 180;
-            const ox = cx + r * Math.cos(outerAngle);
-            const oy = cy + r * Math.sin(outerAngle);
-            const ix = cx + innerR * Math.cos(innerAngle);
-            const iy = cy + innerR * Math.sin(innerAngle);
-            d += (j === 0 ? `M${ox},${oy}` : `L${ox},${oy}`) + `L${ix},${iy}`;
-          }
-          return d + "Z";
-        };
-
-        for (let j = 0; j < maxStars; j++) {
-          const cx = starX + starSize / 2;
-          const cy = starY + starSize / 2;
-          const isFilled = j < filled || (j === filled && hasHalf);
-          const color = isFilled ? starColor : emptyColor;
-          lines.push(`<path d="${starPath(cx, cy, starSize)}" fill="${color}"/>`);
-          starX += starSize + starGap;
-        }
-      }
-    } else if (col.type === "pictogram") {
-      // Render pictogram: registry SVG paths or unicode chars, count or
-      // rating mode (mirrors CellPictogram.svelte).
-      const val = row.metadata[col.field];
-      if (typeof val === "number" && Number.isFinite(val)) {
-        const opts = col.options?.pictogram;
-        if (opts) {
-          const maxGlyphs = opts.maxGlyphs ?? null;
-          const halfGlyphs = opts.halfGlyphs ?? false;
-          const domain = opts.domain ?? null;
-          const layout = opts.layout ?? "row";
-          const size = opts.size ?? "base";
-          // Resolve theme colors to literal values: nested <svg> elements
-          // in rsvg's pipeline don't inherit CSS vars from the outer document,
-          // so var(--tv-secondary) renders as transparent. Pull theme literals.
-          // Glyph default = identity secondary (mirrors primary in mono themes).
-          // Row/cell semantic markerFill (accent/emphasis/muted) layers in
-          // below explicit column color but above theme default.
-          const pictoGlyphDefault = (theme.inputs as { secondary?: string; primary?: string } | undefined)?.secondary
-            ?? (theme.inputs as { primary?: string } | undefined)?.primary
-            ?? theme.accent.default;
-          const pictoCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
-          const pictoRowBundle = resolveSemanticBundle(row.style, theme);
-          const pictoOverride = pictoCellBundle?.markerFill ?? pictoRowBundle?.markerFill ?? null;
-          const filledColor = opts.color ?? pictoOverride ?? pictoGlyphDefault;
-          const emptyColor = opts.emptyColor ?? theme.content.muted;
-
-          // Resolve glyph: single string or value-keyed map (glyph_field).
-          let glyphSpec: string | null = null;
-          if (typeof opts.glyph === "string") {
-            glyphSpec = opts.glyph;
-          } else if (opts.glyph && typeof opts.glyph === "object" && opts.glyphField) {
-            const sel = row.metadata[opts.glyphField];
-            if (sel != null) {
-              const map = opts.glyph as Record<string, string>;
-              glyphSpec = map[String(sel)] ?? null;
-            }
-          }
-          const resolved = resolveGlyph(glyphSpec);
-          if (!resolved) {
-            // No glyph spec — skip rendering this cell.
-            continue;
-          }
-
-          // Domain remap (rating mode only).
-          let raw = val;
-          if (domain && Number.isFinite(domain[0]) && Number.isFinite(domain[1]) &&
-              domain[1] > domain[0] && maxGlyphs != null) {
-            const clamped = Math.max(domain[0], Math.min(domain[1], raw));
-            raw = ((clamped - domain[0]) / (domain[1] - domain[0])) * maxGlyphs;
-          }
-          const rating = Math.max(0, raw);
-
-          // Build slot list.
-          type Slot = { state: "full" | "half" | "empty" };
-          const slots: Slot[] = [];
-          if (maxGlyphs == null) {
-            const n = Math.min(Math.floor(rating + (halfGlyphs ? 0.5 : 0)), 999);
-            for (let i = 0; i < n; i++) slots.push({ state: "full" });
-          } else {
-            for (let i = 1; i <= maxGlyphs; i++) {
-              if (i <= rating) slots.push({ state: "full" });
-              else if (halfGlyphs && i - 0.5 <= rating) slots.push({ state: "half" });
-              else slots.push({ state: "empty" });
-            }
-          }
-
-          const glyphPx = size === "sm" ? 10 : size === "lg" ? 20 : 14;
-          const gap = 1;
-          const valueLabel = opts.valueLabel ?? false;
-          const labelPos = valueLabel === true ? "trailing"
-            : valueLabel === "leading" ? "leading"
-              : valueLabel === "trailing" ? "trailing"
-                : null;
-          const labelText = labelPos
-            ? (opts.labelFormat === "integer"
-                ? String(Math.round(val))
-                : val.toFixed(opts.labelDecimals ?? 1))
-            : "";
-          const labelFontPx = size === "sm" ? 9 : size === "lg" ? 12 : 11;
-          // Approximate label width for layout calc — not perfect but close
-          // enough for centering at this size.
-          const labelW = labelText ? labelText.length * (labelFontPx * 0.55) + 4 : 0;
-
-          // Layout dimensions.
-          const isStack = layout === "stack";
-          const trackW = isStack ? glyphPx : slots.length * glyphPx + Math.max(0, slots.length - 1) * gap;
-          const trackH = isStack ? slots.length * glyphPx : glyphPx;
-          const totalW = trackW + labelW;
-          const totalH = Math.max(trackH, labelFontPx);
-
-          let originX = col.align === "right"
-            ? currentX + width - SPACING.TEXT_PADDING - totalW
-            : col.align === "center"
-              ? currentX + (width - totalW) / 2
-              : currentX + SPACING.TEXT_PADDING;
-          const originY = y + (rowHeight - totalH) / 2;
-
-          // Leading label.
-          if (labelPos === "leading") {
-            lines.push(
-              `<text x="${originX}" y="${originY + totalH / 2}" ` +
-              `font-size="${labelFontPx}" fill="var(--tv-cell-fg, var(--tv-fg))" ` +
-              `dominant-baseline="middle" text-anchor="start">${labelText}</text>`
-            );
-            originX += labelW;
-          }
-
-          // Glyphs.
-          for (let i = 0; i < slots.length; i++) {
-            const slot = slots[i];
-            const sx = isStack ? originX : originX + i * (glyphPx + gap);
-            const sy = isStack ? originY + (slots.length - 1 - i) * glyphPx : originY;
-            if (resolved.kind === "registry") {
-              const def = resolved.def;
-              if (slot.state === "full") {
-                lines.push(
-                  `<svg x="${sx}" y="${sy}" width="${glyphPx}" height="${glyphPx}" viewBox="${def.viewBox}">` +
-                  `<path d="${def.path}" fill="${filledColor}" stroke="none"/></svg>`
-                );
-              } else if (slot.state === "half") {
-                // Half-fill: empty outline underneath, then a left-half-clipped
-                // filled path on top. Mirrors CellPictogram.svelte. The
-                // previous translucent-rect-overlay approach blended with the
-                // cell background, producing the GH-reported artifact on
-                // non-white themes; this approach is bg-independent.
-                //
-                // viewBox-aware clip: parse the viewBox and clip to the left
-                // half so the technique works for any glyph viewBox (not just
-                // `0 0 24 24`). The clipPath id includes the row index, the
-                // slot index, and a path-hash to keep it unique across rows
-                // and glyphs in the same SVG document.
-                const vb = def.viewBox.split(/\s+/).map(Number);
-                const halfW = vb[2] / 2;
-                // clipId scoped to (row.id, column.id, slot-index, path-hash)
-                // so multiple half-glyph cells in the same SVG don't collide
-                // on the document-wide id namespace.
-                const pathHash = (def.path.length * 31) >>> 0;
-                const safeRow = String(row.id).replace(/[^A-Za-z0-9_-]/g, "_");
-                const clipId = `pic-half-${safeRow}-${col.id}-${i}-${pathHash}`;
-                lines.push(
-                  `<svg x="${sx}" y="${sy}" width="${glyphPx}" height="${glyphPx}" viewBox="${def.viewBox}">` +
-                  `<defs><clipPath id="${clipId}"><rect x="${vb[0]}" y="${vb[1]}" width="${halfW}" height="${vb[3]}"/></clipPath></defs>` +
-                  `<path d="${def.path}" fill="none" stroke="${emptyColor}" stroke-width="1.5"/>` +
-                  `<path d="${def.path}" fill="${filledColor}" stroke="none" clip-path="url(#${clipId})"/>` +
-                  `</svg>`
-                );
-              } else {
-                lines.push(
-                  `<svg x="${sx}" y="${sy}" width="${glyphPx}" height="${glyphPx}" viewBox="${def.viewBox}">` +
-                  `<path d="${def.path}" fill="none" stroke="${emptyColor}" stroke-width="1.5"/></svg>`
-                );
-              }
-            } else {
-              // Literal char fallback — render as <text>.
-              const color = slot.state === "empty" ? emptyColor : filledColor;
-              lines.push(
-                `<text x="${sx + glyphPx / 2}" y="${sy + glyphPx * 0.85}" ` +
-                `font-size="${glyphPx}" fill="${color}" text-anchor="middle">${resolved.char}</text>`
-              );
-            }
-          }
-
-          // Trailing label.
-          if (labelPos === "trailing") {
-            const lx = isStack ? originX + glyphPx + 4 : originX + trackW + 4;
-            lines.push(
-              `<text x="${lx}" y="${originY + totalH / 2}" ` +
-              `font-size="${labelFontPx}" fill="var(--tv-cell-fg, var(--tv-fg))" ` +
-              `dominant-baseline="middle" text-anchor="start">${labelText}</text>`
-            );
-          }
-
-          // Mark the silenced GLYPH_REGISTRY import as "used" — the inline
-          // path above goes through resolveGlyph which references it.
-          void GLYPH_REGISTRY;
-        }
-      }
-    } else if (col.type === "ring") {
-      // Render donut gauge: track ring + filled arc + centered numeric
-      // label (mirrors CellRing.svelte). Theme colors resolved literally
-      // since nested <svg> elements don't inherit CSS vars in rsvg.
-      const val = row.metadata[col.field];
-      if (typeof val === "number" && Number.isFinite(val)) {
-        const opts = col.options?.ring;
-        if (opts) {
-          const minV = opts.minValue ?? 0;
-          const maxV = opts.maxValue ?? 1;
-          const size = opts.size ?? "base";
-          const showLabel = opts.showLabel ?? true;
-          const labelFormat = opts.labelFormat ?? "percent";
-          const labelDecimals = opts.labelDecimals ?? 0;
-          const trackColor = opts.trackColor ?? theme.content.muted;
-
-          // Pick filled color from threshold scale or single value.
-          // Glyph default = identity secondary; row/cell semantic markerFill
-          // (accent/emphasis/muted) layers in below explicit column color
-          // but above theme default. Threshold path reads status palette.
-          const ringGlyphDefault = (theme.inputs as { secondary?: string; primary?: string } | undefined)?.secondary
-            ?? (theme.inputs as { primary?: string } | undefined)?.primary
-            ?? theme.accent.default;
-          const ringCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
-          const ringRowBundle = resolveSemanticBundle(row.style, theme);
-          const ringOverride = ringCellBundle?.markerFill ?? ringRowBundle?.markerFill ?? null;
-          let filledColor: string = ringOverride ?? ringGlyphDefault;
-          const thresholds = opts.thresholds ?? null;
-          const colorOpt = opts.color ?? null;
-          if (!thresholds || thresholds.length === 0) {
-            if (typeof colorOpt === "string") filledColor = colorOpt;
-            else if (Array.isArray(colorOpt) && colorOpt.length === 1) filledColor = colorOpt[0];
-          } else {
-            const stops = (() => {
-              if (Array.isArray(colorOpt) && colorOpt.length === thresholds.length + 1) return colorOpt;
-              if (thresholds.length === 1) return [ringGlyphDefault, theme.status?.negative ?? ringGlyphDefault];
-              if (thresholds.length === 2) return [
-                theme.status?.positive ?? ringGlyphDefault,
-                theme.status?.warning ?? ringGlyphDefault,
-                theme.status?.negative ?? ringGlyphDefault,
-              ];
-              return [ringGlyphDefault];
-            })();
-            let idx = 0;
-            for (const t of thresholds) { if (val >= t) idx++; else break; }
-            filledColor = stops[Math.min(idx, stops.length - 1)] ?? ringGlyphDefault;
-          }
-
-          const fraction = maxV > minV
-            ? Math.max(0, Math.min(1, (val - minV) / (maxV - minV)))
-            : 0;
-
-          // Geometry — match CellRing.svelte
-          const diameter = size === "sm" ? 18 : size === "lg" ? 32 : 24;
-          const stroke = Math.max(2, Math.round(diameter * 0.22));
-          const radius = (diameter - stroke) / 2;
-          const cxr = diameter / 2;
-          const cyr = diameter / 2;
-          const circumference = 2 * Math.PI * radius;
-          const dashLen = circumference * fraction;
-          const dashGap = circumference - dashLen;
-
-          // Label text
-          const labelText = labelFormat === "percent"
-            ? (fraction * 100).toFixed(labelDecimals) + "%"
-            : labelFormat === "integer"
-              ? String(Math.round(val))
-              : val.toFixed(labelDecimals);
-          const labelFontPx = size === "sm" ? 9 : size === "lg" ? 12 : 11;
-          const labelW = showLabel ? labelText.length * (labelFontPx * 0.55) + 4 : 0;
-
-          const totalW = diameter + (showLabel ? labelW + 4 : 0);
-          let originX = col.align === "right"
-            ? currentX + width - SPACING.TEXT_PADDING - totalW
-            : col.align === "center"
-              ? currentX + (width - totalW) / 2
-              : currentX + SPACING.TEXT_PADDING;
-          const originY = y + (rowHeight - diameter) / 2;
-
-          // Track ring
-          lines.push(
-            `<circle cx="${originX + cxr}" cy="${originY + cyr}" r="${radius}" ` +
-            `fill="none" stroke="${trackColor}" stroke-width="${stroke}" opacity="0.35"/>`
-          );
-          // Fill arc (rotate -90 for 12 o'clock start)
-          if (dashLen > 0) {
-            lines.push(
-              `<circle cx="${originX + cxr}" cy="${originY + cyr}" r="${radius}" ` +
-              `fill="none" stroke="${filledColor}" stroke-width="${stroke}" ` +
-              `stroke-dasharray="${dashLen} ${dashGap}" stroke-linecap="round" ` +
-              `transform="rotate(-90 ${originX + cxr} ${originY + cyr})"/>`
-            );
-          }
-          // Trailing label
-          if (showLabel) {
-            lines.push(
-              `<text x="${originX + diameter + 4}" y="${originY + diameter / 2}" ` +
-              `font-size="${labelFontPx}" fill="${theme.content.primary}" ` +
-              `dominant-baseline="middle" text-anchor="start">${labelText}</text>`
-            );
-          }
-        }
-      }
-    } else if (col.type === "icon") {
-      // Render single-glyph icon cell. Mirrors CellIcon.svelte: applies
-      // mapping[value] when present, otherwise renders the value verbatim
-      // (typical case is a unicode/emoji glyph stored directly in the
-      // data column). Color cascade matches the bar/sparkline path —
-      // explicit options.color > cell-bundle markerFill > row-bundle
-      // markerFill > theme primary identity.
-      const iconRaw = row.metadata[col.field];
-      const iconOpts = col.options?.icon;
-      const iconMapping = iconOpts?.mapping ?? {};
-      let iconText: string;
-      if (iconRaw === undefined || iconRaw === null || iconRaw === "") {
-        iconText = col.options?.naText ?? "";
-      } else {
-        const sv = String(iconRaw);
-        iconText = sv in iconMapping ? String(iconMapping[sv]) : sv;
-      }
-      if (iconText) {
-        const iconSizeKey = iconOpts?.size ?? "base";
-        const iconPx = iconSizeKey === "sm" ? 12
-          : iconSizeKey === "lg" ? 16
-          : iconSizeKey === "xl" ? 26
-          : 14;
-        const iconCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
-        const iconRowBundle = resolveSemanticBundle(row.style, theme);
-        const iconColor = iconOpts?.color
-          ?? iconCellBundle?.markerFill
-          ?? iconRowBundle?.markerFill
-          ?? theme.inputs?.primary
-          ?? theme.accent.default;
-        const iconAnchor = col.align === "right" ? "end"
-          : col.align === "left" ? "start"
-          : "middle";
-        const iconX = col.align === "right"
-          ? currentX + width - SPACING.TEXT_PADDING
-          : col.align === "left"
-            ? currentX + SPACING.TEXT_PADDING
-            : currentX + width / 2;
-        const iconY = y + rowHeight / 2;
-        lines.push(
-          `<text x="${iconX}" y="${iconY}" ` +
-          `font-family="${theme.text.body.family}" ` +
-          `font-size="${iconPx}px" ` +
-          `fill="${iconColor}" ` +
-          `dominant-baseline="middle" text-anchor="${iconAnchor}">` +
-          `${escapeXml(iconText)}</text>`
-        );
-      }
-    } else if (col.type === "heatmap") {
-      // Render heatmap cell with colored background
-      const hmValue = row.metadata[col.field] as number;
-      if (hmValue !== undefined && hmValue !== null && !Number.isNaN(hmValue)) {
-        const hmOpts = col.options?.heatmap;
-        // Default palette derives light → dark from the theme's primary
-        // identity (matches the live CellHeatmap component). Falls back
-        // to the historical blue palette when neither primary nor
-        // primary_deep are present.
-        const themeInputs = theme.inputs as { primary?: string; primaryDeep?: string } | undefined;
-        const themeSurfaceBase = (theme.surface as { base?: string } | undefined)?.base ?? "#ffffff";
-        const hmPrimary = themeInputs?.primary;
-        const hmPrimaryDeep = themeInputs?.primaryDeep ?? hmPrimary;
-        const defaultPalette: string[] = (hmPrimary && hmPrimaryDeep)
-          ? [(() => {
-              const ah = hmPrimary.replace("#","");
-              const bh = themeSurfaceBase.replace("#","");
-              const t = 0.92;
-              const ar=parseInt(ah.substring(0,2),16),ag=parseInt(ah.substring(2,4),16),ab=parseInt(ah.substring(4,6),16);
-              const br=parseInt(bh.substring(0,2),16),bg=parseInt(bh.substring(2,4),16),bb=parseInt(bh.substring(4,6),16);
-              const r=Math.round(ar*(1-t)+br*t), g=Math.round(ag*(1-t)+bg*t), b=Math.round(ab*(1-t)+bb*t);
-              return `#${r.toString(16).padStart(2,"0")}${g.toString(16).padStart(2,"0")}${b.toString(16).padStart(2,"0")}`;
-            })(), hmPrimaryDeep]
-          : ["#f7fbff", "#08306b"];
-        const palette = hmOpts?.palette ?? defaultPalette;
-        const hmDecimals = hmOpts?.decimals ?? 2;
-        const showValue = hmOpts?.showValue ?? true;
-        const hmScale = hmOpts?.scale ?? "linear";
-
-        // Compute min/max from all rows if not specified
-        let hmMin = hmOpts?.minValue;
-        let hmMax = hmOpts?.maxValue;
-        if (hmMin == null || hmMax == null) {
-          const allVals = allRows
-            .map(r => r.metadata[col.field] as number)
-            .filter(v => v != null && !Number.isNaN(v));
-          if (hmMin == null) hmMin = allVals.length > 0 ? Math.min(...allVals) : 0;
-          if (hmMax == null) hmMax = allVals.length > 0 ? Math.max(...allVals) : 1;
-        }
-
-        // Normalize to [0, 1]
-        const normalized = (hmMax as number) === (hmMin as number)
-          ? 0.5
-          : normalizeValue(hmValue, hmMin as number, hmMax as number, hmScale);
-
-        // Interpolate color
-        const parseHex = (hex: string) => {
-          const h = hex.replace("#", "");
-          return [parseInt(h.substring(0, 2), 16), parseInt(h.substring(2, 4), 16), parseInt(h.substring(4, 6), 16)];
-        };
-        const stops = palette.length - 1;
-        const segment = Math.min(Math.floor(normalized * stops), stops - 1);
-        const t = normalized * stops - segment;
-        const c1 = parseHex(palette[segment]);
-        const c2 = parseHex(palette[segment + 1]);
-        const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
-        const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
-        const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
-        const bgColor = `rgb(${r},${g},${b})`;
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        const textColor = luminance > 0.5 ? theme.content.primary : "#ffffff";
-
-        // Background rect
-        lines.push(`<rect x="${currentX + 2}" y="${y + 2}" width="${width - 4}" height="${rowHeight - 4}"
-          fill="${bgColor}" rx="2"/>`);
-
-        if (showValue) {
-          lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + width / 2}" y="${textY}"
-            font-family="${theme.text.body.family}"
-            font-size="${fontSize * 0.9}px"
-            font-weight="${400}"
-            text-anchor="middle"
-            fill="${textColor}">${hmValue.toFixed(hmDecimals)}</text>`);
-        }
-      }
-    } else if (col.type === "progress") {
-      // Render progress bar
-      const progValue = row.metadata[col.field] as number;
-      if (progValue !== undefined && progValue !== null && !Number.isNaN(progValue)) {
-        const progOpts = col.options?.progress;
-        const progMax = progOpts?.maxValue ?? 100;
-        const progCellBundle = resolveSemanticBundle(row.cellStyles?.[col.field], theme);
-        const progRowBundle = resolveSemanticBundle(row.style, theme);
-        const progColor = progOpts?.color
-          ?? progCellBundle?.markerFill
-          ?? progRowBundle?.markerFill
-          ?? theme.inputs?.primary
-          ?? theme.accent.default;
-        const progShowLabel = progOpts?.showLabel ?? true;
-        const progScale = progOpts?.scale ?? "linear";
-        // Label shows raw percent-of-max (scale-independent), bar width uses the transform
-        const pct = Math.min(100, Math.max(0, (progValue / progMax) * 100));
-        const ratio = normalizeValue(progValue, 0, progMax, progScale);
-
-        const barHeight = 10;
-        const barY = y + (rowHeight - barHeight) / 2;
-        const labelWidth = progShowLabel ? 40 : 0;
-        const barAreaWidth = width - SPACING.TEXT_PADDING * 2 - labelWidth;
-        const barWidth = ratio * barAreaWidth;
-
-        // Track
-        lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${barY}" width="${barAreaWidth}" height="${barHeight}"
-          fill="${theme.divider.subtle}" opacity="0.5" rx="5"/>`);
-        // Fill
-        lines.push(`<rect x="${currentX + SPACING.TEXT_PADDING}" y="${barY}" width="${Math.max(0, barWidth)}" height="${barHeight}"
-          fill="${progColor}" rx="5"/>`);
-
-        if (progShowLabel) {
-          lines.push(`<text class="cell-text" dominant-baseline="central" x="${currentX + width - SPACING.TEXT_PADDING}" y="${textY}"
-            font-family="${theme.text.body.family}"
-            font-size="${fontSize * 0.9}px"
-            font-weight="${400}"
-            text-anchor="end"
-            fill="${theme.content.primary}">${Math.round(pct)}%</text>`);
-        }
-      }
-    } else {
-      // Default text rendering with cell styling
-      // Priority: per-cell style > row-level style > default
-      const cellStyle = row.cellStyles?.[col.field];
-      const rowStyle = row.style;
-
-      // Semantic bundle resolved from row/cell flags — single source of truth
-      // for fg / fontWeight / fontStyle when a semantic class applies. Mirrors
-      // the interactive path (TabvizPlot.svelte .data-cell.row-has-semantic).
-      const cellSemBundle =
-        resolveSemanticBundle(cellStyle, theme) ??
-        resolveSemanticBundle(rowStyle, theme);
-
-      // Font weight: explicit cell/row bold > bundle > default
-      let cellFontWeight = 400;
-      if (cellStyle?.bold || rowStyle?.bold) {
-        cellFontWeight = 600;
-      } else if (cellSemBundle?.fontWeight != null) {
-        cellFontWeight = cellSemBundle.fontWeight;
-      }
-
-      // Font style: explicit italic > bundle > default
-      let cellFontStyle = "normal";
-      if (cellStyle?.italic || rowStyle?.italic) {
-        cellFontStyle = "italic";
-      } else if (cellSemBundle?.fontStyle != null) {
-        cellFontStyle = cellSemBundle.fontStyle;
-      }
-
-      // Color: explicit cell/row color > bundle fg > cellForeground > foreground
-      let cellColor = (theme.cell.fg ?? theme.content.primary);
-      if (cellStyle?.color) {
-        cellColor = cellStyle.color;
-      } else if (rowStyle?.color) {
-        cellColor = rowStyle.color;
-      } else if (cellSemBundle?.fg != null) {
-        cellColor = cellSemBundle.fg;
-      }
-
-      const wrapVal = (col as { wrap?: boolean | number }).wrap;
-      const wrapEnabled = typeof wrapVal === "number" ? wrapVal > 0 : !!wrapVal;
-      if (wrapEnabled) {
-        const cap = typeof wrapVal === "number" ? (wrapVal as number) + 1 : 2;
-        const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
-        const contentWidth = Math.max(1, width - cellPadding);
-        const wrappedLines = wrapTextIntoLines(value, contentWidth, fontSize, cap);
-        const lineHeight = 1.5;
-        const lineHeightPx = Math.ceil(fontSize * lineHeight);
-        const blockHeight = lineHeightPx * wrappedLines.length;
-        // Center the multi-line block within the row, then position each
-        // line at its baseline (~ 0.8 of fontSize down from line top).
-        const blockTop = y + (rowHeight - blockHeight) / 2;
-        for (let li = 0; li < wrappedLines.length; li++) {
-          const lineY = blockTop + li * lineHeightPx + Math.round(fontSize * 0.8);
-          lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${lineY}"
-            font-family="${theme.text.body.family}"
-            font-size="${fontSize}px"
-            font-weight="${cellFontWeight}"
-            font-style="${cellFontStyle}"
-            text-anchor="${anchor}"
-            fill="${cellColor}">${escapeXml(wrappedLines[li])}</text>`);
-        }
-      } else {
-        lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${textY}"
+    const wrapVal = (col as { wrap?: boolean | number }).wrap;
+    const wrapEnabled = typeof wrapVal === "number" ? wrapVal > 0 : !!wrapVal;
+    if (wrapEnabled) {
+      const cap = typeof wrapVal === "number" ? (wrapVal as number) + 1 : 2;
+      const cellPadding = (theme.spacing.cellPaddingX ?? 10) * 2;
+      const contentWidth = Math.max(1, width - cellPadding);
+      const wrappedLines = wrapTextIntoLines(value, contentWidth, fontSize, cap);
+      const lineHeight = 1.5;
+      const lineHeightPx = Math.ceil(fontSize * lineHeight);
+      const blockHeight = lineHeightPx * wrappedLines.length;
+      const blockTop = y + (rowHeight - blockHeight) / 2;
+      for (let li = 0; li < wrappedLines.length; li++) {
+        const lineY = blockTop + li * lineHeightPx + Math.round(fontSize * 0.8);
+        lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${lineY}"
           font-family="${theme.text.body.family}"
           font-size="${fontSize}px"
           font-weight="${cellFontWeight}"
           font-style="${cellFontStyle}"
           text-anchor="${anchor}"
-          fill="${cellColor}">${escapeXml(value)}</text>`);
+          fill="${cellColor}">${escapeXml(wrappedLines[li])}</text>`);
       }
+    } else {
+      lines.push(`<text class="cell-text" dominant-baseline="central" x="${textX}" y="${textY}"
+        font-family="${theme.text.body.family}"
+        font-size="${fontSize}px"
+        font-weight="${cellFontWeight}"
+        font-style="${cellFontStyle}"
+        text-anchor="${anchor}"
+        fill="${cellColor}">${escapeXml(value)}</text>`);
     }
   }
 
@@ -5307,10 +4455,9 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Table rows - unified column rendering
   const rowsY = layout.mainY + layout.headerHeight;
 
-  // Compute bar max values from all data rows for proper scaling.
-  // The richer per-column { min, max } summary (used by schema-driven
-  // bar / heatmap renderers via ctx.columnSummary) is computed alongside.
-  const barMaxValues = computeBarMaxValues(allDataRows, allColumns);
+  // Per-column { min, max } summary consumed by schema-driven bar /
+  // heatmap renderers via ctx.columnSummary. Computed once over the
+  // full data so the scale is stable across pages.
   const columnSummaries = computeColumnSummaries(allDataRows, allColumns);
 
   displayRows.forEach((displayRow, i) => {
@@ -5368,7 +4515,6 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           theme,
           layout.labelWidth,
           depth,
-          barMaxValues,
           autoWidths,
           getColWidth,
           columnPositions,
