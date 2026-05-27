@@ -82,27 +82,9 @@ import {
   getColumnDisplayText,
   truncateString,
 } from "$lib/formatters";
-import { estimateTextWidth, measureTextWidthCanvas, glyphNaturalWidth } from "$lib/width-utils";
+import { estimateTextWidth, measureTextWidth, glyphNaturalWidth } from "$lib/width-utils";
+import { escapeXml } from "$lib/svg-text-utils";
 
-/**
- * Measure text width - uses canvas when available (browser), falls back to estimation (V8/Node).
- * This gives accurate measurements in browser while still working in DOM-free environments.
- */
-function measureTextWidth(
-  text: string,
-  fontSize: number,
-  fontFamily: string,
-  fontWeight: number = 400
-): number {
-  // Try canvas measurement first (only works in browser).
-  const canvasWidth = measureTextWidthCanvas(text, `${fontSize}px`, fontFamily, fontWeight);
-  if (canvasWidth !== null) {
-    return canvasWidth;
-  }
-  // Fall back to character-class estimation (V8/Node). estimateTextWidth
-  // applies the weight correction internally.
-  return estimateTextWidth(text, fontSize, fontWeight);
-}
 import {
   computeBoxplotStats,
   computeKDE,
@@ -1208,16 +1190,9 @@ function getTextPositionPadded(
   return { textX: x + pad, anchor: "start" };
 }
 
-/** Escape XML special characters */
-function escapeXml(text: string | null | undefined): string {
-  if (text == null) return "";
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
+// escapeXml + measureTextWidth moved to $lib/svg-text-utils.ts and
+// $lib/width-utils.ts so the new per-schema SVG renderers can reuse
+// them without depending on this module.
 
 /**
  * Truncate text to fit within a given width (approximate).
@@ -3298,6 +3273,7 @@ function renderUnifiedTableRow(
           target:     "svg",
           cellStyle:  cellSch ?? rowSch,
           naText:     col.options?.naText ?? null,
+          theme,
         },
         theme.nodeRules,
         "svg",

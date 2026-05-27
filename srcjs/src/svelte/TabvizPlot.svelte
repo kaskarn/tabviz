@@ -1442,6 +1442,7 @@
             cellStyle,
             colorOverride: effectiveVizColor(row, column),
             naText: column.options?.naText ?? null,
+            theme: theme ?? null,
           },
           theme?.nodeRules,
           "dom",

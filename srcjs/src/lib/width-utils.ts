@@ -110,6 +110,23 @@ export function estimateTextWidth(
 }
 
 /**
+ * Measure text width using canvas when available (browser), falling
+ * back to character-class estimation in V8/Node. Single entry point
+ * for renderers that need a consistent measurement across runtime
+ * targets.
+ */
+export function measureTextWidth(
+  text: string,
+  fontSize: number,
+  fontFamily: string,
+  fontWeight: number = 400,
+): number {
+  const canvasWidth = measureTextWidthCanvas(text, `${fontSize}px`, fontFamily, fontWeight);
+  if (canvasWidth !== null) return canvasWidth;
+  return estimateTextWidth(text, fontSize, fontWeight);
+}
+
+/**
  * Measure text width using canvas (browser only).
  * Returns null if canvas is not available.
  */

@@ -15,7 +15,7 @@
 // active schema sprint (Phases 4-7).
 
 import type { ColumnSchema } from "./types";
-import type { ColumnSpec } from "../types";
+import type { ColumnSpec, WebTheme } from "../types";
 import type { BankContribution } from "./banks";
 
 // ────────────────────────────────────────────────────────────────────
@@ -172,6 +172,13 @@ export interface RenderContext {
    *  `naText` option when undefined. Carried in ctx so renderers
    *  don't repeat the `column.options?.naText` access. */
   naText?: string | null;
+  /** Resolved theme — visual renderers (badge, ring, icon, …) read
+   *  theme palette tokens directly for color resolution (thresholds,
+   *  status colors, identity palette) since these decisions are
+   *  data-driven, not pure theme styling. Optional so text-composition
+   *  renderers that don't need it stay agnostic; the SVG export and
+   *  browser dispatch sites always populate it. */
+  theme?: WebTheme | null;
 }
 
 /**
