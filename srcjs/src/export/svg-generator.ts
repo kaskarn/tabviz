@@ -80,6 +80,11 @@ import {
 } from "$lib/formatters";
 import { estimateTextWidth, measureTextWidth, glyphNaturalWidth } from "$lib/width-utils";
 import { escapeXml } from "$lib/svg-text-utils";
+import {
+  computeVizBarDomain,
+  computeVizBoxplotDomain,
+  computeVizViolinDomain,
+} from "$lib/viz-domain-utils";
 
 import {
   computeBoxplotStats,
@@ -2428,163 +2433,54 @@ function renderVizViolin(
 /**
  * Compute shared scale for a viz_bar column across all rows.
  */
+// viz_* scale helpers wrap the shared domain computation
+// (`$lib/viz-domain-utils`) — used by both the browser (TabvizPlot)
+// and export (here) paths so domain math is identical by construction
+// (schema-sprint Phase 4d).
+function vizScaleFromDomain(
+  domain: { min: number; max: number },
+  vizWidth: number,
+  isLog: boolean,
+  domainOverride?: [number, number] | null,
+): Scale {
+  const padding = VIZ_MARGIN;
+  // Pan/zoom override from browser wins outright — bit-identical parity
+  // with what the user sees in the viewport.
+  const [lo, hi] = domainOverride ?? [domain.min, domain.max];
+  if (isLog) {
+    return createLogScale([Math.max(0.01, lo), hi], [padding, vizWidth - padding]);
+  }
+  return createLinearScale([lo, hi], [padding, vizWidth - padding]);
+}
+
 function computeVizBarScale(
   rows: Row[],
   options: VizBarColumnOptions,
   vizWidth: number,
-  domainOverride?: [number, number] | null
+  domainOverride?: [number, number] | null,
 ): Scale {
-  const isLog = options.scale === "log";
-  const padding = VIZ_MARGIN;
-
-  // Pan/zoom override from browser wins outright — we want bit-identical
-  // parity with what the user sees in the viewport.
-  if (domainOverride) {
-    if (isLog) {
-      return createLogScale([Math.max(0.01, domainOverride[0]), domainOverride[1]], [padding, vizWidth - padding]);
-    }
-    return createLinearScale([domainOverride[0], domainOverride[1]], [padding, vizWidth - padding]);
-  }
-
-  let domainMin = options.axisRange?.[0];
-  let domainMax = options.axisRange?.[1];
-
-  if (domainMin == null || domainMax == null) {
-    const allValues: number[] = [];
-    for (const row of rows) {
-      for (const effect of options.effects) {
-        const val = row.metadata[effect.value] as number | undefined;
-        if (val != null && !Number.isNaN(val)) {
-          allValues.push(val);
-        }
-      }
-    }
-    if (allValues.length > 0) {
-      domainMin = domainMin ?? Math.min(0, ...allValues);
-      domainMax = domainMax ?? Math.max(...allValues) * 1.1;
-    } else {
-      domainMin = domainMin ?? 0;
-      domainMax = domainMax ?? 100;
-    }
-  }
-
-  if (isLog) {
-    return createLogScale([Math.max(0.01, domainMin), domainMax], [padding, vizWidth - padding]);
-  }
-  return createLinearScale([domainMin, domainMax], [padding, vizWidth - padding]);
+  const domain = computeVizBarDomain(rows, options);
+  return vizScaleFromDomain(domain, vizWidth, options.scale === "log", domainOverride);
 }
 
-/**
- * Compute shared scale for a viz_boxplot column across all rows.
- */
 function computeVizBoxplotScale(
   rows: Row[],
   options: VizBoxplotColumnOptions,
   vizWidth: number,
-  domainOverride?: [number, number] | null
+  domainOverride?: [number, number] | null,
 ): Scale {
-  const isLog = options.scale === "log";
-  const padding = VIZ_MARGIN;
-
-  if (domainOverride) {
-    if (isLog) {
-      return createLogScale([Math.max(0.01, domainOverride[0]), domainOverride[1]], [padding, vizWidth - padding]);
-    }
-    return createLinearScale([domainOverride[0], domainOverride[1]], [padding, vizWidth - padding]);
-  }
-
-  let domainMin = options.axisRange?.[0];
-  let domainMax = options.axisRange?.[1];
-
-  if (domainMin == null || domainMax == null) {
-    const allValues: number[] = [];
-    for (const row of rows) {
-      for (const effect of options.effects) {
-        // Array data mode
-        if (effect.data) {
-          const data = row.metadata[effect.data] as number[] | undefined;
-          if (data && Array.isArray(data)) {
-            const stats = computeBoxplotStats(data);
-            allValues.push(stats.min, stats.max);
-            if (options.showOutliers !== false) allValues.push(...stats.outliers);
-          }
-        }
-        // Pre-computed stats mode
-        else if (effect.min && effect.max) {
-          const min = row.metadata[effect.min] as number;
-          const max = row.metadata[effect.max] as number;
-          if (min != null && !Number.isNaN(min)) allValues.push(min);
-          if (max != null && !Number.isNaN(max)) allValues.push(max);
-        }
-      }
-    }
-    if (allValues.length > 0) {
-      const dataMin = Math.min(...allValues);
-      const dataMax = Math.max(...allValues);
-      const range = dataMax - dataMin;
-      domainMin = domainMin ?? dataMin - range * 0.05;
-      domainMax = domainMax ?? dataMax + range * 0.05;
-    } else {
-      domainMin = domainMin ?? 0;
-      domainMax = domainMax ?? 100;
-    }
-  }
-
-  if (isLog) {
-    return createLogScale([Math.max(0.01, domainMin), domainMax], [padding, vizWidth - padding]);
-  }
-  return createLinearScale([domainMin, domainMax], [padding, vizWidth - padding]);
+  const domain = computeVizBoxplotDomain(rows, options);
+  return vizScaleFromDomain(domain, vizWidth, options.scale === "log", domainOverride);
 }
 
-/**
- * Compute shared scale for a viz_violin column across all rows.
- */
 function computeVizViolinScale(
   rows: Row[],
   options: VizViolinColumnOptions,
   vizWidth: number,
-  domainOverride?: [number, number] | null
+  domainOverride?: [number, number] | null,
 ): Scale {
-  const isLog = options.scale === "log";
-  const padding = VIZ_MARGIN;
-
-  if (domainOverride) {
-    if (isLog) {
-      return createLogScale([Math.max(0.01, domainOverride[0]), domainOverride[1]], [padding, vizWidth - padding]);
-    }
-    return createLinearScale([domainOverride[0], domainOverride[1]], [padding, vizWidth - padding]);
-  }
-
-  let domainMin = options.axisRange?.[0];
-  let domainMax = options.axisRange?.[1];
-
-  if (domainMin == null || domainMax == null) {
-    const allValues: number[] = [];
-    for (const row of rows) {
-      for (const effect of options.effects) {
-        const data = row.metadata[effect.data] as number[] | undefined;
-        if (data && Array.isArray(data)) {
-          allValues.push(...data.filter(v => v != null && !Number.isNaN(v)));
-        }
-      }
-    }
-    if (allValues.length > 0) {
-      domainMin = domainMin ?? Math.min(...allValues);
-      domainMax = domainMax ?? Math.max(...allValues);
-      // Add padding for KDE tails
-      const range = (domainMax ?? 0) - (domainMin ?? 0);
-      domainMin = (domainMin ?? 0) - range * 0.1;
-      domainMax = (domainMax ?? 0) + range * 0.1;
-    } else {
-      domainMin = domainMin ?? 0;
-      domainMax = domainMax ?? 100;
-    }
-  }
-
-  if (isLog) {
-    return createLogScale([Math.max(0.01, domainMin), domainMax], [padding, vizWidth - padding]);
-  }
-  return createLinearScale([domainMin, domainMax], [padding, vizWidth - padding]);
+  const domain = computeVizViolinDomain(rows, options);
+  return vizScaleFromDomain(domain, vizWidth, options.scale === "log", domainOverride);
 }
 
 /**

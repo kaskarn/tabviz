@@ -86,7 +86,11 @@
   import VizBoxplot from "$components/viz/VizBoxplot.svelte";
   import VizViolin from "$components/viz/VizViolin.svelte";
   import { scaleLinear, scaleLog } from "d3-scale";
-  import { computeBoxplotStats } from "$lib/viz-utils";
+  import {
+    computeVizBarDomain,
+    computeVizBoxplotDomain,
+    computeVizViolinDomain,
+  } from "$lib/viz-domain-utils";
   import { VIZ_MARGIN } from "$lib/axis-utils";
   import { zoomable } from "$lib/zoom-interactions";
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
@@ -1004,134 +1008,39 @@
       const col = vc.column;
       const padding = vizPadding;
 
+      // Pull current page's data rows once per loop iteration; the
+      // domain helpers below are shape-agnostic.
+      const dataRows = displayRows
+        .filter((d) => d.type === "data")
+        .map((d) => d.row);
+
+      // Shared helper: domain → effective domain (pan/zoom override) →
+      // d3 scale at the column's effective width. Keeps the three viz
+      // branches symmetrical and matches svg-generator's compute path
+      // by construction (schema-sprint Phase 4d).
+      function buildVizScale(
+        scaleKind: "linear" | "log" | undefined,
+        domain: { min: number; max: number },
+      ): ReturnType<typeof scaleLinear<number, number>> | ReturnType<typeof scaleLog<number, number>> {
+        const vizWidth = effectiveVizWidth(col);
+        const [zMin, zMax] = store.getEffectiveDomain(col.id, [domain.min, domain.max]);
+        return scaleKind === "log"
+          ? scaleLog().domain([Math.max(0.01, zMin), zMax]).range([padding, vizWidth - padding])
+          : scaleLinear().domain([zMin, zMax]).range([padding, vizWidth - padding]);
+      }
+
       if (col.type === "viz_bar") {
         const opts = col.options?.vizBar;
         if (!opts) continue;
-
-        // Aspect-aware render width (Phase 7E Lever 1B).
-        const vizWidth = effectiveVizWidth(col);
-
-        // If axisRange is specified, use it; otherwise compute from all rows
-        let domainMin = opts.axisRange?.[0];
-        let domainMax = opts.axisRange?.[1];
-
-        if (domainMin == null || domainMax == null) {
-          const allValues: number[] = [];
-          for (const dRow of displayRows) {
-            if (dRow.type === "data") {
-              for (const effect of opts.effects) {
-                const val = dRow.row.metadata[effect.value] as number | undefined;
-                if (val != null && !Number.isNaN(val)) {
-                  allValues.push(val);
-                }
-              }
-            }
-          }
-          if (allValues.length > 0) {
-            domainMin = domainMin ?? Math.min(0, ...allValues);
-            domainMax = domainMax ?? Math.max(...allValues) * 1.1;
-          } else {
-            domainMin = domainMin ?? 0;
-            domainMax = domainMax ?? 100;
-          }
-        }
-
-        const [zMin, zMax] = store.getEffectiveDomain(col.id, [domainMin, domainMax]);
-        const scale = opts.scale === "log"
-          ? scaleLog().domain([Math.max(0.01, zMin), zMax]).range([padding, vizWidth - padding])
-          : scaleLinear().domain([zMin, zMax]).range([padding, vizWidth - padding]);
-        scales.set(col.id, scale);
-
+        scales.set(col.id, buildVizScale(opts.scale, computeVizBarDomain(dataRows, opts)));
       } else if (col.type === "viz_boxplot") {
         const opts = col.options?.vizBoxplot;
         if (!opts) continue;
-
-        const vizWidth = effectiveVizWidth(col);
-
-        let domainMin = opts.axisRange?.[0];
-        let domainMax = opts.axisRange?.[1];
-
-        if (domainMin == null || domainMax == null) {
-          const allValues: number[] = [];
-          for (const dRow of displayRows) {
-            if (dRow.type === "data") {
-              for (const effect of opts.effects) {
-                // Array data mode
-                if (effect.data) {
-                  const data = dRow.row.metadata[effect.data] as number[] | undefined;
-                  if (data && Array.isArray(data)) {
-                    const stats = computeBoxplotStats(data);
-                    allValues.push(stats.min, stats.max);
-                    if (opts.showOutliers !== false) allValues.push(...stats.outliers);
-                  }
-                }
-                // Pre-computed stats mode
-                else if (effect.min && effect.max) {
-                  const min = dRow.row.metadata[effect.min] as number;
-                  const max = dRow.row.metadata[effect.max] as number;
-                  if (min != null && !Number.isNaN(min)) allValues.push(min);
-                  if (max != null && !Number.isNaN(max)) allValues.push(max);
-                }
-              }
-            }
-          }
-          if (allValues.length > 0) {
-            const dataMin = Math.min(...allValues);
-            const dataMax = Math.max(...allValues);
-            const range = dataMax - dataMin;
-            domainMin = domainMin ?? dataMin - range * 0.05;
-            domainMax = domainMax ?? dataMax + range * 0.05;
-          } else {
-            domainMin = domainMin ?? 0;
-            domainMax = domainMax ?? 100;
-          }
-        }
-
-        const [zMin, zMax] = store.getEffectiveDomain(col.id, [domainMin, domainMax]);
-        const scale = opts.scale === "log"
-          ? scaleLog().domain([Math.max(0.01, zMin), zMax]).range([padding, vizWidth - padding])
-          : scaleLinear().domain([zMin, zMax]).range([padding, vizWidth - padding]);
-        scales.set(col.id, scale);
-
+        scales.set(col.id, buildVizScale(opts.scale, computeVizBoxplotDomain(dataRows, opts)));
       } else if (col.type === "viz_violin") {
         const opts = col.options?.vizViolin;
         if (!opts) continue;
-
-        const vizWidth = effectiveVizWidth(col);
-
-        let domainMin = opts.axisRange?.[0];
-        let domainMax = opts.axisRange?.[1];
-
-        if (domainMin == null || domainMax == null) {
-          const allValues: number[] = [];
-          for (const dRow of displayRows) {
-            if (dRow.type === "data") {
-              for (const effect of opts.effects) {
-                const data = dRow.row.metadata[effect.data] as number[] | undefined;
-                if (data && Array.isArray(data)) {
-                  allValues.push(...data.filter(v => v != null && !Number.isNaN(v)));
-                }
-              }
-            }
-          }
-          if (allValues.length > 0) {
-            domainMin = domainMin ?? Math.min(...allValues);
-            domainMax = domainMax ?? Math.max(...allValues);
-            // Add padding for KDE tails
-            const range = domainMax - domainMin;
-            domainMin = domainMin - range * 0.1;
-            domainMax = domainMax + range * 0.1;
-          } else {
-            domainMin = domainMin ?? 0;
-            domainMax = domainMax ?? 100;
-          }
-        }
-
-        const [zMin, zMax] = store.getEffectiveDomain(col.id, [domainMin, domainMax]);
-        const scale = opts.scale === "log"
-          ? scaleLog().domain([Math.max(0.01, zMin), zMax]).range([padding, vizWidth - padding])
-          : scaleLinear().domain([zMin, zMax]).range([padding, vizWidth - padding]);
-        scales.set(col.id, scale);
+        scales.set(col.id, buildVizScale(opts.scale, computeVizViolinDomain(dataRows, opts)));
       }
     }
 
