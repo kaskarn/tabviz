@@ -43,7 +43,11 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     targetAspect = if (is.na(spec@target_aspect)) NULL else as.numeric(spec@target_aspect),
     # Anchor rule for ratio-only target-dim resolution (Phase 7C).
     targetAspectAnchor = spec@target_aspect_anchor,
-    originalCall = if (is.na(spec@original_call)) NULL else spec@original_call
+    originalCall = if (is.na(spec@original_call)) NULL else spec@original_call,
+    # Cross-cutting widget state (Phase 5+). Conditions are the only
+    # bank kind currently populated from R; footnotes / axes / legends
+    # come from schema-side contributeBanks behaviors (TS-side).
+    banks = if (length(spec@conditions) > 0L) list(conditions = spec@conditions) else NULL
   )
 }
 
@@ -851,6 +855,12 @@ build_cell_styles_fast <- function(row, recipes) {
   row_names <- names(row)
   get_val <- function(col_name, type) {
     if (is.null(col_name) || length(col_name) == 0L) return(NULL)
+    # Condition references (from `cond("name")`) are resolved at
+    # render time via banks.conditions — they have no row-local
+    # column to read here. Skip; the wire-side styleMapping carries
+    # the cond ref directly (schema-sprint Phase 5).
+    if (inherits(col_name, "tabviz_cond_ref")) return(NULL)
+    if (!is.character(col_name)) return(NULL)
     if (is.na(col_name[1L]) || !(col_name %in% row_names)) return(NULL)
     val <- row[[col_name]]
     if (length(val) == 0L) return(NULL)

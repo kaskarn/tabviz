@@ -211,6 +211,7 @@ tabviz <- function(
     initial_sort = NULL,
     initial_filters = NULL,
     initial_hidden_columns = NULL,
+    conditions = NULL,
     plot_position = NULL,
     row_height = NULL,
     banding = NULL,
@@ -613,7 +614,8 @@ tabviz <- function(
     marker_size_col = style_resolved$marker_size,
     weight_col = style_resolved$weight,
     original_call = .tabviz_call,
-    paginate = as_paginate_spec(paginate)
+    paginate = as_paginate_spec(paginate),
+    conditions = evaluate_conditions(conditions, data) %||% list()
   )
 
   # Return spec only if requested
