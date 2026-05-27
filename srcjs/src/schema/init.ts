@@ -26,6 +26,8 @@ import { registerTextCompositionRenderers } from "./columns/text-composition-ren
 import { registerBadgeRenderer }      from "./columns/badge-renderer";
 import { registerIconRenderer }       from "./columns/icon-renderer";
 import { registerStarsRenderer }      from "./columns/stars-renderer";
+import { registerRingRenderer }       from "./columns/ring-renderer";
+import { registerProgressRenderer }   from "./columns/progress-renderer";
 // DOM cell renderers live in `./init-dom` — they import Svelte
 // components and must NOT be pulled into the V8 bundle. Browser
 // entries import `init-dom` (which side-effect-imports this file too)
@@ -49,4 +51,6 @@ export function bootBuiltinBehaviors(): void {
   registerBadgeRenderer();
   registerIconRenderer();
   registerStarsRenderer();
+  registerRingRenderer();
+  registerProgressRenderer();
 }
