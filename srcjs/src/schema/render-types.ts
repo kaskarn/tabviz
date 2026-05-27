@@ -16,7 +16,7 @@
 
 import type { ColumnSchema } from "./types";
 import type { ColumnSpec, WebTheme } from "../types";
-import type { BankContribution } from "./banks";
+import type { BankContribution, EffectiveBanks } from "./banks";
 
 // ────────────────────────────────────────────────────────────────────
 // Render description tree
@@ -185,6 +185,17 @@ export interface RenderContext {
    *  summary once per render and inject it here; renderers never
    *  iterate rows themselves (schema-sprint Phase 4c). */
   columnSummary?: { min: number; max: number } | null;
+  /** Index into the canonical `spec.data.rows[]` for the cell being
+   *  rendered. Used to look up condition vectors and other per-row
+   *  bank entries (schema-sprint Phase 5). Phase 1's index-based view
+   *  model guarantees this index stays correctly aligned under
+   *  sort + filter. */
+  rowIndex?: number;
+  /** Resolved effective banks for the current spec. Renderers that
+   *  need cross-cutting state (footnotes, conditions, legends, axes)
+   *  read from here. Computed once per render by the dispatch sites
+   *  via `computeEffectiveBanks(spec)` (schema-sprint Phase 5). */
+  banks?: EffectiveBanks | null;
 }
 
 /**

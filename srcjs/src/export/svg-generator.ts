@@ -56,6 +56,8 @@ import { parseFontSize as parseFontSizeUtil } from "$lib/typography-layout";
 import { renderCell as schemaRenderCell } from "../schema/dispatch";
 import { renderNodeToSvg, type StyleResolver } from "../schema/render-svg";
 import { compileVariants } from "../schema/variant-compile";
+import { computeEffectiveBanks } from "../schema/banks";
+import { resolveStyleMapping } from "$lib/style-mapping-resolve";
 import {
   LAYOUT,
   TYPOGRAPHY,
@@ -2868,6 +2870,8 @@ function renderUnifiedTableRow(
   columnPositions: number[],
   allRows: Row[] = [],
   columnSummaries: Map<string, { min: number; max: number }> = new Map(),
+  rowIdToIndex: Map<string, number> = new Map(),
+  banks: import("../schema/banks").EffectiveBanks | null = null,
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.text.body.size);
@@ -2952,6 +2956,15 @@ function renderUnifiedTableRow(
     {
       const cellSch = row.cellStyles?.[col.field];
       const rowSch  = row.style;
+      const rowIndex = rowIdToIndex.get(row.id);
+      // styleMapping resolution (Phase 5): per-cell conditions / field
+      // references / static overrides. Pre-computed cellStyles win; the
+      // resolver only fires when the column has a styleMapping and the
+      // row has no explicit cellStyles entry. Mirrors TabvizPlot's
+      // getCellStyleBase precedence.
+      const mappedStyle = !cellSch && col.styleMapping
+        ? resolveStyleMapping(row, rowIndex, col, banks)
+        : undefined;
       const tree = schemaRenderCell(
         col,
         row.metadata[col.field],
@@ -2960,10 +2973,12 @@ function renderUnifiedTableRow(
           rowHeight,
           row:        row.metadata,
           target:     "svg",
-          cellStyle:  cellSch ?? rowSch,
+          cellStyle:  cellSch ?? mappedStyle ?? rowSch,
           naText:     col.options?.naText ?? null,
           theme,
           columnSummary: columnSummaries.get(col.id) ?? null,
+          rowIndex,
+          banks,
         },
         theme.nodeRules,
         "svg",
@@ -4356,6 +4371,13 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // full data so the scale is stable across pages.
   const columnSummaries = computeColumnSummaries(allDataRows, allColumns);
 
+  // Phase 5: row-id → canonical index map + effective banks. Used by
+  // the schema dispatch to resolve styleMapping conditions and feed
+  // ctx.banks / ctx.rowIndex to renderers. Computed once per export.
+  const rowIdToIndex = new Map<string, number>();
+  for (let ri = 0; ri < allDataRows.length; ri++) rowIdToIndex.set(allDataRows[ri].id, ri);
+  const effectiveBanks = computeEffectiveBanks(spec);
+
   displayRows.forEach((displayRow, i) => {
     const y = rowsY + rowPositions[i];
     const rowHeight = rowHeights[i];
@@ -4416,6 +4438,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           columnPositions,
           allDataRows,
           columnSummaries,
+          rowIdToIndex,
+          effectiveBanks,
         ));
       }
     }

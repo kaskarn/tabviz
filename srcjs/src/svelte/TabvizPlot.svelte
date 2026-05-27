@@ -96,6 +96,7 @@
   import { TEXT_MEASUREMENT } from "$lib/rendering-constants";
   import { buildWidgetCSS } from "$lib/theme-css";
   import { renderCell as schemaRenderCell } from "../schema/dispatch";
+  import { computeEffectiveBanks } from "../schema/banks";
   import RenderTree from "../components/RenderTree.svelte";
   import {
     formatNumber,
@@ -159,6 +160,25 @@
     walk(cols);
     return map;
   });
+
+  // Effective banks for the active spec — author-supplied entries
+  // merged with schema-contributed entries (footnotes, axes, legends,
+  // conditions, levelSets). Renderers read conditions out of this via
+  // ctx.banks; cell-style resolution looks up condition vectors here
+  // (schema-sprint Phase 5).
+  const effectiveBanks = $derived.by(() => spec ? computeEffectiveBanks(spec) : null);
+
+  // Canonical-row-id → index map. Phase 1's index-based view model
+  // guarantees spec.data.rows is referentially stable for the spec's
+  // lifetime; the map only rebuilds on setSpec. Used to resolve
+  // styleMapping conditions against banks.conditions[name].values[i].
+  const rowIdToIndex = $derived.by((): Map<string, number> => {
+    const map = new Map<string, number>();
+    const rows = spec?.data.rows ?? [];
+    for (let i = 0; i < rows.length; i++) map.set(rows[i].id, i);
+    return map;
+  });
+
   const rowPaddedAfter = $derived(store.rowPaddedAfter);
   const layout = $derived(store.layout);
   const xScale = $derived(store.xScale);
@@ -1247,7 +1267,10 @@
   }
   function getCellStyle(row: Row, column: ColumnSpec): CellStyle | undefined {
     const previewToken = paintCellPreviewToken(row, column.field);
-    const baseStyle = getCellStyleBase(row, column);
+    // Resolve canonical row index (stable across sort/filter via
+    // Phase 1's index-based view model) so condition vectors line up.
+    const rowIndex = rowIdToIndex.get(row.id);
+    const baseStyle = getCellStyleBase(row, column, rowIndex, effectiveBanks);
     if (previewToken) {
       return { ...(baseStyle ?? {}), [previewToken]: true } as CellStyle;
     }
@@ -1386,6 +1409,8 @@
             naText: column.options?.naText ?? null,
             theme: theme ?? null,
             columnSummary: columnSummaries.get(column.id) ?? null,
+            rowIndex: rowIdToIndex.get(row.id),
+            banks: effectiveBanks,
           },
           theme?.nodeRules,
           "dom",
@@ -2370,6 +2395,8 @@
 <script lang="ts" module>
   import type { RowStyle } from "$types";
   import { activeSemanticToken as activeSemanticTokenMod } from "$lib/semantic-styling";
+  import { resolveStyleMapping } from "$lib/style-mapping-resolve";
+  import type { EffectiveBanks } from "../schema/banks";
 
   // Note: formatNumber, formatEvents, formatInterval, addThousandsSep, abbreviateNumber are imported from $lib/formatters
 
@@ -2449,56 +2476,25 @@
     return styles.join("; ");
   }
 
-  // Get cell style for a specific column from row.cellStyles or column.styleMapping.
-  // Pure module-level helper — no instance / store access. The paint-preview
-  // wrapper that mixes in the active token lives in the instance script
-  // (it needs `store`); this base lookup is the underlying read.
-  function getCellStyleBase(row: Row, column: ColumnSpec): CellStyle | undefined {
-    // Check for pre-computed cellStyles from R serialization
+  // Get cell style for a specific column from row.cellStyles or
+  // column.styleMapping. Delegates the styleMapping resolution to the
+  // shared `lib/style-mapping-resolve` helper (schema-sprint Phase 5),
+  // which handles all four MappedValue kinds + the legacy bare-string
+  // field form. Conditions are looked up against `banks`, indexed by
+  // `rowIndex` into the canonical `spec.data.rows[]`.
+  function getCellStyleBase(
+    row: Row,
+    column: ColumnSpec,
+    rowIndex: number | undefined,
+    banks: EffectiveBanks | null | undefined,
+  ): CellStyle | undefined {
+    // Pre-computed cellStyles from R serialization win outright.
     if (row.cellStyles?.[column.field]) {
       return row.cellStyles[column.field];
     }
-
-    // Check styleMapping on column definition (resolved at render time from metadata)
     if (column.styleMapping) {
-      const style: CellStyle = {};
-      const meta = row.metadata;
-
-      // Resolve a StyleOverride to the data-field name it references.
-      // Returns undefined for non-field-reference shapes (static /
-      // condition / theme — Phase 7 wires those through the schema
-      // dispatcher). Today's behavior preserved: bare-string reads
-      // and `{kind: "field", field}` reads are equivalent.
-      const fieldOf = (v: unknown): string | undefined => {
-        if (v == null) return undefined;
-        if (typeof v === "string") return v;
-        if (typeof v === "object" && "kind" in (v as object) && (v as { kind: string }).kind === "field") {
-          return (v as { kind: "field"; field: string }).field;
-        }
-        return undefined;
-      };
-
-      const boldF = fieldOf(column.styleMapping.bold);
-      if (boldF && meta[boldF]) style.bold = Boolean(meta[boldF]);
-
-      const italicF = fieldOf(column.styleMapping.italic);
-      if (italicF && meta[italicF]) style.italic = Boolean(meta[italicF]);
-
-      const colorF = fieldOf(column.styleMapping.color);
-      if (colorF && meta[colorF]) style.color = String(meta[colorF]);
-
-      const bgF = fieldOf(column.styleMapping.bg);
-      if (bgF && meta[bgF]) style.bg = String(meta[bgF]);
-
-      const badgeF = fieldOf(column.styleMapping.badge);
-      if (badgeF && meta[badgeF]) style.badge = String(meta[badgeF]);
-
-      const iconF = fieldOf(column.styleMapping.icon);
-      if (iconF && meta[iconF]) style.icon = String(meta[iconF]);
-
-      if (Object.keys(style).length > 0) return style;
+      return resolveStyleMapping(row, rowIndex, column, banks);
     }
-
     return undefined;
   }
 </script>
