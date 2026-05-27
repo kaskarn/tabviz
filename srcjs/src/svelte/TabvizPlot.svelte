@@ -97,6 +97,7 @@
   import { buildWidgetCSS } from "$lib/theme-css";
   import { renderCell as schemaRenderCell } from "../schema/dispatch";
   import { computeEffectiveBanks } from "../schema/banks";
+  import { NUMERIC_COLUMN_TYPES } from "../schema/columns";
   import {
     createLifecycleState,
     dispatchLifecycle,
@@ -1783,6 +1784,7 @@
               <!-- svelte-ignore a11y_click_events_have_key_events -->
               <div
                 class={`grid-cell data-cell ${rowClasses}${cellActiveTok ? ` cell-active-${cellActiveTok}` : ""}`}
+                class:numeric-cell={NUMERIC_COLUMN_TYPES.has(column.type)}
                 class:group-row={isGroupHeader}
                 class:row-padded-after={!isGroupHeader && rowPaddedAfter[i]}
                 class:group-row-bordered={groupLevelBorder}
@@ -2794,6 +2796,15 @@
      semantic styling"; empty rulesets warn under svelte-check and offer
      no override surface vs. just writing the selector when needed. The
      hook lives in the `.grid-cell.data-cell` selector elsewhere. */
+
+  /* Phase 12: numeric-flavored cells pick `theme.text.numeric` for their
+     font family + figure style. Falls back to the body family + tabular
+     figures when the theme doesn't pin numeric (resolver guarantees the
+     wire field is always present). */
+  .numeric-cell {
+    font-family: var(--tv-text-numeric-family, var(--tv-font-family));
+    font-feature-settings: var(--tv-text-numeric-figures, "tnum");
+  }
 
   /* Primary (leftmost) column cell — row identifier, drag surface.
      The first-column variant (theme.variants.firstColumnStyle = "bold")

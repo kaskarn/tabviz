@@ -328,7 +328,11 @@ resolve_text <- function(inputs, content) {
     label    = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "tabular",      fg = label_fg,        italic = FALSE),
     tick     = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "tabular",      fg = tick_fg,         italic = FALSE),
     footnote = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = footnote_fg,     italic = FALSE),
-    caption  = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = caption_fg,      italic = TRUE)
+    caption  = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = caption_fg,      italic = TRUE),
+    # Phase 12: numeric defaults to body. Themes can override `numeric@family`
+    # to give numbers a different family (e.g. a tabular mono) without
+    # affecting text columns; renderers pick this role via pickTextRole.
+    numeric  = TextRole(family = body,    size = "0.875rem",  weight = 400, figures = "tabular",      fg = content@primary, italic = FALSE)
   )
 }
 

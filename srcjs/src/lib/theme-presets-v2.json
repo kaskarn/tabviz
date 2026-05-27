@@ -222,6 +222,14 @@
         "figures": "proportional",
         "fg": "#4E657B",
         "italic": true
+      },
+      "numeric": {
+        "family": "Inter, -apple-system, system-ui, 'Segoe UI', sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#1F2937",
+        "italic": false
       }
     },
     "spacing": {
@@ -748,6 +756,14 @@
         "figures": "proportional",
         "fg": "#2C4C73",
         "italic": true
+      },
+      "numeric": {
+        "family": "Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#1E3A5F",
+        "italic": false
       }
     },
     "spacing": {
@@ -1274,6 +1290,14 @@
         "figures": "proportional",
         "fg": "#313131",
         "italic": true
+      },
+      "numeric": {
+        "family": "Arial, Helvetica, sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#000000",
+        "italic": false
       }
     },
     "spacing": {
@@ -1805,6 +1829,14 @@
         "figures": "proportional",
         "fg": "#435162",
         "italic": true
+      },
+      "numeric": {
+        "family": "'Source Serif Pro', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#1F2A3A",
+        "italic": false
       }
     },
     "spacing": {
@@ -2336,6 +2368,14 @@
         "figures": "proportional",
         "fg": "#413D39",
         "italic": true
+      },
+      "numeric": {
+        "family": "'PT Serif', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#1A1A1A",
+        "italic": false
       }
     },
     "spacing": {
@@ -2862,6 +2902,14 @@
         "figures": "proportional",
         "fg": "#555D67",
         "italic": true
+      },
+      "numeric": {
+        "family": "system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#1F2937",
+        "italic": false
       }
     },
     "spacing": {
@@ -3388,6 +3436,14 @@
         "figures": "proportional",
         "fg": "#5D678A",
         "italic": true
+      },
+      "numeric": {
+        "family": "system-ui, -apple-system, 'Segoe UI', sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#CDD6F4",
+        "italic": false
       }
     },
     "spacing": {
@@ -3919,6 +3975,14 @@
         "figures": "proportional",
         "fg": "#374356",
         "italic": true
+      },
+      "numeric": {
+        "family": "'Jost', 'Futura', 'Helvetica Neue', sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#111111",
+        "italic": false
       }
     },
     "spacing": {
@@ -4445,6 +4509,14 @@
         "figures": "proportional",
         "fg": "#5F5F5F",
         "italic": true
+      },
+      "numeric": {
+        "family": "'Helvetica Neue', Helvetica, Arial, sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#111111",
+        "italic": false
       }
     },
     "spacing": {
@@ -4976,6 +5048,14 @@
         "figures": "proportional",
         "fg": "#7F6F5D",
         "italic": true
+      },
+      "numeric": {
+        "family": "'Crimson Pro', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#1F1F1F",
+        "italic": false
       }
     },
     "spacing": {
@@ -5507,6 +5587,14 @@
         "figures": "proportional",
         "fg": "#35312E",
         "italic": true
+      },
+      "numeric": {
+        "family": "'Roboto Serif', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#1A1A1A",
+        "italic": false
       }
     },
     "spacing": {
@@ -6033,6 +6121,14 @@
         "figures": "proportional",
         "fg": "#61688E",
         "italic": true
+      },
+      "numeric": {
+        "family": "system-ui, -apple-system, 'Segoe UI', sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#586E75",
+        "italic": false
       }
     },
     "spacing": {
@@ -6559,6 +6655,14 @@
         "figures": "proportional",
         "fg": "#3E6D59",
         "italic": true
+      },
+      "numeric": {
+        "family": "system-ui, -apple-system, 'Segoe UI', sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#93A1A1",
+        "italic": false
       }
     },
     "spacing": {
@@ -7085,6 +7189,14 @@
         "figures": "proportional",
         "fg": "#574A6C",
         "italic": true
+      },
+      "numeric": {
+        "family": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#1C1B1F",
+        "italic": false
       }
     },
     "spacing": {
@@ -7611,6 +7723,14 @@
         "figures": "proportional",
         "fg": "#7C7697",
         "italic": true
+      },
+      "numeric": {
+        "family": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#E6E1E5",
+        "italic": false
       }
     },
     "spacing": {
@@ -8146,6 +8266,14 @@
         "figures": "proportional",
         "fg": "#957A5E",
         "italic": true
+      },
+      "numeric": {
+        "family": "'EB Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#E8D9B5",
+        "italic": false
       }
     },
     "spacing": {
@@ -8681,6 +8809,14 @@
         "figures": "proportional",
         "fg": "#7E8EA6",
         "italic": true
+      },
+      "numeric": {
+        "family": "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#EDEFF5",
+        "italic": false
       }
     },
     "spacing": {
@@ -9216,6 +9352,14 @@
         "figures": "proportional",
         "fg": "#7D6E42",
         "italic": true
+      },
+      "numeric": {
+        "family": "'IM Fell English', Georgia, 'Times New Roman', serif",
+        "size": "0.875rem",
+        "weight": 400,
+        "figures": "tabular",
+        "fg": "#3A2C20",
+        "italic": false
       }
     },
     "spacing": {

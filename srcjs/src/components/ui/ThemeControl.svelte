@@ -118,6 +118,13 @@
           }}
         />
       </Field>
+      <Field label="Numeric" hint="Optional family for numeric-category cells (numeric, percent, currency, p-value, interval, events). Defaults to Body.">
+        <FontFamily
+          value={theme.text?.numeric?.family ?? null}
+          roster={fontRoster}
+          onchange={(v) => ctx.setPath(["text", "numeric", "family"], v)}
+        />
+      </Field>
       <Field label="Mono">
         <FontFamily
           value={(inputs?.fontMono as string | undefined) ?? null}

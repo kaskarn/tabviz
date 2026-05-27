@@ -207,6 +207,14 @@ export interface TextRolesV2 {
   tick: TextRoleV2;
   footnote: TextRoleV2;
   caption: TextRoleV2;
+  /**
+   * Optional numeric-flavored text role. When set, the renderer picks
+   * this role for numeric-category columns (numeric / percent /
+   * currency / pvalue / interval / events / badge) instead of `body`.
+   * Resolver fills it from `body` when omitted, so this is always a
+   * fully-defined TextRole on the wire.
+   */
+  numeric: TextRoleV2;
 }
 
 // ────────────────────────────────────────────────────────────────────

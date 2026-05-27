@@ -34,6 +34,25 @@ describe("resolveTheme — smoke", () => {
   });
 });
 
+describe("resolveTheme — numeric text role", () => {
+  const baseInputs = { primary: "#0099CC", neutral: ["#FFFFFF", "#FFFFFF", "#F2F4F7", "#5B6470", "#1F2937"] };
+
+  test("numeric defaults to body family + tabular figures", () => {
+    const t = resolveTheme({ inputs: baseInputs });
+    expect(t.text.numeric.family).toBe(t.text.body.family);
+    expect(t.text.numeric.figures).toBe("tabular");
+  });
+
+  test("explicit numeric override survives resolution", () => {
+    const t = resolveTheme({
+      inputs: { ...baseInputs, fontBody: "Inter" },
+      overrides: { text: { numeric: { family: "JetBrains Mono", figures: "tabular" } } },
+    });
+    expect(t.text.body.family).toBe("Inter");
+    expect(t.text.numeric.family).toBe("JetBrains Mono");
+  });
+});
+
 describe("resolveTheme — borders", () => {
   const baseInputs = { primary: "#0099CC", neutral: ["#FFFFFF", "#FFFFFF", "#F2F4F7", "#5B6470", "#1F2937"] };
 

@@ -188,6 +188,12 @@ function _buildThemeCSSImpl(theme: WebThemeV2): string {
       --tv-badge-muted:   ${theme.content.muted};
       --tv-font-family: ${theme.text.body.family};
       --tv-text-title-family: ${theme.text.title?.family ?? theme.text.body.family};
+      /* Phase 12: numeric-flavored text role. Resolver guarantees a
+         fully-defined TextRole on the wire (falls back to body when
+         the theme doesn't pin numeric). Numeric-category cells pick
+         this via .numeric-cell. */
+      --tv-text-numeric-family: ${theme.text.numeric?.family ?? theme.text.body.family};
+      --tv-text-numeric-figures: ${theme.text.numeric?.figures === "proportional" ? "normal" : "tnum"};
       --tv-font-size-sm: ${theme.text.label.size};
       --tv-font-size-base: ${theme.text.body.size};
       --tv-font-size-lg: ${theme.text.subtitle.size};

@@ -45,6 +45,18 @@ import { VIZ_VIOLIN_SCHEMA } from "./viz_violin";
  * PERCENT, …). Keys here match each schema's `key` field, used as
  * the inheritance handle.
  */
+/**
+ * Phase 12: column types that should pick the optional `theme.text.numeric`
+ * role over `theme.text.body`. Sourced from each schema's `category:
+ * "numeric"` marker; encoded inline so consumers can do a single Set
+ * lookup without walking the registry. Keep in sync with the per-schema
+ * `category` field.
+ */
+export const NUMERIC_COLUMN_TYPES = new Set<string>([
+  "numeric", "n", "currency", "percent", "pvalue",
+  "interval", "range", "events",
+]);
+
 export const SCHEMA_REGISTRY: SchemaRegistry = {
   base:        BASE_SCHEMA,
   categorical: CATEGORICAL_SCHEMA,

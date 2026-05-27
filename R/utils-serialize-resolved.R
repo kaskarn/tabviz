@@ -234,7 +234,8 @@ serialize_theme <- function(theme) {
       label    = serialize_text_role(theme@text@label),
       tick     = serialize_text_role(theme@text@tick),
       footnote = serialize_text_role(theme@text@footnote),
-      caption  = serialize_text_role(theme@text@caption)
+      caption  = serialize_text_role(theme@text@caption),
+      numeric  = serialize_text_role(theme@text@numeric)
     ),
 
     spacing = list(

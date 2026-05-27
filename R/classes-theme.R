@@ -379,7 +379,13 @@ TextRoles <- new_class(
     label    = new_property(TextRole, default = TextRole()),
     tick     = new_property(TextRole, default = TextRole()),
     footnote = new_property(TextRole, default = TextRole()),
-    caption  = new_property(TextRole, default = TextRole())
+    caption  = new_property(TextRole, default = TextRole()),
+    # Phase 12: optional numeric-flavored role. NA-default; resolver
+    # fills it from `body` so the wire always carries a complete TextRole.
+    # Renderers consult it via `pickTextRole(col, theme)` for
+    # numeric-category columns (numeric / percent / currency / pvalue /
+    # interval / events / badge).
+    numeric  = new_property(TextRole, default = TextRole())
   )
 )
 

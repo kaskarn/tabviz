@@ -514,6 +514,9 @@ function resolveText(inputs: ThemeInputsV2, content: ContentV2): TextRolesV2 {
     tick:     { family: body,    size: "0.75rem",  weight: 400, figures: "tabular",      fg: tickFg,         italic: false },
     footnote: { family: body,    size: "0.75rem",  weight: 400, figures: "proportional", fg: footnoteFg,     italic: false },
     caption:  { family: body,    size: "0.75rem",  weight: 400, figures: "proportional", fg: captionFg,      italic: true },
+    // Phase 12: numeric defaults to body. Overriding `numeric.family`
+    // gives numbers a different family without affecting text columns.
+    numeric:  { family: body,    size: "0.875rem", weight: 400, figures: "tabular",      fg: content.primary, italic: false },
   };
 }
 
