@@ -449,17 +449,24 @@ serialize_column <- function(col) {
     !is.null(x) && length(x) > 0 && !is.na(x[1])
   }
 
+  # Condition references survive resolve_column_style as
+  # `tabviz_cond_ref` S3 lists; strip the class for jsonlite so the
+  # value serializes as a plain `{kind, name}` object on the wire.
+  unwrap_cond <- function(x) {
+    if (inherits(x, "tabviz_cond_ref")) unclass(x) else x
+  }
+
   style_mapping <- list()
-  if (has_style(col@style_bold)) style_mapping$bold <- col@style_bold
-  if (has_style(col@style_italic)) style_mapping$italic <- col@style_italic
-  if (has_style(col@style_color)) style_mapping$color <- col@style_color
-  if (has_style(col@style_bg)) style_mapping$bg <- col@style_bg
-  if (has_style(col@style_badge)) style_mapping$badge <- col@style_badge
-  if (has_style(col@style_icon)) style_mapping$icon <- col@style_icon
+  if (has_style(col@style_bold)) style_mapping$bold <- unwrap_cond(col@style_bold)
+  if (has_style(col@style_italic)) style_mapping$italic <- unwrap_cond(col@style_italic)
+  if (has_style(col@style_color)) style_mapping$color <- unwrap_cond(col@style_color)
+  if (has_style(col@style_bg)) style_mapping$bg <- unwrap_cond(col@style_bg)
+  if (has_style(col@style_badge)) style_mapping$badge <- unwrap_cond(col@style_badge)
+  if (has_style(col@style_icon)) style_mapping$icon <- unwrap_cond(col@style_icon)
   # Semantic styling
-  if (has_style(col@style_emphasis)) style_mapping$emphasis <- col@style_emphasis
-  if (has_style(col@style_muted)) style_mapping$muted <- col@style_muted
-  if (has_style(col@style_accent)) style_mapping$accent <- col@style_accent
+  if (has_style(col@style_emphasis)) style_mapping$emphasis <- unwrap_cond(col@style_emphasis)
+  if (has_style(col@style_muted)) style_mapping$muted <- unwrap_cond(col@style_muted)
+  if (has_style(col@style_accent)) style_mapping$accent <- unwrap_cond(col@style_accent)
 
   if (length(style_mapping) > 0) {
     result$styleMapping <- style_mapping
