@@ -97,6 +97,12 @@
   import { buildWidgetCSS } from "$lib/theme-css";
   import { renderCell as schemaRenderCell } from "../schema/dispatch";
   import { computeEffectiveBanks } from "../schema/banks";
+  import {
+    createLifecycleState,
+    dispatchLifecycle,
+    type LifecycleState,
+  } from "../schema/lifecycle-dispatch";
+  import type { WidgetContext } from "../schema/render-types";
   import RenderTree from "../components/RenderTree.svelte";
   import {
     formatNumber,
@@ -212,6 +218,26 @@
   // Column system: all columns in order (forest columns are inline)
   const allColumns = $derived(store.allColumns);
   const allColumnDefs = $derived(store.allColumnDefs);
+
+  // Lifecycle hooks (schema-sprint Phase 7). State persists across
+  // renders so the dispatcher can diff against the previous column
+  // set; the $effect re-runs on every change to allColumnDefs (which
+  // includes group wrappers, so adding/removing wrapping groups also
+  // fires the right child-column hooks).
+  const lifecycleState: LifecycleState = createLifecycleState();
+  $effect(() => {
+    if (!containerRef) return;
+    const widget: WidgetContext = {
+      root: containerRef,
+      columns: allColumns as ColumnSpec[],
+      // Mutation goes through the store proper (insertColumn / hideColumn
+      // / etc.); the lifecycle hook's update channel is informational
+      // only here. Schema authors who need to push column updates can
+      // call back through their own store reference.
+      update: () => {},
+    };
+    dispatchLifecycle(lifecycleState, allColumnDefs, widget);
+  });
   const forestColumns = $derived(store.forestColumns);
   const hasForestColumns = $derived(forestColumns.length > 0);
   const vizColumns = $derived(store.vizColumns);

@@ -480,14 +480,28 @@ save_plot <- function(x, file,
     as.integer(min(auto_max, max(auto_min, computed)))
   }
 
-  # Body columns.
+  # Body columns. ColumnGroup wrappers don't carry @width / @type
+  # themselves — they nest ColumnSpec children. Recurse into groups
+  # so the leaf columns get measured + stamped correctly.
   for (idx in seq_along(spec@columns)) {
-    w <- measure_one(spec@columns[[idx]])
-    if (!is.null(w)) spec@columns[[idx]]@width <- w
+    entry <- spec@columns[[idx]]
+    if (S7_inherits(entry, ColumnGroup)) {
+      grp <- entry
+      for (ci in seq_along(grp@columns)) {
+        child <- grp@columns[[ci]]
+        if (!S7_inherits(child, ColumnSpec)) next
+        w <- measure_one(child)
+        if (!is.null(w)) grp@columns[[ci]]@width <- w
+      }
+      spec@columns[[idx]] <- grp
+    } else if (S7_inherits(entry, ColumnSpec)) {
+      w <- measure_one(entry)
+      if (!is.null(w)) spec@columns[[idx]]@width <- w
+    }
   }
   # Label column lives on its own slot (0.34.2+); apply the same measurement
   # so the leftmost column tracks the rest in shared exports.
-  if (!is.null(spec@label_column)) {
+  if (!is.null(spec@label_column) && S7_inherits(spec@label_column, ColumnSpec)) {
     w <- measure_one(spec@label_column)
     if (!is.null(w)) spec@label_column@width <- w
   }
