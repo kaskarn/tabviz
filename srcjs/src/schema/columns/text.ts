@@ -29,6 +29,7 @@ export const TEXT_SCHEMA: ColumnSchema = {
       default: false,
       hint: "Allow multi-line cells",
       at: "fixed",
+      consumedBy: ["renderCell", "estimateWidth", "editor"],
     },
     {
       key: "maxChars",
@@ -37,6 +38,7 @@ export const TEXT_SCHEMA: ColumnSchema = {
       default: null,
       hint: "Truncate with trailing ellipsis when over",
       min: 1,
+      consumedBy: ["formatValue", "renderCell", "emitSource", "editor"],
     },
 
     // ── Styling overrides ─────────────────────────────────────────────
@@ -64,6 +66,7 @@ export const TEXT_SCHEMA: ColumnSchema = {
       default: null,
       hint: "Theme decides which family / weight / numeric variant",
       accepts: ["string"],
+      consumedBy: ["renderCell", "editor"],
     },
 
     // Reserved for future text-styling escape hatches (raw color /

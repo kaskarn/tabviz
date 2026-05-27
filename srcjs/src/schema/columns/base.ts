@@ -22,6 +22,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       default: null,
       hint: "Defaults to the field name",
       at: "fixed",
+      consumedBy: ["renderCell", "editor"],
     },
     {
       key: "showHeader",
@@ -30,6 +31,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       default: null,
       hint: "Auto: show iff header non-empty",
       at: "fixed",
+      consumedBy: ["renderCell", "editor"],
     },
     {
       key: "align",
@@ -43,6 +45,7 @@ export const BASE_SCHEMA: ColumnSchema = {
         { value: "right", label: "Right" },
       ],
       at: "fixed",
+      consumedBy: ["renderCell", "editor"],
     },
     {
       key: "headerAlign",
@@ -56,6 +59,7 @@ export const BASE_SCHEMA: ColumnSchema = {
         { value: "right", label: "Right" },
       ],
       at: "fixed",
+      consumedBy: ["renderCell", "editor"],
     },
     {
       key: "width",
@@ -64,6 +68,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       default: "auto",
       hint: 'Pixels; blank or "auto" for content-driven',
       at: "fixed",
+      consumedBy: ["renderCell", "estimateWidth", "editor"],
     },
     {
       key: "sortable",
@@ -72,6 +77,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       default: true,
       hint: "Click header to sort. Multi-effect viz sorts by the first series.",
       at: "fixed",
+      consumedBy: ["editor"],
     },
     {
       key: "naText",
@@ -82,6 +88,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       // Legacy wire path: `column.options.naText` (top-level, not in
       // any bucket). 13+ reader sites in the renderer + SVG exporter.
       at: "top",
+      consumedBy: ["renderCell", "formatValue"],
     },
 
     // ── Styling overrides ─────────────────────────────────────────────
@@ -112,6 +119,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       default: null,
       hint: "Semantic role — theme decides colors/weights",
       accepts: ["string"],
+      consumedBy: ["renderCell", "editor"],
     },
     {
       key: "paddingClass",
@@ -127,6 +135,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       default: null,
       hint: "Cell padding — theme decides exact values",
       accepts: ["string"],
+      consumedBy: ["renderCell", "editor"],
     },
     {
       key: "borderClass",
@@ -142,6 +151,7 @@ export const BASE_SCHEMA: ColumnSchema = {
       default: null,
       hint: "Column divider weight — theme decides exact value",
       accepts: ["string"],
+      consumedBy: ["renderCell", "editor"],
     },
   ],
 };

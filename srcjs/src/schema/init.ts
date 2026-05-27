@@ -30,6 +30,7 @@ import { registerRingRenderer }       from "./columns/ring-renderer";
 import { registerProgressRenderer }   from "./columns/progress-renderer";
 import { registerSparklineRenderer }  from "./columns/sparkline-renderer";
 import { registerAggregateBehaviors } from "./columns/aggregate-behaviors";
+import { registerFormatBehaviors }    from "./columns/format-behaviors";
 // DOM cell renderers live in `./init-dom` — they import Svelte
 // components and must NOT be pulled into the V8 bundle. Browser
 // entries import `init-dom` (which side-effect-imports this file too)
@@ -57,4 +58,5 @@ export function bootBuiltinBehaviors(): void {
   registerProgressRenderer();
   registerSparklineRenderer();
   registerAggregateBehaviors();
+  registerFormatBehaviors();
 }

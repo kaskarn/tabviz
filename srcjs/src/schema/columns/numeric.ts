@@ -30,6 +30,7 @@ export const NUMERIC_SCHEMA: ColumnSchema = {
       hint: "Decimal places. Leave blank for auto.",
       min: 0,
       max: 10,
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
       key: "digits",
@@ -39,6 +40,7 @@ export const NUMERIC_SCHEMA: ColumnSchema = {
       hint: "Significant figures (overrides decimals)",
       min: 1,
       max: 10,
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
       key: "thousandsSep",
@@ -48,6 +50,7 @@ export const NUMERIC_SCHEMA: ColumnSchema = {
       // Wire encoding: false | "," (string). Editor exposes a boolean
       // toggle; when on, codegen sets the wire value to "," — matching
       // today's handwritten builders.
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
       key: "abbreviate",
@@ -55,6 +58,7 @@ export const NUMERIC_SCHEMA: ColumnSchema = {
       control: "toggle",
       default: false,
       hint: '"12.3K", "1.2M"',
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
       key: "prefix",
@@ -62,6 +66,7 @@ export const NUMERIC_SCHEMA: ColumnSchema = {
       control: "text",
       default: null,
       hint: 'Prepended literal (e.g. "$")',
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
     {
       key: "suffix",
@@ -69,6 +74,7 @@ export const NUMERIC_SCHEMA: ColumnSchema = {
       control: "text",
       default: null,
       hint: 'Appended literal (e.g. "%")',
+      consumedBy: ["formatValue", "emitSource", "editor"],
     },
   ],
 };
