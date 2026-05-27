@@ -33,8 +33,8 @@ const SIZE_PX: Record<"sm" | "base" | "lg" | "xl", number> = {
 
 function resolveIconColor(
   iconOpts: IconOptions | undefined,
-  cellStyle: unknown,
-  rowStyle: unknown,
+  cellStyle: Parameters<typeof resolveSemanticBundle>[0],
+  rowStyle: Parameters<typeof resolveSemanticBundle>[0],
   theme: WebTheme,
 ): string {
   const cellBundle = resolveSemanticBundle(cellStyle, theme);

@@ -31,8 +31,8 @@ function resolveFilledColor(
   value: number,
   opts: RingOptions,
   theme: WebTheme,
-  cellStyle: unknown,
-  rowStyle: unknown,
+  cellStyle: Parameters<typeof resolveSemanticBundle>[0],
+  rowStyle: Parameters<typeof resolveSemanticBundle>[0],
 ): string {
   const glyphDefault = (theme.inputs as { secondary?: string; primary?: string } | undefined)?.secondary
     ?? (theme.inputs as { primary?: string } | undefined)?.primary

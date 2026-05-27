@@ -57,8 +57,8 @@ function resolveBadgeColor(
   value: unknown,
   opts: BadgeOptions | undefined,
   theme: WebTheme,
-  cellStyle: unknown,
-  rowStyle: unknown,
+  cellStyle: Parameters<typeof resolveSemanticBundle>[0],
+  rowStyle: Parameters<typeof resolveSemanticBundle>[0],
 ): string {
   const inputs = theme.inputs as { secondary?: string; primary?: string } | undefined;
   const glyphDefault = inputs?.secondary ?? inputs?.primary ?? theme.accent.default;

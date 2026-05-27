@@ -28,8 +28,8 @@ const BAR_RADIUS = 5;
 
 function resolveProgressColor(
   opts: ProgressOptions | undefined,
-  cellStyle: unknown,
-  rowStyle: unknown,
+  cellStyle: Parameters<typeof resolveSemanticBundle>[0],
+  rowStyle: Parameters<typeof resolveSemanticBundle>[0],
   theme: WebTheme,
 ): string {
   const cellBundle = resolveSemanticBundle(cellStyle, theme);

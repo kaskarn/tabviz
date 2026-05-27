@@ -1,8 +1,10 @@
-// Tests for the pictogram cell renderer.
+// Tests for the pictogram cell renderer's DOM slot.
 //
-// Visual-cell exemplar: dom returns a RenderComponent escape hatch;
-// svg slot is intentionally NOT registered (svg-generator still
-// owns export markup). Tests verify both behaviors.
+// The DOM slot returns a RenderComponent escape hatch that mounts the
+// existing CellPictogram.svelte. The SVG slot was wired in
+// schema-sprint Phase 4b.5 and is covered by
+// pictogram-svg-renderer.test.ts — this file keeps the DOM-side
+// regressions isolated.
 
 import { describe, test, expect, beforeEach } from "bun:test";
 import { renderCell } from "../dispatch";
@@ -61,13 +63,7 @@ describe("pictogram renderer — dom slot", () => {
   });
 });
 
-describe("pictogram renderer — svg slot intentionally absent", () => {
-  test("renderCell(..., 'svg') returns null", () => {
-    const c = col({ pictogram: { size: "base", layout: "row" } });
-    const out = renderCell(c, 3, ctx({ v: 3 }), undefined, "svg");
-    expect(out).toBeNull();
-  });
-});
+// SVG slot moved to pictogram-svg-renderer.test.ts (Phase 4b.5).
 
 describe("pictogram renderer — component registration", () => {
   test("CellPictogram resolves via the component registry", () => {
