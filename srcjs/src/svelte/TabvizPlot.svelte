@@ -120,7 +120,7 @@
 
   // Reactive derivations from store
   const spec = $derived(store.spec);
-  const visibleRows = $derived(store.visibleRows);
+  const visibleIndices = $derived(store.visibleIndices);
   const displayRows = $derived(store.displayRows);
   const rowPaddedAfter = $derived(store.rowPaddedAfter);
   const layout = $derived(store.layout);
@@ -1461,21 +1461,25 @@
             </CellContent>
           {/if}
         {:else if column.type === "bar"}
-          <!-- Not yet migrated: needs maxValue aggregated over visibleRows. -->
+          <!-- Phase 4 migrates this to a schema renderer reading from
+               `banks.columnSummaries` (aggregate behavior). Today it
+               walks visibleIndices through the canonical rows. -->
           <CellBar
             value={metadata[column.field] as number}
-            maxValue={getMaxValueForColumn(visibleRows, column)}
+            maxValue={getMaxValueForColumn(spec?.data.rows ?? [], visibleIndices, column)}
             options={column.options?.bar}
             naText={column.options?.naText}
             colorOverride={effectiveVizColor(row, column)}
           />
         {:else if column.type === "heatmap"}
-          <!-- Not yet migrated: needs min/maxValue aggregated over visibleRows. -->
+          <!-- Phase 4 migrates this to a schema renderer reading from
+               `banks.columnSummaries` (aggregate behavior). Today it
+               walks visibleIndices through the canonical rows. -->
           <CellHeatmap
             value={metadata[column.field] as number}
             options={column.options?.heatmap}
-            minValue={getMinValueForColumn(visibleRows, column)}
-            maxValue={getMaxValueForColumn(visibleRows, column)}
+            minValue={getMinValueForColumn(spec?.data.rows ?? [], visibleIndices, column)}
+            maxValue={getMaxValueForColumn(spec?.data.rows ?? [], visibleIndices, column)}
             naText={column.options?.naText}
             {theme}
           />
@@ -2448,7 +2452,11 @@
 
   // Note: formatNumber, formatEvents, formatInterval, addThousandsSep, abbreviateNumber are imported from $lib/formatters
 
-  function getMaxValueForColumn(rows: Row[], column: ColumnSpec): number {
+  function getMaxValueForColumn(
+    rows: readonly Row[],
+    indices: readonly number[],
+    column: ColumnSpec,
+  ): number {
     // Use explicit maxValue from options if provided
     if (column.options?.bar?.maxValue) {
       return column.options.bar.maxValue;
@@ -2456,10 +2464,11 @@
     if (column.options?.heatmap?.maxValue != null) {
       return column.options.heatmap.maxValue;
     }
-    // Otherwise compute from data
+    // Otherwise compute over the visible row set (canonical rows; no
+    // overlay-merge needed — metadata isn't paint-tool affected).
     let max = 0;
-    for (const row of rows) {
-      const val = row.metadata[column.field];
+    for (const i of indices) {
+      const val = rows[i].metadata[column.field];
       if (typeof val === "number" && val > max) {
         max = val;
       }
@@ -2467,15 +2476,19 @@
     return max || 100;
   }
 
-  function getMinValueForColumn(rows: Row[], column: ColumnSpec): number {
+  function getMinValueForColumn(
+    rows: readonly Row[],
+    indices: readonly number[],
+    column: ColumnSpec,
+  ): number {
     // Use explicit minValue from options if provided
     if (column.options?.heatmap?.minValue != null) {
       return column.options.heatmap.minValue;
     }
-    // Otherwise compute from data
+    // Otherwise compute over the visible row set.
     let min = Infinity;
-    for (const row of rows) {
-      const val = row.metadata[column.field];
+    for (const i of indices) {
+      const val = rows[i].metadata[column.field];
       if (typeof val === "number" && val < min) {
         min = val;
       }

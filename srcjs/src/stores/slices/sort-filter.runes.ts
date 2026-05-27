@@ -1,8 +1,10 @@
-// Unit tests for the sort-filter slice (Phase 0c-C1 PR4).
+// Unit tests for the sort-filter slice.
 //
-// The slice's `visibleRows` $derived reads styleEdits via deps.getStyleEdits()
-// — the same cross-slice $derived pattern axis validated in PR3. Tests here
-// exercise that edge plus the slice's own methods + helper-backed derivations.
+// The slice exposes `visibleIndices` (number[] into spec.data.rows) and a
+// `rowAt(i)` accessor that performs lazy paint-tool overlay merging.
+// Tests use harness helpers (`h.visibleIds()`, `h.visibleRows()`) for
+// ergonomics; the underlying contract is the index list, which the schema
+// sprint Phase 1 keystone introduces.
 
 import { describe, expect, test } from "vitest";
 import {
@@ -141,15 +143,16 @@ describe("sort-filter slice — column kind detection", () => {
   });
 });
 
-describe("sort-filter slice — visibleRows $derived (cross-slice spike)", () => {
-  test("visibleRows pass-through when no filters or sort", () => {
+describe("sort-filter slice — visibleIndices + rowAt (cross-slice spike)", () => {
+  test("visibleIndices pass-through when no filters or sort", () => {
     const h = buildSortFilterHarness({
       rows: [makeRow("a"), makeRow("b"), makeRow("c")],
     });
-    expect(h.slice.visibleRows.map((r) => r.id)).toEqual(["a", "b", "c"]);
+    expect([...h.slice.visibleIndices]).toEqual([0, 1, 2]);
+    expect(h.visibleIds()).toEqual(["a", "b", "c"]);
   });
 
-  test("filters narrow visibleRows", () => {
+  test("filters narrow visibleIndices", () => {
     const h = buildSortFilterHarness({
       rows: [
         makeRow("a", { x: 1 }),
@@ -158,10 +161,11 @@ describe("sort-filter slice — visibleRows $derived (cross-slice spike)", () =>
       ],
     });
     h.slice.setColumnFilter("x", { field: "x", kind: "numeric", operator: "gt", value: 1 });
-    expect(h.slice.visibleRows.map((r) => r.id)).toEqual(["b", "c"]);
+    expect([...h.slice.visibleIndices]).toEqual([1, 2]);
+    expect(h.visibleIds()).toEqual(["b", "c"]);
   });
 
-  test("sort + filter compose", () => {
+  test("sort + filter compose; indices map back to canonical positions", () => {
     const h = buildSortFilterHarness({
       rows: [
         makeRow("a", { x: 3 }),
@@ -172,22 +176,25 @@ describe("sort-filter slice — visibleRows $derived (cross-slice spike)", () =>
     });
     h.slice.setColumnFilter("x", { field: "x", kind: "numeric", operator: "gte", value: 2 });
     h.slice.sortBy("x", "asc");
-    expect(h.slice.visibleRows.map((r) => r.id)).toEqual(["c", "a"]);
+    expect(h.visibleIds()).toEqual(["c", "a"]);
+    // Indices point at the canonical positions of c (2) then a (0):
+    expect([...h.slice.visibleIndices]).toEqual([2, 0]);
   });
 
-  test("styleEdits.rows merge into row.style BEFORE filter/sort (cross-slice dep)", () => {
+  test("rowAt merges styleEdits.rows lazily; canonical row is untouched", () => {
     const h = buildSortFilterHarness({
       rows: [
         makeRow("a", {}, { label: "A" }),
       ],
     });
-    expect(h.slice.visibleRows[0].style).toBeUndefined();
-    // Cross-slice mutation — same edge as axis.test-harness's setForestWidth.
+    expect(h.slice.rowAt(0).style).toBeUndefined();
     h.setStyleEdits({ rows: { a: { emphasis: true } }, cells: {} });
-    expect(h.slice.visibleRows[0].style?.emphasis).toBe(true);
+    expect(h.slice.rowAt(0).style?.emphasis).toBe(true);
+    // The canonical row inside spec.data.rows is referentially unchanged.
+    expect(h.canonicalRows()[0].style).toBeUndefined();
   });
 
-  test("styleEdits.cells merge per-field (cross-slice dep, deep path)", () => {
+  test("rowAt merges styleEdits.cells per-field (deep path)", () => {
     const h = buildSortFilterHarness({
       rows: [makeRow("a", { x: 1, y: 2 })],
     });
@@ -195,19 +202,58 @@ describe("sort-filter slice — visibleRows $derived (cross-slice spike)", () =>
       rows: {},
       cells: { a: { x: { muted: true } } },
     });
-    const row = h.slice.visibleRows[0];
+    const row = h.slice.rowAt(0);
     expect(row.cellStyles?.x?.muted).toBe(true);
     expect(row.cellStyles?.y).toBeUndefined();
   });
 
-  test("data-source mutation propagates through visibleRows (cross-slice spec dep)", () => {
+  test("data-source mutation propagates through visibleIndices", () => {
     const h = buildSortFilterHarness({
       rows: [makeRow("a"), makeRow("b")],
     });
-    expect(h.slice.visibleRows).toHaveLength(2);
+    expect(h.slice.visibleIndices).toHaveLength(2);
     h.setRows([makeRow("c"), makeRow("d"), makeRow("e")]);
-    expect(h.slice.visibleRows).toHaveLength(3);
-    expect(h.slice.visibleRows.map((r) => r.id)).toEqual(["c", "d", "e"]);
+    expect(h.slice.visibleIndices).toHaveLength(3);
+    expect(h.visibleIds()).toEqual(["c", "d", "e"]);
+  });
+});
+
+describe("sort-filter slice — referential stability (Phase 1 keystone)", () => {
+  test("spec.data.rows array stays referentially identical across sort+filter", () => {
+    const h = buildSortFilterHarness({
+      rows: [
+        makeRow("a", { x: 3 }),
+        makeRow("b", { x: 1 }),
+        makeRow("c", { x: 2 }),
+      ],
+      columns: [textCol("x")],
+    });
+    const rowsRef = h.canonicalRows();
+    const rowARef = rowsRef[0];
+
+    h.slice.sortBy("x", "asc");
+    expect(h.canonicalRows()).toBe(rowsRef);
+    expect(h.canonicalRows()[0]).toBe(rowARef);
+
+    h.slice.sortBy("x", "desc");
+    expect(h.canonicalRows()).toBe(rowsRef);
+    expect(h.canonicalRows()[0]).toBe(rowARef);
+
+    h.slice.setColumnFilter("x", { field: "x", kind: "numeric", operator: "gte", value: 2 });
+    expect(h.canonicalRows()).toBe(rowsRef);
+    expect(h.canonicalRows()[0]).toBe(rowARef);
+  });
+
+  test("paint-tool overlay does NOT mutate the canonical row", () => {
+    const h = buildSortFilterHarness({
+      rows: [makeRow("a", { x: 1 })],
+    });
+    const canonicalA = h.canonicalRows()[0];
+    h.setStyleEdits({ rows: { a: { emphasis: true } }, cells: {} });
+    const overlayMerged = h.slice.rowAt(0);
+    expect(overlayMerged).not.toBe(canonicalA);
+    expect(overlayMerged.style?.emphasis).toBe(true);
+    expect(canonicalA.style).toBeUndefined();
   });
 });
 

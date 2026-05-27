@@ -5,13 +5,14 @@
 // (cellEdits-merged Row).
 //
 // This is the second large slice (after sort-filter) and the first to
-// read a $derived from ANOTHER slice (sort-filter's `visibleRows`)
+// read a $derived from ANOTHER slice (sort-filter's `visibleIndices`)
 // inside its own $derived (`fullDisplayRows`). The axis spike (PR3)
 // validated the cross-slice $derived pattern with two scalar deps;
 // PR4 (sort-filter) validated it with three deps + object-map shapes.
 // This slice continues to push: `fullDisplayRows` reads
-// `visibleRows` from sort-filter, then weaves in collapse state and
-// reorder overrides from THIS slice. Multi-source composition.
+// `visibleIndices` from sort-filter and dereferences via `rowAt(i)`,
+// then weaves in collapse state and reorder overrides from THIS slice.
+// Multi-source composition.
 //
 // Owns:
 //   - collapsedGroups       Set<groupId> of collapsed groups
@@ -29,7 +30,9 @@
 //
 // Dependencies (injected):
 //   - getSpec, getAllColumns                  (data / columns — main)
-//   - getVisibleRows                          (sort-filter slice)
+//   - getVisibleIndices                       (sort-filter slice — index list)
+//   - getRowAt                                (sort-filter slice — resolves an
+//                                              index to its overlay-merged Row)
 //   - getDisplayRows                          (post-pagination — main for now;
 //                                              used by sibling helpers)
 //   - getCellEdits                            (cells slice — for tooltipRow merge)
@@ -56,7 +59,8 @@ type CellEdits = {
 export interface RowsGroupsSliceDeps {
   getSpec: () => WebSpec | null;
   getAllColumns: () => readonly ColumnSpec[];
-  getVisibleRows: () => readonly Row[];
+  getVisibleIndices: () => readonly number[];
+  getRowAt: (i: number) => Row;
   getDisplayRows: () => readonly DisplayRow[];
   getCellEdits: () => CellEdits;
   appendOp: (record: OpRecord) => void;
@@ -146,9 +150,10 @@ export function createRowsGroupsSlice(
     return false;
   }
 
-  // CROSS-SLICE $DERIVED: reads visibleRows from the sort-filter slice
-  // via deps.getVisibleRows(). Reactivity propagates the same way as
-  // the axis spike's xScale reading layout.forestWidth.
+  // CROSS-SLICE $DERIVED: reads visibleIndices from the sort-filter
+  // slice and dereferences each via deps.getRowAt(i). Reactivity
+  // propagates the same way as the axis spike's xScale reading
+  // layout.forestWidth.
   const fullDisplayRows = $derived.by((): DisplayRow[] => {
     const spec = deps.getSpec();
     if (!spec) return [];
@@ -157,7 +162,8 @@ export function createRowsGroupsSlice(
 
     // 1. Group rows by groupId, then apply any per-group reorder override.
     const rowsByGroup = new Map<string | null, Row[]>();
-    for (const row of deps.getVisibleRows()) {
+    for (const i of deps.getVisibleIndices()) {
+      const row = deps.getRowAt(i);
       const key = row.groupId ?? null;
       if (!rowsByGroup.has(key)) rowsByGroup.set(key, []);
       rowsByGroup.get(key)!.push(row);

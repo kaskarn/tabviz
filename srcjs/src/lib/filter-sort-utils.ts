@@ -1,10 +1,22 @@
-// Pure filter + sort helpers, extracted from tabvizStore.svelte.ts during
-// Phase 0c-C1 PR4 (sort-filter slice). No runes, no store access — just
-// row-level operations consumed by `visibleRows` and the column-filter UI.
+// Pure filter + sort helpers — index-based view onto a canonical rows
+// array. The original `spec.data.rows[]` is never re-allocated; sort
+// and filter produce reordered/narrowed `number[]` of indices into it.
 //
-// Functions here are all module-pure; they take rows + config and return
-// new arrays. The slice imports them; future consumers (e.g. paginate-by
-// or export-time row reordering) can do the same.
+// This keystone enables condition vectors and per-row banks to key
+// against original row index without misalignment under sort/filter
+// (see schema-sprint Phase 1). It also drops the per-render `Row[]`
+// allocation that the eager-merge model used to do — paint-tool overlay
+// merges move to lazy `rowAt(i)` in the sort-filter slice.
+//
+// All functions in this file are module-pure: no runes, no store
+// access. Inputs are `(rows, indices, …)`, outputs are fresh
+// `number[]`. The slice imports them; the column-filter UI and other
+// consumers (paginate-by, export-time reordering) can do the same.
+//
+// Predicates and sort-key extraction read from the canonical row
+// (`rows[i]`) — they do NOT see paint-tool overlay style, by design.
+// Sorting on bold/italic/color is not a valid use case; predicates
+// that need styling can layer above the slice's `rowAt(i)`.
 
 import type {
   Row,
@@ -16,12 +28,24 @@ import type {
 } from "$types";
 import { dispatchForColumn } from "../schema/dispatch";
 
-/** Apply all column filters AND-style across columns. Filters with no
- *  predicate matches (e.g. empty "in" array) pass everything. */
-export function applyFilters(rows: Row[], state: FiltersState): Row[] {
+/**
+ * Filter `indices` down to those whose row passes every column filter
+ * (AND across columns). Filters with no predicate matches (e.g. empty
+ * "in" array) pass everything.
+ */
+export function applyFilters(
+  rows: readonly Row[],
+  indices: readonly number[],
+  state: FiltersState,
+): number[] {
   const filterList = Object.values(state);
-  if (filterList.length === 0) return rows;
-  return rows.filter((row) => filterList.every((f) => matchColumnFilter(row, f)));
+  if (filterList.length === 0) return indices.slice();
+  const out: number[] = [];
+  for (const i of indices) {
+    const row = rows[i];
+    if (filterList.every((f) => matchColumnFilter(row, f))) out.push(i);
+  }
+  return out;
 }
 
 /** Read a field from `row.metadata`, falling back to the row itself for
@@ -130,45 +154,59 @@ function compareForSort(aVal: unknown, bVal: unknown, desc: boolean): number {
   return desc ? -comparison : comparison;
 }
 
-function applySort(rows: Row[], config: SortConfig, col: ColumnSpec | undefined): Row[] {
-  const sorted = [...rows];
+/**
+ * Sort the supplied indices by the column's sort key. Returns a fresh
+ * array; inputs are not mutated.
+ */
+export function applySort(
+  rows: readonly Row[],
+  indices: readonly number[],
+  config: SortConfig,
+  col: ColumnSpec | undefined,
+): number[] {
+  const sorted = indices.slice();
   const { column, direction } = config;
-  sorted.sort((a, b) =>
+  const desc = direction === "desc";
+  sorted.sort((ai, bi) =>
     compareForSort(
-      sortValueFor(col, a, column),
-      sortValueFor(col, b, column),
-      direction === "desc",
+      sortValueFor(col, rows[ai], column),
+      sortValueFor(col, rows[bi], column),
+      desc,
     ),
   );
   return sorted;
 }
 
-/** Sort rows within each group bucket so grouping structure is preserved.
- *  Rows with the same groupId stay contiguous and retain their relative
- *  group order. */
+/**
+ * Sort within each group bucket so grouping structure is preserved —
+ * rows sharing a groupId stay contiguous, and bucket order matches
+ * first-appearance in the input. Operates on indices; predicates read
+ * the canonical row via `rows[i]`.
+ */
 export function applySortWithinGroups(
-  rows: Row[],
+  rows: readonly Row[],
+  indices: readonly number[],
   config: SortConfig,
   col: ColumnSpec | undefined,
-): Row[] {
-  const buckets = new Map<string, { positions: number[]; rows: Row[] }>();
+): number[] {
+  const buckets = new Map<string, { positions: number[]; indices: number[] }>();
   const bucketOrder: string[] = [];
-  rows.forEach((row, idx) => {
-    const key = row.groupId ?? "__root__";
+  indices.forEach((rowIdx, slot) => {
+    const key = rows[rowIdx].groupId ?? "__root__";
     let bucket = buckets.get(key);
     if (!bucket) {
-      bucket = { positions: [], rows: [] };
+      bucket = { positions: [], indices: [] };
       buckets.set(key, bucket);
       bucketOrder.push(key);
     }
-    bucket.positions.push(idx);
-    bucket.rows.push(row);
+    bucket.positions.push(slot);
+    bucket.indices.push(rowIdx);
   });
 
-  const result: Row[] = new Array(rows.length);
+  const result: number[] = new Array(indices.length);
   for (const key of bucketOrder) {
-    const { positions, rows: bucketRows } = buckets.get(key)!;
-    const sortedBucket = applySort(bucketRows, config, col);
+    const { positions, indices: bucketIndices } = buckets.get(key)!;
+    const sortedBucket = applySort(rows, bucketIndices, config, col);
     positions.forEach((pos, i) => {
       result[pos] = sortedBucket[i];
     });

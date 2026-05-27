@@ -168,13 +168,14 @@ export function createTabvizStore() {
   // ── Rows + groups ────────────────────────────────────────────────────────
   // Phase 0c-C1 PR5. Owns collapsedGroups, rowOrderOverrides, hover/tooltip
   // pointers, and the big fullDisplayRows + tooltipRow + maxGroupDepth +
-  // groupMap + groupDepthMap derived blocks. Reads visibleRows from the
-  // sort-filter slice (first slice-to-slice $derived chain) and displayRows
-  // from the data slice (the next link in the same chain).
+  // groupMap + groupDepthMap derived blocks. Reads visibleIndices + rowAt
+  // from the sort-filter slice (first slice-to-slice $derived chain) and
+  // displayRows from the data slice (the next link in the same chain).
   const rowsGroups = createRowsGroupsSlice({
     getSpec: () => spec,
     getAllColumns: () => columns.allColumns,
-    getVisibleRows: () => sortFilter.visibleRows,
+    getVisibleIndices: () => sortFilter.visibleIndices,
+    getRowAt: (i: number) => sortFilter.rowAt(i),
     getDisplayRows: () => data.displayRows,
     getCellEdits: () => cells.cellEdits,
     appendOp,
@@ -319,9 +320,10 @@ export function createTabvizStore() {
   const actualScale = $derived(layoutZoom.actualScale);
   const isClamped = $derived(layoutZoom.isClamped);
 
-  // `visibleRows` $derived lives on the sort-filter slice (Phase 0c-C1 PR4).
-  // Local alias keeps existing call sites (displayRows, etc.) unchanged.
-  const visibleRows = $derived(sortFilter.visibleRows);
+  // `visibleIndices` $derived lives on the sort-filter slice (schema-sprint
+  // Phase 1). Local alias keeps existing call sites unchanged. Consumers
+  // that need full Rows call `sortFilter.rowAt(i)` (lazy overlay merge).
+  const visibleIndices = $derived(sortFilter.visibleIndices);
 
   // `axisComputation` and `xScale` $derived blocks live on the axis slice
   // (Phase 0c-C1 PR3). Read here via `axis.axisComputation` / `axis.xScale`.
@@ -791,8 +793,14 @@ export function createTabvizStore() {
     });
     $effect(() => { events.emit("plotWidth", plotWidthOverride); });
 
-    // Derived — visibleRows IDs in display order
-    $effect(() => { events.emit("visibleRows", visibleRows.map((r) => r.id)); });
+    // Derived — visible row IDs in display order. The Shiny wire shape
+    // (`visible_rows`) is the array of original row ids; we resolve via
+    // the canonical rows on the spec, never re-allocating Row objects.
+    $effect(() => {
+      const rows = spec?.data.rows;
+      if (!rows) { events.emit("visibleRows", []); return; }
+      events.emit("visibleRows", visibleIndices.map((i) => rows[i].id));
+    });
 
     // Aggregate `change` — fires when any of the above does. The adapter
     // uses this to drive the debounced `_state` bundle without having to
@@ -834,9 +842,10 @@ export function createTabvizStore() {
     get height() {
       return effectiveHeight;
     },
-    get visibleRows() {
-      return visibleRows;
+    get visibleIndices() {
+      return visibleIndices;
     },
+    rowAt: (i: number) => sortFilter.rowAt(i),
     get xScale() {
       return xScale;
     },

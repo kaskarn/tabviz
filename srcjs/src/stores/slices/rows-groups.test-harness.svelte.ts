@@ -28,6 +28,9 @@ export interface RowsGroupsHarness {
   slice: RowsGroupsSlice;
   opLog: OpRecord[];
   sourceMarks: string[];
+  /** Set the visible row set by passing the desired Row[]; the harness
+   *  derives indices into the spec's canonical rows. Rows not present
+   *  in the spec are pushed onto it so the index lookup stays valid. */
   setVisibleRows: (next: Row[]) => void;
   setDisplayRows: (next: DisplayRow[]) => void;
   setCellEdits: (next: CellEdits) => void;
@@ -41,7 +44,27 @@ export function buildRowsGroupsHarness(initial?: {
   let spec = $state<WebSpec>(
     buildSpec(initial?.rows ?? [], initial?.groups ?? [], initial?.columns ?? []),
   );
-  let visibleRowsRef = $state<Row[]>(initial?.visibleRows ?? initial?.rows ?? []);
+
+  // Visible set is expressed via indices into spec.data.rows. The harness
+  // accepts a `visibleRows` array for ergonomics, derives indices, and
+  // appends any missing rows onto the spec so lookups stay valid.
+  function indicesFor(rows: Row[]): number[] {
+    const out: number[] = [];
+    for (const r of rows) {
+      let idx = spec.data.rows.findIndex((sr) => sr.id === r.id);
+      if (idx === -1) {
+        const nextRows = [...spec.data.rows, r];
+        spec = { ...spec, data: { ...spec.data, rows: nextRows } };
+        idx = nextRows.length - 1;
+      }
+      out.push(idx);
+    }
+    return out;
+  }
+  let visibleIndicesRef = $state<number[]>(
+    indicesFor(initial?.visibleRows ?? initial?.rows ?? []),
+  );
+
   // Default displayRows: wrap the rows as flat data entries. Real store
   // computes this via pagination + grouping; for slice-level reorder
   // tests the flat default is fine (moveRowItem reads it to look up
@@ -60,7 +83,8 @@ export function buildRowsGroupsHarness(initial?: {
   const slice = createRowsGroupsSlice({
     getSpec: () => spec,
     getAllColumns: () => allColumns,
-    getVisibleRows: () => visibleRowsRef,
+    getVisibleIndices: () => visibleIndicesRef,
+    getRowAt: (i: number) => spec.data.rows[i],
     getDisplayRows: () => displayRowsRef,
     getCellEdits: () => cellEditsRef,
     appendOp: (r) => { opLog.push(r); },
@@ -71,7 +95,7 @@ export function buildRowsGroupsHarness(initial?: {
     slice,
     opLog,
     sourceMarks,
-    setVisibleRows(next) { visibleRowsRef = next; },
+    setVisibleRows(next) { visibleIndicesRef = indicesFor(next); },
     setDisplayRows(next) { displayRowsRef = next; },
     setCellEdits(next) { cellEditsRef = next; },
     setSpec(next) { spec = next; },
