@@ -52,7 +52,6 @@
   import Watermark from "$components/table/Watermark.svelte";
   import GroupHeader from "$components/forest/GroupHeader.svelte";
   import TabvizOverlays from "./TabvizOverlays.svelte";
-  import CellBar from "$components/table/CellBar.svelte";
   import CellPvalue from "$components/table/CellPvalue.svelte";
   import CellSparkline from "$components/table/CellSparkline.svelte";
   import CellContent from "$components/table/CellContent.svelte";
@@ -64,7 +63,6 @@
   import CellImg from "$components/table/CellImg.svelte";
   import CellReference from "$components/table/CellReference.svelte";
   import CellRange from "$components/table/CellRange.svelte";
-  import CellHeatmap from "$components/table/CellHeatmap.svelte";
   import CellProgress from "$components/table/CellProgress.svelte";
   import ControlToolbar from "$components/ui/ControlToolbar.svelte";
   import SettingsPanel from "$components/ui/SettingsPanel.svelte";
@@ -122,6 +120,41 @@
   const spec = $derived(store.spec);
   const visibleIndices = $derived(store.visibleIndices);
   const displayRows = $derived(store.displayRows);
+
+  // Per-column aggregates over the visible row set. Bar/heatmap
+  // renderers read these via ctx.columnSummary. Memoized once per
+  // render so a 1k-row × 10-column table costs O(N) per render, not
+  // O(N × cells) (schema-sprint Phase 4c).
+  const columnSummaries = $derived.by((): Map<string, { min: number; max: number }> => {
+    const map = new Map<string, { min: number; max: number }>();
+    const rows = spec?.data.rows;
+    if (!rows) return map;
+    const canonicalRows = rows;
+    const cols = spec?.columns ?? [];
+    function walk(defs: typeof cols): void {
+      for (const d of defs) {
+        const grp = d as { isGroup?: boolean; columns?: typeof cols };
+        if (grp.isGroup && grp.columns) { walk(grp.columns); continue; }
+        const col = d as ColumnSpec;
+        if (col.type !== "bar" && col.type !== "heatmap") continue;
+        let min = Infinity;
+        let max = -Infinity;
+        for (const i of visibleIndices) {
+          const v = canonicalRows[i].metadata[col.field];
+          if (typeof v === "number" && Number.isFinite(v)) {
+            if (v < min) min = v;
+            if (v > max) max = v;
+          }
+        }
+        map.set(col.id, {
+          min: min === Infinity ? 0 : min,
+          max: max === -Infinity ? 0 : max,
+        });
+      }
+    }
+    walk(cols);
+    return map;
+  });
   const rowPaddedAfter = $derived(store.rowPaddedAfter);
   const layout = $derived(store.layout);
   const xScale = $derived(store.xScale);
@@ -1443,6 +1476,7 @@
             colorOverride: effectiveVizColor(row, column),
             naText: column.options?.naText ?? null,
             theme: theme ?? null,
+            columnSummary: columnSummaries.get(column.id) ?? null,
           },
           theme?.nodeRules,
           "dom",
@@ -1461,29 +1495,6 @@
               <RenderTree node={schemaTree} />
             </CellContent>
           {/if}
-        {:else if column.type === "bar"}
-          <!-- Phase 4 migrates this to a schema renderer reading from
-               `banks.columnSummaries` (aggregate behavior). Today it
-               walks visibleIndices through the canonical rows. -->
-          <CellBar
-            value={metadata[column.field] as number}
-            maxValue={getMaxValueForColumn(spec?.data.rows ?? [], visibleIndices, column)}
-            options={column.options?.bar}
-            naText={column.options?.naText}
-            colorOverride={effectiveVizColor(row, column)}
-          />
-        {:else if column.type === "heatmap"}
-          <!-- Phase 4 migrates this to a schema renderer reading from
-               `banks.columnSummaries` (aggregate behavior). Today it
-               walks visibleIndices through the canonical rows. -->
-          <CellHeatmap
-            value={metadata[column.field] as number}
-            options={column.options?.heatmap}
-            minValue={getMinValueForColumn(spec?.data.rows ?? [], visibleIndices, column)}
-            maxValue={getMaxValueForColumn(spec?.data.rows ?? [], visibleIndices, column)}
-            naText={column.options?.naText}
-            {theme}
-          />
         {:else}
           <!-- Final fallback: an unknown column.type (e.g. user-registered
                schema without a renderer, or a wire-shape mismatch).
@@ -2452,50 +2463,6 @@
   import { activeSemanticToken as activeSemanticTokenMod } from "$lib/semantic-styling";
 
   // Note: formatNumber, formatEvents, formatInterval, addThousandsSep, abbreviateNumber are imported from $lib/formatters
-
-  function getMaxValueForColumn(
-    rows: readonly Row[],
-    indices: readonly number[],
-    column: ColumnSpec,
-  ): number {
-    // Use explicit maxValue from options if provided
-    if (column.options?.bar?.maxValue) {
-      return column.options.bar.maxValue;
-    }
-    if (column.options?.heatmap?.maxValue != null) {
-      return column.options.heatmap.maxValue;
-    }
-    // Otherwise compute over the visible row set (canonical rows; no
-    // overlay-merge needed — metadata isn't paint-tool affected).
-    let max = 0;
-    for (const i of indices) {
-      const val = rows[i].metadata[column.field];
-      if (typeof val === "number" && val > max) {
-        max = val;
-      }
-    }
-    return max || 100;
-  }
-
-  function getMinValueForColumn(
-    rows: readonly Row[],
-    indices: readonly number[],
-    column: ColumnSpec,
-  ): number {
-    // Use explicit minValue from options if provided
-    if (column.options?.heatmap?.minValue != null) {
-      return column.options.heatmap.minValue;
-    }
-    // Otherwise compute over the visible row set.
-    let min = Infinity;
-    for (const i of indices) {
-      const val = rows[i].metadata[column.field];
-      if (typeof val === "number" && val < min) {
-        min = val;
-      }
-    }
-    return min === Infinity ? 0 : min;
-  }
 
   function getRowClasses(
     style?: RowStyle,

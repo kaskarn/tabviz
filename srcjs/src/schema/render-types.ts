@@ -179,6 +179,12 @@ export interface RenderContext {
    *  renderers that don't need it stay agnostic; the SVG export and
    *  browser dispatch sites always populate it. */
   theme?: WebTheme | null;
+  /** Pre-computed per-column aggregates over the active row set.
+   *  Bar/heatmap consume `min` / `max` for their scale when the column
+   *  doesn't pin them via options. The dispatch sites compute the
+   *  summary once per render and inject it here; renderers never
+   *  iterate rows themselves (schema-sprint Phase 4c). */
+  columnSummary?: { min: number; max: number } | null;
 }
 
 /**

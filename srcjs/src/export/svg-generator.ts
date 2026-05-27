@@ -1660,6 +1660,36 @@ function computeBarMaxValues(rows: Row[], columns: ColumnSpec[]): Map<string, nu
   return maxValues;
 }
 
+/**
+ * Per-column { min, max } over the spec's row set, keyed by column id.
+ * Consumed by the schema dispatch (ctx.columnSummary) so bar / heatmap
+ * renderers don't iterate rows themselves. Skips columns whose type
+ * doesn't need summary input.
+ */
+function computeColumnSummaries(
+  rows: Row[],
+  columns: ColumnSpec[],
+): Map<string, { min: number; max: number }> {
+  const out = new Map<string, { min: number; max: number }>();
+  for (const col of columns) {
+    if (col.type !== "bar" && col.type !== "heatmap") continue;
+    let min = Infinity;
+    let max = -Infinity;
+    for (const row of rows) {
+      const v = row.metadata[col.field];
+      if (typeof v === "number" && Number.isFinite(v)) {
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+    }
+    out.set(col.id, {
+      min: min === Infinity ? 0 : min,
+      max: max === -Infinity ? 0 : max,
+    });
+  }
+  return out;
+}
+
 function getCellValue(row: Row, col: ColumnSpec): string {
   if (col.type === "interval") {
     // Support optional field overrides from column options
@@ -3087,7 +3117,8 @@ function renderUnifiedTableRow(
   autoWidths: Map<string, number>,
   getColWidth: (col: ColumnSpec) => number,
   columnPositions: number[],
-  allRows: Row[] = []
+  allRows: Row[] = [],
+  columnSummaries: Map<string, { min: number; max: number }> = new Map(),
 ): string {
   const lines: string[] = [];
   const fontSize = parseFontSize(theme.text.body.size);
@@ -3183,6 +3214,7 @@ function renderUnifiedTableRow(
           cellStyle:  cellSch ?? rowSch,
           naText:     col.options?.naText ?? null,
           theme,
+          columnSummary: columnSummaries.get(col.id) ?? null,
         },
         theme.nodeRules,
         "svg",
@@ -5275,8 +5307,11 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
   // Table rows - unified column rendering
   const rowsY = layout.mainY + layout.headerHeight;
 
-  // Compute bar max values from all data rows for proper scaling
+  // Compute bar max values from all data rows for proper scaling.
+  // The richer per-column { min, max } summary (used by schema-driven
+  // bar / heatmap renderers via ctx.columnSummary) is computed alongside.
   const barMaxValues = computeBarMaxValues(allDataRows, allColumns);
+  const columnSummaries = computeColumnSummaries(allDataRows, allColumns);
 
   displayRows.forEach((displayRow, i) => {
     const y = rowsY + rowPositions[i];
@@ -5337,7 +5372,8 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
           autoWidths,
           getColWidth,
           columnPositions,
-          allDataRows
+          allDataRows,
+          columnSummaries,
         ));
       }
     }
