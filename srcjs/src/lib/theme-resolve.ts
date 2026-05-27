@@ -139,6 +139,17 @@ export interface ResolveDraft {
   lightDarkPair?: string | null;
   axis?: Partial<AxisConfigV2>;
   layout?: Partial<LayoutV2>;
+  /**
+   * Border layout + types. `layout`'s default is `"horizontal"`; each
+   * type's `color` defaults to a divider role (minor → subtle, major +
+   * table → strong).
+   */
+  borders?: {
+    layout?: "horizontal" | "vertical" | "grid" | "none";
+    major?: Partial<import("$types/theme-v2").BorderSpecV2>;
+    minor?: Partial<import("$types/theme-v2").BorderSpecV2>;
+    table?: Partial<import("$types/theme-v2").BorderSpecV2>;
+  };
   overrides?: ThemeOverrides;
   /** Per-tag overlays applied to RenderNode trees during cell render
    *  finalization. See `WebThemeV2.nodeRules`. Themes can extend or
@@ -226,6 +237,33 @@ const LAYOUT_DEFAULTS: LayoutV2 = {
   containerBorderRadius: 8,
   banding: null,
 };
+
+/**
+ * Resolve a Borders draft against divider roles. `layout` defaults to
+ * `"horizontal"`; each border type's `color` falls back to a divider
+ * role (minor → subtle, major + table → strong). Mirrors R's
+ * `fill_border` step in `resolve_theme()`.
+ */
+function resolveBorders(
+  draft: ResolveDraft["borders"],
+  divider: DividersV2,
+): import("$types/theme-v2").ThemeBordersV2 {
+  const d = draft ?? {};
+  const fill = (
+    over: Partial<import("$types/theme-v2").BorderSpecV2> | undefined,
+    defaultColor: string,
+  ): import("$types/theme-v2").BorderSpecV2 => ({
+    thickness: over?.thickness ?? 1,
+    style: over?.style ?? "single",
+    color: over?.color ?? defaultColor,
+  });
+  return {
+    layout: d.layout ?? "horizontal",
+    major: fill(d.major, divider.strong),
+    minor: fill(d.minor, divider.subtle),
+    table: fill(d.table, divider.strong),
+  };
+}
 
 const MARKS_DEFAULTS: MarksRecipesV2 = {
   forest:   { body: "fill", outline: "stroke", line: "stroke" },
@@ -827,6 +865,7 @@ export function resolveTheme(draft: ResolveDraft, options: ResolveOptions = {}):
     inputs,
     axis: { ...AXIS_DEFAULTS, ...(draft.axis ?? {}) },
     layout: { ...LAYOUT_DEFAULTS, ...(draft.layout ?? {}) },
+    borders: resolveBorders(draft.borders, divider),
     surface, content, divider, accent, status, semantic,
     series,
     text: textRoles,

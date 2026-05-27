@@ -762,6 +762,51 @@ Layout <- new_class(
   )
 )
 
+#' BorderSpec: one named border type (thickness + style + color).
+#'
+#' `style = "double"` paints two parallel hairlines separated by a
+#' `thickness`-sized gap. `single` paints one stroke at `thickness` px.
+#' @usage NULL
+#' @export
+BorderSpec <- new_class(
+  "BorderSpec",
+  properties = list(
+    thickness = new_property(class_numeric,   default = 1),
+    style     = new_property(class_character, default = "single"),
+    color     = new_property(class_character, default = NA_character_)
+  ),
+  validator = function(self) {
+    if (!self@style %in% c("single", "double")) {
+      return("style must be 'single' or 'double'")
+    }
+    NULL
+  }
+)
+
+#' ThemeBorders: layout × type border model.
+#'
+#' `layout` controls *where* dividers appear; the three named types
+#' (`major` / `minor` / `table`) control *how* they look. See the TS
+#' shape `ThemeBordersV2` in `srcjs/src/types/theme-v2.ts` for the
+#' wire-side mirror.
+#' @usage NULL
+#' @export
+ThemeBorders <- new_class(
+  "ThemeBorders",
+  properties = list(
+    layout = new_property(class_character, default = "horizontal"),
+    major  = new_property(BorderSpec, default = BorderSpec()),
+    minor  = new_property(BorderSpec, default = BorderSpec()),
+    table  = new_property(BorderSpec, default = BorderSpec())
+  ),
+  validator = function(self) {
+    if (!self@layout %in% c("horizontal", "vertical", "grid", "none")) {
+      return("layout must be 'horizontal', 'vertical', 'grid', or 'none'")
+    }
+    NULL
+  }
+)
+
 
 # -- Top-level WebTheme --------------------------------------------
 
@@ -818,7 +863,8 @@ WebTheme <- new_class(
     plot         = new_property(PlotScaffold,      default = PlotScaffold()),
     marks        = new_property(MarksRecipes,      default = MarksRecipes()),
     axis         = new_property(AxisConfig,        default = AxisConfig()),
-    layout       = new_property(Layout,            default = Layout())
+    layout       = new_property(Layout,            default = Layout()),
+    borders      = new_property(ThemeBorders,      default = ThemeBorders())
   ),
   validator = function(self) {
     if (length(self@series) > 0L) {

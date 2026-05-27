@@ -9,12 +9,11 @@ import { TEXT_SCHEMA } from "./columns/text";
 
 describe("initialStateForSchema", () => {
   test("value-or-field options start at { mode: 'off' }", () => {
-    // BASE.token + BASE.paddingClass + BASE.borderClass + TEXT.fontClass
-    // are all value-or-field. All should be off by default.
+    // BASE.token + BASE.paddingClass + TEXT.fontClass are all
+    // value-or-field. All should be off by default.
     const s = initialStateForSchema(NUMERIC_SCHEMA);
     expect(s.token).toEqual({ mode: "off" });
     expect(s.paddingClass).toEqual({ mode: "off" });
-    expect(s.borderClass).toEqual({ mode: "off" });
     expect(s.fontClass).toEqual({ mode: "off" });
   });
 

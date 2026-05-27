@@ -34,6 +34,37 @@ describe("resolveTheme — smoke", () => {
   });
 });
 
+describe("resolveTheme — borders", () => {
+  const baseInputs = { primary: "#0099CC", neutral: ["#FFFFFF", "#FFFFFF", "#F2F4F7", "#5B6470", "#1F2937"] };
+
+  test("defaults to horizontal layout with minor=subtle divider", () => {
+    const t = resolveTheme({ inputs: baseInputs });
+    expect(t.borders.layout).toBe("horizontal");
+    expect(t.borders.minor.thickness).toBe(1);
+    expect(t.borders.minor.style).toBe("single");
+    expect(t.borders.minor.color).toBe(t.divider.subtle);
+    expect(t.borders.major.color).toBe(t.divider.strong);
+    expect(t.borders.table.color).toBe(t.divider.strong);
+  });
+
+  test("partial overrides survive resolution", () => {
+    const t = resolveTheme({
+      inputs: baseInputs,
+      borders: {
+        layout: "grid",
+        minor: { thickness: 2, style: "double" },
+        table: { color: "#FF0000" },
+      },
+    });
+    expect(t.borders.layout).toBe("grid");
+    expect(t.borders.minor.thickness).toBe(2);
+    expect(t.borders.minor.style).toBe("double");
+    // unpinned color still falls back to divider role
+    expect(t.borders.minor.color).toBe(t.divider.subtle);
+    expect(t.borders.table.color).toBe("#FF0000");
+  });
+});
+
 describe("resolveTheme — drift detection vs canonical snapshot", () => {
   // Since the snapshot is regenerated from this very resolver via
   // `scripts/regenerate-theme-presets.ts`, drift detection is byte-exact:

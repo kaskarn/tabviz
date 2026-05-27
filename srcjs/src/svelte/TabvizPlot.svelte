@@ -2695,7 +2695,13 @@
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
-    border-bottom: var(--tv-row-border-width, 1px) solid var(--tv-border);
+    /* Phase 11: row dividers obey theme.borders.layout. --tv-border-row-style
+       is "solid" when layout ∈ {horizontal, grid} and "none" otherwise; the
+       cell paints at --tv-border-minor-color (with var(--tv-border) fallback
+       for unresolved themes). */
+    border-bottom-width: var(--tv-row-border-width, 1px);
+    border-bottom-style: var(--tv-border-row-style, solid);
+    border-bottom-color: var(--tv-border-minor-color, var(--tv-border));
     color: var(--tv-cell-fg, var(--tv-fg));
     /* Row background: `--tv-row-bg` (theme.row.base.bg) with fallback to
        the container bg. Separate from `--tv-bg` so users can tint rows

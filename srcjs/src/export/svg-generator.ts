@@ -3259,6 +3259,48 @@ function renderReferenceLine(
 }
 
 // ============================================================================
+// Border helpers — Phase 11 layout × type border model
+// ============================================================================
+
+import type { BorderSpecV2 } from "$types/theme-v2";
+
+/**
+ * Emit one SVG line obeying a BorderSpec. `single` → one stroke;
+ * `double` → two parallel hairlines with a `thickness`-sized gap
+ * centered on the requested line. Returns an empty string when
+ * `thickness <= 0` (the caller can append unconditionally).
+ */
+function borderLineSvg(
+  x1: number, y1: number, x2: number, y2: number, spec: BorderSpecV2,
+): string {
+  if (!spec || spec.thickness <= 0) return "";
+  if (spec.style === "double") {
+    // Render as two hairlines offset perpendicular to the line. The
+    // current emitters only need horizontal + vertical lines, so we
+    // branch on orientation.
+    const horizontal = y1 === y2;
+    const gap = Math.max(1, spec.thickness);
+    const off = (gap + 1) / 2;
+    if (horizontal) {
+      return [
+        `<line x1="${x1}" x2="${x2}" y1="${y1 - off}" y2="${y2 - off}" stroke="${spec.color}" stroke-width="1"/>`,
+        `<line x1="${x1}" x2="${x2}" y1="${y1 + off}" y2="${y2 + off}" stroke="${spec.color}" stroke-width="1"/>`,
+      ].join("");
+    }
+    return [
+      `<line x1="${x1 - off}" x2="${x2 - off}" y1="${y1}" y2="${y2}" stroke="${spec.color}" stroke-width="1"/>`,
+      `<line x1="${x1 + off}" x2="${x2 + off}" y1="${y1}" y2="${y2}" stroke="${spec.color}" stroke-width="1"/>`,
+    ].join("");
+  }
+  return `<line x1="${x1}" x2="${x2}" y1="${y1}" y2="${y2}" stroke="${spec.color}" stroke-width="${spec.thickness}"/>`;
+}
+
+/** Are horizontal row dividers drawn under the current layout? */
+function layoutHasHorizontal(layout: string): boolean {
+  return layout === "horizontal" || layout === "grid";
+}
+
+// ============================================================================
 // Validation
 // ============================================================================
 
@@ -4444,37 +4486,43 @@ export function generateSVG(spec: WebSpec, options: ExportOptions = {}): string 
       }
     }
 
-    // Row borders — widths come from theme.shapes.{rowBorderWidth,
-    // headerBorderWidth, rowGroupBorderWidth}.
-    const rowBorderW = theme.row.borderWidth ?? 1;
-    const headerBorderW = 2;
-    const groupBorderW = 1;
+    // Row borders — Phase 11 borders model. Horizontal row dividers
+    // only fire when `theme.borders.layout` includes them. Major borders
+    // (summary top, group-header bottom) ignore `layout` since they
+    // demarcate structure rather than data-row stride.
+    const borders = theme.borders;
+    const drawRowDividers = layoutHasHorizontal(borders.layout);
+    const x1 = padding;
+    const x2 = layout.totalWidth - padding;
     if (displayRow.type === "data") {
       const row = displayRow.row;
       const isSummaryRow = row.style?.type === "summary";
       const isSpacerRow = row.style?.type === "spacer";
-
-      // Summary rows get a header-weight top border
-      if (isSummaryRow && headerBorderW > 0) {
-        parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
-          y1="${y}" y2="${y}"
-          stroke="${theme.divider.subtle}" stroke-width="${headerBorderW}"/>`);
+      if (isSummaryRow) {
+        parts.push(borderLineSvg(x1, y, x2, y, borders.major));
       }
-
-      // Bottom border (skip for spacer rows and zero-width themes)
-      if (!isSpacerRow && rowBorderW > 0) {
-        parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
-          y1="${y + rowHeight}" y2="${y + rowHeight}"
-          stroke="${theme.divider.subtle}" stroke-width="${rowBorderW}"/>`);
+      if (!isSpacerRow && drawRowDividers) {
+        parts.push(borderLineSvg(x1, y + rowHeight, x2, y + rowHeight, borders.minor));
       }
-    } else if (groupBorderW > 0) {
-      // Group headers get a bottom border at the group-weight (not row-weight)
-      // so row-group borders can be independently tuned.
-      parts.push(`<line x1="${padding}" x2="${layout.totalWidth - padding}"
-        y1="${y + rowHeight}" y2="${y + rowHeight}"
-        stroke="${theme.divider.subtle}" stroke-width="${groupBorderW}"/>`);
+    } else {
+      parts.push(borderLineSvg(x1, y + rowHeight, x2, y + rowHeight, borders.major));
     }
   });
+
+  // Table outer edge — `borders.table` always paints when layout !=
+  // "none" and thickness > 0. The rect spans from the header top to the
+  // last row bottom; horizontal sides paint twice for "double" style.
+  if (theme.borders.layout !== "none" && theme.borders.table.thickness > 0) {
+    const t = theme.borders.table;
+    const topY = layout.mainY;
+    const botY = rowsY + layout.rowsHeight;
+    const leftX = padding;
+    const rightX = layout.totalWidth - padding;
+    parts.push(borderLineSvg(leftX, topY, rightX, topY, t));
+    parts.push(borderLineSvg(leftX, botY, rightX, botY, t));
+    parts.push(borderLineSvg(leftX, topY, leftX, botY, t));
+    parts.push(borderLineSvg(rightX, topY, rightX, botY, t));
+  }
 
   // Footer (caption, footnote)
   parts.push(renderFooter(spec, layout, theme));

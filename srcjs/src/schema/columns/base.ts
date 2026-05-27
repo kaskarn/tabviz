@@ -137,21 +137,5 @@ export const BASE_SCHEMA: ColumnSchema = {
       accepts: ["string"],
       consumedBy: ["renderCell", "editor"],
     },
-    {
-      key: "borderClass",
-      label: "Border",
-      control: "value-or-field",
-      valueControl: "segmented",
-      segments: [
-        { value: "none",   label: "None" },
-        { value: "subtle", label: "Subtle" },
-        { value: "strong", label: "Strong" },
-      ],
-      kind: "styling",
-      default: null,
-      hint: "Column divider weight — theme decides exact value",
-      accepts: ["string"],
-      consumedBy: ["renderCell", "editor"],
-    },
   ],
 };

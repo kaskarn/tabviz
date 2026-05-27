@@ -2,8 +2,6 @@
 // Per-bucket option interfaces for column.options[bucket].
 
 export interface BadgeBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Custom colors */
   colors?: unknown;
   /** Outline — Transparent fill, colored border */
@@ -23,8 +21,6 @@ export interface BadgeBucketOptions {
 }
 
 export interface BarBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Bar color — Theme primary by default */
   color?: string | null;
   /** Max value — Bar 100% reference; auto from data when null */
@@ -42,8 +38,6 @@ export interface BarBucketOptions {
 export interface CustomBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Decimals — Decimal places. Leave blank for auto. */
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
@@ -69,8 +63,6 @@ export interface CustomBucketOptions {
 }
 
 export interface DateBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Format — strftime-style format string */
   format?: string | null;
   /** Density — Cell padding — theme decides exact values */
@@ -90,8 +82,6 @@ export interface ForestBucketOptions {
   axisRange?: unknown;
   /** Axis ticks — Auto-computed when null */
   axisTicks?: unknown;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Effects — Multiple overlaid effects; use slots above for a single effect */
   effects?: unknown;
   /** Null value — Reference line; 0 for linear, 1 for log default */
@@ -111,8 +101,6 @@ export interface ForestBucketOptions {
 export interface HeatmapBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Decimals — Decimal places. Leave blank for auto. */
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
@@ -144,8 +132,6 @@ export interface HeatmapBucketOptions {
 }
 
 export interface IconBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Color — Theme content by default */
   color?: string | null;
   /** Value → icon — e.g. {pass: "✓", fail: "✗"} */
@@ -159,8 +145,6 @@ export interface IconBucketOptions {
 }
 
 export interface ImgBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Fallback text — Shown when the URL fails to load */
   fallback?: string | null;
   /** Height — Pixels; auto from row height when null */
@@ -178,8 +162,6 @@ export interface ImgBucketOptions {
 export interface IntervalBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Decimals — Decimal places. Leave blank for auto. */
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
@@ -207,8 +189,6 @@ export interface IntervalBucketOptions {
 export interface NumericBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Decimals — Decimal places. Leave blank for auto. */
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
@@ -236,8 +216,6 @@ export interface NumericBucketOptions {
 export interface PercentBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Decimals — Decimal places. Leave blank for auto. */
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
@@ -263,8 +241,6 @@ export interface PercentBucketOptions {
 }
 
 export interface PictogramBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Filled color — Theme accent by default */
   color?: string | null;
   /** Input range — Remap [min, max] → [0, maxGlyphs] */
@@ -296,8 +272,6 @@ export interface PictogramBucketOptions {
 }
 
 export interface ProgressBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Fill color — Theme primary by default */
   color?: string | null;
   /** Max value — Track 100% reference */
@@ -315,8 +289,6 @@ export interface ProgressBucketOptions {
 export interface PvalueBucketOptions {
   /** Abbrev. threshold — Values below show as "<threshold" */
   abbrevThreshold?: number | "auto" | null;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Sig. digits */
   digits?: number | null;
   /** Exp. threshold — Values below use scientific notation */
@@ -336,8 +308,6 @@ export interface PvalueBucketOptions {
 export interface RangeBucketOptions {
   /** Abbreviate — "12.3K", "1.2M" */
   abbreviate?: boolean;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Decimals — Decimal places. Leave blank for auto. */
   decimals?: number | null;
   /** Sig. digits — Significant figures (overrides decimals) */
@@ -363,8 +333,6 @@ export interface RangeBucketOptions {
 }
 
 export interface ReferenceBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Font class — Theme decides which family / weight / numeric variant */
   fontClass?: undefined;
   /** URL field — Optional column with URLs to link */
@@ -380,8 +348,6 @@ export interface ReferenceBucketOptions {
 }
 
 export interface RingBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Filled color — Theme accent by default; thresholds switch color */
   color?: string | null;
   /** Label decimals */
@@ -407,8 +373,6 @@ export interface RingBucketOptions {
 }
 
 export interface SparklineBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Color — Theme primary by default */
   color?: string | null;
   /** Height */
@@ -422,8 +386,6 @@ export interface SparklineBucketOptions {
 }
 
 export interface StarsBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Filled color — Theme accent by default */
   color?: string | null;
   /** Input range — Remap [min, max] → [0, maxGlyphs] */
@@ -455,8 +417,6 @@ export interface StarsBucketOptions {
 }
 
 export interface TextBucketOptions {
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Font class — Theme decides which family / weight / numeric variant */
   fontClass?: undefined;
   /** Max chars — Truncate with trailing ellipsis when over */
@@ -482,8 +442,6 @@ export interface VizBarBucketOptions {
   barGap?: number | null;
   /** Bar width */
   barWidth?: number | null;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Effects — One or more value series */
   effects?: unknown;
   /** Null value — Reference line; 0 for linear, 1 for log default */
@@ -513,8 +471,6 @@ export interface VizBoxplotBucketOptions {
   axisRange?: unknown;
   /** Axis ticks — Auto-computed when null */
   axisTicks?: unknown;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Box width */
   boxWidth?: number | null;
   /** Effects — Raw arrays or quantile fields */
@@ -550,8 +506,6 @@ export interface VizViolinBucketOptions {
   axisTicks?: unknown;
   /** Bandwidth — KDE bandwidth; Silverman default when null */
   bandwidth?: number | "auto" | null;
-  /** Border — Column divider weight — theme decides exact value */
-  borderClass?: undefined;
   /** Effects — One or more array-valued series */
   effects?: unknown;
   /** Max width */

@@ -263,10 +263,17 @@ function _buildThemeCSSImpl(theme: WebThemeV2): string {
       --tv-header-gap: ${theme.spacing.headerGap ?? 12}px;
       --tv-point-size: ${theme.plot.pointSize}px;
       --tv-line-width: ${theme.plot.lineWidth}px;
-      --tv-row-border-width: ${theme.row.borderWidth ?? 1}px;
-      --tv-header-border-width: 2px;
-      --tv-group-border-width: 1px;
-      --tv-container-border: ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};
+      --tv-row-border-width: ${theme.borders.minor.thickness}px;
+      --tv-header-border-width: ${theme.borders.major.thickness > 0 ? Math.max(theme.borders.major.thickness, 2) : 0}px;
+      --tv-group-border-width: ${theme.borders.major.thickness}px;
+      --tv-border-major-color: ${theme.borders.major.color};
+      --tv-border-minor-color: ${theme.borders.minor.color};
+      --tv-border-table-color: ${theme.borders.table.color};
+      --tv-border-row-style: ${theme.borders.layout === "horizontal" || theme.borders.layout === "grid" ? "solid" : "none"};
+      --tv-border-col-style: ${theme.borders.layout === "vertical" || theme.borders.layout === "grid" ? "solid" : "none"};
+      --tv-container-border: ${theme.borders.layout !== "none" && theme.borders.table.thickness > 0
+        ? `${theme.borders.table.thickness}px solid var(--tv-border-table-color)`
+        : theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};
       --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
       ${generateCSSVariables()}
     `.trim();

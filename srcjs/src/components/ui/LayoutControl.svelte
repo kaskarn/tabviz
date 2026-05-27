@@ -10,6 +10,7 @@
   import SegmentedField from "./SegmentedField.svelte";
   import BooleanField from "./BooleanField.svelte";
   import NumberField from "./NumberField.svelte";
+  import ColorField from "./ColorField.svelte";
   import BandingControl from "./BandingControl.svelte";
   import { oklchDarken, oklchMix, oklchChroma } from "$lib/oklch";
 
@@ -22,6 +23,7 @@
   const layout   = $derived(store.spec?.theme?.layout);
   const inputs   = $derived(store.spec?.theme?.inputs);
   const theme    = $derived(store.spec?.theme);
+  const borders  = $derived(store.spec?.theme?.borders);
 
   function setVariant(field: string, value: string) {
     store.setThemeField(["variants", field], value);
@@ -31,6 +33,9 @@
   }
   function setLayout(field: string, value: unknown) {
     store.setThemeField(["layout", field], value);
+  }
+  function setBordersField(path: (string | number)[], value: unknown) {
+    store.setThemeField(["borders", ...path], value);
   }
   function setSpacing(field: string, value: number) {
     store.setThemeField(["spacing", field], value);
@@ -182,6 +187,96 @@
         { value: "outlined",                label: "Lined" },
       ]}
       onchange={changeSlotStyle}
+    />
+  </Section>
+{/if}
+
+{#if borders}
+  <Section
+    title="Borders"
+    hint="Layout × type model. Layout picks which dividers paint (horizontal rows, vertical columns, grid = both, none); the three types control thickness, single/double, and color."
+  >
+    <SegmentedField
+      label="Layout"
+      hint="Where dividers paint. Default is horizontal (row dividers only); grid adds column dividers; vertical removes row dividers; none disables all."
+      value={borders.layout}
+      options={[
+        { value: "horizontal", label: "Rows" },
+        { value: "vertical",   label: "Cols" },
+        { value: "grid",       label: "Grid" },
+        { value: "none",       label: "None" },
+      ]}
+      onchange={(v: string) => setBordersField(["layout"], v)}
+    />
+    <!-- Minor: data row + column dividers. Most user feedback wants this
+         knob, so it's first. -->
+    <NumberField
+      label="Minor thickness"
+      hint="Row + column data divider thickness in px."
+      value={borders.minor.thickness}
+      min={0} max={4} step={1} unit="px"
+      onchange={(v: number) => setBordersField(["minor", "thickness"], v)}
+    />
+    <SegmentedField
+      label="Minor style"
+      hint="Single hairline or paired-hairline (engraved) style."
+      value={borders.minor.style}
+      options={[
+        { value: "single", label: "Single" },
+        { value: "double", label: "Double" },
+      ]}
+      onchange={(v: string) => setBordersField(["minor", "style"], v)}
+    />
+    <ColorField
+      label="Minor color"
+      value={borders.minor.color}
+      onchange={(v: string) => setBordersField(["minor", "color"], v)}
+    />
+    <!-- Major: header bottom + group / summary breaks. -->
+    <NumberField
+      label="Major thickness"
+      hint="Header bottom + group / summary divider thickness in px."
+      value={borders.major.thickness}
+      min={0} max={6} step={1} unit="px"
+      onchange={(v: number) => setBordersField(["major", "thickness"], v)}
+    />
+    <SegmentedField
+      label="Major style"
+      hint="Single hairline or paired-hairline (engraved) style."
+      value={borders.major.style}
+      options={[
+        { value: "single", label: "Single" },
+        { value: "double", label: "Double" },
+      ]}
+      onchange={(v: string) => setBordersField(["major", "style"], v)}
+    />
+    <ColorField
+      label="Major color"
+      value={borders.major.color}
+      onchange={(v: string) => setBordersField(["major", "color"], v)}
+    />
+    <!-- Table: outer edge. Paints regardless of layout (except "none"). -->
+    <NumberField
+      label="Table thickness"
+      hint="Outer edge thickness in px. Set to 0 to drop the outer frame."
+      value={borders.table.thickness}
+      min={0} max={6} step={1} unit="px"
+      onchange={(v: number) => setBordersField(["table", "thickness"], v)}
+    />
+    <SegmentedField
+      label="Table style"
+      hint="Single hairline or paired-hairline (engraved) style."
+      value={borders.table.style}
+      options={[
+        { value: "single", label: "Single" },
+        { value: "double", label: "Double" },
+      ]}
+      onchange={(v: string) => setBordersField(["table", "style"], v)}
+    />
+    <ColorField
+      label="Table color"
+      value={borders.table.color}
+      onchange={(v: string) => setBordersField(["table", "color"], v)}
     />
   </Section>
 {/if}

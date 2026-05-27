@@ -345,6 +345,40 @@ export interface LayoutV2 {
 }
 
 // ────────────────────────────────────────────────────────────────────
+// Borders — layout × type model
+// ────────────────────────────────────────────────────────────────────
+
+/**
+ * One named border type. `double` emits two parallel hairlines with a
+ * `thickness`-sized gap between them; `single` emits one stroke at
+ * `thickness` px.
+ */
+export interface BorderSpecV2 {
+  thickness: number;
+  /** "single" | "double" */
+  style: "single" | "double";
+  color: string;
+}
+
+/**
+ * `layout` controls *where* dividers appear; the three named types
+ * (`major` / `minor` / `table`) control *how* they look.
+ *
+ * Mapping:
+ *   - Row data dividers  → `minor` (layout ∈ {horizontal, grid})
+ *   - Column dividers    → `minor` (layout ∈ {vertical,   grid})
+ *   - Header bottom + group/summary breaks → `major`
+ *   - Outer table edge   → `table` (always rendered when thickness > 0)
+ */
+export interface ThemeBordersV2 {
+  /** "horizontal" | "vertical" | "grid" | "none" */
+  layout: "horizontal" | "vertical" | "grid" | "none";
+  major: BorderSpecV2;
+  minor: BorderSpecV2;
+  table: BorderSpecV2;
+}
+
+// ────────────────────────────────────────────────────────────────────
 // Top-level WebTheme (v2 wire shape)
 // ────────────────────────────────────────────────────────────────────
 
@@ -376,6 +410,7 @@ export interface WebThemeV2 {
   inputs: ThemeInputsV2;
   axis: AxisConfigV2;
   layout: LayoutV2;
+  borders: ThemeBordersV2;
   // Tier 2 — chrome
   surface: SurfacesV2;
   content: ContentV2;
