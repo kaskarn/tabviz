@@ -275,15 +275,16 @@
       oncommit={onEditorCommit}
       onclose={onClose}
     />
-    <!-- Footer affordance — kept only for INSERT mode (user needs an
-         explicit "create this column" gesture). In EDIT mode the
-         editor auto-commits on every change, so Cancel + Save buttons
-         were redundant; Esc and outside-click handle close. -->
-    {#if target.mode === "insert"}
-      <div class="v2-popover-foot">
-        <button type="button" class="primary" onclick={commit}>Insert</button>
-      </div>
-    {/if}
+    <!-- Footer affordance — primary "commit" button. Reads "Insert"
+         when creating a new column, "Save" when editing. Edit mode
+         also auto-commits on every change, but users still want the
+         explicit Save as a "done editing" gesture. Cancel button
+         removed (Esc + outside-click handle close). -->
+    <div class="v2-popover-foot">
+      <button type="button" class="primary" onclick={commit}>
+        {target.mode === "insert" ? "Insert" : "Save"}
+      </button>
+    </div>
   </div>
 {/if}
 
