@@ -2683,18 +2683,17 @@
     contain: layout style paint;
   }
 
-  /* Outer table top + bottom — bound to theme.borders.TABLE (the
-     frame *around the table region itself*, not the outer widget
-     container). Major is reserved for INTERNAL major rules only
-     (header bottom, group breaks). Table default thickness 0 means
-     no frame unless the user opts in. */
+  /* Outer table top edge — bound to theme.borders.TABLE. Frames the
+     header at the very top. The table BOTTOM edge is painted on the
+     axis-cell's border-top so the frame sits below the last data row
+     and above the axis ticks (rather than at the bottom of
+     .tabviz-main, which would put it below the axis).
+     Major is reserved for INTERNAL major rules only (header bottom,
+     group/summary breaks). Table default thickness 0 = no frame. */
   .tabviz-main {
     border-top-width: var(--tv-table-border-width, 0);
     border-top-style: var(--tv-table-border-style, none);
     border-top-color: var(--tv-border-table-color, transparent);
-    border-bottom-width: var(--tv-table-border-width, 0);
-    border-bottom-style: var(--tv-table-border-style, none);
-    border-bottom-color: var(--tv-border-table-color, transparent);
   }
 
   /* Base grid cell styles. Row + column dividers both obey
@@ -2906,6 +2905,17 @@
     border-bottom: none;
     background: var(--tv-bg);
     padding: 0;
+    /* Table bottom edge: paints above the axis row so the frame
+       closes under the last data row, not under the axis ticks.
+       Same vars as .tabviz-main's border-top. */
+    border-top-width: var(--tv-table-border-width, 0);
+    border-top-style: var(--tv-table-border-style, none);
+    border-top-color: var(--tv-border-table-color, transparent);
+    /* Cells default to a right border under cols/grid layout; the
+       axis row sits visually outside the table, so suppress that
+       too — otherwise the bottom-frame line would have a stray
+       continuation into the axis area. */
+    border-right-style: none;
   }
 
   /* Text wrapping mode — pre-line preserves \n and lets long text wrap.
