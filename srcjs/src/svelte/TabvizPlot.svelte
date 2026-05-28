@@ -2727,7 +2727,7 @@
     font-style: var(--tv-text-header-italic, normal);
     font-size: var(--tv-text-header-size, calc(var(--tv-font-size-base, 0.875rem) * var(--tv-header-font-scale, 1.05)));
     border-bottom-width: var(--tv-header-border-width, 2px);
-    border-bottom-style: solid;
+    border-bottom-style: var(--tv-border-major-style, solid);
     border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
     background: var(--tv-header-bg, var(--tv-row-bg, var(--tv-bg)));
     color: var(--tv-header-fg, var(--tv-cell-fg, var(--tv-fg)));
@@ -2749,7 +2749,7 @@
   /* Primary (leftmost) column header — MAJOR bottom (same as leaf headers). */
   .primary-header {
     border-bottom-width: var(--tv-header-border-width, 2px);
-    border-bottom-style: solid;
+    border-bottom-style: var(--tv-border-major-style, solid);
     border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
   }
 
@@ -2763,21 +2763,21 @@
     padding-left: var(--tv-group-padding, 8px);
     padding-right: var(--tv-group-padding, 8px);
     border-bottom-width: var(--tv-row-border-width, 1px);
-    border-bottom-style: solid;
+    border-bottom-style: var(--tv-border-row-style, solid);
     border-bottom-color: var(--tv-border-minor-color, var(--tv-border));
   }
 
   /* Leaf header row — MAJOR bottom. */
   .header-cell:not(.column-group-header):not(.primary-header):not(.plot-header) {
     border-bottom-width: var(--tv-header-border-width, 2px);
-    border-bottom-style: solid;
+    border-bottom-style: var(--tv-border-major-style, solid);
     border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
   }
 
   /* Plot header — MAJOR bottom. */
   .plot-header {
     border-bottom-width: var(--tv-header-border-width, 2px);
-    border-bottom-style: solid;
+    border-bottom-style: var(--tv-border-major-style, solid);
     border-bottom-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
   }
 
@@ -2829,12 +2829,27 @@
      drives bg, fg, weight, and a right-edge rule via CSS vars emitted
      in the cssVars block. When the variant is "default", these are
      transparent / inherit and the cell looks like any other. */
+  /* Primary (leftmost) cell. Owns the "first column rule" (a separator
+     between the label column and the rest), which is only painted when
+     the theme's `firstColumnStyle` is "bold" — otherwise --tv-first-col-rule
+     resolves to `transparent`.
+
+     When the borders layout is "vertical"/"grid" (--tv-border-col-style:
+     solid), every cell paints a right border in --tv-border-minor-color
+     via .grid-cell. The primary cell's first-col-rule shouldn't double
+     up with that. Solution: when first-col-rule is transparent (the
+     default for non-bold variants), don't override .grid-cell's border-
+     right; only override when first-col-rule has a real color. We do
+     this with border-right-COLOR only, leaving width/style from
+     .grid-cell unless the variant explicitly opts in. */
   .primary-cell {
     min-width: 120px;
     background-color: var(--tv-first-col-bg, transparent);
     color: var(--tv-first-col-fg, inherit);
     font-weight: var(--tv-first-col-weight, inherit);
-    border-right: 1px solid var(--tv-first-col-rule, transparent);
+    /* Override only the color when first-col-rule is set. If it's
+       transparent, the cell falls through to .grid-cell's color. */
+    border-right-color: var(--tv-first-col-rule);
   }
   .primary-cell.reorderable {
     cursor: grab;
@@ -3013,6 +3028,12 @@
   .row-summary {
     font-weight: var(--tv-font-weight-bold, 600);
     border-top: 2px solid var(--tv-divider-strong, var(--tv-border));
+  }
+  /* Summary rows visually span all columns (one "Overall" value
+     across the row). Column dividers on data cells would slice the
+     summary into segments, which reads as broken. Suppress them. */
+  .grid-cell.row-summary {
+    border-right-style: none;
   }
 
   .row-bold {

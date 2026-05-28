@@ -269,14 +269,21 @@ function _buildThemeCSSImpl(theme: WebThemeV2): string {
       --tv-header-gap: ${theme.spacing.headerGap ?? 12}px;
       --tv-point-size: ${theme.plot.pointSize}px;
       --tv-line-width: ${theme.plot.lineWidth}px;
-      --tv-row-border-width: ${theme.borders.minor.thickness}px;
-      --tv-header-border-width: ${theme.borders.major.thickness > 0 ? Math.max(theme.borders.major.thickness, 2) : 0}px;
-      --tv-group-border-width: ${theme.borders.major.thickness}px;
+      /* Border widths — CSS border-style: double needs total width
+         >= 3px to render two stripes visibly. When the user picks
+         "double" we scale the effective width to max(3, thickness*3);
+         single keeps the user's thickness as-is. */
+      --tv-row-border-width: ${theme.borders.minor.style === "double" ? Math.max(3, theme.borders.minor.thickness * 3) : theme.borders.minor.thickness}px;
+      --tv-header-border-width: ${theme.borders.major.style === "double" ? Math.max(3, theme.borders.major.thickness * 3) : Math.max(theme.borders.major.thickness, 2)}px;
+      --tv-group-border-width: ${theme.borders.major.style === "double" ? Math.max(3, theme.borders.major.thickness * 3) : theme.borders.major.thickness}px;
       --tv-border-major-color: ${theme.borders.major.color};
       --tv-border-minor-color: ${theme.borders.minor.color};
       --tv-border-table-color: ${theme.borders.table.color};
-      --tv-border-row-style: ${theme.borders.layout === "horizontal" || theme.borders.layout === "grid" ? "solid" : "none"};
-      --tv-border-col-style: ${theme.borders.layout === "vertical" || theme.borders.layout === "grid" ? "solid" : "none"};
+      /* Border style encodes both layout (paints?) and the user's
+         single/double choice. */
+      --tv-border-row-style: ${theme.borders.layout === "horizontal" || theme.borders.layout === "grid" ? theme.borders.minor.style : "none"};
+      --tv-border-col-style: ${theme.borders.layout === "vertical" || theme.borders.layout === "grid" ? theme.borders.minor.style : "none"};
+      --tv-border-major-style: ${theme.borders.major.style};
       --tv-container-border: ${theme.borders.layout !== "none" && theme.borders.table.thickness > 0
         ? `${theme.borders.table.thickness}px solid var(--tv-border-table-color)`
         : theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};

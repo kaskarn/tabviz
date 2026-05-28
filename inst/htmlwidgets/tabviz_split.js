@@ -434,14 +434,21 @@ ${B}`}),"combinedSource"),f=g(m(()=>n.store.spec?Bk({spec:n.store.spec,opLog:[..
       --tv-header-gap: ${e.spacing.headerGap??12}px;
       --tv-point-size: ${e.plot.pointSize}px;
       --tv-line-width: ${e.plot.lineWidth}px;
-      --tv-row-border-width: ${e.borders.minor.thickness}px;
-      --tv-header-border-width: ${e.borders.major.thickness>0?Math.max(e.borders.major.thickness,2):0}px;
-      --tv-group-border-width: ${e.borders.major.thickness}px;
+      /* Border widths — CSS border-style: double needs total width
+         >= 3px to render two stripes visibly. When the user picks
+         "double" we scale the effective width to max(3, thickness*3);
+         single keeps the user's thickness as-is. */
+      --tv-row-border-width: ${e.borders.minor.style==="double"?Math.max(3,e.borders.minor.thickness*3):e.borders.minor.thickness}px;
+      --tv-header-border-width: ${e.borders.major.style==="double"?Math.max(3,e.borders.major.thickness*3):Math.max(e.borders.major.thickness,2)}px;
+      --tv-group-border-width: ${e.borders.major.style==="double"?Math.max(3,e.borders.major.thickness*3):e.borders.major.thickness}px;
       --tv-border-major-color: ${e.borders.major.color};
       --tv-border-minor-color: ${e.borders.minor.color};
       --tv-border-table-color: ${e.borders.table.color};
-      --tv-border-row-style: ${e.borders.layout==="horizontal"||e.borders.layout==="grid"?"solid":"none"};
-      --tv-border-col-style: ${e.borders.layout==="vertical"||e.borders.layout==="grid"?"solid":"none"};
+      /* Border style encodes both layout (paints?) and the user's
+         single/double choice. */
+      --tv-border-row-style: ${e.borders.layout==="horizontal"||e.borders.layout==="grid"?e.borders.minor.style:"none"};
+      --tv-border-col-style: ${e.borders.layout==="vertical"||e.borders.layout==="grid"?e.borders.minor.style:"none"};
+      --tv-border-major-style: ${e.borders.major.style};
       --tv-container-border: ${e.borders.layout!=="none"&&e.borders.table.thickness>0?`${e.borders.table.thickness}px solid var(--tv-border-table-color)`:e.layout.containerBorder?"1px solid var(--tv-border)":"none"};
       --tv-container-border-radius: ${e.layout.containerBorderRadius}px;
       ${Gv()}
