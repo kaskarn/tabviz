@@ -101,29 +101,39 @@
     store.setThemeField(["rowGroup", level, "text", field], value);
   }
 
-  const roles = [
-    "title", "subtitle", "caption", "footnote",
-    "body", "header", "cell", "label", "tick"
+  // Roles grouped by surface — three small clusters read more
+  // deliberately than one wall of nine. Order: Frame (title/caption/
+  // footnote — appears once), Body (the row-content stack), Plot
+  // (axis-only). Group labels render as Section sub-heads.
+  const roleGroups = [
+    { label: "Frame", roles: ["title", "subtitle", "caption", "footnote"] },
+    { label: "Body",  roles: ["body", "header", "cell"] },
+    { label: "Plot",  roles: ["label", "tick"] },
   ];
-
-  function summary_text(role: { family?: string; size?: string; weight?: number; italic?: boolean | null }) {
-    const family = role.family?.split(",")[0]?.replace(/['"]/g, "") ?? "—";
-    const italic = role.italic ? " italic" : "";
-    return `${family} / ${role.size ?? "—"} / ${role.weight ?? "—"}${italic}`;
-  }
 </script>
 
- <Section title="Text roles" hint="Per-role typography. Title and subtitle use the display family; body / header / cell / label / tick / footnote use the body family. Header bundle is the column-header band — composed from body + bold weight by default.">
+ <Section title="Text roles" hint="Per-role typography. Frame = once per chart (title, subtitle, caption, footnote). Body = per row (body, header, cell). Plot = axis (label, tick).">
   <div data-tv-v2>
-    {#each roles as role (role)}
-      {@const roleData = readRole(role)}
-      {#if roleData}
+    {#each roleGroups as group (group.label)}
+      <div class="role-group-label">{group.label}</div>
+      {#each group.roles as role (role)}
+        {@const roleData = readRole(role)}
+        {#if roleData}
         <Accordion
           title={role.charAt(0).toUpperCase() + role.slice(1)}
           open={expandedText[role] ?? false}
         >
           {#snippet summary()}
-            <span class="role-sig">{summary_text(roleData)}</span>
+            <!-- Live specimen: a single "Aa" sample rendered in the
+                 role's actual family / size / weight / italic / color.
+                 The mono spec ("Arial / 1.25rem / 600") tells you what;
+                 the specimen shows you. -->
+            <span class="role-sig"
+                  style:font-family={roleData.family}
+                  style:font-size={roleData.size}
+                  style:font-weight={roleData.weight ?? 400}
+                  style:font-style={roleData.italic ? "italic" : "normal"}
+                  style:color={roleData.fg ?? "currentColor"}>Aa</span>
           {/snippet}
           <Field label="Family">
             <FontFamily
@@ -156,7 +166,8 @@
             swatches={colors(INK_SWATCHES)}
           />
         </Accordion>
-      {/if}
+        {/if}
+      {/each}
     {/each}
   </div>
 </Section>
@@ -170,7 +181,15 @@
         open={expandedLevel[level] ?? (level === "L1")}
       >
         {#snippet summary()}
-          <span class="role-sig">{rg[level]?.text ? summary_text(rg[level].text) : ""}</span>
+          {@const t = rg[level]?.text}
+          {#if t}
+            <span class="role-sig"
+                  style:font-family={t.family}
+                  style:font-size={t.size}
+                  style:font-weight={t.weight ?? 400}
+                  style:font-style={t.italic ? "italic" : "normal"}
+                  style:color={rg[level]?.fg ?? t.fg ?? "currentColor"}>Aa</span>
+          {/if}
         {/snippet}
         <ColorField
           label="Background"
@@ -213,12 +232,30 @@
 {/if}
 
 <style>
-  /* Bespoke .role / .role-toggle / .role-fields are gone — Accordion
-     owns the collapsible row. The signature chip rendered into the
-     summary snippet uses .role-sig (a thin mono one-liner). */
+  /* Role specimen — renders an "Aa" in the role's actual family /
+     size / weight / italic / color. Text-heavy mono spec ("Arial /
+     1.25rem / 600 italic") replaced because the *specimen* is the
+     spec — eye reads it directly. Caps at 22px so headlines don't
+     bust the row height. */
   :global([data-tv-v2]) .role-sig {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: var(--v2-text-small, 10.5px);
+    max-height: 22px;
+    line-height: 1;
+    overflow: hidden;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Sub-section label inside Text roles (Frame / Body / Plot). Quiet
+     italic-serif, sits between the dingbat-less section body and the
+     accordion list. */
+  :global([data-tv-v2]) .role-group-label {
+    font-family: var(--v2-font-serif, "EB Garamond", "Palatino", Georgia, serif);
+    font-style: italic;
+    font-size: 11px;
     color: var(--v2-ink-3, #8a8478);
+    padding: 10px 0 2px;
+    line-height: 1;
+    letter-spacing: 0.04em;
+  }
+  :global([data-tv-v2]) .role-group-label:first-child {
+    padding-top: 2px;
   }
 </style>

@@ -70,11 +70,14 @@
 {#if theme}
   <div class="theme-ctrl" data-tv-v2>
 
-    <!-- ── Identity (T1 keystone) ─────────────────────────────────── -->
+    <!-- Identity — three plates (Primary / Secondary / Accent). Was
+         two sections (Identity + Engagement); the split made Accent
+         feel weightier than it actually is. Single section with three
+         rows reads as "the three roles that drive the cascade." -->
     <Section
       title="Identity"
       glyph="section.identity"
-      hint="Primary + secondary form the mirror chain. Everything chrome inherits from these."
+      hint="Primary + Secondary mirror chain drives chrome. Accent (orthogonal) drives engagement — hover, selected, callouts."
     >
       <Field label="Primary" hint="Title, bold header, series[0]">
         <ColorField label="" value={(inputs?.primary as string | undefined) ?? theme.accent?.default ?? "#0891B2"}
@@ -87,14 +90,6 @@
           onchange={(v) => C.applySecondary(ctx, v)}
           swatches={colors(NEUTRAL_SWATCHES)} />
       </Field>
-    </Section>
-
-    <!-- ── Engagement (orthogonal axis: hover / selected / semantic) ── -->
-    <Section
-      title="Engagement"
-      glyph="section.engagement"
-      hint="Accent owns hover, selected, callouts — orthogonal to identity."
-    >
       <Field label="Accent" hint="Hover, selected, semantic callouts">
         <ColorField label="" value={(inputs?.accent as string | undefined) ?? theme.accent?.default ?? "#8B5CF6"}
           onchange={(v) => C.applyAccent(ctx, v)}
@@ -156,8 +151,11 @@
       </div>
     </Section>
 
-    <!-- ── Roles (T2 derived; collapsed) ──────────────────────────── -->
-    <div class="zone-divider">Roles · derived semantic tokens</div>
+    <!-- Tier 2 / Tier 3 accordions follow. The cascade-tier distinction
+         matters to the resolver but not to the user — the accordions
+         themselves communicate "click to drill into a derived role".
+         No zone-divider headings; the section dingbat is enough. -->
+    <div class="zone-ornament">⌘</div>
 
     <Accordion title="Deep variants" hint="Darkened shadows of Primary + Secondary. Used for title fg, axis line, bold-mode bands." open={false}>
       <Field label="↳ Primary" pinned={ctx.isOver(["inputs", "primaryDeep"])}
@@ -248,7 +246,7 @@
     </Accordion>
 
     <!-- ── Components (T3 bindings; collapsed) ────────────────────── -->
-    <div class="zone-divider">Components · per-binding overrides</div>
+    <div class="zone-ornament">⌘</div>
 
     <Accordion title="Header" hint="Active variant only" open={false}>
       <Field label="Background" pinned={headerBgOverridden()} onreset={headerBgReset}>
@@ -322,23 +320,19 @@
   /* Zone divider — single thin label between top-level groupings.
      Replaces the bespoke .zone-* / .zone-header / .zone-description
      stack with one tracked-uppercase row. */
-  /* Zone divider — a quiet meta-label between groupings of accordions.
-     Designed to be LESS LOUD than Section titles (which announce
-     content); this is just punctuation. Italic serif, centered, em-dash
-     flanked, no rule. Reads like a chapter-break ornament in a journal. */
-  .zone-divider {
+  /* Pure ornament — a single floral mark between groupings of
+     accordions. Was a tracked-caps label with em-dashes; replaced
+     because the verbal headings ("Roles · derived semantic tokens")
+     were jargon-speak the user shouldn't need to parse. */
+  .zone-ornament {
     font-family: var(--v2-font-serif, "EB Garamond", "Palatino", Georgia, serif);
-    font-style: italic;
-    font-size: 11px;
-    letter-spacing: 0.04em;
+    font-size: 14px;
     color: var(--v2-ink-3, #8a8478);
     text-align: center;
-    padding: 18px 0 4px;
+    padding: 18px 0 6px;
     line-height: 1;
     user-select: none;
   }
-  .zone-divider::before { content: "— "; }
-  .zone-divider::after  { content: " —"; }
 
   /* Typography specimen grid — 2×2 grid of family cards. Each card
      shows the live "Aa 123" sample rendered in the family + a small

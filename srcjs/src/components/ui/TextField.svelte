@@ -20,9 +20,16 @@
      * to a generous cap. Default 1 = single-line `<input>`.
      */
     lines?: number;
+    /**
+     * Type family used to render the field's content. `"mono"` is the
+     * default (matches code/data fields). `"serif"` matches a chart
+     * title's eventual rendering — use for title/subtitle/caption
+     * fields so authors WYSIWYG-author. `"sans"` for prose fields.
+     */
+    family?: "mono" | "serif" | "sans";
   }
 
-  let { label, hint, value, placeholder, oninput, onchange, lines = 1 }: Props = $props();
+  let { label, hint, value, placeholder, oninput, onchange, lines = 1, family = "mono" }: Props = $props();
 
   function handleInput(e: Event) {
     const el = e.target as HTMLInputElement | HTMLTextAreaElement;
@@ -54,6 +61,8 @@
     {#if lines > 1}
       <textarea
         class="tf-input tf-textarea"
+        class:family-serif={family === "serif"}
+        class:family-sans={family === "sans"}
         rows={lines}
         {value}
         {placeholder}
@@ -67,6 +76,8 @@
     {:else}
       <input
         class="tf-input"
+        class:family-serif={family === "serif"}
+        class:family-sans={family === "sans"}
         type="text"
         {value}
         {placeholder}
@@ -113,7 +124,18 @@
     padding: 4px 8px;
     line-height: 1.35;
     resize: none;
-    font-family: var(--v2-font-sans, system-ui, sans-serif);
     overflow-y: hidden;
+  }
+
+  /* Family variants — let title/caption fields render in the chart's
+     own typeface so authors author WYSIWYG. Default is mono (above);
+     these classes are merged on for serif/sans. */
+  .family-serif {
+    font-family: var(--v2-font-serif, "EB Garamond", "Palatino", Georgia, serif) !important;
+    font-size: 13px !important;
+    letter-spacing: 0.01em;
+  }
+  .family-sans {
+    font-family: var(--v2-font-sans, system-ui, sans-serif) !important;
   }
 </style>

@@ -182,9 +182,70 @@
         </button>
       {/each}
     </div>
+    <!-- Header style preview cards. Each shows a mock header band at
+         the actual visual weight (Light = bare surface, Tint = primary
+         tinted, Bold = filled primary_deep with inverse text). Reads
+         as a sample-line specimen, not jargon. -->
+    {@const primaryDeep = (inputs?.primaryDeep as string | undefined) ?? "#1F2937"}
+    {@const primary = (inputs?.primary as string | undefined) ?? "#0891B2"}
+    <div class="density-preview" aria-hidden="true">
+      {#each [
+        { value: "light", label: "Light", bg: "#faf7f0", fg: "#15140e", rule: "#d6d0c1" },
+        { value: "tint",  label: "Tint",  bg: `color-mix(in srgb, ${primary} 12%, #faf7f0)`, fg: "#15140e", rule: primary },
+        { value: "bold",  label: "Bold",  bg: primaryDeep, fg: "#faf7f0", rule: primaryDeep },
+      ] as opt}
+        <button
+          type="button"
+          class="density-card"
+          class:active={variants.headerStyle === opt.value}
+          onclick={() => changeHeaderStyle(opt.value)}
+          aria-label={`Set header style to ${opt.label}`}
+        >
+          <svg viewBox="0 0 30 22" width="30" height="22">
+            <rect x="2" y="2" width="26" height="8" fill={opt.bg} stroke={opt.rule} stroke-width="0.5"/>
+            <text x="15" y="8" font-size="5" font-weight="600" text-anchor="middle"
+                  font-family="system-ui" fill={opt.fg}>Aa</text>
+            <rect x="2" y="12" width="26" height="3" fill="var(--v2-paper-2, #f3efe5)"/>
+            <rect x="2" y="17" width="26" height="3" fill="var(--v2-paper-2, #f3efe5)"/>
+          </svg>
+          <span class="density-label">{opt.label}</span>
+        </button>
+      {/each}
+    </div>
+    <!-- Slot style preview cards. Each shows the fill/stroke pairing
+         convention as a glyph: filled circle with darker ring (F+S),
+         flat fill (no ring), outlined ring with light fill. The cards
+         replace 3-letter mystery labels with their own preview. -->
+    {@const slotPrimary = primary}
+    {@const slotStroke = primaryDeep}
+    <div class="density-preview" aria-hidden="true">
+      {#each [
+        { value: "fill_with_darker_stroke", label: "Fill+Ring", fill: slotPrimary, stroke: slotStroke, sw: 1.5 },
+        { value: "flat_fill",               label: "Flat",      fill: slotPrimary, stroke: slotPrimary, sw: 0.5 },
+        { value: "outlined",                label: "Outlined",  fill: `color-mix(in srgb, ${slotPrimary} 15%, #faf7f0)`, stroke: slotPrimary, sw: 1.5 },
+      ] as opt}
+        <button
+          type="button"
+          class="density-card"
+          class:active={(inputs?.slotStyle as string | undefined ?? "fill_with_darker_stroke") === opt.value}
+          onclick={() => changeSlotStyle(opt.value as "fill_with_darker_stroke" | "flat_fill" | "outlined")}
+          aria-label={`Set slot style to ${opt.label}`}
+        >
+          <svg viewBox="0 0 30 22" width="30" height="22">
+            <line x1="6" y1="11" x2="24" y2="11" stroke={opt.stroke} stroke-width={opt.sw}/>
+            <circle cx="15" cy="11" r="4" fill={opt.fill} stroke={opt.stroke} stroke-width={opt.sw}/>
+          </svg>
+          <span class="density-label">{opt.label}</span>
+        </button>
+      {/each}
+    </div>
+    <!-- Hidden SegmentedFields kept for a11y-fallback + native picker
+         affordance. These don't render visibly; the cards above are
+         the visible controls. Could remove if a11y review allows. -->
+    <span class="sr-only">
     <SegmentedField
       label="Header"
-      hint="Light = bare surface band; tint = subtle primary-tinted band; bold = full primary_deep band with inverse text. Tint and bold also drive a stronger row-group bar."
+      hint="Light = bare surface band; tint = subtle primary-tinted band; bold = full primary_deep band with inverse text."
       value={variants.headerStyle}
       options={[
         { value: "light", label: "Light" },
@@ -195,7 +256,7 @@
     />
     <SegmentedField
       label="Slot"
-      hint="Series fill/stroke pairing. Fill + stroke is the publication default; flat reads as a single tone; outlined makes the stroke carry the anchor identity with a near-surface fill."
+      hint="Series fill/stroke pairing."
       value={(inputs?.slotStyle as ("fill_with_darker_stroke" | "flat_fill" | "outlined" | undefined)) ?? "fill_with_darker_stroke"}
       options={[
         { value: "fill_with_darker_stroke", label: "F+S"   },
@@ -204,6 +265,7 @@
       ]}
       onchange={changeSlotStyle}
     />
+    </span>
   </Section>
 {/if}
 
@@ -333,6 +395,16 @@
 <BandingControl {store} />
 
 <style>
+  /* Screen-reader-only fallback for the hidden SegmentedField pickers
+     beneath the card-strip variants. Kept off-screen but addressable. */
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
+  }
+
   /* Density preview row — three mock-row stacks. Click selects. */
   .density-preview {
     display: flex;

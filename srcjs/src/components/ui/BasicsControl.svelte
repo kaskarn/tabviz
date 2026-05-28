@@ -30,14 +30,16 @@
   glyph="section.text"
   hint="Title, subtitle, caption, and footnote — also editable by double-clicking on the widget."
 >
-  <!-- Titles use auto-grow textareas (lines=2) so authored strings
-       longer than one row stay visible. Cmd/Ctrl+Enter commits;
-       plain Enter inserts a newline. -->
+  <!-- Title + Subtitle render in serif so authors WYSIWYG-author in
+       the same family the chart will set them in. Caption + Footnote
+       stay sans (those are casual metadata, often typed in flow).
+       Cmd/Ctrl+Enter commits; plain Enter inserts a newline. -->
   <TextField
     label="Title"
     placeholder="(none)"
     value={title}
     lines={2}
+    family="serif"
     oninput={(v) => store.previewLabel("title", v)}
     onchange={(v) => store.setLabel("title", v)}
   />
@@ -46,6 +48,7 @@
     placeholder="(none)"
     value={subtitle}
     lines={2}
+    family="serif"
     oninput={(v) => store.previewLabel("subtitle", v)}
     onchange={(v) => store.setLabel("subtitle", v)}
   />
@@ -54,6 +57,7 @@
     placeholder="(none)"
     value={caption}
     lines={3}
+    family="sans"
     oninput={(v) => store.previewLabel("caption", v)}
     onchange={(v) => store.setLabel("caption", v)}
   />
@@ -62,6 +66,7 @@
     placeholder="(none)"
     value={footnote}
     lines={3}
+    family="sans"
     oninput={(v) => store.previewLabel("footnote", v)}
     onchange={(v) => store.setLabel("footnote", v)}
   />

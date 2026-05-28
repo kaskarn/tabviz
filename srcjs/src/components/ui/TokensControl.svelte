@@ -119,15 +119,16 @@
           open={expanded[t.id] ?? false}
         >
           {#snippet summary()}
-            <!-- Token preview chip — a small (bg / fg) tile that shows
-                 what the token actually looks like when applied. Reads
-                 as a paint-tube label on the closed accordion row. -->
+            <!-- Token preview chip — renders the token's own label
+                 ("Bold", "Mute", "Accent", …) in the token's actual
+                 bg/fg/weight/italic. Reads as a paint-tube specimen,
+                 not generic chrome. -->
             <span class="token-chip"
                   style:background={(tokenField(t.id, "bg") as string | undefined) ?? "transparent"}
                   style:color={(tokenField(t.id, "fg") as string | undefined) ?? "currentColor"}
                   style:font-style={tokenField(t.id, "fontStyle") === "italic" ? "italic" : "normal"}
                   style:font-weight={(tokenField(t.id, "fontWeight") as number | undefined) ?? 400}>
-              Aa
+              {t.label}
             </span>
           {/snippet}
           <ColorField
@@ -179,15 +180,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 16px;
+    min-width: 56px;
+    padding: 2px 8px;
+    height: 18px;
     border-radius: var(--v2-r-hair, 2px);
     box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
     font-family: var(--v2-font-sans, system-ui, sans-serif);
-    font-size: 10px;
-    font-feature-settings: "smcp" 1, "c2sc" 1;
-    text-transform: lowercase;
+    font-size: 10.5px;
     line-height: 1;
-    letter-spacing: 0.04em;
+    white-space: nowrap;
   }
 </style>
