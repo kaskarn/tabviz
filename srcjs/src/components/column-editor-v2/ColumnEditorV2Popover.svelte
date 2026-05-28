@@ -274,17 +274,9 @@
       {available}
       oncommit={onEditorCommit}
       onclose={onClose}
+      onsave={commit}
+      saveLabel={target.mode === "insert" ? "Insert" : "Save"}
     />
-    <!-- Footer affordance — primary "commit" button. Reads "Insert"
-         when creating a new column, "Save" when editing. Edit mode
-         also auto-commits on every change, but users still want the
-         explicit Save as a "done editing" gesture. Cancel button
-         removed (Esc + outside-click handle close). -->
-    <div class="v2-popover-foot">
-      <button type="button" class="primary" onclick={commit}>
-        {target.mode === "insert" ? "Insert" : "Save"}
-      </button>
-    </div>
   </div>
 {/if}
 
@@ -329,32 +321,8 @@
     cursor: grabbing;
   }
 
-  /* Footer — only rendered in INSERT mode. Flat, no paper-2 fill,
-     no border-top. Single primary button (Insert) hangs at the
-     right; ink-stamp on cream, sans, small-caps. */
-  .v2-popover-foot {
-    display: flex;
-    justify-content: flex-end;
-    padding: 8px 14px 10px;
-    background: transparent;
-  }
-  .v2-popover-foot .primary {
-    appearance: none;
-    border: 0;
-    padding: 5px 14px;
-    border-radius: var(--v2-r-soft, 3px);
-    font-family: var(--v2-font-sans, system-ui, sans-serif);
-    font-size: var(--v2-text-body, 11.5px);
-    font-feature-settings: "smcp" 1, "c2sc" 1;
-    text-transform: lowercase;
-    letter-spacing: 0.08em;
-    background: var(--v2-ink, #15140e);
-    color: var(--v2-paper, #faf7f0);
-    cursor: pointer;
-    transition: background var(--v2-dur-snap, 80ms) var(--v2-ease, ease);
-  }
-  .v2-popover-foot .primary:hover {
-    background: var(--v2-ink-2, #4a463c);
-  }
+  /* (Footer retired — the save/insert button now hangs next to the
+     close X in the editor masthead via ColumnEditorV2's editor-actions
+     cluster.) */
 
 </style>

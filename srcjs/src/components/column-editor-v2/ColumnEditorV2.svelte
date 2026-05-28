@@ -72,6 +72,12 @@
     oncommit?: (next: Partial<ColumnSpec>) => void;
     /** Close button handler. */
     onclose?: () => void;
+    /** Explicit save / insert handler. When provided, renders a
+     *  primary button in the editor masthead alongside the close X.
+     *  Label is "Save" by default; pass `saveLabel` for "Insert". */
+    onsave?: () => void;
+    /** Label for the save button. Defaults to "Save". */
+    saveLabel?: string;
   }
 
   let {
@@ -81,6 +87,8 @@
     swatches = [],
     oncommit,
     onclose,
+    onsave,
+    saveLabel = "Save",
   }: Props = $props();
 
   // ── Resolved schema cascade ─────────────────────────────────────
@@ -347,10 +355,19 @@
   <!-- Title row — uses the same Section masthead idiom as the settings
        panel (small-caps title, hairline-under, italic-i info mark) so
        the column-editor surface reads as a vertical slice of the same
-       editorial system. Close button (when given) hangs at the right
-       edge of the row, ink-3 with hover-to-ink. -->
-  {#if onclose}
-    <button class="editor-close" type="button" aria-label="Close" onclick={onclose}>×</button>
+       editorial system. The save button (when given) and close X
+       hang together in the top-right of the masthead — they share
+       the "exit this dialog" mental column rather than splitting
+       across top+bottom. -->
+  {#if onsave || onclose}
+    <div class="editor-actions">
+      {#if onsave}
+        <button class="editor-save" type="button" onclick={onsave}>{saveLabel}</button>
+      {/if}
+      {#if onclose}
+        <button class="editor-close" type="button" aria-label="Close" onclick={onclose}>×</button>
+      {/if}
+    </div>
   {/if}
 
   <div class="body">
@@ -567,6 +584,36 @@
     color: var(--v2-ink, #15140e);
     position: relative;
   }
+  /* Top-right action cluster: [save] + [×]. Lives in absolute
+     positioning above the masthead Section so it doesn't push the
+     section header down. Save is the prominent primary button;
+     the close X is a quiet ink-3 glyph. */
+  .editor-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .editor-save {
+    appearance: none;
+    border: 0;
+    padding: 4px 12px;
+    border-radius: var(--v2-r-soft, 3px);
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
+    font-size: var(--v2-text-body, 11.5px);
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    letter-spacing: 0.08em;
+    background: var(--v2-ink, #15140e);
+    color: var(--v2-paper, #faf7f0);
+    cursor: pointer;
+    line-height: 1;
+    transition: background var(--v2-dur-snap, 80ms) var(--v2-ease, ease);
+  }
+  .editor-save:hover { background: var(--v2-ink-2, #4a463c); }
   .editor-close {
     appearance: none;
     background: transparent;
@@ -580,10 +627,6 @@
     cursor: pointer;
     display: grid;
     place-items: center;
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 2;
   }
   .editor-close:hover {
     background: var(--v2-hover-tint, rgba(21, 20, 14, 0.05));
