@@ -21,3 +21,6 @@
 ^CRAN-SUBMISSION$
 ^tests/visual$
 ^tests/manual$
+^dev$
+^forclaude\.md$
+^node_modules$

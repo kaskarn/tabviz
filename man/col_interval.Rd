@@ -16,6 +16,7 @@ col_interval(
   abbreviate = FALSE,
   separator = " ",
   imprecise_threshold = NULL,
+  variant = NULL,
   na_text = NULL,
   ...,
   sep = lifecycle::deprecated()
@@ -48,6 +49,12 @@ col_interval(
 the interval is considered imprecise and displayed as "--" instead.
 Default is NULL (no threshold).}
 
+\item{variant}{Rendering variant — one of \code{"traditional"} (default, e.g.
+\code{"0.85 (0.72, 0.99)"}), \code{"bracket_muted"} (\code{"0.85 [0.72-0.99]"} with
+themed muted bounds), \code{"plus_minus"} (\code{"0.85 +/- 0.14"}, half-width as
+the offset), or \code{"stacked"} (point on the first line, bounds on the
+next). NULL keeps the default. Wire field: \code{options.interval.variant}.}
+
 \item{na_text}{Text to display for NA/missing values (default NULL = blank)}
 
 \item{...}{Additional arguments passed to \code{web_col()}, including cell styling:
@@ -78,4 +85,7 @@ col_interval("rr", "rr_lo", "rr_hi", digits = 3)
 
 # Hide imprecise estimates (CI ratio > 10)
 col_interval("hr", "lower", "upper", imprecise_threshold = 10)
+
+# Bracketed, muted bounds (themed)
+col_interval("hr", "lower", "upper", variant = "bracket_muted")
 }

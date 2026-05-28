@@ -269,7 +269,7 @@ web_theme_bmj <- function() {
 #' * `journals` — clinical / publication identities (Cochrane, Lancet,
 #'   JAMA, Dark).
 #' * `design` — design-movement interpretations (Bauhaus, Swiss, Tufte,
-#'   Newsprint, Solarized × {light, dark}, Tonal × {light, dark}).
+#'   Newsprint, Solarized x \{light, dark\}, Tonal x \{light, dark\}).
 #' * `lotr` — easter-egg editorial themes (Dwarven, Elvish, Hobbit).
 #'
 #' @return A 2-level named list of [WebTheme] objects.

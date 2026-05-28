@@ -21,7 +21,7 @@ Categories:
 \item \code{journals} — clinical / publication identities (Cochrane, Lancet,
 JAMA, Dark).
 \item \code{design} — design-movement interpretations (Bauhaus, Swiss, Tufte,
-Newsprint, Solarized × {light, dark}, Tonal × {light, dark}).
+Newsprint, Solarized x \{light, dark\}, Tonal x \{light, dark\}).
 \item \code{lotr} — easter-egg editorial themes (Dwarven, Elvish, Hobbit).
 }
 }

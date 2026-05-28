@@ -219,6 +219,7 @@ split_table <- function(x, by, shared_axis = FALSE, shared_column_widths = FALSE
 #' Internal function to create a new WebSpec with subset data while
 #' inheriting configuration from the base spec.
 #'
+#' @noRd
 # Build the minimal payload `srcjs/src/lib/split-shared.ts` expects from each
 # subset. Data is sent **column-major** (one vector per field) and is
 # further narrowed via `fields` to only the columns the consumer reads —

@@ -66,6 +66,11 @@
 #' @param weight Deprecated: use marker_size instead
 #' @param theme Theme object (use `web_theme_*()` functions)
 #' @param interaction Interaction settings (use `web_interaction()`)
+#' @param conditions Optional named list of row-predicate expressions. Each
+#'   entry is a formula or function that evaluates to a logical vector over
+#'   the data; the names become referenceable via `cond("name")` in
+#'   styleMapping arguments and the schema's `condition(...)` recipe.
+#'   See `vignette("schema-system")` for the wire shape + example.
 #' @param initial_sort Optional `list(column =, direction =)` applied at
 #'   first paint. Direction is one of `"asc"`, `"desc"`, `"none"`. Lets a
 #'   Shiny dashboard load the widget already-sorted so the first frame

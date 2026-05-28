@@ -94,8 +94,8 @@ cond <- function(name) {
 #' Evaluate a single tabviz_condition against a data frame
 #'
 #' Returns the materialized ConditionEntry list shape:
-#'   list(id = name, label = ..., kind = "boolean", values = c(T,F,...),
-#'        ruleText = "..." [if formula], category = ... [if set])
+#' `list(id = name, label = ..., kind = "boolean", values = c(T,F,...),
+#' ruleText = "..." (if formula), category = ... (if set))`.
 #'
 #' Used by `tabviz()`'s spec-build path. Pure: input data unchanged.
 #'
