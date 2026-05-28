@@ -2852,9 +2852,12 @@
     background-color: var(--tv-first-col-bg, transparent);
     color: var(--tv-first-col-fg, inherit);
     font-weight: var(--tv-first-col-weight, inherit);
-    /* Override only the color when first-col-rule is set. If it's
-       transparent, the cell falls through to .grid-cell's color. */
-    border-right-color: var(--tv-first-col-rule);
+    /* If the variant explicitly sets a first-column rule, use it.
+       Otherwise fall back to the standard column-divider color (the
+       minor border color), which is what every other cell uses under
+       cols/grid layout. Without the fallback, the primary cell would
+       show no right border at all under cols/grid. */
+    border-right-color: var(--tv-first-col-rule, var(--tv-border-minor-color, var(--tv-border)));
   }
   .primary-cell.reorderable {
     cursor: grab;

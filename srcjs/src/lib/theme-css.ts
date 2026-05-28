@@ -109,7 +109,13 @@ function _buildThemeCSSImpl(theme: WebThemeV2): string {
   const firstColBg = firstColVariant?.bg ?? "transparent";
   const firstColFg = firstColVariant?.fg ?? "inherit";
   const firstColWeight = firstColVariant?.weight ?? "inherit";
-  const firstColRule = firstColVariant?.rule ?? "transparent";
+  // Rule color when the variant actually wants its own rule, null otherwise.
+  // `null` triggers SKIPPING the CSS var emission so the primary cell's
+  // border-right falls through to `.grid-cell` (i.e., picks up the
+  // column-divider color under cols/grid layout). Emitting "transparent"
+  // would defeat var() fallbacks and make the primary cell invisible
+  // under cols/grid.
+  const firstColRule: string | null = firstColVariant?.rule ?? null;
 
   const inputs = theme.inputs as
     | { primary?: string; primaryDeep?: string; secondary?: string; secondaryDeep?: string }
@@ -248,7 +254,7 @@ function _buildThemeCSSImpl(theme: WebThemeV2): string {
       --tv-first-col-bg: ${firstColBg};
       --tv-first-col-fg: ${firstColFg};
       --tv-first-col-weight: ${firstColWeight};
-      --tv-first-col-rule: ${firstColRule};
+      ${firstColRule ? `--tv-first-col-rule: ${firstColRule};` : ""}
       --tv-row-height: ${theme.spacing.rowHeight}px;
       --tv-row-group-padding: ${theme.spacing.rowGroupPadding ?? 0}px;
       --tv-padding: ${theme.spacing.padding}px;
