@@ -343,17 +343,17 @@
 </script>
 
 <div class="editor" data-tv-v2>
-  <!-- ── Header ──────────────────────────────────────────────── -->
-  <header class="head">
-    <span class="head-glyph">{headerGlyph ? glyphChar(headerGlyph) : "◌"}</span>
-    <span class="head-flag">{schema.label}</span>
-    <span class="head-sep">column</span>
-    {#if onclose}
-      <button class="head-close" type="button" aria-label="Close" onclick={onclose}>×</button>
-    {/if}
-  </header>
+  <!-- Title row — uses the same Section masthead idiom as the settings
+       panel (small-caps title, hairline-under, italic-i info mark) so
+       the column-editor surface reads as a vertical slice of the same
+       editorial system. Close button (when given) hangs at the right
+       edge of the row, ink-3 with hover-to-ink. -->
+  {#if onclose}
+    <button class="editor-close" type="button" aria-label="Close" onclick={onclose}>×</button>
+  {/if}
 
   <div class="body">
+    <Section glyph={headerGlyph} title={schema.label} hint={`${schema.label} column — edit its options below.`} />
     <!-- ── Live preview ──────────────────────────────────────────── -->
     <ColumnPreview {schema} {column} />
 
@@ -403,14 +403,13 @@
           count={pinCount(layer.key)}
         >
           {#if hasVariants}
-            <div class="variant-wrap">
-              <div class="variant-flag">variants</div>
+            <Field label="Variant">
               <VariantPicker
                 value={readVariant(layer)}
                 variants={layer.variants!}
                 onchange={(id) => writeVariant(layer, id)}
               />
-            </div>
+            </Field>
           {/if}
           {#each opts as opt (opt.key)}
             {@const cur = readValue(opt)}
@@ -550,75 +549,44 @@
 </div>
 
 <style>
+  /* Editor surface — flat, paper-on-paper. The previous design
+     wrapped the editor in a card with paper-2 head, paper-2 foot,
+     drop-shadow, and rounded corners. That read as "dialog" rather
+     than "editorial column". Now: same paper layer as the host,
+     hairlines only, masthead via <Section> like the settings panel.
+     The popover shell still owns the spatial-detachment shadow; the
+     editor body stays flat. */
   .editor {
     width: 400px;
-    /* Cap height so the popover stays within the viewport when used
-       as an anchored popover. The header stays pinned; the body
-       scrolls. Hosts that want unbounded height (e.g. the harness
-       scenario for visual audit) can override --tv-editor-max-h. */
     max-height: var(--tv-editor-max-h, min(640px, calc(100vh - 24px)));
     display: flex;
     flex-direction: column;
     min-height: 0;
     background: var(--v2-paper, #faf7f0);
-    border-radius: var(--v2-r-large, 6px);
-    box-shadow:
-      0 1px 0 var(--v2-rule, #d6d0c1),
-      0 8px 28px rgba(21, 20, 14, 0.10),
-      0 32px 80px rgba(21, 20, 14, 0.06);
-    overflow: hidden;
     font: 13px/1.45 var(--v2-font-sans, system-ui, sans-serif);
     color: var(--v2-ink, #15140e);
+    position: relative;
   }
-
-  /* ── Header ───────────────────────────────────────────────── */
-  .head {
-    display: grid;
-    grid-template-columns: 22px 1fr auto auto;
-    align-items: baseline;
-    gap: 8px;
-    padding: 12px 14px 10px;
-    background: var(--v2-paper-2, #f3efe5);
-    border-bottom: 1px solid var(--v2-rule, #d6d0c1);
-  }
-  .head-glyph {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: 15px;
-    line-height: 1;
-    color: var(--v2-ink, #15140e);
-    align-self: center;
-  }
-  .head-flag {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: var(--v2-text-micro, 9.5px);
-    font-weight: 600;
-    letter-spacing: var(--v2-track-flag, 0.14em);
-    text-transform: uppercase;
-    color: var(--v2-ink, #15140e);
-  }
-  .head-sep {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: var(--v2-text-micro, 9.5px);
-    letter-spacing: var(--v2-track-flag, 0.14em);
-    text-transform: uppercase;
-    color: var(--v2-ink-3, #8a8478);
-  }
-  .head-close {
+  .editor-close {
     appearance: none;
     background: transparent;
     border: 0;
     width: 22px;
     height: 22px;
-    border-radius: 3px;
+    border-radius: var(--v2-r-soft, 3px);
     color: var(--v2-ink-3, #8a8478);
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
     display: grid;
     place-items: center;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
   }
-  .head-close:hover {
-    background: var(--v2-hover-tint, rgba(21,20,14,0.05));
+  .editor-close:hover {
+    background: var(--v2-hover-tint, rgba(21, 20, 14, 0.05));
     color: var(--v2-ink, #15140e);
   }
 
@@ -628,8 +596,6 @@
     flex-direction: column;
     min-height: 0;
     overflow-y: auto;
-    /* Header stays pinned; body takes the remaining height of the
-       editor's max-height cap. */
     flex: 1 1 auto;
   }
 
@@ -669,20 +635,7 @@
     font-size: var(--v2-text-small, 10.5px);
   }
 
-  /* ── Variant picker block ─────────────────────────────────── */
-  .variant-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 4px 0 8px;
-    border-bottom: 1px solid var(--v2-rule-soft, #e6e0d1);
-    margin-bottom: 6px;
-  }
-  .variant-flag {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: var(--v2-track-flag, 0.14em);
-    color: var(--v2-ink-3, #8a8478);
-  }
+  /* (.variant-wrap retired — the variant picker is now a regular
+     <Field label="Variant"> row inside the leaf accordion, sharing
+     the spine with every other Field.) */
 </style>
