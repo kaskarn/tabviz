@@ -66,10 +66,12 @@ export type NodeRules = Record<string, NodeRule>;
  * they override it. Prefer empty/explicit-only defaults.
  */
 export const DEFAULT_NODE_RULES: NodeRules = {
-  // Interval bounds — the `(0.72, 0.99)` part of `0.85 (0.72, 0.99)` —
-  // dim to minor size + muted color so the point estimate stays
-  // visually dominant. Themes can override per their own style.
-  "interval-range": { text: { size: "minor", color: "muted" } },
+  // No default rules. Interval bounds (`interval-range` tag) used to
+  // dim to minor size + muted color here, but that locked every theme
+  // into a "diminished bounds" look the user didn't want as default.
+  // Themes that want muted bounds can opt in via their own nodeRules,
+  // or callers can pick the "Bracket, muted" variant on the interval
+  // column (which is explicitly the muted-bounds option).
 };
 
 // ────────────────────────────────────────────────────────────────────
