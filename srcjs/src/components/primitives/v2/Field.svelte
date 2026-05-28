@@ -92,21 +92,21 @@
      label width, making the controls visually staircase to the right.
      100px fits the longest labels we have today + leaves room for the
      `?` info chip; truncate with ellipsis on overflow. */
+  /* Tightened spine: label column 72px (was 100px). Most labels in
+     the panel are ≤8 chars ("Primary", "Subtitle", "Caption", "Color"
+     etc.), which fit comfortably at 72px even with the small-caps
+     scale. Long labels truncate with ellipsis as before; the title
+     attribute surfaces the full text on hover. */
   .field {
     display: grid;
-    grid-template-columns: 8px 100px 1fr;
-    /* minmax so most single-line controls stay pinned to the row-h
-       baseline, but controls that compose a card (Swatch's 2-row
-       chip+hex / palette layout) can grow vertically. */
+    grid-template-columns: 8px 72px 1fr;
     grid-template-rows: minmax(var(--v2-row-h, 22px), auto);
     align-items: center;
     column-gap: var(--v2-gap-mid, 8px);
     row-gap: 0;
   }
   .field.tight {
-    /* When the control wants its native width (Pill, Toggle), let it
-       sit at its intrinsic width and free up the rest of the row. */
-    grid-template-columns: 8px 100px max-content 1fr;
+    grid-template-columns: 8px 72px max-content 1fr;
   }
 
   /* ── Gutter (override dot / reset button) ───────────────── */

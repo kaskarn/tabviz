@@ -293,9 +293,12 @@ function _buildThemeCSSImpl(theme: WebThemeV2): string {
           : "none"
       };
       --tv-border-major-style: ${theme.borders.major.style === "double" ? "double" : "solid"};
-      --tv-container-border: ${theme.borders.layout !== "none" && theme.borders.table.thickness > 0
-        ? `${theme.borders.table.thickness}px solid var(--tv-border-table-color)`
-        : theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};
+      /* Table frame — paints on the .tabviz-main top/bottom (the data
+         region), not on the outer container. Container border stays
+         a separate user-opt-in via theme.layout.containerBorder. */
+      --tv-table-border-width: ${theme.borders.table.style === "double" ? Math.max(3, theme.borders.table.thickness * 3) : theme.borders.table.thickness}px;
+      --tv-table-border-style: ${theme.borders.table.thickness > 0 ? (theme.borders.table.style === "double" ? "double" : "solid") : "none"};
+      --tv-container-border: ${theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};
       --tv-container-border-radius: ${theme.layout.containerBorderRadius}px;
       ${generateCSSVariables()}
     `.trim();

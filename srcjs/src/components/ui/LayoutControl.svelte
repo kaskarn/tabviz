@@ -363,70 +363,62 @@
     hint="H and V axes independently toggle row + column dividers; each type sets its own thickness, single/double, and color."
   >
 
-    <!-- Diagram preview: a tiny table mockup with major/minor/table
-         labels annotated. Self-documenting — eliminates the need to
-         explain in prose what each divider type does. -->
-    <div class="borders-diagram" aria-hidden="true">
-      <svg viewBox="0 0 160 70" width="100%" preserveAspectRatio="xMidYMid meet">
-        <!-- Table edge (outer rect) -->
-        <rect x="6" y="6" width="148" height="58" fill="none"
-              stroke={borders.table.color} stroke-width="1.4"/>
-        <!-- Header bottom — MAJOR -->
-        <line x1="6" y1="22" x2="154" y2="22"
-              stroke={borders.major.color}
-              stroke-width={borders.major.style === "double" ? "0.8" : "1.4"}/>
-        {#if borders.major.style === "double"}
-          <line x1="6" y1="24" x2="154" y2="24" stroke={borders.major.color} stroke-width="0.8"/>
-        {/if}
-        <!-- Row dividers — MINOR (only when layout includes horizontal) -->
-        {#if borders.layout === "horizontal" || borders.layout === "grid"}
-          <line x1="6" y1="36" x2="154" y2="36" stroke={borders.minor.color} stroke-width="0.7"/>
-          <line x1="6" y1="50" x2="154" y2="50" stroke={borders.minor.color} stroke-width="0.7"/>
-        {/if}
-        <!-- Column dividers — MINOR (only when layout includes vertical) -->
-        {#if borders.layout === "vertical" || borders.layout === "grid"}
-          <line x1="60" y1="6" x2="60" y2="64" stroke={borders.minor.color} stroke-width="0.7"/>
-          <line x1="108" y1="6" x2="108" y2="64" stroke={borders.minor.color} stroke-width="0.7"/>
-        {/if}
-        <!-- Annotation labels — each sits on the row where its line
-             paints so the eye traces label → diagram naturally. -->
-        <text x="158" y="9"  class="anno" text-anchor="start">table</text>
-        <text x="158" y="25" class="anno" text-anchor="start">major</text>
-        <text x="158" y="39" class="anno" text-anchor="start">minor</text>
-      </svg>
-    </div>
-    <!-- Axes — H and V as independent on/off cyclers. The wire keeps
-         the existing 4-state `borders.layout`; this is just a more
-         editorial UI surface on top. -->
+    <!-- Axes row — drives which AXES paint (H = row dividers between
+         rows, V = column dividers between cells). Applies to all
+         three border types collectively. -->
+    {@const layoutState = borders.layout as LayoutState}
     <div class="axes-row">
-      <span class="axes-label">Axes</span>
-      {@render axisCycler(layoutHasH(borders.layout as LayoutState), "h",
-        () => setBordersField(["layout"], withH(borders.layout as LayoutState, !layoutHasH(borders.layout as LayoutState))))}
-      {@render axisCycler(layoutHasV(borders.layout as LayoutState), "v",
-        () => setBordersField(["layout"], withV(borders.layout as LayoutState, !layoutHasV(borders.layout as LayoutState))))}
+      <span class="axes-label">axes</span>
+      {@render axisCycler(layoutHasH(layoutState), "h",
+        () => setBordersField(["layout"], withH(layoutState, !layoutHasH(layoutState))))}
+      {@render axisCycler(layoutHasV(layoutState), "v",
+        () => setBordersField(["layout"], withV(layoutState, !layoutHasV(layoutState))))}
     </div>
 
-    <!-- Per-type inline rows. Each: type label · style cycler (─/═) ·
-         thickness cycler (1/2/3) · color swatch. One row at 22px each
-         replaces the previous three rows per type. -->
+    <!-- Per-type inline rows. Each is one 22px line at the row's
+         actual painted style + color, followed by thickness cycler +
+         color swatch. The line preview IS the click target for
+         single/double cycling. When thickness=0 the row fades to
+         "off" and uses a dashed gray as a placeholder. -->
     {#each [
-      { key: "minor" as const, label: "Minor", maxThk: 4, hint: "Row + column data dividers" },
-      { key: "major" as const, label: "Major", maxThk: 6, hint: "Header bottom + group/summary breaks" },
-      { key: "table" as const, label: "Table", maxThk: 6, hint: "Outer table edge" },
+      { key: "minor" as const, label: "minor", maxThk: 4, hint: "Row + column data dividers" },
+      { key: "major" as const, label: "major", maxThk: 6, hint: "Header bottom + group/summary breaks" },
+      { key: "table" as const, label: "table", maxThk: 6, hint: "Top + bottom frame around the data table" },
     ] as t (t.key)}
-      <div class="border-row">
-        <span class="border-label" title={t.hint}>{t.label}</span>
-        {@render styleCycler(borders[t.key].style as "single" | "double",
-          () => setBordersField([t.key, "style"], borders[t.key].style === "double" ? "single" : "double"))}
-        {@render thicknessCycler(borders[t.key].thickness, t.maxThk,
-          () => setBordersField([t.key, "thickness"], cycleThickness(borders[t.key].thickness, t.maxThk)))}
-        <div class="swatch-host">
+      {@const spec = borders[t.key]}
+      {@const off = spec.thickness <= 0}
+      <div class="border-row" class:off>
+        <button type="button" class="border-line-btn"
+                disabled={off}
+                title={off ? `${t.label} off (cycle thickness to enable)` : `${t.label} · click line to toggle single ↔ double`}
+                aria-label={`Toggle ${t.label} style — currently ${spec.style}`}
+                onclick={() => setBordersField([t.key, "style"], spec.style === "double" ? "single" : "double")}>
+          <svg viewBox="0 0 120 12" width="100%" height="12" preserveAspectRatio="none">
+            {#if off}
+              <line x1="2" y1="6" x2="118" y2="6"
+                    stroke="var(--v2-ink-3, #8a8478)" stroke-width="0.7"
+                    stroke-dasharray="3 2" opacity="0.5"/>
+            {:else if spec.style === "double"}
+              <line x1="2" y1="4" x2="118" y2="4" stroke={spec.color}
+                    stroke-width={Math.max(0.7, Math.min(2, spec.thickness * 0.6))}/>
+              <line x1="2" y1="8" x2="118" y2="8" stroke={spec.color}
+                    stroke-width={Math.max(0.7, Math.min(2, spec.thickness * 0.6))}/>
+            {:else}
+              <line x1="2" y1="6" x2="118" y2="6" stroke={spec.color}
+                    stroke-width={Math.max(0.8, Math.min(3, spec.thickness * 1.0))}/>
+            {/if}
+          </svg>
+        </button>
+        {@render thicknessCycler(spec.thickness, t.maxThk,
+          () => setBordersField([t.key, "thickness"], spec.thickness >= t.maxThk ? 0 : spec.thickness + 1))}
+        <div class="border-swatch-host" class:off>
           <ColorField
             label=""
-            value={borders[t.key].color}
+            value={spec.color}
             onchange={(v: string) => setBordersField([t.key, "color"], v)}
           />
         </div>
+        <span class="border-rowlabel" title={t.hint}>{t.label}</span>
       </div>
     {/each}
   </Section>
@@ -587,41 +579,70 @@
     font-variant-numeric: tabular-nums;
     line-height: 1;
   }
+  /* Border type row — one 22px line per type. Anatomy:
+       [LINE PREVIEW button][thk chip][swatch host][type label] */
   .border-row {
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 1px 8px 1px 28px;
-    min-height: 26px;
+    min-height: 24px;
   }
-  .border-label {
+  .border-row.off { opacity: 0.55; }
+  .border-line-btn {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-radius: 2px;
+    transition: background var(--v2-dur-snap, 80ms) var(--v2-ease);
+  }
+  .border-line-btn:hover:not(:disabled) {
+    background: var(--v2-hover-tint, rgba(21, 20, 14, 0.05));
+  }
+  .border-line-btn:disabled { cursor: default; }
+  .border-rowlabel {
     font-family: var(--v2-font-sans, system-ui);
-    font-size: 11.5px;
-    color: var(--v2-ink-2, #4a463c);
+    font-size: 9.5px;
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    letter-spacing: 0.12em;
+    color: var(--v2-ink-3, #8a8478);
     flex: none;
-    min-width: 48px;
+    min-width: 42px;
+    text-align: right;
   }
-  .swatch-host {
-    flex: 1;
+  .border-swatch-host {
+    flex: 0 0 auto;
     min-width: 0;
     display: flex;
     align-items: center;
+    /* Hide the hex input on these compact rows — the chip alone is
+       enough; users click it to open the native picker / palette.
+       The chip stays clickable. */
+  }
+  .border-swatch-host :global(.swatch .hex),
+  .border-swatch-host :global(.swatch .palette-row) {
+    display: none;
+  }
+  .border-swatch-host :global(.swatch) {
+    grid-template-columns: max-content !important;
+  }
+  .border-swatch-host :global(.swatch .primary-row) {
+    height: 16px;
+    gap: 0;
+  }
+  .border-swatch-host :global(.chip) {
+    width: 16px !important;
+    height: 16px !important;
   }
 
-  /* Borders section diagram — a small annotated table mockup that
-     visualizes which divider goes where. Updates live as the user
-     edits borders.layout / borders.{major,minor,table}.{color,style}. */
-  .borders-diagram {
-    margin: 4px 8px 6px 28px;
-    padding: 8px 56px 8px 8px;
-    background: var(--v2-paper-edge, #ffffff);
-    border-radius: var(--v2-r-soft, 3px);
-    box-shadow: inset 0 0 0 1px var(--v2-rule-soft, #e6e0d1);
-  }
-  .borders-diagram :global(text.anno) {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: 7px;
-    fill: var(--v2-ink-3, #8a8478);
-    letter-spacing: 0.08em;
-  }
+  /* (Diagram styles retired — per-type line previews on each row
+     carry the demonstration the diagram used to provide.) */
 </style>

@@ -378,7 +378,12 @@ ${o.join(`
       --tv-border-row-style: ${t.borders.layout==="horizontal"||t.borders.layout==="grid"?t.borders.minor.style==="double"?"double":"solid":"none"};
       --tv-border-col-style: ${t.borders.layout==="vertical"||t.borders.layout==="grid"?t.borders.minor.style==="double"?"double":"solid":"none"};
       --tv-border-major-style: ${t.borders.major.style==="double"?"double":"solid"};
-      --tv-container-border: ${t.borders.layout!=="none"&&t.borders.table.thickness>0?`${t.borders.table.thickness}px solid var(--tv-border-table-color)`:t.layout.containerBorder?"1px solid var(--tv-border)":"none"};
+      /* Table frame — paints on the .tabviz-main top/bottom (the data
+         region), not on the outer container. Container border stays
+         a separate user-opt-in via theme.layout.containerBorder. */
+      --tv-table-border-width: ${t.borders.table.style==="double"?Math.max(3,t.borders.table.thickness*3):t.borders.table.thickness}px;
+      --tv-table-border-style: ${t.borders.table.thickness>0?t.borders.table.style==="double"?"double":"solid":"none"};
+      --tv-container-border: ${t.layout.containerBorder?"1px solid var(--tv-border)":"none"};
       --tv-container-border-radius: ${t.layout.containerBorderRadius}px;
       ${gr()}
     `.trim()}function Ya(t){return`

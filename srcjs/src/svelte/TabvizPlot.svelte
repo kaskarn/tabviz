@@ -2683,12 +2683,18 @@
     contain: layout style paint;
   }
 
-  /* Header top border — symmetric with the header bottom; both bind
-     to theme.borders.major. */
+  /* Outer table top + bottom — bound to theme.borders.TABLE (the
+     frame *around the table region itself*, not the outer widget
+     container). Major is reserved for INTERNAL major rules only
+     (header bottom, group breaks). Table default thickness 0 means
+     no frame unless the user opts in. */
   .tabviz-main {
-    border-top-width: var(--tv-header-border-width, 2px);
-    border-top-style: solid;
-    border-top-color: var(--tv-border-major-color, var(--tv-header-rule, var(--tv-border)));
+    border-top-width: var(--tv-table-border-width, 0);
+    border-top-style: var(--tv-table-border-style, none);
+    border-top-color: var(--tv-border-table-color, transparent);
+    border-bottom-width: var(--tv-table-border-width, 0);
+    border-bottom-style: var(--tv-table-border-style, none);
+    border-bottom-color: var(--tv-border-table-color, transparent);
   }
 
   /* Base grid cell styles. Row + column dividers both obey
