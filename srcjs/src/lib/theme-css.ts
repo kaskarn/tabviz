@@ -279,11 +279,20 @@ function _buildThemeCSSImpl(theme: WebThemeV2): string {
       --tv-border-major-color: ${theme.borders.major.color};
       --tv-border-minor-color: ${theme.borders.minor.color};
       --tv-border-table-color: ${theme.borders.table.color};
-      /* Border style encodes both layout (paints?) and the user's
-         single/double choice. */
-      --tv-border-row-style: ${theme.borders.layout === "horizontal" || theme.borders.layout === "grid" ? theme.borders.minor.style : "none"};
-      --tv-border-col-style: ${theme.borders.layout === "vertical" || theme.borders.layout === "grid" ? theme.borders.minor.style : "none"};
-      --tv-border-major-style: ${theme.borders.major.style};
+      /* Border style encodes both layout (does this axis paint?) and
+         the user's single/double choice. The spec uses "single", but
+         CSS border-style expects "solid" — translate. */
+      --tv-border-row-style: ${
+        (theme.borders.layout === "horizontal" || theme.borders.layout === "grid")
+          ? (theme.borders.minor.style === "double" ? "double" : "solid")
+          : "none"
+      };
+      --tv-border-col-style: ${
+        (theme.borders.layout === "vertical" || theme.borders.layout === "grid")
+          ? (theme.borders.minor.style === "double" ? "double" : "solid")
+          : "none"
+      };
+      --tv-border-major-style: ${theme.borders.major.style === "double" ? "double" : "solid"};
       --tv-container-border: ${theme.borders.layout !== "none" && theme.borders.table.thickness > 0
         ? `${theme.borders.table.thickness}px solid var(--tv-border-table-color)`
         : theme.layout.containerBorder ? `1px solid var(--tv-border)` : "none"};

@@ -71,7 +71,7 @@
         "color": "#B0BEC6"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#596472"
       }
@@ -605,7 +605,7 @@
         "color": "#A8B6C7"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#3A587E"
       }
@@ -1139,7 +1139,7 @@
         "color": "#000000"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#000000"
       }
@@ -1678,7 +1678,7 @@
         "color": "#AFB6C0"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#56616E"
       }
@@ -2217,7 +2217,7 @@
         "color": "#AFABA8"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#57514C"
       }
@@ -2751,7 +2751,7 @@
         "color": "#BEB9B4"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#59636E"
       }
@@ -3285,7 +3285,7 @@
         "color": "#313244"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#45475A"
       }
@@ -3824,7 +3824,7 @@
         "color": "#A9AEB6"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#47494C"
       }
@@ -4358,7 +4358,7 @@
         "color": "#BEBEBE"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#656565"
       }
@@ -4897,7 +4897,7 @@
         "color": "#E3DBC8"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#C9BFA8"
       }
@@ -5436,7 +5436,7 @@
         "color": "#A7A39E"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#544F4A"
       }
@@ -5970,7 +5970,7 @@
         "color": "#B4BDA2"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#617985"
       }
@@ -6504,7 +6504,7 @@
         "color": "#073642"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#586E75"
       }
@@ -7038,7 +7038,7 @@
         "color": "#B4B1C4"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#5E5669"
       }
@@ -7572,7 +7572,7 @@
         "color": "#36343B"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#49454F"
       }
@@ -8115,7 +8115,7 @@
         "color": "#3A2A1A"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#5A4232"
       }
@@ -8658,7 +8658,7 @@
         "color": "#1F2D52"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#3D4F75"
       }
@@ -9201,7 +9201,7 @@
         "color": "#E2D2A8"
       },
       "table": {
-        "thickness": 1,
+        "thickness": 0,
         "style": "single",
         "color": "#A6633E"
       }

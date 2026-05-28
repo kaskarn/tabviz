@@ -249,19 +249,24 @@ function resolveBorders(
   divider: DividersV2,
 ): import("$types/theme-v2").ThemeBordersV2 {
   const d = draft ?? {};
+  // Per-type default thickness: minor + major default to 1 (the divider
+  // role is the default editorial rhythm), table defaults to 0 (users
+  // typically don't want a frame around the chart container — that's a
+  // separate stylistic choice they opt in to).
   const fill = (
     over: Partial<import("$types/theme-v2").BorderSpecV2> | undefined,
     defaultColor: string,
+    defaultThickness: number,
   ): import("$types/theme-v2").BorderSpecV2 => ({
-    thickness: over?.thickness ?? 1,
+    thickness: over?.thickness ?? defaultThickness,
     style: over?.style ?? "single",
     color: over?.color ?? defaultColor,
   });
   return {
     layout: d.layout ?? "horizontal",
-    major: fill(d.major, divider.strong),
-    minor: fill(d.minor, divider.subtle),
-    table: fill(d.table, divider.strong),
+    major: fill(d.major, divider.strong, 1),
+    minor: fill(d.minor, divider.subtle, 1),
+    table: fill(d.table, divider.strong, 0),
   };
 }
 

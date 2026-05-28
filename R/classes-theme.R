@@ -803,7 +803,10 @@ ThemeBorders <- new_class(
     layout = new_property(class_character, default = "horizontal"),
     major  = new_property(BorderSpec, default = BorderSpec()),
     minor  = new_property(BorderSpec, default = BorderSpec()),
-    table  = new_property(BorderSpec, default = BorderSpec())
+    # Table edge defaults OFF (thickness = 0) — users typically don't
+    # want a frame around the chart container; the inner borders carry
+    # structure. Theme authors opt in by pinning a positive thickness.
+    table  = new_property(BorderSpec, default = BorderSpec(thickness = 0))
   ),
   validator = function(self) {
     if (!self@layout %in% c("horizontal", "vertical", "grid", "none")) {

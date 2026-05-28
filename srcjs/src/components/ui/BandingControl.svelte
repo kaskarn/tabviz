@@ -48,10 +48,13 @@
   as a different design language; v2 inherits the editorial ink-on-
   cream palette and stays compact at 22 px row heights.
 -->
+<!-- Banding is small (~2 rows of content) — agents called the glyph
+     overdressed for the footprint. Drop the section glyph and hint
+     stays terse so the section reads as quiet punctuation between
+     Borders and the next tab. -->
 <Section
-  title="Row banding"
-  glyph="section.banding"
-  hint="Zebra backgrounds. Group mode paints whole groups as single bands so header + members read as one unit."
+  title="Banding"
+  hint="Alternate-row backgrounds; Group mode paints whole groups as single bands."
 >
   <SegmentedField
     label="Mode"
