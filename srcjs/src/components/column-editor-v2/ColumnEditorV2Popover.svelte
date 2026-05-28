@@ -275,12 +275,15 @@
       oncommit={onEditorCommit}
       onclose={onClose}
     />
-    <div class="v2-popover-foot">
-      <button type="button" class="secondary" onclick={onClose}>Cancel</button>
-      <button type="button" class="primary" onclick={commit}>
-        {target.mode === "insert" ? "Insert" : "Save"}
-      </button>
-    </div>
+    <!-- Footer affordance — kept only for INSERT mode (user needs an
+         explicit "create this column" gesture). In EDIT mode the
+         editor auto-commits on every change, so Cancel + Save buttons
+         were redundant; Esc and outside-click handle close. -->
+    {#if target.mode === "insert"}
+      <div class="v2-popover-foot">
+        <button type="button" class="primary" onclick={commit}>Insert</button>
+      </div>
+    {/if}
   </div>
 {/if}
 
@@ -325,39 +328,29 @@
     cursor: grabbing;
   }
 
+  /* Footer — only rendered in INSERT mode. Flat, no paper-2 fill,
+     no border-top. Single primary button (Insert) hangs at the
+     right; ink-stamp on cream, sans, small-caps. */
   .v2-popover-foot {
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
-    padding: 8px 12px 10px;
-    background: var(--v2-paper-2, #f3efe5);
-    border-top: 1px solid var(--v2-rule, #d6d0c1);
-    border-radius: 0 0 var(--v2-r-large, 6px) var(--v2-r-large, 6px);
-    margin-top: -1px;
-  }
-  .v2-popover-foot button {
-    appearance: none;
-    border: 0;
-    padding: 4px 12px;
-    border-radius: var(--v2-r-soft, 3px);
-    font: inherit;
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: var(--v2-text-body, 11.5px);
-    cursor: pointer;
-    transition: background var(--v2-dur-snap, 80ms) var(--v2-ease, ease);
-  }
-  .v2-popover-foot .secondary {
+    padding: 8px 14px 10px;
     background: transparent;
-    color: var(--v2-ink-2, #4a463c);
-    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
-  }
-  .v2-popover-foot .secondary:hover {
-    background: var(--v2-hover-tint, rgba(21,20,14,0.05));
-    color: var(--v2-ink, #15140e);
   }
   .v2-popover-foot .primary {
+    appearance: none;
+    border: 0;
+    padding: 5px 14px;
+    border-radius: var(--v2-r-soft, 3px);
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
+    font-size: var(--v2-text-body, 11.5px);
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    letter-spacing: 0.08em;
     background: var(--v2-ink, #15140e);
     color: var(--v2-paper, #faf7f0);
+    cursor: pointer;
+    transition: background var(--v2-dur-snap, 80ms) var(--v2-ease, ease);
   }
   .v2-popover-foot .primary:hover {
     background: var(--v2-ink-2, #4a463c);
