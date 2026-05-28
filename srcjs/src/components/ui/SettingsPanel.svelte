@@ -18,6 +18,7 @@
   // here ensures the stylesheet ships with the widget bundle even when
   // ColumnEditorV2Popover hasn't been lazy-loaded yet.
   import "$components/primitives/v2/tokens.css";
+  import AccordionGroup from "$components/primitives/v2/AccordionGroup.svelte";
   import TabSelect, { type TabOption } from "./TabSelect.svelte";
   import WatermarkControl from "./WatermarkControl.svelte";
 
@@ -219,16 +220,20 @@
             id="settings-panel-{tab.id}"
             aria-labelledby="settings-tab-{tab.id}"
           >
+            <!-- AccordionGroup wraps every tab body so the v2 Section
+                 descendants behave as one-open-at-a-time. The first
+                 registered Section opens by default. -->
+            <AccordionGroup>
             {#if tab.id === "theme"}
               <ThemeControl {store} />
             {:else if tab.id === "layout"}
-              <!-- Labels → Layout (density/header/slot/banding) →
-                   Watermark, in that order. The old standalone Labels
-                   tab was folded in here so viewers can compose the
-                   plot (text labels, banding, watermark) without
-                   tab-hopping. -->
-              <BasicsControl {store} />
+              <!-- User-locked order: Layout → Banding → Borders →
+                   Labels → Watermark. LayoutControl outputs Layout +
+                   Banding + Borders (in that order, internally),
+                   then BasicsControl renders Labels, then
+                   WatermarkControl. -->
               <LayoutControl {store} />
+              <BasicsControl {store} />
               <WatermarkControl {store} />
             {:else if tab.id === "spacing"}
               <SpacingControl {store} />
@@ -239,6 +244,7 @@
             {:else if tab.id === "tokens"}
               <TokensControl {store} />
             {/if}
+            </AccordionGroup>
           </div>
         {/if}
         {/each}

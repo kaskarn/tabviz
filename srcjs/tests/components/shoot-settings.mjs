@@ -34,7 +34,9 @@ for (const id of TABS) {
     const btn = btns.find((b) => b.textContent.trim() === label);
     if (btn) btn.click();
   }, labels[id]);
-  await new Promise((r) => setTimeout(r, 150));
+  // Wait long enough for accordion slide-transitions (160ms in
+  // Section.svelte) to complete before screenshotting.
+  await new Promise((r) => setTimeout(r, 400));
   const target = await page.$(".scaffold");
   const filename = path.join(OUT_DIR, `${id}.png`);
   await target.screenshot({ path: filename });

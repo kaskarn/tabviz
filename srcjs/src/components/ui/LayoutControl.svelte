@@ -297,6 +297,10 @@
   </Section>
 {/if}
 
+<!-- Banding sits between Layout and Borders per the locked
+     ordering (layout → banding → borders → labels → watermark). -->
+<BandingControl {store} />
+
 <!-- Border control snippets — defined at component scope so the
      Borders Section body can render them via {@render foo(...)}. -->
 {#snippet axisCycler(active: boolean, axis: "h" | "v", onclick: () => void)}
@@ -433,8 +437,6 @@
     {/each}
   </Section>
 {/if}
-
-<BandingControl {store} />
 
 <style>
   /* Layout-tab three-card picker rows (Density / Header / Marks).
