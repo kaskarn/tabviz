@@ -1,11 +1,10 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
-  import WatermarkControl from "./WatermarkControl.svelte";
-  import SettingsSection from "./SettingsSection.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
   import TextField from "./TextField.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
 
   let { store }: Props = $props();
@@ -20,18 +19,27 @@
 </script>
 
 <!--
-  Labels tab: plot-level annotation text + watermark.
-  Banding moved to the Layout tab in C2 (banding is a structural choice,
-  not an annotation).
+  Labels section: plot-level annotation text. Watermark moved out so
+  SettingsPanel can compose Labels → Layout → Watermark on the merged
+  "Layout" tab (the dedicated Labels tab was removed since they
+  belonged together — title/caption sit at the same conceptual layer
+  as density/banding for a viewer composing the plot).
 -->
-<SettingsSection
+<Section
   title="Labels"
-  description="Title, subtitle, caption, and footnote — also editable by double-clicking on the widget."
+  glyph="section.text"
+  hint="Title, subtitle, caption, and footnote — also editable by double-clicking on the widget."
 >
+  <!-- Title + Subtitle render in serif so authors WYSIWYG-author in
+       the same family the chart will set them in. Caption + Footnote
+       stay sans (those are casual metadata, often typed in flow).
+       Cmd/Ctrl+Enter commits; plain Enter inserts a newline. -->
   <TextField
     label="Title"
     placeholder="(none)"
     value={title}
+    lines={2}
+    family="serif"
     oninput={(v) => store.previewLabel("title", v)}
     onchange={(v) => store.setLabel("title", v)}
   />
@@ -39,6 +47,8 @@
     label="Subtitle"
     placeholder="(none)"
     value={subtitle}
+    lines={2}
+    family="serif"
     oninput={(v) => store.previewLabel("subtitle", v)}
     onchange={(v) => store.setLabel("subtitle", v)}
   />
@@ -46,6 +56,8 @@
     label="Caption"
     placeholder="(none)"
     value={caption}
+    lines={3}
+    family="sans"
     oninput={(v) => store.previewLabel("caption", v)}
     onchange={(v) => store.setLabel("caption", v)}
   />
@@ -53,8 +65,9 @@
     label="Footnote"
     placeholder="(none)"
     value={footnote}
+    lines={3}
+    family="sans"
     oninput={(v) => store.previewLabel("footnote", v)}
     onchange={(v) => store.setLabel("footnote", v)}
   />
-</SettingsSection>
-<WatermarkControl {store} />
+</Section>

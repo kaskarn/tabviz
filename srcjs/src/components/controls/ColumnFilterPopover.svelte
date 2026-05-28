@@ -1,9 +1,10 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ColumnFilter, ColumnKind, FilterOperator } from "$types";
+  import { portal } from "$lib/portal";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
 
   let { store }: Props = $props();
@@ -151,6 +152,7 @@
     style:max-height={resolvedMaxH ? `${resolvedMaxH}px` : undefined}
     role="dialog"
     aria-label="Column filter: {header}"
+    use:portal
   >
     <div class="filter-title">{header}</div>
     {#if kind === "text"}

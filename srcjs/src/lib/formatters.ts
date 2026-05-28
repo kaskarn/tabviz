@@ -1,9 +1,45 @@
 /**
  * Shared formatting functions for forest plot column rendering.
- * Used by both web (ForestPlot.svelte) and SVG (svg-generator.ts) renderers.
+ * Used by both web (TabvizPlot.svelte) and SVG (svg-generator.ts) renderers.
+ *
+ * Formatters are pure functions of (value, options). They're called per-cell
+ * at render time, so each one is wrapped in a memoization layer keyed by the
+ * stable ColumnOptions object identity + the formatted value(s). The cache
+ * lives in a WeakMap so it GCs when a spec is replaced (new options objects).
  */
 
 import type { ColumnOptions, Row } from "../types";
+
+// ============================================================================
+// Memoization
+// ============================================================================
+// WeakMap<ColumnOptions, Map<valueKey, formattedString>>. ColumnOptions is
+// stable per-column for the lifetime of a spec; values within a column have
+// low cardinality in practice (mostly numerics that repeat). Cache size is
+// bounded by (#columns × unique-values-per-column) and GC's when the spec
+// changes — no manual eviction needed at typical scales (5k rows × ~10 cols).
+//
+// The `_noOpts` cache handles the (rare) call with no options.
+type ValueCache<R = string> = Map<unknown, R>;
+const _noOptsCacheNumber: ValueCache = new Map();
+const _noOptsCachePvalue: ValueCache = new Map();
+const _formatNumberCache: WeakMap<ColumnOptions, ValueCache> = new WeakMap();
+const _formatPvalueCache: WeakMap<ColumnOptions, ValueCache> = new WeakMap();
+const _formatIntervalCache: WeakMap<ColumnOptions, ValueCache> = new WeakMap();
+const _formatEventsCache: WeakMap<ColumnOptions, ValueCache> = new WeakMap();
+const _abbreviateNumberCache: ValueCache<string> = new Map();
+
+function _getOrCreate(
+  cache: WeakMap<ColumnOptions, ValueCache>,
+  options: ColumnOptions
+): ValueCache {
+  let m = cache.get(options);
+  if (!m) {
+    m = new Map();
+    cache.set(options, m);
+  }
+  return m;
+}
 
 // ============================================================================
 // Helper Functions
@@ -38,6 +74,14 @@ export function truncateString(
  * Throws error for values >= 1e12 (trillions not supported).
  */
 export function abbreviateNumber(value: number): string {
+  const hit = _abbreviateNumberCache.get(value);
+  if (hit !== undefined) return hit;
+  const result = _abbreviateNumberImpl(value);
+  _abbreviateNumberCache.set(value, result);
+  return result;
+}
+
+function _abbreviateNumberImpl(value: number): string {
   const absValue = Math.abs(value);
   const sign = value < 0 ? "-" : "";
 
@@ -89,6 +133,15 @@ export function toSuperscript(str: string): string {
 
 /** Format number for display - respects column options */
 export function formatNumber(value: number | undefined | null, options?: ColumnOptions): string {
+  const cache = options ? _getOrCreate(_formatNumberCache, options) : _noOptsCacheNumber;
+  const hit = cache.get(value);
+  if (hit !== undefined) return hit as string;
+  const result = _formatNumberImpl(value, options);
+  cache.set(value, result);
+  return result;
+}
+
+function _formatNumberImpl(value: number | undefined | null, options?: ColumnOptions): string {
   if (value === undefined || value === null || Number.isNaN(value)) {
     return options?.naText ?? "";
   }
@@ -147,9 +200,25 @@ export function formatNumber(value: number | undefined | null, options?: ColumnO
 
 /** Format events column (events/n) */
 export function formatEvents(row: Row, options: ColumnOptions): string {
-  const { eventsField, nField, separator = "/", showPct = false, thousandsSep, abbreviate } = options.events!;
+  const { eventsField, nField } = options.events!;
   const events = row.metadata[eventsField];
   const n = row.metadata[nField];
+  // Cache key: pair of extracted values; we don't depend on row identity.
+  const cache = _getOrCreate(_formatEventsCache, options);
+  const key = `${events as unknown as string}|${n as unknown as string}`;
+  const hit = cache.get(key);
+  if (hit !== undefined) return hit as string;
+  const result = _formatEventsImpl(events, n, options);
+  cache.set(key, result);
+  return result;
+}
+
+function _formatEventsImpl(
+  events: unknown,
+  n: unknown,
+  options: ColumnOptions
+): string {
+  const { separator = "/", showPct = false, thousandsSep, abbreviate } = options.events!;
 
   if (events === undefined || events === null || n === undefined || n === null) {
     return options.naText ?? "";
@@ -191,6 +260,24 @@ export function formatInterval(
   upper?: number,
   options?: ColumnOptions
 ): string {
+  if (options) {
+    const cache = _getOrCreate(_formatIntervalCache, options);
+    const key = `${point}|${lower}|${upper}`;
+    const hit = cache.get(key);
+    if (hit !== undefined) return hit as string;
+    const result = _formatIntervalImpl(point, lower, upper, options);
+    cache.set(key, result);
+    return result;
+  }
+  return _formatIntervalImpl(point, lower, upper, options);
+}
+
+function _formatIntervalImpl(
+  point?: number,
+  lower?: number,
+  upper?: number,
+  options?: ColumnOptions
+): string {
   if (point === undefined || point === null || Number.isNaN(point)) {
     return options?.naText ?? "";
   }
@@ -227,6 +314,15 @@ export function formatInterval(
 
 /** Format p-value for display with Unicode superscript notation */
 export function formatPvalue(value: number | undefined | null, options?: ColumnOptions): string {
+  const cache = options ? _getOrCreate(_formatPvalueCache, options) : _noOptsCachePvalue;
+  const hit = cache.get(value);
+  if (hit !== undefined) return hit as string;
+  const result = _formatPvalueImpl(value, options);
+  cache.set(value, result);
+  return result;
+}
+
+function _formatPvalueImpl(value: number | undefined | null, options?: ColumnOptions): string {
   if (value === undefined || value === null || Number.isNaN(value)) {
     return options?.naText ?? "";
   }

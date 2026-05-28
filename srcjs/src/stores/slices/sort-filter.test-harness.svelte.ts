@@ -28,6 +28,12 @@ export interface SortFilterHarness {
   sourceMarks: string[];
   setStyleEdits: (next: StyleEditsMap) => void;
   setRows: (rows: Row[]) => void;
+  /** Canonical row reference — for referential-stability assertions. */
+  canonicalRows: () => readonly Row[];
+  /** Test ergonomics: row ids in visible order. */
+  visibleIds: () => string[];
+  /** Test ergonomics: overlay-merged rows in visible order. */
+  visibleRows: () => Row[];
 }
 
 export function buildSortFilterHarness(
@@ -57,6 +63,9 @@ export function buildSortFilterHarness(
     sourceMarks,
     setStyleEdits(next) { styleEdits = next; },
     setRows(rows) { spec = { ...spec, data: { ...spec.data, rows } }; },
+    canonicalRows: () => spec.data.rows,
+    visibleIds: () => slice.visibleIndices.map((i) => spec.data.rows[i].id),
+    visibleRows: () => slice.visibleIndices.map((i) => slice.rowAt(i)),
   };
 }
 

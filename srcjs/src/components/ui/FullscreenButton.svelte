@@ -5,10 +5,10 @@
   // Quarto reveal slides) don't permit Element.requestFullscreen(). The
   // overlay covers the host viewport but stays inside the document so
   // popovers, tooltips, and stacking contexts continue to work.
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
     container?: HTMLElement | null;
   }
 

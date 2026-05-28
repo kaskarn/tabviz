@@ -50,7 +50,7 @@ function makeFakeStore(overrides: Record<string, unknown> = {}) {
 function dispatch(method: string, args: Record<string, unknown>, store: ReturnType<typeof makeFakeStore>) {
   const handler = proxyMethods[method];
   if (!handler) throw new Error(`no handler for ${method}`);
-  // The handler type expects a ForestStore; our fake satisfies the subset it calls.
+  // The handler type expects a TabvizStore; our fake satisfies the subset it calls.
   handler(store as unknown as Parameters<typeof handler>[0], args);
 }
 

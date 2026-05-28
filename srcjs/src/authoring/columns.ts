@@ -267,13 +267,15 @@ export interface ColIntervalArgs extends CommonColumnArgs {
   abbreviate?: boolean;
   separator?: string;
   impreciseThreshold?: number | null;
+  /** Display variant — see IntervalColumnOptions.variant. */
+  variant?: IntervalColumnOptions["variant"];
   naText?: string | null;
 }
 
 export function colInterval({
   point, lower, upper,
   decimals = 2, digits, thousandsSep = false, abbreviate = false,
-  separator = " ", impreciseThreshold, naText,
+  separator = " ", impreciseThreshold, variant, naText,
   ...common
 }: ColIntervalArgs): ColumnSpec {
   const interval: IntervalColumnOptions = {
@@ -286,6 +288,7 @@ export function colInterval({
     lower,
     upper,
     impreciseThreshold,
+    ...(variant != null ? { variant } : {}),
   };
   const options = { interval, ...(naText != null ? { naText } : {}) };
   // Synthetic field name (`_interval_<point>`) so multiple interval columns

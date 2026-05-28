@@ -1,90 +1,46 @@
+<!--
+  NumberField — settings-panel slider row. The settings UX wants a
+  light "drag the thumb" affordance (rgc-design idiom), not the
+  heavier edit-and-scrub Knob the column editor uses. Slider is the
+  right tool here.
+-->
 <script lang="ts">
+  import Field from "$components/primitives/v2/Field.svelte";
+  import Slider from "$components/primitives/v2/Slider.svelte";
+
   interface Props {
-    /** Visible label for the field. */
     label: string;
-    /** Optional secondary hint shown under the label. */
     hint?: string;
-    /** Current numeric value. */
     value: number;
-    /** Slider minimum. */
     min: number;
-    /** Slider maximum. */
     max: number;
-    /** Slider step. Defaults to 1 (integer sliders). */
     step?: number;
-    /** Unit label rendered next to the value (e.g. "px", "rem"). */
     unit?: string;
-    /** Fired on every `input` event from the slider. */
     onchange: (value: number) => void;
   }
 
   let { label, hint, value, min, max, step = 1, unit, onchange }: Props = $props();
 
-  function handleInput(e: Event) {
-    const v = parseFloat((e.target as HTMLInputElement).value);
-    if (!Number.isNaN(v)) onchange(v);
-  }
+  let local: number = $state(0);
+  $effect(() => { local = value; });
+  $effect(() => {
+    if (local !== value) onchange(local);
+  });
 </script>
 
-<div class="number-field" title={hint}>
-  <span class="label">{label}</span>
-  <div class="controls">
-    <input
-      class="range"
-      type="range"
+<div class="nf-row" data-tv-v2>
+  <Field {label} {hint}>
+    <Slider
+      bind:value={local}
       {min}
       {max}
       {step}
-      {value}
-      oninput={handleInput}
-      aria-label={label}
+      suffix={unit}
+      ariaLabel={label}
     />
-    <span class="value-display" aria-live="polite">
-      {value}{#if unit}<span class="unit">{unit}</span>{/if}
-    </span>
-  </div>
+  </Field>
 </div>
 
 <style>
-  .number-field {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 8px;
-    padding: 2px 0;
-  }
-
-  .label {
-    font-size: 0.75rem;
-    color: var(--tv-fg, #1a1a1a);
-    font-weight: 500;
-    line-height: 1.2;
-    min-width: 0;
-  }
-
-  .controls {
-    display: grid;
-    grid-template-columns: 100px auto;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .range {
-    width: 100%;
-    accent-color: var(--tv-accent, #2563eb);
-  }
-
-  .value-display {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.7rem;
-    color: var(--tv-fg, #1a1a1a);
-    font-variant-numeric: tabular-nums;
-    min-width: 3em;
-    text-align: right;
-  }
-
-  .unit {
-    color: var(--tv-text-muted, #64748b);
-    margin-left: 2px;
-  }
+  .nf-row { display: contents; }
 </style>

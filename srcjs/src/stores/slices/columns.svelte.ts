@@ -39,7 +39,13 @@ import type {
   WebSpec,
 } from "$types";
 import { getColumnDisplayText } from "$lib/formatters";
-import { glyphNaturalWidth } from "$lib/width-utils";
+import { glyphNaturalWidth, estimateTextWidth } from "$lib/width-utils";
+import {
+  rankTopK,
+  measureExact,
+  DEFAULT_TOP_K,
+  type FontKey,
+} from "$lib/width-measure";
 import { resolveShowHeader } from "$lib/column-types";
 import { VIZ_MARGIN } from "$lib/axis-utils";
 import { ops, renderColumnBuilder, type OpRecord } from "$lib/op-recorder";
@@ -139,12 +145,20 @@ export interface ColumnsSlice {
 }
 
 export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
+  // `columnWidths` stays as `$state` (not `.raw`): `doMeasurement()` writes
+  // entries in-place via `target[col.id] = w` (lines 584, 604, 710) and
+  // `setColumnWidth` / `previewColumnWidth` also mutate keys directly
+  // (lines 428, 445). Converting would require refactoring those writers
+  // to spread-and-reassign; deferred until Phase 5 (see audit notes).
   let columnWidths = $state<Record<string, number>>({});
-  let userResizedIds = $state<Set<string>>(new Set());
-  let userInsertedColumns = $state<InsertedColumn[]>([]);
-  let hiddenColumnIds = $state<Set<string>>(new Set());
-  let columnSpecOverrides = $state<Record<string, ColumnSpec>>({});
-  let columnOrderOverrides = $state<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
+  // Remaining slice state is REPLACE-only (per audit). `$state.raw` skips
+  // the deep-proxy wrap; the runtime read paths (Set.has, [k] lookup) work
+  // identically without it.
+  let userResizedIds = $state.raw<Set<string>>(new Set());
+  let userInsertedColumns = $state.raw<InsertedColumn[]>([]);
+  let hiddenColumnIds = $state.raw<Set<string>>(new Set());
+  let columnSpecOverrides = $state.raw<Record<string, ColumnSpec>>({});
+  let columnOrderOverrides = $state.raw<ColumnOrderOverrides>({ topLevel: null, byGroup: {} });
 
   // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -489,44 +503,58 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       fontSize = `${relValue * rootFontSize}px`;
     }
 
-    doMeasurement(fontSize, fontFamily, columnWidths);
+    const dataFontKey: FontKey = { family: fontFamily, weight: 400 };
+    const headerFontKey: FontKey = { family: fontFamily, weight: 600 };
+
+    doMeasurement(fontSize, dataFontKey, headerFontKey, columnWidths);
 
     if (document.fonts && document.fonts.ready) {
+      // Re-measure once web fonts have loaded. The rank pass is arithmetic-
+      // only so it can run synchronously here, and the top-K exact pass
+      // uses ~30 ctx.measureText calls — small enough not to need
+      // additional batching.
       document.fonts.ready.then(() => {
-        doMeasurement(fontSize, fontFamily, columnWidths, true);
+        doMeasurement(fontSize, dataFontKey, headerFontKey, columnWidths);
       });
     }
   }
 
   function doMeasurement(
     fontSize: string,
-    fontFamily: string,
+    dataFontKey: FontKey,
+    headerFontKey: FontKey,
     target: Record<string, number>,
-    isFontLoaded = false,
   ) {
     const spec = deps.getSpec();
     if (!spec) return;
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
     const headerFontScale = 1.05;
-    let headerFontSize = fontSize;
-    const match = fontSize.match(/^([\d.]+)(px|rem|em)$/);
-    if (match) {
-      const value = parseFloat(match[1]) * headerFontScale;
-      headerFontSize = `${value}${match[2]}`;
-    }
-
-    const fontWeightBold = 600;
-    const headerFont = `${fontWeightBold} ${headerFontSize} ${fontFamily}`;
-    const dataFont = `${fontSize} ${fontFamily}`;
+    const baseFontSize = parseFloat(fontSize) || 14;
+    const headerFontSizePx = baseFontSize * headerFontScale;
 
     const cellPadding = (spec.theme.spacing.cellPaddingX ?? 10) * 2;
     const groupPadding = (spec.theme.spacing.groupPadding ?? 8) * 2;
 
-    void isFontLoaded;
+    // ── rank+top-K helpers ─────────────────────────────────────────────
+    // Column auto-width = max over header + every cell. We don't need
+    // every cell measured — we need the WIDEST. Use the cheap arithmetic
+    // estimator to rank, then exact-measure the top-K with Canvas.
+    // K is tuned for estimator mis-rank tolerance; see `width-measure.ts`.
+
+    function exactMax(candidates: string[], font: FontKey, fontSizePx: number): number {
+      if (candidates.length === 0) return 0;
+      const winners = rankTopK(candidates, fontSizePx, font.weight, DEFAULT_TOP_K);
+      let max = 0;
+      for (const text of winners) {
+        const w = measureExact(text, font, fontSizePx);
+        // In browser: measureExact returns Canvas-exact width. In V8 (no
+        // DOM): null — fall back to estimator. Either way, the top-K from
+        // `rankTopK` is the canonical winner set.
+        const px = w ?? estimateTextWidth(text, fontSizePx, font.weight);
+        if (px > max) max = px;
+      }
+      return max;
+    }
 
     function getLeafColumns(col: ColumnSpec | ColumnGroup): ColumnSpec[] {
       if (col.isGroup) {
@@ -558,21 +586,19 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
 
       if (col.width != null && col.width !== "auto") return;
 
-      let maxWidth = 0;
+      // Header is exact-measured separately (different font key/size).
+      let maxWidth = col.header
+        ? exactMax([col.header], headerFontKey, headerFontSizePx)
+        : 0;
 
-      if (col.header) {
-        ctx!.font = headerFont;
-        maxWidth = Math.max(maxWidth, ctx!.measureText(col.header).width);
-      }
-
-      ctx!.font = dataFont;
+      // Build the candidate-pool for the cells: skip header/spacer rows.
+      const candidates: string[] = [];
       for (const row of spec!.data.rows) {
         if (row.style?.type === "header" || row.style?.type === "spacer") continue;
         const text = getColumnDisplayText(row, col);
-        if (text) {
-          maxWidth = Math.max(maxWidth, ctx!.measureText(text).width);
-        }
+        if (text) candidates.push(text);
       }
+      maxWidth = Math.max(maxWidth, exactMax(candidates, dataFontKey, baseFontSize));
 
       maxWidth = Math.max(maxWidth, glyphNaturalWidth(col, spec!.data.rows));
 
@@ -591,8 +617,8 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
         }
 
         if (col.header) {
-          ctx!.font = headerFont;
-          const groupHeaderWidth = ctx!.measureText(col.header).width + groupPadding + TEXT_MEASUREMENT.RENDERING_BUFFER;
+          const groupHeaderWidth = exactMax([col.header], headerFontKey, headerFontSizePx)
+            + groupPadding + TEXT_MEASUREMENT.RENDERING_BUFFER;
 
           const leafCols = getLeafColumns(col);
           const childrenTotalWidth = leafCols.reduce((sum, leaf) => sum + getEffectiveWidth(leaf), 0);
@@ -633,32 +659,79 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       };
 
       if (primaryCol.header) {
-        ctx!.font = headerFont;
-        maxLabelWidth = Math.max(maxLabelWidth, ctx!.measureText(primaryCol.header).width);
+        maxLabelWidth = Math.max(
+          maxLabelWidth,
+          exactMax([primaryCol.header], headerFontKey, headerFontSizePx),
+        );
       }
 
-      ctx!.font = dataFont;
-      const baseFontSize = parseFloat(fontSize);
+      // Build a candidate set of synthetic "label-with-indent" strings,
+      // ranked by estimated layout width — including badge / indent
+      // contributions in the ranker so the winners are the rows that
+      // actually push the column widest.
+      //
+      // Each candidate is the label text itself (we exact-measure the
+      // label string); the per-row prefix (indent + badge) is added on
+      // top of the exact measurement at the end.
+      type RowMeasureCandidate = {
+        labelText: string;
+        prefixPx: number;       // indent + grip + badge contribution
+        badgeText: string | null;
+      };
+      const rowCandidates: RowMeasureCandidate[] = [];
+      const badgeFontSize = baseFontSize * BADGE.FONT_SCALE;
       for (const row of spec.data.rows) {
-        if (row.label) {
-          const depth = getRowDepth(row.groupId);
-          const rowIndent = row.style?.indent ?? 0;
-          const totalIndent = depth + rowIndent;
-          const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
-          let rowWidth = ctx!.measureText(row.label).width + indentWidth + rowGripBudget;
+        if (!row.label) continue;
+        const depth = getRowDepth(row.groupId);
+        const rowIndent = row.style?.indent ?? 0;
+        const totalIndent = depth + rowIndent;
+        const indentWidth = totalIndent * SPACING.INDENT_PER_LEVEL;
 
-          if (row.style?.badge) {
-            const badgeText = String(row.style.badge);
-            const badgeFontSize = baseFontSize * BADGE.FONT_SCALE;
-            ctx!.font = `${badgeFontSize}px ${fontFamily}`;
-            const badgeTextWidth = ctx!.measureText(badgeText).width;
-            const badgeWidth = badgeTextWidth + BADGE.PADDING * 2;
-            rowWidth += BADGE.GAP + badgeWidth;
-            ctx!.font = dataFont;
-          }
-
-          maxLabelWidth = Math.max(maxLabelWidth, rowWidth);
+        let prefixPx = indentWidth + rowGripBudget;
+        let badgeText: string | null = null;
+        if (row.style?.badge) {
+          badgeText = String(row.style.badge);
         }
+        rowCandidates.push({ labelText: row.label, prefixPx, badgeText });
+      }
+
+      // Rank by estimated TOTAL row width (label estimate + prefix + badge
+      // estimate). The estimator is monotone enough that the top-K of the
+      // total scores includes the actual widest row with very high
+      // probability — and we exact-measure the K winners below.
+      const totalScore = (c: RowMeasureCandidate): number => {
+        let s = estimateTextWidth(c.labelText, baseFontSize, dataFontKey.weight) + c.prefixPx;
+        if (c.badgeText) {
+          s += BADGE.GAP
+            + estimateTextWidth(c.badgeText, badgeFontSize, dataFontKey.weight)
+            + BADGE.PADDING * 2;
+        }
+        return s;
+      };
+      // Partial-selection top-K.
+      const topRows: RowMeasureCandidate[] = [];
+      const K = DEFAULT_TOP_K;
+      for (const c of rowCandidates) {
+        const s = totalScore(c);
+        if (topRows.length < K) {
+          topRows.push(c);
+          topRows.sort((a, b) => totalScore(a) - totalScore(b));
+        } else if (s > totalScore(topRows[0])) {
+          topRows[0] = c;
+          topRows.sort((a, b) => totalScore(a) - totalScore(b));
+        }
+      }
+
+      for (const c of topRows) {
+        const labelExact = measureExact(c.labelText, dataFontKey, baseFontSize)
+          ?? estimateTextWidth(c.labelText, baseFontSize, dataFontKey.weight);
+        let rowWidth = labelExact + c.prefixPx;
+        if (c.badgeText) {
+          const badgeExact = measureExact(c.badgeText, dataFontKey, badgeFontSize)
+            ?? estimateTextWidth(c.badgeText, badgeFontSize, dataFontKey.weight);
+          rowWidth += BADGE.GAP + badgeExact + BADGE.PADDING * 2;
+        }
+        if (rowWidth > maxLabelWidth) maxLabelWidth = rowWidth;
       }
 
       function countAllDescendantRowsForGroup(groupId: string): number {
@@ -675,20 +748,26 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
       }
 
       const showGroupCounts = !!spec.interaction.showGroupCounts;
-      ctx!.font = headerFont;
+      const countFontSize = baseFontSize * 0.75;
+      // Group-header labels are typically a handful per spec; rather than
+      // rank+top-K, just exact-measure all of them. Cost is small in
+      // absolute terms.
       for (const group of spec.data.groups) {
         if (group.label) {
           const indentWidth = group.depth * SPACING.INDENT_PER_LEVEL;
-          const labelWidth = ctx!.measureText(group.label).width;
+          const labelWidth = measureExact(group.label, headerFontKey, headerFontSizePx)
+            ?? estimateTextWidth(group.label, headerFontSizePx, headerFontKey.weight);
 
           let countWidth = 0;
           if (showGroupCounts) {
             const rowCount = countAllDescendantRowsForGroup(group.id);
             const countText = `(${rowCount})`;
-            const countFontSize = baseFontSize * 0.75;
-            ctx!.font = `${countFontSize}px ${fontFamily}`;
-            countWidth = ctx!.measureText(countText).width + GROUP_HEADER.GAP;
-            ctx!.font = headerFont;
+            // Count label rendered at regular weight (pre-existing
+            // behavior: the historical ctx.font reassignment dropped the
+            // weight prefix), so use dataFontKey here, not headerFontKey.
+            const cw = measureExact(countText, dataFontKey, countFontSize)
+              ?? estimateTextWidth(countText, countFontSize, dataFontKey.weight);
+            countWidth = cw + GROUP_HEADER.GAP;
           }
 
           const totalWidth = indentWidth
@@ -725,7 +804,10 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
 
       const counts: Record<string, number> = {};
       if (wrapEnabledCols.length > 0) {
-        ctx.font = dataFont;
+        // Wrap-line counting is intrinsically per-cell ("does THIS string
+        // overflow THIS width?"), so the rank+top-K trick doesn't apply.
+        // The estimator's precision is adequate for "1 vs 2 vs 3 lines"
+        // ceil-division; we don't need Canvas exactness here.
         for (const row of spec.data.rows) {
           let maxLines = 1;
           for (const col of wrapEnabledCols) {
@@ -741,7 +823,7 @@ export function createColumnsSlice(deps: ColumnsSliceDeps): ColumnsSlice {
                 cellLines += 1;
                 continue;
               }
-              const w = ctx.measureText(seg).width;
+              const w = estimateTextWidth(seg, baseFontSize, dataFontKey.weight);
               cellLines += Math.max(1, Math.ceil(w / contentWidth));
             }
             const cap = lineCaps.get(col.id) ?? 1;

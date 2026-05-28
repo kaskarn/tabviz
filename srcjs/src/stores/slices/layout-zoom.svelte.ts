@@ -155,6 +155,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
         showOverallSummary: false,
         rowPositions: [],
         rowHeights: [],
+        rowMarkerCenters: [],
       };
     }
 
@@ -374,6 +375,18 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       cumulativeY += h;
     }
 
+    // Marker-center Y per row. For a "padded-after" row we add
+    // rowGroupPadding to the track height (so the next group_header sits
+    // below empty space, not flush). The marker itself must still center
+    // on the *data* portion of the row, not the inflated total — otherwise
+    // forest dots / bars / boxes / violins drift downward as the user
+    // bumps rowGroupPadding up. Single source so every renderer agrees.
+    const rowMarkerCenters: number[] = [];
+    for (let i = 0; i < rowHeights.length; i++) {
+      const trailingPad = rowPaddedAfterLocal[i] ? rowGroupPadding : 0;
+      rowMarkerCenters.push(rowPositions[i] + (rowHeights[i] - trailingPad) / 2);
+    }
+
     const plotHeight = cumulativeY + (hasOverall ? rowHeight * 1.5 : 0);
 
     const firstForest = forestColumns[0]?.column;
@@ -415,6 +428,7 @@ export function createLayoutZoomSlice(deps: LayoutZoomSliceDeps): LayoutZoomSlic
       showOverallSummary: hasOverall,
       rowPositions,
       rowHeights,
+      rowMarkerCenters,
     };
   });
 

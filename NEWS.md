@@ -1,3 +1,105 @@
+# tabviz 0.36.0 / @tabviz/core 0.5.0
+
+## Schema sprint phases 10–12
+
+Three additive feature phases closing out the schema-driven-columns
+sprint:
+
+* **Phase 10 — Settings panel polish.** Eight `*Control.svelte` files
+  migrated from legacy `SettingsSection` to v2 `Section`. Primitive
+  tokens unified (`--v2-control-h` 24 → 22 px; spine, hairlines,
+  small-caps section heads), one-off corrections to Panel padding,
+  Accordion summary truncation, SegmentedField column alignment,
+  Field label tooltip.
+* **Phase 11 — Borders.** New `theme.borders.{layout,major,minor,
+  table}` model with thickness / style (single/double) / color per
+  type. R-side `BorderSpec` + `ThemeBorders` S7 classes mirror the
+  TS shape; cascade fills border colors from divider roles. SVG
+  export, browser CSS, and settings UI all consume the new model.
+  Wire is additive; bumps no version field.
+* **Phase 12 — Optional Numeric font.** New `theme.text.numeric`
+  text-role (defaults to body) that numeric-category columns
+  (numeric, n, currency, percent, p-value, interval, range, events)
+  pick over body via the `.numeric-cell` CSS class. Resolver fills
+  the role from body when omitted, so the wire always carries a
+  fully-defined TextRole.
+
+## Settings panel redesign (R1–R9)
+
+Multi-round agent-critique-driven redesign:
+
+* Editorial vocabulary: italic-serif "i" info marks (no chips),
+  centered `❦` / `⌘` ornaments retired, hairline rules under section
+  titles, real small-caps via `font-feature-settings: smcp`, paper-
+  texture SVG noise on the panel background, EB Garamond display
+  title.
+* Border row composition: per-axis H/V cyclers + per-type inline rows
+  with clickable line preview (cycles single ↔ double), thickness
+  Slider, color chip. Replaces the previous 9-row triplet stack.
+* Three card-strips (Density / Header / Marks) in Layout tab —
+  equal-width 1fr grid, uniform 36×22 SVG viewBox. Density downgraded
+  to glyph-segments per the agent decision tree (preview legible at
+  ≤24 px).
+* Theme tab: Identity gains a third row (Accent), Engagement section
+  folded in; zone dividers retired in favor of single-glyph ornaments;
+  Typography 2×2 specimen grid showing live "Aa 123" samples.
+* Text tab: roles grouped by surface (Frame / Body / Plot) with
+  italic-serif sub-heads; live specimen summaries in closed accordion
+  rows (font rendered in the role's own family/size/weight/italic
+  /color).
+* Tokens tab: chip previews now render the token's own label in its
+  bg/fg/weight/italic.
+* Labels: Title + Subtitle textareas in serif (WYSIWYG-author in the
+  chart typeface); Caption + Footnote sans.
+* Spine pull-in: Field label column 100 → 72 px (panel-wide).
+* Default `theme.borders.table.thickness` = 0 (no frame around the
+  table by default; opt in per theme).
+* Border-table semantic: paints around the data-table region
+  (.tabviz-main top + .axis-cell top so the bottom sits above the
+  axis), NOT the outer widget container. Major reserved for internal
+  major rules (header bottom, group/summary breaks).
+* CSS bug: `border-style: "single"` translated to CSS `solid` (was
+  letting every border fall through to `none`).
+* Bold-header sub-pixel hairline gaps filled via `box-shadow: 0 0 0
+  0.5px var(--tv-header-bg)`.
+* Primary cell's right-border falls through to the column-divider
+  color when no first-column variant rule is active (was hard-coded
+  transparent).
+
+## Column editor harmonization
+
+* Strip the card chrome (paper bg + drop shadow + paper-2 head +
+  paper-2 foot) — the editor body now reads as a flat slice of the
+  same editorial system as the settings panel.
+* `Aa text` masthead via `<Section title={schema.label} />` replaces
+  the old mono uppercase "NUMERIC COLUMN" head row.
+* Variants picker re-skinned on the LayoutControl card pattern:
+  3-column auto-fit 1fr grid, uniform 22-px preview row, hairline
+  borders, sans small-caps labels, ink-active.
+* Shared `<TextField label="" />` (skips inner Field wrapping when
+  label is empty) replaces the editor's locally-cloned `.text-input`.
+* Save + close buttons co-located in the editor masthead top-right
+  (was a separate footer hanging below the box).
+
+## Interval bounds rendering
+
+* Default `interval-range` node rule removed from
+  `DEFAULT_NODE_RULES`. Default interval columns now render bounds
+  at the same weight as the point estimate. The "Bracket, muted"
+  variant remains the explicit opt-in for the dimmed-bounds look;
+  themes can also opt in via their own `nodeRules`.
+
+## Bug fixes
+
+* `spacing.containerPadding` aligned to 0 across R + JS density
+  presets (R was the outlier at 10, surfacing in `test-parity-themes`).
+* `borderClass` option dropped from BASE schema (was dead).
+* Table bottom border paints above the axis (uses `.axis-cell` /
+  `.axis-spacer` `border-top` instead of `.tabviz-main`'s
+  `border-bottom`).
+* Vertical column dividers suppressed on summary rows under cols /
+  grid layout.
+
 # tabviz 0.35.0
 
 ## R↔TS delegation pass — viz_*, col_date, tabviz() asymmetries

@@ -1,0 +1,26 @@
+scenario                fixture       iters   median        mean          stddev      
+──────────────────────  ────────────  ──────  ────────────  ────────────  ────────────
+measure.estimator       small_mixed        5      0.235 ms      0.276 ms      0.057 ms
+measure.measureString   small_mixed        5      0.188 ms      0.192 ms      0.021 ms
+measure.measureString*  small_mixed        5      0.108 ms      0.107 ms      0.007 ms
+measure.estimator       medium_mixed       5       2.73 ms       2.71 ms      0.055 ms
+measure.measureString   medium_mixed       5       3.34 ms       3.32 ms      0.116 ms
+measure.measureString*  medium_mixed       5       1.13 ms       1.13 ms      0.024 ms
+measure.estimator       large_mixed        5       12.9 ms       12.9 ms      0.160 ms
+measure.measureString   large_mixed        5       12.9 ms       12.9 ms      0.117 ms
+measure.measureString*  large_mixed        5       2.53 ms       2.54 ms      0.058 ms
+measure.estimator       xl_mixed           5       51.2 ms       51.8 ms       1.60 ms
+measure.measureString   xl_mixed           5       50.1 ms       50.1 ms      0.366 ms
+measure.measureString*  xl_mixed           5       9.07 ms       9.12 ms      0.361 ms
+theme.resolve           -                  5      0.166 ms      0.221 ms      0.092 ms
+theme.cssBuild          -                  3      0.000 ms      0.000 ms      0.000 ms
+theme.cssBuild.cached   -                  5      0.000 ms      0.000 ms      0.000 ms
+split.measure           split_small        5      0.496 ms      0.663 ms      0.317 ms
+split.themeBuild        split_small        5      0.002 ms      0.003 ms      0.001 ms
+split.measure           split_medium       5       2.40 ms       2.58 ms      0.296 ms
+split.themeBuild        split_medium       5      0.005 ms      0.006 ms      0.002 ms
+split.measure           split_large        5       2.17 ms       2.17 ms      0.028 ms
+split.themeBuild        split_large        5      0.000 ms      0.000 ms      0.000 ms
+
+Total sampled time: 758 ms (21 scenarios)
+

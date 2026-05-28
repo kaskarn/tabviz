@@ -341,7 +341,14 @@ WebSpec <- new_class(
     #   - "auto": picks "width" or "height" based on whether the requested
     #     ratio is wider or taller than natural — readability-first default
     #     (recommended; will become the package default in a future minor).
-    target_aspect_anchor = new_property(class_character, default = "width")
+    target_aspect_anchor = new_property(class_character, default = "width"),
+    # Materialized condition entries (Phase 5). Each list element has
+    # the wire shape: id, label, kind="boolean", values=c(T,F,...),
+    # optional ruleText / category. Authored via tabviz(conditions=...)
+    # and evaluated at spec construction; renderers read these via
+    # ctx.banks.conditions to apply per-row styleMapping overrides
+    # referenced by cond("name"). Empty list = no conditions.
+    conditions = new_property(class_list, default = list())
   ),
   validator = function(self) {
     # Validate optional columns if specified

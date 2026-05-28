@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
-  import SettingsSection from "./SettingsSection.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
   import TextField from "./TextField.svelte";
   import ColorField from "./ColorField.svelte";
   import NumberField from "./NumberField.svelte";
   import { resolveSwatches } from "$lib/swatches";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
 
   let { store }: Props = $props();
@@ -19,9 +19,10 @@
   const swatches = $derived(resolveSwatches(store.spec?.theme));
 </script>
 
-<SettingsSection
+<Section
   title="Watermark"
-  description="Diagonal text rendered behind the rows region — typically a status label like DRAFT or CONFIDENTIAL. Leave empty for no watermark."
+  glyph="section.watermark"
+  hint="Diagonal text rendered behind the rows region — typically a status label like DRAFT or CONFIDENTIAL. Leave empty for no watermark."
 >
   <TextField
     label="Text"
@@ -47,4 +48,4 @@
     step={0.05}
     onchange={(v) => store.setWatermarkOpacity(v)}
   />
-</SettingsSection>
+</Section>

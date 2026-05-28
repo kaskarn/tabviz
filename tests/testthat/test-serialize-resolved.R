@@ -38,7 +38,7 @@ test_that("series[1] is the pooled-effect anchor (no separate summary slot)", {
 test_that("text roles all serialize with 6 fields", {
   out <- serialize_theme(WebTheme())
   expect_named(out$text, c("title", "subtitle", "body", "cell",
-                           "label", "tick", "footnote", "caption"))
+                           "label", "tick", "footnote", "caption", "numeric"))
   for (role in out$text) {
     expect_named(role, c("family", "size", "weight", "figures", "fg", "italic"))
   }

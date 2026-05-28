@@ -6,7 +6,7 @@
 //      autoPairSlots, getVisualTypeDef) — used by ColumnEditorPopover and
 //      ColumnTypeMenu in components/controls/.
 //   2. Cross-cutting column-type predicates and helpers (isVizType,
-//      resolveShowHeader) — used by the store, ForestPlot, and svg-generator.
+//      resolveShowHeader) — used by the store, TabvizPlot, and svg-generator.
 //
 // Phase 0c-C11 renamed this file from column-compat.ts (the "-compat" was
 // misleading — there's no back-compat shim here). The spec proposed

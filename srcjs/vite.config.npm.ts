@@ -1,7 +1,7 @@
 // vite.config.npm.ts — Build the npm publishable artifacts.
 //
-// Emits ESM bundles per subpath (core, svelte, export, spec) plus a
-// shared style.css. The output lives under `dist/` so it doesn't
+// Emits ESM bundles per subpath (core, svelte, export, spec, extend)
+// plus a shared style.css. The output lives under `dist/` so it doesn't
 // collide with the R-side artifacts in `../inst/`. Phase 3 of the
 // frontend-split program — see docs/dev/frontend-split-spec.md §3.10
 // for the subpath shape this targets.
@@ -30,6 +30,7 @@ export default defineConfig({
         svelte: path.resolve(__dirname, "src/svelte/index.ts"),
         export: path.resolve(__dirname, "src/export/index.ts"),
         spec: path.resolve(__dirname, "src/spec/index.ts"),
+        extend: path.resolve(__dirname, "src/extend/index.ts"),
       },
       formats: ["es"],
     },

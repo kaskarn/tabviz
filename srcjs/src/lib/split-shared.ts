@@ -1,0 +1,347 @@
+/**
+ * Shared-product computation for `split_by` widgets.
+ *
+ * When a SplitForest is rendered in "shared axis" or "shared column widths"
+ * mode, every subset uses the same axis range / column widths so the
+ * subsets line up visually when stacked or compared side by side. Computing
+ * these shared products requires looking at the *union* of subset data —
+ * something a single subset can't see on its own.
+ *
+ * Until now this lived in R (`R/split_table.R:145-339`). Per the TS-first
+ * vision (CLAUDE.md), R should produce the same wire shape a JS author
+ * would. JS authors had no equivalent path. This module is that path.
+ *
+ * The R wrapper now delegates here via `ts_call` (see `R/v8-bridge.R`); the
+ * functions are also exposed from `srcjs/src/authoring/` so JS authors can
+ * pre-compute and stamp values into SplitForest payloads directly.
+ *
+ * Both functions are *pure* — no DOM, no Canvas, no globals — so they work
+ * uniformly under V8 (R-side SVG export), in the browser, and in tests.
+ */
+
+import { niceDomain } from "./scale-utils";
+import { rankTopK, measureExact, DEFAULT_TOP_K, type FontKey } from "./width-measure";
+import { estimateTextWidth } from "./width-utils";
+
+// ─────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Minimum spec shape the shared-product computers consume from each subset.
+ *
+ * Data is in **column-major** form (one array per field). This shape mirrors
+ * R's native representation (`as.list(data.frame)`), which lets the R wrapper
+ * pass subsets through `ts_call` without an expensive per-row pivot. The
+ * row-major equivalent (one object per row) was tried first and turned out
+ * to scale catastrophically at 50k+ rows due to R's per-row list construction
+ * — the column-major form is the wire shape.
+ *
+ * Row metadata is read positionally: `data.columns[fieldName][i]` is the
+ * value of `fieldName` for the i-th row.
+ *
+ * Optional `rowStyleTypes` carries each row's `style.type` for filtering
+ * header/spacer rows; nullable, defaults to "no style metadata" so all rows
+ * are treated as data rows.
+ */
+export interface SubsetSpec {
+  data: {
+    /** Column-major data: `{[fieldName]: vector}`. All vectors have the
+     *  same length (the row count). Values are the raw cell values (no
+     *  formatting applied yet). */
+    columns: Record<string, unknown[]>;
+    /** Optional parallel array of row-style type tags ("header" / "spacer"
+     *  / null). Used to skip non-data rows in width measurement. */
+    rowStyleTypes?: Array<string | null> | null;
+  };
+  columns: Array<{
+    id: string;
+    type: string;
+    field?: string | null;
+    header?: string | null;
+    width?: number | "auto" | null;
+    options?: Record<string, unknown>;
+  }>;
+  theme?: {
+    axis?: {
+      ciClipFactor?: number | null;
+      rangeMin?: number | null;
+      rangeMax?: number | null;
+      tickValues?: number[] | null;
+    } | null;
+    text?: {
+      body?: { family?: string; size?: string };
+    } | null;
+  };
+}
+
+export interface SharedAxisArgs {
+  subsets: SubsetSpec[];
+}
+
+export interface SharedAxisResult {
+  rangeMin: number;
+  rangeMax: number;
+}
+
+export interface SharedWidthsArgs {
+  subsets: SubsetSpec[];
+  /** Font family for measurement. Defaults to a generic system stack. */
+  fontFamily?: string;
+  /** Font size in px. Defaults to 14. */
+  fontSizePx?: number;
+}
+
+export interface SharedWidthsResult {
+  /** Column id → pixel width. Only columns whose `width` was "auto" or unset
+   *  are included; explicit-width columns are skipped. */
+  widths: Record<string, number>;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Shared axis
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Compute a single axis range that fits every subset's effect data.
+ *
+ * Ports the R-side logic in `R/split_table.R:145-306`:
+ *   1. Collect effect values (point / lower / upper) from each subset's
+ *      forest column — both inline single-effect mode and multi-effect mode.
+ *   2. Snap the point-estimate range to nice numbers via `niceDomain`.
+ *   3. Compute clip boundaries from the CI clip factor.
+ *   4. Include CI bounds that fit within the clip; extend to the clip
+ *      boundary when CIs are clipped (so arrowheads remain visible).
+ *   5. Snap the final range to nice numbers.
+ *
+ * Returns the {rangeMin, rangeMax} pair the caller should stamp into each
+ * subset's theme.axis. If explicit min/max already live on the first
+ * subset's axis config, they win (this function never overrides explicit
+ * values — the caller is responsible for respecting them, but the inputs
+ * here represent the data-driven path).
+ */
+export function computeSharedAxis(args: SharedAxisArgs): SharedAxisResult {
+  const { subsets } = args;
+  if (subsets.length === 0) return { rangeMin: 0, rangeMax: 1 };
+
+  // Identify the forest column on the first subset (the others should
+  // share the same column structure).
+  const forestCol = subsets[0].columns.find((c) => c.type === "forest");
+  const forestOpts = (forestCol?.options?.forest ?? {}) as {
+    point?: string;
+    lower?: string;
+    upper?: string;
+    effects?: Array<{ pointCol?: string; lowerCol?: string; upperCol?: string }>;
+    scale?: string;
+    nullValue?: number;
+  };
+
+  const isLog = forestOpts.scale === "log";
+  const nullValue = forestOpts.nullValue ?? (isLog ? 1 : 0);
+  const ciClipFactor = subsets[0].theme?.axis?.ciClipFactor ?? 3.0;
+
+  // Collect effect values across all subsets.
+  const allPoint: number[] = [];
+  const allLower: number[] = [];
+  const allUpper: number[] = [];
+
+  const collectFrom = (
+    fieldP?: string,
+    fieldL?: string,
+    fieldU?: string,
+  ): void => {
+    for (const s of subsets) {
+      const cols = s.data.columns;
+      // Column-major: pull each effect vector once, iterate positionally.
+      // Much cheaper than building rows of metadata objects.
+      const pCol = fieldP ? cols[fieldP] : undefined;
+      const lCol = fieldL ? cols[fieldL] : undefined;
+      const uCol = fieldU ? cols[fieldU] : undefined;
+      const n = pCol?.length ?? lCol?.length ?? uCol?.length ?? 0;
+      for (let i = 0; i < n; i++) {
+        if (pCol) {
+          const v = Number(pCol[i]);
+          if (Number.isFinite(v)) allPoint.push(v);
+        }
+        if (lCol) {
+          const v = Number(lCol[i]);
+          if (Number.isFinite(v)) allLower.push(v);
+        }
+        if (uCol) {
+          const v = Number(uCol[i]);
+          if (Number.isFinite(v)) allUpper.push(v);
+        }
+      }
+    }
+  };
+
+  // Single-effect mode (forest.point / .lower / .upper).
+  collectFrom(forestOpts.point, forestOpts.lower, forestOpts.upper);
+  // Multi-effect mode (forest.effects[].pointCol / .lowerCol / .upperCol).
+  if (Array.isArray(forestOpts.effects)) {
+    for (const eff of forestOpts.effects) {
+      collectFrom(eff?.pointCol, eff?.lowerCol, eff?.upperCol);
+    }
+  }
+
+  // Log-scale: positive values only.
+  let pts = isLog ? allPoint.filter((v) => v > 0) : allPoint;
+  let los = isLog ? allLower.filter((v) => v > 0) : allLower;
+  let his = isLog ? allUpper.filter((v) => v > 0) : allUpper;
+
+  // Degenerate case: no data at all. Synthesize a ±1 / ÷2×2 span around
+  // null_value so niceDomain doesn't choke.
+  if (pts.length === 0 && los.length === 0 && his.length === 0) {
+    pts = isLog ? [nullValue / 2, nullValue * 2] : [nullValue - 1, nullValue + 1];
+  }
+
+  // Estimate range from point + null_value.
+  let rawMinEst = Math.min(...pts, nullValue);
+  let rawMaxEst = Math.max(...pts, nullValue);
+
+  // Zero-span case: spread it out so niceDomain has something to work with.
+  if (rawMaxEst - rawMinEst === 0) {
+    if (isLog) {
+      rawMinEst = rawMinEst / 2;
+      rawMaxEst = rawMaxEst * 2;
+    } else {
+      const spread = Math.max(1, Math.abs(rawMinEst) * 0.1);
+      rawMinEst -= spread;
+      rawMaxEst += spread;
+    }
+  }
+
+  // First snap.
+  const [minEst, maxEst] = niceDomain([rawMinEst, rawMaxEst], isLog);
+
+  // Clip boundaries.
+  let lowerClip: number;
+  let upperClip: number;
+  if (isLog) {
+    lowerClip = minEst / ciClipFactor;
+    upperClip = maxEst * ciClipFactor;
+  } else {
+    const span = maxEst - minEst;
+    lowerClip = minEst - span * ciClipFactor;
+    upperClip = maxEst + span * ciClipFactor;
+  }
+
+  const hasClippedLower = los.some((v) => v < lowerClip);
+  const hasClippedUpper = his.some((v) => v > upperClip);
+
+  const validLower = los.filter((v) => v >= lowerClip);
+  const validUpper = his.filter((v) => v <= upperClip);
+
+  const dataMin = Math.min(
+    ...validLower,
+    minEst,
+    ...(hasClippedLower ? [lowerClip] : []),
+  );
+  const dataMax = Math.max(
+    ...validUpper,
+    maxEst,
+    ...(hasClippedUpper ? [upperClip] : []),
+  );
+
+  // Final snap.
+  const [rangeMin, rangeMax] = niceDomain([dataMin, dataMax], isLog);
+  return { rangeMin, rangeMax };
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Shared column widths
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Compute a shared width per "auto"-width column across every subset's data.
+ *
+ * Uses the rank+top-K strategy (see `width-measure.ts`): score every cell
+ * across the union with `estimateTextWidth`, exact-measure the K winners
+ * (Canvas in browser, estimator fallback in V8), take the max. The output
+ * is a `{columnId: px}` map the caller stamps into each subset's column
+ * config so the widget's per-subset `measureAutoColumns` short-circuits
+ * (numeric width is a hard pin).
+ *
+ * Skips columns with an explicit numeric width (already pinned) and the
+ * viz/forest types (auto-sized from the plot, not text content).
+ */
+export function computeSharedWidths(args: SharedWidthsArgs): SharedWidthsResult {
+  const { subsets } = args;
+  if (subsets.length === 0) return { widths: {} };
+
+  const fontFamily =
+    args.fontFamily
+    ?? subsets[0].theme?.text?.body?.family
+    ?? "Inter, system-ui, sans-serif";
+  const fontSizePx = args.fontSizePx ?? 14;
+  // Both header and body share the same family; only the weight differs.
+  const dataFont: FontKey = { family: fontFamily, weight: 400 };
+  const headerFont: FontKey = { family: fontFamily, weight: 600 };
+
+  // Skip these column types — they auto-size from plot geometry, not text.
+  const SKIP_TYPES = new Set(["viz_bar", "viz_boxplot", "viz_violin", "forest"]);
+
+  // ~8px per-character + 24px padding budget. Matches the R baseline so the
+  // floor here is no looser than the previous behavior; the actual width
+  // comes from rank+top-K exact measurement and will typically be tighter.
+  const CHAR_FLOOR = 40;
+  const HARD_CEIL = 480;
+
+  const result: Record<string, number> = {};
+  const baseColumns = subsets[0].columns;
+
+  for (const col of baseColumns) {
+    // Skip explicit numeric width (hard pin).
+    if (typeof col.width === "number" && Number.isFinite(col.width)) continue;
+    if (SKIP_TYPES.has(col.type)) continue;
+    if (!col.field) continue;
+
+    // Pool: every cell's stringified value for this column across all subsets,
+    // plus the header. Column-major iteration: pull the field's vector
+    // once, skip header/spacer rows positionally via the parallel
+    // rowStyleTypes array.
+    const candidates: string[] = [];
+    if (col.header) candidates.push(col.header);
+    for (const s of subsets) {
+      const sameCol = s.columns.find((c) => c.id === col.id);
+      if (!sameCol || !sameCol.field) continue;
+      const vec = s.data.columns[sameCol.field];
+      if (!vec) continue;
+      const styleTypes = s.data.rowStyleTypes ?? null;
+      for (let i = 0; i < vec.length; i++) {
+        const st = styleTypes ? styleTypes[i] : null;
+        if (st === "header" || st === "spacer") continue;
+        const v = vec[i];
+        if (v == null) continue;
+        candidates.push(String(v));
+      }
+    }
+    if (candidates.length === 0) continue;
+
+    // Rank by estimator, exact-measure top-K with header font (bolder; an
+    // upper bound on either weight at this size).
+    const winners = rankTopK(candidates, fontSizePx, headerFont.weight, DEFAULT_TOP_K);
+    let maxPx = 0;
+    for (const text of winners) {
+      const exact = measureExact(text, headerFont, fontSizePx);
+      const w = exact ?? estimateTextWidth(text, fontSizePx, headerFont.weight);
+      if (w > maxPx) maxPx = w;
+    }
+    // Also exact-measure the same winners under data font, take the larger
+    // — covers headers that render bold but data values that render at
+    // weight 400 (the inverse case is much rarer).
+    for (const text of winners) {
+      const exact = measureExact(text, dataFont, fontSizePx);
+      const w = exact ?? estimateTextWidth(text, fontSizePx, dataFont.weight);
+      if (w > maxPx) maxPx = w;
+    }
+
+    // Add cell-padding buffer + rendering safety margin (24px matches the R
+    // shared-widths baseline; live measureAutoColumns uses a similar
+    // padding sum, so subset widths line up under either measurement path).
+    const computed = Math.ceil(maxPx + 24);
+    result[col.id] = Math.max(CHAR_FLOOR, Math.min(HARD_CEIL, computed));
+  }
+
+  return { widths: result };
+}

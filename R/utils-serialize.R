@@ -43,7 +43,11 @@ serialize_spec <- function(spec, include_forest = TRUE) {
     targetAspect = if (is.na(spec@target_aspect)) NULL else as.numeric(spec@target_aspect),
     # Anchor rule for ratio-only target-dim resolution (Phase 7C).
     targetAspectAnchor = spec@target_aspect_anchor,
-    originalCall = if (is.na(spec@original_call)) NULL else spec@original_call
+    originalCall = if (is.na(spec@original_call)) NULL else spec@original_call,
+    # Cross-cutting widget state (Phase 5+). Conditions are the only
+    # bank kind currently populated from R; footnotes / axes / legends
+    # come from schema-side contributeBanks behaviors (TS-side).
+    banks = if (length(spec@conditions) > 0L) list(conditions = spec@conditions) else NULL
   )
 }
 
@@ -220,9 +224,48 @@ serialize_data <- function(spec, include_forest = TRUE) {
     }
   }
 
+  # Pre-extract column vectors so per-row iteration is positional rather
+  # than relying on `df[i, , drop = FALSE]` — R's row-extraction allocates
+  # a fresh data.frame per row.
+  col_vectors <- as.list(df)
+  col_names <- names(df)
+
+  # Pre-compile per-column style recipes ONCE (Phase 4.1). build_cell_styles
+  # used to walk S7 column props per row × per column; on the bench S7's @
+  # accessor was 32% of total serialize time. Recipes resolve all props once.
+  cell_style_recipes <- compile_cell_style_recipes(spec@columns)
+  row_style_recipe <- compile_row_style_recipe(spec)
+  marker_style_recipe <- compile_marker_style_recipe(spec)
+  # Some columns are list-columns whose per-row value is a single-element
+  # list. We need to unwrap those when building metadata, so flag them once.
+  is_list_col <- vapply(col_vectors, function(v) is.list(v), logical(1))
+
+  # Get values from one row via positional access into the cached column
+  # vectors. Returns a named list with the same shape as `as.list(df[i, ])`
+  # but ~5-10x faster because it skips the data.frame row-extraction.
+  get_row_list <- function(i) {
+    out <- vector("list", length(col_vectors))
+    names(out) <- col_names
+    for (k in seq_along(col_vectors)) {
+      v <- col_vectors[[k]]
+      if (is_list_col[k]) {
+        cell <- v[[i]]
+        # Replicate the old "unwrap single-element list" semantics for
+        # list-columns whose per-row value is itself a length-1 list.
+        if (is.list(cell) && length(cell) == 1 && !is.data.frame(cell)) {
+          cell <- cell[[1]]
+        }
+        out[[k]] <- cell
+      } else {
+        out[[k]] <- v[[i]]
+      }
+    }
+    out
+  }
+
   # Build rows - data now lives entirely in metadata
   rows <- lapply(seq_len(n), function(i) {
-    row <- df[i, , drop = FALSE]
+    row <- get_row_list(i)
 
     # Get label from the primary (leftmost) column, falling back to row number
     label <- if (!is.na(primary_field) && primary_field %in% names(row)) {
@@ -248,28 +291,21 @@ serialize_data <- function(spec, include_forest = TRUE) {
       NULL
     }
 
-    # Build metadata from all columns - ALL data lives here
-    metadata <- as.list(row)
-    names(metadata) <- names(row)
+    # Metadata IS the row list; list-column unwrapping happened in
+    # get_row_list. Trailing single-element-list unwrap kept for any
+    # remaining anomalous cell shapes (defensive).
+    metadata <- row
 
-    # Unwrap single-element list columns (e.g., sparkline data)
-    # In R, list columns like trend = list(c(1,2,3)) serialize as [[1,2,3]]
-    # We want flat arrays [1,2,3] for JSON
-    for (nm in names(metadata)) {
-      val <- metadata[[nm]]
-      if (is.list(val) && length(val) == 1 && !is.data.frame(val)) {
-        metadata[[nm]] <- val[[1]]
-      }
-    }
+    # Row + marker style from pre-resolved column-name recipes (Phase 4.1).
+    # Avoids 16 S7 @ accesses per row × N rows by resolving spec props once.
+    style        <- extract_row_style_fast(row, row_style_recipe)
+    marker_style <- extract_marker_style_fast(row, marker_style_recipe)
 
-    # Extract row style from explicit column mappings
-    style <- extract_row_style(row, spec)
-
-    # Extract marker style from explicit column mappings
-    marker_style <- extract_marker_style(row, spec)
-
-    # Build per-cell styles from column styleMapping
-    cell_styles <- build_cell_styles(row, spec@columns)
+    # Build per-cell styles from pre-compiled recipes (Phase 4.1).
+    # Pre-resolving each column's S7 style props once outside the row
+    # loop avoided ~30% of total serialize_split_table() time on the 1k-
+    # row / 10-subset bench.
+    cell_styles <- build_cell_styles_fast(row, cell_style_recipes)
 
     # Omit `groupId` entirely when there's no grouping — htmlwidgets'
     # `toJSON` serializes a NULL list element as `{}` (empty object)
@@ -413,17 +449,24 @@ serialize_column <- function(col) {
     !is.null(x) && length(x) > 0 && !is.na(x[1])
   }
 
+  # Condition references survive resolve_column_style as
+  # `tabviz_cond_ref` S3 lists; strip the class for jsonlite so the
+  # value serializes as a plain `{kind, name}` object on the wire.
+  unwrap_cond <- function(x) {
+    if (inherits(x, "tabviz_cond_ref")) unclass(x) else x
+  }
+
   style_mapping <- list()
-  if (has_style(col@style_bold)) style_mapping$bold <- col@style_bold
-  if (has_style(col@style_italic)) style_mapping$italic <- col@style_italic
-  if (has_style(col@style_color)) style_mapping$color <- col@style_color
-  if (has_style(col@style_bg)) style_mapping$bg <- col@style_bg
-  if (has_style(col@style_badge)) style_mapping$badge <- col@style_badge
-  if (has_style(col@style_icon)) style_mapping$icon <- col@style_icon
+  if (has_style(col@style_bold)) style_mapping$bold <- unwrap_cond(col@style_bold)
+  if (has_style(col@style_italic)) style_mapping$italic <- unwrap_cond(col@style_italic)
+  if (has_style(col@style_color)) style_mapping$color <- unwrap_cond(col@style_color)
+  if (has_style(col@style_bg)) style_mapping$bg <- unwrap_cond(col@style_bg)
+  if (has_style(col@style_badge)) style_mapping$badge <- unwrap_cond(col@style_badge)
+  if (has_style(col@style_icon)) style_mapping$icon <- unwrap_cond(col@style_icon)
   # Semantic styling
-  if (has_style(col@style_emphasis)) style_mapping$emphasis <- col@style_emphasis
-  if (has_style(col@style_muted)) style_mapping$muted <- col@style_muted
-  if (has_style(col@style_accent)) style_mapping$accent <- col@style_accent
+  if (has_style(col@style_emphasis)) style_mapping$emphasis <- unwrap_cond(col@style_emphasis)
+  if (has_style(col@style_muted)) style_mapping$muted <- unwrap_cond(col@style_muted)
+  if (has_style(col@style_accent)) style_mapping$accent <- unwrap_cond(col@style_accent)
 
   if (length(style_mapping) > 0) {
     result$styleMapping <- style_mapping
@@ -586,7 +629,84 @@ compute_group_depths <- function(groups) {
   depths
 }
 
+# Pre-resolve the spec's row-style and marker-style column names ONCE.
+# extract_row_style was accessing 12 S7 props per row, extract_marker_style
+# 4 — at 1000 rows that's 16k S7 @ accesses per spec. Pre-resolving caches
+# all the spec@row_*_col / spec@marker_*_col names in a plain list the
+# row loop reads with cheap [[ access. Returns a list with named slots
+# keyed by the same names used in the per-row style outputs.
+compile_row_style_recipe <- function(spec) {
+  list(
+    type      = spec@row_type_col,
+    bold      = spec@row_bold_col,
+    italic    = spec@row_italic_col,
+    color     = spec@row_color_col,
+    bg        = spec@row_bg_col,
+    indent    = spec@row_indent_col,
+    icon      = spec@row_icon_col,
+    badge     = spec@row_badge_col,
+    emphasis  = spec@row_emphasis_col,
+    muted     = spec@row_muted_col,
+    accent    = spec@row_accent_col,
+    fill      = spec@row_fill_col
+  )
+}
+
+compile_marker_style_recipe <- function(spec) {
+  list(
+    color   = spec@marker_color_col,
+    shape   = spec@marker_shape_col,
+    opacity = spec@marker_opacity_col,
+    size    = spec@marker_size_col
+  )
+}
+
+# Type map for the row-style keys, used by the fast extractor below.
+.ROW_STYLE_TYPES <- list(
+  type     = "character", bold      = "logical",   italic   = "logical",
+  color    = "character", bg        = "character", indent   = "numeric",
+  icon     = "character", badge     = "character",
+  emphasis = "logical",   muted     = "logical",   accent   = "logical",
+  fill     = "logical"
+)
+.MARKER_STYLE_TYPES <- list(
+  color   = "character", shape = "character",
+  opacity = "numeric",   size  = "numeric"
+)
+
+# Single per-row extractor, reused by both row and marker style passes.
+# Reads from `row` (a named list) using pre-resolved column names in `recipe`.
+.apply_style_recipe <- function(row, recipe, types) {
+  out <- list()
+  row_names <- names(row)
+  for (key in names(recipe)) {
+    col_name <- recipe[[key]]
+    if (is.null(col_name) || length(col_name) == 0L) next
+    if (is.na(col_name) || !(col_name %in% row_names)) next
+    val <- row[[col_name]]
+    if (length(val) == 0L) next
+    if (length(val) == 1L && is.na(val)) next
+    out[[key]] <- switch(types[[key]],
+      logical   = as.logical(val),
+      numeric   = as.numeric(val),
+      as.character(val)
+    )
+  }
+  if (length(out) == 0L) NULL else out
+}
+
+extract_row_style_fast <- function(row, recipe) {
+  .apply_style_recipe(row, recipe, .ROW_STYLE_TYPES)
+}
+extract_marker_style_fast <- function(row, recipe) {
+  .apply_style_recipe(row, recipe, .MARKER_STYLE_TYPES)
+}
+
 #' Extract row style from explicit column mappings
+#'
+#' Legacy wrapper retained for direct callers; the hot path in
+#' `serialize_data()` uses `compile_row_style_recipe()` + the faster
+#' `extract_row_style_fast()`.
 #'
 #' @param row A single row of data
 #' @param spec The WebSpec containing row_*_col mappings
@@ -595,11 +715,16 @@ compute_group_depths <- function(groups) {
 extract_row_style <- function(row, spec) {
   style <- list()
 
-  # Helper to get value from explicit column mapping
+  # Helper to get value from explicit column mapping. Defensive against
+  # zero-length and list-column NULL entries — when `row` is built from a
+  # pre-extracted column vector (post Phase 4.1) rather than a data.frame
+  # row, a list-column with a NULL or empty entry would otherwise pass
+  # through `is.na()` and trip "argument is of length zero".
   get_style_val <- function(col_name, type = "character") {
     if (is.na(col_name) || !col_name %in% names(row)) return(NULL)
     val <- row[[col_name]]
-    if (is.na(val)) return(NULL)
+    if (length(val) == 0L) return(NULL)
+    if (length(val) == 1L && is.na(val)) return(NULL)
     switch(type,
       logical = as.logical(val),
       numeric = as.numeric(val),
@@ -695,79 +820,89 @@ extract_marker_style <- function(row, spec) {
   style
 }
 
-#' Build per-cell styles from column styleMapping
-#' @keywords internal
-build_cell_styles <- function(row, columns) {
-  cell_styles <- list()
-
+# Per-column "style recipe": resolved S7 properties + intended types,
+# computed once per columns tree before the row loop. The inner
+# `build_cell_styles_fast()` consumes recipes without touching S7 props,
+# so per-row work is O(cols × set-style-fields) lookups instead of O(cols
+# × 10 S7 @ accesses). On the 1k-row / 10-subset bench, S7 @ was 32% of
+# total serialize_split_table() time and build_cell_styles dominated
+# at 36% — pre-resolving recipes cuts both.
+compile_cell_style_recipes <- function(columns) {
+  recipes <- list()
   for (col in columns) {
-    # Skip ColumnGroups - process their children instead
     if (S7_inherits(col, ColumnGroup)) {
-      nested_styles <- build_cell_styles(row, col@columns)
-      for (field in names(nested_styles)) {
-        cell_styles[[field]] <- nested_styles[[field]]
-      }
+      # Flatten group children into the same recipe list — output map is
+      # keyed by field, group-vs-leaf distinction doesn't matter here.
+      recipes <- c(recipes, compile_cell_style_recipes(col@columns))
       next
     }
-
-    # Skip non-ColumnSpec objects
     if (!S7_inherits(col, ColumnSpec)) next
-
-    field <- col@field
-    cs <- list()
-
-    # Helper to safely get value from column
-    # col_name can be NULL, NA, or a valid column name
-    get_val <- function(col_name, type = "character") {
-      if (is.null(col_name) || length(col_name) == 0) return(NULL)
-      if (is.na(col_name[1]) || !col_name %in% names(row)) return(NULL)
-      val <- row[[col_name]]
-      if (is.na(val)) return(NULL)
-      switch(type,
-        logical = as.logical(val),
-        as.character(val)
-      )
-    }
-
-    # Check each style mapping
-    val <- get_val(col@style_bold, "logical")
-    if (!is.null(val)) cs$bold <- val
-
-    val <- get_val(col@style_italic, "logical")
-    if (!is.null(val)) cs$italic <- val
-
-    val <- get_val(col@style_color, "character")
-    if (!is.null(val)) cs$color <- val
-
-    val <- get_val(col@style_bg, "character")
-    if (!is.null(val)) cs$bg <- val
-
-    val <- get_val(col@style_badge, "character")
-    if (!is.null(val)) cs$badge <- val
-
-    val <- get_val(col@style_icon, "character")
-    if (!is.null(val)) cs$icon <- val
-
-    # Semantic styling
-    val <- get_val(col@style_emphasis, "logical")
-    if (!is.null(val)) cs$emphasis <- val
-
-    val <- get_val(col@style_muted, "logical")
-    if (!is.null(val)) cs$muted <- val
-
-    val <- get_val(col@style_accent, "logical")
-    if (!is.null(val)) cs$accent <- val
-
-    # Per-cell tooltip text
-    val <- get_val(col@style_tooltip, "character")
-    if (!is.null(val)) cs$tooltip <- val
-
-    if (length(cs) > 0) {
-      cell_styles[[field]] <- cs
-    }
+    # Pull every relevant S7 prop ONCE.
+    recipes[[length(recipes) + 1L]] <- list(
+      field        = col@field,
+      bold_col     = col@style_bold,
+      italic_col   = col@style_italic,
+      color_col    = col@style_color,
+      bg_col       = col@style_bg,
+      badge_col    = col@style_badge,
+      icon_col     = col@style_icon,
+      emphasis_col = col@style_emphasis,
+      muted_col    = col@style_muted,
+      accent_col   = col@style_accent,
+      tooltip_col  = col@style_tooltip
+    )
   }
+  recipes
+}
 
+#' Apply pre-compiled cell-style recipes to one row.
+#' @keywords internal
+build_cell_styles_fast <- function(row, recipes) {
+  cell_styles <- list()
+  row_names <- names(row)
+  get_val <- function(col_name, type) {
+    if (is.null(col_name) || length(col_name) == 0L) return(NULL)
+    # Condition references (from `cond("name")`) are resolved at
+    # render time via banks.conditions — they have no row-local
+    # column to read here. Skip; the wire-side styleMapping carries
+    # the cond ref directly (schema-sprint Phase 5).
+    if (inherits(col_name, "tabviz_cond_ref")) return(NULL)
+    if (!is.character(col_name)) return(NULL)
+    if (is.na(col_name[1L]) || !(col_name %in% row_names)) return(NULL)
+    val <- row[[col_name]]
+    if (length(val) == 0L) return(NULL)
+    if (length(val) == 1L && is.na(val)) return(NULL)
+    switch(type,
+      logical   = as.logical(val),
+      numeric   = as.numeric(val),
+      as.character(val)
+    )
+  }
+  for (r in recipes) {
+    cs <- list()
+    val <- get_val(r$bold_col,     "logical");   if (!is.null(val)) cs$bold     <- val
+    val <- get_val(r$italic_col,   "logical");   if (!is.null(val)) cs$italic   <- val
+    val <- get_val(r$color_col,    "character"); if (!is.null(val)) cs$color    <- val
+    val <- get_val(r$bg_col,       "character"); if (!is.null(val)) cs$bg       <- val
+    val <- get_val(r$badge_col,    "character"); if (!is.null(val)) cs$badge    <- val
+    val <- get_val(r$icon_col,     "character"); if (!is.null(val)) cs$icon     <- val
+    val <- get_val(r$emphasis_col, "logical");   if (!is.null(val)) cs$emphasis <- val
+    val <- get_val(r$muted_col,    "logical");   if (!is.null(val)) cs$muted    <- val
+    val <- get_val(r$accent_col,   "logical");   if (!is.null(val)) cs$accent   <- val
+    val <- get_val(r$tooltip_col,  "character"); if (!is.null(val)) cs$tooltip  <- val
+    if (length(cs) > 0L) cell_styles[[r$field]] <- cs
+  }
   cell_styles
+}
+
+#' Build per-cell styles from column styleMapping (legacy wrapper).
+#'
+#' Kept for any direct external callers and tests; the hot path inside
+#' `serialize_data()` now uses `compile_cell_style_recipes()` once + the
+#' faster `build_cell_styles_fast()` per row.
+#' @keywords internal
+build_cell_styles <- function(row, columns) {
+  build_cell_styles_fast(row, compile_cell_style_recipes(columns))
 }
 
 #' Serialize annotation objects

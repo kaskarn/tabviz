@@ -1,6 +1,6 @@
 {
   "name": "@tabviz/core",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "description": "Interactive forest plots and rich tables — JavaScript runtime for the tabviz R package",
   "homepage": "https://github.com/kaskarn/tabviz",
@@ -24,7 +24,12 @@
     "node": ">=18"
   },
   "sideEffects": [
-    "**/*.css"
+    "**/*.css",
+    "**/schema/init.ts",
+    "**/schema/init-dom.ts",
+    "**/schema/columns/*-behaviors.ts",
+    "**/schema/columns/*-renderer.ts",
+    "**/schema/columns/*-renderers.ts"
   ],
   "files": [
     "dist",
@@ -49,6 +54,10 @@
       "types": "./dist/spec/index.d.ts",
       "import": "./dist/spec.mjs"
     },
+    "./extend": {
+      "types": "./dist/extend/index.d.ts",
+      "import": "./dist/extend.mjs"
+    },
     "./style.css": "./dist/style.css",
     "./package.json": "./package.json"
   },
@@ -59,14 +68,20 @@
     "build:widget": "vite build",
     "build:split": "vite build --config vite.config.split.ts",
     "build:v8": "vite build --config vite.config.v8.ts",
+    "build:harness": "vite build --config vite.config.harness.ts",
+    "dev:harness": "vite serve --config vite.config.harness.ts",
+    "harness:drive": "node tests/components/drive.mjs",
     "build:npm": "vite build --config vite.config.npm.ts && tsc -p tsconfig.npm.json && node scripts/rewrite-dts-aliases.mjs && node scripts/dist-smoke.mjs",
     "build:npm:types": "tsc -p tsconfig.npm.json && node scripts/rewrite-dts-aliases.mjs",
     "check:size": "node scripts/bundle-size-gate.mjs",
     "check:lockfiles": "npm install --package-lock-only --no-audit --no-fund --dry-run && bun install --frozen-lockfile --dry-run",
-    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "check:wiring": "node scripts/check-primitive-wiring.mjs",
+    "check": "svelte-check --tsconfig ./tsconfig.json && node scripts/check-primitive-wiring.mjs",
     "test": "bun test && vitest run",
     "test:bun": "bun test",
     "test:vitest": "vitest run",
+    "bench": "bun run tests/perf/run-bench.ts",
+    "bench:browser": "bun run tests/browser/run-bench.ts",
     "lint": "eslint src --ext .ts,.svelte",
     "format": "prettier --write 'src/**/*.{ts,svelte,css}'",
     "screenshot": "node scripts/screenshot.js"
@@ -92,6 +107,7 @@
     "eslint": "^9.0.0",
     "eslint-plugin-svelte": "^2.0.0",
     "jsdom": "^29.1.1",
+    "pixelmatch": "^7.2.0",
     "prettier": "^3.0.0",
     "prettier-plugin-svelte": "^3.0.0",
     "puppeteer": "^24.0.0",

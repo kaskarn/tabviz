@@ -1,18 +1,18 @@
 // createSplitTabviz — public factory for the split-widget (multi-pane)
 // tabviz instance. Peer of `createTabviz` per spec §3.1 and §3.10.
 //
-// The split widget composes multiple ForestStore instances under a
-// SplitForestStore shell, navigating between panes via the activeKey.
+// The split widget composes multiple TabvizStore instances under a
+// SplitTabvizStore shell, navigating between panes via the activeKey.
 // Its public API is a strict subset of the single-widget instance API
 // (no per-row sort/filter etc. — those would target the active pane's
 // inner store, which a future API revision can expose).
 
 import { mount, unmount, type Component } from "svelte";
-import SplitForestPlot from "$svelte/SplitForestPlot.svelte";
+import SplitTabvizPlot from "$svelte/SplitTabvizPlot.svelte";
 import {
-  createSplitForestStore,
-  type SplitForestStore,
-} from "$stores/splitForestStore.svelte";
+  createSplitTabvizStore,
+  type SplitTabvizStore,
+} from "$stores/splitTabvizStore.svelte";
 import { validateSpecVersion } from "$spec";
 import type { SplitForestPayload } from "$types";
 
@@ -34,7 +34,7 @@ export interface SplitTabvizInstance {
    * (which forwards events from the inner active store) and advanced
    * consumers. Not part of the stable public surface.
    */
-  readonly store: SplitForestStore;
+  readonly store: SplitTabvizStore;
 }
 
 /**
@@ -59,13 +59,13 @@ export function createSplitTabviz(
 ): SplitTabvizInstance {
   validateSpecVersion(payload as { version?: unknown }, "SplitForestPayload");
   validateSplitPayloadType(payload as { type?: unknown });
-  const store = createSplitForestStore();
+  const store = createSplitTabvizStore();
   store.setPayload(payload);
   const w = options.width ?? element.clientWidth;
   const h = options.height ?? element.clientHeight;
   if (w > 0 && h > 0) store.setDimensions(w, h);
 
-  const component = mount(SplitForestPlot as unknown as Component, {
+  const component = mount(SplitTabvizPlot as unknown as Component, {
     target: element,
     props: { store },
   });
@@ -88,4 +88,4 @@ export function createSplitTabviz(
   };
 }
 
-export type { SplitForestPayload, SplitForestStore };
+export type { SplitForestPayload, SplitTabvizStore };

@@ -1,10 +1,22 @@
-// Pure filter + sort helpers, extracted from forestStore.svelte.ts during
-// Phase 0c-C1 PR4 (sort-filter slice). No runes, no store access — just
-// row-level operations consumed by `visibleRows` and the column-filter UI.
+// Pure filter + sort helpers — index-based view onto a canonical rows
+// array. The original `spec.data.rows[]` is never re-allocated; sort
+// and filter produce reordered/narrowed `number[]` of indices into it.
 //
-// Functions here are all module-pure; they take rows + config and return
-// new arrays. The slice imports them; future consumers (e.g. paginate-by
-// or export-time row reordering) can do the same.
+// This keystone enables condition vectors and per-row banks to key
+// against original row index without misalignment under sort/filter
+// (see schema-sprint Phase 1). It also drops the per-render `Row[]`
+// allocation that the eager-merge model used to do — paint-tool overlay
+// merges move to lazy `rowAt(i)` in the sort-filter slice.
+//
+// All functions in this file are module-pure: no runes, no store
+// access. Inputs are `(rows, indices, …)`, outputs are fresh
+// `number[]`. The slice imports them; the column-filter UI and other
+// consumers (paginate-by, export-time reordering) can do the same.
+//
+// Predicates and sort-key extraction read from the canonical row
+// (`rows[i]`) — they do NOT see paint-tool overlay style, by design.
+// Sorting on bold/italic/color is not a valid use case; predicates
+// that need styling can layer above the slice's `rowAt(i)`.
 
 import type {
   Row,
@@ -14,13 +26,26 @@ import type {
   FiltersState,
   SortConfig,
 } from "$types";
+import { dispatchForColumn } from "../schema/dispatch";
 
-/** Apply all column filters AND-style across columns. Filters with no
- *  predicate matches (e.g. empty "in" array) pass everything. */
-export function applyFilters(rows: Row[], state: FiltersState): Row[] {
+/**
+ * Filter `indices` down to those whose row passes every column filter
+ * (AND across columns). Filters with no predicate matches (e.g. empty
+ * "in" array) pass everything.
+ */
+export function applyFilters(
+  rows: readonly Row[],
+  indices: readonly number[],
+  state: FiltersState,
+): number[] {
   const filterList = Object.values(state);
-  if (filterList.length === 0) return rows;
-  return rows.filter((row) => filterList.every((f) => matchColumnFilter(row, f)));
+  if (filterList.length === 0) return indices.slice();
+  const out: number[] = [];
+  for (const i of indices) {
+    const row = rows[i];
+    if (filterList.every((f) => matchColumnFilter(row, f))) out.push(i);
+  }
+  return out;
 }
 
 /** Read a field from `row.metadata`, falling back to the row itself for
@@ -94,90 +119,26 @@ export function findColumnByKey(
   return undefined;
 }
 
-// Numeric median of a possibly-sparse array. Used as the sort key for
-// boxplot / violin columns where the "value" is a distribution rather than
-// a single scalar. Ignores NaN / non-finite entries.
-function median(xs: readonly number[]): number | undefined {
-  const clean = xs.filter((v) => typeof v === "number" && Number.isFinite(v)).slice().sort((a, b) => a - b);
-  if (clean.length === 0) return undefined;
-  const mid = Math.floor(clean.length / 2);
-  return clean.length % 2 === 0 ? (clean[mid - 1] + clean[mid]) / 2 : clean[mid];
-}
-
 /**
- * Extract the scalar value used to sort a row by a given column. Handles
- * the multi-field column types whose `.field` is synthetic and doesn't
- * index `row.metadata` directly:
+ * Extract the scalar value used to sort a row by a given column.
  *
- *   - `forest`: first declared point field (inline `point` or the first
- *     effect's `pointCol`).
- *   - `interval`: `options.interval.point`.
- *   - `custom` with events options: the `eventsField`.
- *   - `viz_bar`: first effect's `value`.
- *   - `viz_boxplot`: first effect's `median` (stats mode) or the median
- *     of its `data` array (array mode).
- *   - `viz_violin`: median of the first effect's `data` array.
- *
- * Falls back to `row.metadata[col.field]` for the scalar column types.
- * Returning `undefined` lets `compareForSort` push the row to the end.
+ * Schema dispatch is consulted first via `SchemaBehaviors.sortKey` —
+ * multi-field column types (interval, viz_*, events) register their
+ * own sort-key logic in `schema/columns/sort-behaviors.ts`. When no
+ * schema in the inheritance chain defines `sortKey`, we fall back to
+ * a bare `meta[col.field]` lookup, which serves every scalar type
+ * (text, numeric, percent, …) and the no-column case.
  */
 function sortValueFor(col: ColumnSpec | undefined, row: Row, key: string): unknown {
   const meta = row.metadata as Record<string, unknown>;
-  const bare = () => meta[key] ?? (row as unknown as Record<string, unknown>)[key];
-  if (!col) return bare();
+  const bare = meta[key] ?? (row as unknown as Record<string, unknown>)[key];
+  if (!col) return bare;
 
-  const opts = col.options as Record<string, unknown> | undefined;
-  const forestOpts = (opts?.forest ?? null) as {
-    point?: string;
-    effects?: Array<{ pointCol?: string }>;
-  } | null;
-  const intervalOpts = (opts?.interval ?? null) as { point?: string } | null;
-  const eventsOpts = (opts?.events ?? null) as { eventsField?: string } | null;
-  const barEffects = (opts?.vizBar as { effects?: Array<{ value?: string }> } | undefined)?.effects;
-  const boxEffects = (opts?.vizBoxplot as {
-    effects?: Array<{ median?: string | null; data?: string | null }>;
-  } | undefined)?.effects;
-  const violinEffects = (opts?.vizViolin as {
-    effects?: Array<{ data?: string }>;
-  } | undefined)?.effects;
-
-  switch (col.type) {
-    case "forest": {
-      const f = forestOpts?.point ?? forestOpts?.effects?.[0]?.pointCol;
-      return f ? meta[f] : bare();
-    }
-    case "interval": {
-      const f = intervalOpts?.point;
-      return f ? meta[f] : bare();
-    }
-    case "custom": {
-      const f = eventsOpts?.eventsField;
-      return f ? meta[f] : bare();
-    }
-    case "viz_bar": {
-      const f = barEffects?.[0]?.value;
-      return f ? meta[f] : bare();
-    }
-    case "viz_boxplot": {
-      const eff = boxEffects?.[0];
-      if (!eff) return bare();
-      if (eff.median) return meta[eff.median];
-      if (eff.data) {
-        const arr = meta[eff.data];
-        if (Array.isArray(arr)) return median(arr as number[]);
-      }
-      return undefined;
-    }
-    case "viz_violin": {
-      const f = violinEffects?.[0]?.data;
-      if (!f) return bare();
-      const arr = meta[f];
-      if (Array.isArray(arr)) return median(arr as number[]);
-      return undefined;
-    }
-    default:
-      return bare();
+  const sortKey = dispatchForColumn(col, "sortKey");
+  if (sortKey) {
+    return sortKey(meta[col.field], col.options, { row: meta });
   }
+  return bare;
 }
 
 function compareForSort(aVal: unknown, bVal: unknown, desc: boolean): number {
@@ -193,45 +154,59 @@ function compareForSort(aVal: unknown, bVal: unknown, desc: boolean): number {
   return desc ? -comparison : comparison;
 }
 
-function applySort(rows: Row[], config: SortConfig, col: ColumnSpec | undefined): Row[] {
-  const sorted = [...rows];
+/**
+ * Sort the supplied indices by the column's sort key. Returns a fresh
+ * array; inputs are not mutated.
+ */
+export function applySort(
+  rows: readonly Row[],
+  indices: readonly number[],
+  config: SortConfig,
+  col: ColumnSpec | undefined,
+): number[] {
+  const sorted = indices.slice();
   const { column, direction } = config;
-  sorted.sort((a, b) =>
+  const desc = direction === "desc";
+  sorted.sort((ai, bi) =>
     compareForSort(
-      sortValueFor(col, a, column),
-      sortValueFor(col, b, column),
-      direction === "desc",
+      sortValueFor(col, rows[ai], column),
+      sortValueFor(col, rows[bi], column),
+      desc,
     ),
   );
   return sorted;
 }
 
-/** Sort rows within each group bucket so grouping structure is preserved.
- *  Rows with the same groupId stay contiguous and retain their relative
- *  group order. */
+/**
+ * Sort within each group bucket so grouping structure is preserved —
+ * rows sharing a groupId stay contiguous, and bucket order matches
+ * first-appearance in the input. Operates on indices; predicates read
+ * the canonical row via `rows[i]`.
+ */
 export function applySortWithinGroups(
-  rows: Row[],
+  rows: readonly Row[],
+  indices: readonly number[],
   config: SortConfig,
   col: ColumnSpec | undefined,
-): Row[] {
-  const buckets = new Map<string, { positions: number[]; rows: Row[] }>();
+): number[] {
+  const buckets = new Map<string, { positions: number[]; indices: number[] }>();
   const bucketOrder: string[] = [];
-  rows.forEach((row, idx) => {
-    const key = row.groupId ?? "__root__";
+  indices.forEach((rowIdx, slot) => {
+    const key = rows[rowIdx].groupId ?? "__root__";
     let bucket = buckets.get(key);
     if (!bucket) {
-      bucket = { positions: [], rows: [] };
+      bucket = { positions: [], indices: [] };
       buckets.set(key, bucket);
       bucketOrder.push(key);
     }
-    bucket.positions.push(idx);
-    bucket.rows.push(row);
+    bucket.positions.push(slot);
+    bucket.indices.push(rowIdx);
   });
 
-  const result: Row[] = new Array(rows.length);
+  const result: number[] = new Array(indices.length);
   for (const key of bucketOrder) {
-    const { positions, rows: bucketRows } = buckets.get(key)!;
-    const sortedBucket = applySort(bucketRows, config, col);
+    const { positions, indices: bucketIndices } = buckets.get(key)!;
+    const sortedBucket = applySort(rows, bucketIndices, config, col);
     positions.forEach((pos, i) => {
       result[pos] = sortedBucket[i];
     });

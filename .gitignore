@@ -20,6 +20,10 @@ inst/scripts/package.json
 # Test artifacts
 tests/testthat/_snaps/
 examples_output/
+tests/visual/output/
+srcjs/tests/visual-browser/fixtures/
+srcjs/tests/visual-browser/output/
+srcjs/tests/components/dist/
 
 # IDE
 .vscode/
@@ -57,3 +61,7 @@ srcjs/tests/visual/output/
 tests/manual/sandbox-download.html
 tests/manual/sandbox-widget.html
 tests/manual/sandbox-widget_files/
+
+# scratch space
+dev
+forclaude.md

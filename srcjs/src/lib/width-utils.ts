@@ -2,7 +2,7 @@
  * Width calculation utilities for column auto-sizing.
  *
  * This module provides shared utilities for calculating column widths in forest plots.
- * It is used by both the web view (forestStore.svelte.ts) and SVG generator (svg-generator.ts)
+ * It is used by both the web view (tabvizStore.svelte.ts) and SVG generator (svg-generator.ts)
  * to ensure visual consistency between renderers.
  *
  * === KEY FUNCTIONS ===
@@ -27,7 +27,7 @@
  *
  * === USAGE ===
  *
- * The forestStore uses canvas measurement when available (more accurate),
+ * The tabvizStore uses canvas measurement when available (more accurate),
  * while the SVG generator uses estimateTextWidth() since it runs in a
  * DOM-free environment (R's V8 engine).
  *
@@ -44,6 +44,7 @@
 import type { ColumnSpec, Row, ColumnOptions, Group } from "../types";
 import { getColumnDisplayText } from "./formatters";
 import { AUTO_WIDTH, SPACING, GROUP_HEADER, TEXT_MEASUREMENT, BADGE } from "./rendering-constants";
+import { dispatchForColumn } from "../schema/dispatch";
 
 // ============================================================================
 // Text Width Measurement
@@ -109,6 +110,23 @@ export function estimateTextWidth(
 }
 
 /**
+ * Measure text width using canvas when available (browser), falling
+ * back to character-class estimation in V8/Node. Single entry point
+ * for renderers that need a consistent measurement across runtime
+ * targets.
+ */
+export function measureTextWidth(
+  text: string,
+  fontSize: number,
+  fontFamily: string,
+  fontWeight: number = 400,
+): number {
+  const canvasWidth = measureTextWidthCanvas(text, `${fontSize}px`, fontFamily, fontWeight);
+  if (canvasWidth !== null) return canvasWidth;
+  return estimateTextWidth(text, fontSize, fontWeight);
+}
+
+/**
  * Measure text width using canvas (browser only).
  * Returns null if canvas is not available.
  */
@@ -152,61 +170,9 @@ export function measureTextWidthCanvas(
  *                + 4px gap + label).
  */
 export function glyphNaturalWidth(col: ColumnSpec, rows: Row[]): number {
-  if (col.type === "pictogram") {
-    const opts = col.options?.pictogram;
-    const sizeKey = opts?.size ?? "base";
-    const glyphPx = sizeKey === "sm" ? 10 : sizeKey === "lg" ? 20 : 14;
-    const gap = 1;
-    const layout = opts?.layout ?? "row";
-
-    let slots: number;
-    if (layout === "stack") {
-      slots = 1;
-    } else if (opts?.maxGlyphs != null) {
-      slots = Math.min(20, opts.maxGlyphs);
-    } else {
-      // count mode: scan rows for max value, capped at 20 (matches the
-      // runaway-row guard in CellPictogram.svelte).
-      let m = 0;
-      for (const row of rows) {
-        const v = Number(row.metadata[col.field]);
-        if (Number.isFinite(v)) m = Math.max(m, Math.ceil(v));
-      }
-      slots = Math.min(20, m);
-    }
-    const trackW = slots * glyphPx + Math.max(0, slots - 1) * gap;
-
-    // valueLabel adds ~5 chars of label text + 4px gap.
-    if (opts?.valueLabel) {
-      const labelFontPx = sizeKey === "sm" ? 11 : sizeKey === "lg" ? 14 : 12;
-      const labelW = 5 * labelFontPx * 0.55;
-      return trackW + 4 + labelW;
-    }
-    return trackW;
-  }
-
-  if (col.type === "stars") {
-    const max = col.options?.stars?.maxStars ?? 5;
-    return max * 12 + Math.max(0, max - 1) * 2;
-  }
-
-  if (col.type === "icon") {
-    const sizeKey = col.options?.icon?.size ?? "base";
-    return sizeKey === "sm" ? 12 : sizeKey === "lg" ? 16 : sizeKey === "xl" ? 26 : 14;
-  }
-
-  if (col.type === "ring") {
-    const opts = col.options?.ring;
-    const sizeKey = opts?.size ?? "base";
-    const diameter = sizeKey === "sm" ? 18 : sizeKey === "lg" ? 32 : 24;
-    if (!(opts?.showLabel ?? true)) return diameter;
-    const labelFontPx = sizeKey === "sm" ? 9 : sizeKey === "lg" ? 12 : 11;
-    // "100%" is the widest typical label (4 chars).
-    const labelW = 4 * labelFontPx * 0.55;
-    return diameter + 4 + labelW;
-  }
-
-  return 0;
+  const fn = dispatchForColumn(col, "naturalWidth");
+  if (!fn) return 0;
+  return fn(col, rows);
 }
 
 // ============================================================================

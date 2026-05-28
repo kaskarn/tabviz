@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import { autoPosition } from "$lib/dropdown-position";
   import Portal from "$lib/Portal.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
 
   let { store }: Props = $props();

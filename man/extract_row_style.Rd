@@ -15,6 +15,8 @@ extract_row_style(row, spec)
 A list of style properties or NULL if none set
 }
 \description{
-Extract row style from explicit column mappings
+Legacy wrapper retained for direct callers; the hot path in
+\code{serialize_data()} uses \code{compile_row_style_recipe()} + the faster
+\code{extract_row_style_fast()}.
 }
 \keyword{internal}

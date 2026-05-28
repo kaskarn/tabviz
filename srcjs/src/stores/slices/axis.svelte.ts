@@ -34,7 +34,7 @@ import type { WebSpec, ColumnSpec } from "$types";
 import { scaleLinear, scaleLog, type ScaleLinear, type ScaleLogarithmic } from "d3-scale";
 import { computeAxis, type AxisComputation, VIZ_MARGIN } from "$lib/axis-utils";
 
-/** Matches the shape produced by forestStore's `forestColumns` $derived
+/** Matches the shape produced by tabvizStore's `forestColumns` $derived
  *  — flat leaf-column entries with the original tree index. */
 type ForestColumnEntry = {
   index: number;

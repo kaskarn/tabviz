@@ -130,6 +130,22 @@ serialize_theme <- function(theme) {
     banding               = serialize_banding(theme@row@banding)
   )
 
+  # Borders are emitted as a flat sibling of axis/layout; layout × type
+  # model (see ThemeBorders + BorderSpec in R/classes-theme.R).
+  serialize_border_spec <- function(b) {
+    list(
+      thickness = b@thickness,
+      style     = b@style,
+      color     = if (is.na(b@color)) "#000000" else b@color
+    )
+  }
+  borders_block <- list(
+    layout = theme@borders@layout,
+    major  = serialize_border_spec(theme@borders@major),
+    minor  = serialize_border_spec(theme@borders@minor),
+    table  = serialize_border_spec(theme@borders@table)
+  )
+
   # web_fonts pass-through: each entry already has {family, url} shape
   # validated by WebTheme; jsonlite serializes the list of lists straight
   # into a JSON array. Use I() so the empty case still serializes as [].
@@ -173,8 +189,9 @@ serialize_theme <- function(theme) {
       slotStyle      = theme@inputs@slot_style
     ),
 
-    axis   = axis_block,
-    layout = layout_block,
+    axis    = axis_block,
+    layout  = layout_block,
+    borders = borders_block,
 
     surface = list(
       base   = theme@surface@base,
@@ -217,7 +234,8 @@ serialize_theme <- function(theme) {
       label    = serialize_text_role(theme@text@label),
       tick     = serialize_text_role(theme@text@tick),
       footnote = serialize_text_role(theme@text@footnote),
-      caption  = serialize_text_role(theme@text@caption)
+      caption  = serialize_text_role(theme@text@caption),
+      numeric  = serialize_text_role(theme@text@numeric)
     ),
 
     spacing = list(

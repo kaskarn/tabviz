@@ -446,6 +446,15 @@ resolve_column_style <- function(col, data, env = parent.frame()) {
       return(list(col_name = NA_character_, data = result_data))
     }
 
+    # Condition reference (from `cond("name")`): pass the tagged-union
+    # value through untouched. The serializer emits it as
+    # `styleMapping.<prop> = { kind: "condition", name }` on the wire;
+    # the TS-side resolver looks up `banks.conditions[name].values[i]`
+    # at render time (schema-sprint Phase 5).
+    if (inherits(expr, "tabviz_cond_ref")) {
+      return(list(col_name = expr, data = result_data))
+    }
+
     if (is.character(expr)) {
       # Validate column exists
       checkmate::assert_string(expr, .var.name = param_name)
@@ -465,7 +474,7 @@ resolve_column_style <- function(col, data, env = parent.frame()) {
 
     cli::cli_abort(
       c(
-        "{.arg {param_name}} must be a column name (character) or formula.",
+        "{.arg {param_name}} must be a column name (character), formula, or {.fn cond} reference.",
         "x" = "Got {.cls {class(expr)[[1]]}}."
       ),
       call = NULL

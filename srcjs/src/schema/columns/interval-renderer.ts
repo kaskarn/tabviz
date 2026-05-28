@@ -1,0 +1,153 @@
+// Cell renderer for the `interval` schema.
+//
+// Text-composition exemplar: produces a tagged RenderNode tree,
+// identical for browser + SVG export. Theme `nodeRules` can restyle
+// the bounds via the `interval-range` tag without the renderer
+// knowing anything about colors or sizes.
+//
+// Output shape (traditional variant):
+//
+//     group{ children: [
+//       text "0.85",                         // point estimate
+//       text " ",                            // separator (configurable)
+//       group{ tags: ["interval-range"],     // bounds, theme-targetable
+//         children: [text "(", text "0.72", text ", ", text "0.99", text ")"]
+//       },
+//     ]}
+//
+// Variants are NOT a runtime channel. The renderer reads only primitive
+// recipe fields from `options.interval.__resolved` (populated at spec
+// ingest by `compileVariants`). The wire `variant` id is preserved for
+// the editor segmented control; the renderer never branches on it
+// directly. See schema-sprint Phase 3 / variant-compile.ts.
+//
+// Edge cases preserved verbatim from the legacy `formatInterval`:
+// - Missing point → `naText`
+// - Missing bounds → just the point
+// - Imprecise threshold tripped → "—"
+
+import type { ColumnOptions } from "../../types";
+import type { RenderNode, RenderText, RenderGroup, CellFormatter } from "../render-types";
+import { registerRenderers } from "../extend";
+import { formatNumber } from "../../lib/formatters";
+import { tag } from "../theme-finalize";
+import { resolveVariant } from "../variant-compile";
+import { INTERVAL_SCHEMA } from "./interval";
+
+function text(value: string): RenderText {
+  return { kind: "text", value };
+}
+
+interface IntervalRecipe {
+  boundsLayout: "row" | "column";
+  boundsContent: "range" | "half_width";
+  boundsDelimiter: readonly [string, string];
+  boundsSeparator: string;
+  boundsPrefix: string;
+}
+
+function recipeFor(opts: ColumnOptions["interval"] | undefined): IntervalRecipe {
+  // Prefer the pre-compiled __resolved shape (compileVariants ingest pass);
+  // fall back to looking up the variant id directly so test fixtures and
+  // ad-hoc render paths that bypass setSpec still work correctly.
+  const fromResolved = opts?.__resolved as Partial<IntervalRecipe> | undefined;
+  if (fromResolved && "boundsLayout" in fromResolved) {
+    return fromResolved as IntervalRecipe;
+  }
+  const variantId = opts?.variant as string | undefined;
+  const fallback = resolveVariant(INTERVAL_SCHEMA, variantId);
+  if (fallback) return fallback as unknown as IntervalRecipe;
+  // No variants declared on the schema (defensive): keep the traditional
+  // layout as the absolute last-resort default.
+  return {
+    boundsLayout: "row",
+    boundsContent: "range",
+    boundsDelimiter: ["(", ")"],
+    boundsSeparator: ", ",
+    boundsPrefix: "",
+  };
+}
+
+const intervalRenderer: CellFormatter = (_value, options, ctx) => {
+  const opts = options as ColumnOptions | undefined;
+  const i = opts?.interval;
+  const meta = (ctx?.row ?? {}) as Record<string, unknown>;
+
+  const pointField = i?.point;
+  const lowerField = i?.lower;
+  const upperField = i?.upper;
+  const point = pointField ? (meta[pointField] as number | undefined) : undefined;
+  const lower = lowerField ? (meta[lowerField] as number | undefined) : undefined;
+  const upper = upperField ? (meta[upperField] as number | undefined) : undefined;
+
+  if (point === undefined || point === null || Number.isNaN(point)) {
+    return text(opts?.naText ?? "");
+  }
+
+  const sep = i?.separator ?? i?.sep ?? " ";
+  const impreciseThreshold = i?.impreciseThreshold;
+
+  const numOpts: ColumnOptions = {
+    numeric: {
+      decimals: i?.decimals,
+      digits: i?.digits,
+      thousandsSep: i?.thousandsSep,
+      abbreviate: i?.abbreviate,
+    },
+  };
+  const fmt = (v: number) => formatNumber(v, numOpts);
+
+  if (
+    lower === undefined || lower === null ||
+    upper === undefined || upper === null ||
+    Number.isNaN(lower) || Number.isNaN(upper)
+  ) {
+    return text(fmt(point));
+  }
+
+  if (impreciseThreshold != null && lower > 0 && upper / lower > impreciseThreshold) {
+    return text("—");
+  }
+
+  const recipe = recipeFor(i);
+
+  // Bounds content: either the full range (lower, upper) joined by the
+  // recipe's separator, or the half-width derived from the bounds.
+  const boundsChildren: RenderNode[] = [];
+  if (recipe.boundsDelimiter[0]) boundsChildren.push(text(recipe.boundsDelimiter[0]));
+  if (recipe.boundsPrefix)       boundsChildren.push(text(recipe.boundsPrefix));
+  if (recipe.boundsContent === "half_width") {
+    boundsChildren.push(text(fmt((upper - lower) / 2)));
+  } else {
+    boundsChildren.push(text(fmt(lower)));
+    if (recipe.boundsSeparator) boundsChildren.push(text(recipe.boundsSeparator));
+    boundsChildren.push(text(fmt(upper)));
+  }
+  if (recipe.boundsDelimiter[1]) boundsChildren.push(text(recipe.boundsDelimiter[1]));
+
+  const bounds: RenderGroup = tag(
+    { kind: "group", layout: "row", children: boundsChildren },
+    "interval-range",
+  ) as RenderGroup;
+
+  return {
+    kind: "group",
+    layout: recipe.boundsLayout,
+    children: recipe.boundsLayout === "column"
+      ? [text(fmt(point)), bounds]
+      : [text(fmt(point)), text(sep), bounds],
+  } as RenderNode;
+};
+
+/** Idempotent re-register helper for tests after registry reset. */
+export function registerIntervalRenderer(): void {
+  // One implementation, both runtimes — text composition is naturally
+  // runtime-agnostic; theme nodeRules overlay both identically.
+  registerRenderers("interval", {
+    dom: intervalRenderer,
+    svg: intervalRenderer,
+  });
+}
+
+// Side-effect: register on first import.
+registerIntervalRenderer();

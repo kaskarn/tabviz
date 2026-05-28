@@ -1,5 +1,5 @@
 import type { SplitForestPayload, HTMLWidgetsBinding, WidgetInstance } from "$types";
-import type { SplitForestStore } from "$stores/splitForestStore.svelte";
+import type { SplitTabvizStore } from "$stores/splitTabvizStore.svelte";
 import { createSplitTabviz, type SplitTabvizInstance } from "$core/createSplitTabviz";
 import { shinyEnvelope } from "$lib/shiny-envelope";
 import { normalize } from "$spec/proxy-args.ts";
@@ -10,9 +10,11 @@ import {
   setShinyInput,
 } from "./glue";
 import "../styles.css";
+// Side-effect: register built-in schema behaviors + DOM cell renderers.
+import "../schema/init-dom";
 
 // Store registry for Shiny proxy support
-const storeRegistry = new Map<string, SplitForestStore>();
+const storeRegistry = new Map<string, SplitTabvizStore>();
 
 // HTMLWidgets binding — consumes the public `createSplitTabviz` factory.
 // Phase 1: factory owns wire-version validation, payload ingestion, mount.
@@ -53,7 +55,7 @@ const binding: HTMLWidgetsBinding = {
 // full Tier-1 observability is deferred — consumers can still observe the
 // active sub-store's own outputs once richer cross-cutting wiring lands.
 // See docs/dev/source-tagging.md for the envelope contract.
-function setupShinyBindings(widgetId: string, store: SplitForestStore) {
+function setupShinyBindings(widgetId: string, store: SplitTabvizStore) {
   $effect.root(() => {
     $effect(() => {
       const activeKey = store.activeKey;
@@ -82,7 +84,7 @@ registerWidget(binding);
 // (typed normalizer per method; handlers receive typed args). Currently
 // the split widget exposes only `selectPlot`; future methods (re-pane,
 // reorder panes, etc.) land here as siblings.
-const splitProxyMethods: Record<string, (store: SplitForestStore, args: Record<string, unknown>) => void> = {
+const splitProxyMethods: Record<string, (store: SplitTabvizStore, args: Record<string, unknown>) => void> = {
   selectPlot: (store, raw) => {
     const a = normalize.selectPlot(raw);
     if (!a) return;

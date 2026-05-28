@@ -66,11 +66,11 @@ test_that("TextRole validates figures and fg", {
   expect_silent(TextRole(fg = "#000000"))
 })
 
-test_that("TextRoles holds 8 named bundles", {
+test_that("TextRoles holds 9 named bundles", {
   tr <- TextRoles()
   expect_setequal(
     S7::prop_names(tr),
-    c("title", "subtitle", "body", "cell", "label", "tick", "footnote", "caption")
+    c("title", "subtitle", "body", "cell", "label", "tick", "footnote", "caption", "numeric")
   )
   for (p in S7::prop_names(tr)) {
     expect_s7_class(S7::prop(tr, p), "TextRole")

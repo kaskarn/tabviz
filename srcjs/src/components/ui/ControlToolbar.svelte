@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { ThemeName } from "$lib/theme-presets";
   import type { WebTheme } from "$types";
   import ThemeSwitcher from "./ThemeSwitcher.svelte";
@@ -13,9 +13,13 @@
   import FullscreenButton from "./FullscreenButton.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
     enableExport?: boolean;
-    enableThemes?: Record<string, WebTheme> | null;  // Available themes (null = disabled)
+    // Available themes. Mirrors `ThemesInput` in ThemeSwitcher — accepts
+    // either a flat `Record<string, WebTheme>` or a categorized
+    // `Record<string, Record<string, WebTheme>>`. `null` disables the
+    // switcher; `undefined` shows the built-in preset list.
+    enableThemes?: Record<string, WebTheme> | Record<string, Record<string, WebTheme>> | null;
     enableZoomControls?: boolean;
     enableReset?: boolean;
     enablePaint?: boolean;

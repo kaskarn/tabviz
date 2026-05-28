@@ -52,7 +52,7 @@ interface RowReport {
 export interface LayoutDebugInput {
   containerEl: HTMLElement;
   layout: ComputedLayout;
-  displayRows: DisplayRow[];
+  displayRows: readonly DisplayRow[];
   themeSpacing: {
     rowHeight: number;
     cellPaddingY: number;

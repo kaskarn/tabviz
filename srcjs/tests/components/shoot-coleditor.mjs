@@ -1,0 +1,10 @@
+import puppeteer from "puppeteer";
+const URL_BASE = "http://localhost:4477/harness.html#v2-editor";
+const b = await puppeteer.launch({ headless: true });
+const p = await b.newPage();
+await p.setViewport({ width: 1400, height: 1600, deviceScaleFactor: 2 });
+await p.goto(URL_BASE, { waitUntil: "networkidle0" });
+await new Promise(r => setTimeout(r, 600));
+await p.screenshot({ path: "/Users/antoine/dev/r/forest/srcjs/tests/components/settings-shots/coleditor.png", fullPage: true });
+console.log("saved coleditor.png");
+await b.close();

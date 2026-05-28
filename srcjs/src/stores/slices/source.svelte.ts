@@ -10,7 +10,7 @@
 // latest tag. `currentSource` is a plain closure variable — its changes
 // are synchronous within withSource's try/finally; no reactivity needed.
 //
-// Extracted from forestStore.svelte.ts as the Phase 0c-C1 spike (idiom
+// Extracted from tabvizStore.svelte.ts as the Phase 0c-C1 spike (idiom
 // (c) "method-only split" per spec §5.1-Q8). See
 // docs/dev/store-decomposition-idiom.md for the decision record.
 

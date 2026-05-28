@@ -18,7 +18,7 @@
 //                                until columns slice ships
 //   - appendOp                 — push setTheme / setWatermark records
 //
-// Extracted from forestStore.svelte.ts in Phase 0c-C1 PR2. See
+// Extracted from tabvizStore.svelte.ts in Phase 0c-C1 PR2. See
 // docs/dev/store-decomposition-idiom.md for the slice idiom.
 //
 // Watermark mutations (setWatermark / previewWatermark / colour / opacity)
@@ -107,10 +107,14 @@ export interface ThemeSlice {
 }
 
 export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
-  let themeEdits = $state<Record<string, Record<string, unknown>>>({});
+  // REPLACE-only state (per audit): use `$state.raw` to skip proxy wrap.
+  // The `$state.snapshot(themeEdits)` call later in this file (for
+  // structuredClone safety during split-widget snapshot persistence)
+  // continues to work — `$state.snapshot` is a no-op on raw signals.
+  let themeEdits = $state.raw<Record<string, Record<string, unknown>>>({});
   let baseThemeName = $state<string>("default");
-  let themeOverrides = $state<Set<string>>(new Set());
-  let initialTheme = $state<WebSpec["theme"] | null>(null);
+  let themeOverrides = $state.raw<Set<string>>(new Set());
+  let initialTheme = $state.raw<WebSpec["theme"] | null>(null);
   let initialWatermark = $state<string | undefined>(undefined);
 
   function cloneTheme(t: WebSpec["theme"]): WebSpec["theme"] {
@@ -195,16 +199,16 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
 
   /**
    * Live-preview a single theme field during a drag without recording
-   * the edit or invalidating column widths. Mirrors the
-   * previewColumnWidth / setColumnWidth pattern.
+   * the edit or invalidating column widths.
+   *
+   * Must reassign the spec (via writeThemePath) rather than mutating in
+   * place — `spec` is held as `$state.raw`, so deep mutations are
+   * invisible to reactivity and the UI wouldn't repaint until commit.
+   * `setColumnWidth`'s preview works on direct mutation because
+   * `columnWidths` is a regular (deep-proxied) `$state`, not raw.
    */
   function previewThemeField(section: string, field: string, value: unknown): void {
-    const spec = deps.getSpec();
-    if (!spec || !spec.theme) return;
-    const theme = spec.theme as unknown as Record<string, unknown>;
-    const current = theme[section];
-    if (!current || typeof current !== "object") return;
-    (current as Record<string, unknown>)[field] = value;
+    writeThemePath([section, field], value);
   }
 
   function setThemeField(...args: unknown[]): void {

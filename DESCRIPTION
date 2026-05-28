@@ -1,6 +1,6 @@
 Package: tabviz
 Title: Interactive Tables with Embedded Visualizations
-Version: 0.35.0
+Version: 0.36.0
 Authors@R:
     person("Antoine", "Baldassari", , "baldassarian@gmail.com", role = c("aut", "cre"))
 Author: Antoine Baldassari [aut, cre]
@@ -27,6 +27,7 @@ Collate:
     'classes-annotations.R'
     'glyph-registry.R'
     'v8-bridge.R'
+    'schema-defaults.R'
     'classes-components.R'
     'update-check.R'
     'utils-nse.R'
@@ -39,6 +40,7 @@ Collate:
     'themes-design.R'
     'themes-api.R'
     'utils-serialize-resolved.R'
+    'conditions.R'
     'paginate.R'
     'wire-version.R'
     'utils-serialize.R'
@@ -53,6 +55,7 @@ Collate:
     'regenerate_examples.R'
     'screenshot.R'
     'visual_tests.R'
+    'render_browser_visual_tests.R'
     'data.R'
     'zzz.R'
 Imports:
@@ -68,6 +71,7 @@ Imports:
     tools
 Suggests:
     shiny (>= 1.8.0),
+    systemfonts (>= 1.0.0),
     data.table,
     broom,
     testthat (>= 3.0.0),

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Row, WebTheme } from "$types";
+  import { portal } from "$lib/portal";
 
   interface Props {
     row: Row | null;
@@ -64,7 +65,12 @@
 </script>
 
 {#if shouldShow && row}
-  <div bind:this={tooltipEl} class="tabviz-tooltip" style={positionStyle}>
+  <!--
+    Portaled to document.body so position:fixed resolves against the
+    viewport, not the contain-scoped .tabviz-container (which would
+    offset the tooltip by the widget's distance from the page origin).
+  -->
+  <div bind:this={tooltipEl} class="tabviz-tooltip" style={positionStyle} use:portal>
     <div class="tooltip-header">{row.label}</div>
     <div class="tooltip-body">
       <div class="tooltip-row tooltip-estimate">

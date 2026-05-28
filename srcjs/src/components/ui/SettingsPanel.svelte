@@ -1,21 +1,28 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import BasicsControl from "./BasicsControl.svelte";
   import ThemeControl from "./ThemeControl.svelte";
-  import V2LayoutControl from "./V2LayoutControl.svelte";
-  import V2SpacingControl from "./V2SpacingControl.svelte";
-  import V2MarksControl from "./V2MarksControl.svelte";
-  import V2TextControl from "./V2TextControl.svelte";
-  import V2TokensControl from "./V2TokensControl.svelte";
-  import TabSelect from "./TabSelect.svelte";
+  import LayoutControl from "./LayoutControl.svelte";
+  import SpacingControl from "./SpacingControl.svelte";
+  import MarksControl from "./MarksControl.svelte";
+  import TextControl from "./TextControl.svelte";
+  import TokensControl from "./TokensControl.svelte";
+  // TabSelect removed Phase B — replaced by TabBar (horizontal row).
   // Axis settings are per-column now (via the column configure popover on
   // viz_forest / viz_bar / viz_boxplot / viz_violin). The theme Axis tab
   // was removed in v0.18 — R's set_axis() still exists for users who want
   // a cross-cutting default, but the interactive surface is column-scoped.
   import ConfirmDialog from "./ConfirmDialog.svelte";
+  // v2 design tokens — the Field/Pill/Knob/Swatch primitives the
+  // re-skinned *Field wrappers use cascade off [data-tv-v2]. Importing
+  // here ensures the stylesheet ships with the widget bundle even when
+  // ColumnEditorV2Popover hasn't been lazy-loaded yet.
+  import "$components/primitives/v2/tokens.css";
+  import TabSelect, { type TabOption } from "./TabSelect.svelte";
+  import WatermarkControl from "./WatermarkControl.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
 
   let { store }: Props = $props();
@@ -29,14 +36,17 @@
    * object structure (banding → colors → typography → spacing → shapes →
    * axis → layout) so the panel reads like the package's mental model.
    */
-  const tabs: { id: string; label: string; kind?: "normal" | "advanced" }[] = [
-    { id: "layout",   label: "Layout" },
-    { id: "theme",    label: "Theme" },
-    { id: "labels",   label: "Labels" },
-    { id: "spacing",  label: "Spacing", kind: "advanced" },
-    { id: "viz",      label: "Viz",     kind: "advanced" },
-    { id: "text",     label: "Text",    kind: "advanced" },
-    { id: "tokens",   label: "Tokens",  kind: "advanced" },
+  // Tab order: Layout (now includes Labels + Watermark — content used
+  // to live in its own tab but those concerns belong together for the
+  // viewer composing the plot), then Theme, then a divider for the
+  // detail surfaces.
+  const tabs: TabOption[] = [
+    { id: "layout",   label: "Layout",  glyph: "section.layout",       description: "Labels, density, banding, watermark" },
+    { id: "theme",    label: "Theme",   glyph: "section.style",        description: "Identity colors, fonts, cascade" },
+    { id: "spacing",  label: "Spacing", glyph: "density.comfortable",  description: "Row heights, gaps, padding",       kind: "advanced" },
+    { id: "viz",      label: "Viz",     glyph: "type.viz",             description: "Series shapes, mark sizes",        kind: "advanced" },
+    { id: "text",     label: "Text",    glyph: "type.text",            description: "Per-role typography",              kind: "advanced" },
+    { id: "tokens",   label: "Tokens",  glyph: "section.options",      description: "Semantic row/cell tokens",         kind: "advanced" },
   ];
   let activeTabId = $state<string>("layout");
 
@@ -130,6 +140,7 @@
   <div
     bind:this={panelRef}
     class="settings-panel"
+    data-tv-v2
     role="dialog"
     aria-modal="true"
     aria-label="Display settings"
@@ -161,17 +172,6 @@
         </button>
       </div>
 
-      <span class="bar-divider" aria-hidden="true"></span>
-
-      <div class="tab-select-wrap">
-        <TabSelect
-          options={tabs}
-          value={activeTabId}
-          onchange={(id) => (activeTabId = id)}
-          ariaLabel="Settings section"
-        />
-      </div>
-
       <!--
         Explicit close button. Keeping it visible even though backdrop /
         Esc / re-clicking the toolbar gear all dismiss the panel —
@@ -191,6 +191,20 @@
       </button>
     </div>
 
+    <!-- Section selector — restyled v2 dropdown. Glyph + label + per-
+         option description in the popover; compact ink chip in the bar.
+         Reverted from the TabBar glyph-only row because seven abstract
+         icons side-by-side don't read at a glance — legibility beats
+         density on a low-frequency surface. -->
+    <div class="tab-bar">
+      <TabSelect
+        options={tabs}
+        value={activeTabId}
+        onchange={(id) => (activeTabId = id)}
+        ariaLabel="Settings section"
+      />
+    </div>
+
     <div class="panel-body-wrap">
       <div
         class="panel-body"
@@ -205,20 +219,25 @@
             id="settings-panel-{tab.id}"
             aria-labelledby="settings-tab-{tab.id}"
           >
-            {#if tab.id === "labels"}
-              <BasicsControl {store} />
-            {:else if tab.id === "theme"}
+            {#if tab.id === "theme"}
               <ThemeControl {store} />
             {:else if tab.id === "layout"}
-              <V2LayoutControl {store} />
+              <!-- User-locked order: Layout → Banding → Borders →
+                   Labels → Watermark. LayoutControl outputs Layout +
+                   Banding + Borders (in that order, internally),
+                   then BasicsControl renders Labels, then
+                   WatermarkControl. -->
+              <LayoutControl {store} />
+              <BasicsControl {store} />
+              <WatermarkControl {store} />
             {:else if tab.id === "spacing"}
-              <V2SpacingControl {store} />
+              <SpacingControl {store} />
             {:else if tab.id === "viz"}
-              <V2MarksControl {store} />
+              <MarksControl {store} />
             {:else if tab.id === "text"}
-              <V2TextControl {store} />
+              <TextControl {store} />
             {:else if tab.id === "tokens"}
-              <V2TokensControl {store} />
+              <TokensControl {store} />
             {/if}
           </div>
         {/if}
@@ -259,7 +278,14 @@
     bottom: 0;
     width: clamp(320px, 40%, 440px);
     z-index: 10011;
-    background: var(--tv-bg, #ffffff);
+    /* Layered paper background: warm cream base + barely-visible paper
+       grain (SVG noise) so the panel reads as a real surface, not flat
+       digital chrome. The radial gradient adds a subtle vignette so the
+       eye centers on the active content. */
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, 0.5) 0%, transparent 65%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.08  0 0 0 0 0.07  0 0 0 0 0.05  0 0 0 0.045 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+      var(--tv-bg, #faf7f0);
     border-left: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
     box-shadow:
       -24px 0 48px -12px color-mix(in srgb, var(--tv-fg, #0f172a) 12%, transparent),
@@ -294,11 +320,16 @@
 
   .bar-title {
     flex-shrink: 0;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--tv-text-muted, #64748b);
+    /* Display font for one moment — the panel's signature. Cinzel /
+       EB Garamond / serif fallback. Real small caps via font-feature-
+       settings so the proportions are correct vs CSS uppercase. */
+    font-family: var(--v2-font-display, "EB Garamond", "Palatino", Georgia, serif);
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    letter-spacing: 0.14em;
+    color: var(--v2-ink, #15140e);
   }
 
   .bar-actions {
@@ -333,25 +364,11 @@
     cursor: not-allowed;
   }
 
-  .bar-divider {
-    flex-shrink: 0;
-    width: 1px;
-    height: 20px;
-    background: color-mix(in srgb, var(--tv-border, #e2e8f0) 70%, transparent);
-    margin: 0 4px;
-  }
 
   /**
-   * Tab selector. Wraps TabSelect — a small themed dropdown that replaces
-   * the native <select> we used briefly in v0.15 (feedback: looked too
-   * plain against the rest of the widget).
+   * (Former .tab-select-wrap removed when the inline TabSelect dropdown
+   * was replaced by the dedicated TabBar row below the panel-bar.)
    */
-  .tab-select-wrap {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-  }
 
   /**
    * Wrap the scrollable body in a positioned container so the bottom-fade
@@ -365,7 +382,10 @@
 
   .panel-body {
     height: 100%;
-    padding: 2px 12px 12px;
+    /* Top padding lives on the first v2 Section's head (12px); adding
+       it here pushes the first section down for no reason. Zero top
+       lets the section's own padding own the rhythm. */
+    padding: 0 12px 12px;
     overflow-y: auto;
   }
 
@@ -395,5 +415,14 @@
 
   .tab-panel {
     display: block;
+  }
+
+  /* Section selector chip in the panel bar — sits flush in the panel
+     body with mild side-padding so the v2 chip's own ink-rule border
+     reads clearly without crowding the body header. */
+  .tab-bar {
+    display: flex;
+    padding: 6px 8px 4px;
+    border-bottom: 1px solid var(--v2-rule, #d6d0c1);
   }
 </style>

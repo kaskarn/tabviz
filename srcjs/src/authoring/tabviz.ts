@@ -15,6 +15,12 @@ import type {
   WebSpec, WebData, Row, ColumnDef, InteractionSpec, LayoutSpec, PlotLabels,
   AvailableField, FieldCategory,
 } from "../types";
+import type {
+  WidgetBanks, FootnoteEntry, AxisEntry, LegendEntry, ConditionEntry, BankEntry,
+} from "../schema/banks";
+import {
+  evaluateConditions, type ConditionAuthoring,
+} from "../schema/conditions";
 import { CURRENT_VERSION } from "../spec";
 import { resolveThemeRef, type ThemeRef } from "../lib/theme-api";
 import { colText } from "./columns";
@@ -80,6 +86,31 @@ export interface TabvizArgs {
   initialHiddenColumns?: string[];
   /** Original-call deparse, for the "View source" baseline line. Optional. */
   originalCall?: string;
+  // Widget banks (footnotes, axes, legends, conditions, custom).
+  // User-authored entries flow through the wire; schema behaviors
+  // contribute additional entries at runtime via
+  // computeEffectiveBanks(spec).
+  footnotes?: FootnoteEntry[];
+  axes?: AxisEntry[];
+  legends?: LegendEntry[];
+  /**
+   * Authored conditions — provided as rule descriptors; tabviz()
+   * evaluates the rules against the data and materializes
+   * ConditionEntry values for the wire.
+   *
+   *   tabviz({ data,
+   *     conditions: [
+   *       { name: 'significant',
+   *         rule: (r, rows) => r.p < 0.05 / rows.length },
+   *     ],
+   *     columns: [...]
+   *   })
+   *
+   * The evaluated boolean vectors are then referenceable via
+   * `cond("significant")` inside any styleMapping field.
+   */
+  conditions?: ConditionAuthoring[];
+  customBanks?: Record<string, BankEntry[]>;
 }
 
 /**
@@ -234,6 +265,23 @@ export function tabviz(args: TabvizArgs): WebSpec {
       hiddenColumns: args.initialHiddenColumns,
     };
   }
+
+  // Widget banks — user-authored entries flow through; schema
+  // behaviors contribute additional entries at runtime.
+  const banks: WidgetBanks = {};
+  if (args.footnotes?.length)   banks.footnotes = args.footnotes;
+  if (args.axes?.length)        banks.axes      = args.axes;
+  if (args.legends?.length)     banks.legends   = args.legends;
+  if (args.conditions?.length) {
+    // Materialize ConditionEntry values by evaluating rules against
+    // the data. The renderer never re-evaluates; this is the only
+    // computation moment for condition values.
+    banks.conditions = evaluateConditions(args.conditions, { rows });
+  }
+  if (args.customBanks && Object.keys(args.customBanks).length > 0) {
+    banks.custom = args.customBanks;
+  }
+  if (Object.keys(banks).length > 0) spec.banks = banks;
 
   return spec;
 }

@@ -11,7 +11,7 @@
   let { group, rowCount, theme, level = 1 }: Props = $props();
 
   // Get level-specific styles from theme
-  // Note: Background is NOT applied here - it's handled by ForestPlot.svelte
+  // Note: Background is NOT applied here - it's handled by TabvizPlot.svelte
   // at the row level via getGroupBackground() for proper solid-color rendering
   function getLevelStyles(level: number, theme: WebTheme | undefined) {
     const rg = theme?.rowGroup;
@@ -30,7 +30,7 @@
 </script>
 
 <!-- Click handling moved to parent row for full-row interactivity -->
-<!-- Background is applied to the full row by ForestPlot.svelte -->
+<!-- Background is applied to the full row by TabvizPlot.svelte -->
 <!-- Border is applied at the parent `.grid-cell.group-row-bordered` so it
      aligns with the row edge rather than floating above the cell's bottom
      padding (driven by GroupHeaderStyles.levelN_border_bottom in the parent). -->

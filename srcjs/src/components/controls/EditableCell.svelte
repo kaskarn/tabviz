@@ -1,10 +1,11 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { EditTarget, EditValue } from "$types";
   import { tick } from "svelte";
+  import { portal } from "$lib/portal";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
     target: EditTarget;
     /** Container the widget is mounted in; used to anchor the inline overlay. */
     root: HTMLElement | null;
@@ -92,6 +93,13 @@
   let draftLo = $state<string>("");
   let draftHi = $state<string>("");
 
+  // `.tabviz-container` declares `contain: layout style paint;`, which
+  // makes it a containing block for `position: fixed` descendants. We
+  // escape that by `use:portal`ing the editor into document.body — so
+  // viewport-relative coords from `getBoundingClientRect()` land
+  // correctly. (Previously we localized inline; the portal approach is
+  // consistent with HeaderContextMenu / ColumnTypeMenu / Tooltip /
+  // DropIndicator and removes the offset-subtraction math.)
   $effect(() => {
     if (anchorEl) rect = anchorEl.getBoundingClientRect();
     if (isForest) rect = null;
@@ -204,6 +212,12 @@
 <svelte:window onpointerdown={onWindowPointerDown} />
 
 {#if isForest}
+  <!--
+    Portaled so position:fixed resolves against the viewport — the
+    target.x/y come from getBoundingClientRect() (viewport coords) but
+    `.tabviz-container` declares `contain: layout`, scoping fixed to
+    the container without the portal escape.
+  -->
   <div
     class="edit-popover"
     bind:this={popoverEl}
@@ -211,6 +225,7 @@
     style:top="{(target.y ?? 0) + 8}px"
     role="dialog"
     aria-label="Edit forest values"
+    use:portal
   >
     <div class="edit-popover-title">Edit values</div>
     <label>
@@ -265,6 +280,7 @@
     style:height="{rect.height}px"
     bind:value={draft}
     onkeydown={onKeyInline}
+    use:portal
     autofocus
   />
 {/if}

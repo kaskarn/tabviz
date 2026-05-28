@@ -5,7 +5,7 @@
  *
  *   1. CSS-shaped constants (opacities, ratios consumed by `var(--tv-…)`
  *      in scoped styles) — emitted as CSS custom properties via
- *      `generateCSSVariables()`. Live in ForestPlot.svelte's runtime
+ *      `generateCSSVariables()`. Live in TabvizPlot.svelte's runtime
  *      style block.
  *   2. Algorithmic constants (SVG path math, layout estimation, text
  *      measurement) — consumed directly by the Svelte renderer and the
@@ -15,7 +15,7 @@
  * to custom properties — most of that migration was already in place
  * via `generateCSSVariables()`. The C6 work was minor: removing one
  * orphan (`GROUP_HEADER_HOVER_OPACITY`, never consumed) and routing
- * ForestPlot's inline-style emission through the helper rather than
+ * TabvizPlot's inline-style emission through the helper rather than
  * inlining the same two `${VAR}` substitutions.
  *
  * Adding a new constant: decide which partition. CSS-shaped → add to
@@ -213,7 +213,7 @@ export const RENDERING = {
  *
  * === WIDTH CALCULATION OVERVIEW ===
  *
- * Width calculation is performed by both the web view (forestStore.svelte.ts)
+ * Width calculation is performed by both the web view (tabvizStore.svelte.ts)
  * and the SVG generator (svg-generator.ts). Both use theme-based padding values
  * and follow the same algorithm to ensure visual consistency.
  *
@@ -325,7 +325,7 @@ export const GROUP_HEADER = {
 
 /**
  * Constants for column group header cells.
- * These match the .column-group-header CSS in ForestPlot.svelte.
+ * These match the .column-group-header CSS in TabvizPlot.svelte.
  *
  * Column group headers span multiple child columns and have their own padding.
  */
@@ -396,7 +396,7 @@ export function getEffectYOffset(index: number, total: number): number {
 
 /**
  * Generate CSS custom properties for rendering constants
- * Used by ForestPlot.svelte to inject consistent values
+ * Used by TabvizPlot.svelte to inject consistent values
  */
 export function generateCSSVariables(): string {
   return `

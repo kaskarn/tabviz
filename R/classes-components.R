@@ -519,6 +519,11 @@ col_n <- function(field, header = "N", width = NULL, decimals = 0,
 #' @param imprecise_threshold When upper/lower ratio exceeds this threshold,
 #'   the interval is considered imprecise and displayed as "--" instead.
 #'   Default is NULL (no threshold).
+#' @param variant Rendering variant — one of `"traditional"` (default, e.g.
+#'   `"0.85 (0.72, 0.99)"`), `"bracket_muted"` (`"0.85 [0.72-0.99]"` with
+#'   themed muted bounds), `"plus_minus"` (`"0.85 +/- 0.14"`, half-width as
+#'   the offset), or `"stacked"` (point on the first line, bounds on the
+#'   next). NULL keeps the default. Wire field: `options.interval.variant`.
 #' @param na_text Text to display for NA/missing values (default NULL = blank)
 #' @param sep `r lifecycle::badge("deprecated")` Use `separator` instead.
 #' @param ... Additional arguments passed to `web_col()`, including cell styling:
@@ -541,12 +546,15 @@ col_n <- function(field, header = "N", width = NULL, decimals = 0,
 #'
 #' # Hide imprecise estimates (CI ratio > 10)
 #' col_interval("hr", "lower", "upper", imprecise_threshold = 10)
+#'
+#' # Bracketed, muted bounds (themed)
+#' col_interval("hr", "lower", "upper", variant = "bracket_muted")
 col_interval <- function(point = NULL, lower = NULL, upper = NULL,
                          header = "95% CI", width = NULL, decimals = 2,
                          digits = NULL, thousands_sep = FALSE,
                          abbreviate = FALSE,
                          separator = " ", imprecise_threshold = NULL,
-                         na_text = NULL,
+                         variant = NULL, na_text = NULL,
                          ..., sep = lifecycle::deprecated()) {
   if (lifecycle::is_present(sep)) {
     lifecycle::deprecate_warn("0.9.0", "col_interval(sep)", "col_interval(separator)")
@@ -557,6 +565,15 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
       "0.9.0",
       I("Calling col_interval() without `point`/`lower`/`upper`"),
       details = "Pass the column names explicitly, e.g. col_interval(\"hr\", \"lower\", \"upper\"). The implicit auto-detect from a sibling viz_forest() column will be removed."
+    )
+  }
+  if (!is.null(variant)) {
+    # Catalog mirrors INTERVAL_SCHEMA.variants in srcjs/src/schema/columns/interval.ts.
+    # Phase 3 follow-up: emit this list from the schema generator so R and TS
+    # cannot drift.
+    checkmate::assert_choice(
+      variant,
+      c("traditional", "bracket_muted", "plus_minus", "stacked")
     )
   }
   # TS-side `colInterval` constructs the synthetic `_interval_<point>`
@@ -572,6 +589,7 @@ col_interval <- function(point = NULL, lower = NULL, upper = NULL,
   if (!is.null(width))                  ts_args$width              <- width
   if (!is.null(digits))                 ts_args$digits             <- digits
   if (!is.null(imprecise_threshold))    ts_args$impreciseThreshold <- imprecise_threshold
+  if (!is.null(variant))                ts_args$variant            <- variant
   delegate_to_web_col("colInterval", ts_args, na_text = na_text, extra_args = list(...))
 }
 

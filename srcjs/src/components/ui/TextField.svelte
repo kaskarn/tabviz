@@ -1,92 +1,186 @@
+<!--
+  TextField — settings-panel text row. v2-skinned: Field wraps either
+  an <input> (single-line) or a <textarea> (multi-line auto-grow,
+  when `lines > 1`). Two events: oninput (every keystroke, for live
+  preview) + onchange (blur/Enter, for one op-log entry per edit).
+-->
 <script lang="ts">
+  import Field from "$components/primitives/v2/Field.svelte";
+
   interface Props {
-    /** Visible label for the field. */
     label: string;
-    /** Optional secondary hint shown under the label. */
     hint?: string;
-    /** Current value. */
     value: string;
-    /** Placeholder shown when the input is empty. */
     placeholder?: string;
-    /**
-     * Live preview on each keystroke. Prefer this for visual updates that
-     * shouldn't be recorded in the op-log (e.g., watermark / title edits
-     * while the user is still typing).
-     */
     oninput?: (value: string) => void;
-    /**
-     * Fires on blur OR Enter — commit the finished edit. This is the one
-     * whose side effects should record an op (so one keypress session
-     * produces one log entry).
-     */
     onchange?: (value: string) => void;
+    /**
+     * Multi-line mode: renders a `<textarea>` with `rows=lines` as the
+     * minimum visible height; the field auto-grows to fit content up
+     * to a generous cap. Default 1 = single-line `<input>`.
+     */
+    lines?: number;
+    /**
+     * Type family used to render the field's content. `"mono"` is the
+     * default (matches code/data fields). `"serif"` matches a chart
+     * title's eventual rendering — use for title/subtitle/caption
+     * fields so authors WYSIWYG-author. `"sans"` for prose fields.
+     */
+    family?: "mono" | "serif" | "sans";
   }
 
-  let { label, hint, value, placeholder, oninput, onchange }: Props = $props();
+  let { label, hint, value, placeholder, oninput, onchange, lines = 1, family = "mono" }: Props = $props();
 
   function handleInput(e: Event) {
-    oninput?.((e.target as HTMLInputElement).value);
+    const el = e.target as HTMLInputElement | HTMLTextAreaElement;
+    autoGrow(el);
+    oninput?.(el.value);
   }
-
-  function handleBlurOrChange(e: Event) {
-    onchange?.((e.target as HTMLInputElement).value);
+  function commit(e: Event) {
+    onchange?.((e.target as HTMLInputElement | HTMLTextAreaElement).value);
   }
-
   function handleKeydown(e: KeyboardEvent) {
-    if (e.key === "Enter") {
+    // For single-line, Enter commits. For multi-line, Enter inserts a
+    // newline (default) and Cmd+Enter commits.
+    if (lines === 1 && e.key === "Enter") {
       onchange?.((e.target as HTMLInputElement).value);
+    } else if (lines > 1 && e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      onchange?.((e.target as HTMLTextAreaElement).value);
     }
+  }
+  function autoGrow(el: HTMLInputElement | HTMLTextAreaElement) {
+    if (el.tagName !== "TEXTAREA") return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
   }
 </script>
 
-<div class="text-field" title={hint}>
-  <span class="label">{label}</span>
-  <input
-    class="text"
-    type="text"
-    {value}
-    {placeholder}
-    oninput={handleInput}
-    onchange={handleBlurOrChange}
-    onblur={handleBlurOrChange}
-    onkeydown={handleKeydown}
-    spellcheck="false"
-    aria-label={label}
-  />
+<!--
+  When called with label="", skip the Field wrapper and render the
+  bare input. Lets callers that are ALREADY inside a Field's control
+  slot reuse TextField without double-wrapping (same pattern as
+  ColorField). Outer callers pass a non-empty label and get the
+  standard labeled row.
+-->
+{#snippet bareInput()}
+  {#if lines > 1}
+    <textarea
+      class="tf-input tf-textarea"
+      class:family-serif={family === "serif"}
+      class:family-sans={family === "sans"}
+      rows={lines}
+      {value}
+      {placeholder}
+      oninput={handleInput}
+      onchange={commit}
+      onblur={commit}
+      onkeydown={handleKeydown}
+      spellcheck="false"
+      aria-label={label || undefined}
+    ></textarea>
+  {:else}
+    <input
+      class="tf-input"
+      class:family-serif={family === "serif"}
+      class:family-sans={family === "sans"}
+      type="text"
+      {value}
+      {placeholder}
+      oninput={handleInput}
+      onchange={commit}
+      onblur={commit}
+      onkeydown={handleKeydown}
+      spellcheck="false"
+      aria-label={label || undefined}
+    />
+  {/if}
+{/snippet}
+
+{#if label === ""}
+  {@render bareInput()}
+{:else}
+<div class="tf-row" data-tv-v2>
+  <Field {label} {hint}>
+    {#if lines > 1}
+      <textarea
+        class="tf-input tf-textarea"
+        class:family-serif={family === "serif"}
+        class:family-sans={family === "sans"}
+        rows={lines}
+        {value}
+        {placeholder}
+        oninput={handleInput}
+        onchange={commit}
+        onblur={commit}
+        onkeydown={handleKeydown}
+        spellcheck="false"
+        aria-label={label}
+      ></textarea>
+    {:else}
+      <input
+        class="tf-input"
+        class:family-serif={family === "serif"}
+        class:family-sans={family === "sans"}
+        type="text"
+        {value}
+        {placeholder}
+        oninput={handleInput}
+        onchange={commit}
+        onblur={commit}
+        onkeydown={handleKeydown}
+        spellcheck="false"
+        aria-label={label}
+      />
+    {/if}
+  </Field>
 </div>
+{/if}
 
 <style>
-  .text-field {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 8px;
-    padding: 2px 0;
-  }
-
-  .label {
-    font-size: 0.75rem;
-    color: var(--tv-fg, #1a1a1a);
-    font-weight: 500;
-    line-height: 1.2;
+  .tf-row { display: contents; }
+  .tf-input {
+    flex: 1;
     min-width: 0;
-  }
-
-  .text {
-    width: 140px;
-    padding: 3px 6px;
-    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 12%, var(--tv-border, #e2e8f0));
-    border-radius: 4px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.7rem;
-    background: var(--tv-bg, #ffffff);
-    color: var(--tv-fg, #1a1a1a);
+    height: var(--v2-control-h, 22px);
+    padding: 0 8px;
+    border: 0;
+    border-radius: var(--v2-r-soft, 3px);
+    background: var(--v2-paper-edge, #fff);
+    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: var(--v2-text-body, 11.5px);
+    color: var(--v2-ink, #15140e);
     outline: none;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease, ease);
+  }
+  .tf-input:hover  { box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c); }
+  .tf-input:focus  { box-shadow: inset 0 0 0 1px var(--v2-rule-strong, #15140e); }
+  .tf-input::placeholder {
+    color: var(--v2-ink-3, #8a8478);
+    font-style: italic;
+  }
+  /* Multi-line variant: auto-grow height set inline via the
+     autoGrow() handler. Min-height covers the rows= attribute when
+     empty; line-height keeps editorial spacing. */
+  .tf-textarea {
+    height: auto;
+    min-height: var(--v2-control-h, 22px);
+    padding: 4px 8px;
+    line-height: 1.35;
+    resize: none;
+    overflow-y: hidden;
   }
 
-  .text:focus {
-    border-color: var(--tv-accent, #2563eb);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tv-accent, #2563eb) 15%, transparent);
+  /* Family variants — let title/caption fields render in the chart's
+     own typeface so authors author WYSIWYG. Default is mono (above);
+     these classes are merged on for serif/sans. */
+  .family-serif {
+    font-family: var(--v2-font-serif, "EB Garamond", "Palatino", Georgia, serif) !important;
+    font-size: 13px !important;
+    letter-spacing: 0.01em;
+  }
+  .family-sans {
+    font-family: var(--v2-font-sans, system-ui, sans-serif) !important;
   }
 </style>

@@ -143,9 +143,10 @@
     clipBounds ? xScale(clipBounds[1]) : layout.forestWidth - VIZ_MARGIN
   );
 
-  // Diamond height for summary rows
-  const diamondHeight = $derived(10 ?? 10);
-  const halfDiamondHeight = $derived(diamondHeight / 2);
+  // Diamond height for summary rows (fixed; theme override removed in
+  // v0.30 cleanup).
+  const diamondHeight = 10;
+  const halfDiamondHeight = diamondHeight / 2;
 
   // Base point size from theme
   const basePointSize = $derived(theme?.plot?.pointSize ?? 6);

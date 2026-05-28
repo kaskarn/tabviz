@@ -328,7 +328,11 @@ resolve_text <- function(inputs, content) {
     label    = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "tabular",      fg = label_fg,        italic = FALSE),
     tick     = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "tabular",      fg = tick_fg,         italic = FALSE),
     footnote = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = footnote_fg,     italic = FALSE),
-    caption  = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = caption_fg,      italic = TRUE)
+    caption  = TextRole(family = body,    size = "0.75rem",   weight = 400, figures = "proportional", fg = caption_fg,      italic = TRUE),
+    # Phase 12: numeric defaults to body. Themes can override `numeric@family`
+    # to give numbers a different family (e.g. a tabular mono) without
+    # affecting text columns; renderers pick this role via pickTextRole.
+    numeric  = TextRole(family = body,    size = "0.875rem",  weight = 400, figures = "tabular",      fg = content@primary, italic = FALSE)
   )
 }
 
@@ -671,6 +675,20 @@ resolve_theme <- function(theme, .validate = TRUE) {
 
   # Step 6: component clusters.
   theme <- resolve_components(theme)
+
+  # Step 6.5: borders. Each border type's `color` defaults to a divider
+  # role (minor → subtle, major + table → strong). `layout` keeps its
+  # author-set value; missing fills are filled in from class defaults.
+  fill_border <- function(b, default_color) {
+    if (is.na(b@color)) b@color <- default_color
+    b
+  }
+  theme@borders@minor <- fill_border(theme@borders@minor, theme@divider@subtle)
+  theme@borders@major <- fill_border(theme@borders@major, theme@divider@strong)
+  theme@borders@table <- fill_border(theme@borders@table, theme@divider@strong)
+  # Legacy: row.borderWidth still feeds a handful of CSS readers; keep it
+  # in sync with the new minor.thickness so existing call sites work.
+  theme@row@border_width <- theme@borders@minor@thickness
 
   # Step 7: validate contrast invariants on the fully resolved theme.
   # Aborts at construction (vs at render) so users see the error at the

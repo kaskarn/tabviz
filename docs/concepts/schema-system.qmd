@@ -1,0 +1,139 @@
+---
+title: "Schema System"
+---
+
+```{r}
+#| include: false
+library(tabviz)
+```
+
+Every column type in tabviz is described by a **schema** — a single declarative
+object that owns its options, its inheritance chain, its renderers (one per
+runtime target), its behaviors (sort key, formatter, aggregate, …), and its
+contributions to widget-wide state (axes, footnotes, conditions). The schema
+is the single source of truth: the editor, the renderer, the source codegen,
+the R-side defaults all read from the same description.
+
+This page covers the design principles. For the full type contracts and
+extension API, see `srcjs/src/schema/ARCHITECTURE.md`.
+
+## Producer / consumer contract
+
+Every advanced feature splits into a side that **produces** typed state and a
+side that **consumes** it.
+
+| Feature | Producer | Consumer |
+|---|---|---|
+| Banks (footnotes / axes / legends / conditions) | `tabviz(footnotes = …, conditions = …)` + schema `contributeBanks` | renderer reads `ctx.banks` |
+| Conditions | `condition(name, rule)` — evaluated at spec build, materialized as a boolean vector on `banks.conditions` | renderer looks up `ctx.banks.conditions[name].values[ctx.rowIndex]` |
+| `styleMapping` (4-mode) | `col_text(bold = cond("sig"))` or `col_text(bold = ~ p < 0.05)` | a shared resolver runs at the cell-style site, looking up the per-row value through the right mode |
+| Variants | `col_interval(variant = "bracket_muted")` — stays on the wire as authoring intent | compiled to primitive options at ingest; renderer reads expanded options + emits tags |
+| Tags + `nodeRules` | renderer emits tagged RenderNodes | theme rules overlay style on tags after rendering |
+| Aggregate | schema's `aggregate` behavior | bar / heatmap consume `ctx.columnSummary` |
+| Lifecycle | schema's `onFirstPresent` / `onColumnCreate` | widget-host dispatcher fires hooks on column-set diffs |
+
+No feature lives only on one side. If you can produce it, something reads it.
+
+## Layer doctrine
+
+- **Renderers commit to structure.** A renderer's job is the RenderNode tree
+  — what cells are there, how they nest, where the parts go. Renderers never
+  set colors / weights / sizes directly when a theme rule could; they emit
+  tags and let the theme decide.
+- **Themes commit to style.** A theme's `nodeRules` table maps tags to
+  appearance overlays — text color, weight, wrap mode, hidden. The renderer
+  stays unchanged when the theme changes its presentation.
+- **Conditions and ordinals commit to typed row-level state.** A condition
+  is a named boolean vector keyed against original row order. An ordinal
+  level set is a named categorical schema. Both ride on `banks` and survive
+  through sort / filter without re-evaluation.
+- **Behaviors commit to value transforms.** Schema behaviors (`sortKey`,
+  `formatValue`, `aggregate`, `emitSource`) are pure functions with type-
+  dispatched contracts. One signature, one return type each. Renderers can
+  call them via `parents.x.formatValue(...)` to compose.
+- **Variants are an editor surface, not a runtime channel.**
+  `options.<bucket>.variant` stays on the wire as authoring intent so the
+  segmented control round-trips, but at spec ingest a compile pass expands
+  the variant into primitive options + tag emissions. Renderers never
+  branch on `variant`.
+
+## Row identity is index-stable
+
+Sort and filter operate on **index lists** into the canonical
+`spec.data.rows[]`, never on the rows array itself. The canonical rows are
+referentially stable for the lifetime of a spec; conditions, banks, and any
+per-row aggregate vectors key against original position. Reorderings cannot
+misalign per-row values — a sort never makes the "bold for significant rows"
+binding wrong.
+
+This is the schema-sprint **keystone**: every other feature depends on it.
+
+## No compatibility shims
+
+tabviz is pre-release. When a new implementation lands, the legacy code path
+gets deleted in the same commit. Git history is the archive. The bare-string
+`styleMapping` back-compat (`bold = "column_name"` → `{kind: "field"}`)
+stays only because the cost is one line in the normalizer and the legacy
+form is what R actively emits today.
+
+## The canonical worked example
+
+```r
+trials <- data.frame(
+  study = c("Smith", "Lee", "García", "Patel", "Okafor"),
+  hr    = c(0.65, 0.92, 0.78, 1.10, 0.55),
+  lo    = c(0.45, 0.71, 0.55, 0.80, 0.35),
+  hi    = c(0.91, 1.18, 1.10, 1.50, 0.85),
+  p     = c(0.001, 0.45, 0.02, 0.50, 0.0001)
+)
+
+tabviz(
+  data       = trials,
+  conditions = list(
+    condition("sig", ~ p < 0.05 / nrow(trials), label = "Bonferroni-significant")
+  ),
+  columns = list(
+    col_text("study", bold = cond("sig")),
+    col_interval("hr", "lo", "hi", variant = "bracket_muted"),
+    col_pvalue("p")
+  )
+)
+```
+
+What happens, in order:
+
+1. `condition()` evaluates the formula against the data at `tabviz()` time
+   and ships `banks.conditions[0] = {id: "sig", kind: "boolean", values: [T,F,T,F,T]}`.
+2. `cond("sig")` resolves to the tagged-union `{kind: "condition", name: "sig"}`
+   that lands on `column.styleMapping.bold`.
+3. The interval column's `variant = "bracket_muted"` stays on the wire as
+   authoring intent; at spec ingest the compile pass writes the expanded
+   recipe (delimiter, separator, layout) to a shadow `__resolved` field.
+4. At render time, the shared `resolveStyleMapping` helper builds a
+   per-cell `CellStyle`. For the bold field it looks up
+   `banks.conditions[name].values[rowIndex]` — using the *canonical* row
+   index, which stays correct under any sort / filter.
+5. The interval renderer reads from `__resolved` and emits a tree like
+   `[text "0.65"]  [group tag="interval-range" [text "[", text "0.45",
+   text "–", text "0.91", text "]"]]`. The theme's `nodeRules` for
+   `interval-range` can re-style the bounds; the renderer doesn't know
+   or care.
+6. The pvalue renderer formats the value via `formatPvalue` (registered
+   on `pvalue.formatValue` so other renderers can compose with it).
+
+Browser path and SVG export path use the same renderers; both produce
+equivalent output up to runtime-target differences (RenderComponent vs
+RenderSvg). Single source of truth, two consumers.
+
+## Where to look next
+
+- **`inst/examples/gallery_99_schema_showcase.R`** — a fictional showcase
+  ("Best in Show: Magical Creatures") that exercises every wired feature
+  in one spec. Run `tabviz::render_visual_tests("gallery_99")` to render.
+- **`srcjs/src/schema/ARCHITECTURE.md`** — the deep dive: every concept,
+  the full type contracts, the extension API for third-party schemas.
+- **`srcjs/src/schema/README.md`** — short-form migration status with
+  pointers to every dispatcher, renderer, and behavior file.
+- **`@tabviz/core/extend`** — the npm subpath that exposes
+  `defineSchema`, `registerColumnType`, `compose`, `tag`, `text` for
+  third parties. The full type surface is re-exported from there.

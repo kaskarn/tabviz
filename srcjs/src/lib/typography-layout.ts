@@ -1,6 +1,6 @@
 /**
  * Typography-aware layout helpers shared between the live forest widget
- * (forestStore + ForestPlot.svelte) and the SVG export (svg-generator.ts).
+ * (tabvizStore + TabvizPlot.svelte) and the SVG export (svg-generator.ts).
  *
  * Both paths used to depend on hardcoded `LAYOUT.AXIS_HEIGHT (32)`,
  * `LAYOUT.AXIS_LABEL_HEIGHT (32)`, and `TYPOGRAPHY.{TITLE,SUBTITLE,…}_HEIGHT`

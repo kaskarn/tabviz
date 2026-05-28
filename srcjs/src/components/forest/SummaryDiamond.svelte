@@ -15,8 +15,8 @@
 
   let { point, lower, upper, yPosition, xScale, layout, theme, label }: Props = $props();
 
-  const diamondHeight = $derived(10 ?? 10);
-  const halfHeight = $derived(diamondHeight / 2);
+  const diamondHeight = 10;
+  const halfHeight = diamondHeight / 2;
 
   // Diamond points: left (lower), top, right (upper), bottom
   const points = $derived.by(() => {

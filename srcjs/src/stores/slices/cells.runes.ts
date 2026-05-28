@@ -5,7 +5,7 @@
 //
 // Tests exercise the slice in isolation by passing stub deps. The
 // fixtures here are intentionally minimal — full-store reactivity
-// tests live in `forestStore.reorder.runes.ts`.
+// tests live in `tabvizStore.reorder.runes.ts`.
 
 import { describe, expect, test } from "vitest";
 import { createCellsSlice } from "./cells.svelte";

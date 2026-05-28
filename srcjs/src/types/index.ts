@@ -53,18 +53,30 @@ export interface CellStyle {
   tooltip?: string | null;
 }
 
-// Maps style properties to column names containing values
+/**
+ * Style-mapping values per ColumnSpec. Each entry can be:
+ *   - a bare string (legacy field-reference; back-compat with today's
+ *     `bold = "highlight_col"` shape)
+ *   - a tagged union from `$schema/styling::StyleMappingValue`
+ *     (`{ kind: "theme" | "static" | "field" | "condition", ... }`)
+ *     — the canonical shape that supports condition references and
+ *     explicit static / theme modes.
+ *
+ * Renderers call `normalizeStyle(value)` from `$schema/styling` at
+ * the read site; downstream code switches on `kind` without
+ * re-handling the legacy string form.
+ */
 export interface StyleMapping {
-  bold?: string;
-  italic?: string;
-  color?: string;
-  bg?: string;
-  badge?: string;
-  icon?: string;
+  bold?:     import("../schema/styling").StyleOverride<boolean>;
+  italic?:   import("../schema/styling").StyleOverride<boolean>;
+  color?:    import("../schema/styling").StyleOverride<string>;
+  bg?:       import("../schema/styling").StyleOverride<string>;
+  badge?:    import("../schema/styling").StyleOverride<string>;
+  icon?:     import("../schema/styling").StyleOverride<string>;
   // Semantic styling mappings
-  emphasis?: string;
-  muted?: string;
-  accent?: string;
+  emphasis?: import("../schema/styling").StyleOverride<boolean>;
+  muted?:    import("../schema/styling").StyleOverride<boolean>;
+  accent?:   import("../schema/styling").StyleOverride<boolean>;
 }
 
 export interface Row {
@@ -182,6 +194,14 @@ export interface IntervalColumnOptions {
   lower?: string;     // Override field for lower bound
   upper?: string;     // Override field for upper bound
   impreciseThreshold?: number | null;  // When upper/lower ratio > threshold, show "—"
+  /** Display variant — declared in INTERVAL_SCHEMA.variants and consumed
+   *  by interval-renderer.ts. One of "traditional" | "bracket_muted" |
+   *  "plus_minus" | "stacked". Defaults to "traditional". */
+  variant?: "traditional" | "bracket_muted" | "plus_minus" | "stacked";
+  /** Compile-pass output (schema/variant-compile.ts). Renderers read
+   *  primitive recipe fields from here instead of branching on `variant`
+   *  directly. Populated at spec ingest; do not author by hand. */
+  __resolved?: Record<string, unknown>;
 }
 
 export interface PercentColumnOptions {
@@ -858,6 +878,15 @@ export interface WebSpec {
     filters?: Array<{ field: string; operator: string; value: unknown }>;
     hiddenColumns?: string[];
   };
+  /**
+   * Widget-level banks — footnotes, axes, legends. User-authored
+   * entries here flow through the wire; schema behaviors contribute
+   * additional entries at runtime via `computeEffectiveBanks(spec)`.
+   * Derived entries are tagged with `producer: column.id` for
+   * auto-cleanup on column removal. See `$schema/banks.ts` for the
+   * entry shapes + dispatcher.
+   */
+  banks?: import("../schema/banks").WidgetBanks;
   /** Target aspect ratio (`width / height`) for static export and the
    *  widget's interactive control. `null` / undefined means render at
    *  natural; a positive number triggers Mode-3 relayout via the lever
@@ -902,6 +931,13 @@ export interface SlotSpec {
   required: boolean;
   // Optional naming patterns to use when auto-pairing siblings off the primary slot
   autoPair?: { suffixes: string[] };
+  /** Wire-shape override. When the wire key for this slot differs from
+   *  the human-readable `key` (e.g. Events: slot `events` writes to
+   *  `options.custom.eventsField`), set `wireKey` to the actual on-wire
+   *  property name. Without this, the column editor reads/writes the
+   *  slot's `key` directly, which produces a wire-shape mismatch and a
+   *  silently-broken column. */
+  wireKey?: string;
 }
 
 export type VisualCategory = "text" | "numeric" | "interval" | "viz" | "icon";
@@ -991,6 +1027,11 @@ export interface ComputedLayout {
   rowPositions: number[];
   // Heights for each row (spacers are half-height)
   rowHeights: number[];
+  /** Per-row marker-center Y. Differs from rowPositions[i] + rowHeights[i]/2
+   *  only when row i is "padded-after" (last data row before a top-level
+   *  group_header): the track is inflated by rowGroupPadding but the marker
+   *  centers on the data portion, not the padded total. */
+  rowMarkerCenters: number[];
 }
 
 // ============================================================================

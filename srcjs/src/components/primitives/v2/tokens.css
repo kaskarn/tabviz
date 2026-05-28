@@ -1,0 +1,91 @@
+/*
+  v2 primitive design tokens. Loaded once per editor surface (popover,
+  settings panel, harness). Every v2 component reads only these tokens;
+  re-skinning is a single-file edit.
+
+  The aesthetic point of view:
+  - Warm ink-on-cream paper. Brutalist editorial.
+  - Type does the lifting. Chrome borders / boxes are hairlines or absent.
+  - Hot accent is for ACTIVE state only — never decoration.
+  - Mono for chrome (labels, values, suffixes). Sans for human readable.
+  - Uppercase tracked micro-caps for section flags. Small numerals tabular.
+
+  Tokens are scoped under `[data-tv-v2]` so a host can opt in. The
+  popover root sets that attribute; everything inside picks up the
+  cascade.
+*/
+
+[data-tv-v2] {
+  /* ── Surface paper ────────────────────────────────────────────── */
+  --v2-paper:        #faf7f0;   /* cream — popover background */
+  --v2-paper-2:      #f3efe5;   /* recessed surface — input wells */
+  --v2-paper-sunk:   #eae5d7;   /* lowest panel — active segment bg-inverse-context */
+  --v2-paper-edge:   #ffffff;   /* highest paper — chip surfaces */
+
+  /* ── Ink (text) ──────────────────────────────────────────────── */
+  --v2-ink:          #15140e;   /* primary — labels, values */
+  --v2-ink-2:        #4a463c;   /* secondary — hints, secondary labels */
+  --v2-ink-3:        #8a8478;   /* muted — placeholder, disabled */
+  --v2-ink-cream:    #faf7f0;   /* inverse — ink-on-active surface */
+
+  /* ── Rule (lines) ────────────────────────────────────────────── */
+  --v2-rule:         #d6d0c1;   /* primary divider — between fields */
+  --v2-rule-soft:    #e6e0d1;   /* sub-divider — within a group */
+  --v2-rule-strong:  #15140e;   /* hairline ink — focus state */
+
+  /* ── Accent (hot) ────────────────────────────────────────────── */
+  --v2-hot:          #b53a1f;   /* override, active dot */
+  --v2-hot-soft:     #d8a89a;   /* override soft glow */
+
+  /* ── State (interactive) ─────────────────────────────────────── */
+  --v2-hover-tint:   rgba(21, 20, 14, 0.05);
+  --v2-focus-ring:   #15140e;
+  --v2-active-bg:    #15140e;
+  --v2-active-fg:    var(--v2-paper);
+
+  /* ── Type ──────────────────────────────────────────────────── */
+  --v2-font-sans: "Inter", "IBM Plex Sans", "Helvetica Neue", system-ui, sans-serif;
+  --v2-font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  /* Serif is reserved for editorial flourish: hint marks, panel title
+     dingbat, section dividers. One typeface, used sparingly. */
+  --v2-font-serif: "EB Garamond", "Palatino Linotype", "Palatino", "Georgia", serif;
+  --v2-font-display: "Cinzel", "Trajan Pro", "EB Garamond", "Palatino Linotype", "Georgia", serif;
+
+  --v2-text-micro:   9.5px;   /* tracked uppercase section flags */
+  --v2-text-small:   10.5px;  /* hints, override-count chips */
+  --v2-text-body:    11.5px;  /* default field label/value */
+  --v2-text-strong:  13px;    /* section titles */
+  --v2-text-large:   16px;    /* popover heading */
+
+  --v2-track-tight:  -0.005em;
+  --v2-track-flat:    0em;
+  --v2-track-loose:   0.04em;
+  --v2-track-flag:    0.14em;  /* tracked uppercase micro-caps */
+
+  /* ── Rhythm (spacing) ────────────────────────────────────────── */
+  --v2-gap-hair:     2px;
+  --v2-gap-tight:    4px;
+  --v2-gap-small:    6px;
+  --v2-gap-mid:      8px;
+  --v2-gap-wide:     12px;
+  --v2-gap-loose:    18px;
+  --v2-gap-vast:     28px;
+
+  --v2-row-h:        22px;   /* default field row content height — Linear-
+                                density editorial precision. Compounds across
+                                every panel row; 24→22 reads tighter. */
+  --v2-row-h-fat:    30px;   /* fat row — for inputs that need breathing */
+  --v2-control-h:    22px;   /* native control height — pinned to row-h. */
+
+  /* ── Radii ──────────────────────────────────────────────────── */
+  --v2-r-hair:       2px;
+  --v2-r-soft:       3px;
+  --v2-r-pill:       11px;   /* exactly half --v2-control-h for proper pill */
+  --v2-r-large:      6px;
+
+  /* ── Motion ─────────────────────────────────────────────────── */
+  --v2-ease:         cubic-bezier(0.2, 0, 0, 1);
+  --v2-dur-snap:     80ms;
+  --v2-dur-flow:     160ms;
+  --v2-dur-settle:   260ms;
+}

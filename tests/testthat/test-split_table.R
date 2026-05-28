@@ -94,6 +94,40 @@ test_that("split_table with shared_axis flag", {
   expect_true(result@shared_axis)
 })
 
+test_that("split_table with shared_axis unwraps col_group wrappers", {
+  # Regression: .subset_payload_for_shared used to read `c@type` on every
+  # column entry, which fails for ColumnGroup wrappers (no @type slot).
+  test_data <- data.frame(
+    study = paste0("Study_", 1:4),
+    n_total = c(120L, 80L, 200L, 150L),
+    effect = c(0.5, 0.8, 1.2, 0.9),
+    lower = c(0.3, 0.5, 0.9, 0.6),
+    upper = c(0.8, 1.1, 1.5, 1.2),
+    group = c("A", "A", "B", "B")
+  )
+
+  spec <- web_spec(
+    test_data,
+    label = "study",
+    columns = list(
+      col_group("Study Info", col_n("n_total")),
+      viz_forest(point = "effect", lower = "lower", upper = "upper"),
+      col_group("Results",
+        col_interval("effect", "lower", "upper", header = "Eff (95% CI)")
+      )
+    )
+  )
+
+  result <- split_table(
+    spec, by = "group",
+    shared_axis = TRUE,
+    shared_column_widths = TRUE
+  )
+
+  expect_true(S7_inherits(result, SplitForest))
+  expect_true(result@shared_axis)
+})
+
 test_that("split_table handles multiple split columns", {
   set.seed(42)  # For reproducibility
   test_data <- data.frame(

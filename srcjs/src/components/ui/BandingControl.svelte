@@ -1,11 +1,12 @@
 <script lang="ts">
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import type { BandingMode } from "$types";
-  import { bandingSpecToString } from "$lib/banding";
-  import SettingsSection from "./SettingsSection.svelte";
+  import Section from "$components/primitives/v2/Section.svelte";
+  import SegmentedField from "./SegmentedField.svelte";
+  import NumberField from "./NumberField.svelte";
 
   interface Props {
-    store: ForestStore;
+    store: TabvizStore;
   }
 
   let { store }: Props = $props();
@@ -13,7 +14,6 @@
   const banding = $derived(store.effectiveBanding);
   const depth = $derived(store.maxGroupDepth);
   const hasGroups = $derived(depth > 0);
-  const currentString = $derived(bandingSpecToString(banding));
   const effectiveLevel = $derived(banding.level ?? depth);
   const startsWithBand = $derived(store.bandingStartsWithBand);
 
@@ -22,6 +22,7 @@
       store.setBandingOverride(mode);
       return;
     }
+    // group
     const level = banding.level ?? depth;
     if (hasGroups) {
       store.setBandingOverride(`group-${level}`);
@@ -40,207 +41,58 @@
   }
 </script>
 
-<SettingsSection
-  title="Row banding"
-  description="Zebra backgrounds. Group mode paints whole groups as single bands so header + members read as one unit."
+<!--
+  Banding now composes the v2 primitives (SegmentedField / NumberField)
+  so it lines up with the rest of the Layout tab. The previous bespoke
+  buttons used the legacy --tv-accent (bright blue) styling and read
+  as a different design language; v2 inherits the editorial ink-on-
+  cream palette and stays compact at 22 px row heights.
+-->
+<!-- Banding is small (~2 rows of content) — agents called the glyph
+     overdressed for the footprint. Drop the section glyph and hint
+     stays terse so the section reads as quiet punctuation between
+     Borders and the next tab. -->
+<Section
+  title="Banding"
+  hint="Alternate-row backgrounds; Group mode paints whole groups as single bands."
 >
-  <div class="row">
-    <span class="row-label">Mode</span>
-    <div class="segmented" role="radiogroup" aria-label="Banding mode">
-      <button
-        type="button" role="radio"
-        aria-checked={banding.mode === "none"}
-        class:selected={banding.mode === "none"}
-        onclick={() => setMode("none")}
-      >None</button>
-      <button
-        type="button" role="radio"
-        aria-checked={banding.mode === "row"}
-        class:selected={banding.mode === "row"}
-        onclick={() => setMode("row")}
-      >Row</button>
-      <button
-        type="button" role="radio"
-        aria-checked={banding.mode === "group"}
-        class:selected={banding.mode === "group"}
-        onclick={() => setMode("group")}
-        disabled={!hasGroups}
-        title={hasGroups ? "" : "Requires row groups"}
-      >Group</button>
-    </div>
-  </div>
+  <SegmentedField
+    label="Mode"
+    value={banding.mode as "none" | "row" | "group"}
+    options={hasGroups
+      ? [
+          { value: "none",  label: "None"  },
+          { value: "row",   label: "Row"   },
+          { value: "group", label: "Group" },
+        ]
+      : [
+          { value: "none", label: "None" },
+          { value: "row",  label: "Row"  },
+        ]}
+    onchange={(v) => setMode(v)}
+  />
 
   {#if banding.mode === "group" && hasGroups}
-    <div class="row">
-      <label class="row-label" for="banding-level">Level</label>
-      <div class="range-wrap">
-        <input
-          id="banding-level"
-          type="range"
-          min={1}
-          max={depth}
-          step={1}
-          value={effectiveLevel}
-          oninput={(e) => setLevel(parseInt((e.target as HTMLInputElement).value, 10))}
-        />
-        <span class="range-value" aria-live="polite">{effectiveLevel}/{depth}</span>
-      </div>
-    </div>
+    <NumberField
+      label="Level"
+      value={effectiveLevel}
+      min={1}
+      max={depth}
+      step={1}
+      onchange={setLevel}
+    />
   {/if}
 
   {#if banding.mode !== "none"}
-    <div class="row">
-      <span class="row-label">Phase</span>
-      <div class="segmented compact" role="radiogroup" aria-label="Banding phase">
-        <button
-          type="button" role="radio"
-          aria-checked={!startsWithBand}
-          class:selected={!startsWithBand}
-          onclick={() => setPhase(false)}
-          title="First row/group uses the base color"
-        >
-          <span class="swatch-pair"><span class="sw a"></span><span class="sw b"></span></span>
-          ABAB
-        </button>
-        <button
-          type="button" role="radio"
-          aria-checked={startsWithBand}
-          class:selected={startsWithBand}
-          onclick={() => setPhase(true)}
-          title="First row/group is banded"
-        >
-          <span class="swatch-pair"><span class="sw b"></span><span class="sw a"></span></span>
-          BABA
-        </button>
-      </div>
-    </div>
+    <SegmentedField
+      label="Start"
+      hint="Does the first row sit on the band or the plain surface?"
+      value={startsWithBand ? "band" : "plain"}
+      options={[
+        { value: "plain", label: "Plain" },
+        { value: "band",  label: "Band"  },
+      ]}
+      onchange={(v) => setPhase(v === "band")}
+    />
   {/if}
-
-  <div class="meta">
-    <span>Active:</span>
-    <code>{currentString}</code>
-  </div>
-</SettingsSection>
-
-<style>
-  .row {
-    display: grid;
-    grid-template-columns: 64px 1fr;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .row-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--tv-text-muted, #64748b);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .segmented {
-    display: flex;
-    border: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 15%, var(--tv-border, #e2e8f0));
-    border-radius: 8px;
-    overflow: hidden;
-    background: var(--tv-bg, #ffffff);
-  }
-
-  .segmented button {
-    flex: 1;
-    padding: 6px 10px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    border: none;
-    background: transparent;
-    color: var(--tv-fg, #1a1a1a);
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-
-  .segmented.compact button {
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-  }
-
-  .segmented button + button {
-    border-left: 1px solid color-mix(in srgb, var(--tv-accent, #2563eb) 10%, var(--tv-border, #e2e8f0));
-  }
-
-  .segmented button:hover:not(:disabled):not(.selected) {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
-  }
-
-  .segmented button.selected {
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 92%, transparent);
-    color: var(--tv-bg, #ffffff);
-  }
-
-  .segmented button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .swatch-pair {
-    display: inline-flex;
-    height: 10px;
-    border-radius: 2px;
-    overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--tv-fg, #1a1a1a) 12%, transparent);
-  }
-
-  .sw {
-    width: 7px;
-    height: 100%;
-  }
-
-  .sw.a {
-    background: var(--tv-bg, #ffffff);
-  }
-
-  .sw.b {
-    background: var(--tv-alt-bg, #f1f5f9);
-  }
-
-  .range-wrap {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .range-wrap input[type="range"] {
-    width: 100%;
-    accent-color: var(--tv-accent, #2563eb);
-  }
-
-  .range-value {
-    font-variant-numeric: tabular-nums;
-    font-size: 0.75rem;
-    color: var(--tv-fg, #1a1a1a);
-    min-width: 3em;
-    text-align: right;
-  }
-
-  .meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.7rem;
-    color: var(--tv-text-muted, #64748b);
-    padding-top: 6px;
-  }
-
-  .meta code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    background: color-mix(in srgb, var(--tv-accent, #2563eb) 8%, transparent);
-    padding: 1px 6px;
-    border-radius: 4px;
-    color: var(--tv-fg, #1a1a1a);
-  }
-</style>
+</Section>

@@ -1,27 +1,33 @@
-// Sort + filter slice — column-level filters, sort config, the
-// `visibleRows` $derived that flows filters + sort + paint-tool merges
-// into a row[] for downstream `displayRows` / `exportSpec`.
+// Sort + filter slice — column-level filters, sort config, and the
+// `visibleIndices` $derived that flows filters + sort into an index
+// list onto the canonical `spec.data.rows[]`.
 //
 // Owns:
 //   - sortConfig            { column, direction } | null
 //   - filters               Record<field, ColumnFilter>
 //   - filterPopoverTarget   anchor for the per-header filter popover
-//   - visibleRows           $derived Row[] (post merge + filter + sort)
+//   - visibleIndices        $derived number[] (post filter + sort)
+//   - rowAt(i)              accessor — resolves a visible index to its
+//                           Row with paint-tool overlay applied lazily
+//
+// Row identity is index-stable: the canonical `spec.data.rows[]` is
+// never re-allocated under sort or filter. Condition vectors and any
+// other per-row banks key against original row index, so reorderings
+// don't propagate misalignment (schema-sprint Phase 1 keystone).
 //
 // Dependencies (forward closures):
 //   - getSpec               for spec.data.rows + spec.columns
 //   - getAllColumns         for detectColumnKind lookups + sort key resolution
 //   - getStyleEdits         for paint-tool overrides merged INTO each row
-//                           BEFORE filter/sort (so painted-row state survives
-//                           the filter pipeline). semantics slice owns this
-//                           today, pre-extraction; ships from the main store
-//                           closure until then.
+//                           lazily at `rowAt(i)` call time — predicates
+//                           and sort keys read the canonical row directly
 //   - appendOp + markSource
 //
 // Cross-slice $derived check (PR3 axis spike validated the pattern):
-// `visibleRows` reads `styleEdits` via `deps.getStyleEdits()`. When the
-// paint tool flips a row's flag in the main store's `styleEdits` $state,
-// the call inside this slice's $derived re-tracks correctly.
+// `rowAt(i)` reads `styleEdits` via `deps.getStyleEdits()` at call
+// time. When the paint tool flips a row's flag in the main store's
+// `styleEdits` $state, downstream renderers re-tracked via rowAt see
+// the update on the next render.
 
 import type {
   Row, ColumnSpec, ColumnFilter, FiltersState, ColumnKind, SortConfig,
@@ -58,7 +64,10 @@ export interface SortFilterSlice {
   readonly filterPopoverTarget:
     | { field: string; header: string; anchorX: number; anchorY: number }
     | null;
-  readonly visibleRows: Row[];
+  /** Indices into `spec.data.rows[]` in display order, post filter+sort. */
+  readonly visibleIndices: readonly number[];
+  /** Resolve a visible index to its row, applying paint-tool overlay. */
+  rowAt: (i: number) => Row;
 
   sortBy: (column: string, direction: "asc" | "desc" | "none") => void;
   toggleSort: (column: string) => void;
@@ -81,51 +90,61 @@ export interface SortFilterSlice {
 }
 
 export function createSortFilterSlice(deps: SortFilterSliceDeps): SortFilterSlice {
-  let sortConfig = $state<SortConfig | null>(null);
-  let filters = $state<FiltersState>({});
+  // REPLACE-only state (per audit): use `$state.raw` to skip proxy wrap.
+  let sortConfig = $state.raw<SortConfig | null>(null);
+  let filters = $state.raw<FiltersState>({});
   let filterPopoverTarget = $state<
     { field: string; header: string; anchorX: number; anchorY: number } | null
   >(null);
 
-  // visibleRows applies paint-tool semantic overrides BEFORE filter/sort so
-  // merged style/cellStyles follow the row through the pipeline. Cross-slice
-  // reads: spec.data.rows (data), styleEdits (semantics — via closure),
-  // spec.columns (data/columns) for sort key resolution.
-  const visibleRows = $derived.by(() => {
+  // `visibleIndices` is an index list onto `spec.data.rows[]` — the
+  // canonical rows array is never re-allocated; sort/filter just
+  // reorder/narrow indices. Filters read row metadata directly (paint-
+  // tool style isn't filterable), sort consults schema dispatch with
+  // canonical metadata; the overlay merge moves to `rowAt(i)` so the
+  // hot path doesn't allocate.
+  const visibleIndices = $derived.by((): number[] => {
     const spec = deps.getSpec();
     if (!spec) return [];
+    const rows = spec.data.rows;
+    let indices: number[] = rows.map((_, i) => i);
 
-    const styleEdits = deps.getStyleEdits();
-    let rows: Row[] = spec.data.rows.map((r) => {
-      const rowOv = styleEdits.rows[r.id];
-      const cellOv = styleEdits.cells[r.id];
-      if (!rowOv && !cellOv) return r;
-      const mergedStyle = rowOv ? { ...(r.style ?? {}), ...rowOv } : r.style;
-      let mergedCells = r.cellStyles;
-      if (cellOv) {
-        mergedCells = { ...(r.cellStyles ?? {}) };
-        for (const [field, flags] of Object.entries(cellOv)) {
-          mergedCells[field] = { ...(mergedCells[field] ?? {}), ...flags };
-        }
-      }
-      return { ...r, style: mergedStyle, cellStyles: mergedCells };
-    });
-
-    // Multi-column filter state (per-header popovers).
     if (Object.keys(filters).length > 0) {
-      rows = applyFilters(rows, filters);
+      indices = applyFilters(rows, indices, filters);
     }
-
-    // Sort within group boundaries so grouped tables retain structure.
     if (sortConfig) {
       const sortCol = spec.columns
         ? findColumnByKey(spec.columns, sortConfig.column)
         : undefined;
-      rows = applySortWithinGroups(rows, sortConfig, sortCol);
+      indices = applySortWithinGroups(rows, indices, sortConfig, sortCol);
     }
-
-    return rows;
+    return indices;
   });
+
+  /**
+   * Resolve a visible index to its row, merging any paint-tool overlay
+   * (`styleEdits`) for that row's id. The canonical row in
+   * `spec.data.rows[]` is referentially stable; this function allocates
+   * a shallow-merged Row only when there's actually an overlay to apply.
+   */
+  function rowAt(i: number): Row {
+    const spec = deps.getSpec();
+    if (!spec) throw new Error("rowAt called before spec was set");
+    const r = spec.data.rows[i];
+    const styleEdits = deps.getStyleEdits();
+    const rowOv = styleEdits.rows[r.id];
+    const cellOv = styleEdits.cells[r.id];
+    if (!rowOv && !cellOv) return r;
+    const mergedStyle = rowOv ? { ...(r.style ?? {}), ...rowOv } : r.style;
+    let mergedCells = r.cellStyles;
+    if (cellOv) {
+      mergedCells = { ...(r.cellStyles ?? {}) };
+      for (const [field, flags] of Object.entries(cellOv)) {
+        mergedCells[field] = { ...(mergedCells[field] ?? {}), ...flags };
+      }
+    }
+    return { ...r, style: mergedStyle, cellStyles: mergedCells };
+  }
 
   function sortBy(column: string, direction: "asc" | "desc" | "none"): void {
     sortConfig = direction === "none" ? null : { column, direction };
@@ -263,7 +282,8 @@ export function createSortFilterSlice(deps: SortFilterSliceDeps): SortFilterSlic
     get sortConfig() { return sortConfig; },
     get filters() { return filters; },
     get filterPopoverTarget() { return filterPopoverTarget; },
-    get visibleRows() { return visibleRows; },
+    get visibleIndices() { return visibleIndices; },
+    rowAt,
 
     sortBy, toggleSort, setColumnFilter, clearAllFilters, getColumnFilter,
     detectColumnKind, getColumnValues, getColumnNumericRange,

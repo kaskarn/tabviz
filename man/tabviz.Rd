@@ -42,6 +42,7 @@ tabviz(
   initial_sort = NULL,
   initial_filters = NULL,
   initial_hidden_columns = NULL,
+  conditions = NULL,
   plot_position = NULL,
   row_height = NULL,
   banding = NULL,
@@ -168,6 +169,12 @@ is one of \code{"eq"}, \code{"neq"}, \code{"gt"}, \code{"lt"}, \code{"contains"}
 hide at first paint. Equivalent to calling \code{remove_column()} immediately
 after construction, but applied before mount so dashboards observing
 \verb{input$<id>_hidden_columns} see the right set on first emission.}
+
+\item{conditions}{Optional named list of row-predicate expressions. Each
+entry is a formula or function that evaluates to a logical vector over
+the data; the names become referenceable via \code{cond("name")} in
+styleMapping arguments and the schema's \code{condition(...)} recipe.
+See \code{vignette("schema-system")} for the wire shape + example.}
 
 \item{plot_position}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} No longer has
 rendering effect; column order in \code{columns = list(...)} controls

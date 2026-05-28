@@ -1,12 +1,12 @@
 <script lang="ts">
   import type { ColumnDef, ColumnSpec, ColumnGroup } from "$types";
-  import type { ForestStore } from "$stores/forestStore.svelte";
+  import type { TabvizStore } from "$stores/tabvizStore.svelte";
 
   interface Props {
     columnDefs: ColumnDef[];
     showLabel?: boolean;
     labelHeader?: string;
-    store?: ForestStore;
+    store?: TabvizStore;
     enableResize?: boolean;
   }
 
@@ -92,8 +92,7 @@
     resizing = { id: "__label__" } as ColumnSpec;
     startX = e.clientX;
     startWidth = getLabelWidth() ?? 150;
-    document.addEventListener("pointermove", onResize);
-    document.addEventListener("pointerup", stopResize);
+    attachDragListeners();
   }
 
   // Generate grid template columns for hierarchical layout
@@ -127,8 +126,7 @@
     resizing = column;
     startX = e.clientX;
     startWidth = getColWidth(column) ?? 80;
-    document.addEventListener("pointermove", onResize);
-    document.addEventListener("pointerup", stopResize);
+    attachDragListeners();
   }
 
   function onResize(e: PointerEvent) {
@@ -138,16 +136,40 @@
     store.previewColumnWidth(resizing.id, startWidth + delta);
   }
 
-  function stopResize(e: PointerEvent) {
+  function stopResize(_e?: Event) {
     if (resizing && store) {
-      const delta = e.clientX - startX;
-      // One recorded `resize_column()` per drag gesture — the settled
-      // width on release rather than every intermediate pixel.
-      store.setColumnWidth(resizing.id, startWidth + delta);
+      // Reuse the last known width during commit. The delta math runs
+      // on the cached startX/startWidth — fine when pointerup arrives
+      // normally; for the fallback paths (window blur, Escape, cancel)
+      // we just commit whatever the preview last applied to keep state
+      // consistent. previewColumnWidth already set the value.
+      store.setColumnWidth(resizing.id, store.getColumnWidth(resizing.id) ?? startWidth);
     }
     resizing = null;
+    detachDragListeners();
+  }
+
+  // Belt-and-braces: same stuck-cursor fix EdgeResize got. document-
+  // level pointermove/up are the happy path; window blur, escape, and
+  // pointercancel cover the cases where pointerup never reaches us
+  // (window focus loss, system interruption, browser quirks).
+  function onWindowBlur() { stopResize(); }
+  function onWindowKey(e: KeyboardEvent) {
+    if (e.key === "Escape") stopResize();
+  }
+  function attachDragListeners() {
+    document.addEventListener("pointermove", onResize);
+    document.addEventListener("pointerup", stopResize);
+    document.addEventListener("pointercancel", stopResize);
+    window.addEventListener("blur", onWindowBlur);
+    window.addEventListener("keydown", onWindowKey);
+  }
+  function detachDragListeners() {
     document.removeEventListener("pointermove", onResize);
     document.removeEventListener("pointerup", stopResize);
+    document.removeEventListener("pointercancel", stopResize);
+    window.removeEventListener("blur", onWindowBlur);
+    window.removeEventListener("keydown", onWindowKey);
   }
 </script>
 
@@ -293,9 +315,10 @@
     border-bottom: 1px solid var(--tv-border);
   }
 
-  .column-row {
-    /* No bottom border on column row - parent has it */
-  }
+  /* `.column-row` had an empty ruleset noting "no bottom border on column
+     row — parent has it". Since the parent already provides the border
+     and this selector has nothing of its own to set, leaving the rule
+     out is the correct outcome. svelte-check warns on empty rulesets. */
 
   .group-header {
     justify-content: center;
