@@ -11,7 +11,6 @@
   import { tabviz } from "$authoring/tabviz";
   import { createTabvizStore, type TabvizStore } from "$stores/tabvizStore.svelte";
 
-  import AccordionGroup  from "$components/primitives/v2/AccordionGroup.svelte";
   import BasicsControl    from "$components/ui/BasicsControl.svelte";
   import ThemeControl     from "$components/ui/ThemeControl.svelte";
   import LayoutControl    from "$components/ui/LayoutControl.svelte";
@@ -72,25 +71,23 @@
     </header>
     <div class="panel-body">
       {#if activeTab === "theme"}
-        <AccordionGroup><ThemeControl {store} /></AccordionGroup>
+        <ThemeControl {store} />
       {:else if activeTab === "layout"}
-        <AccordionGroup>
-          <LayoutControl {store} />
-          <BasicsControl {store} />
-          <WatermarkControl {store} />
-        </AccordionGroup>
+        <LayoutControl {store} />
+        <BasicsControl {store} />
+        <WatermarkControl {store} />
       {:else if activeTab === "spacing"}
-        <AccordionGroup><SpacingControl {store} /></AccordionGroup>
+        <SpacingControl {store} />
       {:else if activeTab === "viz"}
-        <AccordionGroup><MarksControl {store} /></AccordionGroup>
+        <MarksControl {store} />
       {:else if activeTab === "text"}
-        <AccordionGroup><TextControl {store} /></AccordionGroup>
+        <TextControl {store} />
       {:else if activeTab === "tokens"}
-        <AccordionGroup><TokensControl {store} /></AccordionGroup>
+        <TokensControl {store} />
       {:else if activeTab === "basics"}
-        <AccordionGroup><BasicsControl {store} /></AccordionGroup>
+        <BasicsControl {store} />
       {:else if activeTab === "watermark"}
-        <AccordionGroup><WatermarkControl {store} /></AccordionGroup>
+        <WatermarkControl {store} />
       {/if}
     </div>
   </aside>

@@ -18,7 +18,6 @@
   // here ensures the stylesheet ships with the widget bundle even when
   // ColumnEditorV2Popover hasn't been lazy-loaded yet.
   import "$components/primitives/v2/tokens.css";
-  import AccordionGroup from "$components/primitives/v2/AccordionGroup.svelte";
   import TabSelect, { type TabOption } from "./TabSelect.svelte";
   import WatermarkControl from "./WatermarkControl.svelte";
 
@@ -220,10 +219,6 @@
             id="settings-panel-{tab.id}"
             aria-labelledby="settings-tab-{tab.id}"
           >
-            <!-- AccordionGroup wraps every tab body so the v2 Section
-                 descendants behave as one-open-at-a-time. The first
-                 registered Section opens by default. -->
-            <AccordionGroup>
             {#if tab.id === "theme"}
               <ThemeControl {store} />
             {:else if tab.id === "layout"}
@@ -244,7 +239,6 @@
             {:else if tab.id === "tokens"}
               <TokensControl {store} />
             {/if}
-            </AccordionGroup>
           </div>
         {/if}
         {/each}
