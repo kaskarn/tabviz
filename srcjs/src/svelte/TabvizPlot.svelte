@@ -2737,6 +2737,14 @@
     background: var(--tv-header-bg, var(--tv-row-bg, var(--tv-bg)));
     color: var(--tv-header-fg, var(--tv-cell-fg, var(--tv-fg)));
     position: relative;
+    /* Fill sub-pixel hairline gaps between adjacent cells when the
+       header has a non-default bg (e.g. bold variant's primary-deep
+       fill). At fractional column widths, CSS Grid rounds cell edges
+       independently and the page bg bleeds through as bright vertical
+       lines. A 0.5px outline of the same bg color over-paints those
+       hairlines. Has no visible effect when neighboring cells share
+       the same bg (the outline blends in). */
+    box-shadow: 0 0 0 0.5px var(--tv-header-bg, transparent);
   }
 
   .header-cell.sortable {

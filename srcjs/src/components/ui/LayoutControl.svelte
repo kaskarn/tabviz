@@ -7,6 +7,8 @@
   // the full SpacingTokens preset client-side too.
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
   import Section from "$components/primitives/v2/Section.svelte";
+  import Field from "$components/primitives/v2/Field.svelte";
+  import Slider from "$components/primitives/v2/Slider.svelte";
   import SegmentedField from "./SegmentedField.svelte";
   import BooleanField from "./BooleanField.svelte";
   import NumberField from "./NumberField.svelte";
@@ -176,95 +178,95 @@
     glyph="section.layout"
     hint="Three structural choices applied site-wide. Spacing tab can override individual tokens on top of the density preset."
   >
-    <div class="sub-head">Structure</div>
-    <!-- Density: three line-stack glyph-segments. Was a card-strip;
-         the agents flagged that density's pure-spatial enum doesn't
-         need card-footprint — three 24px line stacks read the spatial
-         difference instantly. Saves vertical space and breaks the
-         three-card-rows wall. -->
-    <div class="glyph-row" role="radiogroup" aria-label="Density">
-      {#each [
-        { value: "compact",     label: "Compact", h: 4 },
-        { value: "comfortable", label: "Comfy",   h: 5 },
-        { value: "spacious",    label: "Roomy",   h: 7 },
-      ] as opt}
-        <button
-          type="button"
-          class="glyph-seg"
-          class:active={variants.density === opt.value}
-          onclick={() => changeDensity(opt.value)}
-          aria-label={`Set density to ${opt.label}`}
-          aria-pressed={variants.density === opt.value}
-          title={opt.label}
-        >
-          <svg viewBox="0 0 24 22" width="24" height="22">
-            <rect x="2" y="2"            width="20" height={opt.h} fill="var(--v2-ink-3, #8a8478)" opacity="0.55"/>
-            <rect x="2" y={4 + opt.h}    width="20" height={opt.h} fill="var(--v2-ink-3, #8a8478)" opacity="0.55"/>
-            <rect x="2" y={6 + 2*opt.h}  width="20" height={opt.h} fill="var(--v2-ink-3, #8a8478)" opacity="0.55"/>
-          </svg>
-        </button>
-      {/each}
-    </div>
-
-    <div class="sub-head">Header</div>
-    <!-- Header style preview cards. Each shows a mock header band at
-         the actual visual weight (Light = bare surface, Tint = primary
-         tinted, Bold = filled primary_deep with inverse text). Reads
-         as a sample-line specimen, not jargon. -->
+    <!-- Density / Header / Marks pickers now wrapped in Field so each
+         picker-row's content aligns to the panel's control spine —
+         same x as Primary/Secondary swatches above. Three card-strips
+         use a 3-column 1fr grid with shared SVG viewBox so cards are
+         strictly equal-width and pixel-rhythmic. Density uses the
+         line-stack glyph-segment (agents flagged it doesn't need card
+         footprint). -->
     {@const primaryDeep = (inputs?.primaryDeep as string | undefined) ?? "#1F2937"}
     {@const primary = (inputs?.primary as string | undefined) ?? "#0891B2"}
-    <div class="density-preview" aria-hidden="true">
-      {#each [
-        { value: "light", label: "Light", bg: "#faf7f0", fg: "#15140e", rule: "#d6d0c1" },
-        { value: "tint",  label: "Tint",  bg: `color-mix(in srgb, ${primary} 12%, #faf7f0)`, fg: "#15140e", rule: primary },
-        { value: "bold",  label: "Bold",  bg: primaryDeep, fg: "#faf7f0", rule: primaryDeep },
-      ] as opt}
-        <button
-          type="button"
-          class="density-card"
-          class:active={variants.headerStyle === opt.value}
-          onclick={() => changeHeaderStyle(opt.value)}
-          aria-label={`Set header style to ${opt.label}`}
-        >
-          <svg viewBox="0 0 30 22" width="30" height="22">
-            <rect x="2" y="2" width="26" height="8" fill={opt.bg} stroke={opt.rule} stroke-width="0.5"/>
-            <text x="15" y="8" font-size="5" font-weight="600" text-anchor="middle"
-                  font-family="system-ui" fill={opt.fg}>Aa</text>
-            <rect x="2" y="12" width="26" height="3" fill="var(--v2-paper-2, #f3efe5)"/>
-            <rect x="2" y="17" width="26" height="3" fill="var(--v2-paper-2, #f3efe5)"/>
-          </svg>
-          <span class="density-label">{opt.label}</span>
-        </button>
-      {/each}
-    </div>
-    <div class="sub-head">Marks</div>
-    <!-- Slot style preview cards. Each shows the fill/stroke pairing
-         convention as a glyph: filled circle with darker ring (F+S),
-         flat fill (no ring), outlined ring with light fill. The cards
-         replace 3-letter mystery labels with their own preview. -->
-    {@const slotPrimary = primary}
+
+    <Field label="Density">
+      <div class="layout-pickers" role="radiogroup" aria-label="Density">
+        {#each [
+          { value: "compact",     label: "Compact", h: 4 },
+          { value: "comfortable", label: "Comfy",   h: 5 },
+          { value: "spacious",    label: "Roomy",   h: 7 },
+        ] as opt}
+          <button
+            type="button"
+            class="layout-card glyph-only"
+            class:active={variants.density === opt.value}
+            onclick={() => changeDensity(opt.value)}
+            aria-label={`Set density to ${opt.label}`}
+            aria-pressed={variants.density === opt.value}
+            title={opt.label}
+          >
+            <svg viewBox="0 0 36 22" width="100%" height="22" preserveAspectRatio="xMidYMid meet">
+              <rect x="3" y="2"            width="30" height={opt.h} fill="var(--v2-ink-2, #4a463c)" opacity="0.7"/>
+              <rect x="3" y={4 + opt.h}    width="30" height={opt.h} fill="var(--v2-ink-2, #4a463c)" opacity="0.7"/>
+              <rect x="3" y={6 + 2*opt.h}  width="30" height={opt.h} fill="var(--v2-ink-2, #4a463c)" opacity="0.7"/>
+            </svg>
+          </button>
+        {/each}
+      </div>
+    </Field>
+
+    <Field label="Header">
+      <div class="layout-pickers" role="radiogroup" aria-label="Header style">
+        {#each [
+          { value: "light", label: "Light", bg: "#faf7f0", fg: "#15140e", rule: "#d6d0c1" },
+          { value: "tint",  label: "Tint",  bg: `color-mix(in srgb, ${primary} 12%, #faf7f0)`, fg: "#15140e", rule: primary },
+          { value: "bold",  label: "Bold",  bg: primaryDeep, fg: "#faf7f0", rule: primaryDeep },
+        ] as opt}
+          <button
+            type="button"
+            class="layout-card"
+            class:active={variants.headerStyle === opt.value}
+            onclick={() => changeHeaderStyle(opt.value)}
+            aria-label={`Set header style to ${opt.label}`}
+            aria-pressed={variants.headerStyle === opt.value}
+          >
+            <svg viewBox="0 0 36 22" width="100%" height="22" preserveAspectRatio="xMidYMid meet">
+              <rect x="3" y="2" width="30" height="10" fill={opt.bg} stroke={opt.rule} stroke-width="0.5"/>
+              <text x="18" y="9.5" font-size="6" font-weight="600" text-anchor="middle"
+                    font-family="system-ui" fill={opt.fg}>Aa</text>
+              <rect x="3" y="14" width="30" height="3" fill="var(--v2-paper-2, #f3efe5)"/>
+              <rect x="3" y="18" width="30" height="3" fill="var(--v2-paper-2, #f3efe5)"/>
+            </svg>
+            <span class="card-label">{opt.label}</span>
+          </button>
+        {/each}
+      </div>
+    </Field>
+
     {@const slotStroke = primaryDeep}
-    <div class="density-preview" aria-hidden="true">
-      {#each [
-        { value: "fill_with_darker_stroke", label: "Fill+Ring", fill: slotPrimary, stroke: slotStroke, sw: 1.5 },
-        { value: "flat_fill",               label: "Flat",      fill: slotPrimary, stroke: slotPrimary, sw: 0.5 },
-        { value: "outlined",                label: "Outlined",  fill: `color-mix(in srgb, ${slotPrimary} 15%, #faf7f0)`, stroke: slotPrimary, sw: 1.5 },
-      ] as opt}
-        <button
-          type="button"
-          class="density-card"
-          class:active={(inputs?.slotStyle as string | undefined ?? "fill_with_darker_stroke") === opt.value}
-          onclick={() => changeSlotStyle(opt.value as "fill_with_darker_stroke" | "flat_fill" | "outlined")}
-          aria-label={`Set slot style to ${opt.label}`}
-        >
-          <svg viewBox="0 0 30 22" width="30" height="22">
-            <line x1="6" y1="11" x2="24" y2="11" stroke={opt.stroke} stroke-width={opt.sw}/>
-            <circle cx="15" cy="11" r="4" fill={opt.fill} stroke={opt.stroke} stroke-width={opt.sw}/>
-          </svg>
-          <span class="density-label">{opt.label}</span>
-        </button>
-      {/each}
-    </div>
+    <Field label="Marks">
+      <div class="layout-pickers" role="radiogroup" aria-label="Slot style">
+        {#each [
+          { value: "fill_with_darker_stroke", label: "F+Ring", fill: primary, stroke: slotStroke, sw: 1.5 },
+          { value: "flat_fill",               label: "Flat",   fill: primary, stroke: primary, sw: 0.5 },
+          { value: "outlined",                label: "Lined",  fill: `color-mix(in srgb, ${primary} 15%, #faf7f0)`, stroke: primary, sw: 1.5 },
+        ] as opt}
+          <button
+            type="button"
+            class="layout-card"
+            class:active={(inputs?.slotStyle as string | undefined ?? "fill_with_darker_stroke") === opt.value}
+            onclick={() => changeSlotStyle(opt.value as "fill_with_darker_stroke" | "flat_fill" | "outlined")}
+            aria-label={`Set slot style to ${opt.label}`}
+            aria-pressed={(inputs?.slotStyle as string | undefined ?? "fill_with_darker_stroke") === opt.value}
+          >
+            <svg viewBox="0 0 36 22" width="100%" height="22" preserveAspectRatio="xMidYMid meet">
+              <line x1="6" y1="11" x2="30" y2="11" stroke={opt.stroke} stroke-width={opt.sw}/>
+              <circle cx="18" cy="11" r="5" fill={opt.fill} stroke={opt.stroke} stroke-width={opt.sw}/>
+            </svg>
+            <span class="card-label">{opt.label}</span>
+          </button>
+        {/each}
+      </div>
+    </Field>
     <!-- Hidden SegmentedFields kept for a11y-fallback + native picker
          affordance. These don't render visibly; the cards above are
          the visible controls. Could remove if a11y review allows. -->
@@ -363,63 +365,71 @@
     hint="H and V axes independently toggle row + column dividers; each type sets its own thickness, single/double, and color."
   >
 
-    <!-- Axes row — drives which AXES paint (H = row dividers between
-         rows, V = column dividers between cells). Applies to all
-         three border types collectively. -->
+    <!-- Axes row — drives which AXES paint (H = row dividers, V =
+         column dividers). Applies to all three border types. -->
     {@const layoutState = borders.layout as LayoutState}
-    <div class="axes-row">
-      <span class="axes-label">axes</span>
-      {@render axisCycler(layoutHasH(layoutState), "h",
-        () => setBordersField(["layout"], withH(layoutState, !layoutHasH(layoutState))))}
-      {@render axisCycler(layoutHasV(layoutState), "v",
-        () => setBordersField(["layout"], withV(layoutState, !layoutHasV(layoutState))))}
-    </div>
+    <Field label="Axes">
+      <div class="border-controls">
+        {@render axisCycler(layoutHasH(layoutState), "h",
+          () => setBordersField(["layout"], withH(layoutState, !layoutHasH(layoutState))))}
+        {@render axisCycler(layoutHasV(layoutState), "v",
+          () => setBordersField(["layout"], withV(layoutState, !layoutHasV(layoutState))))}
+      </div>
+    </Field>
 
-    <!-- Per-type inline rows. Each is one 22px line at the row's
-         actual painted style + color, followed by thickness cycler +
-         color swatch. The line preview IS the click target for
-         single/double cycling. When thickness=0 the row fades to
-         "off" and uses a dashed gray as a placeholder. -->
+    <!-- Per-type rows wrapped in Field so they share the panel spine.
+         Control area: line preview (click cycles single ↔ double) +
+         slider for thickness (0..max) + color chip. Type identity is
+         in the Field label. -->
     {#each [
-      { key: "minor" as const, label: "minor", maxThk: 4, hint: "Row + column data dividers" },
-      { key: "major" as const, label: "major", maxThk: 6, hint: "Header bottom + group/summary breaks" },
-      { key: "table" as const, label: "table", maxThk: 6, hint: "Top + bottom frame around the data table" },
+      { key: "minor" as const, label: "Minor", maxThk: 4, hint: "Row + column data dividers" },
+      { key: "major" as const, label: "Major", maxThk: 6, hint: "Header bottom + group/summary breaks" },
+      { key: "table" as const, label: "Table", maxThk: 6, hint: "Top + bottom frame around the data table" },
     ] as t (t.key)}
       {@const spec = borders[t.key]}
       {@const off = spec.thickness <= 0}
-      <div class="border-row" class:off>
-        <button type="button" class="border-line-btn"
-                disabled={off}
-                title={off ? `${t.label} off (cycle thickness to enable)` : `${t.label} · click line to toggle single ↔ double`}
-                aria-label={`Toggle ${t.label} style — currently ${spec.style}`}
-                onclick={() => setBordersField([t.key, "style"], spec.style === "double" ? "single" : "double")}>
-          <svg viewBox="0 0 120 12" width="100%" height="12" preserveAspectRatio="none">
-            {#if off}
-              <line x1="2" y1="6" x2="118" y2="6"
-                    stroke="var(--v2-ink-3, #8a8478)" stroke-width="0.7"
-                    stroke-dasharray="3 2" opacity="0.5"/>
-            {:else if spec.style === "double"}
-              <line x1="2" y1="4" x2="118" y2="4" stroke={spec.color}
-                    stroke-width={Math.max(0.7, Math.min(2, spec.thickness * 0.6))}/>
-              <line x1="2" y1="8" x2="118" y2="8" stroke={spec.color}
-                    stroke-width={Math.max(0.7, Math.min(2, spec.thickness * 0.6))}/>
-            {:else}
-              <line x1="2" y1="6" x2="118" y2="6" stroke={spec.color}
-                    stroke-width={Math.max(0.8, Math.min(3, spec.thickness * 1.0))}/>
-            {/if}
-          </svg>
-        </button>
-        {@render thicknessCycler(spec.thickness, t.maxThk,
-          () => setBordersField([t.key, "thickness"], spec.thickness >= t.maxThk ? 0 : spec.thickness + 1))}
-        <div class="border-swatch-host" class:off>
-          <ColorField
-            label=""
-            value={spec.color}
-            onchange={(v: string) => setBordersField([t.key, "color"], v)}
-          />
+      <Field label={t.label} hint={t.hint}>
+        <div class="border-controls" class:off>
+          <button type="button" class="border-line-btn"
+                  disabled={off}
+                  title={off ? `${t.label} off (drag thickness to enable)` : `${t.label} · click line to toggle single ↔ double`}
+                  aria-label={`Toggle ${t.label} style — currently ${spec.style}`}
+                  onclick={() => setBordersField([t.key, "style"], spec.style === "double" ? "single" : "double")}>
+            <svg viewBox="0 0 120 12" width="100%" height="12" preserveAspectRatio="none">
+              {#if off}
+                <line x1="2" y1="6" x2="118" y2="6"
+                      stroke="var(--v2-ink-3, #8a8478)" stroke-width="0.7"
+                      stroke-dasharray="3 2" opacity="0.5"/>
+              {:else if spec.style === "double"}
+                <line x1="2" y1="4" x2="118" y2="4" stroke={spec.color}
+                      stroke-width={Math.max(0.7, Math.min(2, spec.thickness * 0.6))}/>
+                <line x1="2" y1="8" x2="118" y2="8" stroke={spec.color}
+                      stroke-width={Math.max(0.7, Math.min(2, spec.thickness * 0.6))}/>
+              {:else}
+                <line x1="2" y1="6" x2="118" y2="6" stroke={spec.color}
+                      stroke-width={Math.max(0.8, Math.min(3, spec.thickness * 1.0))}/>
+              {/if}
+            </svg>
+          </button>
+          <div class="border-thk-slider">
+            <Slider
+              value={spec.thickness}
+              min={0} max={t.maxThk} step={1}
+              suffix="px"
+              valueWidth={3}
+              ariaLabel={`${t.label} thickness`}
+              onchange={(v) => setBordersField([t.key, "thickness"], v)}
+            />
+          </div>
+          <div class="border-swatch-host" class:off>
+            <ColorField
+              label=""
+              value={spec.color}
+              onchange={(v: string) => setBordersField([t.key, "color"], v)}
+            />
+          </div>
         </div>
-        <span class="border-rowlabel" title={t.hint}>{t.label}</span>
-      </div>
+      </Field>
     {/each}
   </Section>
 {/if}
@@ -427,53 +437,53 @@
 <BandingControl {store} />
 
 <style>
-  /* Sub-section label inside Layout — small caps, hairline, breathes
-     the three card-strips apart so they read as three named choices
-     rather than one stuck-together wall. Replaces the dingbat-style
-     ornament that's reserved for top-level section breaks. */
-  .sub-head {
+  /* Layout-tab three-card picker rows (Density / Header / Marks).
+     Lives inside Field's control slot, so it starts at the panel
+     spine — same x as Primary/Secondary swatches in Theme. Strict
+     equal-width via 3-column grid; SVG previews share the same
+     viewBox dimensions for uniform internal rhythm. */
+  .layout-pickers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+    align-items: stretch;
+  }
+  .layout-card {
+    appearance: none;
+    border: 1px solid var(--v2-rule-soft, #e6e0d1);
+    background: var(--v2-paper-edge, #fff);
+    border-radius: var(--v2-r-hair, 2px);
+    padding: 4px 2px 3px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+    transition:
+      border-color var(--v2-dur-snap, 80ms) var(--v2-ease),
+      box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
+  }
+  .layout-card:hover {
+    border-color: var(--v2-rule, #d6d0c1);
+  }
+  .layout-card.active {
+    border-color: var(--v2-ink, #15140e);
+    box-shadow: inset 0 0 0 0.5px var(--v2-ink, #15140e);
+  }
+  .layout-card.glyph-only { padding: 3px 2px; }
+  .layout-card.glyph-only.active rect { fill: var(--v2-ink, #15140e); opacity: 1; }
+  .card-label {
     font-family: var(--v2-font-sans, system-ui);
     font-size: 9.5px;
     font-feature-settings: "smcp" 1, "c2sc" 1;
     text-transform: lowercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.08em;
     color: var(--v2-ink-3, #8a8478);
-    font-weight: 500;
-    padding: 10px 0 4px 28px;
     line-height: 1;
   }
-
-  /* Glyph-segment row — for atomic enums where the preview fits
-     under 24px (Density's line-stacks). Three buttons share a row
-     with hairline outlines; active gets an ink ring. */
-  .glyph-row {
-    display: flex;
-    gap: 6px;
-    padding: 2px 8px 6px 28px;
-    align-items: center;
-  }
-  .glyph-seg {
-    appearance: none;
-    border: 0;
-    padding: 2px 4px;
-    background: transparent;
-    border-radius: var(--v2-r-soft, 3px);
-    cursor: pointer;
-    transition:
-      background var(--v2-dur-snap, 80ms) var(--v2-ease),
-      box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease);
-    box-shadow: inset 0 0 0 1px var(--v2-rule-soft, #e6e0d1);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .glyph-seg:hover {
-    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
-  }
-  .glyph-seg.active {
-    box-shadow: inset 0 0 0 1.5px var(--v2-ink, #15140e);
-  }
-  .glyph-seg.active svg rect { opacity: 1 !important; fill: var(--v2-ink, #15140e); }
+  .layout-card.active .card-label { color: var(--v2-ink, #15140e); }
 
   /* Screen-reader-only fallback for the hidden SegmentedField pickers
      beneath the card-strip variants. Kept off-screen but addressable. */
@@ -485,65 +495,9 @@
     white-space: nowrap; border: 0;
   }
 
-  /* Density preview row — three mock-row stacks. Click selects. */
-  .density-preview {
-    display: flex;
-    gap: 6px;
-    padding: 4px 8px 8px 28px;
-  }
-  .density-card {
-    appearance: none;
-    border: 0;
-    padding: 4px 6px 5px;
-    background: var(--v2-paper-edge, #fff);
-    border-radius: var(--v2-r-soft, 3px);
-    box-shadow: inset 0 0 0 1px var(--v2-rule-soft, #e6e0d1);
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    transition:
-      box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease),
-      transform var(--v2-dur-snap, 80ms) var(--v2-ease);
-  }
-  .density-card:hover {
-    transform: translateY(-1px);
-    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
-  }
-  .density-card.active {
-    box-shadow: inset 0 0 0 1.5px var(--v2-ink, #15140e);
-  }
-  .density-label {
-    font-family: var(--v2-font-sans, system-ui);
-    font-size: 9.5px;
-    color: var(--v2-ink-2, #4a463c);
-    font-feature-settings: "smcp" 1, "c2sc" 1;
-    text-transform: lowercase;
-    letter-spacing: 0.1em;
-    line-height: 1;
-  }
-  .density-card.active .density-label { color: var(--v2-ink, #15140e); }
-
-  /* ── Borders inline row ───────────────────────────────────────
-     Each type (minor / major / table) sits on one 22px row:
-       [LABEL ........ style ─/═  thk 1/2/3  ●swatch]
-     Style + thickness are click-to-cycle inline glyph buttons; the
-     swatch fills the rest of the row. This replaces the previous
-     9-row triple-stack with 3 inline rows. */
-  .axes-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px 8px 28px;
-  }
-  .axes-label {
-    font-family: var(--v2-font-sans, system-ui);
-    font-size: 11.5px;
-    color: var(--v2-ink-2, #4a463c);
-    min-width: 36px;
-  }
+  /* Axis / style / thickness cyclers — all use the same 22x22 chassis. */
   .axis-cycler,
+  .style-cycler,
   .style-cycler,
   .thickness-cycler {
     appearance: none;
@@ -579,16 +533,24 @@
     font-variant-numeric: tabular-nums;
     line-height: 1;
   }
-  /* Border type row — one 22px line per type. Anatomy:
-       [LINE PREVIEW button][thk chip][swatch host][type label] */
-  .border-row {
+  /* Border type row content — sits inside Field's control slot
+     so the row aligns to the panel spine. Inline composition:
+       [LINE PREVIEW][SLIDER thk][SWATCH chip]
+     Label is provided by Field. */
+  .border-controls {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 1px 8px 1px 28px;
-    min-height: 24px;
+    width: 100%;
+    min-width: 0;
   }
-  .border-row.off { opacity: 0.55; }
+  .border-controls.off { opacity: 0.55; }
+  .border-thk-slider {
+    flex: 0 0 70px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+  }
   .border-line-btn {
     appearance: none;
     border: 0;
@@ -607,17 +569,6 @@
     background: var(--v2-hover-tint, rgba(21, 20, 14, 0.05));
   }
   .border-line-btn:disabled { cursor: default; }
-  .border-rowlabel {
-    font-family: var(--v2-font-sans, system-ui);
-    font-size: 9.5px;
-    font-feature-settings: "smcp" 1, "c2sc" 1;
-    text-transform: lowercase;
-    letter-spacing: 0.12em;
-    color: var(--v2-ink-3, #8a8478);
-    flex: none;
-    min-width: 42px;
-    text-align: right;
-  }
   .border-swatch-host {
     flex: 0 0 auto;
     min-width: 0;
