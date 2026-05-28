@@ -2892,29 +2892,25 @@
     padding: 0 var(--tv-viz-margin, 12px);
   }
 
-  /* Axis row cells - use full axis height (gap + content) */
-  .axis-spacer {
-    height: var(--tv-axis-height);
-    border-bottom: none;
-    background: var(--tv-bg);
-    padding: 0;
-  }
-
+  /* Axis row cells — full axis height (gap + content). The row
+     hosts EITHER an `.axis-cell` (per column that owns an axis,
+     e.g. the forest column) OR an `.axis-spacer` (per column that
+     doesn't). The table-frame bottom edge needs to span ALL
+     columns — so both classes paint the same border-top using
+     the table-frame vars. */
+  .axis-spacer,
   .axis-cell {
     height: var(--tv-axis-height);
     border-bottom: none;
     background: var(--tv-bg);
     padding: 0;
-    /* Table bottom edge: paints above the axis row so the frame
-       closes under the last data row, not under the axis ticks.
-       Same vars as .tabviz-main's border-top. */
     border-top-width: var(--tv-table-border-width, 0);
     border-top-style: var(--tv-table-border-style, none);
     border-top-color: var(--tv-border-table-color, transparent);
     /* Cells default to a right border under cols/grid layout; the
        axis row sits visually outside the table, so suppress that
-       too — otherwise the bottom-frame line would have a stray
-       continuation into the axis area. */
+       too — otherwise the bottom-frame line would have stray
+       column-divider continuations into the axis area. */
     border-right-style: none;
   }
 
