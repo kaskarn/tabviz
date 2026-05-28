@@ -62,44 +62,42 @@
 </div>
 
 <style>
+  /* Equal-width 3+ column grid — matches the LayoutControl cards
+     (Density / Header / Marks). Auto-fit so 2-card or 4-card variant
+     lists still distribute evenly. Min track 72px lets 4 cards fit
+     in the editor's 200px control area. No horizontal scroll. */
   .vp {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
     gap: 6px;
-    overflow-x: auto;
-    padding: 2px 0;
-    /* The horizontal scrollbar should be invisible in chrome but
-       still scrollable via wheel/drag. */
-    scrollbar-width: thin;
+    width: 100%;
+    padding: 0;
   }
 
   .card {
     appearance: none;
-    border: 0;
+    border: 1px solid var(--v2-rule-soft, #e6e0d1);
     background: var(--v2-paper-edge, #fff);
-    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
-    border-radius: var(--v2-r-soft, 3px);
-    padding: 10px 10px 8px;
-    min-width: 100px;
-    max-width: 160px;
-    flex: 1 1 auto;
+    border-radius: var(--v2-r-hair, 2px);
+    padding: 6px 4px 4px;
+    min-width: 0;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    text-align: left;
+    align-items: center;
+    gap: 3px;
     color: var(--v2-ink, #15140e);
     font: inherit;
     transition:
-      box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease, ease),
+      border-color var(--v2-dur-snap, 80ms) var(--v2-ease, ease),
       background var(--v2-dur-snap, 80ms) var(--v2-ease, ease);
   }
   .card:hover:not(.active) {
-    box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c);
+    border-color: var(--v2-rule, #d6d0c1);
   }
   .card.active {
-    background: var(--v2-active-bg, #15140e);
-    color: var(--v2-active-fg, #faf7f0);
-    box-shadow: none;
+    border-color: var(--v2-ink, #15140e);
+    box-shadow: inset 0 0 0 0.5px var(--v2-ink, #15140e);
   }
   .card:focus-visible {
     outline: 1px solid var(--v2-focus-ring, #15140e);
@@ -107,33 +105,33 @@
   }
   .card:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* Preview area — fixed height so cards align even when previews
-     have different line counts. The 'pre-line' rule respects `\n` in
-     the preview string for genuinely multi-line recipes. */
+  /* Preview snippet — kept as a text string for now (changing
+     VariantSpec to require an SVG would touch every schema). Uniform
+     22px box so cards align even when previews wrap. The mono font +
+     pre-line preserve `\n` for recipe-style previews. */
   .preview {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 28px;
+    height: 22px;
+    width: 100%;
     font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: var(--v2-text-body, 11.5px);
-    line-height: 1.25;
+    font-size: 10px;
+    line-height: 1.1;
     white-space: pre-line;
     text-align: center;
-    color: inherit;
+    color: var(--v2-ink-2, #4a463c);
+    overflow: hidden;
   }
   .label {
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: var(--v2-track-flag, 0.14em);
+    font-family: var(--v2-font-sans, system-ui, sans-serif);
+    font-size: 9.5px;
+    font-feature-settings: "smcp" 1, "c2sc" 1;
+    text-transform: lowercase;
+    letter-spacing: 0.08em;
     color: var(--v2-ink-3, #8a8478);
-    border-top: 1px solid var(--v2-rule-soft, #e6e0d1);
-    padding-top: 5px;
+    line-height: 1;
   }
-  .card.active .label {
-    color: var(--v2-active-fg, #faf7f0);
-    opacity: 0.6;
-    border-top-color: rgba(250, 247, 240, 0.15);
-  }
+  .card.active .label { color: var(--v2-ink, #15140e); }
+  .card.active .preview { color: var(--v2-ink, #15140e); }
 </style>

@@ -56,6 +56,50 @@
   }
 </script>
 
+<!--
+  When called with label="", skip the Field wrapper and render the
+  bare input. Lets callers that are ALREADY inside a Field's control
+  slot reuse TextField without double-wrapping (same pattern as
+  ColorField). Outer callers pass a non-empty label and get the
+  standard labeled row.
+-->
+{#snippet bareInput()}
+  {#if lines > 1}
+    <textarea
+      class="tf-input tf-textarea"
+      class:family-serif={family === "serif"}
+      class:family-sans={family === "sans"}
+      rows={lines}
+      {value}
+      {placeholder}
+      oninput={handleInput}
+      onchange={commit}
+      onblur={commit}
+      onkeydown={handleKeydown}
+      spellcheck="false"
+      aria-label={label || undefined}
+    ></textarea>
+  {:else}
+    <input
+      class="tf-input"
+      class:family-serif={family === "serif"}
+      class:family-sans={family === "sans"}
+      type="text"
+      {value}
+      {placeholder}
+      oninput={handleInput}
+      onchange={commit}
+      onblur={commit}
+      onkeydown={handleKeydown}
+      spellcheck="false"
+      aria-label={label || undefined}
+    />
+  {/if}
+{/snippet}
+
+{#if label === ""}
+  {@render bareInput()}
+{:else}
 <div class="tf-row" data-tv-v2>
   <Field {label} {hint}>
     {#if lines > 1}
@@ -91,6 +135,7 @@
     {/if}
   </Field>
 </div>
+{/if}
 
 <style>
   .tf-row { display: contents; }

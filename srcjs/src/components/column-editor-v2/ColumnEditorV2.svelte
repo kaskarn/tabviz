@@ -55,6 +55,7 @@
   import Mode   from "../primitives/v2/Mode.svelte";
   import VariantPicker from "../primitives/v2/VariantPicker.svelte";
   import ColumnPreview from "../primitives/v2/ColumnPreview.svelte";
+  import TextField from "../ui/TextField.svelte";
   import type { PickerItem, ThemeSwatch, MappedMode } from "../primitives/v2/types";
 
   interface Props {
@@ -508,11 +509,10 @@
                         onchange={(v) => writeMappedStatic(opt, v)}
                       />
                     {:else}
-                      <input
-                        class="text-input"
-                        type="text"
+                      <TextField
+                        label=""
                         value={String(mappedCur ?? "")}
-                        oninput={(e) => writeMappedStatic(opt, (e.target as HTMLInputElement).value || null)}
+                        oninput={(v) => writeMappedStatic(opt, v || null)}
                       />
                     {/if}
                   {:else if m === "field"}
@@ -530,14 +530,14 @@
                   {/if}
                 </span>
               {:else}
-                <!-- Fallback: text input. Used by Base 'header' option
-                     among others. Empty string commits as null so the
-                     pinned-override gutter clears correctly. -->
-                <input
-                  class="text-input"
-                  type="text"
+                <!-- Fallback: text input via shared TextField primitive
+                     with label="" (skips the inner Field wrapper since
+                     we're already inside one). Empty string commits
+                     as null so the pinned-override gutter clears. -->
+                <TextField
+                  label=""
                   value={String(cur ?? opt.default ?? "")}
-                  oninput={(e) => commit(opt, (e.target as HTMLInputElement).value || null)}
+                  oninput={(v) => commit(opt, v || null)}
                 />
               {/if}
             </Field>
@@ -599,28 +599,8 @@
     flex: 1 1 auto;
   }
 
-  /* ── Inline controls ─────────────────────────────────────── */
-  .text-input {
-    flex: 1;
-    min-width: 0;
-    height: var(--v2-control-h, 22px);
-    padding: 0 8px;
-    border: 0;
-    border-radius: var(--v2-r-soft, 3px);
-    background: var(--v2-paper-edge, #fff);
-    box-shadow: inset 0 0 0 1px var(--v2-rule, #d6d0c1);
-    font: inherit;
-    font-size: var(--v2-text-body, 11.5px);
-    color: var(--v2-ink, #15140e);
-    outline: none;
-    transition: box-shadow var(--v2-dur-snap, 80ms) var(--v2-ease, ease);
-  }
-  .text-input:hover { box-shadow: inset 0 0 0 1px var(--v2-ink-2, #4a463c); }
-  .text-input:focus { box-shadow: inset 0 0 0 1px var(--v2-rule-strong, #15140e); }
-  .text-input::placeholder {
-    color: var(--v2-ink-3, #8a8478);
-    font-style: italic;
-  }
+  /* (Local .text-input retired — uses shared TextField primitive via
+     label="" to skip the inner Field wrapper.) */
 
   .mapped {
     display: inline-flex;
