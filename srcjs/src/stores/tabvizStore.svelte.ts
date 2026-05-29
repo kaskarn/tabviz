@@ -1349,6 +1349,7 @@ export function createTabvizStore() {
     },
     setTheme: theme.setTheme,
     setThemeObject: theme.setThemeObject,
+    setAuthoringInputs: theme.setAuthoringInputs,
     captureThemeSnapshot: theme.captureThemeSnapshot,
     applyThemeSnapshot: theme.applyThemeSnapshot,
     // Zoom & auto-fit actions — layout-zoom slice passthrough.

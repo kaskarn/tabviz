@@ -1,312 +1,322 @@
 <!--
-  ThemeControl — settings-panel Theme tab.
+  ThemeControl — settings-panel Theme tab (V3).
 
-  Was 753 lines (cascade logic + boilerplate per color × 30+); now
-  ~280 with the cascade logic extracted to theme-cascade.ts and the
-  markup rationalized onto v2 primitives.
+  Replaces the V2 panel that bypassed the V3 cascade. Binds to
+  `spec.theme.authoringInputs` (the V3 ThemeInputs round-tripped by the
+  adapter) and routes every edit through `store.setAuthoringInputs()`,
+  which rebuilds the resolved theme via the adapter and writes it back.
 
-  Three zones (Identity / Roles / Components) mirror R-side cascade
-  tiers (T1 inputs → T2 derived → T3 component slots). Identity stays
-  always-open (the keystone); roles and components collapse onto
-  v2 Accordions since they're cascade-derived and usually viewed
-  one-section-at-a-time when fine-tuning.
+  Sections, mirroring docs/dev/settings-panel-v3-design.md:
+    Identity     — open;   mode, brand, accent, decorative, neutral tint
+    Structure    — open;   density, header style, first column style
+    Data palettes — closed; categorical / sequential / diverging
+    Typography   — closed; body/display/numeric/mono font stacks
+    Status colors — closed; positive/negative/warning/info
 
-  Wiring rationalization:
-  - All cascade logic in `theme-cascade.ts` (pure, unit-testable)
-  - This file binds store accessors into a CascadeCtx and renders
-  - ColorField (v2-skinned Swatch wrapper) used uniformly
-  - FontFamily primitive replaces the FontFamilyPicker bespoke wrapper
+  Advanced tab (T2 token / T3 cluster pins) is a follow-up — for now,
+  pinning happens R-side via `set_*` modifiers and stays out of the UI.
 -->
 <script lang="ts">
   import type { TabvizStore } from "$stores/tabvizStore.svelte";
+  import type { ThemeInputs } from "$types/theme-inputs";
   import { FONT_PRESETS } from "$lib/font-presets";
+  import { CATEGORICAL_SCHEMES, SEQUENTIAL_SCHEMES, DIVERGING_SCHEMES } from "$lib/data-schemes";
   import ColorField from "./ColorField.svelte";
   import Section from "$components/primitives/v2/Section.svelte";
   import Accordion from "$components/primitives/v2/Accordion.svelte";
   import Field from "$components/primitives/v2/Field.svelte";
   import FontFamily from "$components/primitives/v2/FontFamily.svelte";
   import type { FontEntry } from "$components/primitives/v2/FontFamily.svelte";
-  import { oklchDarken } from "$lib/oklch";
-  import * as C from "./theme-cascade";
+  import Pill from "$components/primitives/v2/Pill.svelte";
+  import Picker from "$components/primitives/v2/Picker.svelte";
+  import Knob from "$components/primitives/v2/Knob.svelte";
   import {
     PAPER_SWATCHES, INK_SWATCHES, ACCENT_SWATCHES,
-    NEUTRAL_SWATCHES, STATUS_SWATCHES, SERIES_SWATCHES, colors,
+    NEUTRAL_SWATCHES, STATUS_SWATCHES, colors,
   } from "./swatch-palettes";
 
   interface Props { store: TabvizStore; }
   let { store }: Props = $props();
 
   const theme  = $derived(store.spec?.theme);
-  const inputs = $derived(theme?.inputs);
+  const inputs = $derived(
+    (theme as { authoringInputs?: ThemeInputs } | undefined)?.authoringInputs ?? null
+  );
 
-  // CascadeCtx — rebuilt every render so cascade helpers always see
-  // the latest theme+inputs read state. Logic lives in theme-cascade.
-  const ctx = $derived<C.CascadeCtx>({
-    setPath:    (p, v) => store.setThemeField(p, v),
-    setDerived: (p, v) => store.setThemeFieldDerived(p, v),
-    clearOver:  (p)    => store.clearOverride(p),
-    isOver:     (p)    => store.isOverridden(p),
-    theme:  theme as never,
-    inputs: inputs as never,
-  });
+  // Coalesce rapid input edits into a single rebuild. The adapter +
+  // re-render path is fast enough that the debounce is mostly to avoid
+  // burning compute on color-picker hover scrubs.
+  let pendingPatch: Partial<ThemeInputs> = {};
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  function commit(patch: Partial<ThemeInputs>): void {
+    pendingPatch = { ...pendingPatch, ...patch };
+    if (debounceTimer != null) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const next = pendingPatch;
+      pendingPatch = {};
+      debounceTimer = null;
+      store.setAuthoringInputs(next);
+    }, 150);
+  }
+  // Immediate commit — for terminal events (toggles, dropdowns) where
+  // the debounce just slows perceived response.
+  function commitNow(patch: Partial<ThemeInputs>): void {
+    if (debounceTimer != null) { clearTimeout(debounceTimer); debounceTimer = null; }
+    const merged = { ...pendingPatch, ...patch };
+    pendingPatch = {};
+    store.setAuthoringInputs(merged);
+  }
 
-  // Convert the broader FontPreset list to FontFamily's FontEntry shape.
+  // Decorative slot — empty until clicked. Tracked locally so the
+  // ColorField only renders after activation; the brand seed is used
+  // as the initial value so the user has a starting point.
+  let decorativeActive = $derived(inputs?.decorative != null);
+
+  // Pill segments
+  const MODE_SEG = [
+    { value: "light" as const, label: "Light" },
+    { value: "dark"  as const, label: "Dark" },
+  ];
+  const DENSITY_SEG = [
+    { value: "compact"     as const, label: "Compact" },
+    { value: "comfortable" as const, label: "Cozy" },
+    { value: "spacious"    as const, label: "Spacious" },
+  ];
+  const HEADER_SEG = [
+    { value: "light" as const, label: "Light" },
+    { value: "tint"  as const, label: "Tint" },
+    { value: "bold"  as const, label: "Bold" },
+  ];
+  const FIRSTCOL_SEG = [
+    { value: "default" as const, label: "Default" },
+    { value: "tint"    as const, label: "Tint" },
+    { value: "bold"    as const, label: "Bold" },
+  ];
+  const NEUTRAL_TINT_SEG = [
+    { value: "untinted"   as const, label: "—" },
+    { value: "brand"      as const, label: "Brand" },
+    { value: "accent"     as const, label: "Accent" },
+    { value: "decorative" as const, label: "Decor." },
+  ];
+
+  // Data scheme pickers
+  const catItems = Object.keys(CATEGORICAL_SCHEMES).map((name) => ({ value: name, label: name }));
+  // brand_mono is also valid for categorical — it derives from the brand ramp.
+  catItems.push({ value: "brand_mono", label: "brand_mono" });
+  const seqItems = Object.keys(SEQUENTIAL_SCHEMES).map((name) => ({ value: name, label: name }));
+  const divItems = Object.keys(DIVERGING_SCHEMES).map((name) => ({ value: name, label: name }));
+
   const fontRoster: FontEntry[] = FONT_PRESETS.map((p) => ({
     value: p.stack,
     label: p.hint ? `${p.name} — ${p.hint}` : p.name,
   }));
 
-  // Header-variant-aware overridden gate for the bg field — only the
-  // bold variant is pin-derived; light/tint don't have a default to
-  // reset to in this UI.
-  function headerBgOverridden(): boolean {
-    return C.activeHeaderVariant(ctx) === "bold" && ctx.isOver(["header", "bold", "bg"]);
+  function neutralTintMode(): "untinted" | "brand" | "accent" | "decorative" {
+    const t = inputs?.neutral_tint ?? "untinted";
+    if (typeof t === "string") {
+      if (t === "untinted" || t === "brand" || t === "accent" || t === "decorative") return t;
+    }
+    return "untinted";
   }
-  function headerBgReset() {
-    if (C.activeHeaderVariant(ctx) === "bold") C.resetHeaderBoldBg(ctx);
-  }
+  const tintStrength = $derived(inputs?.neutral_tint_strength ?? 0.04);
+  const tintActive   = $derived(neutralTintMode() !== "untinted");
 </script>
 
-{#if theme}
+{#if theme && inputs}
   <div class="theme-ctrl" data-tv-v2>
 
-    <!-- Identity — three plates (Primary / Secondary / Accent). Was
-         two sections (Identity + Engagement); the split made Accent
-         feel weightier than it actually is. Single section with three
-         rows reads as "the three roles that drive the cascade." -->
-    <Section
-      title="Identity"
-      glyph="section.identity"
-      hint="Primary + Secondary mirror chain drives chrome. Accent (orthogonal) drives engagement — hover, selected, callouts."
-    >
-      <Field label="Primary" hint="Title, bold header, series[0]">
-        <ColorField label="" value={(inputs?.primary as string | undefined) ?? theme.accent?.default ?? "#0891B2"}
-          onchange={(v) => C.applyPrimary(ctx, v)}
+    <!-- ── Identity ─────────────────────────────────────────────────── -->
+    <Section title="Identity" glyph="section.identity"
+      hint="Brand drives chrome + identity. Accent drives engagement (hover, selected, callouts). Decorative is an optional second editorial color.">
+      <!-- Mode toggle — foundational, top of section. -->
+      <Field label="Mode">
+        <Pill
+          value={inputs.mode ?? "light"}
+          segments={MODE_SEG}
+          ariaLabel="Light/dark mode"
+          onchange={(v) => commitNow({ mode: v as "light" | "dark" })}
+        />
+      </Field>
+
+      <Field label="Brand" hint="Title, bold header, series[0]">
+        <ColorField label="" value={inputs.brand}
+          onchange={(v) => commit({ brand: v })}
           swatches={colors(ACCENT_SWATCHES)} />
       </Field>
-      <Field label="Secondary" hint="Structure + chrome texture" pinned={ctx.isOver(["inputs", "secondary"])}
-        onreset={() => C.resetSecondary(ctx)}>
-        <ColorField label="" value={(inputs?.secondary as string | undefined) ?? C.currentPrimary(ctx)}
-          onchange={(v) => C.applySecondary(ctx, v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
-      </Field>
-      <Field label="Accent" hint="Hover, selected, semantic callouts">
-        <ColorField label="" value={(inputs?.accent as string | undefined) ?? theme.accent?.default ?? "#8B5CF6"}
-          onchange={(v) => C.applyAccent(ctx, v)}
+
+      <Field label="Accent" hint="Hover, selected, callouts">
+        <ColorField label="" value={inputs.accent ?? inputs.brand}
+          onchange={(v) => commit({ accent: v })}
           swatches={colors(ACCENT_SWATCHES)} />
+      </Field>
+
+      <Field label="Decorative" hint="Optional 2nd color (editorial themes)">
+        {#if decorativeActive}
+          <ColorField label="" value={inputs.decorative ?? inputs.brand}
+            onchange={(v) => commit({ decorative: v })}
+            swatches={colors(ACCENT_SWATCHES)} />
+        {:else}
+          <button type="button" class="decorative-add"
+            onclick={() => commitNow({ decorative: inputs.brand })}>+ add</button>
+        {/if}
+      </Field>
+
+      <Field label="Neutral tint" hint="Optional hue blended into the paper/ink ramp">
+        <Pill
+          value={neutralTintMode()}
+          segments={NEUTRAL_TINT_SEG}
+          ariaLabel="Neutral tint source"
+          onchange={(v) => commitNow({ neutral_tint: v as "untinted" | "brand" | "accent" | "decorative" })}
+        />
+      </Field>
+
+      <Field label="Tint strength" hint="Subtle (0.04) ↔ editorial (~1.0)">
+        <Knob
+          value={tintStrength}
+          min={0}
+          max={1}
+          step={0.01}
+          track
+          disabled={!tintActive}
+          onchange={(v) => v != null && commit({ neutral_tint_strength: v })}
+        />
       </Field>
     </Section>
 
-    <!-- ── Typography (families as specimens) ───────────────────────
-         A 2×2 grid where each cell IS the specimen — clicking the
-         dropdown swaps the family and the "Aa 123" sample updates
-         live. Beats four stacked dropdown rows: the user sees the
-         font choice as itself, not as a name. -->
-    <Section title="Typography" glyph="section.text" hint="Body for cells, display for titles, numeric for figures, mono for code.">
+    <!-- ── Structure ────────────────────────────────────────────────── -->
+    <Section title="Structure" glyph="section.layout"
+      hint="Theme structural identity. Banding + borders are per-instance — see Layout tab.">
+      <Field label="Density">
+        <Pill
+          value={inputs.density ?? "comfortable"}
+          segments={DENSITY_SEG}
+          ariaLabel="Density preset"
+          onchange={(v) => commitNow({ density: v as "compact" | "comfortable" | "spacious" })}
+        />
+      </Field>
+
+      <Field label="Header style">
+        <Pill
+          value={(theme.variants?.headerStyle ?? "light") as "light" | "tint" | "bold"}
+          segments={HEADER_SEG}
+          ariaLabel="Header variant"
+          onchange={(v) => store.setThemeField(["variants", "headerStyle"], v)}
+        />
+      </Field>
+
+      <Field label="First column">
+        <Pill
+          value={(theme.variants?.firstColumnStyle ?? "default") as "default" | "tint" | "bold"}
+          segments={FIRSTCOL_SEG}
+          ariaLabel="First column variant"
+          onchange={(v) => store.setThemeField(["variants", "firstColumnStyle"], v)}
+        />
+      </Field>
+    </Section>
+
+    <div class="zone-ornament">⌘</div>
+
+    <!-- ── Data palettes ────────────────────────────────────────────── -->
+    <Accordion title="Data palettes" hint="Categorical / sequential / diverging scheme refs" open={false}>
+      <Field label="Categorical">
+        <Picker
+          value={inputs.categorical ?? "okabe_ito"}
+          items={catItems}
+          ariaLabel="Categorical scheme"
+          onchange={(v) => v != null && commitNow({ categorical: v })}
+        />
+      </Field>
+      <Field label="Sequential">
+        <Picker
+          value={inputs.sequential ?? "viridis"}
+          items={seqItems}
+          ariaLabel="Sequential scheme"
+          onchange={(v) => v != null && commitNow({ sequential: v })}
+        />
+      </Field>
+      <Field label="Diverging">
+        <Picker
+          value={inputs.diverging ?? "rdbu"}
+          items={divItems}
+          ariaLabel="Diverging scheme"
+          onchange={(v) => v != null && commitNow({ diverging: v })}
+        />
+      </Field>
+    </Accordion>
+
+    <!-- ── Typography ──────────────────────────────────────────────── -->
+    <Accordion title="Typography" hint="Font stacks (body / display / numeric / mono)" open={false}>
       <div class="font-grid">
         <div class="specimen-card">
-          <div class="specimen-label">Body</div>
+          <div class="specimen-label">body</div>
           <div class="specimen-sample" style:font-family={theme.text?.body?.family ?? "system-ui"}>Aa 123</div>
           <FontFamily
-            value={theme.text?.body?.family ?? (inputs?.fontBody as string | undefined) ?? null}
+            value={inputs.fonts?.body ?? theme.text?.body?.family ?? null}
             roster={fontRoster}
-            onchange={(v) => {
-              ctx.setPath(["inputs", "fontBody"], v);
-              for (const role of ["body", "cell", "label", "tick", "footnote", "caption", "subtitle"]) {
-                ctx.setPath(["text", role, "family"], v);
-              }
-            }}
+            onchange={(v) => commit({ fonts: { ...(inputs.fonts ?? {}), body: v ?? undefined } })}
           />
         </div>
         <div class="specimen-card">
-          <div class="specimen-label">Display</div>
+          <div class="specimen-label">display</div>
           <div class="specimen-sample" style:font-family={theme.text?.title?.family ?? "serif"}>Aa 123</div>
           <FontFamily
-            value={theme.text?.title?.family ?? (inputs?.fontDisplay as string | undefined) ?? null}
+            value={inputs.fonts?.display ?? theme.text?.title?.family ?? null}
             roster={fontRoster}
-            onchange={(v) => {
-              ctx.setPath(["inputs", "fontDisplay"], v);
-              ctx.setPath(["text", "title", "family"], v);
-            }}
+            onchange={(v) => commit({ fonts: { ...(inputs.fonts ?? {}), display: v ?? undefined } })}
           />
         </div>
         <div class="specimen-card">
-          <div class="specimen-label">Numeric</div>
-          <div class="specimen-sample" style:font-family={theme.text?.numeric?.family ?? theme.text?.body?.family ?? "system-ui"}>Aa 123</div>
+          <div class="specimen-label">numeric</div>
+          <div class="specimen-sample" style:font-family={theme.text?.numeric?.family ?? "system-ui"}>Aa 123</div>
           <FontFamily
             value={theme.text?.numeric?.family ?? null}
             roster={fontRoster}
-            onchange={(v) => ctx.setPath(["text", "numeric", "family"], v)}
+            onchange={(v) => store.setThemeField(["text", "numeric", "family"], v)}
           />
         </div>
         <div class="specimen-card">
-          <div class="specimen-label">Mono</div>
-          <div class="specimen-sample" style:font-family={(inputs?.fontMono as string | undefined) ?? "ui-monospace"}>Aa 123</div>
+          <div class="specimen-label">mono</div>
+          <div class="specimen-sample" style:font-family={inputs.fonts?.mono ?? "ui-monospace"}>Aa 123</div>
           <FontFamily
-            value={(inputs?.fontMono as string | undefined) ?? null}
+            value={inputs.fonts?.mono ?? null}
             roster={fontRoster}
-            onchange={(v) => ctx.setPath(["inputs", "fontMono"], v)}
+            onchange={(v) => commit({ fonts: { ...(inputs.fonts ?? {}), mono: v ?? undefined } })}
           />
         </div>
       </div>
-    </Section>
+    </Accordion>
 
-    <!-- Tier 2 / Tier 3 accordions follow. The cascade-tier distinction
-         matters to the resolver but not to the user — the accordions
-         themselves communicate "click to drill into a derived role".
-         No zone-divider headings; the section dingbat is enough. -->
-    <div class="zone-ornament">⌘</div>
-
-    <Accordion title="Deep variants" hint="Darkened shadows of Primary + Secondary. Used for title fg, axis line, bold-mode bands." open={false}>
-      <Field label="↳ Primary" pinned={ctx.isOver(["inputs", "primaryDeep"])}
-        onreset={() => C.resetPrimaryDeep(ctx)}>
-        <ColorField label="" value={(inputs?.primaryDeep as string | undefined) ?? oklchDarken(C.currentPrimary(ctx), 0.15)}
-          onchange={(v) => C.applyPrimaryDeep(ctx, v)}
-          swatches={colors(ACCENT_SWATCHES)} />
+    <!-- ── Status colors ───────────────────────────────────────────── -->
+    <Accordion title="Status colors" hint="Tufte-minimal defaults" open={false}>
+      <Field label="Positive">
+        <ColorField label="" value={inputs.status?.positive ?? theme.status?.positive ?? "#3F7D3F"}
+          onchange={(v) => commit({ status: { ...(inputs.status ?? {}), positive: v } })}
+          swatches={colors(STATUS_SWATCHES)} />
       </Field>
-      <Field label="↳ Secondary" pinned={ctx.isOver(["inputs", "secondaryDeep"])}
-        onreset={() => C.resetSecondaryDeep(ctx)}>
-        <ColorField label="" value={(inputs?.secondaryDeep as string | undefined) ?? C.currentSecondaryDeep(ctx)}
-          onchange={(v) => C.applySecondaryDeep(ctx, v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
+      <Field label="Negative">
+        <ColorField label="" value={inputs.status?.negative ?? theme.status?.negative ?? "#B33A3A"}
+          onchange={(v) => commit({ status: { ...(inputs.status ?? {}), negative: v } })}
+          swatches={colors(STATUS_SWATCHES)} />
+      </Field>
+      <Field label="Warning">
+        <ColorField label="" value={inputs.status?.warning ?? theme.status?.warning ?? "#C68A2E"}
+          onchange={(v) => commit({ status: { ...(inputs.status ?? {}), warning: v } })}
+          swatches={colors(STATUS_SWATCHES)} />
+      </Field>
+      <Field label="Info">
+        <ColorField label="" value={inputs.status?.info ?? theme.status?.info ?? "#1F77B4"}
+          onchange={(v) => commit({ status: { ...(inputs.status ?? {}), info: v } })}
+          swatches={colors(STATUS_SWATCHES)} />
       </Field>
     </Accordion>
 
-    <Accordion title="Text colors" hint="Body / secondary / muted / inverse" open={false}>
-      <Field label="Foreground"><ColorField label="" value={theme.cell?.fg ?? theme.content?.primary ?? "#000000"}
-        onchange={(v) => C.setForeground(ctx, v)}
-        swatches={colors(INK_SWATCHES)} /></Field>
-      <Field label="Secondary"><ColorField label="" value={theme.content?.secondary ?? "#444444"}
-        onchange={(v) => ctx.setPath(["content","secondary"], v)}
-        swatches={colors(INK_SWATCHES)} /></Field>
-      <Field label="Muted"><ColorField label="" value={theme.content?.muted ?? "#888888"}
-        onchange={(v) => ctx.setPath(["content","muted"], v)}
-        swatches={colors(NEUTRAL_SWATCHES)} /></Field>
-      <Field label="Inverse" hint="Text on bold-mode bands"><ColorField label=""
-        value={theme.content?.inverse ?? "#ffffff"} onchange={(v) => C.setInverseContent(ctx, v)}
-        swatches={colors(PAPER_SWATCHES)} /></Field>
-    </Accordion>
-
-    <Accordion title="Surfaces" hint="Row backgrounds + banding partner" open={false}>
-      <Field label="Background"><ColorField label="" value={theme.row?.base?.bg ?? theme.surface?.base ?? "#ffffff"}
-        onchange={(v) => C.setBackground(ctx, v)}
-        swatches={colors(PAPER_SWATCHES)} /></Field>
-      <Field label="Banding partner"><ColorField label="" value={theme.row?.alt?.bg ?? theme.surface?.muted ?? "#f8fafc"}
-        onchange={(v) => C.setBandingPartner(ctx, v)}
-        swatches={colors(PAPER_SWATCHES)} /></Field>
-    </Accordion>
-
-    <Accordion title="Selection & accents" open={false}>
-      <Field label="Hover / selected"><ColorField label="" value={theme.accent?.muted ?? "#dde1e7"}
-        onchange={(v) => {
-          ctx.setPath(["accent", "muted"], v);
-          ctx.setPath(["row", "hover", "bg"], v);
-          ctx.setPath(["row", "selected", "bg"], v);
-        }}
-        swatches={colors(ACCENT_SWATCHES)} /></Field>
-      <Field label="L1 group bar" pinned={ctx.isOver(["rowGroup", "L1", "bg"])}
-        onreset={() => C.resetL1Bg(ctx)}>
-        <ColorField label="" value={(theme.rowGroup?.L1?.bg as string | undefined) ?? "#e1e5ea"}
-          onchange={(v) => ctx.setPath(["rowGroup", "L1", "bg"], v)}
-          swatches={colors(PAPER_SWATCHES)} />
-      </Field>
-    </Accordion>
-
-    <Accordion title="Dividers" hint="Hairlines + structural rules" open={false}>
-      <Field label="Subtle" hint="Cell borders"
-        pinned={ctx.isOver(["divider", "subtle"]) || ctx.isOver(["cell", "border"])}
-        onreset={() => C.resetSubtleDivider(ctx)}>
-        <ColorField label="" value={theme.cell?.border ?? theme.divider?.subtle ?? "#e2e8f0"}
-          onchange={(v) => {
-            ctx.setPath(["divider", "subtle"], v);
-            ctx.setPath(["cell", "border"], v);
-          }}
-          swatches={colors(NEUTRAL_SWATCHES)} />
-      </Field>
-      <Field label="Strong" hint="Header rule, group rules, axis line">
-        <ColorField label="" value={theme.divider?.strong ?? "#94a3b8"}
-          onchange={(v) => C.setStrongDivider(ctx, v)}
-          swatches={colors(NEUTRAL_SWATCHES)} />
-      </Field>
-    </Accordion>
-
-    <Accordion title="Status" hint="Semantic indicators" open={false}>
-      <Field label="Positive"><ColorField label="" value={theme.status?.positive ?? "#3F7D3F"}
-        onchange={(v) => ctx.setPath(["status","positive"], v)}
-        swatches={colors(STATUS_SWATCHES)} /></Field>
-      <Field label="Negative"><ColorField label="" value={theme.status?.negative ?? "#B33A3A"}
-        onchange={(v) => ctx.setPath(["status","negative"], v)}
-        swatches={colors(STATUS_SWATCHES)} /></Field>
-      <Field label="Warning"><ColorField label="" value={theme.status?.warning ?? "#C68A2E"}
-        onchange={(v) => ctx.setPath(["status","warning"], v)}
-        swatches={colors(STATUS_SWATCHES)} /></Field>
-      <Field label="Info"><ColorField label="" value={theme.status?.info ?? theme.accent?.default ?? "#2C4F7C"}
-        onchange={(v) => ctx.setPath(["status","info"], v)}
-        swatches={colors(STATUS_SWATCHES)} /></Field>
-    </Accordion>
-
-    <!-- ── Components (T3 bindings; collapsed) ────────────────────── -->
-    <div class="zone-ornament">⌘</div>
-
-    <Accordion title="Header" hint="Active variant only" open={false}>
-      <Field label="Background" pinned={headerBgOverridden()} onreset={headerBgReset}>
-        <ColorField label=""
-          value={(theme.header as { light?: { bg?: string }; tint?: { bg?: string }; bold?: { bg?: string } } | undefined)?.[C.activeHeaderVariant(ctx)]?.bg ?? "#f8fafc"}
-          onchange={(v) => C.setHeaderBg(ctx, v)}
-          swatches={colors(PAPER_SWATCHES)} />
-      </Field>
-      <Field label="Text">
-        <ColorField label=""
-          value={(theme.header as { light?: { fg?: string }; tint?: { fg?: string }; bold?: { fg?: string } } | undefined)?.[C.activeHeaderVariant(ctx)]?.fg ?? "#000000"}
-          onchange={(v) => C.setHeaderFg(ctx, v)}
-          swatches={colors(INK_SWATCHES)} />
-      </Field>
-    </Accordion>
-
-    <Accordion title="Plot" hint="Title + axis text" open={false}>
-      <Field label="Title" pinned={ctx.isOver(["text", "title", "fg"])}
-        onreset={() => C.resetTitleFg(ctx)}>
-        <ColorField label="" value={(theme.text?.title?.fg as string | undefined) ?? C.currentPrimaryDeep(ctx)}
-          onchange={(v) => ctx.setPath(["text", "title", "fg"], v)}
-          swatches={colors(INK_SWATCHES)} />
-      </Field>
-      <Field label="Axis label">
-        <ColorField label="" value={(theme.plot?.axisLabel?.fg as string | undefined) ?? theme.content?.muted ?? "#1A1A1A"}
-          onchange={(v) => ctx.setPath(["plot", "axisLabel", "fg"], v)}
-          swatches={colors(INK_SWATCHES)} />
-      </Field>
-      <Field label="Axis tick">
-        <ColorField label="" value={(theme.plot?.tickLabel?.fg as string | undefined) ?? theme.content?.muted ?? "#1A1A1A"}
-          onchange={(v) => ctx.setPath(["plot", "tickLabel", "fg"], v)}
-          swatches={colors(INK_SWATCHES)} />
-      </Field>
-    </Accordion>
-
-    <Accordion title="Series" hint="Per-effect anchor; series 1 → primary" open={false}>
-      {#if Array.isArray(theme.series)}
-        {#each theme.series as slot, i (i)}
-          <Field
-            label={`Series ${i + 1}`}
-            pinned={i === 0 ? ctx.isOver(["series", 0, "fill"]) : undefined}
-            onreset={i === 0 ? () => C.resetSeriesPrimary(ctx) : undefined}
-          >
-            <ColorField label="" value={slot?.fill ?? "#888888"}
-              onchange={(v) => C.setSeriesFill(ctx, i, v)}
-              swatches={colors(SERIES_SWATCHES)} />
-            {#if theme.series.length > 1}
-              <button
-                type="button"
-                class="series-remove"
-                aria-label={`Remove series ${i + 1}`}
-                onclick={() => C.removeSeries(ctx, i)}
-              >×</button>
-            {/if}
-          </Field>
-        {/each}
-      {/if}
-      <button type="button" class="series-add" onclick={() => C.addSeries(ctx)}>+ Add series</button>
-    </Accordion>
-
+  </div>
+{:else if theme}
+  <!-- Legacy theme without V3 authoring inputs round-trip; the engine
+       fix in theme-adapter.ts populates this on every freshly built
+       theme, so users only hit this branch with hand-rolled wire blobs. -->
+  <div class="theme-ctrl-legacy" data-tv-v2>
+    <p>This theme was built without V3 authoring inputs and can't be edited in the panel. Switch to a preset to use the new theme controls.</p>
   </div>
 {/if}
 
@@ -316,14 +326,13 @@
     flex-direction: column;
     gap: 0;
   }
+  .theme-ctrl-legacy {
+    padding: 12px;
+    color: var(--v2-ink-3, #8a8478);
+    font-size: var(--v2-text-small, 10.5px);
+    line-height: 1.4;
+  }
 
-  /* Zone divider — single thin label between top-level groupings.
-     Replaces the bespoke .zone-* / .zone-header / .zone-description
-     stack with one tracked-uppercase row. */
-  /* Pure ornament — a single floral mark between groupings of
-     accordions. Was a tracked-caps label with em-dashes; replaced
-     because the verbal headings ("Roles · derived semantic tokens")
-     were jargon-speak the user shouldn't need to parse. */
   .zone-ornament {
     font-family: var(--v2-font-serif, "EB Garamond", "Palatino", Georgia, serif);
     font-size: 14px;
@@ -334,14 +343,24 @@
     user-select: none;
   }
 
-  /* Typography specimen grid — 2×2 grid of family cards. Each card
-     shows the live "Aa 123" sample rendered in the family + a small
-     picker below. Indented to match the section's hanging title. */
-  /* Typography specimen grid — 2×2 of font sample cards. minmax(0,1fr)
-     is the critical bit: without it the 1fr tracks size to max-content
-     (the giant Aa sample) and overflow happens silently. With it the
-     cards size to the available column and the sample clips/scales
-     instead. */
+  .decorative-add {
+    appearance: none;
+    border: 1px dashed var(--v2-rule, #d6d0c1);
+    background: transparent;
+    padding: 4px 10px;
+    font: inherit;
+    font-family: var(--v2-font-mono, ui-monospace, monospace);
+    font-size: var(--v2-text-small, 10.5px);
+    color: var(--v2-ink-3, #8a8478);
+    cursor: pointer;
+    border-radius: var(--v2-r-hair, 2px);
+  }
+  .decorative-add:hover {
+    color: var(--v2-ink, #15140e);
+    border-color: var(--v2-ink-3, #8a8478);
+  }
+
+  /* Typography specimen grid — 2×2 of font sample cards. */
   .font-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -382,42 +401,5 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  /* Series add/remove — small chrome buttons. */
-  .series-remove {
-    appearance: none;
-    border: 0;
-    background: transparent;
-    width: 18px;
-    height: 18px;
-    border-radius: 3px;
-    color: var(--v2-ink-3, #8a8478);
-    font-size: 14px;
-    line-height: 1;
-    cursor: pointer;
-    flex: none;
-  }
-  .series-remove:hover {
-    background: var(--v2-hover-tint, rgba(21,20,14,0.05));
-    color: var(--v2-hot, #b53a1f);
-  }
-  .series-add {
-    appearance: none;
-    border: 0;
-    background: transparent;
-    padding: 6px 8px;
-    font: inherit;
-    font-family: var(--v2-font-mono, ui-monospace, monospace);
-    font-size: var(--v2-text-small, 10.5px);
-    color: var(--v2-ink-2, #4a463c);
-    cursor: pointer;
-    border-radius: 3px;
-    text-align: left;
-    width: 100%;
-  }
-  .series-add:hover {
-    background: var(--v2-hover-tint, rgba(21,20,14,0.05));
-    color: var(--v2-ink, #15140e);
   }
 </style>

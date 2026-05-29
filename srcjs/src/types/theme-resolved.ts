@@ -427,6 +427,14 @@ export interface WebTheme {
   lightDarkPair: string | null;
   variants: ThemeVariants;
   inputs: ResolvedInputs;
+  /**
+   * The V3 authoring inputs that produced this theme (brand, accent,
+   * decorative, mode, density, neutral_tint, neutral_tint_strength,
+   * fonts, status, data schemes). Round-trips with the theme so the
+   * settings panel can read them, edit, and rebuild via `buildTheme()`.
+   * Optional for compat with hand-constructed wire blobs that skip it.
+   */
+  authoringInputs?: import("./theme-inputs").ThemeInputs;
   axis: AxisConfig;
   layout: Layout;
   borders: ThemeBorders;

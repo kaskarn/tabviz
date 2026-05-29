@@ -747,7 +747,8 @@ export interface GroupHeaderStyles {
 }
 
 /** Resolved theme — the wire shape R emits on every spec.theme. */
-export type { WebTheme } from "./theme-resolved";
+import type { WebTheme } from "./theme-resolved";
+export type { WebTheme };
 
 // ============================================================================
 // Interaction Types
@@ -1288,7 +1289,6 @@ export interface WidgetInstance {
 // migration to `WebTheme` is tracked under Phase 0c-C5 / Phase 1.x.
 // See `./theme-resolved.ts` for the full v2 type tree.
 export type {
-  WebTheme,
   ResolvedInputs,
   ThemeVariants,
   Surfaces,
@@ -1296,7 +1296,6 @@ export type {
   Dividers,
   AccentRoles,
   StatusColors,
-  Semantics,
   SlotRole,
   TextRole,
   TextRoles,
@@ -1316,7 +1315,6 @@ export type {
   PlotScaffold,
   MarksRecipes,
   MarkRecipe,
-  AxisConfig,
   Layout,
   Banding,
   WebFont,

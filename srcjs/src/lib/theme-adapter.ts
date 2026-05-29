@@ -324,6 +324,7 @@ export function buildTheme(
     lightDarkPair: null,
     variants: variants,
     inputs: resolvedInputs,
+    authoringInputs: inputs,
     axis,
     layout,
     borders,

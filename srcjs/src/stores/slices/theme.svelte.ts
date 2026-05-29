@@ -28,7 +28,9 @@
 // initial-* capture migrates with `setSpec`.
 
 import type { WebSpec } from "$types";
+import type { ThemeInputs } from "$types/theme-inputs";
 import { THEME_PRESETS, type ThemeName } from "$lib/theme-presets";
+import { buildTheme } from "$lib/theme-adapter";
 import { ops, type OpRecord } from "$lib/op-recorder";
 
 /** Sections whose edits change text metrics or cell geometry; changing any
@@ -92,6 +94,10 @@ export interface ThemeSlice {
   cloneTheme: (t: WebSpec["theme"]) => WebSpec["theme"];
   setTheme: (themeName: ThemeName) => void;
   setThemeObject: (theme: WebSpec["theme"]) => void;
+  /** V3 authoring path: merge a partial ThemeInputs over the current
+   *  theme's authoringInputs, rebuild the resolved theme via the adapter,
+   *  and write back. Used by the V3 Theme settings panel. */
+  setAuthoringInputs: (partial: Partial<ThemeInputs>) => void;
   previewThemeField: (section: string, field: string, value: unknown) => void;
   setThemeField: (...args: unknown[]) => void;
   setThemeFieldDerived: (path: (string | number)[], value: unknown) => void;
@@ -180,6 +186,26 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     deps.clearAutoWidthsKeepingUserResizes();
     deps.measureAutoColumns();
     deps.appendOp(ops.setTheme(themeName));
+  }
+
+  // V3 authoring path — merges a partial ThemeInputs over the current
+  // theme's authoringInputs, rebuilds the resolved theme via buildTheme(),
+  // and writes back. Theme name is preserved so the source emitter still
+  // matches presets when the inputs happen to round-trip to a known one.
+  function setAuthoringInputs(partial: Partial<ThemeInputs>): void {
+    const spec = deps.getSpec();
+    if (!spec || !spec.theme) return;
+    const current = (spec.theme as { authoringInputs?: ThemeInputs }).authoringInputs;
+    if (!current) return;
+    const merged: ThemeInputs = { ...current, ...partial };
+    const name = spec.theme.name ?? "custom";
+    const rebuilt = buildTheme(merged, name);
+    deps.setSpec({ ...spec, theme: rebuilt as WebSpec["theme"] });
+    // Identity changes (mode, brand, decorative, density) can shift text
+    // metrics + cell paint. Invalidate auto-widths; user-resized columns
+    // stay frozen.
+    deps.clearAutoWidthsKeepingUserResizes();
+    deps.measureAutoColumns();
   }
 
   // Swap in a WebTheme object (for `enable_themes = list(...)` custom themes)
@@ -346,7 +372,7 @@ export function createThemeSlice(deps: ThemeSliceDeps): ThemeSlice {
     },
 
     captureInitial, clearInitial,
-    cloneTheme, setTheme, setThemeObject, previewThemeField,
+    cloneTheme, setTheme, setThemeObject, setAuthoringInputs, previewThemeField,
     setThemeField, setThemeFieldDerived, isOverridden, clearOverride,
     resetThemeEdits, captureThemeSnapshot, applyThemeSnapshot,
     reset,
