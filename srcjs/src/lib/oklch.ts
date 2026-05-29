@@ -334,12 +334,23 @@ export function pickInkOnBg(
 // Step labels stay stable across modes (so `paper = neutral.1` always
 // means "the lightest-in-mode step"); the underlying L values shift.
 
-/** Per-step OKLCH L values in light mode (step 1..12, 0-indexed array). */
+/** Per-step OKLCH L values in light mode (step 1..12, 0-indexed array).
+ *
+ * Tuning history (light-mode neutral surfaces):
+ *   - 0.987/0.972/0.952/0.918 → paper read as too glaring; band step
+ *     (ΔL 0.020) felt sharp on top of glaring paper
+ *   - 0.987/0.967/0.954/0.918 → no perceptible change in paper
+ *   - 0.980/0.945/0.936/0.910 → overcorrected; paper read as clinical
+ *     gray and band step (ΔL 0.009) disappeared into it
+ *   - current → Radix-like subtle-bg target. Paper is clearly off-white
+ *     against page-white but reads as "page background," not "panel."
+ *     Band ΔL 0.019 from paper: visible alternation, no individual
+ *     stripe feels heavy. */
 const LIGHT_RAMP_L = [
-  0.980, // 1 — app bg / paper_raised (was 0.987 — was effectively pure-white)
-  0.945, // 2 — subtle bg / paper (was 0.972 — clearly off-white, Radix-like)
-  0.936, // 3 — UI idle / paper_alt (ΔL ≈ 0.009 from paper — gentle band)
-  0.910, // 4 — UI hover
+  0.987, // 1 — app bg / paper_raised (near-white; sits above paper)
+  0.967, // 2 — subtle bg / paper (off-white, Radix-step-2 territory)
+  0.948, // 3 — UI idle / paper_alt (ΔL 0.019 from paper — subtle band)
+  0.918, // 4 — UI hover / paper_sunken
   0.870, // 5 — UI active / selected
   0.804, // 6 — subtle border / rule_subtle
   0.728, // 7 — UI border / rule_strong / focus
