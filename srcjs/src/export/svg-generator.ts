@@ -3437,6 +3437,141 @@ export function computeNaturalDimensions(spec: WebSpec): {
   };
 }
 
+// ============================================================================
+// Layout Metrics — sizing-verification harness (docs/dev/sizing-model.md §6b)
+// ============================================================================
+//
+// Flat serializable snapshot of the real SVG/V8 layout path: per-row
+// height/top/marker-center/kind, per-column resolved width, chrome dims, and
+// an echo of the spacing tokens that drove the layout (so a snapshot also
+// records WHICH token value was consumed — catches dead-token / density-not-
+// applied regressions, not just geometry drift). Consumed by
+// layout-metrics.test.ts (snapshot gate) and, later, the debug-shapes view.
+
+export interface RowMetric {
+  index: number;
+  kind: "data" | "group_header" | "spacer" | "summary";
+  depth: number;
+  height: number;
+  top: number;
+  markerCenter: number;
+}
+
+export interface ColMetric {
+  id: string;
+  type: string;
+  width: number;
+}
+
+export interface LayoutMetrics {
+  totalWidth: number;
+  totalHeight: number;
+  headerHeight: number;
+  axisHeight: number;
+  forestWidth: number;
+  labelWidth: number;
+  plotHeight: number;
+  rowsHeight: number;
+  spacing: {
+    rowHeight: number;
+    headerHeight: number;
+    cellPaddingX: number;
+    cellPaddingY: number;
+    rowGroupPadding: number;
+    indentPerLevel: number;
+    padding: number;
+    axisGap: number;
+  };
+  rows: RowMetric[];
+  columns: ColMetric[];
+}
+
+function rowKindOf(dr: DisplayRow): RowMetric["kind"] {
+  if (dr.type === "group_header") return "group_header";
+  const st = dr.row.style?.type;
+  if (st === "spacer") return "spacer";
+  if (st === "summary") return "summary";
+  return "data";
+}
+
+/** Compute the SVG/V8-path layout metrics for a spec. Pure; no rendering. */
+export function computeLayoutMetrics(
+  spec: WebSpec,
+  options: ExportOptions = {},
+): LayoutMetrics {
+  spec = normalizeLabelColumn(spec);
+  spec = compileVariants(spec);
+  validateSpec(spec);
+
+  const theme = spec.theme;
+  const padding = theme.spacing.padding;
+  const forestSettings = getForestColumnSettings(spec);
+  const layout = computeLayout(spec, options, forestSettings.nullValue);
+
+  const columnsArr = Array.isArray(spec.columns) ? spec.columns : [];
+  const primaryCol = getPrimaryColumn(columnsArr);
+  const allColumns = flattenAllColumns(columnsArr).filter(
+    (c) => c.id !== primaryCol?.id,
+  );
+
+  // Mirror generateSVG's getColWidth precedence (autoWidths → explicit →
+  // forest/viz/default).
+  const colWidth = (col: ColumnSpec): number => {
+    const pre = layout.autoWidths.get(col.id);
+    if (pre !== undefined) return pre;
+    if (col.type === "forest") {
+      if (typeof col.width === "number") return col.width;
+      return col.options?.forest?.width ?? layout.forestWidth;
+    }
+    if (col.type === "viz_bar" || col.type === "viz_boxplot" || col.type === "viz_violin") {
+      if (typeof col.width === "number") return col.width;
+      return layout.forestWidth;
+    }
+    return typeof col.width === "number" ? col.width : LAYOUT.DEFAULT_COLUMN_WIDTH;
+  };
+
+  const columns: ColMetric[] = [];
+  if (primaryCol) {
+    columns.push({ id: primaryCol.id, type: primaryCol.type, width: layout.labelWidth });
+  }
+  for (const col of allColumns) {
+    columns.push({ id: col.id, type: col.type, width: colWidth(col) });
+  }
+
+  const displayRows = buildDisplayRows(spec);
+  const rows: RowMetric[] = displayRows.map((dr, i) => ({
+    index: i,
+    kind: rowKindOf(dr),
+    depth: dr.depth ?? 0,
+    height: layout.rowHeights[i] ?? layout.rowHeight,
+    top: layout.rowPositions[i] ?? 0,
+    markerCenter: layout.rowMarkerCenters[i] ?? 0,
+  }));
+
+  return {
+    totalWidth: layout.totalWidth,
+    totalHeight: layout.totalHeight,
+    headerHeight: layout.headerHeight,
+    axisHeight: layout.axisHeight,
+    forestWidth: layout.forestWidth,
+    labelWidth: layout.labelWidth,
+    plotHeight: layout.plotHeight,
+    rowsHeight: layout.rowsHeight,
+    spacing: {
+      rowHeight: theme.spacing.rowHeight,
+      headerHeight: theme.spacing.headerHeight,
+      cellPaddingX: theme.spacing.cellPaddingX ?? 10,
+      cellPaddingY: theme.spacing.cellPaddingY ?? 0,
+      rowGroupPadding: theme.spacing.rowGroupPadding ?? 0,
+      indentPerLevel: theme.spacing.indentPerLevel ?? SPACING.INDENT_PER_LEVEL,
+      padding,
+      axisGap: theme.spacing.axisGap ?? 12,
+    },
+    rows,
+    columns,
+  };
+}
+
 /**
  * Mode 3 lever ladder (Phase 7A — direction-aware, width-first).
  *
