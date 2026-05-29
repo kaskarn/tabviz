@@ -163,3 +163,151 @@ export function ref(name: TokenNameV3 | RampStepRefV3, alpha?: number): ColorRef
 export function lit(hex: string, alpha?: number): ColorRefV3 {
   return alpha === undefined ? { hex } : { hex, alpha };
 }
+
+// ────────────────────────────────────────────────────────────────────
+// T3 — Paint roles (fixed canonical recipes)
+// ────────────────────────────────────────────────────────────────────
+
+/** Fixed canonical role vocabulary. Themes redefine recipes; cannot add roles. */
+export type RoleNameV3 =
+  | "emphasis"
+  | "muted"
+  | "accent"
+  | "bold"
+  | "fill"
+  | "positive"
+  | "negative"
+  | "warning"
+  | "info";
+
+/** A paint-role recipe — how a role looks when applied to a target. */
+export interface PaintRoleV3 {
+  bg?: ColorRefV3 | string | null;
+  fg?: ColorRefV3 | string | null;
+  border?: ColorRefV3 | string | null;
+  markerFill?: ColorRefV3 | string | null;
+  markerStroke?: ColorRefV3 | string | null;
+  fontWeight?: number | null;
+  fontStyle?: "normal" | "italic" | null;
+}
+
+export type ThemeRolesV3 = Record<RoleNameV3, PaintRoleV3>;
+
+// ────────────────────────────────────────────────────────────────────
+// T4 — Component clusters (low-level bindings; reference T2 via refs)
+// ────────────────────────────────────────────────────────────────────
+
+export interface RowStateV3 {
+  bg: ColorRefV3 | string | null;
+  fg: ColorRefV3 | string | null;
+}
+
+export interface HeaderVariantV3 {
+  bg: ColorRefV3 | string | null;
+  fg: ColorRefV3 | string | null;
+  rule: ColorRefV3 | string | null;
+}
+
+export interface HeaderClusterV3 {
+  light: HeaderVariantV3;
+  tint: HeaderVariantV3;
+  bold: HeaderVariantV3;
+}
+
+export type ColumnGroupClusterV3 = HeaderClusterV3;
+
+export interface RowGroupTierV3 {
+  bg: ColorRefV3 | string | null;
+  fg: ColorRefV3 | string | null;
+  rule: ColorRefV3 | string | null;
+  fontWeight: number | null;
+}
+
+export interface RowGroupClusterV3 {
+  L1: RowGroupTierV3;
+  L2: RowGroupTierV3;
+  L3: RowGroupTierV3;
+}
+
+export interface RowClusterV3 {
+  base: RowStateV3;
+  alt: RowStateV3;
+  hover: RowStateV3;
+  selected: RowStateV3;
+  banding: "none" | "row" | "group" | string;
+  selectedEdgeWidth: number;
+  borderWidth: number;
+}
+
+export interface CellClusterV3 {
+  bg: ColorRefV3 | string | null;
+  fg: ColorRefV3 | string | null;
+  border: ColorRefV3 | string | null;
+}
+
+export interface FirstColumnVariantV3 {
+  bg: ColorRefV3 | string | null;
+  fg: ColorRefV3 | string | null;
+  rule: ColorRefV3 | string | null;
+  weight: number | null;
+}
+
+export interface FirstColumnClusterV3 {
+  default: FirstColumnVariantV3;
+  bold: FirstColumnVariantV3;
+}
+
+export interface PlotScaffoldV3 {
+  bg: ColorRefV3 | string | null;
+  axisLine: ColorRefV3 | string | null;
+  tickMark: ColorRefV3 | string | null;
+  gridline: ColorRefV3 | string | null;
+  reference: ColorRefV3 | string | null;
+  tickMarkLength: number;
+  lineWidth: number;
+  pointSize: number;
+}
+
+export interface MarkRecipeV3 {
+  body: string;       // slot-bundle field name
+  outline: string;
+  line: string;
+}
+
+export interface MarksRecipesV3 {
+  forest: MarkRecipeV3;
+  summary: MarkRecipeV3;
+  bar: MarkRecipeV3;
+  box: MarkRecipeV3;
+  violin: MarkRecipeV3;
+  lollipop: MarkRecipeV3;
+}
+
+export interface ClustersV3 {
+  header: HeaderClusterV3;
+  columnGroup: ColumnGroupClusterV3;
+  rowGroup: RowGroupClusterV3;
+  row: RowClusterV3;
+  cell: CellClusterV3;
+  firstColumn: FirstColumnClusterV3;
+  plot: PlotScaffoldV3;
+  marks: MarksRecipesV3;
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Resolved theme — what render-time consumers see
+// ────────────────────────────────────────────────────────────────────
+
+export interface WebThemeV3 {
+  schemaVersion: 3;
+  name: string;
+  inputs: ThemeInputsV3;
+  /** Resolved T0 ramps. */
+  ramps: TokenRampsV3;
+  /** Resolved T2 token map (every token name → hex). */
+  tokens: Record<TokenNameV3, string>;
+  /** Paint role recipes (refs not yet dereferenced — render-time picks per role). */
+  roles: ThemeRolesV3;
+  /** Component cluster bindings (refs not yet dereferenced). */
+  clusters: ClustersV3;
+}

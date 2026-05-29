@@ -6,9 +6,10 @@
 // PR B will expand these tests when the full T2 vocabulary lands.
 
 import { describe, it, expect } from "bun:test";
-import { buildRamps, resolveToken, resolveAllTokens } from "./theme-resolve-v3";
+import { buildRamps, resolveToken, resolveAllTokens, resolveRef, buildTheme, defaultRoles, defaultClusters } from "./theme-resolve-v3";
 import { apcaLc, hexToOklch } from "./oklch";
 import type { ThemeInputsV3 } from "../types/theme-v3";
+import { ref, lit } from "../types/theme-v3";
 
 const COCHRANE: ThemeInputsV3 = {
   brand: "#0099CC",
@@ -209,5 +210,156 @@ describe("Lancet preset — two-color editorial integration", () => {
     const decor = resolveToken("decorative_chrome", r);
     expect(brand).not.toBe(decor);
     expect(hexToOklch(brand).H).not.toBeCloseTo(hexToOklch(decor).H, 1);
+  });
+});
+
+describe("resolveRef — string + tagged-object + hex disambiguation", () => {
+  it("hex string passes through", () => {
+    const r = buildRamps(COCHRANE);
+    expect(resolveRef("#ff0000", r)).toBe("#ff0000");
+    expect(resolveRef("#AABBCC", r)).toBe("#AABBCC");
+  });
+
+  it("token name string resolves to T2 token hex", () => {
+    const r = buildRamps(COCHRANE);
+    expect(resolveRef("ink", r)).toBe(resolveToken("ink", r));
+    expect(resolveRef("brand", r)).toBe(resolveToken("brand", r));
+  });
+
+  it("ramp-step string resolves to ramp step", () => {
+    const r = buildRamps(COCHRANE);
+    expect(resolveRef("neutral.1", r)).toBe(r.neutral[0]!);
+    expect(resolveRef("brand.9", r)).toBe(r.brand[8]!);
+    expect(resolveRef("accent.5", r)).toBe(r.accent[4]!);
+  });
+
+  it("tagged ref object resolves like the string", () => {
+    const r = buildRamps(COCHRANE);
+    expect(resolveRef(ref("ink"), r)).toBe(resolveToken("ink", r));
+    expect(resolveRef(ref("brand.9"), r)).toBe(r.brand[8]!);
+  });
+
+  it("tagged lit object passes through", () => {
+    const r = buildRamps(COCHRANE);
+    expect(resolveRef(lit("#123456"), r)).toBe("#123456");
+  });
+
+  it("alpha tag produces hex8", () => {
+    const r = buildRamps(COCHRANE);
+    const out = resolveRef(ref("ink", 0.5), r);
+    expect(out).toMatch(/^#[0-9A-Fa-f]{8}$/);
+  });
+
+  it("null / undefined return null", () => {
+    const r = buildRamps(COCHRANE);
+    expect(resolveRef(null, r)).toBeNull();
+    expect(resolveRef(undefined, r)).toBeNull();
+  });
+
+  it("decorative ramp ref falls back to brand when no decorative", () => {
+    const r = buildRamps(COCHRANE);
+    expect(resolveRef("decorative.5", r)).toBe(r.brand[4]!);
+  });
+
+  it("decorative ramp ref uses decorative when set", () => {
+    const r = buildRamps(LANCET);
+    expect(resolveRef("decorative.5", r)).toBe(r.decorative![4]!);
+  });
+});
+
+describe("defaultRoles + defaultClusters — recipe shapes", () => {
+  it("defaultRoles returns the 9 canonical roles", () => {
+    const r = defaultRoles();
+    expect(Object.keys(r).sort()).toEqual([
+      "accent", "bold", "emphasis", "fill", "info",
+      "muted", "negative", "positive", "warning",
+    ]);
+  });
+
+  it("emphasis recipe uses ink (per locked design)", () => {
+    const r = defaultRoles();
+    const fg = r.emphasis.fg as { ref: string };
+    expect(fg.ref).toBe("ink");
+    expect(r.emphasis.fontWeight).toBe(600);
+  });
+
+  it("accent recipe uses accent token (engagement, per locked design)", () => {
+    const r = defaultRoles();
+    const fg = r.accent.fg as { ref: string };
+    expect(fg.ref).toBe("accent");
+  });
+
+  it("status roles default to fg/markerFill only (Tufte-minimal; no bg)", () => {
+    const r = defaultRoles();
+    for (const status of ["positive", "negative", "warning", "info"] as const) {
+      expect(r[status].bg).toBeUndefined();
+      const fg = r[status].fg as { ref: string };
+      expect(fg.ref).toBe(status);
+    }
+  });
+
+  it("defaultClusters has all expected cluster keys", () => {
+    const c = defaultClusters();
+    expect(Object.keys(c).sort()).toEqual([
+      "cell", "columnGroup", "firstColumn", "header",
+      "marks", "plot", "row", "rowGroup",
+    ]);
+  });
+
+  it("header.bold uses brand + brand_ink (per locked design)", () => {
+    const c = defaultClusters();
+    expect((c.header.bold.bg as { ref: string }).ref).toBe("brand");
+    expect((c.header.bold.fg as { ref: string }).ref).toBe("brand_ink");
+  });
+});
+
+describe("buildTheme — full theme assembly", () => {
+  it("returns schemaVersion 3 with inputs + ramps + tokens + roles + clusters", () => {
+    const t = buildTheme(COCHRANE);
+    expect(t.schemaVersion).toBe(3);
+    expect(t.name).toBe("custom");
+    expect(t.inputs.brand).toBe("#0099CC");
+    expect(t.ramps.brand.length).toBe(12);
+    expect(t.tokens.ink).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(t.tokens.paper).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(t.roles.emphasis.fontWeight).toBe(600);
+    expect(t.clusters.cell.bg).toBeTruthy();
+  });
+
+  it("custom theme name flows through", () => {
+    const t = buildTheme(COCHRANE, "cochrane");
+    expect(t.name).toBe("cochrane");
+  });
+
+  it("Lancet two-color theme produces decorative ramp", () => {
+    const t = buildTheme(LANCET, "lancet");
+    expect(t.ramps.decorative).not.toBeNull();
+    expect(t.tokens.decorative_chrome).toBeTruthy();
+  });
+
+  it("Dark theme inverts paper/ink", () => {
+    const t = buildTheme(DARK, "dark");
+    expect(hexToOklch(t.tokens.paper).L).toBeLessThan(0.4);
+    expect(hexToOklch(t.tokens.ink).L).toBeGreaterThan(0.9);
+  });
+
+  it("cluster refs resolve correctly against the built theme", () => {
+    const t = buildTheme(COCHRANE);
+    // header.light.bg ref → paper token → some hex
+    const headerLightBg = resolveRef(t.clusters.header.light.bg, t.ramps);
+    expect(headerLightBg).toBe(t.tokens.paper);
+    // header.bold.bg ref → brand token
+    const headerBoldBg = resolveRef(t.clusters.header.bold.bg, t.ramps);
+    expect(headerBoldBg).toBe(t.tokens.brand);
+    // header.bold.fg ref → brand_ink token
+    const headerBoldFg = resolveRef(t.clusters.header.bold.fg, t.ramps);
+    expect(headerBoldFg).toBe(t.tokens.brand_ink);
+  });
+
+  it("APCA invariant holds for resolved header.bold pair", () => {
+    const t = buildTheme(COCHRANE);
+    const bg = resolveRef(t.clusters.header.bold.bg, t.ramps)!;
+    const fg = resolveRef(t.clusters.header.bold.fg, t.ramps)!;
+    expect(apcaLc(fg, bg)).toBeGreaterThanOrEqual(60);
   });
 });
