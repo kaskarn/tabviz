@@ -112,20 +112,25 @@ export function sizingFixtures(): SizingFixture[] {
     });
   }
 
-  // 3. Wrapping label — narrow wrap-enabled label column at each density.
-  //    Exercises the wrap line-count → row-height inflation path.
+  // 3. Wrapping — narrow wrap-enabled text column at each density. Exercises
+  //    the wrap line-count → row-height inflation path. The long text must
+  //    live in row.metadata (a `text` column's display text reads
+  //    row.metadata[field], NOT row.label) on a column the wrap counter treats
+  //    as eligible (type text/custom + wrap set). Rows w0/w2 inflate; w1 stays
+  //    one line.
   for (const d of densities) {
     out.push({
       name: `wrap-${d}`,
       spec: spec({
         density: d,
         rows: [
-          dataRow("w0", LONG_LABEL),
-          dataRow("w1", "Short one"),
-          dataRow("w2", LONG_LABEL),
+          dataRow("w0", "Trial 1", { metadata: { notes: LONG_LABEL } } as Partial<Row>),
+          dataRow("w1", "Trial 2", { metadata: { notes: "Short note" } } as Partial<Row>),
+          dataRow("w2", "Trial 3", { metadata: { notes: LONG_LABEL } } as Partial<Row>),
         ],
         columns: [
-          LABEL_COL({ width: 160, wrap: true } as Partial<ColumnSpec>),
+          LABEL_COL(),
+          col("notes", "text", "Notes", { field: "notes", width: 160, wrap: true } as Partial<ColumnSpec>),
           FOREST_COL(),
         ],
       }),
