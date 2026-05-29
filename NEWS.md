@@ -1,5 +1,45 @@
 # tabviz (development)
 
+## Theme rationalization arc — V3 system (PRs A-I)
+
+A 9-PR arc rebuilt the theme surface around a unified vocabulary
+(ink / paper / brand / rule / role-driven recipes / data palettes),
+addressable references (ref("ink_muted"), ref("brand.9")), and an
+inputs+pins+overrides wire format. The new V3 system ships as a
+parallel, fully-tested foundation; the V2-to-V3 consumer cutover is
+the next sprint's work. See docs/dev/theme-rationalization-arc.md for
+status, the migration plan, and what remains.
+
+* PR A — OKLCH extensions (APCA contrast, 12-step ramps),
+  ThemeInputsV3 S7 class + TS resolver skeleton. Mode-aware ramp step
+  picking; APCA-derived brand_ink / accent_ink / status_ink pairs.
+* PR B — ref() resolver path (plain hex, T2 token name, ramp-step
+  string, tagged object, optional alpha as hex8). PaintRoleV3,
+  ThemeRolesV3, full cluster type shapes. defaultRoles() per locked
+  design: emphasis uses ink (editorial weight); accent uses accent
+  token (engagement). defaultClusters() wires header.bold to brand
+  plus brand_ink, row.alt to paper_alt, plot to rule_strong/subtle.
+* PR C — buildThemeCssV3 emits --tv-* CSS variables. Token names map
+  to kebab-case (ink_muted -> --tv-ink-muted). Cluster shorthand vars
+  and paint role vars.
+* PR D — Paint-role resolver (roles-v3.ts). Fixed canonical role
+  vocabulary: emphasis, muted, accent, bold, fill, positive,
+  negative, warning, info. Themes redefine recipes; role names are
+  closed. Status roles join the paint-tool vocabulary.
+* PR E — Data palette separation (data-schemes-v3.ts). Categorical
+  default Okabe-Ito; sequential default Viridis; diverging default
+  RdBu. Series colors decoupled from brand.
+* PR F — Wire format: inputs + pins + overrides (theme-wire-v3.ts).
+  schemaVersion 3. pin/release verbs. resolveWire runs at consumption.
+  Provenance map (input/derived/pin/override) per leaf.
+* PR G — All 18 presets migrated to the new T1 surface
+  (theme-presets-v3.ts). 6-15 LOC of declarative inputs vs ~30+ LOC
+  of V2 constructor calls. APCA invariants validated across all 18.
+* PR H — Reactive theme store (theme-store-v3.svelte.ts). Wraps a
+  ThemeWireV3 in Svelte 5 runes; resolved theme is $derived.
+* PR I — Migration arc status doc; NEWS entry.
+* PR J (planned) — Deep clean / canonize V3 / remove V1+V2 dead code.
+
 ## Theme sprint Phase 1d — OptionKind enforcement
 
 `OptionKind` is promoted from advisory (3 of 169 options tagged) to an
